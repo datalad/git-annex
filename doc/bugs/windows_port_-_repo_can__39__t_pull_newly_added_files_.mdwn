@@ -2,7 +2,7 @@
 
 Using a centralized remote repository, new files that are added to the repository after it's pulled cannot be directly accessed - instead are pulled as symlinks.
 
-The workaround is to create a remote repository that clones from the source. That repo can pull all files correctly
+The workaround is to create a new remote repository that clones from the source. That repo can pull all files correctly
 
 ### What steps will reproduce the problem?
 
@@ -10,6 +10,7 @@ The following script works fine when everything is run on a linux box. If the sa
 
 a file, testrepo.sh is set up on the server to simplify the creation of the repo for testing
 
+**testrepo.sh**
 [[!format sh """
 
 rm -rf repo.git
@@ -21,6 +22,7 @@ git annex sync
 
 """]]
 
+**test script**
 [[!format sh """
 
 ssh joebo@xxxxx sh testrepo.sh
