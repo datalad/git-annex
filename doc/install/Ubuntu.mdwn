@@ -18,12 +18,12 @@ but is otherwise usable.
 
 ## Precise PPA
 
-<https://launchpad.net/~fmarier/+archive/ppa>
+<https://launchpad.net/~fmarier/+archive/git-annex>
 
 A newer version of git-annex, including the [[assistant]] and WebApp.
 (Maintained by François Marier)
 
-	sudo add-apt-repository ppa:fmarier/ppa
+	sudo add-apt-repository ppa:fmarier/git-annex
 	sudo apt-get update
 	sudo apt-get install git-annex
 

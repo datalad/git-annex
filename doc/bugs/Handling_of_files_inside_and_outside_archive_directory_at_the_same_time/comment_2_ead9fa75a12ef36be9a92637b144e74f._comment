@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-06-15T17:52:36Z"
+ content="""
+This turns out to be much worse in direct mode than in indirect mode.
+
+In indirect mode, it only does extra work during the full startup scan. Suppose there are 3 files with the same content, 1, archive/2, and 3. It will download 1, and then will drop archive/2, and then will download 3. This certianly is not ideal, especially when the file content is large.
+
+In indirect mode, it continally and repeatedly downloads the drops the files, as long as it's running. Which is beyond unacceptable.
+
+What seems to be going on is that when archive/2 gets dropped, it necessary needs to convert 1 and 3 to broken symlinks. But the watcher than sees those file changes, thinks these are new or renamed files that have appeared, and promptly re-downloads them. That, in turn triggers an update of archive/2, to convert it back from symlink to direct mode file, and that in turn is noticed by the watcher. Round and round we go!
+"""]]
