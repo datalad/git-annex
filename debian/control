@@ -56,7 +56,7 @@ Build-Depends:
 	curl,
 	openssh-client,
 Maintainer: Joey Hess <joeyh@debian.org>
-Standards-Version: 3.9.3
+Standards-Version: 3.9.4
 Vcs-Git: git://git.kitenet.net/git-annex
 Homepage: http://git-annex.branchable.com/
 
