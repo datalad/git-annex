@@ -50,7 +50,7 @@ install: build install-docs Build/InstallDesktopFile
 test: git-annex
 	./git-annex test
 
-# hothasktags chokes on some tempolate haskell etc, so ignore errors
+# hothasktags chokes on some template haskell etc, so ignore errors
 tags:
 	find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$' | xargs hothasktags > tags 2>/dev/null
 
