@@ -1,4 +1,4 @@
-Today I got to deal with bugs on Android (busted use of `cp` amoung other
+Today I got to deal with bugs on Android (busted use of `cp` among other
 problems), Windows (fixed a strange hang when adding several files), and
 Linux (`.desktop` files suck and Wine ships a particularly nasty one).
 Pretty diverse!

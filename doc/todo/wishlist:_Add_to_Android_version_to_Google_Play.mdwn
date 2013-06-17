@@ -1,0 +1,3 @@
+If possible a frequently updated daily build in separate package for those more adventurous of us.
+
+It would make installing and testing much easier and no need to change configuration settings to allow untrusted source.
