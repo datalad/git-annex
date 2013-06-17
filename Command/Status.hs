@@ -102,7 +102,6 @@ global_fast_stats =
 	, remote_list Trusted
 	, remote_list SemiTrusted
 	, remote_list UnTrusted
-	, remote_list DeadTrusted
 	, transfer_list
 	, disk_size
 	]

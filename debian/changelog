@@ -27,6 +27,7 @@ git-annex (4.20130602) UNRELEASED; urgency=low
     archive directory. (Indirect mode still has some buggy behavior in this
     area, since it does not keep track of associated files.)
     Closes: #712060
+  * status: No longer shows dead repositories.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 
