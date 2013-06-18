@@ -131,7 +131,9 @@ prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
 	 - location, but it's not really the same directory.
 	 - Code used to get this wrong. -}
 	same_dir_shortcurcuits_at_difference =
-		relPathDirToFile "/tmp/r/lll/xxx/yyy/18" "/tmp/r/.git/annex/objects/18/gk/SHA256-foo/SHA256-foo" == "../../../../.git/annex/objects/18/gk/SHA256-foo/SHA256-foo"
+		relPathDirToFile (joinPath [pathSeparator : "tmp", "r", "lll", "xxx", "yyy", "18"])
+			(joinPath [pathSeparator : "tmp", "r", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"])
+				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]
 
 {- Given an original list of paths, and an expanded list derived from it,
  - generates a list of lists, where each sublist corresponds to one of the
