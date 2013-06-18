@@ -63,18 +63,16 @@ sshInfo (host, port) = go =<< sshCacheDir
 		, Params "-o ControlMaster=auto -o ControlPersist=yes"
 		]
 
-{- ssh connection caching creates sockets, so will not work on a
- - crippled filesystem. A GIT_ANNEX_TMP_DIR can be provided to use
+{- ssh connection caching creates sockets, so will not work on all file
+ - systems. A GIT_ANNEX_TMP_DIR can be provided to use
  - a different filesystem. -}
 sshCacheDir :: Annex (Maybe FilePath)
 sshCacheDir
-	| SysConfig.sshconnectioncaching = ifM crippledFileSystem
-		( maybe (return Nothing) usetmpdir =<< gettmpdir
-		, ifM (fromMaybe True . annexSshCaching <$> Annex.getGitConfig)
+	| SysConfig.sshconnectioncaching = 
+		ifM (fromMaybe True . annexSshCaching <$> Annex.getGitConfig)
 			( Just <$> fromRepo gitAnnexSshDir
-			, return Nothing
+			, maybe (return Nothing) usetmpdir =<< gettmpdir
 			)
-		)
 	| otherwise = return Nothing
   where
 	gettmpdir = liftIO $ getEnv "GIT_ANNEX_TMP_DIR"
