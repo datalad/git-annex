@@ -40,4 +40,4 @@ hashObject objtype content repo = getSha subcmd $
 	pipeWriteRead (map Param params) content repo
   where
 	subcmd = "hash-object"
-	params = [subcmd, "-t", show objtype, "-w", "--stdin"]
+	params = [subcmd, "-t", show objtype, "-w", "--stdin", "--no-filters"]
