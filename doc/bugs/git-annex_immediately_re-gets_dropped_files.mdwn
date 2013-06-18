@@ -23,3 +23,5 @@ The repository that this is happening on is a "client" type, direct-mode reposit
 ### Please provide any additional information below.
 
 log emailed.
+
+> [[done]]; not a bug, should use manual mode if manually deciding which files are in a repository --[[Joey]] 
