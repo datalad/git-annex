@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="http://vjt.myopenid.com/"
+ nickname="vjt"
+ subject="drop &quot;content removed from annex&quot; history"
+ date="2013-06-18T02:12:01Z"
+ content="""
+Joey,
+
+dropping the git-annex branch and subsequent fsck worked. Moreover, as I turned my repository in containing over 700k objects due to a silly cycle of `git annex add` / `git annex unannex`, bloating *both* `git-annex` and `master` history, to clean up I successfully performed a squashed rebase of master onto itself.
+
+Here's what I did, in detail:
+
+    $ git checkout git-annex
+    $ cp *.log ..
+    $ git checkout master
+    $ git br -D git-annex
+    $ git br -D synced/git-annex
+    $ git checkout <first commit>
+    $ git checkout -b git-annex
+    $ cp ../*.log .
+    $ <remove the changes done in the first commit, my case just adding a .gitignore>
+    $ git add *.log
+    $ git commit --amend -m 'Init'
+
+With this, I got rid of the many `update` commits. Now, the fun part:
+
+    $ git checkout master
+    $ git rebase -i <first commit>
+    <In the git-rebase-todo, I squashed almost everything, except a few commits I wanted to preserve>
+    $ :wq
+
+Rebase went fine, and I was left with a clean master. I brought also `synced/master` up to date:
+
+    $ git checkout synced/master
+    $ git reset --hard master
+
+Now I re-created all the location links with fsck:
+
+    $ git annex fsck
+
+And eventually, got rid of the redundant history:
+
+    $ git reflog expire --expire=now --expire-unreachable=now --all
+    $ git gc --prune=now
+    $ git repack
+    $ git prune
+
+yay, 500k objects less ^_^'.
+
+"""]]
