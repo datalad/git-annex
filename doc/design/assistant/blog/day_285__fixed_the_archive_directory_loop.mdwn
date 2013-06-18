@@ -1,6 +1,7 @@
 Yay, I fixed the
-[[handling_of_files_inside_and_outside_archive_directory_at_the_same_time]] bug!
-At least in difect mode, which thanks to its associated files tracking
+[[bugs/Handling_of_files_inside_and_outside_archive_directory_at_the_same_time]]
+bug!
+At least in direct mode, which thanks to its associated files tracking
 knows when a given file has another file in the repository with the same
 content. Had not realized the behavior in direct mode was so bad, or the
 fix so relatively easy. Pity I can't do the same for indirect mode, but
