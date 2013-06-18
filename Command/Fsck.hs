@@ -206,24 +206,13 @@ fixLink key file = do
 	maybe noop (go want) have
 	return True
   where
-	go want have = when (want /= have) $ do
-		{- Version 3.20120227 had a bug that could cause content
-		 - to be stored in the wrong hash directory. Clean up
-		 - after the bug by moving the content.
-		 -}
-		whenM (liftIO $ doesFileExist file) $
-			unlessM (inAnnex key) $ do
-				showNote "fixing content location"
-				dir <- liftIO $ parentDir <$> absPath file
-				let content = absPathFrom dir have
-				unlessM crippledFileSystem $
-					liftIO $ allowWrite (parentDir content)
-				moveAnnex key content
-
-		showNote "fixing link"
-		liftIO $ createDirectoryIfMissing True (parentDir file)
-		liftIO $ removeFile file
-		addAnnexLink want file
+	go want have
+		| want /= have = do
+			showNote "fixing link"
+			liftIO $ createDirectoryIfMissing True (parentDir file)
+			liftIO $ removeFile file
+			addAnnexLink want file
+		| otherwise = noop
 
 {- Checks that the location log reflects the current status of the key,
  - in this repository only. -}
