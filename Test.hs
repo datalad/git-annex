@@ -1102,13 +1102,13 @@ tmpdir :: String
 tmpdir = ".t"
 
 mainrepodir :: FilePath
-mainrepodir = tmpdir ++ "/repo"
+mainrepodir = tmpdir </> "repo"
 
 tmprepodir :: IO FilePath
 tmprepodir = go (0 :: Int)
   where
 	go n = do
-		let d = tmpdir ++ "/tmprepo" ++ show n
+		let d = tmpdir </> "tmprepo" ++ show n
 		ifM (doesDirectoryExist d)
 			( go $ n + 1
 			, return d
