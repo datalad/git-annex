@@ -52,7 +52,8 @@ getAnnexLinkTarget file =
 	readfilestart f = do
 		h <- openFile f ReadMode
 		fileEncoding h
-		take 8192 <$> hGetContents h
+		s <- take 8192 <$> hGetContents h
+		length s `seq` (hClose h >> return s)
 
 {- Creates a link on disk.
  -
