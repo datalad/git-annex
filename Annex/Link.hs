@@ -29,7 +29,7 @@ isAnnexLink file = maybe Nothing (fileKey . takeFileName) <$> getAnnexLinkTarget
 {- Gets the link target of a symlink.
  -
  - On a filesystem that does not support symlinks, fall back to getting the
- - link target by looking inside the file. (Only return at first 8k of the
+ - link target by looking inside the file. (Only return first 8k of the
  - file, more than enough for any symlink target.)
  -
  - Returns Nothing if the file is not a symlink, or not a link to annex
