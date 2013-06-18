@@ -21,6 +21,7 @@ hashObjectStart = CoProcess.rawMode <=< gitCoProcessStart True
 	[ Param "hash-object"
 	, Param "-w"
 	, Param "--stdin-paths"
+	, Param "--no-filters"
 	]
 
 hashObjectStop :: HashObjectHandle -> IO ()
