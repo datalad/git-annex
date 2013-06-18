@@ -31,6 +31,7 @@ import Config
 import qualified Option
 import Types.Key
 import Utility.HumanTime
+import Git.FilePath
 
 #ifndef __WINDOWS__
 import System.Posix.Process (getProcessID)
