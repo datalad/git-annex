@@ -233,6 +233,7 @@ readInodeSentinalFile = do
 writeInodeSentinalFile :: Annex ()
 writeInodeSentinalFile = do
 	sentinalfile <- fromRepo gitAnnexInodeSentinal
+	createAnnexDirectory (parentDir sentinalfile)
 	sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
 	liftIO $ writeFile sentinalfile ""
 	liftIO $ maybe noop (writeFile sentinalcachefile . showInodeCache)
