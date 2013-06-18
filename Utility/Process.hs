@@ -241,12 +241,18 @@ withQuietOutput
 	:: CreateProcessRunner
 	-> CreateProcess
 	-> IO ()
-withQuietOutput creator p = withFile "/dev/null" WriteMode $ \devnull -> do
+withQuietOutput creator p = withFile devnull WriteMode $ \nullh -> do
 	let p' = p
-		{ std_out = UseHandle devnull
-		, std_err = UseHandle devnull
+		{ std_out = UseHandle nullh
+		, std_err = UseHandle nullh
 		}
 	creator p' $ const $ return ()
+  where
+#ifndef mingw32_HOST_OS
+	devnull = "/dev/null"
+#else
+	devnull = "NUL"
+#endif
 
 {- Extract a desired handle from createProcess's tuple.
  - These partial functions are safe as long as createProcess is run
