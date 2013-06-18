@@ -31,6 +31,8 @@ git-annex (4.20130602) UNRELEASED; urgency=low
   * annex.debug can now be set to enable debug logging by default.
     The webapp's debugging check box does this.
   * fsck: Avoid getting confused by Windows path separators
+  * Windows: Multiple bug fixes, including fixing the data written to the
+    git-annex branch.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 
