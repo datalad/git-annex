@@ -58,4 +58,4 @@ rm -f last-incremental-failed
 
 # Test git-annex
 rm -rf .t
-withcyg dist/build/git-annex/git-annex.exe test || true
+withcyg dist/build/git-annex/git-annex.exe test

@@ -75,7 +75,12 @@ main = do
 	putStrLn "  (Do not be alarmed by odd output here; it's normal."
         putStrLn "   wait for the last line to see how it went.)"
 	rs <- runhunit =<< prepare False
+#ifndef __WINDOWS__
 	directrs <- runhunit =<< prepare True
+#else
+	-- Windows is only going to use direct mode, so don't test twice.
+	let directrs = []
+#endif
 	divider
 	propigate (rs++directrs) qcok
   where
@@ -1005,6 +1010,7 @@ cleanup dir = do
 		recurseDir SystemFS dir >>=
 			filterM doesDirectoryExist >>=
 				mapM_ Utility.FileMode.allowWrite
+		-- For unknown reasons, this sometimes fails on Windows.
 		void $ tryIO $ removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
