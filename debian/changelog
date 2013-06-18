@@ -30,6 +30,7 @@ git-annex (4.20130602) UNRELEASED; urgency=low
   * status: No longer shows dead repositories.
   * annex.debug can now be set to enable debug logging by default.
     The webapp's debugging check box does this.
+  * fsck: Avoid getting confused by Windows path separators
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 

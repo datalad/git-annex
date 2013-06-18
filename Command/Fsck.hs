@@ -207,7 +207,7 @@ fixLink key file = do
 	return True
   where
 	go want have
-		| want /= have = do
+		| want /= fromInternalGitPath have = do
 			showNote "fixing link"
 			liftIO $ createDirectoryIfMissing True (parentDir file)
 			liftIO $ removeFile file
