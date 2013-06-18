@@ -216,8 +216,11 @@ test_add env = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 		git_annex env "add" ["dir"] @? "add of subdir failed"
 		createDirectory "dir2"
 		writeFile ("dir2" </> "foo") $ content annexedfile
+#ifndef __WINDOWS__
+		{- This does not work on Windows, for whatever reason. -}
 		setCurrentDirectory "dir"
 		git_annex env "add" [".." </> "dir2"] @? "add of ../subdir failed"
+#endif
 
 test_reinject :: TestEnv -> Test
 test_reinject env = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepoInDirect env $ do
