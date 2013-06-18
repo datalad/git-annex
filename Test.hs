@@ -212,12 +212,12 @@ test_add env = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 		annexed_present sha1annexedfile
 	subdirs = TestCase $ intmpclonerepo env $ do
 		createDirectory "dir"
-		writeFile "dir/foo" $ content annexedfile
+		writeFile ("dir" </> "foo") $ content annexedfile
 		git_annex env "add" ["dir"] @? "add of subdir failed"
 		createDirectory "dir2"
-		writeFile "dir2/foo" $ content annexedfile
+		writeFile ("dir2" </> "foo") $ content annexedfile
 		setCurrentDirectory "dir"
-		git_annex env "add" ["../dir2"] @? "add of ../subdir failed"
+		git_annex env "add" [".." </> "dir2"] @? "add of ../subdir failed"
 
 test_reinject :: TestEnv -> Test
 test_reinject env = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepoInDirect env $ do
