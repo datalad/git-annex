@@ -18,9 +18,9 @@ import qualified Git
 import Config
 import Config.Files
 import Utility.DataUnits
+import Git.Config
 
 import qualified Data.Text as T
-import System.Log.Logger
 
 data PrefsForm = PrefsForm
 	{ diskReserve :: Text
@@ -68,7 +68,7 @@ getPrefs = PrefsForm
 	<$> (T.pack . roughSize storageUnits False . annexDiskReserve <$> Annex.getGitConfig)
 	<*> (annexNumCopies <$> Annex.getGitConfig)
 	<*> inAutoStartFile
-	<*> ((==) <$> (pure $ Just DEBUG) <*> (liftIO $ getLevel <$> getRootLogger))
+	<*> (annexDebug <$> Annex.getGitConfig)
 
 storePrefs :: PrefsForm -> Annex ()
 storePrefs p = do
@@ -79,8 +79,10 @@ storePrefs p = do
 		liftIO $ if autoStart p
 			then addAutoStartFile here
 			else removeAutoStartFile here
-	liftIO $ updateGlobalLogger rootLoggerName $ setLevel $
-		if debugEnabled p then DEBUG else WARNING
+	setConfig (annexConfig "debug") (boolConfig $ debugEnabled p)
+	liftIO $ if debugEnabled p
+		then enableDebugOutput 
+		else disableDebugOutput
 
 getPreferencesR :: Handler RepHtml
 getPreferencesR = postPreferencesR

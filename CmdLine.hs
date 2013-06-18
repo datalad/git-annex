@@ -48,6 +48,8 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 				checkfuzzy
 				forM_ fields $ uncurry Annex.setField
 				sequence_ flags
+				whenM (annexDebug <$> Annex.getGitConfig) $
+					liftIO enableDebugOutput
 				prepCommand cmd params
 		 	tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdnocommit cmd]
   where

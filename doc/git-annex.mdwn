@@ -622,6 +622,10 @@ subdirectories).
 
   Show debug messages.
 
+* --no-debug
+
+  Disable debug messages.
+
 * --from=repository
 
   Specifies a repository that content will be retrieved from, or that
@@ -902,6 +906,10 @@ Here are all the supported configuration settings.
 
   Set to false to prevent the git-annex assistant from automatically
   committing changes to files in the repository.
+
+* `annex.debug`
+
+  Set to true to enable debug logging by default.
 
 * `annex.version`
 
