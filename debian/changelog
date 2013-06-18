@@ -33,6 +33,8 @@ git-annex (4.20130602) UNRELEASED; urgency=low
   * fsck: Avoid getting confused by Windows path separators
   * Windows: Multiple bug fixes, including fixing the data written to the
     git-annex branch.
+  * Windows: The test suite now passes on Windows (a few broken parts are
+    disabled).
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 
