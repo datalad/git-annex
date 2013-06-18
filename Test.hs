@@ -978,7 +978,7 @@ cleanup dir = do
 		recurseDir SystemFS dir >>=
 			filterM doesDirectoryExist >>=
 				mapM_ Utility.FileMode.allowWrite
-		removeDirectoryRecursive dir
+		void $ tryIO $ removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
 checklink f = do
