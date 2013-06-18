@@ -9,3 +9,5 @@ It highlights the (now empty) name field, and says "value is required".
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 4.20130618-g333cb8e
 Ubuntu 13.04
+
+> [[fixed|done]] --[[Joey]]
