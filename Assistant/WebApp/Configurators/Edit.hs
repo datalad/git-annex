@@ -134,7 +134,8 @@ setRepoConfig uuid mremote oldc newc = do
 
 editRepositoryAForm :: Bool -> RepoConfig -> MkAForm RepoConfig
 editRepositoryAForm ishere def = RepoConfig
-	<$> areq textField "Name" (Just $ repoName def)
+	<$> areq (if ishere then readonlyTextField else textField)
+		"Name" (Just $ repoName def)
 	<*> aopt textField "Description" (Just $ repoDescription def)
 	<*> areq (selectFieldList groups `withNote` help) "Repository group" (Just $ repoGroup def)
 	<*> associateddirectory
