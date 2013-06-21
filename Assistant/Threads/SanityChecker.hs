@@ -19,6 +19,7 @@ import qualified Git.Config
 import Utility.ThreadScheduler
 import qualified Assistant.Threads.Watcher as Watcher
 import Utility.LogFile
+import Utility.Batch
 import Config
 
 import Data.Time.Clock.POSIX
@@ -42,7 +43,7 @@ sanityCheckerDailyThread = namedThread "SanityCheckerDaily" $ forever $ do
 		modifyDaemonStatus_ $ \s -> s { sanityCheckRunning = True }
 
 		now <- liftIO $ getPOSIXTime -- before check started
-		r <- either showerr return =<< tryIO <~> dailyCheck
+		r <- either showerr return =<< (tryIO . batch) <~> dailyCheck
 
 		modifyDaemonStatus_ $ \s -> s
 			{ sanityCheckRunning = False

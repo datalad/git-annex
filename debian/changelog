@@ -1,6 +1,7 @@
 git-annex (4.20130622) UNRELEASED; urgency=low
 
   * assistant --autostart: Automatically ionices the daemons it starts.
+  * assistant: Daily sanity check thread is run niced.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Jun 2013 13:16:17 -0400
 
