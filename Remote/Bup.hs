@@ -217,10 +217,13 @@ storeBupUUID u buprepo = do
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
 onBupRemote r a command params = do
-	let dir = shellEscape (Git.repoPath r)
 	sshparams <- sshToRepo r [Param $
 			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
 	liftIO $ a "ssh" sshparams
+  where
+	path = Git.repoPath r
+	base = fromMaybe path (stripPrefix "/~/" path)
+	dir = shellEscape base
 
 {- Allow for bup repositories on removable media by checking
  - local bup repositories to see if they are available, and getting their
