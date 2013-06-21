@@ -1,3 +1,9 @@
+git-annex (4.20130622) UNRELEASED; urgency=low
+
+  * assistant --autostart: Automatically ionices the daemons it starts.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 21 Jun 2013 13:16:17 -0400
+
 git-annex (4.20130621) unstable; urgency=low
 
   * Supports indirect mode on encfs in paranoia mode, and other

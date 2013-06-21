@@ -55,13 +55,16 @@ autoStart = do
 		f <- autoStartFile
 		error $ "Nothing listed in " ++ f
 	program <- readProgramFile
+	haveionice <- inPath "ionice"
 	forM_ dirs $ \d -> do
 		putStrLn $ "git-annex autostart in " ++ d
-		ifM (catchBoolIO $ go program d)
+		ifM (catchBoolIO $ go haveionice program d)
 			( putStrLn "ok"
 			, putStrLn "failed"
 			)
   where
-	go program dir = do
+	go haveionice program dir = do
 		setCurrentDirectory dir
-		boolSystem program [Param "assistant"]
+		if haveionice
+			then boolSystem "ionice" [Param "-c3", Param program, Param "assistant"]
+			else boolSystem program [Param "assistant"]
