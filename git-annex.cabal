@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 4.20130601
+Version: 4.20130621
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -107,7 +107,7 @@ Executable git-annex
     Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
     CPP-Options: -DWITH_WEBDAV
 
-  if flag(Assistant) && ! os(windows) && ! os(solaris) && ! os(hurd)
+  if flag(Assistant) && ! os(windows) && ! os(solaris) && ! os(gnu)
     Build-Depends: async, stm (>= 2.3)
     CPP-Options: -DWITH_ASSISTANT
 
@@ -126,7 +126,7 @@ Executable git-annex
       Build-Depends: hfsevents
       CPP-Options: -DWITH_FSEVENTS
     else
-      if (! os(windows) && ! os(solaris) && ! os(linux) && ! os(hurd))
+      if (! os(windows) && ! os(solaris) && ! os(linux) && ! os(gnu))
         CPP-Options: -DWITH_KQUEUE
         C-Sources: Utility/libkqueue.c
 
