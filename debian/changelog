@@ -36,6 +36,8 @@ git-annex (4.20130602) UNRELEASED; urgency=low
   * Windows: The test suite now passes on Windows (a few broken parts are
     disabled).
   * assistant: On Linux, the expensive transfer scan is run niced.
+  * Enable assistant and WebDAV support on powerpc and sparc architectures,
+    which now have the necessary dependencies built.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 
