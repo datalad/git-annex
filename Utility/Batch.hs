@@ -9,7 +9,7 @@
 
 module Utility.Batch where
 
-#if defined(__LINUX__) || defined(__ANDROID__)
+#if defined(linux_HOST_OS) || defined(__ANDROID__)
 import Control.Concurrent.Async
 import System.Posix.Process
 #endif
@@ -26,7 +26,7 @@ import System.Posix.Process
  - systems, the action is simply ran.
  -}
 batch :: IO a -> IO a
-#if defined(__LINUX__) || defined(__ANDROID__)
+#if defined(linux_HOST_OS) || defined(__ANDROID__)
 batch a = wait =<< batchthread
   where
   	batchthread = asyncBound $ do
