@@ -13,8 +13,8 @@ module Assistant.WebApp.Configurators.XMPP where
 import Assistant.WebApp.Common
 import Assistant.WebApp.Notifications
 import Utility.NotificationBroadcaster
-import qualified Remote
 #ifdef WITH_XMPP
+import qualified Remote
 import Assistant.XMPP.Client
 import Assistant.XMPP.Buddies
 import Assistant.Types.Buddies
