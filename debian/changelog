@@ -35,6 +35,7 @@ git-annex (4.20130602) UNRELEASED; urgency=low
     git-annex branch.
   * Windows: The test suite now passes on Windows (a few broken parts are
     disabled).
+  * assistant: On Linux, the expensive transfer scan is run niced.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Jun 2013 12:52:44 -0400
 

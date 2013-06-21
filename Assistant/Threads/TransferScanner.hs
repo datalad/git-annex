@@ -24,6 +24,7 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Utility.ThreadScheduler
 import Utility.NotificationBroadcaster
+import Utility.Batch
 import qualified Git.LsFiles as LsFiles
 import qualified Backend
 import Annex.Content
@@ -114,7 +115,7 @@ failedTransferScan r = do
  - since we need to look at the locations of all keys anyway.
  -}
 expensiveScan :: UrlRenderer -> [Remote] -> Assistant ()
-expensiveScan urlrenderer rs = unless onlyweb $ do
+expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 	debug ["starting scan of", show visiblers]
 
 	unwantedrs <- liftAnnex $ S.fromList

@@ -115,6 +115,9 @@ Executable git-annex
     Build-Depends: data-endian
     CPP-Options: -D__ANDROID__
 
+  if os(linux)
+    CPP-Options: -D__LINUX__
+
   if os(linux) && flag(Inotify)
     Build-Depends: hinotify
     CPP-Options: -DWITH_INOTIFY
