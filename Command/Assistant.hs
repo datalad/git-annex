@@ -13,6 +13,7 @@ import qualified Option
 import qualified Command.Watch
 import Init
 import Config.Files
+import qualified Build.SysConfig
 
 import System.Environment
 
@@ -55,7 +56,7 @@ autoStart = do
 		f <- autoStartFile
 		error $ "Nothing listed in " ++ f
 	program <- readProgramFile
-	haveionice <- inPath "ionice"
+	haveionice <- pure Build.SysConfig.ionice <&&> inPath "ionice"
 	forM_ dirs $ \d -> do
 		putStrLn $ "git-annex autostart in " ++ d
 		ifM (catchBoolIO $ go haveionice program d)
