@@ -13,6 +13,7 @@ florz@server:~$ git-annex version
 git-annex version: 4.20130601
 build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
 """]]
+(the problem still occurs with version 4.20130601 on both devices)
 
 ### Please provide any additional information below.
 
