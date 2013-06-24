@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ import qualified Types.Key
 import qualified Backend
 import Annex.Content
 import Annex.Content.Direct
+import Annex.Direct
 import Annex.Perms
 import Annex.Link
 import Logs.Location
@@ -120,6 +121,7 @@ perform key file backend numcopies = check
 	[ fixLink key file
 	, verifyLocationLog key file
 	, verifyDirectMapping key file
+	, verifyDirectMode key file
 	, checkKeySize key
 	, checkBackend backend key (Just file)
 	, checkKeyNumCopies key file numcopies
@@ -274,6 +276,20 @@ verifyDirectMapping key file = do
 			unlessM (liftIO $ doesFileExist f) $
 				void $ removeAssociatedFile key f
 	return True
+
+{- Ensures that files whose content is available are in direct mode. -}
+verifyDirectMode :: Key -> FilePath -> Annex Bool
+verifyDirectMode key file = do
+	whenM (isDirect <&&> islink) $ do
+		v <- toDirectGen key file
+		case v of
+			Nothing -> noop
+			Just a -> do
+				showNote "fixing direct mode"
+				a
+	return True
+  where
+	islink = liftIO $ isSymbolicLink <$> getSymbolicLinkStatus file
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available.
