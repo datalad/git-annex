@@ -42,3 +42,8 @@ git and git-annex are available on the Remote Server
 > `mangleSshHostName` would need to be changed to generate different mangled
 > hostnames in all cases. Currently, it skips non-alpha-numeric
 > characters in the directory. [[done]] --[[Joey]]
+> --[[Joey]] 
+> 
+> Additionally, just entering a path starting with "~/" would cause this
+> error, since the webapp tacks on "/~/" to make a relative path absolute.
+> I've also fixed that. [[done]] --[[Joey]]

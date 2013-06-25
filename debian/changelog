@@ -9,6 +9,8 @@ git-annex (4.20130622) UNRELEASED; urgency=low
     server.
   * webapp: Ensure that ssh keys generated for different directories
     on a server are always different.
+  * webapp: Fix bug setting up ssh repo if the user enters "~/" at the start 
+    of the path.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Jun 2013 13:16:17 -0400
 
