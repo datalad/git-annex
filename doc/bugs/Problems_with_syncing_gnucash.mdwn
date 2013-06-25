@@ -561,3 +561,6 @@ Everything up-to-date
 [2013-06-22 19:54:47 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
 [2013-06-22 19:54:47 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
 """]]
+
+[[!tag /design/assistant]]
+[[!meta title="hard link to open file which is then deleted"]]
