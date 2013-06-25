@@ -554,3 +554,6 @@ C:\joe\backup\repo-bak>
 
 # End of transcript or log.
 """]]
+
+> Apparently the last of the issues discussed here is fixed.
+> Closing this bug report before it grows a new issue. ;) [[done]] --[[Joey]]
