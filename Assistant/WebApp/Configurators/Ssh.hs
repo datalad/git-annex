@@ -284,18 +284,18 @@ makeSsh rsync setup sshdata
 	| needsPubKey sshdata = do
 		keypair <- liftIO genSshKeyPair
 		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
-		makeSsh' rsync setup sshdata' (Just keypair)
+		makeSsh' rsync setup sshdata sshdata' (Just keypair)
 	| sshPort sshdata /= 22 = do
 		sshdata' <- liftIO $ setSshConfig sshdata []
-		makeSsh' rsync setup sshdata' Nothing
-	| otherwise = makeSsh' rsync setup sshdata Nothing
+		makeSsh' rsync setup sshdata sshdata' Nothing
+	| otherwise = makeSsh' rsync setup sshdata sshdata Nothing
 
-makeSsh' :: Bool -> (Remote -> Handler ()) -> SshData -> Maybe SshKeyPair -> Handler RepHtml
-makeSsh' rsync setup sshdata keypair =
+makeSsh' :: Bool -> (Remote -> Handler ()) -> SshData -> SshData -> Maybe SshKeyPair -> Handler RepHtml
+makeSsh' rsync setup origsshdata sshdata keypair = do
 	sshSetup [sshhost, remoteCommand] "" $
 		makeSshRepo rsync setup sshdata
   where
-	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
+	sshhost = genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
 	remotedir = T.unpack $ sshDirectory sshdata
 	remoteCommand = shellWrap $ intercalate "&&" $ catMaybes
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
