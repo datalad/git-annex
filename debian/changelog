@@ -7,6 +7,8 @@ git-annex (4.20130622) UNRELEASED; urgency=low
   * fsck: Ensures that direct mode is used for files when it's enabled.
   * webapp: Fix bug when setting up a remote ssh repo repeatedly on the same
     server.
+  * webapp: Ensure that ssh keys generated for different directories
+    on a server are always different.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Jun 2013 13:16:17 -0400
 

@@ -16,6 +16,7 @@ import Git.Remote
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Char
+import Network.URI
 
 data SshData = SshData
 	{ sshHostName :: Text
@@ -216,10 +217,16 @@ setSshConfig sshdata config = do
 
 {- This hostname is specific to a given repository on the ssh host,
  - so it is based on the real hostname, the username, and the directory.
+ -
+ - The mangled hostname has the form "git-annex-realhostname-username_dir".
+ - The only use of "-" is to separate the parts shown; this is necessary
+ - to allow unMangleSshHostName to work. Any unusual characters in the
+ - username or directory are url encoded, except using "." rather than "%"
+ - (the latter has special meaning to ssh).
  -}
 mangleSshHostName :: SshData -> String
 mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
-	++ "-" ++ filter safe extra
+	++ "-" ++ escape extra
   where
 	extra = intercalate "_" $ map T.unpack $ catMaybes
 		[ sshUserName sshdata
@@ -229,6 +236,7 @@ mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
 		| isAlphaNum c = True
 		| c == '_' = True
 		| otherwise = False
+	escape s = replace "%" "." $ escapeURIString safe s
 
 {- Extracts the real hostname from a mangled ssh hostname. -}
 unMangleSshHostName :: String -> String
