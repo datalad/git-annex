@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnrFnHRRNUQBB5RCDaIwhVmCcxQp8_yiYw"
+ nickname="Oliver"
+ subject="comment 2"
+ date="2013-06-25T11:19:34Z"
+ content="""
+Had that on snow leopard as well, using both the release and the nightlies. In the end I built it myself using cabal and that was OK.
+
+Possibly using the cli from inside the app to initialize the repo might fix it.
+"""]]
