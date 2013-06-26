@@ -14,6 +14,9 @@ git-annex (4.20130622) UNRELEASED; urgency=low
   * assistant: Fix bug that prevented adding files written by gnucash, 
     and more generally support adding hard links to files. However,
     other operations on hard links are still unsupported.
+  * Temporarily revert back to building with yesod before 1.2.
+    Version 1.2 of yesod, or the new version of warp seem to have a
+    bug that causes the webapp to hang.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Jun 2013 13:16:17 -0400
 
