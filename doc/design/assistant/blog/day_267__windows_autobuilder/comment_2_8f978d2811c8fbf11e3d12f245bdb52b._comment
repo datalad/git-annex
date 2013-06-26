@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 2"
+ date="2013-06-25T17:12:17Z"
+ content="""
+That is the same problem that is currently making the test suite fail on the windows autobuilder.
+
+I don't know what is causing this problem, and have not been able to reproduce it locally in order to debug it.
+"""]]

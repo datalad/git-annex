@@ -45,7 +45,11 @@ handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile
 handleDropsFrom _ _ _ _ _ Nothing _ = noop
 handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote = do
 	fs <- liftAnnex $ ifM isDirect
-		( associatedFilesRelative key
+		( do
+			l <- associatedFilesRelative key
+			if null l
+				then return [afile]
+				else return l
 		, return [afile]
 		)
 	n <- getcopies fs

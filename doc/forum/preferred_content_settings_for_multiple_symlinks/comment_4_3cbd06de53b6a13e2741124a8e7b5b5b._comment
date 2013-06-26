@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 4"
+ date="2013-06-25T17:22:53Z"
+ content="""
+spwhitton, your analysis is correct -- except this problem was finessed in git-annex version 4.20130621. Now, when using direct mode, it knows that `old/song.mp3` is also `music/song.mp3`, and so it only drops it if the preferred content expression allows dropping both files.
+
+Still doesn't work in indirect mode, and I think not likely to in the forseeable future. See [[bugs/Handling_of_files_inside_and_outside_archive_directory_at_the_same_time]]
+"""]]

@@ -90,15 +90,21 @@ watchDir i dir ignored hooks
 				| otherwise ->
 					noop
 
-	-- Ignore creation events for regular files, which won't be
-	-- done being written when initially created, but handle for
-	-- directories and symlinks.
 	go (Created { isDirectory = isd, filePath = f })
 		| isd = recurse $ indir f
-		| hashook addSymlinkHook =
-			checkfiletype Files.isSymbolicLink addSymlinkHook f
-		| otherwise = noop
-	-- Closing a file is assumed to mean it's done being written.
+		| otherwise = do
+			ms <- getstatus f
+			case ms of
+				Just s
+					| Files.isSymbolicLink s -> 
+						when (hashook addSymlinkHook) $
+							runhook addSymlinkHook f ms
+					| Files.isRegularFile s ->
+						when (hashook addHook) $
+							runhook addHook f ms
+				_ -> noop
+	-- Closing a file is assumed to mean it's done being written,
+	-- so a new add event is sent.
 	go (Closed { isDirectory = False, maybeFilePath = Just f }) =
 			checkfiletype Files.isRegularFile addHook f
 	-- When a file or directory is moved in, scan it to add new

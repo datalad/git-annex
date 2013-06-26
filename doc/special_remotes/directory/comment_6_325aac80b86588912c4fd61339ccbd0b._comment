@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://nicolas-schodet.myopenid.com/"
+ ip="2a01:e35:8ae6:f130:1e4b:d6ff:fe78:1ddb"
+ subject="comment 6"
+ date="2013-06-26T17:52:12Z"
+ content="""
+I tried the suggestion on comment 4, but when I add again a remote with the same path, it gets the same repository identifier and is considered dead. Is that expected?
+
+My use case: I use a usb drive to transfer some large files from one git annex to another, then I use the usb drive for something else and the special remote is removed.  Later I want to use the same usb drive again, but when I create the repository, it starts in the dead state.
+"""]]

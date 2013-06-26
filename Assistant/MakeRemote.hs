@@ -49,6 +49,7 @@ makeSshRemote forcersync sshdata mcost = do
 		h = sshHostName sshdata
 		d
 			| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = sshDirectory sshdata
+			| T.pack "~/" `T.isPrefixOf` sshDirectory sshdata = T.concat [T.pack "/", sshDirectory sshdata]
 			| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
 	
 {- Runs an action that returns a name of the remote, and finishes adding it. -}

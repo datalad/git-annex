@@ -17,7 +17,7 @@ withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
 }
 
-# Don't allow build artifact from a past successfuly build to be extracted
+# Don't allow build artifact from a past successful build to be extracted
 # if we fail.
 rm -f git-annex-installer.exe
 
