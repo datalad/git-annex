@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2013-06-26T08:36:33Z"
+ content="""
+Been pretty bad with keeping the osx builder going, but this should fix it...
+
+
+<pre>
+[jtang@x00 build ((cfb577d...))]$ git diff
+diff --git a/.gitignore b/.gitignore
+index 93bd49e..717b58a 100644
+--- a/.gitignore
++++ b/.gitignore
+@@ -24,3 +24,5 @@ cabal-dev
+ .virthualenv
+ tags
+ Setup
++*.hi
++*.o
+</pre>
+
+The build on OSX leaves some stray files and it complains about it.
+"""]]
