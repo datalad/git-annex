@@ -11,6 +11,9 @@ git-annex (4.20130622) UNRELEASED; urgency=low
     on a server are always different.
   * webapp: Fix bug setting up ssh repo if the user enters "~/" at the start 
     of the path.
+  * assistant: Fix bug that prevented adding files written by gnucash, 
+    and more generally support adding hard links to files. However,
+    other operations on hard links are still unsupported.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Jun 2013 13:16:17 -0400
 

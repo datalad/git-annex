@@ -564,3 +564,5 @@ Everything up-to-date
 
 [[!tag /design/assistant]]
 [[!meta title="hard link to open file which is then deleted"]]
+
+> I have fixed this bug. [[done]] --[[Joey]]
