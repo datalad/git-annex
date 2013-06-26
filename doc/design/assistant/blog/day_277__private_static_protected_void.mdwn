@@ -1,5 +1,5 @@
 Yeah, Java hacking today. I have something that I think should deal with
-the [[Android_app_permission_denial_on_startup]] problem. Added a "Open
+the [[bugs/Android_app_permission_denial_on_startup]] problem. Added a "Open
 WebApp" item to the terminal's menu, which should behave as advertised.
 This is available in the Android daily build now, if your device has that
 problem.
