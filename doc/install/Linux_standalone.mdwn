@@ -5,7 +5,7 @@ prebuilt tarball of the most recent release.
 This tarball should work on most Linux systems. It does not depend
 on anything except for glibc.
 
-[download tarball](http://downloads.kitenet.net/git-annex/linux/current/)
+[download tarball](https://downloads.kitenet.net/git-annex/linux/current/)
 
 To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
 -- this sets up an environment where you can use `git annex`, as well
@@ -22,8 +22,8 @@ Warning: This is a last resort. Most Linux users should instead
 
 A daily build is also available.
 
-* i386: [download tarball](http://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/i386/))
-* amd64: [download tarball](http://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/amd64/))
+* i386: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
+* amd64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
 
 ## gitannex-install
 

@@ -1,6 +1,6 @@
 ## What steps will reproduce the problem?
 
-install the latest linux snapshot of git-annex (http://downloads.kitenet.net/git-annex/linux/3.20121127/git-annex-standalone-amd64.tar.gz)
+install the latest linux snapshot of git-annex (https://downloads.kitenet.net/git-annex/linux/3.20121127/git-annex-standalone-amd64.tar.gz)
 
 ## What is the expected output? What do you see instead?
 

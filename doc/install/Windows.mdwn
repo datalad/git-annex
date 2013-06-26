@@ -1,7 +1,7 @@
 git-annex has recently been ported to Windows!
 
 * First, [install git](http://git-scm.com/downloads)
-* Then, [install git-annex](http://downloads.kitenet.net/git-annex/windows/current/)
+* Then, [install git-annex](https://downloads.kitenet.net/git-annex/windows/current/)
 
 This port is in an early state. While it works well enough to use
 git-annex, many things will not work. See [[todo/windows_support]] for

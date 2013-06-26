@@ -3,7 +3,7 @@ You can of course, just drop them onto a website. But perhaps you'd like to
 use git-annex to manage those files. And as an added bonus, why not let
 anyone in the world clone your site and use `git-annex get`!
 
-My site like this is [downloads.kitenet.net](http://downloads.kitenet.net).
+My site like this is [downloads.kitenet.net](https://downloads.kitenet.net).
 Here's how I set it up. --[[Joey]]
 
 1. Set up a web site. I used Apache, and configured it to follow symlinks.
@@ -19,7 +19,7 @@ Here's how I set it up. --[[Joey]]
 6. Make sure users can still download files from the site directly.
 7. Instruct advanced users to clone a http url that ends with the "/.git/"
    directory. For example, for downloads.kitenet.net, the clone url
-   is `http://downloads.kitenet.net/.git/`
+   is `https://downloads.kitenet.net/.git/`
 
 When users clone over http, and run git-annex, it will
 automatically learn all about your repository and be able to download files

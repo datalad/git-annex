@@ -2,6 +2,10 @@ git-annex users entrust it with data that is often intensively private.
 Here's some things to know about how to maintain your privacy while using
 git-annex.
 
+## browsing this web site
+
+This website supports https. [Use it.](https://git-annex.branchable.com/privacy/)
+
 ## repository contents
 
 In general, anyone who can clone a git repository gets the ability to see

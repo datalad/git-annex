@@ -1,4 +1,4 @@
-My server is running the precompiled tarball http://downloads.kitenet.net/git-annex/linux/current/
+My server is running the precompiled tarball https://downloads.kitenet.net/git-annex/linux/current/
 
 git-annex version: 4.20130531-g5df09b5
 build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
