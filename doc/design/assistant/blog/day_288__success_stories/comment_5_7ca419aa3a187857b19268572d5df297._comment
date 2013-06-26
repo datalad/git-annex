@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 5"
+ date="2013-06-26T19:39:15Z"
+ content="""
+Excerpt from an email I received: --[[Joey]]
+
+Another story, but without the assistant this time: I've \"designed\" a
+small f2f file sharing network with it, I'm using it with a friend to
+share accross several computer. This is basically a workflow
+with git annex and gitoline, the flexibility of git and the capacities
+of git annex just gave us this out of the box. Some specs are here if
+you are curious
+http://worlddomination.be/ideas/2012/idea-n-21-build-a-f2f-sharing-network-using
+-git-annex.html
+
+"""]]
