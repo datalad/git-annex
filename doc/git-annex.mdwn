@@ -274,7 +274,7 @@ subdirectories).
   set when using initremote. For example, to add a new gpg key to the keys
   that can access an encrypted remote:
 
-	git annex initremote mys3 encryption=friend@example.com
+	git annex enableremote mys3 encryption=friend@example.com
 
 * trust [repository ...]
 
