@@ -29,10 +29,10 @@ import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Char
 
-awsConfigurator :: Widget -> Handler RepHtml
+awsConfigurator :: Widget -> Handler Html
 awsConfigurator = page "Add an Amazon repository" (Just Configuration)
 
-glacierConfigurator :: Widget -> Handler RepHtml
+glacierConfigurator :: Widget -> Handler Html
 glacierConfigurator a = do
 	ifM (liftIO $ inPath "glacier")
 		( awsConfigurator a
@@ -112,10 +112,10 @@ datacenterField service = areq (selectFieldList list) "Datacenter" defregion
 	list = M.toList $ AWS.regionMap service
 	defregion = Just $ AWS.defaultRegion service
 
-getAddS3R :: Handler RepHtml
+getAddS3R :: Handler Html
 getAddS3R = postAddS3R
 
-postAddS3R :: Handler RepHtml
+postAddS3R :: Handler Html
 #ifdef WITH_S3
 postAddS3R = awsConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
@@ -138,10 +138,10 @@ postAddS3R = awsConfigurator $ do
 postAddS3R = error "S3 not supported by this build"
 #endif
 
-getAddGlacierR :: Handler RepHtml
+getAddGlacierR :: Handler Html
 getAddGlacierR = postAddGlacierR
 
-postAddGlacierR :: Handler RepHtml
+postAddGlacierR :: Handler Html
 #ifdef WITH_S3
 postAddGlacierR = glacierConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
@@ -163,7 +163,7 @@ postAddGlacierR = glacierConfigurator $ do
 postAddGlacierR = error "S3 not supported by this build"
 #endif
 
-getEnableS3R :: UUID -> Handler RepHtml
+getEnableS3R :: UUID -> Handler Html
 #ifdef WITH_S3
 getEnableS3R uuid = do
 	m <- liftAnnex readRemoteLog
@@ -174,17 +174,17 @@ getEnableS3R uuid = do
 getEnableS3R = postEnableS3R
 #endif
 
-postEnableS3R :: UUID -> Handler RepHtml
+postEnableS3R :: UUID -> Handler Html
 #ifdef WITH_S3
 postEnableS3R uuid = awsConfigurator $ enableAWSRemote S3.remote uuid
 #else
 postEnableS3R _ = error "S3 not supported by this build"
 #endif
 
-getEnableGlacierR :: UUID -> Handler RepHtml
+getEnableGlacierR :: UUID -> Handler Html
 getEnableGlacierR = postEnableGlacierR
 
-postEnableGlacierR :: UUID -> Handler RepHtml
+postEnableGlacierR :: UUID -> Handler Html
 postEnableGlacierR = glacierConfigurator . enableAWSRemote Glacier.remote
 
 enableAWSRemote :: RemoteType -> UUID -> Widget

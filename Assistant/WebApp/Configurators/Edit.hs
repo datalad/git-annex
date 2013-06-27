@@ -155,25 +155,25 @@ editRepositoryAForm ishere def = RepoConfig
 		Nothing -> aopt hiddenField "" Nothing
 		Just d -> aopt textField "Associated directory" (Just $ Just d)
 
-getEditRepositoryR :: UUID -> Handler RepHtml
+getEditRepositoryR :: UUID -> Handler Html
 getEditRepositoryR = postEditRepositoryR
 
-postEditRepositoryR :: UUID -> Handler RepHtml
+postEditRepositoryR :: UUID -> Handler Html
 postEditRepositoryR = editForm False
 
-getEditNewRepositoryR :: UUID -> Handler RepHtml
+getEditNewRepositoryR :: UUID -> Handler Html
 getEditNewRepositoryR = postEditNewRepositoryR
 
-postEditNewRepositoryR :: UUID -> Handler RepHtml
+postEditNewRepositoryR :: UUID -> Handler Html
 postEditNewRepositoryR = editForm True
 
-getEditNewCloudRepositoryR :: UUID -> Handler RepHtml
+getEditNewCloudRepositoryR :: UUID -> Handler Html
 getEditNewCloudRepositoryR = postEditNewCloudRepositoryR
 
-postEditNewCloudRepositoryR :: UUID -> Handler RepHtml
+postEditNewCloudRepositoryR :: UUID -> Handler Html
 postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
 
-editForm :: Bool -> UUID -> Handler RepHtml
+editForm :: Bool -> UUID -> Handler Html
 editForm new uuid = page "Edit repository" (Just Configuration) $ do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	curr <- liftAnnex $ getRepoConfig uuid mremote

@@ -16,7 +16,7 @@ import Assistant.XMPP.Client
 #endif
 
 {- The main configuration screen. -}
-getConfigurationR :: Handler RepHtml
+getConfigurationR :: Handler Html
 getConfigurationR = ifM (inFirstRun)
 	( redirect FirstRepositoryR
 	, page "Configuration" (Just Configuration) $ do
@@ -28,7 +28,7 @@ getConfigurationR = ifM (inFirstRun)
 		$(widgetFile "configurators/main")
 	)
 
-getAddRepositoryR :: Handler RepHtml
+getAddRepositoryR :: Handler Html
 getAddRepositoryR = page "Add Repository" (Just Configuration) $ do
 	let repolist = repoListDisplay mainRepoSelector
 	$(widgetFile "configurators/addrepository")

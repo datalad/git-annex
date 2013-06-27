@@ -84,9 +84,9 @@ storePrefs p = do
 		then enableDebugOutput 
 		else disableDebugOutput
 
-getPreferencesR :: Handler RepHtml
+getPreferencesR :: Handler Html
 getPreferencesR = postPreferencesR
-postPreferencesR :: Handler RepHtml
+postPreferencesR :: Handler Html
 postPreferencesR = page "Preferences" (Just Configuration) $ do
 	((result, form), enctype) <- liftH $ do
 		current <- liftAnnex getPrefs

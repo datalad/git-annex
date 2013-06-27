@@ -23,7 +23,6 @@ import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 
-import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 #ifndef WITH_OLD_YESOD

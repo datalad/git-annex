@@ -23,7 +23,6 @@ import Utility.Yesod
 import Logs.Transfer
 import Build.SysConfig (packageversion)
 
-import Yesod
 import Yesod.Static
 import Text.Hamlet
 import Data.Text (Text, pack, unpack)
@@ -72,7 +71,7 @@ instance Yesod WebApp where
 			addStylesheet $ StaticR css_bootstrap_css
 			addStylesheet $ StaticR css_bootstrap_responsive_css
 			$(widgetFile "error")
-		hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
+		giveUrlRenderer $(hamletFile $ hamletTemplate "bootstrap")
 
 instance RenderMessage WebApp FormMessage where
 	renderMessage _ _ = defaultFormMessage

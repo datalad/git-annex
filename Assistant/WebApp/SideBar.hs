@@ -18,7 +18,6 @@ import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 
-import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -61,7 +60,7 @@ sideBarDisplay = do
  - body is. To get the widget head content, the widget is also 
  - inserted onto all pages.
  -}
-getSideBarR :: NotificationId -> Handler RepHtml
+getSideBarR :: NotificationId -> Handler Html
 getSideBarR nid = do
 	waitNotifier getAlertBroadcaster nid
 
@@ -73,7 +72,7 @@ getSideBarR nid = do
 	liftIO $ threadDelay 100000
 
 	page <- widgetToPageContent sideBarDisplay
-	hamletToRepHtml $ [hamlet|^{pageBody page}|]
+	giveUrlRenderer $ [hamlet|^{pageBody page}|]
 
 {- Called by the client to close an alert. -}
 getCloseAlert :: AlertId -> Handler ()

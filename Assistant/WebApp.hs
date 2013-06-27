@@ -15,7 +15,6 @@ import Assistant.Common
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 
-import Yesod
 import Data.Text (Text)
 import Control.Concurrent
 import qualified Network.Wai as W

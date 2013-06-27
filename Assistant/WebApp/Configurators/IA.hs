@@ -30,7 +30,7 @@ import qualified Data.Map as M
 import Data.Char
 import Network.URI
 
-iaConfigurator :: Widget -> Handler RepHtml
+iaConfigurator :: Widget -> Handler Html
 iaConfigurator = page "Add an Internet Archive repository" (Just Configuration)
 
 data IAInput = IAInput
@@ -118,10 +118,10 @@ accessKeyIDFieldWithHelp def = AWS.accessKeyIDField help def
   Get Internet Archive access keys
 |]
 
-getAddIAR :: Handler RepHtml
+getAddIAR :: Handler Html
 getAddIAR = postAddIAR
 
-postAddIAR :: Handler RepHtml
+postAddIAR :: Handler Html
 #ifdef WITH_S3
 postAddIAR = iaConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedIACreds
@@ -153,10 +153,10 @@ postAddIAR = iaConfigurator $ do
 postAddIAR = error "S3 not supported by this build"
 #endif
 
-getEnableIAR :: UUID -> Handler RepHtml
+getEnableIAR :: UUID -> Handler Html
 getEnableIAR = postEnableIAR
 
-postEnableIAR :: UUID -> Handler RepHtml
+postEnableIAR :: UUID -> Handler Html
 #ifdef WITH_S3
 postEnableIAR = iaConfigurator . enableIARemote
 #else

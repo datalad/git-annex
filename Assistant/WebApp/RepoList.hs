@@ -79,11 +79,11 @@ notWanted _ = False
  -
  - Returns a div, which will be inserted into the calling page.
  -}
-getRepoListR :: RepoListNotificationId -> Handler RepHtml
+getRepoListR :: RepoListNotificationId -> Handler Html
 getRepoListR (RepoListNotificationId nid reposelector) = do
 	waitNotifier getRepoListBroadcaster nid
 	p <- widgetToPageContent $ repoListDisplay reposelector
-	hamletToRepHtml $ [hamlet|^{pageBody p}|]
+	giveUrlRenderer $ [hamlet|^{pageBody p}|]
 
 mainRepoSelector :: RepoSelector
 mainRepoSelector = RepoSelector

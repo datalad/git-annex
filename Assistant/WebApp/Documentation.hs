@@ -21,12 +21,12 @@ licenseFile = do
 	base <- standaloneAppBase
 	return $ (</> "LICENSE") <$> base
 
-getAboutR :: Handler RepHtml
+getAboutR :: Handler Html
 getAboutR = page "About git-annex" (Just About) $ do
 	builtinlicense <- isJust <$> liftIO licenseFile
 	$(widgetFile "documentation/about")
 
-getLicenseR :: Handler RepHtml
+getLicenseR :: Handler Html
 getLicenseR = do
 	v <- liftIO licenseFile
 	case v of
@@ -37,6 +37,6 @@ getLicenseR = do
 			license <- liftIO $ readFile f
 			$(widgetFile "documentation/license")
 
-getRepoGroupR :: Handler RepHtml
+getRepoGroupR :: Handler Html
 getRepoGroupR = page "About repository groups" (Just About) $ do
 	$(widgetFile "documentation/repogroup")

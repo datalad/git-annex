@@ -38,6 +38,7 @@ import Config
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Char
+import qualified Text.Hamlet as Hamlet
 
 data RepositoryPath = RepositoryPath Text
 	deriving Show
@@ -123,7 +124,7 @@ defaultRepositoryPath firstrun = do
 			)
 	legit d = not <$> doesFileExist (d </> "git-annex")
 
-newRepositoryForm :: FilePath -> Html -> MkMForm RepositoryPath
+newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
 newRepositoryForm defpath msg = do
 	(pathRes, pathView) <- mreq (repositoryPathField True) ""
 		(Just $ T.pack $ addTrailingPathSeparator defpath)
@@ -137,9 +138,9 @@ newRepositoryForm defpath msg = do
 	return (RepositoryPath <$> pathRes, form)
 
 {- Making the first repository, when starting the webapp for the first time. -}
-getFirstRepositoryR :: Handler RepHtml
+getFirstRepositoryR :: Handler Html
 getFirstRepositoryR = postFirstRepositoryR
-postFirstRepositoryR :: Handler RepHtml
+postFirstRepositoryR :: Handler Html
 postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 #ifdef __ANDROID__
 	androidspecial <- liftIO $ doesDirectoryExist "/sdcard/DCIM"
@@ -166,9 +167,9 @@ getAndroidCameraRepositoryR =
 
 {- Adding a new local repository, which may be entirely separate, or may
  - be connected to the current repository. -}
-getNewRepositoryR :: Handler RepHtml
+getNewRepositoryR :: Handler Html
 getNewRepositoryR = postNewRepositoryR
-postNewRepositoryR :: Handler RepHtml
+postNewRepositoryR :: Handler Html
 postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 	home <- liftIO myHomeDir
 	((res, form), enctype) <- liftH $ runFormPost $ newRepositoryForm home
@@ -188,7 +189,7 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 		mainrepo <- fromJust . relDir <$> liftH getYesod
 		$(widgetFile "configurators/newrepository/combine")
 
-getCombineRepositoryR :: FilePathAndUUID -> Handler RepHtml
+getCombineRepositoryR :: FilePathAndUUID -> Handler Html
 getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
 	r <- combineRepos newrepopath remotename
 	liftAssistant $ syncRemote r
@@ -196,7 +197,7 @@ getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
   where
 	remotename = takeFileName newrepopath
 
-selectDriveForm :: [RemovableDrive] -> Html -> MkMForm RemovableDrive
+selectDriveForm :: [RemovableDrive] -> Hamlet.Html -> MkMForm RemovableDrive
 selectDriveForm drives = renderBootstrap $ RemovableDrive
 	<$> pure Nothing
 	<*> areq (selectFieldList pairs) "Select drive:" Nothing
@@ -219,9 +220,9 @@ removableDriveRepository drive =
 	T.unpack (mountPoint drive) </> T.unpack (driveRepoPath drive)
 
 {- Adding a removable drive. -}
-getAddDriveR :: Handler RepHtml
+getAddDriveR :: Handler Html
 getAddDriveR = postAddDriveR
-postAddDriveR :: Handler RepHtml
+postAddDriveR :: Handler Html
 postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	removabledrives <- liftIO $ driveList
 	writabledrives <- liftIO $
@@ -236,7 +237,7 @@ postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
  - that has already been used elsewhere. If so, check
  - the UUID of the repo and see if it's one we know. If not,
  - the user must confirm the repository merge. -}
-getConfirmAddDriveR :: RemovableDrive -> Handler RepHtml
+getConfirmAddDriveR :: RemovableDrive -> Handler Html
 getConfirmAddDriveR drive = do
 	ifM (needconfirm)
 		( page "Combine repositories?" (Just Configuration) $
@@ -260,7 +261,7 @@ getConfirmAddDriveR drive = do
 cloneModal :: Widget
 cloneModal = $(widgetFile "configurators/adddrive/clonemodal")
 
-getFinishAddDriveR :: RemovableDrive -> Handler RepHtml
+getFinishAddDriveR :: RemovableDrive -> Handler Html
 getFinishAddDriveR drive = make >>= redirect . EditNewRepositoryR
   where
   	make = do
@@ -284,7 +285,7 @@ combineRepos dir name = liftAnnex $ do
 	liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
 	addRemote $ makeGitRemote name dir
 
-getEnableDirectoryR :: UUID -> Handler RepHtml
+getEnableDirectoryR :: UUID -> Handler Html
 getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
 	description <- liftAnnex $ T.pack <$> prettyUUID uuid
 	$(widgetFile "configurators/enabledirectory")

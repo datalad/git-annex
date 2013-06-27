@@ -26,10 +26,10 @@ import qualified Data.Map as M
 import qualified Data.Text as T
 import Network.URI
 
-webDAVConfigurator :: Widget -> Handler RepHtml
+webDAVConfigurator :: Widget -> Handler Html
 webDAVConfigurator = page "Add a WebDAV repository" (Just Configuration)
 
-boxConfigurator :: Widget -> Handler RepHtml
+boxConfigurator :: Widget -> Handler Html
 boxConfigurator = page "Add a Box.com repository" (Just Configuration)
 
 data WebDAVInput = WebDAVInput
@@ -59,9 +59,9 @@ webDAVCredsAForm defcreds = WebDAVInput
 	<*> pure T.empty
 	<*> pure NoEncryption -- not used!
 
-getAddBoxComR :: Handler RepHtml
+getAddBoxComR :: Handler Html
 getAddBoxComR = postAddBoxComR
-postAddBoxComR :: Handler RepHtml
+postAddBoxComR :: Handler Html
 #ifdef WITH_WEBDAV
 postAddBoxComR = boxConfigurator $ do
 	defcreds <- liftAnnex $ previouslyUsedWebDAVCreds "box.com"
@@ -87,9 +87,9 @@ postAddBoxComR = boxConfigurator $ do
 postAddBoxComR = error "WebDAV not supported by this build"
 #endif
 
-getEnableWebDAVR :: UUID -> Handler RepHtml
+getEnableWebDAVR :: UUID -> Handler Html
 getEnableWebDAVR = postEnableWebDAVR
-postEnableWebDAVR :: UUID -> Handler RepHtml
+postEnableWebDAVR :: UUID -> Handler Html
 #ifdef WITH_WEBDAV
 postEnableWebDAVR uuid = do
 	m <- liftAnnex readRemoteLog

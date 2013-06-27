@@ -79,7 +79,7 @@ getBuddyName u = go =<< getclientjid
 		<$> getDaemonStatus
 #endif
 
-getNeedCloudRepoR :: UUID -> Handler RepHtml
+getNeedCloudRepoR :: UUID -> Handler Html
 #ifdef WITH_XMPP
 getNeedCloudRepoR for = page "Cloud repository needed" (Just Configuration) $ do
 	buddyname <- liftAssistant $ getBuddyName for
@@ -89,25 +89,25 @@ getNeedCloudRepoR _ = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
 #endif
 
-getXMPPConfigR :: Handler RepHtml
+getXMPPConfigR :: Handler Html
 getXMPPConfigR = postXMPPConfigR
 
-postXMPPConfigR :: Handler RepHtml
+postXMPPConfigR :: Handler Html
 postXMPPConfigR = xmppform DashboardR
 
-getXMPPConfigForPairFriendR :: Handler RepHtml
+getXMPPConfigForPairFriendR :: Handler Html
 getXMPPConfigForPairFriendR = postXMPPConfigForPairFriendR
 
-postXMPPConfigForPairFriendR :: Handler RepHtml
+postXMPPConfigForPairFriendR :: Handler Html
 postXMPPConfigForPairFriendR = xmppform StartXMPPPairFriendR
 
-getXMPPConfigForPairSelfR :: Handler RepHtml
+getXMPPConfigForPairSelfR :: Handler Html
 getXMPPConfigForPairSelfR = postXMPPConfigForPairSelfR
 
-postXMPPConfigForPairSelfR :: Handler RepHtml
+postXMPPConfigForPairSelfR :: Handler Html
 postXMPPConfigForPairSelfR = xmppform StartXMPPPairSelfR
 
-xmppform :: Route WebApp -> Handler RepHtml
+xmppform :: Route WebApp -> Handler Html
 #ifdef WITH_XMPP
 xmppform next = xmppPage $ do
 	((result, form), enctype) <- liftH $ do
@@ -133,12 +133,12 @@ xmppform _ = xmppPage $
  -
  - Returns a div, which will be inserted into the calling page.
  -}
-getBuddyListR :: NotificationId -> Handler RepHtml
+getBuddyListR :: NotificationId -> Handler Html
 getBuddyListR nid = do
 	waitNotifier getBuddyListBroadcaster nid
 
 	p <- widgetToPageContent buddyListDisplay
-	hamletToRepHtml $ [hamlet|^{pageBody p}|]
+	giveUrlRenderer $ [hamlet|^{pageBody p}|]
 
 buddyListDisplay :: Widget
 buddyListDisplay = do
@@ -216,5 +216,5 @@ testXMPP creds = do
 	showport (UnixSocket s) = s
 #endif
 
-xmppPage :: Widget -> Handler RepHtml
+xmppPage :: Widget -> Handler Html
 xmppPage = page "Jabber" (Just Configuration)

@@ -49,7 +49,7 @@ import Control.Concurrent
 import qualified Data.Set as S
 #endif
 
-getStartXMPPPairFriendR :: Handler RepHtml
+getStartXMPPPairFriendR :: Handler Html
 #ifdef WITH_XMPP
 getStartXMPPPairFriendR = ifM (isJust <$> liftAnnex getXMPPCreds)
 	( do
@@ -65,11 +65,11 @@ getStartXMPPPairFriendR = ifM (isJust <$> liftAnnex getXMPPCreds)
 #else
 getStartXMPPPairFriendR = noXMPPPairing
 
-noXMPPPairing :: Handler RepHtml
+noXMPPPairing :: Handler Html
 noXMPPPairing = noPairing "XMPP"
 #endif
 
-getStartXMPPPairSelfR :: Handler RepHtml
+getStartXMPPPairSelfR :: Handler Html
 #ifdef WITH_XMPP
 getStartXMPPPairSelfR = go =<< liftAnnex getXMPPCreds
   where
@@ -87,14 +87,14 @@ getStartXMPPPairSelfR = go =<< liftAnnex getXMPPCreds
 getStartXMPPPairSelfR = noXMPPPairing
 #endif
 
-getRunningXMPPPairFriendR :: BuddyKey -> Handler RepHtml
+getRunningXMPPPairFriendR :: BuddyKey -> Handler Html
 getRunningXMPPPairFriendR = sendXMPPPairRequest . Just
 
-getRunningXMPPPairSelfR :: Handler RepHtml
+getRunningXMPPPairSelfR :: Handler Html
 getRunningXMPPPairSelfR = sendXMPPPairRequest Nothing
 
 {- Sends a XMPP pair request, to a buddy or to self. -}
-sendXMPPPairRequest :: Maybe BuddyKey -> Handler RepHtml
+sendXMPPPairRequest :: Maybe BuddyKey -> Handler Html
 #ifdef WITH_XMPP
 sendXMPPPairRequest mbid = do
 	bid <- maybe getself return mbid
@@ -125,25 +125,25 @@ sendXMPPPairRequest _ = noXMPPPairing
 #endif
 
 {- Starts local pairing. -}
-getStartLocalPairR :: Handler RepHtml
+getStartLocalPairR :: Handler Html
 getStartLocalPairR = postStartLocalPairR
-postStartLocalPairR :: Handler RepHtml
+postStartLocalPairR :: Handler Html
 #ifdef WITH_PAIRING
 postStartLocalPairR = promptSecret Nothing $
 	startLocalPairing PairReq noop pairingAlert Nothing
 #else
 postStartLocalPairR = noLocalPairing
 
-noLocalPairing :: Handler RepHtml
+noLocalPairing :: Handler Html
 noLocalPairing = noPairing "local"
 #endif
 
 {- Runs on the system that responds to a local pair request; sets up the ssh
  - authorized key first so that the originating host can immediately sync
  - with us. -}
-getFinishLocalPairR :: PairMsg -> Handler RepHtml
+getFinishLocalPairR :: PairMsg -> Handler Html
 getFinishLocalPairR = postFinishLocalPairR
-postFinishLocalPairR :: PairMsg -> Handler RepHtml
+postFinishLocalPairR :: PairMsg -> Handler Html
 #ifdef WITH_PAIRING
 postFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
 	repodir <- liftH $ repoPath <$> liftAnnex gitRepo
@@ -159,7 +159,7 @@ postFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
 postFinishLocalPairR _ = noLocalPairing
 #endif
 
-getConfirmXMPPPairFriendR :: PairKey -> Handler RepHtml
+getConfirmXMPPPairFriendR :: PairKey -> Handler Html
 #ifdef WITH_XMPP
 getConfirmXMPPPairFriendR pairkey@(PairKey _ t) = case parseJID t of
 	Nothing -> error "bad JID"
@@ -170,7 +170,7 @@ getConfirmXMPPPairFriendR pairkey@(PairKey _ t) = case parseJID t of
 getConfirmXMPPPairFriendR _ = noXMPPPairing
 #endif
 
-getFinishXMPPPairFriendR :: PairKey -> Handler RepHtml
+getFinishXMPPPairFriendR :: PairKey -> Handler Html
 #ifdef WITH_XMPP
 getFinishXMPPPairFriendR (PairKey theiruuid t) = case parseJID t of
 	Nothing -> error "bad JID"
@@ -188,13 +188,13 @@ getFinishXMPPPairFriendR _ = noXMPPPairing
 {- Displays a page indicating pairing status and 
  - prompting to set up cloud repositories. -}
 #ifdef WITH_XMPP
-xmppPairStatus :: Bool -> Maybe JID -> Handler RepHtml
+xmppPairStatus :: Bool -> Maybe JID -> Handler Html
 xmppPairStatus inprogress theirjid = pairPage $ do
 	let friend = buddyName <$> theirjid
 	$(widgetFile "configurators/pairing/xmpp/end")
 #endif
 
-getRunningLocalPairR :: SecretReminder -> Handler RepHtml
+getRunningLocalPairR :: SecretReminder -> Handler Html
 #ifdef WITH_PAIRING
 getRunningLocalPairR s = pairPage $ do
 	let secret = fromSecretReminder s
@@ -262,7 +262,7 @@ data InputSecret = InputSecret { secretText :: Maybe Text }
 
 {- If a PairMsg is passed in, ensures that the user enters a secret
  - that can validate it. -}
-promptSecret :: Maybe PairMsg -> (Text -> Secret -> Widget) -> Handler RepHtml
+promptSecret :: Maybe PairMsg -> (Text -> Secret -> Widget) -> Handler Html
 promptSecret msg cont = pairPage $ do
 	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $
@@ -319,9 +319,9 @@ sampleQuote = T.unwords
 
 #endif
 
-pairPage :: Widget -> Handler RepHtml
+pairPage :: Widget -> Handler Html
 pairPage = page "Pairing" (Just Configuration)
 
-noPairing :: Text -> Handler RepHtml
+noPairing :: Text -> Handler Html
 noPairing pairingtype = pairPage $
 	$(widgetFile "configurators/pairing/disabled")

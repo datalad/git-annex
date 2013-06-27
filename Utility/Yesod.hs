@@ -10,18 +10,28 @@
 
 {-# LANGUAGE CPP, RankNTypes, FlexibleContexts #-}
 
-module Utility.Yesod where
+module Utility.Yesod 
+	( module Y
+	, widgetFile
+	, hamletTemplate
+	, liftH
+#if ! MIN_VERSION_yesod(1,2,0)
+	, giveUrlRenderer
+	, Html
+#endif
+	) where
 
-import Yesod
-#if MIN_VERSION_yesod_default(1,2,0)
-import Yesod.Core
+#if MIN_VERSION_yesod(1,2,0)
+import Yesod as Y
+#else
+import Yesod as Y hiding (Html)
 #endif
 #ifndef __ANDROID__
 import Yesod.Default.Util
 import Language.Haskell.TH.Syntax (Q, Exp)
 #if MIN_VERSION_yesod_default(1,1,0)
 import Data.Default (def)
-import Text.Hamlet
+import Text.Hamlet hiding (Html)
 #endif
 
 widgetFile :: String -> Q Exp
@@ -46,4 +56,12 @@ liftH = handlerToWidget
 #else
 liftH :: MonadLift base m => base a -> m a
 liftH = lift
+#endif
+
+{- Misc new names for stuff. -}
+#if ! MIN_VERSION_yesod(1,2,0)
+giveUrlRenderer :: forall master sub. HtmlUrl (Route master) -> GHandler sub master RepHtml
+giveUrlRenderer = hamletToRepHtml
+
+type Html = RepHtml
 #endif
