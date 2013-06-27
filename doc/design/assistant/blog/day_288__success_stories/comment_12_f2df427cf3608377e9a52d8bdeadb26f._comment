@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 12"
+ date="2013-06-27T18:11:45Z"
+ content="""
+From a mail I received: --[[Joey]]
+
+Git-annex makes it possible for me to have lots of data.  Before I
+started using it I had a music library and a few massive tar files,
+none of it properly backed up, and occasionally there would be random
+corruption (I still have broken mp3s which jump and stutter in places)
+because I would carelessly cp them from HDD to HDD.  So I'd avoid
+actually letting data accumulate; this was inconvenient in itself.
+Now git-annex does everything for me.
+
+Following your development blog, as a novice programmer, has been
+really enjoyable and interesting.  My only experience of professional
+IT has put me of but it's good to see you working through things
+methodically and properly.
+"""]]
