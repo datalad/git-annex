@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawl8B4Ima-VCCJ4y32Gvfii8EmvTyN9tFGM"
- nickname="Glendon"
- subject="Ubuntu Raring and fmarier's PPA"
- date="2013-06-27T00:42:52Z"
- content="""
-It seems that fmarier's PPA doesn't have support for Raring. Switching my sources.list file to point to Precise allowed it to be installed, but it might be nice to add as a build target.
-"""]]
