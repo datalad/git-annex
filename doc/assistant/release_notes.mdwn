@@ -1,3 +1,7 @@
+## version 4.20130621, 4.20130627
+
+These releases mostly consist of bug fixes.
+
 ## version 4.20130601
 
 This is a bugfix release, featuring significant XMPP improvements and
