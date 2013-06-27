@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="not OSX specific"
+ date="2013-06-27T02:36:04Z"
+ content="""
+I was able to reproduce the hang on linux after upgrading to the newest version of warp and yesod.
+"""]]
