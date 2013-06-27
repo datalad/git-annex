@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnGrQBFPptA2GU_Nx8KrxRGtyAS7PIlwjw"
+ nickname="Nathan"
+ subject="same problem here"
+ date="2013-06-27T12:32:28Z"
+ content="""
+Ran into this same problem just now. I can't start as I cant make a repository.
+
+Error:
+
+Internal Server Error
+user error (git [\"--git-dir=/Users/Nathan/annex/.git\",\"--work-tree=/Users/Nathan/annex\",\"commit-tree\",\"4b825dc642cb6eb9a060e54bf8d69288fbee4904\"] exited 128)
+
+git-annex version: 
+
+4.20130626-g2dd6f84
+
+Could this have something to do with me first frigging around trying to get git-annex installed via homebrew? Maybe I broke something first?
+"""]]
