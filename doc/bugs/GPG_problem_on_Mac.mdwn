@@ -10,7 +10,7 @@ Add a box.com repository (I assume every repository type that uses gpg will fail
 
 
 ### What version of git-annex are you using? On what operating system?
-* git-annex version 4.20130626-g2dd6f84
+* git-annex version 4.20130626-g2dd6f84 (from https://downloads.kitenet.net/git-annex/OSX/current/10.8.2_Mountain_Lion/)
 * Mac OS 10.8.4
 
 ### Please provide any additional information below.
