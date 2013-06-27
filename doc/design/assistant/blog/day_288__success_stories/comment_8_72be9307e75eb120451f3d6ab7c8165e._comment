@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnAvbXOnK57sqgvZvxkbG74NUKBDwKDcuk"
+ nickname="Tim"
+ subject="Backups"
+ date="2013-06-27T13:14:43Z"
+ content="""
+We use rsync and tar to backup to a server on the local network, and since we discoverd git-annex, we use this mechanism to automatically put all this data in both a local bup repo and a remote one. This gives us a daily full backup, with history available, both locally and off-site. Thanks to bup our 4T of data gets deduplicated to about 270G, only a couple of megs get transferred every night, and thanks to git-annex everything just works, like it should!
+"""]]
