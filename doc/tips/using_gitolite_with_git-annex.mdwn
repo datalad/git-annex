@@ -23,7 +23,7 @@ gitolite installation, just with different paths.
 Set `$GL_ADC_PATH` in `.gitolite.rc`, if you have not already done so.
 
 <pre>
-echo '$GL_ADC_PATH = "/usr/local/lib/gitolite/adc/;"' >>~gitolite/.gitolite.rc
+echo '$GL_ADC_PATH = "/usr/local/lib/gitolite/adc/";' >>~gitolite/.gitolite.rc
 </pre>
 
 Make the ADC directory, and a "ua" subdirectory.
