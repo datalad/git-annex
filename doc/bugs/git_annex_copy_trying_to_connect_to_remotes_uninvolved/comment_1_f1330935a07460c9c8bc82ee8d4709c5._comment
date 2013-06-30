@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 1"
+ date="2013-06-30T17:27:07Z"
+ content="""
+git-annex needs to discover the uuid of each remote before it can use it. So it currently goes off the discover these uuids at startup time.
+
+If you have a remote that you do not want git-annex to use, you can set remote.name.annex-ignore and it will not do this discovery process for that remote.
+
+While it would be possible to defer the lookup until an operation that needs to know the remote's uuid, it would complicate the code quite a bit, so I have not tried to do so.
+"""]]
