@@ -107,7 +107,7 @@ Executable git-annex
     Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
     CPP-Options: -DWITH_WEBDAV
 
-  if flag(Assistant) && ! os(windows) && ! os(solaris) && ! os(gnu)
+  if flag(Assistant) && ! os(windows) && ! os(solaris)
     Build-Depends: async, stm (>= 2.3)
     CPP-Options: -DWITH_ASSISTANT
 
@@ -123,7 +123,7 @@ Executable git-annex
       Build-Depends: hfsevents
       CPP-Options: -DWITH_FSEVENTS
     else
-      if (! os(windows) && ! os(solaris) && ! os(linux) && ! os(gnu))
+      if (! os(windows) && ! os(solaris) && ! os(linux))
         CPP-Options: -DWITH_KQUEUE
         C-Sources: Utility/libkqueue.c
 
