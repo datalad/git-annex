@@ -26,3 +26,5 @@ Windows 7 64 bit
 
 # End of transcript or log.
 """]]
+
+[[!meta title="windows installer fails unless run as admin user"]]
