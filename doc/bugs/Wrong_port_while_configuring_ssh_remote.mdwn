@@ -4,7 +4,7 @@ When the assistant connects the second time during adding a ssh remote, it assum
 
 ### What steps will reproduce the problem?
 
-Adding a ssh git remote
+Adding a ssh git remote with non-standard port
 
 ### What version of git-annex are you using? On what operating system?
 
