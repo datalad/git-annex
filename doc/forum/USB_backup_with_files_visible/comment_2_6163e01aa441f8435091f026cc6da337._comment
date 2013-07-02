@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQafKy7hNSEolLs6TvbgUnkklTctUY9LI"
+ nickname="Zellyn"
+ subject="comment 2"
+ date="2013-07-02T17:10:59Z"
+ content="""
+Aah, perfect. I did in fact set up a non-bare git annex on the drive. I was just lacking the `git annex sync` command. Thanks!
+"""]]
