@@ -10,6 +10,8 @@ Adding a ssh git remote with non-standard port.
 
 GNU/Linux, Ubuntu 12.10, amd64, git-annex 4.20130627-g728b27a
 
+Happens on android as well.
+
 ### Please provide any additional information below.
 
 [[!format sh """
