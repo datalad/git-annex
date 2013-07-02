@@ -292,7 +292,7 @@ makeSsh rsync setup sshdata
 
 makeSsh' :: Bool -> (Remote -> Handler ()) -> SshData -> SshData -> Maybe SshKeyPair -> Handler Html
 makeSsh' rsync setup origsshdata sshdata keypair = do
-	sshSetup [sshhost, remoteCommand] "" $
+	sshSetup ["-p", show (sshPort origsshdata), sshhost, remoteCommand] "" $
 		makeSshRepo rsync setup sshdata
   where
 	sshhost = genSshHost (sshHostName origsshdata) (sshUserName origsshdata)

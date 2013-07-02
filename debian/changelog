@@ -1,3 +1,9 @@
+git-annex (4.20130628) UNRELEASED; urgency=low
+
+  * webapp: Fix ssh setup with nonstandard port, broken in last release.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 02 Jul 2013 15:40:55 -0400
+
 git-annex (4.20130627) unstable; urgency=low
 
   * assistant --autostart: Automatically ionices the daemons it starts.

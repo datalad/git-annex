@@ -30,3 +30,6 @@ ssh: connect to host xxxxx port 22: Connection refused
 
 # End of transcript or log.
 """]]
+
+> [[Fixed|done]]; this bug was introcuded in version
+> 4.20130627 while making some other ssh fixes. --[[Joey]]
