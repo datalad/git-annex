@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 1"
+ date="2013-07-02T05:28:00Z"
+ content="""
+Yes, any git repository where there has not been an initial commit made is in an unusal situation. I've often felt this is a design flaw of git; it could start off with an empty root 00000 commit and avoid this complexity.
+
+There are probably all kinds of fancy git commands that can be used to get out of the situation you describe, but finessing a perfect exit from a situation that has happened in the first 5 minutes of using a new repository seems like overkill. Just run `git annex unannex` to move all your files out of git-annex; run `git rm -rf .` to delete the files from the git-annex branch; run `rm -rf .git`, and you're back where you started with some files and no git repository.
+
+... And no, neither git nor git-annex make any promises about keeping your data secure until you have both committed it and sent it somewhere else.
+"""]]
