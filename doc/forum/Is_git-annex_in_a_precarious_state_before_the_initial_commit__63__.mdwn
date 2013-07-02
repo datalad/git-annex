@@ -13,6 +13,6 @@ Instead, you fool around with git. After all, isn't git designed to keep your da
 
     git checkout git-annex
 
-This command switches to the branch git-annex and makes a mess in the working directory. And you can't switch back to master since master does not have any commits. Is there are clean way to go back? I tried 'git checkout --orphan master', but the messy files stayed in the working directory. In the meantime, there should probably be a warning on the walkthrough page.
+This command switches to the branch git-annex and makes a mess in the working directory. And you can't switch back to master since master does not have any commits. Is there a clean way to go back? I tried 'git checkout --orphan master', but the messy files stayed in the working directory. In the meantime, there should probably be a warning on the walkthrough page.
 
 I think git / git annex should warn you before switching the branch in this rare situation.
