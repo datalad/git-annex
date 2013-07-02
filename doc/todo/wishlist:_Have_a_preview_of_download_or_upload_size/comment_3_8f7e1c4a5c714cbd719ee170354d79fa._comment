@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 3"
+ date="2013-07-02T17:04:47Z"
+ content="""
+You can get info like that by running `git annex status .`
+
+This can also be used to find out how big a download is before starting it. For example, to find all files that are not present locally before running git-annex get:
+
+`git annex status . --not --in here`
+"""]]
