@@ -64,18 +64,17 @@ incrementalScheduleOption = Option.field [] "incremental-schedule" paramTime
 
 fsckOptions :: [Option]
 fsckOptions = 
-	[ allOption
-	, fromOption
+	[ fromOption
 	, startIncrementalOption
 	, moreIncrementalOption
 	, incrementalScheduleOption
-	]
+	] ++ keyOptions
 
 seek :: [CommandSeek]
 seek =
 	[ withField fromOption Remote.byNameWithUUID $ \from ->
 	  withIncremental $ \i ->
-	  withAll (startAll i) $
+	  withKeyOptions (startKey i) $
 	  withFilesInGit $ whenAnnexed $ start from i
 	]
 
@@ -173,8 +172,8 @@ performRemote key file backend numcopies remote =
 			)
 	dummymeter _ = noop
 
-startAll :: Incremental -> Key -> CommandStart
-startAll inc key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
+startKey :: Incremental -> Key -> CommandStart
+startKey inc key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
 	Nothing -> stop
 	Just backend -> runFsck inc (key2file key) key $ performAll key backend
 

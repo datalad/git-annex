@@ -32,21 +32,21 @@ toOption :: Option
 toOption = Option.field ['t'] "to" paramRemote "destination remote"
 
 moveOptions :: [Option]
-moveOptions = [allOption, fromOption, toOption]
+moveOptions = [fromOption, toOption] ++ keyOptions
 
 seek :: [CommandSeek]
 seek = 
 	[ withField toOption Remote.byNameWithUUID $ \to ->
 	  withField fromOption Remote.byNameWithUUID $ \from ->
-	  withAll (startAll to from True) $
+	  withKeyOptions (startKey to from True) $
 	  withFilesInGit $ whenAnnexed $ start to from True
 	]
 
 start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> CommandStart
 start to from move file (key, _) = start' to from move (Just file) key
 
-startAll :: Maybe Remote -> Maybe Remote -> Bool -> Key -> CommandStart
-startAll to from move key = start' to from move Nothing key
+startKey :: Maybe Remote -> Maybe Remote -> Bool -> Key -> CommandStart
+startKey to from move key = start' to from move Nothing key
 
 start' :: Maybe Remote -> Maybe Remote -> Bool -> AssociatedFile -> Key -> CommandStart
 start' to from move afile key = do

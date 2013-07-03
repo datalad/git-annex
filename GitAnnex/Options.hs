@@ -59,6 +59,10 @@ options = Option.common ++
 
 	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
 
-allOption :: Option
-allOption = Option ['A'] ["all"] (NoArg (Annex.setFlag "all"))
-	"operate on all versions of all files"
+keyOptions :: [Option]
+keyOptions = 
+	[ Option ['A'] ["all"] (NoArg (Annex.setFlag "all"))
+		"operate on all versions of all files"
+	, Option ['U'] ["unused"] (NoArg (Annex.setFlag "unused"))
+		"operate on files found by last run of git-annex unused"
+	]

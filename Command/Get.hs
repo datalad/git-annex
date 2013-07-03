@@ -23,12 +23,12 @@ def = [withOptions getOptions $ command "get" paramPaths seek
 	SectionCommon "make content of annexed files available"]
 
 getOptions :: [Option]
-getOptions = [allOption, Command.Move.fromOption]
+getOptions = [Command.Move.fromOption] ++ keyOptions
 
 seek :: [CommandSeek]
 seek = 
 	[ withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
-	  withAll (startAll from) $
+	  withKeyOptions (startKeys from) $
 	  withFilesInGit $ whenAnnexed $ start from
 	]
 
@@ -37,8 +37,8 @@ start from file (key, _) = start' expensivecheck from key (Just file)
   where
 	expensivecheck = checkAuto (numCopiesCheck file key (<) <||> wantGet False (Just file))
 
-startAll :: Maybe Remote -> Key -> CommandStart
-startAll from key = start' (return True) from key Nothing
+startKeys :: Maybe Remote -> Key -> CommandStart
+startKeys from key = start' (return True) from key Nothing
 
 start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> CommandStart
 start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $

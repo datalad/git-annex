@@ -380,6 +380,12 @@ subdirectories).
 
   To check for annexed data on a remote, specify --from.
 
+  After running this command, you can use the --unused option to
+  operate on all the unused data that was found. For example, to
+  move all unused data to origin:
+
+	git annex unused; git annex move --unused --to origin
+
 * dropunused [number|range ...]
 
   Drops the data corresponding to the numbers, as listed by the last
@@ -609,6 +615,11 @@ subdirectories).
   running git-annex in a bare repository; in a non-bare repository the
   normal behavior is to only operate on specified files in the working
   tree.
+
+* --unused
+
+  Operate on all data that has been determined to be unused by
+  a previous run of git-annex unused.
 
 * --quiet
 

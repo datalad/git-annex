@@ -7,7 +7,6 @@
 
 module Command.DropUnused where
 
-import Logs.Unused
 import Common.Annex
 import Command
 import qualified Annex
@@ -15,6 +14,7 @@ import qualified Command.Drop
 import qualified Remote
 import qualified Git
 import qualified Option
+import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 
 def :: [Command]
 def = [withOptions [Command.Drop.fromOption] $

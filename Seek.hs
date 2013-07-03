@@ -25,6 +25,7 @@ import qualified Limit
 import qualified Option
 import Config
 import Logs.Location
+import Logs.Unused
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do
@@ -123,22 +124,32 @@ withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
 
 {- If --all is specified, or in a bare repo, runs an action on all
- - known keys. Otherwise, fall back to a regular CommandSeek action on
+ - known keys.
+ -
+ - If --unused is specified, runs an action on all keys found by
+ - the last git annex unused scan.
+ -
+ - Otherwise, fall back to a regular CommandSeek action on
  - whatever params were passed. -}
-withAll :: (Key -> CommandStart) -> CommandSeek -> CommandSeek
-withAll allop fallbackop params = go =<< (Annex.getFlag "all" <||> isbare)
+withKeyOptions :: (Key -> CommandStart) -> CommandSeek -> CommandSeek
+withKeyOptions keyop fallbackop params = do
+	bare <- fromRepo Git.repoIsLocalBare
+	all <- Annex.getFlag "all" <||> pure bare
+	unused <- Annex.getFlag "unused"
+	auto <- Annex.getState Annex.auto
+	case    (all  , unused, auto ) of
+		(True , False , False) -> go loggedKeys
+		(False, True  , False) -> go unusedKeys
+		(True , True  , _    ) -> error "Cannot use --all with --unused."
+		(False, False , _    ) -> fallbackop params
+		(_    , _     , True )
+			| bare -> error "Cannot use --auto in a bare repository."
+			| otherwise -> error "Cannot use --auto with --all or --unused."
   where
-	go False = fallbackop params
-	go True = do
-		whenM (Annex.getState Annex.auto) $
-			ifM isbare
-				( error "Cannot use --auto in a bare repository."
-				, error "Cannot use --auto with --all."
-				)
+  	go a = do
 		unless (null params) $
-			error "Cannot mix --all with file names."
-		map allop <$> loggedKeys
-	isbare = fromRepo Git.repoIsLocalBare
+			error "Cannot mix --all or --unused with file names."
+		map keyop <$> a
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do

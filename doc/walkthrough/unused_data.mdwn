@@ -5,8 +5,7 @@ file, the old content of the file remains in the annex. Another way is when
 migrating between key-value [[backends]].
 
 This might be historical data you want to preserve, so git-annex defaults to
-preserving it. So from time to time, you may want to check for such data and
-eliminate it to save space.
+preserving it. So from time to time, you may want to check for such data:
 
 	# git annex unused
 	unused . (checking for unused data...) 
@@ -28,3 +27,9 @@ data anymore, you can easily remove it:
 Hint: To drop a lot of unused data, use a command like this:
 
 	# git annex dropunused 1-1000
+
+Rather than removing the data, you can instead send it to other
+repositories:
+
+	# git annex copy --unused --to backup
+	# git annex move --unused --to archive

@@ -21,7 +21,7 @@ seek :: [CommandSeek]
 seek =
 	[ withField Command.Move.toOption Remote.byNameWithUUID $ \to ->
 	  withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
-	  withAll (Command.Move.startAll to from False) $
+	  withKeyOptions (Command.Move.startKey to from False) $
 	  withFilesInGit $ whenAnnexed $ start to from
 	]
 
