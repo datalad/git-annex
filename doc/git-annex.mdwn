@@ -619,7 +619,7 @@ subdirectories).
 * --unused
 
   Operate on all data that has been determined to be unused by
-  a previous run of git-annex unused.
+  a previous run of `git-annex unused`.
 
 * --quiet
 
