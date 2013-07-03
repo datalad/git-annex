@@ -17,10 +17,9 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
 * Month 9: [[screencasts|videos]] and polishing
 * Month 10: bugfixing, [[Android]] webapp
 * Month 11: [[!traillink Windows]] porting, finishing touches
-
-We are, approximately, here:
-
 * Month 12: [presentation at SELF2013](http://www.southeastlinuxfest.org/), finishing touches
+
+... Now what? :)
 
 ## porting
 
