@@ -17,3 +17,13 @@ But my new drive doesn't have a copy of any of the files I dropped from my deskt
 on my desktop, and then my new drive would have a copy of everything, and my desktop drive would still have plenty of space (ie the files I'd dropped to make space would still not be stored on the desktop).
 
 The git repos on these external drives are both bare (as in ``git init --bare``) because they are used only for backups. Thus I operate on them only as remotes from my main (desktop) repo.
+
+> I have now implemented the --all option, and it's the default when
+> running `git annex get` inside a bare repo.
+> 
+> So, the solution is to `cd` to the repository on old-external-drive,
+> and `git remote add newdrive /path/to/new/drive/repo`. Then run `git
+> annex copy --all --to newdrive` and it'll move everything.
+> 
+> Calling this [[done]] unless there are other use cases where the double
+> copy method is really needed? --[[Joey]] 
