@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,22 +10,29 @@ module Command.Merge where
 import Common.Annex
 import Command
 import qualified Annex.Branch
+import qualified Git.Branch
+import Command.Sync (mergeLocal)
 
 def :: [Command]
 def = [command "merge" paramNothing seek SectionMaintenance
-	"auto-merge remote changes into git-annex branch"]
+	"automatically merge changes from remotes"]
 
 seek :: [CommandSeek]
-seek = [withNothing start]
+seek =
+	[ withNothing mergeBranch
+	, withNothing mergeSynced
+	]
 
-start :: CommandStart
-start = do
-	showStart "merge" "."
-	next perform
+mergeBranch :: CommandStart
+mergeBranch = do
+	showStart "merge" "git-annex"
+	next $ do
+		Annex.Branch.update
+		-- commit explicitly, in case no remote branches were merged
+		Annex.Branch.commit "update"
+		next $ return True
 
-perform :: CommandPerform
-perform = do
-	Annex.Branch.update
-	-- commit explicitly, in case no remote branches were merged
-	Annex.Branch.commit "update"
-	next $ return True
+mergeSynced :: CommandStart
+mergeSynced = do
+	branch <- inRepo Git.Branch.current
+	maybe stop mergeLocal branch

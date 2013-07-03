@@ -7,6 +7,10 @@ git-annex (4.20130628) UNRELEASED; urgency=low
     by the last run of git annex unused. Supported by fsck, get, move, copy.
   * get, move, copy: Can now be run in a bare repository,
     like fsck already could. --all is enabled automatically in this case.
+  * merge: Now also merges synced/master or similar branches, which 
+    makes it useful to put in a post-receive hook to make a repository
+    automatically update its working copy when git annex sync or the assistant
+    sync with it.
   * webapp: Fix ssh setup with nonstandard port, broken in last release.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 02 Jul 2013 15:40:55 -0400

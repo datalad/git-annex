@@ -20,9 +20,12 @@ Here's how I set it up. --[[Joey]]
 7. Instruct advanced users to clone a http url that ends with the "/.git/"
    directory. For example, for downloads.kitenet.net, the clone url
    is `https://downloads.kitenet.net/.git/`
+8. Set up a git `post-receive` hook that runs `git annex merge`, and
+   the repository's working tree will automatically be updated when
+   you run `git annex sync` in a clone that can push to the repository.  
+   (Needs git-annex version 4.20130703 or newer; older versions
+   can use `git annex sync` in the post-receive hook instead.)
 
 When users clone over http, and run git-annex, it will
 automatically learn all about your repository and be able to download files
 right out of it, also using http. 
-
-Enjoy!

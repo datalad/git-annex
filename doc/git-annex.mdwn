@@ -148,6 +148,15 @@ subdirectories).
   Note that sync does not transfer any file contents from or to the remote
   repositories.
 
+* merge
+
+  This performs the same merging that is done by the sync command, but
+  without pushing or pulling any data.
+
+  One way to use this is to put `git annex merge` into a repository's
+  post-receive hook. Then any syncs to the repository will update its working
+  copy automatically.
+
 * addurl [url ...]
 
   Downloads each url to its own file, which is added to the annex.
@@ -400,13 +409,6 @@ subdirectories).
   Adds back files for the content corresponding to the numbers or ranges,
   as listed by the last `git annex unused`. The files will have names
   starting with "unused."
-
-* merge
-
-  Automatically merges remote tracking branches */git-annex into
-  the git-annex branch. While git-annex mostly handles keeping the
-  git-annex branch merged automatically, if you find you are unable
-  to push the git-annex branch due non-fast-forward, this will fix it.
 
 * fix [path ...]
 
