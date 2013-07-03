@@ -610,10 +610,6 @@ subdirectories).
   normal behavior is to only operate on specified files in the working
   tree.
 
-  Note that using --all makes .gitattributes annex.numcopies settings
-  not be honored. Other numcopies settings are still taken into account.
-  --all cannot be combined with --auto.
-
 * --quiet
 
   Avoid the default verbose display of what is done; only show errors
