@@ -24,7 +24,7 @@ def = [withOptions options $
 		"transfers a key from or to a remote"]
 
 options :: [Option]
-options = fileOption : Command.Move.options
+options = [fileOption, Command.Move.fromOption, Command.Move.toOption]
 
 fileOption :: Option
 fileOption = Option.field [] "file" paramFile "the associated file"

@@ -122,8 +122,8 @@ withNothing :: CommandStart -> CommandSeek
 withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
 
-{- If --all is specified, runs an action on all logged keys.
- - Otherwise, fall back to a regular CommandSeek action on
+{- If --all is specified, or in a bare repo, runs an action on all
+ - known keys. Otherwise, fall back to a regular CommandSeek action on
  - whatever params were passed. -}
 withAll :: (Key -> CommandStart) -> CommandSeek -> CommandSeek
 withAll allop fallbackop params = go =<< (Annex.getFlag "all" <||> isbare)

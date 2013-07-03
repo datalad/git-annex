@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -14,37 +14,53 @@ import Annex.Content
 import qualified Command.Move
 import Logs.Transfer
 import Annex.Wanted
+import GitAnnex.Options
+import Types.Key
+import Types.Remote
 
 def :: [Command]
-def = [withOptions [Command.Move.fromOption] $ command "get" paramPaths seek
+def = [withOptions getOptions $ command "get" paramPaths seek
 	SectionCommon "make content of annexed files available"]
 
+getOptions :: [Option]
+getOptions = [allOption, Command.Move.fromOption]
+
 seek :: [CommandSeek]
-seek = [withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
-	withFilesInGit $ whenAnnexed $ start from]
+seek = 
+	[ withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
+	  withAll (startAll from) $
+	  withFilesInGit $ whenAnnexed $ start from
+	]
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = stopUnless (not <$> inAnnex key) $
-	stopUnless (checkAuto (numCopiesCheck file key (<) <||> wantGet False (Just file))) $ do
-		case from of
-			Nothing -> go $ perform key file
-			Just src ->
-				-- get --from = copy --from
-				stopUnless (Command.Move.fromOk src key) $
-					go $ Command.Move.fromPerform src False key file
+start from file (key, _) = start' expensivecheck from key (Just file)
   where
-	go a = do
-		showStart "get" file
+	expensivecheck = checkAuto (numCopiesCheck file key (<) <||> wantGet False (Just file))
+
+startAll :: Maybe Remote -> Key -> CommandStart
+startAll from key = start' (return True) from key Nothing
+
+start' :: Annex Bool -> Maybe Remote -> Key -> AssociatedFile -> CommandStart
+start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
+	stopUnless expensivecheck $
+		case from of
+			Nothing -> go $ perform key afile
+			Just src ->
+				stopUnless (Command.Move.fromOk src key) $
+					go $ Command.Move.fromPerform src False key afile
+  where
+  	go a = do
+		showStart "get" (fromMaybe (key2file key) afile)
 		next a
 
-perform :: Key -> FilePath -> CommandPerform
-perform key file = stopUnless (getViaTmp key $ getKeyFile key file) $
+perform :: Key -> AssociatedFile -> CommandPerform
+perform key afile = stopUnless (getViaTmp key $ getKeyFile key afile) $
 	next $ return True -- no cleanup needed
 
 {- Try to find a copy of the file in one of the remotes,
  - and copy it to here. -}
-getKeyFile :: Key -> FilePath -> FilePath -> Annex Bool
-getKeyFile key file dest = dispatch =<< Remote.keyPossibilities key
+getKeyFile :: Key -> AssociatedFile -> FilePath -> Annex Bool
+getKeyFile key afile dest = dispatch =<< Remote.keyPossibilities key
   where
 	dispatch [] = do
 		showNote "not available"
@@ -69,7 +85,7 @@ getKeyFile key file dest = dispatch =<< Remote.keyPossibilities key
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
 	docopy r continue = do
-		ok <- download (Remote.uuid r) key (Just file) noRetry $ \p -> do
+		ok <- download (Remote.uuid r) key afile noRetry $ \p -> do
 			showAction $ "from " ++ Remote.name r
-			Remote.retrieveKeyFile r key (Just file) dest p
+			Remote.retrieveKeyFile r key afile dest p
 		if ok then return ok else continue

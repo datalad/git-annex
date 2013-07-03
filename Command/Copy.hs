@@ -14,13 +14,16 @@ import qualified Remote
 import Annex.Wanted
 
 def :: [Command]
-def = [withOptions Command.Move.options $ command "copy" paramPaths seek
+def = [withOptions Command.Move.moveOptions $ command "copy" paramPaths seek
 	SectionCommon "copy content of files to/from another repository"]
 
 seek :: [CommandSeek]
-seek = [withField Command.Move.toOption Remote.byNameWithUUID $ \to ->
-		withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
-			withFilesInGit $ whenAnnexed $ start to from]
+seek =
+	[ withField Command.Move.toOption Remote.byNameWithUUID $ \to ->
+	  withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
+	  withAll (Command.Move.startAll to from False) $
+	  withFilesInGit $ whenAnnexed $ start to from
+	]
 
 {- A copy is just a move that does not delete the source file.
  - However, --auto mode avoids unnecessary copies, and avoids getting or
@@ -33,4 +36,3 @@ start to from file (key, backend) = stopUnless shouldCopy $
 	check = case to of
 		Nothing -> wantGet False (Just file)
 		Just r -> wantSend False (Just file) (Remote.uuid r)
-		
