@@ -1,5 +1,10 @@
 git-annex (4.20130628) UNRELEASED; urgency=low
 
+  * --all: New switch that makes git-annex operate on all data stored
+    in the git annex, including old versions of files. Supported by
+    fsck, get, drop, move, copy, migrate.
+  * get, drop, move, copy, migrate: Can now be run in a bare repository,
+    like fsck already could. --all is enabled automatically in this case.
   * webapp: Fix ssh setup with nonstandard port, broken in last release.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 02 Jul 2013 15:40:55 -0400

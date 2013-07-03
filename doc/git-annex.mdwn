@@ -602,6 +602,18 @@ subdirectories).
   will only do so when needed to help satisfy the setting of annex.numcopies,
   and preferred content configuration.
 
+* --all
+
+  Operate on all data that has been stored in the git annex,
+  including old versions of files. This is the default behavior when
+  running git-annex in a bare repository; in a non-bare repository the
+  normal behavior is to only operate on specified files in the working
+  tree.
+
+  Note that using --all makes .gitattributes annex.numcopies settings
+  not be honored. Other numcopies settings are still taken into account.
+  --all cannot be combined with --auto.
+
 * --quiet
 
   Avoid the default verbose display of what is done; only show errors

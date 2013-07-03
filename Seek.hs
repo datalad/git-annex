@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ import qualified Git.LsFiles as LsFiles
 import qualified Limit
 import qualified Option
 import Config
+import Logs.Location
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do
@@ -121,6 +122,23 @@ withNothing :: CommandStart -> CommandSeek
 withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
 
+{- If --all is specified, runs an action on all logged keys.
+ - Otherwise, fall back to a regular CommandSeek action on
+ - whatever params were passed. -}
+withAll :: (Key -> CommandStart) -> CommandSeek -> CommandSeek
+withAll allop fallbackop params = go =<< (Annex.getFlag "all" <||> isbare)
+  where
+	go False = fallbackop params
+	go True = do
+		whenM (Annex.getState Annex.auto) $
+			ifM isbare
+				( error "Cannot use --auto in a bare repository."
+				, error "Cannot use --auto with --all."
+				)
+		unless (null params) $
+			error "Cannot mix --all with file names."
+		map allop <$> loggedKeys
+	isbare = fromRepo Git.repoIsLocalBare
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do

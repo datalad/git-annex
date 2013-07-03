@@ -33,6 +33,7 @@ import qualified Option
 import Types.Key
 import Utility.HumanTime
 import Git.FilePath
+import GitAnnex.Options
 
 #ifndef __WINDOWS__
 import System.Posix.Process (getProcessID)
@@ -45,7 +46,7 @@ import System.Posix.Types (EpochTime)
 import System.Locale
 
 def :: [Command]
-def = [withOptions options $ command "fsck" paramPaths seek
+def = [withOptions fsckOptions $ command "fsck" paramPaths seek
 	SectionMaintenance "check for problems"]
 
 fromOption :: Option
@@ -61,9 +62,10 @@ incrementalScheduleOption :: Option
 incrementalScheduleOption = Option.field [] "incremental-schedule" paramTime
 	"schedule incremental fscking"
 
-options :: [Option]
-options = 
-	[ fromOption
+fsckOptions :: [Option]
+fsckOptions = 
+	[ allOption
+	, fromOption
 	, startIncrementalOption
 	, moreIncrementalOption
 	, incrementalScheduleOption
@@ -72,8 +74,9 @@ options =
 seek :: [CommandSeek]
 seek =
 	[ withField fromOption Remote.byNameWithUUID $ \from ->
-	  withIncremental $ \i -> withFilesInGit $ whenAnnexed $ start from i
-	, withIncremental $ \i -> withBarePresentKeys $ startBare i
+	  withIncremental $ \i ->
+	  withAll (startAll i) $
+	  withFilesInGit $ whenAnnexed $ start from i
 	]
 
 withIncremental :: (Incremental -> CommandSeek) -> CommandSeek
@@ -170,26 +173,15 @@ performRemote key file backend numcopies remote =
 			)
 	dummymeter _ = noop
 
-{- To fsck a bare repository, fsck each key in the location log. -}
-withBarePresentKeys :: (Key -> CommandStart) -> CommandSeek
-withBarePresentKeys a params = isBareRepo >>= go
-  where
-	go False = return []
-	go True = do
-		unless (null params) $
-			error "fsck should be run without parameters in a bare repository"
-		map a <$> loggedKeys
-
-startBare :: Incremental -> Key -> CommandStart
-startBare inc key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
+startAll :: Incremental -> Key -> CommandStart
+startAll inc key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
 	Nothing -> stop
-	Just backend -> runFsck inc (key2file key) key $ performBare key backend
+	Just backend -> runFsck inc (key2file key) key $ performAll key backend
 
-{- Note that numcopies cannot be checked in a bare repository, because
- - getting the numcopies value requires a working copy with .gitattributes
- - files. -}
-performBare :: Key -> Backend -> Annex Bool
-performBare key backend = check
+{- Note that numcopies cannot be checked in --all mode, since we do not
+ - have associated filenames to look up in the .gitattributes file. -}
+performAll :: Key -> Backend -> Annex Bool
+performAll key backend = check
 	[ verifyLocationLog key (key2file key)
 	, checkKeySize key
 	, checkBackend backend key Nothing

@@ -58,3 +58,7 @@ options = Option.common ++
 	setgitconfig v = Annex.changeGitRepo =<< inRepo (Git.Config.store v)
 
 	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
+
+allOption :: Option
+allOption = Option ['A'] ["all"] (NoArg (Annex.setFlag "all"))
+	"operate on all versions of all files"
