@@ -53,5 +53,5 @@ number takes that many paths from the end.
 	addurl example.com_videos_2012_01_video.mpeg (downloading http://example.com/videos/2012/01/video.mpeg)
 	# git annex addurl http://example.com/videos/2012/01/video.mpeg --pathdepth=2
 	addurl 2012_01_video.mpeg (downloading http://example.com/videos/2012/01/video.mpeg)
-	# git annex addurl http://example.com/videos/2012/video.mpeg --pathdepth=-2
+	# git annex addurl http://example.com/videos/2012/01/video.mpeg --pathdepth=-2
 	addurl 01_video.mpeg (downloading http://example.com/videos/2012/01/video.mpeg)
