@@ -6,7 +6,7 @@
  -}
 
 module Logs.Unused (
-	UnusedMap(..),
+	UnusedMap,
 	writeUnusedLog,
 	readUnusedLog,
 	unusedKeys,

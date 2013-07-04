@@ -10,7 +10,6 @@ module Annex.Wanted where
 import Common.Annex
 import Logs.PreferredContent
 import Annex.UUID
-import Types.Remote
 
 import qualified Data.Set as S
 

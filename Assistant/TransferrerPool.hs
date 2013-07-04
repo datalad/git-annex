@@ -16,7 +16,6 @@ import Control.Concurrent.STM
 import System.Process (create_group)
 import Control.Exception (throw)
 import Control.Concurrent
-import Types.Remote (AssociatedFile)
 
 {- Runs an action with a Transferrer from the pool. -}
 withTransferrer :: FilePath -> TransferrerPool -> (Transferrer -> IO a) -> IO a

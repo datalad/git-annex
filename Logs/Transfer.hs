@@ -13,7 +13,6 @@ import Common.Annex
 import Annex.Perms
 import Annex.Exception
 import qualified Git
-import Types.Remote
 import Types.Key
 import Utility.Metered
 import Utility.Percentage

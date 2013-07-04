@@ -11,7 +11,7 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Logs.Location
 import Logs.Trust
-import Types.Remote (AssociatedFile, uuid)
+import Types.Remote (uuid)
 import qualified Remote
 import qualified Command.Drop
 import Command

@@ -19,7 +19,6 @@ import Logs.Presence
 import Logs.Transfer
 import GitAnnex.Options
 import Types.Key
-import Types.Remote
 
 def :: [Command]
 def = [withOptions moveOptions $ command "move" paramPaths seek

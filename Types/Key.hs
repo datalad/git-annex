@@ -9,6 +9,7 @@
 
 module Types.Key (
 	Key(..),
+	AssociatedFile,
 	stubKey,
 	key2file,
 	file2key,
@@ -21,7 +22,7 @@ import System.Posix.Types
 import Common
 import Utility.QuickCheck
 
-{- A Key has a unique name, is associated with a key/value backend,
+{- A Key has a unique name, which is derived from a particular backend,
  - and may contain other optional metadata. -}
 data Key = Key {
 	keyName :: String,
@@ -29,6 +30,9 @@ data Key = Key {
 	keySize :: Maybe Integer,
 	keyMtime :: Maybe EpochTime
 } deriving (Eq, Ord, Read, Show)
+
+{- A filename may be associated with a Key. -}
+type AssociatedFile = Maybe FilePath
 
 stubKey :: Key
 stubKey = Key {

@@ -16,7 +16,6 @@ import Logs.Transfer
 import Annex.Wanted
 import GitAnnex.Options
 import Types.Key
-import Types.Remote
 
 def :: [Command]
 def = [withOptions getOptions $ command "get" paramPaths seek

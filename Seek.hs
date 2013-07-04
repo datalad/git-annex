@@ -134,15 +134,15 @@ withNothing _ _ = error "This command takes no parameters."
 withKeyOptions :: (Key -> CommandStart) -> CommandSeek -> CommandSeek
 withKeyOptions keyop fallbackop params = do
 	bare <- fromRepo Git.repoIsLocalBare
-	all <- Annex.getFlag "all" <||> pure bare
+	allkeys <- Annex.getFlag "all" <||> pure bare
 	unused <- Annex.getFlag "unused"
 	auto <- Annex.getState Annex.auto
-	case    (all  , unused, auto ) of
-		(True , False , False) -> go loggedKeys
-		(False, True  , False) -> go unusedKeys
-		(True , True  , _    ) -> error "Cannot use --all with --unused."
-		(False, False , _    ) -> fallbackop params
-		(_    , _     , True )
+	case    (allkeys , unused, auto ) of
+		(True    , False , False) -> go loggedKeys
+		(False   , True  , False) -> go unusedKeys
+		(True    , True  , _    ) -> error "Cannot use --all with --unused."
+		(False   , False , _    ) -> fallbackop params
+		(_       , _     , True )
 			| bare -> error "Cannot use --auto in a bare repository."
 			| otherwise -> error "Cannot use --auto with --all or --unused."
   where
