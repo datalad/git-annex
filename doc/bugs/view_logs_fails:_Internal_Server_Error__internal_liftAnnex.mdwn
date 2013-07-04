@@ -13,4 +13,5 @@ When clicking on "View logs", I get the following error:
 2. Click "Make repository"
 
 ### What version of git-annex are you using? On what operating system?
-4.20130627 on Ubuntu 13.10, installed from debian unstable repository.
+- git-annex 4.20130627 on Ubuntu 13.10, installed from debian unstable (sid) repository.
+- git version 1.8.1.2
