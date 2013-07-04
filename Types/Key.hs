@@ -24,23 +24,23 @@ import Utility.QuickCheck
 
 {- A Key has a unique name, which is derived from a particular backend,
  - and may contain other optional metadata. -}
-data Key = Key {
-	keyName :: String,
-	keyBackendName :: String,
-	keySize :: Maybe Integer,
-	keyMtime :: Maybe EpochTime
-} deriving (Eq, Ord, Read, Show)
+data Key = Key
+	{ keyName :: String
+	, keyBackendName :: String
+	, keySize :: Maybe Integer
+	, keyMtime :: Maybe EpochTime
+	} deriving (Eq, Ord, Read, Show)
 
 {- A filename may be associated with a Key. -}
 type AssociatedFile = Maybe FilePath
 
 stubKey :: Key
-stubKey = Key {
-	keyName = "",
-	keyBackendName = "",
-	keySize = Nothing,
-	keyMtime = Nothing
-}
+stubKey = Key
+	{ keyName = ""
+	, keyBackendName = ""
+	, keySize = Nothing
+	, keyMtime = Nothing
+	}
 
 fieldSep :: Char
 fieldSep = '-'
