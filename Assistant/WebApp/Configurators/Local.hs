@@ -366,9 +366,7 @@ inDir dir a = do
 {- Creates a new repository, and returns its UUID. -}
 initRepo :: Bool -> Bool -> FilePath -> Maybe String -> IO UUID
 initRepo True primary_assistant_repo dir desc = inDir dir $ do
-	{- Initialize a git-annex repository in a directory with a description. -}
-	unlessM isInitialized $
-		initialize desc
+	initRepo' desc
 	{- Initialize the master branch, so things that expect
 	 - to have it will work, before any files are added. -}
 	unlessM (Git.Config.isBare <$> gitRepo) $
@@ -391,9 +389,13 @@ initRepo True primary_assistant_repo dir desc = inDir dir $ do
 	getUUID
 {- Repo already exists, could be a non-git-annex repo though. -}
 initRepo False _ dir desc = inDir dir $ do
+	initRepo' desc
+	getUUID
+
+initRepo' :: Maybe String -> Annex ()
+initRepo' desc = do
 	unlessM isInitialized $
 		initialize desc
-	getUUID
 
 {- Checks if the user can write to a directory.
  -

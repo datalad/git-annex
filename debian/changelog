@@ -12,6 +12,9 @@ git-annex (4.20130628) UNRELEASED; urgency=low
     automatically update its working copy when git annex sync or the assistant
     sync with it.
   * webapp: Fix ssh setup with nonstandard port, broken in last release.
+  * init: Detect systems on which git commit fails due to not being able to
+    determine the FQDN, and put in a workaround so committing to the git-annex
+    branch works.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 02 Jul 2013 15:40:55 -0400
 

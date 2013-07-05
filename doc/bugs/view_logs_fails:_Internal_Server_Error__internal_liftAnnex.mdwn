@@ -15,3 +15,6 @@ When clicking on "View logs", I get the following error:
 ### What version of git-annex are you using? On what operating system?
 - git-annex 4.20130627 on Ubuntu 13.10, installed from debian unstable (sid) repository.
 - git version 1.8.1.2
+
+> I've made it detect systems that lack a FQDN and set user.email
+> automatically. [[done]] --[[Joey]] 

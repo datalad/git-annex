@@ -32,6 +32,7 @@ import Utility.FileMode
 import Config
 import Annex.Direct
 import Annex.Content.Direct
+import Annex.Environment
 import Backend
 
 genDescription :: Maybe String -> Annex String
@@ -53,11 +54,14 @@ initialize mdescription = do
 	setVersion defaultVersion
 	checkCrippledFileSystem
 	checkFifoSupport
-	Annex.Branch.create
 	gitPreCommitHookWrite
 	createInodeSentinalFile
 	u <- getUUID
-	describeUUID u =<< genDescription mdescription
+	{- This will make the first commit to git, so ensure git is set up
+	 - properly to allow commits when running it. -}
+	ensureCommit $ do
+		Annex.Branch.create
+		describeUUID u =<< genDescription mdescription
 
 uninitialize :: Annex ()
 uninitialize = do
