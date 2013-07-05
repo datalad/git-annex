@@ -151,6 +151,7 @@ url2file :: URI -> Maybe Int -> FilePath
 url2file url pathdepth = case pathdepth of
 	Nothing -> filesize $ escape fullurl
 	Just depth
+		| depth >= length urlbits -> frombits id
 		| depth > 0 -> frombits $ drop depth
 		| depth < 0 -> frombits $ reverse . take (negate depth) . reverse
 		| otherwise -> error "bad --pathdepth"

@@ -189,3 +189,9 @@ All interesting transcripts are posted above with cruft removed.
 
 # End of transcript or log.
 """]]
+
+> The cause of this bug is using --pathdepth=3 when the url
+> only has two components in its path. So, kinda GIGO, but
+> let's fix this anyway. ;) 
+> 
+> [[fixed|done]] --[[Joey]]

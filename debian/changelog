@@ -15,6 +15,8 @@ git-annex (4.20130628) UNRELEASED; urgency=low
   * init: Detect systems on which git commit fails due to not being able to
     determine the FQDN, and put in a workaround so committing to the git-annex
     branch works.
+  * addurl --pathdepth: Fix failure when the pathdepth specified is deeper
+    than the urls's path.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 02 Jul 2013 15:40:55 -0400
 
