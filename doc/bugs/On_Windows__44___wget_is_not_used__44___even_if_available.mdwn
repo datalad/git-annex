@@ -10,3 +10,6 @@ On Windows, with a remote repository configured for HTTP access, wget is never u
 
 ### What version of git-annex are you using? On what operating system?
 Windows 7: 4.20140627-g8a36ec5 (from the git-annex download page)
+
+### Additional Info
+After some debugging, it appears the issue is that git-annex looks to see if the file 'wget' is available in any directory on the PATH. on windows, wget is installed as 'wget.exe', and the file 'wget' does not exist anywhere. creating a file named 'wget' works around the issue. (wget.exe appears to still be the file used)
