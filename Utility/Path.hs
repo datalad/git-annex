@@ -181,7 +181,12 @@ searchPath command
 	| otherwise = getSearchPath >>= getM indir
   where
 	indir d = check $ d </> command
-	check f = ifM (doesFileExist f) ( return (Just f), return Nothing )
+	check f = firstM doesFileExist
+#ifdef __WINDOWS__
+		[f, f ++ ".exe"]
+#else
+		[f]
+#endif
 
 {- Checks if a filename is a unix dotfile. All files inside dotdirs
  - count as dotfiles. -}
