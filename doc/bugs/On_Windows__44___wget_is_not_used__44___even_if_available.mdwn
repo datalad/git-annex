@@ -1,0 +1,12 @@
+### Please describe the problem.
+On Windows, with a remote repository configured for HTTP access, wget is never used, even if it's available in the system. curl is always used.
+
+### What steps will reproduce the problem?
+1. Set up an annex on a remote system, configure it for HTTP access, run an HTTP server.
+2. over HTTP, clone it to Windows
+3. "annex get -vd <file>"
+4. note that curl is used.
+
+
+### What version of git-annex are you using? On what operating system?
+Windows 7: 4.20140627-g8a36ec5 (from the git-annex download page)
