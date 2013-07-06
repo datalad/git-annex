@@ -116,7 +116,8 @@ download' quiet url headers options file =
 	 - the remainder to download as the whole file,
 	 - and not indicating how much percent was
 	 - downloaded before the resume. -}
-	curl = go "curl" $ headerparams ++ quietopt "-s" ++ [Params "-L -C - -# -o"]
+	curl = go "curl" $ headerparams ++ quietopt "-s" ++
+		[Params "-f -L -C - -# -o"]
 	go cmd opts = boolSystem cmd $
 		options++opts++[File file, File url]
 	quietopt s
