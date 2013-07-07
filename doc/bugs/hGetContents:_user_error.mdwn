@@ -31,3 +31,5 @@ See above.
 ### What version of git-annex are you using? On what operating system?
 Server: 4.20130521 on debian testing (now: 4.20130627)
 Local: 4.20130621 on debian sid (now: 4.20130627)
+
+[[!meta title="fails to run on Linux with libc 2.17 and old kernel 2.6.32"]]
