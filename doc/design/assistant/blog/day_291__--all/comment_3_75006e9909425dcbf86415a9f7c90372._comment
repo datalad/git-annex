@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.254.222"
+ subject="comment 3"
+ date="2013-07-07T17:20:05Z"
+ content="""
+@john I have considered making copy trust the location log for the remote (which is what your --not --in titan does), but this does change its behavior in a subtly way, and IIRC there were scenarios where this is not desirable.
+
+@sfs the best way to look at older versions of files is to use `git checkout` to check out an older version of the repository. You can then use `git annex get`, `git annex whereis`, etc like you usually would, on the old version of files.
+"""]]
