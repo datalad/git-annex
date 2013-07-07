@@ -9,3 +9,5 @@ Two basic modes of operation:
 An optional `git annex import --copy-only` would copy over and verify the data, but not yet add it. That would allow the user to import into a decent data structure. If run on non-annexed data, `git annex import --copy-only` would ideally calculate checksums and create symlinks already; thus ensuring data integrity as early as possible.
 
 -- RichiH
+
+> [[done]] --[[Joey]] in 2012
