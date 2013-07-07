@@ -28,3 +28,5 @@ only successful ssh key generation in daemon.log
 
 # End of transcript or log.
 """]]
+
+> [[done]]; bad installation. --[[Joey]]
