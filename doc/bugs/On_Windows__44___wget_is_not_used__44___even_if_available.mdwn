@@ -63,3 +63,5 @@ C:\Users\test-git-annex\test_annex> git annex get file.txt
 #fails, with error dialog box, indicating libcurl-4.dll is missing, indicating git-annex is trying to use curl.
 
 """]]
+
+> I fixed this immediately after it was mentioned on IRC. [[done]] --[[Joey]] 
