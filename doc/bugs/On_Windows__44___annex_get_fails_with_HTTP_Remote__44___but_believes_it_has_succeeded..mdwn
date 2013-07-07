@@ -171,3 +171,10 @@ C:\Users\test-git-annex\test_annex>type file1.txt
 192.168.0.2 - - [<datetime>] "GET /test_annex/.git/annex\objects\c96\53e\SHA256-s21--6ed275e9e01c84a57fdd99d6af793c5d587d02e699cd2c28b32b7dc90f73e729\SHA256-s21--6ed275e9e01c84a57fdd99d6af793c5d587d02e699cd2c28b32b7dc90f73e729 HTTP/1.1" 404 -
 192.168.0.2 - - [<datetime>] code 404, message File not found
 """]]
+
+> This seems to be two distinct bugs. First, curl was not propigating the exit
+> status. I already fixed that. 
+> 
+> Second, it's using DOS style path separators when constructing the url.
+> `http://192.168.0.8:8000/test_annex/.git/annex\\objects\\c96`
+> I've put in an (ugly) fix for that. [[done]] --[[Joey]]

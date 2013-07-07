@@ -182,3 +182,5 @@ git-annex: get: 1 failed
 192.168.0.2 - - [<datetime>] code 404, message File not found
 192.168.0.2 - - [<datetime>] "GET /test_annex/.git/annex%5Cobjects%5CJ9%5Cm6%5CSHA256-s21--6ed275e9e01c84a57fdd99d6af793c5d587d02e699cd2c28b32b7dc90f73e729%5CSHA256-s21--6ed275e9e01c84a57fdd99d6af793c5d587d02e699cd2c28b32b7dc90f73e729 HTTP/1.1" 404 -
 """]]
+
+> [[fixed|done]] --[[Joey]]

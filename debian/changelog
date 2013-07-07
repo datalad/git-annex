@@ -19,6 +19,7 @@ git-annex (4.20130628) UNRELEASED; urgency=low
     than the urls's path.
   * Windows: Look for .exe extension when searching for a command in path.
   * Pass -f to curl when downloading a file with it, so it propigates failure. 
+  * Windows: Fix url to object when using a http remote.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 02 Jul 2013 15:40:55 -0400
 

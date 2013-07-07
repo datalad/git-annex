@@ -266,9 +266,14 @@ onLocal r a = do
 		a
 
 keyUrls :: Git.Repo -> Key -> [String]
-keyUrls r key = map tourl (annexLocations key)
+keyUrls r key = map tourl locs
   where
 	tourl l = Git.repoLocation r ++ "/" ++ l
+#ifndef __WINDOWS__
+	locs = annexLocations key
+#else
+	locs = replace "\\" "/" $ annexLocations key
+#endif
 
 dropKey :: Remote -> Key -> Annex Bool
 dropKey r key
