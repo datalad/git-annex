@@ -1,1 +1,1 @@
-As the title says, I would like to see an option where git-annex verifies that all checksums are OK but not that the required number of copies or other possible metrics.
+As the title says, I would like to see an option where git-annex verifies that all checksums are OK but not that the required number of copies or other possible metrics are fulfilled.
