@@ -14,3 +14,20 @@ Attempting to populate one annex from another over an SSH connection is very slo
 Windows 7: 4.20140627-g8a36ec5 (from the git-annex download page)
 
 Debian Linux: 3.20120629 (from the package manager)
+
+> The problem is that git-annex is designed to be used with ssh connection
+> caching. However, I have not gotten ssh connection caching to work on 
+> Windows. I did try getting this to work with IIRC, cygwin's ssh, but
+> it seems that the Unix sockets it expects to use with `-o ControlMaster`
+> don't work, or it's not been ported to use the Windows equivilant.
+>
+> It's not practical to make git-annex reuse a single ssh connection
+> itself, due to the way rsync is run over ssh.
+> 
+> Since this is basically a bug in ssh for Windows, and not in git-annex
+> per se, I am going to close this bug report. However, I do mention
+> this in [[todo/windows_support]].
+> 
+> [[done]] --[[Joey]]
+
+[[!meta title="No ssh connection caching support on Windows"]]
