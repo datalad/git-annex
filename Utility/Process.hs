@@ -296,16 +296,6 @@ showCmd = go . cmdspec
 	go (ShellCommand s) = s
 	go (RawCommand c ps) = c ++ " " ++ show ps
 
-{- Wrappers for System.Process functions that do debug logging.
- - 
- - More could be added, but these are the only ones I usually need.
- -}
-
-createProcess :: CreateProcess -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
-createProcess p = do
-	debugProcess p
-	System.Process.createProcess p
-
 {- Starts an interactive process. Unlike runInteractiveProcess in
  - System.Process, stderr is inherited. -}
 startInteractiveProcess
@@ -322,3 +312,9 @@ startInteractiveProcess cmd args environ = do
 		}
 	(Just from, Just to, _, pid) <- createProcess p
 	return (pid, to, from)
+
+{- Wrapper around System.Process function that does debug logging. -}
+createProcess :: CreateProcess -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
+createProcess p = do
+	debugProcess p
+	System.Process.createProcess p
