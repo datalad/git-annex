@@ -33,3 +33,6 @@ Server: 4.20130521 on debian testing (now: 4.20130627)
 Local: 4.20130621 on debian sid (now: 4.20130627)
 
 [[!meta title="fails to run on Linux with libc 2.17 and old kernel 2.6.32"]]
+
+> Closing this since it's a bad kernel and there is a workaround to build
+> a git-annex that will work with this kernel (see comments). --[[Joey]]
