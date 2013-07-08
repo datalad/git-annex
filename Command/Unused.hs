@@ -351,7 +351,7 @@ startUnused message unused badunused tmpunused maps n = search
 	, (unusedTmpMap maps, tmpunused)
 	]
   where
-	search [] = stop
+	search [] = error $ show n ++ " not valid (run git annex unused for list)"
 	search ((m, a):rest) =
 		case M.lookup n m of
 			Nothing -> search rest
