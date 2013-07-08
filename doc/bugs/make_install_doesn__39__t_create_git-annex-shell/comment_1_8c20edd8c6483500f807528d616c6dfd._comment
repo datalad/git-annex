@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.254.222"
+ subject="comment 1"
+ date="2013-07-08T16:14:37Z"
+ content="""
+The Makefile contains, for the install target:
+
+[[!format sh \"\"\"
+        ln -sf git-annex $(DESTDIR)$(PREFIX)/bin/git-annex-shell
+\"\"\"]]
+
+How was git-annex installed on your server?
+"""]]
