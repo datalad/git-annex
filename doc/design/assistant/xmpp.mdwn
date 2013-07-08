@@ -9,6 +9,10 @@ who share a repository, that is stored in the [[cloud]].
   See <http://git-annex.branchable.com/design/assistant/blog/day_114__xmpp/#comment-aaba579f92cb452caf26ac53071a6788>
 * Support registering with XMPP provider from within the webapp, 
   as clients like pidgin are able to do.
+* At least some XMPP servers are lossy (does XMPP guarantee delivery)?
+  I have seen a log where a push's packet 1 and 3 arrived, but 2 did not.
+  To deal with this, need at least a 1 packet buffer and ACK or resend
+  request implemented over top of XMPP. Essentially, TCP over XMPP. :(
 * Add an encryption layer that does not rely on trusting the XMPP server's
   security (currently it's encrypted only to the server, not end-to-end).
   There are a few options for how to generate the key for eg,
