@@ -189,9 +189,12 @@ toDirectGen k f = do
 		, do
 			{- Copy content from another direct file. -}
 			absf <- liftIO $ absPath f
-			locs <- filterM (\l -> isNothing <$> getAnnexLinkTarget l) =<<
-				(filter (/= absf) <$> addAssociatedFile k f)		
-			return $ Just $ fromdirect locs
+			dlocs <- filterM (goodContent k) =<<
+				filterM (\l -> isNothing <$> getAnnexLinkTarget l) =<<
+				(filter (/= absf) <$> addAssociatedFile k f)
+			case dlocs of
+				[] -> return Nothing
+				(dloc:_) -> return $ Just $ fromdirect dloc
 		)
   where
   	fromindirect loc = do
@@ -201,14 +204,10 @@ toDirectGen k f = do
 		void $ addAssociatedFile k f
 		thawContent loc
 		replaceFile f $ liftIO . moveFile loc
-	fromdirect (loc:locs) = ifM (goodContent k loc)
-		( do
-			replaceFile f $
-				liftIO . void . copyFileExternal loc
-			updateInodeCache k f
-		, fromdirect locs
-		)
-	fromdirect [] = noop
+	fromdirect loc = do
+		replaceFile f $
+			liftIO . void . copyFileExternal loc
+		updateInodeCache k f
 
 {- Removes a direct mode file, while retaining its content in the annex
  - (unless its content has already been changed). -}
