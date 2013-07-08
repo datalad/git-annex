@@ -29,3 +29,6 @@ gpg: problem with the agent: No agent running
 27/Jun/2013:13:41:37 +0200 [Error#yesod-core] user error (gpg ["--quiet","--trust-model","always","--batch","--passphrase-fd","21","--symmetric","--force-mdc"] exited 2) @(yesod-core-1.1.8.3:Yesod.Internal.Core ./Yesod/Internal/Core.hs:550:5)
 # End of transcript or log.
 """]]
+
+> [[done]]; I've updated the OSX autobuild to 
+> use a gpg that doesn't fail when gpg-agent is missing. --[[Joey]]
