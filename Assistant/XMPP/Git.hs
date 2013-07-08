@@ -371,7 +371,7 @@ withPushMessagesInSequence cid side a = loop 0
 					debug ["ignoring duplicate sequence number", show seqnum]
 					loop seqnum
 				| otherwise -> do
-					debug ["ignoring out of order sequence number", show seqnum', "expected", show seqnum]
+					debug ["ignoring out of order sequence number", show seqnum', "expected", show seqnum + 1]
 					loop seqnum
 			Nothing -> go seqnum
 
