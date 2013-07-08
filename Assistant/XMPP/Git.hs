@@ -363,15 +363,16 @@ withPushMessagesInSequence cid side a = loop 0
   	loop seqnum = do
 		m <- timeout xmppTimeout <~> waitInbox cid side
 	  	let go s = a m >> loop s
+		let next = seqnum + 1
 		case extractSequence =<< m of
 			Just seqnum'
-				| seqnum' == seqnum + 1 -> go seqnum'
+				| seqnum' == next -> go next
 				| seqnum' == 0 -> go seqnum
 				| seqnum' == seqnum -> do
 					debug ["ignoring duplicate sequence number", show seqnum]
 					loop seqnum
 				| otherwise -> do
-					debug ["ignoring out of order sequence number", show seqnum', "expected", show seqnum + 1]
+					debug ["ignoring out of order sequence number", show seqnum', "expected", show next]
 					loop seqnum
 			Nothing -> go seqnum
 
