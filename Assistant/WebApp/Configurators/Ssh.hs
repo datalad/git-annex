@@ -303,7 +303,7 @@ makeSsh' rsync setup origsshdata sshdata keypair = do
 		, if rsync then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
 		, if rsync then Nothing else Just "git annex init"
 		, if needsPubKey sshdata
-			then addAuthorizedKeysCommand (rsyncOnly sshdata) remotedir . sshPubKey <$> keypair
+			then addAuthorizedKeysCommand (rsync || rsyncOnly sshdata) remotedir . sshPubKey <$> keypair
 			else Nothing
 		]
 
