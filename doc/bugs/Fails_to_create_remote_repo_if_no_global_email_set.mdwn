@@ -51,3 +51,5 @@ git-annex: init: 1 failed
 
 # End of transcript or log.
 """]]
+
+> [[done]]; I've made git-annex detect such broken systems and configure them so git will work. (sigh!) --[[Joey]]
