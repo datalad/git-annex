@@ -59,4 +59,4 @@ rsync error: error in rsync protocol data stream (code 12) at io.c(605) [sender=
 # End of transcript or log.
 """]]
 
-[[!tag moreinfo]]
+[[!tag done]]
