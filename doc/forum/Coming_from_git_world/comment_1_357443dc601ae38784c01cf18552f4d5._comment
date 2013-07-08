@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 1"
+ date="2013-07-08T20:09:54Z"
+ content="""
+Yes, git-annex would not do very well at adding large file support to git if it did not handle tagging, branches, etc! So of course it does. It's in a sense too obvious a thing to get much mention. And so people sometimes get confused about it.
+
+The only thing to need to be aware of coming from git is that not every repository will have every version of every file locally available. When you check out a branch, you may need to run `git annex get` to retrieve those versions from origin or elsewhere.
+
+And, `git annex unused` can be used to find versions of files that no existing tag or branch refers to, and `git annex dropunused` can then delete those versions. If you want to ensure every revision in your git repo is accessible, you should avoid using those two commands; otherwise git-annex will never delete old versions of files.
+
+The unreleased git master adds a new feature, a --all switch that makes git annex commands operate on all versions of files. While normally `git annex get` will only do what it needs to to get all files in the currently checked out branch, `git annex get --all` will pull down every version of every file in the whole history. Similarly, `git annex copy --all --to origin` will ensure that every locally available version of every file is sent to origin.
+"""]]
