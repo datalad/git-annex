@@ -20,5 +20,5 @@ Version: 3.20130124
 
 Please provide any additional information below.
 
-[[!tag /design/assistant]]
+[[!tag /design/assistant done]]
 [[!meta title="ssh password prompting issue with assistant"]]
