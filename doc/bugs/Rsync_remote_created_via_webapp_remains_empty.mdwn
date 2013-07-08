@@ -133,3 +133,6 @@ rsync error: error in rsync protocol data stream (code 12) at io.c(605) [sender=
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]], corrected logic error that caused `authorized_keys`
+> to incorrectly force the git-annex-shell command for rsync remotes. --[[Joey]]
