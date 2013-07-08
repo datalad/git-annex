@@ -14,6 +14,11 @@ This is one of those potentially hidden but time consuming problems.
   could use inotify. **done**
 * When easily available, remotes call the MeterUpdate callback as downloads
   progress. **done**
+* S3 TODO  
+  While it has a download progress bar, `getObject` probably buffers the whole
+  download in memory before returning. Leaving the progress bar to only
+  display progress for writing the file out of memory. Fixing this would
+  involve making hS3 stream better (also avoids it wasting memory).
 
 ## uploads
 
