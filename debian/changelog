@@ -25,6 +25,9 @@ git-annex (4.20130628) UNRELEASED; urgency=low
     git-annex-shell.
   * OSX Mountain Lion: Fixed gpg bundled in dmg to not fail due to a missing
     gpg-agent.
+  * Android: gpg is built without --enable-minimal, so it interoperates
+    better with other gpg builds that may default to using other algorithms
+    for encryption.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 02 Jul 2013 15:40:55 -0400
 

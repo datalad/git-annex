@@ -34,3 +34,6 @@ gpg: decryption failed: secret key not available
 
 # End of transcript or log.
 """]]
+
+> [[done]]; I have deployed the new gpg build for Android and the
+> nightly Android app build is now using it. --[[Joey]]

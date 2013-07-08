@@ -114,7 +114,7 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/build-stamp: rsync.patch
 $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg/build-stamp:
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && git checkout gnupg-1.4.13
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && ./autogen.sh
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && ./configure --host=arm-linux-androideabi --disable-gnupg-iconv --enable-minimal --disable-card-support --disable-agent-support --disable-photo-viewers --disable-keyserver-helpers --disable-nls
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && ./configure --host=arm-linux-androideabi --disable-gnupg-iconv --disable-card-support --disable-agent-support --disable-photo-viewers --disable-keyserver-helpers --disable-nls
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg; $(MAKE) || true # expected failure in doc build
 	touch $@
 
