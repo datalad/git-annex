@@ -1,6 +1,6 @@
-Like git, git-annex hangs on to every old version of a file, so you can
-make tags and branches, and can check them out later to look at the old
-files.
+Like git, git-annex hangs on to every old version of a file (by default),
+so you can make tags and branches, and can check them out later to look at
+the old files.
 
 	# git tag 1.0
 	# rm -f my_cool_big_file
