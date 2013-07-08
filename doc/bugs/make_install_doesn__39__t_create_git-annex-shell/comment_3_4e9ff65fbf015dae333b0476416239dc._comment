@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.254.222"
+ subject="comment 3"
+ date="2013-07-08T18:15:47Z"
+ content="""
+`cabal install` also installs a git-annex-shell symlink.
+
+Please file a bug report on the ebuild. Sorry, I cannot provide support for it myself. You can use the [[Linux_standalone]] tarball instead..
+"""]]
