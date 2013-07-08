@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.254.222"
+ subject="comment 3"
+ date="2013-07-08T17:10:53Z"
+ content="""
+The git-annex dmg includes a copy of gpg.
+
+It seems that the build machine has been switched to having MacGPG2 installed, which hard-codes the location of gpg-agent inside it. This did not used to be the case, and I don't want to use this MacGPG2 build in the dmg.
+
+Guess I'll have to build gpg from source myself on the mac to get a sane version to distribute..
+"""]]
