@@ -272,7 +272,7 @@ keyUrls r key = map tourl locs
 #ifndef __WINDOWS__
 	locs = annexLocations key
 #else
-	locs = replace "\\" "/" $ annexLocations key
+	locs = map (replace "\\" "/") (annexLocations key)
 #endif
 
 dropKey :: Remote -> Key -> Annex Bool
