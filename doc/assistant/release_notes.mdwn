@@ -1,4 +1,4 @@
-## version 4.20130621, 4.20130627
+## version 4.20130621, 4.20130627, 4.20130709
 
 These releases mostly consist of bug fixes.
 
