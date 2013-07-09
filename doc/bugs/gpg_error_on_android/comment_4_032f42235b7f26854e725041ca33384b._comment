@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 4"
+ date="2013-07-09T18:03:12Z"
+ content="""
+So, I am able to get the \"bad\" key message out of gpg if I encrypt with --symmetric with a passphrase and then enter the wrong passphrase when decrypting.
+
+Perhaps git-annex is sending gpg the wrong encryption key, or perhaps the git repo it's operating in has an old version of the key for this remote somehow?
+"""]]
