@@ -1,4 +1,4 @@
-git-annex (4.20130628) UNRELEASED; urgency=low
+git-annex (4.20130709) unstable; urgency=low
 
   * --all: New switch that makes git-annex operate on all data stored
     in the git annex, including old versions of files. Supported by
@@ -34,7 +34,7 @@ git-annex (4.20130628) UNRELEASED; urgency=low
     is not present.
   * Make --numcopies override annex.numcopies set in .gitattributes.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 02 Jul 2013 15:40:55 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 09 Jul 2013 13:55:39 -0400
 
 git-annex (4.20130627) unstable; urgency=low
 
