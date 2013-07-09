@@ -1,0 +1,23 @@
+Running `git annex sync` or using the [[assistant]] involves merging
+changes from elsewhere into your repository's currently checked out branch.
+This could lead to a merge conflict, perhaps because the same file
+got changed in two different ways. A nice feature is that these
+merge conflicts are automatically resolved, rather than leaving
+git in the middle of a conflicted merge, which would prevent further
+syncing from happening.
+
+When a conflict occurs, there will be several messages printed about the merge
+conflict, and the file that has the merge conflict will be renamed, with
+".variant-XXX" tacked onto it. So if there are two versions of file foo,
+you might end up with "foo.variant-AAA" and "foo.variant-BBB". It's then
+up to you to decide what to do with these two files. Perhaps you can
+manually combine them back into a single file. Or perhaps you choose to
+rename them to better names and keep two versions, or delete one version
+you don't want.
+
+The "AAA" and "BBB" in the above example are essentially arbitrary
+(technically they are the MD5 checksum of the key). The automatic merge
+conflict resoltuion is designed so that if two or more repositories both get
+a merge conflict, and resolve it, the resolved repositories will not
+themselves conflict. This is why it doesn't use something nicer, like
+perhaps the name of the remote that the file came from.
