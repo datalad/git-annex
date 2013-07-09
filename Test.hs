@@ -582,9 +582,9 @@ test_unused env = "git-annex unused/dropunused" ~: intmpclonerepoInDirect env $ 
 		@? "dropkey failed"
 	checkunused [sha1annexedfilekey] ("after dropkey --force " ++ Types.Key.key2file annexedfilekey)
 
-	git_annex env "dropunused" ["1", "2"] @? "dropunused failed"
+	git_annex env "dropunused" ["1"] @? "dropunused failed"
 	checkunused [] "after dropunused"
-	git_annex env "dropunused" ["10", "501"] @? "dropunused failed on bogus numbers"
+	not <$> git_annex env "dropunused" ["10", "501"] @? "dropunused failed to fail on bogus numbers"
 
   where
 	checkunused expectedkeys desc = do
