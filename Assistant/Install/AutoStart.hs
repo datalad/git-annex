@@ -35,4 +35,5 @@ fdoAutostart command = genDesktopEntry
 	"Autostart"
 	False
 	(command ++ " assistant --autostart")
+	Nothing
 	[]

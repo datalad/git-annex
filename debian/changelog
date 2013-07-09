@@ -1,3 +1,9 @@
+git-annex (4.20130710) UNRELEASED; urgency=low
+
+  * Install XDG desktop icon files.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 09 Jul 2013 19:17:13 -0400
+
 git-annex (4.20130709) unstable; urgency=low
 
   * --all: New switch that makes git-annex operate on all data stored

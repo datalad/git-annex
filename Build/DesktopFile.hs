@@ -1,4 +1,4 @@
-{- Generating and installing a desktop menu entry file
+{- Generating and installing a desktop menu entry file and icon,
  - and a desktop autostart file. (And OSX equivilants.)
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
@@ -28,6 +28,7 @@ import System.Posix.Files
 #endif
 import System.FilePath
 import Data.Maybe
+import System.IO
 
 systemwideInstall :: IO Bool
 #ifndef mingw32_HOST_OS 
@@ -48,13 +49,27 @@ inDestDir f = do
 
 writeFDODesktop :: FilePath -> IO ()
 writeFDODesktop command = do
-	datadir <- ifM systemwideInstall ( return systemDataDir, userDataDir )
+	systemwide <- systemwideInstall
+
+	datadir <- if systemwide then return systemDataDir else userDataDir
 	installMenu command
 		=<< inDestDir (desktopMenuFilePath "git-annex" datadir)
 
-	configdir <- ifM systemwideInstall ( return systemConfigDir, userConfigDir )
+	installIcon "doc/logo.svg" =<< inDestDir
+		=<< iconFilePath "git-annex.svg" "scalable" systemwide
+	installIcon "doc/favicon.png" =<< inDestDir
+		=<< iconFilePath "git-annex.png" "16x16" systemwide
+
+	configdir <- if systemwide then return systemConfigDir else userConfigDir
 	installAutoStart command 
 		=<< inDestDir (autoStartPath "git-annex" configdir)
+
+installIcon :: FilePath -> FilePath -> IO ()
+installIcon src dest = do
+	createDirectoryIfMissing True (parentDir dest)
+	withBinaryFile src ReadMode $ \hin ->
+		withBinaryFile dest WriteMode $ \hout ->
+			hGetContents hin >>= hPutStr hout
 
 writeOSXDesktop :: FilePath -> IO ()
 writeOSXDesktop command = do

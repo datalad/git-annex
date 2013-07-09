@@ -27,4 +27,5 @@ fdoDesktopMenu command = genDesktopEntry
 	"Track and sync the files in your Git Annex"
 	False
 	(command ++ " webapp")
+	(Just "git-annex") -- icon base name
 	["Network", "FileTransfer"]
