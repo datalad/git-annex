@@ -53,10 +53,9 @@ options = Option.common ++
 	] ++ Option.matcher
   where
 	setnumcopies v = maybe noop
-		(\n -> Annex.changeGitConfig $ \c -> c { annexNumCopies = n })
+		(\n -> Annex.changeState $ \s -> s { Annex.forcenumcopies = Just n })
 		(readish v)
 	setgitconfig v = Annex.changeGitRepo =<< inRepo (Git.Config.store v)
-
 	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
 
 keyOptions :: [Option]

@@ -99,7 +99,11 @@ isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare
 
 numCopies :: FilePath  -> Annex (Maybe Int)
-numCopies file = readish <$> checkAttr "annex.numcopies" file
+numCopies file = do
+	forced <- Annex.getState Annex.forcenumcopies
+	case forced of
+		Just n -> return $ Just n
+		Nothing -> readish <$> checkAttr "annex.numcopies" file
 
 numCopiesCheck :: FilePath -> Key -> (Int -> Int -> Bool) -> Annex Bool
 numCopiesCheck file key vs = do

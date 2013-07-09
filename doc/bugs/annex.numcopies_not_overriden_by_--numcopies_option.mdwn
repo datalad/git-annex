@@ -11,3 +11,6 @@ Second line fails if only one other copy exists.
 
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 4.20130627
+
+> I don't think this was ever handled correctly.
+> I've fixed it now. [[done]] --[[Joey]] 

@@ -92,6 +92,7 @@ data AnnexState = AnnexState
 	, catfilehandles :: M.Map FilePath CatFileHandle
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, forcebackend :: Maybe String
+	, forcenumcopies :: Maybe Int
 	, limit :: Matcher (FileInfo -> Annex Bool)
 	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe PreferredContentMap
@@ -123,6 +124,7 @@ newState gitrepo = AnnexState
 	, catfilehandles = M.empty
 	, checkattrhandle = Nothing
 	, forcebackend = Nothing
+	, forcenumcopies = Nothing
 	, limit = Left []
 	, uuidmap = Nothing
 	, preferredcontentmap = Nothing
