@@ -2,7 +2,7 @@ Actually spread out over several days..
 
 I think I have finally comprehensively dealt with all the wacky system
 misconfigurations that can make `git commit` complain and refuse to commit.
-The last of these is a system with a FQDN that doesn't have a dot in it. 
+The last of these is [a system with a FQDN that doesn't have a dot in it](http://git-annex.branchable.com/bugs/view_logs_fails:_Internal_Server_Error__internal_liftAnnex/). 
 I personally think git should just use the hostname as-is in the email
 address for commits here -- it's better to be robust. Indeed, I think it
 would make more sense if `git commit` never failed, unless it ran out of
