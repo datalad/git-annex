@@ -56,7 +56,7 @@ renderAlertHeader alert = renderTense (alertTense alert) <$> alertHeader alert
 {- Renders an alert's message for display. -}
 renderAlertMessage :: Alert -> Text
 renderAlertMessage alert = renderTense (alertTense alert) $
-	(alertMessageRender alert) (alertData alert)
+	(alertMessageRender alert) alert
 
 showAlert :: Alert -> String
 showAlert alert = T.unpack $ T.unwords $ catMaybes

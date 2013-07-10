@@ -383,7 +383,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 				return Nothing
 
 	{- Shown an alert while performing an action to add a file or
-	 - files. When only one file is added, its name is shown
+	 - files. When only a few files are added, their names are shown
 	 - in the alert. When it's a batch add, the number of files added
 	 - is shown.
 	 -
@@ -392,15 +392,10 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	 - the add succeeded.
 	 -}
 	addaction [] a = a
-	addaction toadd a = alertWhile' (addFileAlert msg) $
+	addaction toadd a = alertWhile' (addFileAlert $ map changeFile toadd) $
 		(,) 
 			<$> pure True
 			<*> a
-	  where
-	  	msg = case toadd of
-			(InProcessAddChange { keySource = ks }:[]) ->
-				keyFilename ks
-			_ -> show (length toadd) ++ " files"
 
 {- Files can Either be Right to be added now,
  - or are unsafe, and must be Left for later.

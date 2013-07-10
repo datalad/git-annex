@@ -10,3 +10,6 @@ Add a folder with many files and subfolders in it.
 
 ### What version of git-annex are you using? On what operating system?
 4.20130627 
+
+> I have improved the display, now it will just show a single ongoing count,
+> and the most recent 10 or so files added. [[done]] --[[Joey]]

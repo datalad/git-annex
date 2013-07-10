@@ -39,8 +39,9 @@ type AlertCombiner = Alert -> Alert -> Maybe Alert
 data Alert = Alert
 	{ alertClass :: AlertClass
 	, alertHeader :: Maybe TenseText
-	, alertMessageRender :: [TenseChunk] -> TenseText
+	, alertMessageRender :: Alert -> TenseText
 	, alertData :: [TenseChunk]
+	, alertCounter :: Int
 	, alertBlockDisplay :: Bool
 	, alertClosable :: Bool
 	, alertPriority :: AlertPriority

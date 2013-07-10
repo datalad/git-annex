@@ -41,12 +41,16 @@ mkAlertButton label urlrenderer route = do
 		}
 #endif
 
+renderData :: Alert -> TenseText
+renderData = tenseWords . alertData
+
 baseActivityAlert :: Alert
 baseActivityAlert = Alert
 	{ alertClass = Activity
 	, alertHeader = Nothing
-	, alertMessageRender = tenseWords
+	, alertMessageRender = renderData
 	, alertData = []
+	, alertCounter = 0
 	, alertBlockDisplay = False
 	, alertClosable = False
 	, alertPriority = Medium
@@ -60,8 +64,9 @@ warningAlert :: String -> String -> Alert
 warningAlert name msg = Alert
 	{ alertClass = Warning
 	, alertHeader = Just $ tenseWords ["warning"]
-	, alertMessageRender = tenseWords
+	, alertMessageRender = renderData
 	, alertData = [UnTensed $ T.pack msg]
+	, alertCounter = 0
 	, alertBlockDisplay = True
 	, alertClosable = True
 	, alertPriority = High
@@ -128,6 +133,7 @@ sanityCheckFixAlert msg = Alert
 	, alertHeader = Just $ tenseWords ["Fixed a problem"]
 	, alertMessageRender = render
 	, alertData = [UnTensed $ T.pack msg]
+	, alertCounter = 0
 	, alertBlockDisplay = True
 	, alertPriority = High
 	, alertClosable = True
@@ -137,7 +143,7 @@ sanityCheckFixAlert msg = Alert
 	, alertButton = Nothing
 	}
   where
-	render dta = tenseWords $ alerthead : dta ++ [alertfoot]
+	render alert = tenseWords $ alerthead : alertData alert ++ [alertfoot]
 	alerthead = "The daily sanity check found and fixed a problem:"
 	alertfoot = "If these problems persist, consider filing a bug report."
 
@@ -152,8 +158,9 @@ pairRequestReceivedAlert :: String -> AlertButton -> Alert
 pairRequestReceivedAlert who button = Alert
 	{ alertClass = Message
 	, alertHeader = Nothing
-	, alertMessageRender = tenseWords
+	, alertMessageRender = renderData
 	, alertData = [UnTensed $ T.pack $ who ++ " is sending a pair request."]
+	, alertCounter = 0
 	, alertBlockDisplay = False
 	, alertPriority = High
 	, alertClosable = True
@@ -180,7 +187,8 @@ xmppNeededAlert button = Alert
 	, alertButton = Just button
 	, alertClosable = True
 	, alertClass = Message
-	, alertMessageRender = tenseWords
+	, alertMessageRender = renderData
+	, alertCounter = 0
 	, alertBlockDisplay = True
 	, alertName = Just $ XMPPNeededAlert
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
@@ -198,7 +206,8 @@ cloudRepoNeededAlert friendname button = Alert
 	, alertButton = Just button
 	, alertClosable = True
 	, alertClass = Message
-	, alertMessageRender = tenseWords
+	, alertMessageRender = renderData
+	, alertCounter = 0
 	, alertBlockDisplay = True
 	, alertName = Just $ CloudRepoNeededAlert
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
@@ -215,41 +224,80 @@ remoteRemovalAlert desc button = Alert
 	, alertButton = Just button
 	, alertClosable = True
 	, alertClass = Message
-	, alertMessageRender = tenseWords
+	, alertMessageRender = renderData
+	, alertCounter = 0
 	, alertBlockDisplay = True
 	, alertName = Just $ RemoteRemovalAlert desc
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertData = []
 	}
 
-fileAlert :: TenseChunk -> FilePath -> Alert
-fileAlert msg file = (activityAlert Nothing [f])
+{- Show a message that relates to a list of files.
+ -
+ - The most recent several files are shown, and a count of any others. -}
+fileAlert :: TenseChunk -> [FilePath] -> Alert
+fileAlert msg files = (activityAlert Nothing shortfiles)
 	{ alertName = Just $ FileAlert msg
-	, alertMessageRender = render
-	, alertCombiner = Just $ dataCombiner combiner
+	, alertMessageRender = renderer
+	, alertCounter = counter
+	, alertCombiner = Just $ fullCombiner combiner
 	}
   where
-	f = fromString $ shortFile $ takeFileName file
-	render fs = tenseWords $ msg : fs
-	combiner new old = take 10 $ new ++ old
+	maxfilesshown = 10
 
-addFileAlert :: String -> Alert
+	(somefiles, counter) = splitcounter (dedupadjacent files)
+	shortfiles = map (fromString . shortFile . takeFileName) somefiles
+
+	renderer alert = tenseWords $ msg : alertData alert ++ showcounter
+	  where
+		showcounter = case alertCounter alert of
+			0 -> []
+			_ -> [fromString $ "and " ++ show (alertCounter alert) ++ " other files"]
+
+	dedupadjacent (x:y:rest)
+		| x == y = dedupadjacent (y:rest)
+		| otherwise = x : dedupadjacent (y:rest)
+	dedupadjacent (x:[]) = [x]
+	dedupadjacent [] = []
+
+	{- Note that this ensures the counter is never 1; no need to say 
+	 - "1 file" when the filename could be shown. -}
+	splitcounter l
+		| length l <= maxfilesshown = (l, 0)
+		| otherwise =
+			let (keep, rest) = splitAt (maxfilesshown - 1) l
+			in (keep, length rest)
+	
+	combiner new old =
+		let (fs, n) = splitcounter $
+			dedupadjacent $ alertData new ++ alertData old
+		    cnt = n + alertCounter new + alertCounter old
+		in old
+			{ alertData = fs
+			, alertCounter = cnt
+			}
+
+addFileAlert :: [FilePath] -> Alert
 addFileAlert = fileAlert (Tensed "Adding" "Added")
 
 {- This is only used as a success alert after a transfer, not during it. -}
 transferFileAlert :: Direction -> Bool -> FilePath -> Alert
-transferFileAlert direction True
-	| direction == Upload = fileAlert "Uploaded"
-	| otherwise = fileAlert "Downloaded"
-transferFileAlert direction False
-	| direction == Upload = fileAlert "Upload failed"
-	| otherwise = fileAlert "Download failed"
+transferFileAlert direction True file
+	| direction == Upload = fileAlert "Uploaded" [file]
+	| otherwise = fileAlert "Downloaded" [file]
+transferFileAlert direction False file
+	| direction == Upload = fileAlert "Upload failed" [file]
+	| otherwise = fileAlert "Download failed" [file]
 
 dataCombiner :: ([TenseChunk] -> [TenseChunk] -> [TenseChunk]) -> AlertCombiner
-dataCombiner combiner new old
+dataCombiner combiner = fullCombiner $
+	\new old -> old { alertData = alertData new `combiner` alertData old }
+
+fullCombiner :: (Alert -> Alert -> Alert) -> AlertCombiner
+fullCombiner combiner new old
 	| alertClass new /= alertClass old = Nothing
 	| alertName new == alertName old = 
-		Just $! old { alertData = alertData new `combiner` alertData old }
+		Just $! new `combiner` old
 	| otherwise = Nothing
 
 shortFile :: FilePath -> String
