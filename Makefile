@@ -107,6 +107,7 @@ linuxstandalone: Build/Standalone
 	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
+	cp doc/favicon.png doc/logo.svg $(LINUXSTANDALONE_DEST)
 
 	./Build/Standalone "$(LINUXSTANDALONE_DEST)"
 	

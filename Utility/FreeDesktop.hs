@@ -17,6 +17,7 @@ module Utility.FreeDesktop (
 	writeDesktopMenuFile,
 	desktopMenuFilePath,
 	autoStartPath,
+	iconDir,
 	iconFilePath,
 	systemDataDir,
 	systemConfigDir,
@@ -93,13 +94,17 @@ autoStartPath :: String -> FilePath -> FilePath
 autoStartPath basename configdir =
 	configdir </> "autostart" </> desktopfile basename
 
-{- Path to use for an icon file, in either the systemDataDir
- - or the userDatadir.
+{- Base directory to install an icon file, in either the systemDataDir
+ - or the userDatadir. -}
+iconDir :: FilePath -> FilePath
+iconDir datadir = datadir </> "icons" </> "hicolor"
+
+{- Filename of an icon, given the iconDir to use.
  -
  - The resolution is something like "48x48" or "scalable". -}
 iconFilePath :: FilePath -> String -> FilePath -> FilePath
-iconFilePath file resolution datadir = datadir </> "icons" </>
-	"hicolor" </> resolution </> "apps" </> file
+iconFilePath file resolution icondir =
+	icondir </> resolution </> "apps" </> file
 
 desktopfile :: FilePath -> FilePath
 desktopfile f = f ++ ".desktop"

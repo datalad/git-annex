@@ -49,8 +49,9 @@ ensureInstalled = go =<< standaloneAppBase
 #ifdef darwin_HOST_OS
 		autostartfile <- userAutoStart osxAutoStartLabel
 #else
-		installMenu program
-			=<< desktopMenuFilePath "git-annex" <$> userDataDir
+		menufile <- desktopMenuFilePath "git-annex" <$> userDataDir
+		icondir <- iconDir <$> userDataDir
+		installMenu program menufile base icondir
 		autostartfile <- autoStartPath "git-annex" <$> userConfigDir
 #endif
 		installAutoStart program autostartfile

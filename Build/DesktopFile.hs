@@ -28,7 +28,6 @@ import System.Posix.Files
 #endif
 import System.FilePath
 import Data.Maybe
-import System.IO
 
 systemwideInstall :: IO Bool
 #ifndef mingw32_HOST_OS 
@@ -52,24 +51,13 @@ writeFDODesktop command = do
 	systemwide <- systemwideInstall
 
 	datadir <- if systemwide then return systemDataDir else userDataDir
-	installMenu command
-		=<< inDestDir (desktopMenuFilePath "git-annex" datadir)
-
-	installIcon "doc/logo.svg"
-		=<< inDestDir (iconFilePath "git-annex.svg" "scalable" datadir)
-	installIcon "doc/favicon.png"
-		=<< inDestDir (iconFilePath "git-annex.png" "16x16" datadir)
+	menufile <- inDestDir (desktopMenuFilePath "git-annex" datadir)
+	icondir <- inDestDir (iconDir datadir)
+	installMenu command menufile "doc" icondir
 
 	configdir <- if systemwide then return systemConfigDir else userConfigDir
 	installAutoStart command 
 		=<< inDestDir (autoStartPath "git-annex" configdir)
-
-installIcon :: FilePath -> FilePath -> IO ()
-installIcon src dest = do
-	createDirectoryIfMissing True (parentDir dest)
-	withBinaryFile src ReadMode $ \hin ->
-		withBinaryFile dest WriteMode $ \hout ->
-			hGetContents hin >>= hPutStr hout
 
 writeOSXDesktop :: FilePath -> IO ()
 writeOSXDesktop command = do
