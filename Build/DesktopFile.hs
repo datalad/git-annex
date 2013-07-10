@@ -55,10 +55,10 @@ writeFDODesktop command = do
 	installMenu command
 		=<< inDestDir (desktopMenuFilePath "git-annex" datadir)
 
-	installIcon "doc/logo.svg" =<< inDestDir
-		=<< iconFilePath "git-annex.svg" "scalable" systemwide
-	installIcon "doc/favicon.png" =<< inDestDir
-		=<< iconFilePath "git-annex.png" "16x16" systemwide
+	installIcon "doc/logo.svg"
+		=<< inDestDir (iconFilePath "git-annex.svg" "scalable" datadir)
+	installIcon "doc/favicon.png"
+		=<< inDestDir (iconFilePath "git-annex.png" "16x16" datadir)
 
 	configdir <- if systemwide then return systemConfigDir else userConfigDir
 	installAutoStart command 
