@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="trilobite"
+ ip="71.17.134.14"
+ subject="comment 2"
+ date="2013-07-11T23:23:41Z"
+ content="""
+I did this with local synch in home lan.  Filenames do travel both directions.  Just not contents.  They are identifed as symlinks rather than files.
+"""]]
