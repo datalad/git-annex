@@ -380,6 +380,9 @@ subdirectories).
 
 	git annex fsck --incremental-schedule 30d --time-limit 5h
 
+  To verify data integrity only while disregarding required number of copies,
+  use --numcopies=1.
+
 * unused
 
   Checks the annex for data that does not correspond to any files present
