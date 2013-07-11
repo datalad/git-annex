@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Command.Fix where
 
 import System.PosixCompat.Files
@@ -12,6 +14,9 @@ import System.PosixCompat.Files
 import Common.Annex
 import Command
 import qualified Annex.Queue
+#ifndef __ANDROID__
+import Utility.Touch
+#endif
 
 def :: [Command]
 def = [notDirect $ noCommit $ command "fix" paramPaths seek
@@ -30,9 +35,18 @@ start file (key, _) = do
 
 perform :: FilePath -> FilePath -> CommandPerform
 perform file link = do
-	liftIO $ createDirectoryIfMissing True (parentDir file)
-	liftIO $ removeFile file
-	liftIO $ createSymbolicLink link file
+	liftIO $ do
+#ifndef __ANDROID__
+		-- preserve mtime of symlink
+		mtime <- catchMaybeIO $ TimeSpec . modificationTime
+			<$> getSymbolicLinkStatus file
+#endif
+		createDirectoryIfMissing True (parentDir file)
+		removeFile file
+		createSymbolicLink link file
+#ifndef __ANDROID__
+		maybe noop (\t -> touch file t False) mtime
+#endif
 	next $ cleanup file
 
 cleanup :: FilePath -> CommandCleanup

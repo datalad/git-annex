@@ -2,6 +2,7 @@ git-annex (4.20130710) UNRELEASED; urgency=low
 
   * Install XDG desktop icon files.
   * webapp: Better display of added files.
+  * fix: Preserve the original mtime of fixed symlinks.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 09 Jul 2013 19:17:13 -0400
 
