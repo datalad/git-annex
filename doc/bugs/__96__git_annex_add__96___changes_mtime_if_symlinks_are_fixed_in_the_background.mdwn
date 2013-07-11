@@ -41,7 +41,7 @@ lrwxrwxrwx 1 richih richih 197 Jul 11 12:23 foo -> ../.git/annex/objects/zQ/MQ/S
 
 ### What version of git-annex are you using? On what operating system?
 
-git-annex 4.20130709 on Debian unstable i386
+git-annex 4.20130709 on Debian unstable i386 and x64.
 
 ### Please provide any additional information below.
 
