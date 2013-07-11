@@ -1,4 +1,14 @@
-## version 4.20130621, 4.20130627, 4.20130709
+## version 4.20130709
+
+This release is mostly bug fixes.
+
+One of the bugs involved setting up rsync remotes on servers other than
+rsync.net. The wrong `.ssh/authorized_keys` line was deployed to the
+remote server. If you set up a rsync remote with a past release, and it does
+not work, you will need to manually edit the `.ssh/authorized_keys` file,
+and remove the `command=` forced command.
+
+## version 4.20130621, 4.20130627
 
 These releases mostly consist of bug fixes.
 
