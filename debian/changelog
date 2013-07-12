@@ -6,6 +6,8 @@ git-annex (4.20130710) UNRELEASED; urgency=low
   * Rsync.net have committed to support git-annex and offer a special
     discounted rate for git-annex users. Updated the webapp to reflect this.
     http://www.rsync.net/products/git-annex-pricing.html
+  * Improve cabal file to avoid unncessary dependencies when building with
+    the assistant disabled.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 09 Jul 2013 19:17:13 -0400
 
