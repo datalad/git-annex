@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2013-07-12T20:09:32Z"
+ content="""
+Not sure if it applies to your devices, but I considerably speed up SSH transfers on my raspberry pi by using
+
+    Ciphers arcfour
+
+in the ssh configuration.
+"""]]
