@@ -5,11 +5,22 @@ and then:
 
 	cabal update
 	PATH=$HOME/bin:$PATH
-	cabal install c2hs
-	cabal install git-annex --bindir=$HOME/bin
+	cabal install git-annex -f-assistant --bindir=$HOME/bin
 
 The above downloads the latest release and installs it into a ~/bin/
 directory, which you can put in your PATH.
+
+## building in the assistant and webapp
+
+The above builds git-annex without the git-annex assistant and webapp. To
+build with those features enabled, you will need to install several C
+libraries and their headers, including libgnutls, libgsasl, libxml2, and
+zlib. Then run:
+
+	cabal install c2hs --bindir=$HOME/bin
+	cabal install git-annex --bindir=$HOME/bin
+
+## building from git checkout
 
 But maybe you want something newer (or older). Then [[download]] the version
 you want, and use cabal as follows inside its source tree:
@@ -21,11 +32,3 @@ you want, and use cabal as follows inside its source tree:
 	cabal configure
 	cabal build
 	cabal install --bindir=$HOME/bin
-
-By default, cabal will try to build git-annex with the git-annex assistant
-and webapp. This requires several C libraries and their headers be already
-installed on your system, including libgnutls, libgsasl, libxml2, and zlib.
-To build git-annex without the assistant and webapp, you can pass flags to
-cabal install. For example:
-
-	cabal install git-annex --flags="-assistant -WebApp" --bindir=$HOME/bin
