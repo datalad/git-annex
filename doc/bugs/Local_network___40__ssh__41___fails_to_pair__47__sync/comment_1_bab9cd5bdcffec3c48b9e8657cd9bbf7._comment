@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnFjuvfPpi1kf6l54bxfFUm0Aw_Gf_IO0o"
+ nickname="Aaron"
+ subject="Some things working"
+ date="2013-07-14T10:06:13Z"
+ content="""
+Oh, that's odd...
+
+The Mythbuntu machine says it fails and the laptop screen still says pairing, but a new window on the laptop says that it synced with the Mythbuntu server. On the Mythbuntu server, it has a blank entry for the laptop, which if you click to edit says \"Internal Server Error\" \"Unknown UUID\".
+
+When I add things on the laptop, they immediately become shortcuts and an equivalent shortcut appears on the Mythbuntu machine, though updates to the content (in this case a text file) are not sychronised. 
+
+Adding a file on the Mythbuntu machine does not turn into a shortcut and nothing appears on the laptop.
+"""]]
