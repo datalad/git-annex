@@ -33,5 +33,5 @@ failed
 git-annex: drop: 1 failed
 """]]
 
-the given curl command "curl -s --head -L http://192.168.0.8:8000/test_annex_2/.git/annex/objects/738/e2a/SHA256-s27--4fc887746d7ea6c9574f6735bd3dfd9b0485b30acaaf0727658cd1796991dd2d/SHA256-s27--4fc887746d7ea6c9574f6735bd3dfd9b0485b30acaaf0727658cd1796991dd2d -w %{http_code}" fails, because the remote annex isn't using the 3-character hash directory scheme, but the 2-character one, and it seems that 'annex drop' doesn't check both schemes (unlike annex get).
+the given curl command fails with a 404, because the remote annex isn't using the 3-character hash directory scheme, but the 2-character one, and it seems that 'annex drop' doesn't check both schemes (unlike annex get).
 
