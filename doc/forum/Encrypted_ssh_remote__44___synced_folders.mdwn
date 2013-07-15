@@ -10,7 +10,7 @@ Now, is it possible to set up git-annex to support this behaviour? Using an encr
 
 I've set git-annex up on one box, with the two servers as encrypted full backup remotes (without git-annex installed there), and configured my jabber account. That all works, and the files get synced.
 
-Then I've set up a second computer, while the first one is still on. There I've added my jabber account, and created a local repository. Then I selected "Share with your other devices". It now shows my jabber account, and I saw a few syncing messages, but then there came errors, "Unable to download files from your other devices". I've attached the log at the bottom of this page.
+Then I've set up a second computer, while the first one is still on. There I've added my jabber account, and created a local repository. Then I selected "Share with your other devices". It now shows my jabber account on both machines, and I saw a few syncing messages, but then there came errors, "Unable to download files from your other devices". I've attached the log at the bottom of this page.
 
 It gives me the option to add a Cloud Repository. If I add the encrypted rsync full backup remote VPS there, will it work and keep my files in sync? is there something I'm doing wrong?
 
