@@ -1,0 +1,5 @@
+I'm curious if there's a possibility to support lossy remotes. It may be handy to support syncing to special remotes that do lossy compression on the files (e.g., videos and images). For example, one could imagine having a YouTube special remote that only syncs video files. The original files wouldn't be available for download due to the transcoding and compression that YouTube does, so they wouldn't count towards the number of copies. In this YouTube example, the user gains:
+
+1. an online place that their videos are available from
+2. a worst-case scenario "backup"
+3. a remote that they could download smaller video files
