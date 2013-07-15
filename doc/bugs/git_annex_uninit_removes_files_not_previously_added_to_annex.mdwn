@@ -5,9 +5,10 @@ Once git annex uninit is complete, these files are deleted.
 
 ### What steps will reproduce the problem?
 
-cp big-file annex-dir
-cd annex-dir
+cp big-file annex-dir;
+cd annex-dir;
 git annex uninit
+
 ...
 big-file is gone
 
