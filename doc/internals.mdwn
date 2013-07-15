@@ -36,6 +36,9 @@ to accumulate changes for the git-annex branch.
 Also, `.git/annex/journal/` is used to record changes before they
 are added to git.
 
+This branch operates on objects exclusively. No file names will ever
+be stored in this branch.
+
 ### `uuid.log`
 
 Records the UUIDs of known repositories, and associates them with a
