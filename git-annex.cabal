@@ -103,7 +103,7 @@ Executable git-annex
     Build-Depends: hS3
     CPP-Options: -DWITH_S3
 
-  if flag(WebDAV) && flag(Assistant)
+  if flag(WebDAV)
     Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
     CPP-Options: -DWITH_WEBDAV
 
@@ -117,8 +117,8 @@ Executable git-annex
 
   if flag(Assistant)
     if os(linux) && flag(Inotify)
-        Build-Depends: hinotify
-        CPP-Options: -DWITH_INOTIFY
+      Build-Depends: hinotify
+      CPP-Options: -DWITH_INOTIFY
     else
       if os(darwin)
         Build-Depends: hfsevents
@@ -128,11 +128,11 @@ Executable git-annex
           CPP-Options: -DWITH_KQUEUE
           C-Sources: Utility/libkqueue.c
 
-  if os(linux) && flag(Dbus) && flag(Assistant)
+  if os(linux) && flag(Dbus)
     Build-Depends: dbus (>= 0.10.3)
     CPP-Options: -DWITH_DBUS
 
-  if flag(Webapp) && flag(Assistant)
+  if flag(Webapp)
     Build-Depends:
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      case-insensitive, http-types, transformers, wai, wai-logger, warp,
@@ -141,15 +141,15 @@ Executable git-annex
     CPP-Options: -DWITH_WEBAPP
     GHC-Options: -threaded
 
-  if flag(Pairing) && flag(WebApp)
+  if flag(Pairing)
     Build-Depends: network-multicast, network-info
     CPP-Options: -DWITH_PAIRING
 
-  if flag(XMPP) && flag(Assistant)
+  if flag(XMPP)
     Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
     CPP-Options: -DWITH_XMPP
 
-  if flag(DNS) && flag(WebApp)
+  if flag(DNS)
     Build-Depends: dns
     CPP-Options: -DWITH_DNS
 
