@@ -18,3 +18,6 @@ Down the daily APK, it is 9MB.
 
 # End of transcript or log.
 """]]
+
+> Probably several of them were. I've fixed the cabal file, re-running
+> android build now. [[done]] --[[Joey]] 
