@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkF8_uQjLYm5Mf5F_JuVW-BxlvzpWjvR_o"
+ nickname="Andrew"
+ subject="git annex fsck"
+ date="2013-07-16T22:22:25Z"
+ content="""
+Running git annex fsck appears to have resolved the corruption, but it removed all the content and the assistant hasn't refetched them.
+
+I'm running git annex get . now to refetch all the content.
+"""]]
