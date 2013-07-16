@@ -62,9 +62,28 @@ startUnannex file info = do
 start :: CommandStart
 start = next $ next $ do
 	annexdir <- fromRepo gitAnnexDir
+	annexobjectdir <- fromRepo gitAnnexObjectDir
+	present <- getKeysPresent
+	if null present
+		then liftIO $ removeDirectoryRecursive annexdir
+		else error $ unlines
+			[ "Not fully uninitialized"
+			, "Some annexed data is still left in " ++ annexobjectdir
+			, "This may include deleted files, or old versions of modified files."
+			, ""
+			, "If you don't care about preserving the data, just delete the"
+			, "directory."
+			, ""
+			, "Or, you can move it to another location, in case it turns out"
+			, "something in there is important."
+			, ""
+			, "Or, you can run `git annex unused` followed by `git annex dropunused`"
+			, "to remove data that is not used by any tag or branch, which might"
+			, "take care of all the data."
+			, ""
+			, "Then run `git annex uninit` again to finish."
+			]
 	uninitialize
-	mapM_ removeAnnex =<< getKeysPresent
-	liftIO $ removeDirectoryRecursive annexdir
 	-- avoid normal shutdown
 	saveState False
 	inRepo $ Git.Command.run
