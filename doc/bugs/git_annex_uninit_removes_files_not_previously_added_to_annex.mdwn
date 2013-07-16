@@ -26,3 +26,5 @@ Linux Ubuntu 13.04
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
