@@ -80,7 +80,7 @@ content is preferred if it's in a directory (located anywhere in the tree)
 with a special name.
 
 The name of the directory can be configured using 
-`git annex initremote $remote preferreddir=$dirname`
+`git annex enableremote $remote preferreddir=$dirname`
 
 (If no directory name is configured, it uses "public" by default.)
 
@@ -186,9 +186,7 @@ will be published. (The directory can be located anywhere in the
 repository.)
 
 The name of the directory can be configured using
-`git annex initremote $remote preferreddir=$dirname`
-
-`inpreferreddir`
+`git annex enableremote $remote preferreddir=$dirname`
 
 ### unwanted
 
