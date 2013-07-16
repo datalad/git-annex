@@ -322,7 +322,7 @@ subdirectories).
 
   For example:
 
-	git annex content . "include(*.mp3) or include(*.ogg)"
+	git annex content . "include=*.mp3 or include=*.ogg"
 
   Without an expression, displays the current preferred content setting
   of the repository.

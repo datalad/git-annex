@@ -28,3 +28,5 @@ git-annex version: 4.20130709.1, ubuntu quantal
 
 # End of transcript or log.
 """]]
+
+> Fixed the example, thanks. --[[Joey]] [[done]]
