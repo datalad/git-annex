@@ -1,0 +1,22 @@
+### Please describe the problem.
+Entering a jabber address which's server got a selfsigned certificate, the process just fails, without asking for acceptance for that certificate. This is quite a showstopper.
+(for example: jabber.ccc.de)
+
+
+### What steps will reproduce the problem?
+Try with an account from e.g. jabber.ccc.de
+
+
+### What version of git-annex are you using? On what operating system?
+Arch Linux, aur/git-annex-standalone 4.20130709-1 
+
+### Please provide any additional information below.
+There is no logoutput to add... I'm sorry.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
