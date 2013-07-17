@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkkyBDsfOB7JZvPZ4a8F3rwv0wk6Nb9n48"
+ nickname="Abdó"
+ subject="comment 2"
+ date="2013-07-17T20:45:17Z"
+ content="""
+That example I gave: 10 sec vs 1 sec is on a repository of pictures with about 6200 files on a SSD.
+
+Oh, I think I understand the source of the asymmetry, now! So, `git annex copy --to` queries the location log file by file? I've tested a `git grep` on the git-annex branch as follows
+
+```
+git grep -e <repo uuid> git-annex
+```
+
+and seems to be quite fast, less than a second on my test repo. Could git annex make use of this to speed up bulk queries to the location log?
+
+"""]]
