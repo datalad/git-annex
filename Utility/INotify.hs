@@ -144,13 +144,15 @@ watchDir i dir ignored hooks
 			_ -> noop
 	filetype t f = catchBoolIO $ t <$> getSymbolicLinkStatus (indir f)
 
-	-- Inotify fails when there are too many watches with a
-	-- disk full error.
 	failedaddwatch e
+		-- Inotify fails when there are too many watches with a
+		-- disk full error.
 		| isFullError e =
 			case errHook hooks of
 				Nothing -> throw e
 				Just hook -> tooManyWatches hook dir
+		-- The directory could have been deleted.
+		| isDoesNotExistError e = return ()
 		| otherwise = throw e
 
 tooManyWatches :: (String -> Maybe FileStatus -> IO ()) -> FilePath -> IO ()
