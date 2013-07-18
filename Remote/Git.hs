@@ -228,17 +228,14 @@ inAnnex r key
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
   where
-	checkhttp headers = liftIO $ go undefined $ keyUrls r key
-	  where
-		go e [] = return $ Left e
-		go _ (u:us) = do
-			res <- catchMsgIO $
-				Url.check u headers (keySize key)
-			case res of
-				Left e -> go e us
-				v -> return v
+	checkhttp headers = do
+		showchecking
+		liftIO $ ifM (anyM (\u -> Url.check u headers (keySize key)) (keyUrls r key))
+			( return $ Right True
+			, return $ Left "not found"
+			)
 	checkremote = do
-		showAction $ "checking " ++ Git.repoDescribe r
+		showchecking
 		onRemote r (check, unknown) "inannex" [Param (key2file key)] []
 	  where
 		check c p = dispatch <$> safeSystem c p
@@ -253,6 +250,7 @@ inAnnex r key
 		dispatch (Right (Just b)) = Right b
 		dispatch (Right Nothing) = unknown
 	unknown = Left $ "unable to check " ++ Git.repoDescribe r
+	showchecking = showAction $ "checking " ++ Git.repoDescribe r
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}

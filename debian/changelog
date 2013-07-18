@@ -11,6 +11,8 @@ git-annex (4.20130710) UNRELEASED; urgency=low
     are not deleted. Print a message with some suggested actions.
   * When a transfer is already being run by another process,
     proceed on to the next file, rather than dying.
+  * Fix checking when content is present in a non-bare repository
+    accessed via http.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 09 Jul 2013 19:17:13 -0400
 

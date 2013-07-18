@@ -35,3 +35,5 @@ git-annex: drop: 1 failed
 
 the given curl command fails with a 404, because the remote annex isn't using the 3-character hash directory scheme, but the 2-character one, and it seems that 'annex drop' doesn't check both schemes (unlike annex get).
 
+> Ah, the http remote is a non-bare repository, that's why. 
+> Ok, [[fixed|done]]! --[[Joey]] 
