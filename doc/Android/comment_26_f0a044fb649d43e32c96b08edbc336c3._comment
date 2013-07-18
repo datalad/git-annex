@@ -6,5 +6,7 @@
  content="""
 @Frew, you should file bug reports when you have a bug.
 
-One problem you mentioned had already had a bug report filed by someone else: [[bugs/Watcher_crashed:_addWatch:_does_not_exist]] So you can post your details there.
+One problem you mentioned had already had a bug report filed by someone
+else:
+<http://git-annex.branchable.com/bugs/Watcher_crashed:_addWatch:_does_not_exist/> So you can post your details there.
 """]]
