@@ -63,8 +63,8 @@ start :: CommandStart
 start = next $ next $ do
 	annexdir <- fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
-	present <- getKeysPresent
-	if null present
+	leftovers <- removeUnannexed =<< getKeysPresent
+	if null leftovers
 		then liftIO $ removeDirectoryRecursive annexdir
 		else error $ unlines
 			[ "Not fully uninitialized"
@@ -89,3 +89,21 @@ start = next $ next $ do
 	inRepo $ Git.Command.run
 		[Param "branch", Param "-D", Param $ show Annex.Branch.name]
 	liftIO exitSuccess
+
+{- Keys that were moved out of the annex have a hard link still in the
+ - annex, with > 1 link count, and those can be removed.
+ -
+ - Returns keys that cannot be removed. -}
+removeUnannexed :: [Key] -> Annex [Key]
+removeUnannexed = go []
+  where
+  	go c [] = return c
+	go c (k:ks) = ifM (inAnnexCheck k $ liftIO . enoughlinks)
+		( do
+			removeAnnex k
+			go c ks
+		, go (k:c) ks
+		)
+	enoughlinks f = do
+		s <- getFileStatus f
+		return $ linkCount s > 1

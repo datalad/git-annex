@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010,2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@
 module Annex.Content (
 	inAnnex,
 	inAnnexSafe,
+	inAnnexCheck,
 	lockContent,
 	getViaTmp,
 	getViaTmpChecked,
@@ -56,7 +57,11 @@ import Annex.ReplaceFile
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
-inAnnex = inAnnex' id False $ liftIO . doesFileExist
+inAnnex key = inAnnexCheck key $ liftIO . doesFileExist
+
+{- Runs an arbitrary check on a key's content. -}
+inAnnexCheck :: Key -> (FilePath -> Annex Bool) -> Annex Bool
+inAnnexCheck key check = inAnnex' id False check key
 
 {- Generic inAnnex, handling both indirect and direct mode.
  -
