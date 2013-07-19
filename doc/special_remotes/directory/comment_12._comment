@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.25"
+ subject="comment 2"
+ date="2013-07-19T13:54:10Z"
+ content="""
+@Laura the directory special remote requires files to
+be in a particular directory structure with special names
+git-annex comes up with. So you can't use it on an existing
+tree of files like that.
+
+What you can do is use the [[web_special_remote|web]],
+with a `file://` url to point to the files wherever
+they are stored. So for example,
+`git annex addurl file:///media/dvd/file`
+"""]]
