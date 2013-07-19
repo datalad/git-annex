@@ -50,6 +50,8 @@ module Utility.DataUnits (
 import Data.List
 import Data.Char
 
+import Utility.HumanNumber
+
 type ByteSize = Integer
 type Name = String
 type Abbrev = String
@@ -105,7 +107,7 @@ oldSchoolUnits = zipWith (curry mingle) storageUnits memoryUnits
 
 {- approximate display of a particular number of bytes -}
 roughSize :: [Unit] -> Bool -> ByteSize -> String
-roughSize units abbrev i
+roughSize units short i
 	| i < 0 = '-' : findUnit units' (negate i)
 	| otherwise = findUnit units' i
   where
@@ -116,23 +118,14 @@ roughSize units abbrev i
 		| otherwise = findUnit us i'
 	findUnit [] i' = showUnit i' (last units') -- bytes
 
-	showUnit i' (Unit s a n) = let (num, decimal) = chop i' s in
-		show num ++ decimal ++ " " ++
-		(if abbrev then a else plural num decimal n)
-
-	chop :: Integer -> Integer -> (Integer, String)
-	chop i' d =
-		let (num, decimal) = properFraction $ (fromInteger i' :: Double) / fromInteger d
-		    dnum = round (decimal * 100) :: Integer
-		    ds = show dnum
-		    ds' = (take (2 - length ds) (repeat '0')) ++ ds
-		in if (dnum == 0)
-			then (num, "")
-			else (num, "." ++ ds')
-
-	plural num decimal n
-		| num == 1 && null decimal = n
-		| otherwise = n ++ "s"
+	showUnit x (Unit size abbrev name) = s ++ " " ++ unit
+	  where
+	  	v = (fromInteger x :: Double) / fromInteger size
+		s = showImprecise 2 v
+		unit
+			| short = abbrev
+			| s == "1" = name
+			| otherwise = name ++ "s"
 
 {- displays comparison of two sizes -}
 compareSizes :: [Unit] -> Bool -> ByteSize -> ByteSize -> String

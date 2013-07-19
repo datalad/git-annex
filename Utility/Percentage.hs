@@ -13,6 +13,8 @@ module Utility.Percentage (
 
 import Data.Ratio
 
+import Utility.HumanNumber
+
 newtype Percentage = Percentage (Ratio Integer)
 
 instance Show Percentage where
@@ -25,14 +27,8 @@ percentage full have = Percentage $ have * 100 % full
 
 {- Pretty-print a Percentage, with a specified level of precision. -}
 showPercentage :: Int -> Percentage -> String
-showPercentage precision (Percentage p)
-	| precision == 0 || remainder == 0 = go $ show int
-	| otherwise = go $ show int ++ "." ++ strip0s (show remainder)
+showPercentage precision (Percentage p) = v ++ "%"
   where
-	go v = v ++ "%"
-	int :: Integer
-	(int, frac) = properFraction (fromRational p)
-	remainder = floor (frac * multiplier) :: Integer
+	v = showImprecise precision n
+	n = fromRational p :: Double
 	strip0s = reverse . dropWhile (== '0') . reverse
-	multiplier :: Float
-	multiplier = 10 ** (fromIntegral precision)
