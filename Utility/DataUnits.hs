@@ -118,7 +118,7 @@ roughSize units abbrev i
 
 	showUnit i' (Unit s a n) = let (num, decimal) = chop i' s in
 		show num ++ decimal ++ " " ++
-		(if abbrev then a else plural num n)
+		(if abbrev then a else plural num decimal n)
 
 	chop :: Integer -> Integer -> (Integer, String)
 	chop i' d =
@@ -130,9 +130,9 @@ roughSize units abbrev i
 			then (num, "")
 			else (num, "." ++ ds')
 
-	plural n u
-		| n == 1 = u
-		| otherwise = u ++ "s"
+	plural num decimal n
+		| num == 1 && null decimal = n
+		| otherwise = n ++ "s"
 
 {- displays comparison of two sizes -}
 compareSizes :: [Unit] -> Bool -> ByteSize -> ByteSize -> String
