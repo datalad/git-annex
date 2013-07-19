@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="git annex merge driver?"
+ date="2013-07-19T17:04:53Z"
+ content="""
+
+I've tried rebasing git-annex branch, and I hit a bunch of conflicts (both in uuid.log and for individual content file logs) of the form:
+
+<pre><code>
+<<<<<<< HEAD
+1369615760.859476s 1 016d9095-0cbc-4734-a498-4e0421e257d7
+=======
+1369615760.845334s 1 016d9095-0cbc-4734-a498-4e0421e257d7
+>>>>>>> 52e60e8... update
+1369615359.195672s 1 38c359dc-a7d9-498d-a818-2e9beae995b8
+</code></pre>
+
+As I understand, git-annex has a special timestamp-based merge driver to deal with these. Is there a way to use that with git rebase?
+
+"""]]
