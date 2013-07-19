@@ -116,12 +116,19 @@ roughSize units abbrev i
 		| otherwise = findUnit us i'
 	findUnit [] i' = showUnit i' (last units') -- bytes
 
-	showUnit i' (Unit s a n) = let num = chop i' s in
-		show num ++ " " ++
+	showUnit i' (Unit s a n) = let (num, decimal) = chop i' s in
+		show num ++ decimal ++ " " ++
 		(if abbrev then a else plural num n)
 
-	chop :: Integer -> Integer -> Integer
-	chop i' d = round $ (fromInteger i' :: Double) / fromInteger d
+	chop :: Integer -> Integer -> (Integer, String)
+	chop i' d =
+		let (num, decimal) = properFraction $ (fromInteger i' :: Double) / fromInteger d
+		    dnum = round (decimal * 100) :: Integer
+		    ds = show dnum
+		    ds' = (take (2 - length ds) (repeat '0')) ++ ds
+		in if (dnum == 0)
+			then (num, "")
+			else (num, "." ++ ds')
 
 	plural n u
 		| n == 1 = u
