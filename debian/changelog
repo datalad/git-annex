@@ -20,6 +20,8 @@ git-annex (4.20130710) UNRELEASED; urgency=low
     or deleted before it could be scanned.
   * watcher: Partially worked around a bug in hinotify, no longer crashes
     if hinotify cannot process a directory (but can't detect changes in it)
+  * directory special remote: Fix checking that there is enough disk space
+    to hold an object, was broken when using encryption.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 09 Jul 2013 19:17:13 -0400
 

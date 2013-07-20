@@ -118,7 +118,7 @@ withStoredFiles = withCheckedFiles doesFileExist
 store :: FilePath -> ChunkSize -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store d chunksize k _f p = sendAnnex k (void $ remove d k) $ \src ->
 	metered (Just p) k $ \meterupdate -> 
-		storeHelper d chunksize k $ \dests ->
+		storeHelper d chunksize k k $ \dests ->
 			case chunksize of
 				Nothing -> do
 					let dest = Prelude.head dests
@@ -132,7 +132,7 @@ store d chunksize k _f p = sendAnnex k (void $ remove d k) $ \src ->
 storeEncrypted :: FilePath -> GpgOpts -> ChunkSize -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted d gpgOpts chunksize (cipher, enck) k p = sendAnnex k (void $ remove d enck) $ \src ->
 	metered (Just p) k $ \meterupdate ->
-		storeHelper d chunksize enck $ \dests ->
+		storeHelper d chunksize enck k $ \dests ->
 			encrypt gpgOpts cipher (feedFile src) $ readBytes $ \b ->
 				case chunksize of
 					Nothing -> do
@@ -173,17 +173,17 @@ storeSplit' meterupdate chunksize (d:dests) bs c = do
 				feed bytes' (sz - s) ls h
 			else return (l:ls)
 
-storeHelper :: FilePath -> ChunkSize -> Key -> ([FilePath] -> IO [FilePath]) -> Annex Bool
-storeHelper d chunksize key storer = check <&&> go
+storeHelper :: FilePath -> ChunkSize -> Key -> Key -> ([FilePath] -> IO [FilePath]) -> Annex Bool
+storeHelper d chunksize key origkey storer = check <&&> go
   where
 	tmpdir = tmpDir d key
 	destdir = storeDir d key
-	{- The size is not exactly known when encrypting the key;
-	 - this assumes that at least the size of the key is
-	 - needed as free space. -}
+	{- An encrypted key does not have a known size,
+	 - so check that the size of the original key is available as free
+	 - space. -}
 	check = do
 		liftIO $ createDirectoryIfMissing True tmpdir
-		checkDiskSpace (Just tmpdir) key 0
+		checkDiskSpace (Just tmpdir) origkey 0
 	go = liftIO $ catchBoolIO $
 		storeChunks key tmpdir destdir chunksize storer recorder finalizer
 	finalizer tmp dest = do
