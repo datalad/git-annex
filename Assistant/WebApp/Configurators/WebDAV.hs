@@ -69,7 +69,7 @@ postAddBoxComR = boxConfigurator $ do
 		runFormPost $ renderBootstrap $ boxComAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ 
-			makeWebDavRemote "box.com" (toCredPair input) setgroup $ M.fromList
+			makeWebDavRemote initSpecialRemote "box.com" (toCredPair input) setgroup $ M.fromList
 				[ configureEncryption $ enableEncryption input
 				, ("embedcreds", if embedCreds input then "yes" else "no")
 				, ("type", "webdav")
@@ -100,7 +100,7 @@ postEnableWebDAVR uuid = do
 		getRemoteCredPairFor "webdav" c (WebDAV.davCreds uuid)
 	case mcreds of
 		Just creds -> webDAVConfigurator $ liftH $
-			makeWebDavRemote name creds (const noop) M.empty
+			makeWebDavRemote enableSpecialRemote name creds (const noop) M.empty
 		Nothing
 			| "box.com/" `isInfixOf` url ->
 				boxConfigurator $ showform name url
@@ -115,7 +115,7 @@ postEnableWebDAVR uuid = do
 			runFormPost $ renderBootstrap $ webDAVCredsAForm defcreds
 		case result of
 			FormSuccess input -> liftH $
-				makeWebDavRemote name (toCredPair input) (const noop) M.empty
+				makeWebDavRemote enableSpecialRemote name (toCredPair input) (const noop) M.empty
 			_ -> do
 				description <- liftAnnex $
 					T.pack <$> Remote.prettyUUID uuid
@@ -125,13 +125,10 @@ postEnableWebDAVR _ = error "WebDAV not supported by this build"
 #endif
 
 #ifdef WITH_WEBDAV
-makeWebDavRemote :: String -> CredPair -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
-makeWebDavRemote name creds setup config = do
-	remotename <- liftAnnex $ fromRepo $ uniqueRemoteName name 0
+makeWebDavRemote :: SpecialRemoteMaker -> String -> CredPair -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
+makeWebDavRemote maker name creds setup config = do
 	liftIO $ WebDAV.setCredsEnv creds
-	r <- liftAnnex $ addRemote $ do
-		makeSpecialRemote name WebDAV.remote config
-		return remotename
+	r <- liftAnnex $ addRemote $ maker name WebDAV.remote config
 	setup r
 	liftAssistant $ syncRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r

@@ -130,7 +130,7 @@ postAddIAR = iaConfigurator $ do
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = escapeBucket $ T.unpack $ itemName input
-			AWS.makeAWSRemote S3.remote (extractCreds input) name setgroup $
+			AWS.makeAWSRemote initSpecialRemote S3.remote (extractCreds input) name setgroup $
 				M.fromList $ catMaybes
 					[ Just $ configureEncryption NoEncryption
 					, Just ("type", "S3")
@@ -174,7 +174,7 @@ enableIARemote uuid = do
 			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m
-			AWS.makeAWSRemote S3.remote creds name (const noop) M.empty
+			AWS.makeAWSRemote enableSpecialRemote S3.remote creds name (const noop) M.empty
 		_ -> do
 			description <- liftAnnex $
 				T.pack <$> Remote.prettyUUID uuid

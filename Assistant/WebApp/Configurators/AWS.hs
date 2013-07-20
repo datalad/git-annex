@@ -124,7 +124,7 @@ postAddS3R = awsConfigurator $ do
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = T.unpack $ repoName input
-			makeAWSRemote S3.remote (extractCreds input) name setgroup $ M.fromList
+			makeAWSRemote initSpecialRemote S3.remote (extractCreds input) name setgroup $ M.fromList
 				[ configureEncryption $ enableEncryption input
 				, ("type", "S3")
 				, ("datacenter", T.unpack $ datacenter input)
@@ -150,7 +150,7 @@ postAddGlacierR = glacierConfigurator $ do
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = T.unpack $ repoName input
-			makeAWSRemote Glacier.remote (extractCreds input) name setgroup $ M.fromList
+			makeAWSRemote initSpecialRemote Glacier.remote (extractCreds input) name setgroup $ M.fromList
 				[ configureEncryption $ enableEncryption input
 				, ("type", "glacier")
 				, ("datacenter", T.unpack $ datacenter input)
@@ -198,7 +198,7 @@ enableAWSRemote remotetype uuid = do
 			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m
-			makeAWSRemote remotetype creds name (const noop) M.empty
+			makeAWSRemote enableSpecialRemote remotetype creds name (const noop) M.empty
 		_ -> do
 			description <- liftAnnex $
 				T.pack <$> Remote.prettyUUID uuid
@@ -207,13 +207,11 @@ enableAWSRemote remotetype uuid = do
 enableAWSRemote _ _ = error "S3 not supported by this build"
 #endif
 
-makeAWSRemote :: RemoteType -> AWSCreds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
-makeAWSRemote remotetype (AWSCreds ak sk) name setup config = do
-	remotename <- liftAnnex $ fromRepo $ uniqueRemoteName name 0
+makeAWSRemote :: SpecialRemoteMaker -> RemoteType -> AWSCreds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
+makeAWSRemote maker remotetype (AWSCreds ak sk) name setup config = do
 	liftIO $ AWS.setCredsEnv (T.unpack ak, T.unpack sk)
 	r <- liftAnnex $ addRemote $ do
-		makeSpecialRemote hostname remotetype config
-		return remotename
+		maker hostname remotetype config
 	setup r
 	liftAssistant $ syncRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
