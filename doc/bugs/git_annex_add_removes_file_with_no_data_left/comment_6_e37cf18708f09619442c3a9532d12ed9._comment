@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 6"
+ date="2013-07-20T22:43:27Z"
+ content="""
+Got the file. Verified checksum.
+
+Reproduced bug!
+
+Wow, it really seems to be a bug specific to this one particular
+file content. That's crazy.
+"""]]
