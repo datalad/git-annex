@@ -94,3 +94,5 @@ lrwxrwxrwx 1 andrew andrew       195 Jul 12 02:20 Expressionlessm.tar -> ../.git
 
 # End of transcript or log.
 """]]
+
+> [[done]]; this bug is now prevented on several levels. --[[Joey]] 
