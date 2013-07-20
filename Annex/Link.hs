@@ -36,10 +36,13 @@ isAnnexLink file = maybe Nothing (fileKey . takeFileName) <$> getAnnexLinkTarget
  - content.
  -}
 getAnnexLinkTarget :: FilePath -> Annex (Maybe LinkTarget)
-getAnnexLinkTarget file =
-	check readSymbolicLink $
+getAnnexLinkTarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
+	( check readSymbolicLink $
 		check readfilestart $
 			return Nothing
+	, check readSymbolicLink $
+		return Nothing
+	)
   where
 	check getlinktarget fallback = do
 		v <- liftIO $ catchMaybeIO $ getlinktarget file
