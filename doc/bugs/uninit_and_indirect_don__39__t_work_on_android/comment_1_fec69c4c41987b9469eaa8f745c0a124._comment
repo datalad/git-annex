@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 1"
+ date="2013-07-20T23:20:48Z"
+ content="""
+There's no way to make indirect mode work on a filesystem w/o symlinks, but it should be possible to make unannex (required for uninit) work in direct mode. Just has not been done yet.
+"""]]
