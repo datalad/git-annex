@@ -1,6 +1,6 @@
 So far in this walkthrough, git-annex has been used with a remote
 repository on a USB drive. But it can also be used with a git remote
-that is truely remote, a host accessed by ssh.
+that is truly remote, a host accessed by ssh.
 
 Say you have a desktop on the same network as your laptop and want
 to clone the laptop's annex to it:
