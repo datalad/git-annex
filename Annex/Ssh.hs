@@ -51,17 +51,18 @@ sshInfo (host, port) = go =<< sshCacheDir
 	go (Just dir) = do
 		let socketfile = dir </> hostport2socket host port
 		if valid_unix_socket_path socketfile
-			then return (Just socketfile, cacheparams socketfile)
+			then return (Just socketfile, sshConnectionCachingParams socketfile)
 			else do
 				socketfile' <- liftIO $ relPathCwdToFile socketfile
 				if valid_unix_socket_path socketfile'
-					then return (Just socketfile', cacheparams socketfile')
+					then return (Just socketfile', sshConnectionCachingParams socketfile')
 					else return (Nothing, [])
-	cacheparams :: FilePath -> [CommandParam]
-	cacheparams socketfile =
-		[ Param "-S", Param socketfile
-		, Params "-o ControlMaster=auto -o ControlPersist=yes"
-		]
+
+sshConnectionCachingParams :: FilePath -> [CommandParam]
+sshConnectionCachingParams socketfile = 
+	[ Param "-S", Param socketfile
+	, Params "-o ControlMaster=auto -o ControlPersist=yes"
+	]
 
 {- ssh connection caching creates sockets, so will not work on a
  - crippled filesystem. A GIT_ANNEX_TMP_DIR can be provided to use
@@ -116,27 +117,19 @@ sshCleanup = go =<< sshCacheDir
 		stopssh socketfile
 #endif
 	stopssh socketfile = do
-		let (host, port) = socket2hostport socketfile
-		(_, params) <- sshInfo (host, port)
+		let params = sshConnectionCachingParams socketfile
 		-- "ssh -O stop" is noisy on stderr even with -q
 		void $ liftIO $ catchMaybeIO $
 			withQuietOutput createProcessSuccess $
 				proc "ssh" $ toCommand $
 					[ Params "-O stop"
-					] ++ params ++ [Param host]
+					] ++ params ++ [Param "any"]
 		-- Cannot remove the lock file; other processes may
 		-- be waiting on our exclusive lock to use it.
 
 hostport2socket :: String -> Maybe Integer -> FilePath
 hostport2socket host Nothing = host
 hostport2socket host (Just port) = host ++ "!" ++ show port
-
-socket2hostport :: FilePath -> (String, Maybe Integer)
-socket2hostport socket
-	| null p = (h, Nothing)
-	| otherwise = (h, readish p)
-  where
-	(h, p) = separate (== '!') $ takeFileName socket
 
 socket2lock :: FilePath -> FilePath
 socket2lock socket = socket ++ lockExt
