@@ -1,5 +1,8 @@
 git-annex (4.20130710) UNRELEASED; urgency=low
 
+  * Fix data loss bug when adding an (uncompressed) tarball of a
+    git-annex repository, or other file that begins with something
+    that can be mistaken for a git-annex link. Closes: #717456
   * Install XDG desktop icon files.
   * webapp: Better display of added files.
   * fix: Preserve the original mtime of fixed symlinks.
@@ -25,9 +28,6 @@ git-annex (4.20130710) UNRELEASED; urgency=low
   * webapp: Differentiate between creating a new S3/Glacier/WebDav remote,
     and initializing an existing remote. When creating a new remote, avoid
     conflicts with other existing (or deleted) remotes with the same name.
-  * Bug fix: Adding files that contained a tarball of a git-annex repository,
-    or other content in the first line that looks like a git-annex link,
-    could cause git-annex add to malfunction and lose the file content.
   * When an XMPP server has SRV records, try them, but don't then fall
     back to the regular host if they all fail.
 
