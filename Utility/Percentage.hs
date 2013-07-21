@@ -31,4 +31,3 @@ showPercentage precision (Percentage p) = v ++ "%"
   where
 	v = showImprecise precision n
 	n = fromRational p :: Double
-	strip0s = reverse . dropWhile (== '0') . reverse
