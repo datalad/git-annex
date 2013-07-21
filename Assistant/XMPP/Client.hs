@@ -34,17 +34,20 @@ connectXMPP c a = case parseJID (xmppJID c) of
 
 {- Do a SRV lookup, but if it fails, fall back to the cached xmppHostname. -}
 connectXMPP' :: JID -> XMPPCreds -> (JID -> XMPP a) -> IO [(HostPort, Either SomeException ())]
-connectXMPP' jid c a = reverse <$> (go [] =<< lookupSRV srvrecord)
+connectXMPP' jid c a = reverse <$> (handle =<< lookupSRV srvrecord)
   where
 	srvrecord = mkSRVTcp "xmpp-client" $
 		T.unpack $ strDomain $ jidDomain jid
 	serverjid = JID Nothing (jidDomain jid) Nothing
 
-	go l [] = do
+	handle [] = do
 		let h = xmppHostname c
 		let p = PortNumber $ fromIntegral $ xmppPort c
 		r <- run h p $ a jid
-		return (r : l)
+		return [r]
+	handle srvs = go [] srvs
+
+	go l [] = return l
 	go l ((h,p):rest) = do
 		{- Try each SRV record in turn, until one connects,
 		 - at which point the MVar will be full. -}
