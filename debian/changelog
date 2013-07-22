@@ -30,6 +30,8 @@ git-annex (4.20130710) UNRELEASED; urgency=low
     conflicts with other existing (or deleted) remotes with the same name.
   * When an XMPP server has SRV records, try them, but don't then fall
     back to the regular host if they all fail.
+  * For long hostnames, use a hash of the hostname to generate the socket
+    file for ssh connection caching.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 09 Jul 2013 19:17:13 -0400
 

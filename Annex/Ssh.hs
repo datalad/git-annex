@@ -15,6 +15,7 @@ module Annex.Ssh (
 ) where
 
 import qualified Data.Map as M
+import Data.Hash.MD5
 
 import Common.Annex
 import Annex.LockPool
@@ -127,9 +128,17 @@ sshCleanup = go =<< sshCacheDir
 		-- Cannot remove the lock file; other processes may
 		-- be waiting on our exclusive lock to use it.
 
+{- This needs to be as short as possible, due to limitations on the length
+ - of the path to a socket file. At the same time, it needs to be unique
+ - for each host.
+ -}
 hostport2socket :: String -> Maybe Integer -> FilePath
-hostport2socket host Nothing = host
-hostport2socket host (Just port) = host ++ "!" ++ show port
+hostport2socket host Nothing = hostport2socket' host
+hostport2socket host (Just port) = hostport2socket' $ host ++ "!" ++ show port
+hostport2socket' :: String -> FilePath
+hostport2socket' s
+	| length s > 32 = md5s (Str s)
+	| otherwise = s
 
 socket2lock :: FilePath -> FilePath
 socket2lock socket = socket ++ lockExt
