@@ -1,4 +1,4 @@
-
+Wow, what a great archiving system. Thank you for all your work on git annex!
 
 ### Please describe the problem.
 
