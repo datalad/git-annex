@@ -25,3 +25,8 @@ I get exactly the same behavior on my phone, which is running Android 4.1.2
 (scanning...) [2013-07-20 16:21:28 PDT] Watcher: Performing startup scan
 (started...) 
 """]]
+
+> Closing this bug, since it's not something I can fix in git-annex,
+> but would have to be dealt with in the haskell XMPP library. 
+> Which seems unlikely given John's reply, but you never know --
+> and the bug I filed is still open ;) [[done]] --[[Joey]]
