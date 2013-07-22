@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://emk.myopenid.com/"
- ip="24.2.150.84"
- subject="comment 1"
- date="2013-07-22T19:42:16Z"
- content="""
-find music/ -name ._\* -print0 | xargs -0 rm
-"""]]
