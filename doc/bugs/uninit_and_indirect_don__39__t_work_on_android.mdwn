@@ -19,3 +19,5 @@ git-annex version: 4.20130601-g7483ca4
 
 # End of transcript or log.
 """]]
+
+> [[done]]; added support for direct mode --[[Joey]] 

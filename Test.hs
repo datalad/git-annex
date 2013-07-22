@@ -243,11 +243,11 @@ test_reinject env = "git-annex reinject/fromkey" ~: TestCase $ intmpclonerepoInD
 test_unannex :: TestEnv -> Test
 test_unannex env = "git-annex unannex" ~: TestList [nocopy, withcopy]
   where
-	nocopy = "no content" ~: intmpclonerepoInDirect env $ do
+	nocopy = "no content" ~: intmpclonerepo env $ do
 		annexed_notpresent annexedfile
 		git_annex env "unannex" [annexedfile] @? "unannex failed with no copy"
 		annexed_notpresent annexedfile
-	withcopy = "with content" ~: intmpclonerepoInDirect env $ do
+	withcopy = "with content" ~: intmpclonerepo env $ do
 		git_annex env "get" [annexedfile] @? "get failed"
 		annexed_present annexedfile
 		git_annex env "unannex" [annexedfile, sha1annexedfile] @? "unannex failed"
@@ -734,16 +734,18 @@ test_map env = "git-annex map" ~: intmpclonerepo env $ do
 	git_annex env "map" ["--fast"] @? "map failed"
 
 test_uninit :: TestEnv -> Test
-test_uninit env = "git-annex uninit" ~: intmpclonerepoInDirect env $ do
-	git_annex env "get" [] @? "get failed"
-	annexed_present annexedfile
-	boolSystem "git" [Params "checkout git-annex"] @? "git checkout git-annex"
-	not <$> git_annex env "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
-	boolSystem "git" [Params "checkout master"] @? "git checkout master"
-	_ <- git_annex env "uninit" [] -- exit status not checked; does abnormal exit
-	checkregularfile annexedfile
-	doesDirectoryExist ".git" @? ".git vanished in uninit"
-	not <$> doesDirectoryExist ".git/annex" @? ".git/annex still present after uninit"
+test_uninit env = "git-annex uninit" ~: TestList [inbranch, normal]
+  where
+  	inbranch = "in branch" ~: intmpclonerepoInDirect env $ do
+		boolSystem "git" [Params "checkout git-annex"] @? "git checkout git-annex"
+		not <$> git_annex env "uninit" [] @? "uninit failed to fail when git-annex branch was checked out"
+	normal = "normal" ~: intmpclonerepo env $ do
+		git_annex env "get" [] @? "get failed"
+		annexed_present annexedfile
+		_ <- git_annex env "uninit" [] -- exit status not checked; does abnormal exit
+		checkregularfile annexedfile
+		doesDirectoryExist ".git" @? ".git vanished in uninit"
+		not <$> doesDirectoryExist ".git/annex" @? ".git/annex still present after uninit"
 
 test_upgrade :: TestEnv -> Test
 test_upgrade env = "git-annex upgrade" ~: intmpclonerepo env $ do

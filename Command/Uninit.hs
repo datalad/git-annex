@@ -18,7 +18,7 @@ import qualified Annex.Branch
 import Annex.Content
 
 def :: [Command]
-def = [notDirect $ addCheck check $ command "uninit" paramPaths seek 
+def = [addCheck check $ command "uninit" paramPaths seek 
 	SectionUtility "de-initialize git-annex and clean out repository"]
 
 check :: Annex ()
@@ -104,6 +104,6 @@ removeUnannexed = go []
 			go c ks
 		, go (k:c) ks
 		)
-	enoughlinks f = do
+	enoughlinks f = catchBoolIO $ do
 		s <- getFileStatus f
 		return $ linkCount s > 1
