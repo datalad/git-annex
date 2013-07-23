@@ -26,6 +26,7 @@ kickstarter year
 * Month 1 [[!traillink encrypted_git_remotes]]
 * Month 2 [[!traillink disaster_recovery]]
 * Month 3 [[!traillink xmpp_security]]
+* Month 4 user-driven features and polishing
 * Month 5 Windows assistant and webapp
 * Month 6 improve special remote interface & git-annex enhancement contest
 * Month 7 user-driven features and polishing
