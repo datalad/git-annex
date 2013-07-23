@@ -1,0 +1,4 @@
+To avoid leaking even the size of your encrypted files to cloud storage
+providers, add a mode that stores fixed size chunks.
+
+May be a useful starting point for [[deltas]].

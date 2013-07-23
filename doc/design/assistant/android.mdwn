@@ -6,7 +6,7 @@ to improve it.
 * [[bugs/Android_app_permission_denial_on_startup]]
 * S3 doesn't work (at least to Internet Archive: 
   "connect: does not exist (connection refused)")
-* Get app into Goole Play and/or FDroid
+* Get app into Google Play and/or FDroid
 
 ## TODO
 
