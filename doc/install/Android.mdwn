@@ -7,14 +7,14 @@ Now git-annex can be used on Android!
 First, ensure your Android device is configured to allow installation
 of the app. Go to Setup -&gt; Security, and enable "Unknown Sources".
 
-[Download the git-annex.apk](https://downloads.kitenet.net/git-annex/android/current/)
+[Download the git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/)
 onto your Android device, and open it to install.
 
 ## autobuilds
 
 A daily build is also available.
 
-* [download apk](https://downloads.kitenet.net/git-annex/autobuild/android/git-annex.apk) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/android/))
+* [download apk](http://downloads.kitenet.net/git-annex/autobuild/android/git-annex.apk) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/android/))
 
 ## building it yourself
 
