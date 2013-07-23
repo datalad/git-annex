@@ -33,6 +33,7 @@ git-annex (4.20130710) UNRELEASED; urgency=low
   * For long hostnames, use a hash of the hostname to generate the socket
     file for ssh connection caching.
   * Support unannex and uninit in direct mode.
+  * Support import in direct mode.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 09 Jul 2013 19:17:13 -0400
 
