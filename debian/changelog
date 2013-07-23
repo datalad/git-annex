@@ -2,6 +2,8 @@ git-annex (4.20130724) UNRELEASED; urgency=low
 
   * Add status message to XMPP presence tag, to identify to others that
     the client is a git-annex client. Closes: #717652
+  * webapp: When creating a repository on a removable drive, set
+    core.fsyncobjectfiles, to help prevent data loss when the drive is yanked.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 23 Jul 2013 12:39:48 -0400
 

@@ -268,6 +268,10 @@ getFinishAddDriveR drive = make >>= redirect . EditNewRepositoryR
 		liftIO $ createDirectoryIfMissing True dir
 		isnew <- liftIO $ makeRepo dir True
 		u <- liftIO $ initRepo isnew False dir $ Just remotename
+		{- Removable drives are not reliable media, so enable fsync. -}
+		liftIO $ inDir dir $
+			setConfig (ConfigKey "core.fsyncobjectfiles")
+				(boolConfig True)
 		r <- combineRepos dir remotename
 		liftAnnex $ setStandardGroup u TransferGroup
 		liftAssistant $ syncRemote r
