@@ -54,7 +54,7 @@ getRestartR = page "Restarting" Nothing $ do
 			error "restart failed"
 	$(widgetFile "control/restarting")
   where
-	restartcommand program = program ++ " assistant --stop; " ++
+	restartcommand program = program ++ " assistant --stop; exec " ++
 		program ++ " webapp"
 
 getRestartThreadR :: ThreadName -> Handler ()
