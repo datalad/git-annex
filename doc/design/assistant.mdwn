@@ -32,7 +32,7 @@ kickstarter year
 * Month 8 [[!traillink gpgkeys]] [[!traillink sshpassword]]
 * Month 9 [[!traillink Android]] (get it out of beta)
 * Month 10 user-driven features and polishing
-* Month 11 [[!chunks]] [[!traillink deltas]]
+* Month 11 [[!traillink chunks]] [[!traillink deltas]]
 * Month 12 user-driven features and polishing
 
 ## porting
