@@ -271,7 +271,7 @@ getFinishAddDriveR drive = make >>= redirect . EditNewRepositoryR
 		{- Removable drives are not reliable media, so enable fsync. -}
 		liftIO $ inDir dir $
 			setConfig (ConfigKey "core.fsyncobjectfiles")
-				(boolConfig True)
+				(Git.Config.boolConfig True)
 		r <- combineRepos dir remotename
 		liftAnnex $ setStandardGroup u TransferGroup
 		liftAssistant $ syncRemote r
