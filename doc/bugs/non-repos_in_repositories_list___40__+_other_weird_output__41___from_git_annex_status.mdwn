@@ -12,6 +12,8 @@ after a while i could add the remote again, setting it to be a git bare repo, an
 
 from the assistant's webapp, i still see the correct list of remotes, but the output of ```git annex status``` is as below.
 
+```.git/config``` also looks ok, listing some core settings, some annex settings and my three real remotes for this annex.
+
 the part of logs relevant to the above change (deletion of remote, creation of new one + content sync) is unfortunately gone from the annex logs (including the rotated ones in ```.git/annex/daemon.log*```).
 
 ### What version of git-annex are you using? On what operating system?
