@@ -26,11 +26,11 @@ kickstarter year
 * Month 1 [[!traillink encrypted_git_remotes]]
 * Month 2 [[!traillink disaster_recovery]]
 * Month 3 [[!traillink xmpp_security]]
-* Month 5 [[!traillink Windows]] assistant and webapp
+* Month 5 Windows assistant and webapp
 * Month 6 improve special remote interface & git-annex enhancement contest
 * Month 7 user-driven features and polishing
 * Month 8 [[!traillink gpgkeys]] [[!traillink sshpassword]]
-* Month 9 [[!traillink Android]] (get it out of beta)
+* Month 9 get [[Android]] out of beta
 * Month 10 user-driven features and polishing
 * Month 11 [[!traillink chunks]] [[!traillink deltas]]
 * Month 12 user-driven features and polishing
