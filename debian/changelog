@@ -1,3 +1,10 @@
+git-annex (4.20130724) UNRELEASED; urgency=low
+
+  * Add status message to XMPP presence tag, to identify to others that
+    the client is a git-annex client. Closes: #717652
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 23 Jul 2013 12:39:48 -0400
+
 git-annex (4.20130723) unstable; urgency=low
 
   * Fix data loss bug when adding an (uncompressed) tarball of a
