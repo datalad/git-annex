@@ -1,3 +1,13 @@
+## version 4.20130723
+
+This release fixes some bugs. Notably it fixes a bug that could result in data
+loss when adding a tarball of a git-annex repository to your git-annex
+repository.
+
+Rsync.net have committed to support git-annex and offer a special
+discounted rate for git-annex users.
+<http://www.rsync.net/products/git-annex-pricing.html>
+
 ## version 4.20130709
 
 This release is mostly bug fixes.
