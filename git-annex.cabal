@@ -82,6 +82,8 @@ Executable git-annex
   GHC-Options: -Wall
   CPP-Options: -DWITH_CLIBS
   Extensions: PackageImports
+  -- Some things don't work with the non-threaded RTS.
+  GHC-Options: -threaded
 
   if flag(Production)
     GHC-Options: -O2
@@ -139,7 +141,6 @@ Executable git-annex
      blaze-builder, crypto-api, hamlet, clientsession, aeson,
      template-haskell, data-default
     CPP-Options: -DWITH_WEBAPP
-    GHC-Options: -threaded
 
   if flag(Pairing)
     Build-Depends: network-multicast, network-info
