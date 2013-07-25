@@ -38,3 +38,6 @@ v20130723, 64-bit, Debian Stable
 """]]
 
 Also note, the last build 20130709 was compatible with glibc 2.13
+
+> [[fixed|done]]; builds are back to using debian stable.
+> also updated the autobuilds and last release's builds. --[[Joey]]
