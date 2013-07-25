@@ -1,5 +1,12 @@
 git-annex (4.20130724) UNRELEASED; urgency=low
 
+  * dropunused behavior change: Now refuses to drop the last copy of a
+    file, unless you use the --force.
+    This was the last place in git-annex that could remove data referred
+    to by the git history, without being forced.
+    Like drop, dropunused checks remotes, and honors the global
+    annex.numcopies setting. (However, .gitattributes settings cannot
+    apply to unused files.) 
   * Add status message to XMPP presence tag, to identify to others that
     the client is a git-annex client. Closes: #717652
   * webapp: When creating a repository on a removable drive, set

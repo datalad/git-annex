@@ -19,7 +19,7 @@ preserving it. So from time to time, you may want to check for such data:
 
 After running `git annex unused`, you can follow the instructions to examine
 the history of files that used the data, and if you decide you don't need that
-data anymore, you can easily remove it:
+data anymore, you can easily remove it from your local repository.
 
 	# git annex dropunused 1
 	dropunused 1 ok
