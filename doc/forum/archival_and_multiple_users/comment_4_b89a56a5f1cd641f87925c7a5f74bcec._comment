@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 4"
+ date="2013-07-25T19:23:30Z"
+ content="""
+Moving files shouldn't jepardize anything. If a user makes a change they shouldn't have made, it can be reverted.
+
+If you have the archive drive available locally you can set your repository to manual mode and just use `git annex get` on content you want. Or you could set it to be a backup repository and the assistant would get all content.
+Or write a custom [[preferred_content]] expression for your repository to make it want files in `archive/stillusing/`
+
+
+"""]]
