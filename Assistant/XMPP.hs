@@ -75,22 +75,20 @@ gitAnnexTagInfo v = case extractGitAnnexTag v of
 		<*> pure tag
 	_ -> Nothing
 
-{- A presence with a git-annex tag in it. -}
+{- A presence with a git-annex tag in it.
+ - Also includes a status tag, which may be visible in XMPP clients. -}
 gitAnnexPresence :: Element -> Presence
-gitAnnexPresence = insertGitAnnexTag $ emptyPresence PresenceAvailable
-
-{- A presence with an empty git-annex tag in it, used for letting other
- - clients know we're around and are a git-annex client. 
- -
- - Also includes a status tag, which may be visible in XMPP clients.
- -}
-gitAnnexSignature :: Presence
-gitAnnexSignature = addStatusTag $ gitAnnexPresence $ Element gitAnnexTagName [] []
+gitAnnexPresence = insertGitAnnexTag $ addStatusTag $ emptyPresence PresenceAvailable
   where
 	addStatusTag p = p
 		{ presencePayloads = status : presencePayloads p }
 	status = Element "status" [] [statusMessage]
 	statusMessage = NodeContent $ ContentText $ T.pack "git-annex"
+
+{- A presence with an empty git-annex tag in it, used for letting other
+ - clients know we're around and are a git-annex client. -}
+gitAnnexSignature :: Presence
+gitAnnexSignature = gitAnnexPresence $ Element gitAnnexTagName [] []
 
 {- XMPP client to server ping -}
 xmppPing :: JID -> IQ
