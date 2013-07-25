@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-07-25T17:05:00Z"
+ content="""
+Simply set up xmpp on your clients in addition to the central repository you have now. When one client pushes over ssh to the central repo, it will use XMPP to inform other clients of the change.
+"""]]
