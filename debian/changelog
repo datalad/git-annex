@@ -63,7 +63,7 @@ git-annex (4.20130709) unstable; urgency=low
     in the git annex, including old versions of files. Supported by
     fsck, get, move, copy.
   * --unused: New switch that makes git-annex operate on all data found
-    by the last run of git annex unused. Supported by fsck, get, move, copy.
+    by the last run of git annex unused. Supported by fsck, move, copy.
   * get, move, copy: Can now be run in a bare repository,
     like fsck already could. --all is enabled automatically in this case.
   * merge: Now also merges synced/master or similar branches, which 
