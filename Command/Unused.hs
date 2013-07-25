@@ -23,6 +23,7 @@ import Logs.Unused
 import Annex.Content
 import Utility.FileMode
 import Logs.Location
+import Logs.Transfer
 import qualified Annex
 import qualified Git
 import qualified Git.Command
@@ -61,8 +62,8 @@ start = do
 checkUnused :: CommandPerform
 checkUnused = chain 0
 	[ check "" unusedMsg $ findunused =<< Annex.getState Annex.fast
-	, check "bad" staleBadMsg $ staleKeysPrune gitAnnexBadDir
-	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpDir
+	, check "bad" staleBadMsg $ staleKeysPrune gitAnnexBadDir False
+	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpDir True
 	]
   where
 	findunused True = do
@@ -289,8 +290,8 @@ withKeysReferencedInGitRef a ref = do
  - 
  - Also, stale keys that can be proven to have no value are deleted.
  -}
-staleKeysPrune :: (Git.Repo -> FilePath) -> Annex [Key]
-staleKeysPrune dirspec = do
+staleKeysPrune :: (Git.Repo -> FilePath) -> Bool -> Annex [Key]
+staleKeysPrune dirspec nottransferred = do
 	contents <- staleKeys dirspec
 	
 	dups <- filterM inAnnex contents
@@ -299,7 +300,12 @@ staleKeysPrune dirspec = do
 	dir <- fromRepo dirspec
 	liftIO $ forM_ dups $ \t -> removeFile $ dir </> keyFile t
 
-	return stale
+	if nottransferred
+		then do
+			inprogress <- S.fromList . map (transferKey . fst)
+				<$> getTransfers
+			return $ filter (`S.notMember` inprogress) stale
+		else return stale
 
 staleKeys :: (Git.Repo -> FilePath) -> Annex [Key]
 staleKeys dirspec = do

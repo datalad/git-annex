@@ -13,6 +13,8 @@ git-annex (4.20130724) UNRELEASED; urgency=low
     core.fsyncobjectfiles, to help prevent data loss when the drive is yanked.
   * Always build with -threaded, to avoid a deadlock when communicating with
     gpg.
+  * unused: No longer shows as unused tmp files that are actively being
+    transferred.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 23 Jul 2013 12:39:48 -0400
 
