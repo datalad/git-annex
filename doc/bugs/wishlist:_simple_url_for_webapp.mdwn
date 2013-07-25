@@ -24,3 +24,13 @@ os: os/x 10.8.4
 
 I notice that in the webapp ui, all the items at the top of the page highlight when one hovers over them and have useful URLs attached,
 with the exception of the 'git-annex' item at the far left.What if that had the entry point url attached to it (so one could bookmark that)?
+
+> The git-annex assistant is designed to stay running in the background whether you have the web browser open or not. You can open the web display at any time by 
+> using the git-annex menu item (on linux) or running the git-annex-webapp
+> program (which is in the DMG on OSX).
+> 
+> If the file:// url were exposed to users, it would not work if 
+> the assistant had not already been started. This is why there is a program
+> to open the webapp, not an url.
+> 
+> Not a bug; [[done]] --[[Joey]] 
