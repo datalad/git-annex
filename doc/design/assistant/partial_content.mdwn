@@ -25,7 +25,7 @@ uploaded elsewhere. For example, it could hold onto them for a day. This
 would allow the user time to do things with new files before they are
 removed from the android device.
 
-Once way to implement that would be a new preferred content expression like
+One way to implement that would be a new preferred content expression like
 "age(1 day)". But this would need at least a daily full transfer scan to be
 run. 
 
