@@ -23,3 +23,6 @@ http://downloads.kitenet.net/git-annex/OSX/current/10.7.5_Lion/
 Using MacOS 10.7.5 Lion
 
 [[!meta title="OSX gpg.conf auto-key-locate cert line breaks gpg in git-annex app"]]
+
+> [[done]]; all OSX builds now include a recent gpg that supports 
+> this option. --[[Joey]] 
