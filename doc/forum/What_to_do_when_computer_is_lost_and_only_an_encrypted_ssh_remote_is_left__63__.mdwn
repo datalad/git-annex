@@ -1,0 +1,1 @@
+What do I do when I have set up git-annex to back up a folder to an encrypted remote on a vps, and my laptop was stolen? This recently happened, and luckally I had another backup, but what would I do in the case that I have 1 computer using git-annex, backung ip a folder to an encrypted ssh remote on a vps, and I loose the computer? How do I get the data back then?
