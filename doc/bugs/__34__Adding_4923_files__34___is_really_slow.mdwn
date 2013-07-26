@@ -96,3 +96,5 @@ add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._4-08 Tal
 
 # End of transcript or log.
 """]]
+
+[[!meta title="direct mode mappings scale badly with thousands of identical files"]]
