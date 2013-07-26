@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, BangPatterns #-}
+{-# LANGUAGE CPP #-}
 
 module Assistant.Threads.Committer where
 
@@ -273,10 +273,11 @@ handleAdds :: Maybe Seconds -> [Change] -> Assistant [Change]
 handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	direct <- liftAnnex isDirect
-	pending' <- if direct
-		then return pending
+	(pending', cleanup) <- if direct
+		then return (pending, noop)
 		else findnew pending
 	(postponed, toadd) <- partitionEithers <$> safeToAdd delayadd pending' inprocess
+	cleanup
 
 	unless (null postponed) $
 		refillChanges postponed
@@ -294,14 +295,13 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
 		
-	findnew [] = return []
+	findnew [] = return ([], noop)
 	findnew pending@(exemplar:_) = do
-		(!newfiles, cleanup) <- liftAnnex $
+		(newfiles, cleanup) <- liftAnnex $
 			inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
-		void $ liftIO cleanup
 		-- note: timestamp info is lost here
 		let ts = changeTime exemplar
-		return $ map (PendingAddChange ts) newfiles
+		return (map (PendingAddChange ts) newfiles, void $ liftIO $ cleanup)
 
 	returnWhen c a
 		| c = return otherchanges

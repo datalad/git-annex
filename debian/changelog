@@ -17,6 +17,8 @@ git-annex (4.20130724) UNRELEASED; urgency=low
     transferred.
   * assistant: Fix NetWatcher to not sync with remotes that have
     remote.<name>.annex-sync set to false.
+  * assistant: Fix deadlock that could occur when adding a lot of files
+    at once in indirect mode.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 23 Jul 2013 12:39:48 -0400
 
