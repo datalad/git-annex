@@ -27,3 +27,7 @@ Everything up-to-date
 Everything up-to-date
 Everything up-to-date
 """]]
+
+> Excellent bug report! Especially useful that you tracked it
+> down to the NetWatcher. Indeed it was not honoring the
+> annex-sync setting. [[fixed|done]] --[[Joey]]
