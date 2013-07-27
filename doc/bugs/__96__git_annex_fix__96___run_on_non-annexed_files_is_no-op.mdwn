@@ -10,3 +10,6 @@ Please see [[bugs/__96__git_annex_add__96___changes_mtime_if_symlinks_are_fixed_
 ### What version of git-annex are you using? On what operating system?
 
 git-annex 4.20130709 on Debian unstable i386 and x64.
+
+> We've discussed this on IRC and there seems to be nothing more to do here.
+> [[done]] --[[Joey]]
