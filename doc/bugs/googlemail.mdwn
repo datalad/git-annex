@@ -12,4 +12,5 @@ Version: 4.20130709-g18e5f43
 Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
 
 
-
+[[!meta title="xmpp fails to work with googlemail domain"]]
+[[!tag design/assistant]]
