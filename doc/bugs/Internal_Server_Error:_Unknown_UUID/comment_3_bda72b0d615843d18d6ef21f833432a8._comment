@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="I can't reproduce this problem, but I see several people have reported it."
+ date="2013-07-27T22:11:15Z"
+ content="""
+It would be helpful for anyone who can reproduce this problem to do so with debugging enabled on both sides
+ (run with --debug or turn it on in the Configuration page in webapp), and then send the `.git/annex/daemon.log`
+"""]]
