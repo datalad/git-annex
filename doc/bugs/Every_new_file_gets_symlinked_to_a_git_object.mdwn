@@ -13,11 +13,11 @@ Sorry if I'm missing something obvious.
 
 
 ### What version of git-annex are you using? On what operating system?
-git-annex version: 4.20130725-g8140f7c
-build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
-local repository version: 3
-default repository version: 3
-supported repository versions: 3 4
+git-annex version: 4.20130725-g8140f7c  
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP  
+local repository version: 3  
+default repository version: 3  
+supported repository versions: 3 4  
 upgrade supported from repository versions: 0 1 2
 
 Using the generic linux distribution with ./runshell on Ubuntu 13.04 (I saw this same behaviour from the ubuntu package, i.e. apt-get install git-annex)
