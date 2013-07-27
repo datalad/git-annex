@@ -169,7 +169,7 @@ genSshKeyPair = withTmpDir "git-annex-keygen" $ \dir -> do
  -
  - Note that the key files are put in ~/.ssh/git-annex/, rather than directly
  - in ssh because of an **INSANE** behavior of gnome-keyring: It loads
- - ~/.ssh/*.pub, and uses them indiscriminately. But using this key
+ - ~/.ssh/ANYTHING.pub, and uses them indiscriminately. But using this key
  - for a normal login to the server will force git-annex-shell to run,
  - and locks the user out. Luckily, it does not recurse into subdirectories.
  -}
