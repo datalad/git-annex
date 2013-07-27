@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 6"
+ date="2013-07-27T23:06:38Z"
+ content="""
+I'm curious, why didn't `git annex unused --from cloud` show the file? Was it a tag/branch/etc still referring to it?
+"""]]
