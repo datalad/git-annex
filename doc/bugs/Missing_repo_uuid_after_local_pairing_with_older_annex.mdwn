@@ -24,3 +24,8 @@ Ubuntu 13.04 (git-annex 3.10121112ubuntu4)
 
 # End of transcript or log.
 """]]
+
+> Others are reporting what seems to be the same problem here:
+> [[Internal_Server_Error:_Unknown_UUID]].
+> 
+> [[dup|done]] --[[Joey]]

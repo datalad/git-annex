@@ -23,3 +23,7 @@ Mac OS 10.7.5
 ### Please provide any additional information below.
 
 Maybe it's a glitch that only will happen this once, the problem is I can't get rid of it!  Are there anyways of manually getting rid of a repo with uid?
+
+> Also reported here: [[Missing_repo_uuid_after_local_pairing_with_older_annex]] and [[Internal_Server_Error_unknown_UUID;_cannot_modify]] --[[Joey]] 
+
+[[!meta title="local pairing leads to unknown UUID"]]
