@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 2"
+ date="2013-07-27T22:30:50Z"
+ content="""
+I suppose this could happen if you have a tag or a branch or another repository that still refers to the file that's stored in S3. It would then not be found by `unused`.
+
+git-annex 4.20130709 has a nice new --all switch you can use: `git annex move --all --from cloud`
+
+If that doesn't move the file, nothing in the entire history of the git repository refers to it. The question then would be how did that file get there.
+
+It's by [[design|design/encryption]] not possible to get from the name of an encrypted file back to the key, unless you already know all the possible keys that the file could be. It's possible to decrypt the content if you have the gpg key and the git repository, but this space is a bit too small to explain every step in doing so, and I have some nice code that explains how in detail. ;)
+"""]]
