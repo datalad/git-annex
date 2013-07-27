@@ -19,6 +19,8 @@ git-annex (4.20130724) UNRELEASED; urgency=low
     remote.<name>.annex-sync set to false.
   * assistant: Fix deadlock that could occur when adding a lot of files
     at once in indirect mode.
+  * assistant: Fix bug that caused it to stall when adding a very large
+    number of files at once (around 5 thousand).
 
  -- Joey Hess <joeyh@debian.org>  Tue, 23 Jul 2013 12:39:48 -0400
 
