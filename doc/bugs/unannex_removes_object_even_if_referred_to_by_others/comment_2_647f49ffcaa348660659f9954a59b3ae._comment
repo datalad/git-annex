@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRai_qFYPVvEgC6i1nlM1bh-C__jbhqS0"
+ nickname="Matthew"
+ subject="comment 2"
+ date="2013-07-27T08:14:33Z"
+ content="""
+Sorry, that was an unannex . not a uninit, which I used first briefly. Version information:
+
+    git-annex version: 4.20130725-gd10dfef
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+
+"""]]
