@@ -15,3 +15,5 @@ openFile: resource busy (file is locked)
 failed
 git-annex: indirect: 1 failed
 """]]
+
+[[!tag moreinfo]]
