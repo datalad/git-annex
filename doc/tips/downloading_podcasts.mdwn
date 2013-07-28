@@ -37,7 +37,7 @@ To add a feed without downloading its contents right now,
 use `git annex importfeed --fast`. Then you can use `git annex get` as
 usual to download the content of an item.
 
-## distributed podcastching
+## distributed podcasting
 
 A nice benefit of using git-annex as a podcatcher is that you can
 run `git annex importfeed` on the same url in different clones
