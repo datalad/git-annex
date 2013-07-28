@@ -23,17 +23,6 @@ import qualified Utility.Format
 import Utility.Tmp
 import Command.AddUrl (addUrlFile, relaxedOption)
 
-data ToDownload = ToDownload
-	{ feed :: Feed
-	, item :: Item
-	, location :: URLString
-	}
-
-mkToDownload :: Feed -> Item -> Maybe ToDownload
-mkToDownload f i = case getItemEnclosure i of
-	Nothing -> Nothing
-	Just (enclosureurl, _, _) -> Just $ ToDownload f i enclosureurl
-
 def :: [Command]
 def = [notBareRepo $ withOptions [templateOption, relaxedOption] $
 	command "importfeed" (paramRepeating paramUrl) seek
@@ -61,6 +50,17 @@ perform relaxed cache url = do
 			mapM_ (downloadEnclosure relaxed cache) l
 			next $ return True
 		_ -> stop
+
+data ToDownload = ToDownload
+	{ feed :: Feed
+	, item :: Item
+	, location :: URLString
+	}
+
+mkToDownload :: Feed -> Item -> Maybe ToDownload
+mkToDownload f i = case getItemEnclosure i of
+	Nothing -> Nothing
+	Just (enclosureurl, _, _) -> Just $ ToDownload f i enclosureurl
 
 data Cache = Cache
 	{ knownurls :: S.Set URLString
@@ -111,7 +111,7 @@ downloadEnclosure relaxed cache enclosure
   	url = location enclosure
 	
 defaultTemplate :: String
-defaultTemplate = "${feedtitle}/${itemtitle}.${extension}"
+defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
 
 {- Generate a unique filename for the feed item by filling 
  - out the template.
@@ -131,7 +131,7 @@ feedFile tmpl i = makeUnique 0 $
 		, fieldMaybe "itemdescription" $ getItemDescription $ item i
 		, fieldMaybe "itemrights" $ getItemRights $ item i
 		, fieldMaybe "itemid" $ snd <$> getItemId (item i)
-		, field "extension" $ takeExtension $ location i
+		, ("extension", map sanitize $ takeExtension $ location i)
 		]
   where
 	field k v = 
