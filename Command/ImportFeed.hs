@@ -85,6 +85,7 @@ downloadFeed :: URLString -> Annex (Maybe Feed)
 downloadFeed url = do
 	showOutput
 	liftIO $ withTmpFile "feed" $ \f h -> do
+		fileEncoding h
 		ifM (Url.download url [] [] f)
 			( parseFeedString <$> hGetContentsStrict h
 			, return Nothing
