@@ -48,7 +48,7 @@ Build-Depends:
 	libghc-xml-types-dev,
 	libghc-async-dev,
 	libghc-http-dev,
-	libghc-feed-dev
+	libghc-feed-dev,
 	ikiwiki,
 	perlmagick,
 	git,
