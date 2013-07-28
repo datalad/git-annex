@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -61,10 +61,7 @@ start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 perform :: Bool -> String -> FilePath -> CommandPerform
 perform relaxed url file = ifAnnexed file addurl geturl
   where
-	geturl = do
-		liftIO $ createDirectoryIfMissing True (parentDir file)
-		ifM (Annex.getState Annex.fast <||> pure relaxed)
-			( nodownload relaxed url file , download url file )
+	geturl = next $ addUrlFile relaxed url file
 	addurl (key, _backend)
 		| relaxed = do
 			setUrlPresent key url
@@ -80,22 +77,35 @@ perform relaxed url file = ifAnnexed file addurl geturl
 					stop
 				)
 
-download :: String -> FilePath -> CommandPerform
+addUrlFile :: Bool -> String -> FilePath -> Annex Bool
+addUrlFile relaxed url file = do
+	liftIO $ createDirectoryIfMissing True (parentDir file)
+	ifM (Annex.getState Annex.fast <||> pure relaxed)
+		( nodownload relaxed url file
+		, do
+			showAction $ "downloading " ++ url ++ " "
+			download url file
+		)
+
+download :: String -> FilePath -> Annex Bool
 download url file = do
-	showAction $ "downloading " ++ url ++ " "
 	dummykey <- genkey
 	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
-	stopUnless (runtransfer dummykey tmp) $ do
-		backend <- chooseBackend file
-		let source = KeySource
-			{ keyFilename = file
-			, contentLocation = tmp
-			, inodeCache = Nothing
-			}
-		k <- genKey source backend
-		case k of
-			Nothing -> stop
-			Just (key, _) -> next $ cleanup url file key (Just tmp)
+	showOutput
+	ifM (runtransfer dummykey tmp)
+		( do
+			backend <- chooseBackend file
+			let source = KeySource
+				{ keyFilename = file
+				, contentLocation = tmp
+				, inodeCache = Nothing
+				}
+			k <- genKey source backend
+			case k of
+				Nothing -> return False
+				Just (key, _) -> cleanup url file key (Just tmp)
+		, return False
+		)
   where
 	{- Generate a dummy key to use for this download, before we can
 	 - examine the file and find its real key. This allows resuming
@@ -119,7 +129,7 @@ download url file = do
 			downloadUrl [url] tmp
 		
 
-cleanup :: String -> FilePath -> Key -> Maybe FilePath -> CommandCleanup
+cleanup :: String -> FilePath -> Key -> Maybe FilePath -> Annex Bool
 cleanup url file key mtmp = do
 	when (isJust mtmp) $
 		logStatus key InfoPresent
@@ -133,7 +143,7 @@ cleanup url file key mtmp = do
 	maybe noop (moveAnnex key) mtmp
 	return True
 
-nodownload :: Bool -> String -> FilePath -> CommandPerform
+nodownload :: Bool -> String -> FilePath -> Annex Bool
 nodownload relaxed url file = do
 	headers <- getHttpHeaders
 	(exists, size) <- if relaxed
@@ -142,10 +152,10 @@ nodownload relaxed url file = do
 	if exists
 		then do
 			let key = Backend.URL.fromUrl url size
-			next $ cleanup url file key Nothing
+			cleanup url file key Nothing
 		else do
 			warning $ "unable to access url: " ++ url
-			stop
+			return False
 
 url2file :: URI -> Maybe Int -> FilePath
 url2file url pathdepth = case pathdepth of

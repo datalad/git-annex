@@ -35,7 +35,7 @@ stageDirect :: Annex Bool
 stageDirect = do
 	Annex.Queue.flush
 	top <- fromRepo Git.repoPath
-	(l, cleanup) <- inRepo $ Git.LsFiles.stagedDetails [top]
+	(l, cleanup) <- inRepo $ Git.LsFiles.stagedOthersDetails [top]
 	forM_ l go
 	void $ liftIO cleanup
 	staged <- Annex.Queue.size

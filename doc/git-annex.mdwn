@@ -190,6 +190,19 @@ subdirectories).
 
 	git annex import /media/camera/DCIM/
 
+* importfeed [url ...]
+
+  Imports the contents of podcast feeds. Only downloads files whose
+  urls have not already been added to the repository before, so you can
+  delete, rename, etc the resulting files and repeated runs won't duplicate
+  them.
+
+  Use --template to control where the files are stored.
+  The default template is '${feedtitle}/${itemtitle}${extension}'
+  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid)
+
+  The --relaxed and --fast options behave the same as they do in addurl.
+
 * watch
 
   Watches for changes to files in the current directory and its subdirectories,

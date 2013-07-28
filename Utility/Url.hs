@@ -130,6 +130,9 @@ download' quiet url headers options file =
  -
  - This does its own redirect following because Browser's is buggy for HEAD
  - requests.
+ -
+ - Unfortunately, does not handle https, so should only be used
+ - when curl is not available.
  -}
 request :: URI -> Headers -> RequestMethod -> IO (Response String)
 request url headers requesttype = go 5 url

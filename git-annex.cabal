@@ -65,6 +65,9 @@ Flag TestSuite
 Flag TDFA
   Description: Use regex-tdfa for wildcards
 
+Flag Feed
+  Description: Enable podcast feed support
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
@@ -153,6 +156,10 @@ Executable git-annex
   if flag(DNS)
     Build-Depends: dns
     CPP-Options: -DWITH_DNS
+
+  if flag(Feed)
+    Build-Depends: feed
+    CPP-Options: -DWITH_FEED
 
 source-repository head
   type: git

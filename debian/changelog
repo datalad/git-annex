@@ -7,6 +7,7 @@ git-annex (4.20130724) UNRELEASED; urgency=low
     Like drop, dropunused checks remotes, and honors the global
     annex.numcopies setting. (However, .gitattributes settings cannot
     apply to unused files.) 
+  * importfeed can be used to import files from podcast feeds.
   * Add status message to XMPP presence tag, to identify to others that
     the client is a git-annex client. Closes: #717652
   * webapp: When creating a repository on a removable drive, set

@@ -21,6 +21,7 @@ module Annex.Branch (
 	change,
 	commit,
 	files,
+	withIndex,
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
