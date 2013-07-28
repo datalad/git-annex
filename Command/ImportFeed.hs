@@ -45,31 +45,35 @@ templateOption = Option.field [] "template" paramFormat "template for filenames"
 seek :: [CommandSeek]
 seek = [withField templateOption return $ \tmpl ->
 	withFlag relaxedOption $ \relaxed ->
-	withWords $ start relaxed tmpl]
+	withValue (getCache tmpl) $ \cache ->
+	withStrings $ start relaxed cache]
 
-start :: Bool -> Maybe String -> [URLString] -> CommandStart
-start relaxed opttemplate = go Nothing
+start :: Bool -> Cache -> URLString -> CommandStart
+start relaxed cache url = do
+	showStart "importfeed" url
+	next $ perform relaxed cache url
+
+perform :: Bool -> Cache -> URLString -> CommandPerform
+perform relaxed cache url = do
+	v <- findEnclosures url
+	case v of
+		Just l | not (null l) -> do
+			mapM_ (downloadEnclosure relaxed cache) l
+			next $ return True
+		_ -> stop
+
+data Cache = Cache
+	{ knownurls :: S.Set URLString
+	, template :: Utility.Format.Format
+	}
+
+getCache :: Maybe String -> Annex Cache
+getCache opttemplate = do
+	showSideAction "checking known urls"
+	us <- S.fromList <$> knownUrls
+	return $ Cache us tmpl
   where
-  	go _ [] = stop
-  	go cache (url:urls) = do
-		showStart "importfeed" url
-		v <- findEnclosures url
-		if isJust v then showEndOk else showEndFail
-		case v of
-			Just l | not (null l) -> do
-				knownurls <- getknownurls cache
-				mapM_ (downloadEnclosure relaxed template knownurls) l
-				go (Just knownurls) urls
-			_ -> go cache urls
-
-	defaulttemplate = "${feedtitle}/${itemtitle}.${extension}"
-	template = Utility.Format.gen $ fromMaybe defaulttemplate opttemplate
-
-	{- This is expensive, so avoid running it more than once. -}
-	getknownurls (Just cached) = return cached
-	getknownurls Nothing = do
-		showSideAction "checking known urls"
-		S.fromList <$> knownUrls
+	tmpl = Utility.Format.gen $ fromMaybe defaultTemplate opttemplate
 
 findEnclosures :: URLString -> Annex (Maybe [ToDownload])
 findEnclosures url = go =<< downloadFeed url
@@ -93,11 +97,11 @@ downloadFeed url = do
 
 {- Avoids downloading any urls that are already known to be associated
  - with a file in the annex. -}
-downloadEnclosure :: Bool -> Utility.Format.Format -> S.Set URLString -> ToDownload -> Annex ()
-downloadEnclosure relaxed template knownurls enclosure
-	| S.member url knownurls = noop
+downloadEnclosure :: Bool -> Cache -> ToDownload -> Annex ()
+downloadEnclosure relaxed cache enclosure
+	| S.member url (knownurls cache) = noop
 	| otherwise = do
-		dest <- liftIO $ feedFile template enclosure
+		dest <- liftIO $ feedFile (template cache) enclosure
 		showStart "addurl" dest
 		ifM (addUrlFile relaxed url dest)
 			( showEndOk
@@ -105,6 +109,9 @@ downloadEnclosure relaxed template knownurls enclosure
 			)
   where
   	url = location enclosure
+	
+defaultTemplate :: String
+defaultTemplate = "${feedtitle}/${itemtitle}.${extension}"
 
 {- Generate a unique filename for the feed item by filling 
  - out the template.
@@ -114,8 +121,8 @@ downloadEnclosure relaxed template knownurls enclosure
  - has the same title. A number is added to disambiguate.
  -}
 feedFile :: Utility.Format.Format -> ToDownload -> IO FilePath
-feedFile template i = makeUnique 0 $
-	Utility.Format.format template $ M.fromList
+feedFile tmpl i = makeUnique 0 $
+	Utility.Format.format tmpl $ M.fromList
 		[ field "feedtitle" $ getFeedTitle $ feed i
 		, fieldMaybe "itemtitle" $ getItemTitle $ item i
 		, fieldMaybe "feedauthor" $ getFeedAuthor $ feed i
