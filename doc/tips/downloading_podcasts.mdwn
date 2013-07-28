@@ -37,6 +37,16 @@ To add a feed without downloading its contents right now,
 use `git annex importfeed --fast`. Then you can use `git annex get` as
 usual to download the content of an item.
 
+## storing the podcast list in git
+
+You can check the list of podcast urls into git right next to the
+files it downloads. Just make a file named feeds and add one podcast url
+per line.
+
+Then you can run git-annex on all the feeds:
+
+`xargs git-annex importfeed < feeds`
+
 ## distributed podcasting
 
 A nice benefit of using git-annex as a podcatcher is that you can
