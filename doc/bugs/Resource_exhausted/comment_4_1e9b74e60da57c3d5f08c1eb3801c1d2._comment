@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 4"
+ date="2013-07-28T00:23:08Z"
+ content="""
+Hmm, Adam your version is older than the bug reporter's version. OTOH, while there were several FD leak fixes after your version, none of them were to Annex.LockPool, which is what's used for the ssh lock files.
+
+I can't reproduce it with `git annex get` and the current release.. can you?
+"""]]
