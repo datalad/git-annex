@@ -67,7 +67,9 @@ start relaxed opttemplate = go Nothing
 
 	{- This is expensive, so avoid running it more than once. -}
 	getknownurls (Just cached) = return cached
-	getknownurls Nothing = S.fromList <$> knownUrls
+	getknownurls Nothing = do
+		showSideAction "checking known urls"
+		S.fromList <$> knownUrls
 
 findEnclosures :: URLString -> Annex (Maybe [ToDownload])
 findEnclosures url = go =<< downloadFeed url
