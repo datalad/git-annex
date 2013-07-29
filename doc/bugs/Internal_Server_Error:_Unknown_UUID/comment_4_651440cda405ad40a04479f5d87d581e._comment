@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~subito"
+ nickname="subito"
+ subject="Same here for SSH remotes"
+ date="2013-07-29T19:05:55Z"
+ content="""
+I get the problem while only adding an SSH remote. After deciding I want a git-repo on my server, it says \"Unknown UUID\" and created a remote with no name. I was unable to add any SSH remote (tried with two different servers and a couple different dirs - some completly unknown to my annex)
+
+I used the Android webapp btw - latest Version. The same version works fine on my Debian maschines.
+"""]]
