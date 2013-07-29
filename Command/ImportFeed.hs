@@ -118,7 +118,7 @@ defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
  -
  - Since each feed url is only downloaded once,
  - if the file already exists, two items with different urls
- - has the same title. A number is added to disambiguate.
+ - are conflicting. A number is added to disambiguate.
  -}
 feedFile :: Utility.Format.Format -> ToDownload -> IO FilePath
 feedFile tmpl i = makeUnique 1 $
