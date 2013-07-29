@@ -121,7 +121,7 @@ defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
  - has the same title. A number is added to disambiguate.
  -}
 feedFile :: Utility.Format.Format -> ToDownload -> IO FilePath
-feedFile tmpl i = makeUnique 0 $
+feedFile tmpl i = makeUnique 1 $
 	Utility.Format.format tmpl $ M.fromList
 		[ field "feedtitle" $ getFeedTitle $ feed i
 		, fieldMaybe "itemtitle" $ getItemTitle $ item i
@@ -148,10 +148,10 @@ makeUnique :: Integer -> FilePath -> IO FilePath
 makeUnique n file =
 	ifM (isJust <$> catchMaybeIO (getSymbolicLinkStatus f))
 		( makeUnique (n + 1) file
-		, return file
+		, return f
 		)
   where
-  	f = if n == 0
+  	f = if n < 2
 		then file
 		else
 			let (d, base) = splitFileName file
