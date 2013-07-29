@@ -47,7 +47,7 @@ Then you can run git-annex on all the feeds:
 
 `xargs git-annex importfeed < feeds`
 
-## distributed podcasting
+## distributed podcatching
 
 A nice benefit of using git-annex as a podcatcher is that you can
 run `git annex importfeed` on the same url in different clones
