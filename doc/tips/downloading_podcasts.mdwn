@@ -47,8 +47,17 @@ Then you can run git-annex on all the feeds:
 
 `xargs git-annex importfeed < feeds`
 
-## distributed podcasting
+## distributed podcatching
 
 A nice benefit of using git-annex as a podcatcher is that you can
 run `git annex importfeed` on the same url in different clones
 of a repository, and `git annex sync` will sync it all up.
+
+## centralized podcatching
+
+You can also have a designated machine which always fetches all podcstas
+to local disk and stores them. That way, you can archive podcasts with
+time-delayed deletion of upstream content. You can also work around slow
+downloads upstream by podcatching to a server with ample bandwidth or work
+around a slow local Internet connection by podcatching to yuor home server
+and transferring to your laptop on demand.
