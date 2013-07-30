@@ -1,6 +1,11 @@
 As a haskell package, git-annex can be installed using cabal.
 
-Start by installing the [Haskell Platform](http://hackage.haskell.org/platform/).
+Start by installing the [Haskell Platform][]. In Debian, this is as
+simple as:
+
+    sudo apt-get install haskell-platform
+
+ [Haskell Platform]: http://hackage.haskell.org/platform/
 
 ## minimal build
 
