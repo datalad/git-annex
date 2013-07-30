@@ -1,6 +1,6 @@
 git-annex is now available for Android. This includes the 
 [[git-annex assistant|/assistant]], for easy syncing between your Android
-and other devices.
+and other devices. You do not need to root your Android to use git-annex.
 
 [[Android installation instructions|/install/android]]
 
