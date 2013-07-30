@@ -26,3 +26,6 @@ I've tried a clean and rebuild and it reappears, so if there is more information
 
 # End of transcript or log.
 """]]
+
+> Forgot to update the test suite for this behavior change.
+> [[done]] --[[Joey]]
