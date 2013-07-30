@@ -37,10 +37,10 @@ isAnnexLink file = maybe Nothing (fileKey . takeFileName) <$> getAnnexLinkTarget
 getAnnexLinkTarget :: FilePath -> Annex (Maybe LinkTarget)
 getAnnexLinkTarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( check readSymbolicLink $
+		return Nothing
+	, check readSymbolicLink $
 		check probefilecontent $
 			return Nothing
-	, check readSymbolicLink $
-		return Nothing
 	)
   where
 	check getlinktarget fallback = do

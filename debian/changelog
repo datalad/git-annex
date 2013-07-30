@@ -7,6 +7,9 @@ git-annex (4.20130724) UNRELEASED; urgency=low
     Like drop, dropunused checks remotes, and honors the global
     annex.numcopies setting. (However, .gitattributes settings cannot
     apply to unused files.) 
+  * Fix inverted logic in last release's fix for data loss bug,
+    that caused git-annex sync on FAT or other crippled filesystems to add
+    symlink standin files to the annex.
   * importfeed can be used to import files from podcast feeds.
   * Add status message to XMPP presence tag, to identify to others that
     the client is a git-annex client. Closes: #717652
