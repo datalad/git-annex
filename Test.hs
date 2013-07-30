@@ -642,15 +642,8 @@ test_version env = "git-annex version" ~: intmpclonerepo env $ do
 	git_annex env "version" [] @? "version failed"
 
 test_sync :: TestEnv -> Test
-test_sync env = "git-annex sync" ~: intmpclonerepo env $ do
-{- For unknown reasons, running sync in the test suite on Windows
- - fails with what looks like PATH errors. sync works outside
- - the test suite though. TODO -}
-#ifndef __WINDOWS__
+test_sync env = "git-annex sync" ~: intmpclonerepo env $
 	git_annex env "sync" [] @? "sync failed"
-#else
-	noop
-#endif
 
 {- Regression test for union merge bug fixed in
  - 0214e0fb175a608a49b812d81b4632c081f63027 -}
@@ -1113,7 +1106,7 @@ prepare forcedirect = do
 
 	let env =
 		-- Ensure that the just-built git annex is used.
-		[ ("PATH", cwd ++ ":" ++ p)
+		[ ("PATH", cwd ++ [searchPathSeparator] ++ p)
 		, ("TOPDIR", cwd)
 		-- Avoid git complaining if it cannot determine the user's
 		-- email address, or exploding if it doesn't know the user's

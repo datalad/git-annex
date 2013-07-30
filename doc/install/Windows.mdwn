@@ -8,6 +8,13 @@ git-annex, many things will not work. See [[todo/windows_support]] for
 current status. Note especially that git-annex always uses [[direct_mode]]
 on Windows.
 
+The autobuilder is not currently able to run the test suite, so
+testing git-annex on Windows is up to you! To check that the build of
+git-annex works in your Windows system, you are encouraged to run the test
+suite before using git-annex on real data. After installation, run `git
+annex test`. There will be a lot of output; the important thing is that it
+should end with "All tests ok".
+
 ## autobuilds
 
 A daily build is also available, thanks to Yury V. Zaytsev and
