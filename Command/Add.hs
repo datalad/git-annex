@@ -31,6 +31,7 @@ import Config
 import Utility.InodeCache
 import Annex.FileMatcher
 import Annex.ReplaceFile
+import Utility.Tmp
 
 def :: [Command]
 def = [notBareRepo $ command "add" paramPaths seek SectionCommon
@@ -105,7 +106,8 @@ lockDown file = ifM (crippledFileSystem)
 		unlessM (isDirect) $ liftIO $
 			void $ tryIO $ preventWrite file
 		liftIO $ catchMaybeIO $ do
-			(tmpfile, h) <- openTempFile tmp (takeFileName file)
+			(tmpfile, h) <- openTempFile tmp $
+				relatedTemplate $ takeFileName file
 			hClose h
 			nukeFile tmpfile
 			withhardlink tmpfile `catchIO` const nohardlink

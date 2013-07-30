@@ -31,8 +31,7 @@ replaceFile file a = do
 		liftIO $ catchIO (rename tmpfile file) (fallback tmpfile)
   where
   	setup tmpdir = do
-		(tmpfile, h) <- openTempFileWithDefaultPermissions tmpdir $
-			takeFileName file
+		(tmpfile, h) <- openTempFileWithDefaultPermissions tmpdir "tmp"
 		hClose h
 		return tmpfile
 	fallback tmpfile _ = do

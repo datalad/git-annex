@@ -21,6 +21,7 @@ import Data.Char
 import qualified System.FilePath.Posix as Posix
 #else
 import qualified "MissingH" System.Path as MissingH
+import System.Posix.Files
 #endif
 
 import Utility.Monad
@@ -216,4 +217,22 @@ toCygPath p
   	fixtrailing s
 		| hasTrailingPathSeparator p = Posix.addTrailingPathSeparator s
 		| otherwise = s
+#endif
+
+{- Maximum size to use for a file in a specified directory.
+ -
+ - Many systems have a 255 byte limit to the name of a file, 
+ - so that's taken as the max if the system has a larger limit, or has no
+ - limit.
+ -}
+fileNameLengthLimit :: FilePath -> IO Int
+#ifdef __WINDOWS__
+fileNameLengthLimit _ = return 255
+#else
+fileNameLengthLimit dir = do
+	l <- fromIntegral <$> getPathVar dir FileNameLimit
+	if l <= 0
+		then return 255
+		else return $ minimum [l, 255]
+  where
 #endif

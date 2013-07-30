@@ -27,16 +27,18 @@ backend = Backend
 	, canUpgradeKey = Nothing
 	}
 
-fromUrl :: String -> Maybe Integer -> Key
-fromUrl url size = stubKey
-	{ keyName = key
-	, keyBackendName = "URL"
-	, keySize = size
+{- When it's not too long, use the full url as the key name.
+ - If the url is too long, it's truncated at half the filename length
+ - limit, and the md5 of the url is prepended to ensure a unique key. -}
+fromUrl :: String -> Maybe Integer -> Annex Key
+fromUrl url size = do
+	limit <- liftIO . fileNameLengthLimit =<< fromRepo gitAnnexDir
+	let truncurl = truncateFilePath (limit `div` 2) url
+	let key = if url == truncurl
+		then url
+		else truncurl ++ "-" ++ md5s (Str url)
+	return $ stubKey
+		{ keyName = key
+		, keyBackendName = "URL"
+		, keySize = size
 	}
-  where
-	{- when it's not too long, use the url as the key name
-	 - 256 is the absolute filename max, but use a shorter
-	 - length because this is not the entire key filename. -}
-	key
-		| length url < 128 = url
-		| otherwise = take 128 url ++ "-" ++ md5s (Str url)

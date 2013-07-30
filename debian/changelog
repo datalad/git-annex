@@ -29,6 +29,8 @@ git-annex (4.20130724) UNRELEASED; urgency=low
     can be clicked on the open a new webapp when the assistant is already
     running.
   * Improve test suite on Windows; now tests git annex sync.
+  * Fix a few bugs involving filenames that are at or near the filesystem's
+    maximum filename length limit.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 23 Jul 2013 12:39:48 -0400
 

@@ -14,6 +14,7 @@ import Control.Monad.IfElse
 
 import Utility.Exception
 import System.FilePath
+import Utility.FileSystemEncoding
 
 type Template = String
 
@@ -69,3 +70,19 @@ withTmpDirIn tmpdir template = bracket create remove
 		let dir = t ++ "." ++ show n
 		either (const $ makenewdir t $ n + 1) (const $ return dir)
 			=<< tryIO (createDirectory dir)
+
+{- It's not safe to use a FilePath of an existing file as the template
+ - for openTempFile, because if the FilePath is really long, the tmpfile
+ - will be longer, and may exceed the maximum filename length.
+ -
+ - This generates a template that is never too long.
+ - (Well, it allocates 20 characters for use in making a unique temp file,
+ - anyway, which is enough for the current implementation and any
+ - likely implementation.)
+ -}
+relatedTemplate :: FilePath -> FilePath
+relatedTemplate f
+	| len > 20 = truncateFilePath (len - 20) f
+	| otherwise = f
+  where
+	len = length f

@@ -54,7 +54,8 @@ start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 	bad = fromMaybe (error $ "bad url " ++ s) $
 		parseURI $ escapeURIString isUnescapedInURI s
 	go url = do
-		let file = fromMaybe (url2file url pathdepth) optfile
+		pathmax <- liftIO $ fileNameLengthLimit "."
+		let file = fromMaybe (url2file url pathdepth pathmax) optfile
 		showStart "addurl" file
 		next $ perform relaxed s file
 
@@ -122,7 +123,7 @@ download url file = do
 				liftIO $ snd <$> Url.exists url headers
 			, return Nothing
 			)
-		return $ Backend.URL.fromUrl url size
+		Backend.URL.fromUrl url size
   	runtransfer dummykey tmp = 
 		Transfer.download webUUID dummykey (Just file) Transfer.forwardRetry $ const $ do
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
@@ -151,15 +152,15 @@ nodownload relaxed url file = do
 		else liftIO $ Url.exists url headers
 	if exists
 		then do
-			let key = Backend.URL.fromUrl url size
+			key <- Backend.URL.fromUrl url size
 			cleanup url file key Nothing
 		else do
 			warning $ "unable to access url: " ++ url
 			return False
 
-url2file :: URI -> Maybe Int -> FilePath
-url2file url pathdepth = case pathdepth of
-	Nothing -> filesize $ escape fullurl
+url2file :: URI -> Maybe Int -> Int -> FilePath
+url2file url pathdepth pathmax = case pathdepth of
+	Nothing -> truncateFilePath pathmax $ escape fullurl
 	Just depth
 		| depth >= length urlbits -> frombits id
 		| depth > 0 -> frombits $ drop depth
@@ -168,7 +169,6 @@ url2file url pathdepth = case pathdepth of
   where
 	fullurl = uriRegName auth ++ uriPath url ++ uriQuery url
 	frombits a = intercalate "/" $ a urlbits
-	urlbits = map (filesize . escape) $ filter (not . null) $ split "/" fullurl
+	urlbits = map (truncateFilePath pathmax . escape) $ filter (not . null) $ split "/" fullurl
 	auth = fromMaybe (error $ "bad url " ++ show url) $ uriAuthority url
-	filesize = take 255
 	escape = replace "/" "_" . replace "?" "_"

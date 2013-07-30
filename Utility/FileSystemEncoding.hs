@@ -1,6 +1,6 @@
 {- GHC File system encoding handling.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,7 +10,8 @@ module Utility.FileSystemEncoding (
 	withFilePath,
 	md5FilePath,
 	decodeW8,
-	encodeW8	
+	encodeW8,
+	truncateFilePath,
 ) where
 
 import qualified GHC.Foreign as GHC
@@ -75,3 +76,18 @@ encodeW8 w8 = unsafePerformIO $ do
  - represent the FilePath on disk. -}
 decodeW8 :: FilePath -> [Word8]
 decodeW8 = s2w8 . _encodeFilePath
+
+{- Truncates a FilePath to the given number of bytes (or less),
+ - as represented on disk.
+ -
+ - Avoids returning an invalid part of a unicode byte sequence, at the
+ - cost of efficiency when running on a large FilePath.
+ -}
+truncateFilePath :: Int -> FilePath -> FilePath
+truncateFilePath n = go . reverse
+  where
+  	go f =
+		let bytes = decodeW8 f
+		in if length bytes <= n
+			then reverse f
+			else go (drop 1 f)
