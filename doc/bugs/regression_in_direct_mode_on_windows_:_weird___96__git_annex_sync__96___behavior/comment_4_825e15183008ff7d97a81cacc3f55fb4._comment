@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="fixed"
+ date="2013-07-30T20:11:19Z"
+ content="""
+Seems like the test suite should have caught this on Windows. Unfortunately, the part of the test suite that tests sync is commented out due to it not working at all from within the test suite for reasons I don't understand. Pity.
+"""]]
