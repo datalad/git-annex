@@ -51,3 +51,6 @@ I really don't know what's happened here, I just did `git annex unannex .` in a 
     git-annex: git commit [Param "-q",Params "-m",Param "content removed from git annex",Param "--",File "Inbox/Nov 2012 Photo Stream/121124_0044.JPG"] failed
 
 I guess now I'll just try to unlink the symlinks by hand, and drop the `.git` directory?
+
+> [[done]]; per my comment this seems like a corrupt git repository.
+> --[[Joey]]
