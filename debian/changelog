@@ -22,6 +22,9 @@ git-annex (4.20130724) UNRELEASED; urgency=low
     at once in indirect mode.
   * assistant: Fix bug that caused it to stall when adding a very large
     number of files at once (around 5 thousand).
+  * OSX: Make git-annex-webapp run in the background, so that the app icon
+    can be clicked on the open a new webapp when the assistant is already
+    running.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 23 Jul 2013 12:39:48 -0400
 

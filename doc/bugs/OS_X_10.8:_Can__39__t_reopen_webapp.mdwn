@@ -25,3 +25,7 @@ From .git/annex/daemon.log:
 (scanning...) [2013-07-28 00:01:08 CDT] Watcher: Performing startup scan
 (started...)
 """]]
+
+> [[done]]; I added the `&` to git-annex-shell.
+> Hopefully that does not cause any other unwanted behavior..
+> --[[Joey]]

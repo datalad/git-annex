@@ -22,4 +22,5 @@ if [ -e "$base/git-annex" ]; then
 	export GIT_ANNEX_APP_BASE
 fi
 
-exec "$base/runshell" git-annex webapp "$@"
+# OSX wants this to run in the background.
+exec "$base/runshell" git-annex webapp "$@" &
