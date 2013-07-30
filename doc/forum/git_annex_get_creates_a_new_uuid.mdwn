@@ -1,0 +1,6 @@
+From git-annex(1), init should precede any operation of git-annex as a safety feature.
+
+However git cloning a repo and running `git annex get` created a new uuid for that repo, which got
+propagated via sync.
+
+Is this intended behaviour?
