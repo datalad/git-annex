@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 29"
+ date="2013-07-30T17:45:27Z"
+ content="""
+If you are experiencing a problem using git-annex on Android, please examine the list of [[bugs]] and add a new, detailed bug report if no-one has reported the problem. If you are not sure if you have a bug, or need help in filing a good bug report, ask for help in the [[forum]].
+
+I don't want to be an asshole, but I'm going to start deleting comments on this page that look like \"Fragment of error message. Phone model number. No other information.\" This page cannot scale to handle every bug report that someone wants to paste into it.
+"""]]
