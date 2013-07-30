@@ -642,8 +642,12 @@ test_version env = "git-annex version" ~: intmpclonerepo env $ do
 	git_annex env "version" [] @? "version failed"
 
 test_sync :: TestEnv -> Test
-test_sync env = "git-annex sync" ~: intmpclonerepo env $
+test_sync env = "git-annex sync" ~: intmpclonerepo env $ do
 	git_annex env "sync" [] @? "sync failed"
+	{- Regression test for bug fixed in 
+	 - 7b0970b340d7faeb745c666146c7f701ec71808f, where in direct mode
+	 - sync committed the symlink standin file to the annex. -}
+	git_annex_expectoutput env "find" ["--in", "."] []
 
 {- Regression test for union merge bug fixed in
  - 0214e0fb175a608a49b812d81b4632c081f63027 -}
