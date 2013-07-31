@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="finally!"
+ date="2013-07-31T16:47:39Z"
+ content="""
+I've finally been clued in to the cause of this. If a ssh-agent is running, and has been configured to use a ssh key (by running `ssh-add`), this apparently prevents git-annex from using the key it sets up during local pairing. I have reproduced the described bug by this method.
+
+Something similar might also affect adding a remote ssh server, I'm not sure about that yet.
+
+
+"""]]
