@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnWvnTWY6LrcPB4BzYEBn5mRTpNhg5EtEg"
+ nickname="Bence"
+ subject="checkpresent success and failure"
+ date="2013-07-31T13:06:21Z"
+ content="""
+What value should be returned in the \"checkpresent-hook\" to signal that the given file does not exist in the given backend? 
+
+Should the called hook process return an exit code less or greater then zero? In this case the following is displayed: 
+>(user error (sh [\"-c\",\"name_of_the_process\"] exited 1)) failed
+
+This tells that the process failed (no internet connection or something that prevents the process from doing its job) and not that result is false, which would mean the file/entry does not exist in the given backend.
+If the return code is zero the file is treated as existing file/entry (no matter what I write to stderr).
+
+Also I think, the \"checkpresent\" block misses the ending ;; in the example.
+
+Here is my work-in-progress hook: https://gist.github.com/parhuzamos/31bf4516eea434e0d248
+"""]]
