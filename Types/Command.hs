@@ -39,6 +39,7 @@ data Command = Command
 	, cmdnorepo :: Maybe (IO ()) -- an action to run when not in a repo
 	, cmdcheck :: [CommandCheck] -- check stage
 	, cmdnocommit :: Bool        -- don't commit journalled state changes
+	, cmdnomessages :: Bool      -- don't output normal messages
 	, cmdname :: String
 	, cmdparamdesc :: String     -- description of params for usage
 	, cmdseek :: [CommandSeek]   -- seek stage

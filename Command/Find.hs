@@ -20,7 +20,7 @@ import Types.Key
 import qualified Option
 
 def :: [Command]
-def = [noCommit $ withOptions [formatOption, print0Option] $
+def = [noCommit $ noMessages $ withOptions [formatOption, print0Option] $
 	command "find" paramPaths seek SectionQuery "lists available files"]
 
 formatOption :: Option

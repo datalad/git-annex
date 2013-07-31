@@ -9,6 +9,7 @@ module Command (
 	command,
 	noRepo,
 	noCommit,
+	noMessages,
 	withOptions,
 	next,
 	stop,
@@ -40,12 +41,17 @@ import Annex.CheckAttr
 
 {- Generates a normal command -}
 command :: String -> String -> [CommandSeek] -> CommandSection -> String -> Command
-command = Command [] Nothing commonChecks False
+command = Command [] Nothing commonChecks False False
 
 {- Indicates that a command doesn't need to commit any changes to
  - the git-annex branch. -}
 noCommit :: Command -> Command
 noCommit c = c { cmdnocommit = True }
+
+{- Indicates that a command should not output anything other than what
+ - it directly sends to stdout. (--json can override this). -}
+noMessages :: Command -> Command
+noMessages c = c { cmdnomessages = True }
 
 {- Adds a fallback action to a command, that will be run if it's used
  - outside a git repository. -}

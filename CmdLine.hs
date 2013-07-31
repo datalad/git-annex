@@ -30,6 +30,7 @@ import Annex.Content
 import Annex.Ssh
 import Annex.Environment
 import Command
+import Types.Messages
 
 type Params = [String]
 type Flags = [Annex ()]
@@ -47,6 +48,8 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 				checkEnvironment
 				checkfuzzy
 				forM_ fields $ uncurry Annex.setField
+				when (cmdnomessages cmd) $ 
+					Annex.setOutput QuietOutput
 				sequence_ flags
 				whenM (annexDebug <$> Annex.getGitConfig) $
 					liftIO enableDebugOutput
