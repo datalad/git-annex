@@ -15,6 +15,7 @@ import qualified Data.Map as M
 import Data.Char
 
 import Common.Annex
+import qualified Annex
 import Command
 import qualified Utility.Url as Url
 import Logs.Web
@@ -68,12 +69,15 @@ data Cache = Cache
 	}
 
 getCache :: Maybe String -> Annex Cache
-getCache opttemplate = do
-	showSideAction "checking known urls"
-	us <- S.fromList <$> knownUrls
-	return $ Cache us tmpl
+getCache opttemplate = ifM (Annex.getState Annex.force)
+	( ret S.empty
+	, do
+		showSideAction "checking known urls"
+		ret =<< S.fromList <$> knownUrls
+	)
   where
 	tmpl = Utility.Format.gen $ fromMaybe defaultTemplate opttemplate
+	ret s = return $ Cache s tmpl
 
 findEnclosures :: URLString -> Annex (Maybe [ToDownload])
 findEnclosures url = go =<< downloadFeed url
@@ -96,19 +100,21 @@ downloadFeed url = do
 			)
 
 {- Avoids downloading any urls that are already known to be associated
- - with a file in the annex. -}
+ - with a file in the annex, unless forced. -}
 downloadEnclosure :: Bool -> Cache -> ToDownload -> Annex ()
 downloadEnclosure relaxed cache enclosure
-	| S.member url (knownurls cache) = noop
-	| otherwise = do
+	| S.member url (knownurls cache) =
+		whenM (Annex.getState Annex.force) go
+	| otherwise = go
+  where
+  	url = location enclosure
+	go = do
 		dest <- liftIO $ feedFile (template cache) enclosure
 		showStart "addurl" dest
 		ifM (addUrlFile relaxed url dest)
 			( showEndOk
 			, showEndFail
 			)
-  where
-  	url = location enclosure
 	
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
