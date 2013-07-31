@@ -5,12 +5,13 @@ to retrieve the file's content (its value).
 Multiple pluggable key-value backends are supported, and a single repository
 can use different ones for different files.
 
-* `SHA256E` -- The default backend for new files. This allows
+* `SHA256E` -- The default backend for new files, combines a SHA256 hash of
+  the file's content with the file's extension. This allows
   verifying that the file content is right, and can avoid duplicates of
   files with the same content. Its need to generate checksums
   can make it slower for large files. 
 * `SHA256` -- Does not include the file extension in the key, which can
-  lead to better deduplication.
+  lead to better deduplication but can confuse some programs.
 * `WORM` ("Write Once, Read Many") This assumes that any file with
   the same basename, size, and modification time has the same content.
   This is the the least expensive backend, recommended for really large
