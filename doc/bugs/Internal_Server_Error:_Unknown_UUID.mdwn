@@ -32,3 +32,6 @@ Maybe it's a glitch that only will happen this once, the problem is I can't get 
 > --[[Joey]] 
 
 [[!meta title="local pairing leads to unknown UUID"]]
+
+> This bug is [[fixed|done]]. The webapp will detect the problem and
+> provides an interface to correct it. --[[Joey]]
