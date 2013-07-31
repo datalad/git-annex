@@ -177,7 +177,8 @@ repoList reposelector
 	  where
 		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
 	list l = liftAnnex $ do
-		let l' = nubBy (\x y -> fst x == fst y) l
+		let l' = filter (\(u, _) -> u /= NoUUID) $
+			nubBy (\x y -> fst x == fst y) l
 		l'' <- zip
 			<$> Remote.prettyListUUIDs (map fst l')
 			<*> pure l'
