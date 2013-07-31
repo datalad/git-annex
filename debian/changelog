@@ -15,6 +15,7 @@ git-annex (4.20130724) UNRELEASED; urgency=low
     on a host, set IdentitiesOnly to prevent the ssh-agent from forcing
     use of a different ssh key. That could result in unncessary password
     prompts, or prevent git-annex-shell from being run on the remote host.
+  * webapp: Improve handling of remotes whose setup has stalled.
   * Add status message to XMPP presence tag, to identify to others that
     the client is a git-annex client. Closes: #717652
   * webapp: When creating a repository on a removable drive, set

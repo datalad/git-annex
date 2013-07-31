@@ -13,6 +13,7 @@ import Assistant.WebApp.Common
 import Assistant.DaemonStatus
 import Assistant.WebApp.Notifications
 import Assistant.WebApp.Utility
+import Assistant.Ssh
 import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -22,6 +23,8 @@ import Logs.Remote
 import Logs.Trust
 import Logs.Group
 import Config
+import Git.Config
+import Assistant.Sync
 import Config.Cost
 import qualified Git
 #ifdef WITH_XMPP
@@ -177,8 +180,7 @@ repoList reposelector
 	  where
 		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
 	list l = liftAnnex $ do
-		let l' = filter (\(u, _) -> u /= NoUUID) $
-			nubBy (\x y -> fst x == fst y) l
+		let l' = nubBy (\x y -> fst x == fst y) l
 		l'' <- zip
 			<$> Remote.prettyListUUIDs (map fst l')
 			<*> pure l'
@@ -223,3 +225,30 @@ reorderCosts remote rs = zip rs'' (insertCostAfter costs i)
 	rs' = filter (\r -> Remote.uuid r /= Remote.uuid remote) rs
 	costs = map Remote.cost rs'
 	rs'' = (\(x, y) -> x ++ [remote] ++ y) $ splitAt (i + 1) rs'
+
+{- Checks to see if any repositories with NoUUID have annex-ignore set.
+ - That could happen if there's a problem contacting a ssh remote
+ - soon after it was added. -}
+getCheckUnfinishedRepositoriesR :: Handler Html
+getCheckUnfinishedRepositoriesR = page "Unfinished repositories" (Just Configuration) $ do
+	stalled <- liftAnnex findStalled
+	$(widgetFile "configurators/checkunfinished")
+
+findStalled :: Annex [Remote]
+findStalled = filter isstalled <$> remoteListRefresh
+  where
+  	isstalled r = Remote.uuid r == NoUUID
+		&& remoteAnnexIgnore (Remote.gitconfig r)
+
+getRetryUnfinishedRepositoriesR :: Handler ()
+getRetryUnfinishedRepositoriesR = do
+	liftAssistant $ mapM_ unstall =<< liftAnnex findStalled
+	redirect DashboardR
+  where
+	unstall r = do
+		liftIO $ fixSshKeyPair
+		liftAnnex $ setConfig 
+			(remoteConfig (Remote.repo r) "ignore")
+			(boolConfig False)
+		syncRemote r
+		liftAnnex $ void remoteListRefresh

@@ -198,6 +198,36 @@ setupSshKeyPair sshkeypair sshdata = do
 	sshprivkeyfile = "git-annex" </> "key." ++ mangleSshHostName sshdata
 	sshpubkeyfile = sshprivkeyfile ++ ".pub"
 
+{- Fixes git-annex ssh key pairs configured in .ssh/config 
+ - by old versions to set IdentitiesOnly. -}
+fixSshKeyPair :: IO ()
+fixSshKeyPair = do
+	sshdir <- sshDir
+	let configfile = sshdir </> "config"
+	whenM (doesFileExist configfile) $ do
+		ls <- lines <$> readFileStrict configfile
+		let ls' = fixSshKeyPair' ls
+		when (ls /= ls') $
+			viaTmp writeFile configfile $ unlines ls'
+
+{- Strategy: Search for IdentityFile lines in for files with key.git-annex
+ - in their names. These are for git-annex ssh key pairs.
+ - Add the IdentitiesOnly line immediately after them, if not already
+ - present. -}
+fixSshKeyPair' :: [String] -> [String]
+fixSshKeyPair' = go []
+  where
+  	go c [] = reverse c
+	go c (l:[])
+		| all (`isInfixOf` l) indicators = go (fixedline l:l:c) []
+		| otherwise = go (l:c) []
+	go c (l:next:rest)
+		| all (`isInfixOf` l) indicators && not ("IdentitiesOnly" `isInfixOf` next) = 
+			go (fixedline l:l:c) (next:rest)
+		| otherwise = go (l:c) (next:rest)
+  	indicators = ["IdentityFile", "key.git-annex"]
+	fixedline tmpl = takeWhile isSpace tmpl ++ "IdentitiesOnly yes"
+
 {- Setups up a ssh config with a mangled hostname.
  - Returns a modified SshData containing the mangled hostname. -}
 setSshConfig :: SshData -> [(String, String)] -> IO SshData

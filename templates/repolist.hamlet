@@ -12,41 +12,52 @@
   <table .table .table-condensed>
     <tbody #costsortable>
       $forall (name, uuid, actions) <- repolist
-        <tr .repoline ##{fromUUID uuid}>
-          <td .handle>
-            <a .btn .btn-mini .disabled>
-              <i .icon-resize-vertical></i>
-            &nbsp; #{name}
-          <td .draghide>
-            $if needsEnabled actions
-              <a href="@{setupRepoLink actions}">
-                <i .icon-warning-sign></i> not enabled
-            $else
-              $if notWanted actions
-                <i .icon-trash></i> cleaning out..
+        $if uuid == NoUUID
+          <tr .repoline>
+            <td>
+              <a .btn .btn-mini .disabled>
+                <i .icon-time></i>
+              &nbsp; unfinished repository
+            <td>
+              <a href="@{CheckUnfinishedRepositoriesR}">
+                <i .icon-question-sign></i> check status
+            <td>
+        $else
+          <tr .repoline ##{fromUUID uuid}>
+            <td .handle>
+              <a .btn .btn-mini .disabled>
+                <i .icon-resize-vertical></i>
+              &nbsp; #{name}
+            <td .draghide>
+              $if needsEnabled actions
+                <a href="@{setupRepoLink actions}">
+                  <i .icon-warning-sign></i> not enabled
               $else
-                <a href="@{syncToggleLink actions}">
-                  $if notSyncing actions
-                    <i .icon-ban-circle></i> syncing disabled
-                  $else
-                    <i .icon-refresh></i> syncing enabled
-          <td .draghide>
-            $if needsEnabled actions
-              <a href="@{setupRepoLink actions}">
-                enable
-            $else
-              <span .dropdown #menu-#{fromUUID uuid}>
-                <a .dropdown-toggle data-toggle="dropdown" href="#menu-#{fromUUID uuid}">
-                  <i .icon-cog></i> settings
-                  <b .caret></b>
-                <ul .dropdown-menu>
-                  <li>
-                    <a href="@{setupRepoLink actions}">
-                      <i .icon-pencil></i> Edit
-                    <a href="@{DisableRepositoryR uuid}">
-                      <i .icon-minus></i> Disable
-                    <a href="@{DeleteRepositoryR uuid}">
-                      <i .icon-trash></i> Delete
+                $if notWanted actions
+                  <i .icon-trash></i> cleaning out..
+                $else
+                  <a href="@{syncToggleLink actions}">
+                    $if notSyncing actions
+                      <i .icon-ban-circle></i> syncing disabled
+                    $else
+                      <i .icon-refresh></i> syncing enabled
+            <td .draghide>
+              $if needsEnabled actions
+                <a href="@{setupRepoLink actions}">
+                  enable
+              $else
+                <span .dropdown #menu-#{fromUUID uuid}>
+                  <a .dropdown-toggle data-toggle="dropdown" href="#menu-#{fromUUID uuid}">
+                    <i .icon-cog></i> settings
+                    <b .caret></b>
+                  <ul .dropdown-menu>
+                    <li>
+                      <a href="@{setupRepoLink actions}">
+                        <i .icon-pencil></i> Edit
+                      <a href="@{DisableRepositoryR uuid}">
+                        <i .icon-minus></i> Disable
+                      <a href="@{DeleteRepositoryR uuid}">
+                        <i .icon-trash></i> Delete
       $if addmore
         <tr>
           <td colspan="3">
