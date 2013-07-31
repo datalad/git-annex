@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 8"
+ date="2013-07-31T20:42:10Z"
+ content="""
+I've updated the webapp to display nicely when a repository has stalled being set up, rather than crashing. 
+
+There's now an interface to check the status of such a stalled repository, and it will try to clean up after this bug too.
+"""]]
