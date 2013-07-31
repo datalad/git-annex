@@ -172,6 +172,9 @@ genSshKeyPair = withTmpDir "git-annex-keygen" $ \dir -> do
  - ~/.ssh/ANYTHING.pub, and uses them indiscriminately. But using this key
  - for a normal login to the server will force git-annex-shell to run,
  - and locks the user out. Luckily, it does not recurse into subdirectories.
+ -
+ - Similarly, IdentitiesOnly is set in the ssh config to prevent the
+ - ssh-agent from forcing use of a different key.
  -}
 setupSshKeyPair :: SshKeyPair -> SshData -> IO SshData
 setupSshKeyPair sshkeypair sshdata = do
@@ -188,7 +191,9 @@ setupSshKeyPair sshkeypair sshdata = do
 		writeFile (sshdir </> sshpubkeyfile) (sshPubKey sshkeypair)
 
 	setSshConfig sshdata
-		[ ("IdentityFile", "~/.ssh/" ++ sshprivkeyfile) ]
+		[ ("IdentityFile", "~/.ssh/" ++ sshprivkeyfile)
+		, ("IdentitiesOnly", "yes")
+		]
   where
 	sshprivkeyfile = "git-annex" </> "key." ++ mangleSshHostName sshdata
 	sshpubkeyfile = sshprivkeyfile ++ ".pub"

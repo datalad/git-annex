@@ -11,6 +11,10 @@ git-annex (4.20130724) UNRELEASED; urgency=low
     that caused git-annex sync on FAT or other crippled filesystems to add
     symlink standin files to the annex.
   * importfeed can be used to import files from podcast feeds.
+  * webapp: When setting up a dedicated ssh key to access the annex
+    on a host, set IdentitiesOnly to prevent the ssh-agent from forcing
+    use of a different ssh key. That could result in unncessary password
+    prompts, or prevent git-annex-shell from being run on the remote host.
   * Add status message to XMPP presence tag, to identify to others that
     the client is a git-annex client. Closes: #717652
   * webapp: When creating a repository on a removable drive, set
