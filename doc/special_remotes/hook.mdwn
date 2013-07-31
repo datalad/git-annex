@@ -97,6 +97,7 @@ case "$ANNEX_ACTION" in
 		if demo-exists "$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY"; then
 			echo "$ANNEX_KEY"
 		fi
+	;;
 	*)
 		echo "unknown ANNEX_ACTION: $ANNEX_ACTION" >&2
 		exit 1
