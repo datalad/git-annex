@@ -22,6 +22,7 @@ kickstarter year
 * Month 12: [presentation at SELF2013](http://www.southeastlinuxfest.org/), finishing touches
 
 [sustaining git-annex development](https://campaign.joeyh.name/) year
+(starts September 2013).
 
 * Month 1 [[!traillink encrypted_git_remotes]]
 * Month 2 [[!traillink disaster_recovery]]
