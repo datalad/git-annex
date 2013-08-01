@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.145"
+ subject="comment 1"
+ date="2013-08-01T16:06:42Z"
+ content="""
+I cannot see a way to do this using rsync's current command-line interface. Ideas how to do it welcomed.
+"""]]
