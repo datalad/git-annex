@@ -24,7 +24,7 @@ local paired with or is being used as a ssh server, but I don't yet
 understand what. I have spent hours today trying various scenarios to break
 git-annex and get this problem to happen.
 
-I certianly can improve the webapp's behavior when a repository's UUID is
+I certainly can improve the webapp's behavior when a repository's UUID is
 not known. The easiest fix would be to simply not display such
 repositories. Or there could be a UI to try to get the UUID.
 But I'm more interested in fixing the core problem than putting
