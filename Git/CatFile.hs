@@ -1,6 +1,6 @@
 {- git cat-file interface
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,6 +17,9 @@ module Git.CatFile (
 import System.IO
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
+import Data.Digest.Pure.SHA
+import Data.Char
+import System.Process (std_out, std_err)
 
 import Common
 import Git
@@ -26,16 +29,18 @@ import Git.Types
 import Git.FilePath
 import qualified Utility.CoProcess as CoProcess
 
-type CatFileHandle = CoProcess.CoProcessHandle
+data CatFileHandle = CatFileHandle CoProcess.CoProcessHandle Repo
 
 catFileStart :: Repo -> IO CatFileHandle
-catFileStart = CoProcess.rawMode <=< gitCoProcessStart True
-	[ Param "cat-file"
-	, Param "--batch"
-	]
+catFileStart repo = do
+	coprocess <- CoProcess.rawMode =<< gitCoProcessStart True
+		[ Param "cat-file"
+		, Param "--batch"
+		] repo
+	return $ CatFileHandle coprocess repo
 
 catFileStop :: CatFileHandle -> IO ()
-catFileStop = CoProcess.stop
+catFileStop (CatFileHandle p _) = CoProcess.stop p
 
 {- Reads a file from a specified branch. -}
 catFile :: CatFileHandle -> Branch -> FilePath -> IO L.ByteString
@@ -49,9 +54,10 @@ catObject h object = maybe L.empty fst <$> catObjectDetails h object
 
 {- Gets both the content of an object, and its Sha. -}
 catObjectDetails :: CatFileHandle -> Ref -> IO (Maybe (L.ByteString, Sha))
-catObjectDetails h object = CoProcess.query h send receive
+catObjectDetails (CatFileHandle hdl repo) object = CoProcess.query hdl send receive
   where
-	send to = hPutStrLn to $ show object
+	query = show object
+	send to = hPutStrLn to query
 	receive from = do
 		header <- hGetLine from
 		case words header of
@@ -64,7 +70,10 @@ catObjectDetails h object = CoProcess.query h send receive
 				| otherwise -> dne
 			_
 				| header == show object ++ " missing" -> dne
-				| otherwise -> error $ "unknown response from git cat-file " ++ show (header, object)
+				| otherwise -> 
+					if any isSpace query
+						then fallback
+						else error $ "unknown response from git cat-file " ++ show (header, object)
 	readcontent bytes from sha = do
 		content <- S.hGet from bytes
 		eatchar '\n' from
@@ -74,3 +83,25 @@ catObjectDetails h object = CoProcess.query h send receive
 		c <- hGetChar from
 		when (c /= expected) $
 			error $ "missing " ++ (show expected) ++ " from git cat-file"
+
+	{- Work around a bug in git 1.8.4 rc0 which broke it for filenames
+	 - containing spaces. http://bugs.debian.org/718517   
+	 - Slow! Also can use a lot of memory, if the object is large. -}
+	fallback = do
+		let p = gitCreateProcess 
+			[ Param "cat-file"
+			, Param "-p"
+			, Param query
+			] repo
+		(_, Just h, _, pid) <- withNullHandle $ \null -> 
+			createProcess p
+				{ std_out = CreatePipe
+				, std_err = UseHandle null
+				}
+		fileEncoding h
+		content <- L.hGetContents h
+		let sha = (\s -> length s `seq` s) (showDigest $ sha1 content)
+		ok <- checkSuccessProcess pid
+		return $ if ok
+			then Just (content, Ref sha)
+			else Nothing

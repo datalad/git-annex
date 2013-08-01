@@ -25,6 +25,7 @@ module Utility.Process (
 	withHandle,
 	withBothHandles,
 	withQuietOutput,
+	withNullHandle,
 	createProcess,
 	startInteractiveProcess,
 	stdinHandle,
@@ -241,12 +242,15 @@ withQuietOutput
 	:: CreateProcessRunner
 	-> CreateProcess
 	-> IO ()
-withQuietOutput creator p = withFile devnull WriteMode $ \nullh -> do
+withQuietOutput creator p = withNullHandle $ \nullh -> do
 	let p' = p
 		{ std_out = UseHandle nullh
 		, std_err = UseHandle nullh
 		}
 	creator p' $ const $ return ()
+
+withNullHandle :: (Handle -> IO a) -> IO a
+withNullHandle = withFile devnull WriteMode
   where
 #ifndef mingw32_HOST_OS
 	devnull = "/dev/null"

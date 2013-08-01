@@ -39,6 +39,8 @@ git-annex (4.20130724) UNRELEASED; urgency=low
   * find: Avoid polluting stdout with progress messages. Closes: #718186
   * Escape ':' in file/directory names to avoid it being treated
     as a pathspec by some git commands. Closes: #718185
+  * Slow and ugly work around for bug #718517 in git, which broke
+    git-cat-file --batch for filenames containing spaces.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 23 Jul 2013 12:39:48 -0400
 
