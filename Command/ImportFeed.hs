@@ -104,41 +104,63 @@ downloadFeed url = do
 downloadEnclosure :: Bool -> Cache -> ToDownload -> Annex ()
 downloadEnclosure relaxed cache enclosure
 	| S.member url (knownurls cache) =
-		whenM (Annex.getState Annex.force) go
+		whenM forced go
 	| otherwise = go
   where
+  	forced = Annex.getState Annex.force
   	url = location enclosure
 	go = do
-		dest <- liftIO $ feedFile (template cache) enclosure
-		showStart "addurl" dest
-		ifM (addUrlFile relaxed url dest)
-			( showEndOk
-			, showEndFail
+		dest <- makeunique (1 :: Integer) $ feedFile (template cache) enclosure
+		case dest of
+			Nothing -> noop
+			Just f -> do
+				showStart "addurl" f
+				ifM (addUrlFile relaxed url f)
+					( showEndOk
+					, showEndFail
+					)
+	{- Find a unique filename to save the url to.
+	 - If the file exists, prefixes it with a number.
+	 - When forced, the file may already exist and have the same
+	 - url, in which case Nothing is returned as it does not need
+	 - to be re-downloaded. -}
+	makeunique n file = ifM alreadyexists
+		( ifM forced
+			( ifAnnexed f checksameurl tryanother
+			, tryanother
+			)
+		, return $ Just f
+		)
+	  where
+	  	f = if n < 2
+			then file
+			else
+				let (d, base) = splitFileName file
+				in d </> show n ++ "_" ++ base
+		tryanother = makeunique (n + 1) file
+		alreadyexists = liftIO $ isJust <$> catchMaybeIO (getSymbolicLinkStatus f)
+		checksameurl (k, _) = ifM (elem url <$> getUrls k)
+			( return Nothing
+			, tryanother
 			)
 	
 defaultTemplate :: String
 defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
 
-{- Generate a unique filename for the feed item by filling 
- - out the template.
- -
- - Since each feed url is only downloaded once,
- - if the file already exists, two items with different urls
- - are conflicting. A number is added to disambiguate.
- -}
-feedFile :: Utility.Format.Format -> ToDownload -> IO FilePath
-feedFile tmpl i = makeUnique 1 $
-	Utility.Format.format tmpl $ M.fromList
-		[ field "feedtitle" $ getFeedTitle $ feed i
-		, fieldMaybe "itemtitle" $ getItemTitle $ item i
-		, fieldMaybe "feedauthor" $ getFeedAuthor $ feed i
-		, fieldMaybe "itemauthor" $ getItemAuthor $ item i
-		, fieldMaybe "itemsummary" $ getItemSummary $ item i
-		, fieldMaybe "itemdescription" $ getItemDescription $ item i
-		, fieldMaybe "itemrights" $ getItemRights $ item i
-		, fieldMaybe "itemid" $ snd <$> getItemId (item i)
-		, ("extension", map sanitize $ takeExtension $ location i)
-		]
+{- Generates a filename to use for a feed item by filling out the template.
+ - The filename may not be unique. -}
+feedFile :: Utility.Format.Format -> ToDownload -> FilePath
+feedFile tmpl i = Utility.Format.format tmpl $ M.fromList
+	[ field "feedtitle" $ getFeedTitle $ feed i
+	, fieldMaybe "itemtitle" $ getItemTitle $ item i
+	, fieldMaybe "feedauthor" $ getFeedAuthor $ feed i
+	, fieldMaybe "itemauthor" $ getItemAuthor $ item i
+	, fieldMaybe "itemsummary" $ getItemSummary $ item i
+	, fieldMaybe "itemdescription" $ getItemDescription $ item i
+	, fieldMaybe "itemrights" $ getItemRights $ item i
+	, fieldMaybe "itemid" $ snd <$> getItemId (item i)
+	, ("extension", map sanitize $ takeExtension $ location i)
+	]
   where
 	field k v = 
 		let s = map sanitize v in
@@ -149,16 +171,3 @@ feedFile tmpl i = makeUnique 1 $
 	sanitize c
 		| isSpace c || isPunctuation c || c == '/' = '_'
 		| otherwise = c
-
-makeUnique :: Integer -> FilePath -> IO FilePath
-makeUnique n file =
-	ifM (isJust <$> catchMaybeIO (getSymbolicLinkStatus f))
-		( makeUnique (n + 1) file
-		, return f
-		)
-  where
-  	f = if n < 2
-		then file
-		else
-			let (d, base) = splitFileName file
-			in d </> show n ++ "_" ++ base

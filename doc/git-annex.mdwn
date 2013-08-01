@@ -195,7 +195,7 @@ subdirectories).
   Imports the contents of podcast feeds. Only downloads files whose
   urls have not already been added to the repository before, so you can
   delete, rename, etc the resulting files and repeated runs won't duplicate
-  them. (Use --force to force downloading files it's seen before.)
+  them. (Use --force to force downloading urls it's seen before.)
 
   Use --template to control where the files are stored.
   The default template is '${feedtitle}/${itemtitle}${extension}'
