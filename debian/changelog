@@ -37,6 +37,8 @@ git-annex (4.20130724) UNRELEASED; urgency=low
   * Fix a few bugs involving filenames that are at or near the filesystem's
     maximum filename length limit.
   * find: Avoid polluting stdout with progress messages. Closes: #718186
+  * Escape ':' in file/directory names to avoid it being treated
+    as a pathspec by some git commands. Closes: #718185
 
  -- Joey Hess <joeyh@debian.org>  Tue, 23 Jul 2013 12:39:48 -0400
 
