@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.145"
+ subject="comment 1"
+ date="2013-08-01T17:10:56Z"
+ content="""
+There is a remote.name.annex-gnupg-options git-config setting that can be used to pass options to gpg on a per-remote basis.
+
+> also wonder if using the same symmetric key for many files presents a security issues (and whether using GPG keys directly would be more secure).
+
+I am not a cryptographer, but I have today run this question by someone with a good amount of crypo knowledge. My understanding is that reusing a symmetric key is theoretically vulnerable to eg known-plaintext or chosen-plaintext attacks. And that modern ciphers like AES and CAST (gpg default) are designed to resist such attacks.
+
+If someone was particularly concerned about these attack vectors, it would be pretty easy to add a mode where git-annex uses public key encryption directly. With the disadvantage, of course, that once a file was sent to a special remote and encrypted for a given set of public keys, other keys could not later be granted access to it.
+"""]]
