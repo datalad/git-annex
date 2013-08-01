@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~mikapflueger"
+ nickname="mikapflueger"
+ subject="Thank you so much!"
+ date="2013-08-01T01:13:51Z"
+ content="""
+This behaviour of ssh has bugged me for years now (I even think it is an information leak – ssh offers basically all my public ssh keys to every server I try to connect to, even though that public key might be confidential). Although it had nothing to do with git-annex, you helped me a _lot_ by pointing me towards IdentitiesOnly. Really a nice setting!
+
+Cheers,
+
+Mika
+"""]]
