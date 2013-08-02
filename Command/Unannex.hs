@@ -66,7 +66,7 @@ cleanupIndirect file key = do
 		)
 	return True
   where
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 	goFast = go
 #else
 	goFast = do

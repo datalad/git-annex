@@ -11,7 +11,7 @@ module Remote.Rsync (remote) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
 #else
 import System.Random (getStdRandom, random)
@@ -221,7 +221,7 @@ sendParams = ifM crippledFileSystem
  - up trees for rsync. -}
 withRsyncScratchDir :: (FilePath -> Annex Bool) -> Annex Bool
 withRsyncScratchDir a = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	v <- liftIO getProcessID
 #else
 	v <- liftIO (getStdRandom random :: IO Int)

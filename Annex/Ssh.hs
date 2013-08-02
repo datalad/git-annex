@@ -98,7 +98,7 @@ sshCleanup = go =<< sshCacheDir
 			liftIO (catchDefaultIO [] $ dirContents dir)
 		forM_ sockets cleanup
 	cleanup socketfile = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock
 		-- succeeds, nothing is using this ssh, and it can

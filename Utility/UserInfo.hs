@@ -24,7 +24,7 @@ import Utility.Env
 myHomeDir :: IO FilePath
 myHomeDir = myVal env homeDirectory
   where
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	env = ["HOME"]
 #else
 	env = ["USERPROFILE", "HOME"] -- HOME is used in Cygwin
@@ -34,7 +34,7 @@ myHomeDir = myVal env homeDirectory
 myUserName :: IO String
 myUserName = myVal env userName
   where
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	env = ["USER", "LOGNAME"]
 #else
 	env = ["USERNAME", "USER", "LOGNAME"]

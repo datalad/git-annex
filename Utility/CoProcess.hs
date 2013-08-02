@@ -88,6 +88,6 @@ rawMode ch = do
   where
   	raw h = do
 		fileEncoding h
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 		hSetNewlineMode h noNewlineTranslation
 #endif

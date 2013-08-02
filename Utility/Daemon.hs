@@ -12,7 +12,7 @@ module Utility.Daemon where
 import Common
 import Utility.LogFile
 
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import System.Posix
 #else
 import System.PosixCompat
@@ -26,7 +26,7 @@ import System.Posix.Types
  -
  - When successful, does not return. -}
 daemonize :: Fd -> Maybe FilePath -> Bool -> IO () -> IO ()
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 daemonize logfd pidfile changedirectory a = do
 	maybe noop checkalreadyrunning pidfile
 	_ <- forkProcess child1
@@ -58,7 +58,7 @@ daemonize = error "daemonize is not implemented on Windows" -- TODO
 lockPidFile :: FilePath -> IO ()
 lockPidFile file = do
 	createDirectoryIfMissing True (parentDir file)
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
 	locked <- catchMaybeIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 	fd' <- openFd newfile ReadWrite (Just stdFileMode) defaultFileFlags
@@ -85,7 +85,7 @@ alreadyRunning = error "Daemon is already running."
  -
  - If it's running, returns its pid. -}
 checkDaemon :: FilePath -> IO (Maybe ProcessID)
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 checkDaemon pidfile = do
 	v <- catchMaybeIO $
 		openFd pidfile ReadOnly (Just stdFileMode) defaultFileFlags
@@ -110,7 +110,7 @@ checkDaemon pidfile = maybe Nothing readish <$> catchMaybeIO (readFile pidfile)
 
 {- Stops the daemon, safely. -}
 stopDaemon :: FilePath -> IO ()
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 stopDaemon pidfile = go =<< checkDaemon pidfile
   where
 	go Nothing = noop

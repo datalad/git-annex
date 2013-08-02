@@ -16,7 +16,7 @@ import Data.List
 import Data.Maybe
 import Control.Applicative
 
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 import Data.Char
 import qualified System.FilePath.Posix as Posix
 #else
@@ -38,7 +38,7 @@ import Utility.UserInfo
  - no normalization is done.
  -}
 absNormPath :: FilePath -> FilePath -> Maybe FilePath
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 absNormPath dir path = MissingH.absNormPath dir path
 #else
 absNormPath dir path = Just $ combine dir path
@@ -183,7 +183,7 @@ searchPath command
   where
 	indir d = check $ d </> command
 	check f = firstM doesFileExist
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 		[f, f ++ ".exe"]
 #else
 		[f]
@@ -203,7 +203,7 @@ dotfile file
 {- Converts a DOS style path to a Cygwin style path. Only on Windows.
  - Any trailing '\' is preserved as a trailing '/' -}
 toCygPath :: FilePath -> FilePath
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 toCygPath = id
 #else
 toCygPath p
@@ -226,7 +226,7 @@ toCygPath p
  - limit.
  -}
 fileNameLengthLimit :: FilePath -> IO Int
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 fileNameLengthLimit _ = return 255
 #else
 fileNameLengthLimit dir = do

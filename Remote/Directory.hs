@@ -219,7 +219,7 @@ retrieveEncrypted d chunksize (cipher, enck) k f p = metered (Just p) k $ \meter
 
 retrieveCheap :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
 retrieveCheap _ (Just _) _ _ = return False -- no cheap retrieval for chunks
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 retrieveCheap d _ k f = liftIO $ withStoredFiles Nothing d k go
   where
 	go [file] = catchBoolIO $ createSymbolicLink file f >> return True

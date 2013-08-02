@@ -25,7 +25,7 @@ module Git.Construct (
 
 {-# LANGUAGE CPP #-}
 
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import System.Posix.User
 #else
 import Git.FilePath
@@ -146,7 +146,7 @@ fromRemoteLocation :: String -> Repo -> IO Repo
 fromRemoteLocation s repo = gen $ calcloc s
   where
 	gen v	
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 		| dosstyle v = fromRemotePath (dospath v) repo
 #endif
 		| scpstyle v = fromUrl $ scptourl v
@@ -182,7 +182,7 @@ fromRemoteLocation s repo = gen $ calcloc s
 			| "/" `isPrefixOf` d = d
 			| "~" `isPrefixOf` d = '/':d
 			| otherwise = "/~/" ++ d
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 	-- git on Windows will write a path to .git/config with "drive:",
 	-- which is not to be confused with a "host:"
 	dosstyle = hasDrive
@@ -208,7 +208,7 @@ repoAbsPath d = do
 	return $ h </> d'
 
 expandTilde :: FilePath -> IO FilePath
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 expandTilde = return
 #else
 expandTilde = expandt True

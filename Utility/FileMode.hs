@@ -13,7 +13,7 @@ import Common
 
 import Control.Exception (bracket)
 import System.PosixCompat.Types
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import System.Posix.Files
 #endif
 import Foreign (complement)
@@ -76,7 +76,7 @@ checkMode checkfor mode = checkfor `intersectFileModes` mode == checkfor
 
 {- Checks if a file mode indicates it's a symlink. -}
 isSymLink :: FileMode -> Bool
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 isSymLink _ = False
 #else
 isSymLink = checkMode symbolicLinkMode
@@ -89,7 +89,7 @@ isExecutable mode = combineModes executeModes `intersectFileModes` mode /= 0
 {- Runs an action without that pesky umask influencing it, unless the
  - passed FileMode is the standard one. -}
 noUmask :: FileMode -> IO a -> IO a
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 noUmask mode a
 	| mode == stdFileMode = a
 	| otherwise = bracket setup cleanup go
@@ -107,7 +107,7 @@ combineModes [m] = m
 combineModes (m:ms) = foldl unionFileModes m ms
 
 isSticky :: FileMode -> Bool
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 isSticky _ = False
 #else
 isSticky = checkMode stickyMode

@@ -14,7 +14,7 @@ import Common
 import System.Posix.Types
 
 openLog :: FilePath -> IO Fd
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 openLog logfile = do
 	rotateLog logfile
 	openFd logfile WriteOnly (Just stdFileMode)
@@ -50,7 +50,7 @@ maxLogs :: Int
 maxLogs = 9
 
 redirLog :: Fd -> IO ()
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 redirLog logfd = do
 	mapM_ (redir logfd) [stdOutput, stdError]
 	closeFd logfd
@@ -58,7 +58,7 @@ redirLog logfd = do
 redirLog _ = error "redirLog TODO"
 #endif
 
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 redir :: Fd -> Fd -> IO ()
 redir newh h = do
 	closeFd h

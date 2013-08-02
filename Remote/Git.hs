@@ -267,7 +267,7 @@ keyUrls :: Git.Repo -> Key -> [String]
 keyUrls r key = map tourl locs
   where
 	tourl l = Git.repoLocation r ++ "/" ++ l
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	locs = annexLocations key
 #else
 	locs = map (replace "\\" "/") (annexLocations key)
@@ -361,7 +361,7 @@ copyFromRemote' r key file dest
 
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
 copyFromRemoteCheap r key file
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
 		loc <- liftIO $ gitAnnexLocation key (repo r) $
 			fromJust $ remoteGitConfig $ gitconfig r
@@ -418,7 +418,7 @@ rsyncHelper callback params = do
  - filesystem. Then cp could be faster. -}
 rsyncOrCopyFile :: [CommandParam] -> FilePath -> FilePath -> MeterUpdate -> Annex Bool
 rsyncOrCopyFile rsyncparams src dest p =
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 	dorsync
   where
 #else

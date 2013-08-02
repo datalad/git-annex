@@ -87,7 +87,7 @@ lockJournal a = do
 	bracketIO (lock lockfile mode) unlock (const a)
   where
 	lock lockfile mode = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		l <- noUmask mode $ createFile lockfile mode
 		waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
 		return l
@@ -95,7 +95,7 @@ lockJournal a = do
 		writeFile lockfile ""
 		return lockfile
 #endif
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	unlock = closeFd
 #else
 	unlock = removeFile

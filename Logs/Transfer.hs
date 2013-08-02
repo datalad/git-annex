@@ -130,7 +130,7 @@ runTransfer t file shouldretry a = do
 			return ok
   where
 	prep tfile mode info = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		mfd <- catchMaybeIO $
 			openFd (transferLockFile tfile) ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
@@ -154,7 +154,7 @@ runTransfer t file shouldretry a = do
 	cleanup tfile (Just fd) = do
 		void $ tryIO $ removeFile tfile
 		void $ tryIO $ removeFile $ transferLockFile tfile
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		closeFd fd
 #endif
 	retry oldinfo metervar run = do
@@ -214,7 +214,7 @@ startTransferInfo file = TransferInfo
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
 checkTransfer t = do
 	tfile <- fromRepo $ transferFile t
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	mode <- annexFileMode
 	mfd <- liftIO $ catchMaybeIO $
 		openFd (transferLockFile tfile) ReadOnly (Just mode) defaultFileFlags

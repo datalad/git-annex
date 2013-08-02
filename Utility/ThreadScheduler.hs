@@ -13,7 +13,7 @@ module Utility.ThreadScheduler where
 import Common
 
 import Control.Concurrent
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import System.Posix.Signals
 #ifndef __ANDROID__
 import System.Posix.Terminal
@@ -54,7 +54,7 @@ unboundDelay time = do
 waitForTermination :: IO ()
 waitForTermination = do
 	lock <- newEmptyMVar
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	let check sig = void $
 		installHandler sig (CatchOnce $ putMVar lock ()) Nothing
 	check softwareTermination

@@ -22,7 +22,7 @@ lockFile file = go =<< fromPool file
   where
 	go (Just _) = noop -- already locked
 	go Nothing = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		mode <- annexFileMode
 		fd <- liftIO $ noUmask mode $
 			openFd file ReadOnly (Just mode) defaultFileFlags
@@ -37,7 +37,7 @@ unlockFile :: FilePath -> Annex ()
 unlockFile file = maybe noop go =<< fromPool file
   where
 	go fd = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		liftIO $ closeFd fd
 #endif
 		changePool $ M.delete file

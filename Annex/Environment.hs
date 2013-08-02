@@ -34,7 +34,7 @@ checkEnvironment = do
 
 checkEnvironmentIO :: IO ()
 checkEnvironmentIO =
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 	noop
 #else
 	whenM (null <$> myUserGecos) $ do

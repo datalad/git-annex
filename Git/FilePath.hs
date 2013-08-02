@@ -44,14 +44,14 @@ asTopFilePath file = TopFilePath file
 type InternalGitPath = String
 
 toInternalGitPath :: FilePath -> InternalGitPath
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 toInternalGitPath = id
 #else
 toInternalGitPath = replace "\\" "/"
 #endif
 
 fromInternalGitPath :: InternalGitPath -> FilePath
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 fromInternalGitPath = id
 #else
 fromInternalGitPath = replace "/" "\\"

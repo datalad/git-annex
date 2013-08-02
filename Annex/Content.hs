@@ -92,14 +92,14 @@ inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
   where
 	go f = liftIO $ openforlock f >>= check
 	openforlock f = catchMaybeIO $
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		openFd f ReadOnly Nothing defaultFileFlags
 #else
 		return ()
 #endif
 	check Nothing = return is_missing
 	check (Just h) = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
 		closeFd h
 		return $ case v of
@@ -116,7 +116,7 @@ inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
  - it. (If the content is not present, no locking is done.) -}
 lockContent :: Key -> Annex a -> Annex a
 lockContent key a = do
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 	a
 #else
 	file <- calcRepo $ gitAnnexLocation key

@@ -35,7 +35,7 @@ import Utility.HumanTime
 import Git.FilePath
 import GitAnnex.Options
 
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
 #else
 import System.Random (getStdRandom, random)
@@ -151,7 +151,7 @@ performRemote key file backend numcopies remote =
 		, checkKeyNumCopies key file numcopies
 		]
 	withtmp a = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		v <- liftIO getProcessID
 #else
 		v <- liftIO (getStdRandom random :: IO Int)
@@ -458,7 +458,7 @@ recordFsckTime key = do
 	parent <- parentDir <$> calcRepo (gitAnnexLocation key)
 	liftIO $ void $ tryIO $ do
 		touchFile parent
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		setSticky parent
 #endif
 
