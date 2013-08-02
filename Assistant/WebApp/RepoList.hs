@@ -120,6 +120,7 @@ repoListDisplay reposelector = do
 	$(widgetFile "repolist")
   where
 	ident = "repolist"
+	unfinished uuid = uuid == NoUUID
 
 type RepoList = [(String, UUID, Actions)]
 
