@@ -74,7 +74,7 @@ perform relaxed url file = ifAnnexed file addurl geturl
 					setUrlPresent key url
 					next $ return True
 				, do
-					warning $ "failed to verify url: " ++ url
+					warning $ "failed to verify url exists: " ++ url
 					stop
 				)
 
