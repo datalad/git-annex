@@ -39,7 +39,7 @@ toCommand = concatMap unwrap
 	unwrap (File s) = [s]
 	-- '/' is explicitly included because it's an alternative
 	-- path separator on Windows.
-	pathseps = [pathSeparator, './']
+	pathseps = pathSeparator:"./"
 
 {- Run a system command, and returns True or False
  - if it succeeded or failed.
