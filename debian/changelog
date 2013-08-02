@@ -1,4 +1,4 @@
-git-annex (4.20130724) UNRELEASED; urgency=low
+git-annex (4.20130802) unstable; urgency=low
 
   * dropunused behavior change: Now refuses to drop the last copy of a
     file, unless you use the --force.
@@ -39,10 +39,11 @@ git-annex (4.20130724) UNRELEASED; urgency=low
   * find: Avoid polluting stdout with progress messages. Closes: #718186
   * Escape ':' in file/directory names to avoid it being treated
     as a pathspec by some git commands. Closes: #718185
-  * Slow and ugly work around for bug #718517 in git, which broke
+  * Slow and ugly work around for bug #718517 in git 1.8.4~rc0, which broke
     git-cat-file --batch for filenames containing spaces.
+    (Will be reverted after next git pre-release fixes the problem.)
 
- -- Joey Hess <joeyh@debian.org>  Tue, 23 Jul 2013 12:39:48 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 02 Aug 2013 11:35:16 -0400
 
 git-annex (4.20130723) unstable; urgency=low
 
