@@ -37,7 +37,9 @@ toCommand = concatMap unwrap
 		| isAlphaNum h || h `elem` pathseps = [s]
 		| otherwise = ["./" ++ s]
 	unwrap (File s) = [s]
-	pathseps = [pathSeparator, '.']
+	-- '/' is explicitly included because it's an alternative
+	-- path separator on Windows.
+	pathseps = [pathSeparator, './']
 
 {- Run a system command, and returns True or False
  - if it succeeded or failed.
