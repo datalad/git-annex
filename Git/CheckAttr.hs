@@ -10,7 +10,7 @@ module Git.CheckAttr where
 import Common
 import Git
 import Git.Command
-import qualified Git.Version
+import qualified Git.BuildVersion
 import qualified Utility.CoProcess as CoProcess
 
 type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], String)
@@ -54,7 +54,7 @@ checkAttr (h, attrs, cwd) want file = do
 	 - With newer git, git check-attr chokes on some absolute
 	 - filenames, and the bugs that necessitated them were fixed,
 	 - so use relative filenames. -}
-	oldgit = Git.Version.older "1.7.7"
+	oldgit = Git.BuildVersion.older "1.7.7"
 	file'
 		| oldgit = absPathFrom cwd file
 		| otherwise = relPathDirToFile cwd $ absPathFrom cwd file

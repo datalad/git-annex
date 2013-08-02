@@ -18,7 +18,7 @@ import Assistant.DaemonStatus
 import qualified Remote
 import Remote.List
 import qualified Git.Command
-import qualified Git.Version
+import qualified Git.BuildVersion
 import Logs.Trust
 import qualified Annex
 
@@ -39,7 +39,7 @@ disableRemote uuid = do
 			[ Param "remote"
 			-- name of this subcommand changed
 			, Param $
-				if Git.Version.older "1.8.0"
+				if Git.BuildVersion.older "1.8.0"
 					then "rm"
 					else "remove"
 			, Param (Remote.name remote)

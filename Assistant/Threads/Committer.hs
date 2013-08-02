@@ -22,7 +22,7 @@ import Logs.Location
 import qualified Annex.Queue
 import qualified Git.Command
 import qualified Git.LsFiles
-import qualified Git.Version
+import qualified Git.BuildVersion
 import qualified Command.Add
 import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
@@ -234,9 +234,9 @@ commitStaged = do
 		, Param "--no-verify"
 		]
 	nomessage ps
-		| Git.Version.older "1.7.2" =
+		| Git.BuildVersion.older "1.7.2" =
 			Param "-m" : Param "autocommit" : ps
-		| Git.Version.older "1.7.8" =
+		| Git.BuildVersion.older "1.7.8" =
 			Param "--allow-empty-message" :
 			Param "-m" : Param "" : ps
 		| otherwise =
