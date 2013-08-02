@@ -103,9 +103,10 @@ Executable git-annex
     Build-Depends: hS3
     CPP-Options: -DWITH_S3
 
-  if flag(WebDAV)
-    Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
-    CPP-Options: -DWITH_WEBDAV
+  -- Not yet available for backport.
+  --if flag(WebDAV)
+  --  Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
+  --  CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(windows) && ! os(solaris)
     Build-Depends: async, stm (>= 2.3)

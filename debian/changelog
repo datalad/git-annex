@@ -1,5 +1,7 @@
-git-annex (4.20130521) unstable; urgency=low
+git-annex (4.20130521~bpo70+1) wheezy-backports; urgency=low
 
+  * Wheezy backport. Note that WebDAV is disabled in this backport.
+    Closes: #718339
   * Sanitize debian changelog version before putting it into cabal file.
     Closes: #708619
   * Switch to MonadCatchIO-transformers for better handling of state while
@@ -23,7 +25,7 @@ git-annex (4.20130521) unstable; urgency=low
   * Linux standalone: Back to being built with glibc 2.13 for maximum
     portability.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 21 May 2013 13:10:26 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 02 Aug 2013 13:18:44 -0400
 
 git-annex (4.20130516) unstable; urgency=low
 
