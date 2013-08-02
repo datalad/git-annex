@@ -1,3 +1,15 @@
+## version 4.20130802
+
+This release fixes several bugs, including a reversion introduced in the last
+version that broke direct mode on Windows, Android, and other crippled
+filesystems. It contains a workaround for a bug in recent git pre-releases
+that broke handling of filenames containing spaces.
+It is a highly recommended upgrade.
+
+The webapp can now detect repositories that did not finish getting properly set
+up, and can recover from one common bug that broke local pairing and remote
+ssh server setups on systems using `ssh-agent`.
+
 ## version 4.20130723
 
 This release fixes some bugs. Notably it fixes a bug that could result in data
