@@ -1,3 +1,11 @@
+git-annex (4.20130803) UNRELEASED; urgency=low
+
+  * assistant, watcher: .gitignore files and other git ignores are now
+    honored, when git 1.8.4 or newer is installed.
+    (Thanks, Adam Spiers, for getting the necessary support into git for this.)
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 02 Aug 2013 19:26:20 -0400
+
 git-annex (4.20130802) unstable; urgency=low
 
   * dropunused behavior change: Now refuses to drop the last copy of a

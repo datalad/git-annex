@@ -27,3 +27,5 @@ What version of git-annex are you using? On what operating system?
 > or a gitignore parser. --[[Joey]] 
 
 [[!tag /design/assistant]]
+
+> [[fixed|done]]; with git 1.8.4 the assistant honors .gitignore --[[Joey]]
