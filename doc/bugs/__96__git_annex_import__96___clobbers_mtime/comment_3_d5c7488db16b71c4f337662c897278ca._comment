@@ -10,6 +10,8 @@ In this particular case
 * It's a normal repo
 * That the inode can have only one shared mtime is obvious, but the symlinks could have their own:
 
+Random line to make MarkDown happy
+
     richih@eudyptes (git)-[master] ~/killme/target % stat * .git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
       File: ‘foo’ -> ‘.git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855’
       Size: 178          Blocks: 8          IO Block: 4096   symbolic link
