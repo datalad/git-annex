@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.145"
+ subject="comment 9"
+ date="2013-08-01T23:51:48Z"
+ content="""
+The behavior you show with `fsck --from` is that the first time it's run against the damaged remote it notices the file is not present using the checkpresent hook. It then updates the location log. The subsequent times it's run, it sees that the location log says the file is not present in the remote. It verifies this is the case by calling the checkpresent hook. Since the two data sources agree, and numcopies is still satisfied, it prints \"ok\". There does not seem to be a bug here.
+
+(`return` in Haskell does not do what you would expect to happen in a traditional imperative language. It does not alter control flow, and any function using `return` can be mechanically converted to one that does not use `return`.)
+"""]]
