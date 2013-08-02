@@ -12,7 +12,7 @@
   <table .table .table-condensed>
     <tbody #costsortable>
       $forall (name, uuid, actions) <- repolist
-        $if uuid == NoUUID
+        $if unfinished uuid
           <tr .repoline>
             <td>
               <a .btn .btn-mini .disabled>
