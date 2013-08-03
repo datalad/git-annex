@@ -7,8 +7,11 @@ There's one small problem.
 Say:
 
  1) I've already published a file using `git annex get file-to-update`
+
  2) I update that file on my computer
+
  3) I do `git annex sync`
+
  4) I do `git annex get file-to-update`
 
 Between steps 3 and 4, file-to-update goes from being an accessible web resource to being a dead symlink.  It's not really a problem for me, as hardly anyone visits my site. But it would be nice if I could make `sync` leave the old symlink to the old file until I `get`ed the new one.
