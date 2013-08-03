@@ -1,5 +1,5 @@
-I tried to "git annex copy --to <SSH REMOTE>" it says it sends it:
-copy Test (checking <SSH REMOTE>...) (to <SSH REMOTE>...) 
+I tried to "git annex copy --to SSH-REMOTE" it says it sends it:
+copy Test (checking SSH-REMOTE...) (to SSH-REMOTE...) 
 SHA256E-s6--8283daccd02d2b2797da53446d367e39dc0fb1615bcae4274460f44455bd9822
            6 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
 
