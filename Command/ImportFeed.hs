@@ -182,6 +182,7 @@ feedFile tmpl i = Utility.Format.format tmpl $ M.fromList
 	fieldMaybe k (Just v) = field k v
 
 	sanitize c
+		| c == '.' = c
 		| isSpace c || isPunctuation c || c == '/' = '_'
 		| otherwise = c
 
