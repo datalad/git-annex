@@ -16,3 +16,5 @@ Between steps 3 and 4, file-to-update goes from being an accessible web resource
 Is this possible?
 
 PS: For those who might follow in my footsteps, remember that you probably don't want people reading the contents of your .git dir, so make a re-write rule for this!
+
+Timothy
