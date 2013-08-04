@@ -107,7 +107,7 @@ getEnvCredPair storage = liftM2 (,)
 
 {- Stores a CredPair in the environment. -}
 setEnvCredPair :: CredPair -> CredPairStorage -> IO ()
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 setEnvCredPair (l, p) storage = do
 	set uenv l
 	set penv p

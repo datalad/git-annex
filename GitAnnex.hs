@@ -23,7 +23,7 @@ import qualified Command.Get
 import qualified Command.FromKey
 import qualified Command.DropKey
 import qualified Command.TransferKey
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import qualified Command.TransferKeys
 #endif
 import qualified Command.ReKey
@@ -118,7 +118,7 @@ cmds = concat
 	, Command.FromKey.def
 	, Command.DropKey.def
 	, Command.TransferKey.def
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	, Command.TransferKeys.def
 #endif
 	, Command.ReKey.def

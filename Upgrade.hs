@@ -11,7 +11,7 @@ module Upgrade where
 
 import Common.Annex
 import Annex.Version
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import qualified Upgrade.V0
 import qualified Upgrade.V1
 #endif
@@ -20,7 +20,7 @@ import qualified Upgrade.V2
 upgrade :: Annex Bool
 upgrade = go =<< getVersion
   where
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	go (Just "0") = Upgrade.V0.upgrade
 	go (Just "1") = Upgrade.V1.upgrade
 #else

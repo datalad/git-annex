@@ -17,7 +17,7 @@ import qualified Control.Exception as E
 import qualified Data.Map as M
 import Control.Exception (throw)
 import System.Console.GetOpt
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import System.Posix.Signals
 #endif
 
@@ -123,7 +123,7 @@ tryRun' errnum state cmd (a:as) = do
 {- Actions to perform each time ran. -}
 startup :: Annex Bool
 startup = liftIO $ do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	void $ installHandler sigINT Default Nothing
 #endif
 	return True

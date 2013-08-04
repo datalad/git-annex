@@ -32,7 +32,7 @@ module Git (
 ) where
 
 import Network.URI (uriPath, uriScheme, unEscapeString)
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import System.Posix.Files
 #endif
 
@@ -131,7 +131,7 @@ hookPath script repo = do
 	ifM (catchBoolIO $ isexecutable hook)
 		( return $ Just hook , return Nothing )
   where
-#if __WINDOWS__
+#if mingw32_HOST_OS
 	isexecutable f = doesFileExist f
 #else
 	isexecutable f = isExecutable . fileMode <$> getFileStatus f
