@@ -6,6 +6,7 @@ git-annex (4.20130803) UNRELEASED; urgency=low
   * importfeed: Ignores transient problems with feeds. Only exits nonzero
     when a feed has repeatedly had a problems for at least 1 day.
   * importfeed: Fix handling of dots in extensions.
+  * Windows: Added support for encrypted special remotes.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 02 Aug 2013 19:26:20 -0400
 

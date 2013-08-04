@@ -18,6 +18,9 @@ import System.Path
 import Common
 import Utility.Env
 import qualified Build.SysConfig as SysConfig
+#ifdef mingw32_HOST_OS
+import Utility.Tmp
+#endif
 
 newtype KeyIds = KeyIds [String]
 	deriving (Ord, Eq)
@@ -77,8 +80,8 @@ pipeStrict params input = do
  - Note that to avoid deadlock with the cleanup stage,
  - the reader must fully consume gpg's input before returning. -}
 feedRead :: [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
-#ifndef mingw32_HOST_OS
 feedRead params passphrase feeder reader = do
+#ifndef mingw32_HOST_OS
 	-- pipe the passphrase into gpg on a fd
 	(frompipe, topipe) <- createPipe
 	void $ forkIO $ do
@@ -89,17 +92,23 @@ feedRead params passphrase feeder reader = do
 	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
 
 	params' <- stdParams $ [Param "--batch"] ++ passphrasefd ++ params
-	closeFd frompipe `after`
-		withBothHandles createProcessSuccess (proc gpgcmd params') go
-  where
-	go (to, from) = do
-		void $ forkIO $ do
-			feeder to
-			hClose to
-		reader from
+	closeFd frompipe `after` go params'
 #else
-feedRead = error "gpg feedRead not implemented on Windows" -- TODO
+	-- store the passphrase in a temp file for gpg
+	withTmpFile "gpg" $ \tmpfile h -> do
+		hPutStr h passphrase
+		hClose h
+		let passphrasefile = [Param "--passphrase-file", File tmpfile]
+		params' <- stdParams $ [Param "--batch"] ++ passphrasefile ++ params
+		go params'
 #endif
+  where
+	go params' = withBothHandles createProcessSuccess (proc gpgcmd params')
+		$ \(to, from) -> do
+			void $ forkIO $ do
+				feeder to
+				hClose to
+			reader from
 
 {- Finds gpg public keys matching some string. (Could be an email address,
  - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of
