@@ -38,7 +38,9 @@ import System.Posix.Files
 
 import Common
 import Git.Types
+#ifndef mingw32_HOST_OS
 import Utility.FileMode
+#endif
 
 {- User-visible description of a git repo. -}
 repoDescribe :: Repo -> String

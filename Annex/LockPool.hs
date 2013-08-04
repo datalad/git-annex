@@ -14,7 +14,9 @@ import System.Posix.Types (Fd)
 
 import Common.Annex
 import Annex
+#ifndef mingw32_HOST_OS
 import Annex.Perms
+#endif
 
 {- Create a specified lock file, and takes a shared lock. -}
 lockFile :: FilePath -> Annex ()

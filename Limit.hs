@@ -35,8 +35,10 @@ import Utility.DataUnits
 import Text.Regex.TDFA
 import Text.Regex.TDFA.String
 #else
+#ifndef mingw32_HOST_OS
 import System.Path.WildMatch
 import Types.FileMatcher
+#endif
 #endif
 
 type MatchFiles = AssumeNotPresent -> FileInfo -> Annex Bool

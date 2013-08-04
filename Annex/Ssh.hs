@@ -19,11 +19,13 @@ import Data.Hash.MD5
 
 import Common.Annex
 import Annex.LockPool
-import Annex.Perms
 import qualified Build.SysConfig as SysConfig
 import qualified Annex
 import Config
 import Utility.Env
+#ifndef mingw32_HOST_OS
+import Annex.Perms
+#endif
 
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port, with connection caching. -}

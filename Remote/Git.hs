@@ -17,7 +17,6 @@ import qualified Data.Map as M
 import Control.Exception.Extensible
 
 import Common.Annex
-import Utility.CopyFile
 import Utility.Rsync
 import Remote.Helper.Ssh
 import Annex.Ssh
@@ -44,6 +43,9 @@ import Types.Key
 import qualified Fields
 import Logs.Location
 import Utility.Metered
+#ifndef mingw32_HOST_OS
+import Utility.CopyFile
+#endif
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -360,8 +362,8 @@ copyFromRemote' r key file dest
 		bracketIO noop (const $ tryIO $ killThread tid) (const $ a feeder)
 
 copyFromRemoteCheap :: Remote -> Key -> FilePath -> Annex Bool
-copyFromRemoteCheap r key file
 #ifndef mingw32_HOST_OS
+copyFromRemoteCheap r key file
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
 		loc <- liftIO $ gitAnnexLocation key (repo r) $
 			fromJust $ remoteGitConfig $ gitconfig r
@@ -371,8 +373,10 @@ copyFromRemoteCheap r key file
 			( copyFromRemote' r key Nothing file
 			, return False
 			)
-#endif
 	| otherwise = return False
+#else
+copyFromRemoteCheap _ _ _ = return False
+#endif
 
 {- Tries to copy a key's content to a remote's annex. -}
 copyToRemote :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool

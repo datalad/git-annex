@@ -48,12 +48,14 @@ import Types.Key
 import Utility.DataUnits
 import Utility.CopyFile
 import Config
-import Annex.Exception
 import Git.SharedRepository
 import Annex.Perms
 import Annex.Link
 import Annex.Content.Direct
 import Annex.ReplaceFile
+#ifndef mingw32_HOST_OS
+import Annex.Exception
+#endif
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -91,34 +93,34 @@ inAnnexSafe :: Key -> Annex (Maybe Bool)
 inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
   where
 	go f = liftIO $ openforlock f >>= check
-	openforlock f = catchMaybeIO $
 #ifndef mingw32_HOST_OS
+	openforlock f = catchMaybeIO $
 		openFd f ReadOnly Nothing defaultFileFlags
 #else
-		return ()
+	openforlock _ = return $ Just ()
 #endif
 	check Nothing = return is_missing
-	check (Just h) = do
 #ifndef mingw32_HOST_OS
+	check (Just h) = do
 		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
 		closeFd h
 		return $ case v of
 			Just _ -> is_locked
 			Nothing -> is_unlocked
 #else
-		return is_unlocked
+	check (Just _) = return is_unlocked
 #endif
+#ifndef mingw32_HOST_OS
 	is_locked = Nothing
+#endif
 	is_unlocked = Just True
 	is_missing = Just False
 
 {- Content is exclusively locked while running an action that might remove
  - it. (If the content is not present, no locking is done.) -}
 lockContent :: Key -> Annex a -> Annex a
-lockContent key a = do
-#ifdef mingw32_HOST_OS
-	a
-#else
+#ifndef mingw32_HOST_OS
+lockContent key a =
 	file <- calcRepo $ gitAnnexLocation key
 	bracketIO (openforlock file >>= lock) unlock (const a)
   where
@@ -140,6 +142,8 @@ lockContent key a = do
 			Right _ -> return $ Just fd
 	unlock Nothing = noop
 	unlock (Just l) = closeFd l
+#else
+lockContent _key a = a -- no locking for Windows!
 #endif
 
 {- Runs an action, passing it a temporary filename to get,
