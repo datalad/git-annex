@@ -13,7 +13,9 @@ import Common
 import Git.Types
 import Git.Construct
 import qualified Git.Config
+#ifndef mingw32_HOST_OS
 import Utility.Env
+#endif
 
 {- Gets the current git repository.
  -
@@ -40,8 +42,8 @@ get = do
 				setCurrentDirectory d
 			return $ addworktree wt r
   where
-	pathenv s = do
 #ifndef mingw32_HOST_OS
+	pathenv s = do
 		v <- getEnv s
 		case v of
 			Just d -> do
@@ -49,7 +51,7 @@ get = do
 				Just <$> absPath d
 			Nothing -> return Nothing
 #else
-		return Nothing
+	pathenv _ = return Nothing
 #endif
 
 	configure Nothing (Just r) = Git.Config.read r

@@ -9,16 +9,18 @@
 
 module Utility.Gpg where
 
-import System.Posix.Types
 import Control.Applicative
 import Control.Concurrent
-import Control.Exception (bracket)
-import System.Path
 
 import Common
-import Utility.Env
 import qualified Build.SysConfig as SysConfig
-#ifdef mingw32_HOST_OS
+
+#ifndef mingw32_HOST_OS
+import System.Posix.Types
+import Control.Exception (bracket)
+import System.Path
+import Utility.Env
+#else
 import Utility.Tmp
 #endif
 

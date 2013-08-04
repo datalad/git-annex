@@ -120,7 +120,7 @@ inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
  - it. (If the content is not present, no locking is done.) -}
 lockContent :: Key -> Annex a -> Annex a
 #ifndef mingw32_HOST_OS
-lockContent key a =
+lockContent key a = do
 	file <- calcRepo $ gitAnnexLocation key
 	bracketIO (openforlock file >>= lock) unlock (const a)
   where

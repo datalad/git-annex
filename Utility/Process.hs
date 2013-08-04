@@ -42,9 +42,9 @@ import System.Log.Logger
 import Control.Concurrent
 import qualified Control.Exception as E
 import Control.Monad
-import Data.Maybe
 #ifndef mingw32_HOST_OS
 import System.Posix.IO
+import Data.Maybe
 #endif
 
 import Utility.Misc

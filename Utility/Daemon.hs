@@ -10,13 +10,14 @@
 module Utility.Daemon where
 
 import Common
+#ifndef mingw32_HOST_OS
 import Utility.LogFile
+#endif
 
 #ifndef mingw32_HOST_OS
 import System.Posix
 #else
 import System.PosixCompat
-import System.Posix.Types
 #endif
 
 {- Run an action as a daemon, with all output sent to a file descriptor.
