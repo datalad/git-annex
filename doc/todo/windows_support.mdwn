@@ -7,7 +7,7 @@ now! --[[Joey]]
   support use of DOS style paths, which git-annex uses on Windows). 
   Must use the upstream build of git for Windows.
 * Test suite works and passes, but 6 tests are disabled due to failing.
-* Directory and rsync special remotes are known buggy.
+* rsync special remotes are known buggy.
 * Bad file locking, it's probably not safe to run more than one git-annex
   process at the same time on Windows.
 * No support for the assistant or webapp.

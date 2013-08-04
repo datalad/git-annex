@@ -7,6 +7,8 @@ git-annex (4.20130803) UNRELEASED; urgency=low
     when a feed has repeatedly had a problems for at least 1 day.
   * importfeed: Fix handling of dots in extensions.
   * Windows: Added support for encrypted special remotes.
+  * Windows: Fixed permissions problem that prevented removing files
+    from directory special remote. Directory special remotes now fully usable.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 02 Aug 2013 19:26:20 -0400
 

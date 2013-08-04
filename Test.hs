@@ -802,13 +802,10 @@ test_directory_remote env = "git-annex directory remote" ~: intmpclonerepo env $
 	annexed_present annexedfile
 	git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
 	annexed_notpresent annexedfile
-#ifndef mingw32_HOST_OS
-	-- moving from directory special remote fails on Windows TODO
 	git_annex env "move" [annexedfile, "--from", "foo"] @? "move --from directory remote failed"
 	annexed_present annexedfile
 	not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
-#endif
 
 test_rsync_remote :: TestEnv -> Test
 test_rsync_remote env = "git-annex rsync remote" ~: intmpclonerepo env $ do

@@ -231,6 +231,11 @@ retrieveCheap _ _ _ _ = return False
 remove :: FilePath -> Key -> Annex Bool
 remove d k = liftIO $ do
 	void $ tryIO $ allowWrite dir
+#ifdef mingw32_HOST_OS
+	{- Windows needs the files inside the directory to be writable
+	 - before it can delete them. -}
+	void $ tryIO $ mapM_ allowWrite =<< dirContents dir
+#endif
 	catchBoolIO $ do
 		removeDirectoryRecursive dir
 		return True
