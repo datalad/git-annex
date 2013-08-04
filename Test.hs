@@ -666,7 +666,6 @@ test_union_merge_regression env = "union merge regression" ~:
 						boolSystem "git" [Params "remote add r3", File ("../../" ++ r3)] @? "remote add"
 					git_annex env "get" [annexedfile] @? "get failed"
 					boolSystem "git" [Params "remote rm origin"] @? "remote rm"
-#ifndef mingw32_HOST_OS
 				forM_ [r3, r2, r1] $ \r -> indir env r $
 					git_annex env "sync" [] @? "sync failed"
 				forM_ [r3, r2] $ \r -> indir env r $
@@ -678,7 +677,6 @@ test_union_merge_regression env = "union merge regression" ~:
 					 - mangled location log data and it
 					 - thought the file was still in r2 -}
 					git_annex_expectoutput env "find" ["--in", "r2"] []
-#endif
 
 {- Regression test for the automatic conflict resolution bug fixed
  - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
@@ -707,7 +705,6 @@ test_conflict_resolution env = "automatic conflict resolution" ~:
 						git_annex env "unlock" [annexedfile] @? "unlock failed"		
 						writeFile annexedfile newcontent
 					)
-#ifndef mingw32_HOST_OS
 			{- Sync twice in r1 so it gets the conflict resolution
 			 - update from r2 -}
 			forM_ [r1, r2, r1] $ \r -> indir env r $ do
@@ -721,7 +718,6 @@ test_conflict_resolution env = "automatic conflict resolution" ~:
 			 - been put in it. -}
 			forM_ [r1, r2] $ \r -> indir env r $ do
 			 	git_annex env "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
-#endif
 
 test_map :: TestEnv -> Test
 test_map env = "git-annex map" ~: intmpclonerepo env $ do
