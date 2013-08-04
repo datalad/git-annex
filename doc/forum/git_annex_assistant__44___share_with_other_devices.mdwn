@@ -1,0 +1,1 @@
+I am trying to share files between my PC at home at that at work using the walkthrough here: http://git-annex.branchable.com/assistant/remote_sharing_walkthrough/. However, I don't have the option on my machine to "Share with other devices". Any ideas why this would be missing? I am using Ubuntu 13.04 if that helps. 

@@ -1,0 +1,15 @@
+Hi and thank you for an incredible piece of software and great work!
+
+I've noticed that when I add new files to a repository and I have my USB drive connected, the assistant alternate it's transfers of files. And only transfers one queued file at the time.
+
+file1 -->> Internet offsite computer
+file1 -->> USB drive
+file2 -->> Internet offsite computer
+file2 -->> USB drive
+
+
+I would prefer a logic where the assistant transfer files in parallel to my different repositories. I know that it might not be a good thing doing that with network accessed repositories, but when I have "low cost", locally attached USB drives it would be great if the transfers could be done in parallel.
+
+
+Is there a configuration option for this already?
+

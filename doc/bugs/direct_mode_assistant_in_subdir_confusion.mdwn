@@ -1,0 +1,6 @@
+I ran the assistant in a subdir in direct mode, and it seemed to move files from other places outside that subdir
+into it, and commit them there. These may have been files that needed to be committed, and it just staged them to the wrong place.
+
+I'm pretty sure this does not affect indirect mode.
+
+--[[Joey]]
