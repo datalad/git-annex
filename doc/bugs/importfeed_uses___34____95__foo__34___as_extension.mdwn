@@ -13,3 +13,5 @@ supported repository versions: 3 4
 upgrade supported from repository versions: 0 1 2
 
 on Debian Sid
+
+> Already fixed in git. [[done]] --[[Joey]]
