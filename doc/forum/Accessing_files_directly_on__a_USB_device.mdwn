@@ -7,3 +7,5 @@ Is there any way to change this ? E.g. to have a copy of the working tree, plus 
 My use case: I have added plenty of media files to my repository. In addition to using the USB disk as a backup/medium for transfering these files to another computer, I'd like to be able to plug the disk to e.g. a media player and read the files directly from the tree, but it does not work at the moment.
 
 Is there anything I am missing ?
+
+Edited: yes, there is something I was missing: the forum entry at [[forum/USB_backup_with_files_visible/]]
