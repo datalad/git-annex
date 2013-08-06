@@ -97,7 +97,7 @@ Executable git-annex
     Build-Depends: unix
 
   if flag(TestSuite)
-    Build-Depends: HUnit
+    Build-Depends: HUnit, tasty, tasty-hunit, tasty-quickcheck
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(TDFA)

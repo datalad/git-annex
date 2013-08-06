@@ -9,12 +9,15 @@
 
 module Test where
 
+import Test.Tasty
+import Test.Tasty.Runners
+import Test.Tasty.HUnit
+import Test.Tasty.QuickCheck
 import Test.HUnit
-import Test.QuickCheck
-import Test.QuickCheck.Test
 
 import System.PosixCompat.Files
 import Control.Exception.Extensible
+import Data.Monoid
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
 import qualified Text.JSON
@@ -66,83 +69,57 @@ type TestEnv = M.Map String String
 
 main :: IO ()
 main = do
-	divider
-	putStrLn "First, some automated quick checks of properties ..."
-	divider
-	qcok <- all isSuccess <$> sequence quickcheck
-	divider
-	putStrLn "Now, some broader checks ..."
-	putStrLn "  (Do not be alarmed by odd output here; it's normal."
-        putStrLn "   wait for the last line to see how it went.)"
-	rs <- runhunit =<< prepare False
 #ifndef mingw32_HOST_OS
-	directrs <- runhunit =<< prepare True
+	indirectenv <- prepare False
+	directenv <- prepare True
+	let tests = testGroup "Tests"
+		[ properties
+		, unitTests indirectenv "(indirect)"
+		, unitTests directenv "(direct)"
+		]
 #else
 	-- Windows is only going to use direct mode, so don't test twice.
-	let directrs = []
+	env <- prepare False
+	let tests = testGroup "Tests"
+		[properties, unitTests env ""]
 #endif
-	divider
-	propigate (rs++directrs) qcok
-  where
-	divider = putStrLn $ replicate 70 '-'
-	runhunit env = do
-		r <- forM hunit $ \t -> do
-			divider
-			t env
-		cleanup tmpdir
-		return r
+	runUI mempty tests =<< launchTestTree mempty tests
 
-propigate :: [Counts] -> Bool -> IO ()
-propigate cs qcok
-	| countsok && qcok = putStrLn "All tests ok."
-	| otherwise = do
-		unless qcok $
-			putStrLn "Quick check tests failed! This is a bug in git-annex."
-		unless countsok $ do
-			putStrLn "Some tests failed!"
-			putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
-			putStrLn "   with utilities, such as git, installed on this system.)"
-		exitFailure
-  where
-	noerrors (Counts { errors = e , failures = f }) = e + f == 0
-	countsok = all noerrors cs
-
-quickcheck :: [IO Result]
-quickcheck =
-	[ check "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
-	, check "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
-	, check "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
-	, check "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
-	, check "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
-	, check "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
-	, check "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
-	, check "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
-	, check "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
-	, check "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
-	, check "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
-	, check "prop_cost_sane" Config.Cost.prop_cost_sane
-	, check "prop_matcher_sane" Utility.Matcher.prop_matcher_sane
-	, check "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane
-	, check "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
-	, check "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
-	, check "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
-	, check "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
-	, check "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
-	, check "prop_read_show_inodecache" Utility.InodeCache.prop_read_show_inodecache
-	, check "prop_parse_show_log" Logs.Presence.prop_parse_show_log
-	, check "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
-	, check "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog
+properties :: TestTree
+properties = testGroup "QuickCheck"
+	[ testProperty "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
+	, testProperty "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
+	, testProperty "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
+	, testProperty "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
+	, testProperty "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
+	, testProperty "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
+	, testProperty "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
+	, testProperty "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
+	, testProperty "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
+	, testProperty "prop_relPathDirToFile_basics" Utility.Path.prop_relPathDirToFile_basics
+	, testProperty "prop_relPathDirToFile_regressionTest" Utility.Path.prop_relPathDirToFile_regressionTest
+	, testProperty "prop_cost_sane" Config.Cost.prop_cost_sane
+	, testProperty "prop_matcher_sane" Utility.Matcher.prop_matcher_sane
+	, testProperty "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane
+	, testProperty "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
+	, testProperty "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
+	, testProperty "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
+	, testProperty "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
+	, testProperty "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
+	, testProperty "prop_read_show_inodecache" Utility.InodeCache.prop_read_show_inodecache
+	, testProperty "prop_parse_show_log" Logs.Presence.prop_parse_show_log
+	, testProperty "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
+	, testProperty "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog
 	]
-  where
-	check desc prop = do
-		putStrLn desc
-		quickCheckResult prop
 
-hunit :: [TestEnv -> IO Counts]
-hunit =
+unitTests :: TestEnv -> String -> TestTree
+unitTests env note = testGroup ("Unit Tests " ++ note)
 	-- test order matters, later tests may rely on state from earlier
 	[ check "init" test_init
 	, check "add" test_add
+	, check "add sha1dup" test_add_sha1dup
+	, check "add subdirs" test_add_subdirs
+	{-
 	, check "reinject" test_reinject
 	, check "unannex" test_unannex
 	, check "drop" test_drop
@@ -174,57 +151,62 @@ hunit =
 	, check "bup remote" test_bup_remote
 	, check "crypto" test_crypto
 	, check "preferred content" test_preferred_content
+	-}
+	, check "global cleanup" test_global_cleanup
 	]
   where
-	check desc t env = do
-		putStrLn desc
-		runTestTT (t env)
+	check desc t = testCase desc (t env)
 
-test_init :: TestEnv -> Test
-test_init env = "git-annex init" ~: TestCase $ innewrepo env $ do
+test_global_cleanup :: TestEnv -> Assertion
+test_global_cleanup env = cleanup tmpdir
+
+test_init :: TestEnv -> Assertion
+test_init env = innewrepo env $ do
 	git_annex env "init" [reponame] @? "init failed"
 	handleforcedirect env
   where
 	reponame = "test repo"
 
-test_add :: TestEnv -> Test
-test_add env = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
-  where
-	-- this test case runs in the main repo, to set up a basic
-	-- annexed file that later tests will use
-	basic = TestCase $ inmainrepo env $ do
-		writeFile annexedfile $ content annexedfile
-		git_annex env "add" [annexedfile] @? "add failed"
-		annexed_present annexedfile
-		writeFile sha1annexedfile $ content sha1annexedfile
-		git_annex env "add" [sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
-		annexed_present sha1annexedfile
-		checkbackend sha1annexedfile backendSHA1
-		writeFile wormannexedfile $ content wormannexedfile
-		git_annex env "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
-		annexed_present wormannexedfile
-		checkbackend wormannexedfile backendWORM
-		boolSystem "git" [Params "rm --force -q", File wormannexedfile] @? "git rm failed"
-		writeFile ingitfile $ content ingitfile
-		boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
-		boolSystem "git" [Params "commit -q -m commit"] @? "git commit failed"
-		git_annex env "add" [ingitfile] @? "add ingitfile should be no-op"
-		unannexed ingitfile
-	sha1dup = TestCase $ intmpclonerepo env $ do
-		writeFile sha1annexedfiledup $ content sha1annexedfiledup
-		git_annex env "add" [sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
-		annexed_present sha1annexedfiledup
-		annexed_present sha1annexedfile
-	subdirs = TestCase $ intmpclonerepo env $ do
-		createDirectory "dir"
-		writeFile ("dir" </> "foo") $ content annexedfile
-		git_annex env "add" ["dir"] @? "add of subdir failed"
-		createDirectory "dir2"
-		writeFile ("dir2" </> "foo") $ content annexedfile
+-- this test case runs in the main repo, to set up a basic
+-- annexed file that later tests will use
+test_add :: TestEnv -> Assertion
+test_add env = inmainrepo env $ do
+	writeFile annexedfile $ content annexedfile
+	git_annex env "add" [annexedfile] @? "add failed"
+	annexed_present annexedfile
+	writeFile sha1annexedfile $ content sha1annexedfile
+	git_annex env "add" [sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
+	annexed_present sha1annexedfile
+	checkbackend sha1annexedfile backendSHA1
+	writeFile wormannexedfile $ content wormannexedfile
+	git_annex env "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
+	annexed_present wormannexedfile
+	checkbackend wormannexedfile backendWORM
+	boolSystem "git" [Params "rm --force -q", File wormannexedfile] @? "git rm failed"
+	writeFile ingitfile $ content ingitfile
+	boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
+	boolSystem "git" [Params "commit -q -m commit"] @? "git commit failed"
+	git_annex env "add" [ingitfile] @? "add ingitfile should be no-op"
+	unannexed ingitfile
+
+test_add_sha1dup :: TestEnv -> Assertion
+test_add_sha1dup env = intmpclonerepo env $ do
+	writeFile sha1annexedfiledup $ content sha1annexedfiledup
+	git_annex env "add" [sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
+	annexed_present sha1annexedfiledup
+	annexed_present sha1annexedfile
+
+test_add_subdirs :: TestEnv -> Assertion
+test_add_subdirs env = intmpclonerepo env $ do
+	createDirectory "dir"
+	writeFile ("dir" </> "foo") $ content annexedfile
+	git_annex env "add" ["dir"] @? "add of subdir failed"
+	createDirectory "dir2"
+	writeFile ("dir2" </> "foo") $ content annexedfile
 #ifndef mingw32_HOST_OS
-		{- This does not work on Windows, for whatever reason. -}
-		setCurrentDirectory "dir"
-		git_annex env "add" [".." </> "dir2"] @? "add of ../subdir failed"
+	{- This does not work on Windows, for whatever reason. -}
+	setCurrentDirectory "dir"
+	git_annex env "add" [".." </> "dir2"] @? "add of ../subdir failed"
 #endif
 
 test_reinject :: TestEnv -> Test
