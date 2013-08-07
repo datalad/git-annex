@@ -1,0 +1,9 @@
+Seems that a fairly common desire in some use cases is to be able to make a
+clone of a repository and be able to get files, without updating the
+location tracking information. (And without even recording a uuid in the
+remote.log.) Use cases include wanting to have temporary
+clones without cluttering history, and centralized development where the
+developers don't care to know about one-another's systems.
+
+It seems that such an untracked repository would need to automatically
+consider itself untrusted. Is that enough to avoid losing data?
