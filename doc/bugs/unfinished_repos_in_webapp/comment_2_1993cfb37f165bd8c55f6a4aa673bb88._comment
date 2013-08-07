@@ -1,0 +1,132 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 2"
+ date="2013-08-07T22:33:49Z"
+ content="""
+Hi,
+
+There's all sorts of weirdness no uuid for the final remote in .git/config.  Odd missing letter at front of preferred contents uuid in git annex vicfg and spurious repos.  Everything seems to be working okay though...excepting the UI in progress bit.
+
+## git config
+
+<pre><code>
+[core]
+	repositoryformatversion = 0
+	filemode = true
+	bare = false
+	logallrefupdates = true
+	ignorecase = true
+	precomposeunicode = false
+[annex]
+	uuid = 972ba0fb-cf1e-4a37-8748-d9cc840efd92
+	version = 4
+	direct = true
+	delayadd = 2
+	diskreserve = 1 megabyte
+	numcopies = 1
+	debug = false
+#[gc]
+#	auto = 0
+[remote \"dancingfrog.hopto.org_git_current_transfer\"]
+	url = ssh://matt@dancingfrog.hopto.org/~/git/current_transfer/
+	fetch = +refs/heads/*:refs/remotes/dancingfrog.hopto.org_git_current_transfer/*
+	annex-uuid = fcedc155-fca2-484b-b12d-b129d3324fd8
+	annex-cost = 100.0
+	annex-sync = true
+[remote \"mattford63\"]
+	url = xmpp::mattford63@gmail.com
+	fetch = +refs/heads/*:refs/remotes/mattford63/*
+	annex-uuid = 88733342-45ef-420f-8f1b-9a5ed8d8e070
+[remote \"10.23.33.69_current\"]
+	url = ssh://matt@git-annex-10.23.33.69-matt_current/~/current/
+	fetch = +refs/heads/*:refs/remotes/10.23.33.69_current/*
+	annex-cost = 175.0
+	annex-ignore = false
+</code></pre>
+
+## git-annex-status
+
+<pre><code>
+supported backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+supported remote types: git S3 bup directory rsync web webdav glacier hook
+repository mode: direct
+trusted repositories: ssh: connect to host 10.23.33.69 port 22: Operation timed out
+ssh: connect to host 10.23.33.69 port 22: No route to host
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+0
+semitrusted repositories: 4
+	00000000-0000-0000-0000-000000000001 -- web (What's this)
+ 	88733342-45ef-420f-8f1b-9a5ed8d8e070 -- mattford63 (matt@descartes.rss.mhs.man.ac.uk:~/current)
+ 	972ba0fb-cf1e-4a37-8748-d9cc840efd92 -- here (matt@Matts-Mac-Mini.local:~/current)
+ 	fcedc155-fca2-484b-b12d-b129d3324fd8 -- dancingfrog.hopto.org_git_current_transfer (matt@Matts-Mac-Mini.local:~/git/current_transfer)
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 229.37 gigabytes (+1 megabyte reserved)
+local annex keys: 665
+local annex size: 43.29 megabytes
+known annex keys: 286
+known annex size: 30.33 megabytes
+bloom filter size: 16 mebibytes (0.1% full)
+backend usage: 
+	SHA256E: 951
+</code></pre>
+
+## git annex vicfg
+
+<pre><code>
+# git-annex configuration
+#
+# Changes saved to this file will be recorded in the git-annex branch.
+#
+# Lines in this file have the format:
+#   setting uuid = value
+
+# Repository trust configuration
+# (Valid trust levels: trusted semitrusted untrusted dead)
+# (for mattford63 (matt@descartes.rss.mhs.man.ac.uk:~/current))
+trust 88733342-45ef-420f-8f1b-9a5ed8d8e070 = semitrusted
+# (for Dead repo)
+trust 40da403e-6f74-4705-aae0-433aa656b55e = dead
+# (for web (What's this))
+#trust 00000000-0000-0000-0000-000000000001 = semitrusted
+# (for matt@Matts-Mac-Mini.local:~/current)
+#trust 972ba0fb-cf1e-4a37-8748-d9cc840efd92 = semitrusted
+# (for dancingfrog.hopto.org_git_current_transfer (matt@Matts-Mac-Mini.local:~/git/current_transfer))
+#trust fcedc155-fca2-484b-b12d-b129d3324fd8 = semitrusted
+
+# Repository groups
+# (Standard groups: client transfer backup incrementalbackup smallarchive archive source manual public u
+nwanted)
+# (Separate group names with spaces)
+# (for Dead repo)
+group 40da403e-6f74-4705-aae0-433aa656b55e =
+# (for mattford63 (matt@descartes.rss.mhs.man.ac.uk:~/current))
+group 88733342-45ef-420f-8f1b-9a5ed8d8e070 = client
+# (for matt@Matts-Mac-Mini.local:~/current)
+group 972ba0fb-cf1e-4a37-8748-d9cc840efd92 = client
+# (for )
+group ad58acea-cbbf-40fc-8eec-fa7759aad1fc = client
+# (for dancingfrog.hopto.org_git_current_transfer (matt@Matts-Mac-Mini.local:~/git/current_transfer))
+group fcedc155-fca2-484b-b12d-b129d3324fd8 = transfer
+# (for web (What's this))
+#group 00000000-0000-0000-0000-000000000001 =
+
+# Repository preferred contents
+# (for dancingfrog.hopto.org_git_current_transfer (matt@Matts-Mac-Mini.local:~/git/current_transfer))
+content fcedc155-fca2-484b-b12d-b129d3324fd8 =
+# (for mattford63 (matt@descartes.rss.mhs.man.ac.uk:~/current))
+content 88733342-45ef-420f-8f1b-9a5ed8d8e070 = standard
+# (for matt@Matts-Mac-Mini.local:~/current)
+content 972ba0fb-cf1e-4a37-8748-d9cc840efd92 = standard
+# (for )
+content cedc155-fca2-484b-b12d-b129d3324fd8 = standard
+# (for web (What's this))
+#content 00000000-0000-0000-0000-000000000001 =
+# (for Dead repo)
+#content 40da403e-6f74-4705-aae0-433aa656b55e =
+</code></pre>
+"""]]
