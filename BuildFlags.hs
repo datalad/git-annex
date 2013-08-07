@@ -48,4 +48,7 @@ buildFlags = filter (not . null)
 #ifdef WITH_DNS
 	, "DNS"
 #endif
+#ifdef WITH_FEEDS
+	, "Feeds"
+#endif
 	]
