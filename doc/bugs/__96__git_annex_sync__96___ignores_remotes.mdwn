@@ -102,3 +102,5 @@ ok
 [2013-08-06 11:00:17 CEST] read: git ["--git-dir=/home/sam/Music/.git","--work-tree=/home/sam/Music","log","refs/heads/git-annex..feaba7c5ea5f4ca73c123e6ea44ffd6333bf383e","--oneline","-n1"]
 [2013-08-06 11:00:17 CEST] call: git ["--git-dir=/home/sam/Music/.git","--work-tree=/home/sam/Music","branch","-f","synced/master"]
 """]]
+
+[[done]]
