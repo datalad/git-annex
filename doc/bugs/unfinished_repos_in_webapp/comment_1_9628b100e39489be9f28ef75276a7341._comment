@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-08-07T16:07:56Z"
+ content="""
+It seems to me that it has already finished applying the workaround. That IdentitiesOnly change could only be made
+if you clicked on a Retry button once it detected a problem.
+
+You may be experiencing a different problem that it cannot recover from. Paste your .git/config file.
+"""]]
