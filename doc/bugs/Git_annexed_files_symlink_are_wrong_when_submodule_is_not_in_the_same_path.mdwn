@@ -47,6 +47,7 @@ This returns test -> ../.git/modules/module/annex/objects/w8/pv/SHA256E-s5--f2ca
 
 Actually, the file committed is correct. But the fact it points to '../.git/modules/module/...' makes the link work only if the repository is also a submodule and if this submodule is also located in the modules folder in the parent git repository.
 
+I tried playing with making the repository direct and then indirect, hoping that would fix the symlinks, but it did not work.
 ### What version of git-annex are you using? On what operating system?
 
     $ git-annex version
