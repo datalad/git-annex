@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="minor suggestion"
+ date="2013-08-10T14:31:31Z"
+ content="""
+The contents of large files are not stored in git, only the names of the files and some other metadata remain there.
+
+Would this read better to the newbie as:
+
+The contents of 'annexed' files are not stored in git, only the names of the files and some other metadata remain there.
+
+First time for me, the note about large files made me think that maybe annex operated on files above a certain size.
+"""]]
