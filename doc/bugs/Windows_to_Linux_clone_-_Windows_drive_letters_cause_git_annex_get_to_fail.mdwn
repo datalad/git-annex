@@ -10,6 +10,7 @@ On Windows:
 3. git annex sync (because I forgot about commit)
 
 On Linux:
+
 1. Mount the Windows annex via SMB (mine was read only, but probably won't matter)
 
 2. git clone the folder (works fine)
@@ -42,6 +43,8 @@ upgrade supported from repository versions: 0 1 2
 [[!format sh """
 # If you can, paste a complete transcript of the problem occurring here.
 # If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+#output of git annex get on the Linux side.
 
 get Purchased/Caravan Palace/Panic/01 Queens.mp3 (not available) 
   Try making some of these repositories available:
