@@ -190,6 +190,27 @@ subdirectories).
 
 	git annex import /media/camera/DCIM/
 
+  By default, importing two files with the same contents from two different
+  locations will result in both files being added to the repository.
+  (With most backends, only one copy of the data will be stored.)
+
+  To not delete files from the import location, use the
+  --duplicate option. This could allow importing the same files repeatedly
+  to different locations in a repository. More likely, it could be used to
+  import the same files to a number of different branches or separate git
+  repositories.
+
+  The --deduplicate option can be used to alter this behavior, making
+  files whose content has already been seen by git-annex not be added
+  to the repository, but just be deleted.
+
+  The --clean-duplicates option does not import any new files, but any files
+  found in the import location that are duplicates of content in the annex
+  are deleted.
+  
+  (Note that using --deduplicate or --clean-duplicates with the WORM
+  backend does not look at file content, but filename and mtime.)
+
 * importfeed [url ...]
 
   Imports the contents of podcast feeds. Only downloads files whose
