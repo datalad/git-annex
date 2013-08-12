@@ -20,6 +20,7 @@ When changing a file in a repository from a symlink to a normal file causes anne
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 4.20130802
+
 Ubuntu 12.04 LTS
 
 ### Please provide any additional information below.
