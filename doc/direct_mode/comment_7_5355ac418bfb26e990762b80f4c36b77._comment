@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://caust1c.myopenid.com/"
+ nickname="asbraithwaite"
+ subject="comment 7"
+ date="2013-08-12T18:06:21Z"
+ content="""
+Would it be safe to add largefiles to gitignore in direct mode?
+
+Can git-annex still track large files ignored by git?
+
+Thanks. :-)
+"""]]
