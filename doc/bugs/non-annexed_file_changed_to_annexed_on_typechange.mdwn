@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-When changing a file in a repository from a symlink to a normal file causes annex to create an annexed file from that typechange regardless of weather or not it was an annexed file.
+Changing a file in a repository from a symlink to a normal file causes annex to create an annexed file from that typechange regardless of weather or not it was an annexed file.
 
 
 ### What steps will reproduce the problem?
