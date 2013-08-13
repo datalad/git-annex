@@ -166,6 +166,7 @@ Everything up-to-date
 I tried removing the USB drive I had plugged in, and was able to get the file from S3, and it wasn't dropped.
 However, checking the logs, I see that it did try to drop the file, but was unable to verify numcopies, so gives up.
 Also odd, is that it doesn't suggest making the USB drive available, but `git annex whereis` knows that the drive does have it. Also, annex.numcopies is 1, and it got it from S3, so why can't it drop it on the computer?
+Or, why does it say that it needs two copies? `git config annex.numcopies` gives 1.
 
 [[!format sh """
 [2013-08-13 16:52:08 NZST] TransferWatcher: transfer starting: Download UUID "be992080-b1db-11e1-8f79-1b10bb4092ef" 01/IMG_4230.JPG Nothing
