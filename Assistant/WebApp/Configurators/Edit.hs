@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators.Edit where
 
@@ -132,9 +132,10 @@ setRepoConfig uuid mremote oldc newc = do
 
 	legalName = makeLegalName . T.unpack . repoName
 
-editRepositoryAForm :: RepoConfig -> AForm WebApp WebApp RepoConfig
-editRepositoryAForm def = RepoConfig
-	<$> areq textField "Name" (Just $ repoName def)
+editRepositoryAForm :: Bool -> RepoConfig -> MkAForm RepoConfig
+editRepositoryAForm ishere def = RepoConfig
+	<$> areq (if ishere then readonlyTextField else textField)
+		"Name" (Just $ repoName def)
 	<*> aopt textField "Description" (Just $ repoDescription def)
 	<*> areq (selectFieldList groups `withNote` help) "Repository group" (Just $ repoGroup def)
 	<*> associateddirectory
@@ -154,33 +155,33 @@ editRepositoryAForm def = RepoConfig
 		Nothing -> aopt hiddenField "" Nothing
 		Just d -> aopt textField "Associated directory" (Just $ Just d)
 
-getEditRepositoryR :: UUID -> Handler RepHtml
+getEditRepositoryR :: UUID -> Handler Html
 getEditRepositoryR = postEditRepositoryR
 
-postEditRepositoryR :: UUID -> Handler RepHtml
+postEditRepositoryR :: UUID -> Handler Html
 postEditRepositoryR = editForm False
 
-getEditNewRepositoryR :: UUID -> Handler RepHtml
+getEditNewRepositoryR :: UUID -> Handler Html
 getEditNewRepositoryR = postEditNewRepositoryR
 
-postEditNewRepositoryR :: UUID -> Handler RepHtml
+postEditNewRepositoryR :: UUID -> Handler Html
 postEditNewRepositoryR = editForm True
 
-getEditNewCloudRepositoryR :: UUID -> Handler RepHtml
+getEditNewCloudRepositoryR :: UUID -> Handler Html
 getEditNewCloudRepositoryR = postEditNewCloudRepositoryR
 
-postEditNewCloudRepositoryR :: UUID -> Handler RepHtml
+postEditNewCloudRepositoryR :: UUID -> Handler Html
 postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
 
-editForm :: Bool -> UUID -> Handler RepHtml
-editForm new uuid = page "Configure repository" (Just Configuration) $ do
+editForm :: Bool -> UUID -> Handler Html
+editForm new uuid = page "Edit repository" (Just Configuration) $ do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	curr <- liftAnnex $ getRepoConfig uuid mremote
 	liftAnnex $ checkAssociatedDirectory curr mremote
-	((result, form), enctype) <- lift $
-		runFormPost $ renderBootstrap $ editRepositoryAForm curr
+	((result, form), enctype) <- liftH $
+		runFormPost $ renderBootstrap $ editRepositoryAForm (isNothing mremote) curr
 	case result of
-		FormSuccess input -> lift $ do
+		FormSuccess input -> liftH $ do
 			setRepoConfig uuid mremote curr input
 			liftAnnex $ checkAssociatedDirectory input mremote
 			redirect DashboardR

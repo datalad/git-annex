@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="http://emk.myopenid.com/"
+ ip="24.2.150.84"
+ subject="Well, this is the first time it ever panicked"
+ date="2013-07-23T16:32:10Z"
+ content="""
+Well, it's not like my machine kernel panics on a regular basis or anything. :-) This is the first time I ever saw the kernel encryption code do this. I'm running a boring stock install of Ubuntu 12.04 LTS that was preloaded by ZaReason, and I'm using the ecryptfs home directory encryption supplied by Ubuntu. So in this case, \"stop using kernel features that crash\" means \"stop using Ubuntu on supported hardware.\"
+
+The underlying problem is that ext4 allocates file contents lazily and out-of-order, and it may wait a surprisingly long time before actually flushing data to disk:
+
+https://bugs.launchpad.net/ubuntu/+source/linux/+bug/317781
+http://linux.bihlman.com/2010/learn-linux-help/how-to-solve-zero-length-file-problem-in-linuxs-ext4-file-system/
+
+The problem is that `git annex assistant` and `git` don't sync the disks all that often, and that the assistant can generate huge amounts of complicated disk I/O across multiple volumes for hours on end. All you need to do is go through the walkthrough, create the specified repositories including one on a USB drive, and throw 50GB of data into the annex directory. `git annex assistant` will happily grind away overnight, and it anything prevents ext4 from flushing data, there's a good chance you'll wind up with multiple corrupted repositories with hundreds of `git fsck` errors.
+
+There are some potential workarounds:
+
+1. Reconfigure ext4 to run in data write-back mode. This isn't really possible for non-technical users, but it's an excellent idea for large external USB drives.
+2. Somehow convince `git` and `git annex assistant` to call `sync` or `fsync` more aggressively on local volumes.
+3. Use a remote server for at least one remote, as you suggested.
+4. Operate on the repository manually, so that you can ensure that `git`'s data is in a known-good state before trying to copy the annex files. The 
+annex files are much easier to recover than git's state.
+
+Anyway, I doubt this is really fixable. And it's not really `git annex`'s fault, in any case. But I'm really glad I had recent backups of all my data last night, which allowed me to checksum everything and start from scratch.
+
+...
+
+Leaving aside this incident, `git annex` is one of the nicest pieces of open source software I've seen in a long time, and it's clearly going to change how I use my computer. And thank you for posting the crowd-funding campaign so we can say \"Thanks!\"
+"""]]

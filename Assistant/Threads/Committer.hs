@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, BangPatterns #-}
+{-# LANGUAGE CPP #-}
 
 module Assistant.Threads.Committer where
 
@@ -75,33 +75,38 @@ refill cs = do
 	debug ["delaying commit of", show (length cs), "changes"]
 	refillChanges cs
 
-{- Wait for one or more changes to arrive to be committed. -}
+{- Wait for one or more changes to arrive to be committed, and then
+ - runs an action to commit them. If more changes arrive while this is
+ - going on, they're handled intelligently, batching up changes into
+ - large commits where possible, doing rename detection, and
+ - commiting immediately otherwise. -}
 waitChangeTime :: (([Change], UTCTime) -> Assistant Int) -> Assistant ()
-waitChangeTime a = go [] 0
+waitChangeTime a = waitchanges 0
   where
-	go unhandled lastcommitsize = do
+	waitchanges lastcommitsize = do
 		-- Wait one one second as a simple rate limiter.
 		liftIO $ threadDelaySeconds (Seconds 1)
 		-- Now, wait until at least one change is available for
 		-- processing.
 		cs <- getChanges
-		let changes = unhandled ++ cs
+		handlechanges cs lastcommitsize
+	handlechanges changes lastcommitsize = do
 		let len = length changes
 		-- See if now's a good time to commit.
 		now <- liftIO getCurrentTime
 		case (lastcommitsize >= maxCommitSize, shouldCommit now len changes, possiblyrename changes) of
 			(True, True, _)
 				| len > maxCommitSize -> 
-					go [] =<< a (changes, now)
+					waitchanges =<< a (changes, now)
 				| otherwise -> aftermaxcommit changes
 			(_, True, False) ->
-				go [] =<< a (changes, now)
+				waitchanges =<< a (changes, now)
 			(_, True, True) -> do
 				morechanges <- getrelatedchanges changes
-				go [] =<< a (changes ++ morechanges, now)
+				waitchanges =<< a (changes ++ morechanges, now)
 			_ -> do
 				refill changes
-				go [] lastcommitsize
+				waitchanges lastcommitsize
 	
 	{- Did we perhaps only get one of the AddChange and RmChange pair
 	 - that make up a file rename? Or some of the pairs that make up 
@@ -158,14 +163,17 @@ waitChangeTime a = go [] 0
 	 -}
 	aftermaxcommit oldchanges = loop (30 :: Int)
 	  where
-	  	loop 0 = go oldchanges 0
+	  	loop 0 = continue oldchanges
 	  	loop n = do
 			liftAnnex noop -- ensure Annex state is free
 			liftIO $ threadDelaySeconds (Seconds 1)
 			changes <- getAnyChanges
 			if null changes
 				then loop (n - 1)
-				else go (oldchanges ++ changes) 0
+				else continue (oldchanges ++ changes)
+		continue cs
+			| null cs = waitchanges 0
+			| otherwise = handlechanges cs 0
 
 isRmChange :: Change -> Bool
 isRmChange (Change { changeInfo = i }) | i == RmChange = True
@@ -273,10 +281,11 @@ handleAdds :: Maybe Seconds -> [Change] -> Assistant [Change]
 handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	direct <- liftAnnex isDirect
-	pending' <- if direct
-		then return pending
+	(pending', cleanup) <- if direct
+		then return (pending, noop)
 		else findnew pending
 	(postponed, toadd) <- partitionEithers <$> safeToAdd delayadd pending' inprocess
+	cleanup
 
 	unless (null postponed) $
 		refillChanges postponed
@@ -294,14 +303,13 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
 		
-	findnew [] = return []
+	findnew [] = return ([], noop)
 	findnew pending@(exemplar:_) = do
-		(!newfiles, cleanup) <- liftAnnex $
+		(newfiles, cleanup) <- liftAnnex $
 			inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
-		void $ liftIO cleanup
 		-- note: timestamp info is lost here
 		let ts = changeTime exemplar
-		return $ map (PendingAddChange ts) newfiles
+		return (map (PendingAddChange ts) newfiles, void $ liftIO $ cleanup)
 
 	returnWhen c a
 		| c = return otherchanges
@@ -383,7 +391,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 				return Nothing
 
 	{- Shown an alert while performing an action to add a file or
-	 - files. When only one file is added, its name is shown
+	 - files. When only a few files are added, their names are shown
 	 - in the alert. When it's a batch add, the number of files added
 	 - is shown.
 	 -
@@ -392,15 +400,10 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	 - the add succeeded.
 	 -}
 	addaction [] a = a
-	addaction toadd a = alertWhile' (addFileAlert msg) $
+	addaction toadd a = alertWhile' (addFileAlert $ map changeFile toadd) $
 		(,) 
 			<$> pure True
 			<*> a
-	  where
-	  	msg = case toadd of
-			(InProcessAddChange { keySource = ks }:[]) ->
-				keyFilename ks
-			_ -> show (length toadd) ++ " files"
 
 {- Files can Either be Right to be added now,
  - or are unsafe, and must be Left for later.

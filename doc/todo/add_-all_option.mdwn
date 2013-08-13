@@ -16,3 +16,7 @@ grubbing thru history to find where/when the key used to exist). So
 particular problem for `drop` and for `--auto`.
 
 --[[Joey]]
+
+> [[done]]. The .gitattributes problem was solved simply by not
+> supporting `drop --all`. `--auto` also cannot be mixed with --all for
+> similar reasons. --[[Joey]] 

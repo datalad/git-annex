@@ -41,7 +41,7 @@ get = do
 			return $ addworktree wt r
   where
 	pathenv s = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		v <- getEnv s
 		case v of
 			Just d -> do

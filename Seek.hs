@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,6 +16,7 @@ import System.PosixCompat.Files
 import Common.Annex
 import Types.Command
 import Types.Key
+import Types.FileMatcher
 import qualified Annex
 import qualified Git
 import qualified Git.Command
@@ -23,6 +24,8 @@ import qualified Git.LsFiles as LsFiles
 import qualified Limit
 import qualified Option
 import Config
+import Logs.Location
+import Logs.Unused
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do
@@ -120,13 +123,40 @@ withNothing :: CommandStart -> CommandSeek
 withNothing a [] = return [a]
 withNothing _ _ = error "This command takes no parameters."
 
+{- If --all is specified, or in a bare repo, runs an action on all
+ - known keys.
+ -
+ - If --unused is specified, runs an action on all keys found by
+ - the last git annex unused scan.
+ -
+ - Otherwise, fall back to a regular CommandSeek action on
+ - whatever params were passed. -}
+withKeyOptions :: (Key -> CommandStart) -> CommandSeek -> CommandSeek
+withKeyOptions keyop fallbackop params = do
+	bare <- fromRepo Git.repoIsLocalBare
+	allkeys <- Annex.getFlag "all" <||> pure bare
+	unused <- Annex.getFlag "unused"
+	auto <- Annex.getState Annex.auto
+	case    (allkeys , unused, auto ) of
+		(True    , False , False) -> go loggedKeys
+		(False   , True  , False) -> go unusedKeys
+		(True    , True  , _    ) -> error "Cannot use --all with --unused."
+		(False   , False , _    ) -> fallbackop params
+		(_       , _     , True )
+			| bare -> error "Cannot use --auto in a bare repository."
+			| otherwise -> error "Cannot use --auto with --all or --unused."
+  where
+  	go a = do
+		unless (null params) $
+			error "Cannot mix --all or --unused with file names."
+		map keyop <$> a
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do
 	matcher <- Limit.getMatcher
 	map (process matcher) <$> fs
   where
-	process matcher f = ifM (matcher $ Annex.FileInfo f f)
+	process matcher f = ifM (matcher $ FileInfo f f)
 		( a f , return Nothing )
 
 notSymlink :: FilePath -> IO Bool

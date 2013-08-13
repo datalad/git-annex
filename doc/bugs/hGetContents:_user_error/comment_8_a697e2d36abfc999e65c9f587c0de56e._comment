@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.254.222"
+ subject="workaround"
+ date="2013-07-07T16:38:09Z"
+ content="""
+This bug only affects programs built with the threaded haskell runtime. 
+
+git-annex can be built without the threaded runtime, by simply disabling the webapp. So a workaround is to pass the flag -f-WebApp to cabal when building git-annex with cabal.
+"""]]

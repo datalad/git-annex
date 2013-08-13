@@ -7,6 +7,7 @@
 
 module Annex.Content.Direct (
 	associatedFiles,
+	associatedFilesRelative,
 	removeAssociatedFile,
 	removeAssociatedFileUnchecked,
 	addAssociatedFile,
@@ -193,7 +194,7 @@ compareInodeCachesWith :: Annex InodeComparisonType
 compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
 
 {- Copies the contentfile to the associated file, if the associated
- - file has not content. If the associated file does have content,
+ - file has no content. If the associated file does have content,
  - even if the content differs, it's left unchanged. -}
 addContentWhenNotPresent :: Key -> FilePath -> FilePath -> Annex ()
 addContentWhenNotPresent key contentfile associatedfile = do
@@ -232,6 +233,7 @@ readInodeSentinalFile = do
 writeInodeSentinalFile :: Annex ()
 writeInodeSentinalFile = do
 	sentinalfile <- fromRepo gitAnnexInodeSentinal
+	createAnnexDirectory (parentDir sentinalfile)
 	sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
 	liftIO $ writeFile sentinalfile ""
 	liftIO $ maybe noop (writeFile sentinalcachefile . showInodeCache)

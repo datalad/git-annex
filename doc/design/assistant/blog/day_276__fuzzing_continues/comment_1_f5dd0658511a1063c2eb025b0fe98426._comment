@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkGCmVc5qIJaQQgG82Hc5zzBdAVdhe2JEM"
+ nickname="Bruno"
+ subject="comment 1"
+ date="2013-05-28T03:23:50Z"
+ content="""
+Does the Android application use a [WakeLock](https://developer.android.com/reference/android/os/PowerManager.WakeLock.html) to ensure syncing happens even if the device screen goes off?
+
+I'm under the impression that it doesn't since it took a very long time to sync the first time (before I used the terminal's options to prevent the phone from sleeping).
+
+I think that option shouldn't be left on since it would waste the battery and I think the application should block sleep mode only when syncing.
+
+I might be wrong. I never had to use a WakeLock on Android yet.
+"""]]

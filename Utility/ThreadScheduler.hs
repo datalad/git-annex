@@ -13,9 +13,11 @@ module Utility.ThreadScheduler where
 import Common
 
 import Control.Concurrent
+#ifndef mingw32_HOST_OS
 import System.Posix.Signals
 #ifndef __ANDROID__
 import System.Posix.Terminal
+#endif
 #endif
 
 newtype Seconds = Seconds { fromSeconds :: Int }
@@ -52,15 +54,16 @@ unboundDelay time = do
 waitForTermination :: IO ()
 waitForTermination = do
 	lock <- newEmptyMVar
-	check softwareTermination lock
+#ifndef mingw32_HOST_OS
+	let check sig = void $
+		installHandler sig (CatchOnce $ putMVar lock ()) Nothing
+	check softwareTermination
 #ifndef __ANDROID__
 	whenM (queryTerminal stdInput) $
-		check keyboardSignal lock
+		check keyboardSignal
+#endif
 #endif
 	takeMVar lock
-  where
-	check sig lock = void $
-		installHandler sig (CatchOnce $ putMVar lock ()) Nothing
 
 oneSecond :: Microseconds
 oneSecond = 1000000

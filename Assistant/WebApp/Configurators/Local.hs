@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings, RankNTypes, KindSignatures, TypeFamilies #-}
 
 module Assistant.WebApp.Configurators.Local where
 
@@ -38,6 +38,7 @@ import Config
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Char
+import qualified Text.Hamlet as Hamlet
 
 data RepositoryPath = RepositoryPath Text
 	deriving Show
@@ -46,7 +47,11 @@ data RepositoryPath = RepositoryPath Text
  -
  - Validates that the path entered is not empty, and is a safe value
  - to use as a repository. -}
+#if MIN_VERSION_yesod(1,2,0)
+repositoryPathField :: forall (m :: * -> *). (MonadIO m, HandlerSite m ~ WebApp) => Bool -> Field m Text
+#else
 repositoryPathField :: forall sub. Bool -> Field sub WebApp Text
+#endif
 repositoryPathField autofocus = Field
 #if ! MIN_VERSION_yesod_form(1,2,0)
 	{ fieldParse = parse
@@ -119,7 +124,7 @@ defaultRepositoryPath firstrun = do
 			)
 	legit d = not <$> doesFileExist (d </> "git-annex")
 
-newRepositoryForm :: FilePath -> Form RepositoryPath
+newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
 newRepositoryForm defpath msg = do
 	(pathRes, pathView) <- mreq (repositoryPathField True) ""
 		(Just $ T.pack $ addTrailingPathSeparator defpath)
@@ -133,40 +138,47 @@ newRepositoryForm defpath msg = do
 	return (RepositoryPath <$> pathRes, form)
 
 {- Making the first repository, when starting the webapp for the first time. -}
-getFirstRepositoryR :: Handler RepHtml
+getFirstRepositoryR :: Handler Html
 getFirstRepositoryR = postFirstRepositoryR
-postFirstRepositoryR :: Handler RepHtml
+postFirstRepositoryR :: Handler Html
 postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 #ifdef __ANDROID__
 	androidspecial <- liftIO $ doesDirectoryExist "/sdcard/DCIM"
 	let path = "/sdcard/annex"
 #else
 	let androidspecial = False
-	path <- liftIO . defaultRepositoryPath =<< lift inFirstRun
+	path <- liftIO . defaultRepositoryPath =<< liftH inFirstRun
 #endif
-	((res, form), enctype) <- lift $ runFormPost $ newRepositoryForm path
+	((res, form), enctype) <- liftH $ runFormPost $ newRepositoryForm path
 	case res of
-		FormSuccess (RepositoryPath p) -> lift $
-			startFullAssistant (T.unpack p) ClientGroup
+		FormSuccess (RepositoryPath p) -> liftH $
+			startFullAssistant (T.unpack p) ClientGroup Nothing
 		_ -> $(widgetFile "configurators/newrepository/first")
 
 getAndroidCameraRepositoryR :: Handler ()
-getAndroidCameraRepositoryR = startFullAssistant "/sdcard/DCIM" SourceGroup
+getAndroidCameraRepositoryR = 
+	startFullAssistant "/sdcard/DCIM" SourceGroup $ Just addignore	
+  where
+  	addignore = do
+		liftIO $ unlessM (doesFileExist ".gitignore") $
+			writeFile ".gitignore" ".thumbnails/*"
+		void $ inRepo $
+			Git.Command.runBool [Param "add", File ".gitignore"]
 
 {- Adding a new local repository, which may be entirely separate, or may
  - be connected to the current repository. -}
-getNewRepositoryR :: Handler RepHtml
+getNewRepositoryR :: Handler Html
 getNewRepositoryR = postNewRepositoryR
-postNewRepositoryR :: Handler RepHtml
+postNewRepositoryR :: Handler Html
 postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 	home <- liftIO myHomeDir
-	((res, form), enctype) <- lift $ runFormPost $ newRepositoryForm home
+	((res, form), enctype) <- liftH $ runFormPost $ newRepositoryForm home
 	case res of
 		FormSuccess (RepositoryPath p) -> do
 			let path = T.unpack p
 			isnew <- liftIO $ makeRepo path False
 			u <- liftIO $ initRepo isnew True path Nothing
-			lift $ liftAnnexOr () $ setStandardGroup u ClientGroup
+			liftH $ liftAnnexOr () $ setStandardGroup u ClientGroup
 			liftIO $ addAutoStartFile path
 			liftIO $ startAssistant path
 			askcombine u path
@@ -174,10 +186,10 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
   where
 	askcombine newrepouuid newrepopath = do
 		newrepo <- liftIO $ relHome newrepopath
-		mainrepo <- fromJust . relDir <$> lift getYesod
+		mainrepo <- fromJust . relDir <$> liftH getYesod
 		$(widgetFile "configurators/newrepository/combine")
 
-getCombineRepositoryR :: FilePathAndUUID -> Handler RepHtml
+getCombineRepositoryR :: FilePathAndUUID -> Handler Html
 getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
 	r <- combineRepos newrepopath remotename
 	liftAssistant $ syncRemote r
@@ -185,7 +197,7 @@ getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
   where
 	remotename = takeFileName newrepopath
 
-selectDriveForm :: [RemovableDrive] -> Form RemovableDrive
+selectDriveForm :: [RemovableDrive] -> Hamlet.Html -> MkMForm RemovableDrive
 selectDriveForm drives = renderBootstrap $ RemovableDrive
 	<$> pure Nothing
 	<*> areq (selectFieldList pairs) "Select drive:" Nothing
@@ -208,24 +220,24 @@ removableDriveRepository drive =
 	T.unpack (mountPoint drive) </> T.unpack (driveRepoPath drive)
 
 {- Adding a removable drive. -}
-getAddDriveR :: Handler RepHtml
+getAddDriveR :: Handler Html
 getAddDriveR = postAddDriveR
-postAddDriveR :: Handler RepHtml
+postAddDriveR :: Handler Html
 postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	removabledrives <- liftIO $ driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
-	((res, form), enctype) <- lift $ runFormPost $
+	((res, form), enctype) <- liftH $ runFormPost $
 		selectDriveForm (sort writabledrives)
 	case res of
-		FormSuccess drive -> lift $ redirect $ ConfirmAddDriveR drive
+		FormSuccess drive -> liftH $ redirect $ ConfirmAddDriveR drive
 		_ -> $(widgetFile "configurators/adddrive")
 
 {- The repo may already exist, when adding removable media
  - that has already been used elsewhere. If so, check
  - the UUID of the repo and see if it's one we know. If not,
  - the user must confirm the repository merge. -}
-getConfirmAddDriveR :: RemovableDrive -> Handler RepHtml
+getConfirmAddDriveR :: RemovableDrive -> Handler Html
 getConfirmAddDriveR drive = do
 	ifM (needconfirm)
 		( page "Combine repositories?" (Just Configuration) $
@@ -249,13 +261,17 @@ getConfirmAddDriveR drive = do
 cloneModal :: Widget
 cloneModal = $(widgetFile "configurators/adddrive/clonemodal")
 
-getFinishAddDriveR :: RemovableDrive -> Handler RepHtml
+getFinishAddDriveR :: RemovableDrive -> Handler Html
 getFinishAddDriveR drive = make >>= redirect . EditNewRepositoryR
   where
   	make = do
 		liftIO $ createDirectoryIfMissing True dir
 		isnew <- liftIO $ makeRepo dir True
 		u <- liftIO $ initRepo isnew False dir $ Just remotename
+		{- Removable drives are not reliable media, so enable fsync. -}
+		liftIO $ inDir dir $
+			setConfig (ConfigKey "core.fsyncobjectfiles")
+				(Git.Config.boolConfig True)
 		r <- combineRepos dir remotename
 		liftAnnex $ setStandardGroup u TransferGroup
 		liftAssistant $ syncRemote r
@@ -273,7 +289,7 @@ combineRepos dir name = liftAnnex $ do
 	liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
 	addRemote $ makeGitRemote name dir
 
-getEnableDirectoryR :: UUID -> Handler RepHtml
+getEnableDirectoryR :: UUID -> Handler Html
 getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
 	description <- liftAnnex $ T.pack <$> prettyUUID uuid
 	$(widgetFile "configurators/enabledirectory")
@@ -311,13 +327,15 @@ driveList = return []
 {- Bootstraps from first run mode to a fully running assistant in a
  - repository, by running the postFirstRun callback, which returns the
  - url to the new webapp. -}
-startFullAssistant :: FilePath -> StandardGroup -> Handler ()
-startFullAssistant path repogroup = do
+startFullAssistant :: FilePath -> StandardGroup -> Maybe (Annex ())-> Handler ()
+startFullAssistant path repogroup setup = do
 	webapp <- getYesod
 	url <- liftIO $ do
 		isnew <- makeRepo path False
 		u <- initRepo isnew True path Nothing
-		inDir path $ setStandardGroup u repogroup
+		inDir path $ do
+			setStandardGroup u repogroup
+			maybe noop id setup
 		addAutoStartFile path
 		setCurrentDirectory path
 		fromJust $ postFirstRun webapp
@@ -352,9 +370,7 @@ inDir dir a = do
 {- Creates a new repository, and returns its UUID. -}
 initRepo :: Bool -> Bool -> FilePath -> Maybe String -> IO UUID
 initRepo True primary_assistant_repo dir desc = inDir dir $ do
-	{- Initialize a git-annex repository in a directory with a description. -}
-	unlessM isInitialized $
-		initialize desc
+	initRepo' desc
 	{- Initialize the master branch, so things that expect
 	 - to have it will work, before any files are added. -}
 	unlessM (Git.Config.isBare <$> gitRepo) $
@@ -377,9 +393,13 @@ initRepo True primary_assistant_repo dir desc = inDir dir $ do
 	getUUID
 {- Repo already exists, could be a non-git-annex repo though. -}
 initRepo False _ dir desc = inDir dir $ do
+	initRepo' desc
+	getUUID
+
+initRepo' :: Maybe String -> Annex ()
+initRepo' desc = do
 	unlessM isInitialized $
 		initialize desc
-	getUUID
 
 {- Checks if the user can write to a directory.
  -

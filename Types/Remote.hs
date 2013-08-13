@@ -37,9 +37,6 @@ data RemoteTypeA a = RemoteType {
 instance Eq (RemoteTypeA a) where
 	x == y = typename x == typename y
 
-{- A filename associated with a Key, for display to user. -}
-type AssociatedFile = Maybe FilePath
-
 {- An individual remote. -}
 data RemoteA a = Remote {
 	-- each Remote has a unique uuid

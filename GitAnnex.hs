@@ -52,10 +52,14 @@ import qualified Command.Untrust
 import qualified Command.Semitrust
 import qualified Command.Dead
 import qualified Command.Group
+import qualified Command.Content
 import qualified Command.Ungroup
 import qualified Command.Vicfg
 import qualified Command.Sync
 import qualified Command.AddUrl
+#ifdef WITH_FEED
+import qualified Command.ImportFeed
+#endif
 import qualified Command.RmUrl
 import qualified Command.Import
 import qualified Command.Map
@@ -75,9 +79,8 @@ import qualified Command.XMPPGit
 #endif
 #endif
 #ifdef WITH_TESTSUITE
-#ifndef __WINDOWS__
 import qualified Command.Test
-#endif
+import qualified Command.FuzzTest
 #endif
 
 cmds :: [Command]
@@ -91,6 +94,9 @@ cmds = concat
 	, Command.Lock.def
 	, Command.Sync.def
 	, Command.AddUrl.def
+#ifdef WITH_FEED
+	, Command.ImportFeed.def
+#endif
 	, Command.RmUrl.def
 	, Command.Import.def
 	, Command.Init.def
@@ -106,6 +112,7 @@ cmds = concat
 	, Command.Semitrust.def
 	, Command.Dead.def
 	, Command.Group.def
+	, Command.Content.def
 	, Command.Ungroup.def
 	, Command.Vicfg.def
 	, Command.FromKey.def
@@ -143,9 +150,8 @@ cmds = concat
 #endif
 #endif
 #ifdef WITH_TESTSUITE
-#ifndef __WINDOWS__
 	, Command.Test.def
-#endif
+	, Command.FuzzTest.def
 #endif
 	]
 

@@ -1,0 +1,17 @@
+### Current setup
+
+ATM git-annex has
+
+remote.<name>.annex-cost
+remote.<name>.annex-cost-command  # command is not provided cmdline options by annex
+
+to set the cost for a given remote.  That requires setting up one of those variables per each host, and possibly hardcoding options for the annex-cost-command providing e.g. the remote name.
+
+### Suggestion
+
+wouldn't it be more general and thus more flexible to have a repository-wide
+
+annex.cost-command
+
+which could take options %remote, %file and assessed accordingly per each file upon '--get' request to allow maximal flexibility: e.g. some files might better be fetched from remotes supporting transfer compression, some from the web, etc.  Also it might be worth providing %remote_kind ("special" vs "git") to disambiguate %remote's?
+

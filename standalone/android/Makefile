@@ -11,7 +11,7 @@ PATH:=$(ANDROID_CROSS_COMPILER):$(PATH)
 export ANDROID_SDK_ROOT?=$(HOME)/tmp/adt-bundle-linux-x86/sdk
 export ANDROID_NDK_ROOT?=$(HOME)/tmp/android-ndk-r8d
 
-# Where to store the $(GIT_ANNEX_ANDROID_SOURCETREE)s to utilities. This
+# Where to store the source tree used to build utilities. This
 # directory will be created by `make source`.
 GIT_ANNEX_ANDROID_SOURCETREE?=$(HOME)/tmp/android-sourcetree
 
@@ -64,7 +64,7 @@ build: start
 		$(GITTREE)/libexec/git-core/git-web--browse
 	# Most of git is in one multicall binary, but a few important
 	# commands are still shell scripts. Those are put into
-	# a tarball, along with a list of all the hard links that should be
+	# a tarball, along with a list of all the links that should be
 	# set up.
 	cd $(GITTREE) && mkdir -p links
 	cd $(GITTREE) && find -samefile bin/git -not -wholename ./bin/git > links/git
@@ -114,7 +114,7 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/build-stamp: rsync.patch
 $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg/build-stamp:
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && git checkout gnupg-1.4.13
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && ./autogen.sh
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && ./configure --host=arm-linux-androideabi --disable-gnupg-iconv --enable-minimal --disable-card-support --disable-agent-support --disable-photo-viewers --disable-keyserver-helpers --disable-nls
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg && ./configure --host=arm-linux-androideabi --disable-gnupg-iconv --disable-card-support --disable-agent-support --disable-photo-viewers --disable-keyserver-helpers --disable-nls
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg; $(MAKE) || true # expected failure in doc build
 	touch $@
 

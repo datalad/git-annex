@@ -3,7 +3,7 @@ to share the same synchronised folder, communicating directly with each other.
 
 [[!inline feeds=no template=bare pages=videos/git-annex_assistant_remote_sharing]]
 
-You can add even more computers using the same method show here.
+You can add even more computers using the same method shown here.
 
 ----
 

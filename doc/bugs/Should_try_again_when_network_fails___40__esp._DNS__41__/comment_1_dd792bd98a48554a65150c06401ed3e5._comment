@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 1"
+ date="2013-07-17T18:54:47Z"
+ content="""
+Trying again one time does not seem like it would help, given the example you show. Trying multiple times by default would, I think, be annoying in lots of use cases where one just wants to get whatever is available, and having it get stuck retrying to download a file from a remote that is offline would not be desired when it could move on and get another file from a remote that is online.
+
+I'm willing to consider some kind of option to control how much it retries on error. But I'm not 100% sold on it being better than a simple loop. At least in most cases, using a gpg agent and a loop would work. I suppose the case it would not work as well is if enough time has elapsed for the gpg agent to re-lock the key.
+
+One approach that might work well is to add a --retry-failures-at-end option. It turns out that all failed downloads are already logged (the assistant uses this to automatically retry them), and so it would be easy to add. And rather than retrying immediately after a failure, when transferring multiple files, this puts some space in between, in which the problem may correct itself.
+"""]]

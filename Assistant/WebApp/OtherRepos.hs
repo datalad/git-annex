@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.OtherRepos where
 
@@ -18,11 +18,10 @@ import Config.Files
 import qualified Utility.Url as Url
 import Utility.Yesod
 
-import Yesod
 import Control.Concurrent
 import System.Process (cwd)
 
-getRepositorySwitcherR :: Handler RepHtml
+getRepositorySwitcherR :: Handler Html
 getRepositorySwitcherR = page "Switch repository" Nothing $ do
 	repolist <- liftIO listOtherRepos
 	$(widgetFile "control/repositoryswitcher")
@@ -40,9 +39,10 @@ listOtherRepos = do
  - a gitAnnexUrlFile. Waits for the assistant to be up and listening for
  - connections by testing the url. Once it's running, redirect to it.
  -}
-getSwitchToRepositoryR :: FilePath -> Handler RepHtml
+getSwitchToRepositoryR :: FilePath -> Handler Html
 getSwitchToRepositoryR repo = do
 	liftIO $ startAssistant repo
+	liftIO $ addAutoStartFile repo -- make this the new default repo
 	redirect =<< liftIO geturl
   where
 	geturl = do

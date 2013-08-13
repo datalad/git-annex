@@ -13,7 +13,6 @@ import Common.Annex
 import Annex.Perms
 import Annex.Exception
 import qualified Git
-import Types.Remote
 import Types.Key
 import Utility.Metered
 import Utility.Percentage
@@ -104,10 +103,12 @@ download u key = runTransfer (Transfer Download u key)
 
 {- Runs a transfer action. Creates and locks the lock file while the
  - action is running, and stores info in the transfer information
- - file. Will throw an error if the transfer is already in progress.
+ - file.
  -
  - If the transfer action returns False, the transfer info is 
  - left in the failedTransferDir.
+ -
+ - If the transfer is already in progress, returns False.
  -
  - An upload can be run from a read-only filesystem, and in this case
  - no transfer information or lock file is used.
@@ -117,36 +118,43 @@ runTransfer t file shouldretry a = do
 	info <- liftIO $ startTransferInfo file
 	(meter, tfile, metervar) <- mkProgressUpdater t info
 	mode <- annexFileMode
-	fd <- liftIO $ prep tfile mode info
-	ok <- retry info metervar $
-		bracketIO (return fd) (cleanup tfile) (a meter)
-	unless ok $ recordFailedTransfer t info
-	return ok
+	(fd, inprogress) <- liftIO $ prep tfile mode info
+	if inprogress
+		then do
+			showNote "transfer already in progress"
+			return False
+		else do
+			ok <- retry info metervar $
+		 		bracketIO (return fd) (cleanup tfile) (const $ a meter)
+			unless ok $ recordFailedTransfer t info
+			return ok
   where
 	prep tfile mode info = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		mfd <- catchMaybeIO $
 			openFd (transferLockFile tfile) ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
 		case mfd of
-			Nothing -> return mfd
+			Nothing -> return (mfd, False)
 			Just fd -> do
 				locked <- catchMaybeIO $
 					setLock fd (WriteLock, AbsoluteSeek, 0, 0)
-				when (isNothing locked) $
-					error "transfer already in progress"
-				void $ tryIO $ writeTransferInfoFile info tfile
-				return mfd
+				if isNothing locked
+					then return (Nothing, True)
+					else do
+						void $ tryIO $ writeTransferInfoFile info tfile
+						return (mfd, False)
 #else
-		catchMaybeIO $ do
+		mfd <- catchMaybeIO $ do
 			writeFile (transferLockFile tfile) ""
 			writeTransferInfoFile info tfile
+		return (mfd, False)
 #endif
 	cleanup _ Nothing = noop
 	cleanup tfile (Just fd) = do
 		void $ tryIO $ removeFile tfile
 		void $ tryIO $ removeFile $ transferLockFile tfile
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		closeFd fd
 #endif
 	retry oldinfo metervar run = do
@@ -206,7 +214,7 @@ startTransferInfo file = TransferInfo
 checkTransfer :: Transfer -> Annex (Maybe TransferInfo)
 checkTransfer t = do
 	tfile <- fromRepo $ transferFile t
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	mode <- annexFileMode
 	mfd <- liftIO $ catchMaybeIO $
 		openFd (transferLockFile tfile) ReadOnly (Just mode) defaultFileFlags

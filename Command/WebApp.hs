@@ -20,6 +20,9 @@ import Assistant.Install
 import Annex.Environment
 import Utility.WebApp
 import Utility.Daemon (checkDaemon)
+#ifdef __ANDROID__
+import Utility.Env
+#endif
 import Init
 import qualified Git
 import qualified Git.Config
@@ -32,7 +35,7 @@ import Control.Concurrent
 import Control.Concurrent.STM
 import System.Process (env, std_out, std_err)
 import Network.Socket (HostName)
-import System.Environment
+import System.Environment (getArgs)
 
 def :: [Command]
 def = [ withOptions [listenOption] $
@@ -154,25 +157,36 @@ firstRun listenhost = do
 			Annex.eval state $
 				startDaemon True True listenhost $ Just $
 					sendurlback v
-	sendurlback v _origout _origerr url _htmlshim = putMVar v url
+	sendurlback v _origout _origerr url _htmlshim = do
+		recordUrl url
+		putMVar v url
+
+recordUrl :: String -> IO ()
+#ifdef __ANDROID__
+{- The Android app has a menu item that opens the url recorded
+ - in this file. -}
+recordUrl url = writeFile "/sdcard/git-annex.home/.git-annex-url" url
+#else
+recordUrl _ = noop
+#endif
 
 openBrowser :: Maybe FilePath -> FilePath -> String -> Maybe Handle -> Maybe Handle -> IO ()
-#ifdef __ANDROID__
-openBrowser mcmd htmlshim realurl outh errh = do
+#ifndef __ANDROID__
+openBrowser mcmd htmlshim _realurl outh errh = runbrowser
 #else
-openBrowser mcmd htmlshim _realurl outh errh = do
+openBrowser mcmd htmlshim realurl outh errh = do
+	recordUrl url
+	{- Android's `am` command does not work reliably across the
+	 - wide range of Android devices. Intead, FIFO should be set to 
+	 - the filename of a fifo that we can write the URL to. -}
+	v <- getEnv "FIFO"
+	case v of
+		Nothing -> runbrowser
+		Just f -> void $ forkIO $ do
+			fd <- openFd f WriteOnly Nothing defaultFileFlags
+			void $ fdWrite fd url
+			closeFd fd
 #endif
-	hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
-	hFlush stdout
-	environ <- cleanEnvironment
-	(_, _, _, pid) <- createProcess p
-		{ env = environ
-		, std_out = maybe Inherit UseHandle outh
-		, std_err = maybe Inherit UseHandle errh
-		}
-	exitcode <- waitForProcess pid
-	unless (exitcode == ExitSuccess) $
-		hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
   where
 	p = case mcmd of
 		Just cmd -> proc cmd [htmlshim]
@@ -185,6 +199,18 @@ openBrowser mcmd htmlshim _realurl outh errh = do
 #else
 	url = fileUrl htmlshim
 #endif
+	runbrowser = do
+		hPutStrLn (fromMaybe stdout outh) $ "Launching web browser on " ++ url
+		hFlush stdout
+		environ <- cleanEnvironment
+		(_, _, _, pid) <- createProcess p
+			{ env = environ
+			, std_out = maybe Inherit UseHandle outh
+			, std_err = maybe Inherit UseHandle errh
+			}
+		exitcode <- waitForProcess pid
+		unless (exitcode == ExitSuccess) $ do
+			hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
 
 {- web.browser is a generic git config setting for a web browser program -}
 webBrowser :: Git.Repo -> Maybe FilePath

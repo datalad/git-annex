@@ -32,6 +32,7 @@ import Utility.FileMode
 import Config
 import Annex.Direct
 import Annex.Content.Direct
+import Annex.Environment
 import Backend
 
 genDescription :: Maybe String -> Annex String
@@ -53,11 +54,14 @@ initialize mdescription = do
 	setVersion defaultVersion
 	checkCrippledFileSystem
 	checkFifoSupport
-	Annex.Branch.create
 	gitPreCommitHookWrite
 	createInodeSentinalFile
 	u <- getUUID
-	describeUUID u =<< genDescription mdescription
+	{- This will make the first commit to git, so ensure git is set up
+	 - properly to allow commits when running it. -}
+	ensureCommit $ do
+		Annex.Branch.create
+		describeUUID u =<< genDescription mdescription
 
 uninitialize :: Annex ()
 uninitialize = do
@@ -140,8 +144,6 @@ probeCrippledFileSystem = do
 	probe f = catchBoolIO $ do
 		let f2 = f ++ "2"
 		nukeFile f2
-		createLink f f2
-		nukeFile f2
 		createSymbolicLink f f2
 		nukeFile f2
 		preventWrite f
@@ -162,15 +164,16 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 		setConfig (ConfigKey "core.symlinks")
 			(Git.Config.boolConfig False)
 
-	unlessM isDirect $ do
-		warning "Enabling direct mode."
-		top <- fromRepo Git.repoPath
-		(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
-		forM_ l $ \f ->
-			maybe noop (`toDirect` f) =<< isAnnexLink f
-		void $ liftIO clean
-		setDirect True
-	setVersion directModeVersion
+	unlessBare $ do
+		unlessM isDirect $ do
+			warning "Enabling direct mode."
+			top <- fromRepo Git.repoPath
+			(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
+			forM_ l $ \f ->
+				maybe noop (`toDirect` f) =<< isAnnexLink f
+			void $ liftIO clean
+			setDirect True
+		setVersion directModeVersion
 
 probeFifoSupport :: Annex Bool
 probeFifoSupport = do

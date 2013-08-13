@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE TypeFamilies, QuasiQuotes, TemplateHaskell, OverloadedStrings, FlexibleContexts #-}
 {-# LANGUAGE CPP #-}
 
 module Assistant.WebApp.Configurators.XMPP where
@@ -13,25 +13,23 @@ module Assistant.WebApp.Configurators.XMPP where
 import Assistant.WebApp.Common
 import Assistant.WebApp.Notifications
 import Utility.NotificationBroadcaster
-import qualified Remote
 #ifdef WITH_XMPP
+import qualified Remote
 import Assistant.XMPP.Client
 import Assistant.XMPP.Buddies
 import Assistant.Types.Buddies
 import Assistant.NetMessager
 import Assistant.Alert
 import Assistant.DaemonStatus
-import Utility.SRV
 import Assistant.WebApp.RepoList
 import Assistant.WebApp.Configurators
 import Assistant.XMPP
 #endif
 
 #ifdef WITH_XMPP
-import Network
 import Network.Protocol.XMPP
+import Network
 import qualified Data.Text as T
-import Control.Exception (SomeException)
 #endif
 
 {- Displays an alert suggesting to configure XMPP. -}
@@ -81,7 +79,7 @@ getBuddyName u = go =<< getclientjid
 		<$> getDaemonStatus
 #endif
 
-getNeedCloudRepoR :: UUID -> Handler RepHtml
+getNeedCloudRepoR :: UUID -> Handler Html
 #ifdef WITH_XMPP
 getNeedCloudRepoR for = page "Cloud repository needed" (Just Configuration) $ do
 	buddyname <- liftAssistant $ getBuddyName for
@@ -91,34 +89,34 @@ getNeedCloudRepoR _ = xmppPage $
 	$(widgetFile "configurators/xmpp/disabled")
 #endif
 
-getXMPPConfigR :: Handler RepHtml
+getXMPPConfigR :: Handler Html
 getXMPPConfigR = postXMPPConfigR
 
-postXMPPConfigR :: Handler RepHtml
+postXMPPConfigR :: Handler Html
 postXMPPConfigR = xmppform DashboardR
 
-getXMPPConfigForPairFriendR :: Handler RepHtml
+getXMPPConfigForPairFriendR :: Handler Html
 getXMPPConfigForPairFriendR = postXMPPConfigForPairFriendR
 
-postXMPPConfigForPairFriendR :: Handler RepHtml
+postXMPPConfigForPairFriendR :: Handler Html
 postXMPPConfigForPairFriendR = xmppform StartXMPPPairFriendR
 
-getXMPPConfigForPairSelfR :: Handler RepHtml
+getXMPPConfigForPairSelfR :: Handler Html
 getXMPPConfigForPairSelfR = postXMPPConfigForPairSelfR
 
-postXMPPConfigForPairSelfR :: Handler RepHtml
+postXMPPConfigForPairSelfR :: Handler Html
 postXMPPConfigForPairSelfR = xmppform StartXMPPPairSelfR
 
-xmppform :: Route WebApp -> Handler RepHtml
+xmppform :: Route WebApp -> Handler Html
 #ifdef WITH_XMPP
 xmppform next = xmppPage $ do
-	((result, form), enctype) <- lift $ do
+	((result, form), enctype) <- liftH $ do
 		oldcreds <- liftAnnex getXMPPCreds
 		runFormPost $ renderBootstrap $ xmppAForm $
 			creds2Form <$> oldcreds
 	let showform problem = $(widgetFile "configurators/xmpp")
 	case result of
-		FormSuccess f -> either (showform . Just . show) (lift . storecreds)
+		FormSuccess f -> either (showform . Just) (liftH . storecreds)
 			=<< liftIO (validateForm f)
 		_ -> showform Nothing
   where
@@ -135,12 +133,12 @@ xmppform _ = xmppPage $
  -
  - Returns a div, which will be inserted into the calling page.
  -}
-getBuddyListR :: NotificationId -> Handler RepHtml
+getBuddyListR :: NotificationId -> Handler Html
 getBuddyListR nid = do
 	waitNotifier getBuddyListBroadcaster nid
 
 	p <- widgetToPageContent buddyListDisplay
-	hamletToRepHtml $ [hamlet|^{pageBody p}|]
+	giveUrlRenderer $ [hamlet|^{pageBody p}|]
 
 buddyListDisplay :: Widget
 buddyListDisplay = do
@@ -173,44 +171,50 @@ data XMPPForm = XMPPForm
 creds2Form :: XMPPCreds -> XMPPForm
 creds2Form c = XMPPForm (xmppJID c) (xmppPassword c)
 
-xmppAForm :: (Maybe XMPPForm) -> AForm WebApp WebApp XMPPForm
+xmppAForm :: (Maybe XMPPForm) -> MkAForm XMPPForm
 xmppAForm def = XMPPForm
 	<$> areq jidField "Jabber address" (formJID <$> def)
 	<*> areq passwordField "Password" Nothing
 
-jidField :: Field WebApp WebApp Text
+jidField :: MkField Text
 jidField = checkBool (isJust . parseJID) bad textField
   where
 	bad :: Text
 	bad = "This should look like an email address.."
 
-validateForm :: XMPPForm -> IO (Either SomeException XMPPCreds)
+validateForm :: XMPPForm -> IO (Either String XMPPCreds)
 validateForm f = do
 	let jid = fromMaybe (error "bad JID") $ parseJID (formJID f)
-	let domain = T.unpack $ strDomain $ jidDomain jid
-	hostports <- lookupSRV $ mkSRVTcp "xmpp-client" domain
 	let username = fromMaybe "" (strNode <$> jidNode jid)
-	case hostports of
-		((h, PortNumber p):_) -> testXMPP $ XMPPCreds
-			{ xmppUsername = username
-			, xmppPassword = formPassword f
-			, xmppHostname = h
+	testXMPP $ XMPPCreds
+		{ xmppUsername = username
+		, xmppPassword = formPassword f
+		, xmppHostname = T.unpack $ strDomain $ jidDomain jid
+		, xmppPort = 5222
+		, xmppJID = formJID f
+		}
+
+testXMPP :: XMPPCreds -> IO (Either String XMPPCreds)
+testXMPP creds = do
+	(good, bad) <- partition (either (const False) (const True) . snd) 
+		<$> connectXMPP creds (const noop)
+	case good of
+		(((h, PortNumber p), _):_) -> return $ Right $ creds
+			{ xmppHostname = h
 			, xmppPort = fromIntegral p
-			, xmppJID = formJID f
 			}
-		_ -> testXMPP $ XMPPCreds
-			{ xmppUsername = username
-			, xmppPassword = formPassword f
-			, xmppHostname = T.unpack $ strDomain $ jidDomain jid
-			, xmppPort = 5222
-			, xmppJID = formJID f
+		(((h, _), _):_) -> return $ Right $ creds
+			{ xmppHostname = h
 			}
+		_ -> return $ Left $ intercalate "; " $ map formatlog bad
+  where
+  	formatlog ((h, p), Left e) = "host " ++ h ++ ":" ++ showport p ++ " failed: " ++ show e
+  	formatlog _ = ""
 
-testXMPP :: XMPPCreds -> IO (Either SomeException XMPPCreds)
-testXMPP creds = either Left (const $ Right creds)
-	<$> connectXMPP creds (const noop)
-
+	showport (PortNumber n) = show n
+	showport (Service s) = s
+	showport (UnixSocket s) = s
 #endif
 
-xmppPage :: Widget -> Handler RepHtml
+xmppPage :: Widget -> Handler Html
 xmppPage = page "Jabber" (Just Configuration)

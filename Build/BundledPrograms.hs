@@ -40,6 +40,8 @@ bundledPrograms = catMaybes
 	, SysConfig.sha512
 	, SysConfig.sha224
 	, SysConfig.sha384
+	-- ionice is not included in the bundle; we rely on the system's
+	-- own version, which may better match its kernel
 	]
   where
 	ifset True s = Just s

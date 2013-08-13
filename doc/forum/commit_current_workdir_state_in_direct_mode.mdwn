@@ -1,0 +1,5 @@
+I'd like to commit the current workdir state in direct mode in a script. This is what git annex watch does but I can not reliably start and stop git annex watch in a cron script.
+
+Is this already possible with the current api or could we have something like git annex watch --once?
+
+Thank you, Thomas Koch

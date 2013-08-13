@@ -1,0 +1,53 @@
+The assistant should help the user recover their repository when things go
+wrong.
+
+## dangling lock files
+
+There are a few ways a git repository can get broken that are easily fixed.
+One is left over index.lck files. When a commit to a repository fails,
+check that nothing else is using it, fix the problem, and redo the commit.
+
+This should be done on both the current repository and any local
+repositories. Maybe also make git-annex-shell be able to do it remotely?
+
+## incremental fsck
+
+Add webapp UI to enable incremental fsck, and choose when to start and how
+long to run each day.
+
+When fsck finds a damanged file, queue a download of the file from a
+remote. If no accessible remote has the file, prompt the user to eg, connect
+a drive containing it.
+
+## git-annex-shell remote fsck
+
+Would be nice; otherwise remote fsck is too expensive (downloads
+everything) to have the assistant do. (remote fsck --fast might be worth
+having the assistant do)
+
+## git fsck
+
+Have the sanity checker run git fsck periodically (it's fairly inexpensive,
+but still not too often, and should be ioniced and niced). 
+
+If committing to the repository fails, after resolving any dangling lock
+files (see above), it should git fsck.
+
+If git fsck finds problems, launch git repository repair.
+
+## git repository repair
+
+There are several ways git repositories can get damanged. 
+
+The most common is empty files in .git/annex/objects and commits that refer
+to those objects. When the objects have not yet been pushed anywhere.
+I've several times recovered from this manually by
+removing the bad files and resetting to before the commits that referred to
+them. Then re-staging any divergence in the working tree. This could
+perhaps be automated.
+
+As long as the git repository has at least one remote, another method is to
+clone the remote, sync from all other remotes, move over .git/config and
+.git/annex/objects, and tar up the old broken git repo and `git annex add`
+it. This should be automatable and get the user back on their feet. User
+could just click a button and have this be done.

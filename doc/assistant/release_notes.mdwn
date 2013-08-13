@@ -1,3 +1,39 @@
+## version 4.20130723
+
+This release fixes some bugs. Notably it fixes a bug that could result in data
+loss when adding a tarball of a git-annex repository to your git-annex
+repository.
+
+Rsync.net have committed to support git-annex and offer a special
+discounted rate for git-annex users.
+<http://www.rsync.net/products/git-annex-pricing.html>
+
+## version 4.20130709
+
+This release is mostly bug fixes.
+
+One of the bugs involved setting up rsync remotes on servers other than
+rsync.net. The wrong `.ssh/authorized_keys` line was deployed to the
+remote server. If you set up a rsync remote with a past release, and it does
+not work, you will need to manually edit the `.ssh/authorized_keys` file,
+and remove the `command=` forced command.
+
+## version 4.20130621, 4.20130627
+
+These releases mostly consist of bug fixes.
+
+## version 4.20130601
+
+This is a bugfix release, featuring significant XMPP improvements and
+more robustness thanks to automated fuzz testing. Recommended upgrade.
+
+This version changes its XMPP protocol, so it will fail to sync with older
+git-annex versions over XMPP.
+
+## version 4.20130521
+
+This is a bugfix release. Recommended upgrade.
+
 ## version 4.20130516
 
 This version contains numerous bug fixes, and improvements.
@@ -6,10 +42,6 @@ This is the first release with a fully usable Android app. No command-line
 typing needed to set up syncing to your Android phone or tablet!
 A few of the more advanced features may not work (or not work reliably)
 on Android. The Android app is still beta quality.
-
-There is a known problem with android 4.2.2 that prevents the webapp
-from opening. See [[Android_app_permission_denial_on_startup]] for a
-workaround.
 
 This is also the first release with a Windows port! The Windows port
 is in an alpha quality state, and is missing many features.

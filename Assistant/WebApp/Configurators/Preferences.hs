@@ -18,9 +18,9 @@ import qualified Git
 import Config
 import Config.Files
 import Utility.DataUnits
+import Git.Config
 
 import qualified Data.Text as T
-import System.Log.Logger
 
 data PrefsForm = PrefsForm
 	{ diskReserve :: Text
@@ -29,7 +29,7 @@ data PrefsForm = PrefsForm
 	, debugEnabled :: Bool
 	}
 
-prefsAForm :: PrefsForm -> AForm WebApp WebApp PrefsForm
+prefsAForm :: PrefsForm -> MkAForm PrefsForm
 prefsAForm def = PrefsForm
 	<$> areq (storageField `withNote` diskreservenote)
 		"Disk reserve" (Just $ diskReserve def)
@@ -68,7 +68,7 @@ getPrefs = PrefsForm
 	<$> (T.pack . roughSize storageUnits False . annexDiskReserve <$> Annex.getGitConfig)
 	<*> (annexNumCopies <$> Annex.getGitConfig)
 	<*> inAutoStartFile
-	<*> ((==) <$> (pure $ Just DEBUG) <*> (liftIO $ getLevel <$> getRootLogger))
+	<*> (annexDebug <$> Annex.getGitConfig)
 
 storePrefs :: PrefsForm -> Annex ()
 storePrefs p = do
@@ -79,18 +79,20 @@ storePrefs p = do
 		liftIO $ if autoStart p
 			then addAutoStartFile here
 			else removeAutoStartFile here
-	liftIO $ updateGlobalLogger rootLoggerName $ setLevel $
-		if debugEnabled p then DEBUG else WARNING
+	setConfig (annexConfig "debug") (boolConfig $ debugEnabled p)
+	liftIO $ if debugEnabled p
+		then enableDebugOutput 
+		else disableDebugOutput
 
-getPreferencesR :: Handler RepHtml
+getPreferencesR :: Handler Html
 getPreferencesR = postPreferencesR
-postPreferencesR :: Handler RepHtml
+postPreferencesR :: Handler Html
 postPreferencesR = page "Preferences" (Just Configuration) $ do
-	((result, form), enctype) <- lift $ do
+	((result, form), enctype) <- liftH $ do
 		current <- liftAnnex getPrefs
 		runFormPost $ renderBootstrap $ prefsAForm current
 	case result of
-		FormSuccess new -> lift $ do
+		FormSuccess new -> liftH $ do
 			liftAnnex $ storePrefs new
 			redirect ConfigurationR
 		_ -> $(widgetFile "configurators/preferences")

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://aap.liquidid.net/"
+ nickname="AAP"
+ subject="comment 18"
+ date="2013-05-30T11:23:58Z"
+ content="""
+I too get the 'link busybox: Read-only file system' message. Here is my phone info: 
+
+Phone: Samsung Galaxy Y GT-S5360 (rooted)   
+Android: 2.3.6 Gingerbread   
+BusyBox path: /system/xbin/ 
+
+
+Androids own terminal seems not to understand the d argument (-ld: No such file or directory) but over ssh 'ls -ld /data/data/ga.androidterm' returns
+     
+         drwxr-x--x    1 app_97   app_97           0 May 30 12:57 /data/data/ga.androidterm/
+"""]]

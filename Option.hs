@@ -16,7 +16,6 @@ module Option (
 ) where
 
 import System.Console.GetOpt
-import System.Log.Logger
 
 import Common.Annex
 import qualified Annex
@@ -40,6 +39,8 @@ common =
 		"enable JSON output"
 	, Option ['d'] ["debug"] (NoArg setdebug)
 		"show debug messages"
+	, Option [] ["no-debug"] (NoArg unsetdebug)
+		"don't show debug messages"
 	, Option ['b'] ["backend"] (ReqArg setforcebackend paramName)
 		"specify key-value backend to use"
 	]
@@ -48,7 +49,8 @@ common =
 	setfast v = Annex.changeState $ \s -> s { Annex.fast = v }
 	setauto v = Annex.changeState $ \s -> s { Annex.auto = v }
 	setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
-	setdebug = liftIO $ updateGlobalLogger rootLoggerName $ setLevel DEBUG
+	setdebug = Annex.changeGitConfig $ \c -> c { annexDebug = True }
+	unsetdebug = Annex.changeGitConfig $ \c -> c { annexDebug = False }
 
 matcher :: [Option]
 matcher =

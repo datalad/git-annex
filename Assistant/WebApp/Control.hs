@@ -20,11 +20,11 @@ import Control.Concurrent
 import System.Posix (getProcessID, signalProcess, sigTERM)
 import qualified Data.Map as M
 
-getShutdownR :: Handler RepHtml
+getShutdownR :: Handler Html
 getShutdownR = page "Shutdown" Nothing $
 	$(widgetFile "control/shutdown")
 
-getShutdownConfirmedR :: Handler RepHtml
+getShutdownConfirmedR :: Handler Html
 getShutdownConfirmedR = do
 	{- Remove all alerts for currently running activities. -}
 	liftAssistant $ do
@@ -45,7 +45,7 @@ getShutdownConfirmedR = do
 		$(widgetFile "control/shutdownconfirmed")
 
 {- Quite a hack, and doesn't redirect the browser window. -}
-getRestartR :: Handler RepHtml
+getRestartR :: Handler Html
 getRestartR = page "Restarting" Nothing $ do
 	void $ liftIO $ forkIO $ do
 		threadDelay 2000000
@@ -54,7 +54,7 @@ getRestartR = page "Restarting" Nothing $ do
 			error "restart failed"
 	$(widgetFile "control/restarting")
   where
-	restartcommand program = program ++ " assistant --stop; " ++
+	restartcommand program = program ++ " assistant --stop; exec " ++
 		program ++ " webapp"
 
 getRestartThreadR :: ThreadName -> Handler ()
@@ -63,7 +63,7 @@ getRestartThreadR name = do
 	liftIO $ maybe noop snd $ M.lookup name m
 	redirectBack
 
-getLogR :: Handler RepHtml
+getLogR :: Handler Html
 getLogR = page "Logs" Nothing $ do
 	logfile <- liftAnnex $ fromRepo gitAnnexLogFile
 	logs <- liftIO $ listLogs logfile

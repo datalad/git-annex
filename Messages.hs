@@ -31,7 +31,9 @@ module Messages (
 	showCustom,
 	showHeader,
 	showRaw,
-	setupConsole
+	setupConsole,
+	enableDebugOutput,
+	disableDebugOutput
 ) where
 
 import Text.JSON
@@ -219,6 +221,12 @@ setupConsole = do
 	 - filenames when printing them out. -}
 	fileEncoding stdout
 	fileEncoding stderr
+
+enableDebugOutput :: IO ()
+enableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel DEBUG
+
+disableDebugOutput :: IO ()
+disableDebugOutput = updateGlobalLogger rootLoggerName $ setLevel NOTICE
 
 handle :: IO () -> IO () -> Annex ()
 handle json normal = withOutputType go

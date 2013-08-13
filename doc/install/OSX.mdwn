@@ -2,7 +2,7 @@
 
 [[!img /assistant/osx-app.png align=right link=/assistant]]
 For easy installation, use the
-[beta release of git-annex.app](http://downloads.kitenet.net/git-annex/OSX/current/).
+[beta release of git-annex.app](https://downloads.kitenet.net/git-annex/OSX/current/).
 
 Be sure to select the build matching your version of OSX.
 
@@ -30,17 +30,21 @@ the app for OSX Lion.
 
 [[Joey]] autobuilds the app for Mountain Lion.
 
-* [autobuild of git-annex.app](http://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mountain-lion/git-annex.dmg.bz2) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mountain-lion/))
+* [autobuild of git-annex.app](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mountain-lion/git-annex.dmg.bz2) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mountain-lion/))
 
 ## using Brew
 
 <pre>
 brew update
 brew install haskell-platform git ossp-uuid md5sha1sum coreutils libgsasl gnutls libidn libgsasl pkg-config libxml2
-brew link libxml2
+brew link libxml2 --force
 cabal update
+mkdir $HOME/bin
 PATH=$HOME/bin:$PATH
-cabal install c2hs git-annex --bindir=$HOME/bin
+PATH=$HOME/.cabal/bin:$PATH
+cabal install c2hs --bindir=$HOME/bin
+cabal install gnuidn
+cabal install git-annex --bindir=$HOME/bin
 </pre>
 
 ## using MacPorts

@@ -15,6 +15,7 @@ module Utility.SRV (
 	mkSRV,
 	lookupSRV,
 	lookupSRVHost,
+	HostPort,
 ) where
 
 import Utility.Process
@@ -65,9 +66,7 @@ lookupSRV (SRV srv) = initResolver [] $ \resolver -> do
 #ifdef WITH_DNS
 lookupSRV (SRV srv) = do
 	seed <- makeResolvSeed defaultResolvConf
-	print srv
 	r <- withResolver seed $ flip DNS.lookupSRV $ B8.fromString srv
-	print r
 	return $ maybe [] (orderHosts . map tohosts) r
   where
 	tohosts (priority, weight, port, hostname) =

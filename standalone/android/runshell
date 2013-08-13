@@ -27,7 +27,7 @@ buildtree () {
 		if $cmd test -e "$base/bin/$prog"; then
 			$cmd rm -f "$base/bin/$prog"
 		fi
-		$cmd ln "$base/lib/lib.$prog.so" "$base/bin/$prog"
+		$cmd ln -s "$base/lib/lib.$prog.so" "$base/bin/$prog"
 	done
 
 	$cmd --install $base/bin
@@ -41,7 +41,7 @@ buildtree () {
 			if $cmd test -e "$base/$link"; then
 				$cmd rm -f "$base/$link"
 			fi
-			$cmd ln "$base/bin/$prog" "$base/$link"
+			$cmd ln -s "$base/bin/$prog" "$base/$link"
 		done
 		$cmd rm -f "$base/links/$prog"
 	done
@@ -116,12 +116,17 @@ run () {
 	fi
 }
 
-if ! prep; then
-	$cmd echo "prep failed. Please report a bug."
-	read line
+if $cmd test -n "$MKFIFO"; then
+	# because java is insane
+	$cmd mkfifo "$MKFIFO"
+else
+	if ! prep; then
+		$cmd echo "prep failed. Please report a bug."
+		read line
+	fi
+	if ! install; then
+		$cmd echo "install failed. Please report a bug."
+		read line
+	fi
+	run
 fi
-if ! install; then
-	$cmd echo "install failed. Please report a bug."
-	read line
-fi
-run

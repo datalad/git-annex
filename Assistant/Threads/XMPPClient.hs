@@ -20,7 +20,6 @@ import qualified Remote
 import Utility.ThreadScheduler
 import Assistant.WebApp (UrlRenderer)
 import Assistant.WebApp.Types hiding (liftAssistant)
-import Assistant.WebApp.Configurators.XMPP (checkCloudRepos)
 import Assistant.Alert
 import Assistant.Pairing
 import Assistant.XMPP.Git
@@ -29,11 +28,14 @@ import Logs.UUID
 
 import Network.Protocol.XMPP
 import Control.Concurrent
+import Control.Concurrent.STM.TMVar
+import Control.Concurrent.STM (atomically)
 import qualified Data.Text as T
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Git.Branch
 import Data.Time.Clock
+import Control.Concurrent.Async
 
 xmppClientThread :: UrlRenderer -> NamedThread
 xmppClientThread urlrenderer = namedThread "XMPPClient" $
@@ -65,16 +67,16 @@ xmppClient urlrenderer d creds =
 		 - is not retained. -}
 		liftAssistant $
 			updateBuddyList (const noBuddies) <<~ buddyList
-		e <- client
+		void client
 		liftAssistant $ modifyDaemonStatus_ $ \s -> s
 			{ xmppClientID = Nothing }
 		now <- getCurrentTime
 		if diffUTCTime now starttime > 300
 			then do
-				liftAssistant $ debug ["connection lost; reconnecting", show e]
+				liftAssistant $ debug ["connection lost; reconnecting"]
 				retry client now
 			else do
-				liftAssistant $ debug ["connection failed; will retry", show e]
+				liftAssistant $ debug ["connection failed; will retry"]
 				threadDelaySeconds (Seconds 300)
 				retry client =<< getCurrentTime
 
@@ -87,16 +89,43 @@ xmppClient urlrenderer d creds =
 				{ xmppClientID = Just $ xmppJID creds }
 			debug ["connected", logJid selfjid]
 
-		xmppThread $ receivenotifications selfjid
-		forever $ do
-			a <- inAssistant $ relayNetMessage selfjid
-			a
+		lasttraffic <- liftIO $ atomically . newTMVar =<< getCurrentTime
 
-	receivenotifications selfjid = forever $ do
+		sender <- xmppSession $ sendnotifications selfjid
+		receiver <- xmppSession $ receivenotifications selfjid lasttraffic
+		pinger <- xmppSession $ sendpings selfjid lasttraffic
+		{- Run all 3 threads concurrently, until
+		 - any of them throw an exception.
+		 - Then kill all 3 threads, and rethrow the
+		 - exception.
+		 -
+		 - If this thread gets an exception, the 3 threads
+		 - will also be killed. -}
+		liftIO $ pinger `concurrently` sender `concurrently` receiver
+
+	sendnotifications selfjid = forever $ do
+		a <- inAssistant $ relayNetMessage selfjid
+		a
+	receivenotifications selfjid lasttraffic = forever $ do
 		l <- decodeStanza selfjid <$> getStanza
+		void $ liftIO $ atomically . swapTMVar lasttraffic =<< getCurrentTime
 		inAssistant $ debug
 			["received:", show $ map logXMPPEvent l]
 		mapM_ (handle selfjid) l
+	sendpings selfjid lasttraffic = forever $ do
+		putStanza pingstanza
+
+		startping <- liftIO $ getCurrentTime
+		liftIO $ threadDelaySeconds (Seconds 120)
+		t <- liftIO $ atomically $ readTMVar lasttraffic
+		when (t < startping) $ do
+			inAssistant $ debug ["ping timeout"]
+			error "ping timeout"
+	  where
+		{- XEP-0199 says that the server will respond with either
+		 - a ping response or an error message. Either will
+		 - cause traffic, so good enough. -}
+	  	pingstanza = xmppPing selfjid
 
 	handle selfjid (PresenceMessage p) = do
 		void $ inAssistant $ 
@@ -107,11 +136,9 @@ xmppClient urlrenderer d creds =
 	handle selfjid (GotNetMessage (PairingNotification stage c u)) =
 		maybe noop (inAssistant . pairMsgReceived urlrenderer stage u selfjid) (parseJID c)
 	handle _ (GotNetMessage m@(Pushing _ pushstage))
-		| isPushInitiation pushstage = inAssistant $
-			unlessM (queueNetPushMessage m) $ do
-				let checker = checkCloudRepos urlrenderer
-				void $ forkIO <~> handlePushInitiation checker m
-		| otherwise = void $ inAssistant $ queueNetPushMessage m
+		| isPushNotice pushstage = inAssistant $ handlePushNotice m
+		| isPushInitiation pushstage = inAssistant $ queuePushInitiation m
+		| otherwise = inAssistant $ storeInbox m
 	handle _ (Ignorable _) = noop
 	handle _ (Unknown _) = noop
 	handle _ (ProtocolError _) = noop
@@ -144,7 +171,9 @@ logXMPPEvent :: XMPPEvent -> String
 logXMPPEvent (GotNetMessage m) = logNetMessage m
 logXMPPEvent (PresenceMessage p) = logPresence p
 logXMPPEvent (Ignorable (ReceivedPresence p)) = "Ignorable " ++ logPresence p
-logXMPPEvent v = show v
+logXMPPEvent (Ignorable _) = "Ignorable message"
+logXMPPEvent (Unknown _) = "Unknown message"
+logXMPPEvent (ProtocolError _) = "Protocol error message"
 
 logPresence :: Presence -> String
 logPresence (p@Presence { presenceFrom = Just jid }) = unwords
@@ -247,13 +276,12 @@ withOtherClient selfjid c a = case parseJID c of
 withClient :: ClientID -> (JID -> XMPP ()) -> XMPP ()
 withClient c a = maybe noop a $ parseJID c
 
-{- Runs a XMPP action in a separate thread, using a session to allow it
- - to access the same XMPP client. -}
-xmppThread :: XMPP () -> XMPP ()
-xmppThread a = do
+{- Returns an IO action that runs a XMPP action in a separate thread,
+ - using a session to allow it to access the same XMPP client. -}
+xmppSession :: XMPP () -> XMPP (IO ())
+xmppSession a = do
 	s <- getSession
-	void $ liftIO $ forkIO $
-		void $ runXMPP s a
+	return $ void $ runXMPP s a
 
 {- We only pull from one remote out of the set listed in the push
  - notification, as an optimisation.

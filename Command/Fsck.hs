@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ import qualified Types.Key
 import qualified Backend
 import Annex.Content
 import Annex.Content.Direct
+import Annex.Direct
 import Annex.Perms
 import Annex.Link
 import Logs.Location
@@ -31,8 +32,10 @@ import Config
 import qualified Option
 import Types.Key
 import Utility.HumanTime
+import Git.FilePath
+import GitAnnex.Options
 
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
 #else
 import System.Random (getStdRandom, random)
@@ -43,7 +46,7 @@ import System.Posix.Types (EpochTime)
 import System.Locale
 
 def :: [Command]
-def = [withOptions options $ command "fsck" paramPaths seek
+def = [withOptions fsckOptions $ command "fsck" paramPaths seek
 	SectionMaintenance "check for problems"]
 
 fromOption :: Option
@@ -59,19 +62,20 @@ incrementalScheduleOption :: Option
 incrementalScheduleOption = Option.field [] "incremental-schedule" paramTime
 	"schedule incremental fscking"
 
-options :: [Option]
-options = 
+fsckOptions :: [Option]
+fsckOptions = 
 	[ fromOption
 	, startIncrementalOption
 	, moreIncrementalOption
 	, incrementalScheduleOption
-	]
+	] ++ keyOptions
 
 seek :: [CommandSeek]
 seek =
 	[ withField fromOption Remote.byNameWithUUID $ \from ->
-	  withIncremental $ \i -> withFilesInGit $ whenAnnexed $ start from i
-	, withIncremental $ \i -> withBarePresentKeys $ startBare i
+	  withIncremental $ \i ->
+	  withKeyOptions (startKey i) $
+	  withFilesInGit $ whenAnnexed $ start from i
 	]
 
 withIncremental :: (Incremental -> CommandSeek) -> CommandSeek
@@ -119,6 +123,7 @@ perform key file backend numcopies = check
 	[ fixLink key file
 	, verifyLocationLog key file
 	, verifyDirectMapping key file
+	, verifyDirectMode key file
 	, checkKeySize key
 	, checkBackend backend key (Just file)
 	, checkKeyNumCopies key file numcopies
@@ -146,7 +151,7 @@ performRemote key file backend numcopies remote =
 		, checkKeyNumCopies key file numcopies
 		]
 	withtmp a = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		v <- liftIO getProcessID
 #else
 		v <- liftIO (getStdRandom random :: IO Int)
@@ -167,26 +172,15 @@ performRemote key file backend numcopies remote =
 			)
 	dummymeter _ = noop
 
-{- To fsck a bare repository, fsck each key in the location log. -}
-withBarePresentKeys :: (Key -> CommandStart) -> CommandSeek
-withBarePresentKeys a params = isBareRepo >>= go
-  where
-	go False = return []
-	go True = do
-		unless (null params) $
-			error "fsck should be run without parameters in a bare repository"
-		map a <$> loggedKeys
-
-startBare :: Incremental -> Key -> CommandStart
-startBare inc key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
+startKey :: Incremental -> Key -> CommandStart
+startKey inc key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
 	Nothing -> stop
-	Just backend -> runFsck inc (key2file key) key $ performBare key backend
+	Just backend -> runFsck inc (key2file key) key $ performAll key backend
 
-{- Note that numcopies cannot be checked in a bare repository, because
- - getting the numcopies value requires a working copy with .gitattributes
- - files. -}
-performBare :: Key -> Backend -> Annex Bool
-performBare key backend = check
+{- Note that numcopies cannot be checked in --all mode, since we do not
+ - have associated filenames to look up in the .gitattributes file. -}
+performAll :: Key -> Backend -> Annex Bool
+performAll key backend = check
 	[ verifyLocationLog key (key2file key)
 	, checkKeySize key
 	, checkBackend backend key Nothing
@@ -206,24 +200,13 @@ fixLink key file = do
 	maybe noop (go want) have
 	return True
   where
-	go want have = when (want /= have) $ do
-		{- Version 3.20120227 had a bug that could cause content
-		 - to be stored in the wrong hash directory. Clean up
-		 - after the bug by moving the content.
-		 -}
-		whenM (liftIO $ doesFileExist file) $
-			unlessM (inAnnex key) $ do
-				showNote "fixing content location"
-				dir <- liftIO $ parentDir <$> absPath file
-				let content = absPathFrom dir have
-				unlessM crippledFileSystem $
-					liftIO $ allowWrite (parentDir content)
-				moveAnnex key content
-
-		showNote "fixing link"
-		liftIO $ createDirectoryIfMissing True (parentDir file)
-		liftIO $ removeFile file
-		addAnnexLink want file
+	go want have
+		| want /= fromInternalGitPath have = do
+			showNote "fixing link"
+			liftIO $ createDirectoryIfMissing True (parentDir file)
+			liftIO $ removeFile file
+			addAnnexLink want file
+		| otherwise = noop
 
 {- Checks that the location log reflects the current status of the key,
  - in this repository only. -}
@@ -284,6 +267,20 @@ verifyDirectMapping key file = do
 			unlessM (liftIO $ doesFileExist f) $
 				void $ removeAssociatedFile key f
 	return True
+
+{- Ensures that files whose content is available are in direct mode. -}
+verifyDirectMode :: Key -> FilePath -> Annex Bool
+verifyDirectMode key file = do
+	whenM (isDirect <&&> islink) $ do
+		v <- toDirectGen key file
+		case v of
+			Nothing -> noop
+			Just a -> do
+				showNote "fixing direct mode"
+				a
+	return True
+  where
+	islink = liftIO $ isSymbolicLink <$> getSymbolicLinkStatus file
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available.
@@ -461,7 +458,7 @@ recordFsckTime key = do
 	parent <- parentDir <$> calcRepo (gitAnnexLocation key)
 	liftIO $ void $ tryIO $ do
 		touchFile parent
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		setSticky parent
 #endif
 

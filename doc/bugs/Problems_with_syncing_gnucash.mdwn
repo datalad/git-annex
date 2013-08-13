@@ -1,0 +1,568 @@
+### Please describe the problem.
+I am trying to sync gnucash between my server and my notebook. Both devices are connected via VPN to provide bidirectional SSH connectivity. After adding some data in gnucash the logfiles get synced properly but the changes to the gnucash.gnucash file are not recognized. Touching the file afterwards causes git-annex to immediately transfer the file.
+
+### What steps will reproduce the problem?
+
+Store your gnucash configuration in a git-annex repository. Add some transactions and wait for git-annex to sync your *.gnucash file.
+
+### What version of git-annex are you using? On what operating system?
+
+server and notebook -> Ubuntu 12.04.2 LTS:
+[[!format sh """
+florz@server:~$ git-annex version
+git-annex version: 4.20130601
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+"""]]
+
+### Please provide any additional information below.
+
+before opening gnucash:
+[[!format sh """
+florz@notebook:~$ stat annex-sync/gnucash/gnucash.gnucash
+  Datei: »annex-sync/gnucash/gnucash.gnucash“
+  Größe: 113902         Blöcke: 240        EA Block: 4096   Normale Datei
+Gerät: 15h/21d  Inode: 2974371     Verknüpfungen: 1
+Zugriff: (0600/-rw-------)  Uid: ( 1000/   florz)   Gid: ( 1000/   florz)
+Zugriff    : 2013-06-22 19:32:37.974073365 +0200
+Modifiziert: 2013-06-22 19:32:37.846073367 +0200
+Geändert   : 2013-06-22 19:32:37.970073365 +0200
+ Geburt    : -
+
+florz@server:~$ stat annex-sync/gnucash/gnucash.gnucash
+  Datei: »annex-sync/gnucash/gnucash.gnucash“
+  Größe: 113902         Blöcke: 224        EA Block: 4096   Normale Datei
+Gerät: fc00h/64512d     Inode: 401737579   Verknüpfungen: 1
+Zugriff: (0600/-rw-------)  Uid: ( 1000/   florz)   Gid: ( 1000/   florz)
+Zugriff    : 2013-06-22 19:40:24.148876398 +0200
+Modifiziert: 2013-06-22 19:24:18.000000000 +0200
+Geändert   : 2013-06-22 19:24:26.817865369 +0200
+ Geburt    : -
+"""]]
+
+after doing some changes in gnucash:
+[[!format sh """
+florz@notebook:~$ stat annex-sync/gnucash/gnucash.gnucash
+  Datei: »annex-sync/gnucash/gnucash.gnucash“
+  Größe: 114039         Blöcke: 240        EA Block: 4096   Normale Datei
+Gerät: 15h/21d  Inode: 2974990     Verknüpfungen: 1
+Zugriff: (0600/-rw-------)  Uid: ( 1000/   florz)   Gid: ( 1000/   florz)
+Zugriff    : 2013-06-22 19:52:12.226049268 +0200
+Modifiziert: 2013-06-22 19:52:12.342049265 +0200
+Geändert   : 2013-06-22 19:52:12.342049265 +0200
+ Geburt    : -
+
+florz@server:~$ stat annex-sync/gnucash/gnucash.gnucash
+  Datei: »annex-sync/gnucash/gnucash.gnucash“
+  Größe: 113902         Blöcke: 224        EA Block: 4096   Normale Datei
+Gerät: fc00h/64512d     Inode: 401737579   Verknüpfungen: 1
+Zugriff: (0600/-rw-------)  Uid: ( 1000/   florz)   Gid: ( 1000/   florz)
+Zugriff    : 2013-06-22 19:40:24.148876398 +0200
+Modifiziert: 2013-06-22 19:24:18.000000000 +0200
+Geändert   : 2013-06-22 19:24:26.817865369 +0200
+ Geburt    : -
+
+# after some time -> still no transfer
+
+florz@server:~$ stat annex-sync/gnucash/gnucash.gnucash
+  Datei: »annex-sync/gnucash/gnucash.gnucash“
+  Größe: 113902         Blöcke: 224        EA Block: 4096   Normale Datei
+Gerät: fc00h/64512d     Inode: 401737579   Verknüpfungen: 1
+Zugriff: (0600/-rw-------)  Uid: ( 1000/   florz)   Gid: ( 1000/   florz)
+Zugriff    : 2013-06-22 19:40:24.148876398 +0200
+Modifiziert: 2013-06-22 19:24:18.000000000 +0200
+Geändert   : 2013-06-22 19:24:26.817865369 +0200
+ Geburt    : -
+"""]]
+
+doing a touch on the file:
+[[!format sh """
+florz@notebook:~$ touch annex-sync/gnucash/gnucash.gnucash
+florz@notebook:~$ stat annex-sync/gnucash/gnucash.gnucash
+  Datei: »annex-sync/gnucash/gnucash.gnucash“
+  Größe: 114039         Blöcke: 240        EA Block: 4096   Normale Datei
+Gerät: 15h/21d  Inode: 2974990     Verknüpfungen: 1
+Zugriff: (0600/-rw-------)  Uid: ( 1000/   florz)   Gid: ( 1000/   florz)
+Zugriff    : 2013-06-22 19:54:27.222046497 +0200
+Modifiziert: 2013-06-22 19:54:27.070046501 +0200
+Geändert   : 2013-06-22 19:54:27.214046498 +0200
+ Geburt    : -
+
+#it syncs immediately
+
+florz@server:~$ stat annex-sync/gnucash/gnucash.gnucash
+  Datei: »annex-sync/gnucash/gnucash.gnucash“
+  Größe: 114039         Blöcke: 224        EA Block: 4096   Normale Datei
+Gerät: fc00h/64512d     Inode: 401737638   Verknüpfungen: 1
+Zugriff: (0600/-rw-------)  Uid: ( 1000/   florz)   Gid: ( 1000/   florz)
+Zugriff    : 2013-06-22 19:54:35.307056482 +0200
+Modifiziert: 2013-06-22 19:54:27.000000000 +0200
+Geändert   : 2013-06-22 19:54:34.787072264 +0200
+ Geburt    : -
+"""]]
+
+on my notebook:
+[[!format sh """
+Everything up-to-date
+Everything up-to-date
+Everything up-to-date
+[2013-06-22 19:52:12 CEST] Watcher: file deleted gnucash/gnucash.gnucash.tmp-rFzA3U
+[2013-06-22 19:52:12 CEST] Committer: committing 1 changes
+[2013-06-22 19:52:12 CEST] Committer: Committing changes to git
+[2013-06-22 19:52:12 CEST] feed: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-index","-z","--index-info"]
+[2013-06-22 19:52:12 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","commit","--allow-empty-message","--no-edit","-m","","--quiet","--no-verify"]
+[2013-06-22 19:52:12 CEST] Pusher: Syncing with server192.168.2.2, home192.168.1.3 
+[2013-06-22 19:52:12 CEST] Watcher: add direct gnucash/gnucash.gnucash.20130622195200.log
+[2013-06-22 19:52:12 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:12 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:12 CEST] Pusher: pushing to [Remote { name ="server192.168.2.2" },Remote { name ="home192.168.1.3" }]
+[2013-06-22 19:52:12 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","branch","-f","synced/master"]
+[2013-06-22 19:52:12 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","home192.168.1.3","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:52:12 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","server192.168.2.2","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:52:13 CEST] read: lsof ["-F0can","+d","/home/florz/annex-sync/.git/annex/tmp/"]
+[2013-06-22 19:52:13 CEST] Committer: Adding gnucash.g..95200.log
+ok
+(Recording state in git...)
+(Recording state in git...)
+
+
+
+(Recording state in git...)
+add gnucash/gnucash.gnucash.20130622195200.log (checksum...) [2013-06-22 19:52:13 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-t","blob","-w","--stdin"]
+[2013-06-22 19:52:13 CEST] Committer: committing 1 changes
+[2013-06-22 19:52:13 CEST] Committer: Committing changes to git
+[2013-06-22 19:52:13 CEST] feed: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-index","-z","--index-info"]
+[2013-06-22 19:52:13 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","commit","--allow-empty-message","--no-edit","-m","","--quiet","--no-verify"]
+[2013-06-22 19:52:13 CEST] Committer: queued Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash.20130622195200.log Nothing : new file created
+[2013-06-22 19:52:13 CEST] Transferrer: Transferring: Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash.20130622195200.log Nothing
+[2013-06-22 19:52:13 CEST] Committer: queued Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash.20130622195200.log Nothing : new file created
+[2013-06-22 19:52:13 CEST] call: /home/florz/bin/git-annex ["transferkeys","--readfd","29","--writefd","27"]
+[2013-06-22 19:52:13 CEST] TransferWatcher: transfer starting: Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash.20130622195200.log Nothing
+[2013-06-22 19:52:14 CEST] Watcher: changed direct .gnucash/books/gnucash.gnucash.gcm
+[2013-06-22 19:52:14 CEST] Watcher: file deleted gnucash/gnucash.gnucash.7f0101.29284.LNK
+[2013-06-22 19:52:14 CEST] Watcher: file deleted gnucash/gnucash.gnucash.LCK
+[2013-06-22 19:52:14 CEST] Watcher: changed direct .gnucash/accelerator-map
+[2013-06-22 19:52:14 CEST] Watcher: changed direct .gnucash/expressions-2.0
+[2013-06-22 19:52:14 CEST] Watcher: changed direct .gnucash/stylesheets-2.0
+[2013-06-22 19:52:14 CEST] Watcher: add direct gnucash/gnucash.gnucash.20130622195212.log
+[2013-06-22 19:52:14 CEST] read: lsof ["-F0can","+d","/home/florz/annex-sync/.git/annex/tmp/"]
+[2013-06-22 19:52:14 CEST] Committer: Adding 5 files
+ok
+(Recording state in git...)
+add .gnucash/books/gnucash.gnucash.gcm (checksum...) [2013-06-22 19:52:15 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-t","blob","-w","--stdin"]
+ok
+add .gnucash/accelerator-map (checksum...) [2013-06-22 19:52:15 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-t","blob","-w","--stdin"]
+ok
+add .gnucash/expressions-2.0 (checksum...) [2013-06-22 19:52:15 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-t","blob","-w","--stdin"]
+ok
+add .gnucash/stylesheets-2.0 (checksum...) [2013-06-22 19:52:15 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-t","blob","-w","--stdin"]
+ok
+add gnucash/gnucash.gnucash.20130622195212.log (checksum...) [2013-06-22 19:52:15 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-t","blob","-w","--stdin"]
+[2013-06-22 19:52:15 CEST] Committer: committing 7 changes
+[2013-06-22 19:52:15 CEST] Committer: Committing changes to git
+[2013-06-22 19:52:15 CEST] feed: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-index","-z","--index-info"]
+To ssh://florz@192.168.1.3/home/florz/annex-sync/
+   7d4c30d..1954c7f  master -> synced/master
+[2013-06-22 19:52:15 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","commit","--allow-empty-message","--no-edit","-m","","--quiet","--no-verify"]
+[2013-06-22 19:52:15 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:15 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:15 CEST] Merger: merging refs/remotes/home192.168.1.3/synced/master into refs/heads/master
+[2013-06-22 19:52:15 CEST] Committer: queued Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash.20130622195212.log Nothing : new file created
+[2013-06-22 19:52:15 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:15 CEST] Committer: queued Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash.20130622195212.log Nothing : new file created
+[2013-06-22 19:52:15 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:15 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:52:15 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync/.git/annex/merge/","merge","--no-edit","refs/remotes/home192.168.1.3/synced/master"]
+Already up-to-date.
+[2013-06-22 19:52:15 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:52:15 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","diff-tree","-z","--raw","--no-renames","-l0","-r","e1cb6c3b8bc0c851e6dab51271a4cde04815c50c","e1cb6c3b8bc0c851e6dab51271a4cde04815c50c"]
+To ssh://florz@192.168.2.2/home/florz/annex-sync/
+   7d4c30d..e1cb6c3  master -> synced/master
+[2013-06-22 19:52:16 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:16 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:16 CEST] Merger: merging refs/remotes/server192.168.2.2/synced/master into refs/heads/master
+[2013-06-22 19:52:16 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:16 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:16 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:52:16 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync/.git/annex/merge/","merge","--no-edit","refs/remotes/server192.168.2.2/synced/master"]
+Already up-to-date.
+[2013-06-22 19:52:16 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:52:16 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","diff-tree","-z","--raw","--no-renames","-l0","-r","e1cb6c3b8bc0c851e6dab51271a4cde04815c50c","e1cb6c3b8bc0c851e6dab51271a4cde04815c50c"]
+
+gnucash.gnucash.20130622195200.log
+
+         778 100%    0.00kB/s    0:00:00  
+         778 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+[2013-06-22 19:52:17 CEST] TransferWatcher: transfer starting: Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash.20130622195200.log Just 778
+
+sent 876 bytes  received 31 bytes  201.56 bytes/sec
+total size is 778  speedup is 0.86
+[2013-06-22 19:52:17 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512", transferKey = Key {keyName = "8b8aa5c2cfe4466c6b897f7987246021468033301a696e2db0070386f7d0f3fd.log", keyBackendName = "SHA256E", keySize = Just 778, keyMtime = Nothing}}
+[2013-06-22 19:52:17 CEST] Transferrer: Uploaded gnucash.g..95200.log
+[2013-06-22 19:52:17 CEST] Transferrer: Transferring: Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash.20130622195212.log Nothing
+[2013-06-22 19:52:17 CEST] TransferWatcher: transfer starting: Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash.20130622195212.log Nothing
+[2013-06-22 19:52:18 CEST] Pusher: Syncing with server192.168.2.2, home192.168.1.3 
+[2013-06-22 19:52:18 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-w","--stdin-paths"]
+[2013-06-22 19:52:18 CEST] feed: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-index","-z","--index-info"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","write-tree"]
+[2013-06-22 19:52:18 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","commit-tree","f2463d30e73fec86e14c9df4bcae5e568398a503","-p","refs/heads/git-annex"]
+[2013-06-22 19:52:18 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-ref","refs/heads/git-annex","776258f91d4245ffe13117a771dc8c7723867c1a"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:18 CEST] Pusher: pushing to [Remote { name ="server192.168.2.2" },Remote { name ="home192.168.1.3" }]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:52:18 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","branch","-f","synced/master"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:52:18 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","server192.168.2.2","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:52:18 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","home192.168.1.3","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..776258f91d4245ffe13117a771dc8c7723867c1a","--oneline","-n1"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e7d4504abea59b0b59659908ba771783acc6cd55","--oneline","-n1"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","ls-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","preferred-content.log"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:18 CEST] Merger: merging refs/heads/synced/master into refs/heads/master
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:52:18 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync/.git/annex/merge/","merge","--no-edit","refs/heads/synced/master"]
+Already up-to-date.
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:52:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","diff-tree","-z","--raw","--no-renames","-l0","-r","e1cb6c3b8bc0c851e6dab51271a4cde04815c50c","e1cb6c3b8bc0c851e6dab51271a4cde04815c50c"]
+
+gnucash.gnucash.20130622195212.log
+
+         411 100%    0.00kB/s    0:00:00  
+         411 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+[2013-06-22 19:52:20 CEST] TransferWatcher: transfer starting: Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash.20130622195212.log Just 411
+
+sent 509 bytes  received 31 bytes  154.29 bytes/sec
+total size is 411  speedup is 0.76
+[2013-06-22 19:52:20 CEST] Transferrer: Uploaded gnucash.g..95212.log
+[2013-06-22 19:52:20 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "84bab1ab-238f-4602-953a-a297aab6da44", transferKey = Key {keyName = "36e8842e91f7577d12992724c8f52586e9ea7cb0234312dc5544ea4dc6f6c39a.log", keyBackendName = "SHA256E", keySize = Just 411, keyMtime = Nothing}}
+[2013-06-22 19:52:20 CEST] Transferrer: Transferring: Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash.20130622195212.log Nothing
+[2013-06-22 19:52:20 CEST] TransferWatcher: transfer starting: Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash.20130622195212.log Nothing
+To ssh://florz@192.168.1.3/home/florz/annex-sync/
+   e7d4504..776258f  git-annex -> synced/git-annex
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..776258f91d4245ffe13117a771dc8c7723867c1a","--oneline","-n1"]
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e7d4504abea59b0b59659908ba771783acc6cd55","--oneline","-n1"]
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:21 CEST] Merger: merging refs/remotes/home192.168.1.3/synced/master into refs/heads/master
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:52:21 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync/.git/annex/merge/","merge","--no-edit","refs/remotes/home192.168.1.3/synced/master"]
+Already up-to-date.
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:52:21 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","diff-tree","-z","--raw","--no-renames","-l0","-r","e1cb6c3b8bc0c851e6dab51271a4cde04815c50c","e1cb6c3b8bc0c851e6dab51271a4cde04815c50c"]
+
+gnucash.gnucash.20130622195212.log
+
+         411 100%    0.00kB/s    0:00:00  
+         411 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+[2013-06-22 19:52:21 CEST] TransferWatcher: transfer starting: Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash.20130622195212.log Just 411
+
+sent 509 bytes  received 31 bytes  360.00 bytes/sec
+total size is 411  speedup is 0.76
+[2013-06-22 19:52:22 CEST] Transferrer: Uploaded gnucash.g..95212.log
+[2013-06-22 19:52:22 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512", transferKey = Key {keyName = "36e8842e91f7577d12992724c8f52586e9ea7cb0234312dc5544ea4dc6f6c39a.log", keyBackendName = "SHA256E", keySize = Just 411, keyMtime = Nothing}}
+[2013-06-22 19:52:22 CEST] Transferrer: Transferring: Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash.20130622195200.log Nothing
+[2013-06-22 19:52:22 CEST] TransferWatcher: transfer starting: Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash.20130622195200.log Nothing
+To ssh://florz@192.168.2.2/home/florz/annex-sync/
+   e7d4504..776258f  git-annex -> synced/git-annex
+[2013-06-22 19:52:22 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:52:22 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:52:22 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..776258f91d4245ffe13117a771dc8c7723867c1a","--oneline","-n1"]
+[2013-06-22 19:52:22 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e7d4504abea59b0b59659908ba771783acc6cd55","--oneline","-n1"]
+[2013-06-22 19:52:22 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:52:22 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+git-annex-shell: key is already present in annex
+rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+rsync error: error in rsync protocol data stream (code 12) at io.c(605) [sender=3.0.9]
+[2013-06-22 19:52:22 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "84bab1ab-238f-4602-953a-a297aab6da44", transferKey = Key {keyName = "8b8aa5c2cfe4466c6b897f7987246021468033301a696e2db0070386f7d0f3fd.log", keyBackendName = "SHA256E", keySize = Just 778, keyMtime = Nothing}}
+git-annex-shell: key is already present in annex
+rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+rsync error: error in rsync protocol data stream (code 12) at io.c(605) [sender=3.0.9]
+[2013-06-22 19:52:24 CEST] Pusher: Syncing with server192.168.2.2, home192.168.1.3 
+[2013-06-22 19:52:24 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-w","--stdin-paths"]
+[2013-06-22 19:52:24 CEST] feed: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-index","-z","--index-info"]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","write-tree"]
+[2013-06-22 19:52:24 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","commit-tree","1641422d48162f533f80693486d7c5a1208b9fcf","-p","refs/heads/git-annex"]
+[2013-06-22 19:52:24 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-ref","refs/heads/git-annex","48cfe2eb07d63d4a59c237994eb07896c92ef1c4"]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:52:24 CEST] Pusher: pushing to [Remote { name ="server192.168.2.2" },Remote { name ="home192.168.1.3" }]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:52:24 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","branch","-f","synced/master"]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:52:24 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","server192.168.2.2","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:52:24 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","home192.168.1.3","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..48cfe2eb07d63d4a59c237994eb07896c92ef1c4","--oneline","-n1"]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e7d4504abea59b0b59659908ba771783acc6cd55","--oneline","-n1"]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..776258f91d4245ffe13117a771dc8c7723867c1a","--oneline","-n1"]
+[2013-06-22 19:52:24 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..48cfe2eb07d63d4a59c237994eb07896c92ef1c4","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..df87e3bef80902abc6d48ce0fbfe3432c790cd21","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..776258f91d4245ffe13117a771dc8c7723867c1a","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] feed: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-index","-z","--index-info"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","df87e3bef80902abc6d48ce0fbfe3432c790cd21"]
+[2013-06-22 19:52:25 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-t","blob","-w","--stdin"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","df87e3bef80902abc6d48ce0fbfe3432c790cd21..refs/heads/git-annex","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","write-tree"]
+[2013-06-22 19:52:25 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","commit-tree","5bf44cd143b2c35a44e609e083af23093eb02028","-p","refs/heads/git-annex","-p","df87e3bef80902abc6d48ce0fbfe3432c790cd21"]
+[2013-06-22 19:52:25 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-ref","refs/heads/git-annex","4cd264f192611f5a0d76e54d31329921a650f896"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..4cd264f192611f5a0d76e54d31329921a650f896","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..df87e3bef80902abc6d48ce0fbfe3432c790cd21","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..776258f91d4245ffe13117a771dc8c7723867c1a","--oneline","-n1"]
+[2013-06-22 19:52:25 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+To ssh://florz@192.168.1.3/home/florz/annex-sync/
+   df87e3b..4cd264f  git-annex -> synced/git-annex
+[2013-06-22 19:52:26 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:52:26 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:52:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..4cd264f192611f5a0d76e54d31329921a650f896","--oneline","-n1"]
+[2013-06-22 19:52:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..df87e3bef80902abc6d48ce0fbfe3432c790cd21","--oneline","-n1"]
+[2013-06-22 19:52:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:52:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..776258f91d4245ffe13117a771dc8c7723867c1a","--oneline","-n1"]
+[2013-06-22 19:52:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+To ssh://florz@192.168.2.2/home/florz/annex-sync/
+   776258f..4cd264f  git-annex -> synced/git-annex
+[2013-06-22 19:52:28 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:52:28 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:52:28 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..4cd264f192611f5a0d76e54d31329921a650f896","--oneline","-n1"]
+[2013-06-22 19:52:28 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..df87e3bef80902abc6d48ce0fbfe3432c790cd21","--oneline","-n1"]
+[2013-06-22 19:52:28 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:52:28 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:53:18 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","ls-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","preferred-content.log"]
+[2013-06-22 19:54:27 CEST] Watcher: changed direct gnucash/gnucash.gnucash
+[2013-06-22 19:54:27 CEST] read: lsof ["-F0can","+d","/home/florz/annex-sync/.git/annex/tmp/"]
+[2013-06-22 19:54:27 CEST] Committer: Adding gnucash.gnucash
+ok
+(Recording state in git...)
+
+
+(Recording state in git...)
+
+
+(Recording state in git...)
+(merging synced/git-annex into git-annex...)
+(Recording state in git...)
+add gnucash/gnucash.gnucash (checksum...) [2013-06-22 19:54:27 CEST] read: sha256sum ["/home/florz/annex-sync/.git/annex/tmp/gnucash25536.gnucash"]
+[2013-06-22 19:54:27 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-t","blob","-w","--stdin"]
+[2013-06-22 19:54:27 CEST] Committer: committing 1 changes
+[2013-06-22 19:54:27 CEST] Committer: Committing changes to git
+[2013-06-22 19:54:27 CEST] feed: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-index","-z","--index-info"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","commit","--allow-empty-message","--no-edit","-m","","--quiet","--no-verify"]
+[2013-06-22 19:54:27 CEST] Committer: queued Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash Nothing : new file created
+[2013-06-22 19:54:27 CEST] Pusher: Syncing with server192.168.2.2, home192.168.1.3 
+[2013-06-22 19:54:27 CEST] Transferrer: Transferring: Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash Nothing
+[2013-06-22 19:54:27 CEST] Committer: queued Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash Nothing : new file created
+[2013-06-22 19:54:27 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-w","--stdin-paths"]
+[2013-06-22 19:54:27 CEST] feed: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-index","-z","--index-info"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","write-tree"]
+[2013-06-22 19:54:27 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","commit-tree","4c81716cf1a0e0df472ffb43770ac8a27ca45420","-p","refs/heads/git-annex"]
+[2013-06-22 19:54:27 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-ref","refs/heads/git-annex","e9e2f951a5c1c645447ccc565bc3def9caeff93c"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:54:27 CEST] Pusher: pushing to [Remote { name ="server192.168.2.2" },Remote { name ="home192.168.1.3" }]
+[2013-06-22 19:54:27 CEST] TransferWatcher: transfer starting: Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash Nothing
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:27 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","branch","-f","synced/master"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:27 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","server192.168.2.2","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:54:27 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","home192.168.1.3","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e9e2f951a5c1c645447ccc565bc3def9caeff93c","--oneline","-n1"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..df87e3bef80902abc6d48ce0fbfe3432c790cd21","--oneline","-n1"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..4cd264f192611f5a0d76e54d31329921a650f896","--oneline","-n1"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","ls-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","preferred-content.log"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:54:27 CEST] Merger: merging refs/heads/synced/master into refs/heads/master
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:54:27 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync/.git/annex/merge/","merge","--no-edit","refs/heads/synced/master"]
+Already up-to-date.
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:54:27 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","diff-tree","-z","--raw","--no-renames","-l0","-r","e41ffae310ed2a50058b2f963decde4f9bc10a14","e41ffae310ed2a50058b2f963decde4f9bc10a14"]
+
+
+
+gnucash.gnucash
+
+       32768  28%    0.00kB/s    0:00:00  [2
+      114039 100%   15.50MB/s    0:00:00 (xfer#1, to-check=0/1)
+013-06-22 19:54:28 CEST] TransferWatcher: transfer starting: Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash Just 32768
+[2013-06-22 19:54:28 CEST] TransferWatcher: transfer starting: Upload UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512" gnucash/gnucash.gnucash Just 114039
+To ssh://florz@192.168.1.3/home/florz/annex-sync/
+   4cd264f..e9e2f95  git-annex -> synced/git-annex
+   e1cb6c3..e41ffae  master -> synced/master
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e9e2f951a5c1c645447ccc565bc3def9caeff93c","--oneline","-n1"]
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..df87e3bef80902abc6d48ce0fbfe3432c790cd21","--oneline","-n1"]
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..4cd264f192611f5a0d76e54d31329921a650f896","--oneline","-n1"]
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:54:33 CEST] Merger: merging refs/remotes/home192.168.1.3/synced/master into refs/heads/master
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:54:33 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync/.git/annex/merge/","merge","--no-edit","refs/remotes/home192.168.1.3/synced/master"]
+Already up-to-date.
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/ann
+sent 114130 bytes  received 31 bytes  20756.55 bytes/sec
+total size is 114039  espeedup is 1.00
+x-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:54:33 CEST] Transferrer: Uploaded gnucash.gnucash
+[2013-06-22 19:54:33 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "dc591dd7-2446-45c6-84dc-55bdf79e7512", transferKey = Key {keyName = "91ec950e4004863219ea33f1398ea4308e0969267c207272e046858ede8bf9d9", keyBackendName = "SHA256E", keySize = Just 114039, keyMtime = Nothing}}
+[2013-06-22 19:54:33 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","diff-tree","-z","--raw","--no-renames","-l0","-r","e41ffae310ed2a50058b2f963decde4f9bc10a14","e41ffae310ed2a50058b2f963decde4f9bc10a14"]
+[2013-06-22 19:54:33 CEST] Transferrer: Transferring: Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash Nothing
+[2013-06-22 19:54:33 CEST] TransferWatcher: transfer starting: Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash Nothing
+
+gnucash.gnucash
+
+       32768  28%    0.00kB/s    0:00:00  
+      114039 100%   19.38MB/s    0:00:00 (xfer#1, to-check=0/1)
+[2013-06-22 19:54:33 CEST] TransferWatcher: transfer starting: Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash Just 32768
+[2013-06-22 19:54:33 CEST] TransferWatcher: transfer starting: Upload UUID "84bab1ab-238f-4602-953a-a297aab6da44" gnucash/gnucash.gnucash Just 114039
+To ssh://florz@192.168.2.2/home/florz/annex-sync/
+   4cd264f..e9e2f95  git-annex -> synced/git-annex
+   e1cb6c3..e41ffae  master -> synced/master
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e9e2f951a5c1c645447ccc565bc3def9caeff93c","--oneline","-n1"]
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..df87e3bef80902abc6d48ce0fbfe3432c790cd21","--oneline","-n1"]
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:54:34 CEST] Merger: merging refs/remotes/server192.168.2.2/synced/master into refs/heads/master
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:54:34 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync/.git/annex/merge/","merge","--no-edit","refs/remotes/server192.168.2.2/synced/master"]
+Already up-to-date.
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/master"]
+[2013-06-22 19:54:34 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","diff-tree","-z","--raw","--no-renames","-l0","-r","e41ffae310ed2a50058b2f963decde4f9bc10a14","e41ffae310ed2a50058b2f963decde4f9bc10a14"]
+
+sent 114130 bytes  received 31 bytes  45664.40 bytes/sec
+total size is 114039  speedup is 1.00
+[2013-06-22 19:54:35 CEST] Transferrer: Uploaded gnucash.gnucash
+[2013-06-22 19:54:35 CEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "84bab1ab-238f-4602-953a-a297aab6da44", transferKey = Key {keyName = "91ec950e4004863219ea33f1398ea4308e0969267c207272e046858ede8bf9d9", keyBackendName = "SHA256E", keySize = Just 114039, keyMtime = Nothing}}
+[2013-06-22 19:54:36 CEST] Pusher: Syncing with server192.168.2.2, home192.168.1.3 
+[2013-06-22 19:54:36 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-w","--stdin-paths"]
+[2013-06-22 19:54:36 CEST] feed: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-index","-z","--index-info"]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","write-tree"]
+[2013-06-22 19:54:36 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","commit-tree","fb43dcef4baa4b928faec6622a4f7889125c6c0a","-p","refs/heads/git-annex"]
+[2013-06-22 19:54:36 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-ref","refs/heads/git-annex","b74b3402e31d7394815733811b9668b00cc51aa9"]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","symbolic-ref","HEAD"]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","refs/heads/master"]
+[2013-06-22 19:54:36 CEST] Pusher: pushing to [Remote { name ="server192.168.2.2" },Remote { name ="home192.168.1.3" }]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:36 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","branch","-f","synced/master"]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:36 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","server192.168.2.2","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:54:36 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","home192.168.1.3","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..b74b3402e31d7394815733811b9668b00cc51aa9","--oneline","-n1"]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..df87e3bef80902abc6d48ce0fbfe3432c790cd21","--oneline","-n1"]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e9e2f951a5c1c645447ccc565bc3def9caeff93c","--oneline","-n1"]
+[2013-06-22 19:54:36 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:39 CEST] read: git ["--gitTo ssh://florz@192.168.1.3/home/florz/annex-sync/
+- ! [rejected]        dgit-annex -> synced/git-annexi (r=/non-fast-forwardh)o
+me/florz/aerror: failed to push some refs to 'ssh://florz@192.168.1.3/home/florz/annex-sync/'
+nTo prevent you from losing history, non-fast-forward updates were rejected
+Merge the remote changes (e.g. 'git pull') before pushing again.  See the
+'Note about fast-forwards' section of 'git push --help' for details.
+nex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..b74b3402e31d7394815733811b9668b00cc51aa9","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..89e2137442dfdb06facbaba3079873d90c7af281","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e9e2f951a5c1c645447ccc565bc3def9caeff93c","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] feed: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-index","-z","--index-info"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","diff-index","--raw","-z","-r","--no-renames","-l0","--cached","89e2137442dfdb06facbaba3079873d90c7af281"]
+[2013-06-22 19:54:39 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","hash-object","-t","blob","-w","--stdin"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","89e2137442dfdb06facbaba3079873d90c7af281..refs/heads/git-annex","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","write-tree"]
+[2013-06-22 19:54:39 CEST] chat: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","commit-tree","f175a05b82160942363f46bf1af3e7af1660dfa1","-p","refs/heads/git-annex","-p","89e2137442dfdb06facbaba3079873d90c7af281"]
+[2013-06-22 19:54:39 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","update-ref","refs/heads/git-annex","fabac4b203dce9e812b4637f7e95375b15a3f739"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..fabac4b203dce9e812b4637f7e95375b15a3f739","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..89e2137442dfdb06facbaba3079873d90c7af281","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e9e2f951a5c1c645447ccc565bc3def9caeff93c","--oneline","-n1"]
+[2013-06-22 19:54:39 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+To ssh://florz@192.168.2.2/home/florz/annex-sync/
+   e9e2f95..fabac4b  git-annex -> synced/git-annex
+[2013-06-22 19:54:40 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:40 CEST] Pusher: trying manual pull to resolve failed pushes
+[2013-06-22 19:54:40 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:40 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..fabac4b203dce9e812b4637f7e95375b15a3f739","--oneline","-n1"]
+[2013-06-22 19:54:40 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..89e2137442dfdb06facbaba3079873d90c7af281","--oneline","-n1"]
+[2013-06-22 19:54:40 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:40 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..e9e2f951a5c1c645447ccc565bc3def9caeff93c","--oneline","-n1"]
+[2013-06-22 19:54:40 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:54:40 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","fetch","home192.168.1.3"]
+From ssh://192.168.1.3/home/florz/annex-sync
+   e9e2f95..89e2137  synced/git-annex -> home192.168.1.3/synced/git-annex
+[2013-06-22 19:54:42 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:42 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:42 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..fabac4b203dce9e812b4637f7e95375b15a3f739","--oneline","-n1"]
+[2013-06-22 19:54:42 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..89e2137442dfdb06facbaba3079873d90c7af281","--oneline","-n1"]
+[2013-06-22 19:54:42 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:43 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:54:43 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:43 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:43 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..fabac4b203dce9e812b4637f7e95375b15a3f739","--oneline","-n1"]
+[2013-06-22 19:54:43 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..89e2137442dfdb06facbaba3079873d90c7af281","--oneline","-n1"]
+[2013-06-22 19:54:43 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:43 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+[2013-06-22 19:54:43 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--verify","-q","refs/remotes/home192.168.1.3/master"]
+[2013-06-22 19:54:43 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/master..refs/remotes/home192.168.1.3/master","--oneline","-n1"]
+[2013-06-22 19:54:43 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--verify","-q","refs/remotes/home192.168.1.3/synced/master"]
+[2013-06-22 19:54:43 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/synced/master..refs/remotes/home192.168.1.3/synced/master","--oneline","-n1"]
+[2013-06-22 19:54:43 CEST] Pusher: pushing to [Remote { name ="home192.168.1.3" }]
+[2013-06-22 19:54:43 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","branch","-f","synced/master"]
+[2013-06-22 19:54:43 CEST] call: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","push","home192.168.1.3","git-annex:synced/git-annex","master:synced/master"]
+[2013-06-22 19:54:45 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:45 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:45 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..fabac4b203dce9e812b4637f7e95375b15a3f739","--oneline","-n1"]
+[2013-06-22 19:54:45 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:45 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..89e2137442dfdb06facbaba3079873d90c7af281","--oneline","-n1"]
+[2013-06-22 19:54:45 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+Everything up-to-date
+[2013-06-22 19:54:46 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","git-annex"]
+[2013-06-22 19:54:46 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","show-ref","--hash","refs/heads/git-annex"]
+[2013-06-22 19:54:47 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..fabac4b203dce9e812b4637f7e95375b15a3f739","--oneline","-n1"]
+[2013-06-22 19:54:47 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..69a00fc4a2079b3a87725cc0e3e8b8a1e3a9ae20","--oneline","-n1"]
+[2013-06-22 19:54:47 CEST] read: git ["--git-dir=/home/florz/annex-sync/.git","--work-tree=/home/florz/annex-sync","log","refs/heads/git-annex..3c87a082e3b5340597dc59b9d5963b191f24a936","--oneline","-n1"]
+"""]]
+
+[[!tag /design/assistant]]
+[[!meta title="hard link to open file which is then deleted"]]
+
+> I have fixed this bug. [[done]] --[[Joey]]

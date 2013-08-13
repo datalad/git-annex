@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="ringprince"
+ ip="134.76.2.1"
+ subject="comment 2"
+ date="2013-07-23T08:47:58Z"
+ content="""
+Not sure, what you mean.
+
+Disabling sync?
+But that also disables sync, right?  ;-)  So, if I add a file manually (via command line) that file is not synced automatically, correct?
+
+I do not see any other 'pause' button next to the repository.
+
+I am fine with git-annex doing the syncing automatically for me, but I want to be in control over the files git annex actually uses.
+
+If I just downloaded a big file, I might want to check it first before having git-annex move it to other repositories.
+
+
+"""]]

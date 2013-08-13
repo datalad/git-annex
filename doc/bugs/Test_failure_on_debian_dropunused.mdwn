@@ -1,0 +1,31 @@
+### Please describe the problem.
+./git-annex test fails:
+                                          
+    ### Failure in: git-annex unused/dropunused                                                                                                     
+    dropunused failed
+    Cases: 1  Tried: 1  Errors: 0  Failures: 1   
+
+### What steps will reproduce the problem?
+./git-annex test
+
+### What version of git-annex are you using? On what operating system?
+4.20130723-206-g1647361
+
+
+debian 7.1 i686
+
+### Please provide any additional information below.
+
+I'm not sure if there is a way to get extra information out of the test harness. I had a quick look at the code and couldn't see anything obvious.
+I've tried a clean and rebuild and it reappears, so if there is more information you need just let me know what.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+> Forgot to update the test suite for this behavior change.
+> [[done]] --[[Joey]]

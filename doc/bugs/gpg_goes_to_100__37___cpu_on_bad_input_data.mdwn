@@ -14,3 +14,5 @@ http://paste.ubuntu.com/5626517/
 Note: The problem is most likely caused by bad data from either the nntp hooks program, or the nntp server itself.
 
 I also have one file with bad data that consistently is NOT a problem for gpg to handle(lines 24-25 of log).
+
+[[!tag moreinfo]]

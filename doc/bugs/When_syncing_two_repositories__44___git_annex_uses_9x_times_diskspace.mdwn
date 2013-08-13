@@ -35,7 +35,7 @@ Self-controlled resource hogging. Ie. dont use more then 50% processor,
 or dont make heavy disk usage for 3-4 hours, because the laptop can overheat.
 
 What version of git-annex are you using? On what operating system?
-http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz
+https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz
 Version: 4.20130227
 Ubuntu 10.04, laptop Toshiba L300, Intel Core2Duo T5800@2.0Ghz, 3GB ram
 

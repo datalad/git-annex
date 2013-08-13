@@ -1,0 +1,13 @@
+Variants of the git-annex logo.
+
+[[logo_small.png]]
+
+[[logo.svg]]
+
+[[logo-old.png]]
+
+[[logo-old_small.png]]
+
+[[logo-old.svg]]
+
+[[logo-old-bw.svg]]

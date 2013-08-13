@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 3"
+ date="2013-07-08T18:22:18Z"
+ content="""
+`cabal install` also creates the git-annex-shell symlink. I have filed a bug on the ebuild: <https://github.com/gentoo-haskell/gentoo-haskell/issues/247>
+"""]]

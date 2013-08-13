@@ -1,4 +1,4 @@
-{- Generating and installing a desktop menu entry file
+{- Generating and installing a desktop menu entry file and icon,
  - and a desktop autostart file. (And OSX equivilants.)
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>

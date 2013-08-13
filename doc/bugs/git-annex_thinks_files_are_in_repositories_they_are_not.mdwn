@@ -20,3 +20,10 @@ Both 4.20130405 on Ubuntu 12.10
 
 I noticed this first when using a USB drive to communicate between work and home. Making changes at home, it thought that the new files were now present at work, when the computer there is off, and a long way away.
 --Walter
+
+> A little while ago, I made this change:
+
+  * direct mode: Direct mode commands now work on files staged in the index,
+    they do not need to be committed to git.
+
+> I think that fixes the confusing behavior described here. [[done]] --[[Joey]] 

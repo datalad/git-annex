@@ -1,0 +1,113 @@
+### Please describe the problem.
+In latest git-annex version for windows (4.2130723), after a fresh clone, git annex sync considers dummy symlinks as recently modified files and commits the content.
+
+Alternatively, to try and avoid this problem, I tried manually merging branches (git-annex and master) but if I do that, I can't retrieve files anymore. That is, `git annex get .` downloads files but doesn't replace the dummy symlinks (I am guessing the same as `http://git-annex.branchable.com/bugs/windows_port_-_can__39__t_directly_access_files/`. Tell me if this is a different bug, I'll file a new bug report)
+
+
+### What steps will reproduce the problem?
+Create a new repository (on windows or on linux), create a file and commit it.
+
+Clone this repository (on windows), then `git annex init` it. The file is here, containing the path to the real file (like a symlink but the crippled filesystem's version).
+
+At this point, if you perform `git annex sync`, git-annex thinks the dummy symlink is the new content of the file and commits it.
+
+
+### What version of git-annex are you using? On what operating system?
+This problem occurs on git-annex for windows version 4.20130723 (the latest version as of now) although it worked well in version 4.20130709.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$ mkdir test1
+
+$ cd test1
+
+$ git init
+Initialized empty Git repository in c:/Users/raz/test1/.git/
+
+$ git annex init test1
+init test1
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+(Recording state in git...)
+
+$ echo "This is the content of the file" > file.txt
+
+$ git annex add
+add file.txt (checksum...) ok
+(Recording state in git...)
+
+$ git annex sync
+commit
+ok
+git-annex: no branch is checked out
+
+$ cat file.txt
+This is the content of the file
+
+$ cd ..
+
+$ git clone test1 test2
+Cloning into 'test2'...
+done.
+
+$ cd test2
+
+$ git annex init test2
+init test2
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+(Recording state in git...)
+
+$ cat file.txt        # File is only a dummy file, it contains the path to the real file (which doesn't yet exist here, this is expected behavior)
+.git/annex/objects/33/43/SHA256E-s32--a50017c6136930a142cfca6ee34b700d96dcf0ba59cf7007c27c2924f80dfa7a.txt/SHA256E-s32--a50017c6136930a142cfca6ee34b700d96dcf0ba59cf7007c27c2924f80dfa7a.txt
+
+$ git annex sync
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+add file.txt (checksum...) ok                # ??? The dummy file is added to the index -> shouldn't happen
+(Recording state in git...)
+commit
+(Recording state in git...)
+ok
+pull origin
+ok
+push origin
+Counting objects: 26, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (14/14), done.
+Writing objects: 100% (19/19), 1.78 KiB | 0 bytes/s, done.
+Total 19 (delta 2), reused 0 (delta 0)
+To c:/Users/Renaud Casenave-Pere/test1
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+
+$ git annex whereis                     # File should be in origin repository, not here
+whereis file.txt (1 copy)
+        e6e1c558-7127-4ffa-a79b-2161b44ec44b -- here (test2)
+ok
+
+$ cat file.txt                          # The committed content, discarding the real content
+.git/annex/objects/33/43/SHA256E-s32--a50017c6136930a142cfca6ee34b700d96dcf0ba59cf7007c27c2924f80dfa7a.txt/SHA256E-s32--a50017c6136930a142cfca6ee34b700d96dcf0ba59cf7007c27c2924f80dfa7a.txt
+
+# End of transcript or log.
+"""]]
+
+Tell me if you need further information.
+
+> [[fixed|done]] --[[Joey]] 

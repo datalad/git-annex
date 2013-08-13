@@ -1,3 +1,5 @@
+For SL6/CentOS6 install the EPEL repo and yum install git-annex. 
+
 I was waiting for my backups to be done hence this article, as I was using
 _git-annex_ to manage my files and I decided I needed to have
 git-annex on a SL5 based machine. SL5 is just an opensource

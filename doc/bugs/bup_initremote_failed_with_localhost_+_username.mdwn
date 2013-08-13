@@ -1,0 +1,49 @@
+### Please describe the problem.
+Attempted to create a bup remote on the current system via ssh. It appears to have created the bup remote fine, but fails when sshing to it and does not add the remote.
+This is a normal indirect annex (currently containing a single test jpg in its root)
+I'm presuming the error is "(storing uuid...) sh: 1: cd: can't cd to /~/archie" 
+
+
+### What steps will reproduce the problem?
+git annex initremote bup type=bup encryption=none buprepo=sshservername:path
+
+I've tried using .ssh/config to remove the username from the servername passed to bup repo and it still fails.
+
+### What version of git-annex are you using? On what operating system?
+[[!format sh """
+>git-annex version
+git-annex version: 4.20130615-g29d5bb9
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+local repository version: 3
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+"""]]
+debian wheezy i686
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+> git annex initremote bup type=bup encryption=none buprepo=bup@localhost:archie
+initremote bup (bup init...)
+Reinitialized existing Git repository in /media/backup/home/archie/.bup/
+Initialized empty Git repository in /media/backup/bup/archie/
+(storing uuid...) sh: 1: cd: can't cd to /~/archie
+git-annex: ssh failed
+
+> ssh bup@localhost
+Last login: Mon Jun 17 10:35:45 2013 from localhost
+$ ls
+archie
+$ cd archie
+$ ls
+branches  config  description  HEAD  hooks  info  objects  refs
+
+
+# End of transcript or log.
+"""]]
+
+> applied patchm, [[done]] --[[Joey]]

@@ -25,8 +25,9 @@ module Utility.Process (
 	withHandle,
 	withBothHandles,
 	withQuietOutput,
+	withNullHandle,
 	createProcess,
-	runInteractiveProcess,
+	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
 	stderrHandle,
@@ -34,7 +35,7 @@ module Utility.Process (
 
 import qualified System.Process
 import System.Process as X hiding (CreateProcess(..), createProcess, runInteractiveProcess, readProcess, readProcessWithExitCode, system, rawSystem, runInteractiveCommand, runProcess)
-import System.Process hiding (createProcess, runInteractiveProcess, readProcess)
+import System.Process hiding (createProcess, readProcess)
 import System.Exit
 import System.IO
 import System.Log.Logger
@@ -241,12 +242,21 @@ withQuietOutput
 	:: CreateProcessRunner
 	-> CreateProcess
 	-> IO ()
-withQuietOutput creator p = withFile "/dev/null" WriteMode $ \devnull -> do
+withQuietOutput creator p = withNullHandle $ \nullh -> do
 	let p' = p
-		{ std_out = UseHandle devnull
-		, std_err = UseHandle devnull
+		{ std_out = UseHandle nullh
+		, std_err = UseHandle nullh
 		}
 	creator p' $ const $ return ()
+
+withNullHandle :: (Handle -> IO a) -> IO a
+withNullHandle = withFile devnull WriteMode
+  where
+#ifndef mingw32_HOST_OS
+	devnull = "/dev/null"
+#else
+	devnull = "NUL"
+#endif
 
 {- Extract a desired handle from createProcess's tuple.
  - These partial functions are safe as long as createProcess is run
@@ -290,27 +300,25 @@ showCmd = go . cmdspec
 	go (ShellCommand s) = s
 	go (RawCommand c ps) = c ++ " " ++ show ps
 
-{- Wrappers for System.Process functions that do debug logging.
- - 
- - More could be added, but these are the only ones I usually need.
- -}
+{- Starts an interactive process. Unlike runInteractiveProcess in
+ - System.Process, stderr is inherited. -}
+startInteractiveProcess
+	:: FilePath
+	-> [String]
+	-> Maybe [(String, String)]
+	-> IO (ProcessHandle, Handle, Handle)
+startInteractiveProcess cmd args environ = do
+	let p = (proc cmd args)
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = Inherit
+		, env = environ
+		}
+	(Just from, Just to, _, pid) <- createProcess p
+	return (pid, to, from)
 
+{- Wrapper around System.Process function that does debug logging. -}
 createProcess :: CreateProcess -> IO (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle)
 createProcess p = do
 	debugProcess p
 	System.Process.createProcess p
-
-runInteractiveProcess
-	:: FilePath	
-	-> [String]	
-	-> Maybe FilePath	
-	-> Maybe [(String, String)]	
-	-> IO (Handle, Handle, Handle, ProcessHandle)
-runInteractiveProcess f args c e = do
-	debugProcess $ (proc f args)
-			{ std_in = CreatePipe
-			, std_out = CreatePipe
-			, std_err = CreatePipe
-			, env = e
-			}
-	System.Process.runInteractiveProcess f args c e

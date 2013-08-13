@@ -15,6 +15,7 @@ module Annex.Ssh (
 ) where
 
 import qualified Data.Map as M
+import Data.Hash.MD5
 
 import Common.Annex
 import Annex.LockPool
@@ -51,17 +52,18 @@ sshInfo (host, port) = go =<< sshCacheDir
 	go (Just dir) = do
 		let socketfile = dir </> hostport2socket host port
 		if valid_unix_socket_path socketfile
-			then return (Just socketfile, cacheparams socketfile)
+			then return (Just socketfile, sshConnectionCachingParams socketfile)
 			else do
 				socketfile' <- liftIO $ relPathCwdToFile socketfile
 				if valid_unix_socket_path socketfile'
-					then return (Just socketfile', cacheparams socketfile')
+					then return (Just socketfile', sshConnectionCachingParams socketfile')
 					else return (Nothing, [])
-	cacheparams :: FilePath -> [CommandParam]
-	cacheparams socketfile =
-		[ Param "-S", Param socketfile
-		, Params "-o ControlMaster=auto -o ControlPersist=yes"
-		]
+
+sshConnectionCachingParams :: FilePath -> [CommandParam]
+sshConnectionCachingParams socketfile = 
+	[ Param "-S", Param socketfile
+	, Params "-o ControlMaster=auto -o ControlPersist=yes"
+	]
 
 {- ssh connection caching creates sockets, so will not work on a
  - crippled filesystem. A GIT_ANNEX_TMP_DIR can be provided to use
@@ -96,7 +98,7 @@ sshCleanup = go =<< sshCacheDir
 			liftIO (catchDefaultIO [] $ dirContents dir)
 		forM_ sockets cleanup
 	cleanup socketfile = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock
 		-- succeeds, nothing is using this ssh, and it can
@@ -116,27 +118,27 @@ sshCleanup = go =<< sshCacheDir
 		stopssh socketfile
 #endif
 	stopssh socketfile = do
-		let (host, port) = socket2hostport socketfile
-		(_, params) <- sshInfo (host, port)
+		let params = sshConnectionCachingParams socketfile
 		-- "ssh -O stop" is noisy on stderr even with -q
 		void $ liftIO $ catchMaybeIO $
 			withQuietOutput createProcessSuccess $
 				proc "ssh" $ toCommand $
 					[ Params "-O stop"
-					] ++ params ++ [Param host]
+					] ++ params ++ [Param "any"]
 		-- Cannot remove the lock file; other processes may
 		-- be waiting on our exclusive lock to use it.
 
+{- This needs to be as short as possible, due to limitations on the length
+ - of the path to a socket file. At the same time, it needs to be unique
+ - for each host.
+ -}
 hostport2socket :: String -> Maybe Integer -> FilePath
-hostport2socket host Nothing = host
-hostport2socket host (Just port) = host ++ "!" ++ show port
-
-socket2hostport :: FilePath -> (String, Maybe Integer)
-socket2hostport socket
-	| null p = (h, Nothing)
-	| otherwise = (h, readish p)
-  where
-	(h, p) = separate (== '!') $ takeFileName socket
+hostport2socket host Nothing = hostport2socket' host
+hostport2socket host (Just port) = hostport2socket' $ host ++ "!" ++ show port
+hostport2socket' :: String -> FilePath
+hostport2socket' s
+	| length s > 32 = md5s (Str s)
+	| otherwise = s
 
 socket2lock :: FilePath -> FilePath
 socket2lock socket = socket ++ lockExt

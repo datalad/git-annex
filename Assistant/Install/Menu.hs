@@ -9,14 +9,20 @@
 
 module Assistant.Install.Menu where
 
+import Common
+
 import Utility.FreeDesktop
 
-installMenu :: FilePath -> FilePath -> IO ()
-installMenu command file =
+installMenu :: FilePath -> FilePath -> FilePath -> FilePath -> IO ()
+installMenu command menufile iconsrcdir icondir = do
 #ifdef darwin_HOST_OS
 	return ()
 #else
-	writeDesktopMenuFile (fdoDesktopMenu command) file
+	writeDesktopMenuFile (fdoDesktopMenu command) menufile
+	installIcon (iconsrcdir </> "logo.svg") $
+		iconFilePath (iconBaseName ++ ".svg") "scalable" icondir
+	installIcon (iconsrcdir </> "favicon.png") $
+		iconFilePath (iconBaseName ++ ".png") "16x16" icondir
 #endif
 
 {- The command can be either just "git-annex", or the full path to use
@@ -27,4 +33,15 @@ fdoDesktopMenu command = genDesktopEntry
 	"Track and sync the files in your Git Annex"
 	False
 	(command ++ " webapp")
+	(Just iconBaseName)
 	["Network", "FileTransfer"]
+
+installIcon :: FilePath -> FilePath -> IO ()
+installIcon src dest = do
+	createDirectoryIfMissing True (parentDir dest)
+	withBinaryFile src ReadMode $ \hin ->
+		withBinaryFile dest WriteMode $ \hout ->
+			hGetContents hin >>= hPutStr hout
+
+iconBaseName :: String
+iconBaseName = "git-annex"

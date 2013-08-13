@@ -1,6 +1,6 @@
 {- safely running shell commands
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,8 @@ import Utility.Process
 import System.Process (env)
 import Data.String.Utils
 import Control.Applicative
+import System.FilePath
+import Data.Char
 
 {- A type for parameters passed to a shell command. A command can
  - be passed either some Params (multiple parameters can be included,
@@ -24,14 +26,20 @@ data CommandParam = Params String | Param String | File FilePath
 {- Used to pass a list of CommandParams to a function that runs
  - a command and expects Strings. -}
 toCommand :: [CommandParam] -> [String]
-toCommand = (>>= unwrap)
+toCommand = concatMap unwrap
   where
 	unwrap (Param s) = [s]
 	unwrap (Params s) = filter (not . null) (split " " s)
-	-- Files that start with a dash are modified to avoid
-	-- the command interpreting them as options.
-	unwrap (File s@('-':_)) = ["./" ++ s]
+	-- Files that start with a non-alphanumeric that is not a path
+	-- separator are modified to avoid the command interpreting them as
+	-- options or other special constructs.
+	unwrap (File s@(h:_))
+		| isAlphaNum h || h `elem` pathseps = [s]
+		| otherwise = ["./" ++ s]
 	unwrap (File s) = [s]
+	-- '/' is explicitly included because it's an alternative
+	-- path separator on Windows.
+	pathseps = pathSeparator:"./"
 
 {- Run a system command, and returns True or False
  - if it succeeded or failed.

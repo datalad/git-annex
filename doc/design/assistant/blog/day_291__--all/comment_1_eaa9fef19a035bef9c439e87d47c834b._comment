@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 1"
+ date="2013-07-03T22:16:32Z"
+ content="""
+Excellent stuff!  Another thing I'd like to see is that I find myself doing the following all the time:
+
+    git annex copy --to titan --not --in titan
+
+Meaning: copy everything to titan that it doesn't already have.  This operation is very quick.  But I write just:
+
+    git annex copy --to titan
+
+This operation is extremely slow, since it appears to scan through every file in the repository.  Is there a way to have the latter imply the former?  I wouldn't ever want to copy a file that it already has anyway...
+
+"""]]

@@ -15,7 +15,8 @@ More should be added, such as:
   REST API; free software
 * Mediafire provides 50gb free and has a REST API.
 * Flickr provides 1 tb (!!!!) to free accounts, and can store at least
-  photos and videos.
+  photos and videos. <https://github.com/ricardobeat/filr> is a hack
+  to allow storing any type of file on Flickr.
 * mega.co.nz. Already supported via [[tips/megaannex]], would just need
   webapp modifications to configure it. May want to use megaannex as-is to
   build a non-hook special remote in haskell.

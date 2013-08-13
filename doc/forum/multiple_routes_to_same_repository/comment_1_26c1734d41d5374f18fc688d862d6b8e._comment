@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmZ9EwisYI1DDev8HXY6zFjPrLKt60-3QI"
+ nickname="Yo"
+ subject="comment 1"
+ date="2013-06-24T12:23:15Z"
+ content="""
+I believe I have a similar set up as you're trying to achieve. What I did was just add a repository using the public domain name only (DDNS). My home router seems to be smart enough to realize the IP the domain name resolves to is its own, so I get gigabit speeds when at home, and I can still access it when I'm not at home.
+"""]]

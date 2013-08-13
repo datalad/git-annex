@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Flo"
+ ip="141.76.46.31"
+ subject="Git repositery?"
+ date="2013-07-19T08:56:04Z"
+ content="""
+I'm not sure to know what you mean with \"git repository on a SSH server\". I tried to use the assistant to add this git synchronization fall-back if XMPP is not available. However, it synchronizes all files too with this new repository. I tried to make it manual, unwanted, etc. But it stills send all my files on the transfer repository on rsync.net. I don't want that...
+"""]]

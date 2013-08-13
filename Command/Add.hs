@@ -31,6 +31,7 @@ import Config
 import Utility.InodeCache
 import Annex.FileMatcher
 import Annex.ReplaceFile
+import Utility.Tmp
 
 def :: [Command]
 def = [notBareRepo $ command "add" paramPaths seek SectionCommon
@@ -79,37 +80,54 @@ start file = ifAnnexed file addpresent add
 		next $ next $ cleanup file key =<< inAnnex key
 
 {- The file that's being added is locked down before a key is generated,
- - to prevent it from being modified in between. It's hard linked into a
- - temporary location, and its writable bits are removed. It could still be
- - written to by a process that already has it open for writing.
+ - to prevent it from being modified in between. This lock down is not
+ - perfect at best (and pretty weak at worst). For example, it does not
+ - guard against files that are already opened for write by another process.
+ - So a KeySource is returned. Its inodeCache can be used to detect any
+ - changes that might be made to the file after it was locked down.
+ -
+ - In indirect mode, the write bit is removed from the file as part of lock
+ - down to guard against further writes, and because objects in the annex
+ - have their write bit disabled anyway. This is not done in direct mode,
+ - because files there need to remain writable at all times.
+ -
+ - When possible, the file is hard linked to a temp directory. This guards
+ - against some changes, like deletion or overwrite of the file, and
+ - allows lsof checks to be done more efficiently when adding a lot of files.
  -
  - Lockdown can fail if a file gets deleted, and Nothing will be returned.
  -}
 lockDown :: FilePath -> Annex (Maybe KeySource)
 lockDown file = ifM (crippledFileSystem)
-	( liftIO $ catchMaybeIO $ do
+	( liftIO $ catchMaybeIO nohardlink
+	, do
+		tmp <- fromRepo gitAnnexTmpDir
+		createAnnexDirectory tmp
+		unlessM (isDirect) $ liftIO $
+			void $ tryIO $ preventWrite file
+		liftIO $ catchMaybeIO $ do
+			(tmpfile, h) <- openTempFile tmp $
+				relatedTemplate $ takeFileName file
+			hClose h
+			nukeFile tmpfile
+			withhardlink tmpfile `catchIO` const nohardlink
+	)
+  where
+  	nohardlink = do
 		cache <- genInodeCache file
 		return $ KeySource
 			{ keyFilename = file
 			, contentLocation = file
 			, inodeCache = cache
 			}
-	, do
-		tmp <- fromRepo gitAnnexTmpDir
-		createAnnexDirectory tmp
-		liftIO $ catchMaybeIO $ do
-			preventWrite file
-			(tmpfile, h) <- openTempFile tmp (takeFileName file)
-			hClose h
-			nukeFile tmpfile
-			createLink file tmpfile
-			cache <- genInodeCache tmpfile
-			return $ KeySource
-				{ keyFilename = file
-				, contentLocation = tmpfile
-				, inodeCache = cache
-				}
-	)
+	withhardlink tmpfile = do
+		createLink file tmpfile
+		cache <- genInodeCache tmpfile
+		return $ KeySource
+			{ keyFilename = file
+			, contentLocation = tmpfile
+			, inodeCache = cache
+			}
 
 {- Ingests a locked down file into the annex.
  -
@@ -151,8 +169,6 @@ ingest (Just source) = do
 finishIngestDirect :: Key -> KeySource -> Annex ()
 finishIngestDirect key source = do
 	void $ addAssociatedFile key $ keyFilename source
-	unlessM crippledFileSystem $
-		liftIO $ allowWrite $ keyFilename source
 	when (contentLocation source /= keyFilename source) $
 		liftIO $ nukeFile $ contentLocation source
 
@@ -174,7 +190,7 @@ undo file key e = do
 		liftIO $ nukeFile file
 		catchAnnex (fromAnnex key file) tryharder
 		logStatus key InfoMissing
-	throw e
+	throwAnnex e
   where
 	-- fromAnnex could fail if the file ownership is weird
 	tryharder :: IOException -> Annex ()

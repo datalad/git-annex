@@ -1,0 +1,1 @@
+It would be nice to have mimetype support on the `annex.largefiles` configuration directive. F.e. `git config annex.largefiles "not mimetype=text/plain"`

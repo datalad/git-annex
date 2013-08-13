@@ -7,7 +7,8 @@
 
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses #-}
 {-# LANGUAGE TemplateHaskell, OverloadedStrings, RankNTypes #-}
-{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances, FlexibleContexts #-}
+{-# LANGUAGE CPP #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Assistant.WebApp.Types where
@@ -22,7 +23,6 @@ import Utility.Yesod
 import Logs.Transfer
 import Build.SysConfig (packageversion)
 
-import Yesod
 import Yesod.Static
 import Text.Hamlet
 import Data.Text (Text, pack, unpack)
@@ -71,7 +71,7 @@ instance Yesod WebApp where
 			addStylesheet $ StaticR css_bootstrap_css
 			addStylesheet $ StaticR css_bootstrap_responsive_css
 			$(widgetFile "error")
-		hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
+		giveUrlRenderer $(hamletFile $ hamletTemplate "bootstrap")
 
 instance RenderMessage WebApp FormMessage where
 	renderMessage _ _ = defaultFormMessage
@@ -81,29 +81,65 @@ instance RenderMessage WebApp FormMessage where
  - When the webapp is run outside a git-annex repository, the fallback
  - value is returned.
  -}
+#if MIN_VERSION_yesod(1,2,0)
+liftAnnexOr :: forall a. a -> Annex a -> Handler a
+#else
 liftAnnexOr :: forall sub a. a -> Annex a -> GHandler sub WebApp a
+#endif
 liftAnnexOr fallback a = ifM (noAnnex <$> getYesod)
 	( return fallback
 	, liftAssistant $ liftAnnex a
 	)
 
+#if MIN_VERSION_yesod(1,2,0)
+instance LiftAnnex Handler where
+#else
 instance LiftAnnex (GHandler sub WebApp) where
-	liftAnnex = liftAnnexOr $ error "internal runAnnex"
+#endif
+	liftAnnex = liftAnnexOr $ error "internal liftAnnex"
 
+#if MIN_VERSION_yesod(1,2,0)
+instance LiftAnnex (WidgetT WebApp IO) where
+#else
 instance LiftAnnex (GWidget WebApp WebApp) where
-	liftAnnex = lift . liftAnnex
+#endif
+	liftAnnex = liftH . liftAnnex
 
 class LiftAssistant m where
 	liftAssistant :: Assistant a -> m a
 
+#if MIN_VERSION_yesod(1,2,0)
+instance LiftAssistant Handler where
+#else
 instance LiftAssistant (GHandler sub WebApp) where
+#endif
 	liftAssistant a = liftIO . flip runAssistant a
 		=<< assistantData <$> getYesod
 
+#if MIN_VERSION_yesod(1,2,0)
+instance LiftAssistant (WidgetT WebApp IO) where
+#else
 instance LiftAssistant (GWidget WebApp WebApp) where
-	liftAssistant = lift . liftAssistant
+#endif
+	liftAssistant = liftH . liftAssistant
 
-type Form x = Html -> MForm WebApp WebApp (FormResult x, Widget)
+#if MIN_VERSION_yesod(1,2,0)
+type MkMForm x = MForm Handler (FormResult x, Widget)
+#else
+type MkMForm x = MForm WebApp WebApp (FormResult x, Widget)
+#endif
+
+#if MIN_VERSION_yesod(1,2,0)
+type MkAForm x = AForm Handler x
+#else
+type MkAForm x = AForm WebApp WebApp x
+#endif
+
+#if MIN_VERSION_yesod(1,2,0)
+type MkField x = Monad m => RenderMessage (HandlerSite m) FormMessage => Field m x
+#else
+type MkField x = RenderMessage master FormMessage => Field sub master x
+#endif
 
 data RepoSelector = RepoSelector
 	{ onlyCloud :: Bool

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-27T19:09:50Z"
+ content="""
+Mega can be used via [[/tips/megaannex]]. I don't have personal experience with it, but if you set up a repository manually using that, the assistant can use that repository just as it uses any other repository.
+
+git-annex at the command line is great for small local repositories that pull files from various larger remotes as needed. You just run \"git annex get\" when you want a file and \"git annex drop\" when you want to free disk space. You can also use this mode with the assistant, by configuring the local repository to be in \"manual mode\".
+
+By default though, the way the assistant handles this kind of use case is with `archive` directories. It tries to move any files in an archive directory away from your local disk, and it tries to get any files not in an archive directory to be locally available. So you can just move files around between directories to control where they are stored. See [[assistant/archival_walkthrough]] for details an an example video.
+"""]]

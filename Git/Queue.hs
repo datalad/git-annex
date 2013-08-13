@@ -40,7 +40,7 @@ data Action
 	| CommandAction 
 		{ getSubcommand :: String
 		, getParams :: [CommandParam]
-		, getFiles :: [FilePath]
+		, getFiles :: [CommandParam]
 		} 
 
 {- A key that can uniquely represent an action in a Map. -}
@@ -92,7 +92,7 @@ addCommand subcommand params files q repo =
 		, getParams = params
 		, getFiles = newfiles
 		}
-	newfiles = files ++ maybe [] getFiles (M.lookup key $ items q)
+	newfiles = map File files ++ maybe [] getFiles (M.lookup key $ items q)
 		
 	different (CommandAction { getSubcommand = s }) = s /= subcommand
 	different _ = True
@@ -150,7 +150,7 @@ runAction repo (UpdateIndexAction streamers) =
 runAction repo action@(CommandAction {}) =
 	withHandle StdinHandle createProcessSuccess p $ \h -> do
 		fileEncoding h
-		hPutStr h $ intercalate "\0" $ getFiles action
+		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
 		hClose h
   where
 	p = (proc "xargs" params) { env = gitEnv repo }

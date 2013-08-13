@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+This is a follow up of [[Problems building on Mac OS X]].
+As of 4.20130521.1, cabal still cannot resolve the dependencies.
+
+### What steps will reproduce the problem?
+
+    cabal update
+    cabal install git-annex-4.20130521.1 --user --only-dependencies
+
+### Please provide any additional information below.
+
+[[!format sh """
+Resolving dependencies...
+cabal: Could not resolve dependencies:
+trying: git-annex-4.20130521.1
+trying: git-annex-4.20130521.1:+webapp
+trying: yesod-form-1.3.0
+trying: yesod-core-1.2.1
+rejecting: yesod-default-1.2.0 (conflict: git-annex-4.20130521.1:webapp =>
+yesod-default(<1.2))
+rejecting: yesod-default-1.1.3.2, 1.1.3.1, 1.1.3, 1.1.2, 1.1.1, 1.1.0.2,
+1.1.0.1, 1.1.0 (conflict: yesod-core==1.2.1, yesod-default => yesod-core>=1.1
+&& <1.2)
+rejecting: yesod-default-1.0.1.1, 1.0.1, 1.0.0 (conflict: yesod-core==1.2.1,
+yesod-default => yesod-core>=1.0 && <1.1)
+rejecting: yesod-default-0.6.1 (conflict: yesod-core==1.2.1, yesod-default =>
+yesod-core>=0.10.1 && <0.11)
+rejecting: yesod-default-0.5.0 (conflict: yesod-core==1.2.1, yesod-default =>
+yesod-core>=0.9.4 && <0.10)
+rejecting: yesod-default-0.4.1, 0.4.0, 0.3.1 (conflict: yesod-core==1.2.1,
+yesod-default => yesod-core>=0.9 && <0.10
+"""]]
+
+> At the risk of closing early again, I have uploaded a .2 with
+> hints for the version of yesod-form and yesod-static. [[done]] --[[Joey]] 

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="remotes costs"
+ date="2013-05-22T18:33:11Z"
+ content="""
+Thank you -- that is nice!
+
+Could costs be presented in 'whereis' and 'status' commands? e.g. like we know APT repositories priorities from  apt-cache policy -- now I do not see them (at least in 4.20130501... updating to sid's 0521 now)
+
+"""]]

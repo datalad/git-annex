@@ -18,6 +18,11 @@ as non-bare repositories. Except for these caveats:
   branches that have been pushed to the bare repository. So use it with care..
 * Commands that need a work tree, like `git annex add` won't work in a bare
   repository, of course.
+* However, you can (with recent versions of git-annex) run `git annex copy`,
+  `git annex get`, and `git annex move` in a bare repository. These behave
+  as if the `--all` option were used, and just operate on every single
+  version of every single file that is present in the git repository
+  history.
 
 ***
 

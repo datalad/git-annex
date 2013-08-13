@@ -78,7 +78,11 @@ pipeReadStrict params repo = assertLocal repo $
 pipeWriteRead :: [CommandParam] -> String -> Repo -> IO String
 pipeWriteRead params s repo = assertLocal repo $
 	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
-		(gitEnv repo) s (Just fileEncoding)
+		(gitEnv repo) s (Just adjusthandle)
+  where
+  	adjusthandle h = do
+		fileEncoding h
+		hSetNewlineMode h noNewlineTranslation
 
 {- Runs a git command, feeding it input on a handle with an action. -}
 pipeWrite :: [CommandParam] -> Repo -> (Handle -> IO ()) -> IO ()
@@ -109,8 +113,10 @@ leaveZombie :: (a, IO Bool) -> a
 leaveZombie = fst
 
 {- Runs a git command as a coprocess. -}
-gitCoProcessStart :: [CommandParam] -> Repo -> IO CoProcess.CoProcessHandle
-gitCoProcessStart params repo = CoProcess.start "git" (toCommand $ gitCommandLine params repo) (gitEnv repo)
+gitCoProcessStart :: Bool -> [CommandParam] -> Repo -> IO CoProcess.CoProcessHandle
+gitCoProcessStart restartable params repo = CoProcess.start restartable "git"
+	(toCommand $ gitCommandLine params repo)
+	(gitEnv repo)
 
 gitCreateProcess :: [CommandParam] -> Repo -> CreateProcess
 gitCreateProcess params repo =

@@ -6,7 +6,12 @@
       Rsync.net #
     is a well-respected cloud storage provider. Its rsync repositories are #
     supported very well by git-annex. #
-    <a href="http://www.rsync.net/products/pricing.html">
+
+  <p>
+    They have committed to support git-annex and offer a special
+    discounted rate for git-annex users.
+
+    <a href="http://www.rsync.net/products/git-annex-pricing.html">
       pricing details
   <p>
     $case status

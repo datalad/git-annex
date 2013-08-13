@@ -15,6 +15,7 @@ import Data.BloomFilter
 import Data.BloomFilter.Easy
 import Data.BloomFilter.Hash
 import Control.Monad.ST
+import qualified Data.Map as M
 
 import Common.Annex
 import Command
@@ -22,6 +23,7 @@ import Logs.Unused
 import Annex.Content
 import Utility.FileMode
 import Logs.Location
+import Logs.Transfer
 import qualified Annex
 import qualified Git
 import qualified Git.Command
@@ -60,8 +62,8 @@ start = do
 checkUnused :: CommandPerform
 checkUnused = chain 0
 	[ check "" unusedMsg $ findunused =<< Annex.getState Annex.fast
-	, check "bad" staleBadMsg $ staleKeysPrune gitAnnexBadDir
-	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpDir
+	, check "bad" staleBadMsg $ staleKeysPrune gitAnnexBadDir False
+	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpDir True
 	]
   where
 	findunused True = do
@@ -288,8 +290,8 @@ withKeysReferencedInGitRef a ref = do
  - 
  - Also, stale keys that can be proven to have no value are deleted.
  -}
-staleKeysPrune :: (Git.Repo -> FilePath) -> Annex [Key]
-staleKeysPrune dirspec = do
+staleKeysPrune :: (Git.Repo -> FilePath) -> Bool -> Annex [Key]
+staleKeysPrune dirspec nottransferred = do
 	contents <- staleKeys dirspec
 	
 	dups <- filterM inAnnex contents
@@ -298,7 +300,12 @@ staleKeysPrune dirspec = do
 	dir <- fromRepo dirspec
 	liftIO $ forM_ dups $ \t -> removeFile $ dir </> keyFile t
 
-	return stale
+	if nottransferred
+		then do
+			inprogress <- S.fromList . map (transferKey . fst)
+				<$> getTransfers
+			return $ filter (`S.notMember` inprogress) stale
+		else return stale
 
 staleKeys :: (Git.Repo -> FilePath) -> Annex [Key]
 staleKeys dirspec = do
@@ -311,3 +318,49 @@ staleKeys dirspec = do
 			return $ mapMaybe (fileKey . takeFileName) files
 		, return []
 		)
+
+data UnusedMaps = UnusedMaps
+	{ unusedMap :: UnusedMap
+	, unusedBadMap :: UnusedMap
+	, unusedTmpMap :: UnusedMap
+	}
+
+{- Read unused logs once, and pass the maps to each start action. -}
+withUnusedMaps :: (UnusedMaps -> Int -> CommandStart) -> CommandSeek
+withUnusedMaps a params = do
+	unused <- readUnusedLog ""
+	unusedbad <- readUnusedLog "bad"
+	unusedtmp <- readUnusedLog "tmp"
+	return $ map (a $ UnusedMaps unused unusedbad unusedtmp) $
+		concatMap unusedSpec params
+
+unusedSpec :: String -> [Int]
+unusedSpec spec
+	| "-" `isInfixOf` spec = range $ separate (== '-') spec
+	| otherwise = maybe badspec (: []) (readish spec)
+  where
+	range (a, b) = case (readish a, readish b) of
+		(Just x, Just y) -> [x..y]
+		_ -> badspec
+	badspec = error $ "Expected number or range, not \"" ++ spec ++ "\""
+
+{- Start action for unused content. Finds the number in the maps, and
+ - calls either of 3 actions, depending on the type of unused file. -}
+startUnused :: String
+	-> (Key -> CommandPerform)
+	-> (Key -> CommandPerform) 
+	-> (Key -> CommandPerform)
+	-> UnusedMaps -> Int -> CommandStart
+startUnused message unused badunused tmpunused maps n = search
+	[ (unusedMap maps, unused)
+	, (unusedBadMap maps, badunused)
+	, (unusedTmpMap maps, tmpunused)
+	]
+  where
+	search [] = error $ show n ++ " not valid (run git annex unused for list)"
+	search ((m, a):rest) =
+		case M.lookup n m of
+			Nothing -> search rest
+			Just key -> do
+				showStart message (show n)
+				next $ a key

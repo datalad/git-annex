@@ -27,6 +27,8 @@ import Creds
 import qualified Data.Text as T
 import qualified Data.Map as M
 
+type RemoteName = String
+
 {- Sets up and begins syncing with a new ssh or rsync remote. -}
 makeSshRemote :: Bool -> SshData -> Maybe Cost -> Assistant Remote
 makeSshRemote forcersync sshdata mcost = do
@@ -49,10 +51,11 @@ makeSshRemote forcersync sshdata mcost = do
 		h = sshHostName sshdata
 		d
 			| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = sshDirectory sshdata
+			| T.pack "~/" `T.isPrefixOf` sshDirectory sshdata = T.concat [T.pack "/", sshDirectory sshdata]
 			| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
 	
 {- Runs an action that returns a name of the remote, and finishes adding it. -}
-addRemote :: Annex String -> Annex Remote
+addRemote :: Annex RemoteName -> Annex Remote
 addRemote a = do
 	name <- a
 	void remoteListRefresh
@@ -60,36 +63,58 @@ addRemote a = do
 		=<< Remote.byName (Just name)
 
 {- Inits a rsync special remote, and returns its name. -}
-makeRsyncRemote :: String -> String -> Annex String
-makeRsyncRemote name location = makeRemote name location $
-	const $ makeSpecialRemote name Rsync.remote config
+makeRsyncRemote :: RemoteName -> String -> Annex String
+makeRsyncRemote name location = makeRemote name location $ const $ void $
+	go =<< Command.InitRemote.findExisting name
   where
+  	go Nothing = setupSpecialRemote name Rsync.remote config
+		=<< Command.InitRemote.generateNew name
+	go (Just v) = setupSpecialRemote name Rsync.remote config v
 	config = M.fromList
 		[ ("encryption", "shared")
 		, ("rsyncurl", location)
 		, ("type", "rsync")
 		]
 
-{- Inits a new special remote, or enables an existing one.
- -
- - Currently, only 'weak' ciphers can be generated from the assistant,
- - because otherwise GnuPG may block once the entropy pool is drained,
- - and as of now there's no way to tell the user to perform IO actions
- - to refill the pool. -}
-makeSpecialRemote :: String -> RemoteType -> R.RemoteConfig -> Annex ()
-makeSpecialRemote name remotetype config =
-	go =<< Command.InitRemote.findExisting name
+type SpecialRemoteMaker = RemoteName -> RemoteType -> R.RemoteConfig -> Annex RemoteName
+
+{- Inits a new special remote. The name is used as a suggestion, but
+ - will be changed if there is already a special remote with that name. -}
+initSpecialRemote :: SpecialRemoteMaker
+initSpecialRemote name remotetype config = go 0
   where
-  	go Nothing = go =<< Just <$> Command.InitRemote.generateNew name
-	go (Just (u, c)) = do
-		c' <- R.setup remotetype u $
-			M.insert "highRandomQuality" "false" $ M.union config c
-		describeUUID u name
-		configSet u c'
+	go :: Int -> Annex RemoteName
+	go n = do
+		let fullname = if n == 0  then name else name ++ show n
+		r <- Command.InitRemote.findExisting fullname
+		case r of
+			Nothing -> setupSpecialRemote fullname remotetype config
+				=<< Command.InitRemote.generateNew fullname
+			Just _ -> go (n + 1)
+
+{- Enables an existing special remote. -}
+enableSpecialRemote :: SpecialRemoteMaker
+enableSpecialRemote name remotetype config = do
+	r <- Command.InitRemote.findExisting name
+	case r of
+		Nothing -> error $ "Cannot find a special remote named " ++ name
+		Just v -> setupSpecialRemote name remotetype config v
+
+setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> (UUID, R.RemoteConfig) -> Annex RemoteName
+setupSpecialRemote name remotetype config (u, c) = do
+	{- Currently, only 'weak' ciphers can be generated from the
+	 - assistant, because otherwise GnuPG may block once the entropy
+	 - pool is drained, and as of now there's no way to tell the user
+	 - to perform IO actions to refill the pool. -}
+	c' <- R.setup remotetype u $
+		M.insert "highRandomQuality" "false" $ M.union config c
+	describeUUID u name
+	configSet u c'
+	return name
 
 {- Returns the name of the git remote it created. If there's already a
  - remote at the location, returns its name. -}
-makeGitRemote :: String -> String -> Annex String
+makeGitRemote :: String -> String -> Annex RemoteName
 makeGitRemote basename location = makeRemote basename location $ \name ->
 	void $ inRepo $ Git.Command.runBool
 		[Param "remote", Param "add", Param name, Param location]
@@ -98,7 +123,7 @@ makeGitRemote basename location = makeRemote basename location $ \name ->
  - action, which is passed the name of the remote to make.
  -
  - Returns the name of the remote. -}
-makeRemote :: String -> String -> (String -> Annex ()) -> Annex String
+makeRemote :: String -> String -> (RemoteName -> Annex ()) -> Annex RemoteName
 makeRemote basename location a = do
 	g <- gitRepo
 	if not (any samelocation $ Git.remotes g)
@@ -115,7 +140,7 @@ makeRemote basename location a = do
  - necessary.
  -
  - Ensures that the returned name is a legal git remote name. -}
-uniqueRemoteName :: String -> Int -> Git.Repo -> String
+uniqueRemoteName :: String -> Int -> Git.Repo -> RemoteName
 uniqueRemoteName basename n r
 	| null namecollision = name
 	| otherwise = uniqueRemoteName legalbasename (succ n) r

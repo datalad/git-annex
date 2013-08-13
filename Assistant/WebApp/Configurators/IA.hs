@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, FlexibleContexts, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators.IA where
 
@@ -30,7 +30,7 @@ import qualified Data.Map as M
 import Data.Char
 import Network.URI
 
-iaConfigurator :: Widget -> Handler RepHtml
+iaConfigurator :: Widget -> Handler Html
 iaConfigurator = page "Add an Internet Archive repository" (Just Configuration)
 
 data IAInput = IAInput
@@ -79,7 +79,7 @@ showMediaType MediaVideo = "videos & movies"
 showMediaType MediaAudio = "audio & music"
 showMediaType MediaOmitted = "other"
 
-iaInputAForm :: Maybe CredPair -> AForm WebApp WebApp IAInput
+iaInputAForm :: Maybe CredPair -> MkAForm IAInput
 iaInputAForm defcreds = IAInput
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
@@ -99,7 +99,7 @@ itemNameHelp = [whamlet|
   will be uploaded to your Internet Archive item.
 |]
 
-iaCredsAForm :: Maybe CredPair -> AForm WebApp WebApp AWS.AWSCreds
+iaCredsAForm :: Maybe CredPair -> MkAForm AWS.AWSCreds
 iaCredsAForm defcreds = AWS.AWSCreds
         <$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
         <*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
@@ -110,7 +110,7 @@ previouslyUsedIACreds = previouslyUsedCredPair AWS.creds S3.remote $
 	AWS.isIARemoteConfig . Remote.config
 #endif
 
-accessKeyIDFieldWithHelp :: Maybe Text -> AForm WebApp WebApp Text
+accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text
 accessKeyIDFieldWithHelp def = AWS.accessKeyIDField help def
   where
 	help = [whamlet|
@@ -118,19 +118,19 @@ accessKeyIDFieldWithHelp def = AWS.accessKeyIDField help def
   Get Internet Archive access keys
 |]
 
-getAddIAR :: Handler RepHtml
+getAddIAR :: Handler Html
 getAddIAR = postAddIAR
 
-postAddIAR :: Handler RepHtml
+postAddIAR :: Handler Html
 #ifdef WITH_S3
 postAddIAR = iaConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedIACreds
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ iaInputAForm defcreds
 	case result of
-		FormSuccess input -> lift $ do
+		FormSuccess input -> liftH $ do
 			let name = escapeBucket $ T.unpack $ itemName input
-			AWS.makeAWSRemote S3.remote (extractCreds input) name setgroup $
+			AWS.makeAWSRemote initSpecialRemote S3.remote (extractCreds input) name setgroup $
 				M.fromList $ catMaybes
 					[ Just $ configureEncryption NoEncryption
 					, Just ("type", "S3")
@@ -153,10 +153,10 @@ postAddIAR = iaConfigurator $ do
 postAddIAR = error "S3 not supported by this build"
 #endif
 
-getEnableIAR :: UUID -> Handler RepHtml
+getEnableIAR :: UUID -> Handler Html
 getEnableIAR = postEnableIAR
 
-postEnableIAR :: UUID -> Handler RepHtml
+postEnableIAR :: UUID -> Handler Html
 #ifdef WITH_S3
 postEnableIAR = iaConfigurator . enableIARemote
 #else
@@ -167,14 +167,14 @@ postEnableIAR _ = error "S3 not supported by this build"
 enableIARemote :: UUID -> Widget
 enableIARemote uuid = do
 	defcreds <- liftAnnex previouslyUsedIACreds
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ iaCredsAForm defcreds
 	case result of
-		FormSuccess creds -> lift $ do
+		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m
-			AWS.makeAWSRemote S3.remote creds name (const noop) M.empty
+			AWS.makeAWSRemote enableSpecialRemote S3.remote creds name (const noop) M.empty
 		_ -> do
 			description <- liftAnnex $
 				T.pack <$> Remote.prettyUUID uuid

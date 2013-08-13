@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlOc-EOD5ZyggsAp6lOnU7x5MxizwLtUXA"
+ nickname="Hendrik"
+ subject="more success"
+ date="2013-06-27T14:09:47Z"
+ content="""
+Hi,
+
+I have moved all my photographs to an annex running on a Ubuntu file server while doing photo editing, presenting etc. on my MacBook. The annex is great in selectively moving files between these machines for editing and presentation purposes. I started using it around christmas season last year and added a glacier \"backup\" recently. My statistics: 6 repositories in total, more than 300GB (dedup'd from 380GB), 60.000 local keys.
+
+What is missing from my point of view (and I would happily join crowd funding): stable windows and android versions, managing selective transfers from the assistant (select folders to be transferred from/to a specific repository), options for running the annex as a server daemon with web GUI (authentication to GUI + fixed URLs, status reports on GUI, etc.). All these would dramatically increase the WAF.
+"""]]

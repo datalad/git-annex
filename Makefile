@@ -50,7 +50,7 @@ install: build install-docs Build/InstallDesktopFile
 test: git-annex
 	./git-annex test
 
-# hothasktags chokes on some tempolate haskell etc, so ignore errors
+# hothasktags chokes on some template haskell etc, so ignore errors
 tags:
 	find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$' | xargs hothasktags > tags 2>/dev/null
 
@@ -107,6 +107,7 @@ linuxstandalone: Build/Standalone
 	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
+	cp doc/favicon.png doc/logo.svg $(LINUXSTANDALONE_DEST)
 
 	./Build/Standalone "$(LINUXSTANDALONE_DEST)"
 	
@@ -210,6 +211,6 @@ dist/caballog: git-annex.cabal
 # TODO should be possible to derive this from caballog.
 hdevtools:
 	hdevtools --stop-server || true
-	hdevtools check git-annex.hs -g -cpp -g -i -g -idist/build/git-annex/git-annex-tmp -g -i. -g -idist/build/autogen -g -Idist/build/autogen -g -Idist/build/git-annex/git-annex-tmp -g -IUtility -g -DWITH_TESTSUITE -g -DWITH_S3 -g -DWITH_ASSISTANT -g -DWITH_INOTIFY -g -DWITH_DBUS -g -DWITH_PAIRING -g -DWITH_XMPP -g -optP-include -g -optPdist/build/autogen/cabal_macros.h -g -odir -g dist/build/git-annex/git-annex-tmp -g -hidir -g dist/build/git-annex/git-annex-tmp -g -stubdir -g dist/build/git-annex/git-annex-tmp -g -threaded -g -Wall -g -XHaskell98
+	hdevtools check git-annex.hs -g -cpp -g -i -g -idist/build/git-annex/git-annex-tmp -g -i. -g -idist/build/autogen -g -Idist/build/autogen -g -Idist/build/git-annex/git-annex-tmp -g -IUtility -g -DWITH_TESTSUITE -g -DWITH_S3 -g -DWITH_ASSISTANT -g -DWITH_INOTIFY -g -DWITH_DBUS -g -DWITH_PAIRING -g -DWITH_XMPP -g -optP-include -g -optPdist/build/autogen/cabal_macros.h -g -odir -g dist/build/git-annex/git-annex-tmp -g -hidir -g dist/build/git-annex/git-annex-tmp -g -stubdir -g dist/build/git-annex/git-annex-tmp -g -threaded -g -Wall -g -XHaskell98 -g -XPackageImports
 
 .PHONY: git-annex tags build-stamp

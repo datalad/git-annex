@@ -1,4 +1,4 @@
-    $ wget http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
+    $ wget https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz
     $ tar xvzf git-annex-standalone-amd64.tar.gz
     $ cd git-annex.linux
     $ ./git-annex version

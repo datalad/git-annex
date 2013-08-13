@@ -16,6 +16,7 @@ import Git.Remote
 import Data.Text (Text)
 import qualified Data.Text as T
 import Data.Char
+import Network.URI
 
 data SshData = SshData
 	{ sshHostName :: Text
@@ -64,7 +65,10 @@ sshTranscript opts input = processTranscript "ssh" opts input
 {- Ensure that the ssh public key doesn't include any ssh options, like
  - command=foo, or other weirdness -}
 validateSshPubKey :: SshPubKey -> IO ()
-validateSshPubKey pubkey = either error return $ check $ words pubkey
+validateSshPubKey pubkey
+	| length (lines pubkey) == 1 =
+		either error return $ check $ words pubkey
+	| otherwise = error "too many lines in ssh public key"
   where
 	check [prefix, _key, comment] = do
 		checkprefix prefix
@@ -82,9 +86,10 @@ validateSshPubKey pubkey = either error return $ check $ words pubkey
 	  where
 		(ssh, keytype) = separate (== '-') prefix
 
-	checkcomment comment
-		| all (\c -> isAlphaNum c || c == '@' || c == '-' || c == '_' || c == '.') comment = ok
-		| otherwise = err "bad comment in ssh public key"
+	checkcomment comment = case filter (not . safeincomment) comment of
+		[] -> ok
+		badstuff -> err $ "bad comment in ssh public key (contains: \"" ++ badstuff ++ "\")"
+	safeincomment c = isAlphaNum c || c == '@' || c == '-' || c == '_' || c == '.'
 
 addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
 addAuthorizedKeys rsynconly dir pubkey = boolSystem "sh"
@@ -164,9 +169,12 @@ genSshKeyPair = withTmpDir "git-annex-keygen" $ \dir -> do
  -
  - Note that the key files are put in ~/.ssh/git-annex/, rather than directly
  - in ssh because of an **INSANE** behavior of gnome-keyring: It loads
- - ~/.ssh/*.pub, and uses them indiscriminately. But using this key
+ - ~/.ssh/ANYTHING.pub, and uses them indiscriminately. But using this key
  - for a normal login to the server will force git-annex-shell to run,
  - and locks the user out. Luckily, it does not recurse into subdirectories.
+ -
+ - Similarly, IdentitiesOnly is set in the ssh config to prevent the
+ - ssh-agent from forcing use of a different key.
  -}
 setupSshKeyPair :: SshKeyPair -> SshData -> IO SshData
 setupSshKeyPair sshkeypair sshdata = do
@@ -183,10 +191,42 @@ setupSshKeyPair sshkeypair sshdata = do
 		writeFile (sshdir </> sshpubkeyfile) (sshPubKey sshkeypair)
 
 	setSshConfig sshdata
-		[ ("IdentityFile", "~/.ssh/" ++ sshprivkeyfile) ]
+		[ ("IdentityFile", "~/.ssh/" ++ sshprivkeyfile)
+		, ("IdentitiesOnly", "yes")
+		]
   where
 	sshprivkeyfile = "git-annex" </> "key." ++ mangleSshHostName sshdata
 	sshpubkeyfile = sshprivkeyfile ++ ".pub"
+
+{- Fixes git-annex ssh key pairs configured in .ssh/config 
+ - by old versions to set IdentitiesOnly. -}
+fixSshKeyPair :: IO ()
+fixSshKeyPair = do
+	sshdir <- sshDir
+	let configfile = sshdir </> "config"
+	whenM (doesFileExist configfile) $ do
+		ls <- lines <$> readFileStrict configfile
+		let ls' = fixSshKeyPair' ls
+		when (ls /= ls') $
+			viaTmp writeFile configfile $ unlines ls'
+
+{- Strategy: Search for IdentityFile lines in for files with key.git-annex
+ - in their names. These are for git-annex ssh key pairs.
+ - Add the IdentitiesOnly line immediately after them, if not already
+ - present. -}
+fixSshKeyPair' :: [String] -> [String]
+fixSshKeyPair' = go []
+  where
+  	go c [] = reverse c
+	go c (l:[])
+		| all (`isInfixOf` l) indicators = go (fixedline l:l:c) []
+		| otherwise = go (l:c) []
+	go c (l:next:rest)
+		| all (`isInfixOf` l) indicators && not ("IdentitiesOnly" `isInfixOf` next) = 
+			go (fixedline l:l:c) (next:rest)
+		| otherwise = go (l:c) (next:rest)
+  	indicators = ["IdentityFile", "key.git-annex"]
+	fixedline tmpl = takeWhile isSpace tmpl ++ "IdentitiesOnly yes"
 
 {- Setups up a ssh config with a mangled hostname.
  - Returns a modified SshData containing the mangled hostname. -}
@@ -212,10 +252,16 @@ setSshConfig sshdata config = do
 
 {- This hostname is specific to a given repository on the ssh host,
  - so it is based on the real hostname, the username, and the directory.
+ -
+ - The mangled hostname has the form "git-annex-realhostname-username_dir".
+ - The only use of "-" is to separate the parts shown; this is necessary
+ - to allow unMangleSshHostName to work. Any unusual characters in the
+ - username or directory are url encoded, except using "." rather than "%"
+ - (the latter has special meaning to ssh).
  -}
 mangleSshHostName :: SshData -> String
 mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
-	++ "-" ++ filter safe extra
+	++ "-" ++ escape extra
   where
 	extra = intercalate "_" $ map T.unpack $ catMaybes
 		[ sshUserName sshdata
@@ -225,6 +271,7 @@ mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
 		| isAlphaNum c = True
 		| c == '_' = True
 		| otherwise = False
+	escape s = replace "%" "." $ escapeURIString safe s
 
 {- Extracts the real hostname from a mangled ssh hostname. -}
 unMangleSshHostName :: String -> String

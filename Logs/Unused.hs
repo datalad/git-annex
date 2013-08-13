@@ -7,19 +7,18 @@
 
 module Logs.Unused (
 	UnusedMap,
-	UnusedMaps(..),
 	writeUnusedLog,
 	readUnusedLog,
-	withUnusedMaps,
-	startUnused,
+	unusedKeys,
 ) where
 
 import qualified Data.Map as M
 
 import Common.Annex
-import Command
 import Types.Key
 import Utility.Tmp
+
+type UnusedMap = M.Map Int Key
 
 writeUnusedLog :: FilePath -> [(Int, Key)] -> Annex ()
 writeUnusedLog prefix l = do
@@ -42,50 +41,5 @@ readUnusedLog prefix = do
 	  where
 		(tag, rest) = separate (== ' ') line
 
-type UnusedMap = M.Map Int Key
-
-data UnusedMaps = UnusedMaps
-	{ unusedMap :: UnusedMap
-	, unusedBadMap :: UnusedMap
-	, unusedTmpMap :: UnusedMap
-	}
-
-{- Read unused logs once, and pass the maps to each start action. -}
-withUnusedMaps :: (UnusedMaps -> Int -> CommandStart) -> CommandSeek
-withUnusedMaps a params = do
-	unused <- readUnusedLog ""
-	unusedbad <- readUnusedLog "bad"
-	unusedtmp <- readUnusedLog "tmp"
-	return $ map (a $ UnusedMaps unused unusedbad unusedtmp) $
-		concatMap unusedSpec params
-
-unusedSpec :: String -> [Int]
-unusedSpec spec
-	| "-" `isInfixOf` spec = range $ separate (== '-') spec
-	| otherwise = maybe badspec (: []) (readish spec)
-  where
-	range (a, b) = case (readish a, readish b) of
-		(Just x, Just y) -> [x..y]
-		_ -> badspec
-	badspec = error $ "Expected number or range, not \"" ++ spec ++ "\""
-
-{- Start action for unused content. Finds the number in the maps, and
- - calls either of 3 actions, depending on the type of unused file. -}
-startUnused :: String
-	-> (Key -> CommandPerform)
-	-> (Key -> CommandPerform) 
-	-> (Key -> CommandPerform)
-	-> UnusedMaps -> Int -> CommandStart
-startUnused message unused badunused tmpunused maps n = search
-	[ (unusedMap maps, unused)
-	, (unusedBadMap maps, badunused)
-	, (unusedTmpMap maps, tmpunused)
-	]
-  where
-	search [] = stop
-	search ((m, a):rest) =
-		case M.lookup n m of
-			Nothing -> search rest
-			Just key -> do
-				showStart message (show n)
-				next $ a key
+unusedKeys :: Annex [Key]
+unusedKeys = M.elems <$> readUnusedLog ""

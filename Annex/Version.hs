@@ -25,7 +25,7 @@ supportedVersions :: [Version]
 supportedVersions = [defaultVersion, directModeVersion]
 
 upgradableVersions :: [Version]
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 upgradableVersions = ["0", "1", "2"]
 #else
 upgradableVersions = ["2"]

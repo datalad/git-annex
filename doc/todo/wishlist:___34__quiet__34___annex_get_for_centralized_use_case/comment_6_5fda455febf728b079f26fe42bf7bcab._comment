@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://caust1c.myopenid.com/"
+ nickname="asbraithwaite"
+ subject="comment 6"
+ date="2013-07-18T21:23:58Z"
+ content="""
+Disregard that.  I was testing it with a particular file that didn't exactly play nice.
+
+Basically, to test this before production I used `dd bs=1024 count=100000 if=/dev/zero of=bigfile`.
+
+When I did a `git pull`, it showed the symlink as being valid.
+
+When I changed the command to `dd bs=1024 count=100000 if=/dev/urandom of=bigfile` then it showed the symlink as bad after pulling.
+
+Weird!
+"""]]

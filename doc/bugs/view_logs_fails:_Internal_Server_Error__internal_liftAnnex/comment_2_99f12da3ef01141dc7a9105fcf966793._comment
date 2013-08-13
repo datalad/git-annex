@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 2"
+ date="2013-07-05T15:30:37Z"
+ content="""
+Ok, the liftAnnex part of this is just because most of the webapp, including viewing logs, requires a repo to be set up, and it's not gotten past the early setup part where this happens before it, apparently, crashed because of the email misconfiguration problem.
+
+So, I should really detect and deal with this rather annoyingly common misconfiguration of user's computers..
+"""]]

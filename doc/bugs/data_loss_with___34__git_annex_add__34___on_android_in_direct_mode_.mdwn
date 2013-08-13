@@ -10,7 +10,7 @@ This was with direct mode turned on.  Distinct files should remain distinct.  In
 
 Running rooted android on a Samsung Galaxy Nexus.  Working in a system directory which is not "crippled".
 The git-annex package was dated 2013-03-23 and downloaded from
-> http://downloads.kitenet.net/git-annex/android/current/
+> https://downloads.kitenet.net/git-annex/android/current/
 
 **Please provide any additional information below.**
 

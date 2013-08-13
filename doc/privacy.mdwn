@@ -1,0 +1,47 @@
+git-annex users entrust it with data that is often intensively private.
+Here's some things to know about how to maintain your privacy while using
+git-annex.
+
+## browsing this web site
+
+This website supports https. [Use it.](https://git-annex.branchable.com/privacy/)
+
+## repository contents
+
+In general, anyone who can clone a git repository gets the ability to see
+all current and past filenames in the repository, and their contents.
+It's best to assume this also holds true for git-annex, as a general rule.
+
+There are some obvious exceptions: If you `git annex dropunused` old
+content from all your repositories, then it's *gone*. If you `git annex
+move` files to a offline drive then only those with physical access can see
+their content. (The names of the files are still visible to anyone with a
+clone of the repository.)
+
+git-annex can encrypt data stored in special remotes. This allows you to
+store files in the cloud without exposing their file names, or their
+contents. See [[design/encryption]] for details.
+
+When using the shared enctyption method, the encryption key gets stored
+in git, and so anyone who has a clone of your repository can decrypt files
+from the encrypted special remote.
+
+When using encryption with a GPG key or keys, only those with access to the
+GPG key can decrypt the content of files stored in an encrypted special
+remote.
+
+## bug reporting
+
+When you file a [[bug]] report on git-annex, you may need to provide
+debugging output or details about your repository. In general, git-annex
+does not sanitize `--debug` output at all, so it may include the names of
+files or other repository details. You should review any debug or other
+output you post, and feel free to remove identifying information.
+
+Note that the git-annex assistant *does* sanitize XMPP protocol information
+logged when debugging is enabled.
+
+If you prefer not to post information publically, you can send a GPG
+encrypted mail to Joey Hess <id@joeyh.name> (gpg key ID 2512E3C7).
+Or you can post a public bug report, and send a followup email with private
+details.

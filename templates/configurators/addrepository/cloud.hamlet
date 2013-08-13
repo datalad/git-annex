@@ -9,6 +9,8 @@
     <i .icon-plus-sign></i> Rsync.net
 <p>
   Works very well with git-annex.
+  <br>
+  Offers a discounted rate for git-annex users.
 
 <h3>
   <a href="@{AddS3R}">

@@ -23,6 +23,7 @@ import qualified Annex.Branch
 import Annex.UUID
 import Logs.UUID
 import Annex.TaggedPush
+import Annex.CatFile
 import Config
 import Git
 import qualified Git.Branch
@@ -42,6 +43,22 @@ import Control.Concurrent
 import System.Timeout
 import qualified Data.ByteString as B
 import qualified Data.Map as M
+
+{- Largest chunk of data to send in a single XMPP message. -}
+chunkSize :: Int
+chunkSize = 4096
+
+{- How long to wait for an expected message before assuming the other side
+ - has gone away and canceling a push. 
+ -
+ - This needs to be long enough to allow a message of up to 2+ times
+ - chunkSize to propigate up to a XMPP server, perhaps across to another
+ - server, and back down to us. On the other hand, other XMPP pushes can be
+ - delayed for running until the timeout is reached, so it should not be
+ - excessive.
+ -}
+xmppTimeout :: Int
+xmppTimeout = 120000000 -- 120 seconds
 
 finishXMPPPairing :: JID -> UUID -> Assistant ()
 finishXMPPPairing jid u = void $ alertWhile alert $
@@ -83,8 +100,8 @@ makeXMPPGitRemote buddyname jid u = do
  -
  - We listen at the other end of the pipe and relay to and from XMPP.
  -}
-xmppPush :: ClientID -> (Git.Repo -> IO Bool) -> (NetMessage -> Assistant ()) -> Assistant Bool
-xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
+xmppPush :: ClientID -> (Git.Repo -> IO Bool) -> Assistant Bool
+xmppPush cid gitpush = do
 	u <- liftAnnex getUUID
 	sendNetMessage $ Pushing cid (StartingPush u)
 
@@ -120,7 +137,8 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 	liftIO $ do
 		mapM_ killThread [t1, t2]
 		mapM_ hClose [inh, outh, controlh]
-
+		mapM_ closeFd [Fd inf, Fd outf, Fd controlf]
+	
 	return r
   where
 	toxmpp seqnum inh = do
@@ -132,24 +150,26 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 				sendNetMessage $ Pushing cid $
 					SendPackOutput seqnum' b
 				toxmpp seqnum' inh
-	fromxmpp outh controlh = forever $ do
-		m <- timeout xmppTimeout <~> waitNetPushMessage SendPack
-		case m of
-			(Just (Pushing _ (ReceivePackOutput _ b))) -> 
-				liftIO $ writeChunk outh b
-			(Just (Pushing _ (ReceivePackDone exitcode))) ->
-				liftIO $ do
-					hPrint controlh exitcode
-					hFlush controlh
-			(Just _) -> noop
-			Nothing -> do
-				debug ["timeout waiting for git receive-pack output via XMPP"]
-				-- Send a synthetic exit code to git-annex
-				-- xmppgit, which will exit and cause git push
-				-- to die.
-				liftIO $ do
-					hPrint controlh (ExitFailure 1)
-					hFlush controlh
+	
+	fromxmpp outh controlh = withPushMessagesInSequence cid SendPack handle
+	  where
+	  	handle (Just (Pushing _ (ReceivePackOutput _ b))) = 
+			liftIO $ writeChunk outh b
+		handle (Just (Pushing _ (ReceivePackDone exitcode))) =
+			liftIO $ do
+				hPrint controlh exitcode
+				hFlush controlh
+		handle (Just _) = noop
+		handle Nothing = do
+			debug ["timeout waiting for git receive-pack output via XMPP"]
+			-- Send a synthetic exit code to git-annex
+			-- xmppgit, which will exit and cause git push
+			-- to die.
+			liftIO $ do
+				hPrint controlh (ExitFailure 1)
+				hFlush controlh
+				killThread =<< myThreadId
+	
 	installwrapper tmpdir = liftIO $ do
 		createDirectoryIfMissing True tmpdir
 		let wrapper = tmpdir </> "git-remote-xmpp"
@@ -159,6 +179,7 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 			, "exec " ++ program ++ " xmppgit"
 			]
 		modifyFileMode wrapper $ addModes executeModes
+	
 	{- Use GIT_ANNEX_TMP_DIR if set, since that may be a better temp
 	 - dir (ie, not on a crippled filesystem where we can't make
 	 - the wrapper executable). -}
@@ -169,7 +190,6 @@ xmppPush cid gitpush handledeferred = runPush SendPack cid handledeferred $ do
 				tmp <- liftAnnex $ fromRepo gitAnnexTmpDir
 				return $ tmp </> "xmppgit"
 			Just d -> return $ d </> "xmppgit"
-				
 
 type EnvVar = String
 
@@ -219,8 +239,8 @@ xmppGitRelay = do
 
 {- Relays git receive-pack stdin and stdout via XMPP, as well as propigating
  - its exit status to XMPP. -}
-xmppReceivePack :: ClientID -> (NetMessage -> Assistant ()) -> Assistant Bool
-xmppReceivePack cid handledeferred = runPush ReceivePack cid handledeferred $ do
+xmppReceivePack :: ClientID -> Assistant Bool
+xmppReceivePack cid = do
 	repodir <- liftAnnex $ fromRepo repoPath
 	let p = (proc "git" ["receive-pack", repodir])
 		{ std_in = CreatePipe
@@ -245,19 +265,17 @@ xmppReceivePack cid handledeferred = runPush ReceivePack cid handledeferred $ do
 			let seqnum' = succ seqnum
 			sendNetMessage $ Pushing cid $ ReceivePackOutput seqnum' b
 			relaytoxmpp seqnum' outh
-	relayfromxmpp inh = forever $ do
-		m <- timeout xmppTimeout <~> waitNetPushMessage ReceivePack
-		case m of
-			(Just (Pushing _ (SendPackOutput _ b))) ->
-				liftIO $ writeChunk inh b
-			(Just _) -> noop
-			Nothing -> do
-				debug ["timeout waiting for git send-pack output via XMPP"]
-				-- closing the handle will make
-				-- git receive-pack exit
-				liftIO $ do
-					hClose inh
-					killThread =<< myThreadId
+	relayfromxmpp inh = withPushMessagesInSequence cid ReceivePack handle
+	  where
+	  	handle (Just (Pushing _ (SendPackOutput _ b))) =
+			liftIO $ writeChunk inh b
+		handle (Just _) = noop
+		handle Nothing = do
+			debug ["timeout waiting for git send-pack output via XMPP"]
+			-- closing the handle will make git receive-pack exit
+			liftIO $ do
+				hClose inh
+				killThread =<< myThreadId
 
 xmppRemotes :: ClientID -> UUID -> Assistant [Remote]
 xmppRemotes cid theiruuid = case baseJID <$> parseJID cid of
@@ -271,15 +289,12 @@ xmppRemotes cid theiruuid = case baseJID <$> parseJID cid of
 	matching loc r = repoIsUrl r && repoLocation r == loc
 	knownuuid um r = Remote.uuid r == theiruuid || M.member theiruuid um
 
-handlePushInitiation :: (Remote -> Assistant ()) -> NetMessage -> Assistant ()
-handlePushInitiation _ (Pushing cid (CanPush theiruuid)) =
-	unlessM (null <$> xmppRemotes cid theiruuid) $ do
-		u <- liftAnnex getUUID
-		sendNetMessage $ Pushing cid (PushRequest u)
-handlePushInitiation checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
+{- Returns the ClientID that it pushed to. -}
+runPush :: (Remote -> Assistant ()) -> NetMessage -> Assistant (Maybe ClientID)
+runPush checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
 	go =<< liftAnnex (inRepo Git.Branch.current)
   where
-	go Nothing = noop
+	go Nothing = return Nothing
 	go (Just branch) = do
 		rs <- xmppRemotes cid theiruuid
 		liftAnnex $ Annex.Branch.commit "update"
@@ -288,40 +303,80 @@ handlePushInitiation checkcloudrepos (Pushing cid (PushRequest theiruuid)) =
 			<*> getUUID
 		liftIO $ Command.Sync.updateBranch (Command.Sync.syncBranch branch) g
 		selfjid <- ((T.unpack <$>) . xmppClientID) <$> getDaemonStatus
-		forM_ rs $ \r -> do
-			void $ alertWhile (syncAlert [r]) $
-				xmppPush cid
-					(taggedPush u selfjid branch r)
-					(handleDeferred checkcloudrepos)
-			checkcloudrepos r
-handlePushInitiation checkcloudrepos (Pushing cid (StartingPush theiruuid)) = do
+		if null rs
+			then return Nothing
+			else do
+				forM_ rs $ \r -> do
+					void $ alertWhile (syncAlert [r]) $
+						xmppPush cid (taggedPush u selfjid branch r)
+					checkcloudrepos r
+				return $ Just cid
+runPush checkcloudrepos (Pushing cid (StartingPush theiruuid)) = do
 	rs <- xmppRemotes cid theiruuid
-	unless (null rs) $ do
-		void $ alertWhile (syncAlert rs) $
-			xmppReceivePack cid (handleDeferred checkcloudrepos)
-		mapM_ checkcloudrepos rs
-handlePushInitiation _ _ = noop
+	if null rs
+		then return Nothing
+		else do
+			void $ alertWhile (syncAlert rs) $
+				xmppReceivePack cid
+			mapM_ checkcloudrepos rs
+			return $ Just cid
+runPush _ _ = return Nothing
 
-handleDeferred :: (Remote -> Assistant ()) -> NetMessage -> Assistant ()
-handleDeferred = handlePushInitiation
+{- Check if any of the shas that can be pushed are ones we do not
+ - have.
+ -
+ - (Older clients send no shas, so when there are none, always
+ - request a push.)
+ -}
+handlePushNotice :: NetMessage -> Assistant ()
+handlePushNotice (Pushing cid (CanPush theiruuid shas)) =
+	unlessM (null <$> xmppRemotes cid theiruuid) $
+		if null shas
+			then go
+			else ifM (haveall shas)
+				( debug ["ignoring CanPush with known shas"]
+				, go
+				)
+  where
+  	go = do
+		u <- liftAnnex getUUID
+		sendNetMessage $ Pushing cid (PushRequest u)
+	haveall l = liftAnnex $ not <$> anyM donthave l
+	donthave sha = isNothing <$> catObjectDetails sha
+handlePushNotice _ = noop
 
 writeChunk :: Handle -> B.ByteString -> IO ()
 writeChunk h b = do
 	B.hPut h b
 	hFlush h
 
-{- Largest chunk of data to send in a single XMPP message. -}
-chunkSize :: Int
-chunkSize = 4096
-
-{- How long to wait for an expected message before assuming the other side
- - has gone away and canceling a push. 
+{- Gets NetMessages for a PushSide, ensures they are in order,
+ - and runs an action to handle each in turn. The action will be passed
+ - Nothing on timeout.
  -
- - This needs to be long enough to allow a message of up to 2+ times
- - chunkSize to propigate up to a XMPP server, perhaps across to another
- - server, and back down to us. On the other hand, other XMPP pushes can be
- - delayed for running until the timeout is reached, so it should not be
- - excessive.
+ - Does not currently reorder messages, but does ensure that any 
+ - duplicate messages, or messages not in the sequence, are discarded.
  -}
-xmppTimeout :: Int
-xmppTimeout = 120000000 -- 120 seconds
+withPushMessagesInSequence :: ClientID -> PushSide -> (Maybe NetMessage -> Assistant ()) -> Assistant ()
+withPushMessagesInSequence cid side a = loop 0
+  where
+  	loop seqnum = do
+		m <- timeout xmppTimeout <~> waitInbox cid side
+	  	let go s = a m >> loop s
+		let next = seqnum + 1
+		case extractSequence =<< m of
+			Just seqnum'
+				| seqnum' == next -> go next
+				| seqnum' == 0 -> go seqnum
+				| seqnum' == seqnum -> do
+					debug ["ignoring duplicate sequence number", show seqnum]
+					loop seqnum
+				| otherwise -> do
+					debug ["ignoring out of order sequence number", show seqnum', "expected", show next]
+					loop seqnum
+			Nothing -> go seqnum
+
+extractSequence :: NetMessage -> Maybe Int
+extractSequence (Pushing _ (ReceivePackOutput seqnum _)) = Just seqnum
+extractSequence (Pushing _ (SendPackOutput seqnum _)) = Just seqnum
+extractSequence _ = Nothing

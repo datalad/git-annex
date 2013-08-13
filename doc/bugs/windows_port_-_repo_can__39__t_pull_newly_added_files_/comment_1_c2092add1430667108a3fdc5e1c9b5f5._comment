@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-06-15T18:50:45Z"
+ content="""
+Joe, you need to carefully read [[direct_mode]]. When you manually run `git merge` in a direct mode repository, you defeat associated file tracking, with the resulting behavior you describe. This is why there is a [[todo/direct_mode_guard]] todo item.
+"""]]

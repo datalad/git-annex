@@ -37,3 +37,10 @@ It would be helpful if there were some indication in the Dashboard as to the num
 It's great to see that git annex might make a box.com account useful for automatic upload and sync... looking forward to getting it to work on both sides! Thanks for making this!
 
 [[!tag /design/assistant moreinfo]]
+
+> The robustness of the XMPP support has massively improved since this bug
+> report was filed. Since no more information is forthcoming, I consider
+> this bug [[done]].
+>
+> (Incidentially, this bug got me to santize all information logged about
+> XMPP protocol, including the names/emails of buddies..) --[[Joey]]

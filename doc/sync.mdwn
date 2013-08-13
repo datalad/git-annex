@@ -17,10 +17,11 @@ Breitner. The idea is to have a branch `synced/master` (actually,
 as a drop-point for other repositories to use to push changes.
 
 When you run `git annex sync`, it merges the `synced/master` branch
-into `master`, receiving anything that's been pushed to it. Then it
-fetches from each remote, and merges in any changes that have been made
-to the remotes too. Finally, it updates `synced/master` to reflect the new
-state of `master`, and pushes it out to each of the remotes.
+into `master`, receiving anything that's been pushed to it. (If there is a
+conflict in this merge, [[automatic_conflict_resolution]] is used to
+resolve it). Then it fetches from each remote, and merges in any changes that
+have been made to the remotes too. Finally, it updates `synced/master`
+to reflect the new state of `master`, and pushes it out to each of the remotes.
 
 This way, changes propagate around between repositories as `git annex sync`
 is run on each of them. Every repository does not need to be able to talk

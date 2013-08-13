@@ -12,7 +12,7 @@ The webapp makes it easy to make a repository on either a USB drive,
 or on Amazon Glacier. Once the repository is created, be sure to
 put it in either the small archive, or full archive repository group.
 
-[[!img repogroup.png]]
+[[!img repogroups.png]]
 
 Now when you're done with a file, just move it into a directory named
 "archive". The assistant will notice you put it there, and next time it

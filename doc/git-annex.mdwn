@@ -148,6 +148,15 @@ subdirectories).
   Note that sync does not transfer any file contents from or to the remote
   repositories.
 
+* merge
+
+  This performs the same merging that is done by the sync command, but
+  without pushing or pulling any data.
+
+  One way to use this is to put `git annex merge` into a repository's
+  post-receive hook. Then any syncs to the repository will update its working
+  copy automatically.
+
 * addurl [url ...]
 
   Downloads each url to its own file, which is added to the annex.
@@ -180,6 +189,19 @@ subdirectories).
   subdirectory structure inside it is preserved.
 
 	git annex import /media/camera/DCIM/
+
+* importfeed [url ...]
+
+  Imports the contents of podcast feeds. Only downloads files whose
+  urls have not already been added to the repository before, so you can
+  delete, rename, etc the resulting files and repeated runs won't duplicate
+  them. (Use --force to force downloading urls it's seen before.)
+
+  Use --template to control where the files are stored.
+  The default template is '${feedtitle}/${itemtitle}${extension}'
+  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid)
+
+  The --relaxed and --fast options behave the same as they do in addurl.
 
 * watch
 
@@ -237,7 +259,7 @@ subdirectories).
 * initremote name [param=value ...]
 
   Creates a new special remote, and adds it to `.git/config`. 
-  
+
   The remote's configuration is specified by the parameters. Different
   types of special remotes need different configuration values. The
   command will prompt for parameters as needed.
@@ -246,6 +268,11 @@ subdirectories).
   encryption=none to disable encryption, or use encryption=keyid
   (or encryption=emailaddress) to specify a gpg key that can access
   the encrypted special remote.
+
+  Note that with encryption enabled, a gpg key is created. This requires
+  sufficient entropy. If initremote seems to hang or take a long time
+  while generating the key, you may want to ctrl-c it and re-run with --fast,
+  which causes it to use a lower-quality source of randomness.
 
   Example Amazon S3 remote:
 
@@ -256,20 +283,20 @@ subdirectories).
   Enables use of an existing special remote in the current repository,
   which may be a different repository than the one in which it was
   originally created with the initremote command. 
-  
+
   The name of the remote is the same name used when origianlly 
   creating that remote with "initremote". Run "git annex enableremote"
   with no parameters to get a list of special remote names.
 
   Some special remotes may need parameters to be specified every time.
   For example, the directory special remote requires a directory= parameter.
-  
+
   This command can also be used to modify the configuration of an existing
   special remote, by specifying new values for parameters that were originally
   set when using initremote. For example, to add a new gpg key to the keys
   that can access an encrypted remote:
 
-	git annex initremote mys3 encryption=friend@example.com
+	git annex enableremote mys3 encryption=friend@example.com
 
 * trust [repository ...]
 
@@ -301,6 +328,18 @@ subdirectories).
 
   Removes a repository from a group.
 
+* content repository [expression]
+
+  When run with an expression, configures the content that is preferred
+  to be held in the archive. See PREFERRED CONTENT below.
+
+  For example:
+
+	git annex content . "include=*.mp3 or include=*.ogg"
+
+  Without an expression, displays the current preferred content setting
+  of the repository.
+
 * vicfg
 
   Opens EDITOR on a temp file containing most of the above configuration
@@ -321,7 +360,7 @@ subdirectories).
 * indirect
 
   Switches a repository back from direct mode to the default, indirect mode.
-  
+
   As part of the switch from direct mode, any changed files will be committed.
 
 # REPOSITORY MAINTENANCE COMMANDS
@@ -346,13 +385,16 @@ subdirectories).
   started a configurable time after the last incremental fsck was started.
   Once the current incremental fsck has completely finished, it causes
   a new one to start.
- 
+
   Maybe you'd like to run a fsck for 5 hours at night, picking up each
   night where it left off. You'd like this to continue until all files
   have been fscked. And once it's done, you'd like a new fsck pass to start,
   but no more often than once a month. Then put this in a nightly cron job:
 
 	git annex fsck --incremental-schedule 30d --time-limit 5h
+
+  To verify data integrity only while disregarding required number of copies,
+  use --numcopies=1.
 
 * unused
 
@@ -362,6 +404,12 @@ subdirectories).
   To only show unused temp and bad files, specify --fast.
 
   To check for annexed data on a remote, specify --from.
+
+  After running this command, you can use the --unused option to
+  operate on all the unused data that was found. For example, to
+  move all unused data to origin:
+
+	git annex unused; git annex move --unused --to origin
 
 * dropunused [number|range ...]
 
@@ -377,13 +425,6 @@ subdirectories).
   Adds back files for the content corresponding to the numbers or ranges,
   as listed by the last `git annex unused`. The files will have names
   starting with "unused."
-
-* merge
-
-  Automatically merges remote tracking branches */git-annex into
-  the git-annex branch. While git-annex mostly handles keeping the
-  git-annex branch merged automatically, if you find you are unable
-  to push the git-annex branch due non-fast-forward, this will fix it.
 
 * fix [path ...]
 
@@ -551,7 +592,7 @@ subdirectories).
   This plumbing-level command is used by the assistant to transfer data.
 
 * rekey [file key ...]
-  
+
   This plumbing-level command is similar to migrate, but you specify
   both the file, and the new key to use for it.
 
@@ -585,6 +626,19 @@ subdirectories).
   will only do so when needed to help satisfy the setting of annex.numcopies,
   and preferred content configuration.
 
+* --all
+
+  Operate on all data that has been stored in the git annex,
+  including old versions of files. This is the default behavior when
+  running git-annex in a bare repository; in a non-bare repository the
+  normal behavior is to only operate on specified files in the working
+  tree.
+
+* --unused
+
+  Operate on all data that has been determined to be unused by
+  a previous run of `git-annex unused`.
+
 * --quiet
 
   Avoid the default verbose display of what is done; only show errors
@@ -604,6 +658,10 @@ subdirectories).
 * --debug
 
   Show debug messages.
+
+* --no-debug
+
+  Disable debug messages.
 
 * --from=repository
 
@@ -641,7 +699,7 @@ subdirectories).
 * --untrust=repository
 
   Overrides trust settings for a repository. May be specified more than once.
-  
+
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository.
 
@@ -750,7 +808,7 @@ file contents are present at either of two repositories.
 
   Matches only files whose content is smaller than, or larger than the
   specified size.
- 
+
   The size can be specified with any commonly used units, for example,
   "0.5 gb" or "100 KiloBytes"
 
@@ -885,6 +943,10 @@ Here are all the supported configuration settings.
 
   Set to false to prevent the git-annex assistant from automatically
   committing changes to files in the repository.
+
+* `annex.debug`
+
+  Set to true to enable debug logging by default.
 
 * `annex.version`
 
@@ -1086,7 +1148,7 @@ any value set using `annex.numcopies` in `.git/config`.
 For example, this makes two copies be needed for wav files:
 
 	*.wav annex.numcopies=2
-  
+
 Note that setting numcopies to 0 is very unsafe.
 
 # FILES

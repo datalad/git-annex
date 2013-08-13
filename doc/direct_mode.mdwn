@@ -35,7 +35,7 @@ To stop using direct mode:
 
 With direct mode, you're operating without large swathes of git-annex's
 carefully constructed safety net, which ensures that past versions of
-files are preserved and can be accessed (until you dropunused them). 
+files are preserved and can be accessed. 
 With direct mode, any file can be edited directly, or deleted at any time,
 and there's no guarantee that the old version is backed up somewhere else.
 

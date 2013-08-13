@@ -1,0 +1,50 @@
+### Please describe the problem.
+
+webapp needs to be killed and restarted to finish setting up a new repository
+
+### What steps will reproduce the problem?
+
+I run on a remote linux server
+
+git annex webapp --listen=10.222.0.1:4000
+
+I get a url printed
+
+click the url, it opens in my browser
+click make a repository, and it doesn't finish loading the web page
+if I ctrl-c git on the remote server and start it up again, click
+the url again, i can continue to set up the new repository
+
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 4.20130709
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+
+debian wheezy with git-annex pinned from sid
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[2013-07-19 08:09:54 EST] main: starting assistant version 4.20130709
+WebApp crashed: unable to bind to local socket
+[2013-07-19 08:09:54 EST] WebApp: warning WebApp crashed: unable to bind to local socket
+
+  dbus failed; falling back to mtab polling (ClientError {clientErrorMessage = "runClient: unable to determine DBUS address", clientErrorFatal = True})
+
+  No known network monitor available through dbus; falling back to polling
+(scanning...) [2013-07-19 08:09:54 EST] Watcher: Performing startup scan
+(started...) Merge made by the 'recursive' strategy.
+ ...book.azw |    1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 Books/book.azw
+[2013-07-19 08:13:03 EST] Committer: Committing changes to git
+
+
+# End of transcript or log.
+"""]]
+
+> Duplicate; [[closed|done]]. --[[Joey]]

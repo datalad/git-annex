@@ -119,6 +119,7 @@ cygwinDlls :: [FilePath]
 cygwinDlls =
 	[ "cygwin1.dll"
 	, "cygasn1-8.dll"
+	, "cygattr-1.dll"
 	, "cygheimbase-1.dll"
 	, "cygroken-18.dll"
 	, "cygcom_err-2.dll"

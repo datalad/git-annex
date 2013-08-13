@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators.Delete where
 
@@ -28,24 +28,24 @@ import qualified Data.Text as T
 import qualified Data.Map as M
 import System.Path
 
-notCurrentRepo :: UUID -> Handler RepHtml -> Handler RepHtml
+notCurrentRepo :: UUID -> Handler Html -> Handler Html
 notCurrentRepo uuid a = go =<< liftAnnex (Remote.remoteFromUUID uuid)
   where
   	go Nothing = redirect DeleteCurrentRepositoryR
 	go (Just _) = a
 
-getDisableRepositoryR :: UUID -> Handler RepHtml
+getDisableRepositoryR :: UUID -> Handler Html
 getDisableRepositoryR uuid = notCurrentRepo uuid $ do
 	void $ liftAssistant $ disableRemote uuid
 	redirect DashboardR
 
-getDeleteRepositoryR :: UUID -> Handler RepHtml
+getDeleteRepositoryR :: UUID -> Handler Html
 getDeleteRepositoryR uuid = notCurrentRepo uuid $
 	deletionPage $ do
 		reponame <- liftAnnex $ Remote.prettyUUID uuid
 		$(widgetFile "configurators/delete/start")
 
-getStartDeleteRepositoryR :: UUID -> Handler RepHtml
+getStartDeleteRepositoryR :: UUID -> Handler Html
 getStartDeleteRepositoryR uuid = do
 	remote <- fromMaybe (error "unknown remote")
 		<$> liftAnnex (Remote.remoteFromUUID uuid)
@@ -55,7 +55,7 @@ getStartDeleteRepositoryR uuid = do
 	liftAssistant $ addScanRemotes True [remote]
 	redirect DashboardR
 
-getFinishDeleteRepositoryR :: UUID -> Handler RepHtml
+getFinishDeleteRepositoryR :: UUID -> Handler Html
 getFinishDeleteRepositoryR uuid = deletionPage $ do
 	void $ liftAssistant $ removeRemote uuid
 
@@ -64,22 +64,22 @@ getFinishDeleteRepositoryR uuid = deletionPage $ do
 	gitrepo <- liftAnnex $ M.notMember uuid <$> readRemoteLog
 	$(widgetFile "configurators/delete/finished")	
 
-getDeleteCurrentRepositoryR :: Handler RepHtml
+getDeleteCurrentRepositoryR :: Handler Html
 getDeleteCurrentRepositoryR = deleteCurrentRepository
 
-postDeleteCurrentRepositoryR :: Handler RepHtml
+postDeleteCurrentRepositoryR :: Handler Html
 postDeleteCurrentRepositoryR = deleteCurrentRepository
 
-deleteCurrentRepository :: Handler RepHtml
+deleteCurrentRepository :: Handler Html
 deleteCurrentRepository = dangerPage $ do
-	reldir <- fromJust . relDir <$> lift getYesod
+	reldir <- fromJust . relDir <$> liftH getYesod
 	havegitremotes <- haveremotes syncGitRemotes
 	havedataremotes <- haveremotes syncDataRemotes
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ sanityVerifierAForm $
 			SanityVerifier magicphrase
 	case result of
-		FormSuccess _ -> lift $ do
+		FormSuccess _ -> liftH $ do
 			dir <- liftAnnex $ fromRepo Git.repoPath
 			liftIO $ removeAutoStartFile dir
 
@@ -107,7 +107,7 @@ deleteCurrentRepository = dangerPage $ do
 data SanityVerifier = SanityVerifier T.Text
 	deriving (Eq)
 
-sanityVerifierAForm :: SanityVerifier -> AForm WebApp WebApp SanityVerifier
+sanityVerifierAForm :: SanityVerifier -> MkAForm SanityVerifier
 sanityVerifierAForm template = SanityVerifier
 	<$> areq checksanity "Confirm deletion?" Nothing
   where
@@ -116,10 +116,10 @@ sanityVerifierAForm template = SanityVerifier
 	
 	insane = "Maybe this is not a good idea..." :: Text
 
-deletionPage :: Widget -> Handler RepHtml
+deletionPage :: Widget -> Handler Html
 deletionPage = page "Delete repository" (Just Configuration)
 
-dangerPage :: Widget -> Handler RepHtml
+dangerPage :: Widget -> Handler Html
 dangerPage = page "Danger danger danger" (Just Configuration)
 
 magicphrase :: Text

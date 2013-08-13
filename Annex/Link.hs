@@ -29,17 +29,19 @@ isAnnexLink file = maybe Nothing (fileKey . takeFileName) <$> getAnnexLinkTarget
 {- Gets the link target of a symlink.
  -
  - On a filesystem that does not support symlinks, fall back to getting the
- - link target by looking inside the file. (Only return at first 8k of the
- - file, more than enough for any symlink target.)
+ - link target by looking inside the file.
  -
  - Returns Nothing if the file is not a symlink, or not a link to annex
  - content.
  -}
 getAnnexLinkTarget :: FilePath -> Annex (Maybe LinkTarget)
-getAnnexLinkTarget file =
-	check readSymbolicLink $
-		check readfilestart $
+getAnnexLinkTarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
+	( check readSymbolicLink $
+		return Nothing
+	, check readSymbolicLink $
+		check probefilecontent $
 			return Nothing
+	)
   where
 	check getlinktarget fallback = do
 		v <- liftIO $ catchMaybeIO $ getlinktarget file
@@ -49,10 +51,26 @@ getAnnexLinkTarget file =
 				| otherwise -> return Nothing
 			Nothing -> fallback
 
-	readfilestart f = do
+	probefilecontent f = do
 		h <- openFile f ReadMode
 		fileEncoding h
-		take 8192 <$> hGetContents h
+		-- The first 8k is more than enough to read; link
+		-- files are small.
+		s <- take 8192 <$> hGetContents h
+		-- If we got the full 8k, the file is too large
+		if length s == 8192
+			then do
+				hClose h
+				return ""
+			else do
+				hClose h
+				-- If there are any NUL or newline
+				-- characters, or whitespace, we
+				-- certianly don't have a link to a
+				-- git-annex key.
+				if any (`elem` s) "\0\n\r \t"
+					then return ""
+					else return s
 
 {- Creates a link on disk.
  -

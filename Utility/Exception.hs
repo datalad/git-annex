@@ -9,8 +9,8 @@
 
 module Utility.Exception where
 
-import Prelude hiding (catch)
 import Control.Exception
+import qualified Control.Exception as E
 import Control.Applicative
 import Control.Monad
 import System.IO.Error (isDoesNotExistError)
@@ -33,7 +33,7 @@ catchMsgIO a = either (Left . show) Right <$> tryIO a
 
 {- catch specialized for IO errors only -}
 catchIO :: IO a -> (IOException -> IO a) -> IO a
-catchIO = catch
+catchIO = E.catch
 
 {- try specialized for IO errors only -}
 tryIO :: IO a -> IO (Either IOException a)

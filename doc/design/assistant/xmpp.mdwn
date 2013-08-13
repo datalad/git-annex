@@ -4,11 +4,15 @@ who share a repository, that is stored in the [[cloud]].
 
 ### TODO
 
-* Prevent idle disconnection. Probably means sending or receiving pings,
-  but would prefer to avoid eg pinging every 60 seconds as some clients do.
 * Do git-annex clients sharing an account with regular clients cause confusing
   things to happen? 
   See <http://git-annex.branchable.com/design/assistant/blog/day_114__xmpp/#comment-aaba579f92cb452caf26ac53071a6788>
+* Support registering with XMPP provider from within the webapp, 
+  as clients like pidgin are able to do.
+* At least some XMPP servers are lossy (does XMPP guarantee delivery)?
+  I have seen a log where a push's packet 1 and 3 arrived, but 2 did not.
+  To deal with this, need at least a 1 packet buffer and ACK or resend
+  request implemented over top of XMPP. Essentially, TCP over XMPP. :(
 
 ## design goals
 
@@ -66,7 +70,11 @@ containing:
 To indicate that we could push over XMPP, a chat message is sent,
 to each known client of each XMPP remote.
 
-	<git-annex xmlns='git-annex' canpush="myuuid" />
+	<git-annex xmlns='git-annex' canpush="myuuid" shas="sha1 sha1" />
+
+The shas are omitted by old clients. If present, they are the git shas of
+the head and git-annex branches that are available to be pushed. This lets
+the receiver check if it's already got them.
 
 To request that a remote push to us, a chat message can be sent.
 
@@ -96,8 +104,7 @@ one or more chat messages, directed to the receiver:
 
 The value of rp and sp used to be empty, but now it's a sequence number.
 This indicates the sequence of this packet, counting from 1. The receiver
-and sender each have their own sequence numbers. These sequence numbers
-are not really used yet, but are available for debugging.
+and sender each have their own sequence numbers.
 
 When `git receive-pack` exits, the receiver indicates its exit
 status with a chat message, directed at the sender:
@@ -106,9 +113,10 @@ status with a chat message, directed at the sender:
 
 ### security
 
-Data git-annex sends over XMPP will be visible to the XMPP
-account's buddies, to the XMPP server, and quite likely to other interested
-parties. So it's important to consider the security exposure of using it.
+Data git-annex sends over XMPP will be visible to the XMPP account's
+buddies, and to the XMPP server (and any attacker who has access to the
+XMPP server). So it's important to consider the security exposure of using
+it.
 
 Even if git-annex sends only a single bit notification, this lets attackers
 know when the user is active and changing files. Although the assistant's other
@@ -118,9 +126,11 @@ As soon as git-annex does anything unlike any other client, an attacker can
 see how many clients are connected for a user, and fingerprint the ones
 running git-annex, and determine how many clients are running git-annex.
 
-If git-annex sent the UUID of the remote it pushed to, this would let
-attackers determine how many different remotes are being used,
-and map some of the connections between clients and remotes.
+An attacker can observe the UUIDs used for pushes and pairing, and determine
+how many different remotes are being used.
 
 An attacker could replay push notification messages, reusing UUIDs it's
 observed. This would make clients pull repeatedly, perhaps as a DOS.
+
+The XMPP server, or an attacker with access to it can reconstruct the git 
+repository from data sent in pushes, in part or in whole.

@@ -30,3 +30,12 @@ I do not really know the minimal setup to reproduce this problem.
 ### What version of git-annex are you using? On what operating system?
 
 git-annex 4.20130417 on Gentoo Linux using Ebuilds from Haskell overlay
+
+> I suspect this was some kind of misconfiguration, or 
+> one of the kinds of data corruption that git-annex can automatically heal from. 
+> 
+> I am pretty sure I didn't make any changes to git-annex that caused
+> the problem to stop happening!
+> 
+> While it would be very good to get to the bottom of this, I don't see
+> any benefit to keeping this report open without more info. [[done]] --[[Joey]]

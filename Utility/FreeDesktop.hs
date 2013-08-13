@@ -3,6 +3,7 @@
  - http://standards.freedesktop.org/basedir-spec/latest/
  - http://standards.freedesktop.org/desktop-entry-spec/latest/
  - http://standards.freedesktop.org/menu-spec/latest/
+ - http://standards.freedesktop.org/icon-theme-spec/latest/
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
@@ -16,6 +17,8 @@ module Utility.FreeDesktop (
 	writeDesktopMenuFile,
 	desktopMenuFilePath,
 	autoStartPath,
+	iconDir,
+	iconFilePath,
 	systemDataDir,
 	systemConfigDir,
 	userDataDir,
@@ -34,6 +37,7 @@ import System.Directory
 import System.FilePath
 import Data.List
 import Data.String.Utils
+import Data.Maybe
 import Control.Applicative
 
 type DesktopEntry = [(Key, Value)]
@@ -54,18 +58,19 @@ toString (ListV l)
   where
 	escapesemi = join "\\;" . split ";"
 
-genDesktopEntry :: String -> String -> Bool -> FilePath -> [String] -> DesktopEntry
-genDesktopEntry name comment terminal program categories =
+genDesktopEntry :: String -> String -> Bool -> FilePath -> Maybe String -> [String] -> DesktopEntry
+genDesktopEntry name comment terminal program icon categories = catMaybes
 	[ item "Type" StringV "Application"
 	, item "Version" NumericV 1.0
 	, item "Name" StringV name
 	, item "Comment" StringV comment
 	, item "Terminal" BoolV terminal
 	, item "Exec" StringV program
+	, maybe Nothing (item "Icon" StringV) icon
 	, item "Categories" ListV (map StringV categories)
 	]
   where
-	item x c y = (x, c y)
+	item x c y = Just (x, c y)
 
 buildDesktopMenuFile :: DesktopEntry -> String
 buildDesktopMenuFile d = unlines ("[Desktop Entry]" : map keyvalue d) ++ "\n"
@@ -88,6 +93,18 @@ desktopMenuFilePath basename datadir =
 autoStartPath :: String -> FilePath -> FilePath
 autoStartPath basename configdir =
 	configdir </> "autostart" </> desktopfile basename
+
+{- Base directory to install an icon file, in either the systemDataDir
+ - or the userDatadir. -}
+iconDir :: FilePath -> FilePath
+iconDir datadir = datadir </> "icons" </> "hicolor"
+
+{- Filename of an icon, given the iconDir to use.
+ -
+ - The resolution is something like "48x48" or "scalable". -}
+iconFilePath :: FilePath -> String -> FilePath -> FilePath
+iconFilePath file resolution icondir =
+	icondir </> resolution </> "apps" </> file
 
 desktopfile :: FilePath -> FilePath
 desktopfile f = f ++ ".desktop"

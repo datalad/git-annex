@@ -11,9 +11,9 @@
       repositories into one, allowing you to share files.
   <p>
     $if start
-      For security, enter a secret phrase. This same secret phrase will #
-      also need to be entered on the computer you're pairing with. #
-      It will be used to verify you're pairing with the right computer.
+      For security, enter a secret phrase. To verify that you're pairing #
+      with the right computer, its git-annex webapp will then prompt for the #
+      same secret phrase. That's all this secret phrase will be used for.
     $else
       $if sameusername
         For security, you need to enter the same secret phrase that was #

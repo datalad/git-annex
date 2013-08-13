@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 1"
+ date="2013-07-17T19:11:38Z"
+ content="""
+How many files are in the directory tree you're copying?
+
+`copy --fast --to` does indeed avoid the check to see if the remote already has the file before copying it.
+
+However, it still needs to look in the location log to see which files are already present on the remote. Whereas `copy --from` can do a single stat of the file on disk to see if it's present in the local repo. Location log lookups are about as fast as I can make them, but they still require requesting info from out of the git repository. If you have a lot of files this otherwise minor difference in speed can stack up..
+"""]]

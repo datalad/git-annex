@@ -1,0 +1,9 @@
+Hi,
+
+It is possible to keep devices sync only using a box.com account as a transfer remote, without Jabber? I can't use Jabber because of firewall restrictions.
+
+It would be nice to be able to use the transfer remote, in my case box.net, as the sync "provider", for example by polling a file with the needed changes in a pre-defined interval.
+
+Regards,
+
+Stone

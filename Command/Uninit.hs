@@ -18,7 +18,7 @@ import qualified Annex.Branch
 import Annex.Content
 
 def :: [Command]
-def = [notDirect $ addCheck check $ command "uninit" paramPaths seek 
+def = [addCheck check $ command "uninit" paramPaths seek 
 	SectionUtility "de-initialize git-annex and clean out repository"]
 
 check :: Annex ()
@@ -62,11 +62,48 @@ startUnannex file info = do
 start :: CommandStart
 start = next $ next $ do
 	annexdir <- fromRepo gitAnnexDir
+	annexobjectdir <- fromRepo gitAnnexObjectDir
+	leftovers <- removeUnannexed =<< getKeysPresent
+	if null leftovers
+		then liftIO $ removeDirectoryRecursive annexdir
+		else error $ unlines
+			[ "Not fully uninitialized"
+			, "Some annexed data is still left in " ++ annexobjectdir
+			, "This may include deleted files, or old versions of modified files."
+			, ""
+			, "If you don't care about preserving the data, just delete the"
+			, "directory."
+			, ""
+			, "Or, you can move it to another location, in case it turns out"
+			, "something in there is important."
+			, ""
+			, "Or, you can run `git annex unused` followed by `git annex dropunused`"
+			, "to remove data that is not used by any tag or branch, which might"
+			, "take care of all the data."
+			, ""
+			, "Then run `git annex uninit` again to finish."
+			]
 	uninitialize
-	mapM_ removeAnnex =<< getKeysPresent
-	liftIO $ removeDirectoryRecursive annexdir
 	-- avoid normal shutdown
 	saveState False
 	inRepo $ Git.Command.run
 		[Param "branch", Param "-D", Param $ show Annex.Branch.name]
 	liftIO exitSuccess
+
+{- Keys that were moved out of the annex have a hard link still in the
+ - annex, with > 1 link count, and those can be removed.
+ -
+ - Returns keys that cannot be removed. -}
+removeUnannexed :: [Key] -> Annex [Key]
+removeUnannexed = go []
+  where
+  	go c [] = return c
+	go c (k:ks) = ifM (inAnnexCheck k $ liftIO . enoughlinks)
+		( do
+			removeAnnex k
+			go c ks
+		, go (k:c) ks
+		)
+	enoughlinks f = catchBoolIO $ do
+		s <- getFileStatus f
+		return $ linkCount s > 1

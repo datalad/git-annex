@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkwjBDXkP9HAQKhjTgThGOxUa1B99y_WRA"
+ nickname="Franck"
+ subject="comment 10"
+ date="2013-06-02T17:23:43Z"
+ content="""
+I updated the C program to simplify it so it uses a static path for `_chrooter`. In the previous version, I suspect that one can play with symlinks and use it to get a root shell. So, if `_chrooter` is not installed in `/opt/bin` this file has to be edited too before compilation.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 20"
+ date="2013-07-17T19:06:31Z"
+ content="""
+@frioux the webapp has a \"ssh server\" option that will set up a ssh key and use it for passwordless data transfer to a ssh server. You have to enter your password twice in the git-annex terminal app, and then it's set up.
+
+The openssh included in the git-annex app fully supports everything you can usually do with ssh keys, so you can also set this up by hand.
+"""]]

@@ -11,13 +11,14 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Logs.Location
 import Logs.Trust
-import Types.Remote (AssociatedFile, uuid)
+import Types.Remote (uuid)
 import qualified Remote
 import qualified Command.Drop
 import Command
 import Annex.Wanted
 import Annex.Exception
 import Config
+import Annex.Content.Direct
 
 import qualified Data.Set as S
 
@@ -35,20 +36,30 @@ handleDrops reason fromhere key f knownpresentremote = do
 {- The UUIDs are ones where the content is believed to be present.
  - The Remote list can include other remotes that do not have the content;
  - only ones that match the UUIDs will be dropped from.
- - If allows to drop fromhere, that drop will be tried first. -}
+ - If allowed to drop fromhere, that drop will be tried first.
+ -
+ - In direct mode, all associated files are checked, and only if all
+ - of them are unwanted are they dropped.
+ -}
 handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Assistant ()
 handleDropsFrom _ _ _ _ _ Nothing _ = noop
-handleDropsFrom locs rs reason fromhere key (Just f) knownpresentremote
-	| fromhere = do
-		n <- getcopies
-		if checkcopies n Nothing
-			then go rs =<< dropl n
-			else go rs n
-	| otherwise = go rs =<< getcopies
+handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote = do
+	fs <- liftAnnex $ ifM isDirect
+		( do
+			l <- associatedFilesRelative key
+			if null l
+				then return [afile]
+				else return l
+		, return [afile]
+		)
+	n <- getcopies fs
+	if fromhere && checkcopies n Nothing
+		then go fs rs =<< dropl fs n
+		else go fs rs n
   where
-	getcopies = liftAnnex $ do
+	getcopies fs = liftAnnex $ do
 		(untrusted, have) <- trustPartition UnTrusted locs
-		numcopies <- getNumCopies =<< numCopies f
+		numcopies <- maximum <$> mapM (getNumCopies <=< numCopies) fs
 		return (length have, numcopies, S.fromList untrusted)
 
 	{- Check that we have enough copies still to drop the content.
@@ -66,20 +77,20 @@ handleDropsFrom locs rs reason fromhere key (Just f) knownpresentremote
 		| S.member u untrusted = v
 		| otherwise = decrcopies v Nothing
 
-	go [] _ = noop
-	go (r:rest) n
-		| uuid r `S.notMember` slocs = go rest n
+	go _ [] _ = noop
+	go fs (r:rest) n
+		| uuid r `S.notMember` slocs = go fs rest n
 		| checkcopies n (Just $ Remote.uuid r) =
-			dropr r n >>= go rest
+			dropr fs r n >>= go fs rest
 		| otherwise = noop
 
-	checkdrop n@(have, numcopies, _untrusted) u a =
-		ifM (liftAnnex $ wantDrop True u (Just f))
+	checkdrop fs n@(have, numcopies, _untrusted) u a =
+		ifM (liftAnnex $ allM (wantDrop True u . Just) fs)
 			( ifM (liftAnnex $ safely $ doCommand $ a (Just numcopies))
 				( do
 					debug
 						[ "dropped"
-						, f
+						, afile
 						, "(from " ++ maybe "here" show u ++ ")"
 						, "(copies now " ++ show (have - 1) ++ ")"
 						, ": " ++ reason
@@ -90,11 +101,11 @@ handleDropsFrom locs rs reason fromhere key (Just f) knownpresentremote
 			, return n
 			)
 
-	dropl n = checkdrop n Nothing $ \numcopies ->
-		Command.Drop.startLocal f numcopies key knownpresentremote
+	dropl fs n = checkdrop fs n Nothing $ \numcopies ->
+		Command.Drop.startLocal afile numcopies key knownpresentremote
 
-	dropr r n  = checkdrop n (Just $ Remote.uuid r) $ \numcopies ->
-		Command.Drop.startRemote f numcopies key r
+	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies ->
+		Command.Drop.startRemote afile numcopies key r
 
 	safely a = either (const False) id <$> tryAnnex a
 

@@ -31,4 +31,4 @@ them back by reverting the commit but things like that make me very nervous.
 
 3.20130102 on Arch Linux x64
 
-[!tag /design/assistant moreinfo]]
+[[!tag /design/assistant moreinfo]]

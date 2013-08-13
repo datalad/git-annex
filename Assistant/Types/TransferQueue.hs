@@ -9,7 +9,6 @@ module Assistant.Types.TransferQueue where
 
 import Common.Annex
 import Logs.Transfer
-import Types.Remote
 
 import Control.Concurrent.STM
 import Utility.TList

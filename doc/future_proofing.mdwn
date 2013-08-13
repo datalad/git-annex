@@ -2,7 +2,7 @@ Imagine putting a git-annex drive in a time capsule. In 20, or 50, or 100
 years, you'd like its contents to be as accessible as possible to whoever
 digs it up.
 
-This is a hard problem. git-annex cannot completly solve it, but it does
+This is a hard problem. git-annex cannot completely solve it, but it does
 its best to not contribute to the problem. Here are some aspects of the
 problem:
 

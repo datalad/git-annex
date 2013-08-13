@@ -23,7 +23,17 @@ newTList = newEmptyTMVar
 {- Gets the contents of the TList. Blocks when empty.
  - TList is left empty. -}
 getTList :: TList a -> STM [a]
-getTList tlist = D.toList <$> takeTMVar tlist
+getTList tlist = D.toList <$> getTDList tlist
+
+getTDList :: TList a -> STM (D.DList a)
+getTDList = takeTMVar
+
+{- Replaces the contents of the TList. -}
+setTList :: TList a -> [a] -> STM ()
+setTList tlist = setTDList tlist . D.fromList
+
+setTDList :: TList a -> D.DList a -> STM ()
+setTDList tlist = modifyTList tlist . const
 
 {- Takes anything currently in the TList, without blocking.
  - TList is left empty. -}
@@ -54,6 +64,3 @@ snocTList tlist v = modifyTList tlist $ \dl -> D.snoc dl v
 
 appendTList :: TList a -> [a] -> STM ()
 appendTList tlist l = modifyTList tlist $ \dl -> D.append dl (D.fromList l)
-
-setTList :: TList a -> [a] -> STM ()
-setTList tlist l = modifyTList tlist $ const $ D.fromList l

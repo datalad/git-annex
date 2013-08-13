@@ -1,0 +1,6 @@
+Hi,
+
+Glad to see this project appears to be doing well.  I just wanted to mention that there's a similar project called cloudcmd that has many of the same use cases in spirit: https://github.com/briangu/cloudcmd
+
+Cheers,
+Brian

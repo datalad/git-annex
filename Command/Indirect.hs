@@ -59,7 +59,7 @@ perform = do
 	setDirect False
 
 	top <- fromRepo Git.repoPath
-	(l, clean) <- inRepo $ Git.LsFiles.stagedDetails [top]
+	(l, clean) <- inRepo $ Git.LsFiles.stagedOthersDetails [top]
 	forM_ l go
 	void $ liftIO clean
 	next cleanup

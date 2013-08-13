@@ -27,14 +27,14 @@ Build-Depends:
 	libghc-hinotify-dev [linux-any],
 	libghc-stm-dev (>= 2.3),
 	libghc-dbus-dev (>= 0.10.3) [linux-any],
-	libghc-yesod-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
-	libghc-yesod-static-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
-	libghc-yesod-default-dev [i386 amd64 kfreebsd-amd64],
-	libghc-hamlet-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
-	libghc-clientsession-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
-	libghc-warp-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
-	libghc-wai-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
-	libghc-wai-logger-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64],
+	libghc-yesod-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-yesod-static-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-yesod-default-dev [i386 amd64 kfreebsd-amd64 powerpc sparc],
+	libghc-hamlet-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-clientsession-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-warp-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-wai-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-wai-logger-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
 	libghc-case-insensitive-dev,
 	libghc-http-types-dev,
 	libghc-blaze-builder-dev,
@@ -47,6 +47,7 @@ Build-Depends:
 	libghc-xml-types-dev,
 	libghc-async-dev,
 	libghc-http-dev,
+	libghc-feed-dev,
 	ikiwiki,
 	perlmagick,
 	git,
@@ -55,7 +56,7 @@ Build-Depends:
 	curl,
 	openssh-client,
 Maintainer: Joey Hess <joeyh@debian.org>
-Standards-Version: 3.9.3
+Standards-Version: 3.9.4
 Vcs-Git: git://git.kitenet.net/git-annex
 Homepage: http://git-annex.branchable.com/
 

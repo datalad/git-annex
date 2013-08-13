@@ -17,10 +17,11 @@ import qualified Utility.CoProcess as CoProcess
 type HashObjectHandle = CoProcess.CoProcessHandle
 
 hashObjectStart :: Repo -> IO HashObjectHandle
-hashObjectStart = CoProcess.rawMode <=< gitCoProcessStart
+hashObjectStart = CoProcess.rawMode <=< gitCoProcessStart True
 	[ Param "hash-object"
 	, Param "-w"
 	, Param "--stdin-paths"
+	, Param "--no-filters"
 	]
 
 hashObjectStop :: HashObjectHandle -> IO ()
@@ -39,4 +40,4 @@ hashObject objtype content repo = getSha subcmd $
 	pipeWriteRead (map Param params) content repo
   where
 	subcmd = "hash-object"
-	params = [subcmd, "-t", show objtype, "-w", "--stdin"]
+	params = [subcmd, "-t", show objtype, "-w", "--stdin", "--no-filters"]

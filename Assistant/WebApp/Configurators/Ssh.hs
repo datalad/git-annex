@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Assistant.WebApp.Configurators.Ssh where
@@ -24,7 +24,7 @@ import qualified Data.Text as T
 import qualified Data.Map as M
 import Network.Socket
 
-sshConfigurator :: Widget -> Handler RepHtml
+sshConfigurator :: Widget -> Handler Html
 sshConfigurator = page "Add a remote server" (Just Configuration)
 
 data SshInput = SshInput
@@ -58,7 +58,11 @@ mkSshInput s = SshInput
 	, inputPort = sshPort s
 	}
 
-sshInputAForm :: (Field WebApp WebApp Text) -> SshInput -> AForm WebApp WebApp SshInput
+#if MIN_VERSION_yesod(1,2,0)
+sshInputAForm :: Field Handler Text -> SshInput -> AForm Handler SshInput
+#else
+sshInputAForm :: Field WebApp WebApp Text -> SshInput -> AForm WebApp WebApp SshInput
+#endif
 sshInputAForm hostnamefield def = SshInput
 	<$> aopt check_hostname "Host name" (Just $ inputHostname def)
 	<*> aopt check_username "User name" (Just $ inputUsername def)
@@ -102,12 +106,12 @@ usable (UnusableServer _) = False
 usable UsableRsyncServer = True
 usable UsableSshInput = True
 
-getAddSshR :: Handler RepHtml
+getAddSshR :: Handler Html
 getAddSshR = postAddSshR
-postAddSshR :: Handler RepHtml
+postAddSshR :: Handler Html
 postAddSshR = sshConfigurator $ do
 	u <- liftIO $ T.pack <$> myUserName
-	((result, form), enctype) <- lift $
+	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ sshInputAForm textField $
 			SshInput Nothing (Just u) Nothing 22
 	case result of
@@ -115,7 +119,7 @@ postAddSshR = sshConfigurator $ do
 			s <- liftIO $ testServer sshinput
 			case s of
 				Left status -> showform form enctype status
-				Right sshdata -> lift $ redirect $ ConfirmSshR sshdata
+				Right sshdata -> liftH $ redirect $ ConfirmSshR sshdata
 		_ -> showform form enctype UntestedServer
   where
 	showform form enctype status = $(widgetFile "configurators/ssh/add")
@@ -131,19 +135,19 @@ sshTestModal = $(widgetFile "configurators/ssh/testmodal")
  - Note that there's no EnableSshR because ssh remotes are not special
  - remotes, and so their configuration is not shared between repositories.
  -}
-getEnableRsyncR :: UUID -> Handler RepHtml
+getEnableRsyncR :: UUID -> Handler Html
 getEnableRsyncR = postEnableRsyncR
-postEnableRsyncR :: UUID -> Handler RepHtml
+postEnableRsyncR :: UUID -> Handler Html
 postEnableRsyncR u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
 	case (parseSshRsyncUrl =<< M.lookup "rsyncurl" m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
-			((result, form), enctype) <- lift $
+			((result, form), enctype) <- liftH $
 				runFormPost $ renderBootstrap $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (inputHostname sshinput') ->
-						void $ lift $ makeRsyncNet sshinput' reponame (const noop)
+						void $ liftH $ makeRsyncNet sshinput' reponame (const noop)
 					| otherwise -> do
 						s <- liftIO $ testServer sshinput'
 						case s of
@@ -156,7 +160,7 @@ postEnableRsyncR u = do
 	showform form enctype status = do
 		description <- liftAnnex $ T.pack <$> prettyUUID u
 		$(widgetFile "configurators/ssh/enable")
-	enable sshdata = lift $ redirect $ ConfirmSshR $
+	enable sshdata = liftH $ redirect $ ConfirmSshR $
 		sshdata { rsyncOnly = True }
 
 {- Converts a rsyncurl value to a SshInput. But only if it's a ssh rsync
@@ -249,18 +253,18 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 
 {- Runs a ssh command; if it fails shows the user the transcript,
  - and if it succeeds, runs an action. -}
-sshSetup :: [String] -> String -> Handler RepHtml -> Handler RepHtml
+sshSetup :: [String] -> String -> Handler Html -> Handler Html
 sshSetup opts input a = do
 	(transcript, ok) <- liftIO $ sshTranscript opts (Just input)
 	if ok
 		then a
 		else showSshErr transcript
 
-showSshErr :: String -> Handler RepHtml
+showSshErr :: String -> Handler Html
 showSshErr msg = sshConfigurator $
 	$(widgetFile "configurators/ssh/error")
 
-getConfirmSshR :: SshData -> Handler RepHtml
+getConfirmSshR :: SshData -> Handler Html
 getConfirmSshR sshdata = sshConfigurator $
 	$(widgetFile "configurators/ssh/confirm")
 
@@ -269,29 +273,29 @@ getRetrySshR sshdata = do
 	s <- liftIO $ testServer $ mkSshInput sshdata
 	redirect $ either (const $ ConfirmSshR sshdata) ConfirmSshR s
 
-getMakeSshGitR :: SshData -> Handler RepHtml
+getMakeSshGitR :: SshData -> Handler Html
 getMakeSshGitR = makeSsh False setupGroup
 
-getMakeSshRsyncR :: SshData -> Handler RepHtml
+getMakeSshRsyncR :: SshData -> Handler Html
 getMakeSshRsyncR = makeSsh True setupGroup
 
-makeSsh :: Bool -> (Remote -> Handler ()) -> SshData -> Handler RepHtml
+makeSsh :: Bool -> (Remote -> Handler ()) -> SshData -> Handler Html
 makeSsh rsync setup sshdata
 	| needsPubKey sshdata = do
 		keypair <- liftIO genSshKeyPair
 		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
-		makeSsh' rsync setup sshdata' (Just keypair)
+		makeSsh' rsync setup sshdata sshdata' (Just keypair)
 	| sshPort sshdata /= 22 = do
 		sshdata' <- liftIO $ setSshConfig sshdata []
-		makeSsh' rsync setup sshdata' Nothing
-	| otherwise = makeSsh' rsync setup sshdata Nothing
+		makeSsh' rsync setup sshdata sshdata' Nothing
+	| otherwise = makeSsh' rsync setup sshdata sshdata Nothing
 
-makeSsh' :: Bool -> (Remote -> Handler ()) -> SshData -> Maybe SshKeyPair -> Handler RepHtml
-makeSsh' rsync setup sshdata keypair =
-	sshSetup [sshhost, remoteCommand] "" $
+makeSsh' :: Bool -> (Remote -> Handler ()) -> SshData -> SshData -> Maybe SshKeyPair -> Handler Html
+makeSsh' rsync setup origsshdata sshdata keypair = do
+	sshSetup ["-p", show (sshPort origsshdata), sshhost, remoteCommand] "" $
 		makeSshRepo rsync setup sshdata
   where
-	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
+	sshhost = genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
 	remotedir = T.unpack $ sshDirectory sshdata
 	remoteCommand = shellWrap $ intercalate "&&" $ catMaybes
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
@@ -299,19 +303,19 @@ makeSsh' rsync setup sshdata keypair =
 		, if rsync then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
 		, if rsync then Nothing else Just "git annex init"
 		, if needsPubKey sshdata
-			then addAuthorizedKeysCommand (rsyncOnly sshdata) remotedir . sshPubKey <$> keypair
+			then addAuthorizedKeysCommand (rsync || rsyncOnly sshdata) remotedir . sshPubKey <$> keypair
 			else Nothing
 		]
 
-makeSshRepo :: Bool -> (Remote -> Handler ()) -> SshData -> Handler RepHtml
+makeSshRepo :: Bool -> (Remote -> Handler ()) -> SshData -> Handler Html
 makeSshRepo forcersync setup sshdata = do
 	r <- liftAssistant $ makeSshRemote forcersync sshdata Nothing
 	setup r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
 
-getAddRsyncNetR :: Handler RepHtml
+getAddRsyncNetR :: Handler Html
 getAddRsyncNetR = postAddRsyncNetR
-postAddRsyncNetR :: Handler RepHtml
+postAddRsyncNetR :: Handler Html
 postAddRsyncNetR = do
 	((result, form), enctype) <- runFormPost $
 		renderBootstrap $ sshInputAForm hostnamefield $
@@ -339,7 +343,7 @@ postAddRsyncNetR = do
   user name something like "7491"
 |]
 
-makeRsyncNet :: SshInput -> String -> (Remote -> Handler ()) -> Handler RepHtml
+makeRsyncNet :: SshInput -> String -> (Remote -> Handler ()) -> Handler Html
 makeRsyncNet sshinput reponame setup = do
 	knownhost <- liftIO $ maybe (return False) knownHost (inputHostname sshinput)
 	keypair <- liftIO $ genSshKeyPair

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkwjBDXkP9HAQKhjTgThGOxUa1B99y_WRA"
+ nickname="Franck"
+ subject="Still problems with my old N1/CM7"
+ date="2013-05-24T06:01:18Z"
+ content="""
+Hi, thank you for addressing this issue! I installed the new release but now it fails in another way: the message is just \"In mgmain NJI_OnLoad\" then the terminal says that the session is closed.
+"""]]

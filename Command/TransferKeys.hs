@@ -15,7 +15,6 @@ import Annex.Content
 import Logs.Location
 import Logs.Transfer
 import qualified Remote
-import Types.Remote (AssociatedFile)
 import Types.Key
 import qualified Option
 

@@ -12,7 +12,7 @@ module Utility.Url (
 	check,
 	exists,
 	download,
-	get
+	downloadQuiet
 ) where
 
 import Common
@@ -91,7 +91,14 @@ exists url headers = case parseURIRelaxed url of
  - for only one in.
  -}
 download :: URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
-download url headers options file = 
+download = download' False
+
+{- No output, even on error. -}
+downloadQuiet :: URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
+downloadQuiet = download' True
+
+download' :: Bool -> URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
+download' quiet url headers options file = 
 	case parseURIRelaxed url of
 		Just u
 			| uriScheme u == "file:" -> do
@@ -103,31 +110,19 @@ download url headers options file =
 		_ -> return False
   where
 	headerparams = map (\h -> Param $ "--header=" ++ h) headers
-	wget = go "wget" $ headerparams ++ [Params "-c -O"]
+	wget = go "wget" $ headerparams ++ quietopt "-q" ++ [Params "-c -O"]
 	{- Uses the -# progress display, because the normal
 	 - one is very confusing when resuming, showing
 	 - the remainder to download as the whole file,
 	 - and not indicating how much percent was
 	 - downloaded before the resume. -}
-	curl = go "curl" $ headerparams ++ [Params "-L -C - -# -o"]
+	curl = go "curl" $ headerparams ++ quietopt "-s" ++
+		[Params "-f -L -C - -# -o"]
 	go cmd opts = boolSystem cmd $
 		options++opts++[File file, File url]
-
-{- Downloads a small file.
- -
- - Uses curl if available since it handles HTTPS better than
- - the Haskell libraries do. -}
-get :: URLString -> Headers -> IO String
-get url headers = if Build.SysConfig.curl
-	then readProcess "curl" $
-		["-s", "-L", url] ++ concatMap (\h -> ["-H", h]) headers
-	else case parseURI url of
-		Nothing -> error "url parse error"
-		Just u -> do
-			r <- request u headers GET
-			case rspCode r of
-				(2,_,_) -> return $ rspBody r
-				_ -> error $ rspReason r
+	quietopt s
+		| quiet = [Param s]
+		| otherwise = []
 
 {- Uses Network.Browser to make a http request of an url.
  - For example, HEAD can be used to check if the url exists,
@@ -135,6 +130,9 @@ get url headers = if Build.SysConfig.curl
  -
  - This does its own redirect following because Browser's is buggy for HEAD
  - requests.
+ -
+ - Unfortunately, does not handle https, so should only be used
+ - when curl is not available.
  -}
 request :: URI -> Headers -> RequestMethod -> IO (Response String)
 request url headers requesttype = go 5 url

@@ -25,7 +25,7 @@ seek = [withWords start]
 start :: [String] -> CommandStart
 start ws = do
 	let name = unwords ws
-	showStart "dead " name
+	showStart "dead" name
 	u <- Remote.nameToUUID name
 	next $ perform u
 

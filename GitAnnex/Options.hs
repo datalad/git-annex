@@ -53,8 +53,15 @@ options = Option.common ++
 	] ++ Option.matcher
   where
 	setnumcopies v = maybe noop
-		(\n -> Annex.changeGitConfig $ \c -> c { annexNumCopies = n })
+		(\n -> Annex.changeState $ \s -> s { Annex.forcenumcopies = Just n })
 		(readish v)
 	setgitconfig v = Annex.changeGitRepo =<< inRepo (Git.Config.store v)
-
 	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
+
+keyOptions :: [Option]
+keyOptions = 
+	[ Option ['A'] ["all"] (NoArg (Annex.setFlag "all"))
+		"operate on all versions of all files"
+	, Option ['U'] ["unused"] (NoArg (Annex.setFlag "unused"))
+		"operate on files found by last run of git-annex unused"
+	]

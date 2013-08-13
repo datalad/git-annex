@@ -27,6 +27,10 @@ getM p (x:xs) = maybe (getM p xs) (return . Just) =<< p x
 anyM :: Monad m => (a -> m Bool) -> [a] -> m Bool
 anyM p = liftM isJust . firstM p
 
+allM :: Monad m => (a -> m Bool) -> [a] -> m Bool
+allM _ [] = return True
+allM p (x:xs) = p x <&&> allM p xs
+
 {- Runs an action on values from a list until it succeeds. -}
 untilTrue :: Monad m => [a] -> (a -> m Bool) -> m Bool
 untilTrue = flip anyM

@@ -7,8 +7,6 @@
 
 module Command.ReKey where
 
-import System.PosixCompat.Files
-
 import Common.Annex
 import Command
 import qualified Annex
@@ -17,7 +15,6 @@ import Annex.Content
 import qualified Command.Add
 import Logs.Web
 import Logs.Location
-import Config
 import Utility.CopyFile
 
 def :: [Command]
@@ -49,18 +46,14 @@ perform file oldkey newkey = do
 			return True
 	next $ cleanup file oldkey newkey
 
-{- Make a hard link to the old key content, to avoid wasting disk space. -}
+{- Make a hard link to the old key content (when supported),
+ - to avoid wasting disk space. -}
 linkKey :: Key -> Key -> Annex Bool
 linkKey oldkey newkey = getViaTmpUnchecked newkey $ \tmp -> do
 	src <- calcRepo $ gitAnnexLocation oldkey
-	ifM (liftIO $ doesFileExist tmp)
+	liftIO $ ifM (doesFileExist tmp)
 		( return True
-		, ifM crippledFileSystem
-			( liftIO $ copyFileExternal src tmp
-			, do
-				liftIO $ createLink src tmp
-				return True
-			)
+		, createLinkOrCopy src tmp
 		)
 
 cleanup :: FilePath -> Key -> Key -> CommandCleanup

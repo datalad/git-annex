@@ -8,10 +8,12 @@
 {-# LANGUAGE FlexibleContexts, TypeFamilies, QuasiQuotes #-}
 {-# LANGUAGE MultiParamTypeClasses, TemplateHaskell #-}
 {-# LANGUAGE OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP #-}
 
 module Assistant.WebApp.Form where
 
 import Types.Remote (RemoteConfigKey)
+import Assistant.WebApp.Types
 
 import Yesod hiding (textField, passwordField)
 import Yesod.Form.Fields as F
@@ -24,15 +26,22 @@ import Data.Text (Text)
  -
  - Required fields are still checked by Yesod.
  -}
-textField :: RenderMessage master FormMessage => Field sub master Text
+textField :: MkField Text
 textField = F.textField
 	{ fieldView = \theId name attrs val _isReq -> [whamlet|
 <input id="#{theId}" name="#{name}" *{attrs} type="text" value="#{either id id val}">
 |]
 	}
 
+readonlyTextField :: MkField Text
+readonlyTextField = F.textField
+	{ fieldView = \theId name attrs val _isReq -> [whamlet|
+<input id="#{theId}" name="#{name}" *{attrs} type="text" value="#{either id id val}" readonly="true">
+|]
+	}
+
 {- Also without required attribute. -}
-passwordField :: RenderMessage master FormMessage => Field sub master Text
+passwordField :: MkField Text
 passwordField = F.passwordField
 	{ fieldView = \theId name attrs val _isReq -> toWidget [hamlet|
 <input id="#{theId}" name="#{name}" *{attrs} type="password" value="#{either id id val}">
@@ -40,7 +49,11 @@ passwordField = F.passwordField
 	}
 
 {- Makes a note widget be displayed after a field. -}
+#if MIN_VERSION_yesod(1,2,0)
+withNote :: (Monad m, ToWidget (HandlerSite m) a) => Field m v -> a -> Field m v
+#else
 withNote :: Field sub master v -> GWidget sub master () -> Field sub master v
+#endif
 withNote field note = field { fieldView = newview }
   where
 	newview theId name attrs val isReq = 
@@ -48,7 +61,11 @@ withNote field note = field { fieldView = newview }
 		in [whamlet|^{fieldwidget}&nbsp;&nbsp;<span>^{note}</span>|]
 
 {- Note that the toggle string must be unique on the form. -}
+#if MIN_VERSION_yesod(1,2,0)
+withExpandableNote :: (Monad m, ToWidget (HandlerSite m) w) => Field m v -> (String, w) -> Field m v
+#else
 withExpandableNote :: Field sub master v -> (String, GWidget sub master ()) -> Field sub master v
+#endif
 withExpandableNote field (toggle, note) = withNote field $ [whamlet|
 <a .btn data-toggle="collapse" data-target="##{ident}">
   #{toggle}
@@ -62,7 +79,11 @@ data EnableEncryption = SharedEncryption | NoEncryption
 	deriving (Eq)
 
 {- Adds a check box to an AForm to control encryption. -}
+#if MIN_VERSION_yesod(1,2,0)
+enableEncryptionField :: (RenderMessage site FormMessage) => AForm (HandlerT site IO) EnableEncryption
+#else
 enableEncryptionField :: RenderMessage master FormMessage => AForm sub master EnableEncryption
+#endif
 enableEncryptionField = areq (selectFieldList choices) "Encryption" (Just SharedEncryption)
   where
 	choices :: [(Text, EnableEncryption)]

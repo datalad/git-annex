@@ -16,11 +16,12 @@ import Data.List
 import Data.Maybe
 import Control.Applicative
 
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 import Data.Char
 import qualified System.FilePath.Posix as Posix
 #else
 import qualified "MissingH" System.Path as MissingH
+import System.Posix.Files
 #endif
 
 import Utility.Monad
@@ -37,7 +38,7 @@ import Utility.UserInfo
  - no normalization is done.
  -}
 absNormPath :: FilePath -> FilePath -> Maybe FilePath
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 absNormPath dir path = MissingH.absNormPath dir path
 #else
 absNormPath dir path = Just $ combine dir path
@@ -131,7 +132,9 @@ prop_relPathDirToFile_regressionTest = same_dir_shortcurcuits_at_difference
 	 - location, but it's not really the same directory.
 	 - Code used to get this wrong. -}
 	same_dir_shortcurcuits_at_difference =
-		relPathDirToFile "/tmp/r/lll/xxx/yyy/18" "/tmp/r/.git/annex/objects/18/gk/SHA256-foo/SHA256-foo" == "../../../../.git/annex/objects/18/gk/SHA256-foo/SHA256-foo"
+		relPathDirToFile (joinPath [pathSeparator : "tmp", "r", "lll", "xxx", "yyy", "18"])
+			(joinPath [pathSeparator : "tmp", "r", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"])
+				== joinPath ["..", "..", "..", "..", ".git", "annex", "objects", "18", "gk", "SHA256-foo", "SHA256-foo"]
 
 {- Given an original list of paths, and an expanded list derived from it,
  - generates a list of lists, where each sublist corresponds to one of the
@@ -179,7 +182,12 @@ searchPath command
 	| otherwise = getSearchPath >>= getM indir
   where
 	indir d = check $ d </> command
-	check f = ifM (doesFileExist f) ( return (Just f), return Nothing )
+	check f = firstM doesFileExist
+#ifdef mingw32_HOST_OS
+		[f, f ++ ".exe"]
+#else
+		[f]
+#endif
 
 {- Checks if a filename is a unix dotfile. All files inside dotdirs
  - count as dotfiles. -}
@@ -195,7 +203,7 @@ dotfile file
 {- Converts a DOS style path to a Cygwin style path. Only on Windows.
  - Any trailing '\' is preserved as a trailing '/' -}
 toCygPath :: FilePath -> FilePath
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 toCygPath = id
 #else
 toCygPath p
@@ -209,4 +217,22 @@ toCygPath p
   	fixtrailing s
 		| hasTrailingPathSeparator p = Posix.addTrailingPathSeparator s
 		| otherwise = s
+#endif
+
+{- Maximum size to use for a file in a specified directory.
+ -
+ - Many systems have a 255 byte limit to the name of a file, 
+ - so that's taken as the max if the system has a larger limit, or has no
+ - limit.
+ -}
+fileNameLengthLimit :: FilePath -> IO Int
+#ifdef mingw32_HOST_OS
+fileNameLengthLimit _ = return 255
+#else
+fileNameLengthLimit dir = do
+	l <- fromIntegral <$> getPathVar dir FileNameLimit
+	if l <= 0
+		then return 255
+		else return $ minimum [l, 255]
+  where
 #endif

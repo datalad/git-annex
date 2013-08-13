@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes, CPP #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings, CPP #-}
 
 module Assistant.WebApp.Configurators where
 
@@ -16,7 +16,7 @@ import Assistant.XMPP.Client
 #endif
 
 {- The main configuration screen. -}
-getConfigurationR :: Handler RepHtml
+getConfigurationR :: Handler Html
 getConfigurationR = ifM (inFirstRun)
 	( redirect FirstRepositoryR
 	, page "Configuration" (Just Configuration) $ do
@@ -28,7 +28,7 @@ getConfigurationR = ifM (inFirstRun)
 		$(widgetFile "configurators/main")
 	)
 
-getAddRepositoryR :: Handler RepHtml
+getAddRepositoryR :: Handler Html
 getAddRepositoryR = page "Add Repository" (Just Configuration) $ do
 	let repolist = repoListDisplay mainRepoSelector
 	$(widgetFile "configurators/addrepository")

@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+If the assistant is not running, I can successfully open the git-annex application, which will trigger my browser to open a new tab with the assistant interface.
+
+However, once that has been done one time, there appears to be no way to get back to the assistant if the tab is closed.  Attempting to open the application again while the assistant is running in the background results in nothing happening at all. 
+
+### What steps will reproduce the problem?
+
+1. Open git-annex.app
+2. See assistant and then close the browser tab
+3. Open git-annex.app again
+4. Nothing happens
+
+### What version of git-annex are you using? On what operating system?
+
+Version 4.20130723-ge023649 on OS X 10.8.4.
+
+### Please provide any additional information below.
+
+From .git/annex/daemon.log:
+
+[[!format sh """
+[2013-07-28 00:01:08 CDT] main: starting assistant version 4.20130723-ge023649
+
+(scanning...) [2013-07-28 00:01:08 CDT] Watcher: Performing startup scan
+(started...)
+"""]]
+
+> [[done]]; I added the `&` to git-annex-shell.
+> Hopefully that does not cause any other unwanted behavior..
+> --[[Joey]]

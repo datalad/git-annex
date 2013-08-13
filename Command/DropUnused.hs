@@ -7,7 +7,6 @@
 
 module Command.DropUnused where
 
-import Logs.Unused
 import Common.Annex
 import Command
 import qualified Annex
@@ -15,6 +14,7 @@ import qualified Command.Drop
 import qualified Remote
 import qualified Git
 import qualified Option
+import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 
 def :: [Command]
 def = [withOptions [Command.Drop.fromOption] $
@@ -32,9 +32,8 @@ perform key = maybe droplocal dropremote =<< Remote.byNameWithUUID =<< from
   where
 	dropremote r = do
 		showAction $ "from " ++ Remote.name r
-		ok <- Remote.removeKey r key
-		next $ Command.Drop.cleanupRemote key r ok
-	droplocal = Command.Drop.performLocal key (Just 0) Nothing -- force drop
+		Command.Drop.performRemote key Nothing r
+	droplocal = Command.Drop.performLocal key Nothing Nothing
 	from = Annex.getField $ Option.name Command.Drop.fromOption
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform

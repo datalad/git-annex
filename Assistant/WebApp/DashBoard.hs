@@ -23,15 +23,15 @@ import Types.Key
 import qualified Remote
 import qualified Git
 
-import Text.Hamlet
+import qualified Text.Hamlet as Hamlet
 import qualified Data.Map as M
 import Control.Concurrent
 
 {- A display of currently running and queued transfers. -}
 transfersDisplay :: Bool -> Widget
 transfersDisplay warnNoScript = do
-	webapp <- lift getYesod
-	current <- lift $ M.toList <$> getCurrentTransfers
+	webapp <- liftH getYesod
+	current <- liftH $ M.toList <$> getCurrentTransfers
 	queued <- take 10 <$> liftAssistant getTransferQueue
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
 	let transfers = simplifyTransfers $ current ++ queued
@@ -62,12 +62,12 @@ simplifyTransfers (v@(t1, _):r@((t2, _):l))
  - body is. To get the widget head content, the widget is also 
  - inserted onto the getDashboardR page.
  -}
-getTransfersR :: NotificationId -> Handler RepHtml
+getTransfersR :: NotificationId -> Handler Html
 getTransfersR nid = do
 	waitNotifier getTransferBroadcaster nid
 
 	p <- widgetToPageContent $ transfersDisplay False
-	hamletToRepHtml $ [hamlet|^{pageBody p}|]
+	giveUrlRenderer $ [hamlet|^{pageBody p}|]
 
 {- The main dashboard. -}
 dashboard :: Bool -> Widget
@@ -77,7 +77,7 @@ dashboard warnNoScript = do
 	let transferlist = transfersDisplay warnNoScript
 	$(widgetFile "dashboard/main")
 
-getDashboardR :: Handler RepHtml
+getDashboardR :: Handler Html
 getDashboardR = ifM (inFirstRun)
 	( redirect ConfigurationR
 	, page "" (Just DashBoard) $ dashboard True
@@ -88,16 +88,16 @@ headDashboardR :: Handler ()
 headDashboardR = noop
 
 {- Same as DashboardR, except no autorefresh at all (and no noscript warning). -}
-getNoScriptR :: Handler RepHtml
+getNoScriptR :: Handler Html
 getNoScriptR = page "" (Just DashBoard) $ dashboard False
 
 {- Same as DashboardR, except with autorefreshing via meta refresh. -}
-getNoScriptAutoR :: Handler RepHtml
+getNoScriptAutoR :: Handler Html
 getNoScriptAutoR = page "" (Just DashBoard) $ do
 	let ident = NoScriptR
 	let delayseconds = 3 :: Int
 	let this = NoScriptAutoR
-	toWidgetHead $(hamletFile $ hamletTemplate "dashboard/metarefresh")
+	toWidgetHead $(Hamlet.hamletFile $ hamletTemplate "dashboard/metarefresh")
 	dashboard False
 
 {- The javascript code does a post. -}

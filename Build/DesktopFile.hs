@@ -1,4 +1,4 @@
-{- Generating and installing a desktop menu entry file
+{- Generating and installing a desktop menu entry file and icon,
  - and a desktop autostart file. (And OSX equivilants.)
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
@@ -48,11 +48,14 @@ inDestDir f = do
 
 writeFDODesktop :: FilePath -> IO ()
 writeFDODesktop command = do
-	datadir <- ifM systemwideInstall ( return systemDataDir, userDataDir )
-	installMenu command
-		=<< inDestDir (desktopMenuFilePath "git-annex" datadir)
+	systemwide <- systemwideInstall
 
-	configdir <- ifM systemwideInstall ( return systemConfigDir, userConfigDir )
+	datadir <- if systemwide then return systemDataDir else userDataDir
+	menufile <- inDestDir (desktopMenuFilePath "git-annex" datadir)
+	icondir <- inDestDir (iconDir datadir)
+	installMenu command menufile "doc" icondir
+
+	configdir <- if systemwide then return systemConfigDir else userConfigDir
 	installAutoStart command 
 		=<< inDestDir (autoStartPath "git-annex" configdir)
 

@@ -13,8 +13,8 @@ module Assistant.Threads.NetWatcher where
 import Assistant.Common
 import Assistant.Sync
 import Utility.ThreadScheduler
-import Remote.List
 import qualified Types.Remote as Remote
+import Assistant.DaemonStatus
 
 #if WITH_DBUS
 import Utility.DBus
@@ -125,7 +125,7 @@ listenWicdConnections client callback =
 handleConnection :: Assistant ()
 handleConnection = reconnectRemotes True =<< networkRemotes
 
-{- Finds network remotes. -}
+{- Network remotes to sync with. -}
 networkRemotes :: Assistant [Remote]
-networkRemotes = liftAnnex $
-	filter (isNothing . Remote.localpath) <$> remoteList
+networkRemotes = filter (isNothing . Remote.localpath) . syncRemotes
+	<$> getDaemonStatus

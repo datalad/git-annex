@@ -29,7 +29,7 @@ gpgcmd = fromMaybe "gpg" SysConfig.gpg
 
 stdParams :: [CommandParam] -> IO [String]
 stdParams params = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	-- Enable batch mode if GPG_AGENT_INFO is set, to avoid extraneous
 	-- gpg output about password prompts. GPG_BATCH is set by the test
 	-- suite for a similar reason.
@@ -77,7 +77,7 @@ pipeStrict params input = do
  - Note that to avoid deadlock with the cleanup stage,
  - the reader must fully consume gpg's input before returning. -}
 feedRead :: [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 feedRead params passphrase feeder reader = do
 	-- pipe the passphrase into gpg on a fd
 	(frompipe, topipe) <- createPipe

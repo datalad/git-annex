@@ -15,7 +15,7 @@ import qualified Annex
 import qualified Command.Add
 
 def :: [Command]
-def = [notDirect $ notBareRepo $ command "import" paramPaths seek
+def = [notBareRepo $ command "import" paramPaths seek
 	SectionCommon "move and add files from outside git working copy"]
 
 seek :: [CommandSeek]

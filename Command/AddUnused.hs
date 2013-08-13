@@ -8,10 +8,10 @@
 module Command.AddUnused where
 
 import Common.Annex
-import Logs.Unused
 import Logs.Location
 import Command
 import qualified Command.Add
+import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Types.Key
 
 def :: [Command]

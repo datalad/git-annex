@@ -20,6 +20,7 @@ import Utility.Parallel
 import qualified Git
 import qualified Git.Branch
 import qualified Git.Command
+import qualified Git.Ref
 import qualified Remote
 import qualified Types.Remote as Remote
 import qualified Annex.Branch
@@ -112,8 +113,12 @@ pushToRemotes' now notifypushes remotes = do
 			<*> getUUID
 	let (xmppremotes, normalremotes) = partition isXMPPRemote remotes
 	ret <- go True branch g u normalremotes
-	forM_ xmppremotes $ \r ->
-		sendNetMessage $ Pushing (getXMPPClientID r) (CanPush u)
+	unless (null xmppremotes) $ do
+		shas <- liftAnnex $ map fst <$>
+			inRepo (Git.Ref.matchingWithHEAD
+				[Annex.Branch.fullname, Git.Ref.headRef])
+		forM_ xmppremotes $ \r -> sendNetMessage $
+			Pushing (getXMPPClientID r) (CanPush u shas)
 	return ret
   where
 	go _ Nothing _ _ _ = return [] -- no branch, so nothing to do

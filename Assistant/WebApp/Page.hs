@@ -15,8 +15,7 @@ import Assistant.WebApp.Types
 import Assistant.WebApp.SideBar
 import Utility.Yesod
 
-import Yesod
-import Text.Hamlet
+import qualified Text.Hamlet as Hamlet
 import Data.Text (Text)
 
 data NavBarItem = DashBoard | Configuration | About
@@ -43,14 +42,14 @@ selectNavBar = ifM (inFirstRun) (return firstRunNavBar, return defaultNavBar)
 
 {- A standard page of the webapp, with a title, a sidebar, and that may
  - be highlighted on the navbar. -}
-page :: Html -> Maybe NavBarItem -> Widget -> Handler RepHtml
+page :: Hamlet.Html -> Maybe NavBarItem -> Widget -> Handler Html
 page title navbaritem content = customPage navbaritem $ do
 	setTitle title
 	sideBarDisplay
 	content
 
 {- A custom page, with no title or sidebar set. -}
-customPage :: Maybe NavBarItem -> Widget -> Handler RepHtml
+customPage :: Maybe NavBarItem -> Widget -> Handler Html
 customPage navbaritem content = do
 	webapp <- getYesod
 	navbar <- map navdetails <$> selectNavBar
@@ -62,7 +61,7 @@ customPage navbaritem content = do
 		addScript $ StaticR js_bootstrap_modal_js
 		addScript $ StaticR js_bootstrap_collapse_js
 		$(widgetFile "page")
-	hamletToRepHtml $(hamletFile $ hamletTemplate "bootstrap")
+	giveUrlRenderer $(Hamlet.hamletFile $ hamletTemplate "bootstrap")
   where
 	navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)
 

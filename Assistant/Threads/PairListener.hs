@@ -37,6 +37,7 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 	go reqs cache sock = liftIO (getmsg sock []) >>= \msg -> case readish msg of
 		Nothing -> go reqs cache sock
 		Just m -> do
+			debug ["received", show msg]
 			sane <- checkSane msg
 			(pip, verified) <- verificationCheck m
 				=<< (pairingInProgress <$> getDaemonStatus)

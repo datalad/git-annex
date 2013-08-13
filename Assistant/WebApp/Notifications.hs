@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell, OverloadedStrings, RankNTypes #-}
+{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 #if defined VERSION_yesod_default
 #if ! MIN_VERSION_yesod_default(1,1,0)
@@ -23,7 +23,6 @@ import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.Yesod
 
-import Yesod
 import Data.Text (Text)
 import qualified Data.Text as T
 #ifndef WITH_OLD_YESOD

@@ -1,0 +1,19 @@
+One of my Windows fixes yesterday got the test suite close to sort of
+working on Windows, and I spent all day today pounding on it. Fixed
+numerous bugs, and worked around some weird Windows behaviors -- like
+recursively deleting a directory sometimes fails with a permission denied
+error about a file in it, and leaves behind an empty directory. (What!?)
+The most important bug I fixed caused CR to leak into files in the
+git-annex branch from Windows, during a union merge, which was not a good
+thing at all.
+
+At the end of the day, I only have 6 remaining failing test cases on
+Windows. Half of them are some problem where running `git annex sync`
+from the test suite stomps on PATH somehow and prevents xargs from working.
+The rest are probably real bugs in the directory (again something to do
+with recursive directory deletion, hmmm..), hook, and rsync
+special remotes on Windows. I'm punting on those 6 for now, they'll be
+skipped on Windows.
+
+Should be worth today's pain to know in the future when I break
+something that I've oh-so-painfully gotten working on Windows.

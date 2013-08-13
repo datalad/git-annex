@@ -1,6 +1,6 @@
 {- git-annex command
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,9 +17,11 @@ import Annex.UUID
 import qualified Option
 import Logs.Presence
 import Logs.Transfer
+import GitAnnex.Options
+import Types.Key
 
 def :: [Command]
-def = [withOptions options $ command "move" paramPaths seek
+def = [withOptions moveOptions $ command "move" paramPaths seek
 	SectionCommon "move content of files to/from another repository"]
 
 fromOption :: Option
@@ -28,29 +30,40 @@ fromOption = Option.field ['f'] "from" paramRemote "source remote"
 toOption :: Option
 toOption = Option.field ['t'] "to" paramRemote "destination remote"
 
-options :: [Option]
-options = [fromOption, toOption]
+moveOptions :: [Option]
+moveOptions = [fromOption, toOption] ++ keyOptions
 
 seek :: [CommandSeek]
-seek = [withField toOption Remote.byNameWithUUID $ \to ->
-		withField fromOption Remote.byNameWithUUID $ \from ->
-			withFilesInGit $ whenAnnexed $ start to from True]
+seek = 
+	[ withField toOption Remote.byNameWithUUID $ \to ->
+	  withField fromOption Remote.byNameWithUUID $ \from ->
+	  withKeyOptions (startKey to from True) $
+	  withFilesInGit $ whenAnnexed $ start to from True
+	]
 
 start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> CommandStart
-start to from move file (key, _) = do
+start to from move file (key, _) = start' to from move (Just file) key
+
+startKey :: Maybe Remote -> Maybe Remote -> Bool -> Key -> CommandStart
+startKey to from move key = start' to from move Nothing key
+
+start' :: Maybe Remote -> Maybe Remote -> Bool -> AssociatedFile -> Key -> CommandStart
+start' to from move afile key = do
 	noAuto
 	case (from, to) of
 		(Nothing, Nothing) -> error "specify either --from or --to"
-		(Nothing, Just dest) -> toStart dest move file key
-		(Just src, Nothing) -> fromStart src move file key
+		(Nothing, Just dest) -> toStart dest move afile key
+		(Just src, Nothing) -> fromStart src move afile key
 		(_ ,  _) -> error "only one of --from or --to can be specified"
   where
 	noAuto = when move $ whenM (Annex.getState Annex.auto) $ error
 		"--auto is not supported for move"
 
-showMoveAction :: Bool -> FilePath -> Annex ()
-showMoveAction True file = showStart "move" file
-showMoveAction False file = showStart "copy" file
+showMoveAction :: Bool -> Key -> AssociatedFile -> Annex ()
+showMoveAction True _ (Just file) = showStart "move" file
+showMoveAction False _ (Just file) = showStart "copy" file
+showMoveAction True key Nothing = showStart "move" (key2file key)
+showMoveAction False key Nothing = showStart "copy" (key2file key)
 
 {- Moves (or copies) the content of an annexed file to a remote.
  -
@@ -61,17 +74,17 @@ showMoveAction False file = showStart "copy" file
  - A file's content can be moved even if there are insufficient copies to
  - allow it to be dropped.
  -}
-toStart :: Remote -> Bool -> FilePath -> Key -> CommandStart
-toStart dest move file key = do
+toStart :: Remote -> Bool -> AssociatedFile -> Key -> CommandStart
+toStart dest move afile key = do
 	u <- getUUID
 	ishere <- inAnnex key
 	if not ishere || u == Remote.uuid dest
 		then stop -- not here, so nothing to do
 		else do
-			showMoveAction move file
-			next $ toPerform dest move key file
-toPerform :: Remote -> Bool -> Key -> FilePath -> CommandPerform
-toPerform dest move key file = moveLock move key $ do
+			showMoveAction move key afile
+			next $ toPerform dest move key afile
+toPerform :: Remote -> Bool -> Key -> AssociatedFile -> CommandPerform
+toPerform dest move key afile = moveLock move key $ do
 	-- Checking the remote is expensive, so not done in the start step.
 	-- In fast mode, location tracking is assumed to be correct,
 	-- and an explicit check is not done, when copying. When moving,
@@ -87,8 +100,8 @@ toPerform dest move key file = moveLock move key $ do
 			stop
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
-			ok <- upload (Remote.uuid dest) key (Just file) noRetry $
-				Remote.storeKey dest key (Just file)
+			ok <- upload (Remote.uuid dest) key afile noRetry $
+				Remote.storeKey dest key afile
 			if ok
 				then do
 					Remote.logStatus dest key InfoPresent
@@ -117,14 +130,14 @@ toPerform dest move key file = moveLock move key $ do
  - If the current repository already has the content, it is still removed
  - from the remote.
  -}
-fromStart :: Remote -> Bool -> FilePath -> Key -> CommandStart
-fromStart src move file key
+fromStart :: Remote -> Bool -> AssociatedFile -> Key -> CommandStart
+fromStart src move afile key
 	| move = go
 	| otherwise = stopUnless (not <$> inAnnex key) go
   where
 	go = stopUnless (fromOk src key) $ do
-		showMoveAction move file
-		next $ fromPerform src move key file
+		showMoveAction move key afile
+		next $ fromPerform src move key afile
 
 fromOk :: Remote -> Key -> Annex Bool
 fromOk src key
@@ -137,16 +150,16 @@ fromOk src key
 		remotes <- Remote.keyPossibilities key
 		return $ u /= Remote.uuid src && elem src remotes
 
-fromPerform :: Remote -> Bool -> Key -> FilePath -> CommandPerform
-fromPerform src move key file = moveLock move key $
+fromPerform :: Remote -> Bool -> Key -> AssociatedFile -> CommandPerform
+fromPerform src move key afile = moveLock move key $
 	ifM (inAnnex key)
 		( handle move True
 		, handle move =<< go
 		)
   where
-	go = download (Remote.uuid src) key (Just file) noRetry $ \p -> do
+	go = download (Remote.uuid src) key afile noRetry $ \p -> do
 		showAction $ "from " ++ Remote.name src
-		getViaTmp key $ \t -> Remote.retrieveKeyFile src key (Just file) t p
+		getViaTmp key $ \t -> Remote.retrieveKeyFile src key afile t p
 	handle _ False = stop -- failed
 	handle False True = next $ return True -- copy complete
 	handle True True = do -- finish moving

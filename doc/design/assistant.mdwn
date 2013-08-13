@@ -5,6 +5,8 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
 
 ## roadmap
 
+kickstarter year
+
 * Month 1 "like dropbox": [[!traillink inotify]] [[!traillink syncing]]
 * Month 2 "shiny webapp": [[!traillink webapp]] [[!traillink progressbars]]
 * Month 3 "easy setup": [[!traillink configurators]] [[!traillink pairing]]
@@ -16,11 +18,24 @@ and use cases to add. Feel free to chip in with comments! --[[Joey]]
 * Month 8: [[!traillink Android]]
 * Month 9: [[screencasts|videos]] and polishing
 * Month 10: bugfixing, [[Android]] webapp
+* Month 11: [[!traillink Windows]] porting, finishing touches
+* Month 12: [presentation at SELF2013](http://www.southeastlinuxfest.org/), finishing touches
 
-We are, approximately, here:
+[sustaining git-annex development](https://campaign.joeyh.name/) year
+(starts September 2013).
 
-* Month 11: [[Android]] and [[!traillink Windows]] porting
-* Month 12: finishing touches
+* Month 1 [[!traillink encrypted_git_remotes]]
+* Month 2 [[!traillink disaster_recovery]]
+* Month 3 user-driven features and polishing
+* Month 4 improve special remote interface & git-annex enhancement contest
+* Month 5 [[!traillink xmpp_security]]
+* Month 6 Windows assistant and webapp
+* Month 7 user-driven features and polishing
+* Month 8 [[!traillink gpgkeys]] [[!traillink sshpassword]]
+* Month 9 get [[Android]] out of beta
+* Month 10 user-driven features and polishing
+* Month 11 [[!traillink chunks]] [[!traillink deltas]]
+* Month 12 user-driven features and polishing
 
 ## porting
 
@@ -32,7 +47,6 @@ We are, approximately, here:
 
 * [[rate_limiting]]
 * [[partial_content]]
-* [[encrypted_git_remotes]]
 * [[deltas]]
 * [[leftovers]]
 * [[other todo items|todo]]

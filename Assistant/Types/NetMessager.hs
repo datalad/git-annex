@@ -9,15 +9,17 @@ module Assistant.Types.NetMessager where
 
 import Common.Annex
 import Assistant.Pairing
+import Git.Types
 
+import qualified Data.Text as T
+import qualified Data.Set as S
+import qualified Data.Map as M
+import qualified Data.DList as D
 import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
 import Data.ByteString (ByteString)
 import qualified Data.ByteString.Char8 as B8
 import Data.Text (Text)
-import qualified Data.Text as T
-import qualified Data.Set as S
-import qualified Data.Map as M
 
 {- Messages that can be sent out of band by a network messager. -}
 data NetMessage 
@@ -37,7 +39,7 @@ type ClientID = Text
 
 data PushStage
 	-- indicates that we have data to push over the out of band network
-	= CanPush UUID
+	= CanPush UUID [Sha]
 	-- request that a git push be sent over the out of band network
 	| PushRequest UUID
 	-- indicates that a push is starting
@@ -58,9 +60,17 @@ type SequenceNum = Int
 {- NetMessages that are important (and small), and should be stored to be
  - resent when new clients are seen. -}
 isImportantNetMessage :: NetMessage -> Maybe ClientID
-isImportantNetMessage (Pushing c (CanPush _)) = Just c
+isImportantNetMessage (Pushing c (CanPush _ _)) = Just c
 isImportantNetMessage (Pushing c (PushRequest _)) = Just c
 isImportantNetMessage _ = Nothing
+
+{- Checks if two important NetMessages are equivilant.
+ - That is to say, assuming they were sent to the same client,
+ - would it do the same thing for one as for the other? -}
+equivilantImportantNetMessages :: NetMessage -> NetMessage -> Bool
+equivilantImportantNetMessages (Pushing _ (CanPush _ _)) (Pushing _ (CanPush _ _)) = True
+equivilantImportantNetMessages (Pushing _ (PushRequest _)) (Pushing _ (PushRequest _)) = True
+equivilantImportantNetMessages _ _ = False
 
 readdressNetMessage :: NetMessage -> ClientID -> NetMessage
 readdressNetMessage (PairingNotification stage _ uuid) c = PairingNotification stage c uuid
@@ -85,16 +95,19 @@ logClientID c = T.concat [T.take 1 c, T.pack $ show $ T.length c]
 
 {- Things that initiate either side of a push, but do not actually send data. -}
 isPushInitiation :: PushStage -> Bool
-isPushInitiation (CanPush _) = True
 isPushInitiation (PushRequest _) = True
 isPushInitiation (StartingPush _) = True
 isPushInitiation _ = False
 
+isPushNotice :: PushStage -> Bool
+isPushNotice (CanPush _ _) = True
+isPushNotice _ = False
+
 data PushSide = SendPack | ReceivePack
-	deriving (Eq, Ord)
+	deriving (Eq, Ord, Show)
 
 pushDestinationSide :: PushStage -> PushSide
-pushDestinationSide (CanPush _) = ReceivePack
+pushDestinationSide (CanPush _ _) = ReceivePack
 pushDestinationSide (PushRequest _) = SendPack
 pushDestinationSide (StartingPush _) = ReceivePack
 pushDestinationSide (ReceivePackOutput _ _) = SendPack
@@ -114,6 +127,8 @@ mkSideMap gen = do
 getSide :: PushSide -> SideMap a -> a
 getSide side m = m side
 
+type Inboxes = TVar (M.Map ClientID (Int, D.DList NetMessage))
+
 data NetMessager = NetMessager
 	-- outgoing messages
 	{ netMessages :: TChan NetMessage
@@ -123,12 +138,11 @@ data NetMessager = NetMessager
 	, sentImportantNetMessages :: TMVar (M.Map ClientID (S.Set NetMessage))
 	-- write to this to restart the net messager
 	, netMessagerRestart :: MSampleVar ()
-	-- only one side of a push can be running at a time
-	, netMessagerPushRunning :: SideMap (TMVar (Maybe ClientID))
-	-- incoming messages related to a running push
-	, netMessagesPush :: SideMap (TChan NetMessage)
-	-- incoming push messages, deferred to be processed later
-	, netMessagesPushDeferred :: SideMap (TMVar (S.Set NetMessage))
+	-- queue of incoming messages that request the initiation of pushes
+	, netMessagerPushInitiations :: SideMap (TMVar [NetMessage])
+	-- incoming messages containing data for a running
+	-- (or not yet started) push
+	, netMessagerInboxes :: SideMap Inboxes
 	}
 
 newNetMessager :: IO NetMessager
@@ -137,6 +151,5 @@ newNetMessager = NetMessager
 	<*> atomically (newTMVar M.empty)
 	<*> atomically (newTMVar M.empty)
 	<*> newEmptySV
-	<*> mkSideMap (newTMVar Nothing)
-	<*> mkSideMap newTChan
-	<*> mkSideMap (newTMVar S.empty)
+	<*> mkSideMap newEmptyTMVar
+	<*> mkSideMap (newTVar M.empty)

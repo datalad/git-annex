@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkx5V3MTbzCXS3J7Mn9FEq8M9bPPYMkAHY"
+ nickname="Pedro"
+ subject="comment 4"
+ date="2013-05-29T18:48:10Z"
+ content="""
+I agree with your assessment for the traditional git-annex, as it's an extension of git. For the assistant (in direct mode at least) it seems like broken behavior, there will be files that exist on one side but not the other and files that have the same content on one side but not the other.
+
+I just had a look and unfortunately there doesn't seem to be a general way to do inode to path lookup in UNIX, so an inode cache would really be needed. It would look something like:
+
+* On inotify CREATE detect that the file has other hardlinked instances, find out if they are in the repository by keeping a inode->path cache of all files
+* When the file is a hardlink to another file already in the repository commit some kind of special file to git that states \"hardlink to /path/to/otherfile\" and add metadata to the original file saying what files are hardlinks to it
+* When a remote gets a special file after a sync it will itself run a \"ln /path/to/otherfile /path/to/newfile\" or alteratively a copy when the two paths span filesystems or the filesystem is crippled
+* When a crippled remote gets a write to a file with hardlinks, it will replicate those writes to the other files (this is where the metadata is needed)
+* When a crippled remote does a write to a file with hardlinks that file becomes independent in the remotes with hardlinks since the content is now different between the two (or more) files.
+
+This does get pretty hairy with the corner cases. Right now the simple case of \"sync between two non-crippled filesystems\" shows pretty surprising results though so I'd argue something needs to change. I think that for direct mode to really be a \"transparent folder sync\" kind of solution this should be fixed.
+"""]]

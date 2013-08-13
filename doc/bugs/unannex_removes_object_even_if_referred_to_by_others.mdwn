@@ -16,3 +16,5 @@ git-annex built from git on Tue Mar 12 15:58:36 2013 -0400
 From commit: 70b7555eaf9ac5f88bb137985d93bed8d5a434e8
 
 On Debian Sid
+
+> [[done]]; duplicate bug report

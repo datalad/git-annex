@@ -1,5 +1,4 @@
-The git-annex assistant is being
-[crowd funded on Kickstarter](http://www.kickstarter.com/projects/joeyh/git-annex-assistant-like-dropbox-but-with-your-own/).
+Work on the git-annex assistant is [crowdfunded](https://campaign.joeyh.name/).
 I'll be blogging about my progress here on a semi-daily basis.
 
 [[!sidebar content="""

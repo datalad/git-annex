@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010,2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@
 module Annex.Content (
 	inAnnex,
 	inAnnexSafe,
+	inAnnexCheck,
 	lockContent,
 	getViaTmp,
 	getViaTmpChecked,
@@ -56,7 +57,11 @@ import Annex.ReplaceFile
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
-inAnnex = inAnnex' id False $ liftIO . doesFileExist
+inAnnex key = inAnnexCheck key $ liftIO . doesFileExist
+
+{- Runs an arbitrary check on a key's content. -}
+inAnnexCheck :: Key -> (FilePath -> Annex Bool) -> Annex Bool
+inAnnexCheck key check = inAnnex' id False check key
 
 {- Generic inAnnex, handling both indirect and direct mode.
  -
@@ -87,14 +92,14 @@ inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
   where
 	go f = liftIO $ openforlock f >>= check
 	openforlock f = catchMaybeIO $
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		openFd f ReadOnly Nothing defaultFileFlags
 #else
 		return ()
 #endif
 	check Nothing = return is_missing
 	check (Just h) = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
 		closeFd h
 		return $ case v of
@@ -111,11 +116,11 @@ inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
  - it. (If the content is not present, no locking is done.) -}
 lockContent :: Key -> Annex a -> Annex a
 lockContent key a = do
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 	a
 #else
 	file <- calcRepo $ gitAnnexLocation key
-	bracketIO (openforlock file >>= lock) unlock a
+	bracketIO (openforlock file >>= lock) unlock (const a)
   where
 	{- Since files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
@@ -205,8 +210,7 @@ checkDiskSpace destination key alreadythere = do
 	case (free, keySize key) of
 		(Just have, Just need) -> do
 			let ok = (need + reserve <= have + alreadythere) || force
-			unless ok $ do
-				liftIO $ print (need, reserve, have, alreadythere)
+			unless ok $
 				needmorespace (need + reserve - have - alreadythere)
 			return ok
 		_ -> return True

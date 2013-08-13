@@ -18,3 +18,5 @@ add an rsync.net repo
 
 # End of transcript or log.
 """]]
+
+> [[done]]; the OSX gpg was broken for a while, now fixed. --[[Joey]]
