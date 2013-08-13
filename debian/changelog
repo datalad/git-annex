@@ -1,5 +1,7 @@
-git-annex (4.20130802) unstable; urgency=low
+git-annex (4.20130802~bpo70+1) wheezy-backports; urgency=low
 
+  * Wheezy backport. Fix build dependency on libghc-network-protocol-xmpp-dev
+    (allow the version in wheezy to be used, despite it being a bit buggy).
   * dropunused behavior change: Now refuses to drop the last copy of a
     file, unless you use the --force.
     This was the last place in git-annex that could remove data referred
