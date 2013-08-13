@@ -5,4 +5,4 @@ This has similarities to the "trash" on a desktop. It might also be nice to
 * configure a maximum amount of space of the "trash"
 * have a way to see the contents of the trash to easily recover deleted files
 
-Maybe it would make sense to just move dropped files to the desktops trash?
+Maybe it would make sense to just move dropped files to the desktops trash? "git annex trash" as an alternative to drop?
