@@ -27,8 +27,7 @@ lrwxrwxrwx 1 walter walter 210 Aug 13 12:16 IMG_4230.JPG -> ../../../../.git/ann
 
 ### What steps will reproduce the problem?
 
-`git annex get 2013/08/01/IMG_4230.JPG`
-
+I'm not really sure; I will test later whether this happens on other computers.
 
 ### What version of git-annex are you using? On what operating system?
     git-annex version: 4.20130812-gc590455
