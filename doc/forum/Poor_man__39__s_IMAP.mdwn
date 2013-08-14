@@ -2,5 +2,5 @@ I have an e-mail server configured to save my mail in ~/Maildir on an account th
 
 I tried setting it up with the webUI to the assistant but it only offers encrypted storage[1] on the remote server. I looked into setting it up manually but "git-annex does not notice when files are added to remote rsync repositories."[2]
 
-[1] http://git-annex.branchable.com/bugs/Remote_repositories_have_to_be_setup_encrypted/ 
+[1] http://git-annex.branchable.com/bugs/Remote_repositories_have_to_be_setup_encrypted/  
 [2] from comments on http://git-annex.branchable.com/special_remotes/rsync/
