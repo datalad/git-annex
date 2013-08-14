@@ -192,7 +192,8 @@ subdirectories).
 
   By default, importing two files with the same contents from two different
   locations will result in both files being added to the repository.
-  (With most backends, only one copy of the data will be stored.)
+  (With all checksumming backends, including the default SHA256E,
+  only one copy of the data will be stored.)
 
   To not delete files from the import location, use the
   --duplicate option. This could allow importing the same files repeatedly
@@ -201,8 +202,8 @@ subdirectories).
   repositories.
 
   The --deduplicate option can be used to alter this behavior, making
-  files whose content has already been seen by git-annex not be added
-  to the repository, but just be deleted.
+  only files whose content has been seen before by git-annex be added
+  to the repository. Duplicate files will be deleted from the import location.
 
   The --clean-duplicates option does not import any new files, but any files
   found in the import location that are duplicates of content in the annex
