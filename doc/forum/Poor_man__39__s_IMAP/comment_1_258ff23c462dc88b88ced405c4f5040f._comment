@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="220.244.41.108"
+ subject="comment 1"
+ date="2013-08-14T06:45:56Z"
+ content="""
+I'd say that git-annex is the wrong tool.
+
+OfflineIMAP ([[http://offlineimap.org]]) is simple to set up, is easy to secure over ssh and does exactly what you want.
+
+"""]]
