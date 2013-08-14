@@ -19,7 +19,7 @@ You can now add your *on-the-go* computer as a remote on your *home* computer. U
     ssh-keygen -t rsa
     ssh-copy-id "me@localhost -p 2201"
     cd ~/annex
-    git annex remote add on-the-go ssh://me@localhost:2201/home/myuser/annex
+    git remote add on-the-go ssh://me@localhost:2201/home/myuser/annex
 
 Now you can run normal annex operations, as long as the port forwarding shell is running³.
 
