@@ -1,3 +1,9 @@
+git-annex (4.20130816) UNRELEASED; urgency=low
+
+  * Debian: Run the builtin test suite as an autopkgtest.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 15 Aug 2013 15:47:52 +0200
+
 git-annex (4.20130815) unstable; urgency=low
 
   * assistant, watcher: .gitignore files and other git ignores are now
