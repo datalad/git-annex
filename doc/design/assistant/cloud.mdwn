@@ -1,0 +1,45 @@
+The [[syncing]] design assumes the network is connected. But it's often
+not in these pre-IPV6 days, so the cloud needs to be used to bridge between
+LANS.
+
+## The cloud notification problem (**done**)
+
+Alice and Bob have repos, and there is a cloud remote they both share.
+Alice adds a file; the assistant transfers it to the cloud remote.
+How does Bob find out about it?
+
+There are two parts to this problem. Bob needs to find out that there's
+been a change to Alice's git repo. Then he needs to pull from Alice's git repo,
+or some other repo in the cloud she pushed to. Once both steps are done,
+the assistant will transfer the file from the cloud to Bob.
+
+* dvcs-autosync uses xmppp; all repos need to have the same xmpp account
+  configured, and send self-messages. An alternative would be to have
+  different accounts that join a channel or message each other. Still needs
+  account configuration.
+* irc could be used. With a default irc network, and an agreed-upon channel,
+  no configuration should be needed. IRC might be harder to get through
+  some firewalls, and is prone to netsplits, etc. IRC networks have reasons
+  to be wary of bots using them. Only basic notifications could be done over
+  irc, as it has little security.
+* When there's a ssh server involved, code could be run on it to notify
+  logged-in clients. But this is not a general solution to this problem.
+* pubsubhubbub does not seem like an option; its hubs want to pull down
+  a feed over http.
+
+See [[xmpp]] for design of git-annex's use of xmpp for push notifications.
+
+## storing git repos in the cloud **done for XMPP**
+
+Of course, one option is to just use github etc to store the git repo.
+
+Two things can store git repos in Amazon S3:
+* <http://gabrito.com/post/storing-git-repositories-in-amazon-s3-for-high-availability>
+* <http://wiki.cs.pdx.edu/oss2009/index/projects/gits3.html>
+
+Another option is to not store the git repo in the cloud, but push/pull
+peer-to-peer. When peers cannot directly talk to one-another, this could be
+bounced through something like XMPP. This is **done** for [[xmpp]]!
+
+Another option: Use <https://github.com/blake2-ppc/git-remote-gcrypt> to store
+git repo encrypted on cloud storage.

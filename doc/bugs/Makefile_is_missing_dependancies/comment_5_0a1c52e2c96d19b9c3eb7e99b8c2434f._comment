@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 5"
+ date="2011-03-23T16:14:22Z"
+ content="""
+Actually I may have just been stupid and should have read the man page on statfs...
+
+<pre>
+jtang@x00:~/develop/git-annex $ git diff
+diff --git a/StatFS.hsc b/StatFS.hsc
+index 8b453dc..e10b2dd 100644
+--- a/StatFS.hsc
++++ b/StatFS.hsc
+@@ -53,7 +53,7 @@ import Foreign.C.String
+ import Data.ByteString (useAsCString)
+ import Data.ByteString.Char8 (pack)
+ 
+-#if defined (__FreeBSD__)
++#if defined (__FreeBSD__) || defined (__APPLE__)
+ # include <sys/param.h>
+ # include <sys/mount.h>
+ #else
+@@ -84,8 +84,8 @@ data CStatfs
+ #ifdef UNKNOWN
+ #warning free space checking code not available for this OS
+ #else
+-#if defined(__FreeBSD__)
+-foreign import ccall unsafe \"sys/mount.h statfs\"
++#if defined(__FreeBSD__) || defined (__APPLE__)
++foreign import ccall unsafe \"sys/mount.h statfs64\"
+ #else
+ foreign import ccall unsafe \"sys/vfs.h statfs64\"
+ #endif
+</pre>
+
+yields this...
+
+<pre>
+jtang@x00:~/develop/git-annex $ ghci StatFS.hs                                                                                                                                    
+GHCi, version 6.12.3: http://www.haskell.org/ghc/  :? for help
+Loading package ghc-prim ... linking ... done.
+Loading package integer-gmp ... linking ... done.
+Loading package base ... linking ... done.
+Loading package ffi-1.0 ... linking ... done.
+[1 of 1] Compiling StatFS           ( StatFS.hs, interpreted )
+Ok, modules loaded: StatFS.
+*StatFS> s <- getFileSystemStats \".\"
+Loading package bytestring-0.9.1.7 ... linking ... done.
+*StatFS> s
+Just (FileSystemStats {fsStatBlockSize = 4096, fsStatBlockCount = 244106668, fsStatByteCount = 999860912128, fsStatBytesFree = 423097798656, fsStatBytesAvailable = 422835654656, fsStatBytesUsed = 576763113472})
+*StatFS> 
+</pre>
+
+
+we could just stick another if defined (__APPLE__) instead of what I previously had and it looks like it will do the right thing on OSX.
+
+
+"""]]

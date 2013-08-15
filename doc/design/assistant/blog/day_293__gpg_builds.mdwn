@@ -1,0 +1,32 @@
+Two gpg fixes today. The OSX Mtn Lion builds were pulling in a build of gpg
+that wanted a gpg-agent to be installed in /usr/local or it wouldn't work.
+I had to build my own gpg on OSX to work around this. I am pondering making
+the OSX dmg builds pull down the gpg source and build their own binary,
+so issues on the build system can't affect it. But would really rather not,
+since maintaining your own version of every dependency on every
+OS is hard (pity about there still being so many OS's without sane package
+management).
+
+On Android, which I have not needed to touch for a month, gpg was built
+with --enable-minimal, which turned out to not be necessary and was
+limiting the encryption algorythms included, and led to
+interoperability problems for some. Fixed that gpg build too.
+
+Also fixed an ugly bug in the webapp when setting up a rsync repository.
+It would configure `~/.ssh/authorized_keys` on the server to force
+git-annex-shell to be run. Which doesn't work for rsync. I didn't notice
+this before because it doesn't affect ssh servers that already have a ssh
+setup that allows accessing them w/o a password.
+
+Spent a while working on a bug that can occur in a non-utf8 locale
+when using special characters in the directory name of a ssh remote.
+I was able to reproduce it, but have not worked out how to fix it; encoding
+issues like this are always tricky.
+
+Added something to the walkthrough to help convince people that yes, you
+can use tags and branches with git-annex just like with regular git. One of
+those things that is so obvious to the developer writing the docs 
+that it's hard to realize it will be a point of concern.
+
+Seems like there is a release worth of changes already, so I plan to push
+it out tomorrow.

@@ -1,0 +1,23 @@
+Got fairly far along in my triage of my backlog, looking through everything
+that happened after January 23rd. Still 39 or so items to look at.
+
+There have been several reports of problems with ssh password prompts.
+I'm beginning to think the assistant may need to prompt for the password
+when setting up a ssh remote. This should be handled by `ssh-askpass` or
+similar, but some Linux users probably don't have it installed, and there
+seems to be no widely used OSX equivalent.
+
+---
+
+Fixed several bugs today, all involving (gasp) direct mode.
+
+The tricky one involved renaming or deleting files in direct mode.
+Currently nothing removes the old filename from the direct mode
+mapping, and this could result in the renamed or deleted file
+unexpectedly being put back into the tree when content is downloaded.
+
+To deal with this, it now assumes that direct mode mappings may be out of
+date compared to the tree, and does additional checks to catch
+inconsistencies. While that works well enough for the assistant,
+I'd also like to make the `pre-commit` hook update the mappings for files
+that are changed. That's needed to handle things like `git mv`.

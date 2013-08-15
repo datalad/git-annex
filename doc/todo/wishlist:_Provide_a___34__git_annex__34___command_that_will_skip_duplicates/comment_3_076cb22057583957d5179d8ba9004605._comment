@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkjvjLHW9Omza7x1VEzIFQ8Z5honhRB90I"
+ nickname="Asheesh"
+ subject="Duplication of the filenames is what I am concerned about"
+ date="2011-04-29T11:48:22Z"
+ content="""
+For what it's worth, yes, I want to actually forget I ever had the same file in the filesystem with a duplicated name. I'm not just aiming to clean up the disk's space usage; I'm also aiming to clean things up so that navigating the filesystem is easier.
+
+I can write my own script to do that based on the symlinks' target (and I wrote something along those lines), but I still think it'd be nicer if git-annex supported this use case.
+
+Perhaps:
+
+<pre>git annex drop --by-contents</pre>
+
+could let me remove a file from git-annex if the contents are available through a different name. (Right now, \"git annex drop\" requires the name *and* contents match.)
+
+-- Asheesh.
+"""]]

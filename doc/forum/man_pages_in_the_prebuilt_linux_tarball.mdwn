@@ -1,0 +1,1 @@
+Is there an easy way for a noob to get the man pages, after installing the prebuilt tarball?

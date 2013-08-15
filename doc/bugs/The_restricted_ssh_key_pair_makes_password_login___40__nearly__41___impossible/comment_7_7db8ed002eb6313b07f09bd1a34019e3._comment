@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 7"
+ date="2013-04-13T22:48:55Z"
+ content="""
+@Florian, it seems very unlikely that ssh would go off and pick a **utterly random file** to use as the key. ssh generally tries to be consistent, and secure, and that would be neither. 
+
+Can you paste the `ssh -vv` output when it does it?
+"""]]

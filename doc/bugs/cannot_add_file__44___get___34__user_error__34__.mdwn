@@ -1,0 +1,32 @@
+What steps will reproduce the problem?
+
+I can reproduce it locally:
+
+    % annex -d add Eigene\ Bilder/
+    [2013-03-19 15:44:01 CET] read: git ["--git-dir=/Users/fschulze/Bilder/.git","--work-tree=/Users/fschulze/Bilder","ls-files","--others","--exclude-standard","-z","--","Eigene Bilder/"]
+    [2013-03-19 15:44:01 CET] read: git ["--git-dir=/Users/fschulze/Bilder/.git","--work-tree=/Users/fschulze/Bilder","diff","--name-only","--diff-filter=T","-z","--","Eigene Bilder/"]
+    add Eigene Bilder/20070311/Bild023.jpg [2013-03-19 15:44:01 CET] chat: git ["--git-dir=/Users/fschulze/Bilder/.git","--work-tree=/Users/fschulze/Bilder","check-attr","-z","--    stdin","annex.backend","annex.numcopies","--"]
+    (checksum...) [2013-03-19 15:44:01 CET] read: sha512sum ["/Users/fschulze/Bilder/.git/annex/tmp/Bild02366551.jpg"]
+
+git-annex: user error (sha512sum ["/Users/fschulze/Bilder/.git/annex/tmp/Bild02366551.jpg"] exited 127)
+failed
+
+What is the expected output? What do you see instead?
+
+The file isn't added.
+
+What version of git-annex are you using? On what operating system?
+
+OS X from dmg
+
+    git-annex version: 4.20130314
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
+
+> The OSX app is now changed so that git-annex is a wrapper
+> script using runshell. This allows putting `git-annex.app/Contents/MacOS`
+> into PATH and using git-annex, and it will find all the libraries and
+> utilities bundled with it. [[done]] --[[Joey]]

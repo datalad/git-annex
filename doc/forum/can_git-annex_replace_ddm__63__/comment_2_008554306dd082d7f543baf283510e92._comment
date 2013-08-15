@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://dieter-be.myopenid.com/"
+ nickname="dieter"
+ subject="comment 2"
+ date="2011-02-16T21:32:04Z"
+ content="""
+thanks Joey,
+
+is it possible to run some git annex command that tells me, for a specific directory, which files are available in an other remote? (and which remote, and which filenames?)
+I guess I could run that, do my own policy thingie, and run `git annex get` for the files I want.
+
+For your podcast use case (and some of my use cases) don't you think git [annex] might actually be overkill?  For example your podcasts use case, what value does git annex give over a simple rsync/rm script?
+such a script wouldn't even need a data store to store its state, unlike git. it seems simpler and cleaner to me.
+
+for the mpd thing, check http://alip.github.com/mpdcron/ (bad project name, it's a plugin based \"event handler\")
+you should be able to write a simple plugin for mpdcron that does what you want (or even interface with mpd yourself from perl/python/.. to use its idle mode to get events)
+
+Dieter
+"""]]

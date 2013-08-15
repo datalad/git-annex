@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 10"
+ date="2013-03-06T20:35:43Z"
+ content="""
+I've been revisiting the XMPP stuff this week, and today I fixed at least 3 problems that would keep XMPP sync from happening reliably. This would affect machines that are using XMPP and are sometimes disconnected from the net (or suspended). Nothing caused a sync to happen when restarting the assistant, or resuming from a network disconnection. This could result in both files not showing up, and file contents not being transferred, depending on the case hit.
+
+I think it explains everything in this bug report, hopefully.
+
+(All XMPP nodes sync with all other nodes, BTW.)
+"""]]

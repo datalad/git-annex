@@ -1,0 +1,48 @@
+<h4>What steps will reproduce the problem?</h4>
+<pre><code>    git init /tmp/test
+    cd /tmp/test
+    git annex init
+    touch òó ō
+    git annex add òó ō
+    git annex find --include='*'
+</code></pre>
+
+<h4>What is the expected output? What do you see instead?</h4>
+Only <tt>ō</tt> is listed. Files containing ISO8859-15 characters that are not in ASCII-7, such as <tt>òó</tt>, are not listed by
+<code>git annex find --include='*'</code>. On the other hand, <code>git annex find --in=here</code> lists both.
+
+<h4>What version of git-annex are you using? On what operating system?</h4>
+git-annex 4.20130227, on Debian GNU/Linux (sid, i386).
+
+<h4>Please provide any additional information below.</h4>
+<pre><code>    ~$ locale
+    LANG=en_US.UTF-8
+    LANGUAGE=en
+    LC_CTYPE="en_US.UTF-8"
+    LC_NUMERIC=C
+    LC_TIME=en_DK.UTF-8
+    LC_COLLATE="en_US.UTF-8"
+    LC_MONETARY="en_US.UTF-8"
+    LC_MESSAGES="en_US.UTF-8"
+    LC_PAPER=sv_SE.UTF-8
+    LC_NAME=sv_SE.UTF-8
+    LC_ADDRESS=sv_SE.UTF-8
+    LC_TELEPHONE=sv_SE.UTF-8
+    LC_MEASUREMENT=sv_SE.UTF-8
+    LC_IDENTIFICATION="en_US.UTF-8"
+    LC_ALL=
+</code></pre>
+
+> Tracked this back to a bug in either the C library or the haskell
+> regex-posix wrpaper around it. I'm not sure which, but I emailed the
+> maintainer of the haskell library. It just doesn't think these
+> things are characters; even `.` fails to match them! Everything should
+> match that...
+> 
+> There are apparently quite a lot of bugs on POSIX regex libraries
+> as implemented on different systems:
+> <http://www.haskell.org/haskellwiki/Regex_Posix>
+> 
+> It seemed best to jettison this dependency entirely; I've switched it to
+> haskell's pure regex-tdfa library, which works nicely. [[done]]
+> --[[Joey]]

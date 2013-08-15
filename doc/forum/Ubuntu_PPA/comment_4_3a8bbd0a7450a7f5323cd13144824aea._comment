@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://grossmeier.net/"
+ nickname="greg"
+ subject="All PPAs are outdated"
+ date="2013-05-08T17:38:04Z"
+ content="""
+My work preinstalled Ubuntu machine is now on Raring, and even there the version of git-annex is only 3.20121112ubuntu3; too old to have the webapp option enabled :/ The two PPAs mentioned here aren't configured to build for Raring, so even though the one from François has a build from May 1st (7 days ago), it doesn't help me ;)
+
+François: mind updating your PPA to support Raring? Thanks much if you do!
+
+Either that, or I'll take the time some day to do a proper install on this machine (read: Debian). ;-)
+"""]]

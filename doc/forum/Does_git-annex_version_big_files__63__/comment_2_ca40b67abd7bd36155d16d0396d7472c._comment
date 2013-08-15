@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="karhun"
+ ip="99.20.248.32"
+ subject="comment 2"
+ date="2012-11-09T21:37:19Z"
+ content="""
+Hi
+
+Thanks for the pointer.
+
+The reason I asked about is that it says that \"git-annex allows managing files with git, without checking the file contents into git. \". So I was just trying to understand the mechanic behind the description. If it is not check into the git then probably it is not versioning the files. I assumed that it must be  merely a sync tool.
+
+
+"""]]

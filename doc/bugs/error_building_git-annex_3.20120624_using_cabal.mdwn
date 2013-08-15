@@ -1,0 +1,159 @@
+I am trying to install git-annex 3.20120624 using cabal.  My currently installed version of git-annex is 3.20120615.  After a "cabal update", the build of git-annex fails:
+
+    bram@falafel% cabal install git-annex
+    Resolving dependencies...
+    [1 of 4] Compiling Utility.SafeCommand ( /tmp/git-annex-3.20120624-4173/git-annex-3.20120624/Utility/SafeCommand.hs, /tmp/git-annex-3.20120624-4173/git-annex-3.20120624/dist/setup/Utility/SafeCommand.o )
+    [2 of 4] Compiling Build.TestConfig ( /tmp/git-annex-3.20120624-4173/git-annex-3.20120624/Build/TestConfig.hs, /tmp/git-annex-3.20120624-4173/git-annex-3.20120624/dist/setup/Build/TestConfig.o )
+    [3 of 4] Compiling Build.Configure  ( /tmp/git-annex-3.20120624-4173/git-annex-3.20120624/Build/Configure.hs, /tmp/git-annex-3.20120624-4173/git-annex-3.20120624/dist/setup/Build/Configure.o )
+    [4 of 4] Compiling Main             ( /tmp/git-annex-3.20120624-4173/git-annex-3.20120624/Setup.hs, /tmp/git-annex-3.20120624-4173/git-annex-3.20120624/dist/setup/Main.o )
+    Linking /tmp/git-annex-3.20120624-4173/git-annex-3.20120624/dist/setup/setup ...
+      checking version... 3.20120624
+      checking git... yes
+      checking git version... 1.7.9.5
+      checking cp -a... yes
+      checking cp -p... yes
+      checking cp --reflink=auto... yes
+      checking uuid generator... uuid
+      checking xargs -0... yes
+      checking rsync... yes
+      checking curl... no
+      checking wget... yes
+      checking bup... no
+      checking gpg... yes
+      checking lsof... yes
+      checking ssh connection caching... yes
+      checking sha1... sha1sum
+      checking sha512... sha512sum
+      checking sha224... sha224sum
+      checking sha384... sha384sum
+      checking sha256... sha256sum
+    Configuring git-annex-3.20120624...
+    Building git-annex-3.20120624...
+    Preprocessing executable 'git-annex' for git-annex-3.20120624...
+    [  1 of 183] Compiling Utility.Percentage ( Utility/Percentage.hs, dist/build/git-annex/git-annex-tmp/Utility/Percentage.o )
+    [  2 of 183] Compiling Utility.Dot      ( Utility/Dot.hs, dist/build/git-annex/git-annex-tmp/Utility/Dot.o )
+    [  3 of 183] Compiling Utility.ThreadLock ( Utility/ThreadLock.hs, dist/build/git-annex/git-annex-tmp/Utility/ThreadLock.o )
+    [  4 of 183] Compiling Utility.Base64   ( Utility/Base64.hs, dist/build/git-annex/git-annex-tmp/Utility/Base64.o )
+    [  5 of 183] Compiling Utility.DataUnits ( Utility/DataUnits.hs, dist/build/git-annex/git-annex-tmp/Utility/DataUnits.o )
+    [  6 of 183] Compiling Utility.JSONStream ( Utility/JSONStream.hs, dist/build/git-annex/git-annex-tmp/Utility/JSONStream.o )
+    [  7 of 183] Compiling Messages.JSON    ( Messages/JSON.hs, dist/build/git-annex/git-annex-tmp/Messages/JSON.o )
+    [  8 of 183] Compiling Build.SysConfig  ( Build/SysConfig.hs, dist/build/git-annex/git-annex-tmp/Build/SysConfig.o )
+    [  9 of 183] Compiling Types.KeySource  ( Types/KeySource.hs, dist/build/git-annex/git-annex-tmp/Types/KeySource.o )
+    [ 10 of 183] Compiling Types.UUID       ( Types/UUID.hs, dist/build/git-annex/git-annex-tmp/Types/UUID.o )
+    [ 11 of 183] Compiling Utility.State    ( Utility/State.hs, dist/build/git-annex/git-annex-tmp/Utility/State.o )
+    [ 12 of 183] Compiling Types.Messages   ( Types/Messages.hs, dist/build/git-annex/git-annex-tmp/Types/Messages.o )
+    [ 13 of 183] Compiling Types.TrustLevel ( Types/TrustLevel.hs, dist/build/git-annex/git-annex-tmp/Types/TrustLevel.o )
+    [ 14 of 183] Compiling Types.BranchState ( Types/BranchState.hs, dist/build/git-annex/git-annex-tmp/Types/BranchState.o )
+    [ 15 of 183] Compiling Git.Index        ( Git/Index.hs, dist/build/git-annex/git-annex-tmp/Git/Index.o )
+    [ 16 of 183] Compiling Utility.PartialPrelude ( Utility/PartialPrelude.hs, dist/build/git-annex/git-annex-tmp/Utility/PartialPrelude.o )
+    [ 17 of 183] Compiling Utility.Format   ( Utility/Format.hs, dist/build/git-annex/git-annex-tmp/Utility/Format.o )
+    [ 18 of 183] Compiling Utility.FileSystemEncoding ( Utility/FileSystemEncoding.hs, dist/build/git-annex/git-annex-tmp/Utility/FileSystemEncoding.o )
+    [ 19 of 183] Compiling Utility.Touch    ( dist/build/git-annex/git-annex-tmp/Utility/Touch.hs, dist/build/git-annex/git-annex-tmp/Utility/Touch.o )
+    [ 20 of 183] Compiling Utility.Monad    ( Utility/Monad.hs, dist/build/git-annex/git-annex-tmp/Utility/Monad.o )
+    [ 21 of 183] Compiling Utility.Path     ( Utility/Path.hs, dist/build/git-annex/git-annex-tmp/Utility/Path.o )
+    [ 22 of 183] Compiling Utility.SafeCommand ( Utility/SafeCommand.hs, dist/build/git-annex/git-annex-tmp/Utility/SafeCommand.o )
+    [ 23 of 183] Compiling Utility.RsyncFile ( Utility/RsyncFile.hs, dist/build/git-annex/git-annex-tmp/Utility/RsyncFile.o )
+    [ 24 of 183] Compiling Utility.Exception ( Utility/Exception.hs, dist/build/git-annex/git-annex-tmp/Utility/Exception.o )
+    [ 25 of 183] Compiling Utility.TempFile ( Utility/TempFile.hs, dist/build/git-annex/git-annex-tmp/Utility/TempFile.o )
+    [ 26 of 183] Compiling Utility.Directory ( Utility/Directory.hs, dist/build/git-annex/git-annex-tmp/Utility/Directory.o )
+    [ 27 of 183] Compiling Utility.Misc     ( Utility/Misc.hs, dist/build/git-annex/git-annex-tmp/Utility/Misc.o )
+    [ 28 of 183] Compiling Git.Types        ( Git/Types.hs, dist/build/git-annex/git-annex-tmp/Git/Types.o )
+    [ 29 of 183] Compiling Common           ( Common.hs, dist/build/git-annex/git-annex-tmp/Common.o )
+    [ 30 of 183] Compiling Utility.FileMode ( Utility/FileMode.hs, dist/build/git-annex/git-annex-tmp/Utility/FileMode.o )
+    [ 31 of 183] Compiling Git              ( Git.hs, dist/build/git-annex/git-annex-tmp/Git.o )
+    [ 32 of 183] Compiling Git.Command      ( Git/Command.hs, dist/build/git-annex/git-annex-tmp/Git/Command.o )
+    [ 33 of 183] Compiling Git.Ref          ( Git/Ref.hs, dist/build/git-annex/git-annex-tmp/Git/Ref.o )
+    [ 34 of 183] Compiling Git.FilePath     ( Git/FilePath.hs, dist/build/git-annex/git-annex-tmp/Git/FilePath.o )
+    [ 35 of 183] Compiling Utility.Matcher  ( Utility/Matcher.hs, dist/build/git-annex/git-annex-tmp/Utility/Matcher.o )
+    [ 36 of 183] Compiling Utility.Gpg      ( Utility/Gpg.hs, dist/build/git-annex/git-annex-tmp/Utility/Gpg.o )
+    [ 37 of 183] Compiling Types.Crypto     ( Types/Crypto.hs, dist/build/git-annex/git-annex-tmp/Types/Crypto.o )
+    [ 38 of 183] Compiling Types.Key        ( Types/Key.hs, dist/build/git-annex/git-annex-tmp/Types/Key.o )
+    [ 39 of 183] Compiling Types.Backend    ( Types/Backend.hs, dist/build/git-annex/git-annex-tmp/Types/Backend.o )
+    [ 40 of 183] Compiling Types.Remote     ( Types/Remote.hs, dist/build/git-annex/git-annex-tmp/Types/Remote.o )
+    [ 41 of 183] Compiling Git.Sha          ( Git/Sha.hs, dist/build/git-annex/git-annex-tmp/Git/Sha.o )
+    [ 42 of 183] Compiling Git.Branch       ( Git/Branch.hs, dist/build/git-annex/git-annex-tmp/Git/Branch.o )
+    [ 43 of 183] Compiling Git.UpdateIndex  ( Git/UpdateIndex.hs, dist/build/git-annex/git-annex-tmp/Git/UpdateIndex.o )
+    [ 44 of 183] Compiling Git.Queue        ( Git/Queue.hs, dist/build/git-annex/git-annex-tmp/Git/Queue.o )
+    [ 45 of 183] Compiling Git.Url          ( Git/Url.hs, dist/build/git-annex/git-annex-tmp/Git/Url.o )
+    [ 46 of 183] Compiling Git.Construct    ( Git/Construct.hs, dist/build/git-annex/git-annex-tmp/Git/Construct.o )
+    [ 47 of 183] Compiling Git.Config       ( Git/Config.hs, dist/build/git-annex/git-annex-tmp/Git/Config.o )
+    [ 48 of 183] Compiling Git.SharedRepository ( Git/SharedRepository.hs, dist/build/git-annex/git-annex-tmp/Git/SharedRepository.o )
+    [ 49 of 183] Compiling Git.Version      ( Git/Version.hs, dist/build/git-annex/git-annex-tmp/Git/Version.o )
+    [ 50 of 183] Compiling Utility.CoProcess ( Utility/CoProcess.hs, dist/build/git-annex/git-annex-tmp/Utility/CoProcess.o )
+    [ 51 of 183] Compiling Git.HashObject   ( Git/HashObject.hs, dist/build/git-annex/git-annex-tmp/Git/HashObject.o )
+    [ 52 of 183] Compiling Git.CatFile      ( Git/CatFile.hs, dist/build/git-annex/git-annex-tmp/Git/CatFile.o )
+    [ 53 of 183] Compiling Git.UnionMerge   ( Git/UnionMerge.hs, dist/build/git-annex/git-annex-tmp/Git/UnionMerge.o )
+    [ 54 of 183] Compiling Git.CheckAttr    ( Git/CheckAttr.hs, dist/build/git-annex/git-annex-tmp/Git/CheckAttr.o )
+    [ 55 of 183] Compiling Annex            ( Annex.hs, dist/build/git-annex/git-annex-tmp/Annex.o )
+    [ 56 of 183] Compiling Types.Option     ( Types/Option.hs, dist/build/git-annex/git-annex-tmp/Types/Option.o )
+    [ 57 of 183] Compiling Types            ( Types.hs, dist/build/git-annex/git-annex-tmp/Types.o )
+    [ 58 of 183] Compiling Messages         ( Messages.hs, dist/build/git-annex/git-annex-tmp/Messages.o )
+    [ 59 of 183] Compiling Types.Command    ( Types/Command.hs, dist/build/git-annex/git-annex-tmp/Types/Command.o )
+    [ 60 of 183] Compiling Locations        ( Locations.hs, dist/build/git-annex/git-annex-tmp/Locations.o )
+    [ 61 of 183] Compiling Common.Annex     ( Common/Annex.hs, dist/build/git-annex/git-annex-tmp/Common/Annex.o )
+    [ 62 of 183] Compiling Annex.Exception  ( Annex/Exception.hs, dist/build/git-annex/git-annex-tmp/Annex/Exception.o )
+    [ 63 of 183] Compiling Annex.BranchState ( Annex/BranchState.hs, dist/build/git-annex/git-annex-tmp/Annex/BranchState.o )
+    [ 64 of 183] Compiling Annex.CatFile    ( Annex/CatFile.hs, dist/build/git-annex/git-annex-tmp/Annex/CatFile.o )
+    [ 65 of 183] Compiling Annex.Perms      ( Annex/Perms.hs, dist/build/git-annex/git-annex-tmp/Annex/Perms.o )
+    [ 66 of 183] Compiling Annex.Journal    ( Annex/Journal.hs, dist/build/git-annex/git-annex-tmp/Annex/Journal.o )
+    [ 67 of 183] Compiling Annex.Branch     ( Annex/Branch.hs, dist/build/git-annex/git-annex-tmp/Annex/Branch.o )
+    [ 68 of 183] Compiling Crypto           ( Crypto.hs, dist/build/git-annex/git-annex-tmp/Crypto.o )
+    [ 69 of 183] Compiling Usage            ( Usage.hs, dist/build/git-annex/git-annex-tmp/Usage.o )
+    [ 70 of 183] Compiling Annex.CheckAttr  ( Annex/CheckAttr.hs, dist/build/git-annex/git-annex-tmp/Annex/CheckAttr.o )
+    [ 71 of 183] Compiling Remote.Helper.Special ( Remote/Helper/Special.hs, dist/build/git-annex/git-annex-tmp/Remote/Helper/Special.o )
+    [ 72 of 183] Compiling Logs.Presence    ( Logs/Presence.hs, dist/build/git-annex/git-annex-tmp/Logs/Presence.o )
+    [ 73 of 183] Compiling Logs.Location    ( Logs/Location.hs, dist/build/git-annex/git-annex-tmp/Logs/Location.o )
+    [ 74 of 183] Compiling Logs.Web         ( Logs/Web.hs, dist/build/git-annex/git-annex-tmp/Logs/Web.o )
+    [ 75 of 183] Compiling Annex.LockPool   ( Annex/LockPool.hs, dist/build/git-annex/git-annex-tmp/Annex/LockPool.o )
+    [ 76 of 183] Compiling Backend.SHA      ( Backend/SHA.hs, dist/build/git-annex/git-annex-tmp/Backend/SHA.o )
+    [ 77 of 183] Compiling Backend.WORM     ( Backend/WORM.hs, dist/build/git-annex/git-annex-tmp/Backend/WORM.o )
+    [ 78 of 183] Compiling Backend.URL      ( Backend/URL.hs, dist/build/git-annex/git-annex-tmp/Backend/URL.o )
+    [ 79 of 183] Compiling Assistant.ThreadedMonad ( Assistant/ThreadedMonad.hs, dist/build/git-annex/git-annex-tmp/Assistant/ThreadedMonad.o )
+    [ 80 of 183] Compiling Logs.UUIDBased   ( Logs/UUIDBased.hs, dist/build/git-annex/git-annex-tmp/Logs/UUIDBased.o )
+    [ 81 of 183] Compiling Logs.Remote      ( Logs/Remote.hs, dist/build/git-annex/git-annex-tmp/Logs/Remote.o )
+    [ 82 of 183] Compiling Utility.DiskFree ( Utility/DiskFree.hs, dist/build/git-annex/git-annex-tmp/Utility/DiskFree.o )
+    [ 83 of 183] Compiling Utility.Url      ( Utility/Url.hs, dist/build/git-annex/git-annex-tmp/Utility/Url.o )
+    [ 84 of 183] Compiling Utility.CopyFile ( Utility/CopyFile.hs, dist/build/git-annex/git-annex-tmp/Utility/CopyFile.o )
+    [ 85 of 183] Compiling Git.LsFiles      ( Git/LsFiles.hs, dist/build/git-annex/git-annex-tmp/Git/LsFiles.o )
+    [ 86 of 183] Compiling Git.AutoCorrect  ( Git/AutoCorrect.hs, dist/build/git-annex/git-annex-tmp/Git/AutoCorrect.o )
+    [ 87 of 183] Compiling Git.CurrentRepo  ( Git/CurrentRepo.hs, dist/build/git-annex/git-annex-tmp/Git/CurrentRepo.o )
+    [ 88 of 183] Compiling Utility.Daemon   ( Utility/Daemon.hs, dist/build/git-annex/git-annex-tmp/Utility/Daemon.o )
+    [ 89 of 183] Compiling Utility.LogFile  ( Utility/LogFile.hs, dist/build/git-annex/git-annex-tmp/Utility/LogFile.o )
+    [ 90 of 183] Compiling Utility.ThreadScheduler ( Utility/ThreadScheduler.hs, dist/build/git-annex/git-annex-tmp/Utility/ThreadScheduler.o )
+    [ 91 of 183] Compiling Assistant.DaemonStatus ( Assistant/DaemonStatus.hs, dist/build/git-annex/git-annex-tmp/Assistant/DaemonStatus.o )
+    [ 92 of 183] Compiling Utility.Types.DirWatcher ( Utility/Types/DirWatcher.hs, dist/build/git-annex/git-annex-tmp/Utility/Types/DirWatcher.o )
+    [ 93 of 183] Compiling Utility.INotify  ( Utility/INotify.hs, dist/build/git-annex/git-annex-tmp/Utility/INotify.o )
+    [ 94 of 183] Compiling Utility.DirWatcher ( Utility/DirWatcher.hs, dist/build/git-annex/git-annex-tmp/Utility/DirWatcher.o )
+    [ 95 of 183] Compiling Utility.Lsof     ( Utility/Lsof.hs, dist/build/git-annex/git-annex-tmp/Utility/Lsof.o )
+    [ 96 of 183] Compiling Git.Merge        ( Git/Merge.hs, dist/build/git-annex/git-annex-tmp/Git/Merge.o )
+    [ 97 of 183] Compiling Git.Filename     ( Git/Filename.hs, dist/build/git-annex/git-annex-tmp/Git/Filename.o )
+    [ 98 of 183] Compiling Git.LsTree       ( Git/LsTree.hs, dist/build/git-annex/git-annex-tmp/Git/LsTree.o )
+    [ 99 of 183] Compiling Config           ( Config.hs, dist/build/git-annex/git-annex-tmp/Config.o )
+    [100 of 183] Compiling Annex.UUID       ( Annex/UUID.hs, dist/build/git-annex/git-annex-tmp/Annex/UUID.o )
+    [101 of 183] Compiling Logs.UUID        ( Logs/UUID.hs, dist/build/git-annex/git-annex-tmp/Logs/UUID.o )
+    [102 of 183] Compiling Backend          ( Backend.hs, dist/build/git-annex/git-annex-tmp/Backend.o )
+    [103 of 183] Compiling Remote.Helper.Hooks ( Remote/Helper/Hooks.hs, dist/build/git-annex/git-annex-tmp/Remote/Helper/Hooks.o )
+    [104 of 183] Compiling Remote.Helper.Encryptable ( Remote/Helper/Encryptable.hs, dist/build/git-annex/git-annex-tmp/Remote/Helper/Encryptable.o )
+    [105 of 183] Compiling Annex.Queue      ( Annex/Queue.hs, dist/build/git-annex/git-annex-tmp/Annex/Queue.o )
+    [106 of 183] Compiling Annex.Content    ( Annex/Content.hs, dist/build/git-annex/git-annex-tmp/Annex/Content.o )
+    [107 of 183] Compiling Remote.S3        ( Remote/S3.hs, dist/build/git-annex/git-annex-tmp/Remote/S3.o )
+    [108 of 183] Compiling Remote.Directory ( Remote/Directory.hs, dist/build/git-annex/git-annex-tmp/Remote/Directory.o )
+    [109 of 183] Compiling Remote.Rsync     ( Remote/Rsync.hs, dist/build/git-annex/git-annex-tmp/Remote/Rsync.o )
+    [110 of 183] Compiling Remote.Web       ( Remote/Web.hs, dist/build/git-annex/git-annex-tmp/Remote/Web.o )
+    [111 of 183] Compiling Remote.Hook      ( Remote/Hook.hs, dist/build/git-annex/git-annex-tmp/Remote/Hook.o )
+    [112 of 183] Compiling Upgrade.V2       ( Upgrade/V2.hs, dist/build/git-annex/git-annex-tmp/Upgrade/V2.o )
+    [113 of 183] Compiling Assistant.Changes ( Assistant/Changes.hs, dist/build/git-annex/git-annex-tmp/Assistant/Changes.o )
+    
+    Assistant/Changes.hs:73:30:
+        Not in scope: `tryReadTChan'
+        Perhaps you meant `readTChan' (imported from Control.Concurrent.STM)
+    cabal: Error: some packages failed to install:
+    git-annex-3.20120624 failed during the building phase. The exception was:
+    ExitFailure 1
+
+This is using haskell-platform 2012.1.0.0~debian1 on Ubuntu 12.04.
+
+> Turns out it needs version 2.3 of the STM library. (libghc-stm-dev
+> package). I've made cabal detect an older version and skip building
+> the new `git annex watch` command, so you'll be able to build the next
+> release. [[done]] --[[Joey]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://dlaxalde.myopenid.com/"
+ nickname="dl"
+ subject="comment 1"
+ date="2012-05-31T14:36:33Z"
+ content="""
+Is there a way to have git-annex completely ignore a repository? I see that
+the `dead` command adds the uuid of the repository to `trust.log` but does
+not change `uuid.log`. Is it enough to remove the corresponding line in
+`uuid.log` and `trust.log`?
+"""]]

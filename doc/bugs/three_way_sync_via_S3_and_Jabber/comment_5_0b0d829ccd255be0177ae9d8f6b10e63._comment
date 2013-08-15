@@ -1,0 +1,61 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhjlfoU21OiXKH_MXw75Uq5EsX7LJW5p0"
+ nickname="Ian"
+ subject="comment 5"
+ date="2013-01-14T20:04:02Z"
+ content="""
+Here is the result of running `echo Foo > ~/Desktop/annex/dagon2.txt` on dagon.
+
+In dagon's daemon.log:
+<pre>
+add dagon2.txt (checksum...) (Recording state in git...)
+(Recording state in git...)
+Already up-to-date.
+To xmpp::ian.james.campbell@gmail.com
+   0bf7dc2..0182e26  git-annex -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/git-annex
+   c1e1f70..2711f11  master -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/master
+(merging refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/git-annex into git-annex...)
+Already up-to-date.
+</pre>
+
+Nothing appeared in zakaz's log. As I mentioned in the previous comment hastur doesn't seem to have a log (should this worry me?).
+
+The new file appeared on dagon and hastur but not zakaz (not even as a broken link).
+
+I tried a couple more times (dagon3 and dagon4) with the same effect.
+
+Since zakaz now appears to be the host which is playing up I then tried `echo Foo > zakaz2.2txt` on zakaz.
+
+The log on zakaz said:
+<pre>
+add zakaz2.2txt (checksum...) gpg: cannot open tty `/dev/tty': No such device or address
+gpg: cannot open tty `/dev/tty': No such device or address
+(Recording state in git...)
+(Recording state in git...)
+gpg: cannot open tty `/dev/tty': No such device or address
+gpg: cannot open tty `/dev/tty': No such device or address
+</pre>
+
+and dagon:
+<pre>
+(merging refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/git-annex into git-annex...)
+(Recording state in git...)
+Merge made by the 'recursive' strategy.
+ zakaz2.2txt |    1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 zakaz2.2txt
+(Recording state in git...)
+# On branch master
+nothing to commit (working directory clean)
+(merging refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/git-annex into git-annex...)
+(Recording state in git...)
+Already up-to-date!
+Merge made by the 'recursive' strategy.
+Already up-to-date.
+To xmpp::ian.james.campbell@gmail.com
+   d220ce6..4e8647f  git-annex -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/git-annex
+   b2a84e4..ef0a200  master -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/master
+</pre>
+
+However zakaz2.2txt is a broken symlink on both hastur and dagon.
+"""]]

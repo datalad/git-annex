@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 8"
+ date="2011-02-09T04:10:27Z"
+ content="""
+The chmod errors are because your chmod does not understand the -R argument. Only the test suite uses chmod -R. I've fixed it to modify modes manually.
+"""]]

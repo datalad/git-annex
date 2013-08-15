@@ -1,0 +1,26 @@
+First, I'm using a 2011 version because i'm getting this kind of errors from cabal install (on Fedora 16 and 17):
+
+    $ cabal install git-annex --bindir=$HOME/.local/bin
+    Resolving dependencies...
+    cabal: cannot configure git-annex-3.20120406. It requires base >=4.5 && <5
+    For the dependency on base >=4.5 && <5 there are these packages: base-4.5.0.0.
+    However none of them are available.
+    base-4.5.0.0 was excluded because of the top level dependency base -any
+
+So I installed a 2011 version and it worked.
+
+Now, when I add some files in the git annex repository I get an error:
+
+    $ git annex add Photo\ Library/2010/06/28/IMG_4926.JPG
+    add Photo Library/2010/06/28/IMG_4926.JPG (checksum...)
+    git-annex: Photo Library/2010/06/28/IMG_4926.JPG: getFileStatus: does not exist (No such file or directory)
+    failed
+    git-annex: add: 1 failed
+
+None of the other files in the same directory are a problem. The file content is not a problem either as I can move the file elsewhere and git annex add it w/o any problem. It's this file in this directory that causes the problem.
+
+Something interesting though. If I move the file elsewhere, and git annex add it, there is no problem. Now, if I git mv the file back into its original location, and git annex fix the file, the symbolic link is wrong: instead of pointing to `../../../../.git/annex/objects/somefile` it points to  `../../../annex/objects/somefile` (notice the missing `../.git/` part of the path).
+
+I can fix that by hand, and it works well, but that's very annoying. There are not much files having that bug though.
+
+[Mildred](http://mildred.fr)

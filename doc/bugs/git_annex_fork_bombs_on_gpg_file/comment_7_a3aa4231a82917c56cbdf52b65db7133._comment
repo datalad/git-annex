@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://me.tinco.nl/"
+ nickname="Tinco"
+ subject="comment 7"
+ date="2013-05-19T19:27:03Z"
+ content="""
+Hi Joey thanks for working with me on this. The result from copying one file over is 'resource vanished':
+
+    [2013-05-19 21:24:53 CEST] read: git [\"--git-dir=/Users/tinco/Documents/.git\",\"--work-tree=/Users/tinco/Documents\",\"show-ref\",\"git-annex\"]
+    [2013-05-19 21:24:53 CEST] read: git [\"--git-dir=/Users/tinco/Documents/.git\",\"--work-tree=/Users/tinco/Documents\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-05-19 21:24:53 CEST] read: git [\"--git-dir=/Users/tinco/Documents/.git\",\"--work-tree=/Users/tinco/Documents\",\"log\",\"refs/heads/git-annex..f0523a06e2eb7217d98fe2b9f6ec5afa724ccd92\",\"--oneline\",\"-n1\"]
+    [2013-05-19 21:24:53 CEST] chat: git [\"--git-dir=/Users/tinco/Documents/.git\",\"--work-tree=/Users/tinco/Documents\",\"cat-file\",\"--batch\"]
+    [2013-05-19 21:24:53 CEST] read: git [\"--git-dir=/Users/tinco/Documents/.git\",\"--work-tree=/Users/tinco/Documents\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"About Stacks.pdf\"]
+    copy About Stacks.pdf (gpg) [2013-05-19 21:24:53 CEST] chat: gpg [\"--quiet\",\"--trust-model\",\"always\",\"--decrypt\"]
+
+    git-annex: fd:12: hClose: resource vanished (Broken pipe)
+    failed
+    git-annex: copy: 1 failed
+
+
+"""]]

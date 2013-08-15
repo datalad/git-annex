@@ -1,0 +1,119 @@
+## What steps will reproduce the problem?
+
+I wanted to setup a `~/Desktop/annex` synchronised between three machines, my home desktop (`dagon`), my work desktop (`zakaz`) and my laptop (`hastur`).
+
+I set this up via the annex interface, using my gmail account and Amazon S3.
+
+## What is the expected output? What do you see instead?
+
+I expected that anything dropped into `~/Desktop/annex` on any of the three machines would be synced to the other 2.
+
+I ran:
+<pre>
+    $ echo Created on `hostname` > `hostname`.txt on each of the three machines.
+</pre>
+
+What I ended up with was:
+
+* Home desktop (`dagon`): dagon.txt (ok)
+* Work desktop (`zakaz`): zakaz.txt (ok) and hastur.txt (broken link)
+* Laptop (`hastur`): hastur.txt (ok) and zakaz.txt (broken link)
+
+In each case the local file had been detected and annexed -- "(ok)" means it is a symlink to the annex.
+
+Manually running `git annex sync` on any of the machines didn't change anything. Running `git annex copy --auto --from=DesktopAnnex` on the Work desktop synced the broken hastur.txt but dagon.txt didn't appear. Running the same on my laptop did nothing. Likewise on my home desktop it did nothing. (I'm not sure if running stuff from the CLI is valid when the assistant is running, but I couldn't see a "force refresh" option in the UI)
+
+In the `git log --oneline` my laptop and Work machines both have:
+<pre>
+3f541e5 Merge commit 'refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/master'
+cbee12b 
+dddc4f0 
+d8854e7 Merge commit 'refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/master'
+</pre>
+
+While my home desktop has:
+<pre>
+43a80d5 git-annex automatic sync
+46328db 
+d8854e7 Merge commit 'refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/master'
+</pre>
+
+There are other commits prior to d8854e7 which appear to be the same on all hosts. d8854e7 was committed in December when I first played with this stuff. All the commits after that were made today as part of the experiment above, with the exception of 43a80d5 on my home desktop with was the removal of a "Test.txt" created last year. This removal also didn't sync to the other two machines.
+
+git-annex status on my home desktop (dagon) shows:
+<pre>
+semitrusted repositories: 5
+	00000000-0000-0000-0000-000000000001 -- web
+ 	1167ef76-4791-11e2-9bfe-4319f44b8a5f -- annex on hastur
+ 	54f6febc-4791-11e2-952f-13bd7a1c79f1 -- here (annex on dagon)
+ 	552d29fe-4a86-11e2-819a-9f61585ee7a2 -- ian.james.campbell (annex on zakaz)
+ 	ad5c6a4c-4791-11e2-b9f0-53f8af10a9e6 -- DesktopAnnex
+</pre>
+(DesktopAnnex is the S3 remote, ian.james.campbell is my gmail username)
+
+However the webapp only shows 3 repos:
+<pre>
+	here (annex on dagon)
+	ian.james.campbell (annex on zakaz)
+	DesktopAnnex
+</pre>
+
+git-annex status on my laptop (hastur) shows only:
+<pre>
+	00000000-0000-0000-0000-000000000001 -- web
+ 	1167ef76-4791-11e2-9bfe-4319f44b8a5f -- here (ijc@hastur:~/Desktop/annex)
+ 	54f6febc-4791-11e2-952f-13bd7a1c79f1 -- ian.james.campbell (ijc@dagon:~/Desktop/annex)
+ 	ad5c6a4c-4791-11e2-b9f0-53f8af10a9e6 -- DesktopAnnex
+</pre>
+
+while the webapp shows:
+<pre>
+	here (ijc@hastur:~/Desktop/annex)
+	ian.james.campbell (ijc@dagon:~/Desktop/annex)
+	DesktopAnnex
+</pre>
+
+Lastly on my work desktop (zakaz) annex status shows:
+<pre>
+	00000000-0000-0000-0000-000000000001 -- web
+ 	1167ef76-4791-11e2-9bfe-4319f44b8a5f -- annex on hastur
+ 	54f6febc-4791-11e2-952f-13bd7a1c79f1 -- ian.james.campbell (annex on dagon)
+ 	552d29fe-4a86-11e2-819a-9f61585ee7a2 -- here (annex on zakaz)
+ 	ad5c6a4c-4791-11e2-b9f0-53f8af10a9e6 -- DesktopAnnex
+</pre>
+
+The webapp shows:
+<pre>
+ 	here (annex on zakaz)
+ 	ian.james.campbell (annex on dagon)
+ 	DesktopAnnex 
+</pre>
+
+git-annex sync on any of them shows:
+<pre>
+$ git annex sync
+commit  
+# On branch master
+nothing to commit (working directory clean)
+ok
+pull ian.james.campbell 
+fatal: Unable to find remote helper for 'xmpp'
+failed
+push ian.james.campbell 
+fatal: Unable to find remote helper for 'xmpp'
+failed
+git-annex: sync: 2 failed
+</pre>
+
+## What version of git-annex are you using? On what operating system?
+
+3.20121211 on Debian Sid. All machines are amd64
+
+## Please provide any additional information below.
+
+I'm not 100% sure this sort of multiway synching is supposed to work, so maybe this is just as expected. If this isn't a bug you could consider it a feature request though ;-)
+
+This issue also made me wonder about how one would go about syncing multiple unrelated annexes via XMPP. Would you need a different gmail account for each? Maybe there is a trick similar to the email local+foo@ thing?
+
+> [[done]], turned out I left XMPP git push working,
+> but had not done all the stuff around it to get reliable syncing. Now have. --[[Joey]]

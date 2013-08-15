@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.127"
+ subject="comment 2"
+ date="2012-12-28T02:46:23Z"
+ content="""
+No, linux's inotify has everything I need for direct mode.
+"""]]

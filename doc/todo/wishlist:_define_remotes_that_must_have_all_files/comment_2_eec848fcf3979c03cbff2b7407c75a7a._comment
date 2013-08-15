@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="gernot"
+ ip="87.79.209.169"
+ subject="comment 2"
+ date="2011-04-24T11:20:05Z"
+ content="""
+Right, I have thought about untrusting all but a few remotes to achieve
+something similar before and I'm sure it would kind of work. It would be more
+of an ugly workaround, however, because I would have to untrust remotes that
+are, in reality, at least semi-trusted. That's why an extra option/attribute
+for that kind of purpose/remote would be nice.
+
+Obviously I didn't see the scalability problem though. Good Point. Maybe I can
+achieve the same thing by writing a log parsing script for myself?
+
+"""]]

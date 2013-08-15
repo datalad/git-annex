@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.211"
+ subject="comment 1"
+ date="2013-01-03T18:02:21Z"
+ content="""
+Specifically, this affects only rsync special remotes. All the other ones have a check box that allows enabling encryption or not. I didn't get around to adding that for rsync due to some complications in the code. Of course, you can use `git annex initremote` at the command line to set up non-encrypted rsync remotes.
+"""]]

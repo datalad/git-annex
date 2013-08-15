@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://dieter-be.myopenid.com/"
+ nickname="dieter"
+ subject="comment 2"
+ date="2012-08-06T08:30:47Z"
+ content="""
++1 on what Richard said
+about the correctly figuring out what are valid mountpoints / devices that can be used, your current code doesn't seem very robust.
+check this out https://github.com/Dieterbe/aif/blob/develop/src/core/libs/lib-blockdevices-filesystems.sh#L213
+"""]]

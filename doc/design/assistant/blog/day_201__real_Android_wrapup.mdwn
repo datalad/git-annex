@@ -1,0 +1,38 @@
+[[!meta title="day 201  real Android wrapup"]]
+
+I got yesod-pure fully working on Android...
+
+[[!img fib.png size=400x]]
+
+As expected, this involved manually splicing some template haskell. I'm now
+confident I can port the git-annex webapp to Android this way, and that it
+will take about a week. Probably will start on that in a month or so. If
+anyone has some spare Android hardware they'd like to loan me, possibly
+sooner. (Returning loaner Asus Transformer tomorrow; thanks Mark.) Although
+I'm inclined to let the situation develop; we may just get a ghc-android
+that supports TH..
+
+Also:
+
+* Fixed several bugs in the Android installation process.
+* Committed patches for all Haskell libraries I've modified to
+  the git-annex git repo.
+* Ran the test suite on Android. It found a problem; seems `git clone`
+  of a local repository is broken in the Android environment.
+
+Non-Android:
+
+* Made the assistant check every hour if logs have grown larger than a
+  megabyte, and rotate them to avoid using too much disk space.
+* Avoided noise in log about typechanged objects when running
+  git commit in direct mode repositories. Seems `git commit`
+  has no way to shut that up, so I had to /dev/null it.
+* When run with `--debug`, the assistant now logs more information
+  about why it transfers or drops objects.
+* Found and fixed a case where moving a file to an archive directory would
+  not cause its content to be dropped.
+* Working on a bug with the assistant where moving a file out of an 
+  archive directory in direct mode sometimes ends up with a symlink
+  rather than a proper direct mode file. Have not gotten to the bottom
+  of it entirely, but it's a race, and I think the race is between
+  the direct mode mapping being updated, and the file being transferred.

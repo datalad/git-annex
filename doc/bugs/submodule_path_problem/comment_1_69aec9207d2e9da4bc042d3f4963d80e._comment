@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkywesyg6tKBZcmxJ2EMUO89DZL1LZ7Sng"
+ nickname="Peter"
+ subject="comment 1"
+ date="2012-10-16T12:02:27Z"
+ content="""
+Not quite there yet.
+
+git-annex init works now, but there is still a problem with paths:
+
+Using the same setup as previously, git-annex init now works: 
+
+    cd lib/submod
+    git annex init
+
+But adding a file failes:
+
+    git annex add big-file
+
+Output:
+
+    add big-file (checksum...) 
+    git-annex: big-file: getFileStatus: does not exist (No such file or directory)
+    failed
+    (Recording state in git...)
+    git-annex: add: 1 failed
+
+Debug:
+
+
+[2012-10-16 13:59:26 CEST] read: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"ls-files\",\"--others\",\"--exclude-standard\",\"-z\",\"--\",\"big-file\"]
+[2012-10-16 13:59:26 CEST] read: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"diff\",\"--name-only\",\"--diff-filter=T\",\"-z\",\"--\",\"big-file\"]
+add big-file [2012-10-16 13:59:26 CEST] chat: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.numcopies\",\"--\"]
+(checksum...) [2012-10-16 13:59:26 CEST] chat: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"cat-file\",\"--batch\"]
+
+git-annex: big-file: getFileStatus: does not exist (No such file or directory)
+failed
+
+    [2012-10-16 13:59:26 CEST] chat: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"hash-object\",\"-w\",\"--stdin-paths\"]
+    [2012-10-16 13:59:26 CEST] feed: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"update-index\",\"-z\",\"--index-info\"]
+    [2012-10-16 13:59:26 CEST] read: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    (Recording state in git...)
+    [2012-10-16 13:59:26 CEST] read: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"write-tree\"]
+    [2012-10-16 13:59:26 CEST] chat: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"commit-tree\",\"ed2f98d7105deed7482b3dde43426c177b360131\",\"-p\",\"refs/heads/git-annex\"]
+    [2012-10-16 13:59:26 CEST] call: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"update-ref\",\"refs/heads/git-annex\",\"df49e7bef8409dff450ce549c40f4ab429ea3144\"]
+    [2012-10-16 13:59:26 CEST] chat: git [\"--git-dir=../../.git/modules/lib/submod\",\"--work-tree=/Users/ptx/tmp/test-annex/test/lib/submod\",\"cat-file\",\"--batch\"]
+    git-annex: add: 1 failed
+"""]]

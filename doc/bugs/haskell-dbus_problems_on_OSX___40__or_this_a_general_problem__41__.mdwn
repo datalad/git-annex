@@ -1,0 +1,113 @@
+Building commit 805d50c69d40be97baa28735371778df63b5fed6
+
+<pre>
+x00:git-annex jtang$ cabal install
+Resolving dependencies...
+Configuring dbus-0.10...
+Building dbus-0.10...
+Preprocessing library dbus-0.10...
+[1 of 9] Compiling DBus.Types       ( lib/DBus/Types.hs, dist/build/DBus/Types.o )
+[2 of 9] Compiling DBus.Message     ( lib/DBus/Message.hs, dist/build/DBus/Message.o )
+[3 of 9] Compiling DBus.Wire        ( lib/DBus/Wire.hs, dist/build/DBus/Wire.o )
+[4 of 9] Compiling DBus.Address     ( lib/DBus/Address.hs, dist/build/DBus/Address.o )
+[5 of 9] Compiling DBus             ( lib/DBus.hs, dist/build/DBus.o )
+[6 of 9] Compiling DBus.Introspection ( lib/DBus/Introspection.hs, dist/build/DBus/Introspection.o )
+[7 of 9] Compiling DBus.Transport   ( lib/DBus/Transport.hs, dist/build/DBus/Transport.o )
+
+lib/DBus/Transport.hs:196:72: Not in scope: `getPeerCred'
+cabal: Error: some packages failed to install:
+dbus-0.10 failed during the building phase. The exception was:
+ExitFailure 1
+git-annex-3.20120721 depends on dbus-0.10 which failed to install.
+</pre>
+
+The above isn't a git-annex problem but a dbus problem, at first I thought I didn't have the network package installed, but did. I should probably report this problem to the haskell dbus author.
+
+On a slightly different note, based on the makefile DBUS is not enabled on OSX/BSD so I did not expect the cabal file to use dbus as well, I'm currently interested in poking at the webapp stuff ;)
+
+Although DBUS is available on OSX from macports I get the feeling that the haskell-dbus package might need some poking before it works properly.
+
+To continue, pulling, installing the dependancies (dbus is still boned) and building commit 6cecc26206c4a539999b04664136c6f785211a41
+
+<pre>
+[ 92 of 205] Compiling Utility.Url      ( Utility/Url.hs, tmp/Utility/Url.o )
+
+Utility/Url.hs:39:14: Not in scope: `parseURI'
+
+Utility/Url.hs:73:14: Not in scope: `parseURI'
+
+Utility/Url.hs:88:12: Not in scope: type constructor or class `URI'
+
+Utility/Url.hs:91:30: Not in scope: type constructor or class `URI'
+
+Utility/Url.hs:107:38: Not in scope: `parseURIReference'
+
+Utility/Url.hs:111:95: Not in scope: `relativeTo'
+make: *** [git-annex] Error 1
+</pre>
+
+Which then lead me to doing a "cabal install -f-DBus" which spits out the following when trying to link the binary
+
+<pre>
+[206 of 206] Compiling Main             ( git-annex.hs, dist/build/git-annex/git-annex-tmp/Main.o )
+Linking dist/build/git-annex/git-annex ...
+Undefined symbols for architecture x86_64:
+  "_addfds_kqueue", referenced from:
+      _s16v6_info in Kqueue.o
+  "_init_kqueue", referenced from:
+      _s16v3_info in Kqueue.o
+  "_waitchange_kqueue", referenced from:
+      _UtilityziKqueue_zdwa1_info in Kqueue.o
+ld: symbol(s) not found for architecture x86_64
+collect2: ld returned 1 exit status
+cabal: Error: some packages failed to install:
+git-annex-3.20120721 failed during the building phase. The exception was:
+ExitFailure 1
+</pre>
+
+I then just tried to build commit with 6cecc26206c4a539999b04664136c6f785211a41 (i have the needed dependancies installed), gives me this...
+
+<pre>
+x00:git-annex jtang$ make
+ghc -O2 -threaded -Wall -ignore-package monads-fd -ignore-package monads-tf -outputdir tmp -IUtility -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP --make git-annex Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
+
+Assistant/Threads/MountWatcher.hs:39:0:
+     warning: #warning Building without dbus support; will use mtab polling
+[ 92 of 205] Compiling Utility.Url      ( Utility/Url.hs, tmp/Utility/Url.o )
+
+Utility/Url.hs:98:65:
+    Couldn't match expected type `network-2.3.0.13:Network.URI.URI'
+                with actual type `URI'
+    In the second argument of `mkRequest', namely `u'
+    In the expression: mkRequest requesttype u :: Request_String
+    In an equation for `req':
+        req = mkRequest requesttype u :: Request_String
+make: *** [git-annex] Error 1
+</pre>
+
+The latest version of the network package in hackage is network-2.3.0.14 which I have installed, this might also be the reason why dbus is broken. removing network-2.3.0.14 at least makes it happy again.
+
+to remove the network-2.3.0.14 package
+
+<pre>
+ghc-pkg unregister network-2.3.0.14
+</pre>
+
+Hope the above isn't too random of bug/issue report.
+
+----
+
+going through <http://hackage.haskell.org/packages/archive/network/2.3.0.14/doc/html/Network-Socket.html> shows that getPeerCred is only available on systems where SO_PEERCRED is supported, *sigh* OSX isn't supported and thus haskell-dbus is broken. Apparently getpeerid is more portable but it isnt supported in the network package. It looks like dbus support on OSX isn't really going to work too well till haskell-dbus gets fixed on OSX (or BSD?)
+
+> Does OSX acually come with dbus by default, and can you
+> use something like `dbus-monitor` to see events when
+> plugging in removable drives? If so, this might be worth spending time
+> on.
+
+>> No OSX does not come with dbus by default, the user must install it
+
+> 
+> Currently though, dbus is not supposed to be built on non-Linux systems.
+> (Well, it might work on Freebsd or something, but I've not tried it.)
+> I've fixed the cabal file to only enable it on Linux. [[done]] --[[Joey]] 
+

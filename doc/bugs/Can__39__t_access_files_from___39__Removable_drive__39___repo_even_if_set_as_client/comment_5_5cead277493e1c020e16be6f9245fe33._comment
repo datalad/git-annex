@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 5"
+ date="2013-02-27T17:05:07Z"
+ content="""
+There is a way to fetch/drop files if you don't want to use the command line, though it's not nearly as flexible as using a command line.  If you've got a machine set as \"client\" then dragging files into a subdirectory named \"archive\" drops them, and dragging them out of that subdirectory fetches them.
+
+Honestly, moving files in and out of directories, and preferred content settings, have both been subject to the occasional regression, so there have been times this hasn't worked right, but in theory, that's how you do it.
+
+Unfortunately if you've got more than one \"client\" machine, this means adding/dropping files on one will affect them all, as file movements propagate.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 19"
+ date="2011-04-03T19:53:44Z"
+ content="""
+Git does not need to be upgraded. Git-annex needs to be upgraded to git rev 616e6f8a840ef4d99632d12a2e7ea15c3cfb1805 or newer, on all machines.
+"""]]

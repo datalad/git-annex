@@ -1,0 +1,41 @@
+What steps will reproduce the problem?
+
+> Open Webapp on Mac OSX Mountain Lion
+
+What is the expected output? What do you see instead?
+
+> I expect notification bubbles and transfer progress bars to show and update on the fly, as well as notifications to disappear when I click the X.
+> 
+> Instead, I have to reload the page after clicking an X or to see new bubbles and progress bar updates.
+
+What version of git-annex are you using? On what operating system?
+
+>     git-annex version: 3.20130107
+>     local repository version: 3
+>     default repository version: 3
+>     supported repository versions: 3
+>     upgrade supported from repository versions: 0 1 2
+> 
+> Mac OS X 10.8.2 Build 12C3006
+> 
+> Chrome Version 23.0.1271.101
+
+Please provide any additional information below.
+
+Javascript console error log says "Syntax error on localhost:5" which is this line:
+
+    <link rel="stylesheet" href="/static/css/bootstrap.css"><link rel="stylesheet" href="/static/css/bootstrap-responsive.css"><style>body{padding-top:60px;padding-bottom:40px}.sidebar-nav{padding:9px 0}</style><script src="/static/jquery.full.js"></script><script src="/static/js/bootstrap-dropdown.js"></script><script src="/static/js/bootstrap-modal.js"></script><script src="/static/js/bootstrap-collapse.js"></script><script src="/static/longpolling.js"></script><script>function longpoll_"sidebar"() {
+
+> And the bug is the quoting inside the function name.
+> 
+> I believe this affects all builds done using shakespeare-js 1.0.0.2.
+> It may be that some browsers manage to run the javascript despite the
+> quoting. Otherwise, I don't know why noone has reported this bug
+> before now.
+> 
+> I've fixed this bug in git. Your testing with tomorrow's
+> autobuild would be appreciated. --[[Joey]]
+
+>> There was a second issue as noted. I fixed that last week,
+>> and the fix is in the autobuilds if you'd like to test before
+>> the next release. [[done]] again --[[Joey]]

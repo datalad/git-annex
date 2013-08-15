@@ -1,0 +1,19 @@
+Not much available time today, only a few hours.
+
+Main thing I did was fixed up the failed push tracking to use a better data
+structure. No need for a queue of failed pushes, all it needs is a map of
+remotes that have an outstanding failed push, and a timestamp. Now it
+won't grow in memory use forever anymore. :)
+
+Finding the right thread mutex type for this turned out to be a bit of a
+challenge. I ended up with a STM TMVar, which is left empty when there are
+no pushes to retry, so the thread using it blocks until there are some. And,
+it can be updated transactionally, without races.
+
+I also fixed a bug outside the git-annex assistant code. It was possible to
+crash git-annex if a local git repository was configured as a remote, and
+the repository was not available on startup. git-annex now ignores such
+remotes. This does impact the assistant, since it is a long running process
+and git repositories will come and go. Now it ignores any that
+were not available when it started up. This will need to be dealt with when
+making it support removable drives.

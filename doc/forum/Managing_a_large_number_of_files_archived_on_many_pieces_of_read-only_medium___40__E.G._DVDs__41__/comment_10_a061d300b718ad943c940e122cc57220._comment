@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="Steve"
+ ip="92.104.175.136"
+ subject="Web remote works"
+ date="2012-11-25T22:30:46Z"
+ content="""
+Thanks for the suggestion Joey, I found a way to make the web remotes work for adding the files from existing discs.  I wound up adding a symlink farm to the repo with a link for each disk pointing at the mount point.  This way when I try to retrieve a file, I see the URL which contains the name of the disc:
+
+    $ git annex get bigfile.bin
+    get bigfile.bin (from web...) 
+    curl: (37) Couldn't open file /var/tmp/repo/storage/dvd13/bigfile.bin
+    
+      Unable to access these remotes: web
+    
+      Try making some of these repositories available:
+            00000000-0000-0000-0000-000000000001 -- web
+    failed
+    git-annex: get: 1 failed
+
+It took me a while as the version of git-annex in portage was rather old and I just didn't get around to updating git-annex on Gentoo for while.  If anybody wants to get git-annex 3.20121112 running under Gentoo I detailed the process I used at <http://git-annex.mysteryvortex.com>
+
+Now I'll have to try out the assistant!  (Though I didn't get the webapp to compile due to a shakespeare-js error)
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="203.45.2.230"
+ subject="comment 4"
+ date="2013-01-17T01:57:06Z"
+ content="""
+No problem.  Glad to be of assistance.
+
+This was actually a bug that I ran into whilst testing direct mode.  Quantifying the commands needed to reproduce was a bit of a challenge.  :-)
+
+"""]]

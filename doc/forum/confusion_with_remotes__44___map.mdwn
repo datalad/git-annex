@@ -1,0 +1,113 @@
+I'm starting out with git-annex and running into some confusion with setting up the remotes.
+
+I have three systems I'm trying to set up (domains edited):
+
+* psychosis: ssh://psychosis.foo.com/vid
+* bacon: ssh://bucket.foo.com/vid
+* bucket: ssh://bucket.bar.org/vid
+
+And one bare repository so that I can have a single place to push/pull:
+
+* origin: https://git.foo.com/jim/vid.git
+
+On psychosis:
+
+    psychosis$ git config --list | grep ^remote | sort
+    remote.bacon.annex-uuid=8f1f0898-f8c1-11e0-9bf2-b387af26ee63
+    remote.bacon.fetch=+refs/heads/*:refs/remotes/bacon/*
+    remote.bacon.url=ssh://bucket.foo.com/vid
+    remote.bucket.annex-uuid=82814942-f8e0-11e0-b053-e70a61e98e19
+    remote.bucket.fetch=+refs/heads/*:refs/remotes/bucket/*
+    remote.bucket.url=ssh://bucket.bar.org/vid
+    remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+    remote.origin.url=https://git.foo.com/jim/vid.git
+    
+    psychosis$ git annex status
+    supported backends: WORM SHA1 SHA256 SHA512 SHA224 SHA384 SHA1E SHA256E SHA512E SHA224E SHA384E URL
+    supported remote types: git S3 bup directory rsync web hook
+    known repositories: 
+            09c0b436-f8de-11e0-842f-b7644539d57f -- here (psychosis)
+            82814942-f8e0-11e0-b053-e70a61e98e19 -- bucket
+    local annex keys: 2256
+    local annex size: 449 gigabytes
+    total annex keys: 2256
+    total annex size: 449 gigabytes
+    backend usage: 
+            WORM: 2256
+
+**First point of confusion**: Why doesn't "bacon" show up in "git annex status"?  I can "git annex copy --to bacon filename" and it will copy it there.  Is there some step of setting it up that I missed?  I basically just did "git remote add bacon ssh://bucket.foo.com/vid".
+
+Now I've started setting up the remotes on each host:
+
+On bacon:
+   
+    bacon$ git config --list | grep ^remote | sort
+    remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+    remote.origin.url=https://git.foo.com/jim/vid.git
+    remote.psychosis.annex-uuid=09c0b436-f8de-11e0-842f-b7644539d57f
+    remote.psychosis.fetch=+refs/heads/*:refs/remotes/psychosis/*
+    remote.psychosis.url=ssh://psychosis.foo.com/vid
+    
+    bacon$ git annex status
+    supported backends: WORM SHA1 SHA256 SHA512 SHA224 SHA384 SHA1E SHA256E SHA512E SHA224E SHA384E URL
+    supported remote types: git S3 bup directory rsync web hook
+    known repositories: 
+            09c0b436-f8de-11e0-842f-b7644539d57f -- psychosis
+            8f1f0898-f8c1-11e0-9bf2-b387af26ee63 -- here (bacon)
+    temporary directory size: 366 megabytes (clean up with git-annex unused)
+    local annex keys: 1
+    local annex size: 308 bytes
+    total annex keys: 2256
+    total annex size: 449 gigabytes
+    backend usage: 
+            WORM: 2256
+
+On bucket:
+
+    bucket$ git config --list | grep ^remote | sort
+    remote.origin.fetch=+refs/heads/*:refs/remotes/origin/*
+    remote.origin.url=https://git.foo.com/jim/vid.git
+    remote.psychosis.annex-uuid=09c0b436-f8de-11e0-842f-b7644539d57f
+    remote.psychosis.fetch=+refs/heads/*:refs/remotes/psychosis/*
+    remote.psychosis.url=ssh://psychosis.foo.com/vid
+
+    bucket$ git annex status
+    supported backends: WORM SHA1 SHA256 SHA512 SHA224 SHA384 SHA1E SHA256E SHA512E SHA224E SHA384E URL
+    supported remote types: git S3 bup directory rsync web hook
+    known repositories: 
+            09c0b436-f8de-11e0-842f-b7644539d57f -- psychosis
+            82814942-f8e0-11e0-b053-e70a61e98e19 -- here (bucket)
+    temporary directory size: 183 megabytes (clean up with git-annex unused)
+    local annex keys: 3
+    local annex size: 550 megabytes
+    total annex keys: 2256
+    total annex size: 449 gigabytes
+    backend usage: 
+            WORM: 2256
+
+But I'm getting weird results if I try to show the map from psychosis:
+
+    psychosis$ git annex map
+    $ git annex map
+    map /vid/tv ok
+    map bacon (sshing...) 
+    ok
+    map bucket (sshing...) 
+    ok
+    map origin 
+    failed
+    map psychosis (sshing...) 
+    jim@psychosis.foo.com's password: 
+    ok
+    map psychosis (sshing...) 
+    jim@psychosis.foo.com's password: 
+    ok
+    
+      running: dot -Tx11 map.dot
+
+**Second confusion**: it's as if psychosis was considered a new remote each time?
+The generated map has psychosis listed with several redundant links:
+
+![Map](http://jim.sh/~jim/tmp/map.png)
+
+Is this some bug or do I just need to be hit with the clue bat?

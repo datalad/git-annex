@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-05-06T18:30:02Z"
+ content="""
+Unless you are forced to use a password, you should really be using a ssh key.
+
+    ssh-keygen
+    #put local .ssh/id_?sa.pub into remote .ssh/authorized_keys (which needs to be chmod 600)
+    ssh-add
+    git annex whatever
+
+"""]]

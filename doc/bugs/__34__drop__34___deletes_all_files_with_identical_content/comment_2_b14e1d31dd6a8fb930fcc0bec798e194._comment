@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlgyVag95OnpvSzQofjyX0WjW__MOMKsl0"
+ nickname="Sehr"
+ subject="comment 2"
+ date="2012-10-28T21:46:08Z"
+ content="""
+I onyl used \"--force\" for demonstration purposes. I could also set 
+
+   annex.numcopies = 0
+
+which removes the need \"force\". While this setting can be totally reasonable in certain circumstancing it seems very dangerous, that completely unrelated files might unwillingly be deleted.
+
+I agree with you, that a possible solution could be to not use a deduplicating backend. But my point is, that this needs to be either changed or documented. Because even if the user can \"fix\" this by changing his behavior, he will probably only do so AFTER he lost something.
+
+Instead of changing the program (to include a check), I would at least suggest an addition to \"drop\"'s documentation: 
+
+
+\"drop\": keep in mind, that on dedcupliocating backends, you might end up deleting more than one file. to be perfectly safe, use git-rm and git-annex dropunused.
+"""]]

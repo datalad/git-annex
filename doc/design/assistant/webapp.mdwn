@@ -1,0 +1,65 @@
+The webapp is a web server that displays a shiny interface.
+
+## performance
+
+Having the webapp open while transfers are
+running uses significant CPU just for the browser to update the progress 
+bar. Unsurprising, since the webapp is sending the browser a new `<div>`
+each time. Updating the DOM instead from javascript would avoid that;
+the webapp just needs to send the javascript either a full `<div>` or a 
+changed percentage and quantity complete to update a single progress bar.
+
+(Another reason to do this is it'll cut down on the refreshes, which 
+sometimes make browsers ignore clicks on UI elements like the pause button, 
+if the transfer display refreshes just as the click is made.)
+
+## other features
+
+* there could be a UI to export a file, which would make it be served up
+  over http by the web app
+* there could be a UI (some javascript thing) in the web browser to
+  submit urls to the web app to be added to the annex and downloaded.
+  See: [[todo/wishlist:_an_"assistant"_for_web-browsing_--_tracking_the_sources_of_the_downloads]]
+* Display the `inotify max_user_watches` exceeded message. **done**
+* Display something sane when kqueue runs out of file descriptors.
+* allow removing git remotes **done**
+* allow disabling syncing to here, which should temporarily disable all
+  local syncing. **done**
+
+## better headless support
+
+`--listen` is insecure, and using HTTPS would still not make it 100% secure
+as there would be no way for the browser to verify its certificate.
+
+I do have a better idea, but it'd be hard to implement.
+`git annex webapp --remote user@host:dir` could ssh to the remote host,
+run the webapp there, listening only on localhost, and then send the
+port the webapp chose back over the ssh connection. Then the same
+ssh connection could be reused (using ssh connection caching) to set up
+port forwarding from a port on the local host to the remote webapp.
+
+This would need to handle the first run case too, which would require
+forwarding a second port once the webapp made the repository and
+the second webapp started up.
+
+## first start **done**
+
+* make git repo **done**
+* generate a nice description like "joey@hostname Desktop/annex" **done**
+* record repository that was made, and use it next time run **done**
+* write a pid file, to prevent more than one first-start process running
+  at once **done**
+
+## security **acceptable/done**
+
+* Listen only to localhost. **done**
+* Instruct the user's web browser to open an url that contains a secret
+  token. This guards against other users on the same system. **done**
+  (I would like to avoid passwords or other authentication methods,
+  it's your local system.)
+* Don't pass the url with secret token directly to the web browser,
+  as that exposes it to `ps`. Instead, write a html file only the user can read,
+  that redirects to the webapp. **done**
+* Alternative for Linux at least would be to write a small program using
+  GTK+ Webkit, that runs the webapp, and can know what user ran it, avoiding
+  needing authentication.

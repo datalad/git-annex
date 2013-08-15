@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 1"
+ date="2013-07-18T19:37:33Z"
+ content="""
+Sorry about the delay getting to this, I've been overloaded.
+
+The link that you show:
+
+`Expressionlessm.tar -> ../.git/annex/objects/vk/mF/SHA256-s3131909--a2808d850ba2e880ac58bf622cd68edd7e72ea2775b984d52b5d5266c`
+
+.. That's not right at all.  I don't understand in the least how this could happen, and am flummoxed how to try to debug it. It just doesn't match anything I know about how the code works.
+
+If I understand you correctly, it's only happening with one particular file content.
+
+I think you either need to rule out it being due to the way you've installed git-annex, perhaps by installing the linux standalone tarball, and seeing if you can get the same behavior with that. Or you could send me the repository by email (joey@kitenet.net) and I'll see if I can reproduce it, and if so, will certianly be able to debug and fix it.
+"""]]

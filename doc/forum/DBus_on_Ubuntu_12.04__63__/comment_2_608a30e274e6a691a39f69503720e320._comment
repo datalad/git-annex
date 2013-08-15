@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.119"
+ subject="comment 2"
+ date="2012-08-25T13:11:37Z"
+ content="""
+I fnordgot to mention, cabal can be configured to not build with dbus too. The relevant incantation is:
+
+cabal install git-annex --flags=\"-Dbus\"
+"""]]

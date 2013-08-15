@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkwjBDXkP9HAQKhjTgThGOxUa1B99y_WRA"
+ nickname="Franck"
+ subject="comment 2"
+ date="2013-05-24T15:47:36Z"
+ content="""
+Thanks for your quick answer! But this is true only for servers where git-annex is installed. On a server that just does SSH, things must be different. So, I've started to use the SSH `command=` mechanism to log the commands and discovered so far four of them:
+
+ * `sh -c 'echo git-annex-probe...` and `sh -c 'mkdir -p ...` when the server is first connected by a client
+ * `rsync --server -vre.iLsf --partial-dir .rsync-partial . DIR/` and `rsync --server --sender -e31.14 --inplace . DIR//bd1/469/TEXT` when files are transfered between clients
+
+I want to derive patterns from this but if you could give them to me (ie, tell me which parts are fixed and which are variable) this will be safer. Moreover, I'm quite sure there are somme commands missing from my logs... By the way, parameter `-e31.14` to `rsync` surprises me because `-e` is supposed to set the remote shell (like `--rsh`).
+
+Cheers, Franck
+"""]]

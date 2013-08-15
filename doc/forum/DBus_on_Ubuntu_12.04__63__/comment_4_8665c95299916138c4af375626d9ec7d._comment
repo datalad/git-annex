@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.119"
+ subject="in the language of the ancients, small details matter"
+ date="2012-08-25T15:50:47Z"
+ content="""
+It seems that to cabal, \"DBus\" and \"dbus\" are different packages, and it seems you should install the latter, which has a current version of 0.10 which works and not some old 0.4 version.
+"""]]

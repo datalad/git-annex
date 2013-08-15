@@ -1,0 +1,7 @@
+Right now the assistant can have a huge list of pending transfers for certain hosts if its data is a bit outdated, or a host hasn't been synced lately. When starting up it will then attempt each transfer to said host (which will in turn fail, but at times take time to time out), possibly before doing other stuff like attempting to download new files, or copy files to online hosts.
+
+I suggest that if a transfer fails for host X, and there are other pending transfers, say to host Y and from Z, then all other pending transfers to/from X gets pushed to the back of the queue, to avoid having to wait a long time for several transfers to time out before doing useful stuff.
+
+The prime example for me was this morning, when a laptop that was turned off had a huge amount of queued transfers to it, resulting in the assistant attempting a load of transfers to that host before it retrieved a new file that I had created on another machine yesterday.
+
+[[!tag design/assistant]]

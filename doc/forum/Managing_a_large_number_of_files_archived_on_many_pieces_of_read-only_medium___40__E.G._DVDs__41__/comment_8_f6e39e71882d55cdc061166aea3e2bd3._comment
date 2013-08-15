@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="Steve"
+ ip="92.104.175.136"
+ subject="no need to merge"
+ date="2012-10-24T23:52:30Z"
+ content="""
+Albert,
+
+Thanks for feedback!  I'm glad that somebody else found the method I worked out useful.  As I'm going to try and turn it into a proper special remote, let me know if there is any particular use case or feature you'd like me to address.
+
+Note that in my testing, I found that you don't actually need to merge the DVD's branch into the local branch you are using for git annex to be able to find the files on it that are identical to files in your local branch.
+
+I haven't played around with cloning the repo, but I will try that this weekend.  I'm thinking it *might* be necessary to create local branches from the DVD remotes so that they'll get carried along when you clone the repo.
+
+As far as the repos on the DVD's not having a shared ancestry with main repo, that was a conscious choice that I made.  I wanted to add as little extra data to the DVDs as possible since I usually fill them to the brim anyway.  I didn't feel that it would be beneficial for the DVD's to know about the history of the main repo and other files that they don't contain.  Furthermore, besides all the links and history, you'd be replicating all the files in the main repo that aren't annexed.
+
+If you want to avoid the error, but still have a local branch for the DVD repos you should be able to do something like the following:
+
+<b>WARNING:</b> these commands are untested!
+<pre>
+git checkout -b disc1 disc1/master
+git checkout -b disc2 disc2/master
+</pre>
+
+Working from the original example, you should then get local branches for the DVDs that don't have a common ancestor with your master local repo.  I haven't actually tested that though.  Testing will have to wait for this weekend.
+"""]]

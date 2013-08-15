@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-06T06:32:56Z"
+ content="""
+More testing shows that only the first git commit is slow. A second commit will be fast whether or not `git-repack` has been run in between.
+"""]]

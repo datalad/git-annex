@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 1"
+ date="2012-12-16T00:10:39Z"
+ content="""
+wow, are you git annexing your whole home directory?  that sounds extreme and problematic, since everything in git annex becomes read-only!!
+
+This how to make git annex ignore something though: make git ignore it in the first place.
+
+Stop the git assistant if it's running.
+
+create a file called \".gitignore\" in the root of your annex directory; add a line to that file for everything you want git (and therefore git annex) to ignore, e.g. \".thunderbird\"
+
+
+e.g.:
+
+    echo '.thunderbird' > '.gitignore'
+
+check that file into git:
+
+
+    git add .gitignore
+    git commit -m 'check in .gitignore'
+
+Now you should be able to start up git-annex again and have it ignore .thunderbird, or any other path you put in .gitignore
+"""]]

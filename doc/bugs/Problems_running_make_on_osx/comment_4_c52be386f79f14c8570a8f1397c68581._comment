@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-02-08T19:00:14Z"
+ content="""
+I doubt that git-annex can be used with QuickCheck 1.2.0. The QuickCheck I've tested it with is 2.1.0.3 actually.
+
+I suspect you have an old version of the TestPack haskell library on your system, that is linked against QuickCheck 1.2.0. Git-annex has been tested with TestPack 2.0.0, which uses QuickCheck 2.x.
+
+In any case, you don't have to run 'make test' to build git-annex, and my comments above should make the main program compile, I expect.
+"""]]

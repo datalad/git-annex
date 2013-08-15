@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="antymat"
+ ip="77.190.74.127"
+ subject="comment 2"
+ date="2012-02-14T22:48:37Z"
+ content="""
+Thanks, joey, but I still do not know, why the file that has been (and *is*) OK according to separate sha1 and sha256 checks, has been marked 'bad' by `fsck` and moved to `.git/annex/bad`. What could be a reason for that? Could have `rsync` caused it? I know too little about internal workings of `git-annex` to answer this question.
+
+But one thing I know for certain - the false positives should *not* happen, unless something *is* wrong with the file. Otherwise, if it is unreliable, if I have to check twice, it is useless. I might as well just keep checksums of all the files and do all checks by hand...
+"""]]

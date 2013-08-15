@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="modules"
+ ip="31.150.97.85"
+ subject="comment 2"
+ date="2013-04-06T20:49:20Z"
+ content="""
+I have the same issue here and it seems to be the PATH problem with standalone tarball for noniteractive shell on remote server. Is there an easy way to setup right PATH or workaround for prebuilt tarballs?
+
+"""]]

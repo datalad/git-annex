@@ -1,0 +1,40 @@
+Hi,
+
+I just wanted to install git-annex via cabal, as described in the install document. More specifically, I did this on my Ubuntu Lucid box:
+
+    andreas@antares:~$ sudo aptitude install cabal-install
+    [...]
+    andreas@antares:~$ cabal update
+    andreas@antares:~$ cabal install quickcheck --bindir=$HOME/bin
+    andreas@antares:~$ cabal install git-annex -v --bindir=$HOME/bin
+
+However, I got this error:
+
+    /usr/bin/ghc --numeric-version
+    looking for package tool: ghc-pkg near compiler in /usr/bin
+    found package tool in /usr/bin/ghc-pkg
+    /usr/bin/ghc-pkg --version
+    /usr/bin/ghc --supported-languages
+    Reading installed packages...
+    /usr/bin/ghc-pkg dump --global
+    /usr/bin/ghc-pkg dump --user
+    Reading available packages...
+    Resolving dependencies...
+    selecting
+    cabal: cannot configure git-annex-3.20120113. It requires quickcheck >=2.1
+    There is no available version of quickcheck that satisfies >=2.1
+
+which is really strange, because quickcheck 2.4.2 is installed:
+
+    andreas@antares:~$ ls -a .cabal/lib/
+    .  ..  QuickCheck-2.4.2
+
+Any help is greatly appreciated :)
+Andreas.
+
+> QuickCheck has to be spelled in mixed case. --[[Joey]] 
+
+Sorry to disagree, this doesn't fix my problem. cabal still complains that no version >= 2.1 is available, even though 2.4.2 is installed. This problem already occurred before I explicitly installed QuickCheck. According to [[install]], the `cabal install git-annex -v --bindir=$HOME/bin` should already take care of the dependencies.
+
+>> You need to `cabal update` to get the fixed version of git-annex which
+>> spells QuickCheck correctly. [[done]] --[[Joey]]

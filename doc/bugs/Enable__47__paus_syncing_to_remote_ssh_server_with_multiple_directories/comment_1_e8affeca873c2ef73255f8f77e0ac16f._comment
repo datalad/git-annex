@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-16T21:56:37Z"
+ content="""
+Hmm, I can't quite reproduce this, but I did just fix a bug that, amoung other manifestations, caused the display of whether syncing is enabled for a remote to be wrong sometimes.
+
+Can you send a copy of your repository's .git/config file to this bug report? (That's `annex/.git/config`)
+"""]]

@@ -1,0 +1,37 @@
+Milestone: I can run `git annex assistant`, plug in a USB drive, and it
+automatically transfers files to get the USB drive and current repo back in
+sync.
+
+I decided to implement the naive scan, to find files needing to be
+transferred. So it walks through `git ls-files` and checks each file
+in turn. I've deferred less expensive, more sophisticated approaches to later.
+
+I did some work on the TransferQueue, which now keeps track of the length
+of the queue, and can block attempts to add Transfers to it if it gets too
+long. This was a nice use of STM, which let me implement that without using
+any locking.
+
+[[!format haskell """
+atomically $ do
+        sz <- readTVar (queuesize q)
+        if sz <= wantsz
+                then enqueue schedule q t (stubInfo f remote)
+                else retry -- blocks until queuesize changes
+"""]]
+
+Anyway, the point was that, as the scan finds Transfers to do,
+it doesn't build up a really long TransferQueue, but instead is blocked
+from running further until some of the files get transferred. The resulting
+interleaving of the scan thread with transfer threads means that transfers
+start fairly quickly upon a USB drive being plugged in, and kind of hides
+the innefficiencies of the scanner, which will most of the time be
+swamped out by the IO bound large data transfers.
+
+---
+
+At this point, the assistant should do a good job of keeping repositories
+in sync, as long as they're all interconnected, or on removable media
+like USB drives. There's lots more work to be done to handle use cases
+where repositories are not well-connected, but since the assistant's
+[[syncing]] now covers at least a couple of use cases, I'm ready to move
+on to the next phase. [[Webapp]], here we come!

@@ -1,0 +1,3 @@
+I tried to compile the assitant branch on Ubuntu 12.04. But i depends on the DBus libraryw hich does not compile with some glibberish errors. Is there a way to solve this?
+
+

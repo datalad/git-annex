@@ -1,0 +1,15 @@
+git annex add has problems if items start with dashes, example:
+
+-wut-a-directory-name-/file1
+
+leads to
+
+[[!format bash """
+add -wut-a-directory-name-/file1 (checksum...) sha1sum: invalid option -- 'u'
+„sha1sum --help“ gibt weitere Informationen.
+
+  git-annex: <file descriptor: 15>: hGetLine: end of file
+"""]]
+
+> This is fixed in git, at least I think I've found all cases where
+> filenames are passed to programs and escaped them. --[[Joey]] [[done]]

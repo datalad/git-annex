@@ -1,0 +1,13 @@
+when i want to
+
+    git annex get file
+
+on repo ssh://host-without-port/annex, it works, but if i want to get a file from ssh://host:5122/annex, it tries to run command
+ssh ["host:5122", "git-annex-shell 'configlist' '/annex/file'"] and fails. ssh needs the -p option to set the default port, it doesn't support host:port notation.
+this is confusing because git can handle this url correctly, and will happily clone/push/pull to/from these url.
+
+temporary workaround is to use ssh://host/annex as url and define remote.name.annex-ssh-options to "-p 5122", but we need to use this workaround when doing annex get and undo the workaround when pushing/cloning.
+
+if i had more time, i would have learned haskell and provided a patch ;)
+
+> Fixed in git! --[[Joey]] [[done]]

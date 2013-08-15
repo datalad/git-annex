@@ -1,0 +1,5 @@
+Hi!
+
+> Hi.. Please file bug reports in [[bugs]], not in the forum. 
+> Moved this post to [[bugs/Problem_with_bup:_cannot_lock_refs]]
+--[[Joey]] 

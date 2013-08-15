@@ -1,0 +1,53 @@
+What steps will reproduce the problem?
+On Arch Linux, using a cabal installation or prebuilt binaries:
+
+    git-annex get foobar
+
+The remote is an ssh URL: ssh://user@host/path/to/repo.git. Fetching the URL worked just fine.
+
+
+What is the expected output? What do you see instead?
+I expect git-annex to retrieve the file from the remote.
+Insted I see this:
+
+        get foobar (from origin...)                                              
+        git-annex-shell: user error (unrecognized option `--uuid'                                                                                       
+                                                                                 
+        Usage: git-annex-shell [-c] command [parameters ...] [option ..]         
+                                                                                 
+        Options:                                                                 
+                   --force         allow actions that may lose annexed data      
+          -F       --fast          avoid slow operations                         
+          -q       --quiet         avoid verbose output                          
+          -v       --verbose       allow verbose output (default)                
+          -d       --debug         show debug messages                           
+          -b NAME  --backend=NAME  specify key-value backend to use              
+                                                                                 
+        Commands:                                                                
+          configlist DIRECTORY          outputs relevant git configuration       
+          inannex    DIRECTORY KEY ...  checks if keys are present in the annex  
+          dropkey    DIRECTORY KEY ...  drops annexed content for specified keys 
+          recvkey    DIRECTORY KEY      runs rsync in server mode to receive content
+          sendkey    DIRECTORY KEY      runs rsync in server mode to send content
+        )                                                                        
+        rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+        rsync error: error in rsync protocol data stream (code 12) at io.c(605) [Receiver=3.0.9]
+                                                                                 
+          Unable to access these remotes: origin                                 
+                                                                                 
+          Try making some of these repositories available:                       
+                5afcfc68-aa55-11e2-b5aa-73eac1531269 -- origin (my_remote)       
+        failed                                                                   
+        git-annex: get: 1 failed
+
+
+What version of git-annex are you using? On what operating system?
+git-annex does not understand a '--version' switch and I cannot find another option to print the version. It's the latest I just installed via cabal.
+OS is Arch Linux on kernel 3.8.8
+
+> This happens if the remote server has a very old version of
+> git-annex-shell. While I would not, today, add a new option like
+> --uuid that breaks backwards compatability as happened here, 
+> I don't intend to try to make git-annex backwards compatible
+> with that old version. Not even Debian stable has such an old version of 
+> git-annex anymore, so there's no excuse not to upgrade. [[done]]

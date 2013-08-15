@@ -1,0 +1,4 @@
+It would be helpful to have a way to query things like a repository's description and trust level, without having to poke in the git-annex branch.  For example, "git annex describe ." currently clears the description but could print the current one instead.
+
+> `git annex status` now breaks down the repository list by type. [[done]]
+> --[[Joey]] 

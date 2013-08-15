@@ -1,0 +1,7 @@
+After moving some files (about 1G, some big and some small files) in and out the annex, I noticed that the size of the repository has grown quite a bit. My empty repository now is over 100 MB (even after  "git annex dropunused ..." and "git gc").
+
+Most of this size is not Git metadata but many small files in the git-annex branch that seem to hold information about files I deleted (even in the other known repositories).
+
+So is there a way to get rid of these useless but space consuming information?
+
+(Maybe there is no (elegant) way to remove the symlink versions from the Git history (is there?), but it would already be nice if those small git-annex metadata files could be removed)

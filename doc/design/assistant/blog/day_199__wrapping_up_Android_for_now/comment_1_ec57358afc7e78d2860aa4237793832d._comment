@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="Automagic photo backups"
+ date="2013-02-26T21:56:44Z"
+ content="""
+Did you investigate how hard it would be to only commit & upload once the phone is being charged _and_ on WiFi? That does not rely on the webapp, but it would make using git-annex on Android a lot more useful until you restart your work on this.
+
+
+RichiH
+"""]]

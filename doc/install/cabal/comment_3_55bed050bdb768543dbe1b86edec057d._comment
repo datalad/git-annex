@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-30T15:25:29Z"
+ content="""
+If you're installing git-annex with cabal, there is no need to install any haskell library packages with apt-get. That includes libghc-libxml-sax-dev and libghc-zlib-dev. Without those, the apt-get line may work to install the C libraries needed for cabal to install the haskell libraries. 
+
+However, see the the [[Ubuntu]] page for much easier ways to get git-annex installed.
+"""]]

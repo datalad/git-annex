@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/6xTna_B_h.ECb6_ftC2dYLytAEwrv36etg_054U-#4c1e7"
+ nickname="Fake"
+ subject="comment 2"
+ date="2012-11-01T11:49:55Z"
+ content="""
+Ok, thanks for the info.  I actually tried running this directly because I was getting the same error from inside of git-annex assistant.  When I add a remote server repository with encrypted rsync, I am able to add the server (\"Check this server\" works), but when I click on the \"Use an encrypted rsync repository on the server\" button, I get the following error:
+
+    Internal Server Error
+    
+    user error (gpg [\"--quiet\",\"--trust-model\",\"always\",\"--gen-random\",\"--armor\",\"1\",\"512\"] exited 5)
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 6"
+ date="2011-10-22T01:18:27Z"
+ content="""
+Hmm, I don't see the spurious ssh edge in the dot file -- that is, I don't see any ssh:// uris in it?
+"""]]

@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-23T21:41:31Z"
+ content="""
+This is a lot of stuff. It would be better to file individual detailed bug reports if you want any of this looked at in depth. Otherwise, I just read it to get an impression of how things are working, or not, for you, and try to hit some of the main points:
+
+* The OSX app icon behavior is probably because OSX does not realize that this is supposed to be a daemon. I don't know how to fix that. Clicking on the app icon is supposed to launch the web app, and has been reported to do so by others. I have no access to an OSX desktop.
+
+* Transfer repositories only keep files that have not yet reached all your client repositories. However, it's possible that files
+  may be uploaded to a transfer repository unnecessarily (if there is some other path for the file to get to the other client
+  repositories, ie if you've locally paired them). In this case, the file will be uploaded and then later removed from the transfer
+  repository, without being used.
+
+* I have never seen encrypted filenames appear in the webapp. I don't see how that could happen TBH.
+
+* git-annex logs information to `.git/annex/debug.log` within your repository. You can go to Configuration -> Preferences to enable
+  additional debug logging. I absolutely need these logs to help debug almost any problems with the assistant.
+
+* \"Clicking a couple of hundred play buttons\" could result in it trying to make a couple of hundred uploads to box.com
+  at the same time. This is probably not a good idea.
+
+* The fragment of log you posted shows me some problem that caused gpg to fail to encrypt a file before sending it to somewhere,
+  but it's lacking all context (and starts when the file transfer is already 87% complete!) so I can't say more. I need to see the whole log to make any informed guesses about what might be going on.
+"""]]

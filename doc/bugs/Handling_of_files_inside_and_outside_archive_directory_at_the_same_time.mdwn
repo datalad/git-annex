@@ -1,0 +1,16 @@
+Hi,
+
+some time ago, I accidentially copied some files from the archive to the non-archive part of my (indirect, type 'client') repository (instead of moving), with the effect that assistant always kept downloading and afterwards immediately dropping the files. Now this was not really suprising once I found the duplicate folder, but maybe git annex could detect this case and refuse to run in circles or at least complain about it.
+
+Best
+Karsten
+
+[[!tag /design/assistant]]
+
+> Update: Current status is this is fixed for direct mode.
+> 
+> In indirect mode, the startup scan will still download and then drop
+> content if a file outside and inside the archive directory has the
+> same content. It doesn't loop like it did in direct mode, only
+> happens once (or once per duplicate file, really). Is still potentially
+> annoying and a bug. --[[Joey]]

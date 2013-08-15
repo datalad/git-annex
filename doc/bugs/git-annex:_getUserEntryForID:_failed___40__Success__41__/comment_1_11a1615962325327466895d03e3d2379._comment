@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.118"
+ subject="comment 1"
+ date="2012-10-25T18:52:52Z"
+ content="""
+This means it has been unable to look up your home directory in /etc/passwd. I wonder, are you using NIS or a similar thing that keeps your user entry out of /etc/passwd?
+"""]]

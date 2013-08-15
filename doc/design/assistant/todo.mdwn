@@ -1,0 +1,4 @@
+This is a subset of [[/todo]] and [[/bugs]] 
+for items tagged for the assistant.
+
+[[!inline pages="tagged(design/assistant) and !link(bugs/done) and !link(bugs/moreinfo)" show=0 archive=yes]]

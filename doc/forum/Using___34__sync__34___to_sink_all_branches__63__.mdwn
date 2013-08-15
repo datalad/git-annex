@@ -1,0 +1,9 @@
+Is there a way to sync all (or a subset of) local branches, not just the currently checked out branch?
+
+Does this make sense at all, or does this show I am missing some important point in git-annex?
+
+I am asking because I would like to use git-annex to keep git repositories with normal git files (with versioned and branched content) in sync.
+
+If it's not currently possible, could you provide some pointers on where to start, if I wanted to change to Haskell source?
+
+Thnx

@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-02-02T00:41:24Z"
+ content="""
+And following on to my transcript, you can then add the file to git in the regular git way, and it works fine:
+
+<pre>
+joey@gnu:~/tmp/demo>git add file
+joey@gnu:~/tmp/demo>git commit
+[master 225ffc0] added as regular git file, not in annex
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+ create mode 100644 file
+joey@gnu:~/tmp/demo>ls -l file
+-rw-r--r-- 1 joey joey 3 Feb  1 20:38 file
+joey@gnu:~/tmp/demo>git log file
+commit 225ffc048f5af7c0466b3b1fe549a6d5e9a9e9fe
+Author: Joey Hess <joey@kitenet.net>
+Date:   Tue Feb 1 20:43:13 2011 -0400
+
+    added as regular git file, not in annex
+
+commit 78a09cc791b875c3b859ca9401e5b6472bf19d08
+Author: Joey Hess <joey@kitenet.net>
+Date:   Tue Feb 1 20:38:30 2011 -0400
+
+    unannex
+
+commit 64cf267734adae05c020d9fd4d5a7ff7c64390db
+Author: Joey Hess <joey@kitenet.net>
+Date:   Tue Feb 1 20:38:18 2011 -0400
+
+    add
+</pre>
+"""]]

@@ -1,0 +1,31 @@
+After fixing a few things - see [[bugs/the tip at commit 6cecc26206c4a539999b04664136c6f785211a41 disables the watch command on OSX]], [[bugs/Missing dependancy in commit 6cecc26206c4a539999b04664136c6f785211a41]] and [[bugs/Fix for opening a browser on a mac (or xdg-open on linux/bsd?)]] I tried the watch command on my ~180gig annex of stuff. This might be yet again related to the issue of [[bugs/Issue on OSX with some system limits]]
+
+the watch command segfaults
+
+<pre>
+x00:annex jtang$ git annex watch --foreground -d
+watch . [2012-07-26 12:27:16 IST] read: git ["--git-dir=/Users/jtang/annex/.git","--work-tree=/Users/jtang/annex","show-ref","git-annex"] 
+[2012-07-26 12:27:16 IST] read: git ["--git-dir=/Users/jtang/annex/.git","--work-tree=/Users/jtang/annex","show-ref","--hash","refs/heads/git-annex"] 
+[2012-07-26 12:27:16 IST] read: git ["--git-dir=/Users/jtang/annex/.git","--work-tree=/Users/jtang/annex","log","refs/heads/git-annex..38d3f769ef004b96b6d640cfb59a45f7b4edf5f6","--oneline","-n1"] 
+[2012-07-26 12:27:16 IST] read: git ["--git-dir=/Users/jtang/annex/.git","--work-tree=/Users/jtang/annex","log","refs/heads/git-annex..ebabe9c92516c350a30126037173080648f5930b","--oneline","-n1"] 
+[2012-07-26 12:27:16 IST] read: git ["--git-dir=/Users/jtang/annex/.git","--work-tree=/Users/jtang/annex","log","refs/heads/git-annex..d36d8d88847decc2320f0be22892ad94a8abe594","--oneline","-n1"] 
+[2012-07-26 12:27:16 IST] read: git ["--git-dir=/Users/jtang/annex/.git","--work-tree=/Users/jtang/annex","log","refs/heads/git-annex..aaa62a8191b3c964fdf546077049f626e8561b22","--oneline","-n1"] 
+[2012-07-26 12:27:16 IST] chat: git ["--git-dir=/Users/jtang/annex/.git","--work-tree=/Users/jtang/annex","cat-file","--batch"] 
+(scanning...) error: git-annex died of signal 11
+</pre>
+
+The above was done on the usual OSX 10.7 system that I have.
+
+---
+
+I'll try and bisect it and find out where the problem first appeared, does the tests currently test the watch command? (also my comments seem to get moderated whether i use my openid account with google or with the native ikiwiki account, so some comments might be hidden)
+
+> The test suite does not currently test the watch command, unfortunatly.
+>
+> Wow, I had not noticed the 30 pending moderated comments.. Let them all
+> thru, and I guess I'll turn off comment spam filtering for now, since
+> there has apparently been none. --[[Joey]] 
+
+---
+
+> Seems this segfault is fixed. [[done]] --[[Joey]] 

@@ -1,0 +1,38 @@
+The `git annex sync` command provides an easy way to keep several
+repositories in sync. 
+
+Often git is used in a centralized fashion with a central bare repository
+which changes are pulled and pushed to using normal git commands.
+That works fine, if you don't mind having a central repository.
+
+But it can be harder to use git in a fully decentralized fashion, with no
+central repository and still keep repositories in sync with one another.
+You have to remember to pull from each remote, and merge the appopriate
+branch after pulling. It's difficult to *push* to a remote, since git does
+not allow pushes into the currently checked out branch.
+
+`git annex sync` makes it easier using a scheme devised by Joachim
+Breitner. The idea is to have a branch `synced/master` (actually,
+`synced/$currentbranch`), that is never directly checked out, and serves
+as a drop-point for other repositories to use to push changes.
+
+When you run `git annex sync`, it merges the `synced/master` branch
+into `master`, receiving anything that's been pushed to it. (If there is a
+conflict in this merge, [[automatic_conflict_resolution]] is used to
+resolve it). Then it fetches from each remote, and merges in any changes that
+have been made to the remotes too. Finally, it updates `synced/master`
+to reflect the new state of `master`, and pushes it out to each of the remotes.
+
+This way, changes propagate around between repositories as `git annex sync`
+is run on each of them. Every repository does not need to be able to talk
+to every other repository; as long as the graph of repositories is
+connected, and `git annex sync` is run from time to time on each, a given
+change, made anywhere, will eventually reach every other repository.
+
+The workflow for using `git annex sync` is simple:
+
+* Make some changes to files in the repository, using `git-annex`,
+  or anything else.
+* Run `git annex sync` to save the changes.
+* Next time you're working on a different clone of that repository,
+  run `git annex sync` to update it.

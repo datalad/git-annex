@@ -1,0 +1,56 @@
+What steps will reproduce the problem?
+
+Building of the current github HEAD fails with a strange error message regarding OSX. I'm not using OSX but Ubuntu 12.10, why is cabal trying to build these files?
+
+<pre>
+dominik@Atlantis:/var/tmp$ git clone git://github.com/joeyh/git-annex.git
+Cloning into 'git-annex'...
+remote: Counting objects: 40243, done.
+remote: Compressing objects: 100% (10568/10568), done.
+remote: Total 40243 (delta 29647), reused 40044 (delta 29449)
+Receiving objects: 100% (40243/40243), 9.12 MiB | 184 KiB/s, done.
+Resolving deltas: 100% (29647/29647), done.
+dominik@Atlantis:/var/tmp$ cd git-annex/
+dominik@Atlantis:/var/tmp/git-annex$ cabal update
+Downloading the latest package list from hackage.haskell.org
+dominik@Atlantis:/var/tmp/git-annex$ cabal install --only-dependencies
+Resolving dependencies...
+All the requested packages are already installed:
+Use --reinstall if you want to reinstall anyway.
+dominik@Atlantis:/var/tmp/git-annex$ cabal configure
+Resolving dependencies...
+[ 1 of 21] Compiling Utility.FileSystemEncoding ( Utility/FileSystemEncoding.hs, dist/setup/Utility/FileSystemEncoding.o )
+[ 2 of 21] Compiling Utility.Applicative ( Utility/Applicative.hs, dist/setup/Utility/Applicative.o )
+[ 3 of 21] Compiling Utility.PartialPrelude ( Utility/PartialPrelude.hs, dist/setup/Utility/PartialPrelude.o )
+[ 4 of 21] Compiling Utility.UserInfo ( Utility/UserInfo.hs, dist/setup/Utility/UserInfo.o )
+[ 5 of 21] Compiling Utility.Monad    ( Utility/Monad.hs, dist/setup/Utility/Monad.o )
+[ 6 of 21] Compiling Utility.Path     ( Utility/Path.hs, dist/setup/Utility/Path.o )
+[ 7 of 21] Compiling Utility.OSX      ( Utility/OSX.hs, dist/setup/Utility/OSX.o )
+
+Utility/OSX.hs:22:17: Not in scope: `myHomeDir'
+</pre>
+
+What is the expected output? What do you see instead?
+
+I expect cabal to build git-annex. 
+
+What version of git-annex are you using? On what operating system?
+
+github HEAD on Ubuntu 12.10
+
+Please provide any additional information below.
+
+<pre>
+$ cabal --version
+cabal-install version 0.14.0
+using version 1.14.0 of the Cabal library 
+
+$ ghc --version
+The Glorious Glasgow Haskell Compilation System, version 7.4.2
+
+$ uname -a
+Linux Atlantis 3.5.0-17-generic #28-Ubuntu SMP Tue Oct 9 19:31:23 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
+
+</pre>
+
+> [[fixed|done]] --[[Joey]] 

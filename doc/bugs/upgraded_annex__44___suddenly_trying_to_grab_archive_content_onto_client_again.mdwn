@@ -1,0 +1,434 @@
+### Please describe the problem.
+
+recently upgraded to a git snapshot; restarted assistant and found my disk space disappearing.  Checked webapp and there were a bunch of transfers queued.  Restarted assistant in --debug mode to get some logs.
+
+Transfers should not have happened, because I'm on a "client" machine, they are in an archive subdirectory, and there are adequate copies elsewhere (a ssh remote and a USB drive) to satisfy "numcopies=2."  (Note that the USB drive was not connected at the time, but that hasn't mattered in the past)
+
+### What steps will reproduce the problem?
+
+As noted above. I don't know that this is reproducible in a fresh repo; I was hoping that a bug report with the log would do.  Can try if that would help.
+
+### What version of git-annex are you using? On what operating system?
+
+checkout hash is:
+
+70ba425 2013-04-07
+
+OS X Lion.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/debug.log
+
+
+[13:13:55 PM]$ cat daemon.log
+[2013-04-26 12:59:09 EDT] main: starting assistant version 4.20130406
+[2013-04-26 12:59:09 EDT] TransferScanner: Syncing with toshiba, homeworld 
+[2013-04-26 12:59:09 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 12:59:09 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 12:59:09 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+[2013-04-26 12:59:09 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 12:59:09 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 12:59:09 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..bfa73167b1cd90bbb2213a2c9bad64fbb1befe00","--oneline","-n1"]
+[2013-04-26 12:59:09 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","ls-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","preferred-content.log"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","symbolic-ref","HEAD"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","refs/heads/master"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..bfa73167b1cd90bbb2213a2c9bad64fbb1befe00","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","ls-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","preferred-content.log"]
+[2013-04-26 12:59:10 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","fetch","toshiba"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","symbolic-ref","HEAD"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","refs/heads/master"]
+[2013-04-26 12:59:10 EDT] Merger: merging refs/heads/synced/master into refs/heads/master
+[2013-04-26 12:59:10 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","merge","--no-edit","refs/heads/synced/master"]
+fatal: '/Volumes/TOSHIBAEXT/annex' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+[2013-04-26 12:59:10 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","fetch","homeworld"]
+Already up-to-date.
+
+(scanning...) [2013-04-26 12:59:10 EDT] Watcher: Performing startup scan
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..bfa73167b1cd90bbb2213a2c9bad64fbb1befe00","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..bfa73167b1cd90bbb2213a2c9bad64fbb1befe00","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","symbolic-ref","HEAD"]
+[2013-04-26 12:59:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","refs/heads/master"]
+[2013-04-26 12:59:10 EDT] Merger: merging refs/remotes/homeworld/synced/master into refs/heads/master
+[2013-04-26 12:59:10 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","merge","--no-edit","refs/remotes/homeworld/synced/master"]
+Already up-to-date.
+[2013-04-26 12:59:11 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 12:59:11 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 12:59:11 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+[2013-04-26 12:59:11 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 12:59:11 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 12:59:11 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..bfa73167b1cd90bbb2213a2c9bad64fbb1befe00","--oneline","-n1"]
+[2013-04-26 12:59:11 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 12:59:12 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 12:59:12 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 12:59:12 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 12:59:12 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+[2013-04-26 12:59:13 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 12:59:13 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 12:59:13 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..bfa73167b1cd90bbb2213a2c9bad64fbb1befe00","--oneline","-n1"]
+[2013-04-26 12:59:13 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 12:59:14 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 12:59:14 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 12:59:14 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 12:59:14 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+[2013-04-26 12:59:14 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 12:59:14 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 12:59:14 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..bfa73167b1cd90bbb2213a2c9bad64fbb1befe00","--oneline","-n1"]
+[2013-04-26 12:59:14 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 12:59:14 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 12:59:15 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","symbolic-ref","HEAD"]
+[2013-04-26 12:59:15 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","refs/heads/master"]
+[2013-04-26 12:59:15 EDT] Merger: merging refs/remotes/toshiba/synced/master into refs/heads/master
+[2013-04-26 12:59:15 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--verify","-q","refs/remotes/toshiba/master"]
+[2013-04-26 12:59:15 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/master..refs/remotes/toshiba/master","--oneline","-n1"]
+[2013-04-26 12:59:20 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--verify","-q","refs/remotes/toshiba/synced/master"]
+[2013-04-26 12:59:20 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/synced/master..refs/remotes/toshiba/synced/master","--oneline","-n1"]
+[2013-04-26 12:59:20 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","merge","--no-edit","refs/remotes/toshiba/synced/master"]
+Already up-to-date.
+[2013-04-26 12:59:20 EDT] Merger: watching /Users/ed/annex/.git/refs
+[2013-04-26 12:59:20 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--verify","-q","refs/remotes/homeworld/master"]
+[2013-04-26 12:59:20 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/master..refs/remotes/homeworld/master","--oneline","-n1"]
+[2013-04-26 12:59:20 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--verify","-q","refs/remotes/homeworld/synced/master"]
+[2013-04-26 12:59:20 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/synced/master..refs/remotes/homeworld/synced/master","--oneline","-n1"]
+[2013-04-26 12:59:20 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","symbolic-ref","HEAD"]
+[2013-04-26 12:59:21 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","refs/heads/master"]
+[2013-04-26 12:59:21 EDT] TransferScanner: pushing to [Remote { name ="toshiba" },Remote { name ="homeworld" }]
+[2013-04-26 12:59:21 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","branch","-f","synced/master"]
+[2013-04-26 12:59:21 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","push","toshiba","git-annex:synced/git-annex","master:synced/master"]
+fatal: '/Volumes/TOSHIBAEXT/annex' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+[2013-04-26 12:59:21 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","push","homeworld","git-annex:synced/git-annex","master:synced/master"]
+[2013-04-26 12:59:21 EDT] TransferWatcher: watching for transfers
+To ssh://ed@homeworld/srv/mybook/annex
+   bfa7316..9a8e676  git-annex -> synced/git-annex
+[2013-04-26 12:59:36 EDT] TransferScanner: trying manual pull to resolve failed pushes
+[2013-04-26 12:59:36 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","fetch","toshiba"]
+fatal: '/Volumes/TOSHIBAEXT/annex' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+[2013-04-26 12:59:36 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 12:59:36 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 12:59:36 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+[2013-04-26 12:59:36 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 12:59:36 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 12:59:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 12:59:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 12:59:37 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--verify","-q","refs/remotes/toshiba/master"]
+[2013-04-26 12:59:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/master..refs/remotes/toshiba/master","--oneline","-n1"]
+[2013-04-26 12:59:37 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--verify","-q","refs/remotes/toshiba/synced/master"]
+[2013-04-26 12:59:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/synced/master..refs/remotes/toshiba/synced/master","--oneline","-n1"]
+[2013-04-26 12:59:37 EDT] TransferScanner: pushing to [Remote { name ="toshiba" }]
+[2013-04-26 12:59:37 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","branch","-f","synced/master"]
+[2013-04-26 12:59:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 12:59:37 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","push","toshiba","git-annex:synced/git-annex","master:synced/master"]
+[2013-04-26 12:59:37 EDT] read: git ["--git-dir=/Users/ed/annex/fatal: '/Volumes/TOSHIBAEXT/annex' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 12:59:37 EDT] TransferScanner: fallback pushing to [Remote { name ="toshiba" }]
+[2013-04-26 12:59:37 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","push","toshiba","git-annex:refs/synced/fa2bd02e-3ce2-11e2-a675-47389975a32e/git-annex","refs/heads/master:refs/synced/fa2bd02e-3ce2-11e2-a675-47389975a32e/master"]
+[2013-04-26 12:59:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+fatal: '/Volumes/TOSHIBAEXT/annex' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+[2013-04-26 12:59:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 12:59:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 12:59:38 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 12:59:38 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 12:59:38 EDT] 127.0.0.1 GET / Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:39 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 12:59:39 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 12:59:39 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+[2013-04-26 12:59:39 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 12:59:39 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 12:59:39 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 12:59:39 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 12:59:39 EDT] chat: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","cat-file","--batch"]
+[2013-04-26 12:59:39 EDT] read: git ["config","--null","--list"]
+[2013-04-26 12:59:40 EDT] TransferScanner: starting scan of [Remote { name ="toshiba" },Remote { name ="homeworld" }]
+[2013-04-26 12:59:40 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","ls-files","--cached","-z","--"]
+[2013-04-26 12:59:40 EDT] 127.0.0.1 GET /static/css/bootstrap.css Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:40 EDT] chat: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
+[2013-04-26 12:59:41 EDT] 127.0.0.1 GET /static/css/bootstrap-responsive.css Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:41 EDT] 127.0.0.1 GET /static/jquery.full.js Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:41 EDT] 127.0.0.1 GET /static/js/bootstrap-dropdown.js Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:41 EDT] 127.0.0.1 GET /static/js/bootstrap-modal.js Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:41 EDT] 127.0.0.1 GET /static/js/bootstrap-collapse.js Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:41 EDT] 127.0.0.1 GET /static/longpolling.js Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:41 EDT] 127.0.0.1 GET /static/jquery.ui.core.js Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:41 EDT] 127.0.0.1 GET /static/jquery.ui.widget.js Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /static/jquery.ui.mouse.js Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /static/jquery.ui.sortable.js Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /static/favicon.ico Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /static/img/glyphicons-halflings-white.png Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /static/img/glyphicons-halflings.png Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /notifier/sidebar Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /notifier/repolist/RepoSelector%20%7BonlyCloud%20=%20False,%20onlyConfigured%20=%20False,%20includeHere%20=%20True,%20nudgeAddMore%20=%20True%7D Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /notifier/transfers Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /sidebar/NotificationId%200 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /repolist/RepoListNotificationId%20(NotificationId%200)%20(RepoSelector%20%7BonlyCloud%20=%20False,%20onlyConfigured%20=%20False,%20includeHere%20=%20True,%20nudgeAddMore%20=%20True%7D) Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:42 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:43 EDT] 127.0.0.1 GET /sidebar/NotificationId%200 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:43 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 12:59:43 EDT] 127.0.0.1 GET /repolist/RepoListNotificationId%20(NotificationId%200)%20(RepoSelector%20%7BonlyCloud%20=%20False,%20onlyConfigured%20=%20False,%20includeHere%20=%20True,%20nudgeAddMore%20=%20True%7D) Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","ls-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","preferred-content.log"]
+[2013-04-26 13:00:27 EDT] TransferScanner: queued Download UUID "429af61a-3cf6-11e2-af0a-170be35d46b6" Books/archive/Art books/John Gadsby Chapman - American Drawing-Book - A Manual for the Amateur.pdf.part Nothing : expensive scan found missing object
+[2013-04-26 13:00:27 EDT] TransferScanner: queued Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/John Gadsby Chapman - American Drawing-Book - A Manual for the Amateur.pdf.part Nothing : expensive scan found missing object
+[2013-04-26 13:00:27 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:27 EDT] Transferrer: Transferring: Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/John Gadsby Chapman - American Drawing-Book - A Manual for the Amateur.pdf.part Nothing
+[2013-04-26 13:00:27 EDT] call: /Users/ed/bin/git-annex ["transferkeys","--readfd","34","--writefd","31"]
+[2013-04-26 13:00:27 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:27 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:27 EDT] TransferScanner: queued Download UUID "429af61a-3cf6-11e2-af0a-170be35d46b6" Books/archive/Art books/L.A. Doust - A Manual on Drawing the Human Figure.pdf.part Nothing : expensive scan found missing object
+[2013-04-26 13:00:27 EDT] TransferScanner: queued Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/L.A. Doust - A Manual on Drawing the Human Figure.pdf.part Nothing : expensive scan found missing object
+[2013-04-26 13:00:27 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:28 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:28 EDT] TransferScanner: queued Download UUID "429af61a-3cf6-11e2-af0a-170be35d46b6" Books/archive/Art books/Michael D. Mattesi - Force. The Key to Capturing Life Through Drawing.pdf Nothing : expensive scan found missing object
+[2013-04-26 13:00:28 EDT] TransferScanner: queued Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/Michael D. Mattesi - Force. The Key to Capturing Life Through Drawing.pdf Nothing : expensive scan found missing object
+[2013-04-26 13:00:28 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:28 EDT] TransferScanner: queued Download UUID "429af61a-3cf6-11e2-af0a-170be35d46b6" Books/archive/Art books/Richard G. Hatton - Figure Drawing.pdf Nothing : expensive scan found missing object
+[2013-04-26 13:00:28 EDT] TransferScanner: queued Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/Richard G. Hatton - Figure Drawing.pdf Nothing : expensive scan found missing object
+[2013-04-26 13:00:28 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:28 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:28 EDT] TransferScanner: queued Download UUID "429af61a-3cf6-11e2-af0a-170be35d46b6" Books/archive/Art books/The Figure in Repose.pdf Nothing : expensive scan found missing object
+Control socket connect(/Users/ed/annex/.git/annex/ssh/ed@homeworld): Connection refused
+[2013-04-26 13:00:28 EDT] TransferWatcher: transfer starting: Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/John Gadsby Chapman - American Drawing-Book - A Manual for the Amateur.pdf.part Nothing
+[2013-04-26 13:00:28 EDT] TransferScanner: queued Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/The Figure in Repose.pdf Nothing : expensive scan found missing object
+[2013-04-26 13:00:28 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:28 EDT] TransferWatcher: transfer starting: Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/John Gadsby Chapman - American Drawing-Book - A Manual for the Amateur.pdf.part Nothing
+[2013-04-26 13:00:28 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:28 EDT] TransferScanner: queued Download UUID "429af61a-3cf6-11e2-af0a-170be35d46b6" Books/archive/Art books/Torrent downloaded from Demonoid.com.txt Nothing : expensive scan found missing object
+[2013-04-26 13:00:28 EDT] TransferScanner: queued Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/Torrent downloaded from Demonoid.com.txt Nothing : expensive scan found missing object
+[2013-04-26 13:00:29 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:29 EDT] TransferScanner: queued Download UUID "429af61a-3cf6-11e2-af0a-170be35d46b6" Books/archive/Art books/Victor Perard - Drawing and Anatomy.pdf Nothing : expensive scan found missing object
+[2013-04-26 13:00:29 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:29 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+ControlSocket /Users/ed/annex/.git/annex/ssh/ed@homeworld already exists, disabling multiplexing
+
+SHA256E-s568690--ec5aaaf0320739ab91e4efa9a0bfd372a92ca436e96a5182a3d072ba409691b5.pdf.part
+[2013-04-26 13:00:31 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:33 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+      568690 100%  185.12kB/s    0:00:03 (xfer#1, to-check=0/1)
+
+sent 42 bytes  received 568933 bytes  87534.62 bytes/sec
+total size is 568690  speedup is 1.00
+[2013-04-26 13:00:34 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:35 EDT] Transferrer: Downloaded John Gads...pdf.part
+[2013-04-26 13:00:35 EDT] TransferWatcher: transfer finishing: Transfer {transferDirection = Download, transferUUID = UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720", transferKey = Key {keyName = "ec5aaaf0320739ab91e4efa9a0bfd372a92ca436e96a5182a3d072ba409691b5.pdf.part", keyBackendName = "SHA256E", keySize = Just 568690, keyMtime = Nothing}}
+[2013-04-26 13:00:35 EDT] Pusher: Syncing with homeworld 
+[2013-04-26 13:00:35 EDT] TransferScanner: queued Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/Victor Perard - Drawing and Anatomy.pdf Nothing : expensive scan found missing object
+[2013-04-26 13:00:35 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:35 EDT] Transferrer: Transferring: Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/L.A. Doust - A Manual on Drawing the Human Figure.pdf.part Nothing
+[2013-04-26 13:00:35 EDT] chat: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","hash-object","-w","--stdin-paths"]
+[2013-04-26 13:00:35 EDT] feed: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","update-index","-z","--index-info"]
+[2013-04-26 13:00:35 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:35 EDT] 127.0.0.1 GET /sidebar/NotificationId%200 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:35 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+Control socket connect(/Users/ed/annex/.git/annex/ssh/ed@homeworld): Connection refused
+[2013-04-26 13:00:35 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 13:00:35 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","write-tree"]
+[2013-04-26 13:00:35 EDT] 127.0.0.1 GET /sidebar/NotificationId%200 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:36 EDT] chat: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","commit-tree","24ad0c0244cd209b4689b2b3877645971fe88084","-p","refs/heads/git-annex"]
+[2013-04-26 13:00:36 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","update-ref","refs/heads/git-annex","726dd240a1e79cf0ce481f9875b5358b56c250b7"]
+[2013-04-26 13:00:36 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","symbolic-ref","HEAD"]
+[2013-04-26 13:00:36 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","refs/heads/master"]
+[2013-04-26 13:00:36 EDT] Pusher: pushing to [Remote { name ="homeworld" }]
+[2013-04-26 13:00:36 EDT] TransferWatcher: transfer starting: Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/L.A. Doust - A Manual on Drawing the Human Figure.pdf.part Nothing
+[2013-04-26 13:00:36 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","branch","-f","synced/master"]
+[2013-04-26 13:00:36 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","push","homeworld","git-annex:synced/git-annex","master:synced/master"]
+[2013-04-26 13:00:36 EDT] TransferWatcher: transfer starting: Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/L.A. Doust - A Manual on Drawing the Human Figure.pdf.part Nothing
+[2013-04-26 13:00:36 EDT] TransferScanner: queued Download UUID "429af61a-3cf6-11e2-af0a-170be35d46b6" Books/archive/Art books/Willy Pogany - Art of Drawing.pdf Nothing : expensive scan found missing object
+[2013-04-26 13:00:36 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:36 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+ControlSocket /Users/ed/annex/.git/annex/ssh/ed@homeworld already exists, disabling multiplexing
+[2013-04-26 13:00:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 13:00:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 13:00:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..726dd240a1e79cf0ce481f9875b5358b56c250b7","--oneline","-n1"]
+[2013-04-26 13:00:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 13:00:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 13:00:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..9a8e676d552905528b25e29ae9c56b5e50c35f70","--oneline","-n1"]
+[2013-04-26 13:00:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 13:00:37 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+
+SHA256E-s3733003--1536ff33f9a59112d40ff816f731f3fd96554f0c42acc9df758e59350176d616.pdf.part
+[2013-04-26 13:00:38 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:39 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:41 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:43 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:44 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:44 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","ls-files","--deleted","-z","--","/Users/ed/annex"]
+
+
+(Recording state in git...)
+(started...) [2013-04-26 13:00:44 EDT] Watcher: watching .
+[2013-04-26 13:00:44 EDT] 127.0.0.1 GET /sidebar/NotificationId%200 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:46 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:47 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:48 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:50 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+To ssh://ed@homeworld/srv/mybook/annex09
+   9a8e676..726dd24  git-annex -> synced/git-annex
+[2013-04-26 13:00:50 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 13:00:50 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 13:00:50 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..726dd240a1e79cf0ce481f9875b5358b56c250b7","--oneline","-n1"]
+[2013-04-26 13:00:50 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 13:00:50 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 13:00:50 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 13:00:51 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 13:00:51 EDT] 127.0.0.1 GET /sidebar/NotificationId%200 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:51 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:53 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:54 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:56 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:57 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+     3733003 100%  175.37kB/s    0:00:20 (xfer#1, to-check=0/1)
+[2013-04-26 13:00:59 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+
+sent 42 bytes  received 3733631 bytes  152394.82 bytes/sec
+total size is 3733003  speedup is 1.00
+[2013-04-26 13:00:59 EDT] Transferrer: Downloaded L.A. Dous...pdf.part
+[2013-04-26 13:00:59 EDT] Pusher: Syncing with homeworld 
+[2013-04-26 13:00:59 EDT] chat: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","hash-object","-w","--stdin-paths"]
+[2013-04-26 13:00:59 EDT] feed: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","update-index","-z","--index-info"]
+[2013-04-26 13:00:59 EDT] TransferWatcher: transfer finishing: Transfer {transferDirection = Download, transferUUID = UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720", transferKey = Key {keyName = "1536ff33f9a59112d40ff816f731f3fd96554f0c42acc9df758e59350176d616.pdf.part", keyBackendName = "SHA256E", keySize = Just 3733003, keyMtime = Nothing}}
+[2013-04-26 13:00:59 EDT] TransferScanner: queued Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/Willy Pogany - Art of Drawing.pdf Nothing : expensive scan found missing object
+[2013-04-26 13:00:59 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:59 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 13:00:59 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","write-tree"]
+[2013-04-26 13:00:59 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:59 EDT] 127.0.0.1 GET /sidebar/NotificationId%200 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:59 EDT] 127.0.0.1 GET /sidebar/NotificationId%200 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:59 EDT] chat: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","commit-tree","2b93aa36603e01e699d332fb277874488ab21c1f","-p","refs/heads/git-annex"]
+[2013-04-26 13:00:59 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","update-ref","refs/heads/git-annex","58f45e4a8453d7bb3c1612bd910410eee0e2c72a"]
+[2013-04-26 13:00:59 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","symbolic-ref","HEAD"]
+[2013-04-26 13:00:59 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","refs/heads/master"]
+[2013-04-26 13:00:59 EDT] Pusher: pushing to [Remote { name ="homeworld" }]
+[2013-04-26 13:00:59 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","branch","-f","synced/master"]
+[2013-04-26 13:00:59 EDT] call: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","push","homeworld","git-annex:synced/git-annex","master:synced/master"]
+[2013-04-26 13:00:59 EDT] Transferrer: Transferring: Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/Michael D. Mattesi - Force. The Key to Capturing Life Through Drawing.pdf Nothing
+[2013-04-26 13:00:59 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:59 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:00:59 EDT] TransferScanner: queued Download UUID "429af61a-3cf6-11e2-af0a-170be35d46b6" Books/archive/Magic  in china.PDF Nothing : expensive scan found missing object
+Control socket connect(/Users/ed/annex/.git/annex/ssh/ed@homeworld): Connection refused
+[2013-04-26 13:00:59 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:00 EDT] TransferWatcher: transfer starting: Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/Michael D. Mattesi - Force. The Key to Capturing Life Through Drawing.pdf Nothing
+[2013-04-26 13:01:00 EDT] TransferWatcher: transfer starting: Download UUID "d16d0d1a-3cdd-11e2-9161-67c83599f720" Books/archive/Art books/Michael D. Mattesi - Force. The Key to Capturing Life Through Drawing.pdf Nothing
+[2013-04-26 13:01:00 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:00 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:00 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 13:01:00 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 13:01:00 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..58f45e4a8453d7bb3c1612bd910410eee0e2c72a","--oneline","-n1"]
+[2013-04-26 13:01:00 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 13:01:00 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 13:01:00 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..726dd240a1e79cf0ce481f9875b5358b56c250b7","--oneline","-n1"]
+ControlSocket /Users/ed/annex/.git/annex/ssh/ed@homeworld already exists, disabling multiplexing
+[2013-04-26 13:01:00 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 13:01:00 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+
+SHA256E-s41718677--71d082deb0cdac45ae5556322cc5fa9245dafe477d3f3b7186fd19876e12e335.pdf
+[2013-04-26 13:01:02 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+To ssh://ed@homeworld/srv/mybook/annex12
+   726dd24..58f45e4  git-annex -> synced/git-annex
+[2013-04-26 13:01:03 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","git-annex"]
+[2013-04-26 13:01:03 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-04-26 13:01:03 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..58f45e4a8453d7bb3c1612bd910410eee0e2c72a","--oneline","-n1"]
+[2013-04-26 13:01:03 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..c19f5f18ea26d43b735de8fbdb67d4f85987d171","--oneline","-n1"]
+[2013-04-26 13:01:03 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..7077e8c56be8c84fee214456bb2c951ef5b2202e","--oneline","-n1"]
+[2013-04-26 13:01:03 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..f7a2f8f189db99c7f9f4bacc2fc935d63737287e","--oneline","-n1"]
+[2013-04-26 13:01:04 EDT] 127.0.0.1 GET /sidebar/NotificationId%200 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:04 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","log","refs/heads/git-annex..be505749576a7064cca1eaf9fc241b450cdaadc6","--oneline","-n1"]
+[2013-04-26 13:01:04 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:05 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:07 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:08 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:10 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:10 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","ls-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","preferred-content.log"]
+[2013-04-26 13:01:11 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:13 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:14 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:16 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:17 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:18 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:20 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:21 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:23 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:24 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:26 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:27 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:29 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:30 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:32 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:33 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:35 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:36 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:38 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:39 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:41 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:42 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:43 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:45 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:46 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+[2013-04-26 13:01:48 EDT] 127.0.0.1 GET /transfers/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:20.0) Gecko/20100101 Firefox/20.0
+recv: resource vanished (Connection reset by peer)
+    41718677 100%  173.12kB/s    0:03:55 (xfer#1, to-check=0/1)
+
+sent 42 bytes  received 41723941 bytes  174943.32 bytes/sec
+total size is 41718677  speedup is 1.00
+
+git-annex: <file descriptor: 31>: hFlush: resource vanished (Broken pipe)
+failed
+(Recording state in git...)
+git-annex: transferkeys: 1 failed
+~/annex/.git/annex (GIT_DIR!)
+[13:14:08 PM]$ 
+
+# End of transcript or log.
+"""]]
+
+Here is the typical status of a file queued for download:
+
+whereis Art books/The Figure in Repose.pdf (2 copies) 
+  	429af61a-3cf6-11e2-af0a-170be35d46b6 -- toshiba (toshiba external hd)
+   	d16d0d1a-3cdd-11e2-9161-67c83599f720 -- homeworld
+
+This is with "numcopies=2"  homeworld is trusted, backup, standard.  toshiba is semitrusted, backup, standard.  here is client, semitrusted, standard.
+
+[[done]]

@@ -1,0 +1,31 @@
+git-annex does not take into account the --git-dir and --work-tree command line options (while they can be useful when scripting).
+
+    > mkdir /tmp/test
+    > cd /tmp/test
+    > git init
+    Initialized empty Git repository in /tmp/test/.git/
+    > git annex init test
+    init test ok
+    > touch foo
+    > cd
+    > git --git-dir=/tmp/test/.git --work-tree=/tmp/test annex add foo
+    git-annex: Not in a git repository.
+
+regular git add works:
+
+    > git --git-dir=/tmp/test/.git --work-tree=/tmp/test add foo
+    > git --git-dir=/tmp/test/.git --work-tree=/tmp/test status 
+    # On branch master
+    #
+    # Initial commit
+    #
+    # Changes to be committed:
+    #   (use "git rm --cached <file>..." to unstage)
+    #
+    #       new file:   foo
+    #
+
+git-annex version: 3.20110702
+
+> [[done]], git-annex now honors `GIT_DIR` and `GIT_WORK_TREE` like other
+> git commands do. --[[Joey]]

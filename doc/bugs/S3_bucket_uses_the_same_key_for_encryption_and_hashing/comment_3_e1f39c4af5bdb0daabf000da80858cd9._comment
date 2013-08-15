@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-03-30T18:15:18Z"
+ content="""
+Yes, encrypting the symmetric key with users' regular gpg keys is the plan.
+
+I don't think that encryption of content in a git annex remote makes much sense; the filenames obviously cannot be encrypted there. It's more likely that the same encryption would get used for a bup remote, or with the [[special_remotes/directory]] remote I threw in today.
+"""]]

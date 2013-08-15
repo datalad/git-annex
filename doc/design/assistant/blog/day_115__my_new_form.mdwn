@@ -1,0 +1,17 @@
+Built a SRV lookup library that can use either `host` or ADNS.
+
+Worked on DBUS reconnection some more; found a FD leak in the dbus library,
+and wrote its long-suffering author, John Millikin (also the XMPP library
+author, so I've been bothering him a lot lately), who once again came
+through with a quick fix.
+
+Built a XMPP configuration form, that tests the connection to the server.
+Getting the wording right on this was hard, and it's probably still not
+100% right.
+
+[[!img /assistant/xmpp.png]]
+ 
+Pairing over XMPP is something I'm still thinking about. It's
+contingent on tunneling git over XMPP (actually not too hard),
+and getting a really secure XMPP connection (needs library improvements,
+as the library currently accepts any SSL certificate).

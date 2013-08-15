@@ -1,0 +1,39 @@
+**What steps will reproduce the problem?**
+
+Run *git annex assistant --autostart*
+
+    git-annex autostart in /home/tobru/annex/repo1
+    failed
+    git-annex autostart in /home/tobru/annex/repo2
+    failed
+    git-annex autostart in /home/tobru/annex/repo3
+    failed
+    git-annex autostart in /home/tobru/annex/repo4
+    failed
+    git-annex autostart in /home/tobru/annex/repo5
+    failed
+
+Running *git annex assistant* in each directory starts the assistant without errors.
+
+What could cause autostart to fail? Is there any log? Or a --debug parameter?
+
+
+**What is the expected output? What do you see instead?**
+
+The assistant should start on all known repositories
+
+**What version of git-annex are you using? On what operating system?**
+
+4.20130417-g4bb97d5 on Ubuntu
+
+**Please provide any additional information below.**
+
+The ~/.config/git-annex/autostart file looks like this:
+
+    /home/tobru/annex/repo1
+    /home/tobru/annex/repo2
+    /home/tobru/annex/repo3
+    /home/tobru/annex/repo4
+    /home/tobru/annex/repo5
+
+> Closing, seems local misconfiguration. --[[Joey]] [[done]]

@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-12-14T17:31:31Z"
+ content="""
+This is an entirely reasonable way to go about it.
+
+However, doing it this way causes files in B to always \"win\" -- If the same filename is in both repositories, with differing content, the version added in B will superscede the version from A. If A has a file that is not in B, a git commit -a in B will commit a deletion of that file.
+
+I might do it your way and look at the changes in B before (or even after) committing them to see if files from A were deleted or changed.
+
+Or, I might just instead keep B in a separate subdirectory in the repository, set up like so:
+
+<pre>
+mv b old_b
+git clone a b
+cd b
+mv ../old_b .
+git annex add old_b --not --exclude '*.avi'
+</pre>
+
+Or, a third way would be to commit A to a branch like branchA and B to a separate branchB, and not merge the branches at all.
+"""]]

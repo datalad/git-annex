@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 2"
+ date="2011-12-06T23:23:29Z"
+ content="""
+Doh! Total brain melt on my part. Thanks for the additional info.  Not taking my time and reading things properly - kept assuming that the full remote pull failed due to the warning:
+
+    You asked to pull from the remote 'rss', but did not specify
+    a branch. Because this is not the default configured remote
+    for your current branch, you must specify a branch on the command line.
+
+Rookie mistake indeed.
+"""]]

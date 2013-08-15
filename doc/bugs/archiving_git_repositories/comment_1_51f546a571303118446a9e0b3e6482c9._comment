@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.23"
+ subject="comment 1"
+ date="2012-10-19T21:01:44Z"
+ content="""
+The assistant is not ready to manage whole home directories, and the webapp refuses to allow you to do that.
+
+git doesn't allow checking a git repository into a git repository either. I archive old git repos inside one of my annexes by tarring them up.
+"""]]

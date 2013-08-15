@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkaT0B6s9jQuMzQUYRVBgWqtO7BhT_ZSaE"
+ nickname="Fernando Seabra"
+ subject="cannot get files"
+ date="2012-05-27T20:33:09Z"
+ content="""
+Hi,
+
+I could successfully clone my ssh repo's annex to my laptop, following these instructions.
+I'm also able to sync the repositories (laptop and ssh) when I commit new files in the ssh repo.
+
+However, every time I try to get files from the ssh repo (using 'git annex get some_file'), nothing happens.
+Do you know what can be happening?
+
+Thanks!
+"""]]

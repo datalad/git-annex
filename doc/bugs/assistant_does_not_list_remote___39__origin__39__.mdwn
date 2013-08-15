@@ -1,0 +1,26 @@
+What steps will reproduce the problem?
+
+1. create a git annex repo on a server
+2. clone it on workstation
+3. open the webapp on the workstation
+
+
+What is the expected output? What do you see instead?
+
+The webapp should show the 'origin' remote and the assistant should ensure syncing.
+Instead the remote does not show up in the webapp.
+I checked with `git annex status` and the remote is there.
+
+What version of git-annex are you using? On what operating system?
+
+3.20130207 on latest Ubuntu
+
+Please provide any additional information below.
+
+I tried both with direct and indirect mode for the local annex repo.
+
+I am sorry if I am missing the point. I checked the docs, however without much success.
+
+[[!tag /design/assistant]]
+
+[[done]]

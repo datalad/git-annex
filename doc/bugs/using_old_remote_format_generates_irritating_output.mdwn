@@ -1,0 +1,28 @@
+a special remote (encrypted rsync) that got copied to long ago (not sure when, there are old files that already have sizes in their unencrypted file names) seems to use the aa/bb/GPGHMACSHA1-- format instead of aaa/bbb/GPGHMACSHA1-. ``git annex fsck`` over such files produces very irritating output:
+
+<code>
+fsck L1100423.JPG (gpg) (checking …remote…...) 
+rsync: change_dir "…somewhere…/0a0/8cd/GPGHMACSHA1--91234b770b34eeff811d09c97ce94bb2398b3d72" failed: No such file or directory (2)
+
+sent 8 bytes  received 12 bytes  40.00 bytes/sec
+total size is 0  speedup is 0.00
+rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1536) [Receiver=3.0.9]
+
+  rsync failed -- run git annex again to resume file transfer
+
+GPGHMACSHA1--91234b770b34eeff811d09c97ce94bb2398b3d72
+     3922730 100%  623.81kB/s    0:00:06 (xfer#1, to-check=0/1)
+
+sent 30 bytes  received 3923328 bytes  523114.40 bytes/sec
+total size is 3922730  speedup is 1.00
+(checksum...) ok
+</code>
+
+(observed with debian's git-annex 3.20121017).
+
+while this does output an "ok" at th end and a zero exit status, having such messages in an fsck is highly irritating.
+
+i see two ways to enhance the situation:
+
+* silence the "not found" error when the file is found in another location
+* a way to rename the files in the remote (i guess the aaa/bbb part can be derived from the file name; in that case, that could even be done w/o network interaction).

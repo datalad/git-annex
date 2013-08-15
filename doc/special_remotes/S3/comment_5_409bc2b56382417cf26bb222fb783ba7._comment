@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 5"
+ date="2012-08-09T18:01:06Z"
+ content="""
+I guess this could be useful if you have a *lot* of buckets already in use at S3, or if you want to be able to have a lot of distinct S3 special remotes. Implemented the `fileprefix` setting. Note that I have not tested it, beyond checking it builds, since I let my S3 account expire. Your testing would be appreciated.
+
+"""]]

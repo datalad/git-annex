@@ -1,0 +1,9 @@
+Managed to find a minimal, 20 line test case for at least one of the ways
+git-annex was hanging with GHC's threaded runtime. Sent it off to
+haskell-cafe for analysis.
+[thread](http://thread.gmane.org/gmane.comp.lang.haskell.cafe/99334)
+
+Further managed to narrow the bug down to MissingH's use of logging code,
+that git-annex doesn't use. [bug report](http://bugs.debian.org/681621).
+So, I can at least get around this problem with a modified version of
+MissingH. Hopefully that was the only thing causing the hangs I was seeing!

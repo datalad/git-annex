@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 3"
+ date="2011-03-23T02:07:49Z"
+ content="""
+Ah yes, I feel kinda stupid in hindsight.
+
+As the central server is most likely a common use case, would you object if I added that to the walkthrough? If you have any best practices on how to automate a push with every copy to a bare remote? AFAIK, git does not store information about bare/non-bare remotes, but this could easily be put into .git/config by git annex.
+
+-- RichiH
+"""]]

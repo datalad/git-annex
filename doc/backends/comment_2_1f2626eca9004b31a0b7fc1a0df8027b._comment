@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7eqCMh_B7mxE0tnchbr0JoYu11FUAFRY"
+ nickname="Stéphane"
+ subject="Tracking remote copies not even stored locally / URL backend turned into a &quot;special remote&quot;."
+ date="2013-01-03T10:59:35Z"
+ content="""
+In case you came here looking for the URL backend.
+
+## The URL backend
+
+Several documents on the web refer to a special \"URL backend\", e.g. [Large file management with git-annex [LWN.net]](http://lwn.net/Articles/419241/).  Historical content will never be updated yet it drives people to living places.
+
+## Why a URL backend ?
+
+It is interesting because you can:
+
+* let `git-annex` rest on the fact that some documents are available as extra copies available at any time (but from something that is not a git repository).
+* track these documents like your own with all git features, which opens up some truly marvelous combinations, which this margin is too narrow to contain (Pierre d.F. wouldn't disapprove ;-).
+
+## How/Where now ?
+
+`git-annex` used to have a URL backend. It seems that the design changed into a \"special remote\" feature, not limited to the web. You can now track files available through plain directories, rsync, webdav, some cloud storage, etc, even clay tablets. For details see [[special remotes]].
+
+"""]]

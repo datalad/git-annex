@@ -1,0 +1,13 @@
+the build is currently borked with
+
+<pre>
+ghc -O2 -threaded -Wall -ignore-package monads-fd -ignore-package monads-tf -outputdir tmp -IUtility -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING -DWITH_KQUEUE -DOSX --make git-annex -o tmp/git-annex Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
+Assistant/Install.hs:19:8:
+Could not find module `Utility'
+Use -v to see a list of the files searched for.
+make: *** [git-annex] Error 1
+</pre>
+
+This was first introduced at commit e88e3ba
+
+> oops, -DOSX is not a good idea. [[done]] --[[Joey]] 

@@ -1,0 +1,10 @@
+Similar to how
+
+    git commit -m 'foo'
+
+works, if I run 
+
+    git annex sync -m 'my hovercraft is full of eels'
+
+git annex should use that commit message instead of the default ones. That way, I could use [[sync]] directly and not be forced to commit prior to syncing just to make sure I have a useful commit message.
+

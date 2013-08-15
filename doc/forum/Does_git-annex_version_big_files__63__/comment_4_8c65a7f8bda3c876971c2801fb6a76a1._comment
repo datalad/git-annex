@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.27"
+ subject="comment 4"
+ date="2012-11-12T15:17:53Z"
+ content="""
+Let's suppose you delete a file from git, and sync the deletion. Later, you can run `git annex unused` and it will find content not needed by any branch of the git repository. And if you choose, you can use `git annex dropunused` to delete that content.
+"""]]

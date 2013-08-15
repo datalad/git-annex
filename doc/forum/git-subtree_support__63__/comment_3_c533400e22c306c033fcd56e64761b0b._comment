@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2012-01-03T18:42:08Z"
+ content="""
+You can make it a remote without merging its contents. Git will not merge its contents by default unless it's named \"origin\". git-annex will be prefectly happy with that.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="yatesa"
+ ip="171.25.193.21"
+ subject="Secret URL token"
+ date="2012-06-19T03:41:16Z"
+ content="""
+> Instruct the user's web browser to open an url that contains a secret token. This guards against other users on the same system.
+
+How will you implement that? Running \"sensible-browser URL\" would be the obvious way, but the secret URL would show up in a well timed ps listing. (And depending on the browser, ps may show the URL the entire time it's running.)
+"""]]

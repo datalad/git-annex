@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2012-08-01T21:19:03Z"
+ content="""
+Please use `$XDG_CONFIG_HOME` and fall back to `~/.config` if that's not defined.
+"""]]

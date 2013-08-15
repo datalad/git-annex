@@ -1,0 +1,79 @@
+What steps will reproduce the problem?
+
+	$ git annex initremote rsyncremote type=rsync rsyncurl=myuser@rsync.hidrive.strato.com:/users/myuser/git-annex/Music/ encryption=0xC597DECC177AFD7C
+	$ git annex get --from rsyncremote "file"
+
+What is the expected output? What do you see instead?
+
+I expect that the requested file is copied as for every other remote, but instead I get this error:
+
+----------------------------------------
+	get <file> (from rsyncremote...) (gpg) 
+	rsync: change_dir "/users/myuser/git-annex/Music/0e5/a5b/'GPGHMACSHA1--3afd32ab8e70ac329262adeb770c330b0845b1e0" failed: No such file or directory (2)
+
+	sent 8 bytes  received 10 bytes  7.20 bytes/sec
+	total size is 0  speedup is 0.00
+	rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1518) [Receiver=3.0.9]
+
+	  rsync failed -- run git annex again to resume file transfer
+
+	rsync: change_dir "/users/myuser/git-annex/Music/8k/QZ/'GPGHMACSHA1--3afd32ab8e70ac329262adeb770c330b0845b1e0" failed: No such file or directory (2)
+
+	sent 8 bytes  received 10 bytes  36.00 bytes/sec
+	total size is 0  speedup is 0.00
+	rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1518) [Receiver=3.0.9]
+
+	  rsync failed -- run git annex again to resume file transfer
+failed
+	git-annex: get: 1 failed
+----------------------------------------
+
+I can verify that the directory /users/myuser/git-annex/Music/0e5/a5b/GPGHMACSHA1--3afd32ab8e70ac329262adeb770c330b0845b1e0 exists in the rsync remote, without the ' character.
+
+What version of git-annex are you using? On what operating system?
+
+I tried versions 3.20120315 and 3.20120430 on Gentoo linux.
+
+	$ uname -a
+	Linux odin 3.3.1-gentoo-odin #1 SMP Sat Apr 7 21:18:11 CEST 2012 x86_64 Intel(R) Core(TM) i5 CPU M 560 @ 2.67GHz GenuineIntel GNU/Linux
+
+	$ ghc --version
+	The Glorious Glasgow Haskell Compilation System, version 7.4.1
+
+Please provide any additional information below.
+
+The rsync remote config in .git/config:
+
+	[remote "rsyncremote"]
+		annex-rsyncurl = myuser@rsync.hidrive.strato.com:/users/myuser/git-annex/Music/
+		annex-uuid = "UUID"
+
+> Here's what the --debug flag shows is being run: --[[Joey]] 
+
+	Running: rsync ["--progress","--inplace","joey@localhost:/tmp/Music/d98/a3c/'GPGHMACSHA1--878c3a3f59965bd87b4738ab29562efd215b954c/GPGHMACSHA1--878c3a3f59965bd87b4738ab29562efd215b954c'","/home/joey/tmp/x/.git/annex/tmp/GPGHMACSHA1--878c3a3f59965bd87b4738ab29562efd215b954c"] 
+
+> But, this works for me, here, despite containing the quoting!
+> That's because here it's using rsync over ssh, which actually requires
+> that quoting. Are you using rsync
+> over the rsync protocol? If so, the workaround is to explicitly make
+> the rsyncurl start with `rsync://`
+> 
+> And if this is the case, I need
+> to adjust the code in git-annex that determines if it's using ssh or
+> the rsync protocol. It assumes that (and this is what the rsync man 
+> says AFAICS) that the rsync protocol is only used if the url starts
+> with `rsync://` or contains `::`.
+> 
+>> Nope, it is indeed using rsync over ssh as git-annex thought.
+> 
+> Hmm, I see that `hidrive.strato.com` is some kind of rsync provider?
+> Perhaps they do something with rsync over ssh that
+> avoids the need for shell quoting. For example, they might pass incoming
+> ssh connections directly into rsync, bypassing the shell
+> -- which avoids the need for this quoting. Any details you can provide
+> about them would probably be useful then. Ie, do they really use rsync
+> over ssh, is it really a `rsync.net` type rsync provider? 
+>  --[[Joey]]
+> 
+>> This was the case, and the shellescape=no config option has been added
+>> to rsync special remotes to deal with it. [[done]] --[[Joey]] 

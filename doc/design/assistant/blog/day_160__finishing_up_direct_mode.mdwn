@@ -1,0 +1,10 @@
+A few final bits and pieces of direct mode. Fixed a few more bugs in the
+assistant. Made all git-annex commands that don't work at
+all, or only partially work in direct mode, refuse to run at all. Also,
+some optimisations.
+
+I'll surely need to revisit direct mode later and make more commands
+support it; `fsck` and `add` especially.
+But the only thing I'd like to deal with before I make a release with direct
+mode is the problem of files being able to be modified while they're
+being transferred, which can result in data loss.

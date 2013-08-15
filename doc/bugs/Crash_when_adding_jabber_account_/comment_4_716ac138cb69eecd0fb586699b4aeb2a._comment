@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmu416zAYgYzbXVZAe30MiXoOWO4z6nGX8"
+ nickname="Johannes"
+ subject="signal 11"
+ date="2013-04-03T15:13:05Z"
+ content="""
+I'm getting a \"error: git-annex died of signal 11\" when trying to add a self-hosted jabber account. I'm using ejabberd and a self-signed SSL certificate.
+"""]]

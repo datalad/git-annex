@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://dzsino.myopenid.com/"
+ nickname="dzsino"
+ subject="me2"
+ date="2013-06-30T13:16:38Z"
+ content="""
+i'm using cabal on my mac to stay on the bleeding edge, but it still picks up version 0601, which it cannot install with yesod-1.1.9.3 failing to build (so it's not a git-annex problem). I hope a new release would fix that too..
+"""]]

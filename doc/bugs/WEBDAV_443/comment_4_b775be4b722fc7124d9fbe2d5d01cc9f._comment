@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 4"
+ date="2013-03-17T21:19:20Z"
+ content="""
+Digging into your error message a bit more, it looks like this is not a http proxy (or if it is, it's letting some connections through). 
+
+git-annex is testing the box.com WebDAV server, by performing 3 actions:
+
+1. Creating the requested subdirectory on it, in your case \"git-annex\". 
+2. Creating an empty file to that directory, named \"git-annex-test\"
+3. Deleting the file.
+
+Step 2 is failing. Which sort of suggests step 1 succeeded, but who knows..
+
+So, if you go look at your files on box.com, do you have a git-annex directory?
+
+Does git-annex/git-annex-test exist?
+
+Does it also fail if you use a different directory, like https://www.box.com/dav/git-annex2 ?
+"""]]

@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="praet"
+ ip="81.240.27.89"
+ subject="Brainfart"
+ date="2011-03-20T20:11:27Z"
+ content="""
+Haven't given these any serious thought (which will become apparent in a moment) but hoping they will give birth to some less retarded ideas:
+
+---
+
+### Bait'n'switch
+
+- pre-commit: Replace all staged symlinks (when pointing to annexed files) with plaintext files containing the key of their respective annexed content, re-stage, and add their paths (relative to repo root) to .gitignore.
+- post-commit: Replace the plaintext files with (git annex fix'ed) symlinks.
+
+In doing so, the blobs to be committed can remain unaltered, irrespective of their related files' depth in the directory hierarchy.
+
+To prevent git from reporting ALL annexed files as unstaged changes after running post-commit hook, their paths would need to be added to .gitignore.
+
+This wouldn't cause any issues when adding files, very little when modifying files (would need some alterations to \"git annex unlock\"), BUT would make git totally oblivious to removals...
+
+---
+
+### Manifest-based (re)population
+- Keep a manifest of all annexed files (key + relative path)
+- DON'T track the symlinks (.gitignore)
+- Populate/update the directory structure using a post-commit hook.
+
+... thus circumventing the issue entirely, yet diffstats (et al.) would be rather uninformative.
+
+---
+
+***Wide open to suggestions, criticism, mocking laughter and finger-pointing :)***
+"""]]

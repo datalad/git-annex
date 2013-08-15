@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="dhess"
+ ip="173.247.200.7"
+ subject="Choose a friendly/unintimidating name"
+ date="2012-09-13T00:32:15Z"
+ content="""
+You've already decided to accommodate mom by choosing ~/Desktop as the default location, so you should be consistent: choose a name that means something to people. \"Annex\" and \"GitAnnex\" are good branding, but not very user-friendly. (Contrast with \"Dropbox\", the default folder name for Dropbox -- good branding *and* reasonably meaningful.)
+
+\"Shared\" is friendly, but implies that you're sharing with other people, which isn't necessarily the case. (You should reserve the name \"Shared\" for a sub-directory of the default directory, anyway, if/when the time comes to implement sharing URLs to your g-a-a objects with other users.)
+
+I think that \"Synced\" is fine. Most English-speakers will know what it means, and it's a good description of what g-a-a does.
+
+Don't worry whether we like it or not. Nobody who comments here, nor, likely, anyone who votes, will use the default name anyway ;)
+"""]]

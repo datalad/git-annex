@@ -1,0 +1,8 @@
+Talks and screencasts about git-annex.
+
+These videos are also available in a public git-annex repository
+`git clone http://downloads.kitenet.net/.git/`
+
+[[!inline pages="./videos/* and !./videos/*/* and !*/Discussion" show="2"]]
+
+[[!inline pages="./videos/* and !./videos/*/* and !*/Discussion" show="0" archive=yes skip=2 feeds=no]]

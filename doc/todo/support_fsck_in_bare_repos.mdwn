@@ -1,0 +1,17 @@
+What is says on the tin:
+
+    22:56:54 < RichiH> joeyh_: by the way, i have been thinking about fsck on bare repos
+    22:57:37 < RichiH> joeyh_: the best i could come with is to have a bare and a non-bare access the same repo store
+    22:58:00 < RichiH> joeyh_: alternatively, with the SHA* backend, you have all the information to verify that the local data is correct
+    22:58:41 < RichiH> and verifying that would already be a plus. if there  really _is_ a problem, having the SHA is enough to track issues down
+    23:09:50 < joeyh_> oh, I think I have code that fsck could use on bare repos already.. just a matter of wiring it up
+    23:10:42 < joeyh_> feel free to reopen a bug or whatever so I remember.. the unused command's branch content enumeration could be used in a bare repo
+    23:14:51 < joeyh_> unused/dropunused could work in bare repos too btw
+
+> Also `status`'s total annex keys/size could be handled for bare repos. --[[Joey]] 
+
+>> Fsck is done. Rest not done yet. --[[Joey]]
+
+>>> all [[done]]! --[[Joey]] 
+
+[[!meta title="support unused, dropunused in bare repos"]]

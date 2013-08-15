@@ -1,0 +1,6 @@
+Is there likely to be any problem in pointing different annexes to the same special remote (i.e. rsync/box.com/etc.) ?
+
+As the objects are stored based on their SHA256 key the expectation is that the chance of collision is is small.
+
+The only problem I can foresee is where the same content is stored in more than one annex and it is deleted in the remote in one annex, but not the other - there won't be any protection against that, but for non-overlapping content this risk should be negligible.
+

@@ -1,0 +1,26 @@
+Unexpectedly managed a mostly productive day today. 
+
+Went ahead with making the assistant run separate `git-annex` processes for
+transfers. This will currently fail if git-annex is not installed in PATH.
+(Deferred dealing with that.)
+
+To stop a transfer, the webapp needs to signal not just the git-annex
+process, but all its children. I'm using process groups for this, which is
+working, but I'm not extremely happy with.
+
+Anyway, the webapp's UI can now be used for stopping transfers, and it
+wasn't far from there to also implementing pausing of transfers. 
+
+Pausing a transfer is actually the same as stopping it, except a special
+signal is sent to the transfer control thread, which keeps running, despite
+the git-annex process having been killed, waits for a special resume
+signal, and restarts the transfer. This way a paused transfer continues to
+occupy a transfer slot, which prevents other queued transfers from running.
+This seems to be the behavior that makes sense.
+
+Still need to wire up the webapp's button for starting a transfer. For a
+paused transfer, that will just need to resume it. I have not decided what
+the button should do when used on a transfer that is queued but not running
+yet. Maybe it forces it to run even if all transfer slots are already in
+use? Maybe it stops one of the currently running transfers to free up a
+slot?

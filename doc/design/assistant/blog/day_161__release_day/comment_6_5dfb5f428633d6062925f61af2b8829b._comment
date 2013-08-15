@@ -1,0 +1,23 @@
+[[!comment format=c
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 6"
+ date="2013-01-03T22:55:41Z"
+ content="""
+another problem:
+1. If you add a removable drive via the gui, you can not remove it anymore (from the gui)
+2. If you delete the directory on the removable drive, git-annex assistant silently fails
+to recreate the directory and start fresh.
+2/a. on the gui, there is no indication something is wrong with the removable drive repository
+2/b on the terminal it shows only this: 
+fatal: Not a git repository: '/mnt/dxd/annex/.git'
+
+On the main page it shows the two repositories, but on the upper right corner, the dropdown menu
+contains only the original repository and not the removeable drive repository.
+
+I stop spaming now...
+
+Laszlo
+
+
+"""]]

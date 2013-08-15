@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 9"
+ date="2011-12-23T16:07:39Z"
+ content="""
+Adam, to answer a lot of points breifly..
+
+* --include='*' makes find list files whether their contents are present or not
+* Your perl script is not O(n). Inserting into perl hash tables has overhead of minimum O(n log n). Not counting the overhead of resizing hash tables, the grevious slowdown if the bucket size is overcome by data (it probably falls back to a linked list or something then), and the overhead of traversing the hash tables to get data out.
+* I think that git-annex's set of file matching options is coming along nicely, and new ones can easily be added, so see no need to pull in unix find(1).
+* Your memory size calculations ignore the overhead of a hash table or other data structure to store the data in, which will tend to be more than the actual data size it's storing.  I estimate your 50 million number is off by at least one order of magnitude, and more likely two; in any case I don't want git-annex to use 1 gb of ram.
+* Little known fact: sort(1) will use a temp file as a buffer if too much memory is needed to hold the data to sort. It's also written in the most efficient language possible and has been ruthlessly optimised for 30 years, so I would be very surprised if it was not the best choice.
+"""]]

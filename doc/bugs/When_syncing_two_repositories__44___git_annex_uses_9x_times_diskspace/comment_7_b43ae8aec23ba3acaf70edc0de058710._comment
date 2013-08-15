@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 7"
+ date="2013-03-02T11:03:46Z"
+ content="""
+    Ok, quick question: Should I issue git config gc.auto 0, in both repositories? 
+    (it puts variable inside .git/config)
+
+    With this gc.auto 0, should the \"typechange: \" logging change? (because it still in the log)
+
+    I'm testing the whole experience, and report back, 
+    also when new build is available i will switch to it, to report about the logging size.
+
+Thank you for your fast response!
+
+"""]]

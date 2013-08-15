@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 1"
+ date="2012-12-19T17:19:28Z"
+ content="""
+I had similar issues when I tried to use \"present\" settings a while back, except it was with adding files.  I would add a file and then it would be immediately dropped (because it was not yet \"present\" while it was being added?).  I gave up and just started using \"archive\" subdirectories for things I didn't want to be present.  Even so I'm having some confusing issues with the assistant.  It keeps dropping certain files which are in \"backup\" repositories and therefore should never have anything dropped.  I haven't isolated what's going on to the degree I can get a good bug report together.  But I'm having a hard time trusting assistant and its content settings to do what I want.  I have a couple scripts that do things like:
+
+git annex copy --not --in=usbdrive --to=usbdrive
+
+to populate my backup repos, and these seem much more reliable than the assistant.
+
+"""]]

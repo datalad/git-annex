@@ -1,0 +1,31 @@
+Hello.
+
+My case: I have somehow managed to get my repo, with quite much stuff inside it messed up.
+
+There is single directory 'cities' containing quite many files (>10k) that i would rather see gone (and keep the tar.bz version of it ..). I tried doing 
+
+    git drop --force
+
+that works fine, but the files are still there after sync. 
+
+git annex unused says just 'ok' so i guess it thinks they are still used somewhere. I tried to look where, but i ended up just doing git annex drop -f my_remote_here test_file_name for each of my remotes. This doesnt help. 
+How can i get rid of these files? Doing git annex fsck shows that 
+
+
+So, try to search what is the key:
+
+     % ls -lah cities/diskcache/config.cfg
+     lrwxrwxrwx 1 XX XXX 190 Nov 29 05:52 cities/diskcache/config.cfg -> ../../../../.git/annex/objects/qm/M6/SHA256-s32--4f5ce34d1b0b8d854a315530b2fdcbfa9c3067636a2aa5433a04402db4151dce/SHA256-s32--4f5ce34d1b0b8d854a315530b2fdcbfa9c3067636a2aa5433a04402db4151dce
+     sundberg@sundberg-MS-7680 ~/git-repository/ubuntu.iso/Archive/Maps
+     % git log --stat --all -SSHA256-s32--4f5ce34d1b0b8d854a315530b2fdcbfa9c3067636a2aa5433a04402db4151dce/SHA256-s32--4f5ce34d1b0b8d854a315530b2fdcbfa9c3067636a2aa5433a04402db4151dce
+     commit 51a57a023774ff80408210828f298f5c42a7e0be
+     Author: XXXX
+     Date:   Sun Dec 9 13:42:40 2012 +0200
+        git-annex automatic sync
+     Archive/Maps/cities/diskcache/config.cfg |    1 +
+     1 file changed, 1 insertion(+)
+
+So how can i deduce what is the remote i should try to clean up ?
+
+
+Thanks!

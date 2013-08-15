@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="how to drop one of the urls?"
+ date="2013-04-12T14:53:29Z"
+ content="""
+is there a way to remove one of the urls? e.g. if I have
+
+    $> git annex whereis fail2ban_logo.png
+    whereis fail2ban_logo.png (1 copy) 
+      	00000000-0000-0000-0000-000000000001 -- web
+
+      web: http://www.fail2ban.org/fail2ban_logo.png
+      web: http://www.onerussian.com/tmp/statsmodes.png
+    ok
+
+and would like to remove the fail2ban.org one... ?
+"""]]

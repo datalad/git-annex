@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWg4VvDTer9f49Y3z-R0AH16P4d1ygotA"
+ nickname="Tobias"
+ subject="User defined server"
+ date="2013-04-17T09:45:59Z"
+ content="""
+It would be nice if you could expand the XMPP setup in the assistant to support an \"advanced\" settings view where a custom server could be defined.
+
+Example: I have a google Apps domain called mytest.com, with the users bla1@mytest.com and bla2@mytest.com. When trying to add either of those accounts to the assistant XMPP will try to use mytest.com as the jabber server, and not googles server.
+
+"""]]

@@ -1,0 +1,23 @@
+Turns out my old Droid has such an old version of Android (2.2) that
+it doesn't work with any binaries produced by my haskell cross-compiler. I
+think it's using a symbol not in its version of libc. Since upgrading this
+particular phone is a ugly process and the hardware is dying anyway (bad
+USB power connecter), I have given up on using it, and ordered an Android
+tablet instead to use for testing. Until that arrives, no Android. Bah.
+Wanted to get the Android app working in April.
+
+Instead, today I worked on making the webapp require less redundant
+password entry when adding multiple repositories using the same cloud
+provider. This is especially needed for the Internet Archive, since users
+will often want to have quite a few repositories, for different IA items.
+Implemented it for box.com, and Amazon too.
+
+Francois Marier has built an Ubuntu PPA for git-annex, containing the
+current version, with the assistant and webapp. It's targeted at Precise,
+but I think will probably also work with newer releases.
+<https://launchpad.net/~fmarier/+archive/ppa>
+
+Probably while I'm waiting to work on Android again, I will try to
+improve the situation with using a single XMPP account for multiple
+repositories. Spent a while today thinking through ways to improve the
+design, and have some ideas.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://kaizer.se/"
+ nickname="ulrik.sverdrup"
+ subject="comment 6"
+ date="2013-03-06T05:30:16Z"
+ content="""
+I'm not very clear, sorry. S2K is not iterative in the way for example PBKDF2 is. It will hash a very long repetition of salt + passphrase + salt + passphrase etc in one go. The repetition of this happens if more key bits than the hash digest size are needed.
+"""]]

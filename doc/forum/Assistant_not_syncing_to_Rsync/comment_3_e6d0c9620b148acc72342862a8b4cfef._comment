@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 3"
+ date="2013-01-10T18:44:00Z"
+ content="""
+Sounds like copy works then?
+
+What version of git-annex do you have installed? A bug was fixed on December 11th, before that the assistant never stored things in repositories configured as backups.
+"""]]

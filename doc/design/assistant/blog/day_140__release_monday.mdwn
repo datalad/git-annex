@@ -1,0 +1,25 @@
+New release today, the main improvements in this one being WebDAV,
+Box.com, and Amazon glacier support. [[/assistant/release_notes]]
+
+Collected together all the OSX problem reports into one place
+at [[/assistant/OSX]], to make it easier to get an overview of them.
+
+Did some testing of the OSX standalone app and found that it was missing
+some libraries. It seems some new libraries it's using themselves depend on
+other libraries, and `otool -L` doesn't recursively resolve this. 
+
+So I converted the simplistic shell script it was using to install
+libraries into a haskell progream that recursively adds libraries until
+there are no more to add. It's pulling in quite a lot more libraries now.
+This may fix some of the problems that have been reported with the
+standalone app; I don't really know since I can only do very limited
+testing on OSX.
+
+Still working on getting the standalone builds for this release done,
+should be done by the end of today.
+
+Also found a real stinker of a bug in `dirContentsRecursive`, which was
+just completely broken, apparently since day 1. Fixing that has certianly
+fixed buggy behavior of `git annex import`. It seems that the other
+user of it, the transfer log code, luckily avoided the deep directory
+trees that triggered the bug.

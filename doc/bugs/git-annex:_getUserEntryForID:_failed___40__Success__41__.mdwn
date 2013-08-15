@@ -1,0 +1,13 @@
+What steps will reproduce the problem?
+ Start "./git-annex-webapp"
+
+What is the expected output? What do you see instead?
+ The webapp should start, but I get the error "git-annex: getUserEntryForID: failed (Success)"
+
+What version of git-annex are you using? On what operating system?
+ 3.20121017 on "Ubuntu 10.04.4 LTS" 32-Bit
+
+Please provide any additional information below.
+
+
+> [[fixed|done]] --[[Joey]] 

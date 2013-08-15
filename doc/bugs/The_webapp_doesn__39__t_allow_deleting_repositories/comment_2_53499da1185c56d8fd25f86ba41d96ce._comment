@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="it also doesn't recognize when a local repository has been deleted manually"
+ date="2013-01-09T16:13:41Z"
+ content="""
+I created a new local repository to play with the new Direct Mode features.  I ended up deleting it (deleting the directory), but when I launched the assistant, I was still given the option of \"switching repository\" to the now-deleted one.  It threw the error Internal Server Error (user error (git [\"config\",\"--null\",\"--list\"] exited 126)).
+
+> Fixed this. --[[Joey]]
+
+"""]]

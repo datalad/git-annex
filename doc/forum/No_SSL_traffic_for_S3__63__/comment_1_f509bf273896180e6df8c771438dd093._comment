@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 1"
+ date="2013-01-15T20:25:42Z"
+ content="""
+<http://hackage.haskell.org/package/hS3> is a Haskell library for S3, which git-annex uses. It does not support HTTPS. I'm sure its author would appreciate help, or maybe even just gentle motivation.
+
+FWIW, I think that S3's authorization is designed to be pretty secure even over an un-encrypted transport.
+It uses HMAC to sign the request with your AWS credentials securely, and includes a date that is hopefully used to avoid replay attacks.
+"""]]

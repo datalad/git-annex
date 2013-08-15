@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="basak"
+ subject="comment 2"
+ date="2012-09-21T22:21:04Z"
+ content="""
+I've created a glacier command line interface that integrates with git-annex [here](https://github.com/basak/glacier-cli), currently using the hook special remote mechanism. To get around the time delay, operations which require a job submission will submit the job and then fail. Retrying again four hours later should then succeed. It seems to work pretty well with git-annex.
+"""]]

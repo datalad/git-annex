@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-25T00:50:01Z"
+ content="""
+Does the uuid that whereis prints next to the name of the s3 remote match the annex.<remote>.uuid setting for that remote in .git/config?
+"""]]

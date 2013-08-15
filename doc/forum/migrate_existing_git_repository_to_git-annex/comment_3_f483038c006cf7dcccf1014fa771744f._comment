@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="tyger"
+ ip="80.66.20.180"
+ subject="comment 3"
+ date="2011-03-02T08:15:37Z"
+ content="""
+> Sounds like it might be enough to add a switch to git-annex that overrides where it considers the top of the git repository to be?
+
+It should sufficient to honor GIT_DIR/GIT_WORK_TREE/GIT_INDEX_FILE environment variables. git filter-branch sets GIT_WORK_TREE to ., but this can be mitigated by starting the filter script with 'GIT_WORK_TREE=$(pwd $GIT_WORK_TREE)'. E.g. GIT_DIR=/home/tyger/repo/.git, GIT_WORK_TREE=/home/tyger/repo/.git-rewrite/t, then git annex should be able to compute the correct relative path or maybe use absolute pathes in symlinks.
+
+Another problem I observed is that git annex add automatically commits the symlink; this behaviour doesn't work well with filter-tree. git annex commits the wrong path (.git-rewrite/t/LINK instead of LINK). Also filter-tree doesn't expect that the filter script commmits anything; new files in the temporary work tree will be committed by filter-tree on each iteration of the filter script (missing files will be removed).
+"""]]

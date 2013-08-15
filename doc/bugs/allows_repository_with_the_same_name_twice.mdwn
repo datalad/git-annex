@@ -1,0 +1,24 @@
+What steps will reproduce the problem?
+
+Unsure. I believe:
+
+* Add a git remote
+* Mark it as dead
+* Remove the git remote, re-add with the same name
+
+What is the expected output? What do you see instead?
+
+When I do a `git annex status` I see:
+
+ 	04e701b5-8a22-4391-ad74-d75dde715c7b -- bigserver
+ 	6ddfda5d-0f17-45a9-b41a-2a626a823101 -- bigserver
+
+What version of git-annex are you using? On what operating system?
+
+4.20130323 on OSX and Linux
+
+Please provide any additional information below.
+
+Trying to get a file from bigserver kept on failing with the message "Try making some of these repositories available". Which led me on a wild goose chases blaming SSH keys and PATH issues.
+
+> [[done]]; not a bug --[[Joey]]

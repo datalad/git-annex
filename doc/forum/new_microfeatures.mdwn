@@ -1,0 +1,59 @@
+I'm soliciting ideas for new small features that let git-annex do things that currently have to be done manually or whatever.
+
+Here are a few I've been considering:
+
+---
+
+* --numcopies would be a useful command line switch.
+  > Update: Added. Also allows for things like `git annex drop --numcopies=2` when in a repo that normally needs 3 copies, if you need
+  > to urgently free up space.
+* A way to make `drop` and other commands temporarily trust a given remote, or possibly all remotes. 
+
+Combined, this would allow `git annex drop --numcopies=2 --trust=repoa --trust=repob` to remove files that have been replicated out to the other 2 repositories, which could be offline. (Slightly unsafe, but in this case the files are podcasts so not really.)
+
+> Update: done --[[Joey]] 
+
+---
+
+[[wishlist:_git-annex_replicate]] suggests some way for git-annex to have the smarts to copy content around on its own to ensure numcopies is satisfied. I'd be satisfied with a `git annex copy --to foo --if-needed-by-numcopies`
+
+  > Contrary to the "basic" solution, I would love to have a git annex distribute which is smart enough to simply distribute all data according to certain rules. My ideal, personal use case during the next holidays where I will have two external disks, several SD cards with 32 GB each and a local disk with 20 GB (yes....) would be:
+
+    cd ~/photos.annex # this repository does not have any objects!
+    git annex inject --bare /path/to/SD/card  # this adds softlinks, but does **not** add anything to the index. it would calculate checksums (if enabled) and have to add a temporary location list, though
+    git annex distribute # this checks the config. it would see that my two external disks have a low cost whereas the two remotes have a higher cost.
+     # check numcopies. it's 3
+     # copy to external disk one (cost x)
+     # copy to external disk two (cost x)
+     # copy to remote one (cost x * 2)
+     # remove file from temporary tracking list
+    git annex fsck # everything ok. yay!
+
+Come to think of it, the inject --bare thing is probably not a microfeature. Should I add a new wishlist item for that? -- RichiH
+
+> I've thought about such things before; does not seem really micro and I'm unsure how well it would work, but it would be worth a [[todo]]. --[[Joey]]
+
+>> Update: Done as --auto. --[[Joey]] 
+
+---
+
+Along similar lines, it might be nice to have a mode where git-annex tries to fill up a disk up to the `annex.diskreserve` with files, preferring files that have relatively few copies. Then as storage prices continue to fall, new large drives could just be plopped in and git-annex used to fill it up in a way that improves the overall redundancy without needing to manually pick and choose.
+
+> Update: git annex get --auto basically does this; you can tune
+> --numcopies on the fly to make it get more files than needed by the
+> current numcopies setting. --[[Joey]] 
+
+---
+
+If a remote could send on received files to another remote, I could use my own local bandwith efficiently while still having my git-annex repos replicate data. -- RichiH
+
+---
+
+Really micro:
+
+    % grep annex-push .git/config
+        annex-push = !git pull && git annex add . && git annex copy . --to origin --fast --quiet && git commit -a -m "$HOST $(date +%F--%H-%M-%S-%Z)" && git push
+    %
+
+-- RichiH
+--[[Joey]]

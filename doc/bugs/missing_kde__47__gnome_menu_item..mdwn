@@ -1,0 +1,29 @@
+What steps will reproduce the problem?
+  apt-get install git-annex
+
+
+
+What is the expected output?
+ a menu item at kde or gnome at internet> Git Annex , as
+http://git-annex.branchable.com/assistant/  shows.
+
+ What do you see instead? no menu item.
+
+
+What version of git-annex are you using?
+Version: 1:1.7.10.4-1+wheezy1
+
+ On what operating system?
+Wheezy
+
+
+ Also
+I just installed git-annex on a squeeze system and had the same result.
+
+same with ubuntu precise 12.04
+
+> git-annex ships a /usr/share/applications/git-annex.desktop
+> file that provies the menu item. But there has never been a version
+> 1.7.10. I suspect this is user error; installing a version of git-annex
+> that predates the git-annex assistant and expecting it to have the
+> assistant and its menu item. [[done]] --[[Joey]] 

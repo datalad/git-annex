@@ -1,0 +1,26 @@
+From 23e96f0d948e7a26febf1745a4c373faf579c8ee Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Mon, 15 Apr 2013 16:32:31 -0400
+Subject: [PATCH] expose modules used by TH
+
+---
+ shakespeare-css.cabal | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/shakespeare-css.cabal b/shakespeare-css.cabal
+index de2497b..468353a 100644
+--- a/shakespeare-css.cabal
++++ b/shakespeare-css.cabal
+@@ -39,8 +39,8 @@ library
+ 
+     exposed-modules: Text.Cassius
+                      Text.Lucius
+-    other-modules:   Text.MkSizeType
+                      Text.Css
++    other-modules:   Text.MkSizeType
+                      Text.IndentToBrace
+                      Text.CssCommon
+     ghc-options:     -Wall
+-- 
+1.8.2.rc3
+

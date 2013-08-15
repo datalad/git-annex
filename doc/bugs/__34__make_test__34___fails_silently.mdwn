@@ -1,0 +1,4 @@
+`make test` fails silently when the test program cannot be built. This happens, for example, when attempting to compile git-annex with `QuickCheck-2.4.2`.
+
+> I've made "make test" exit nonzero if the test suite cannot be built.
+> [[done]] --[[Joey]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmnG4EuvZWse5hvgrl0XAK-U61e-0iGaao"
+ nickname="David"
+ subject="NAS?"
+ date="2012-11-25T12:27:50Z"
+ content="""
+What are you planning to support with the NAS repository type?  Will the assistant sync over NFS? I wanted to read more about this but I couldn't find anything on the design pages.
+"""]]

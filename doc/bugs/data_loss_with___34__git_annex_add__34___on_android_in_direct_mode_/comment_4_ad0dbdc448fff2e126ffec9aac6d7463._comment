@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn26WQjIP5fnMgQF_L_k3Q3UrR5v8mjRTY"
+ nickname="Ellis"
+ subject="comment 4"
+ date="2013-04-03T09:02:44Z"
+ content="""
+*The truely odd thing about this is that when git-annex adds a direct mode file, it does not touch the file at all. The file is left right where it is.*
+
+After further investigation, I've managed to reproduce the error, and it is **not** caused by git-annex, but by a limitation in my device's sdcard overlay (I can now see that I was using it in an unintended fashion).  Sorry to have taken your time with this.  However, the following information may be useful for others who might also want to use git-annex from the android console to manager their media.
+
+Some android devices don't have sdcards (they are the ones which want you to use MTP (Media Transfer Protocol) to transfer data via a USB cable).  These devices emulate an sdcard for use by apps.  On my Samsung Galaxy Nexus, the emulated sdcard is at ``/sdcard``.  If your device is rooted, you will find the equivalent \"real\" filesystem at ``/data/media/0``.  There is apparently a limitation in the sdcard emulator which causes ``mv`` commands involving multiple files to semi-randomly fail when moving files from ``/sdcard`` to ``/data/media/0``.  What happens is that the command will randomly tend to replace some of the files in the move with a hardlink to another one of the files.  I have encountered no problems when moving files from ``/sdcard`` any other destination.
+
+So **don't do this** (or variants of it):
+
+    $ mv /sdcard/DCIM/Camera/* /data/media/0/annex-on-a-good-fs/import
+
+My reason for placing the repository under ``/data/media/0/`` is so that git-annex can use a non-crippled filesystem, but at the same time other apps can access the data under ``/sdcard``.  To get around the above problem, either of these two commands can be used:
+
+    $ mv /sdcard/DCIM/Camera/* /sdcard/annex-on-a-good-fs/import
+    $ mv /data/media/0/DCIM/Camera/* /data/media/0/annex-on-a-good-fs/import
+
+@joey: the instructions say to link this bug to ``done`` when it's closed, but I don't see how to do that?  Or should it be deleted, since it wasn't a git-annex bug at all?
+"""]]

@@ -1,0 +1,107 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 5"
+ date="2011-02-08T19:56:55Z"
+ content="""
+Ah, that gave me a good clue, my system just got pretty confused with a mixture of quickcheck and testpack installs. Would it be possible to put up a list of versions of the software you are using on your development environment? (at least the minimum tested version) 
+
+I guess it shouldn't matter to most users who are going to rely on packagers to sort these dependancy issues, but it's nice to know. 
+
+Anyway, the tests build now, and they seem to fail on my (rather messy) install of haskell platform + ghc 6.12 on osx 10.6.6.
+
+<pre>
+< output that passed some tests >
+Testing 1:blackbox:0:git-annex init
+Testing 1:blackbox:1:git-annex add:0
+Testing 1:blackbox:1:git-annex add:1
+Cases: 30  Tried: 9  Errors: 0  Failures: 0test: sha1sum: executeFile: does not exist (No such file or directory)
+  git-annex: <file descriptor: 6>: hGetLine: end of file
+### Failure in: 1:blackbox:1:git-annex add:1
+add with SHA1 failed
+Testing 1:blackbox:2:git-annex setkey/fromkey
+Cases: 30  Tried: 10  Errors: 0  Failures: 1(checksum...) test: sha1sum: executeFile: does not exist (No such file or directory)
+### Error in:   1:blackbox:2:git-annex setkey/fromkey
+<file descriptor: 3>: hGetLine: end of file
+Testing 1:blackbox:3:git-annex unannex:0:no content
+Cases: 30  Tried: 11  Errors: 1  Failures: 1chmod: -R: No such file or directory
+chmod: -R: No such file or directory
+Testing 1:blackbox:3:git-annex unannex:1:with content
+### Failure in: 1:blackbox:3:git-annex unannex:1:with content
+foo is not a symlink
+Testing 1:blackbox:4:git-annex drop:0:no remotes
+Cases: 30  Tried: 13  Errors: 1  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:4:git-annex drop:0:no remotes
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:4:git-annex drop:1:with remote
+Cases: 30  Tried: 14  Errors: 2  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:4:git-annex drop:1:with remote
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:4:git-annex drop:2:untrusted remote
+Cases: 30  Tried: 15  Errors: 3  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:4:git-annex drop:2:untrusted remote
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:5:git-annex get
+Cases: 30  Tried: 16  Errors: 4  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:5:git-annex get
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:6:git-annex move
+Cases: 30  Tried: 17  Errors: 5  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:6:git-annex move
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:7:git-annex copy
+Cases: 30  Tried: 18  Errors: 6  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:7:git-annex copy
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:8:git-annex unlock/lock
+Cases: 30  Tried: 19  Errors: 7  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:8:git-annex unlock/lock
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:9:git-annex edit/commit:0
+Cases: 30  Tried: 20  Errors: 8  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:9:git-annex edit/commit:0
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:9:git-annex edit/commit:1
+Cases: 30  Tried: 21  Errors: 9  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:9:git-annex edit/commit:1
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:10:git-annex fix
+Cases: 30  Tried: 22  Errors: 10  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:10:git-annex fix
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:11:git-annex trust/untrust/semitrust
+Cases: 30  Tried: 23  Errors: 11  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:11:git-annex trust/untrust/semitrust
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:12:git-annex fsck:0
+Cases: 30  Tried: 24  Errors: 12  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:12:git-annex fsck:0
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:12:git-annex fsck:1
+Cases: 30  Tried: 25  Errors: 13  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:12:git-annex fsck:1
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:12:git-annex fsck:2
+Cases: 30  Tried: 26  Errors: 14  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:12:git-annex fsck:2
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:13:git-annex migrate:0
+Cases: 30  Tried: 27  Errors: 15  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:13:git-annex migrate:0
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:13:git-annex migrate:1
+Cases: 30  Tried: 28  Errors: 16  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:13:git-annex migrate:1
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:14:git-annex unused/dropunused
+Cases: 30  Tried: 29  Errors: 17  Failures: 2chmod: -R: No such file or directory
+### Error in:   1:blackbox:14:git-annex unused/dropunused
+.t/tmprepo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+Cases: 30  Tried: 30  Errors: 18  Failures: 2
+chmod: -R: No such file or directory
+test: .t/repo/.git/annex/objects/WORM:1297194705:20:foo/WORM:1297194705:20:foo: removeLink: permission denied (Permission denied)
+make: *** [test] Error 1
+</pre>
+
+I assumed that since the tests built, then running them shouldn't be a problem. It looks like some argument isn't being passed about for the location of the .t directory that gets created. I will check the dependancies on my system again.
+"""]]

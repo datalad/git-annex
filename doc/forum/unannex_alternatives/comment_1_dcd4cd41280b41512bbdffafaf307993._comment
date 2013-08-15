@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-02-02T00:39:10Z"
+ content="""
+Git-annex's commit hook does not prevent unannex being used. The file you unannex will not be checked into git anymore and will be a regular file again, not a git-annex symlink. 
+
+For example, here's a transcript:
+
+<pre>
+joey@gnu:~/tmp>mkdir demo
+joey@gnu:~/tmp>cd demo
+joey@gnu:~/tmp/demo>git init
+Initialized empty Git repository in /home/joey/tmp/demo/.git/
+joey@gnu:~/tmp/demo>git annex init demo
+init demo ok
+joey@gnu:~/tmp/demo>echo hi > file
+joey@gnu:~/tmp/demo>git annex add file 
+add file ok
+(Recording state in git...)
+joey@gnu:~/tmp/demo>git commit -m add
+[master 64cf267] add
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+ create mode 100644 .git-annex/WORM:1296607093:3:file.log
+ create mode 120000 file
+joey@gnu:~/tmp/demo>git annex unannex file
+unannex file ok
+(Recording state in git...)
+joey@gnu:~/tmp/demo>ls -l file
+-rw-r--r-- 1 joey joey 3 Feb  1 20:38 file
+joey@gnu:~/tmp/demo>git commit
+[master 78a09cc] unannex
+ 2 files changed, 1 insertions(+), 2 deletions(-)
+ delete mode 120000 file
+joey@gnu:~/tmp/demo>ls -l file
+-rw-r--r-- 1 joey joey 3 Feb  1 20:38 file
+joey@gnu:~/tmp/demo>git status
+# On branch master
+# Untracked files:
+#   (use \"git add <file>...\" to include in what will be committed)
+#
+#	file
+nothing added to commit but untracked files present (use \"git add\" to track)
+</pre>
+"""]]

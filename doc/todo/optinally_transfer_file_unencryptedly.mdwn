@@ -1,0 +1,6 @@
+I have a git-annex repository on a NSLU 2, and transfers are much slower over ssh compared to unencrypted transfers (no wonder at that CPU speed). For the files that I am transferring, no encryption would be necessary. Unfortunately, ssh in Debian does not support "-c none" to disable encryption.
+
+It would be nice if git-annex would have a way of conveniently transferring files in another way than SSH. I’m not sure what a good way would be – maybe launching a one-shot HTTP-server on the sending end? Haskell libraries for that would be available... Of course it is not always the case that the host reachable with "ssh foo" is also reachable via TCP at "foo:1234"... And there are surely more problem. But still, it would be nice :-)
+
+> Setting `remote.name.annex-rsync-transport = rsh` will now
+> make rsync special remotes use rsh instead of ssh. [[done]]

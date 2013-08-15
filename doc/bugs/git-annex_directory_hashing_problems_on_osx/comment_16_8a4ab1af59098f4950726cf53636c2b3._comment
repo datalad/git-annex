@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 16"
+ date="2011-04-03T16:02:33Z"
+ content="""
+I think the correct steps should be, make a backup first :) then ...
+
+1. git pull  # update your clone, and commit everything so you don't lose anything
+2. git annex fsck --fast # check the repo first, just in case
+3. rm -rf .git-annex/?? # remove the old metadata
+4. git annex fsck --fast # get git annex to regenerate it all
+5. push your changes out to your other repos, you will need to make sure git-annex is updated everywhere if there are remotes in your setup.
+
+I eventually migrated all of my own annex'd repos and I no longer have the old hashed directories but the new ones in the form
+
+    .git/annex/aaa/bbb/foo.log
+
+I did lose some tracking information but not data (as far as I can see for now), but that was quickly fixed by pushing and pulling to my bare repo which tracks most of my data.
+
+I also found that it worked a bit more reliably for me on the copies of repos that were located on case sensitive filesystems, but I guess that was expected.
+"""]]

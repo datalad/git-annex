@@ -1,0 +1,26 @@
+Apart from Tahoe-LAFS (covered by [[todo/tahoe lfs for reals]] and [[forum/tips: special_remotes/hook with tahoe-lafs]]), [[special remotes]] (which I understand as real storage backends) for other other [peer network data stores](http://en.wikipedia.org/wiki/Distributed_data_store#Peer_network_node_data_stores_2) would be interesting.
+
+I mean gnunet, freenet, BitTorrent (also trackerless).
+
+Before dropping a file locally, the BitTorrent client should check that all parts are still available from the peers.
+
+Of course, there is no guarantee assumed that the content won't disappear from the peer network in future: they act more like a cache rather than an archive on whose lifespan you decide. (I'm only not sure about gnunet now: whether there is a rule of dropping unused content from it, like in freenet.)
+
+So, a copy in peer networks shouldn't be counted on by git-annex as much as a copy on a storage you control: probably, by efault, it shouldn't let you delete the local copy if there is a copy in a peer network unless you saved it somewhere else. 
+
+(Think of such a scenario: I could save some of my public large data on external disks/DVDs and keep them at home, and also put them onto peer networks with the same nterface of git-annex which I would be used to; I would also use the git-annex interface to check from time to time that the content is still present, i.e. "cached", on the peer networks. Whenever I'm away from home, and unexpectedly need to show this content to someone, or have a look at it for some reason, I could get it from the peer network "cache".)
+
+Also networks like namecoin (derived from bitcoin) can be used as a key-value store. Despite being a peer network, a system like namecoin actually could offer the publisher more control over the lifespan of the content: he should be able to offer "financial" reward for others processing his key-value data. (But I'm not sure namecoin is designed reasonably for this reward system to work actually; but there might be appearing other similar systems.)
+
+## A different view: extend the key-value backends with ways to look for the content in other content-addressable storage systems
+We might want to look for the registered files in other [content-addressable storage systems](http://en.wikipedia.org/wiki/Content-addressable_storage#Open-source_implementations) (and also to be able to put the files there for storage).
+
+For example:
+
+* [**GNUnet**](http://en.wikipedia.org/wiki/Gnunet) uses its own hash format to address the content. git-annex could extend its own [[backends]] with a one to work with GNUnet, and by default have a built-in [[special remote|special remotes]] that would interact with GNUnet when looking for a content or storing some content. No special setup of the special remote in each repo should be necessary, because GNUnet is "global", so we'd just use the user's already configured GNUnet client. Just turning the builtin GNUnet special remote on or off should be an option (in the repo configuration, and when calling the commands that would query it, like `whereis`).
+* **freenet** is similar.
+* Similarly, a backend  for the hashes used in **BitTorrent** and **magnet links** could be used. If we want a trackerless mode, then probably it's a similar case for a "global"/built-in special remote that needs no local setup in each repo. Using a selected tracker would mean setting up a special remote in our repo.
+* **Git**  itself can be viwed as place to look for the content. There could be a corresponding backend and a builtin special remote (needing no extra setup) to look for the content among the objects stored in the local Git repo. (What if we have a copy of a file that we've put under the control of git-annex in a previous Git commit? We could get it from the object store of Git.)
+* **Venti**, [[**Tahoe-LAFS**|todo/tahoe lfs for reals]] would need a backend for their hashes, and a specially setup special remote in each repo where we'd like to use them--because these are not "global" system, we must setup the path to the instance of the filesystem we'd like to use.
+* probably, there must be other interesting cases of this kind...
+* (I'm also thinking about using somethng like a **bibliographic information** as a key, but then it wouldn't guarantee identical files: the same paper can be stored in different formats, etc. Cf. [**URNs**](http://en.wikipedia.org/wiki/Uniform_resource_name#Examples), via <http://it.slashdot.org/comments.pl?sid=3032489&cid=40907233>. Also, an URN like bibliographic information can't be computed from the file, it will have to be entered manually or obtained from another directory of URNs.)

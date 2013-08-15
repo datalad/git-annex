@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="gernot"
+ ip="213.196.216.21"
+ subject="comment 2"
+ date="2011-04-26T18:56:44Z"
+ content="""
+Thanks for the update, Joey. I think you forgot to change libghc-missingh-dev to libghc6-missingh-dev for the copy & paste instructions though.
+
+Also, after having checked that I have everything installed I'm still getting this error:
+
+	...
+	[15 of 77] Compiling Annex            ( Annex.hs, Annex.o )
+
+	Annex.hs:19:35:
+		Module `Control.Monad.State' does not export `state'
+	make[1]: *** [git-annex] Error 1
+	make[1]: Leaving directory `/home/gernot/dev/git-annex'
+	dh_auto_build: make -j1 returned exit code 2
+	make: *** [binary] Error 2
+
+"""]]

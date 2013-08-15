@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 11"
+ date="2013-03-11T05:31:04Z"
+ content="""
+I don't want to steal gadu's thunder, and I really quite like having an ecosystem of tools develop around git-annex.
+
+With that said, \"git annex status .\" now shows the disk used for all files in the current directory and below. It also shows the number of keys, and the total amount of disk those keys would use.
+
+Additionally, you can use all the standard git-annex file limiting options. For example, here I'm finding out how much disk space is used by files located on a *remote* system:
+
+<pre>
+git annex status . --in turtle
+directory: .
+local annex keys: 0
+local annex size: 0 bytes
+known annex keys: 10
+known annex size: 3 gigabytes
+</pre>
+"""]]

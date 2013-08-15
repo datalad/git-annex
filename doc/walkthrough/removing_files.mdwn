@@ -1,0 +1,17 @@
+When you're using git-annex you can `git rm` a file just like you usually
+would with git. Just like with git, this removes the file from your work
+tree, but it does not remove the file's content from the git repository.
+If you check the file back out, or revert the removal, you can get it back.
+
+Git-annex adds the ability to remove the content of a file from your local
+repository to save space. This is called "dropping" the file. 
+
+You can always drop files safely. Git-annex checks that some other
+repository still has the file before removing it.
+
+	# git annex drop iso/debian.iso
+	drop iso/Debian_5.0.iso ok
+
+Once dropped, the file will still appear in your work tree as a broken symlink.
+You can use `git annex get` to as usual to get this file back to your local
+repository.

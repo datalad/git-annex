@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2012-02-14T22:57:29Z"
+ content="""
+All that git annex fsck does is checksum the file and move it away if the checksum fails. 
+
+If bad data was somehow read from the disk that one time, what you describe could occur. I cannot think of any other way it could happen.
+"""]]

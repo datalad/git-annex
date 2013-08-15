@@ -1,0 +1,38 @@
+# NAME
+
+git-union-merge - Join branches together using a union merge
+
+# SYNOPSIS
+
+git union-merge ref ref newref
+
+# DESCRIPTION
+
+Does a union merge between two refs, storing the result in the
+specified newref.
+
+The union merge will always succeed, but assumes that files can be merged
+simply by concacenating together lines from all the oldrefs, in any order.
+So, this is useful only for branches containing log-type data.
+
+Note that this does not touch the checked out working copy. It operates
+entirely on git refs and branches.
+
+# EXAMPLE
+
+	git union-merge git-annex origin/git-annex refs/heads/git-annex 
+
+Merges the current git-annex branch, and a version from origin,
+storing the result in the git-annex branch.
+
+# BUGS
+
+File modes are not currently merged.
+
+# AUTHOR
+
+Joey Hess <joey@kitenet.net>
+
+<http://git-annex.branchable.com/>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care

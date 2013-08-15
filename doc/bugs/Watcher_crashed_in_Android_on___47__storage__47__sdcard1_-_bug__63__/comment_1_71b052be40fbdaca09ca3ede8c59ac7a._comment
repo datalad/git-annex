@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 1"
+ date="2013-07-30T18:42:32Z"
+ content="""
+You should have a `/storage/sdcard1/.git/annex/daemon.log` file. Please paste it here.
+"""]]

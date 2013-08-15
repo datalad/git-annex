@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 13"
+ date="2011-05-15T20:25:25Z"
+ content="""
+Yes, makes sense. I am so used to using --fast, I forgot a non-fast mode existed. I still think it would be a good idea to fall back to non-fast mode if --fast runs into an error from the remote, but as that is well without my abilities how about this patch?
+
+
+    From 4855510c7a84eb5d28fdada429580a8a42b7112a Mon Sep 17 00:00:00 2001
+    From: Richard Hartmann <richih.mailinglist@gmail.com>
+    Date: Sun, 15 May 2011 22:20:42 +0200
+    Subject: [PATCH] Make error in RecvKey.hs suggest possible solution
+    
+    ---
+     Command/RecvKey.hs |    2 +-
+     1 files changed, 1 insertions(+), 1 deletions(-)
+    
+    diff --git a/Command/RecvKey.hs b/Command/RecvKey.hs
+    index 126608f..b917a1c 100644
+    --- a/Command/RecvKey.hs
+    +++ b/Command/RecvKey.hs
+    @@ -27,7 +27,7 @@ start :: CommandStartKey
+     start key = do
+        present <- inAnnex key
+        when present $
+    -       error \"key is already present in annex\"
+    +       error \"key is already present in annex. If you are running copy, try without '--fast'\"
+        
+        ok <- getViaTmp key (liftIO . rsyncServerReceive)
+        if ok
+    -- 
+    1.7.4.4
+
+"""]]

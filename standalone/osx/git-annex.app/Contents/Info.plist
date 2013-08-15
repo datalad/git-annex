@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>git-annex-webapp</string>
+	<key>NSHumanReadableCopyright</key>
+	<string>GPL 3</string>
+	<key>CFBundleGetInfoString</key>
+	<string>0.0.1</string>
+	<key>CFBundleIconFile</key>
+	<string>git-annex</string>
+	<key>CFBundleIdentifier</key>
+	<string>com.branchable.git-annex</string>
+	<key>CFBundleInfoDictionaryVersion</key>
+	<string>6.0</string>
+	<key>CFBundleName</key>
+	<string>GIT-ANNEX</string>
+	<key>CFBundlePackageType</key>
+	<string>APPL</string>
+	<key>CFBundleShortVersionString</key>
+	<string>0.0.1</string>
+	<key>CFBundleSignature</key>
+	<string>git-annex</string>
+	<key>CFBundleVersion</key>
+	<string>0.0.1</string>
+	<key>LSMinimumSystemVersion</key>
+	<string>10.5</string>
+	<key>CFBundleDisplayName</key>
+	<string>Start git-annex webapp</string>
+	<key>LSMinimumSystemVersionByArchitecture</key>
+	<dict>
+		<key>i386</key>
+		<string>10.5.0</string>
+		<key>x86_64</key>
+		<string>10.6.0</string>
+	</dict>
+</dict>
+</plist>

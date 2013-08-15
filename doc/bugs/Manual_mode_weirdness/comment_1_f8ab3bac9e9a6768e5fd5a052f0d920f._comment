@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-29T16:13:10Z"
+ content="""
+Yes,  4.20130501 is broken WRT manual mode. This has been fixed for a while in the current git master branch and autobuilds and there will be a new release soon with the fix.
+"""]]

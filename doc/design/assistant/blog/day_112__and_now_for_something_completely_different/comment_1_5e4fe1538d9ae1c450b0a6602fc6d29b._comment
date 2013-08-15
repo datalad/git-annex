@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmQ4Oe5-qOANRuZel9kDvtBfQG1zlEcIzw"
+ nickname="Dominik"
+ subject="PEP is ok"
+ date="2012-10-24T05:15:38Z"
+ content="""
+PEP and pubsub are really widely used. You will have a hard time finding a server that doesn't support it.
+
+Also note XMPPs ability to send status to only selected buddies and even resources. You can globally appear as offline while sending availability to myownjid@example.com/thatannexthere.
+"""]]

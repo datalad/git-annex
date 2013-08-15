@@ -1,0 +1,46 @@
+What steps will reproduce the problem?
+
+1. Open the assistant with git-annex webapp
+2. Click add another repository
+3. Choose "add another repository"
+4. Use "/home/pierre/testme" (try and get the problem with a new directory or an existing directory)
+5. Press "Make Repository"
+5. Choose "Keep the repository separate" 
+
+What is the expected output? What do you see instead?
+
+Go to the created repository but the interface hangs forever
+I have 4 git-annex processes that use no CPUs.
+I can still use the UI by clicking around with success or even shutdown the daemon.
+If I shutdown the daemon, all git-annex process gets killed.
+
+What version of git-annex are you using? On what operating system?
+
+It is said to be git-annex version: 4.20130324 but it is actually 4.20130405 (known bug)
+
+Please provide any additional information below.
+
+
+OS: Arch linux, bin package (not installed from source)
+All tests are OK
+Nothing happens on the log pages
+
+This is so weird that I would like to see the log file but I cannot find it. I have looked at /var/log without success.
+I have tried other available version on Arch linux (AUR git-annex-bin, AUR git-annex-standalone, haskell-web git-annex) and they all exhibit the same problem.
+At that stage, what I would like to be able is to try to figure out what is going on using the log file.
+Thanks
+
+> This could happen when using the amd64 standalone build, because I 
+> forgot to install curl into its chroot, so it was not included in the
+> bundle. If the host system also lacked curl, or something prevented
+> curl from working, it would fail like this.
+> 
+> I've included curl into the amd64 standalone build. I've also made the
+> assistant fall back to using a built-in http client if it is built
+> without curl.
+> 
+> None of which helps at all with the Arch git-annex-bin hack, since
+> that binary will be built with a working curl (when my amd64 standalone
+> builder builds it), and then installed onto a system, that,
+> apparently, has a broken curl. Which is one of many reasons I cannot
+> support that hack. [[done]] --[[Joey]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 10"
+ date="2013-05-06T16:54:36Z"
+ content="""
+My estimate was indeed slightly optimistic. While I did not run the whole import, it did run slower for the later batches of files. As far as I can see, that slowdown is just because git gets slower as it has more files. So nothing I can do about it. git-annex is now scaling well itself, though.
+
+Re checksumming on startup: There was a bug that caused the assistant to re-checksum all direct mode files on startup. This bug was fixed in version 4.20130417. If you're using that version and still see it re-checksumming files, please file a new bug report about it, as this is not intended behavior.
+
+You seem to be saying that the assistant is failing to add some files, and then when stopped and restarted it finds and adds them. I don't quite know how that would happen. If you can provide a test case that I can use to reproduce that behavior, I will try to debug it.
+"""]]

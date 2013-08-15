@@ -1,0 +1,11 @@
+Got progress bars working for glacier. This needed some glacier-cli
+changes, which Robie helpfully made earlier.
+
+Spent some hours getting caught up and responding to bug reports, etc.
+
+Spent a while trying to make git-annex commands that fail to find
+any matching files to act on print a useful warning message,
+rather than the current nothing. Concluded this will be surprisingly
+hard to do, due to the multiple seek passes some commands perform. Update:
+Thought of a non-invasive and not too ugly way to do this while on my
+evening walk, and this wart is gone.

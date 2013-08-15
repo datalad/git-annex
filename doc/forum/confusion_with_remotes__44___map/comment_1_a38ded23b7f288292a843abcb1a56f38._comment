@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-10-17T19:01:21Z"
+ content="""
+My guess is that psychosis has not pulled the git-annex branch since bacon was set up (or that bacon's git-annex branch has not been pushed to origin). git-annex status only shows remotes present in git-annex:uuid.log This may be a bug.
+
+The duplicate links in the map I don't quite understand. I only see duplicate links in my maps when I have the same repository configured as two different git remotes (for example, because the same repository can be accessed two different ways). You don't seem to have that in your config.
+"""]]

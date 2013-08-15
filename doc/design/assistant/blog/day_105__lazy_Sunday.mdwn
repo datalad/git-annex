@@ -1,0 +1,43 @@
+Did a fair amount of testing and bug fixing today. 
+
+There is still some buggy behavior around pausing syncing to a remote,
+where transfers still happen to it, but I fixed the worst bug there.
+
+Noticed that if a non-bare repo is set up on a removable drive,
+its file tree will not normally be updated as syncs come in -- because the
+assistant is not running on that repo, and so incoming syncs are not
+merged into the local master branch. For now I made it always use bare
+repos on removable drives, but I may want to revisit this.
+
+The repository edit form now has a field for the name of the repo,
+so the ugly names that the assistant comes up with for ssh remotes
+can be edited as you like. `git remote rename` is a very nice thing.
+
+Changed the preferred content expression for transfer repos to this:
+"not (inallgroup=client **and copies=client:2)**". This way, when there's
+just one client, files on it will be synced to transfer repos, even
+though those repos have no other clients to transfer them to. Presumably,
+if a transfer repo is set up, more clients are coming soon, so this avoids
+a wait. Particularly useful with removable drives, as the drive will start
+being filled as soon as it's added, and can then be brought to a client
+elsewhere. The "2" does mean that, once another client is found,
+the data on the transfer repo will be dropped, and so if it's brought
+to yet another new client, it won't have data for it right away.
+I can't see way to generalize this workaround to more than 2 clients;
+the transfer repo has to start dropping apparently unwanted content at
+some point. Still, this will avoid a potentially very confusing behavior
+when getting started.
+
+----
+
+I need to get that dropping of non-preferred content to happen still.
+Yesterday, I did some analysis of all the events that can cause previously
+preferred content to no longer be preferred, so I know all the places
+I have to deal with this.
+
+The one that's giving me some trouble is checking in the transfer scan. If it
+checks for content to drop at the same time as content to transfer, it could
+end up doing a lot of transfers before dropping anything. It'd be nicer to
+first drop as much as it can, before getting more data, so that transfer
+remotes stay as small as possible. But the scan is expensive, and it'd also
+be nice not to need two passes.

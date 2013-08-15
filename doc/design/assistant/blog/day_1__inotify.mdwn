@@ -1,0 +1,57 @@
+First day of [Kickstarter funded work](http://www.kickstarter.com/projects/joeyh/git-annex-assistant-like-dropbox-but-with-your-own/)! 
+
+Worked on [[inotify]] today. The `watch` branch in git now does a pretty
+good job of following changes made to the directory, annexing files
+as they're added and staging other changes into git. Here's a quick
+transcript of it in action:
+
+	joey@gnu:~/tmp>mkdir demo
+	joey@gnu:~/tmp>cd demo
+	joey@gnu:~/tmp/demo>git init
+	Initialized empty Git repository in /home/joey/tmp/demo/.git/
+	joey@gnu:~/tmp/demo>git annex init demo
+	init demo ok
+	(Recording state in git...)
+	joey@gnu:~/tmp/demo>git annex watch &
+	[1] 3284
+	watch . (scanning...) (started)
+	joey@gnu:~/tmp/demo>dd if=/dev/urandom of=bigfile bs=1M count=2
+	add ./bigfile 2+0 records in
+	2+0 records out
+	2097152 bytes (2.1 MB) copied, 0.835976 s, 2.5 MB/s
+	(checksum...) ok
+	(Recording state in git...)
+	joey@gnu:~/tmp/demo>ls -la bigfile
+	lrwxrwxrwx 1 joey joey 188 Jun  4 15:36 bigfile -> .git/annex/objects/Wx/KQ/SHA256-s2097152--e5ced5836a3f9be782e6da14446794a1d22d9694f5c85f3ad7220b035a4b82ee/SHA256-s2097152--e5ced5836a3f9be782e6da14446794a1d22d9694f5c85f3ad7220b035a4b82ee
+	joey@gnu:~/tmp/demo>git status -s
+	A  bigfile
+	joey@gnu:~/tmp/demo>mkdir foo
+	joey@gnu:~/tmp/demo>mv bigfile foo
+	"del ./bigfile"
+	joey@gnu:~/tmp/demo>git status -s
+	AD bigfile
+	A  foo/bigfile
+
+Due to Linux's inotify interface, this is surely some of the most subtle,
+race-heavy code that I'll need to deal with while developing the git annex
+assistant. But I can't start wading, need to jump off the deep end to make
+progress!
+
+The hardest problem today involved the case where a directory is moved
+outside of the tree that's being watched. Inotify will still send events
+for such directories, but it doesn't make sense to continue to handle them.
+
+Ideally I'd stop inotify watching such directories, but a lot of state
+would need to be maintained to know which inotify handle to stop watching.
+(Seems like Haskell's inotify API makes this harder than it needs to be...)
+
+Instead, I put in a hack that will make it detect inotify events from
+directories moved away, and ignore them. This is probably acceptable,
+since this is an unusual edge case.
+
+----
+
+The notable omission in the inotify code, which I'll work on next, is
+staging deleting of files. This is tricky because adding a file to the
+annex happens to cause a deletion event. I need to make sure there are no
+races where that deletion event causes data loss.

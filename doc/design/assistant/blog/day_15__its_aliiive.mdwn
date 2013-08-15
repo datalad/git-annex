@@ -1,0 +1,33 @@
+Syncing works! I have two clones, and any file I create in the first
+is immediately visible in the second. Delete that file from the second, and
+it's immediately removed from the first.
+
+Most of my work today felt like stitching existing limbs onto a pre-existing
+monster. Took the committer thread, that waits for changes and commits them,
+and refashioned it into a pusher thread, that waits for commits and pushes
+them. Took the watcher thread, that watches for files being made,
+and refashioned it into a merger thread, that watches for git refs being
+updated. Pulled in bits of the `git annex sync` command to reanimate this.
+
+It may be a shambling hulk, but it works.
+
+Actually, it's not much of a shambling hulk; I refactored my code after
+copying it. ;)
+
+I think I'm up to 11 threads now in the new
+`git annex assistant` command, each with its own job, and each needing
+to avoid stepping on the other's toes. I did see one MVar deadlock error
+today, which I have not managed to reproduce after some changes. I think
+the committer thread was triggering the merger thread, which probably
+then waited on the Annex state MVar the committer thread had held.
+
+Anyway, it even pushes to remotes in parallel, and keeps track of remotes
+it failed to push to, although as of yet it doesn't do any attempt at
+periodically retrying.
+
+One bug I need to deal with is that the push code assumes any change
+made to the remote has already been pushed back to it. When it hasn't, 
+the push will fail due to not being a fast-forward. I need to make it
+detect this case and pull before pushing.
+
+(I've pushed this work out in a new `assistant branch`.)

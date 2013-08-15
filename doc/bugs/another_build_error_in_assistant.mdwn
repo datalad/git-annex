@@ -1,0 +1,79 @@
+What steps will reproduce the problem?
+Just trying to install git-annex last release (20121120) from cabal or from bundled sources
+
+What is the expected output? What do you see instead?
+Build stop like this :
+(doing cabal install or build from the bundle)
+...
+[161 of 284] Compiling Assistant.Alert  ( Assistant/Alert.hs, dist/build/git-annex/git-annex-tmp/Assistant/Alert.o )
+[162 of 284] Compiling Assistant.Types.DaemonStatus ( Assistant/Types/DaemonStatus.hs, dist/build/git-annex/git-annex-tmp/Assistant/Types/DaemonStatus.o )
+[163 of 284] Compiling Assistant.Monad  ( Assistant/Monad.hs, dist/build/git-annex/git-annex-tmp/Assistant/Monad.o )
+
+Assistant/Monad.hs:86:16:
+    Couldn't match expected type `Assistant a'
+                with actual type `Reader AssistantData a'
+    Expected type: (AssistantData -> a) -> Assistant a
+      Actual type: (AssistantData -> a) -> Reader AssistantData a
+    In the expression: reader
+    In an equation for `getAssistant': getAssistant = reader
+
+Assistant/Monad.hs:93:15:
+    Couldn't match expected type `Assistant t0'
+                with actual type `Reader r0 a0'
+    In the return type of a call of `reader'
+    In a stmt of a 'do' block: st <- reader threadState
+    In the expression:
+      do { st <- reader threadState;
+           liftIO $ runThreadState st a }
+
+Assistant/Monad.hs:99:14:
+    Couldn't match expected type `Assistant t0'
+                with actual type `Reader r0 a0'
+    In the return type of a call of `reader'
+    In a stmt of a 'do' block: d <- reader id
+    In the expression:
+      do { d <- reader id;
+           liftIO $ io $ runAssistant d a }
+
+Assistant/Monad.hs:105:14:
+    Couldn't match expected type `Assistant t0'
+                with actual type `Reader r0 a0'
+    In the return type of a call of `reader'
+    In a stmt of a 'do' block: d <- reader id
+    In the expression:
+      do { d <- reader id;
+           return $ runAssistant d a }
+
+Assistant/Monad.hs:110:14:
+    Couldn't match expected type `Assistant t0'
+                with actual type `Reader r0 a0'
+    In the return type of a call of `reader'
+    In a stmt of a 'do' block: d <- reader id
+    In the expression:
+      do { d <- reader id;
+           return $ \ v -> runAssistant d $ a v }
+
+Assistant/Monad.hs:115:14:
+    Couldn't match expected type `Assistant t0'
+                with actual type `Reader r0 a0'
+    In the return type of a call of `reader'
+    In a stmt of a 'do' block: d <- reader id
+    In the expression:
+      do { d <- reader id;
+           return $ \ v1 v2 -> runAssistant d (a v1 v2) }
+
+Assistant/Monad.hs:120:12:
+    Couldn't match expected type `Assistant a0'
+                with actual type `Reader r0 a1'
+    In the return type of a call of `reader'
+    In the first argument of `(>>=)', namely `reader v'
+    In the expression: reader v >>= liftIO . io
+
+
+
+
+What version of git-annex are you using? On what operating system?
+- version 3.20121112
+- Ubuntu 12.04 LTS, 64 bits
+
+> Dup of [[3.20121112_build_fails_on_Ubuntu_12.04]]. --[[Joey]] [[done]]

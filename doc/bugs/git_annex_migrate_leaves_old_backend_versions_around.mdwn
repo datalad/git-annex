@@ -1,0 +1,19 @@
+`git annex migrate` leaves old, unlinked backend versions lying around. It
+would be great if these were purged automatically somehow. 
+
+> Yes, this is an issue mentioned in the
+> [[tips/migrating_data_to_a_new_backend]].
+> 
+> Since multiple files can point to the same content, it could be that
+> only one file has been migrated, and the content is still used. So
+> the content either has to be retained, or an operation as expensive
+> as `git annex unused` used to find if something else still uses it. 
+> 
+> Rather than adding such an
+> expensive operation to each call to migrate, I focused on hard-linking
+> the values for the old and new keys, so that the old keys don't actually
+> use any additional resources (beyond an extra inode).
+> 
+> This way a lot of migrations can be done, and only when you're done you
+> can do the more expensive cleanup pass if you want to. --[[Joey]]
+> [[done]]

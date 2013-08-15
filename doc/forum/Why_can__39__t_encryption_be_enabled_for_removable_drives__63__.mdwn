@@ -1,0 +1,7 @@
+I currently have a pair of hard drives that I store backups etc on and that I would like to use as archive repositories for Git-Annex. I want everything on these to be encrypted, because I can't guarantee physical security of them.
+
+When I am setting up a removable drive as a repository, there is no option to encrypt to it. I understand that there is a "Directory" special remote, but it seems odd to have to use a different special remote that is not built into the webapp. Wouldn't it be good to have a checkbox for encryption when setting up a removable drive as a repository?
+
+Is there something that I'm missing here?
+
+Thanks for a great piece of software!

@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="you win at highlighting logs!"
+ date="2013-04-23T23:04:13Z"
+ content="""
+This weird message is coming from whatever equivilant bitbucket has of a login shell.
+
+I'd expect you would only see the message once. When git-annex notices it cannot run git-annex-shell on the remote, it automatically sets `remote.bitbucket.annex-ignore`. Once that is set, it will not try again to send/receive files from the remote. But due to the recent change I made, will still git push/pull to it.
+
+I don't see anything unexpected in the logs.. What would be unexpected is if `remote.bitbucket.annex-ignore` is set, and it tries to do this again next time it syncs. Or if `remote.bitbucket.annex-ignore` is not set to true in `.git/config`.
+
+Here is an example of how it's supposed to work:
+
+<pre>
+joey@gnu:~/tmp/rr>git annex sync
+fatal: unrecognized command 'git-annex-shell 'configlist' '/~/test.git''
+
+  Remote origin does not have git-annex installed; setting remote.origin.annex-ignore
+commit  
+ok
+
+joey@gnu:~/tmp/rr>git config remote.origin.annex-ignore 
+true
+
+joey@gnu:~/tmp/rr>git annex sync
+commit  
+ok
+</pre>
+"""]]

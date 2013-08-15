@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 2"
+ date="2013-01-10T16:06:28Z"
+ content="""
+That is how direct mode works. (Although without the hard links, since maintaining them doesn't have any benefits.) And that's how downloading into a direct mode repo works. The issue I'm dealing with, though, is uploading from a direct mode repo, where the file that's being uploaded can be modified at the same time.
+"""]]

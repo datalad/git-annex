@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkeyfC88gIU4fsEqqkvhzVlSKDUxbtZaTE"
+ nickname="Selem"
+ subject="comment 2"
+ date="2013-07-10T01:41:24Z"
+ content="""
+I got the same problem (Mac OS X 10.8.4, whatever the latest download package, local computers same network repos)
+
+To get rid of the noname repo, I just removed git remote in the annex dir.
+
+    # List remote
+    $ git remote -v
+    # Remove remote grabbed from running the previous command
+    $ git remote rm your_remote
+
+After that, I added the second computer repo successfully.
+
+"""]]

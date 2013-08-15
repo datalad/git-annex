@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://me.tinco.nl/"
+ nickname="Tinco"
+ subject="comment 12"
+ date="2013-05-19T21:24:48Z"
+ content="""
+Yes exactly, it spawns a dialog window and overall has a very nice interface for managing gpg keys. I switched from the DMG to cabal because I couldn't get the bundled gpg to ask for my password, setting up a gpg-agent seemed pretty complicated, so I just went for the packaged approach from https://gpgtools.org/.
+"""]]

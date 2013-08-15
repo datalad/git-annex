@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn7gQ1zZDdWhXy9H51W2krZYShNmKL3qfM"
+ nickname="Karsten"
+ subject="comment 1"
+ date="2013-01-17T08:30:54Z"
+ content="""
+You don't need the webapp to run the assistant, but if you want, you can forward it to your local system. You will find the URL in .git/annex/url and have to extract the port from it (http://127.0.0.1:<someport>/.../), afterwards forward that port either via ssh port forwarding or via a webserver acting as a reverse proxy.
+"""]]

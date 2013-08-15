@@ -1,0 +1,35 @@
+What steps will reproduce the problem?
+
+Add a rsync special remote - one that you need a username/password to access (stored in text file $HOME/.rsync.password):
+
+    $ git annex initremote myrsync type=rsync rsyncurl=rsync://username@rsync.example.com/myrsync encryption=none
+    $ git annex describe myrsync "rsync server"
+    $ git config remote.myrsync.annex-rsync-options "--password-file=$HOME/.rsync.password"
+
+Copy a file to the remote:
+
+    $ git annex -d copy my-file --to myrsync
+
+What is the expected output? What do you see instead?
+
+Expect to see the file copied over to the rsync remote, but the check doesn't use the annex-rsync-options and asks for a password.  The debug output is:
+
+    copy my-file (checking myrsync...) [2012-10-28 01:01:01 EST] call: sh ["-c","rsync --quiet 'rsync://username@rsync.example.com/myrsync/[...SNIP...]' 2>/dev/null"]
+
+However the actual copy does use annex-rsync-options and the copy works:
+
+    [2012-10-28 01:01:05 EST] read: rsync ["--password-file=/home/blah/.rsync.password","--progress","--recursive","--partial","--partial-dir=.rsync-partial","/home/blah/annex/.git/annex/tmp/rsynctmp/12345/","rsync://username@rsync.example.com/myrsync"]
+
+
+What version of git-annex are you using? On what operating system?
+
+git-annex: 3.20121017
+
+OS: Ubuntu 12.04
+
+Please provide any additional information below.
+
+I think this fix is as easy as including the annex-rsync-options wherever rsync is called.
+
+> I belive there was only the one place this was neglected. [[done]]
+> --[[Joey]]

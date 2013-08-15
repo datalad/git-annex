@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnVX_teMpJeQkyheivad_1XSCFSjpiWgx8"
+ nickname="Diggory"
+ subject="synchronising stored files with a bare repository"
+ date="2013-01-11T16:52:38Z"
+ content="""
+Good for syncing indexes, but if I want to synchronise all data files too (specifically pushing to a remote bare repository), how do I do that?
+"""]]

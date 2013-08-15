@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.141"
+ subject="comment 1"
+ date="2012-09-25T16:13:08Z"
+ content="""
+The difficulty with using cabal on Debian testing (and unstable) is that Debian has an older version of Yesod, and I have not managed to get cabal to work with both versions at once.
+
+If you build using the Makefile, it currently uses the old version of Yesod, so that'll work.
+
+The [package from unstable](http://packages.debian.org/sid/git-annex) should install ok on testing.
+"""]]

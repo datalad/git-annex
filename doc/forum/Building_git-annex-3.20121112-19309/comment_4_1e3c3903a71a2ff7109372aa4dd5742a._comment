@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 4"
+ date="2012-11-25T20:26:33Z"
+ content="""
+I was able to reproduce this build failure with the same old version of mtl you have. I've adjusted the cabal build dependencies to require a newer version.
+"""]]

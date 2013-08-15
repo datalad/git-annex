@@ -1,0 +1,7 @@
+was checking the version of git-annex on a machine before cloning a repo...
+
+    $ git annex version
+    git-annex: Not in a git repository.
+
+> made difficult by the Annex monad, but I made it work! --[[Joey]]
+> [[done]]

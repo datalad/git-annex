@@ -1,0 +1,52 @@
+I'm stunned and stoked to have gotten git push over XMPP working today.
+And am nearly out of steam, it was a wild ride..
+
+	To xmpp::joey@kitenet.net
+	  * [new branch]      master -> refs/xmpp/newmaster
+
+The surprising part is how close my initial implementation came to just
+working on the first try. It had around 3 bugs, which took hours of staring
+at debugging output to find:
+
+1. The git push action was run in the same thread as the XMPP
+   client, which prevented the client from continuing to run and relaying
+   messages.
+2. The git-receive-pack side waited on the wrong thread, so didn't
+   notice when the program was done.
+3. I accidentially used the wrong attribute name when sending a ReceivePackDone
+   message.
+
+But all in all, it just worked.
+
+Here's a sample of the actual data sent when one file is added to the
+repository (also includes the corresponding update to the git-annex branch):
+
+	MDA4NjhhMmNmOGZjMWE3MTlkOGVjOWVmOWZiMGZiNjVlODc2NjQ1NDAyMTAgODIwNTZjMDM4
+	ZjU2YzE1ODdjYzllOWRhNzQzMzU0YjE4NzNjZWJlOSByZWZzL3htcHAvbmV3bWFzdGVyACBy
+	ZXBvcnQtc3RhdHVzIHNpZGUtYmFuZC02NGswMDAw
+
+	UEFDSwAAAAIAAAADnAx4nJXLTQ4CIQxA4T2n4AKaAqVAYoxL4y2gU+Jo5iczdeHtnSu4eMm3
+	ebqJ2NwgSCLmNkTBlKFCYwwhoHOtQ+scqZCwWesms9pcPffc2dXkypCFi/TSG/RGUXIiwojg
+	HZj60eey2cciX3uXfbeX18Hbe1SZRc9HV+tC9FgyJW9PgACGl2kaVeXfz/wArHQ81qMGeJwz
+	NDIAAoVUI4ZZB9RW1E8NtXp5t77/fn3hw41cl2MNIbIZqTk5+Qwerw+aJX2INjsffYndtdCz
+	5mZWLDdUQV5qeVpmDtCQnx/3/6s40+Q4P/7O+Y4ShS+1Ad83AwC6CirftAt4nK3MsRGDMAwF
+	0IkcSVgSdpkidzRUmcDWBy4pSAEFl+mzRN4A77a9Tmr7vlz06e8lzoPmmb5Mz+k+mD/SkTkl
+	eFHPq9eqQ+nSzFsWaDFnFmCMCEOvHgLrCrQxS7AWdvUVhv9uPwHxMbfumlvWdco1RLL4wSQF
+	g0uFFOKu3Q==
+
+Git said this push took 385 bytes; after base64 encoding to transport it over
+XMPP as shown above, it needs 701 bytes, and the XMPP envelope and encryption
+adds more overhead (although the XMPP connection may also be compressed?)
+
+Not the most efficient git transport, but still a practical one!
+
+----
+
+Big thanks by the way to meep, who posted a comment reminding me about
+`git-remote-helpers`. This was the right thing to use for XMPP over git,
+it lets the git remote be configured with `url = xmpp::user@host`.
+
+----
+
+Next, I need to get the assistant to use this for syncing. Currently, it only
+pushes a test branch.

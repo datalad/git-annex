@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWg4VvDTer9f49Y3z-R0AH16P4d1ygotA"
+ nickname="Tobias"
+ subject="Hooks too"
+ date="2013-05-22T10:40:33Z"
+ content="""
+It would actually be very nice if this could be done with hooks too.
+
+Especially with the new hook method.
+
+Take this hook
+
+	mega-hook = /usr/bin/python2 ~/sources/megaannex/megaannex.py
+
+git-annex could make a request with either the parameter(or environment variable) \"getsettingsobject\" that could return. {\"username\": \"\", \"password\": \"\", \"folder\": \"\"}.
+
+The point being git-annex can request from the hooks program what settings it takes, and give a web interface to set it. Then store the information in the creds folder(ew ew, that folder is unencrypted, oh well) and pass it to the hook on run. 
+
+The advantage being that users wouldn't have to edit a settings file manually (this is currently also the case for the IMAP special remote, which also requires a settings file).
+"""]]

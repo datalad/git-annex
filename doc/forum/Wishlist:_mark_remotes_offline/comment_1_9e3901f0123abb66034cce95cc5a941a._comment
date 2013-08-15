@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 1"
+ date="2012-07-06T13:04:07Z"
+ content="""
+You can already do this:
+
+    git config remote.foo.annex-ignore true
+
+There's no need to do anything for portable drives that are sometimes mounted and sometimes not -- git-annex will automatically avoid using repositories in directories that do not currently exist.
+
+I thought git-annex also had a way to run a command and use its exit status to control whether a repo was
+ignored or not, but it seems I never actually implemented that. It might be worth adding, although the command would necessarily run whenever git-annex is transferring data around.
+"""]]

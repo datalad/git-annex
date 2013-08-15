@@ -1,0 +1,28 @@
+Several bug fixes today, and got mostly caught up on recent messages.
+Still have a backlog of two known bugs that I cannot reproduce well enough
+to have worked on, but I am thinking I will make a release tomorrow. There
+have been a lot of changes in the 10 days since the last release.
+
+----
+
+I am, frustratingly, stuck building the webapp on Android with no forward
+progress today (and last night) after such a productive day yesterday.
+
+The expanded Template Haskell code of the webapp fails to compile,
+whereever type safe urls are used.
+
+<pre>
+Assistant/WebApp/Types.hs:95:63:
+    Couldn't match expected type `Route WebApp -> t2'
+                with actual type `Text'
+    The function `urender_a1qcK' is applied to three arguments,
+    but its type `Route WebApp -> [(Text, Text)] -> Text' has only two
+    In the expression: urender_a1qcK u_a1qcL [] LogR
+    In the first argument of `toHtml', namely
+      `(\ u_a1qcL -> urender_a1qcK u_a1qcL [] LogR)'
+</pre>
+
+My best guess is this is a mismatch between the versions of yesod (or other
+libraries) used for the native and cross compiled ghc's. So I've been
+slowly trying to get a fully matched set of versions in between working on
+bugs.

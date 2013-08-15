@@ -1,0 +1,65 @@
+git-annex version: 4.20130323
+
+Running the webapp with SELinux enabled:
+
+    [0 zerodogg@browncoats annexed]$ git annex webapp --debug
+    Launching web browser on file:///home/zerodogg/Documents/annexed/.git/annex/webapp.html
+    /home/zerodogg/bin/git-annex: line 25:  5801 Segmentation fault      (core dumped) "$base/runshell" git-annex "$@"
+
+After disabling SELinux it works just fine. This is on a freshly installed (default settings) Fedora 18 on x86-64.
+
+Running the assistant also works, but segfaults when attempting to open the webapp:
+
+    [0 zerodogg@browncoats annexed]$ git annex assistant &
+    [1] 6241
+    [0 zerodogg@browncoats annexed]$ 
+    [0 zerodogg@browncoats annexed]$ git annex webapp --debug
+    Launching web browser on file:///home/zerodogg/Documents/annexed/.git/annex/webapp.html
+    /home/zerodogg/bin/git-annex: line 25:  6322 Segmentation fault      (core dumped) "$base/runshell" git-annex "$@"
+    [139 zerodogg@browncoats annexed]$ Created new window in existing browser session.
+
+Here's what `dmesg` says:
+
+    [   71.488843] SELinux: initialized (dev proc, type proc), uses genfs_contexts
+    [  115.443932] git-annex[3985]: segfault at e6e62984 ip 0000000009b8085a sp 00000000f4bfd028 error 4 in git-annex[8048000+1c75000]
+    [  125.148819] SELinux: initialized (dev proc, type proc), uses genfs_contexts
+    [  125.230155] git-annex[4043]: segfault at e6eda984 ip 0000000009b8085a sp 00000000f63fd028 error 4 in git-annex[8048000+1c75000]
+    [  406.855659] SELinux: initialized (dev proc, type proc), uses genfs_contexts
+    [  407.033966] git-annex[5806]: segfault at e6faa984 ip 0000000009b8085a sp 00000000f6dfd028 error 4 in git-annex[8048000+1c75000]
+    [  462.368045] git-annex[6279]: segfault at e6f76984 ip 0000000009b8085a sp 00000000f49fd028 error 4 in git-annex[8048000+1c75000]
+    [  465.714636] SELinux: initialized (dev proc, type proc), uses genfs_contexts
+    [  465.930434] git-annex[6329]: segfault at e6e7a984 ip 0000000009b8085a sp 00000000f63fd028 error 4 in git-annex[8048000+1c75000]
+    [  560.570480] git-annex[7050]: segfault at e7022984 ip 0000000009b8085a sp 00000000f54fd028 error 4 in git-annex[8048000+1c75000]
+    [  565.510664] SELinux: initialized (dev proc, type proc), uses genfs_contexts
+    [  565.688681] git-annex[7108]: segfault at e7196984 ip 0000000009b8085a sp 00000000f54fd028 error 4 in git-annex[8048000+1c75000]
+
+Running the whole thing with --debug doesn't appear to provide anything useful:
+
+    [0 zerodogg@browncoats annexed]$ git annex assistant --debug &
+    [1] 7018
+    [0 zerodogg@browncoats annexed]$ [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","show-ref","git-annex"]
+    [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","show-ref","--hash","refs/heads/git-annex"]
+    [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","log","refs/heads/git-annex..f2260840bd9563f3d9face53dddd6807813860cd","--oneline","-n1"]
+    [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","log","refs/heads/git-annex..798526ef1315811296b1ac95d4cf97c72141ad29","--oneline","-n1"]
+    [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","log","refs/heads/git-annex..0d827b1ef545a88e94ee8cc973e54a1b74d216f4","--oneline","-n1"]
+    [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","log","refs/heads/git-annex..1d8f91411b827c4d59735dbc572e7f278e870e43","--oneline","-n1"]
+    [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","log","refs/heads/git-annex..cc442416b325866139db6dbe374bddacda6fef91","--oneline","-n1"]
+    [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","log","refs/heads/git-annex..3c2f44ffd82df1a0ae8858bdf2610e933b105a09","--oneline","-n1"]
+    [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","log","refs/heads/git-annex..fb8819ca92d9a2ed39e6d329160b5f8da60df83f","--oneline","-n1"]
+    [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","log","refs/heads/git-annex..68d0f936ee044b0ca34cf4029bcd6274fed88499","--oneline","-n1"]
+    [2013-03-24 16:27:02 CET] read: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","log","refs/heads/git-annex..3ba3dfef6340196126f4fc630b5048188230d1ff","--oneline","-n1"]
+    [2013-03-24 16:27:02 CET] chat: git ["--git-dir=/home/zerodogg/Documents/annexed/.git","--work-tree=/home/zerodogg/Documents/annexed","cat-file","--batch"]
+    
+    [1]  + done       GITWRAP annex assistant --debug
+    [0 zerodogg@browncoats annexed]$ git annex webapp --debug &
+    [1] 7082
+    [0 zerodogg@browncoats annexed]$ Launching web browser on file:///home/zerodogg/Documents/annexed/.git/annex/webapp.html
+    /home/zerodogg/bin/git-annex: line 25:  7088 Segmentation fault      (core dumped) "$base/runshell" git-annex "$@"
+    
+    [1]  + exit 139   GITWRAP annex webapp --debug
+    [0 zerodogg@browncoats annexed]$ Created new window in existing browser session.
+
+> On IRC it developed that it segfaulted at other times, and gdb complained
+> of a library mismatch. Seems something changed in Fedora libc, and 
+> the 32 bit binary is not working on 64 bit. I've brought back the 64 bit
+> standalone builds, which work. [[done]] --[[Joey]]

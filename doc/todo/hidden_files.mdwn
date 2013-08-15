@@ -1,0 +1,30 @@
+Add a `git annex hide $file` that behaves like drop, checking counter info
+and updating location log to say the current repo no longer has a file --
+but does not actually remove the content.
+
+Then `git annex unused` can be used to clean it up later. And in the
+meantime, it's still locally accessible. This can be useful if you're
+planning to need to free up space later, but want to hold onto the content
+for a while. Possibly you'll be disconnected later, so it's easier to push
+out that intent now.
+
+--
+
+TODO:
+
+* Make 100% sure this is safe. Drop, etc should never check content files
+  are present on other repos if the location log doesn't say the repo
+  has the content.
+
+* What will `git annex get` do if it's asked to get a file that has been
+  hidden?
+
+> Unless I am missing something: Make sure the data is correct (for SHA1 or other tracking) and restore locally. If that's not the case, delete and restore from remote. -- RichiH
+
+----
+
+Is 'unused' a good name? 'clean' and 'autoclean' would make more sense, imo. 'clean' deletes everything, whereas an optional 'autoclean' could try to be smart based on disk usage and/or SHA1, etc. -- RichiH
+
+> Nah, `git annex unused/dropunused` already exist.  --[[Joey]] 
+
+>> OK, in that case forget what I said. No idea about your internal policy, but feel free to delete this part of the page, then. -- RichiH

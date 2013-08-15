@@ -1,0 +1,1 @@
+I recently created WebDAV remote to my annex which I assumed to be just for testing purposes at the time, so I gave it a strange and long-wided name. It turned out, though, that the remote is stable, works fine, and that I'm going to keep it. Now, I would like to give it a snappier and more descriptive name than the one I originally chose. Is that possible somehow?

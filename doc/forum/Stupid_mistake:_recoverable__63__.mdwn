@@ -1,0 +1,31 @@
+Hi,
+
+I was a bit hasty the other day and did something stupid.  I
+added a new folder to git annex.  Something like
+
+    git annex add my-important folder
+
+my-important folder contains a lot of files and it took a couple
+of minutes to add.  When I then tried to do
+
+    git commit -am 'added files'
+
+per the walkthrough I got an error (9, as I recall).  I thought
+I'd added too many files or something so I wanted to start over
+and perhaps I didn't fully understand the mechanisms of annex I
+did the following
+
+    git reset --hard .
+
+Unfortunately, did replaced my files with a bunch of symlinks,
+rather than making git annex forget and go back to the previous
+stage as I had hoped.
+
+I have managed to recover most of my files from backup, but some
+of them I still can't recover.  Is there any way back?  It seems
+I still have the files in my git folder.
+
+Thanks,
+Rasmus
+
+PS: Sorry, I shouldn't have made this text rather than Markdown.

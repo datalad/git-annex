@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="http://mildred.fr/"
+ nickname="mildred"
+ subject="Problems with URL ending with &quot;.git&quot;"
+ date="2013-05-24T12:15:16Z"
+ content="""
+Hi,
+
+I noticed using the git-annex branch of gitolite v3 that the same URL with \".git\" at the end would not work in git-annex. For example my test repository was `git@git2.mildred.fr:u/mildred/Annex.git` but it didn't work until I converted it to `git@git2.mildred.fr:u/mildred/Annex`
+
+On the server, the repository is in `repositories/u/mildred/Annex.git`
+
+If I try a copy with git-annex for example, I would get:
+
+    $ git annex copy titi --to test
+    copy titi (checking test...) FATAL: u/mildred/Annex.git mildred DENIED
+    
+    (unable to check test) failed
+    git-annex: copy: 1 failed
+
+(test is the name of my remote and titi is my file)
+
+Note, in my gitolite conf, I have:
+
+    repo u/CREATOR/[a-zA-Z0-9].*
+      C    = @all
+      RW+D = CREATOR
+      RW   = WRITERS
+      R    = READERS
+
+"""]]

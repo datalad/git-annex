@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://rmunn.myopenid.com/"
+ nickname="rmunn"
+ subject="comment 1"
+ date="2012-06-12T15:52:35Z"
+ content="""
+* One way to handle the configuration might be with regular expressions. If the URL matches regex A, handle it with downloader A' (with option set A''). If the URL matches regex B, handle it with downloader B' and option set B''. And so on. Then if nothing is matched, the default downloader is wget/curl.
+
+* In my experience, youtube-dl breakages are fixed relatively quickly; a much more serious problem from a trust standpoint is that Youtube videos often disappear. Sometimes due to a legitimate copyright claim, sometimes due to illegitimate copyright claims. (I've seen both happen). Or because the video uploader decided to upload *other* videos that violated copyright, and Youtube closed his/her account, thereby removing *all* his/her videos from the Web. Youtube is definitely an untrustworthy repository as far as \"the file will still be there later on\" is concerned. Perhaps a default trust relationship could go along with the regexes? URLs matching regex A are semitrusted, while URLs matching regex B are untrusted.
+"""]]

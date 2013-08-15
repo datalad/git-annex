@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkO9tsPZkAxEulq2pGCdwz4md-LqB0RcMw"
+ nickname="Reimund"
+ subject="Problems with Base & Crypto"
+ date="2012-04-25T22:56:18Z"
+ content="""
+I got the following error message trying to install git-annex:
+
+    cabal: cannot configure git-annex-3.20120418. It requires base >=4.5 && <5
+    For the dependency on base >=4.5 && <5 there are these packages: base-4.5.0.0.
+    However none of them are available.
+    base-4.5.0.0 was excluded because of the top level dependency base -any
+
+These are the steps I performed to make it work
+
+1. Download [Ghc 7.4](http://www.haskell.org/ghc/download).
+2. Run `sudo cabal install git-annex --bindir=$HOME/bin`.
+3. Compilation of the Crypto-4.2.4 dependency failed since it's not updated to work with Ghc 7.4. You need to patch SHA2.hs (steps below).
+4. Run `sudo cabal install git-annex --bindir=$HOME/bin` a second time.
+
+The steps I did to patch the SHA2.hs file in Crypto-4.2.4:
+
+1. `cabal unpack crypto-4.2.4`
+2. `cd Crypto-4.2.4`
+3. `patch -p1 < crypto-4.2.4-ghc-7.4.patch`
+4. `sudo cabal install`.
+
+PS: I used [this patchfile](http://sources.gentoo.org/cgi-bin/viewvc.cgi/gentoo-x86/dev-haskell/crypto/files/crypto-4.2.4-ghc-7.4.patch?revision=1.1).
+Then I did the last step a third time.
+"""]]

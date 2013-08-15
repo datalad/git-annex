@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-03-28T20:05:13Z"
+ content="""
+Probably more like 150 lines of haskell. Maybe just 50 lines if the bup repository is required to be on the same computer as the git-annex repository.
+
+Since I do have some repositories where I'd appreciate this level of assurance that data not be lost, it's mostly a matter of me finding a free day.
+"""]]

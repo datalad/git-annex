@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk9nck8WX8-ADF3Fdh5vFo4Qrw1I_bJcR8"
+ nickname="Jon Ander"
+ subject="comment 2"
+ date="2013-03-13T23:52:32Z"
+ content="""
+Hi Joey,
+
+My problem isn't that the repositories don't sync immediately, they are never up at the same time and I understand that the assistant is not constantly checking for changes, so that's not an issue.
+The problem is that with this setup I'm experiencing data loss (files being completely removed from both repos), it has happened a few times, but I cant seam to reproduce it reliably. I'll keep investigating and get back to you if I have a proper bug.
+"""]]

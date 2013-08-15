@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="fmarier"
+ ip="121.98.93.240"
+ subject="My PPA (Ubuntu Precise) has git-annex 4.20130417"
+ date="2013-04-27T11:12:26Z"
+ content="""
+I just went through the pain of backporting 90+ Haskell packages from Debian unstable: https://launchpad.net/~fmarier/+archive/ppa
+"""]]

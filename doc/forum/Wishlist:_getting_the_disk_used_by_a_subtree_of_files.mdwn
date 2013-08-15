@@ -1,0 +1,10 @@
+I'm not sure if this _feature_ exists already wrapped or provided as a recipe for users or not yet. But it would be nice to be able to do a
+
+    git annex du [PATH]
+
+Such that the output that git annex would return is the total disk used locally in the PATH and the theoretical disk used by the PATH if it was fully populated locally. e.g.
+
+    $ git annex du FSL0001_ANALYSIS
+    $ Local: 1000kb, Annex: 2000kb
+
+or something along the lines of that?

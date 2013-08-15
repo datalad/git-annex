@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.253.75"
+ subject="comment 10"
+ date="2013-02-22T17:30:59Z"
+ content="""
+@rillian could you try to install KBOX <http://kevinboone.net/Term-debug.apk> and see if its terminal accepts input? It's the same terminal app, so will be good to know if I broke it or this is a wider problem.
+
+Also, did you try the soft keyboard? There's a menu item to enable it.
+"""]]

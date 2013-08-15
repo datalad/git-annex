@@ -1,0 +1,9 @@
+I want to put my photos into a git-annex repository, syncing it with my girlfriends computer and our NAS.
+If possible, I'd like to be able to add files to the NAS and have them synced, so I guess a special remote doesn't work here.
+
+Unfortunately, git-annex doesn't run on my NAS directly (yet), so I thought of mounting the NAS with CIFS, and creating an annex there that syncs with the local ones.
+While this seems to work fine with one computer, I wonder what will happen if I mount the Samba share on my and my girlfriend's computer at the same time.
+
+In theory, the NAS supports Samba Unix extensions which includes POSIX locking, but a weird bug that prevents you from removing a named pipe from Samba, making git-annex init fail (sent a bug report to Synology). When I disable Unix extensions it works. It then detects a crippled file system though.
+
+Any thoughts?

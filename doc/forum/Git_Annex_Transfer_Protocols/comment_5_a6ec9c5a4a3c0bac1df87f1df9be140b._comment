@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.186"
+ subject="comment 5"
+ date="2012-05-10T19:17:22Z"
+ content="""
+rsync over ssh is used to transfer file contents between repositories. (You can use the -d option to see the commands git-annex runs.)
+"""]]

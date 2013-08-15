@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="zooko"
+ ip="97.118.97.117"
+ subject="performance"
+ date="2011-05-17T19:20:39Z"
+ content="""
+Hm... O(N^2)? I think it just takes O(N). To read an entry out of a directory you have to download the entire directory (and store it in RAM and parse it). The constants are basically \"too big to be good but not big enough to be prohibitive\", I think. jctang has reported that his special remote hook performs well enough to use, but it would be nice if it were faster.
+
+The Tahoe-LAFS folks are working on speeding up mutable files, by the way, after which we would be able to speed up directories.
+"""]]

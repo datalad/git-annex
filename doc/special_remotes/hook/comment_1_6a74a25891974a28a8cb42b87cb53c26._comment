@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="helmut"
+ ip="89.0.176.236"
+ subject="Asynchronous hooks?"
+ date="2012-10-13T09:46:14Z"
+ content="""
+Is there a way to use asynchronous remotes? Interaction with git annex would have to
+split the part of initiating some action from completing it.
+
+I imagine I could `git annex copy` a file to an asynchronous remote and the command
+would almost immediately complete. Later I would learn that the transfer is
+completed, so the hook must be able to record that information in the `git-annex`
+branch. An additional plumbing command seems required here as well as a way to
+indicate that even though the store-hook completed, the file is not transferred.
+
+Similarly `git annex get` would immediately return without actually fetching the
+file. This should already be possible by returning non-zero from the retrieve-hook.
+Later the hook could use plumbing level commands to actually stick the received file
+into the repository.
+
+The remove-hook should need no changes, but the checkpresent-hook would be more like
+a trigger without any actual result. The extension of the plumbing required for the
+extension to the receive-hook could update the location log. A downside here is that
+you never know when a fsck has completed.
+
+My proposal does not include a way to track the completion of actions, but relies on
+the hook to always complete them reliably. It is not clear that this is the best road
+for asynchronous hooks.
+
+One use case for this would be a remote that is only accessible via uucp. Are there
+other use cases? Is the drafted interface useful?
+"""]]

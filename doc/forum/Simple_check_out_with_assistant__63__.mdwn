@@ -1,0 +1,2 @@
+I want to use the annex assistant instead of the command line. Which is the recommended method to check out a file that I want to edit?
+

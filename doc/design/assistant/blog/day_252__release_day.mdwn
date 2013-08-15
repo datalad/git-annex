@@ -1,0 +1,6 @@
+Pushed out a release today. Looking back over April, I'm happy with it as a
+bug fix and stabilization month. Wish I'd finished the Android app in April,
+but let's see what happens tomorrow.
+
+Recorded part of a screencast on using Archive.org, but `recordmydesktop`
+lost the second part. Grr. Will work on that later.

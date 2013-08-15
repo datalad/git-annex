@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="EskildHustvedt"
+ ip="84.48.83.221"
+ subject="comment 2"
+ date="2013-03-31T18:13:53Z"
+ content="""
+GITWRAP is just my shell function that sets GIT_PAGER to different values depending on the command.
+
+SELinux lets git-annex run the browser. Browser opens on the file, redirects to the git-annex localhost URL (which fails to connect at that point, since git-annex has crashed). So the crash is 1) in git-annex, and 2) after it has started the browser. The segfault also occurs if I directly start the browser on `/home/zerodogg/Documents/annexed/.git/annex/webapp.html`, so it would appear that the crash occurs when something tries to connect to the http server.
+
+There's nothing from --debug in `.git/annex/daemon.log`:
+
+    [2013-03-31 19:58:09 CEST] main: starting assistant version 4.20130323
+    [2013-03-31 19:58:09 CEST] read: host [\"-t\",\"SRV\",\"--\",\"_xmpp-client._tcp.dukgo.com\"]
+    [2013-03-31 19:58:09 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"symbolic-ref\",\"HEAD\"]
+    [2013-03-31 19:58:09 CEST] TransferScanner: Syncing with serenity, river, hufsa, browncoats 
+    [2013-03-31 19:58:09 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"show-ref\",\"refs/heads/master\"]
+    [2013-03-31 19:58:09 CEST] NetWatcher: Using running DBUS service org.freedesktop.NetworkManager to monitor network connection events.
+    [2013-03-31 19:58:09 CEST] MountWatcher: Using running DBUS service org.gtk.Private.UDisks2VolumeMonitor to monitor mount events.
+    [2013-03-31 19:58:09 CEST] Merger: merging refs/remotes/browncoats/synced/master into refs/heads/master
+    [2013-03-31 19:58:09 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"ls-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"preferred-content.log\"]
+    [2013-03-31 19:58:09 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"symbolic-ref\",\"HEAD\"]
+    [2013-03-31 19:58:09 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"show-ref\",\"refs/heads/master\"]
+
+    [2013-03-31 19:58:09 CEST] call: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"merge\",\"--no-edit\",\"refs/remotes/browncoats/synced/master\"]
+    Already up-to-date.
+    [2013-03-31 19:58:09 CEST] call: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"fetch\",\"serenity\"]
+    [2013-03-31 19:58:09 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"show-ref\",\"git-annex\"]
+    [2013-03-31 19:58:09 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-03-31 19:58:09 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..d5e18a083c7d0caeddc3da78f18b53fac0d56a7f\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:09 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..f2260840bd9563f3d9face53dddd6807813860cd\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:09 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..798526ef1315811296b1ac95d4cf97c72141ad29\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..21a6361e598efd80e851276c17249e5c3284713f\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..3c2f44ffd82df1a0ae8858bdf2610e933b105a09\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..3b4fcc605fd4787084afe47e82eac6821cb2cd37\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"ls-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"preferred-content.log\"]
+    (scanning...) [2013-03-31 19:58:10 CEST] Watcher: Performing startup scan
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"show-ref\",\"git-annex\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..d5e18a083c7d0caeddc3da78f18b53fac0d56a7f\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..f2260840bd9563f3d9face53dddd6807813860cd\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..798526ef1315811296b1ac95d4cf97c72141ad29\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..21a6361e598efd80e851276c17249e5c3284713f\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..3c2f44ffd82df1a0ae8858bdf2610e933b105a09\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..3b4fcc605fd4787084afe47e82eac6821cb2cd37\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"symbolic-ref\",\"HEAD\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"show-ref\",\"refs/heads/master\"]
+    [2013-03-31 19:58:10 CEST] Merger: merging refs/remotes/serenity/synced/master into refs/heads/master
+
+    [2013-03-31 19:58:10 CEST] call: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"merge\",\"--no-edit\",\"refs/remotes/serenity/synced/master\"]
+    Already up-to-date.
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"show-ref\",\"git-annex\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..d5e18a083c7d0caeddc3da78f18b53fac0d56a7f\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..f2260840bd9563f3d9face53dddd6807813860cd\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..798526ef1315811296b1ac95d4cf97c72141ad29\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..21a6361e598efd80e851276c17249e5c3284713f\",\"--oneline\",\"-n1\"]
+    [2013-03-31 19:58:10 CEST] read: git [\"--git-dir=/home/zerodogg/Documents/annexed/.git\",\"--work-tree=/home/zerodogg/Documents/annexed\",\"log\",\"refs/heads/git-annex..3c2f44ffd82df1a0ae8858bdf2610e933b105a09\",\"--oneline\",\"-n1\"]
+"""]]

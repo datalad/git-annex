@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://afoolishmanifesto.com/"
+ nickname="frioux"
+ subject="SSH Keys - 2"
+ date="2013-07-17T22:56:37Z"
+ content="""
+@joey should I be using the nightlies to see that?  Under \"Adding a remote server using ssh\" I only see  Host name, user name, directory, and port.  Will it only be an option after I type in a password?
+"""]]

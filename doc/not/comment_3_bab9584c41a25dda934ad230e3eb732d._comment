@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.236"
+ subject="comment 3"
+ date="2012-09-06T14:50:43Z"
+ content="""
+My understanding of sparkleshare (I've not used it) is that it uses a regular git repository, so has git's problems with large files and will not support partial checkouts. However, you might want to try it out and see if it works for you.
+"""]]

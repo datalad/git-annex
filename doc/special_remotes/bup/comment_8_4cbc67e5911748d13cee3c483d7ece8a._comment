@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlsXhOlsW6RaGR83VNSMxPh159l5dFau70"
+ nickname="Yung-Chin"
+ subject="re scaling issue"
+ date="2013-05-03T14:57:51Z"
+ content="""
+Tobias/joey,
+
+I think there are at least two scaling issues that may be causing you trouble. One is that bup writes pack+idx files rather than bare objects, and if you send 1 file per call to bup-split, you end up with a pair of pack and idx files for each such call. When you later try to retrieve a blob, bup currently just calls git, and git will have to traverse all these tiny idx files looking for the right hash (bare objects you could at least find by name). You can probably ameliorate the pain by calling git repack (look at the -a and --max-pack-size switches) on your bup repository. The other is the \"thousands of branches\" issue, and I think \"git pack-refs --all\" (that's again on your bup repository) might help a little bit. 
+
+It would certainly help performance if you could store blob/tree ids in git-annex instead of branch names. For small files, all bup would need to store is a blob, but currently you end up storing a blob, a tree, and a commit (and looking-up all of those, plus the ref too, on calling bup-join). (you might want to patch bup-split, so it would allow you to ask it for \"--blob-or-tree\", because currently if you say you pass it -b for blob-ids, then for bigger files you get a series of IDs, whereas you'd be much better off with a tree-id there)
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.210"
+ subject="comment 6"
+ date="2013-02-26T17:20:13Z"
+ content="""
+The recent switch to using the Glob library seems to be responsible for this problem. It seems that
+with Glob, \"\*\" matches \"foo\", but not \"directory/foo\", so the \"\*\" in preferred content for backup repositories matches only files in the top directory!
+
+Writing test cases and fixing this now.
+"""]]

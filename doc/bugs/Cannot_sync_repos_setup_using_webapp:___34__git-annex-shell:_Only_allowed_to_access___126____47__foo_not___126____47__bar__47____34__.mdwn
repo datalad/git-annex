@@ -1,0 +1,29 @@
+###What steps will reproduce the problem?
+
+Suppose you have two types of folders you want to sync on two machines, e.g. Images and Documents.
+
+I already setup the Documents folders on both machines to sync using local pairing and they sync happily. Now I want to do the same and I execute the same steps again for the Images and I choose to not combine the Documents and Images repositories, but keep them separate.
+
+###What is the expected output? What do you see instead?
+
+The git repositories between both machines should be synced and all files should be transfered sucessfully between them.
+
+Instead the one machine shows a message "Failed to sync with host1_Images" and in the log it says
+
+    [2013-04-15 15:57:22 CEST] PairListener: Syncing with host1_Images 
+    git-annex-shell: Only allowed to access ~/Documents not ~/Images/
+    fatal: The remote end hung up unexpectedly
+    Already up-to-date.
+
+I do not know how to debug this further cause I do not understand where this access-permission is configured.
+
+###What version of git-annex are you using? On what operating system?
+
+Machine 1: Gentoo Linux with Git-annex 4.20130405 from haskell-overlay.
+Machine 2: Ubuntu 12.04 with Git-Annex 4.20130405 installed using cabal.
+
+###Please provide any additional information below.
+
+> [[done]]; when setting up a new repo it will now use
+> a ssh key that is different for each repository on the host.
+> --[[Joey]]

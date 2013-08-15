@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 4"
+ date="2011-03-30T18:20:56Z"
+ content="""
+Picking up the automagic encryption idea for annex remotes, this would allow you to host a branchable-esque git-annex hosting service. (Nexenta with ZFS is a cheap and reliable option until btrfs becomes stable in a year or five).
+"""]]

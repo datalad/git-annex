@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.254.222"
+ subject="comment 1"
+ date="2013-07-07T17:47:54Z"
+ content="""
+The Windows installer includes numerous DLLs from Cygwin. I have tested it in a non-cygwin environment and it seems to work for me, and for other users. At least generally.. perhaps it *is* missing something used by wget or curl?
+
+Can you please provide the names of the DLLs that seem to be missing?
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 7"
+ date="2011-05-14T23:13:15Z"
+ content="""
+It exists locally, whereis tells me it exists locally and locally, only.
+
+The object is _not_ in the bare repo.
+
+The file _might_ have gone missing before I upgraded my annex backend version to 2. Could this be a factor?
+"""]]

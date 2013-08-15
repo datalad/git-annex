@@ -1,0 +1,73 @@
+Syncing works well when the graph of repositories is strongly connected.
+Now I'm working on making it work reliably with less connected graphs.
+
+I've been focusing on and testing a doubly-connected list of repositories,
+such as: `A <-> B <-> C`
+
+----
+
+I was seeing a lot of git-annex branch push failures occuring in
+this line of repositories topology. Sometimes was is able to recover from
+these, but when two repositories were trying to push to one-another at the
+same time, and both failed, both would pull and merge, which actually keeps
+the git-annex branch still diverged. (The two merge commits differ.)
+
+A large part of the problem was that it pushed directly into the git-annex
+branch on the remote; the same branch the remote modifies. I changed it to
+push to `synced/git-annex` on the remote, which avoids most push failures.
+Only when A and C are both trying to push into `B/synced/git-annex` at the
+same time would one fail, and need to pull, merge, and retry.
+
+-----
+
+With that change, git syncing always succeeded in my tests, and without
+needing any retries. But with more complex sets of repositories, or more
+traffic, it could still fail.
+
+I want to avoid repeated retries, exponential backoffs, and that kind of
+thing. It'd probably be good enough, but I'm not happy with it because
+it could take arbitrarily long to get git in sync.
+
+I've settled on letting it retry once to push to the synced/git-annex
+and synced/master branches. If the retry fails, it enters a fallback mode,
+which is guaranteed to succeed, as long as the remote is accessible.
+
+The problem with the fallback mode is it uses really ugly branch names.
+Which is why Joachim Breitner and I originally decided on making `git annex
+sync` use the single `synced/master` branch, despite the potential for
+failed syncs. But in the assistant, the requirements are different,
+and I'm ok with the uglier names.
+
+It does seem to make sense to only use the uglier names as a fallback,
+rather than by default. This preserves compatability with `git annex sync`,
+and it allows the assistant to delete fallback sync branches after it's
+merged them, so the ugliness is temporary.
+
+---
+
+Also worked some today on a bug that prevents C from receiving files
+added to A.
+
+The problem is that file contents and git metadata sync independantly. So C
+will probably receive the git metadata from B before B has finished
+downloading the file from A. C would normally queue a download of the
+content when it sees the file appear, but at this point it has nowhere to
+get it from.
+
+My first stab at this was a failure. I made each download of a file result
+in uploads of the file being queued to every remote that doesn't have it
+yet. So rather than C downloading from B, B uploads to C. Which works fine,
+but then C sees this download from B has finished, and proceeds to try to
+re-upload to B. Which rejects it, but notices that this download has
+finished, so re-uploads it to C...
+
+The problem with that approach is that I don't have an event when a download
+succeeds, just an event when a download ends.  Of course, C could skip
+uploading back to the same place it just downloaded from, but loops are
+still possible with other network topologies (ie, if D is connected to both
+B and C, there would be an upload loop 'B -> C -> D -> B`). So unless I can
+find a better event to hook into, this idea is doomed.
+
+I do have another idea to fix the same problem. C could certianly remember
+that it saw a file and didn't know where to get the content from, and then
+when it receives a git push of a git-annex branch, try again.

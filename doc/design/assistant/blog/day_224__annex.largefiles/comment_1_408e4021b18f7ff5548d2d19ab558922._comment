@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="Great idea! "
+ date="2013-03-30T08:00:16Z"
+ content="""
+This will be perfect for my raw image pool! I use Lightroom, so my photos are only imported once and only in case of DNG are they actually changed, in all other formats LR creates little sidecar XML files with processing instructions. So with this change the side car files can actually be fully Versionen and lage files are kept out of the repo and handled by archiving with annex. Cool! 
+"""]]

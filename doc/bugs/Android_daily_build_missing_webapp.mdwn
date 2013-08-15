@@ -1,0 +1,23 @@
+### Please describe the problem.
+
+The daily Android build is missing the webapp, raising a bug in case this is unexpected.
+
+### What steps will reproduce the problem?
+
+Down the daily APK, it is 9MB.
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+> Probably several of them were. I've fixed the cabal file, re-running
+> android build now. [[done]] --[[Joey]] 

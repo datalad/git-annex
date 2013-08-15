@@ -1,0 +1,1 @@
+In a true dropbox-like fashion, I tried to import my entire homefolder into the git-annex assistant. However, it seems that git-annex breaks on the several git repositories I've got checked out in my "Projects" folder. Is this a possible use case, or should I look at other tools to perform this with?

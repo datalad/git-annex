@@ -1,0 +1,38 @@
+Imagine putting a git-annex drive in a time capsule. In 20, or 50, or 100
+years, you'd like its contents to be as accessible as possible to whoever
+digs it up.
+
+This is a hard problem. git-annex cannot completely solve it, but it does
+its best to not contribute to the problem. Here are some aspects of the
+problem:
+
+* How are files accessed? Git-annex carefully adds minimal complexity
+  to access files in a repository. Nothing needs to be done to extract
+  files from the repository; they are there on disk in the usual way,
+  with just some symlinks pointing at the annexed file contents.
+  Neither git-annex nor git is needed to get at the file contents.
+  
+  (Also, git-annex provides an "uninit" command that moves everything out
+  of the annex, if you should ever want to stop using it.)
+
+* What file formats are used? Will they still be readable? To deal with
+  this, it's best to stick to plain text files, and the most common
+  image, sound, etc formats. Consider storing the same content in multiple
+  formats.
+
+* What filesystem is used on the drive? Will that filesystem still be
+  available? Whatever you choose to use, git-annex can put files on it.
+  Even if you choose (ugh) FAT.
+
+* What is the hardware interface of the drive? Will hardware still exist
+  to talk to it?
+
+* What if some of the data is damaged? git-annex facilitates storing a
+  configurable number of [[copies]] of the file contents. The metadata
+  about your files is stored in git, and so every clone of the repository
+  means another copy of that is stored. Also, git-annex uses filenames
+  for the data that encode everything needed to match it back to the
+  metadata. So if a filesystem is badly corrupted and all your annexed
+  files end up in `lost+found`, they can easily be lifted back out into
+  another clone of the repository. Even if the filenames are lost,
+  it's possible to [[tips/recover_data_from_lost+found]].

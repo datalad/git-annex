@@ -1,0 +1,7 @@
+Somehow I seemingly have not understood the manual mode.
+
+If I have a file in my repository, that is not yet in the annex (or in git), and I start the webapp, that file is automatically added to git-annex (and git).
+
+Why is that?
+
+And how can I use the webapp without such interference?

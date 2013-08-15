@@ -1,0 +1,26 @@
+Implemented everything I planned out yesterday: Expensive scans are only
+done once per remote (unless the remote changed while it was disconnected),
+and failed transfers are logged so they can be retried later.
+
+Changed the TransferScanner to prefer to scan low cost remotes first,
+as a crude form of scheduling lower-cost transfers first.
+
+A whole bunch of interesting syncing scenarios should work now. I have not
+tested them all in detail, but to the best of my knowledge, all these
+should work:
+
+* Connect to the network. It starts syncing with a networked remote.
+  Disconnect the network. Reconnect, and it resumes where it left off.
+* Migrate between networks (ie, home to cafe to work). Any transfers
+  that can only happen on one LAN are retried on each new network you
+  visit, until they succeed.
+
+One that is not working, but is soooo close:
+
+* Plug in a removable drive. Some transfers start. Yank the plug.
+  Plug it back in. All necessary transfers resume, and it ends up
+  fully in sync, no matter how many times you yank that cable.
+
+That's not working because of an infelicity in the MountWatcher.
+It doesn't notice when the drive gets unmounted, so it ignores
+the new mount event.

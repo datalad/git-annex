@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBJ6Dv1glxzzi4qIzGFNa6F-mfHIvv9Ck"
+ nickname="Jim"
+ subject="Same bug"
+ date="2013-03-19T13:59:32Z"
+ content="""
+Hi,
+
+This looks like the exact same issue as [get failed, but remote has the file](http://git-annex.branchable.com/bugs/get_failed__44___but_remote_has_the_file/).
+I can reproduce your problem here by doing a `git annex copy --to bucket bigfile.gz`, then stopping that transfer with `^Z`, and finally running the `copy` command
+again.  It will fail with the same debug output as you show here.
+"""]]

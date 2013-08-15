@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkGCmVc5qIJaQQgG82Hc5zzBdAVdhe2JEM"
+ nickname="Bruno"
+ subject="comment 3"
+ date="2013-05-30T16:30:31Z"
+ content="""
+Here's the screen capture : [http://i.imgur.com/owmuIKa.png](http://i.imgur.com/owmuIKa.png)
+
+I used the menu item to open the WebApp. Nothing appeared in the git-annex's terminal window when I opened the WebApp. The error message is the one that appears when I start Git Annex.
+
+The WebApp seems to be working. It synced a picture I took when the WebApp was already running. See : [http://i.imgur.com/Bcu4iAE.png](http://i.imgur.com/Bcu4iAE.png)
+
+I think I have this bug since the Android version is out. I thought maybe it was normal in the beginning.
+
+Here's the log :
+
+    [2013-05-30 12:15:36 EDT] main: starting assistant version 4.20130529-g6b9b452
+    \"_xmpp-client._tcp.gmail.com\"
+    Just [(5,0,5222,\"xmpp.l.google.com.\"),(20,0,5222,\"alt1.xmpp.l.google.com.\"),(20,0,5222,\"alt3.xmpp.l.google.com.\"),(20,0,5222,\"alt4.xmpp.l.google.com.\"),(20,0,5222,\"alt2.xmpp.l.google.com.\")]
+    (scanning...) [2013-05-30 12:15:37 EDT] Watcher: Performing startup scan
+    WebApp crashed: <file descriptor: 15>: hPutStr: illegal operation (handle is closed)
+    [2013-05-30 12:15:37 EDT] WebApp: warning WebApp crashed: <file descriptor: 15>: hPutStr: illegal operation (handle is closed)
+    (started...) [2013-05-30 12:22:02 EDT] Committer: Adding IMG_20130..22201.jpg
+
+    add Camera/IMG_20130530_122201.jpg (checksum...) [2013-05-30 12:22:02 EDT] Committer: Committing changes to git
+    [2013-05-30 12:22:13 EDT] Committer: Adding IMG_20130..22201.jpg
+    ok
+    (Recording state in git...)
+    (Recording state in git...)
+    add Camera/IMG_20130530_122201.jpg (checksum...) [2013-05-30 12:22:14 EDT] Committer: Committing changes to git
+    (gpg) 
+    [...]
+                            
+    [2013-05-30 12:22:50 EDT] Transferrer: Uploaded IMG_20130..22201.jpg
+"""]]

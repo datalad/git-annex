@@ -1,0 +1,17 @@
+This isn't really a bug of git-annex, but a problem with haskell-platform/ghc6.12.x so this post might need to be moved to a better place (maybe tips).
+
+OSX's haskell-platform doesn't have the dynamic libraries available, as far as I know it just isn't supported therefore git-annex will always be statically built on OSX, so wrappers like <http://tsocks.sourceforge.net/> or [[!google dsocks]] for preloading connect() calls won't work. 
+
+<pre>
+jtang@x00:~/annex $ tsocks git annex get .
+dyld: could not load inserted library: /opt/local/lib/libtsocks.dylib
+
+error: git-annex died of signal 5
+</pre>
+
+The side effect of this means that users who are behind restrictive firewalls that allow only ssh via a socks proxy, they will need to configure ssh to use something like <http://bent.latency.net/bent/git/goto-san-connect-1.85/src/connect.html>.
+
+<pre>
+host remotemyhost
+        ProxyCommand connect -S proxy.mydomain:1080 -R local %h %p
+</pre>

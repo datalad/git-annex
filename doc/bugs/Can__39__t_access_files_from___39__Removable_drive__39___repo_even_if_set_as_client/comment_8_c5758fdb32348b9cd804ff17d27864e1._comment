@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 8"
+ date="2013-02-27T18:36:16Z"
+ content="""
+@Joey:
+As my use case is 1 person using multiple machines, I didn't think local/XMPP pairing was appropriate.
+
+Local pairing because the netbook leaves the network the desktop machine is on, which is when transferring the files is wanted (otherwise, they would just use the desktop...).
+XMPP pairing description implies that it is for 2 different people (thus 2 different addresses). Can it be used where both annexes are using the same address? Or does the address also allow you to include the location (i.e. name@host.com/netbook)?
+
+It definitely sounds like I am misunderstanding how this is supposed to work so I apologise for that. Please keep up the excellent work. git-annex is one of those tools I wish I had learned about a long time ago!
+
+@edheil: Interesting workaround, thanks.
+"""]]

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 9"
+ date="2012-07-10T14:08:10Z"
+ content="""
+Can you run the series of commands I had above on your two machines?  I figure there are two possibilities:
+
+1. There is something wrong with the git-annex versions you are using.
+2. There is something wrong with your repository. (\"warning: There are too many unreachable loose objects\"?)
+
+so if you can make a temp repository on goldnerlab, then clone it on the other machine and see where it fails, that would be helpful.
+ 
+after cloning git-annex status should hopefully say that you have 1 known key, not 0.
+
+Obviously this won't fix the problem, but it will at least narrow it down.
+"""]]

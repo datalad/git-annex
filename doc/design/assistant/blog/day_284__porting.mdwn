@@ -1,0 +1,13 @@
+Today I got to deal with bugs on Android (busted use of `cp` among other
+problems), Windows (fixed a strange hang when adding several files), and
+Linux (`.desktop` files suck and Wine ships a particularly nasty one).
+Pretty diverse!
+
+Did quite a lot of research and thinking on XMPP encryption yesterday, but
+have not run any code yet (except for trying out a D-H exchange in `ghci`).
+I have listed several options on the [[XMPP]] page.
+
+Planning to take a look at
+[[bugs/Handling_of_files_inside_and_outside_archive_directory_at_the_same_time]]
+tomorrow; maybe I can come up with a workaround to avoid it behaving so
+badly in that case.

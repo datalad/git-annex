@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2011-04-08T07:23:08Z"
+ content="""
++1 for this feature, I've been longing for something like this other than rolling my own perl/shell scripts to parse the outputs of \"git annex whereis .\" to see how many files are on my machine or not.
+"""]]

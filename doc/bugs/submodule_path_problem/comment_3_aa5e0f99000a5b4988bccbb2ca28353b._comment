@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkywesyg6tKBZcmxJ2EMUO89DZL1LZ7Sng"
+ nickname="Peter"
+ subject="comment 3"
+ date="2012-10-17T11:41:54Z"
+ content="""
+One step closer, but still not perfect:
+
+    git annex add big-file
+    > add big-file (checksum...) ok
+    > (Recording state in git...)
+
+    git commit -a -m \"Added file\"
+    > git-annex: /Users/ptx/tmp/test-annex/test/.git/lib/submod: changeWorkingDirectory: does not exist (No such file or directory)
+
+So when applying the post-hook, git-annex is getting the wrong directory.
+
+`test/.git/lib/submod` should be `test/.git/modules/lib/submod`
+
+"""]]

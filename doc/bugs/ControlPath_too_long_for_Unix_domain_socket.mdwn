@@ -1,0 +1,53 @@
+What steps will reproduce the problem?
+Pairing an existing git annex repository with a fresh repository on another computer in the git-annex webapp
+
+
+What is the expected output? What do you see instead?
+Expected result is that the two machines sync correctly.
+
+What i see are some "ControlPath <data>  too long for unix domain socket" errors from ssh, but the computers do actually sync properly. 
+
+Even though the data is synced properly, either the sender(or both of the clients) don't actually realize this. And the queue circles, all the transfers are being redone constantly(On every start of git-annex webapp on the original repository at least).
+
+
+What version of git-annex are you using? On what operating system?
+Latest git master as of this post. Debian sid and Ubuntu 12.04
+
+
+Please provide any additional information below.
+
+
+stdout snippet from git-annex webapp:
+
+
+    ControlPath "/home/alansmithee/Desktop/annex/.git/annex/ssh/alansmithee@git-annex-debbook.local-alansmithee.dxpXHVCkLhsxvWaH" too long for Unix domain socket
+    SHA256-s51233--0b4c59b3ab03b1ca6d95d4084fa6ff7220cf26695b6e3dd575f78af3dec6b701
+           51233 100%    5.43MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+    sent 30 bytes  received 51385 bytes  102830.00 bytes/sec
+    total size is 51233  speedup is 1.00
+    ok
+    (Recording state in git...)
+
+    ControlPath "/home/alansmithee/Desktop/annex/.git/annex/ssh/alansmithee@git-annex-debbook.local-alansmithee.9ZQwEjraTxi20B6W" too long for Unix domain socket
+    SHA256-s47883982--4b7cbb49506dcdd223a9db7b400cc41fc2e3ebbf5b2b17b75c9334bb949b6754
+        47883982 100%    1.34MB/s    0:00:34 (xfer#1, to-check=0/1)
+
+    sent 30 bytes  received 47889978 bytes  1388116.17 bytes/sec
+    total size is 47883982  speedup is 1.00
+    ok
+    (Recording state in git...)
+
+
+This data appears on both the sending and receiving git-annex stdout. At least for the initial sync. For later syncs it only appears on the sender, though the client system is using a lot of resources.
+
+> I've made git-annex detect if the control path would be too long,
+> and disable ssh connection caching. It also tries a relative path
+> to the file, which tends to make it shorter, and I think would
+> keep ssh connection caching working in your example.
+> 
+> Please test and see if it works, and also if the "looping" problem
+> still happens. --[[Joey]]
+
+>> Closing; I'm pretty sure the looping is just transfer retrying, to be
+>> expected if they fail. [[done]] --[[Joey]] 

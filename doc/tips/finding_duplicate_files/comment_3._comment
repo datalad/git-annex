@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="mhameed"
+ ip="82.32.202.53"
+ subject="problems with spaces in filenames"
+ date="Wed Sep  5 09:38:56 BST 2012"
+ content="""
+
+Spaces, and other special chars can make filename handeling ugly.
+If you don't have a restriction on keeping the exact filenames, then 
+it might be easiest just to get rid of the problematic chars.
+
+    #!/bin/bash
+
+    function process() {
+        dir="$1"
+        echo "processing $dir"
+        pushd $dir >/dev/null 2>&1
+
+        for fileOrDir in *; do
+            nfileOrDir=`echo "$fileOrDir" | sed -e 's/\[//g' -e 's/\]//g' -e 's/ /_/g' -e "s/'//g" `
+            if [ "$fileOrDir" != "$nfileOrDir" ]; then
+                echo renaming $fileOrDir to $nfileOrDir
+                git mv "$fileOrDir" "$nfileOrDir"
+            else
+                echo "skipping $fileOrDir, no need to rename."
+            fi
+        done
+
+        find ./ -mindepth 1 -maxdepth 1 -type d | while read d; do
+        process "$d"
+        done
+        popd >/dev/null 2>&1
+    }
+
+    process .
+
+Maybe you can run something like this before checking for duplicates.
+
+"""]]

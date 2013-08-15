@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-03-15T14:11:27Z"
+ content="""
+Keep in mind that lots of small files may have significant overhead, so a warning that it's not possible to make sure there's enough space would make sense for certain corner cases. Actually finding out the exact overhead is beyond git-annex' scope and, given transparent compression etc, ability, but a warning, optionally with a \"do you want to continue\" prompt can't hurt.
+
+-- RichiH
+"""]]

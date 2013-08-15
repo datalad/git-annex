@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 4"
+ date="2013-01-16T19:05:38Z"
+ content="""
+Does it ask for a passphrase if --batch is included in gpg's parameters? 
+"""]]

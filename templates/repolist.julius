@@ -1,0 +1,28 @@
+$(function() {
+	var setup = function() {
+		$("#costsortable").sortable({
+			items: ".repoline",
+			handle: ".handle",
+			cursor: "move",
+			forceHelperSize: true,
+			start: function(event, ui) {
+				ui.item.children(".draghide").hide();
+			},
+			stop: function(event, ui) {
+				ui.item.children(".draghide").show();
+				var list = $("#costsortable").sortable("toArray");
+				var moved = ui.item.attr("id");
+				$.ajax({
+					'url': "@{RepositoriesReorderR}",
+					'data': {
+						'moved': moved,
+						'list': list
+					}
+				});
+			},
+		});
+	};
+	longpollcallbacks.add(setup);
+	setup();
+
+});

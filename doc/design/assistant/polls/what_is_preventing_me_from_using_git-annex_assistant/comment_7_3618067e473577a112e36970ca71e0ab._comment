@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://dzsino.myopenid.com/"
+ nickname="dzsino"
+ subject="Recording file creation dates?"
+ date="2013-01-11T16:35:27Z"
+ content="""
+I've just started using git annex, command line feels safer for the time being. One issue I've got with assistant that I had to kill it couple of times when it got confused over something (could be that I used command line git annex at the same time?),  shutdown from the UI is welcome.
+
+More of a git annex issue for me that I lost file creation dates for annexed files, which i don't really mind for most of my content, except really old photos without proper EXIF tags.
+I think of git annex as more of a DVR for my digital life, rather than a mere sync tool, so I would welcome some basic metadata facility. Would you consider adding this?
+(Really getting carried away, I would want to full text search on file names, ID3 tags, document metadata and text etc. and requesting files based on search hits, spotlight style..)
+"""]]

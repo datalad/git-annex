@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.23"
+ subject="comment 2"
+ date="2012-10-18T02:23:54Z"
+ content="""
+Another possibilty is to reuse the dead uuids for later repos. You can do this by just setting annex.uuid in .git/config before you run `git annex init`, and then run `git annex fsck`.
+"""]]

@@ -1,0 +1,17 @@
+The compilation command should states which packages are used and avoid the default mechnasim that automatically search for them.
+
+This can be done by the flags -hide-packages and then -package foo
+
+> My ghc does not have a `--hide-packages` option.
+> 
+> Could you just show the build problem that you are suggesting I work
+> around? --[[Joey]]
+
+
+> Thanks npouillard, I see the problem now.
+> <http://stackoverflow.com/questions/2048953/control-monad-state-found-in-multiple-packages-haskell>
+> 
+> I've added "-ignore-package monads-fd" to GHCFLAGS. I hope I don't
+> really have to hide all packages and individually turn them back on;
+> surely this monads-fd/mtl conflict is an exception, and Haskell's module
+> system is not a mess of conflicting modules? --[[Joey]] [[done]]

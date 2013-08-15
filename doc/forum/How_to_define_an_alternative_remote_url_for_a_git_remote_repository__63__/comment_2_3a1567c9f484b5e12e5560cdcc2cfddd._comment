@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.8.29"
+ subject="Justin is right"
+ date="2012-08-21T15:57:46Z"
+ content="""
+git-annex doesn't care how many git remotes you have pointing to a given repo, that repo's uuid still only counts as one copy.
+"""]]

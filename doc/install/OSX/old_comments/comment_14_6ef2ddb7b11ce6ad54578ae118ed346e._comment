@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 14"
+ date="2012-07-04T12:43:54Z"
+ content="""
+@Damien, hmm, it should not be using any cp options, unless when it was built there was a cp in the path that supported some option like -p. Can you check with --debug what cp parameters it's trying to use?
+
+
+"""]]

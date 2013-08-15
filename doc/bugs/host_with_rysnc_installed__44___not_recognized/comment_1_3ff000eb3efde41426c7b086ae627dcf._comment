@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-18T15:55:05Z"
+ content="""
+The git-annex webapp runs some shell commands on the remote it's setting up, in this case the FreeNAS box. It's difficult to do this entirely portably. I have tried to use only POSIX shell compatable commands, that should also work with embedded systems using busybox.
+
+You can try running the probe yourself at the prompt on the FreeNAS and see how it fails. The command run is:
+
+     echo loggedin;if which git-annex-shell; then echo git-annex-shell; fi;if which rsync; then echo rsync; fi
+"""]]

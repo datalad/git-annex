@@ -1,0 +1,18 @@
+So suppose you put an existing folder under git-annex control, like this:
+
+    cd Archive_of_all_my_files
+    git init .
+    git annex init "Archive Folder"
+    git annex add .
+
+And now you forget the last step:
+
+    git commit -am "init"
+
+Instead, you fool around with git. After all, isn't git designed to keep your data safe and make sure there's no way you can accidentally lose it? The only branch that exists is 'git-annex', so you switch to that branch to see what it is:
+
+    git checkout git-annex
+
+This command switches to the branch git-annex and makes a mess in the working directory. And you can't switch back to master since master does not have any commits. Is there a clean way to go back? I tried 'git checkout --orphan master', but the messy files stayed in the working directory. In the meantime, there should probably be a warning on the walkthrough page.
+
+I think git / git annex should warn you before switching the branch in this rare situation.

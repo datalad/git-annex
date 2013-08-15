@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 6"
+ date="2013-03-04T00:20:25Z"
+ content="""
+Since I can't reproduce the \"copy archived content to the client repo then drop it from the backup repo\" anymore, I guess we can close.  If I notice anything like that happening again I have the --debug flag available to investigate and open a new bug report.
+
+"""]]

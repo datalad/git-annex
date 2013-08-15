@@ -1,0 +1,29 @@
+It would be nice if git-annex could be used in bare git repos.
+However, that is not currently supported. Problems include:
+
+* git-annex often does not read a git repo's config before touching it,
+  so it doesn't know if the repo is bare or not
+  (reading the config when operating on ssh repos would be a pain and SLOW;
+  I had some of that code in as of 1aa19422ac8748eeff219ac4f46df166dae783c5,
+  but ripped it all out)
+* .. which results in creating `.git/annex` in a bare repo, which mightily
+  confuses git (so it will complain that the bare repo is not
+  a git repo at all!)
+* `.git-annex/` needs to have state recorded to it and committed, and that
+  is not possible with a bare repo. (If [[todo/branching]] were done,
+  that might be fixed.) (now fixed)
+
+----
+
+Update: Now that git-annex-shell is used for accessing remote repos,
+it would be possible to add smarts about bare repos there, and avoid
+some of the above problems. Probably only the state recording problem
+remains.
+
+A possible other approach to the state recording repo is to not
+record state changes on the remote in that case. Git-annex already
+records remote state changes locally whenever it modifies the state of a
+remote. --[[Joey]]
+
+> And... [[done]]! See [[/bare_repositories]] for current status
+> and gotchas. --[[Joey]] 

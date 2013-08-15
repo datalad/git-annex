@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 5"
+ date="2011-04-29T18:01:04Z"
+ content="""
+I've corrected the missing `ANNEX_HASH_*` oversight. (It also affected removal, btw.)
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.254.222"
+ subject="comment 6"
+ date="2013-07-08T16:11:32Z"
+ content="""
+`.git/annex/objects` does not typically contain any file contents in direct mode. The file contents are stored directly in the working tree.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="SSL certificates"
+ date="2013-03-25T16:09:54Z"
+ content="""
+Trying to use webdav leads in:
+
+    git-annex: HandshakeFailed (Error_Protocol (\"certificate rejected: not coping with anything else Start (Container Context 0)\",True,CertificateUnknown))
+
+How can I disable the SSL certificate check?
+"""]]

@@ -1,0 +1,38 @@
+### Please describe the problem.
+My server is on debian testing.  After an upgrade (git annex: 3.20120629 → 4.20130521) I can't do anything in my repository anymore.  git itself works, but invoking any git-annex command leads to:
+
+    git-annex: fd:6: hGetContents: user error (Pattern match failure in do expression at libraries/base/GHC/Event/Thread.hs:90:3-10)
+
+This repo is handled by a script, which invokes only the following git/git-annex commands:
+
+    $ git annex sync
+    $ git annex add
+    $ git commit -m "…"
+
+I realized this after trying to move files from my server to my local repo.  My local machine runs debian sid.  When trying to transfer files, this happens:
+
+    $ git annex sync
+    → ok
+    $ git annex move --from origin .
+    move x.zip (from origin...) 
+    user@host's password: ← pw ok
+    git-annex-shell: fd:6: hGetContents: user error (Pattern match failure in do expression at libraries/base/GHC/Event/Thread.hs:90:3-10)
+    rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+    rsync error: error in rsync protocol data stream (code 12) at io.c(605) [Receiver=3.0.9]
+    failed
+
+I updated git-annex on both machines to 4.20130627 (rest of server is still on debian testing), but it didn't change anything.
+
+The server was not down since the last successful transfer, so I can't imagine anything interrupting any git-annex process.
+
+### What steps will reproduce the problem?
+See above.
+
+### What version of git-annex are you using? On what operating system?
+Server: 4.20130521 on debian testing (now: 4.20130627)
+Local: 4.20130621 on debian sid (now: 4.20130627)
+
+[[!meta title="fails to run on Linux with libc 2.17 and old kernel 2.6.32"]]
+
+> Closing this since it's a bad kernel and there is a workaround to build
+> a git-annex that will work with this kernel (see comments).  [[done]] --[[Joey]]

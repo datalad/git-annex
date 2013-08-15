@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-07-04T22:58:46Z"
+ content="""
+Well if it happens again why don't you use `ps` or `strace` to see what it's doing.
+"""]]

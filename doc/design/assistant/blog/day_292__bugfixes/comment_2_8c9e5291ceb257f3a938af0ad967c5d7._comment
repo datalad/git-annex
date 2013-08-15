@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://nullroute.eu.org/~grawity/"
+ nickname="Mantas"
+ subject="comment 2"
+ date="2013-07-09T13:47:20Z"
+ content="""
+git **used to** use the hostname as-is, but that didn't work out well – many people just kept on committing as `joeyh@kremvax.(none)`, which doesn't make for a good email address or a globally-unique identifier (sometimes by being lazy; sometimes by forgetting to carry their Git config over to a new machine).
+
+The stricter check was implemented in [8c5b1ae1](https://github.com/gitster/git/commit/8c5b1ae1b26a7512eb29e75391b8b24c0d0439e7) for git v1.8.3. Setting `$EMAIL` or running `git -c user.email=foo@bar` should override it.
+"""]]

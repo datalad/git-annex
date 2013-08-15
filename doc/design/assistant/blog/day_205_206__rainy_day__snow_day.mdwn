@@ -1,0 +1,12 @@
+Yesterday was all bug fixes, nothing to write about really.
+
+Today I've been working on getting XMPP remotes to sync more reliably.
+I left some big holes when I stopped work on it in November:
+
+1. The assistant did not sync with XMPP remotes when it started up.
+2. .. Or when it detected a network reconnection.
+3. There was no way to trigger a full scan for transfers
+   after receiving a push from an XMPP remote.
+
+The asynchronous nature of git push over XMPP complicated doing this, but
+I've solved all 3 issues today.

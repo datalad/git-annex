@@ -1,0 +1,25 @@
+Perhaps stupidly I added some very large bare git repos into a git-annex.
+
+This took a very long time, used lot's of memory, and then crashed.  I didn't catch the error (which is annoying) - sorry about that.  IIRC it is the same error if one Ctrl-c's the addition.
+
+I ran `git annex add .` a second time and eventually killed it (I perhaps should have waited - I now think it was working).
+
+A `git annex unannex` fixed up some files but somehow I managed to end up with tonnes of files all sym-linked into the git annex object directory but not somehow recognised as annexed files.  I'm assuming that they somehow didn't make it into git annex's meta-data layer (or equivalent).
+
+Commands such as `git annex {fsck,whereis,unannex} weirdfile` immediately returned without error.
+
+I've now spent a lot of manual time copying the files back. Doing the following, not the cleverest but I was a little panicky about my data...
+
+    find . -type l -exec mv \{} \{}.link \; #Move link names out of the way
+    find . -type l -exec cp \{} \{}.cp \; #Copy follows links so we can copy target back to link location
+    find . -type f -name "*.link.cp" | xargs -n 1 rename 's/\.link\.cp//' #Change to original name
+    find . -type l -exec rm \{} \; #Ditch the links
+    git annex unused
+    git annex dropunused `seq 9228`
+
+9228 files were found to be unused, this gives an idea of the scale of the number of "lost" files for want of a better term.
+
+A pretty poor bug report as these things go.  Anyone any idea what might have happened (it didn't seem space or memory related)?  Or how I might have fixed it a little more cleverly?
+
+For reference I am using stable Debian, git annex version 3.20111011.
+

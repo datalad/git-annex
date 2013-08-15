@@ -1,0 +1,70 @@
+What steps will reproduce the problem?
+
+I am unable to create a minimal setup to reproduce this unfortunately. But my case is the following:
+
+* Two synced repos, I have switched between direct and indirect in both, currently they are indirect
+* I have two submodules in the repos (not related to the unuesd files)
+
+* I used "git rm -r" to remove a bunch of files along with "git mv" to move some
+* I have three commits of actions like this
+
+* In one repo, the one where I did the deletions, I have 172 unused files, and all seem to come from the first of the three commits
+* In the second repo, to which I synced, I have 188 unused files, which includes a couple of files from the third commit as well
+
+* If I try to dropunused either a single file or the whole range of the files, from either repo, I get git-annex telling me "ok, recording state" but when I run unused again the files are still there. And looking into .git/objects/annex/ the file is still present
+
+This is the debug from the drop command:
+
+    dropunused 9 [2013-02-07 12:47:24 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","show-ref","git-annex"]
+    [2013-02-07 12:47:24 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","show-ref","--hash","refs/heads/git-annex"]
+    [2013-02-07 12:47:24 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","log","refs/heads/git-annex..5f3fc9db5c7badb5fb25c3159c20584f11dadaf9","--oneline","-n1"]
+    [2013-02-07 12:47:24 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","log","refs/heads/git-annex..8e5674078706864f2eade86d8aa43027e05afc1d","--oneline","-n1"]
+    [2013-02-07 12:47:24 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","log","refs/heads/git-annex..cbe492cfa79728698f5d891d7f716fbcd9fc29e2","--oneline","-n1"]
+    [2013-02-07 12:47:24 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","log","refs/heads/git-annex..48a1bdf98a10ad9a81c0587f8909e94c1c0dccc4","--oneline","-n1"]
+    [2013-02-07 12:47:24 CET] chat: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","cat-file","--batch"]
+    [2013-02-07 12:47:24 CET] read: git ["config","--null","--list"]
+    [2013-02-07 12:47:24 CET] chat: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","hash-object","-w","--stdin-paths"]
+    [2013-02-07 12:47:24 CET] feed: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","update-index","-z","--index-info"]
+    [2013-02-07 12:47:24 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","show-ref","--hash","refs/heads/git-annex"]
+    [2013-02-07 12:47:24 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","write-tree"]
+    [2013-02-07 12:47:24 CET] chat: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","commit-tree","76f5041bc6e8a109e0309a09b5f36cd0da8b204a","-p","refs/heads/git-annex"]
+    [2013-02-07 12:47:24 CET] call: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","update-ref","refs/heads/git-annex","96de755475bdd8f0f948dd6421c3956803a63e66"]
+    ok
+    (Recording state in git...)
+
+If I run it again, I get:
+
+    dropunused 9 [2013-02-07 12:47:47 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","show-ref","git-annex"]
+    [2013-02-07 12:47:47 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","show-ref","--hash","refs/heads/git-annex"]
+    [2013-02-07 12:47:47 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","log","refs/heads/git-annex..96de755475bdd8f0f948dd6421c3956803a63e66","--oneline","-n1"]
+    [2013-02-07 12:47:48 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","log","refs/heads/git-annex..8e5674078706864f2eade86d8aa43027e05afc1d","--oneline","-n1"]
+    [2013-02-07 12:47:48 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","log","refs/heads/git-annex..cbe492cfa79728698f5d891d7f716fbcd9fc29e2","--oneline","-n1"]
+    [2013-02-07 12:47:48 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","log","refs/heads/git-annex..48a1bdf98a10ad9a81c0587f8909e94c1c0dccc4","--oneline","-n1"]
+    [2013-02-07 12:47:48 CET] chat: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","cat-file","--batch"]
+    [2013-02-07 12:47:48 CET] read: git ["config","--null","--list"]
+    [2013-02-07 12:47:48 CET] chat: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","hash-object","-w","--stdin-paths"]
+    [2013-02-07 12:47:48 CET] feed: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","update-index","-z","--index-info"]
+    [2013-02-07 12:47:48 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","show-ref","--hash","refs/heads/git-annex"]
+    [2013-02-07 12:47:48 CET] read: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","write-tree"]
+    [2013-02-07 12:47:48 CET] chat: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","commit-tree","e40d82db10c60519f6a3a72055e9577850972fdf","-p","refs/heads/git-annex"]
+    [2013-02-07 12:47:48 CET] call: git ["--git-dir=/home/arand/.git","--work-tree=/home/arand","update-ref","refs/heads/git-annex","6cf49f629251f9b39fa8b457cf6590c71c1d509b"]
+    ok
+    (Recording state in git...)
+
+
+What version of git-annex are you using? On what operating system?
+
+git-annex: 3.20130124
+Debian: sid 2013-02-01
+
+> I put a fix in for this in 57780cb3a4dfe1292b72e1412ec4d2a70b6d04ce 
+> but it was buggy and I had to revert it.
+> 
+> The bug is caused by direct mode cache and mapping info.
+> This makes getKeysPresent find keys that are not present.
+> It would be expensive to make getKeysPresent check that the
+> actual key files are present (it just lists the directories). 
+> But this seems to be needed, since direct mode can leave
+> cache and mapping files behind. --[[Joey]]
+
+>> Now fixed properly. [[done]] --[[Joey]]

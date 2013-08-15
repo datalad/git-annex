@@ -1,0 +1,26 @@
+###What steps will reproduce the problem?
+    $ touch /home/arand/empty
+    $ git annex addurl 'file:///home/arand/empty'                                                                             
+    addurl _home_arand_empty (downloading file:///home/arand/empty ...) 
+    
+    git-annex: /home/arand/tmp/c/.git/annex/tmp/URL--file&c%%%home%arand%empty: getFileStatus: does not exist (No such file or directory)
+    failed
+    git-annex: addurl: 1 failed
+
+###What is the expected output? What do you see instead?
+If it is possible to distinguish between empty files and files that just fail to open, it would be nice if Annex were able to handle it, or at least give a more obvious error message.
+
+###What version of git-annex are you using? On what operating system?
+
+Debian sid/experimental
+
+    git-annex version: 4.20130227
+    local repository version: 4
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+
+> Seems that curl doesn't write the file it was asked to 
+> output to in this case. Crazy. Does not affect empty 
+> http urls. Switched to using just cp for file://
+> [[done]] --[[Joey]] 

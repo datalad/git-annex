@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="zooko"
+ ip="75.220.153.232"
+ subject="Tahoe-LAFS comes with encryption"
+ date="2011-05-18T04:32:14Z"
+ content="""
+The Tahoe-LAFS special remote automatically encrypts and adds cryptography integrity checks/digital signatures. For that special remote you should not use the git-annex encryption scheme.
+
+Tahoe-LAFS encryption generates a new independent key for each file. This means that you can share access to one of the files without thereby sharing access to all of them, and it means that individual files can be deduplicated among multiple users.
+"""]]

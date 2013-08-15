@@ -1,0 +1,46 @@
+What steps will reproduce the problem?
+
+Unable to reproduce as it seems to happen randomly, to very few files (4/250).
+
+What is the expected output? What do you see instead?
+
+I expect to see the assistant warn if it attempts to add a file which fails to add to the annex.
+Instead, I see no output from the assistant, but lines like this in the log.
+
+daemon.log.2:add Indie Game Stand/Deadly 30/Deadly30_MAC.zip (checksum...) failed
+daemon.log.2:add Indie Game Stand/Wyv and Keep/xnafx40_redist.msi (checksum...) failed
+daemon.log.2:add Indie Game Stand/Blueberry Garden/Blueberry_Garden_1.1.zip (checksum...) failed
+daemon.log.2:add Indie Game Stand/Flatspace Bundle/fsmusicpack3setup.exe (checksum...) failed
+
+There is no reason given for the failure in the log file. The assistant also never tries to add them again in normal running (but did add them when it was started again after a reboot).
+
+What version of git-annex are you using? On what operating system?
+
+git-annex version: 4.20130314
+OS: Arch Linux
+
+Please provide any additional information below.
+
+The assistant in this case is being used as nothing more than a way for me to see which files have been added (--verbose, --foreground and --debug with 'watch' outputs nothing..). No remotes or anything like that.
+
+> I have made the assistant re-queue any file that it fails to add,
+> so it will retry it later. Typically within a few seconds. [[done]]
+> 
+> I have only been able to think of one scenario in which this could
+> happen. It's pretty unusual:
+> 
+> * Something writes to a file, and closes it.
+> * Assistant sees file has no writers, and locks it down in preparation
+>   to add it.
+> * Something then re-opens the file to write to it some more.
+>   Note that it would seem to need to bypass permissions that prevent
+>   the file from being written to in order to do this. It makes a change
+>   to the file.
+> * Assistant is checksumming file, reaches end, and detects it has been
+>   tampered with and gives up.
+> 
+> I would still like more information about circumstances that
+> cause this to happen, because while a possible scenario, the 
+> above is too weird to believe anyone could run into it.
+> 
+> --[[Joey]] 

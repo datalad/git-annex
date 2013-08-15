@@ -1,0 +1,14 @@
+Seems the last few commits have borked 'cabal configure' on OSX with the following error message
+
+<pre>
+[jtang@laplace git-annex (master)]$ cabal configure 
+Resolving dependencies...
+
+Build/InstallDesktopFile.hs:19:8:
+    Could not find module `Assistant.OSX'
+    Use -v to see a list of the files searched for.
+</pre>
+
+Looks like a missing module.
+
+> Was broken everywhere really, so I fixed it. [[done]] --[[Joey]] 

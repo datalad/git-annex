@@ -1,0 +1,10 @@
+When the [[design/assistant]] is running on a pair of remotes, I've seen
+them get out of sync, such that every pull and merge results in a conflict,
+that then has to be auto-resolved. 
+
+This seems similar to the laddering problem described in this old bug:
+[[bugs/making_annex-merge_try_a_fast-forward]]
+
+--[[Joey]]
+
+Think I've fixed this. [[done]] --[[Joey]]

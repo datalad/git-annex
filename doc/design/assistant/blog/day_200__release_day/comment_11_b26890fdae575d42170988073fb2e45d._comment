@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmmLfBDEDFfEOba8Ra46nsnTmoNHFsLObo"
+ nickname="Brian"
+ subject="comment 11"
+ date="2013-03-01T12:02:09Z"
+ content="""
+Good point--it didn't occur to me start.c runs as a child process. Makes sense. How do I download the output of the autobuild? Size-wise and behavior-wise, http://downloads.kitenet.net/git-annex/android/current/git-annex.apk looks like the same file I already had.
+"""]]

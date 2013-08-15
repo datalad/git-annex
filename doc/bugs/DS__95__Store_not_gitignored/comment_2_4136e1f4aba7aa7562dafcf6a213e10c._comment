@@ -1,0 +1,58 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="comment 2"
+ date="2013-01-28T23:26:27Z"
+ content="""
+This actually explains an interesting quirk (I wouldn't necessarily call it a bug) that results because of annex's handling of .gitignore:
+
+    %  › git annex import ~/Downloads/BoxcarMac.dmg
+    import BoxcarMac.dmg (checksum...) ok
+    (Recording state in git...)
+    The following paths are ignored by one of your .gitignore files:
+    BoxcarMac.dmg
+    Use -f if you really want to add them.
+    fatal: no files added
+    
+    git-annex: user error (xargs [\"-0\",\"git\",\"--git-dir=/Users/akraut/Desktop/annexes/test/.git\",\"--work-tree=/Users/akraut/Desktop/annexes/test\",\"add\",\"--\"] exited 1)
+    failed
+    git-annex: import: 1 failed
+    
+    %  › ls -l
+    total 8
+    lrwxr-xr-x 1 akraut staff 198 Jan 28 15:01 BoxcarMac.dmg -> .git/annex/objects/K4/Q8/SHA256E-s6240024--2d3b032f29c8411f81f9379bd79abfa713b66b9783559ef48cd945ab418e97a3.dmg/SHA256E-s6240024--2d3b032f29c8411f81f9379bd79abfa713b66b9783559ef48cd945ab418e97a3.dmg
+    -rw-r--r-- 1 akraut staff   0 Jan 28 14:56 README
+    lrwxr-xr-x 1 akraut staff 200 Jan 28 14:58 Wireshark 1.8.4 Intel 64.dmg -> .git/annex/objects/vj/55/SHA256E-s21772874--eb01484d832a9dc5b8fdecacdccabc4ef28fb17a2e20bc2837ccc43a69df30c5.dmg/SHA256E-s21772874--eb01484d832a9dc5b8fdecacdccabc4ef28fb17a2e20bc2837ccc43a69df30c5.dmg
+    
+    %  › cp ~/Downloads/Wireshark\ 1.8.4\ Intel\ 64.dmg .
+    
+    %  › git annex add Wireshark\ 1.8.4\ Intel\ 64.dmg
+    (Recording state in git...)
+    
+    %  › ls -l
+    total 21264
+    -rw-r--r-- 1 akraut staff        0 Jan 28 14:56 README
+    -rw-r--r-- 1 akraut staff 21772874 Jan 28 14:58 Wireshark 1.8.4 Intel 64.dmg
+    
+    %  › git annex import Wireshark\ 1.8.4\ Intel\ 64.dmg
+    import Wireshark 1.8.4 Intel 64.dmg git-annex: not overwriting existing Wireshark 1.8.4 Intel 64.dmg (use --force to override)
+    
+    %  › git annex import --force Wireshark\ 1.8.4\ Intel\ 64.dmg
+    import Wireshark 1.8.4 Intel 64.dmg (checksum...) ok
+    (Recording state in git...)
+    
+    %  › ls
+    README  Wireshark 1.8.4 Intel 64.dmg@
+    
+    %  › git annex sync
+    commit  
+    [master 0a17811] git-annex automatic sync
+     1 file changed, 1 insertion(+)
+     create mode 120000 Wireshark 1.8.4 Intel 64.dmg
+    ok
+    
+    %  › ls -l
+    total 4
+    -rw-r--r-- 1 akraut staff   0 Jan 28 14:56 README
+    lrwxr-xr-x 1 akraut staff 200 Jan 28 14:58 Wireshark 1.8.4 Intel 64.dmg -> .git/annex/objects/vj/55/SHA256E-s21772874--eb01484d832a9dc5b8fdecacdccabc4ef28fb17a2e20bc2837ccc43a69df30c5.dmg/SHA256E-s21772874--eb01484d832a9dc5b8fdecacdccabc4ef28fb17a2e20bc2837ccc43a69df30c5.dmg
+"""]]

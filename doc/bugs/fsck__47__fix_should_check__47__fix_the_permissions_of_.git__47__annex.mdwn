@@ -1,0 +1,8 @@
+git annex carefully setup restrictive permissions of .git/annex directories and files.
+
+The fsck command should check that they are still correct.
+The fix command should fix them.
+
+PS: Thanks for this nice tool!
+
+> Good idea, [[done]] (actually, fsck just fixes them too)! --[[Joey]]

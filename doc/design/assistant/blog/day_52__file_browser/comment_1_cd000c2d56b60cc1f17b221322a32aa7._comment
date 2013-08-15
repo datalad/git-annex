@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://cweiske.de/"
+ nickname="cweiske"
+ subject="comment 1"
+ date="2012-08-15T22:02:14Z"
+ content="""
+I thought that most (if not all) browsers prevent opening local files/directories via web pages. How did you solve that problem?
+"""]]

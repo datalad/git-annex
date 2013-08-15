@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 1"
+ date="2013-07-16T19:16:54Z"
+ content="""
+There is already one example of a lossy remote: If you use `git annex addurl --relaxed` it generates a key that just uses the url, without its size. When retreiving such a key, any content will be accepted.
+"""]]

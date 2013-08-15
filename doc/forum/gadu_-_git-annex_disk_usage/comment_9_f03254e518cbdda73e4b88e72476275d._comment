@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://sunny256.sunbase.org/"
+ nickname="sunny256"
+ subject="The git-annex-utils repo"
+ date="2013-01-09T09:39:16Z"
+ content="""
+Thanks for setting up the git-annex-utils repo, Steve. Will install the newest gadu(1) on my computers now. I'll probably contribute some patches for some utility scripts or programs, if that's OK. What's your preferred way to receive patches? GPG-encrypted mail to your address in the commit log?
+"""]]

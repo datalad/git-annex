@@ -1,0 +1,5 @@
+I have the webapp setup to manage 4 different repositories.
+
+One repository had many gigabytes to upload to a remote. As this was moving along, I wanted to check on the status of one of the other repositories. I knew that this second repository had a lot of data to download. When I switched to the second repo in the webapp, I noticed in my network monitor that the amount of upstream bandwidth I was using dropped and the amount of downstream bandwidth increased. I switched back to the first repo, and my downstream bandwidth dropped and the upstream bandwidth increased.
+
+It looks like git-annex stopped uploading data from the first repo when I switched to the second, and stopped downloading data to the second repo when I switched to the first. Is this correct? I was under the impression that switching repositories in the webapp simply changed the view that I was looking at, but that the assistant would still be managing all the repositories I had setup -- uploading/downloading/syncing concurrently.

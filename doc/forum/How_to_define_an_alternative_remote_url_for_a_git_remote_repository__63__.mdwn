@@ -1,0 +1,7 @@
+I'm using git-annex to manage my files. Some of my remotes are available using 2 or 3 methods, for example ssh and nfs, but the nfs access is only possible on my local network, of course. Then, git-annex chooses the fastest method to sync or get the files (nfs, if available, ssh instead, using scores to choose). For now, I define a remote per repository and per access method (example: server-by-ssh, server-by-nfs), but that's not a really git-annex way to do the job, as it is not compliant with the numcopies option, which ckecks that the files in the annex are kept with enough replications (with my current method, many remotes are in fact the same folders on a hard drive).
+
+Then, my question applies to both git and git-annex, since the remotes are added in git, not git-annex: I wonder if it is possible to define alternative url for a given remote.
+
+I have tried to use the git remote set --url --add command, but it doesn't really work as I would expect. Indeed, if the nfs url is not reachable, git hangs up and waits.
+
+Any idea?

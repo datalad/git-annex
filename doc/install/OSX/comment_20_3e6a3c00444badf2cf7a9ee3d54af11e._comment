@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnEgT3Gxm4AAK4zu3ft5-PsUmY6dr1F-gE"
+ nickname="David"
+ subject="OSX app bundle"
+ date="2013-06-05T17:35:49Z"
+ content="""
+I'm using the annex assistant from the annex bundle for the convenience, but sometimes I use git-annex directly from the command line. I have /Applications/git-annex.app/Contents/MacOS/ in my path, but is there any way you could build the app bundle with the manpage in there so I could add it to my MANPATH?  
+"""]]

@@ -1,0 +1,22 @@
+[[!img /android/webapp.png alt="git-annex webapp on Android"]]
+
+I fixed what I thought was keeping the webapp from working on Android, but
+then it started segfaulting every time it was started. Eventually I
+determined this segfault happened whenever haskell code called
+`getaddrinfo`. I don't know why. This is particularly weird since I had
+a demo web server that used `getaddrinfo` working way back in
+[[day_201__real_Android_wrapup]]. Anyway, I worked around it by not using
+`getaddrinfo` on Android.
+
+Then I spent 3 hours stuck, because the webapp seemed to run, but
+nothing could connect to the port it was on. Was it a firewall? Was
+the Haskell threaded runtime's use of `accept()` broken? I went all the way
+down to the raw system calls, and back, only to finally notice I had `netstat`
+available on my Android. Which showed it was not listening to the port I
+thought it was!
+
+Seems that `ntohs` and `htons` are broken somehow. To get the
+screenshot, I fixed up the port manually. Have a build running that
+should work around the issue.
+
+Anyway, the webapp works on Android!

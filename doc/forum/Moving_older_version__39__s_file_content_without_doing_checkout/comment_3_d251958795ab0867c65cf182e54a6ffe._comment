@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 3"
+ date="2013-07-03T18:10:29Z"
+ content="""
+Now the --all option is built. You can, for example, run `git annex copy --all --to backup`
+"""]]

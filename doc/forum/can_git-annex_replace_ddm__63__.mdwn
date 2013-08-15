@@ -1,0 +1,13 @@
+Hi,
+a few years ago I wrote a tool called 'ddm'.  The code is overengineered and the script is more complicated then it should be,
+but I think it demonstrates some good use cases, and I wonder how well git-annex can fulfill the requirements for those use cases - maybe I should remove ddm and start hacking with git-annex instead.
+
+To answer this question, you should read the section about the possible dataset types on http://dieter.plaetinck.be/ddm_a_distributed_data_manager.html, and the example at the bottom of that page. it demonstrates the idea behind the "selection" dataset to always try to keep a subset (the most appropriate, based on the output of some script) of files "checked out".
+the introduction section on https://github.com/Dieterbe/ddm/raw/358f7cf92c0ba7b336dc97638351d4e324461afa/MANUAL should further clarify things, as well as give some more good use cases (as you can see it's a bit more about [semi-]automated workflows then purely tracking what's where)
+
+So I'm not sure, maybe the way to go for me is to make git-annex my "housekeeping about which data is where" backend and make ddm into a set of policies and tools on top of git-annex.
+
+Any input?
+
+Thanks,
+Dieter

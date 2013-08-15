@@ -1,0 +1,5 @@
+Please file bug reports in [[bugs]], not the forum, so they can be closed
+when fixed.
+
+Moved to [[bug report|bugs/Out_of_memory_error_in_fsck_whereis_find_and_status_cmds]].
+--[[Joey]]

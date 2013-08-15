@@ -1,0 +1,12 @@
+<div .span9 .hero-unit>
+  <h2>
+    <i .icon-warning-sign></i> Failed to make repository
+  <p>
+    Something went wrong setting up the repository on the remote server.
+  <p>
+    Transcript:
+    <pre>
+      #{msg}
+  <p>
+    <a .btn .btn-primary href="#">
+     Retry

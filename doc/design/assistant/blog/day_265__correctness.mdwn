@@ -1,0 +1,23 @@
+Laid some groundwork for porting the test suite to Windows, and getting it
+working in direct mode. That's not complete, but even starting to run the
+test suite in direct mode and looking at all the failures (many of them
+benign, like files not being symlinks) highlighted something
+I have been meaning to look into for quite a while: Why, in direct mode,
+`git-annex` doesn't operate on data staged in the index, but requires you
+commit changes to files before it'll see them. That's an annoying
+difference between direct and indirect modes.
+
+It turned out that I introduced this behavior back on
+[[January 5th|day_163__free_features]], working around a nasty
+bug I didn't understand. Bad Joey, should have root caused the bug at the
+time! But the commit says I was stuck on it for hours, and it was
+presenting as if it was a bug in `git cat-file` itself, so ok. Anyway,
+I quickly got to the bottom of it today, fixed the underlying bug (which 
+was in git-annex, not git itself), and got rid of the workaround and its
+undesired consequences. Much better.
+
+The test suite is turning up some other minor problems with direct mode.
+Should have found time to port it earlier.
+
+Also, may have fixed the issue that was preventing GTalk from working on
+Android. (Missing DNS library so it didn't do SRV lookups right.)

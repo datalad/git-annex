@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-03-16T03:22:45Z"
+ content="""
+Well, I spent a few hours playing this evening in the 'reorg' branch in git. It seems to be shaping up pretty well; type-based refactoring in haskell makes these kind of big systematic changes a matter of editing until it compiles. And it compiles and test suite passes. But, so far I've only covered 1. 3. and 4. on the list, and have yet to deal with upgrades.
+
+I'd recommend you not wait before using git-annex. I am committed to provide upgradability between annexes created with all versions of git-annex, going forward. This is important because we can have offline archival drives that sit unused for years. Git-annex will upgrade a repository to current standard the first time it sees it, and I hope the upgrade will be pretty smooth. It was not bad for the annex.version 0 to 1 upgrade earlier. The only annoyance with upgrades is that it will result in some big commits to git, as every symlink in the repo gets changed, and log files get moved to new names.
+
+(The metadata being stored with keys is data that a particular backend can use, and is static to a given key, so there are no merge issues (and it won't be used to preserve mtimes, etc).)
+"""]]

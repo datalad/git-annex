@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 6"
+ date="2013-05-10T12:52:48Z"
+ content="""
+OK, I'm going to guess the problem is there is no \"master\" branch in your cloned repository, because there is no \"master\" branch in a bare remote. (Not sure about this, just guessing.)  Try \"git branch\" in your clone.  If there is no \"master\" branch, that's the problem.
+
+If that's true, the right thing to do would probably have been not to clone from it, but to create a fresh git repo and then set your bare repo as a remote.
+
+You could try doing that -- create a fresh git repo, git annex init it, and then try something like \"git remote add barerepo /path/to/bare/repo\" and then \"git annex sync\" which should pull changes from the bare repo's 'synced/master' branch into your 'synced/master' branch and from there into your master branch, giving you all your symlinks.
+
+If that works you could declare your previous attempt \"dead\" and you'll be good.
+
+It *may* also be possible to just fix the clone you've got by creating a master branch, maybe by branching off of synced/master.  Do a \"git branch\" and see whether synced/master exists, and just try \"git branch master synced/master\" and then \"git checkout master\" and that might do the job!
+
+But I'm just throwing ideas around here, so I hope somebody who actually knows what's going on (joey? are you there?) will pipe up.
+"""]]

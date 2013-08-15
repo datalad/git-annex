@@ -1,0 +1,19 @@
+Hi,
+
+I try to install git-annex master with cabal, so I cloned the git repo and run "cabal install --only-dependencies". This gives me the following error:
+
+    Resolving dependencies...
+    cabal: Could not resolve dependencies:
+    trying: git-annex-3.20120826 (user goal)
+    trying: git-annex-3.20120826:+oldyesod
+    trying: git-annex-3.20120826:+currentyesod
+    next goal: yesod-default (dependency of git-annex-3.20120826:+oldyesod)
+    rejecting: yesod-default-1.1.0 (conflict: git-annex-3.20120826:oldyesod =>
+    yesod-default(<=1.0.1.1))
+    rejecting: yesod-default-1.0.1.1, 1.0.1, 1.0.0, 0.6.1, 0.5.0, 0.4.1, 0.4.0,
+    0.3.1 (conflict: git-annex-3.20120826:currentyesod => yesod-default(>=1.1.0))
+
+Any idea how to fix this? (PS: I'm running Kubuntu 12.04)
+
+Cheers,
+Tobias

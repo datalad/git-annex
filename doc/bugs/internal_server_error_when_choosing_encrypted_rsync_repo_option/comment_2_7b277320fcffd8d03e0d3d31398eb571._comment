@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlpOeCs7zZLR-PBGPxUgjWlg7bwAAzQZyk"
+ nickname="Seth"
+ subject="comment 2"
+ date="2013-06-30T21:32:54Z"
+ content="""
+Here it is, with personal info redacted:
+
+(Recording state in git...)
+(encryption setup) gpg: /Users/bokeh/.gnupg/gpg.conf:233: invalid auto-key-locate list
+[2013-06-30 17:31:18 EDT] read: ssh-keygen [\"-F\",\"XXXXXXXXXXXX.com\"]
+[2013-06-30 17:31:18 EDT] read: ssh [\"-oNumberOfPasswordPrompts=0\",\"-n\",\"-p\",\"22\",\"XXXXXXXXXXXX@XXXXXXXXXXXX.com\",\"sh -c 'echo git-annex-probe loggedin;if which git-annex-shell; then echo git-annex-probe git-annex-shell; fi;if which rsync; then echo git-annex-probe rsync; fi;if which ~/.ssh/git-annex-shell; then echo git-annex-probe ~/.ssh/git-annex-shell; fi'\"]
+[2013-06-30 17:31:23 EDT] chat: ssh [\"XXXXXXXXXXXX@XXXXXXXXXXXX.com\",\"sh -c 'mkdir -p '\\"'\\"'annex'\\"'\\"'&&cd '\\"'\\"'annex'\\"'\\"''\"]
+(encryption setup) [2013-06-30 17:31:25 EDT] read: gpg [\"--quiet\",\"--trust-model\",\"always\",\"--gen-random\",\"--armor\",\"1\",\"512\"]
+gpg: /Users/bokeh/.gnupg/gpg.conf:233: invalid auto-key-locate list
+"""]]

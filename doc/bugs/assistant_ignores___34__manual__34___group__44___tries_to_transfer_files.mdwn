@@ -1,0 +1,56 @@
+__What steps will reproduce the problem?__
+
+on server:
+
+* mkdir annex
+* cd annex
+* git init
+* git annex init "donkey"
+* git commit -m "CREATE GIT ANNEX" --allow-empty
+
+on desktop:
+
+* git clone ssh://donkey/home/xyem/annex
+* cd annex
+* git annex init "jaguar"
+* git annex vicfg
+(..change origin and 'here' to 'manual' group..)
+* git annex sync
+* git annex webapp
+
+on server: 
+
+* git annex sync
+* git annex assistant
+
+(..download/move a file into the annex folder on the desktop..)
+
+__What is the expected output?__
+
+The server should be synced, gaining a broken symlink to the file. No file data transferred to the server (manual mode).
+
+__What do you see instead?__
+
+In addition to the expected/wanted behaviour above, the webapp shows the assistant trying to transfer the file contents to the server, despite it being in the manual group. This is also shown in 'ps aux | grep git' where there is a 'transferkey' operation for the file[1].
+
+__What version of git-annex are you using? On what operating system?__
+
+* server:  4.20130314
+* desktop: 4.20130314
+* OS: Arch Linux
+* Package: git-annex-bin (AUR)
+
+__Please provide any additional information below.__
+
+[1] The transfer itself doesn't work because the assistant is trying to use its own SSH connection caching, with no keys and without prompting for a password, rather than use my existing connection caching. Running the transferkey command manually seems to work though. This isn't a concern at the moment.
+
+Restarting the webapp has not effect. The file is still in the transfer queue and additional files also get added for transfer.
+
+This was working correctly on a previous version, but I'm not sure which one of these I was using at the time:
+
+* 3.20130114
+* 3.20130216
+* 4.20130227
+
+> Closing this bug report since my comment below seems a reasonable
+> explanation for the behavior you saw. [[done]] --[[Joey]] 

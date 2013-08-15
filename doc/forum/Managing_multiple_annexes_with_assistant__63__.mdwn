@@ -1,0 +1,13 @@
+Is it possible to run more than one instance of the assistant in an account?
+
+A particular example is that I might have two annexes:
+
+1. for my music, and
+2. for some personal documents.
+
+I would like to have my music annex paired with my work laptop and have all the automagical power of git-annex-assistant working for me.  However I don't want to put my personal documents on a work machine, hence the second annex.
+
+(I think) An ideal world would have the assistant managing both annexes.  Is this possible?
+
+
+I know my question is similar to [one annex versus many annexes?](http://git-annex.branchable.com/forum/one_annex_versus_many_annexes__63__/) but I think it is different enough to warrant a new thread...

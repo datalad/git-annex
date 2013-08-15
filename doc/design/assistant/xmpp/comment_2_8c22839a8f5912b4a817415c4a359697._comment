@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkurjhi0CRJvgm7QNaZDWS9hitBtavqIpc"
+ nickname="Bret"
+ subject="Plans for two factor authentication or oath?"
+ date="2013-04-15T00:58:04Z"
+ content="""
+Are there plans to support google's two factor authentication?  Right now I have to use an application specific password.
+"""]]

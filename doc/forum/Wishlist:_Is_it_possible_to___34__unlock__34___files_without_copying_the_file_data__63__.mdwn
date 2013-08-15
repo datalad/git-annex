@@ -1,0 +1,6 @@
+I have a DLink Boxee media player and it can not play content from symbolic links, it needs to access regular media files. Unfortunately unlocking/locking is quite slow for such a large amount of data due to the required data copying, but it should not even be needed since I do not need write access to any file to watch the movie or to play the song.
+
+Is it currently possible or would it be possible to add a commands like "unlock" which would not copy the file data but simply move files out from the data store into the tree while still keeping the files read only? A corresponding "lock" command would also be needed to restore the normal symbolic link tree structure.
+
+Update:
+I tried the rsync special remote http://git-annex.branchable.com/special_remotes/rsync/ and it works but the file structure created reflects the data store not the view given by the symbolic links.

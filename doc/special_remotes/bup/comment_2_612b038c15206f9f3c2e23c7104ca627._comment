@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.23"
+ subject="comment 2"
+ date="2012-10-23T20:01:43Z"
+ content="""
+@Albert, thanks for reporting this bug (but put them in [[bugs]] in future please).
+
+This is specific to using the bup special remote with encryption. Without encryption it works. And no, it won't manage to deduplicate anything that's encrypted, as far as I know. 
+
+I think bup-split must have used - for stdin in the past, but now, it just reads from stdin when no file is specified, so I've updated git-annex.
+"""]]

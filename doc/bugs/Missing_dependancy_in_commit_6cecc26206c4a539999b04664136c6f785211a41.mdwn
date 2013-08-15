@@ -1,0 +1,35 @@
+Seems commit 6cecc26206c4a539999b04664136c6f785211a41 missed on dependancy, that is blaze-markup
+
+<pre>
+Assistant/Threads/WebApp.hs:25:8:
+    Could not find module `Text.Blaze.Renderer.String'
+    It is a member of the hidden package `blaze-markup-0.5.1.0'.
+    Perhaps you need to add `blaze-markup' to the build-depends in your .cabal file.
+    Use -v to see a list of the files searched for.
+cabal: Error: some packages failed to install:
+git-annex-3.20120721 failed during the building phase. The exception was:
+ExitFailure 1
+</pre>
+
+This should fix it
+
+<pre>
+x00:git-annex jtang$ git diff
+diff --git a/git-annex.cabal b/git-annex.cabal
+index c7d9bf5..4f98d2a 100644
+--- a/git-annex.cabal
++++ b/git-annex.cabal
+@@ -76,7 +76,7 @@ Executable git-annex
+   if flag(Webapp)
+     Build-Depends: yesod, yesod-static, case-insensitive, http-types,
+      transformers, wai, wai-logger, warp, blaze-builder, blaze-html,
+-     crypto-api, hamlet
++     blaze-markup, crypto-api, hamlet
+     CPP-Options: -DWITH_WEBAPP
+ 
+   if (os(darwin))
+</pre>
+
+> [[done]].. interestingly, cabal had not complained about there here,
+> as in my version, it's in blaze, not blaze-markup. Added it anyway.
+> --[[Joey]] 

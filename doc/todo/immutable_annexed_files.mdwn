@@ -1,0 +1,8 @@
+> josh: Do you do anything in git-annex to try to make the files immutable?
+> For instance, removing write permission, or even chattr?
+> joey: I don't, but that's a very good idea
+> josh: Oh, I just thought of another slightly crazy but handy idea.
+> josh: I'd hate to run into a program which somehow followed the symlink and then did an unlink to replace the file.
+> josh: To break that, you could create a new directory under annex's internal directory for each file, and make the directory have no write permission.
+
+[[done]] and done --[[Joey]] 

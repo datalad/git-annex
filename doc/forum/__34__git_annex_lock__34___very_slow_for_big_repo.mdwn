@@ -1,0 +1,7 @@
+I found the command "git annex lock" very slow (much slower than the initial "git annex add" with SHA1), for a not so big directory, when run in a big repo.
+It seems that each underlying git command is not fast, so I thought it would be better to run them once with all files as arguments.
+I had to stop the lock command, and ran "git checkout ." (I did not change any file), is this a correct alternative?
+
+Thanks a LOT for this software, one that I missed since a long time (but wasn't able to write)!
+
+Rafaël

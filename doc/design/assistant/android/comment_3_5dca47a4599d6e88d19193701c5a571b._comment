@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlhIMPGF1E0XEJKV6j6-PFzAxA1-nIlydo"
+ nickname="Bernhard"
+ subject="GHC and Android"
+ date="2012-09-10T21:58:28Z"
+ content="""
+I played around a bit with GHC and Android today. It isn't really a result, but maybe useful for someone out there.
+
+I have a Debian `chroot` environment on my Android device (howto: <http://www.saurik.com/id/10/>). In the Debian box:
+
+    $ cat arm.hs
+    main = do
+      putStrLn \"Hello ARM\"
+    $ ghc -static --make arm.hs
+    Linking arm ...
+    $ ldd arm
+	libgmp.so.3 => /usr/lib/libgmp.so.3 (0x40233000)
+	libm.so.6 => /lib/libm.so.6 (0x400c8000)
+	libffi.so.5 => /usr/lib/libffi.so.5 (0x401b1000)
+	librt.so.1 => /lib/librt.so.1 (0x40171000)
+	libdl.so.2 => /lib/libdl.so.2 (0x40180000)
+	libgcc_s.so.1 => /lib/libgcc_s.so.1 (0x4018b000)
+	libc.so.6 => /lib/libc.so.6 (0x40282000)
+	/lib/ld-linux.so.3 (0x400a2000)
+	libpthread.so.0 => /lib/libpthread.so.0 (0x4007e000)
+
+well, that isn't really static. tell the linker to build a static binary (those are arguments to `ld`):
+
+    $ ghc --make arm.hs -optl-static -optl-pthread
+    [1 of 1] Compiling Main             ( arm.hs, arm.o )
+    Linking arm ...
+    $ file arm
+    arm: ELF 32-bit LSB executable, ARM, version 1 (SYSV), statically linked, for GNU/Linux 2.6.18, not stripped
+    $ ldd arm
+    	not a dynamic executable
+    $ ./arm
+    Hello ARM
+
+now, get this (quite big) binary into the normal android environment, using `adb`, `SSHDroid` or whatever:
+
+    % cd /data/local/tmp # assuming destination of file transfer
+    % ./arm
+    arm: mkTextEncoding: invalid argument (Invalid argument)
+
+looking in the source of `System.IO` it seems like an `iconv` issue. So, there's still some dynamic dependency in there... *sigh*
+"""]]

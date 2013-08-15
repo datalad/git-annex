@@ -1,0 +1,13 @@
+I want to setup a rsync special remote on my server with a non-standard ssh port.
+
+I tried the following steps:
+
+    git annex initremote rsync-encrypted type=rsync rsyncurl=1.2.3.4:/encrypted-annex encryption=AAAAAAAAA
+    git config remote.rsync-encrypted.annex-rsync-options "-e \'ssh -p 443\'"
+
+But I just get this error:
+
+    [2012-11-22 21:04:30 CET] read: rsync ["-e","'ssh","-p","443'","--progress","--recursive","--partial","-- partial-dir=.rsync-partial","/home/marco/annex/.git/annex/tmp/rsynctmp/15309/","1.2.3.4:/encrypted-annex"]
+    Missing trailing-' in remote-shell command.
+
+I tried some ways to escape the config but I don't have a clue. Anybody?

@@ -1,0 +1,21 @@
+What steps will reproduce the problem?
+
+    $ git annex -j sync | json_reformat
+
+What is the expected output? What do you see instead?
+
+Expecting valid JSON, instead this happens:
+
+    $ git annex -j sync | json_reformat
+    lexical error: invalid char in json text.
+              {"command":"commit","file":""# On branch master nothing to c
+                         (right here) ------^
+    $
+
+
+What version of git-annex are you using? On what operating system?
+
+Newest standalone (3.20121126), Linux i386. The "json_reformat" program is from the "yajl-tools" .deb package.
+
+> [[done]]; I've updated the --json documentation to note that it only
+> works with some query commands. --[[Joey]] 

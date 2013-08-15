@@ -1,0 +1,5 @@
+One reason to use git-annex is to save disk space by tossing files you don't use that often.
+
+I can find big files in the repository with git annex find --largerthan=100M, but is there a way to find large *directories*?  In an ordinary filesystem I'd use "du -h" with a maxdepth to get an idea of what parts of a directory are taking up my disk space, but obviously that won't work with git annex because all the content is in .git/annex.  Any ideas?
+
+(I can get a listing of file sizes in a directory with the handy -L flag of ls -- "ls -lL" shows me the sizes of the link targets -- but that won't summarize all the sizes of subdirectories.  Unless my ls-fu is just weak.)

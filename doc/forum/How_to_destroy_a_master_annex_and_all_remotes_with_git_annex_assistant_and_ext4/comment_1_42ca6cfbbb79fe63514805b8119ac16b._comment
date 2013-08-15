@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-07-23T14:45:05Z"
+ content="""
+It seems to me that it would be better to avoid using kernel features that crash. And, set up a git repository on another machine, which will serve as a real backup if something goes catostrophically wrong. The only potential failure mode then would be if a kernel/hardware issue zeroed some of your files, in direct mode the assistant might commit those new corrupt files and ship them over to the backup. But, if your offsite backup is accumulating old versions of files, you can recover from this by reverting the bad commit.
+"""]]

@@ -1,0 +1,13 @@
+git-annex deletes all tmp files on shutdown, if everything succeeded.
+This presents 2 problems:
+
+1. If git-annex is rsyncing something and another one is run, it will
+   delete the running instance's tmp files.
+2. If a long-running rsync transfer is interrupted partway through, the
+   tmp file was expensive to obtain, and one needs to avoid running
+   git-annex to do anything else until that transfer can be resumed and
+   finished.
+
+--[[Joey]] 
+
+[[done]]

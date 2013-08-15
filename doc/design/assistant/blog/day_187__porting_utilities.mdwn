@@ -1,0 +1,22 @@
+Ported all the utilities git-annex needs to run on Android: 
+git, rsync, gnupg, dropbear (ssh client), busybox. Built a
+Makefile that can download, patch, and cross build these from source.
+
+While all the utilities work, dropbear doesn't allow git-annex to use ssh
+connection caching, which is rather annoying especially since these systems
+tend to be rather slow and take a while to start up ssh connections.
+I'd sort of like to try to get openssh's client working on Android instead.
+Don't know how realistic that is.
+
+Dealt with several parts of git-annex that assumed `/bin/sh` exists,
+so it instead uses `/system/bin/sh` on Android. Also adapted `runshell`
+for Android.
+
+Now I have a 8 mb compressed tarball for Android.
+Uncompressed it's 25 mb. This includes a lot of git and busybox
+commands that won't be used, so it could be trimmed down further.
+16 mb of it is git-annex itself.
+
+[[Instructions for using the Android tarball|install/Android]]  
+This is for users who are rather brave, not afraid of command line and
+keyboard usage. Good first step.

@@ -1,0 +1,11 @@
+Hello Joey,
+
+I just want to know if file transfers between three inter-connected repositories somehow gets syncronized. I have a laptop, a local file server in my home and a virtual server on the internet.
+
+Both my laptop and my file server are configured with a full git repository and connected through pairing and xmpp. The server on the internet is configured as a rsync special remote.
+
+I want the local file server to hold a copy of everything in my annex, the rsync remote should get everything except the folder "media" (too large to upload and not that important) and the laptop whatever I manually decide (preferred content is set to "present").
+
+I have added some files to the repository on the local file server and transferred their content to my laptop by using "git annex get". But when I started the web interface, I saw that those files who are present on both the file server and on the laptop get uploaded to the remote server from both computers, often the same file at the same time. Previously I though the two assistants would somehow talk to each other via xmpp so that doubled effort like that would be avoided. I'm also worried about data consistency because two apparently separate processes rsync to the same remote repository at the same time.
+
+So my question would be: Is your xmpp protocol designed to deal with situations like this and I did not set it up correctly or is what I'm trying to accomplish simply not (yet) possible?

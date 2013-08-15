@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 5"
+ date="2011-04-07T16:41:00Z"
+ content="""
+I think what is happening with \"git annex unannex\" is that \"git annex add\" crashes before it can \"git add\" the symlinks. unannex only looks at files that \"git ls-files\" shows, and so files that are not added to git are not seen. So, this can be recovered from by looking at git status and manually adding the symlinks to git, and then unannex.
+
+That also suggests that \"git annex add .\" has done something before crashing. That's consistent with you passing it < 2 parameters; it's not just running out of memory trying to expand and preserve order of its parameters (like it might if you ran \"git annex add experiment-1/ experiment-2/\")
+
+I'm pretty sure I know where the space leak is now. git-annex builds up a queue of git commands, so that it can run git a minimum number of times. Currently, this queue is only flushed at the end. I had been meaning to work on having it flush the queue periodically to avoid it growing without bounds, and I will prioritize doing that.
+
+(The only other thing that \"git annex add\" does is record location log information.)
+"""]]

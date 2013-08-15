@@ -1,0 +1,44 @@
+Finished crippled filesystem support, except for symlink handling.
+This was straightforward, just got lsof working in that mode, made
+`migrate` copy key contents, and adapted the rsync special remote to
+support it. Encrypted rsync special remotes have no more overhead on
+crippled filesystems than normally. Un-encrypted rsync special remotes
+have some added overhead, but less than encrypted remotes. Acceptable
+for now.
+
+I've now successfully run the assistant on a FAT filesystem.
+
+----
+
+Git handles symlinks on crippled filesystems by setting
+`core.symlinks=false` and checking them out as files containing the link
+text. So to finish up crippled filesystem support, git-annex needs to
+do the same whenever it creates a symlink, and needs to read file contents
+when it normally reads a symlink target.
+
+There are rather a lot of calls to `createSymbolicLink`,
+`readSymbolicLink`, `getSymbolicLinkStatus`, `isSymbolicLink`, and `isSymLink`
+in the tree; only ones that are used in direct mode
+need to be converted. This will take a while.
+
+Checking whether something is a symlink, or where it points is especially
+tricky. How to tell if a small file in a git working tree is intended to be
+a symlink or not? Well, it can look at the content and see if it makes
+sense as a link text pointing at a git-annex key. As long as the
+possibility of false positives is ok. It might be possible, in some cases,
+to query git to verify if the object stored for that file is really a
+symlink, but that won't work if the file has been renamed, for example.
+
+Converted some of the most commonly used symlink code to handle this.
+Much more to do, but it basically works; I can `git annex get` and `git
+annex drop` on FAT, and it works.
+
+-----
+
+Unfortunately, got side-tracked when I discovered that the last release
+introduced a bug in direct mode. Due to the bug, "git annex get file; git annex
+drop file; git annex get file" would end up with the file being an indirect
+mode symlink to the content, rather than a direct mode file. No data loss,
+but not right. So, spent several hours fixing that reversion, which was
+caused by me stupidly fixing another bug at 5 am in the morning last week.. 
+and I'll probably be pushing out another release tomorrow with the fix.

@@ -1,0 +1,40 @@
+<div .span9 ##{ident}>
+  <table .table>
+    <tbody>
+    $if null buddies
+      <tr>
+        <td>
+          $if isNothing myjid
+            Not connected to the jabber server. Check your network connection ...
+          $else
+            Searching...
+    $else
+      $forall (name, away, canpair, paired, buddyid) <- buddies
+        <tr>
+          <td>
+            $if isself buddyid
+              <i .icon-star></i> #
+              <span :away:.muted>
+                your other devices
+            $else
+              <i .icon-user></i> #
+              <span :away:.muted>
+                  #{name}
+          <td>
+            $if away
+              <span .muted>
+                away
+            $else
+              $if paired
+                <span .label .label-success>
+                  paired
+              $else
+                $if canpair
+                  $if isself buddyid
+                    <a .btn .btn-primary .btn-small href="@{RunningXMPPPairSelfR}">
+                      Start pairing
+                  $else
+                    <a .btn .btn-primary .btn-small href="@{RunningXMPPPairFriendR buddyid}">
+                      Start pairing
+                $else
+                  not using git-annex

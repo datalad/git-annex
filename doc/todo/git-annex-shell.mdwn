@@ -1,0 +1,15 @@
+[[done]]
+
+I've been considering adding a `git-annex-shell` command. This would
+be similar to `git-shell` (and in fact would pass unknown commands off to
+`git-shell`).
+
+## Reasons
+
+* Allows locking down an account to only be able to use git-annex (and
+  git).
+* Avoids needing to construct complex shell commands to run on the remote
+  system. (Mostly already avoided by the plumbing level commands.)
+* Could possibly allow multiple things to be done with one ssh connection
+  in future.
+* Allows expanding `~` and `~user` in repopath on the remote system.

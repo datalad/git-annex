@@ -1,0 +1,5 @@
+Debian Squeeze, git version 1.7.10.4, git-annex version 3.20121211
+
+The machine has a clone of the annex with preferred content string: `present or include=calibre/* or include=img/* or include=mail/* or include=music/* or include=sounds/*`
+
+This, I believe, should mean the assistant should never drop anything.  However for the past two days it's been moving files to an encrypted rsync remote so that there are two copies (there is another copy on an external HDD) and then it's dropping them from the current annex.  I want to keep the files here; can anyone think of any reason why they would be moved away?

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="203.45.2.230"
+ subject="comment 2"
+ date="2012-01-03T02:49:18Z"
+ content="""
+Thanks!  `git annex addurl --fast` does exactly what I want it to do.
+
+Wow.  Yet another special backend for me to play with.  :-)
+"""]]

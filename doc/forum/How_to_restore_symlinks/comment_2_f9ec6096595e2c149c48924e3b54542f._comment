@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 2"
+ date="2012-11-25T18:35:56Z"
+ content="""
+The key thing to realize is that the symlinks used by git-annex are checked into git like any other file would be. So you can use the entire git toolkit to manage them. 
+
+For example, you could run `git status` to see if git shows them as recently deleted, and then use `git checkout $file` to restore the deleted files. 
+
+Or perhaps the deletion has been committed to git, and then you'd use `git log --stat` to find the commit that deleted your files, and `git revert` could be used to undo it.
+
+(`git annex fix` is not related to this and won't help.)
+"""]]

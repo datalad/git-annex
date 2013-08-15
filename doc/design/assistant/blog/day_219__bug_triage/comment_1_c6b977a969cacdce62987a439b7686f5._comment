@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://jasonwoof.com/"
+ nickname="JasonWoof"
+ subject="wrapping css"
+ date="2013-03-20T20:28:04Z"
+ content="""
+You can do this in css:
+
+    word-wrap: break-word;
+
+That should make the text not leave the box. Not sure if this makes it break \"reasonably\" though, eg a two letter word followed by an 200 letter \"word\" would probably leave the two letter word on a line by itself.
+
+Worth a try though.
+
+Seems to be well supported on browsers: [http://caniuse.com/#search=wrap](http://caniuse.com/#search=wrap)
+"""]]

@@ -1,0 +1,25 @@
+Several things suggest now would be a good time to reorgaize the object
+directory. This would be annex.version=2. It will be slightly painful for
+all users, so this should be the *last* reorg in the forseeable future.
+
+1. Remove colons from filenames, for [[bugs/fat_support]]
+
+2. Add hashing, since some filesystems do suck (like er, fat at least :)
+   [[forum/hashing_objects_directories]]
+   (Also, may as well hash .git-annex/* while at it -- that's what
+   really gets big.)
+
+3. Add filesize metadata for [[bugs/free_space_checking]]. (Currently only
+   present in WORM, and in an ad-hoc way.)
+
+4. Perhaps use a generic format that will allow further metadata to be
+   added later. For example,
+   "bSHA1,s101111,kf3101c30bb23467deaec5d78c6daa71d395d1879"
+
+   (Probably everything after ",k" should be part of the key, even if it
+   contains the "," separator character. Otherwise an escaping mechanism
+   would be needed.)
+
+[[done]] now! 
+
+Although [[bugs/free_space_checking]] is not quite there --[[Joey]] 

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.1.10"
+ subject="comment 1"
+ date="2013-07-22T21:41:01Z"
+ content="""
+I have tried but have not had any luck reproducing this when initializing a glacier remote.
+
+Do you also get this problem if you initialize a special remote of another type, such as the directory special remote, that's encrypted to the same gpg key?
+
+Can you reproduce the hang using the [[/install/Linux_standalone]] tarball?
+
+You should be able to tell which file descriptor gpg is blocking on. Just attach strace to the gpg process, and see what file descriptor it says gpg is reading from (or perhaps writing to). Since git-annex feeds it both a passphrase and data to encrypt, knowing the number of the file descriptor will narrow down the bug's cause.
+"""]]

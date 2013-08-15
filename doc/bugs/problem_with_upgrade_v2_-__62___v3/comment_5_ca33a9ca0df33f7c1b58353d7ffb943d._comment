@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 5"
+ date="2011-07-05T19:06:48Z"
+ content="""
+By the way, the original bug reporter mentioned deleting .git/annex/journal. This is not recommended, and doing it during an upgrade can result in git-annex losing location tracking information. You should probably run `git annex fsck` or reset to the old git tree (and `git config annex.version 2`) and upgrade again.
+"""]]

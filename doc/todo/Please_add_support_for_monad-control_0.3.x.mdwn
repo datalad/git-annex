@@ -1,0 +1,9 @@
+Git-annex doesn't compile with the latest version of monad-control. Would it be hard to support that new version?
+
+> I have been waiting for it to land in Debian before trying to 
+> deal with its changes.
+> 
+> There is now a branch in git called `new-monad-control` that will build
+> with the new monad-control. --[[Joey]]
+
+>> Now merged to master. [[done]] --[[Joey]]

@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmB-gCGEs--zfmvYU-__Hj2FbliUXgxMDs"
+ nickname="Jakub"
+ subject="Fixed"
+ date="2012-07-13T19:27:46Z"
+ content="""
+Found the problem:
+
+One should never use ~ in such path:
+
+WRONG export PATH=~/somedir:$PATH
+
+Instead one should use $HOME:
+
+GOOD export PATH=$HOME/somedir:$PATH
+
+Can I surpress the message that shell failed with status 255 when a repo is unavailible? I've got two repos pointing to one machine - either via vpn or local lan and I keep getting erros if one is unavailible:
+
+ssh: connect to host 10.9.0.1 port 39882: No route to host
+Command ssh [\"-S\",\"/home/pielgrzym/annex/.git/annex/ssh/nas\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"nas\",\"git-annex-shell 'configlist' '/~/annex'\"] failed; exit code 255
+
+
+"""]]

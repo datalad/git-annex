@@ -1,0 +1,17 @@
+[Installed a generator](http://joeyh.name/blog/entry/overcast/),
+so I'll have more power and less hibernation.
+
+Added UI in the webapp to shut down the daemon. Would like to also have
+restart UI, but that's rather harder to do, seems it'd need to start
+another copy of the webapp (and so, of the assistant), and redirect the
+browser to its new url. ... But running two assistants in the same repo at
+the same time isn't good. Anyway, users can now use the UI to shut it down,
+and then use their native desktop UI to start it back up.
+
+[[!img /assistant/controlmenu.png]]
+
+Spiffed up the control menu. Had to stop listing other local repositories
+in the menu, because there was no way to notice when a new one was added
+(without checking a file on every page load, which is way overkill for this
+minor feature). Instead added a new page that lists local repositories it
+can switch to.

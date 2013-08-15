@@ -1,0 +1,9 @@
+Here's the annex-du script that I use:
+
+#!/bin/sh
+git annex find "$@" --include '*' --format='${bytesize}\n' |awk '{ sum += $1; nfiles++; } END { printf "%d files, %.3f MB\n", nfiles, sum/1000000 } '
+
+This one can be slow on a large number of files, but it has an advantage of being able to use all of the filtering available in git annex find.
+For example, to figure out how much is stored in remote X, do
+
+annex-du --in=X

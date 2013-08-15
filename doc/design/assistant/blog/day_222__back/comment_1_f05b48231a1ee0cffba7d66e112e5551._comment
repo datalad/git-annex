@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="something for the wishlist maybe?"
+ date="2013-03-28T08:30:00Z"
+ content="""
+Something I was wondering with the assistant now getting really smart: would it be possible to have a cli-mode for the assistant that runs in the forground and only until there is nothing to do anymore? Something like a single-run-assistant`? Reason being that in my usecases most often I know exactly when the right moment for a run is - for example after processing a bunch of photographs - and I most definitely don't want a background process to work on those photographs while I do work on them. Or with archival media, I know when I will hook up the archive drives. In allmost all of my scenarios it would be much easier to not run the assistant in the background, but to fire it from the cli at the right moments, letting it work over night and have it shut down automatically when all is synced.
+"""]]

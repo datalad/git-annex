@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="robconnolly"
+ ip="118.90.115.19"
+ subject="comment 2"
+ date="2012-12-06T02:29:56Z"
+ content="""
+Hi Joey,
+
+Thanks for your response. Here is the output:
+
+[robert@laforge ~]$ ssh-keygen -P \"\" -f test; cat test.pub
+Generating public/private rsa key pair.
+Your identification has been saved in test.
+Your public key has been saved in test.pub.
+The key fingerprint is:
+84:43:aa:f0:ba:a7:f0:11:41:55:3b:c4:63:6a:71:e1 robert@laforge.enterprise
+The key's randomart image is:
++--[ RSA 2048]----+
+|  ...o=.         |
+| .  .==o         |
+|. . .=E..        |
+| o oo  +         |
+|  +.    S        |
+| . .             |
+|o .              |
+|.o..             |
+|oo.              |
++-----------------+
+ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDIeitbarby1thLPEyVpeT/vDaWt0MJwLPvhT7TEZv0FedYalvz/mm3enULHiYdxkjWGBaO/EEzfmz5bjhoJx2tsqSLsUj/UZVv0LxsSfZwTrk0SPuUerzWvAJAXKvtPobDXJoAxsNvzSJN392BMOLKqcjAQTqPA3vd5+EjUVIgJxguz5poGrP0ZRMQD5LmsDrPGUWNJ/EHaVkrqGobAE4DVr8vhJTY41h5Gk2ipnzx+GD6CDZTSNFwl8RorjFAV3mYTTjHc2Cz7GxTLSmwF0+qFZ/UkiO2tD1M37Y4/cPLY7GpVfKvpPHTC8pJUpvj+B4uujHxvZkBJLLz9XhH9KsZ robert@laforge.enterprise
+
+Let me know if you need any more info.
+"""]]

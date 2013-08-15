@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.189"
+ subject="comment 4"
+ date="2012-07-26T22:08:53Z"
+ content="""
+Oh, wait, you're right, if the assistant process that watch forks off is segfaulting, that error message is about the best we can hope for. You can try the manual startup of the assistant to confirm it's crashing..
+"""]]

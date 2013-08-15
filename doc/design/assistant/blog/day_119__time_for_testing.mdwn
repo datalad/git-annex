@@ -1,0 +1,12 @@
+Finished working the new assistant monad into all the assistant's code.
+I've changed 1870 lines of code in the past two days. It feels like more.
+While the total number of lines of code has gone up by around 100, the
+actual code size has gone *down*; the monad allowed dropping 3.4 kilobytes
+of manual variable threading complications. Or around 1% of a novel edited
+away, in other words.
+
+I don't seem to have broken anything, but I'm started an extensive test
+of all the assistant and webapp. So far, the bugs I've found were not
+introduced by my monadic changes. Fixed several bugs around adding
+removable drives, and a few other minor bugs. Plan to continue testing
+tomorrow.

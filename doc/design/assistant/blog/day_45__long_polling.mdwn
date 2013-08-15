@@ -1,0 +1,66 @@
+The webapp now displays actual progress bars, for the actual transfers
+that the assistant is making! And it's seriously shiny.
+
+[[!img full.png]]
+
+Yes, I used Bootstrap. I can see why so many people are using it,
+that the common complaint is everything looks the same. I spent a few hours
+mocking up the transfer display part of the WebApp using Bootstrap, and
+arrived at something that doesn't entirely suck remarkably quickly.
+
+The really sweet thing about Bootstrap is that when I resized my browser to
+the shape of a cell phone, it magically redrew the WebApp like so:
+
+[[!img phone.png]]
+
+---
+
+To update the display, the WebApp uses two techniques. On noscript
+browsers, it just uses a meta refresh, which is about the best I can do. I
+welcome feedback; it might be better to just have an "Update" button in
+this case.
+
+With javascript enabled, it uses long polling, done over AJAX. There are
+some other options I considered, including websockets, and server-sent
+events. Websockets seem too new, and while there's a WAI module supporting
+server-sent events, and even an example of them in the Yesod book, the
+module is not packaged for Debian yet. Anyway, long polling is the most
+widely supported, so a good starting place. It seems to work fine too, I
+don't really anticipate needing the more sophisticated methods.
+
+(Incidentially, this's the first time I've ever written code that uses AJAX.)
+
+Currently the status display is rendered in html by the web server, and
+just updated into place by javascript. I like this approach since it
+keeps the javascript code to a minimum and the pure haskell code to a
+maximum. But who knows, I may have to switch to JSON that gets rendered by
+javascript, for some reason, later on.
+
+---
+
+I was very happy with Yesod when I managed to factor out a
+general purpose widget that adds long-polling and meta-refresh to any
+other widget. I was less happy with Yesod when I tried to include
+jquery on my static site and it kept serving up a truncated version of it.
+Eventually worked around what's seemingly a bug in the default WAI
+middleware, by disabling that middleware.
+
+----
+
+Also yesterday I realized there were about 30 comments stuck in moderation on
+this website. I thought I had a feed of those, but obviously I didn't. I've
+posted them all, and also read them all.
+
+----
+
+Next up is probably some cleanup of bugs and minor todos. Including
+figuring out why `watch` has started to segfault on OSX when it was
+working fine before.
+
+After that, I need to build a way to block the long polling request
+until the DaemonStatus and/or TransferQueue change from the version
+previously displayed by the WebApp. An interesting concurrency problem..
+
+Once I have that working, I can reduce the current 3 second delay between
+refreshes to a very short delay, and the WebApp will update in
+near-realtime as changes come in.

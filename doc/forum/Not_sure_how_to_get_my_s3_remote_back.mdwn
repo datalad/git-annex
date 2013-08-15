@@ -1,0 +1,31 @@
+My situation goes something like this:
+
+I have a machine with an annex and a number of special remotes (s3, box, and an rsync'd nas).  I also have a git remote that's doesn't have git annex on it, so it's just got the git branches.  That machine has some problems so I start getting the annex set up on a different machine.  These are the steps that I went through:
+
+* clone from the git remote
+* git annex doesn't think this is an actual annex at this point, so `git annex init` it
+* Now I can start the webapp `git annex webapp`
+* My rsync'd remote works and the assistant starts downloading the files from there (which is great, it's the local network one) but the box and s3 remotes are disabled (sure, not a huge deal).
+* Click enable on the box remote, I have to specify that it's a full backup remote
+* Things start copying from box as well, so I disable it until everything from the local network is done
+* Click enable on the s3 remote and it wants my AWS creds
+* Download those and add it
+* Set the remote up the same way, as a full backup.
+
+At this point, all my files have copied from the rsync remote, so I enable the other remotes.
+
+Now I want to make sure that all the remotes are set up and working properly.
+
+I turn off the webapp, turn off direct mode (I think it was indirect mode by default, but I'd been playing with things before then), and `git annex drop <file>` a file that I don't particularly care about.  Everything drops successfully.
+
+I'm able to `git annex get -f <rsync remote> <file>` and from `<box remote>` successfully, but when I try to get from the s3 remote, it doesn't give me any output and doesn't download the file.
+
+Having used regular git annex without the assistant before, I try re-initing the remote `git annex initremote <s3>`.  It complains that there's no type, so I `git annex initremote <s3> type=S3`, then it complains about encryption.  `git annex initremote <s3> type=S3 encryption=shared`.  It says it worked, but I `git annex get -f <s3> <file>` still doesn't do anything.
+
+After more looking around, it turns out that I may have created a second remote with the same name as the original s3 remote... (figure that out).  I use the webapp to rename the remotes so they're different, but neither of them will `get -f` successfully.
+
+At this point, I turn to you and ask what the heck I did wrong.  I tried editing the remote.log and uuid.log files to remove the new s3 remote (and I figured out which one was which) from the git-annex branch.  I also marked the new s3 remote as dead, but I still can't get access to s3.
+
+`git annex fsck -f <s3>` doesn't actually seem to hit s3 (I seem to recall that it used to, it calculated checksums), it just checks some git local information.
+
+I don't mind deleting my current checkout and starting from the clone step again if you think I've made too much of a mess.  At least I know I can get my files off my rsync remote and box :)

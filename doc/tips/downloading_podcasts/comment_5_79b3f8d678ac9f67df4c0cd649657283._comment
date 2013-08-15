@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="ckeen"
+ ip="79.249.110.228"
+ subject="Force a reload of a feed?"
+ date="2013-07-31T10:35:50Z"
+ content="""
+Currently I have my podcasts imported with --fast. For some reason there are podcast episodes missing. This has been done propably during my period of toying with the feature. If I retry on a clean annex I see all episodes. My suspicion is that git-annex has been interrupted during downloading a feed but now somehow thinks it's already there. How can I debug this situation and/or force git annex to retry all the links in a feed?
+"""]]

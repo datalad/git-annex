@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.8"
+ subject="comment 10"
+ date="2012-10-16T05:52:08Z"
+ content="""
+If you need a git repository with your regular file names on the smb share, none of the special remotes will meet your needs. You'd need to find a way to make it support POSIX locking to use git-annex on it in a full git repository.
+
+But I think that in most cases a directory special remote on such a share, with the git repository kept locally and git-annex used to pull files down to it as needed, would work ok.
+"""]]

@@ -1,0 +1,26 @@
+<div .navbar .navbar-fixed-top>
+  <div .navbar-inner>
+    <div .container>
+      <a .brand>
+        git-annex
+      <ul .nav>
+        <li .active>
+          <a href="">
+            Error
+        <li>
+          <a href="" onclick="history.back(-1);return false">
+            Go Back
+        <li>
+          <a href="@{LogR}">
+            View logs
+        <li>
+          <a href="http://git-annex.branchable.com/bugs/">
+            File a Bug
+<div .container-fluid>
+  <div .row-fluid>
+    <div .span3>
+    <div .span6>
+      <div .alert .alert-error .alert-block>
+        ^{content}
+      <hr>
+      git-annex version #{packageversion}

@@ -1,0 +1,21 @@
+[[forum/tips:_special__95__remotes__47__hook_with_tahoe-lafs]] is a good
+start, but Zooko points out that using Tahoe's directory translation layer
+incurs O(N^2) overhead as the number of objects grows. Also, making
+hash subdirectories in Tahoe is expensive. Instead it would be good to use
+it as a key/value store directly. The catch is that doing so involves
+sending the content to Tahoe, and getting back a key identifier.
+
+This would be fairly easy to do as a [[backend|backends]], which can assign its
+own key names (although typically done before data is stored in it),
+but a tahoe-lafs special remote would be more flexible.
+
+To support a special remote, a mapping is needed from git-annex keys to
+Tahoe keys.
+
+The best place to store this mapping is perhaps as a new field in the
+location log:
+
+	date present repo-uuid newfields
+
+This way, each remote can store its own key-specfic data in the same place
+as other key-specific data, with minimal overhead.

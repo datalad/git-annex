@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 10"
+ date="2011-05-15T16:47:53Z"
+ content="""
+The key is the basename of the symlink target.
+"""]]

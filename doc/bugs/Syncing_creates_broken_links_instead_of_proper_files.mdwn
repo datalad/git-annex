@@ -1,0 +1,51 @@
+What steps will reproduce the problem?
+
+Create two repositories by running git annex webapp. Sync them by linking them to the same xmpp account. Add files on both sides.
+
+What is the expected output? What do you see instead?
+
+I expect the same file to show up on both sides with the same contents. Instead adding a file on any side creates a broken link with the same name on the other side. For example:
+
+Side A:
+
+    $ ls -la
+    total 20
+    drwxrwxr-x  3 pedrocr pedrocr 4096 Jan  3 19:24 .
+    drwxr-xr-x 55 pedrocr pedrocr 4096 Jan  3 19:19 ..
+    lrwxrwxrwx  1 pedrocr pedrocr  178 Jan  3 19:22 bar -> .git/annex/objects/FQ/vV/SHA256E-s8--12a61f4e173fb3a11c05d6471f74728f76231b4a5fcd9667cef3af87a3ae4dc2/SHA256E-s8--12a61f4e173fb3a11c05d6471f74728f76231b4a5fcd9667cef3af87a3ae4dc2
+    lrwxrwxrwx  1 pedrocr pedrocr  178 Jan  3 19:20 foo -> .git/annex/objects/g7/9v/SHA256E-s4--7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730/SHA256E-s4--7d865e959b2466918c9863afca942d0fb89d7c9ac0c99bafc3749504ded97730
+    drwxrwxr-x  7 pedrocr pedrocr 4096 Jan  3 19:24 .git
+    -rw-r--r--  1 pedrocr pedrocr    0 Jan  3 19:24 testing
+
+"foo" and "bar" are broken links that were created on Side B
+
+Side B:
+
+    $ ls -la
+    total 24
+    drwxrwxr-x  3 pedrocr pedrocr 4096 Jan  3 19:24 .
+    drwx------ 42 pedrocr pedrocr 4096 Jan  3 19:18 ..
+    -rw-r--r--  1 pedrocr pedrocr    8 Jan  3 19:22 bar
+    -rw-r--r--  1 pedrocr pedrocr    4 Jan  3 19:20 foo
+    drwxrwxr-x  7 pedrocr pedrocr 4096 Jan  3 19:24 .git
+    lrwxrwxrwx  1 pedrocr pedrocr  178 Jan  3 19:24 testing -> .git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+
+In this case "testing" is a broken link and was created on Side A.
+
+What version of git-annex are you using? On what operating system?
+
+    $ ./git-annex version
+    git-annex version: 3.20130102
+
+    $ uname -a
+    Linux wintermute 3.2.0-35-generic #55-Ubuntu SMP Wed Dec 5 17:45:18 UTC 2012 i686 i686 i386 GNU/Linux
+
+    $ lsb_release -a
+    Distributor ID:	Ubuntu
+    Description:	Ubuntu 12.04.1 LTS
+    Release:	12.04
+    Codename:	precise
+
+> [[done]]; the webapp now detects when XMPP pairing has been used but no
+> transfer remote is available, and prompts the user to create one.
+> --[[Joey]]

@@ -1,0 +1,28 @@
+Both the assistant and `git annex drop --auto` refused to drop files from
+untrusted repositories. Got that fixed.
+
+Finally recorded the xmpp pairing screencast. In one perfect take, which
+somehow `recordmydesktop` lost the last 3 minutes of.
+Argh! Anyway I'm editing it now, so, look for that screencast soon.
+
+The [[polls/goals_for_April]] poll results are in. 
+
+* There have been no votes at all for working on
+  cloud remotes. Seems that git-annex supports enough cloud remotes already.
+* A lot of people want the Android webapp port to be done, so I will
+  probably spend some time on that this month.
+* Interest in other various features is split. I am surprised how many 
+  want git-remote-gcrypt, compared to the features that would make
+  syncing use less bandwidth. Doesn't git push over xmpp cover most
+  of the use cases where git-remote-gcrypt would need to be used with the
+  assistant?
+* Nearly as many people as want features, want me to work on bug
+  fixing and polishing what's already there.
+  So I should probably continue to make screencasts, since they often force
+  me to look at things with fresh eyes and see and fix problems. And of course,
+  continue working on bugs as they're reported.
+* I'm not sure what to make of the 10% who want me to add direct mode support.
+  Since direct mode is already used by default, perhaps they want
+  me to take time off? :) (I certainly need to fix the
+  [[bugs/Direct_mode_keeps_re-checksuming_duplicated_files]] bug, and one other
+  direct mode bug I discovered yesterday.)

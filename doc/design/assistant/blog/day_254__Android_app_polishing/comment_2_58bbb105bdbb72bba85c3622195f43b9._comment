@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-05-06T15:08:19Z"
+ content="""
+As it stands, using the \"source\" repository type will tend to remove the picture from that repository pretty quickly, assuming a fast network connection. I think if you want to do things on your phone with pictures you take, it's best to use \"client\" instead. Perhaps with an archive repository set up, so you can move stuff to an \"archive\" folder when done with it to get it removed from the phone.
+
+Whether \"source\" is a good default in this case remains to be seen...
+
+It might also be possible to change \"source\" in some way to make it more useful. For example, if it held onto new files for a day after they were created, you'd have plenty of time to use them before they expire off your phone. I have posted some thoughts about this to [[partial_content]].
+"""]]

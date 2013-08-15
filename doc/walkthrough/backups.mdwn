@@ -1,0 +1,25 @@
+git-annex can be configured to require more than one copy of a file exists,
+as a simple backup for your data. This is controlled by the "annex.numcopies"
+setting, which defaults to 1 copy. Let's change that to require 2 copies,
+and send a copy of every file to a USB drive.
+
+	# echo "* annex.numcopies=2" >> .gitattributes
+	# git annex copy . --to usbdrive
+
+Now when we try to `git annex drop` a file, it will verify that it
+knows of 2 other repositories that have a copy before removing its
+content from the current repository.
+
+You can also vary the number of copies needed, depending on the file name.
+So, if you want 3 copies of all your flac files, but only 1 copy of oggs:
+
+	# echo "*.ogg annex.numcopies=1" >> .gitattributes
+	# echo "*.flac annex.numcopies=3" >> .gitattributes
+
+Or, you might want to make a directory for important stuff, and configure
+it so anything put in there is backed up more thoroughly:
+
+	# mkdir important_stuff
+	# echo "* annex.numcopies=3" > important_stuff/.gitattributes
+
+For more details about the numcopies setting, see [[copies]].

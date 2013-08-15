@@ -1,0 +1,5 @@
+The instructions for building git-annex on [[install/Debian]] stable don't seem to be valid anymore.
+
+1. `dpkg-checkbuilddeps` is looking for the wrong packages, e.g. libghc-missingh-dev instead of libghc6-missingh-dev.
+
+2. Not all dependencies are available in the Squeeze repositories anymore (at least not Crypto and hS3), if I am not mistaken.

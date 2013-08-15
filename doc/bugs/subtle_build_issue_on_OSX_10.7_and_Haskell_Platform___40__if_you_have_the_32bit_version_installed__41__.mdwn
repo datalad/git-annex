@@ -1,0 +1,50 @@
+I've just come across a subtle build issue (as haskell-platform just
+got updated, I thought I might give it a try) The scenario is
+
+* OSX 10.7 (everything is up to date with xcode etc... the usual)
+* The 32bit version of Haskell Platform 2012.2
+
+The issue is when libdiskfree.c is compiled and linked to git-annex, 
+OSX defaults to a 64bit binary, thus...
+
+        Linking git-annex ...
+        ld: warning: ignoring file Utility/libdiskfree.o, file was built for unsupported file format which is not the architecture being linked (i386)
+        Undefined symbols for architecture i386:
+          "_diskfree", referenced from:
+              _UtilityziDiskFree_zdwa_info in DiskFree.o
+        ld: symbol(s) not found for architecture i386
+        collect2: ld returned 1 exit status
+        make: *** [git-annex] Error 1
+
+You can either compile up the c library in a 32bit mode if you have the 32bit 
+version of Haskell Platform installed as in the following example
+
+        laplace:git-annex jtang$ cc  -m32  -c -o Utility/libdiskfree.o Utility/libdiskfree.c
+        Utility/libdiskfree.c: In function ‘diskfree’:
+        Utility/libdiskfree.c:61: warning: ‘statfs64’ is deprecated (declared at /usr/include/sys/mount.h:379)
+        laplace:git-annex jtang$ make
+        ghc -O2 -Wall -ignore-package monads-fd -outputdir tmp -IUtility -DWITH_S3 --make git-annex Utility/libdiskfree.o
+
+        Utility/Touch.hs:1:12:
+            Warning: -#include and INCLUDE pragmas are deprecated: They no longer have any effect
+
+        Utility/Touch.hs:2:12:
+            Warning: -#include and INCLUDE pragmas are deprecated: They no longer have any effect
+
+        Utility/Touch.hs:3:12:
+            Warning: -#include and INCLUDE pragmas are deprecated: They no longer have any effect
+
+        Utility/Touch.hs:4:12:
+            Warning: -#include and INCLUDE pragmas are deprecated: They no longer have any effect
+        Linking git-annex ...
+
+Or else just install the 64bit haskell platform. I'm not too sure where
+you would but the intelligence to detect 32 or 64 outputs from the
+different compilers. I suspect checking what ghc outputs then putting in
+the appropriate -m32 or -m64 for the c compiler is the right thing to do. 
+Or just telling users to use the 64bit version of the haskell platform?
+It may also be possible to get osx's c compiler to output a universal binary 
+to give you everything, but that be going down the _being too platform 
+specific route_.
+
+> [[done]], it'll detect this and force -m32. --[[Joey]]

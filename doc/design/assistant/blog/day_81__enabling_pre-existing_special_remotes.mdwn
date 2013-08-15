@@ -1,0 +1,34 @@
+It's possible for one git annex repository to configure a special remote
+that it makes sense for other repositories to also be able to use. Today I
+added the UI to support that; in the list of repositories, such
+repositories have a "enable" link.
+
+To enable pre-existing rsync special remotes, the webapp has to do the same
+probing and ssh key setup that it does when initially creating them.
+Rsync.net is also handled as a special case in that code. There was one
+ugly part to this.. When a rsync remote is configured in the webapp,
+it uses a mangled hostname like "git-annex-example.com-user", to
+make ssh use the key it sets up. That gets stored in the `remote.log`, and so
+the enabling code has to unmangle it to get back to the real hostname.
+
+---
+
+Based on the still-running [[prioritizing_special_remotes]] poll, a lot
+of people want special remote support for their phone or mp3 player.
+(As opposed to running git-annex on an Android phone, which comes later..)
+It'd be easy enough to make the webapp set up a directory special remote
+on such a device, but that makes consuming some types of content on the
+phone difficult (mp3 players seem to handle them ok based on what people tell
+me). I need to think more about some of the ideas mentioned in [[android]]
+for more suitable ways of storing files.
+
+One thing's for sure: You won't want the assistant to sync all your files
+to your phone! So I also need to start coming up with partial syncing
+controls. One idea is for each remote to have a configurable matcher for files
+it likes to receive. That could be only mp3 files, or all files inside a
+given subdirectory, or all files *not* in a given subdirectory. That means
+that when the assistant detects a file has been moved, it'll need to add
+(or remove) a queued transfer. Lots of other things could be matched on,
+like file size, number of copies, etc. Oh look, I have a
+[beautiful library I wrote earlier](http://joeyh.name/blog/entry/happy_haskell_hacker)
+that I can reuse!

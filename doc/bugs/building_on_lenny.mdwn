@@ -1,0 +1,80 @@
+hi,
+
+I am trying to build git annex on lenny.
+
+I checked out the latest from git c88d4939453845efee04da811d64aa41046f9c11,
+installed all the packages (some from backports) as required by dpkg-buildpackage
+
+Then I get this:
+
+	...
+	mkdir -p build
+	ghc -odir build -hidir build --make git-annex
+	[ 1 of 19] Compiling Utility          ( Utility.hs, build/Utility.o )
+	[ 2 of 19] Compiling GitRepo          ( GitRepo.hs, build/GitRepo.o )
+	[ 3 of 19] Compiling GitQueue         ( GitQueue.hs, build/GitQueue.o )
+	[ 4 of 19] Compiling TypeInternals    ( TypeInternals.hs, build/TypeInternals.o )
+	[ 5 of 19] Compiling Types            ( Types.hs, build/Types.o )
+	[ 6 of 19] Compiling Annex            ( Annex.hs, build/Annex.o )
+	[ 7 of 19] Compiling Locations        ( Locations.hs, build/Locations.o )
+	[ 8 of 19] Compiling UUID             ( UUID.hs, build/UUID.o )
+	[ 9 of 19] Compiling LocationLog      ( LocationLog.hs, build/LocationLog.o )
+	[10 of 19] Compiling Core             ( Core.hs, build/Core.o )
+	[11 of 19] Compiling Backend.URL      ( Backend/URL.hs, build/Backend/URL.o )
+	[12 of 19] Compiling Backend          ( Backend.hs, build/Backend.o )
+
+	Backend.hs:114:50:
+	    Not in scope: type constructor or class `SomeException'
+	make[1]: *** [git-annex] Error 1
+	make[1]: Leaving directory `/home/cstamas/tmp/git-annex'
+	dh_auto_build: make -j1 returned exit code 2
+	make: *** [build] Error 2
+	dpkg-buildpackage: failure: debian/rules build gave error exit status 2
+
+I will try to check the mentioned file for error, but I do not know how to program in haskell.
+
+Thanks for your help! --[[cstamas]]
+
+> Newer versions of ghc changed their exception handling types, and
+> I coded git-annex to use the new style and not the old. gch6 6.12 will
+> work. I do not think there is a backport available though. --[[Joey]]
+>
+> Ok, found and deployed a workaround. It is not tested. Let me know how it
+> works for you. --[[Joey]]
+
+>> I did a git pull and now I get:
+
+	mkdir -p build
+	ghc -cpp -odir build -hidir build --make git-annex
+	[ 1 of 20] Compiling Portability      ( Portability.hs, build/Portability.o )
+
+	Portability.hs:13:21:
+	    Not in scope: type constructor or class `Exception'
+	make[1]: *** [git-annex] Error 1
+	make[1]: Leaving directory `/home/cstamas/tmp/git-annex'
+	dh_auto_build: make -j1 returned exit code 2
+	make: *** [build] Error 2
+	dpkg-buildpackage: failure: debian/rules build gave error exit status 2
+
+>> --[[cstamas]]
+
+>>> Ok well, I'm not going to try to reimplement all of
+>>> Control.Exception.Extensible so I've made it use it. You will have to
+>>> figure out how to install that library yourself though, I don't know
+>>> how to use cabal with such an old ghc. Library is here:
+>>> <http://hackage.haskell.org/package/extensible-exceptions> 
+>>> and I asked how to get it on stable here:
+>>> <http://ask.debian.net/questions/how-to-get-haskell-extensible-extceptions-on-stable> --[[Joey]] 
+
+>>>> I made some effort with cabal on lenny. I can install (and I did it) cabal
+>>>> from squeeze as dependencies are ok. Then I installed extensible
+>>>> exceptions, but it places it in some local dir that git-annex's installer
+>>>> (or ghc itself) does not know about.
+>>>>
+>>>> Later I realized that *only* for the compilation ghc6 and its friends are
+>>>> needed. So I built the package on my other machine running squeeze. Then
+>>>> resulting deb packages cleanly installs on lenny
+>>>> 
+>>>> For me this is OK. Thanks! --[[cstamas]]
+
+[[done]]

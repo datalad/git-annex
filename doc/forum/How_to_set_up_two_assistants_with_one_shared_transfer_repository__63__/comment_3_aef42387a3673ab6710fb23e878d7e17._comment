@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.252.11.120"
+ subject="comment 3"
+ date="2012-11-13T17:57:49Z"
+ content="""
+I recently dealt with a segfault caused by a bug in the haskell gnutls library. It could be that's what you were seeing. It's fixed in gnutls (>= 0.1.4)
+
+Yes, you can run `git annex sync` by hand. It does the same syncing of the git repository that the assistant does. I don't think making the assistant poll is a good idea.
+"""]]

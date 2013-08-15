@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.194"
+ subject="comment 1"
+ date="2013-01-18T18:20:43Z"
+ content="""
+You can rename a git remote with just \"git remote rename <old> <new>\". However, for a special remote, git-remote will fail to rename it unless you first add a dummy remote.<name>.fetch value in .git/config. You can remove it later.
+
+So, for example:
+
+<pre>
+git config remote.$uglyname.fetch dummy
+git remote rename $uglyname $nicename
+git config remote.$nicename.fetch \"\"
+</pre>
+
+(The webapp handles doing this when you edit a remote's name, BTW.)
+
+---
+
+There's actually another place the name of a special remote is recorded, in `remote.log`. That name is only used when you use `git annex initremote` though. It actually is possible to change it, by using `initremote` to change the vale of the name field. Example:
+
+<pre>
+git annex initremote $uglyname name=$newname
+</pre>
+
+Note that for some types of special remotes, this will require you to re-specify some other configuration. For example, with a directory special remote, it wanted me to include a directory= parameter.
+"""]]

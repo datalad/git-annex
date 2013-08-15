@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.211"
+ subject="comment 2"
+ date="2013-01-03T17:59:22Z"
+ content="""
+\"I added a new directory (empty)\"
+
+Sounds like you set up the repository yourself, rather than letting the assistant do it. If so, it won't be in direct mode. You can `git annex assistant--stop`, and then `git annex direct` to enable direct mode.
+
+Restart/shutdown in the UI coming soon, I think.
+
+The entire git-annex configuration, include that of the assistant, is stored in the `.git/config` of your reposository, and on its `git-annex` branch. Deleting the repository is thus all that's needed to start over.
+"""]]

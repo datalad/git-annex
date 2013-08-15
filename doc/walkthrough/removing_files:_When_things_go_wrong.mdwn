@@ -1,0 +1,24 @@
+Before dropping a file, git-annex wants to be able to look at other
+remotes, and verify that they still have a file. After all, it could
+have been dropped from them too. If the remotes are not mounted/available,
+you'll see something like this.
+
+	# git annex drop important_file other.iso
+	drop important_file (unsafe)
+	  Could only verify the existence of 0 out of 1 necessary copies
+	  Unable to access these remotes: usbdrive
+	  Try making some of these repositories available:
+	   	58d84e8a-d9ae-11df-a1aa-ab9aa8c00826  -- portable USB drive
+	   	ca20064c-dbb5-11df-b2fe-002170d25c55  -- backup SATA drive
+	  (Use --force to override this check, or adjust annex.numcopies.)
+	failed
+	drop other.iso (unsafe)
+	  Could only verify the existence of 0 out of 1 necessary copies
+          No other repository is known to contain the file.
+	  (Use --force to override this check, or adjust annex.numcopies.)
+	failed
+
+Here you might --force it to drop `important_file` if you [[trust]] your backup.
+But `other.iso` looks to have never been copied to anywhere else, so if
+it's something you want to hold onto, you'd need to transfer it to
+some other repository before dropping it.

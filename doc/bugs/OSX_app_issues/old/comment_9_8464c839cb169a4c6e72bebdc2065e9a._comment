@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://wiggy.net/"
+ nickname="Wichert"
+ subject="Trying to add remote server after failed attempt blocks forever"
+ date="2012-11-28T21:23:54Z"
+ content="""
+Out of curiosity I checked what would happen if I tried to add a remote server repo again after it just failed with the missing library error (see previous comment). Surprisingly the webapp is now waiting forever at the *Testing server ...* message.
+"""]]

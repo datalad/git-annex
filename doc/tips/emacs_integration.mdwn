@@ -1,0 +1,20 @@
+bergey has developed an emacs mode for browsing git-annex repositories,
+dired style.
+
+<https://gitorious.org/emacs-contrib/annex-mode>
+
+Locally available files are colored differently, and pressing g runs
+`git annex get` on the file at point.
+
+----
+
+John Wiegley has developed a brand new git-annex interaction mode for
+Emacs, which aims to integrate with the standard facilities
+(C-x C-q, M-x dired, etc) rather than invent its own interface.
+
+<https://github.com/jwiegley/git-annex-el>
+
+He has also added support to org-attach; if
+`org-attach-git-annex-cutoff' is non-nil and smaller than the size
+ of the file you're attaching then org-attach will `git annex add the
+file`; otherwise it will "git add" it. 

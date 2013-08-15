@@ -1,0 +1,51 @@
+What steps will reproduce the problem?
+
+I added a (encrypted) ssh remote and everything worked fine. Now I marked the remote as dead, but git-annex still tries to upload to this remote. I recognize this because it asks for my ssh and gpg keys passwords. 
+
+While transfering (or asking for the password), `git annex status` shows the following:
+<pre>
+supported backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+supported remote types: git S3 bup directory rsync web hook
+trusted repositories: 0
+semitrusted repositories: 2
+	00000000-0000-0000-0000-000000000001 -- web
+ 	cd16b9c6-f464-11e1-9845-8749687232d2 -- here (Dell)
+untrusted repositories: 0
+dead repositories: 7
+	11379fa0-ecd6-49e2-9bec-24fc19cc7b9f -- vserver.dbruhn.de_annex
+ 	2195e036-d2ef-4357-8c89-a9aaec23ebdc -- vserver-plain
+ 	4d066ea1-fb9f-45fd-990a-5c5c836f530e -- inTmp
+ 	bb276045-6ba6-488f-88d0-39a3c5f5134d -- vserver-enc
+ 	c49f3372-3fcf-49fc-b626-73ba4454c172 -- annexBare (bareAnnex)
+ 	e52645b3-bfb6-457d-b281-967353919e29 -- AnnexUSBFAT
+ 	ea3d6acc-716c-48e8-9b6b-993b90dcc1db -- vserver2
+transfers in progress: 
+	uploading Schmidt/somefile.m4a
+
+
+ to vserver2
+available local disk space: 43 gigabytes (+1 megabyte reserved)
+temporary directory size: 389 megabytes (clean up with git-annex unused)
+local annex keys: 23
+local annex size: 396 megabytes
+known annex keys: 19
+known annex size: 396 megabytes
+bloom filter size: 16 mebibytes (0% full)
+backend usage: 
+	SHA256E: 42
+</pre>
+
+As you can see, the `vserver2` remote is marked as dead but git-annex still tries to upload. This problem keeps occuring even after restarts. 
+
+What is the expected output? What do you see instead?
+
+If I do not get the `dead` status wrong, git-annex should not use these remotes.
+
+
+What version of git-annex are you using? On what operating system?
+
+git-annex HEAD from yesterdays git. Ubuntu 12.10
+
+Please provide any additional information below.
+
+[[!tag /design/assistant moreinfo]]

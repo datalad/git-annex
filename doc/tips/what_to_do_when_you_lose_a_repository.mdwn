@@ -1,0 +1,19 @@
+So you lost a thumb drive containing a git-annex repository. Or a hard
+drive died or some other misfortune has befallen your data.
+
+Unless you configured backups, git-annex can't get your data back. But it
+can help you deal with the loss.
+
+Go somewhere that knows about the lost repository, and mark it as
+dead:
+
+	git annex dead usbdrive
+
+This retains the [[location_tracking]] information for the repository,
+but avoids trying to access it, or list it as a location where files
+are present.
+
+If you later found the drive, you could let git-annex know it's found
+like so:
+
+	git annex semitrust usbdrive

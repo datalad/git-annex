@@ -1,0 +1,34 @@
+Decided to only make bare git repos on remote ssh servers. This
+configurator is aimed at using a server somewhere, which is probably not
+going to be running the assistant. So it doesn't need a non-bare repo, and
+there's nothing to keep the checked out branch in a non-bare repo
+up-to-date on such a server, anyway. For non-bare repos on locally
+accessible boxes, the [[pairing]] configurator will be the thing
+to use, instead of this one.
+
+Note: While the remote ssh configurator works great, and you could even have the
+assistant running on multiple computers and use it to point them all at the
+same repo on a server, the assistant does not yet support keeping such a
+network topology in sync. That needs some of the ideas in [[cloud]] to
+happen, so clients can somehow inform each other when there are changes.
+Until that happens, the assistant polls only every 30 minutes, so it'll
+keep in sync with a 30 minute delay.
+
+---
+
+This configurator can also set up encryped rsync special remotes. Currently
+it always encrypts them, using the shared cipher mode of git-annex's
+encryption. That avoids issues with gpg key generation and distribution,
+and was easy to get working.
+
+---
+
+I feel I'm in a good place now WRT adding repository configurator wizards
+to the webapp. This one took about 2.5 days, and involved laying some
+groundwork that will be useful for other repository configurators. And it
+was probably one of the more complex ones. 
+
+Now I should be able to crank out configurators for things like Amazon S3,
+Bup, Rsync.net, etc fairly quickly. First, I need to do a beta release of
+the assistant, and start getting feedback from my backers to prioritize
+what to work on.

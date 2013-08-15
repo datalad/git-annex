@@ -1,0 +1,32 @@
+What steps will reproduce the problem?
+
+I downloaded the most recent OS X Lion build of the Git Annex application bundle and ran it.
+
+I wanted to test the direct mode, as my existing annex is in the old style.
+So I set up a new (direct) repository, then added an SSH remote, then dropped a large number of files (170) in there.
+
+
+What is the expected output? What do you see instead?
+
+Expected: the files will be added to the repository in direct mode and stored on the ssh remote.
+Instead: the following error appeared in the webapp: 
+ 
+Committer crashed: /Users/ed/directannex/.git/annex/tmp/: openTempFile: resource exhausted (Too many open files)
+
+nothing seems to have been synced to the remote -- I gather this from the fact that the annex directory in the remote git repo is only 70K instead of several hundred megs.
+
+
+What version of git-annex are you using? On what operating system?
+
+ Version: 3.20130102  on OS X lion, using the version bundled as an application bundle.
+
+
+Please provide any additional information below.
+
+I imagine I could avoid this error by using the "ulimit -n" command to increase number of files in a shell session and then running assistant manually, so this is really only a bug report about the bundled application.
+
+> This seems to be caused by Command.Add.lockdown not closing the
+> temporary file handle, so when called in a mapM by the committer
+> thread when there are a lot of files, it could build up a lot of
+> open handles before later GC closes them. Added a manual close,
+> so I think this is [[done]]. --[[Joey]]

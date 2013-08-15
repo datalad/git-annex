@@ -1,0 +1,19 @@
+I worked out how to retroactively annex a large file that had been checked into a git repo some time ago.  I thought this might be useful for others, so I am posting it here.
+
+Suppose you have a git repo where somebody had checked in a large file you would like to have annexed, but there are a bunch of commits after it and you don't want to loose history, but you also don't want everybody to have to retrieve the large file when they clone the repo.  This will re-write history as if the file had been annexed when it was originally added.
+
+This command works for me, it relies on the current behavior of git which is to use a directory named .git-rewrite/t/ at the top of the git tree for the extracted tree.  This will not be fast and it will rewrite history, so be sure that everybody who has a copy of your repo is OK with accepting the new history.  If the behavior of git changes, you can specify the directory to use with the -d option.  Currently, the t/ directory is created inside the directory you specify, so "-d ./.git-rewrite/" should be roughly equivalent to the default.
+
+Enough with the explanation, on to the command:
+<pre>
+git filter-branch --tree-filter 'for FILE in file1 file2 file3;do if [ -f "$FILE" ] && [ ! -L "$FILE" ];then git rm --cached "$FILE";git annex add "$FILE";ln -sf `readlink "$FILE"|sed -e "s:^../../::"` "$FILE";fi;done' --tag-name-filter cat -- --all
+</pre>
+
+replace file1 file2 file3... with whatever paths you want retroactively annexed.  If you wanted bigfile1.bin in the top dir and subdir1/bigfile2.bin to be retroactively annexed try:
+<pre>
+git filter-branch --tree-filter 'for FILE in bigfile1.bin subdir1/bigfile2.bin;do if [ -f "$FILE" ] && [ ! -L "$FILE" ];then git rm --cached "$FILE";git annex add "$FILE";ln -sf `readlink "$FILE"|sed -e "s:^../../::"` "$FILE";fi;done' --tag-name-filter cat -- --all
+</pre>
+
+**If your repo has tags** then you should take a look at the git-filter-branch man page about the --tag-name-filter option and decide what you want to do.  By default this will re-write the tags "nearly properly".
+
+You'll probably also want to look at the git-filter-branch man page's section titled "CHECKLIST FOR SHRINKING A REPOSITORY" if you want to free up the space in the existing repo that you just changed history on.

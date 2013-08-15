@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 8"
+ date="2013-05-12T19:06:14Z"
+ content="""
+So what *does* show up?  Is your repo an empty directory?  Or are the symlinks that should point to content there?
+
+as far as git goes, are you on the master branch?  *is* there a master branch?  If you do \"git status\" what do you see?
+
+There's no reason this shouldn't work for you....
+"""]]

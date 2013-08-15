@@ -1,0 +1,42 @@
+Sorry to be reporting another vague bug, this one interferes with my work unfortunately.
+
+### Please describe the problem.
+After uninstalling git-annix, running git commit returns the following error:
+
+git: 'annex' is not a git command. See 'git --help'.
+
+### What steps will reproduce the problem?
+
+Install git-annex using the ubuntu ppa of fmarcier like so:
+
+    sudo apt-get install git-annex
+
+Then remove it:
+
+    sudo apt-get remove git-annex
+
+Then go to work in a git project, that is not in annex and has no relation to it. Add your changes and run commit:
+
+    git add my-new-file
+    git commit -m "added new file"
+
+I expect it to confirm the file is committed, instead I get the error message:
+  
+    git: 'annex' is not a git command. See 'git --help'.
+
+### What version of git-annex are you using? On what operating system?
+
+Ubuntu 13.04, using the PPA by marcier linked on the branchable website.
+
+> I don't think this is something I want to change.. `git-annex init`
+> installs a pre-commit hook that runs `git annex fix`. If git-annex
+> is removed that hook is left behind to fail. However, if you were really
+> using git-annex in the repo, that's the least of your troubles. If you were
+> using git-annex in the repo and stopped, then you should run `git annex uninit` to remove the hook.
+>
+> The only change I could make is to have the hook check if git-annex
+> is in PATH before trying to run it. But this adds time and complexity
+> to the usual case for a edge case. And keeps cruft around in the edge case
+> rather than informing you of the problem. 
+> 
+> [[done]] --[[Joey]] 

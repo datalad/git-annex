@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.252.11.120"
+ subject="comment 4"
+ date="2012-11-14T17:31:38Z"
+ content="""
+The new hash directory tree is generated in a simple to explain way. Take the md5sum of the key and the first 3 characters are the first directory, and the next 3 characters are the second directory.
+
+The old hash directory tree is rather harder to explain. It takes the md5sum of the key, but rather than a string, represents it as 4 32bit words. Only the first word is used. It is converted into a string by the same mechanism that would be used to encode a normal md5sum value into a string, but where that would normally encode the bits using the 16 characters 0-9a-f, this instead uses the 32 characters \"0123456789zqjxkmvwgpfZQJXKMVWGPF\". The first 2 letters of the resulting string are the first directory, and the second 2 are the second directory.
+
+There's probably a 1:1 mapping between this special md5 encoding an a regular md5 encoding. But it's certainly easier just to use the existing Haskell implementation of the hash. The following program, which needs to be built inside a git-annex source tree, reads keys on stdin, and outputs their old hash directory tree values, and their new values on stdout.
+
+<pre>
+import Locations
+import Types.Key
+import Utility.Misc
+
+main = interact $ \s -> case file2key $ firstLine s of
+        Nothing -> \"bad key\"
+        Just k -> hashDirMixed k ++ \" \" ++ hashDirLower k ++ \"\n\"
+</pre>
+
+<pre>
+joey@gnu:~/src/git-annex>ghc --make convert.hs
+joey@gnu:~/src/git-annex>echo WORM--foo | ./ convert
+jq/8w/ 2b1/ba3/
+</pre>
+"""]]

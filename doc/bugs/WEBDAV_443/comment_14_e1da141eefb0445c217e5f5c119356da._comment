@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 14"
+ date="2013-03-18T16:54:02Z"
+ content="""
+Given that line 69 of runshell is a newline, and that runshell does not ever try to run git-annex-shell, I wonder what you downloaded exactly...
+"""]]

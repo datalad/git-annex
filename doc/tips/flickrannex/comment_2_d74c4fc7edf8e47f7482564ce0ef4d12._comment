@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="develop"
+ subject="comment 2"
+ date="2013-06-05T21:33:42Z"
+ content="""
+Get the statically linked version from here http://git-annex.branchable.com/install/Linux_standalone/
+
+I believe the new hook format was introduced in version 4.20130521
+"""]]

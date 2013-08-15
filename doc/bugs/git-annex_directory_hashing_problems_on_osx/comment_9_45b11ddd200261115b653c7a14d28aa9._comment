@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 9"
+ date="2011-03-31T21:32:10Z"
+ content="""
+I'm was running git 1.7.4.1 at the time when I came across it, I have just upgraded to 1.7.4.2. I've also just moved to using a loopback fs for the stuff i care about. Do you still want a repo that exhibits the problem (excluding the .git/annex data) ??? I'm also not sure if 1.7.4.2 has corrected the problem yet as I haven't done much with my repos since. I suspect just making all the .git-annex hashed directories seems to be lower case might be better in the long run. 
+"""]]

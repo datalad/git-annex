@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlJ2utMQgMEYAOs3Dfc6eZRyUzt4acNXUU"
+ nickname="David"
+ subject="comment 1"
+ date="2013-06-10T23:42:20Z"
+ content="""
+If you do a D-H key exchange and display the key fingerprint on both devices, that would be a pretty strong disincentive against XMPP servers doing a MitM. You only need one victim to casually notice a discrepancy, and it leaves behind a strong proof of tampering.
+"""]]

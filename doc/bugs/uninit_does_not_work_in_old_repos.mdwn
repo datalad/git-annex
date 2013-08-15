@@ -1,0 +1,20 @@
+As uninit does not need to actually write out any data, just remove it, it should be possible to uninit in old stores.
+
+    % git annex uninit
+    git-annex: Repository version 2 is not supported. Upgrade this repository: git-annex upgrade
+
+If the repo happens to be broken, this essentially locks in data.
+
+> No, because you can always check out the version of git-annex you need
+> for that repository.
+> 
+> uninit, as implemented, runs unannex on every file and then does some
+> cleanup. The cleanup does not need to write state, but the unannex does.
+> And it depends on the object directory layout, which has changed between
+> versions. So supporting old versions in this code would complicate it
+> quite a lot. I don't want to go there. --[[Joey]]
+
+>>Requiring a version upgrade for unannex is fine. Yet, I see a problem when a git repo is broken; you are stuck without being able to uninit. In this case an uninit that does nothing but undo the symlinking would be useful. -- Richard
+
+>>> As I said, version 2 of git-annex is still there for people who need
+>>> it for whatever reason. [[done]] --[[Joey]]

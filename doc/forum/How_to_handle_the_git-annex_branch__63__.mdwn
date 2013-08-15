@@ -1,0 +1,5 @@
+Hi!
+
+When I update one repository to/from another, am I to push/pull only the master branch (and other branches I'd have created myself) or also the git-annex branch?
+
+From what I understand, the git-annex branch is local to one repository and has no interest in being merged in another, but some examples make use of git pull --all (which merges distant git-annex branch into local).

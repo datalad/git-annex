@@ -1,0 +1,10 @@
+Actually did do some work on the webapp today, just fixing a bug I noticed
+in a spare moment. Also managed a bit in the plane earlier this week,
+implementing resuming of paused transfers. (Still need to test that.)
+
+But the big thing today was dinner with one of my major Kickstarter
+backers, and as it turned out, "half the Haskell community of San
+Francisco" (3 people). Enjoyed talking about git-annex and haskell with
+them.
+
+I'm looking forward to getting back home and back to work on Monday..

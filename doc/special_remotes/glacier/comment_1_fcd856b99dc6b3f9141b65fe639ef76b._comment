@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmUJBh1lYmvfCCiGr3yrdx-QhuLCSRnU5c"
+ nickname="Justin"
+ subject="comment 1"
+ date="2013-05-16T00:54:21Z"
+ content="""
+The glacier-cli tool seems to have been abandoned, and there are a number of outstanding issues with it.  boto has a `glacier` tool, but it doesn't seem to include caching, which seems to be something git annex needs.
+
+Looking through the PRs, it seems like we should build a tool specifically tailored to git annex's needs.  It seems that there are at least three of us willing to hack on this if it's in Python.  I'm not sure any of us knows haskell, though...
+"""]]

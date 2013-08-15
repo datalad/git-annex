@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmdLmVxigDvxiGhnQ34xhyAaxl0CRRe9gs"
+ nickname="Bryan"
+ subject="Alternate version - smarter integration with other remotes/web special remote?"
+ date="2013-03-03T14:19:12Z"
+ content="""
+I love the idea of pushing files to \"visible\" using annex, but I'm wondering how difficult to would be to make this even fancier.
+
+For instance, if there are files that were originally imported from the web special remote (and have http:// prefixes, since that's not guaranteed), and they're not actually in the pushed annex, generate a redirect for all of them and write a special remote-local .htaccess file.
+
+Or, similarly, allow each remote to have some metadata which specifies what, if any, the URL prefix for a directory in annex is. Then, whenever you update a web remote, the auto-generated redirects list could contain not only files not present but with web-remote locations, but also other remotes which have the file under a web-visible path prefix. Bonus for allowing URL prefixes for S3-style remotes that are not encrypted.
+
+My use case for this sort of fancy is that I have a large server with gobs of space but on a personal (slower) internet connection, and a much smaller hosted instance with much faster bandwidth. With this smarts, I could push and pull large/expected high traffic files to the higher bandwidth/smaller machine ahead of, say, announcing a new feature or sharing a link to a video via e-mail.. or even reactively if the lower-bandwidth server is getting overwhelmed. 
+"""]]

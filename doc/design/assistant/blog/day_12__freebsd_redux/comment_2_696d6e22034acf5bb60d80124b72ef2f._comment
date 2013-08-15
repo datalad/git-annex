@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2012-06-19T07:01:26Z"
+ content="""
+issues with the watch command on OSX, it seems that there is a race condition somewhere. I dumped a few iso's into an annex and it only annexed the smaller files (checksums) and the bigger ones (the iso's) just got made read only. also do you want these bugs to be logged here or in the bugs section?
+"""]]

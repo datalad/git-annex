@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.125"
+ subject="comment 1"
+ date="2013-02-05T19:22:04Z"
+ content="""
+You're not really intended to start the git-annex assistant from a console. If you do, ssh will go ahead and prompt for passwords using that controlling console.
+
+When the assistant is not started from a console, ssh should use the `ssh-askpass` to prompt for the password. Assuming your system has that installed.
+"""]]

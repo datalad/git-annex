@@ -1,0 +1,40 @@
+The main git repository for git-annex is `git://git-annex.branchable.com/`
+
+(You can push changes to this wiki from that anonymous git checkout.)
+
+Other mirrors of the git repository:
+
+* `git://git.kitenet.net/git-annex` [[gitweb](http://git.kitenet.net/?p=git-annex.git;a=summary)]
+* [at github](https://github.com/joeyh/git-annex)
+
+Releases of git-annex are uploaded
+[to hackage](http://hackage.haskell.org/package/git-annex). Get your
+tarballs there, if you need them.
+
+Some operating systems include git-annex in easily prepackaged form and
+others need some manual work. See [[install]] for details.
+
+## git branches
+
+The git repository has some branches:
+
+* `ghc7.0` supports versions of ghc older than 7.4, which
+  had a major change to filename encoding.
+* `old-monad-control` is for systems that don't have a newer monad-control
+  library.
+* `no-ifelse` avoids using the IFelse library
+  (merge it into master if you need it)
+* `no-bloom` avoids using bloom filters. (merge it into master if you need it)
+* `no-s3` avoids using the S3 library (merge it into master if you need it)
+* `debian-stable` contains the latest backport of git-annex to Debian
+  stable.
+* `tweak-fetch` adds support for the git tweak-fetch hook, which has
+  been proposed and implemented but not yet accepted into git.
+* `setup` contains configuration for this website
+* `pristine-tar` contains [pristine-tar](http://kitenet.net/~joey/code/pristine-tar)
+  data to create tarballs of any past git-annex release.
+
+----
+
+Developing git-annex? Patches are very welcome.
+You should read [[coding_style]].

@@ -1,0 +1,3 @@
+Is there a way to store a file in an annex repo without the assistant trying to commit it? My particular issue is that git annex watch tries to add my .thunderbird folder, and I don't want it in annex. Is that a supported use case?
+
+Also, for my better understanding, does watch keep track of what files it saw last time and only look for new things on startup? Or does it try to commit anything that's not already in git (whether symlink or not)?

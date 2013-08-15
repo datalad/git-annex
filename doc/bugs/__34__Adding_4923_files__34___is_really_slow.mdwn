@@ -1,0 +1,100 @@
+Wow, what a great archiving system. Thank you for all your work on git annex!
+
+### Please describe the problem.
+
+I was using 'git annex assistant' on a brand-new annex that I created today. I had previously added about 20GB of data and a couple thousand files, mostly MP4 videos and MP3 music.
+
+I then used regular 'mv' to add a folder containing about 20GB of music. This went well for a while—git annex assistant added two groups of files, containing roughly 700 and 1000 MP3s each. But the third group contained 4,923 files, and it's taking a really long time to import.
+
+CPU usage is pretty consistently near 100%. According to the log, the files are being processed slowly.
+
+### What steps will reproduce the problem?
+
+I don't want to try to reproduce this problem until the MP3s finish being imported. I can try again later with thousands of digital photos if that would help.
+
+### What version of git-annex are you using? On what operating system?
+
+Version: 4.20130709.1 
+Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+
+Ubuntu 12.04.2 LTS
+
+### Please provide any additional information below.
+
+Here's the 'top' output and a snippet of the log. Let me know if you need anything else.
+
+[[!format sh """
+# CPU usage
+
+  PID USER      PR  NI  VIRT  RES  SHR S %CPU %MEM    TIME+  COMMAND      
+  584 ...me...  20   0  776m 147m  16m S  100  0.9 181:16.87 git-annex    
+
+
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[201ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._3-06 Words.mp3 3-0(checksum...) 7-22 14:52:14 EDT] TransferScanner: queued Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-08 Walk This Way.mp3 Nothing : expensive scan found missing object
+[2013-07-22 14:52:34 EDT] Transferrer: Transferring: Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-08 Walk This Way.mp3 Nothing
+[2013-07-22 14:52:34 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+[ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._4-05 Our House.mp3 2013-0(checksum...) 7-22 14:52:34 EDT] TransferWatcher: transfer starting: Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-08 Walk This Way.mp3 Nothing
+[2013-07-22 14:52:54 EDT] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06", transferKey = Key {keyName = "a8ddf79be61cf4a5ab3c7c8e95d8c259ceb102410dff50eb1260e7d818f8c5a8.mp3", keyBackendName = "SHA256E", keySize = Just 70, keyMtime = Nothing}}
+[2013-07-22 14:52:54 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/7-15 Never Gonna Give You Up.mp3 (checksum...) [2013-07-22 14:52:54 EDT] read: sha256sum ["/mnt/storage/private/annex/.git/annex/tmp/7-15 Never Gonna Give You Up584.mp3"]
+[2013-07-22 14:52:55 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+[ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/3-09 Down Under.mp3 2013-07-(checksum...) 22 14:52:55 EDT] TransferScanner: queued Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-09 Dude (Looks Like A Lady).mp3 Nothing : expensive scan found missing object
+[2013-07-22 14:52:55 EDT] read: sha256sum ["/mnt/storage/private/annex/.git/annex/tmp/3-09 Down Under584.mp3"]
+[2013-07-22 14:52:55 EDT] Transferrer: Transferring: Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-09 Dude (Looks Like A Lady).mp3 Nothing
+[2013-07-22 14:52:55 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+[ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/7-19 Right Here Waiting.mp3 2013(checksum...) -07-22 14:52:55 EDT] TransferWatcher: transfer starting: Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-09 Dude (Looks Like A Lady).mp3 Nothing
+[2013-07-22 14:52:55 EDT] read: sha256sum ["/mnt/storage/private/annex/.git/annex/tmp/7-19 Right Here Waiting584.mp3"]
+[2013-07-22 14:52:55 EDT] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06", transferKey = Key {keyName = "a8ddf79be61cf4a5ab3c7c8e95d8c259ceb102410dff50eb1260e7d818f8c5a8.mp3", keyBackendName = "SHA256E", keySize = Just 70, keyMtime = Nothing}}
+[2013-07-22 14:52:55 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._1-04 Another One Bites The Dust.mp3 (checksum...) [2013-07-22 14:53:15 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+[2013ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/2-08 Hold On Loosely.mp3 -07(checksum...) -22 14:53:15 EDT] TransferScanner: queued Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-10 What It Takes.mp3 Nothing : expensive scan found missing object
+[2013-07-22 14:53:15 EDT] read: sha256sum ["/mnt/storage/private/annex/.git/annex/tmp/2-08 Hold On Loosely584.mp3"]
+[2013-07-22 14:53:15 EDT] Transferrer: Transferring: Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-10 What It Takes.mp3 Nothing
+[2013-07-22 14:53:15 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+[ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._6-11 Kyrie.mp3 201(checksum...) 3-07-22 14:53:15 EDT] TransferWatcher: transfer starting: Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-10 What It Takes.mp3 Nothing
+[2013-07-22 14:53:36 EDT] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06", transferKey = Key {keyName = "a8ddf79be61cf4a5ab3c7c8e95d8c259ceb102410dff50eb1260e7d818f8c5a8.mp3", keyBackendName = "SHA256E", keySize = Just 70, keyMtime = Nothing}}
+[2013-07-22 14:53:36 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._5-03 I'm So Excited.mp3 (checksum...) [2013-07-22 14:53:56 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+[2013ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/7-20 Roam.mp3 -07-(checksum...) 22 14:53:56 EDT] TransferScanner: queued Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-11 Sweet Emotion.mp3 Nothing : expensive scan found missing object
+[2013-07-22 14:53:56 EDT] read: sha256sum ["/mnt/storage/private/annex/.git/annex/tmp/7-20 Roam584.mp3"]
+[2013-07-22 14:53:57 EDT] Transferrer: Transferring: Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/._2-11 Sweet Emotion.mp3 Nothing
+[2013-07-22 14:53:57 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+[2ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._3-20 Goodbye To You.mp3 013-07(checksum...) -22 14:53:57 EDT] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06", transferKey = Key {keyName = "a8ddf79be61cf4a5ab3c7c8e95d8c259ceb102410dff50eb1260e7d818f8c5a8.mp3", keyBackendName = "SHA256E", keySize = Just 70, keyMtime = Nothing}}
+[2013-07-22 14:54:17 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._7-18 Don't Worry Be Happy.mp3 (checksum...) [2013-07-22 14:54:37 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+[ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._3-04 Rock This Town.mp3 2013-(checksum...) 07-22 14:54:37 EDT] TransferScanner: queued Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/1-01 Eat The Rich.mp3 Nothing : expensive scan found missing object
+[2013-07-22 14:54:57 EDT] Transferrer: Transferring: Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/1-01 Eat The Rich.mp3 Nothing
+[2013-07-22 14:54:57 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._7-13 Since You've Been Gone.mp3 [2013-(checksum...) 07-22 14:54:57 EDT] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06", transferKey = Key {keyName = "2cb6e7b6ee77f9f98e01e942185265dfe18868503e93d78201485672e6939ab7.mp3", keyBackendName = "SHA256E", keySize = Just 6354105, keyMtime = Nothing}}
+[2013-07-22 14:55:18 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._2-09 Believe It Or Not (Theme From _Greatest American Hero_).mp3 (checksum...) [2013-07-22 14:55:38 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+[ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/7-14 Only In My Dreams.mp3 2013(checksum...) -07-22 14:55:38 EDT] TransferScanner: queued Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/1-02 Love In An Elevator.mp3 Nothing : expensive scan found missing object
+[2013-07-22 14:55:38 EDT] read: sha256sum ["/mnt/storage/private/annex/.git/annex/tmp/7-14 Only In My Dreams584.mp3"]
+[2013-07-22 14:55:38 EDT] Transferrer: Transferring: Upload UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06" music/Rock/Aerosmith/A Little South of Sanity/1-02 Love In An Elevator.mp3 Nothing
+[2013-07-22 14:55:38 EDT] chat: git ["--git-dir=/mnt/storage/private/annex/.git","--work-tree=/mnt/storage/private/annex","hash-object","-t","blob","-w","--stdin","--no-filters"]
+[2013-ok
+add music/Pop/Various/Like, Omigod! The 80s Pop Culture Box (totally)/._4-08 Talking In Your Sleep.mp3 07-2(checksum...) 2 14:55:38 EDT] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID "8dbe75a4-b065-46fd-99f7-22599b2eaf06", transferKey = Key {keyName = "7cd4b9aefb99f044c5f3b24e9890f45673a63ada3b71e7399e17eb1d710ea0f6.mp3", keyBackendName = "SHA256E", keySize = Just 7181660, keyMtime = Nothing}}
+
+# End of transcript or log.
+"""]]
+
+[[!meta title="direct mode mappings scale badly with thousands of identical files"]]

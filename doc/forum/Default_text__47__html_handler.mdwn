@@ -1,0 +1,2 @@
+I've had to change my default `text/html .html` handler from a text editor to a browser to support the opening sequence of `git annex webapp`. any other way around this? perhaps to have it open the page in the default browser rather than the default text/html handler?
+

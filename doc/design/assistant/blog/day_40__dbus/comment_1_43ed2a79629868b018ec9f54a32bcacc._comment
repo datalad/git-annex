@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="dbus vs polling"
+ date="2012-07-19T17:38:40Z"
+ content="""
+I am running KDE, dbus, and I like to mount drives by hand; all that without bothering to set up /etc/fstab... Often from CLI so I don't even see the notifications for new drives.
+
+Especially while on the road, I will use no KDE, but just a tty or three. Still, dbus will be running.
+
+Long story short, I would need polling for the assistant to work flawlessly in all use cases.
+"""]]

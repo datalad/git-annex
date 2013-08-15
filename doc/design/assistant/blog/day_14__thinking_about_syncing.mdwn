@@ -1,0 +1,44 @@
+Pondering [[syncing]] today. I will be doing syncing of the git repository
+first, and working on syncing of file data later.
+
+The former seems straightforward enough, since we just want to push all
+changes to everywhere. Indeed, git-annex already has a [[sync]] command
+that uses a smart technique to allow syncing between clones without a
+central bare repository. (Props to Joachim Breitner for that.)
+
+But it's not all easy. Syncing should happen as fast as possible, so
+changes show up without delay. Eventually it'll need to support syncing
+between nodes that cannot directly contact one-another. Syncing needs to
+deal with nodes coming and going; one example of that is a USB drive being
+plugged in, which should immediately be synced, but network can also come
+and go, so it should periodically retry nodes it failed to sync with. To
+start with, I'll be focusing on fast syncing between directly connected
+nodes, but I have to keep this wider problem space in mind.
+
+One problem with `git annex sync` is that it has to be run in both clones
+in order for changes to fully propagate. This is because git doesn't allow
+pushing changes into a non-bare repository; so instead it drops off a new
+branch in `.git/refs/remotes/$foo/synced/master`. Then when it's run locally
+it merges that new branch into `master`. 
+
+So, how to trigger a clone to run `git annex sync` when syncing to it?
+Well, I just realized I have spent two weeks developing something that can
+be repurposed to do that! [[Inotify]] can watch for changes to
+`.git/refs/remotes`, and the instant a change is made, the local sync
+process can be started. This avoids needing to make another ssh connection
+to trigger the sync, so is faster and allows the data to be transferred
+over another protocol than ssh, which may come in handy later.
+
+So, in summary, here's what will happen when a new file is created:
+
+1. inotify event causes the file to be added to the annex, and
+   immediately committed.
+2. new branch is pushed to remotes (probably in parallel)
+3. remotes notice new sync branch and merge it
+4. (data sync, TBD later)
+5. file is fully synced and available
+
+Steps 1, 2, and 3 should all be able to be accomplished in under a second.
+The speed of `git push` making a ssh connection will be the main limit
+to making it fast. (Perhaps I should also reuse git-annex's existing ssh
+connection caching code?)

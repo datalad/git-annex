@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://bergey.dreamwidth.org/"
+ ip="66.80.90.109"
+ subject="git-media"
+ date="2012-07-14T15:42:05Z"
+ content="""
+I haven't used git-media, but from the README it looks as though they now support several backends.  Might want to update the (very helpful!) comparison.
+"""]]

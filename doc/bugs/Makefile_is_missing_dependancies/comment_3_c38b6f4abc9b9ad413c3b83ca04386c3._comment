@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-03-23T15:13:33Z"
+ content="""
+Alternatively, you can just load it up in ghci and see if it reports numbers that make sense:
+
+<pre>
+joey@gnu:~/src/git-annex>make StatFS.hs
+hsc2hs StatFS.hsc
+perl -i -pe 's/^{-# INCLUDE.*//' StatFS.hs
+joey@gnu:~/src/git-annex>ghci StatFS.hs
+GHCi, version 6.12.1: http://www.haskell.org/ghc/  :? for help
+Loading package ghc-prim ... linking ... done.
+Loading package integer-gmp ... linking ... done.
+Loading package base ... linking ... done.
+[1 of 1] Compiling StatFS           ( StatFS.hs, interpreted )
+Ok, modules loaded: StatFS.
+*StatFS> s <- getFileSystemStats \".\"
+Loading package bytestring-0.9.1.5 ... linking ... done.
+*StatFS> s
+Just (FileSystemStats {fsStatBlockSize = 4096, fsStatBlockCount = 7427989, fsStatByteCount = 30425042944, fsStatBytesFree = 2528489472, fsStatBytesAvailable = 2219384832, fsStatBytesUsed = 27896553472})
+</pre>
+"""]]

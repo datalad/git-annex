@@ -1,0 +1,41 @@
+This page gives a high-level view of git-annex. For a detailed
+low-level view, see [[the_man_page|git-annex]] and [[internals]].
+
+You do not need to read this page to get started with using git-annex. The
+[[walkthrough]] provides step-by-step instructions.
+
+Still reading? Ok. Git's man page calls it "a stupid content
+tracker". With git-annex, git is instead "a stupid filename and metadata"
+tracker. The contents of large files are not stored in git, only the
+names of the files and some other metadata remain there.
+
+The contents of the files are kept by git-annex in a distributed key/value
+store consisting of every clone of a given git repository. That's a fancy
+way to say that git-annex stores the actual file content somewhere under
+`.git/annex/`. (See [[internals]] for details.)
+
+That was the values; what about the keys? Well, a key is calculated for a
+given file when it's first added into git-annex. Normally this uses a hash
+of its contents, but various [[backends]] can produce different sorts of
+keys. The file that gets checked into git is just a symlink to the key
+under `.git/annex/`. If the content of a file is modified, that produces
+a different key (and the symlink is changed).
+
+A file's content can be [[transferred|transferring_data]] from one
+repository to another by git-annex. Which repositories contain a given
+value is tracked by git-annex (see [[location_tracking]]). It stores this
+tracking information in a separate branch, named "git-annex". All you ever
+do with the "git-annex" branch is push/pull it around between repositories,
+to [[sync]] up git-annex's view of the world.
+
+That's really all there is to it. Oh, there are [[special_remotes]] that
+let values be stored other places than git repositories (anything from
+Amazon S3 to a USB key), and there's a pile of commands listed in
+[[the_man_page|git-annex]] to handle moving the values around and managing
+them. But if you grok the description above, you can see through all that.
+It's really just symlinks, keys, values, and a git-annex branch to store
+additional metadata.
+
+---
+
+Next: [[install]] or [[walkthrough]]

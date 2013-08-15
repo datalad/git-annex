@@ -1,0 +1,38 @@
+What steps will reproduce the problem?
+
+Send a file with the character ':' in it. rsync fails to send those files from the command line as well
+confusing them with hostnames. As far as I know a workaround is prepending the pathname with './'
+(for rsync commandline invocation that is)
+
+What is the expected output? What do you see instead?
+
+    copy müzik/Mixxx/Recordings/2013-01-15_16h:13m:03s.mp3 (checking kaotik...) (to kaotik...) 
+    git-annex: //home/alip/kaotika/.git/annex/transfer/download/effe4eef-926f-494c-a3b6-eeecdc208fb9/SHA256-s36349200--ce51eaf316b19c61831
+    41f0bda1c54be7e590e5999753a4b1c16bafab93a3fc1: commitBuffer: invalid argument (invalid character)
+    git-annex-shell: recvkey: 1 failed
+    protocol version mismatch -- is your shell clean?
+    (see the rsync man page for an explanation)
+    rsync error: protocol incompatibility (code 2) at compat.c(174) [sender=3.0.9]
+
+
+What version of git-annex are you using? On what operating system?
+
+    git-annex version: 3.20120807
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3
+    upgrade supported from repository versions: 0 1 2
+
+Operating system is Linux (Exherbo) although this isn't a packaged installation.
+I installed it by hand from git sources.
+
+Please provide any additional information below.
+
+Thanks for the wonderful tool!
+
+> This is a duplicate of
+> [[bugs/commitBuffer:_invalid_argument___40__invalid_character__41__]],
+> which was fixed in version 3.20120924. You need to upgrade the git-annex
+> on kaotik. [[done]]
+>
+> (It has nothing to do with rsync or colon in filenames.) --[[Joey]]

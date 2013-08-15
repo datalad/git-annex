@@ -1,0 +1,57 @@
+    (checksum...) failed
+    fsck foo (fixing location log) 
+      Only 1 of 2 trustworthy copies exist of foo
+      Back it up with git-annex copy.
+
+> You've given me severely partial output, and no test case, but until
+> it says "fsck foo", the output is pertaining to some other file than foo.
+> As far as I can see, there is no bug here. --[[Joey]]
+
+>> Sorry, I thought it would be obvious, but that's no excuse for not
+>> providing additional explanation. The problem is that fsck tells me a
+>> file's fsck has failed without printing extra details. In this case, the
+>> checksum is OK while I don't have enough copies to satisfy the fsck. The
+>> fact that I don't have enough copies is obviously relevant, but I would
+>> still like to know if the checksums are OK. -- Richard
+
+>>> I think you're misreading the truncated output you posted. The actual,
+>>> full output would make much more sense. --[[Joey]]
+
+>>>> No. I have a total of 14908 annex keys, 3333 of which are on a remote. The only message other than 'checksum OK' and the above is 'git-annex: 11577 failed'.
+>>>> I checked several files manually, their checksums are OK so `git annex
+>>>> fsck` is reporting those files as completely failed when they "only" miss copies. -- Richard
+
+>>>>> fsck considers not enough copies to be a failure condition; it prints
+>>>>> error messages about it etc. That has nothing to do with checksums.
+>>>>> --[[Joey]]
+
+>>>>>> I get that. Still, I think it would be _extremely_ useful to know what failures occurred, exactly. Not having enough copies is Not Good, yet not having enough copies and a locally correct file is _lot_ better than having not enough copies and a broken file. I.e. I would prefer:
+
+    (checksum...) OK
+    Not enough copies: Only 1 of 2 trustworthy copies exist of foo
+
+>>>>>> or similar and at the end
+
+    git-annex: 0 wrong checksums
+    git-annex: 11577 with too few copies
+
+>>>>>> In the end, it comes down to the distinction of different failure classes. -- Richard
+
+>>>>>>> For the third, and final time: 
+>>>>>>> # You are misreading the truncated output you posted
+>>>>>>> The "checksum" line is regarding **different** file than the 
+>>>>>>> not enough copies message. fsck does not attempt to checksum a file
+>>>>>>> that is not present. [[done]] --[[Joey]]
+
+
+>>>>>>>> I realized early on that I pasted the wrong cross-passage, but as there is a ton of the same output, I didn't think it would matter. I wasn't aware that it does not try to checksum when there aren't enough copies. To be fair, you only just mentioned that.
+>>>>>>>> Personally, I think that's a bug as it makes ensuring local correctness before copying a file to remotes impossible.
+>>>>>>>> Either way, I really didn't know it actually _skipped_ checksumming; that part was missing.
+>>>>>>>> For the benefit of anyone else who might read this, this is the correct order:
+
+    fsck foo (fixing location log) 
+      Only 1 of 2 trustworthy copies exist of foo
+      Back it up with git-annex copy.
+    (checksum...) failed
+
+>>>>>>>> If you would like to keep things this way, fine. I think it's less than ideal, but I don't want to argue, either. -- Richard

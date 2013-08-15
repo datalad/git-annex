@@ -1,0 +1,51 @@
+What steps will reproduce the problem?
+Create a new annex, add a new repository:
+
+  git annex initremote vserver2 type=rsync rsyncurl=vserver.dbruhn.de:/annex encryption=dominik@dbruhn.de
+
+Add some files, add them to annex, try to transfer them:
+  git annex transferkey SHA256-s6486446--df84b11a0e9543134224d0ac1e0f2567bcd79d86605117c5af008a1b133cee3a --to vserver2 --file MKBD/OB.mp3 --debug
+
+What is the expected output? What do you see instead?
+
+I expect the file to be transfered to my remote server. Instead I see a 'gpg>' prompt with nothing happening. When pressing CTRL+C, the following mesage is shown:
+
+gpg: Interrupt caught ... exiting
+
+There must be some faults when interfacing gpg. The other console-output is:
+
+-----
+    [2012-09-08 18:50:12 CEST] read: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","show-ref","git-annex"] 
+    [2012-09-08 18:50:12 CEST] read: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","show-ref","--hash","refs/heads/git-annex"] 
+    [2012-09-08 18:50:12 CEST] read: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","log","refs/heads/gitannex..245fa80db6733dbbeff6c40d46bd65ed00811548","--oneline","-n1"] 
+    [2012-09-08 18:50:12 CEST] chat: git ["--git-dir=/home/dominik/Annex/.git","--work-tree=/home/dominik/Annex","cat-file","--batch"] 
+    (gpg) [2012-09-08 18:50:12 CEST] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--decrypt"] 
+    [2012-09-08 18:50:12 CEST] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--passphrase-fd","8","--symmetric","--force-mdc"] 
+    sdgdg
+    dsgdgs
+    ^C
+    gpg: Interrupt caught ... exiting
+-----
+
+What version of git-annex are you using? On what operating system?
+git-annex version: 3.20120826
+Ubuntu 12.04, GHC 7.4.1
+gpg is 'gpg (GnuPG) 1.4.11'
+
+Please provide any additional information below.
+
+The key which is used for the remote is password protected. The GnuPG Agent asks me for the password, so this seems to work. I do not know what content the gpg expects but does not recieve. The .git/config entry for the remote looks reasonable:
+
+    [remote "vserver2"]
+        annex-rsyncurl = vserver.dbruhn.de:/annex
+        annex-uuid = ea3d6acc-716c-48e8-9b6b-993b90dcc1db
+
+When adding a new rsync-remote with encryption set to 'none' (therefore disabled), everything works, so it really seems a gpg issue.
+
+How can I help debugging?
+
+> Thanks, I reproduced a deadlock in the gpg code, which was introduced
+> with some of my earlier changes to use threading. No released version of
+> git-annex was affected, and I have developed a fix, which works for me
+> and is now committed to master. Marking this [[done]]; please do check
+> that my fix works for you! --[[Joey]]

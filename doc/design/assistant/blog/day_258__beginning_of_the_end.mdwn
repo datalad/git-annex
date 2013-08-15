@@ -1,0 +1,24 @@
+Fixed a nasty bug that affects at least some FreeBSD systems. It misparsed
+the output of `sha256`, and thought every file had a SHA256 of "SHA256".
+Added multiple layers of protection against checksum programs not having
+the expected output format.
+
+Lots more building and rebuilding today of Android libs than I wanted to do.
+Finally have a completly clean build, which might be able to open TCP
+connections. Will test tomorrow.
+
+In the meantime, I fired up the evil twin of my development laptop.
+It's identical, except it runs Windows.
+
+I installed the Haskell Platform for Windows on it, and removed
+some of the bloatware to free up disk space and memory for development.
+While a rather disgusting experience, I certainly have a usable Haskell
+development environment on this OS a lot faster than I did on Android!
+Cabal is happily installing some stuff, and other stuff wants me to install
+Cygwin.
+
+So, the clock on my month of working on a Windows port starts now. Since
+I've already done rather a lot of ground work that was necessary for a
+Windows port (direct mode, crippled filesystem support), and for general
+sanity and to keep everything else from screeching to a halt, I plan to
+only spend half my time messing with Windows over the next 30 days.

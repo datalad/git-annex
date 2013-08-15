@@ -1,0 +1,45 @@
+<div ##{ident}>
+  <h2>Transfers
+  $if transfersrunning
+    $forall (transfer, info) <- transfers
+      $with percent <- maybe "unknown" (showPercentage 0) $ percentComplete transfer info
+        <div .row-fluid>
+          <div .span10>
+            <div .row-fluid>
+              <h3 .forcewrap>
+                $maybe file <- associatedFile info
+                  #{file}
+                $nothing
+                  #{key2file $ transferKey transfer}
+                $case transferDirection transfer
+                  $of Upload
+                    &rarr;
+                  $of Download
+                    &larr;
+                <small>
+                  <a href="@{EditRepositoryR $ transferUUID transfer}">
+                    #{maybe "unknown" Remote.name $ transferRemote info}
+                  $with size <- maybe "unknown" (roughSize dataUnits True) $ keySize $ transferKey transfer
+                    $if isJust $ startedTime info
+                      $if isrunning info
+                        <small .pull-right><b>#{percent} of #{size}</b></small>
+                      $else
+                        <small .pull-right>paused at #{percent} of #{size}</small>
+                    $else
+                        <small .pull-right>queued (#{size})</small>
+            <div .row-fluid>
+              <div .progress .progress-striped>
+                <div .bar style="width: #{percent};">
+          <div .btn-group .span2>
+            $if isrunning info
+              ^{actionButton (PauseTransferR transfer) Nothing (Just "pause") "btn" "icon-pause"}
+            $else
+              ^{actionButton (StartTransferR transfer) Nothing (Just "continue") "btn" "icon-play"}
+            ^{actionButton (CancelTransferR transfer) Nothing (Just "cancel") "btn" "icon-remove"}
+  $if scanrunning
+    <img src="@{StaticR activityicon_gif}" alt=""> #
+    Scanning for files to transfer
+  $else
+    $if (not transfersrunning)
+      <i>
+        (No file transfers running)

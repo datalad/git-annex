@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://emk.myopenid.com/"
+ ip="24.2.150.84"
+ subject="Detecting ecryptfs"
+ date="2013-07-23T18:49:08Z"
+ content="""
+If the string `\" ecryptfs \"` (with surrounding spaces) appears in `/etc/mtab`, then there's at least one ecryptfs volume on the system. More specific parsing will tell you where it's mounted.
+
+Ubuntu released a new kernels fixing the worst ecryptfs bugs in 12.04 LTS. The current version is OK, but perhaps not exactly great. Some older versions are public menaces with awful data corruption bugs.
+"""]]

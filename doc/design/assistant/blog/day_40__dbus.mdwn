@@ -1,0 +1,100 @@
+Really productive day today, now that I'm out of the threaded runtime
+tarpit!
+
+First, brought back `--debug` logging, better than before! As part of that, I
+wrote some 250 lines of code to provide a IMHO more pleasant interface to
+`System.Process` (itself only 650 lines of code) that avoids all the
+low-level setup, cleanup, and tuple unpacking. Now I can do things like
+write to a pipe to a process, and ensure it exits nonzero, this easily:
+
+	withHandle StdinHandle createProcessSuccess (proc "git" ["hash-object", "--stdin"]) $ \h ->
+		hHutStr h objectdata
+
+My interface also makes it easy to run nasty background processes,
+reading their output lazily.
+
+	lazystring <- withHandle StdoutHandle createBackgroundProcess (proc "find" ["/"]) hGetContents
+
+Any true Haskellers are shuddering here, I really should be using
+conduits or pipes, or something. One day..
+
+----
+
+The assistant needs to detect when removable drives are attached, and
+sync with them. This is a reasonable thing to be working on at this point,
+because it'll make the currently incomplete data transfer code fully usable
+for the sneakernet use case, and firming that up will probably be a good
+step toward handing other use cases involving data transfer over the
+network, including cases where network remotes are transientely available.
+
+So I've been playing with using dbus to detect mount events.
+There's a very nice Haskell library to use dbus.
+
+This simple program will detect removable drives being mounted, and
+works on Xfce (as long as you have automounting enabled in its
+configuration), and should also work on Gnome, and, probably, KDE:
+
+[[!format haskell """
+{-# LANGUAGE OverloadedStrings #-}
+
+import Data.List (sort)
+import DBus
+import DBus.Client
+import Control.Monad
+
+main = do
+	client <- connectSession
+    
+	listen client mountadded $ \s ->
+		putStrLn (show s)
+
+	forever $ getLine -- let listener thread run forever
+
+	where
+		mountadded = matchAny
+			{ matchInterface = Just "org.gtk.Private.RemoteVolumeMonitor"
+			, matchMember = Just "MountAdded"
+			}
+"""]]
+
+(Yeah... "org.gtk.Private.RemoteVolumeMonitor". There are so
+many things wrong with that string. What does gtk have to do with
+mounting a drive? Why is it Private? Bleagh. Should I only match
+the "MountAdded" member and not the interface? Seems everyone who does
+this relies on google to find other people who have cargo-culted it,
+or just runs `dbus-monitor` and picks out things.
+There seems to be no canonical list of events. Bleagh.)
+
+----
+
+Spent a while shaving a yak of needing a `getmntent` interface in Haskell.
+Found one in a hsshellscript library; since that library is not packaged
+in Debian, and I don't really want to depend on it, I extracted just
+the mtab and fstab parts of it into a little library in git-annex.
+
+----
+
+I've started putting together a MountWatcher thread. On systems without
+dbus (do OSX or the BSDs have dbus?), or if dbus is not running, it polls
+`/etc/mtab` every 10 seconds for new mounts. When dbus is available,
+it doesn't need the polling, and should notice mounts more quickly.
+
+Open question: Should it still poll even when dbus is available? Some of us
+like to mount our own drives, by hand and may have automounting disabled. It'd
+be good if the assistant supported that. This might need a
+`annex.no-dbus` setting, but I'd rather avoid needing such manual
+configuration.
+
+One idea is to do polling in addition to dbus, if `/etc/fstab` contains
+mount points that seem to be removable drives, on which git remotes lives.
+Or it could always do polling in addition to dbus, which is just some extra
+work. Or, it could try to introspect dbus to see if mount events will
+be generated.
+
+The MountWatcher so far only detects new mounts and prints out what
+happened. Next up: Do something in response to them. 
+
+This will involve manipulating the Annex state to belatedly add the Remote
+on the mount point.. tricky. And then, for Git Remotes, it should pull/push
+the Remote to sync git data. Finally, for all remotes, it will need to
+queue Transfers of file contents from/to the newly available Remote.

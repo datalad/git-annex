@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkurjhi0CRJvgm7QNaZDWS9hitBtavqIpc"
+ nickname="Bret"
+ subject="A few OS X bugs"
+ date="2012-09-25T00:50:56Z"
+ content="""
+Cabal update
+
+Cabal install git-annex 
+Seemed to install correctly on OS X 10.7
+
+After the installation, an application for git-annex showed up on my desktop.  This is the wrong place to put applications in OS X.  It should belong in the /Applications Folder.  
+Launching the git-annex app, the web-browser is opened, and it tells me to make a repository.  I entered /Users/[my home folder]/Annex and continued.  I then got an internal server error and nothing else happened.  The Error:
+
+uuid [\"-m\"] exited 127
+
+Annex was created, and there is a .git folder in it.
+
+Checking the annex status:
+Bret-Air:Annex bret$ git annex status
+git-annex: First run: git-annex init
+
+I'll try it on 10.6 here in just a moment.  Let me know if I can provide any more useful information.  
+"""]]

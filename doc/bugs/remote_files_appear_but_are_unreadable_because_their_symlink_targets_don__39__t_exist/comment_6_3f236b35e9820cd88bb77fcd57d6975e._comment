@@ -1,0 +1,43 @@
+[[!comment format=mdwn
+ username="http://bigasterisk.com/"
+ nickname="Drew Perttula"
+ subject="comment 6"
+ date="2013-07-25T05:36:07Z"
+ content="""
+Here's how little it takes for things to go wrong:  
+  
+----
+First host:  
+
+bang(pts/17):~/annex% git init  
+Initialized empty Git repository in /home/drewp/annex/.git/  
+
+bang(pts/17):~/annex% git-annex init  
+init  ok  
+(Recording state in git...)
+
+bang(pts/17):~/annex% git-annex webapp --listen 10.1.0.1:9999    
+http://10.1.0.1:9999/?auth=6f9a8b...
+
+
+----
+Second host:
+
+dash(pts/34):~/annex% git init  
+Initialized empty Git repository in /home/drewp/annex/.git/
+
+dash(pts/34):~/annex% git-annex init  
+init  ok  
+(Recording state in git...)
+
+dash(pts/34):~/annex% git-annex webapp --listen 10.1.0.229:9999  
+http://10.1.0.229:9999/?auth=f28bd56b456....
+
+
+Browse to first URI. Add another repo. Local computer. Enter 'qwerty'.   
+Browse to second URI. Respond to pairing request. Enter 'qwerty' again.  
+View both dashboards: http://bigasterisk.com/post/git-annex-bad-pair.png  
+
+
+
+"""]]

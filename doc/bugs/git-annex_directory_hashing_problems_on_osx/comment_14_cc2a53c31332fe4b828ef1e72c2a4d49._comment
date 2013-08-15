@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 14"
+ date="2011-04-03T08:24:17Z"
+ content="""
+I meant to say in it wasn't reliable when I was following the instructions for \"Comment 12\". I did find that just doing a  \"git annex copy -t externalusb .\"  then a \"git annex drop .\" from the root of my cloned and \"none trusted\" annexed repos to be more reliable, it just means I temporarily need a load of space to get myself out of my earlier mess.
+
+On testing this bug fix, I found a minor behavioural issue with [[git annex copy -f REMOTE . doesn't work as expected]]
+"""]]

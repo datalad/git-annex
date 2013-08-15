@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-23T20:00:31Z"
+ content="""
+Is this related or unrelated to the bug you filed at [[Resource_exhausted]]?
+
+I tried this test, and noticed that it was taking the assistant rather a long time to get to the 10 thousand file threshhold where it makes a batch commit. A small change to a better data structure for its queue reduced that time from probably 10 minutes to 2.5. 
+
+I was unable to reproduce any problem with the webapp. Please provide lots of details to back up \"it just crashes the GUI\".
+
+The main problem with this directory tree is that it has more directories than inotify can watch, in the default configuration. 
+So after it adds the first 8192 directories, it begins failing to watch any more, and printing a message about you needing to increase the inotify limits for each additional directory. I don't think that 51 thousand directories is a particularly realistic amount for any real-world usage of git-annex. (It will also break file manager, dropbox, etc, which all use inotify in the same way.)
+
+The other main time sink is that git-annex needs to run `git hash-object` once per file to stage its symlink. That is a lot of processes to run, and perhaps it could be sped up by using `git fast-import`.
+"""]]

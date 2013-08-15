@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.253.75"
+ subject="comment 4"
+ date="2013-02-22T00:54:56Z"
+ content="""
+@jim git http support is disabled to save space
+
+What seems to work is: git config user.email \"you@example.com\" 
+
+It's probably looking in the wrong place for the global .gitconfig so --global doesn't work. The assistant
+also automates dealing with this problem BTW.
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-06T20:59:10Z"
+ content="""
+You can run this script as root, and it will install it to /usr/local/bin, which should always be in your path:
+<https://github.com/zerodogg/scriptbucket/blob/master/gitannex-install>
+
+However, I'd hope most people do not need to use the standalone tarball to install git-annex on a server. Most major linux distributions have their own way to install git-annex by now, and while most of them are too old versions to use the git annex assistant with, those old versions work fine on a server. The assistant will interoperate with them just fine.
+"""]]

@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://pradermecker.myopenid.com/"
+ ip="195.244.162.7"
+ subject="comment 15"
+ date="2013-03-18T19:07:31Z"
+ content="""
+Euh. I actually feel stupid enough with this but ...
+
+I have try first with your link and it gives me:
+
+```
+./runshell: line 75: /home/vagrant/programs/git-annex.linux/bin/sh: No such file or directory
+```
+
+As I told you I then try the AUR package : https://aur.archlinux.org/packages/git-annex-standalone/
+
+And it does give me the same error on line 69.
+
+It is the same line (3 lines before the end):
+
+```
+exec \"$cmd\" \"$@\"
+```
+
+I really don't get it because the file is there ... and the first sanity checks of the script have pass.
+
+"""]]

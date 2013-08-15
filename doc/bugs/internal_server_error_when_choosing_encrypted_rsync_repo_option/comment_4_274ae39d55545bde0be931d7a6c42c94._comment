@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 4"
+ date="2013-07-02T16:52:43Z"
+ content="""
+The question is, where did this line in .gnupg/gpg.conf come from?
+
+It seems likely to me that something else put it there, and perhaps that has a version of gpg that supports some of the options, like ldap, while the version of gpg bundled with git-annex for OSX Lion does not.
+
+(I tried enabling that line on a Mountian Lion machine, and the gpg in git-annex accepts it.)
+"""]]

@@ -1,0 +1,25 @@
+Continuing to flail away at this XMPP segfault, which turned out not to be
+fixed by bound threads. I managed to make a fairly self-contained and small
+reproducible test case for it that does not depend on the network.
+Seems the bug is gonna be either in the Haskell binding for GNUTLS,
+or possibly in GNUTLS itself.
+
+Update: John was able to fix it using my testcase! It was a GNUTLS
+credentials object that went out of scope and got garbage collected.
+I think I was seeing the crash only with the threaded runtime because
+it has a separate garbage collection thread.
+
+----
+
+Arranged for the XMPP thread to restart when network connections
+change, as well as when the webapp configures it.
+
+Added an alert to nudge users to enable XMPP. It's displayed after adding a
+remote in the cloud.
+
+[[!img /assistant/xmppnudge.png]]
+
+----
+
+So, the first stage of XMPP is done. But so far all it does is push
+notification. Much more work to do here.

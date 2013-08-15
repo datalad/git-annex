@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="sauluskahn"
+ ip="67.171.218.222"
+ subject="comment 1"
+ date="2012-09-21T21:40:30Z"
+ content="""
+Also, git annex is 3.20120825 on both machines, and rsync is 3.0.9
+
+Both have no problem handling the characters on their own, but when I try to rsync them I get trouble.
+"""]]

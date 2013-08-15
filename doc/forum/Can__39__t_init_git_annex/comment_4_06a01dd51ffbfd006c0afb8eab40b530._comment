@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZ0g2UAijV7RGrKtWPljCCAYHBJ3pwPvM"
+ nickname="Meng"
+ subject="comment 4"
+ date="2012-10-16T04:17:11Z"
+ content="""
+Could i use (some variant of) `git annex sync` to do two-way sync between local and `smb`?
+"""]]

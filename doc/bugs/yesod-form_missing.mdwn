@@ -1,0 +1,23 @@
+What steps will reproduce the problem?
+
+build using cabal from a git checkout
+
+What is the expected output? What do you see instead?
+
+successful build; error message is:
+
+Assistant/WebApp/Form.hs:15:8:
+    Could not find module `Yesod.Form.Fields'
+    It is a member of the hidden package `yesod-form-1.2.0'.
+    Perhaps you need to add `yesod-form' to the build-depends in your .cabal file.
+
+
+What version of git-annex are you using? On what operating system?
+
+git checkout commit 90b62db1defdd223294935ec0bbaac883cd20c04 on OS X Lion
+
+Please provide any additional information below.
+
+adding yesod-form to the build depends in git-annex.cabal does indeed fix the problem!
+
+> [[done]] --[[Joey]] 

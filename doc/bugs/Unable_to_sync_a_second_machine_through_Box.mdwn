@@ -1,0 +1,46 @@
+What steps will reproduce the problem?
+
+Install 4.20130417 as packaged in Debian unstable.
+Using "git annex webapp", setup on first machine adding repository ~/annex.  Add a Box.com repository in directory "annex", encrypted.  Add a jabber account (apparently successful).
+Add test file to ~/annex.  Login via website to box.com, notice that the "annex" directory is created and contains encrypted file.
+On second (remote machine), follow the same steps (add repository in ~/annex, Add a Box.com repository in directory "annex", encrypted, Add same jabber account).
+
+What is the expected output? What do you see instead?
+
+Expected the file to appear in the second machine's ~/annex.  The webapp indicates: Synced with box.com
+Log file says:
+
+[2013-04-23 06:50:16 EDT] main: starting assistant version 4.20130417
+(scanning...) [2013-04-23 06:50:16 EDT] Watcher: Performing startup scan
+(started...) 
+(encryption setup shared cipher) (testing WebDAV server...)
+(gpg) [2013-04-23 06:50:50 EDT] main: Syncing with box.com 
+[2013-04-23 06:50:50 EDT] main: Share with friends, and keep your devices in sync across the cloud. 
+[2013-04-23 06:51:03 EDT] main: Share with friends, and keep your devices in sync across the cloud. 
+warning: Not updating non-default fetch respec
+	
+	Please update the configuration manually if necessary.
+Initializing nautilus-gdu extension
+Shutting down nautilus-gdu extension
+git-annex: Daemon is already running.
+
+What version of git-annex are you using? On what operating system?
+
+4.20130417, debian testing with apt-pinning to unstable on both systems.
+
+Please provide any additional information below.
+
+When editing the Box.com repository, the option to select a directory no longer appears (and the configuration doesn't show the one selected at creation).
+There's no indication if the jabber communication is working successfully.  It could be that signalling isn't working for some reason, but the user has no information to determine that.
+It would be helpful if there were some indication in the Dashboard as to the number of files/directories/objects that git annex believes exists in each location.  It could be that it's not accessing the Box.com server successfully, but again, this is difficult to determine.
+
+It's great to see that git annex might make a box.com account useful for automatic upload and sync... looking forward to getting it to work on both sides! Thanks for making this!
+
+[[!tag /design/assistant moreinfo]]
+
+> The robustness of the XMPP support has massively improved since this bug
+> report was filed. Since no more information is forthcoming, I consider
+> this bug [[done]].
+>
+> (Incidentially, this bug got me to santize all information logged about
+> XMPP protocol, including the names/emails of buddies..) --[[Joey]]

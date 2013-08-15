@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3Wgg0XiqYFwM_Pw1RxZwlpNFi65g17sM"
+ nickname="James"
+ subject="comment 3"
+ date="2013-06-12T01:12:24Z"
+ content="""
+Ah, ok, I presumed there was an option in git to set a per-repository ssh command. I've looked at vcsh, but I'm not that confident with git remotes, so I don't use it (I use hg). If a per-repository ssh command added to git, would you consider adding this?
+"""]]

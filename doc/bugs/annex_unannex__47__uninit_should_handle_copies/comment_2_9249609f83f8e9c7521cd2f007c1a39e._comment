@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmJfIszzreLNvCqzqzvTayA9_9L6gb9RtY"
+ nickname="Joey"
+ subject="comment 2"
+ date="2011-07-04T20:25:38Z"
+ content="""
+Indeed, uninit needed to be improved. I've done so. Also, unannex --fast can be used to make hard links to content left in the annex.
+"""]]

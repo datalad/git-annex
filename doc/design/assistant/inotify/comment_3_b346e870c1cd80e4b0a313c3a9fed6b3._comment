@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 3"
+ date="2012-06-17T08:52:32Z"
+ content="""
+In relation to OSX support, hfsevents (or supporting hfs is probably a bad idea), its very osx specific and users who are moving usb keys and disks between systems will probably end up using fat32/exfat/vfat disks around. Also if you want I can lower the turn around time for the OSX auto-builder that I have setup to every 1 or 2mins? would that help?
+"""]]

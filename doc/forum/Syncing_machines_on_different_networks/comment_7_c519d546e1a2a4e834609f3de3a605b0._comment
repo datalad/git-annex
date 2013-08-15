@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZEanlyzay_QlEAL0CWpyZcRTyN7vay8U"
+ nickname="Carlo"
+ subject="Quick Cloud Tip"
+ date="2012-11-21T13:16:54Z"
+ content="""
+If you have broadband, get a raspberry pi and hook up a thumb drive. Then allow ssh access through your router for really cheap cloud storage.
+"""]]

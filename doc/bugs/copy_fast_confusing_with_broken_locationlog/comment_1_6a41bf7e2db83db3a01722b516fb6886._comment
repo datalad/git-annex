@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-05-12T00:07:29Z"
+ content="""
+I followed this to re-inject files which git annex fsck listed as missing.
+
+For everyone of those files, I get 
+
+    git-annex-shell: key is already present in annex
+    rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+    rsync error: error in rsync protocol data stream (code 12) at io.c(601) [sender=3.0.8]
+
+when trying to copy the files to the remote.
+
+-- Richard
+"""]]

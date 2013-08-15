@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="praet"
+ ip="81.240.159.215"
+ subject="Use variable symlinks, relative to the repo's root ?"
+ date="2011-03-10T16:50:28Z"
+ content="""
+It all boils down to the fact that the path to a relative symlink's target is determined relative to the symlink itself.
+
+Now, if we define the symlink's target relative to the git repo's root (eg. using the $GIT_DIR environment variable, which can be a relative or absolute path itself), this unfortunately results in an absolute symlink, which would -for obvious reasons- only be usable locally:
+
+    user@host:~$ mkdir -p tmp/{.git/annex,somefolder}
+    user@host:~$ export GIT_DIR=~/tmp
+    user@host:~$ touch $GIT_DIR/.git/annex/realfile
+    user@host:~$ ln -s $GIT_DIR/.git/annex/realfile $GIT_DIR/somefolder/file
+    user@host:~$ ls -al $GIT_DIR/somefolder/
+    total 12
+    drwxr-x--- 2 user group 4096 2011-03-10 16:54 .
+    drwxr-x--- 4 user group 4096 2011-03-10 16:53 ..
+    lrwxrwxrwx 1 user group   33 2011-03-10 16:54 file -> /home/user/tmp/.git/annex/realfile
+    user@host:~$
+
+So, what we need is the ability to record the actual variable name (instead of it's value) in our symlinks.
+
+It *is* possible, using [variable/variant symlinks](http://en.wikipedia.org/wiki/Symbolic_link#Variable_symbolic_links), yet I'm unsure as to whether or not this is available on Linux systems, and even if it is, it would introduce compatibility issues in multi-OS environments.
+
+Thoughts on this?
+"""]]

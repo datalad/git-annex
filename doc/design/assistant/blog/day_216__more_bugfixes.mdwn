@@ -1,0 +1,42 @@
+A long time ago I made Remote be an instance of the Ord typeclass, with an
+implementation that compared the costs of Remotes. That seemed like a good
+idea at the time, as it saved typing.. But at the time I was still making
+custom Read and Show instances too. I've since learned that this is *not* a
+good idea, and neither is making custom Ord instances, without deep thought
+about the possible sets of values in a type.
+
+This Ord instance came around and bit me when I put Remotes into a Set,
+because now remotes with the same cost appeared to be in the Set even if 
+they were not. Also affected putting Remotes into a Map. I noticed this
+when the webapp got confused about which Remotes were paused.
+
+Rarely does a bug go this deep. I've fixed it comprehensively, first
+removing the Ord instance entirely, and fixing the places that wanted to
+order remotes by cost to do it explicitly. Then adding back an Ord instance
+that is much more sane. Also by checking the rest of the Ord (and Eq) 
+instances in the code base (which were all ok).
+
+While doing that, I found lots of places that kept remotes in Maps and
+Sets. All of it was probably subtly broken in one way or another before
+this fix, but it would be hard to say exactly how the bugs would
+manifest.
+
+-----
+
+Also fought some with Google Talk today. Seem to be missing presence
+messages sometimes. Ugh. May have fixed it, but I've thought that before..
+
+Made --debug include a sanitized dump of the XMPP protocol.
+
+Made UI changes to encourage user to install git-annex on the server when
+adding a ssh server, rather than just funneling them through to rsync.
+
+Fixed UI glitches in XMPP username/password prompt.
+
+Switched all forms in the webapp to use POST, to avoid sensitive
+information leaking on the url bar.
+
+----
+
+Added an incremental backup group. Repositories in this group only want
+files that have not been backed up somewhere else yet.

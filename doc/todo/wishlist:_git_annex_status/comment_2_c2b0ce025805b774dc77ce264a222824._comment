@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="format, respect working directory"
+ date="2011-04-26T12:31:02Z"
+ content="""
+we could include the information about the current directory as well, if the command is not issued in the local git root directory. to avoid large numbers of similar lines, that could look like this:
+
+    Estimated annex size: B MiB (of C MiB; [B/C]%)
+    Estimated annex size in $PWD: B' MiB (of C' MiB; [B'/C']%)
+
+with the percentages being replaced with \"complete\" if really all files are present (and not just many enough for the value to be rounded to 100%).
+"""]]

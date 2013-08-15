@@ -1,0 +1,14 @@
+Not a lot of programming today; I spent most of the day stuffing hundreds
+of envelopes for this Kickstarter thing you may have heard of. Some post
+office is going to be very surprised with all the international mail soon.
+
+----
+
+That said, I did write 184 lines of code. (Actually rather a lot, but it
+was mostly pure functional code, so easy to write.) That
+pops up your text editor on a file with the the trust and group
+configurations of repositories, that's stored in the git-annex branch.
+Handy for both viewing that stuff all in one place, and changing it.
+
+The real reason for doing that is to provide a nice interface for editing
+transfer control expressions, which I'll be adding next.

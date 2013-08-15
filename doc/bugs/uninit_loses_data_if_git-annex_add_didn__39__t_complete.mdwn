@@ -1,0 +1,15 @@
+* Create a git-annex repo where a lot of files live.
+* Start an annex add.
+* Kill it.
+* git-annex uninit
+
+Now, whatever files were annexed (ie: moved to .git/annex/objects/) but not committed are lost as the .git/annex directory was deleted.
+
+I know there are two conflicting issues here:
+
+1. if there is legitimately unused data in .git/annex then that shouldn't be unannexed
+2. the above case where some files were annexed but not committed should be unannexed
+
+Maybe uninit could check to see if all symlinks currently in the repo pointing to something under .git/annex/objects are committed. If not, commit them then uninit, or just de-annex them.
+
+> Added a check for this, [[done]] --[[Joey]] 

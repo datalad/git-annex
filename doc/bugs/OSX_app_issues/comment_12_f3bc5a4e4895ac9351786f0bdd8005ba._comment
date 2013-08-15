@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmYiJgOvC4IDYkr2KIjMlfVD9r_1Sij_jY"
+ nickname="Douglas"
+ subject="Error creating remote repository using ssh on OSX"
+ date="2013-01-25T13:18:40Z"
+ content="""
+There is an issue with creating remote repositories using ssh (the problem may require using a different account name.) I filed the following bug:
+
+
+<http://git-annex.branchable.com/bugs/Error_creating_remote_repository_using_ssh_on_OSX/>
+"""]]

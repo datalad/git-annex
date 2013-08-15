@@ -1,0 +1,5 @@
+Thanks for creating git-annex.
+
+I am confused about the advantages of the SHA* backends over WORM.  The "backends" page in this wiki says that with WORM, files "can be moved around, but should never be added to or changed".  But I don't see any difference to SHA* files as long as the premise of WORM that "any file with the same basename, size, and modification time has the same content" is true.  Using "git annex unlock", WORM files can be modified in the same way as SHA* files.
+
+If the storage I use is dependable (i.e. I don't need SHA checksums for detection of corruption), and I don't need to optimize for the case that the modification date of a file is changed but the contents stay the same, and if it is unlikely that several files will be identical, is there actually any advantage in using SHA*?

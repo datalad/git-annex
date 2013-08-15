@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+When I launch git annex Android application, it fails to open the web browser. Workaround is to copy the url and manually paste it into web browser url line.
+
+### What steps will reproduce the problem?
+
+See above
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version 4.20130513-g5185533 on Android 4.2.2
+
+### Please provide any additional information below.
+
+[[!format sh """
+u0_a126@android:/sdcard/git-annex.home $ git annex webapp
+Launching web browser on http://127.0.0.1:47557/?auth=[...snip...]
+Starting: Intent { act=android.intent.action.VIEW dat=http://127.0.0.1:47557/?auth=[...snip...] }
+java.lang.SecurityException: Permission Denial: startActivity asks to run as user -2 but is calling from user 0; this requires android.permission.INTERACT_ACROSS_USERS_FULL
+        at android.os.Parcel.readException(Parcel.java:1425)
+        at android.os.Parcel.readException(Parcel.java:1379)
+        at android.app.ActivityManagerProxy.startActivityAsUser(ActivityManagerNative.java:1921)
+        at com.android.commands.am.Am.runStart(Am.java:494)
+        at com.android.commands.am.Am.run(Am.java:109)
+        at com.android.commands.am.Am.main(Am.java:82)
+        at com.android.internal.os.RuntimeInit.nativeFinishInit(Native Method)
+        at com.android.internal.os.RuntimeInit.main(RuntimeInit.java:235)
+        at dalvik.system.NativeStart.main(Native Method)
+failed to start web browser
+u0_a126@android:/sdcard/git-annex.home $
+
+# End of transcript or log.
+"""]]
+
+[[done]], duplicate bug

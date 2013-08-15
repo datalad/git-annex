@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="fmarier"
+ subject="comment 3"
+ date="2011-04-05T10:00:21Z"
+ content="""
+Thanks for the reply @joey.
+
+While it would certainly be possible for a bare repo to exist on my iRiver, the problem is that the music player uses the filesystem to organize files into directories like \"Artist/Album/Track.ogg\". So replacing that with \"..../xx/yy/Track.ogg\" would make it fairly difficult to browse my music collection and select the album/track I want to listen to :)
+
+So unless I have the files physically organized like the symlinks, then it's probably not going to work very for that particular workflow. Smudge filters are interesting though. In the meantime, I'll look into rsyncing from another box which has the right filesystem layout onto my iRiver directly.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 3"
+ date="2013-07-30T21:25:32Z"
+ content="""
+Edit Utility/Url.hs and play around with the version in the `MIN_VERSION_network` define.  It seems to me that your system needs to build with the #else branch of the #ifdef, despite having a version of the haskell network package older than 2.4.0. It's possible that the haskell network package has been modified by Fedora.
+"""]]

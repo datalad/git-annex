@@ -1,0 +1,21 @@
+Note: This may not be a bug maybe the software doesn't work the way I think.
+
+What steps will reproduce the problem?
+
+Using the webapp, I created a normal repo on my desktop. I then added a 'Removable drive' repo on my usb stick.
+
+I want all my files to be synced and accessibles on both repos so I set the 'Removable drive' repo to 'client'.
+
+
+What is the expected output? What do you see instead?
+
+When I look in the 'annex' folder on my usb stick. I see a git repo (annex, branches, hooks) instead of seeing the files in the same way the 'annex' repo on my desktop is.
+
+
+What version of git-annex are you using? On what operating system?
+
+I'm using 9e57edff287ac53fc4b1cefef7271e9ed17f2285 (Fri Feb 22 15:19:25 2013 +0000).
+
+Ubuntu 12.10 x86_64
+
+[[!tag /design/assistant]]

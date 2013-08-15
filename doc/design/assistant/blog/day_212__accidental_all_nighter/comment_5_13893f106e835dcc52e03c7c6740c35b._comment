@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-03-13T16:58:04Z"
+ content="""
+In the standalone linux daily build, you need to use the \"runshell\" script to start a shell environment in which you can run git-annex.
+"""]]

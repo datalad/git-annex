@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="git-add instead of git-annex-add"
+ date="2011-02-26T21:43:21Z"
+ content="""
+would, with these modifications in place, there still be a way to *really* git-add a file? (my main repository contains both normal git and git-annex files.)
+"""]]

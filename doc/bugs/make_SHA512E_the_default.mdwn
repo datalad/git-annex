@@ -1,0 +1,29 @@
+What steps will reproduce the problem?
+
+As described in
+http://git-annex.branchable.com/backends/#comment-3c1cd45d2a015b4fc412dd813293ad7d
+, sha512 is faster. On my 64-bit system, the speed difference is about
+1.5times.
+
+What is the expected output? What do you see instead?
+
+
+What version of git-annex are you using? On what operating system?
+
+
+Please provide any additional information below.
+
+> You are free to change the default in your own annexes. This is very easy
+> to do: `echo '* annex.backend=SHA512E' > .gitattributes`
+> 
+> I don't anticipate moving to SHA512, because
+> 
+> 1. It makes `ls -l` really ugly. Each symlink takes like 4 lines
+>    on an 80 column terminal.
+> 2. There are better hashes coming. Particularly SHA3. That should be
+>    faster and/or more secure. And without adding so much length to the
+>    hash.
+> 
+> --[[Joey]]
+
+[[done]]

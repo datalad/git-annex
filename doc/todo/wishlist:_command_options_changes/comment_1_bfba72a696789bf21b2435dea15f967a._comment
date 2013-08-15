@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-04-17T23:46:37Z"
+ content="""
+--to and --from seem to have different semantics than --source and --destination. Subtle, but still different.
+
+That being said, I am not sure --from and --to are needed at all. Calling the local repo . and all remotes by their name, they are arguably redundant and removing them would make the syntax a lot prettier; mv and cp don't need them, either.
+
+I am not sure changing syntax at this point is considered good style though personally, I wouldn't mind adapting and would actually prefer it over using --to and --from.
+
+-v and -q would be nice.
+
+
+Richard
+"""]]

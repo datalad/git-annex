@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="Rasmus"
+ ip="213.120.148.111"
+ subject="comment 3"
+ date="2013-04-02T23:25:45Z"
+ content="""
+Joey,
+
+Sorry for asking again, but I haven't been able to resolve this using the symlinks.
+
+Consider this file 
+
+    ElgarCEH.pdf -> ../.git/annex/objects/g6/q8/SHA256E-759787--3ec5f8d64cc4f84dec74ed7f0f7a640b3e672a03faf0f5fc3daf0b823d596f03.pdf/SHA256E-759787--3ec5f8d64cc4f84dec74ed7f0f7a640b3e672a03faf0f5fc3daf0b823d596f03.pdf
+
+The file that the symlink points to doesn't exist.  I'm not sure it should.  The file with {.map,.cahce} extensions does exist, in this case 
+
+    sh>ls ../.git/annex/objects/g6/q8/SHA256E-s759787--3ec5f8d64cc4f84dec74ed7f0f7a640b3e672a03faf0f5fc3daf0b823d596f03.pdf/
+       SHA256E-s759787--3ec5f8d64cc4f84dec74ed7f0f7a640b3e672a03faf0f5fc3daf0b823d596f03.pdf.cache
+       SHA256E-s759787--3ec5f8d64cc4f84dec74ed7f0f7a640b3e672a03faf0f5fc3daf0b823d596f03.pdf.map
+
+The content of the .cache file is 
+
+    1703824 411810 1350480334
+
+and the content of the .map file is 
+
+    documents/ElgarCEH.pdf
+
+However, for all of the following
+
+    git add ElgarCEH.pdf
+    git add --force ElgarCEH.pdf
+    git annex add ElgarCEH.pdf
+
+the files are not staged, and I get the message usual
+
+    no changes added to commit.
+
+with `git log`.
+
+So do I need to something more in order to get `git` to add my symlinks?
+"""]]

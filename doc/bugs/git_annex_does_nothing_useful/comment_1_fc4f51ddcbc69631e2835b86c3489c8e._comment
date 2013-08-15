@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 1"
+ date="2012-07-09T23:16:32Z"
+ content="""
+`git ls-files` is not listing your file. Perhaps your file is not checked into git?
+"""]]

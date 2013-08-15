@@ -1,0 +1,16 @@
+(Posted a day late.) [[!meta date="Mon Jan  7 16:05:13 JEST 2013"]]
+
+Got `git annex add` (and `addurl`) working in direct mode. This allowed me
+to make `git annex sync` in direct mode no longer automatically add new
+files.
+
+It's also now safe to mix direct mode annexed files with regular files in
+git, in the same repository. Might have been safe all along, but I've
+tested it, and it certainly works now. You just have to be careful to not
+use `git commit -a` to commit changes to such files, since that'll also 
+stage the entire content of direct mode files.
+
+Made a minor release for these recent changes and bugfixes. Recommended if
+you're using direct mode. Had to chase down a stupid typo I made yesterday
+that caused fsck to infinite loop if it found a corrupted file. Thank
+goodness for test suites.

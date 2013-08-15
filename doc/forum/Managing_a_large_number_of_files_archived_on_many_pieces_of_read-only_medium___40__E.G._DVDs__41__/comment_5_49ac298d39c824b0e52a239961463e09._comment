@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.23"
+ subject="comment 5"
+ date="2012-10-21T05:36:36Z"
+ content="""
+I encourage playing around with the hook special remote and see how far you can make it go.
+
+I may be doing something vaguely like this for [[design/assistant/desymlink]], although I'm pretty sure it would still have a git repository associated with the directory of regular files.
+
+One option is to use the web special remote, with file:// urls. Assuming a given disc will always end up mounted somewhere stable, such as /media/dvd1, /media/dvd2, etc, you could then just `git annex addurl file:///media/dvd1/$file`. `git annex whereis` will show the url, which has enough info to work out the disk to mount.
+
+The web special remote did not support file:// urls, but I've just fixed that. The only downside is that, while it will identify files duplicated across disks, and `whereis` will show multiple urls for such files, there's only one web special remote, and so it only counts as 1 copy. This could perhaps be improved; git-annex may eventually get support for remotes reporting how many copies of a file they contain.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 12"
+ date="2011-04-02T17:58:24Z"
+ content="""
+Also, you can delete `.git-annex/??` if you want to, then running `git annex fsck --fast` in each of your clones would regenerate the data using only the lower-case hash directories.
+"""]]

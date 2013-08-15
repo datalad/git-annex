@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="karhun"
+ ip="99.20.248.32"
+ subject="comment 3"
+ date="2012-11-12T05:58:16Z"
+ content="""
+Hi
+
+I have one more follow up question.
+
+So git-annex versions files as I understand. Is it possible to use it without file versioning and just use it as a sync tool. I realize that there are example scenarios to demonstrate it however I would like to disable versioning if possible because I am intending to use it on large folders with big binary type files.
+
+thanks
+
+"""]]

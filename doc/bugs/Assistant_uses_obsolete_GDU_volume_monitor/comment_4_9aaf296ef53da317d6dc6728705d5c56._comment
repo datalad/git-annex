@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://nullroute.eu.org/~grawity/"
+ nickname="Mantas"
+ subject="comment 4"
+ date="2013-01-10T19:41:22Z"
+ content="""
+I'm getting:
+
+    dbus failed; falling back to mtab polling (ClientError {clientErrorMessage =
+        \"Call failed: The name org.gtk.Private.RemoteVolumeMonitor was not provided
+        by any .service files\", clientErrorFatal = False})
+
+The volume monitor's bus name should be `org.gtk.Private.UDisks2VolumeMonitor`.
+
+`org.gtk.Private.RemoteVolumeMonitor` is the interface name, which all Gvfs monitors implement.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-04-30T21:57:13Z"
+ content="""
+Yes, `git annex sync` only syncs the metadata. 
+
+If you have numcopies set to to, and run `git annex copy --to RAID --auto`, it will only copy files that have less than 2 copies. (Same with `git annex copy --from BIG --auto` or `git annex get --auto`)
+"""]]

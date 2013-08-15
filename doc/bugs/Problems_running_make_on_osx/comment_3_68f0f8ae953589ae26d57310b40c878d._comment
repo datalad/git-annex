@@ -1,0 +1,57 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="tests fail with more recent installs of haskell platform"
+ date="2011-02-07T12:43:43Z"
+ content="""
+I'm running ghc 6.12.3 with the corresponding haskell-platform package from the HP site which I installed in preference to the macports version of haskell-platform (it's quite old). it seems when you install quickcheck, the version that is installed is of version 2.4.0.1 and not 1.2.0 which git-annex depends on for its tests.
+
+<pre>
+jtang@x00:~ $ cabal install quickcheck --reinstall               
+Resolving dependencies...
+Configuring QuickCheck-2.4.0.1...
+Preprocessing library QuickCheck-2.4.0.1...
+
+..
+and so on..
+..
+
+</pre>
+
+it fails with this
+
+<pre>
+[54 of 54] Compiling Main             ( test.hs, test.o )
+
+test.hs:56:3:
+    No instance for (QuickCheck-1.2.0.1:Test.QuickCheck.Arbitrary Char)
+      arising from a use of `qctest' at test.hs:56:3-64
+    Possible fix:
+      add an instance declaration for
+      (QuickCheck-1.2.0.1:Test.QuickCheck.Arbitrary Char)
+    In the expression:
+        qctest \"prop_idempotent_deencode\" Git.prop_idempotent_deencode
+    In the first argument of `TestList', namely
+        `[qctest \"prop_idempotent_deencode\" Git.prop_idempotent_deencode,
+          qctest \"prop_idempotent_fileKey\" Locations.prop_idempotent_fileKey,
+          qctest
+            \"prop_idempotent_key_read_show\"
+            BackendTypes.prop_idempotent_key_read_show,
+          qctest
+            \"prop_idempotent_shellEscape\" Utility.prop_idempotent_shellEscape,
+          ....]'
+    In the second argument of `($)', namely
+        `TestList
+           [qctest \"prop_idempotent_deencode\" Git.prop_idempotent_deencode,
+            qctest \"prop_idempotent_fileKey\" Locations.prop_idempotent_fileKey,
+            qctest
+              \"prop_idempotent_key_read_show\"
+              BackendTypes.prop_idempotent_key_read_show,
+            qctest
+              \"prop_idempotent_shellEscape\" Utility.prop_idempotent_shellEscape,
+            ....]'
+</pre>
+
+I'd imagine if I could downgrade, it would compile and pass the tests (I hope)
+
+"""]]

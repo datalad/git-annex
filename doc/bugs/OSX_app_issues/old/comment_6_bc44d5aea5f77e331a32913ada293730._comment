@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.jsilence.org/"
+ nickname="jsilence"
+ subject="Setting up a repository fails on OSX 10.6"
+ date="2013-01-05T11:17:18Z"
+ content="""
+I installed Haskell via MacPorts and managed to compile git-annex as described via cabal.
+
+On the initial start, git-annex webapp starts just fine and the webapp opens in the browser. When I try to configure a local repository, the webapp crashes.
+
+    1 jsilence@zeo ~ % git-annex webapp
+    (Recording state in git...)
+    WebApp crashed: watch mode is not available on this system
+    
+    Launching web browser on file:///var/folders/6b/6bWnFAnbFXSPCLPvCnKNrE+++TI/-Tmp-/webapp1003.html
+    jsilence@zeo ~ % 
+
+\"watch mode is not suported\" suggests that lsof is not in the PATH. lsof resides in /usr/sbin and can be found just fine:
+
+    jsilence@zeo ~ % which lsof
+    /usr/sbin/lsof
+
+Any help would be appreciated.
+
+-jsl
+
+"""]]

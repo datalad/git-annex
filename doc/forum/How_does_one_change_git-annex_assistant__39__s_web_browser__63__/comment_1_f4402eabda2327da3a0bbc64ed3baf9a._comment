@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.60"
+ subject="comment 1"
+ date="2012-09-17T15:32:07Z"
+ content="""
+The web browser is started by running the `xdg-open` program (or just `open` on Mac OS X).
+
+xdg-open, in turn, runs the desktop environment's kde-open, gvfs-open, exo-open. Which browser these run is configured in the desktop environment's settings. Which is my goal for the web app; it should open the same browser that other applications in the desktop use.
+
+When there's no desktop environment in use, xdg-open falls back to some default browser, or to what's configured by the BROWSER environment variable.
+"""]]

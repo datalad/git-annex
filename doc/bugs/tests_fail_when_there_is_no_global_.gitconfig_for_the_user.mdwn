@@ -1,0 +1,50 @@
+Make test fails when git doesn't know what identity to give to commits
+
+<pre>
+
+Testing 1:blackbox:0:git-annex init
+Cases: 30  Tried: 7  Errors: 0  Failures: 0
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: empty ident  <jtang@lenny.localdomain> not allowed
+### Failure in: 1:blackbox:0:git-annex init
+init failed
+Testing 1:blackbox:1:git-annex add:0
+Cases: 30  Tried: 8  Errors: 0  Failures: 1
+*** Please tell me who you are.
+</pre>
+
+I guess most users testing git-annex probably have a .gitconfig sitting in their home directories already so the above never cropped up. This failure was initially found in a clean and fresh install of a virtual machine with archlinux and repeated again on my archlinux laptop.
+
+Update: I pulled the master on my rhel5 test machine and moved my .gitconfig out of the way, the tests passes and continues but I still get a "warning message" from git. 
+
+<pre>
+Testing 1:blackbox:3:git-annex unannex:1:with content                         
+Cases: 30  Tried: 12  Errors: 0  Failures: 0[master fce0cde] content removed from git annex
+ Committer: Jimmy Tang <jtang@removed.removed.tcd.ie>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+You can suppress this message by setting them explicitly:
+
+    git config --global user.name "Your Name"
+    git config --global user.email you@example.com
+
+After doing this, you may fix the identity used for this commit with:
+
+    git commit --amend --reset-author
+
+ 2 files changed, 1 insertions(+), 2 deletions(-)
+ delete mode 120000 foo
+</pre>
+
+I guess it also depends a bit on how git figures out who it is is committing and how the machine in question is configured with hostnames and domain names.
+
+> Fixed that. [[done]] --[[Joey]] 

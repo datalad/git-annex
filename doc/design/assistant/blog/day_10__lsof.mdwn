@@ -1,0 +1,54 @@
+A rather frustrating and long day coding went like this:
+
+## 1-3 pm
+
+Wrote a single function, of which all any Haskell programmer needs to know
+is its type signature:
+
+	Lsof.queryDir :: FilePath -> IO [(FilePath, LsofOpenMode, ProcessInfo)]
+
+When I'm spending another hour or two taking a unix utility like lsof and
+parsing its output, which in this case is in a rather complicated
+machine-parsable output format, I often wish unix streams were strongly
+typed, which would avoid this bother.
+
+## 3-9 pm
+
+Six hours spent making it defer annexing files until the commit thread
+wakes up and is about to make a commit. Why did it take so horribly long?
+Well, there were a number of complications, and some really bad bugs
+involving races that were hard to reproduce reliably enough to deal with.
+
+In other words, I was lost in the weeds for a lot of those hours...
+
+At one point, something glorious happened, and it was always making exactly
+one commit for batch mode modifications of a lot of files (like untarring
+them). Unfortunately, I had to lose that gloriousness due to another
+potential race, which, while unlikely, would have made the program deadlock
+if it happened. 
+
+So, it's back to making 2 or 3 commits per batch mode change. I also have a
+buglet that causes sometimes a second empty commit after a file is added.
+I know why (the inotify event for the symlink gets in late,
+after the commit); will try to improve commit frequency later.
+
+## 9-11 pm
+
+Put the capstone on the day's work, by calling lsof on a directory full
+of hardlinks to the files that are about to be annexed, to check if any
+are still open for write.
+
+This works great! Starting up `git annex watch` when processes have files
+open is no longer a problem, and even if you're evil enough to try having
+multiple processes open the same file, it will complain and not annex it
+until all the writers close it.
+
+(Well, someone really evil could turn the write bit back on after git annex
+clears it, and open the file again, but then really evil people can do
+that to files in `.git/annex/objects` too, and they'll get their just
+deserts when `git annex fsck` runs. So, that's ok..)
+
+----
+
+Anyway, will beat on it more tomorrow, and if all is well, this will finally
+go out to the beta testers.

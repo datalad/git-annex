@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-03-03T18:53:23Z"
+ content="""
+Are you sure the file in question is checked into git? Because git-annex ignores symlinks that are not checked into git.
+"""]]

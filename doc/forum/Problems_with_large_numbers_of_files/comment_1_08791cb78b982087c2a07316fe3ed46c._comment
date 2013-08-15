@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2011-04-05T07:27:46Z"
+ content="""
+Heh, cool, I was thinking throwing about 28million files at git-annex. Let me know how it goes, I suspect you have just run into a default limits OSX problem.
+
+You probably just need to up some system limits (you will need to read the error messages that first appear) then do something like
+
+<pre>
+# this is really for the run time, you can set these settings in /etc/sysctl.conf
+sudo sysctl -w kern.maxproc=2048
+sudo sysctl -w kern.maxprocperuid=1024
+
+# tell launchd about having higher limits
+sudo echo \"limit maxfiles 1024 unlimited\" >> /etc/launchd.conf
+sudo echo \"limit maxproc 1024 2048\" >> /etc/launchd.conf
+</pre>
+
+There are other system limits which you can check by doing a \"ulimit -a\", once you make the above changes, you will need to reboot to make the changes take affect. I am unsure if the above will help as it is an example of what I did on 10.6.6 a few months ago to fix some forking issues. From the error you got you will probably need to increase the stacksize to something bigger or even make it unlimited if you feel lucky, the default stacksize on OSX is 8192, try making it say 10times that size first and see what happens.
+"""]]

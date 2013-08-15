@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 6"
+ date="2011-03-31T18:02:42Z"
+ content="""
+Alright, I have created a case-insensative HFS+ filesystem here on my linux laptop. 
+
+I have not been able to trick git into staging the same file with 2 different capitalizations yet.
+
+It might be helpful if you can send me a copy of a git repository where 'git add -i' shows the same file staged with two capitalizations. Leaving out .git/annex of course. (joey@kitenet.net; a tarball would probably work)
+
+It seems that `git add` only started properly working on case insensative filesystems quite recently. The commit in question is 5e738ae820ec53c45895b029baa3a1f63e654b1b, \"Support case folding for git add when core.ignorecase=true\", which was first released in git 1.7.4, January 30, 2011. If you don't yet have that version, that could explain the problem entirely. In about half an hour (dialup!) I will have downloaded an older git and will see if I can reproduce the problem with it.
+"""]]

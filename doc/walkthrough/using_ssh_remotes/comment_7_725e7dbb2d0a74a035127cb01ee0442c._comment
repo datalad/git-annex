@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkaT0B6s9jQuMzQUYRVBgWqtO7BhT_ZSaE"
+ nickname="Fernando Seabra"
+ subject="comment 7"
+ date="2012-05-27T23:35:17Z"
+ content="""
+Hi,
+
+It was already installed in PATH. In fact, I can call it from the command line, and it is recognized (e.g. calling 'git-annex-shell' gives me 'git-annex-shell: bad parameters'). However, every time I do a 'git annex whereis' or 'git annex get file --from repo', it gives me the following error:
+
+bash: git-annex-shell: command not found
+Command ssh [\"-S\",\"/Users/username/annex/.git/annex/ssh/username@example.edu\",\"-o\",\"ControlMaster=auto\",\"-o\",\"ControlPersist=yes\",\"username@example.edu\",\"git-annex-shell 'configlist' '/~/annex'\"] failed; exit code 127
+
+I tried to run this ssh command, but it gives me the same 'command not found' error. It seems that the problem is with the ssh repo?
+The ssh repo has a git-annex-shell working and installed in PATH.
+"""]]

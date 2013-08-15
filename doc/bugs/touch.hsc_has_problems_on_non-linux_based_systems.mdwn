@@ -1,0 +1,19 @@
+It seems that commit bc5c54c987f548505a3877e8a0e460abe0b2a081 introduced some linux specific things...
+
+<pre>
+hsc2hs Touch.hsc
+Touch.hsc: In function ‘main’:
+Touch.hsc:46: error: ‘UTIME_OMIT’ undeclared (first use in this function)
+Touch.hsc:46: error: (Each undeclared identifier is reported only once
+Touch.hsc:46: error: for each function it appears in.)
+Touch.hsc:48: error: ‘UTIME_NOW’ undeclared (first use in this function)
+Touch.hsc:67: error: ‘AT_FDCWD’ undeclared (first use in this function)
+Touch.hsc:68: error: ‘AT_SYMLINK_NOFOLLOW’ undeclared (first use in this function)
+compiling Touch_hsc_make.c failed
+command was: /usr/bin/gcc -c -m32 -I/Library/Frameworks/GHC.framework/Versions/612/usr/lib/ghc-6.12.3/include/ Touch_hsc_make.c -o Touch_hsc_make.o
+make: *** [Touch.hs] Error 1
+</pre>
+
+I dug around the OSX documentation and fcntl.h header file and it seems that UTIME_OMIT, UTIME_NOW, AT_FDCWD and AT_SYMLINK_NOFOLLOW aren't defined (at least on OSX). I suspect the BSD's in general will have problems compiling git-annex.
+
+[[!meta title="annexed symlink mtime matching code is disabled on non-linux systems; needs testing"]]

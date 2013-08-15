@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-12-31T00:29:45Z"
+ content="""
+Well a repo url like `gitolite@localhost:testing` puts it in the gitolite user's /~/testing
+
+This worked when I added the gitolite stuff, anyway.. Let's see if it still does:
+
+<pre>
+joey@gnu:~/tmp>mkdir g
+joey@gnu:~/tmp>cd g
+joey@gnu:~/tmp/g>git init
+Initialized empty Git repository in /home/joey/tmp/g/.git/
+joey@gnu:~/tmp/g>git annex init
+init  ok
+joey@gnu:~/tmp/g>git remote add test 'gitolite@localhost:testing'
+joey@gnu:~/tmp/g>touch foo
+joey@gnu:~/tmp/g>git annex add foo
+add foo (checksum...) ok
+(Recording state in git...)
+joey@gnu:~/tmp/g>git annex copy foo --to test --debug
+git [\"--git-dir=/home/joey/tmp/g/.git\",\"--work-tree=/home/joey/tmp/g\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"foo\"]
+git [\"--git-dir=/home/joey/tmp/g/.git\",\"--work-tree=/home/joey/tmp/g\",\"check-attr\",\"annex.numcopies\",\"-z\",\"--stdin\"]
+git [\"--git-dir=/home/joey/tmp/g/.git\",\"--work-tree=/home/joey/tmp/g\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+git [\"--git-dir=/home/joey/tmp/g/.git\",\"--work-tree=/home/joey/tmp/g\",\"show-ref\",\"git-annex\"]
+git [\"--git-dir=/home/joey/tmp/g/.git\",\"--work-tree=/home/joey/tmp/g\",\"cat-file\",\"--batch\"]
+Running: ssh [\"-4\",\"gitolite@localhost\",\"git-annex-shell 'configlist' '/~/testing'\"]
+</pre>
+
+Still seems right, the ADC's regexp will match this the git-annex shell command.
+"""]]

@@ -1,0 +1,7 @@
+I think it would be interesting to have a way to recursively import a local directory without actually moving files around. And to be able to checksum these files as well (without moving them into the annex).
+
+This would work somewhat similar to looping over a directory and adding file:// remotes for each file.
+
+A use case is importing optical media (read-only), whilst keeping that media as a remote, and being able to calculate checksums directly without moving any files around.
+
+For single files, it would also be interesting if addurl had a "--localchecksum" option that would only work for file:// urls, and make it checksum files directly from their source location?)

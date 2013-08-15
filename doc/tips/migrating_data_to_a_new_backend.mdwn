@@ -1,0 +1,16 @@
+Maybe you started out using the WORM backend, and have now configured
+git-annex to use SHA1. But files you added to the annex before still
+use the WORM backend. There is a simple command that can migrate that
+data:
+
+	# git annex migrate my_cool_big_file
+	migrate my_cool_big_file (checksum...) ok
+
+You can only migrate files whose content is currently available. Other
+files will be skipped.
+
+After migrating a file to a new backend, the old content in the old backend
+will still be present. That is necessary because multiple files
+can point to the same content. The `git annex unused` subcommand can be
+used to clear up that detritus later. Note that hard links are used,
+to avoid wasting disk space.

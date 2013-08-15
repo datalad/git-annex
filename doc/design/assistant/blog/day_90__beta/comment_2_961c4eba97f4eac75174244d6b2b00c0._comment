@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2012-09-24T21:21:57Z"
+ content="""
+cool, I haven't been on top of things recently. If haskell-platform gets updated in macports and assuming its easy to package up any dependancies (if any) as macport packages, git-annex should be relatively straightforward to package up
+"""]]

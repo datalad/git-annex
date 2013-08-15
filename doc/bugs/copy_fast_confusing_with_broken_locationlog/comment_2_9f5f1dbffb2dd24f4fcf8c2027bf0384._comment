@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-05-12T01:01:34Z"
+ content="""
+Sounds like you probably didn't commit after the fsck, or didn't push so the other repository did not know the first had the content again -- but I'm not 100% sure.
+"""]]

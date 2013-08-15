@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 6"
+ date="2013-03-02T10:05:38Z"
+ content="""
+    $ ls -lah daemon.log
+    -rw-r--r-- 1 user user 3,3G 2013-03-02 10:54 daemon.log
+
+    $ cat daemon.log |wc -l
+    30746274
+
+    $ grep \"Auto packing the repository for optimum performance.\" daemon.log |wc -l
+    568
+
+    $ grep \"typechange: \" daemon.log |wc -l
+    30713158
+
+I'm not sure where should I issue the git command. Inside the annex/.git directory?
+The useful data is also in git repository locally.
+I try to RTFM over the internet, thanks for the pointer!
+
+
+
+"""]]

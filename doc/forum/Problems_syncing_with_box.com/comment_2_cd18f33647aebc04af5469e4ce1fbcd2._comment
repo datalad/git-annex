@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="tomas"
+ ip="188.167.111.235"
+ subject="Problems syncing with box.com"
+ date="2013-05-19T19:56:09Z"
+ content="""
+Thanks for the answer Joey.
+My setup is really 2 PCs that are usually not turned on at the same time (usually) and are unable to connect directly (usually). I've dropped box.com because there are bugs. When I sync a file, I see a broken link sometimes. That happens even in situation when the two PCs see each other. Other repos work as expected. So I assume this is a box.com issue. I tried to remove the box repo from both sides, but it is still in 'cleaning out' state even after few days and a lot of daemon restarts. I also have a queue to box. If I delete the transfers, they would appear later. Any way of sorting that out?
+I know that reporting bugs like this is not really efficient. What would be the best way to make it reproducible? E.g. using vagrant and two VMs?
+
+"""]]

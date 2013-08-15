@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="Few other issues"
+ date="2013-05-25T15:35:46Z"
+ content="""
+Hi again.
+
+talking about 4.20130523-gcfe07a2 version:
+
+- because working in the terminal to interact with git-annex probably should not be a common case on Android, may be it is worth making default type of new added repository to become a full backup?  I have initiated a new one, attached a remote one, it said \"synced\" but all the files were just containing symlinks and were not usable.  I had to switch to \"full backup\" (or whatever that name) to finally get directory synced
+
+- log file might grow too large simply because of containing numerous entries for attempting connect remote repository while offline, e.g.
+
+Please make sure you have the correct access rights
+and the repository exists.
+ssh: Could not resolve hostname onerussian.com: No address associated with hostname
+fatal: Could not read from remote repository.
+
+IMHO those should not be there at all, e.g. if it is known that ATM there is no network connectivity
+
+- In addition to two existing repositories (1 local /sdcard/annex, which is also avail at/storage/sdcard0/annex + 1 remote) I have added one more local (and said to keep it in sync with original local).  But it didn't work -- it \"Synced with onerussian.com_annex but not with Annex\" and claimed that the /external/extSdCard/Annex doesn't exist, although it is there (and with .git generated etc).  When I restarted the deamon I got into a \"new\" Repository: /storage/extSdCard/Annex which also listed the 1st local but with \"Failed to sync with localhost\" message -- no remote one listed.  Whenever I try to \"Switch repository\" to /sdcard/annex (the original local) -- it starts loading a new page but gets stuck right there.  The only way to revive webui is to go back to Dashboard.  Log there says (retyping from the screen so typos might be there):
+
+error: cannot run git-receive-pack '/storage/sdcard0/annex': No such file or directory
+fatal: unable to fork
+
+"""]]

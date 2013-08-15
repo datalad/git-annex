@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2011-04-08T22:02:41Z"
+ content="""
+What if your files have the same prefix and it happens to be 100 chars long? This can not be solved within WORM, but as Joey pointed out, SHA* exists.
+"""]]

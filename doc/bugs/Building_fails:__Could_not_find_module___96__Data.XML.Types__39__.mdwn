@@ -1,0 +1,82 @@
+What steps will reproduce the problem?
+
+<pre>
+dominik@Atlantis:/var/tmp$ git clone git://github.com/joeyh/git-annex.git
+Cloning into 'git-annex'...
+remote: Counting objects: 40841, done.
+remote: Compressing objects: 100% (10648/10648), done.
+remote: Total 40841 (delta 30135), reused 40669 (delta 29964)
+Receiving objects: 100% (40841/40841), 9.21 MiB | 517 KiB/s, done.
+Resolving deltas: 100% (30135/30135), done.
+dominik@Atlantis:/var/tmp/git-annex$ cabal install --only-dependencies
+Resolving dependencies...
+All the requested packages are already installed:
+Use --reinstall if you want to reinstall anyway.
+dominik@Atlantis:/var/tmp/git-annex$ cabal configure
+Resolving dependencies...
+[ 1 of 21] Compiling Utility.FileSystemEncoding ( Utility/FileSystemEncoding.hs, dist/setup/Utility/FileSystemEncoding.o )
+[ 2 of 21] Compiling Utility.Applicative ( Utility/Applicative.hs, dist/setup/Utility/Applicative.o )
+[ 3 of 21] Compiling Utility.PartialPrelude ( Utility/PartialPrelude.hs, dist/setup/Utility/PartialPrelude.o )
+[ 4 of 21] Compiling Utility.UserInfo ( Utility/UserInfo.hs, dist/setup/Utility/UserInfo.o )
+[ 5 of 21] Compiling Utility.Monad    ( Utility/Monad.hs, dist/setup/Utility/Monad.o )
+[ 6 of 21] Compiling Utility.Path     ( Utility/Path.hs, dist/setup/Utility/Path.o )
+[ 7 of 21] Compiling Utility.OSX      ( Utility/OSX.hs, dist/setup/Utility/OSX.o )
+[ 8 of 21] Compiling Utility.Exception ( Utility/Exception.hs, dist/setup/Utility/Exception.o )
+[ 9 of 21] Compiling Utility.TempFile ( Utility/TempFile.hs, dist/setup/Utility/TempFile.o )
+[10 of 21] Compiling Utility.Misc     ( Utility/Misc.hs, dist/setup/Utility/Misc.o )
+[11 of 21] Compiling Utility.Process  ( Utility/Process.hs, dist/setup/Utility/Process.o )
+[12 of 21] Compiling Utility.FreeDesktop ( Utility/FreeDesktop.hs, dist/setup/Utility/FreeDesktop.o )
+[13 of 21] Compiling Assistant.Install.AutoStart ( Assistant/Install/AutoStart.hs, dist/setup/Assistant/Install/AutoStart.o )
+[14 of 21] Compiling Utility.SafeCommand ( Utility/SafeCommand.hs, dist/setup/Utility/SafeCommand.o )
+[15 of 21] Compiling Utility.Directory ( Utility/Directory.hs, dist/setup/Utility/Directory.o )
+[16 of 21] Compiling Common           ( Common.hs, dist/setup/Common.o )
+[17 of 21] Compiling Locations.UserConfig ( Locations/UserConfig.hs, dist/setup/Locations/UserConfig.o )
+[18 of 21] Compiling Build.TestConfig ( Build/TestConfig.hs, dist/setup/Build/TestConfig.o )
+[19 of 21] Compiling Build.Configure  ( Build/Configure.hs, dist/setup/Build/Configure.o )
+[20 of 21] Compiling Build.InstallDesktopFile ( Build/InstallDesktopFile.hs, dist/setup/Build/InstallDesktopFile.o )
+[21 of 21] Compiling Main             ( Setup.hs, dist/setup/Main.o )
+Linking ./dist/setup/setup ...
+  checking version... 3.20121018
+  checking git... yes
+  checking git version... 1.7.10.4
+  checking cp -a... yes
+  checking cp -p... yes
+  checking cp --reflink=auto... yes
+  checking uuid generator... uuidgen
+  checking xargs -0... yes
+  checking rsync... yes
+  checking curl... yes
+  checking wget... yes
+  checking bup... no
+  checking gpg... yes
+  checking lsof... yes
+  checking ssh connection caching... yes
+  checking sha1... sha1sum
+  checking sha256... sha256sum
+  checking sha512... sha512sum
+  checking sha224... sha224sum
+  checking sha384... sha384sum
+Configuring git-annex-3.20121018...
+dominik@Atlantis:/var/tmp/git-annex$ cabal build
+Building git-annex-3.20121018...
+Preprocessing executable 'git-annex' for git-annex-3.20121018...
+
+Assistant/XMPP.hs:18:8:
+    Could not find module `Data.XML.Types'
+    It is a member of the hidden package `xml-types-0.3.3'.
+    Perhaps you need to add `xml-types' to the build-depends in your .cabal file.
+    Use -v to see a list of the files searched for.
+</pre>
+
+What is the expected output? What do you see instead?
+
+I exepect the current git HEAD to build without errors.
+
+What version of git-annex are you using? On what operating system?
+
+git-annex HEAD from git, Ubuntu 12.10
+
+Please provide any additional information below.
+
+> [[done]] --[[Joey]] (and tested the whole cabal build, which I usually
+> only do on releases)

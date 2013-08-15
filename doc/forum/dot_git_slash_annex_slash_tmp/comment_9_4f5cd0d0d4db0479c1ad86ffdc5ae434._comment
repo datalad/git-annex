@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl2Jj8q2upJL4ZQAc2lp7ugTxJiGtcICv8"
+ nickname="Michael"
+ subject="comment 9"
+ date="2013-02-20T10:23:12Z"
+ content="""
+I'm seeing this too, and the number being added to the file name is the PID of the git-annex process.
+"""]]

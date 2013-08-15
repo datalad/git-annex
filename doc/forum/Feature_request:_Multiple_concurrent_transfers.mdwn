@@ -1,0 +1,19 @@
+I'm sitting on a pretty fast connection, and often git-annex isn't using my entire upstream to fill the remotes.
+
+Lets say i have an annex with 10 x 100mb files. and my git-annex has 5 special remotes that needs to be filled.
+
+I would like to have git-annex do 5 concurrent uploads(one to each remote). Currently git-annex only uploads to one special-remote at a time (meaning the 4 remaining servers are just waiting).
+
+It would also be nice to have a per remote number of threads. Especially if adding a directory with 1000 small files in it(say 100bytes each), having 5 transfer threads to each remote would make the sync complete much faster.
+
+
+For now i've made a shell script that i call:
+
+# for j in `seq -w 0 10`; do echo DOING $j; for i in `curl "http://127.0.0.1:$1/?auth=$2" | grep "continue" | gawk -F\"  ' { print $8 } '`; do curl "http://127.0.0.1:$1$i"; sleep 0; done; done
+
+But it is very rough, and basically just starts all transfers on the page. Which means i currently have 315 active transfers running. whoops.
+
+I could improve the shell script. But it really would be quite a bit niftier to have it as settings in git-annex.
+
+Sincerely
+Tobias

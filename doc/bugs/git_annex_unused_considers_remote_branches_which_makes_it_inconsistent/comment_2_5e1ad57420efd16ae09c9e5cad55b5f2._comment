@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="Steve"
+ ip="92.104.175.136"
+ subject="comment 2"
+ date="2013-01-01T23:51:53Z"
+ content="""
+I filed the bug because I thought the inconsistent behavior was bad.  For example;  If you move the data to a repo which doesn't know about the unsynced remote, it'll happily get dropped with dropunused as opposed to being considered in use in the current repo.
+
+There probably aren't too many people who want to have remotes set that are usually unreachable, and I can work around it now that I know it exists.
+
+If it is expected behavior, feel free to close the bug.
+
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn-KDr_Z4CMkjS0v_TxQ08SzAB5ecHG3K0"
+ nickname="Glen"
+ subject="Modifying files in a folder watched by assistant"
+ date="2012-09-19T14:18:54Z"
+ content="""
+I think this feature is really important.  For my use cases, if I can't modify files that are in the folder that is kept in sync, then I would just use rsync or manually keep copies on multiple systems..
+
+I might be missing something, but tried a git annex unlock on the file, but if the assistant is running, it seems to revert this back.
+
+"""]]

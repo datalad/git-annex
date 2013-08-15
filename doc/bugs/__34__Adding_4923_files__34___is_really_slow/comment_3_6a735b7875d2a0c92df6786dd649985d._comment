@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="http://emk.myopenid.com/"
+ ip="24.2.150.84"
+ subject="That particular &quot;Adding 4923 files&quot; was unusually slow"
+ date="2013-07-23T11:46:03Z"
+ content="""
+That particular add took most of an afternoon, and didn't complete until I deleted all the junk files.
+
+I later did \"adding ~10,000 files\" and \"adding ~15,000 files\", all of which ran in an hour or so at most, even though I had added a second remote. So this isn't solely a disk I/O bottleneck.
+
+One peculiar thing about the garbage files: There were 1,626 of them, and they were all tiny:
+
+```
+00000000  00 05 16 07 00 02 00 00  00 00 00 00 00 00 00 00  |................|
+00000010  00 00 00 00 00 00 00 00  00 01 00 00 00 09 00 00  |................|
+00000020  00 26 00 00 00 20 4d 50  47 33 68 6f 6f 6b 00 00  |.&... MPG3hook..|
+00000030  00 00 00 00 00 00 00 00  00 00 00 00 00 00 00 00  |................|
+*
+00000046
+```
+
+1,581 of these files had the SHA1 hash code 5460c190ef495baf43e2cd001687be272cd6a9d2, and all but one of the rest had the hash code d4b1d36c67149c981ea4b3d8392050188673817c. So if there's anything weird about this repository, it was thousands of tiny identical files in the same 'git annex assistant' adding pass. Once I scrubbed those files on later imports, things were considerably faster even when the file count increased dramatically.
+
+You can go ahead and close this bug report if that seems reasonable—I just thought the weird behavior was worth reporting, in case somebody else runs it into again.
+
+And thank you for an awesome program!
+
+"""]]

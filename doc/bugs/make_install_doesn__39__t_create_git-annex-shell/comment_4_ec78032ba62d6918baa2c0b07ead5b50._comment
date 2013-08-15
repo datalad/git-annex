@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm01ida6POv7vqyUYtOlymEbJTbrImAIzM"
+ nickname="Reinis"
+ subject="comment 4"
+ date="2013-07-08T18:44:59Z"
+ content="""
+Thanks! That leaves the issue that even when manually creating the symlink it still errors out (second half of the log in original report), but that probably is another issue. Should I open separate report for it? There was something similar in [[http://git-annex.branchable.com/bugs/Rsync_remote_created_via_webapp_remains_empty/]], but the command= part was in the file on my local computer only and removing it didn't make any difference.
+"""]]

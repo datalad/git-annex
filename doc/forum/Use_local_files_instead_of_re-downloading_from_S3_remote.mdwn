@@ -1,0 +1,3 @@
+I have a question on setting up a new repo. Is it possible to initialize a new repo using files which are already local on say my laptop, instead of downloading them from a S3 remote repository? Sorry if this is unclear. But I'm trying to make use of the files that are local on my laptop so I don's have to go through the ordeal of downloading them from S3.
+
+I should also mention that I don't have a complete set of all the files locally on the laptop vs. what's already in the S3 repository.

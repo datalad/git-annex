@@ -1,0 +1,36 @@
+What steps will reproduce the problem?
+
+    ~$ mkdir testannex
+    ~$ cd testannex/
+    testannex$ git init
+    Initialized empty Git repository in /Users/ed/testannex/.git/
+    testannex$ git annex init "test annex"
+    init test annex ok
+    (Recording state in git...)
+    testannex$ echo "file1" > file1
+    testannex$ git annex add file1
+    add file1 (checksum...) ok
+    (Recording state in git...)
+    testannex$ mkdir directory
+    testannex$ mv file1 directory/
+    testannex$ cat directory/file1 
+    cat: directory/file1: No such file or directory
+    testannex$ git annex fix directory/file1
+    git-annex: directory/file1 not found
+
+
+What is the expected output? What do you see instead?
+
+    git annex fix should fix the symlink.  It looks like maybe it's *following* the symlink?
+
+What version of git-annex are you using? On what operating system?
+
+    checkout:  20d195f   compiled on OS X 10.7 using cabal.  
+
+Please provide any additional information below.
+
+    git annex assistant is not noticing file renames either.
+
+> git-annex commands (other than `git annex add`) only operate on files
+> checked into git, which `directory/file1` is not, since you did not use
+> `git mv`. Once you `git add` the file, it'll work. [[done]] --[[Joey]]

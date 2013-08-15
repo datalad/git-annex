@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://phil.0x539.de/"
+ nickname="Philipp Kern"
+ subject="How to deal with offline messages being eaten?"
+ date="2012-11-09T14:05:30Z"
+ content="""
+How do you avoid eating up normal text messages when git-annex is the only client left? Granted, Google Talk does some additional magic so that it shows you the history when connecting with the web page client. But with other servers it would be inconvenient if new messages weren't saved as offline messages but sent to the dæmon instead.
+"""]]

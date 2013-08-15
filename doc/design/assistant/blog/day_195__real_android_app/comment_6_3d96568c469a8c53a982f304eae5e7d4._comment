@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="rillian"
+ ip="174.6.6.167"
+ subject="no keybourd events on Galaxy Tab 10.1"
+ date="2013-02-22T06:54:54Z"
+ content="""
+Hey, thanks for working on this.
+
+I tried the Feb 21 apk on my Samsung galaxy Tab 10.1 with Android 4.0.4. It installed and launched fine, bringing up a terminal window, keyboard, etc, but only the return key works. It's not possible to type znything. The menus, new window button etc all seem to be functional.
+"""]]

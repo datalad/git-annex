@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-12-06T17:08:37Z"
+ content="""
+The bug with newlines is now fixed.
+
+Thought I'd mention how to clean up from interrupting `git annex add`.
+When you do that, it doesn't get a chance to `git add` the files it's
+added (this is normally done at the end, or sometimes at points in the middle when you're adding a *lot* of files).
+Which is also why fsck, whereis, and unannex wouldn't operate on them, since they only deal with files in git.
+
+So the first step is to manually use `git add` on any symlinks.
+
+Then, `git commit` as usual.
+
+At that point, `git annex unannex` would get you back to your starting state.
+"""]]

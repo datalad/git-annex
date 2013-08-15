@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://openid.fmarier.org/"
+ nickname="fmarier"
+ subject="Still stuck at &quot;pairing in progress&quot;"
+ date="2013-05-05T00:26:16Z"
+ content="""
+I hadn't thought of ssh. So here's what I've got now:
+
+* both laptop and desktop have `-A INPUT -d 224.0.0.251/32 -p udp --dport 55556 -j ACCEPT`
+* `git annex webapp` is running as user `francois` on both machines
+* laptop has `openssh-server` running on port 22 and its firewall allows desktop to connect
+* desktop has `openssh-server` running on port 22 and its firewall allows the whole internal network to connect
+* laptop's ssh pubkey is in francois' `~/.ssh/authorized_keys` on desktop and ssh'ing works
+* deskop's ssh pubkey is **not** in francois' `~/.ssh/authorized_keys` on laptop (is that required?)
+* (as mentioned before) both desktop and laptop are on the same switch and connected over CAT5
+* I'm using `password` as a pairing key just to rule out any typos there
+
+I don't see anything in the git-annex log on both of these machines. There's just a bunch of key generation stuff and then the last line is \"Pairing in progress\".
+"""]]

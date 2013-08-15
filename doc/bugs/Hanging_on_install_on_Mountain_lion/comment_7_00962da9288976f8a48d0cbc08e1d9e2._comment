@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQafKy7hNSEolLs6TvbgUnkklTctUY9LI"
+ nickname="Zellyn"
+ subject="More info"
+ date="2013-06-26T04:21:47Z"
+ content="""
+Looking at what the browser is doing:
+
+1. Open file://localhost/var/folders/00/0wpr8000h01000cxqpysvccm003kv1/T/webapp72069.html
+2. Meta refresh to: http://127.0.0.1:64190/?auth=7b8464a1fe3ed0386520bd2b214dbb963864b345151edc0b5febc0310a7974d89fda2ab6464d5791e6b1a474bebb86026b7c90ebb920c51a8291940c75e7c1f9
+3. Redirect to: http://127.0.0.1:64190/config?auth=7b8464a1fe3ed0386520bd2b214dbb963864b345151edc0b5febc0310a7974d89fda2ab6464d5791e6b1a474bebb86026b7c90ebb920c51a8291940c75e7c1f9
+4. Redirect to: http://127.0.0.1:64190/config/repository/new/first?auth=7b8464a1fe3ed0386520bd2b214dbb963864b345151edc0b5febc0310a7974d89fda2ab6464d5791e6b1a474bebb86026b7c90ebb920c51a8291940c75e7c1f9
+5. hang indefinitely
+
+"""]]

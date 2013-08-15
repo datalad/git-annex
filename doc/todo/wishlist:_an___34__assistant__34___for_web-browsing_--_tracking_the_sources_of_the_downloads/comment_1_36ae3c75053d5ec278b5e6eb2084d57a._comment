@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2012-09-25T23:55:44Z"
+ content="""
+You know about `git annex addurl` right?  It doesn't help with the browser integration (though I bet there are existing download manager extensions you could re-use for this) but it takes care of the other use cases.
+"""]]

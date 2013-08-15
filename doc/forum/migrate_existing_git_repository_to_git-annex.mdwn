@@ -1,0 +1,66 @@
+I have a large git repository with binary files scattered over different branches. I want to switch to git-annex mainly for performance reasons, but I don't want to loose my history.
+
+I tried to rewrite the (cloned) repository with git-filter-branch but failed miserably for several reasons:
+
+* --tree-filter performs its operations in a temporary directory (.git-rewrite/t/) so the symlinks point to the wrong destination (../../.git/annex/).
+* annex log files are stored in .git-annex/ instead of .git-rewrite/t/.git-annex/ so the filter operation misses them
+
+Any suggestions how to proceed?
+
+EDIT 3/2/2010
+I finally got it working for my purposes. Hardest part was preserving the branches while injecting the new `git annex setup` base commit.
+
+#### Clone repository
+    git clone original migrate
+    cd migrate
+    git checkout mybranch
+    git checkout master
+    git remote rm origin
+
+#### Inject `git annex setup` base commit and repair branches
+    git symbolic-ref HEAD refs/heads/newroot
+    git rm --cached *
+    git clean -f -d
+    git annex init master
+    echo \*.rpm annex.backend=SHA1 >> .gitattributes
+    git commit -m "store rpms in git annex" .gitattributes
+    git cherry-pick $(git rev-list --reverse master | head -1)
+    git rebase --onto newroot newroot master
+    git rebase --onto master mybranch~1 mybranch
+    git branch -d newroot
+
+#### Migrate repository
+    mkdir .temp
+    cp .git-annex/* .temp/
+    MYWORKDIR=$(pwd) git filter-branch \
+     --tag-name-filter cat \
+     --tree-filter '
+        mkdir -p .git-annex;
+        cp ${MYWORKDIR}/.temp/* .git-annex/;
+        for rpm in $(git ls-files | grep "\.rpm$"); do
+            echo;
+            git annex add $rpm;
+            annexdest=$(readlink $rpm);
+            if [ -e .git-annex/$(basename $annexdest).log ]; then
+                echo "FOUND $(basename $annexdest).log";
+            else
+                echo "COPY $(basename $annexdest).log";
+                cp ${MYWORKDIR}/.git-annex/$(basename $annexdest).log .git-annex/;
+                cp ${MYWORKDIR}/.git-annex/$(basename $annexdest).log ${MYWORKDIR}/.temp/;
+            fi;
+            ln -sf ${annexdest#../../} $rpm;
+        done;
+        git reset HEAD .git-rewrite;
+        :
+        ' -- $(git branch | cut -c 3-)
+    rm -rf .temp
+    git reset --hard
+
+
+TODO:
+
+* Find a way to repair branches automatically (detect branch points and run appropriate `git rebase` commands)
+
+I'll be happy to try any suggestions to improve this migration script.
+
+P.S. Is there a way to edit comments?

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="l3iggs"
+ ip="24.130.145.126"
+ subject="comment 7"
+ date="2013-02-03T03:57:05Z"
+ content="""
+hi joey,
+
+i'm excited by your project here but also confused by its direction. the kickstarter page has the header: \"git-annex assistant: Like DropBox, but with your own cloud.\" this page says \"git-annex is not a ... DropBox clone.\" these seem to be in direct opposition.
+
+i'm looking for what is described by the header on your kickstarter page. i assume your backers are looking for the the same thing (a self hosted DropBox). for my use, dropbox is perfect, except for the fact that i have to pay a monthly fee to store my data on someone else's server when i would like to buy my own storage medium and run some open source dropbox clone on my own server.
+
+can you explain more clearly what dropbox features your project lacks (/will lack)? and why where is a difference between your fundraising page and this one?
+
+maybe i'm just confused by the difference between git-annex and git-annex assistant. does git-annex assistant truely aim to be a dropbox clone?
+"""]]

@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+The environment is os/x with chrome as the browser.
+
+Let's say I close the tab with the webapp running in it. The 'git-annex webapp' process is still running, according to 'ps'.
+
+So I open a new tab, but then what do I  type into the browser url bar to get the app back? What is usually there is a loopback address and an authorisation hash.
+
+* Should I double-click on the git-annex icon in the dock (or Applications directory)?
+* I figured out from observing the startup that if I give the url ://localhost/Users/me/annex/.git/annex/webapp.html I will get redirected to the right place.
+Should I set up a bookmark for that?
+
+### What steps will reproduce the problem?
+
+see above.
+
+### What version of git-annex are you using? On what operating system?
+
+Version: 4.20130723-ge023649 
+Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
+os: os/x 10.8.4
+
+### Please provide any additional information below.
+
+I notice that in the webapp ui, all the items at the top of the page highlight when one hovers over them and have useful URLs attached,
+with the exception of the 'git-annex' item at the far left.What if that had the entry point url attached to it (so one could bookmark that)?
+
+> The git-annex assistant is designed to stay running in the background whether you have the web browser open or not. You can open the web display at any time by 
+> using the git-annex menu item (on linux) or running the git-annex-webapp
+> program (which is in the DMG on OSX).
+> 
+> If the file:// url were exposed to users, it would not work if 
+> the assistant had not already been started. This is why there is a program
+> to open the webapp, not an url.
+> 
+> Not a bug; [[done]] --[[Joey]] 

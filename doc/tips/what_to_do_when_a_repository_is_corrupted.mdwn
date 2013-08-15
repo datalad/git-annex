@@ -1,0 +1,22 @@
+A git-annex repository on a removable USB drive is great, until the cable
+falls out at the wrong time and git's repository gets trashed. The way
+git checksums everything and the poor quality of USB media makes this
+perhaps more likely than you would expect. If this happens to you,
+here's a way to recover that makes the most of whatever data is left
+on the drive.
+
+* First, run `git fsck`. If it does not report any problems, your data
+  is fine, and you don't need to proceed further.
+* So `git fsck` says the git repository is corrupted. But probably the data
+  git-annex stored is fine. Your first step is to clone another copy
+  of the git repository from somewhere else. Let's call this clone
+  "$good", and the corrupted repository "$bad".
+* Preserve your git configuration changes, and the `annex.uuid` setting:
+  `mv $bad/.git/config $good/.git/config`
+* Move annexed data into the new repository: `mkdir $good/.git/annex; mv
+  $bad/.git/annex/objects $good/.git/annex/objects`
+* Reinitalize git-annex: `cd $good; git annex init`
+* Check for any problems with the annexed data: `cd $good; git annex fsck`
+* Now you can remove the corrupted repository, the new one is ready to use.
+
+--[[Joey]]

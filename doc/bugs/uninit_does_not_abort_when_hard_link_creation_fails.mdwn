@@ -1,0 +1,47 @@
+> What steps will reproduce the problem?
+
+Issue the following commands on a file system where hard links are disabled:
+
+    $ touch foo
+    
+    $ ln foo bar # just to check that hard links are disabled
+    ln: failed to create hard link `bar' => `foo': Operation not permitted
+    
+    $ git init && git annex init
+    
+    $ git annex add .
+    
+    $ git annex uninit
+    unannex foo 
+    git-annex: [...]: createLink: permission denied (Operation not permitted)
+    failed
+    Deleted branch git-annex [...].
+
+    $ echo $? # exit status of last command
+    0
+    
+    $ ls foo
+    ls: cannot access foo: No such file or directory
+
+
+> What is the expected output? What do you see instead?
+
+`git annex uninit` should abort and exit with a non-`0` return code. Instead, `git annex uninit` cleans up git-annex objects and exits with return code `0`.
+
+
+> What version of git-annex are you using? On what operating system?
+
+3.20120406 on Ubuntu 12.04.1.
+
+
+> Please provide any additional information below.
+
+git-annex should probably not be used on a file system where hard links are disabled.
+
+However, if the user is not aware that he's using git-annex on such a filesystem, he will accidently delete his annexed files by issuing a `git annex uninit` command.
+
+> git-annex needs a POSIX filesystem, which includes the ability to create
+> hard links. The `git annex add` in the example above will fail
+> trying to create a hard link with current versions.
+> 
+> I've made uninit fall back to a non-hard link mode. [[done]] --[[Joey]]

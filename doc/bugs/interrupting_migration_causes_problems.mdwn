@@ -1,0 +1,52 @@
+Killing a migration from WORM to SHA256 with ^C breaks things; future attempts to do the migration fail:
+
+    #!/bin/bash
+    
+    BASE=/tmp/migrate-bug
+    
+    set -x
+    
+    chmod -R +w $BASE
+    rm -rf $BASE
+    mkdir -p $BASE
+    cd $BASE
+    
+    # create annex
+    git init .
+    git annex init
+    
+    # make a big (sparse) file and add it
+    dd if=/dev/zero of=bigfile bs=1 count=0 seek=1G
+    git annex add --backend WORM bigfile
+    git commit -m 'added bigfile'
+    
+    # look at status
+    git annex status
+    
+    # now migrate it, but kill migration during checksum
+    # Simulate ^C by making a new process group and sending SIGINT
+    setsid git annex migrate --backend SHA256 bigfile &
+    PID=$!
+    sleep 1
+    kill -INT -$PID
+    wait
+    
+    # look at status
+    git annex status
+    
+    # this migration fails
+    git annex migrate --backend SHA256 bigfile
+    
+    # but fsck says everything's OK
+    git annex fsck
+
+The error:
+
+    migrate bigfile 
+    git-annex: /tmp/migrate-bug/.git/annex/objects/K9/V1/WORM-s1073741824-m1321566308--bigfile/WORM-s1073741824-m1321566308--bigfile: createLink: already exists (File exists)
+    failed
+    git-annex: migrate: 1 failed
+
+> Fixed it to delete the stale temp file. [[done]]
+> 
+> Thanks for making such clear test cases, Jim! --[[Joey]] 

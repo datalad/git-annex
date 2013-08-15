@@ -1,0 +1,19 @@
+What steps will reproduce the problem?
+
+Add two remote repositories to same server using ssh. Each directory is added to repositories list and starts syncing. 
+After both repositories are scanned click on "syncing enabled" to disable syncing for one of the two remote repositories.
+
+What is the expected output? What do you see instead?
+
+Only remote repository which i clicked should stop syncing, but both remote repos start to stop syncing.
+Its also working the other way around (enable -> pause -> enable -> ..)
+
+What version of git-annex are you using? On what operating system?
+
+Version: 4.20130314, Debian
+
+Please provide any additional information below.
+
+I am an "webinterface only" user.
+
+[[!tag /design/assistant moreinfo]]

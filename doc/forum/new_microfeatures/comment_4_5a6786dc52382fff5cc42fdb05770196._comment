@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="git annex unused"
+ date="2011-06-02T11:55:58Z"
+ content="""
+Before dropping unsused items, sometimes I want to check the content of the files manually.
+But currently, from e.g. a sha1 key, I don't know how to find the corresponding file, except with
+'find .git/annex/objects -type f -name 'SHA1-s1678--70....', wich is too slow (I'm in the case where \"git log --stat -S'KEY'\"
+won't work, either because it is too slow or it was never commited). By the way,
+is it documented somewhere how to determine the 2 (nested) sub-directories in which a given
+(by name) object is located?
+
+So I would like 'git-annex unused' be able to give me the list of *paths* to the unused items.
+Also, I would really appreciate a command like 'git annex unused --log NUMBER [NUMBER2...]' which would do for me the suggested command
+\"git log --stat -S'KEY'\", where NUMBER is from the 'git annex unused' output.
+Thanks.
+"""]]

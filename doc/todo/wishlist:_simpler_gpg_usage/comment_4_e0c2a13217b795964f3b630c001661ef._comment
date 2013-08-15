@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 4"
+ date="2012-04-29T03:09:03Z"
+ content="""
+I got a good laugh out of it :-)
+
+Storing the key unencrypted would make things easier..  I think at least for my use-cases I don't require another layer of protection on top of the ssh keys that provide access to the encrypted remotes themselves.
+"""]]

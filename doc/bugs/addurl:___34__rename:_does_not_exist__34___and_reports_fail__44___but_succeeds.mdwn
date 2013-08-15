@@ -1,0 +1,197 @@
+### Please describe the problem.
+
+"git annex --pathdepth=3 addurl URL" displays this error message and reports "failed", even though the operation succeeds when using --fast:
+
+    git-annex: /media/usb32g-1/annex/musikk/.git/annex/tmp/2325: rename: does not exist (No such file or directory)
+
+### What steps will reproduce the problem?
+
+I have lots of downloaded files I'd like to add an URL to, so I'm doing this:
+
+    $ ga addurl --fast --pathdepth=3 $(for f in *.mp3; do echo http://traffic.libsyn.com/geologicpodcast/$f; done)
+    addurl
+    git-annex: /media/usb32g-1/annex/musikk/.git/annex/tmp/2325: rename: does not exist (No such file or directory)
+    failed
+    addurl
+    git-annex: /media/usb32g-1/annex/musikk/.git/annex/tmp/2325: rename: does not exist (No such file or directory)
+    failed
+    addurl
+    git-annex: /media/usb32g-1/annex/musikk/.git/annex/tmp/2325: rename: does not exist (No such file or directory)
+    [... Delete 166 lines ...]
+    addurl
+    git-annex: /media/usb32g-1/annex/musikk/.git/annex/tmp/2325: rename: does not exist (No such file or directory)
+    failed
+    addurl
+    git-annex: /media/usb32g-1/annex/musikk/.git/annex/tmp/2325: rename: does not exist (No such file or directory)
+    failed
+    (Recording state in git...)
+    git-annex: addurl: 60 failed
+    $
+
+This "ga" command is a wrapper around git-annex to make it work everywhere with the .tar.gz version:
+
+    #!/bin/bash
+
+    #=======================================================================
+    # ga
+    # File ID: e89047ce-29d1-11e2-bb6f-00c0a8deee11
+    #=======================================================================
+
+    if test "$1" = "sync"; then
+        stat_output="$(git status --porcelain | grep -v '^??')"
+        test -n "$stat_output" && { echo ga: Repo has modifications, will not git-annex sync >&2; exit 1; }
+    fi
+    /opt/git-annex/runshell /opt/git-annex/git-annex "$@"
+
+$PATH is also set up to include /opt/git-annex/bin/ , and all other operations work nicely. In my ~/bin/ directory I've also symlinked this script to "git-annex".
+
+When dropping "--fast", this happens:
+
+    $ ga addurl --pathdepth=3 $(for f in *.mp3; do echo http://traffic.libsyn.com/geologicpodcast/$f; done | tail -20 | head -1)
+    addurl  (downloading http://traffic.libsyn.com/geologicpodcast/GeologicPodcast302-Feb28-13.mp3 ...) --2013-07-04 14:08:01--  http://traffic.libsyn.com/geologicpodcast/GeologicPodcast302-Feb28-13.mp3
+    Resolving traffic.libsyn.com (traffic.libsyn.com)... 204.16.245.39
+    Connecting to traffic.libsyn.com (traffic.libsyn.com)|204.16.245.39|:80... connected.
+    HTTP request sent, awaiting response... 302 Found
+    Location: http://ec.libsyn.com/p/6/9/b/69b9837556ed5238/GeologicPodcast302-Feb28-13.mp3?d13a76d516d9dec20c3d276ce028ed5089ab1ce3dae902ea1d01cf853ed5cd5c0f85&c_id=5440885 [following]
+    --2013-07-04 14:08:02--  http://ec.libsyn.com/p/6/9/b/69b9837556ed5238/GeologicPodcast302-Feb28-13.mp3?d13a76d516d9dec20c3d276ce028ed5089ab1ce3dae902ea1d01cf853ed5cd5c0f85&c_id=5440885
+    Resolving ec.libsyn.com (ec.libsyn.com)... 68.232.34.133
+    Connecting to ec.libsyn.com (ec.libsyn.com)|68.232.34.133|:80... connected.
+    HTTP request sent, awaiting response... 200 OK
+    Length: 53173384 (51M) [audio/mpeg]
+    Saving to: `/media/usb32g-1/annex/musikk/.git/annex/tmp/URL--http&c%%traffic.libsyn.com%geologicpodcast%GeologicPodcast302-Feb28-13.mp3'
+
+    100%[==================================================================================================================================================================>] 53,173,384  3.50M/s   in 45s
+
+    2013-07-04 14:08:47 (1.13 MB/s) - `/media/usb32g-1/annex/musikk/.git/annex/tmp/URL--http&c%%traffic.libsyn.com%geologicpodcast%GeologicPodcast302-Feb28-13.mp3' saved [53173384/53173384]
+
+    (checksum...)
+    git-annex: /media/usb32g-1/annex/musikk/.git/annex/tmp/3970: rename: does not exist (No such file or directory)
+    failed
+    (Recording state in git...)
+    git-annex: addurl: 1 failed
+    $
+
+git-annex now believes that the file is stored locally, but an fsck shows how things really are:
+
+    $ ga fsck
+    fsck GeologicPodcast02-Feb21-07.mp3 ok
+    fsck GeologicPodcast03-Feb28-07.mp3 ok
+    [... Delete 35 lines ...]
+    fsck GeologicPodcast301-Feb22-13.mp3 ok
+    fsck GeologicPodcast302-Feb28-13.mp3 (fixing location log)
+      ** Based on the location log, GeologicPodcast302-Feb28-13.mp3
+      ** was expected to be present, but its content is missing.
+    failed
+    fsck GeologicPodcast303-Mar07-13.mp3 ok
+    fsck GeologicPodcast303.1_Fancast6-Mar09-13.mp3 ok
+    [... Delete 16 lines ...]
+    fsck GeologicPodcast72-Jul03-08.mp3 ok
+    (Recording state in git...)
+    git-annex: fsck: 3 failed
+    $
+
+After this fsck, everything is OK again; the location log is correct and "get" from this URL works.
+
+The file data didn't exist locally (it's stored on another disk) when doing this, but I also experimented what would happen if the file data did exist:
+
+    $ rm GeologicPodcast297-Jan24-13.mp3
+    $ wget http://traffic.libsyn.com/geologicpodcast/GeologicPodcast297-Jan24-13.mp3
+    --2013-07-04 14:35:15--  http://traffic.libsyn.com/geologicpodcast/GeologicPodcast297-Jan24-13.mp3
+    Resolving traffic.libsyn.com (traffic.libsyn.com)... 204.16.245.39
+    Connecting to traffic.libsyn.com (traffic.libsyn.com)|204.16.245.39|:80... connected.
+    HTTP request sent, awaiting response... 302 Found
+    Location: http://hwcdn.libsyn.com/p/9/d/f/9df13b1a6d622c46/GeologicPodcast297-Jan24-13.mp3?c_id=5341445&expiration=1372945406&hwt=476d03abba40d71119011bf7cb51f68a [following]
+    --2013-07-04 14:35:16--  http://hwcdn.libsyn.com/p/9/d/f/9df13b1a6d622c46/GeologicPodcast297-Jan24-13.mp3?c_id=5341445&expiration=1372945406&hwt=476d03abba40d71119011bf7cb51f68a
+    Resolving hwcdn.libsyn.com (hwcdn.libsyn.com)... 69.16.175.42, 69.16.175.10
+    Connecting to hwcdn.libsyn.com (hwcdn.libsyn.com)|69.16.175.42|:80... connected.
+    HTTP request sent, awaiting response... 200 OK
+    Length: 49299974 (47M) [audio/mpeg]
+    Saving to: ‘GeologicPodcast297-Jan24-13.mp3’
+
+    100%[===========================================================================================================================================>] 49,299,974  5.88MB/s   in 30s
+
+    $ ga add
+    add GeologicPodcast297-Jan24-13.mp3 (checksum...) ok
+    (Recording state in git...)
+    $ ga addurl --pathdepth=3 http://traffic.libsyn.com/geologicpodcast/GeologicPodcast297-Jan24-13.mp3
+
+At this stage, the data for this .mp3 file exist locally, but git-annex is either unaware of it, or it insists on verifying the data. Anyhow, it downloads the file:
+
+    $ ga addurl --pathdepth=3 http://traffic.libsyn.com/geologicpodcast/GeologicPodcast297-Jan24-13.mp3
+    addurl  (downloading http://traffic.libsyn.com/geologicpodcast/GeologicPodcast297-Jan24-13.mp3 ...) --2013-07-04 14:42:40--  http://traffic.libsyn.com/geologicpodcast/GeologicPodcast297-Jan24-13.mp3
+    Resolving traffic.libsyn.com (traffic.libsyn.com)... 204.16.245.39
+    Connecting to traffic.libsyn.com (traffic.libsyn.com)|204.16.245.39|:80... connected.
+    HTTP request sent, awaiting response... 302 Found
+    Location: http://ec.libsyn.com/p/9/d/f/9df13b1a6d622c46/GeologicPodcast297-Jan24-13.mp3?d13a76d516d9dec20c3d276ce028ed5089ab1ce3dae902ea1d01cf853ed5cc54b707&c_id=5341445 [following]
+    --2013-07-04 14:42:41--  http://ec.libsyn.com/p/9/d/f/9df13b1a6d622c46/GeologicPodcast297-Jan24-13.mp3?d13a76d516d9dec20c3d276ce028ed5089ab1ce3dae902ea1d01cf853ed5cc54b707&c_id=5341445
+    Resolving ec.libsyn.com (ec.libsyn.com)... 68.232.34.133
+    Connecting to ec.libsyn.com (ec.libsyn.com)|68.232.34.133|:80... connected.
+    HTTP request sent, awaiting response... 206 Partial Content
+    Length: 49299974 (47M), 48727654 (46M) remaining [audio/mpeg]
+    Saving to: `/media/usb32g-1/annex/musikk/.git/annex/tmp/URL--http&c%%traffic.libsyn.com%geologicpodcast%GeologicPodcast297-Jan24-13.mp3'
+
+    100%[====================================================================================================================================================================>] 49,299,974  2.07M/s   in 88s
+
+    2013-07-04 14:44:10 (538 KB/s) - `/media/usb32g-1/annex/musikk/.git/annex/tmp/URL--http&c%%traffic.libsyn.com%geologicpodcast%GeologicPodcast297-Jan24-13.mp3' saved [49299974/49299974]
+
+    (checksum...)
+    git-annex: /media/usb32g-1/annex/musikk/.git/annex/objects/gp/7Z/SHA256-s49299974--ff6758202d7168a0548b004d0c6e79a095b7738f442aa14d2603665914bee7e0/SHA256-s49299974--ff6758202d7168a0548b004d0c6e79a095b7738f442aa14d2603665914bee7e0: rename: does not exist (No such file or directory)
+    failed
+    (Recording state in git...)
+    git-annex: addurl: 1 failed
+    2013-07-04 14:44:11 sunny@dg-vbox:/media/usb32g-1/annex/musikk/podcast/Geologic Podcast (master)
+    $
+
+The error message appears again, but because the data did exist from before, git-annex fsck has nothing to complain about:
+
+    $ ga fsck
+    [...]
+    fsck GeologicPodcast297-Jan24-13.mp3 (checksum...) ok
+    [...]
+    2013-07-04 14:44:33 sunny@dg-vbox:/media/usb32g-1/annex/musikk/podcast/Geologic Podcast (master)
+    $
+
+### What version of git-annex are you using? On what operating system?
+
+v4.20130627 Linux i386 and AMD64. Both versions behave the same way. Tested on two computers:
+
+Computer #1 (AMD64 version):
+
+    $ uname -a
+    Linux dg-vbox 3.8.0-19-generic #30-Ubuntu SMP Wed May 1 16:35:23 UTC 2013 x86_64 x86_64 x86_64 GNU/Linux
+    $ lsb_release -a
+    No LSB modules are available.
+    Distributor ID: LinuxMint
+    Description:    Linux Mint 15 Olivia
+    Release:        15
+    Codename:       olivia
+
+Computer #2 (i386 version):
+
+    $ uname -a
+    Linux linode 2.6.39.1-linode34 #1 SMP Tue Jun 21 10:29:24 EDT 2011 i686 GNU/Linux
+    $ lsb_release -a
+    Distributor ID: Ubuntu
+    Description:    Ubuntu 10.04.4 LTS
+    Release:        10.04
+    Codename:       lucid
+    No LSB modules are available.
+
+Also tested with v4.20130601, same thing happens.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+All interesting transcripts are posted above with cruft removed.
+
+# End of transcript or log.
+"""]]
+
+> The cause of this bug is using --pathdepth=3 when the url
+> only has two components in its path. So, kinda GIGO, but
+> let's fix this anyway. ;) 
+> 
+> [[fixed|done]] --[[Joey]]

@@ -1,0 +1,12 @@
+<div .span9>
+  ^{repolist}
+  ^{transferlist}
+$if warnNoScript
+  <noscript>
+    <div .navbar .navbar-fixed-bottom>
+      <div .navbar-inner>
+        <div .container>
+          Javascript is disabled; cannot update in real-time.
+          <div .btn-group>
+            <a .btn .btn-primary href="@{NoScriptAutoR}">Auto-refresh every 3 seconds #
+            <a .btn .btn-primary href="@{NoScriptR}">Manually refresh

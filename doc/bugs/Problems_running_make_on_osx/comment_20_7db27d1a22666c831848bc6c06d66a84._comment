@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 20"
+ date="2011-02-13T17:54:09Z"
+ content="""
+Outside the test suite, git-annex's actual use of cp puts fairly low demands on it. It tries to use cp -a or cp -p if available just to preserve whatever attributes it can preserve, but the worst case if that you have a symlink pointing to a file that doesn't have the original timestamp or whatever. And there's little expectation git preserves that stuff anyway.
+
+I will probably try to make the test suite entirely use git clone rather than cp.
+"""]]

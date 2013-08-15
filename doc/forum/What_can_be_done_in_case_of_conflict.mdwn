@@ -1,0 +1,7 @@
+Hi,
+
+How can I resolve the conflict when it occurs?
+
+Suppose I have 2 branches (master, current), When I merge these branches or while doing cherry-pick, if I get conflict how can I resolve it?
+
+Thank You

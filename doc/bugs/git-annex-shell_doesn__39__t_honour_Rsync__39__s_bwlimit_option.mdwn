@@ -1,0 +1,37 @@
+<h4>What steps will reproduce the problem?</h4>
+
+On <tt>host1.example.tld</tt>:
+<pre><code>    git init /tmp/annex
+    cd /tmp/annex
+    git annex init
+    git config annex.rsync-options '--bwlimit=100'
+    dd if=/dev/urandom of=bigfile bs=1024 count=102400
+    git annex add bigfile
+    git commit -am bigfile
+</code></pre>
+
+On <tt>host2.example.tld</tt>:
+<pre><code>    git clone ssh://host1.example.tld/tmp/annex /tmp/annex
+    cd /tmp/annex
+    git annex init
+    git config annex.rsync-options '--bwlimit=100'
+    git annex get --from=origin bigfile
+</code></pre>
+
+<h4>What is the expected output? What do you see instead?</h4>
+<tt>bigfile</tt> is retrieved full speed, despite the <tt>bwlimit</tt> option. In fact on the origin <tt>host1.example.tld</tt>, <tt>ps x | grep rsync</tt> shows:
+<pre><code>
+    21386 ?        Ssl    0:00 git-annex-shell sendkey /tmp/annex SHA256E-s104857600--3e87b769b88db67c56f8c8a0245203a1c22cdb027f0a1230dac8309b1a9fded0 --uuid 7002cb3d-2205-4
+f8d-892b-5c35c693d76c -- remoteuuid=67263f47-7a5f-4a75-937b-7cffafa85f56 direct= associatedfile=bigfile -- dummy rsync --server --sender -ve.Lsf --bwlimit=100 --inplace .
+    21390 ?        S      0:01 rsync --server -t --inplace -e.Lsf . --sender /tmp/annex/.git/annex/objects/jX/3W/SHA256E-s104857600--3e87b769b88db67c56f8c8a0245203a1c22cdb02
+7f0a1230dac8309b1a9fded0/SHA256E-s104857600--3e87b769b88db67c56f8c8a0245203a1c22cdb027f0a1230dac8309b1a9fded0
+</code></pre>
+
+On the first line the option is indeed there, but it's somehow not forwarded to the actual rsync command. (On the client <tt>host2.example.tld</tt> the option shows up, but the sender's bandwidth seems to take precedence.)
+
+<h4>What version of git-annex are you using? On what operating system?</h4>
+
+git-annex 4.20130227, on Debian GNU/Linux (sid, i386).
+
+> [[done]], --bwlimit is now passed through from the caller.
+> Thanks, guilhem

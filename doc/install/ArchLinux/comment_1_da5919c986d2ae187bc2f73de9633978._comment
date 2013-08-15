@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlwYMdU0H7P7MMlD0v_BcczO-ZkYHY4zuY"
+ nickname="Morris"
+ subject="Arch Linux"
+ date="2012-10-17T13:21:24Z"
+ content="""
+For Arch Linux there should be the AUR package [git-annex-bin](https://aur.archlinux.org/packages.php?ID=63503) mentioned, because it's easier to install (no haskell dependencies to be installed) and is based on the prebuild linux binary tarball.
+"""]]

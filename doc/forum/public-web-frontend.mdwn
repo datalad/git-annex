@@ -1,0 +1,16 @@
+Hi,
+
+Use case: I would like to have a "Public" top-level directory in my annex, which gets files in there published over HTTP on a particular server.
+
+How I see doing this:
+
+1. Put my annex to an http server with exported-over-http `/Public/` directory.
+2. Configure a `post-update` hook with the following:
+
+        $ git annex fix
+
+3. Push files on `/Public/` to that annex.
+
+Does it make sense? If yes, are there any gotchas I should beware of?
+
+Thanks.

@@ -1,0 +1,19 @@
+What steps will reproduce the problem?
+Set up a remote server using ssh to a FreeNAS box
+
+What is the expected output? What do you see instead?
+Neither rsync nor git-annex are installed
+rsync is in the path, user with permissions is able to run it
+
+What version of git-annex are you using? On what operating system?
+4.20130227 OSX
+
+Please provide any additional information below.
+ssh keys were installed to allow login, when ssh-askpass was not found on osx version
+
+[[!meta title="webapp rsync probe command failed on FreeNAS box"]]
+[[!tag /design/assistant]]
+
+> [[done]]; based on the error message it's using csh and 
+> the assistant will now wrap its shell commands to work with csh.
+> --[[Joey]]

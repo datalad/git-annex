@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawncBlzaDI248OZGjKQMXrLVQIx4XrZrzFo"
+ nickname="Perttu"
+ subject="comment 2"
+ date="2011-09-30T11:55:35Z"
+ content="""
+Thanks for the quick reply :)
+
+I wanted to look up the UUID of the current repo so that I can find out which repo is alive from the collection of repos with the same name.
+I could have looked for it in .git/config though, since it's pretty obvious. I just looked into the git-annex branch and didn't find it there.
+Thanks for the tip about using \".\". By the way, could there be some kind of warning about using non-unique names for repos? That would make this
+scenario less likely. Or maybe that is a bad idea given the decentralized nature of git.
+
+By the way, do the trust settings propagate to other repos? If I mark some UUID as untrusted on one computer does it become globally untrusted?
+"""]]

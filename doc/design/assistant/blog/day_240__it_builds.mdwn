@@ -1,0 +1,37 @@
+Late last night, I successfully built the full webapp for Android!
+
+That was with several manual modifications to the generated code, which I
+still need to automate. And I need to set up the autobuilder properly
+still. And I need to find a way to make the webapp open Android's web browser
+to URL. So it'll be a while yet until a package is available
+to try. But what a milestone!
+
+The point I was stuck on all day yesterday was generated code that
+looked like this:
+
+[[!format haskell """
+(toHtml
+  (\ u_a2ehE -> urender_a2ehD u_a2ehE []
+    (CloseAlert aid)))));
+"""]]
+
+That just couldn't type check at all. Most puzzling. My best guess is that
+`u_a2ehE` is the dictionary GHC passes internally to make a typeclass work,
+which somehow leaked out and became visible. Although
+I can't rule out that I may have messed something up in my build environment.
+The EvilSplicer has a hack in it that finds such code and converts it to
+something like this:
+
+[[!format haskell """
+(toHtml
+  (flip urender_a2ehD []
+    (CloseAlert aid)))));
+"""]]
+
+I wrote some more about the process of the Android port in my personal blog:
+[Template Haskell on impossible architectures](http://joeyh.name/blog/entry/Template_Haskell_on_impossible_architectures/)
+
+----
+
+Release day today. The OSX builds are both not available yet for this
+release, hopefully will come out soon.

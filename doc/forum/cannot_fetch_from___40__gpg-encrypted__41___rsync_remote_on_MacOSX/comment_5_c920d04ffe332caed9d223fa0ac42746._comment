@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="remember now"
+ date="2012-08-07T19:37:22Z"
+ content="""
+This was a bug in determining the git version at compile time. Fixed in commit bafc50e05e098234d2d22886085d9844fc763e0e which was included in version 3.20120721.
+"""]]

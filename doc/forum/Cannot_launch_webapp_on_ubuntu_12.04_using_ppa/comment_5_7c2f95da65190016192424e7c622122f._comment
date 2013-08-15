@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="Debian Sid PowerPC is also without webapp"
+ date="2013-05-07T09:44:31Z"
+ content="""
+Took me a couple of minutes to figure out why git-annex on my old Apple G4 wouldn't recognise the webapp command. Comparing the version command output on AMD64 and PowerPC made it obvious.
+"""]]

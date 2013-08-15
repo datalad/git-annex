@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="comment 1"
+ date="2011-07-04T16:57:25Z"
+ content="""
+You convince me for unannex, but isn't the goal of uninit to revert all annex operations? In the current state, a clean revert is not possible (because of the broken symlinks after uninit). Instead of copying, using hard links is out of question?
+
+For my needs, is the command \"git annex unlock .\" (from the root of the repo) a correct workaround?
+"""]]

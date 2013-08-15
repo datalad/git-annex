@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-03-11T15:50:11Z"
+ content="""
+There is a `ghc7.0` branch in [[git|download]] that is being maintained to work with that version.
+"""]]

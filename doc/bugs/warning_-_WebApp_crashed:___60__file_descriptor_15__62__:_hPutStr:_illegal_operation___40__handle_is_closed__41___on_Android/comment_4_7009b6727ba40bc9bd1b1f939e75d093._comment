@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 4"
+ date="2013-05-30T19:18:50Z"
+ content="""
+Seems it's crashing while trying to print out a message telling you to use the menu to open the webapp. I'm not sure why, but I have updated the android autobuild to try to work around this. If you can test and tell me if that fixes it or not, it'll help me tell what's going on.
+"""]]

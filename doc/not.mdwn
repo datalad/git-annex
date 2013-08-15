@@ -1,0 +1,55 @@
+[[!meta title="what git-annex is not"]]
+
+* git-annex is not a backup system. It may be a useful component of an
+  [[archival|use_case/bob]] system, or a way to deliver files to a backup
+  system. For a backup system that uses git and that git-annex supports
+  storing data in, see [[special_remotes/bup]].
+
+* git-annex is not a filesystem or DropBox clone. However, the git-annex
+  [[assistant]] is addressing some of the same needs in its own unique ways.
+  (There is also a FUSE filesystem built on top of git-annex, called 
+  [ShareBox](https://github.com/chmduquesne/sharebox-fs).)
+
+* git-annex is not unison, but if you're finding unison's checksumming
+  too slow, or its strict mirroring of everything to both places too
+  limiting, then git-annex could be a useful alternative.
+
+* git-annex is more than just a workaround for git scalability 
+  limitations that might eventually be fixed by efforts like
+  [git-bigfiles](http://caca.zoy.org/wiki/git-bigfiles). In particular,
+  git-annex's [[location_tracking]] allows having many repositories
+  with a partial set of files, that are copied around as desired.
+
+* git-annex is not some flaky script that was quickly thrown together.
+  I wrote it in Haskell because I wanted it to be solid and to compile
+  down to a binary. And it has a fairly extensive test suite. (Don't be
+  fooled by "make test" only showing a few dozen test cases; each test
+  involves checking dozens to hundreds of assertions.)
+
+* git-annex is not [git-media](https://github.com/schacon/git-media),
+  although they both approach the same problem from a similar direction.
+  I only learned of git-media after writing git-annex, but I probably
+  would have still written git-annex instead of using it. Currently,
+  git-media has the advantage of using git smudge filters rather than
+  git-annex's pile of symlinks, and it may be a tighter fit for certain
+  situations. It lacks git-annex's support for widely distributed storage,
+  using only a single backend data store. It also does not support
+  partial checkouts of file contents, like git-annex does.
+
+* git-annex is similarly not [git-fat](https://github.com/jedbrown/git-fat),
+  which also uses git smudge filters, and also lacks git-annex' widely
+  distributed storage and partial checkouts.
+
+* git-annex is also not [boar](http://code.google.com/p/boar/),
+  although it shares many of its goals and characteristics. Boar implements
+  its own version control system, rather than simply embracing and
+  extending git. And while boar supports distributed clones of a repository,
+  it does not support keeping different files in different clones of the
+  same repository, which git-annex does, and is an important feature for
+  large-scale archiving.
+
+* git-annex is not the [Mercurial largefiles extension](http://mercurial.selenic.com/wiki/LargefilesExtension).
+  Although mercurial and git have some of the same problems around large
+  files, and both try to solve them in similar ways (standin files using
+  mostly hashes of the real content).
+  

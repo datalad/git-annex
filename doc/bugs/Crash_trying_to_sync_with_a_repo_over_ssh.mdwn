@@ -1,0 +1,43 @@
+What steps will reproduce the problem?
+
+I create a new annex, added in a bunch of files.
+
+I cloned this annex to another machine, where I already had those files, so I copied them into a directory named "foo", did "git annex add foo", and then did "git rm -r foo", and git commit'd my clone of the annex.
+
+Then I try to "git annex sync" with the remote.
+
+What is the expected output? What do you see instead?
+
+I don't know, I've never used git-annex before.  This is what I get each time:
+
+    Hermes ~/Products/tmp/Movies (master) $ ga sync
+    git-annex-shell: Prelude.(!!): index too large
+
+What version of git-annex are you using? On what operating system?
+
+It's the 'master' as of yesterday: c504f4025fec49e62601fbd4a3cd8f1270c7d221
+
+I'm on OS X 10.8.2, using GHC 7.6.1.  The annex in question has 38G in a few hundred files.
+
+Please provide any additional information below.
+
+I'm willing to help track this down!
+
+> I've got it, October 9th's release 
+> included commit bc649a35bacbecef93e378b1497f6a05b30bf452, which included a
+> change to a `segment` function. It was supposed to be a
+> rewrite in terms of a more general version, but it introduced a bug
+> in what it returned in an edge case and this in turn led git-annex-shell's
+> parameter parser to fail in a code path that was never reachable before.
+> 
+> It'd fail both when a new repo was running `git-annex-shell configlist`,
+> and in `git-annex-shell commit`, although this latter crash was less
+> noticible and I'm sure you saw the former.
+> 
+> Fixed the reversion; fixed insufficient guards around the partial code
+> (which I cannot see a way to entirely eliminate sadly; look at
+> GitAnnexShell.hs's `partitionParams` and weep or let me know if you have 
+> any smart ideas..); added a regression test to check the non-obvious
+> behavior of segment with an empty segment. I'll be releasing a new
+> version with this fix as soon as I have bandwidth, ie tomorrow.
+> [[done]] --[[Joey]]

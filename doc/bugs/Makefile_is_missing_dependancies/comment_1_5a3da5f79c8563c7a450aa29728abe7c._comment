@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2011-03-23T08:21:30Z"
+ content="""
+Just did some minor digging around and checking, this seems to satisfy the compilers etc... I have yet to confirm that it *really* is working as expected. Also it might be better to check for a darwin operating system instead of apple I think, though I don't know of any one really using a pure darwin OS. But for now it works (I think)
+
+<pre>
+From fbfe27c2e19906ac02e3673b91bffa920f6dae5d Mon Sep 17 00:00:00 2001
+From: Jimmy Tang <jtang@tchpc.tcd.ie>
+Date: Wed, 23 Mar 2011 08:15:39 +0000
+Subject: [PATCH] Define (__APPLE__) in StatFS
+
+At least on OSX 10.6.6 it appears to have the same defintions as
+FreeBSD. The build process doesn't complain and the code is enabled,
+this needs to be tested and checked more.
+---
+ StatFS.hsc |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/StatFS.hsc b/StatFS.hsc
+index 8b453dc..45fd7e4 100644
+--- a/StatFS.hsc
++++ b/StatFS.hsc
+@@ -53,7 +53,7 @@ import Foreign.C.String
+ import Data.ByteString (useAsCString)
+ import Data.ByteString.Char8 (pack)
+ 
+-#if defined (__FreeBSD__)
++#if defined (__FreeBSD__) || defined(__APPLE__)
+ # include <sys/param.h>
+ # include <sys/mount.h>
+ #else
+@@ -84,7 +84,7 @@ data CStatfs
+ #ifdef UNKNOWN
+ #warning free space checking code not available for this OS
+ #else
+-#if defined(__FreeBSD__)
++#if defined(__FreeBSD__) || defined(__APPLE__)
+ foreign import ccall unsafe \"sys/mount.h statfs\"
+ #else
+ foreign import ccall unsafe \"sys/vfs.h statfs64\"
+-- 
+1.7.4.1
+</pre>
+"""]]

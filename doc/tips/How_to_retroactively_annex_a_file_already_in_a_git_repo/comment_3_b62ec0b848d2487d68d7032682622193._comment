@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="arand"
+ ip="130.238.245.202"
+ subject="comment 3"
+ date="2013-03-18T14:39:52Z"
+ content="""
+One thing I noticed is that git-annex needs to checksum each file even if they were previously annexed (rather obviously since there is no general way to tell if the file is the same as the old one without checksumming), but in the specific case that we are replacing files that are already in git, we do actually have the sha1 checksum for each file in question, which could be used.
+
+So, trying to work with this, I wrote a filter script that starts out annexing stuff in the first commit, and continously writes out sha1<->filename<->git-annex-object triplets to a global file, when it then starts with the next commit, it compares the sha1s of the index with those of the global file, and any matches are manually symlinked directly to the corresponding git-annex-object without checksumming.
+
+I've done a few tests and this seems to be considerably faster than letting git-annex checksum everything.
+
+This is from a git-svn import of the (free software) Red Eclipse game project, there are approximately 3500 files (images, maps, models, etc.) being annexed in each commit (and around 5300 commits, hence why I really, really care about speed):
+
+10 commits: ~7min
+
+100 commits: ~38min
+
+For comparison, the old and new method (the difference should increase with the amount of commits):
+
+old, 20 commits ~32min
+
+new, 20 commits: ~11min
+
+The script itself is a bit of a monstrosity in bash(/grep/sed/awk/git), and the files that are annexed are hardcoded (removed in forming $oldindexfiles), but should be fairly easy to adapt:
+
+[https://gitorious.org/arand-scripts/arand-scripts/blobs/master/annex-ffilter](https://gitorious.org/arand-scripts/arand-scripts/blobs/master/annex-ffilter)
+
+The usage would be something like:
+
+    rm /tmp/annex-ffilter.log; git filter-branch --tree-filter 'ANNEX_FFILTER_LOG=/tmp/annex-ffilter.log ~/utv/scripts/annex-ffilter' --tag-name-filter cat -- branchname
+
+I suggest you use it with at least two orders of magnitude more caution than normal filter-branch.
+
+Hope it might be useful for someone else wrestling with filter-branch and git-annex :)
+"""]]

@@ -1,0 +1,4 @@
+Transferring a file from a ssh:// remote should use rsync to allow resuming
+of a prior transfer.
+
+[[done]]

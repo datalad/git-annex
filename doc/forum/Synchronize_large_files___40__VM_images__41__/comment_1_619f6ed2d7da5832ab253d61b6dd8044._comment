@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 1"
+ date="2012-11-28T18:01:31Z"
+ content="""
+This volume of data should be no problem for git-annex.
+
+The only catch would be if you're running those VM images and want to sync them as they're changed. With git-annex, you'd need to `git annex unlock` a file to allow it to be modified, and then `git annex add` it back and commit changes made to it.
+"""]]

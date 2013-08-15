@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-03-23T15:05:12Z"
+ content="""
+There's a simple test -- just configure annex.diskreserve to be say, 10 megabytes less than the total free space on your disk. Then try to git annex get a 11 mb file, and a 9 mb file. :)
+"""]]

@@ -1,0 +1,55 @@
+git-annex mostly does not use encryption. Anyone with access to a git
+repository can see all the filenames in it, its history, and can access
+any annexed file contents.
+
+Encryption is needed when using [[special_remotes]] like Amazon S3, where
+file content is sent to an untrusted party who does not have access to the
+git repository.
+
+Such an encrypted remote uses strong GPG encryption on the contents of files,
+as well as HMAC hashing of the filenames. The size of the encrypted files,
+and access patterns of the data, should be the only clues to what is
+stored in such a remote.
+
+You should decide whether to use encryption with a special remote before
+any data is stored in it. So, `git annex initremote` requires you
+to specify "encryption=none" when first setting up a remote in order
+to disable encryption.
+
+If you want to use encryption, run `git annex initremote` with
+"encryption=USERID". The value will be passed to `gpg` to find encryption keys.
+Typically, you will say "encryption=2512E3C7" to use a specific gpg key.
+Or, you might say "encryption=joey@kitenet.net" to search for matching keys.
+
+The default MAC algorithm to be applied on the filenames is HMACSHA1. A
+stronger one, for instance HMACSHA512, one can be chosen upon creation
+of the special remote with the option `mac=HMACSHA512`. The available
+MAC algorithms are HMACSHA1, HMACSHA224, HMACSHA256, HMACSHA384, and
+HMACSHA512. Note that it is not possible to change algorithm for a
+non-empty remote.
+
+The [[encryption_design|design/encryption]] allows additional encryption keys
+to be added on to a special remote later. Once a key is added, it is able
+to access content that has already been stored in the special remote.
+To add a new key, just run `git annex enableremote` specifying the
+new encryption key:
+
+	git annex enableremote myremote encryption=788A3F4C
+
+Note that once a key has been given access to a remote, it's not
+possible to revoke that access, short of deleting the remote. See
+[[encryption_design|design/encryption]] for other security risks
+associated with encryption.
+
+## shared cipher mode
+
+Alternatively, you can configure git-annex to use a shared cipher to
+encrypt data stored in a remote. This shared cipher is stored,
+**unencrypted** in the git repository. So it's shared amoung every
+clone of the git repository. The advantage is you don't need to set up gpg
+keys. The disadvantage is that this is **insecure** unless you
+trust every clone of the git repository with access to the encrypted data
+stored in the special remote.
+
+To use shared encryption, specify "encryption=shared" when first setting
+up a special remote.

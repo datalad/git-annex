@@ -1,0 +1,15 @@
+15 hours in a plane with in-seat power. Ok, time for some new features!
+
+Added two new repository groups. 
+
+"manual" can be used to avoid the assistant downloading any file contents
+on its own. It'll still upload and otherwise sync data. To download files,
+you can use `git annex get` while the assistant is running. You can also
+drop files using the command line.
+
+"source" is for repositories that are the source of new files, but don't
+need to retain a copy once the file has been moved to another repository.
+A camera would be a good example.
+
+Ok, those were easy features to code; I suck at being productive on planes.
+Release coming up with those, once I find enough bandwidth here in AU.

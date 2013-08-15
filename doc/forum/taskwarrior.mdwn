@@ -1,0 +1,11 @@
+I try to sync my taskWarrior files .task/*.data with git-annex ... but there is two problem :
+
+- i need to chmod 755 my files because taskWarrior doesn't recognize them, or say "problem with permission" 
+
+- taskwarrior seems crazy with symbolic link used by git-annex, undo not work, task appear multiple times , etc.
+
+Is there any solution ?
+Any user experienced the same problem?
+
+Thanks
+Sr.

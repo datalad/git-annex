@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2012-09-26T23:52:50Z"
+ content="""
+I think a lot of people misinterpreted \"phone/mp3 player\" as \"Android\"; I know I did.
+
+As you already support directories, MTP would be needed to support the other half of pretty much all phones and media players (other than those made by Apple). MTP is a valley of pain, though.
+"""]]

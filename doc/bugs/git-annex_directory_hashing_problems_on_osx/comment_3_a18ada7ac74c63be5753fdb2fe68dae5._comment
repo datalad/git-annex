@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-03-28T15:25:18Z"
+ content="""
+So, there is evidence here of a circumstance caused by the [[other_bug|git-annex_has_issues_with_git_when_staging__47__commiting_logs]], as I suspected.
+
+I don't think that manual `git commit -a` caused the problem. I suspect it was a subsequent `git add` that caused git to follow the wrong case paths and add the files in the wrong place. Ie, when you run \"git add .git-annex\", it recurses into `.git-annex/Gm/`, and adds files using that case, that were previously added from `.git-annex/GM/`.
+
+For completeness, can you verify this repo's core.ignorecase setting?
+
+---
+
+I hate that you are stuck using loop filesystems to work around this bug. If my guess is correct, you don't need to, as long as you avoid manually running \"git add .git-annex\". I take this bug seriously. While I'm currently very involved in adding Amazon S3 support to git-annex (which will take days more of solid work), I do plan to make a loop filesystem of my own, probably vfat, so I can try and reproduce this on a case-insensative filesystem. If you could confirm my above hypothesis, that would speed things up for me.
+
+It's possible I will have to tweak the hash directories. Hopefully if so, I will only tweak them for *new* keys; if I had to do a v3 backend just to fix this stupid thing, I'd be sad -- upgrading all my offline disks from v1 to v2 took me many days.
+"""]]

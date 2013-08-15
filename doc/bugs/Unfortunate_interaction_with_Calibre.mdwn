@@ -1,0 +1,24 @@
+# Calibre 
+
+Calibre is a somewhat popular eBook management package that's also free software.  <http://calibre-ebook.com/>  
+
+Install via
+    # apt-get install calibre
+
+There is a somewhat unfortunate interaction between Calibre and git-annex...
+
+* git-annex makes its files become read-only.  By the way, that's not quite obvious from the documentation; I suggest making that more prominent.
+* Calibre modifies files (not quite sure of semantics, how, or why) when doing various operations, notably such as when copying a book from one's library to one's portable reading device.
+
+These don't play well together, sadly.
+
+I'd expect most of the issue to sit on the Calibre side, and have reported it as a bug.
+[Calibre bug #739045](https://bugs.launchpad.net/calibre/+bug/739045)
+Preliminary indication is that they're treating it as a functionality change they'll decline to fix.  Which isn't entirely unreasonable - I anticipated as much, and I don't want to treat that as a bad/wrong decision.
+
+However, I think it's:
+* Unfortunate, as fitting Calibre together with git-annex seems like a neat idea.
+* Useful to make sure that this kind of "doesn't play well together" condition is documented, even if only as a bug report.
+
+> [[done]]; the assistant uses direct mode by default now to avoid
+> this kind of thing. --[[Joey]] 

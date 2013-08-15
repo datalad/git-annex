@@ -1,0 +1,22 @@
+What steps will reproduce the problem?
+
+As a default user i want to start git-annex assistent with
+
+`$ git-annex webapp`
+
+`git-annex: Not in a git repository.`
+
+What is the expected output? What do you see instead?
+
+I would expect the assistent to popup in a opened browser window.
+
+What version of git-annex are you using? On what operating system?
+
+Debian wheezy with git-annex version: 3.20130114
+
+Please provide any additional information below.
+
+Its working if i start `git-annex webapp` as root. I had the same error on previous version.
+
+> I've made some improvements. Think this was user error. [[done]]
+> --[[Joey]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://piotr.ozarowski.pl/"
+ nickname="POX"
+ subject="XDG"
+ date="2012-08-02T10:30:55Z"
+ content="""
+same for XDG_DESKTOP_DIR (for pl_PL ~/.config/user-dirs.dirs file contains XDG_DESKTOP_DIR=\"$HOME/Pulpit\" instead of Desktop)
+"""]]

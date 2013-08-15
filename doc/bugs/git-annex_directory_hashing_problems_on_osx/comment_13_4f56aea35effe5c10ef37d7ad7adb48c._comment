@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 13"
+ date="2011-04-03T07:43:37Z"
+ content="""
+Ok, thanks for the fix. It seems the fix isn't too reliable with my repos, I get different numbers of  \"** No known copies of...\" in the various cloned repos that I have. After all the \"messing\" that I have done to my repos I think git-annex has gotten very confused. I will just leave things as they are and let git-annex slowly migrate over to the new format or re-clone from a linux source and see how things go. I will report back on this issue in abit after I use it more to see.
+"""]]

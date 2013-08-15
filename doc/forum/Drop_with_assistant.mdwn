@@ -1,0 +1,5 @@
+Hi,
+
+how can I handle *drop* with the assistant? There are some files in my annex that I don't need on my laptop. so i just *drop* them on the command line bevcause I have copies on my server and an external usb drive. But after a while the assistant pulls all the files back in. Can I avoid this and make the *drop* somehow "sticky" until i *get* them over cli?
+
+Best, Michael

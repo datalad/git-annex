@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniXLhO9mLn-7EDfawdENZ2fQwlGy5w_oc"
+ nickname="Michał"
+ subject="unrecognized command"
+ date="2013-03-12T06:32:56Z"
+ content="""
+Thanks Matthias, I fought with this as well, this was the tip I needed to move on.  I'm using the Linux standalone, and I had 2 issues getting everything to work without getting git-annex-shell errors.
+
+1. The autoinstalled wrapper could not be found, I had to comment the \"Ubuntu exit\" line and add the $HOME/.ssh to path to get rid of \"command not found\"
+2. Had to modify the wrapper by replacing the \"$SSH_ORIGINAL_COMMAND\" by \"$@\" to get rid of \"fatal: unrecognized command ''\"
+
+
+"""]]

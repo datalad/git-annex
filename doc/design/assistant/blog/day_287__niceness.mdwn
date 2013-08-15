@@ -1,0 +1,13 @@
+Pushed out a release today. While I've somewhat ramped down activity this
+month with the Kickstarter period over and summer trips and events ongoing,
+looking over the changelog I still see a ton of improvements in the 20 days
+since the last release.
+
+Been doing some work to make the assistant daemon be more `nice`. I don't
+want to nice the whole program, because that could make the web interface
+unresponsive. What I am able to do, thanks to Linux violating POSIX, is to
+`nice` certain expensive operations, including the startup scan and the daily
+sanity check. Also, I put in a call to `ionice` (when it's available) 
+when `git annex assistant --autostart` is run, so the daemon's
+disk IO will be prioritized below other IO. Hope this keeps it out of your
+way while it does its job.

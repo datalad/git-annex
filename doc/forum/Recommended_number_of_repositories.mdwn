@@ -1,0 +1,4 @@
+With git it is easy to create one repository per project, and it almost always makes sense to do so.  When using git-annex, what is the recommended setup?
+
+Should one have a single annex containing all files, or is it recommended to create different repositories for things like 'photos', 'music', 'isos' ?
+

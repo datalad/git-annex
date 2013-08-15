@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="saironiq"
+ ip="147.251.209.29"
+ subject="comment 4"
+ date="2013-04-15T10:35:36Z"
+ content="""
+These symbol lookup errors appear right after i click 'keep the repositories separate', so I think there indeed is a connection. There's nothing else in the log, except this one line repeating over and over again.
+
+>[2013-04-15 11:14:30 CEST] main: starting assistant version 4.20130324<br/>
+>Already up-to-date.</br>
+>
+>(scanning...) [2013-04-15 11:14:31 CEST] Watcher: Performing startup scan<br/>
+>Already up-to-date.<br/>
+>
+>(started...) [2013-04-15 12:14:30 CEST] NetWatcherFallback: Syncing with wolf, zyzyx<br/>
+>(Recording state in git...)<br/>
+>git-annex: Daemon is already running.<br/>
+>curl: symbol lookup error: /usr/lib/libssl.so.1.0.0: undefined symbol: EVP_idea_cbc<br/>
+>curl: symbol lookup error: /usr/lib/libssl.so.1.0.0: undefined symbol: EVP_idea_cbc<br/>
+>curl: symbol lookup error: /usr/lib/libssl.so.1.0.0: undefined symbol: EVP_idea_cbc<br/>
+>...
+"""]]

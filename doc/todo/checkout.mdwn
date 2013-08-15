@@ -1,0 +1,23 @@
+The checkout subcommand replaces the symlink that normally points at a
+file's content, with a copy of the file. Once you've checked a file out,
+you can edit it, and `git commit` it. On commit, git-annex will detect
+if the file has been changed, and if it has, `add` its content to the
+annex.
+
+> Internally, this will need to store the original symlink to the file, in 
+> `.git/annex/checkedout/$filename`.
+> 
+> * git-annex uncheckout moves that back
+> * git-annex pre-commit hook checks each file being committed to see if
+>   it has a symlink there, and if so, removes the symlink and adds the new
+>   content to the annex. 
+> 
+> And it seems the file content should be copied, not moved or hard linked:
+> 
+> * Makes sure other annexes can find it if transferring it from
+>   this annex.
+> * Ensures it's always available for uncheckout.
+> * Avoids the last copy of a file's content being lost when
+>   the checked out file is modified.
+
+[[done]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 4"
+ date="2012-11-28T20:13:11Z"
+ content="""
+@Nathan, I have just noticed and fixed a problem that could cause this to happen if you were using the standalone tarball (or OSX app) builds. It would not affect git-annex installed by other methods.
+"""]]

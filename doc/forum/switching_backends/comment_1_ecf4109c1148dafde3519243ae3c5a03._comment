@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 1"
+ date="2013-01-28T03:20:38Z"
+ content="""
+Just noticed this -- http://git-annex.branchable.com/bugs/git_annex_migrate_leaves_old_backend_versions_around/
+
+so I don't need to worry about disk space bloat; they're all just hardlinks.  That's cool.  Still would be nice to know why they don't show up as \"unused.\"  But not as important.
+"""]]

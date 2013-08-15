@@ -1,0 +1,66 @@
+hi, 
+
+i think of use git-annex as the backbone of a archival systems. at first point no distributed storage, just 1 node.
+but now i run into the topic below ( deleted the "named" symlink of the "object" -- how to recover ?)
+
+maybe someone can enlighten me...
+
+thanks,
+.ka
+
+// about the version. ( debian-squeeze, bpo )
+
+$ git-annex version
+git-annex version: 3.20120629~bpo60+2
+local repository version: 3
+default repository version: 3
+supported repository versions: 3
+upgrade supported from repository versions: 0 1 2
+
+// building up a testcase.
+
+$ git init
+Initialized empty Git repository in ...test2/.git/
+
+$ git annex init
+init  ok
+(Recording state in git...)
+
+$ echo "aaa" > 1.txt
+
+$ echo "bbb" > 2.txt
+
+$ git-annex add .
+add 1.txt (checksum...) ok
+add 2.txt (checksum...) ok
+(Recording state in git...)
+
+$ git commit -a -m "added 2 files"
+fatal: No HEAD commit to compare with (yet)
+fatal: No HEAD commit to compare with (yet)
+[master (root-commit) fc2a5d7] added 2 files
+ Committer: userhere user <bla@bla>
+Your name and email address were configured automatically based
+on your username and hostname. Please check that they are accurate.
+...
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+ create mode 120000 1.txt
+ create mode 120000 2.txt
+
+// ok, so far standard. i have now 2 files - lets delete one.
+
+$ rm 2.txt 
+$ ls -l
+lrwxrwxrwx 1 xp xp 176 24. Okt 22:55 1.txt -> .git/annex/objects/Z6/7q/SHA256-s4--17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76/SHA256-s4--17e682f060b5f8e47ea04c5c4855908b0a5ad612022260fe50e11ecb0cc0ab76
+
+// eek, delete of 2.txt was a bad idea (it was just the symlink) -- try to recover...
+
+$ git-annex fix
+$ git-annex fsck
+fsck 1.txt (checksum...) ok
+$ ls
+1.txt
+
+// still not here.. how to recover the link to 2.txt ???
+// i still see the content of the file in the object folder
+// if I want to use git-annex as the backend of a archival system, this is important.

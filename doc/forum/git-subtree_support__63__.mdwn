@@ -1,0 +1,9 @@
+Hi,
+
+I am a happy user of [git-subtree](http://github.com/apenwarr/git-subtree), and I wonder whether it integrates nicely with git-annex?
+
+My use-case looks like this: I have two annex repositories -- one at home and one at work. The annex at work is a strict subset of the one at home, i.e. all files that I have at work ought to be part of the annex at home, but not the other way round. Now, I realize that I could have one annex and selectively copy files to the checked out copy at work, but I don't want to do that because I don't want to have (broken) symlinks for all kinds of stuff visible on my machine at work that is not supposed to be there (such as MP3 files, etc.). Instead, I would like to use git-subtree to import the work annex into a sub-directory of the one at home, so that both annex are logically separate, but still the one at home always contains everything that the one at work contains.
+
+Is that possible?
+
+And if not, is there maybe another way to accomplish this kind of thing?

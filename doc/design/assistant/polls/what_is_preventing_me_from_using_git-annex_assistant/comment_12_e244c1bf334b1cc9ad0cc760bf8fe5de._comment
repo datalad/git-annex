@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkx5V3MTbzCXS3J7Mn9FEq8M9bPPYMkAHY"
+ nickname="Pedro"
+ subject="It fails silently and leaves symlinks behind"
+ date="2013-01-11T23:49:51Z"
+ content="""
+I dedicated a day to looking into using the assistant and although it's clearly an exciting piece of software it's still pretty hard to get working. To get two machines to sync with one another the options seem to be:
+
+1. Connect both of them to a XMPP server: That makes metadata sync flawlessly and yet leaves a symlink mess behind. As it turns out that's because XMPP syncs only metadata but nowhere was that stated on the webapp (that I could find) and no error message given
+2. So then I tried the sync method with SSH. 
+
+For that you'll need to:
+
+* Have SSH servers installed on both endpoints (for me that was easy to do but I'm sure most users will have a harder time)
+* Make sure both computers are actually on the same broadcast network otherwise they won't see each other (I was testing with a VM behind virtualbox's NAT so initially it didn't work)
+* Install the assistant on both sides and make sure both the base program and the shell wrapper are in the PATH. (this was harder to do than needed as in the standalone bundle they're not on the same folder and the shell wrapper needs to be run by the runshell script, so even if you get it in the path it will still fail with missing libraries. An Ubuntu PPA would have solved this I'm sure.
+
+For some reason I couldn't figure out they still couldn't sync and symlink mess ensued.
+
+I think there are a few usability issues here:
+
+1. Direct mode should never overwrite files in a way you can no longer use them just because metadata updates came before content updates. I'd rather have an older version of the file than lose access to it.
+2. Error reporting needs to be a lot more explicit to be able to debug these issues
+3. At the best of times SSH sync is going to be a problem. In my opinion to be really dropbox-like the sync method for normal users should be to connect all devices to the same XMPP account (this works great now) and then have those assistants automatically reach each other by a direct connection when possible and by something like STUN if NAT punching is needed. The SSH/bup/etc remotes all have their place for advanced setups but being able to tell the user to just connect to XMPP and be done would turn this from \"something I'll spend an afternoon writing puppet manifests to deploy in my personal servers/computers\" to \"something I can explain to a non-technical friend how to use over a phone call and then share files with him\".
+
+On the XMPP side though, it would work best if you could authenticate a Google XMPP acount through an OAuth workflow instead of asking for the password. I wouldn't give any program my gmail password but I'd easily give it permission to use gtalk on my behalf.
+
+As I started by saying the assistant (and git-annex in general) is an extremely impressive piece of software that I'm very excited about. I hope it keeps improving at the current pace as there are still a few features I'd love to have (partial content particularly) but by far the thing that's keeping me most from using it is the ability to easily get a reliable sync going that won't leave me with a folder full of symlinks that I don't know what to do about. One of the great things about dropbox is that whenever it isn't running or can't sync for any reason your folder degenerates into a folder like any other on your disk. The right way of thinking about direct mode should be that one, \"a folder like any other that we stream changes from and to on multiple machines\". Right now, with the symlink replacement when sync isn't possible and to a lesser extent the adding of .git folders it doesn't live up to that guarantee.
+"""]]

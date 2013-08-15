@@ -1,0 +1,49 @@
+I hope I'm nearly at the end of this XMPP stuff after today. Planning a new
+release tomorrow.
+
+----
+
+Split up the local pairing and XMPP pairing UIs, and wrote a
+[[/assistant/share_with_a_friend_walkthrough]].
+
+----
+
+Got the XMPP push code to time out if expected data doesn't arrive within
+2 minutes, rather than potentially blocking other XMPP push forever if 
+the other end went away. 
+
+I pulled in the Haskell
+[async](http://hackage.haskell.org/package/async) library for this,
+which is yes, yet another library, but one that's now in the haskell platform.
+It's worth it, because of how nicely it let me implement IO actions that
+time out.
+
+[[!format haskell """
+runTimeout :: Seconds -> IO a -> IO (Either SomeException a)
+runTimeout secs a = do
+        runner <- async a
+        controller <- async $ do
+                threadDelaySeconds secs
+                cancel runner
+        cancel controller `after` waitCatch runner
+"""]]
+
+This would have been 20-50 lines of gnarly code without async, and I'm sure
+I'll find more uses for async in the future.
+
+----
+
+Discovered that the XMPP push code could deadlock, if both clients started
+a push to the other at the same time. I decided to fix this by allowing
+each client to run both one push and one receive-pack over XMPP at the same
+time.
+
+----
+
+Prevented the transfer scanner from trying to queue transfers to XMPP remotes.
+
+----
+
+Made XMPP pair requests that come from the same account we've already
+paired with be automatically accepted. So once you pair with one device,
+you can easily add more.

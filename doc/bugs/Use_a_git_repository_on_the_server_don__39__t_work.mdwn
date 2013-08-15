@@ -1,0 +1,49 @@
+What steps will reproduce the problem?
+1. Create a Repository
+2. Add a Remote Server
+
+What is the expected output? What do you see instead?
+The option "Use a git repository on the server" is marked as not available
+
+What version of git-annex are you using? On what operating system?
+Version: 4.20130405 but on Webapp ist shows: Version: 4.20130324
+Linux 64bit
+
+Please provide any additional information below.
+git and git-annex are available on the Remote Server
+
+> While this bug report was about a server that did not get git-annex-shell
+> installed in PATH (something trivially fixed by `apt-get install
+> git-annex`), the comments below would like to turn this into a bug report about 
+> the error message "unknown UUID; cannot modify". All right then..
+> --[[Joey]]
+> 
+> This can occur if a ssh key is locked down to use directory A, and a
+> new repo is added in directory B which uses the same ssh key. Things will
+> then fail when git-annex-shell rejects the attept to use directory B, and
+> this results in the webapp displaying an internal server error of
+> "unknown UUID; cannot modify" since NoUUID is retreived for the repo.
+> 
+> In fact, I already dealt with this
+> once in 79561774450c8abf7c2cb42b08575a3ca27010dc; it used to not use 
+> the directory name at all as part of the mangled hostname. Most of the 
+> "me too" responses" predate that fix.
+> 
+> Now, this can only happen
+> if the mangled hostname for directory A and B is the same. One way this can
+> happen is if the directories are "annex" and "~/annex". In other words,
+> I suspect that users are entering "annex" once, and "~/annex" another
+> time, when setting up what they intend to be the same repo. Perhaps the
+> first time something else fails (like the original problem of
+> git-annex-shell not being in path), or they want to set it up again,
+> and the next time the subtly different directory is entered.
+> 
+> To fix this,
+> `mangleSshHostName` would need to be changed to generate different mangled
+> hostnames in all cases. Currently, it skips non-alpha-numeric
+> characters in the directory. [[done]] --[[Joey]]
+> --[[Joey]] 
+> 
+> Additionally, just entering a path starting with "~/" would cause this
+> error, since the webapp tacks on "/~/" to make a relative path absolute.
+> I've also fixed that. [[done]] --[[Joey]]

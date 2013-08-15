@@ -1,0 +1,32 @@
+There was a typo in cabal file that broke building the assistant on OSX.
+This didn't affect the autobuilds of the app, but several users building by
+hand reported problems. I made a new minor release fixing that typo, and
+also a resouce leak bug.
+
+Got a restart UI working after all. It's a hack though. It
+opens a new tab for the new assistant instance, and as most web browsers
+don't allow javascript to close tabs, the old tab is left open. At some
+point I need to add a proper thread manager to the assistant, which the
+restart code could use to kill the watcher and committer threads, and then
+I could do a clean restart, bringing up the new daemon and redirecting the
+browser to it.
+
+Found a bug in the assistant in direct mode -- the expensive transfer scan
+didn't queue uploads needed to sync to other repos in direct mode, although
+it did queue downloads. Fixing this laid some very useful groundwork for
+making more commands support direct mode, too. Got stuck for a long time
+dealing with some very strange `git-cat-file` behavior while making this
+work. Ended up putting in a workaround.
+
+After that, I found that these commands work in direct mode, without
+needing any futher changes!
+
+* `git annex find`
+* `git annex whereis`
+* `git annex copy`
+* `git annex move`
+* `git annex drop`
+* `git annex log`
+
+Enjoy! The only commands I'd like to add to this are `fsck`, `add`,
+and `addurl`...

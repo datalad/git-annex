@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://wiggy.net/"
+ nickname="Wichert"
+ subject="symlinks?"
+ date="2012-10-03T07:15:21Z"
+ content="""
+Does that mean that git-annex will no longer need to turn everything into symlinks? I suspect that that will improve behaviour on at least OSX quite a bit.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlJEI45rGczFAnuM7gRSj4C6s9AS9yPZDc"
+ nickname="Kevin"
+ subject="Haskell on MacPorts"
+ date="2012-09-24T21:09:39Z"
+ content="""
+FYI, I just came across a [MacPorts ticket](https://trac.macports.org/ticket/35813) to update Haskell to 2012.2.0.0.  It would be nice to install git-annex from MacPorts.
+
+"""]]

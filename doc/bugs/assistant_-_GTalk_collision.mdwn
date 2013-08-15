@@ -1,0 +1,17 @@
+##What steps will reproduce the problem?
+
+Follow the [share with a friend walkthrough](http://git-annex.branchable.com/assistant/share_with_a_friend_walkthrough/).  I use my Google Talk account to pair with myself.  With the assistant running, log in to Google Talk on the web interface and set your status 'Invisible'.
+
+##What is the expected output? What do you see instead?
+
+I expect to remain invisible, but I get the following warning: "Oops! You are not invisible because you're logged into Google Talk from another client, device or location that doesn't support invisibility."
+
+##What version of git-annex are you using? On what operating system?
+
+4.20130314 on Linux.
+
+##Please provide any additional information below.
+
+Syncing between the repositories works ok.
+
+[[!tag /design/assistant]]

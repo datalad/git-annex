@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 6"
+ date="2011-04-29T20:11:08Z"
+ content="""
+Cool, that seems to make things work as expected, here's an updated recipe
+
+
+<pre>
+git config annex.tahoe-store-hook 'tahoe mkdir tahoe:$ANNEX_HASH_1/$ANNEX_HASH_2 && tahoe put $ANNEX_FILE tahoe:$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY'
+git config annex.tahoe-retrieve-hook 'tahoe get tahoe:$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY $ANNEX_FILE'
+git config annex.tahoe-remove-hook 'tahoe rm tahoe:$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY'
+git config annex.tahoe-checkpresent-hook 'tahoe ls tahoe:$ANNEX_HASH_1/$ANNEX_HASH_2/$ANNEX_KEY 2>&1 || echo FAIL'
+git annex initremote library type=hook hooktype=tahoe encryption=none
+git annex describe 1d1bc312-7243-11e0-a9ce-5f10c0ce9b0a library
+</pre>
+
+
+I just needs some of the output redirected to /dev/null.
+
+(I updated this comment to fix a bug. --[[Joey]])
+"""]]

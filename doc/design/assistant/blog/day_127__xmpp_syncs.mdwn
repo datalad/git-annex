@@ -1,0 +1,35 @@
+I got full-on git-annex assistant syncing going over XMPP today!
+
+How well does it work? Well, I'm at the cabin behind a dialup modem. I have
+two repos that can only communicate over XMPP. One uses my own XMPP server,
+and the other uses a Google Talk account. I make a file in one repo, and
+switch windows to the other, and type `ls`, and the file (not its content
+tho..) has often already shown up. So, it's about as fast as syncing over
+ssh, although YMMV.
+
+----
+
+Refactored the git push over XMPP code rather severely. It's quite a
+lot cleaner now.
+
+----
+
+Set XMPP presence priority to a negative value, which will hopefully
+prevent git-annex clients that share a XMPP account with other clients from
+intercepting chat messages. Had to change my XMPP protocol some to deal
+with this.
+
+----
+
+Some webapp UI work. When showing the buddy list, indicate which buddies
+are already paired with. 
+
+After XMPP pairing, it now encourages setting up a shared cloud repository.
+
+[[!img /assistant/xmpppairingend.png]]
+
+I still need to do more with the UI after XMPP pairing, to help the paired
+users configure a shared cloud transfer remote. Perhaps the thing to do is
+for the ConfigMonitor to notice when a git push adds a new remote,
+and pop up an alert suggesting the user enable it. Then one user
+can create the repository, and the other one enable it.

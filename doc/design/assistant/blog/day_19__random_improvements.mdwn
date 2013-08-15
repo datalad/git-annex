@@ -1,0 +1,50 @@
+Random improvements day..
+
+Got the merge conflict resolution code working in `git annex assistant`.
+
+Did some more fixes to the pushing and pulling code, covering some cases
+I missed earlier. 
+
+Git syncing seems to work well for me now; I've seen it recover
+from a variety of error conditions, including merge conflicts and repos
+that were temporarily unavailable.
+
+----
+
+There is definitely a MVar deadlock if the merger thread's inotify event
+handler tries to run code in the Annex monad. Luckily, it doesn't
+currently seem to need to do that, so I have put off debugging what's going
+on there.
+
+Reworked how the inotify thread runs, to avoid the two inotify threads
+in the assistant now from both needing to wait for program termination,
+in a possibly conflicting manner.
+
+Hmm, that *seems* to have fixed the MVar deadlock problem.
+
+----
+
+Been thinking about how to fix [[bugs/watcher_commits_unlocked_files]].
+Posted some thoughts there.
+
+It's about time to move on to data [[syncing]]. While eventually that will
+need to build a map of the repo network to efficiently sync data over the
+fastest paths, I'm thinking that I'll first write a dumb version. So, two
+more threads:
+
+1. Uploads new data to every configured remote. Triggered by the watcher
+   thread when it adds content. Easy; just use a `TSet` of Keys to send.
+
+2. Downloads new data from the cheapest remote that has it. Could be 
+   triggered by the
+   merger thread, after it merges in a git sync. Rather hard; how does it
+   work out what new keys are in the tree without scanning it all? Scan
+   through the git history to find newly created files? Maybe the watcher
+   triggers this thread instead, when it sees a new symlink, without data,
+   appear.
+
+Both threads will need to be able to be stopped, and restarted, as needed
+to control the data transfer. And a lot of other control smarts will
+eventually be needed, but my first pass will be to do a straightforward
+implementation. Once it's done, the git annex assistant will be basically
+usable.

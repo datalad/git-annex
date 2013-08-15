@@ -1,0 +1,14 @@
+A recent checkout of git-annex fails to build for me (I've installed the new dependancies as well)
+
+<pre>
+[70 of 81] Compiling Command.DropUnused ( Command/DropUnused.hs, Command/DropUnused.o )
+[71 of 81] Compiling Command.Status   ( Command/Status.hs, Command/Status.o )
+
+Command/Status.hs:133:37: Not in scope: `swap'
+make: *** [git-annex] Error 1
+</pre>
+
+it fails on OSX 10.6.x with ghc 6.12.3 and a corresponding haskell-platform install. I ran a bisect and found that commit 75a3f5027f74565d909fb940893636d081d9872a seems to have broken git-annex for me, reverting the commit allows me to build git-annex, I have not run the tests to verify everything is working correctly though.
+
+> Probably `swap` appeared only in a newer GHC. I've reverted to avoid a
+> versioned build dependency. [[done]] --[[Joey]]

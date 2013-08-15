@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://nullroute.eu.org/~grawity/"
+ nickname="Mantas"
+ subject="comment 1"
+ date="2013-02-15T00:38:00Z"
+ content="""
+Windows supports hardlinks on NTFS filesystems. Not sure about the privileges needed; I think all users can create them.
+
+Recent versions also support symlinks, but that's limited to Administrators by default, so Cygwin-Git (like the rest of Cygwin) uses special files with the \"system\" flag.
+
+As far as I know, Git does not try to dereference symlinks when merging – it only tracks the paths they point to. Where symlinks are not supported (e.g. vfat filesystems in general, or msysGit on Windows) it simply creates regular files containing the target path (i.e. the raw contents of the respective blobs).
+
+Regarding the use of Unix permissions: The \"open file\" syscall on Windows has a \"share mode\" flag, which can be used to disallow other programs from opening the file for writing (and/or even reading) as long as git-annex keeps it open. (I guess this is similar to mandatory locks in Linux.)
+"""]]

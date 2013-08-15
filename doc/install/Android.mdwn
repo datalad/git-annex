@@ -1,0 +1,31 @@
+Now git-annex can be used on Android!
+
+[[Documentation for using git-annex on Android|/android]]
+
+## Android app
+
+First, ensure your Android device is configured to allow installation
+of the app. Go to Setup -&gt; Security, and enable "Unknown Sources".
+
+[Download the git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/)
+onto your Android device, and open it to install.
+
+## autobuilds
+
+A daily build is also available.
+
+* [download apk](http://downloads.kitenet.net/git-annex/autobuild/android/git-annex.apk) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/android/))
+
+## building it yourself
+
+git-annex can be built for Android, with `make android`. It's not an easy
+process:
+
+* First, install <https://github.com/neurocyte/ghc-android>.
+* You will need to have the Android SDK and NDK installed; see
+  `standalone/android/Makefile` to configure the paths to them. You'll also
+  need ant, and the JDK.
+* In `standalone/android/`, run `install-haskell-packages native`
+* You also need to install git and all the utilities listed on [[fromscratch]],
+  on the system doing the building.
+* Then to build the full Android app bundle, use `make androidapp`

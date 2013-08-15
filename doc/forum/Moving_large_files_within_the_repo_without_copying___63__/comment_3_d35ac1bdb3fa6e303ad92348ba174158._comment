@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn7gQ1zZDdWhXy9H51W2krZYShNmKL3qfM"
+ nickname="Karsten"
+ subject="comment 3"
+ date="2012-11-28T15:03:42Z"
+ content="""
+In my tests 'git annex fix' works only on symlinks in directories alredy known to git. So if you created a new directory inside your annex, be sure to 'git add' the directory before running 'git annex fix'.
+
+HTH,
+Karsten
+"""]]

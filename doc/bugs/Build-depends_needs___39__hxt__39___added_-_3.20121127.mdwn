@@ -1,0 +1,36 @@
+What steps will reproduce the problem?
+
+Install git-annex via cabal - either from Hackage or as a manual install.  (i.e. <http://git-annex.branchable.com/install/cabal/>)
+
+What is the expected output? What do you see instead?
+
+Expect a clean install.
+
+However, get the following error:
+
+    Assistant/Install.hs:24:8:
+        Could not find module `Data.AssocList'
+        It is a member of the hidden package `hxt-9.3.1.1'.
+        Perhaps you need to add `hxt' to the build-depends in your .cabal file.
+        Use -v to see a list of the files searched for.
+
+
+What version of git-annex are you using? On what operating system?
+
+git-annex: 3.20121127
+OS: Mac OSX 10.6.8
+
+Please provide any additional information below.
+
+The fix seems to be as simple as adding 'htx' to the 'git-annex.cabal' file:
+
+    Executable git-annex
+      Main-Is: git-annex.hs
+      Build-Depends: MissingH, hslogger, directory, filepath,
+       unix, containers, utf8-string, network (>= 2.0), mtl (>= 2.1.1),
+       bytestring, old-locale, time,
+       -- Added htx here
+       hxt,
+       pcre-light, extensible-exceptions, dataenc, SHA, process, json, HTTP,
+
+> I removed the need for hxt, which was accidental. [[done]] --[[Joey]] 

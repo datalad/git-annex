@@ -1,0 +1,175 @@
+### Please describe the problem.
+I am trying to set out two computers on the same network to synchronise.
+
+### What steps will reproduce the problem?
+Install Git-Annex. Start the webapp. Try to connect. Enter a secret phrase on both. The Mythbuntu machine shows "Failed to sync with Inspiron 14z" (the laptop). The laptop shows "Pairing in progress" forever.
+
+The machines can normally connect together passwordlessly through ssh with public key encryption. 
+
+### What version of git-annex are you using? On what operating system?
+Ubuntu Raring Version: 3.20121112ubuntu2 from the repos on my laptop.  Install version 4.20130627 from the PPA on Mythbuntu Precise (which I use as a home server).
+
+### Please provide any additional information below.
+From the the laptop, where I started the pairing:
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$ git-annex webapp 
+
+(process:3084): GLib-CRITICAL **: g_slice_set_config: assertion `sys_page_size == 0' failed
+
+** (firefox:3084): WARNING **: Failed to find domain member of JSON manifest
+Running global cleanup code from study base classes.
+(Recording state in git...)
+
+Launching web browser on file:///tmp/webapp3075.html
+(scanning...) 
+  dbus failed; falling back to mtab polling (ClientError {clientErrorMessage = "Call failed: The name org.gtk.Private.GduVolumeMonitor was not provided by any .service files", clientErrorFatal = False})
+(started...) Generating public/private rsa key pair.
+Your identification has been saved in /tmp/git-annex-keygen3075.0/key.
+Your public key has been saved in /tmp/git-annex-keygen3075.0/key.pub.
+The key fingerprint is:
+79:00:67:a4:f0:5f:62:26:78:ed:09:97:e4:c4:dd:56 aaron@Inspiron-14z
+The key's randomart image is:
++--[ RSA 2048]----+
+|    . .o*. . .E  |
+|     + X... o    |
+|    . * X ..     |
+|     . O *       |
+|        S .      |
+|         .       |
+|                 |
+|                 |
+|                 |
++-----------------+
+Control socket connect(/home/shared/annex/.git/annex/ssh/mythbuntu@git-annex-mythbuntu-server.local-mythbuntu): Connection refused
+Failed to connect to new control master
+warning: no common commits
+
+  Remote mythbuntuserver.local_annex does not have git-annex installed; setting remote.mythbuntuserver.local_annex.annex-ignore
+Already up-to-date.
+Counting objects: 13, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (9/9), done.
+Writing objects: 100% (11/11), 1.06 KiB, done.
+Total 11 (delta 2), reused 0 (delta 0)
+To ssh://mythbuntu@git-annex-mythbuntu-server.local-mythbuntu/~/annex/
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+Already up-to-date!
+Merge made by the 'recursive' strategy.
+Already up-to-date.
+Already up-to-date.
+Counting objects: 2, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (2/2), done.
+Writing objects: 100% (2/2), 326 bytes, done.
+Total 2 (delta 1), reused 0 (delta 0)
+To ssh://mythbuntu@git-annex-mythbuntu-server.local-mythbuntu/~/annex/
+   82bf946..dfe0bd1  master -> synced/master
+Already up-to-date.
+SendMessage (77594660, 0x101f, (nil), (nil))
+SendMessage (0, 0x1203, (nil), 0x7fffc68a1850)
+SendMessage (0, 0x1204, (nil), 0x7fffc68a1850)
+SendMessage (0, 0x1203, 0x1, 0x7fffc68a1850)
+SendMessage (0, 0x1204, 0x1, 0x7fffc68a1850)
+SendMessage (0, 0x1203, 0x2, 0x7fffc68a1850)
+SendMessage (0, 0x1204, 0x2, 0x7fffc68a1850)
+SendMessage (0, 0x1203, 0x3, 0x7fffc68a1850)
+SendMessage (0, 0x1204, 0x3, 0x7fffc68a1850)
+SendMessage (0, 0x1203, 0x4, 0x7fffc68a1850)
+SendMessage (0, 0x1204, 0x4, 0x7fffc68a1850)
+SendMessage (77594660, 0x101f, (nil), (nil))
+SendMessage (0, 0x1203, (nil), 0x7fffc68a1810)
+SendMessage (0, 0x1204, (nil), 0x7fffc68a1810)
+SendMessage (0, 0x1203, 0x1, 0x7fffc68a1810)
+SendMessage (0, 0x1204, 0x1, 0x7fffc68a1810)
+SendMessage (0, 0x1203, 0x2, 0x7fffc68a1810)
+SendMessage (0, 0x1204, 0x2, 0x7fffc68a1810)
+SendMessage (0, 0x1203, 0x3, 0x7fffc68a1810)
+SendMessage (0, 0x1204, 0x3, 0x7fffc68a1810)
+SendMessage (0, 0x1203, 0x4, 0x7fffc68a1810)
+SendMessage (0, 0x1204, 0x4, 0x7fffc68a1810)
+SendMessage (77594660, 0x101f, (nil), (nil))
+SendMessage (0, 0x1203, (nil), 0x7fffc68a2920)
+SendMessage (0, 0x1204, (nil), 0x7fffc68a2920)
+SendMessage (0, 0x1203, 0x1, 0x7fffc68a2920)
+SendMessage (0, 0x1204, 0x1, 0x7fffc68a2920)
+SendMessage (0, 0x1203, 0x2, 0x7fffc68a2920)
+SendMessage (0, 0x1204, 0x2, 0x7fffc68a2920)
+SendMessage (0, 0x1203, 0x3, 0x7fffc68a2920)
+SendMessage (0, 0x1204, 0x3, 0x7fffc68a2920)
+SendMessage (0, 0x1203, 0x4, 0x7fffc68a2920)
+SendMessage (0, 0x1204, 0x4, 0x7fffc68a2920)
+Redirection loop trying to set HTTPS on:
+  http://www.aol.com/favicon.ico
+(falling back to HTTP)
+SendMessage (77594652, 0x444, 0x1, 0x3652e00)
+SendMessage (77594652, 0x444, 0x1, 0x3647de0)
+SendMessage (77594652, 0x444, 0x1, 0x3667a80)
+SendMessage (77594652, 0x444, 0x1, 0x3667a80)
+
+# End of transcript or log.
+# End of transcript or log.
+"""]]
+
+On the Mythbuntu machine:
+[[!format sh """
+$ git-annex webapp
+Launching web browser on file:///tmp/webapp8399.html
+(Recording state in git...)
+"""]]
+
+Unless I'm going mad, there doesn't seem to be a daemon.log on my laptop.
+
+Daemon.log on the Mythbuntu machine:
+[[!format sh """
+[2013-07-14 10:38:56 BST] main: starting assistant version 4.20130627
+(scanning...) [2013-07-14 10:38:56 BST] Watcher: Performing startup scan
+(started...) [2013-07-14 10:38:57 BST] PairListener: aaron@Inspiron-14z:/home/shared/annex is sending a pair request.
+Generating public/private rsa key pair.
+Your identification has been saved in /tmp/git-annex-keygen.0/key.
+Your public key has been saved in /tmp/git-annex-keygen.0/key.pub.
+The key fingerprint is:
+bb:8c:66:05:22:8e:fa:e1:10:33:6d:cb:d6:57:e2:47 mythbuntu@mythbuntu-server
+The key's randomart image is:
++--[ RSA 2048]----+
+|                 |
+|                 |
+|                 |
+| .. . .          |
+|+oo. ...E        |
+|.*.o . +..       |
+|o = . o.o        |
+|.+ . .o+ .       |
+| .o  o. o        |
++-----------------+
+[2013-07-14 10:39:13 BST] main: Pairing with aaron@Inspiron-14z:/home/shared/annex in progress
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+fatal: The remote end hung up unexpectedly
+[2013-07-14 10:39:17 BST] PairListener: Syncing with Inspiron14z.local__home_shared_annex 
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+fatal: The remote end hung up unexpectedly
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+fatal: The remote end hung up unexpectedly
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+fatal: The remote end hung up unexpectedly
+Already up-to-date.
+Already up-to-date.
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+fatal: The remote end hung up unexpectedly
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+fatal: The remote end hung up unexpectedly
+Updating 82bf946..dfe0bd1
+Fast-forward
+[2013-07-14 10:39:56 BST] Pusher: Syncing with Inspiron14z.local__home_shared_annex 
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+fatal: The remote end hung up unexpectedly
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+fatal: The remote end hung up unexpectedly
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+fatal: The remote end hung up unexpectedly
+ssh: connect to host Inspiron-14z.local port 22: Connection refused
+fatal: The remote end hung up unexpectedly
+"""]]

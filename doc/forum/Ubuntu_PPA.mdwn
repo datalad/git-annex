@@ -1,0 +1,3 @@
+Is there a PPA that Ubuntu people are using to track the latest git-annex?
+
+The [Ubuntu install page](http://git-annex.branchable.com/install/Ubuntu/) mentions [https://launchpad.net/~rubiojr/+archive/git-annex](https://launchpad.net/~rubiojr/+archive/git-annex) which hasn't been updated for a while.

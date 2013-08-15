@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmB-gCGEs--zfmvYU-__Hj2FbliUXgxMDs"
+ nickname="Jakub"
+ subject="Path problems"
+ date="2012-07-13T19:15:15Z"
+ content="""
+Hi,
+
+I have a same 'git-annex-shell command not found' problem as above. I've installed git annex via cabal into my ~/.haskell_bin directory. Then I've added this dir both to ~/.bashrc and ~/.zshrc. I can run git annex or 'git annex-shell' and everything is fine. My guess is that haskell is trying to spawn git-annex-shell with some current $PATH unaware shell like dash maybe?
+
+I've fixed this behavior by using a really ugly hack - I've symlinked ~/.haskell_bin/git-annex-shell to /usr/bin/git-annex-shell on all my machines and the problem is gone. Somehow haskell (or whatever is trying to call git-annex-shell) is unaware of path modifications from .bashrc/.zshrc
+
+Here is the path modification I've used:
+
+export PATH=~/.haskell_bin:$PATH
+"""]]

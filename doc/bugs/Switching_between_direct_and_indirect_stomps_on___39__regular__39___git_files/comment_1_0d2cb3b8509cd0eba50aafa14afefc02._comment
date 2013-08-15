@@ -1,0 +1,63 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-08T19:44:29Z"
+ content="""
+I cannot reproduce this using the steps given. Transcript:
+
+<pre>
+joey@gnu:~/tmp>mkdir test
+joey@gnu:~/tmp>cd test
+joey@gnu:~/tmp/test>git init
+Initialized empty Git repository in /home/joey/tmp/test/.git/
+joey@gnu:~/tmp/test>git annex init
+init  ok
+(Recording state in git...)
+joey@gnu:~/tmp/test>echo file > file
+joey@gnu:~/tmp/test>echo file2 > file2
+joey@gnu:~/tmp/test>git add file
+joey@gnu:~/tmp/test>git annex add file2
+add file2 (checksum...) ok
+(Recording state in git...)
+joey@gnu:~/tmp/test>git annex direct
+commit  
+[master (root-commit) 8d49cac] commit before switching to direct mode
+ 2 files changed, 2 insertions(+)
+ create mode 100644 file
+ create mode 120000 file2
+ok
+direct file2 ok
+direct  ok
+joey@gnu:~/tmp/test>git annex indirect
+commit  (Recording state in git...)
+
+ok
+# On branch master
+# Changes not staged for commit:
+#   (use \"git add <file>...\" to update what will be committed)
+#   (use \"git checkout -- <file>...\" to discard changes in working directory)
+#
+#	typechange: file2
+#
+no changes added to commit (use \"git add\" and/or \"git commit -a\")
+ok
+indirect file2 ok
+indirect  ok
+ok
+joey@gnu:~/tmp/test>ls
+file  file2@
+joey@gnu:~/tmp/test>file file
+file: ASCII text
+joey@gnu:~/tmp/test>file file2
+file2: symbolic link to `.git/annex/objects/ZV/w4/SHA256E-s6--67ee5478eaadb034ba59944eb977797b49ca6aa8d3574587f36ebcbeeb65f70e/SHA256E-s6--67ee5478eaadb034ba59944eb977797b49ca6aa8d3574587f36ebcbeeb65f70e'
+joey@gnu:~/tmp/test>git log --oneline file 
+8d49cac commit before switching to direct mode
+</pre>
+
+I even tried to reproduce the bug on a mac in case it was somehow only happening on that OS, but still, no go. `file` remains checked into git as a normal file, it is not annexed.
+
+`git annex indirect` does not touch files unless they have a symlink committed to git. The code is pretty clear about that.
+
+Please post a complete transcript that goes all the way from repository creation to the bug happening.
+"""]]

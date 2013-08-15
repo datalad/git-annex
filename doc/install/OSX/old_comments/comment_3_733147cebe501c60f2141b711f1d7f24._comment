@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnnIQkoUQo4RYzjUNyiB3v6yJ5aR41WG8k"
+ nickname="Markus"
+ subject="Updated install instructions with homebrew"
+ date="2012-08-07T06:46:47Z"
+ content="""
+To install git annex with homebrew simply do:
+
+    brew update
+    brew install haskell-platform git ossp-uuid md5sha1sum coreutils pcre
+    cabal install git-annex
+
+Then link the binary to your `PATH` e.g. with
+
+    ln -s ~/.cabal/bin/git-annex* /usr/local/bin/
+"""]]

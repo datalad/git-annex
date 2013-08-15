@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="comment 2"
+ date="2012-10-25T21:29:05Z"
+ content="""
+Yes, the system is using LDAP as user backend... Any idea how I can use git-annex with LDAP as user backend?
+"""]]

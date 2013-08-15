@@ -1,0 +1,15 @@
+It would be extremely useful to have some additional ways to select files (for git annex copy/move/get and maybe others) based on the meta-information available to git-annex, rather than just by file or directory name.
+
+An example of what I'd like to do is this:
+
+    host1$ git annex copy --to usb-drive --missing-on host2
+
+This would check location tracking information and copy each file from host1's annex which is not present on host2 onto the usb-drive annex -- i.e. it's what I want when I need to do a sneakernet synchronisation of host1 and host2 (for backup purposes, for example). Note that of course I could copy --to host2, assuming network connectivity, but that would take a long time.
+
+There's probably other selectors that we can imagine; an obvious one could be --present-on <annex> -- useful for judiciously dropping only those files that you have easily available in a local annex (as you may want to keep files that are hard to make available even if --numcopies would nominally be satisfied).
+
+Other similar ideas for file content selectors:
+
+ * Files that have less than n, exactly n or more than n copies -- for when you need to satisfy your --numcopies policy over sneakernet.
+ * Files that are present (or not present) on some trusted annex -- for making sure you have trusted copies of everything.
+ * Boolean combinations of these filters -- "git annex drop --present-on lanserver1 --or --present-on lanserver2" or similar syntax, although obviously doing this in full generality may be quite fiddly.

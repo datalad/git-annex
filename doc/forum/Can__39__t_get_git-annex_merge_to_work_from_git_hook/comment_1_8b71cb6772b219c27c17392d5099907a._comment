@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://kallesoderman.myopenid.com/"
+ ip="85.224.35.48"
+ subject="Same problem here"
+ date="2013-08-14T20:20:42Z"
+ content="""
+I'm trying to achieve [[USB_backup_with_files_visible/]] but can't make the post-recieve or post-update hooks have any effect. The filesystem is vfat so there are some issues with mounting defaults and executables (do the hooks have to be executable?) but regardless of mount options no dice.
+
+ ``git-annex merge`` at the cli works perfectly. I havent been bitten by  files being deleted and propagated though.
+
+Manually merging ruins my \"late for work need to bring data but to tired to think properly\" use case.
+"""]]

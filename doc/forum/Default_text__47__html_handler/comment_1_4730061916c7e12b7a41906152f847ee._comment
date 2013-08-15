@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.252.11.120"
+ subject="comment 1"
+ date="2012-11-13T17:25:07Z"
+ content="""
+Not without exposing the secret token to other users in the system by passing it as a parameter to the browser command. Which is why it uses the method it does.
+
+But, you can configure it to use a specific browser in the standard git way:
+
+git config web.browser chromium
+"""]]

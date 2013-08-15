@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="comment 1"
+ date="2011-07-03T11:56:45Z"
+ content="""
+And what about emitting a warning, as git does, that some files were not annex-added (when not using --force)?
+"""]]

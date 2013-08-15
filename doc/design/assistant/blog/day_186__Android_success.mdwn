@@ -1,0 +1,33 @@
+I'm now successfully using git-annex at the command line on Android.
+`git annex watch` works too.
+
+For now, I'm using a git repository under `/data`, which is on a real,
+non-cripped filesystem, so symlinks work there.
+
+There's still the issue of running without any symlinks on `/mnt/sdcard`.
+While direct mode gets most of the way, it still uses symlinks in a few
+places, so some more work will be needed there. Also, git-annex uses hard
+links to lock down files, which won't work on cripped filesystems.
+
+Besides that, there's lots of minor porting, but no big show-stoppers
+currently.. Some of today's porting work:
+
+* Cross-compiled git for Android. While the Terminal IDE app has some git
+  stuff, it's not complete and misses a lot of plumbing commands git-annex
+  uses. My git build needs some tweaks to be relocatable without setting
+  `GIT_EXEC_PATH`, but it works.
+
+* Switched git-annex to use the Haskell glob library, rather than PCRE. This
+  avoids needing libpcre, which simplifies installation on several platforms
+  (including Android).
+
+* Made git-annex's `configure` hardcode some settings when cross-compiling
+  for Android, rather than probing the build system.
+
+* Android's built-in `lsof` doesn't support the -F option to use a
+  machine-readable output format. So wrote a separate lsof output parser for
+  the standard lsof output format. Unfortunatly, Android's lsof does not
+  provide any information about where a file is open for read or write, so
+  for safety, git-annex has to assume any file that's open might be written
+  to, and avoid annexing it. It might be better to provide my own lsof
+  eventually.

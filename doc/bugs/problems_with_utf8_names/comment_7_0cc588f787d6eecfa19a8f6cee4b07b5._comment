@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk6QAwUsFHpr3Km1yQbg8hf3S7RDYf7hX4"
+ nickname="Lauri"
+ subject="comment 7"
+ date="2012-01-28T00:21:40Z"
+ content="""
+7.2. nomeata already explained the issue. I got utf-8 filenames to work on a utf-8 locale by switching from Char8-bytestrings to UTF8-bytestrings, and adding `hSetEncoding h localeEncoding` to suitable places. Making things work properly with an arbitrary locale encoding would be more complicated.
+"""]]

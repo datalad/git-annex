@@ -1,0 +1,29 @@
+Short day because I spent 3 hours this morning explaining free software
+and kickstarter to an accountant. And was away until 3 pm, so how did I get
+all this done‽
+
+Eliot pointed out that shutting down the assistant could leave transfers
+running. This happened because `git annex transferkeys` is a separate
+process, and so it was left to finish up any transfer that was in
+process. I've made shutdown stop all transfers that the
+assistant started. (Other paired computers could still be connecting to
+make transfers even when the assistant is not running, and those are not
+affected.)
+
+Added sequence numbers to the XMPP messages used for git pushes. While
+these numbers are not used yet, they're available for debugging, and will
+help me determine if packets are lost or come out of order. So if you have
+experienced problems with XMPP syncing sometimes failing, run tonight's
+build of the assistant with `--debug` (or turn on debugging in the webapp
+configuration screen), and send me a log by email to
+<debuglogs201204@joeyh.name>
+
+Changed the way that autobuilds and manual builds report their version
+number. It now includes the date of the last commit, and the abbreviated
+commit ID, rather than being some random date after the last release.
+
+Frederik found a bug using the assistant on a FAT filesystem. It didn't
+properly handle the files that git uses to stand-in for symlinks in that
+situation, and annexed those files. I've fixed this, and even moving
+around symlink stand-in files on a FAT filesystem now results in correct
+changes to symlinks being committed.

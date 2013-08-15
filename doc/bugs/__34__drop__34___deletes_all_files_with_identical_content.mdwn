@@ -1,0 +1,49 @@
+# What steps will reproduce the problem?
+
+    echo "TEST CONTENT" > fileA
+    cp fileA fileB
+    git annex add file{A,B}
+    git annex drop fileA --force
+    cat fileB
+
+# What is the expected output? What do you see instead?
+
+## expected: 
+
+-->   TEST CONTENT
+
+## observed:
+
+-->   cat: fileB: No such file or directory
+
+
+# What version of git-annex are you using? On what operating system?
+
+git-annex version: 3.20121017
+
+# Please provide any additional information below.
+
+I really like git annex's feature, to store the same content only once. But as this happens transparently (i.e. the user does not need to no, nor is he told, that contents are identical (which is very comfortable, of course)), the "git annex drop" function is broken. For it effectively deleting (seemingly) random files, WITHOUT notifying the user.
+
+
+# Possible solution?
+
+One simple solution would be to use "git annex find" functionality to see who else uses the file and NOT deleting it.
+
+But this still leaves a problem:
+
+Consider the following variation of the above example and assume, that "drop" does not delete content that is still used (i.e. implementing the above solution). 
+
+    echo "TEST CONTENT" > fileA
+    cp fileA fileB
+    git annex add file{A,B}
+    git rm fileB
+    git annex drop fileA --force
+    git checkout --force
+    cat fileB
+-->  cat: fileB: No such file or directory
+
+Here again, the problem is, that the user would probably (correct me if I am wrong) expect that the fileB still exists, because removing a file and checking it out again is expected to not mess with the annex contents (?). He does not know, that the "annex frop fileA" actually drop fileB's contents, because there was no additional file linking to it. It effectively performed a "git annex dropunused".
+
+> We seem to have agreed this is reasonable behavior, and a doc change was done.
+> Do feel free to suggest other doc changes.. [[done]] --[[Joey]]

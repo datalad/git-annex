@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.236"
+ subject="comment 2"
+ date="2012-08-01T14:04:08Z"
+ content="""
+Hmm, my thought on putting it under Desktop is that'll let me install git-annex and tell my mom (really!) that files dragged to there are shared. Don't the other xdg directories get used as default save/open locations for things like word processors, so not need to be on the desktop?
+
+Although that may not be necessary. I've realized I can, at least on linux, easily make a button on the webapp that pops open the directory in the desktop's file manager.
+
+I guess another way of looking at the question is: Where does dropbox put its folder?
+"""]]

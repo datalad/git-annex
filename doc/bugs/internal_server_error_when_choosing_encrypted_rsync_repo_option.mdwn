@@ -1,0 +1,28 @@
+### Please describe the problem.
+I get this same internal server error when doing the encrypted rsync repo option:
+
+    user error (gpg ["--quiet","--trust-model","always","--gen-random","--armor","1","512"] exited 2)
+
+### What steps will reproduce the problem?
+
+1. click Configuration > repositories
+2. click Remote Server
+3. On "Ready to add remote server" screen click Use an encrypted repo
+
+Error pops up:
+
+Internal Server Error
+
+    user error (gpg ["--quiet","--trust-model","always","--gen-random","--armor","1","512"] exited 2)
+
+### What version of git-annex are you using? On what operating system?
+Currently using the file found here:
+
+http://downloads.kitenet.net/git-annex/OSX/current/10.7.5_Lion/
+
+Using MacOS 10.7.5 Lion
+
+[[!meta title="OSX gpg.conf auto-key-locate cert line breaks gpg in git-annex app"]]
+
+> [[done]]; all OSX builds now include a recent gpg that supports 
+> this option. --[[Joey]] 

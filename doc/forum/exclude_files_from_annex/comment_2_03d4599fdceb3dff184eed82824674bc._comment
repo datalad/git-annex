@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnSenxKyE_2Z6Wb-EBMO8FciyRywjx1ZiQ"
+ nickname="Walter"
+ subject="comment 2"
+ date="2013-05-19T21:35:37Z"
+ content="""
+This seems to have stopped happening, after I installed a newer version (from git) of git-annex.
+
+I might try and recreate it later, but for now it seems to work as expected.
+
+Thanks for your help.
+"""]]

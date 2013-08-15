@@ -1,0 +1,39 @@
+Got the bugfix release out.
+
+Tobias contributed [[tips/megaannex]], which allows using mega.co.nz as a
+special remote. Someone should do this with Flickr, using
+[filr](https://github.com/ricardobeat/filr). I have improved the
+[[special_remotes/hook]] special remote to make it easier to create
+and use reusable programs like megaannex.
+
+But, I am too busy rewriting lots of the XMPP code to join in the
+special remote fun. Spent all last night staring at protocol traces and
+tests, and came to the conclusion that it's working well at the basic
+communication level, but there are a lot of bugs above that level. This
+mostly shows up as one side refusing to push changes made to its tree,
+although it will happily merge in changes sent from the other side.
+
+The NetMessanger code, which handles routing messages to git commands and
+queuing other messages, seems to be just wrong. This is code I wrote in the
+fall, and have basically not touched since. And it shows. Spent 4 hours
+this morning rewriting it. Went all Erlang and implemented message inboxes
+using STM. I'm much more confident it won't drop messages on the
+floor, which the old code certainly did do sometimes.
+
+Added a check to avoid unnecessary pushes over XMPP. Unfortunately, this
+required changing the protocol in a way that will make previous versions of
+git-annex refuse to accept any pushes advertised by this version. Could not
+find a way around that, but there were so many unnecessary pushes happening
+(and possibly contributing to other problems) that it seemed worth the
+upgrade pain.
+
+Will be beating on XMPP a bit more. There is one problem I was seeing
+last night that I cannot reproduce now. It may have been masked or even
+fixed by these changes, but I need to verify that, or put in a workaround.
+It seemed that sometimes this code in `runPush` would run the setup
+and the action, but either the action blocked forever, or an exception
+got through and caused the cleanup not to be run.
+
+[[!format haskell """
+        r <- E.bracket_ setup cleanup <~> a
+"""]]

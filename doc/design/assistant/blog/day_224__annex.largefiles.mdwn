@@ -1,0 +1,23 @@
+Built a feature for power users today. `annex.largefiles` can be
+configured to specify what files `git annex add` and the assistant should
+put into the annex. It uses the same syntax as [[/preferred_content]],
+so arbitrarily complex expressions can be built.
+
+For example, a game written in C with some large data files could
+include only 100kb or larger files, that are not C code:
+
+	annex.largefiles = largerthan=100kb and not (include=*.c or include=*.h) 
+
+The assistant will commit small files to git directly!
+`git annex add`, being a lower level tool, skips small files
+and leaves it up to you to `git add` them as desired.
+
+It's even possible to tell the assistant that no file is too large to be
+committed directly to git. `git config annex.largefiles 'exclude=*'`
+The result should be much like using SparkleShare or dvcs-autosync.
+
+-----
+
+Also today, made the remote ssh server checking code in the webapp
+deal with servers where the default shell is csh or some other non-POSIX
+shell.

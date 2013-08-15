@@ -1,0 +1,26 @@
+Utility/WebApp.hs, didn't quite have the right definition to use 'open' instead of 'xdg-open' on OSX, the follow fixes that
+
+<pre>
+diff --git a/Utility/WebApp.hs b/Utility/WebApp.hs
+index 6936c66..0593dda 100644
+--- a/Utility/WebApp.hs
++++ b/Utility/WebApp.hs
+@@ -42,7 +42,7 @@ localhost = "localhost"
+ runBrowser :: String -> IO Bool
+ runBrowser url = boolSystem cmd [Param url]
+        where
+-#if MAC
++#if OSX
+                cmd = "open"
+ #else
+                cmd = "xdg-open"
+</pre>
+
+> [[done]], thanks
+
+I guess I should really clone the repo and submit a stream of minor changes
+:P, @joeyh please let me know if you're getting annoyed with copy and
+pasting the small fixes from the bug/forums section.
+
+> If you're going to be writing some patches, a git repo I can pull from
+> would make my life easier. --[[Joey]]

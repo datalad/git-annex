@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn7gQ1zZDdWhXy9H51W2krZYShNmKL3qfM"
+ nickname="Karsten"
+ subject="comment 1"
+ date="2013-01-20T08:11:37Z"
+ content="""
+Run 'git annex vicfg', locate the preferred content setting for your repository, uncomment it and set it to 'present'. Then it shouldn't move content automatically.
+"""]]

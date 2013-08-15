@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 17"
+ date="2012-12-01T23:08:50Z"
+ content="""
+Doesn't say anything to me..
+
+Using nohup might help, or at least get us an error message to see. Edit `git-annex.app/Contents/MacOS/git-annex-webapp` and make the last line:
+
+<pre>
+nohup \"$base/runshell\" git-annex webapp \"$@\"
+</pre>
+
+It'll put a nohup.out log file in your home directory, or somewhere like that.
+"""]]

@@ -1,0 +1,95 @@
+Below is a test case which shows a way that the git-annex branch
+can become corrupted and lose data, including location log records and
+uuid.log lines.
+
+At the end, a commit on the git-annex branch removes one of the 2 lines
+from the uuid.log; which should never happen.
+
+The actual problem occurs earlier, at the "push point". Here a repo is
+cloned from the main one, initialized (adding the last uuid.log line),
+and then pushed back to the main one. That push is a fast-forward, so is
+allowed to directly update the git-annex branch in the main repo:
+
+	b884fe5..c497739  git-annex -> git-annex
+
+Now the git-annex branch has a change that is not reflected in
+`.git/annex/index`, so the next time a change is made, it's committed
+using the out of date index, which causes a reversion of the changes
+that were pushed to the branch.
+
+---
+
+## Thoughts
+
+This is essentially the same reason why git blocks pushes to the checked-out
+branch of a non-bare repository. 
+
+This problem only affects workflows that involve pushing. Pulling workflows
+do not directly update the local git-annex branch, so avoid the problem.
+
+And while bare repos are pushed to, they rarely have changes made directly
+to their git-annex branches, so while I think the same problem could
+happen with pushing to a bare repo, it's unlikely.
+
+None of which is to say this is not a bad bug that needs to be comprehensively
+fixed. 
+
+Probably git-annex needs to record which ref of the git-annex branch
+corresponds to its index, and if the branch is at a different ref,
+merge it into the index.
+
+> And now that's [[done]]. I managed to do it with very little slowdown.
+> 
+> A side benefit is that users can now safely check out the git-annex
+> branch and commit changes to it, and git-annex will notice them.
+> Before, it was documented to ignore such changes.
+> --[[Joey]] 
+
+---
+
+## Workaround
+
+Users who want to prevent this bug from occuring when pushing to their
+non-bare repositories can install this script as `.git/hooks/update`
+
+<pre>
+#!/bin/sh
+if [ "$1" = refs/heads/git-annex ]; then
+	exit 1
+fi
+</pre>
+
+--[[Joey]] 
+
+---
+
+## Test Case
+<pre>
+#!/bin/sh
+mkdir annextest
+cd annextest
+
+git init dir1
+cd dir1
+git annex init
+touch foo 
+echo hi > bar
+git annex add
+git commit -m add
+
+cd ..
+git clone dir1 dir2
+cd dir2
+git annex init otherdir
+git annex get
+# push point
+git push
+
+cd ..
+cd dir1
+echo "before"
+git show git-annex:uuid.log
+git annex drop foo --force
+echo "after"
+git show git-annex:uuid.log
+</pre>

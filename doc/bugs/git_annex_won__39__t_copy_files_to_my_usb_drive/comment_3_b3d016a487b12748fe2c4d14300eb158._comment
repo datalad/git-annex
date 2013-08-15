@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 3"
+ date="2013-02-25T14:24:29Z"
+ content="""
+This is still weird though.
+
+Setup: I have my home drive, an ssh remote, and a usb remote.
+
+Home drive is a \"client\" and the other two are \"backups.\"  numcopies = 2.
+
+WHen I start the assistant and watch it in the webapp, it starts furiously copying content in \"archive\" subdirectories from the USB remote to the home drive, and then dropping it from the USB remote!
+
+I then kill the assistant because I do not want content dropped from my backup, that's why it's a backup.
+
+Is there any way to tell *why* the assistant is doing this crazy thing?
+
+
+"""]]

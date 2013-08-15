@@ -1,0 +1,19 @@
+As well as making a new release, I rewrote most of the Makefile, so that it
+uses cabal to build git-annex. This avoids some duplication, and most
+importantly, means that the Makefile can auto-detect available libraries
+rather than needing to juggle build flags manually. Which was becoming a
+real pain.
+
+I had avoided doing this before because cabal is slow for me on my little
+netbook. Adding ten seconds to every rebuild really does matter! But I came
+up with a hack to let me do incremental development builds without the
+cabal overhead, by intercepting and reusing the ghc command that cabal
+runs.
+
+There was also cabal "fun" to get the Android build working with cabal.
+And more fun involving building the test suite. For various reasons, I
+decided to move the test suite into the git-annex binary. So you can run
+`git annex test` at any time, any place, and it self-tests. That's a neat
+trick I've seen one or two other programs do, and probably the nicest thing
+to come out of what was otherwise a pretty yak shaving change that involved
+babysitting builds all day.

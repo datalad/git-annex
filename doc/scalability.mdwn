@@ -1,0 +1,44 @@
+git-annex is designed for scalability. The key points are:
+
+* Arbitrarily large files can be managed. The only constraint
+  on file size are how large a file your filesystem can hold.
+
+  While git-annex does checksum files by default, there
+  is a [[WORM_backend|backends]] available that avoids the checksumming
+  overhead, so you can add new, enormous files, very fast. This also
+  allows it to be used on systems with very slow disk IO.
+
+* Memory usage should be constant. This is a "should", because there
+  can sometimes be leaks (and this is one of haskell's weak spots),
+  but git-annex is designed so that it does not need to hold all
+  the details about your repository in memory.
+
+  The one exception is that [[todo/git-annex_unused_eats_memory]],
+  because it *does* need to hold the whole repo state in memory. But
+  that is still considered a bug, and hoped to be solved one day.
+  Luckily, that command is not often used.
+
+* Many files can be managed. The limiting factor is git's own
+  limitations in scaling to repositories with a lot of files, and as git
+  improves this will improve. Scaling to hundreds of thousands of files
+  is not a problem, scaling beyond that and git will start to get slow.
+
+  To some degree, git-annex works around inefficiencies in git; for
+  example it batches input sent to certain git commands that are slow
+  when run in an enormous repository.
+
+* It can use as much, or as little bandwidth as is available. In
+  particular, any interrupted file transfer can be resumed by git-annex.
+
+## scalability tips
+
+* If the files are so big that checksumming becomes a bottleneck, consider
+  using the [[WORM_backend|backends]]. You can always `git annex migrate`
+  files to a checksumming backend later on.
+
+* If you're adding a huge number of files at once (hundreds of thousands),
+  you'll soon notice that git-annex periodically stops and say
+  "Recording state in git" while it runs a `git add` command that
+  becomes increasingly expensive. Consider adjusting the `annex.queuesize`
+  to a higher value, at the expense of it using more memory.
+

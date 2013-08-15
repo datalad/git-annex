@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 4"
+ date="2013-04-08T18:25:48Z"
+ content="""
+Interesting that you say .gitignore doesn't work with assistant because.. it definitely does.
+
+    $ git init /tmp/annex-test
+    $ cd /tmp/annex-test
+    $ git annex init
+    $ echo \"file.test\" > .gitignore
+    $ git annex assistant
+    $ echo \"test1\" > file.test
+    $ echo \"test2\" > file2.test
+
+yields this log file:
+    
+    (scanning...) [2013-04-08 19:17:03 BST] Watcher: Performing startup scan
+    (started...) 
+    [2013-04-08 19:17:10 BST] Committer: Adding file2.test
+    add file2.test (checksum...) [2013-04-08 19:17:10 BST] Committer: Committing changes to git
+    (Recording state in git...)
+    (Recording state in git...)
+    [2013-04-08 19:17:11 BST] Committer: Committing changes to git
+
+git annex find:
+
+    file2.test
+
+On the previous files, the log shows all failed files being added to the annex find after the assistant was restarted (daemon.log.1) so I would imagine 'git annex add' would have worked fine too.
+
+Right now, I'm just running
+    while true; do git annex add; sleep 1; done
+in the annex directory, which gives me (expensive) watch-like behaviour, with fairly clear output for me to confirm everything has been added. 
+"""]]

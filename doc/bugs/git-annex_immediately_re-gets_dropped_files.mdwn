@@ -1,0 +1,27 @@
+### Please describe the problem.
+
+I have some files that I want to drop from my laptop. However, as soon as I drop them (git-annex drop), the assistant starts to download them again from another repository. At first glance, this seems like a variant of [[bugs/Handling_of_files_inside_and_outside_archive_directory_at_the_same_time]].
+
+I would expect that after an explicit drop command, the files would not be re-downloaded.
+
+The repository that this is happening on is a "client" type, direct-mode repository.
+
+### What steps will reproduce the problem?
+
+    git annex drop drop-test/TestFile.data
+
+### What version of git-annex are you using? On what operating system?
+    git-annex version: 4.20130618-g333cb8e
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+    local repository version: 4
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+
+    I am running Ubuntu 13.04
+
+### Please provide any additional information below.
+
+log emailed.
+
+> [[done]]; not a bug, should use manual mode if manually deciding which files are in a repository --[[Joey]] 

@@ -1,0 +1,19 @@
+I have a need to use git-annex from a larger program. It'd be great if the information output by some of the commands that is descriptive (for example, whereis) could be sent to stdout in a machine-readable format like (preferably) JSON, or XML. That way I can simply read in the output of the command and use the data directly instead of having to parse it via regexes or other such string manipulation.
+
+This could perhaps be triggered by a --json or --xml flag to the relevant commands.
+
+> This is [[done]], --json is supported by all commands, more or less.
+> 
+> Caveats: 
+> 
+>  * the version, status, and find commands produce custom output and so
+>    no json. This could change for version and status; find needs to just
+>    be a simple list of files, I think 
+>  * The "note" fields may repeat multiple times per object with different
+>    notes and are of course not machine readable, and subject to change.
+>  * Output of helper commands like rsync is not diverted away, and
+>    could clutter up the json output badly. Should only affect commands
+>    that transfer data. And AFAICS, wget and rsync both output their
+>    progress displays to stderr, so shouldn't be a problem.
+> 
+> --[[Joey]] 

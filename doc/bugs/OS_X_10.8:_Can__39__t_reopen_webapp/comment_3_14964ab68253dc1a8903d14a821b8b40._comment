@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl-BU4KfFktO2-bqaFmlArHta0Oy7zJrCs"
+ nickname="J. Ryan"
+ subject="Thanks!"
+ date="2013-07-29T14:44:42Z"
+ content="""
+I was unaware of both `git-annex-webapp` command as well as the `webapp.html` file it appears to open, so now I have two approaches to get back into the webapp.
+
+It does seem like it would be nice if future double-clicks on the app itself triggered the page to open, but at least now I have some way to get there.
+"""]]

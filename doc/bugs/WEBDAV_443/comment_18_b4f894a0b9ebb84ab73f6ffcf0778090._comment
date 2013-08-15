@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="https://pradermecker.myopenid.com/"
+ ip="195.244.162.7"
+ subject="It works !"
+ date="2013-03-19T10:40:31Z"
+ content="""
+Sorry for the wild tangents.
+
+It is now working. I am not sure what went wrong.
+
+For the record here are the steps I took (all using the Git annex UI):
+
+* Set up removable media -> OK
+* Set up remote SSH -> missing lsof -> install it -> everything OK
+* Set up S3  -> had issue with time -> solve it with ntp -> everything OK
+* Try again WebDav -> \"Conflict\" message -> try using another dir -> everything OK
+
+There might be a \"cleanup after error problem\" somewhere that would explain the conflict message I have received.
+
+Again for the record, I made it works inside a VM using the AUR \"git-annex 4.20130314-1\" (not the standalone). The only change I made on the PKGBUILD was to install everything with cabal except for the packages in the [haskell-core] Arch repo. I know you are not aware with Arch but basically I choose not to rely on the [haskell-web] Arch repo.
+
+I will try again at home on my laptop and I will try the standalone as well.
+
+Thanks you so much for the wonderful product !
+
+Cheers
+
+
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk6QAwUsFHpr3Km1yQbg8hf3S7RDYf7hX4"
+ nickname="Lauri"
+ subject="comment 5"
+ date="2012-01-26T22:13:18Z"
+ content="""
+I also encountered Adam's bug. The problem seems to be that communication with the git process is done with `Char8`-bytestrings. So, when `L.unpack` is called, all filenames that git outputs (with `ls-files` or `ls-tree`) are interpreted to be in latin-1, which wreaks havoc if they are really in UTF-8.
+
+I suspect that it would be enough to just switch to standard `String`s (or `Data.Text.Text`) instead of bytestrings for textual data, and to `Word8`-bytestrings for pure binary data. GHC should nowadays handle locale-dependent encoding of `String`s transparently.
+
+"""]]

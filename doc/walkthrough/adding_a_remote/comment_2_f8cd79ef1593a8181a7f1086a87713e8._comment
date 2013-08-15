@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-03-19T15:35:38Z"
+ content="""
+Yes, you have to pull down location tracking information in order for fsck to be satisfied in that situation. But since this is a walkthrough, and neither fsck or numcopies settings are mentioned until later, it's ok for this pull to be described a few steps along in [[getting file content]].
+
+"""]]

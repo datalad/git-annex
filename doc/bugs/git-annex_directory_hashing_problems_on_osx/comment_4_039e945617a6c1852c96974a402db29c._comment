@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 4"
+ date="2011-03-28T15:41:56Z"
+ content="""
+In my \"sources\" repo on x00, the current setting is this \"ignorecase = true\" it was the first repo that I created before I clone it elsewhere and pull my changes back, it is on a HFS+ partition which is case insensitive and it is replicated on a portable hdd with a bare repo on a exfat partition. I wonder if my portable disk has a partially borked repo :P
+"""]]

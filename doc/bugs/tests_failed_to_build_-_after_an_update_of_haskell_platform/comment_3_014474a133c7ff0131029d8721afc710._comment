@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn7gQ1zZDdWhXy9H51W2krZYShNmKL3qfM"
+ nickname="Karsten"
+ subject="Testpack install fails on ubuntu 12.04"
+ date="2013-02-28T10:42:36Z"
+ content="""
+The current release (git-annex-4.20130227, via cabal) fails to install because testpack-2.1.2 fails to install:
+
+    karsten@vdr1:~$ cabal install --bindir $HOME/bin git-annex
+    Resolving dependencies...
+    Configuring testpack-2.1.2...
+    Building testpack-2.1.2...
+    Preprocessing library testpack-2.1.2...
+    [1 of 3] Compiling Test.QuickCheck.Instances ( src/Test/QuickCheck/Instances.hs, dist/build/Test/QuickCheck/Instances.o )
+    [2 of 3] Compiling Test.QuickCheck.Tools ( src/Test/QuickCheck/Tools.hs, dist/build/Test/QuickCheck/Tools.o )
+    
+    src/Test/QuickCheck/Tools.hs:33:9:
+        Warning: Fields of `MkResult' not initialised: abort
+        In the expression:
+          MkResult
+            {ok = Just (expected == actual), expect = True,
+             interrupted = False,
+             reason = \"Result: expected \"
+                      ++ show expected ++ \", got \" ++ show actual,
+             stamp = [], callbacks = []}
+        In an equation for `@=?':
+            expected @=? actual
+              = MkResult
+                  {ok = Just (expected == actual), expect = True,
+                   interrupted = False,
+                   reason = \"Result: expected \"
+                            ++ show expected ++ \", got \" ++ show actual,
+                   stamp = [], callbacks = []}
+    [3 of 3] Compiling Test.HUnit.Tools ( src/Test/HUnit/Tools.hs, dist/build/Test/HUnit/Tools.o )
+    
+    src/Test/HUnit/Tools.hs:131:57:
+        `maxDiscard' is not a (visible) constructor field name
+    
+    src/Test/HUnit/Tools.hs:177:40: Not in scope: `maxDiscard'
+    cabal: Error: some packages failed to install:
+    git-annex-4.20130227 depends on testpack-2.1.2 which failed to install.
+    testpack-2.1.2 failed during the building phase. The exception was:
+    ExitFailure 1
+
+Manually installing testpack gives Version testpack-2.1.2.1 which installs correctly. Maybe the dependencies should be updated?
+"""]]

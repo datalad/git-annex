@@ -1,0 +1,37 @@
+What steps will reproduce the problem?
+
+Use assistant and create repository the a folder in home dir.
+Use textedit and save a new txt to the repository folder. 
+
+What is the expected output? What do you see instead?
+
+The alias solution is broken. It should work more like Dropbox.
+Textedit saves the file initially, but it is immediately locked.
+Since it autosaves, it asks to unlock or duplicate.
+Then gives the error:
+"The file “Untitled 16.txt” cannot be unlocked."
+
+If the file exists:
+The document “Untitled 14” could not be saved as “Untitled 14.txt”. You don’t have permission.
+
+If you open a file from the repository (now replaced by a symlink) with textedit, there are other problems:
+- The filename will not be correct (will show the sha hash). 
+- It will ask to unlock, then give the error "You don’t have permission to write to the folder that the file “SHA256E-s8--8985d9832de2e28b5e1af64258c391a34d7528709ef916bac496e698c139020c.txt” is in."
+
+What version of git-annex are you using? On what operating system?
+
+OSX Lion
+git-annex version: 3.20120924
+
+Please provide any additional information below.
+
+Even if you fix these problems, automatic versioning in lion will probably don't work, and the symlinks seem a hackish solution and don't seem intuitive or easy to the end user. 
+The sync should be transparent but it's not, and it's error prone. It would even be best to keep file copies in the git repo and sync them with the original folder than make symlinks.
+
+Dropbox even allows to put a symlink in the dropbox directory, and it will sync the file. 
+
+[[!tag /design/assistant/OSX]]
+
+> Now the assistant creates new repositories using direct mode on OSX.
+> In direct mode, there is no locking of files; they can be modified
+> directly. [[done]] --[[Joey]]

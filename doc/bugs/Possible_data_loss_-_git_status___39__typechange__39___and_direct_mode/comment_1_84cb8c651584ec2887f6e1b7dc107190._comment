@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="203.45.2.230"
+ subject="comment 1"
+ date="2013-01-17T02:13:03Z"
+ content="""
+Should g-a encourage users to *not* `git add` files with the typechange attribute?
+"""]]

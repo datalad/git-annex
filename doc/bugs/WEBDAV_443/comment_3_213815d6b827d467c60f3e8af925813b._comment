@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-03-17T21:07:50Z"
+ content="""
+Seems that I misdiagnosed this. The error message from the bad TLS library was about a had certificate, not \"user error\" (which, confusingly, does not mean what user error normally means!).
+
+Also, I see you reported this at <https://aur.archlinux.org/packages/git-annex/>, so you're using that build and not the \"git-annex-bin\" build at <https://aur.archlinux.org/packages.php?ID=63503>. The Arch Linux build that's done from source couldn't be affected by the Debian-spefific TLS bug anyway.
+
+I am reopening this bug report. 
+
+Now, FailedConnectionException could be any of several things, but I noticed that someone else (perhaps cooindidentially using Arch Linux) reported the same error message here: [[Proxy_support]]. I wonder if you perhaps also have a http proxy that could be causing trouble.
+"""]]

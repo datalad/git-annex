@@ -1,0 +1,31 @@
+Felt like spending my birthday working on git-annex. Thanks again to
+everyone who makes it possible for me to work on something I care about
+every day.
+
+----
+
+Did some work on `git annex addurl` today. It had gotten broken in direct
+mode (I think by an otherwise good and important bugfix). After fixing
+that, I made it interoperate with the webapp. So if you have the webapp
+open, it will display progress bars for downloads being run by `git annex
+addurl`.
+
+This enhancement meshes nicely with a FlashGot script Andy
+contributed, which lets you queue up downloads into your annex from a web
+browser. Andy described how to set it up in
+[[this_tip|tips/Using_Git-annex_as_a_web_browsing_assistant]].
+
+(I also looked briefly into ways to intercept a drag and drop of a link
+into the webapp and make it lauch a download for you. It doesn't seem that
+browsers allow javascript to override their standard behavior of loading
+links that are dropped into them. Probably good to prevent misuse, but it
+would be nice here...)
+
+----
+
+Also, I think I have fixed the progress bars displayed when downloading
+a file from an encrypted remote. I did this by hooking up existing
+download progress metering (that was only being used to display
+a download percentage in the console) into the location log, so the
+webapp can use it. So that was a *lot* easier than it could have been,
+but still a pretty large patch (500+ lines). Haven't tested this; should work.

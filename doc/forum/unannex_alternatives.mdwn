@@ -1,0 +1,9 @@
+what is the work flow to get a file that is in git-annex out of there and into git? (current situation: `git-annex add`ed a bunch of pictures, later found make files in there which i'd rather have in git for proper source code control)
+
+the most intuitive thing to do is `git unannex`, which at first seemed to do the right thing, but when committing there came the hook and everything was back to where it was before.
+
+i could disable the hook as a workaround, but that doesn't smell like a good work flow.
+
+the [[man page|git-annex]] does warn that `unannex` is only supposed to be used against unintentional `git annex add`s (probably meaning that it should be used before something is committed), but the alternatives it suggests (`git rm` and `git annex drop`) don't to what i want to do.
+
+am i missing something or is there really no work flow for this? --[[chrysn]]

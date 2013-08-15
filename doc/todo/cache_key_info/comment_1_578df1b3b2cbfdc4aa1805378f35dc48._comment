@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-05-17T07:27:02Z"
+ content="""
+Sounds like a good idea.
+
+* git annex fsck (or similar) should check/rebuild the caches
+* I would simply require a clean tree with a verbose error. 80/20 rule and defaulting to save actions.
+"""]]

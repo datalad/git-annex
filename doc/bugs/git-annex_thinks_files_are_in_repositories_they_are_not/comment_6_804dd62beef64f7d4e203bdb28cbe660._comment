@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnSenxKyE_2Z6Wb-EBMO8FciyRywjx1ZiQ"
+ nickname="Walter"
+ subject="comment 6"
+ date="2013-04-16T22:40:04Z"
+ content="""
+I am running the webapp, and thought that changes get made immediately?
+Especially, these are files that I never manually commit/add/anything, and are not modified after creation even.
+
+Specifically, in my previous comment, files New1 and New1.txt are (to my eyes) created and treated identically, yet `git annex whereis` gives different results.
+"""]]

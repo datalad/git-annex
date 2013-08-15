@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 3"
+ date="2013-07-13T15:05:53Z"
+ content="""
+With git-annex built from current Git (i.e. the mtime fix for `git annex fix/add` applied), I have imported directory structure and objects (I will write a blog post along with scripts and pitfalls about that once the process is totally finished) and been running `git annex add` and `git mv` repeatedly to keep things up to date.
+
+As I now need to rename a few files with globs (`zmv`/`rename`) where `git mv` does not really cut it, I am in between a rock and a hard place. Most likely, I will `git checkout -- .`, rename, and `git annex add` again. I am pretty sure that `git annex add` does not do anything other than staging in the current branch and does not touch the `git-annex` branch. But I don't _know_.
+
+Long story short, it would make both my workflow easier and give me more peace of mind if there was a `git annex fix --untracked` or similar which does exactly the same, but operates on files that are not checked in and/or staged.
+
+As an aside, `git annex fsck --untracked` which is basically `git annex fsck --numcopies=1` on untracked files would be.... awesome.
+
+"""]]

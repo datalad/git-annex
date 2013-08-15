@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.141"
+ subject="comment 1"
+ date="2012-09-25T22:57:19Z"
+ content="""
+The best first step to adding such kinds of data stores to git-annex is probably to use the [[special_remotes/hook]] special remote to access them. 
+"""]]

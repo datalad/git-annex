@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="comment 5"
+ date="2011-12-13T18:47:18Z"
+ content="""
+After some experimentation, this seems to work better:
+
+    	git commit -a -m 'git annex sync'
+	git merge git-annex-master
+	for remote in $(git remote)
+	do
+		git fetch $remote
+		git merge $remote git-annex-master
+	done
+	git branch -f git-annex-master
+	git annex merge
+	for remote in $(git remote)
+	do
+		git push $remote git-annex git-annex-master
+	done
+
+Maybe this approach can be enhance to skip stuff gracefully if there is no git-annex-master branch and then be added to what \"git annex sync\" does, this way those who want to use the feature can do so by running \"git branch git-annex-master\" once. Or, if you like this and want to make it default, just make git-annex-init create the git-annex-master branch :-)
+"""]]

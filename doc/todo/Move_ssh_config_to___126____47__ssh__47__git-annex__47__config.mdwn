@@ -1,0 +1,7 @@
+### Please describe the problem.
+Instead of storing config for each remote in ~/.ssh/config, which mixes the user own config with that of git-annex-assistant, which is irritating if (like me) you store your ssh config in a vcs. Since the option -F allows the choice of the config file, it should be possible to move the config into ~/.ssh/git-annex/config. The only issue I see is according to the ssh man page on my system states that the system-wide config is ignored if a config file is specified on the command line.
+
+### What version of git-annex are you using? On what operating system?
+I'm using git-annex 4.20130601 on a Debian Testing/Unstable/Experimental mix.
+
+[[!tag design/assistant]]

@@ -1,0 +1,48 @@
+For the record, there is a slight weirdness with how git-annex
+handles a signal like ctrl-c.
+
+For example:
+
+	joey@gnu:~/tmp/b>git annex copy a b --to origin
+	copy a (checking origin...) (to origin...) 
+	SHA256-s104857600--20492a4d0d84f8beb1767f6616229f85d44c2827b64bdbfb260ee12fa1109e0e
+	        3272   0%    0.00kB/s    0:00:00  ^C
+	zsh: interrupt  git annex copy a --to origin
+	joey@gnu:~/tmp/b>
+	rsync error: unexplained error (code 130) at rsync.c(549) [sender=3.0.9]
+
+Here git-annex exits before rsync has fully exited. Not a large problem
+but sorta weird.
+
+The culprit is `CmdLine.startup` in Utility.SafeCommand, which installs
+a default signal handler for SIGINT, which causes it to immediatly
+terminate git-annex. rsync, in turn, has its own SIGINT handler, which 
+prints the message, typically later.
+
+(Why it prints that message and not its more usual message about having
+received a signal, I'm not sure?)
+
+It's more usual for a `system` like thing to block SIGINT, letting the child
+catch it and exit, and then detecting the child's exit status and terminating. 
+However, since rsync *is* trapping SIGINT, and exiting nonzero explicitly,
+git-annex can't tell that rsync failed due to a SIGINT by examining the
+`waitpid` result.
+And, git-annex typically doesn't stop when a single child fails. In the
+example above, it would go on to copy `b` after a ctrl-c!
+
+A further complication is that git-annex is itself a child process
+of git, which does not block SIGINT either. So if git-annex blocks SIGINT,
+it will be left running in the background after git exits, and continuing
+with further actions too. (Perhaps its SIGINT handling is a bug in git.)
+
+Now, rsync does have a documented exit code it uses after a SIGINT.
+But other programs git-annex runs generally do not. So it would be possible
+to special case in support for rsync, blocking SIGINT while running it,
+noticing it exited with 20, and git-annex then stopping. But this is
+ugly and failure prone if rsync's code 20 changes. And it only
+would fix the rsync case, not helping with other commands like wget, unless
+it assumes they never trap SIGINT on their own.
+
+Which is why the current behavior of not blocking SIGINT was chosen,
+as a less bad alternative. Still, I'd like to find a better one.
+--[[Joey]] 

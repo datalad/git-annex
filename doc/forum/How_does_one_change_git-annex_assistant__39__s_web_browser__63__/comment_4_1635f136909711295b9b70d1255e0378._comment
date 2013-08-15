@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBJ6Dv1glxzzi4qIzGFNa6F-mfHIvv9Ck"
+ nickname="Jim"
+ subject="Doesn't use the configured web browser app..."
+ date="2012-12-04T23:10:43Z"
+ content="""
+On my system, `xdg-open http://google.com/` opens firefox as desired, but `xdg-open file:///tmp/foo.html` tries to load **wine**!
+I'm using xfce, and it seems like exo-open is noticing the `file://` URL, finding the mime type, and looking it up in `~/.local/share/applications/wine-extension-html.desktop`, which was (annoyingly) created by wine.  Deleting those files fixes it.
+
+Not sure how you'd make this better.  Maybe give xdg-open a URL like `http://localhost:54896/?authfile=...` that redirects to `file:///tmp/webapp12345.html` that redirects to `http://localhost:54896/?auth=...` ?
+"""]]

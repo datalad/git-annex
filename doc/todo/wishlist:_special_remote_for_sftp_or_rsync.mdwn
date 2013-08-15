@@ -1,0 +1,28 @@
+i think it would be useful to have a fourth kind of [[special_remotes]]
+that connects to a dumb storage using sftp or rsync. this can be emulated
+by using sshfs, but that means lots of round-trips through the system and
+is limited to platforms where sshfs is available.
+
+typical use cases are backups to storate shared between a group of people
+where each user only has limited access (sftp or rsync), when using
+[[special_remotes/bup]] is not an option.
+
+an alternative to implementing yet another special remote would be to have
+some kind of plugin system by which external programs can provide an
+interface to key-value stores (i'd implement the sftp backend myself, but
+haven't learned haskell yet).
+
+> Ask and ye [[shall receive|special_remotes/rsync]].
+> 
+> Sometimes I almost think that a generic configurable special remote that
+> just uses configured shell commands would be useful.. But there's really
+> no comparison with sitting down and writing code tuned to work with
+> a given transport like rsync, when it comes to reliability and taking
+> advantage of its abilities (like resuming). --[[Joey]]
+
+>> big thanks, and bonus points for identical formats, so converting from
+>> directory to rsync is just a matter of changing ``type`` from ``directory``
+>> to ``rsync`` in ``.git-annex/remote.log`` and replacing the directory info
+>> with ``annex-rsyncurl = <host>:<dir>`` in ``.git/config``. --[[chrysn]]
+
+[[done]]

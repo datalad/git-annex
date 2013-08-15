@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://rjc.pip.verisignlabs.com/"
+ ip="86.22.66.200"
+ subject="assistant in Debian"
+ date="2012-09-30T09:10:17Z"
+ content="""
+The same version of ghc in Debian repository on i386 and amd64 privides ghc-ghci virtual package while on all the other architectures it doesn't. Is that normal or shall I file a bug?
+
+What it basically means is that the packages, both git-annex (with assistant) and its build dependencies, for all the other archs cannot be build on Debian porting machines until that is fixed. It already is in the experimental version but until that one gets to unstable there won't be any official debs for all non-Intel architecures.
+"""]]

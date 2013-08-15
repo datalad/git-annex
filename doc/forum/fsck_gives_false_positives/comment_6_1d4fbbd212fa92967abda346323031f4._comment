@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWQTrnPloMWiPFg8Y2Y5g-2IYe26D0KKw"
+ nickname="Jim"
+ subject="comment 6"
+ date="2012-07-07T16:18:06Z"
+ content="""
+It's also possible you got a one-time DRAM corruption.  You have to expect those to happen every so often unless you're using ECC memory.
+"""]]

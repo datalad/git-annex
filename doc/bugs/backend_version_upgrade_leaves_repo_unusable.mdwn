@@ -1,0 +1,72 @@
+foo is a local repo, bar is a bare remote.
+
+I upgraded foo's git-annex to 0.20110325 and upgraded a local repo backend
+to version 2. I then ran `git annex copy . --to bar` and checked the
+remote. This created WORM:SHA512--123123 files in annex/objects.
+Understandable but unwanted. So I upgraded git-annex on bar's machine, as
+well.
+
+    % git annex copy . --to bar
+    copy quux (checking bar) git-annex-shell: Repository version 1 is not supported. Upgrade this repository: git-annex upgrade (to bar)
+    git-annex-shell: Repository version 1 is not supported. Upgrade this repository: git-annex upgrade
+    rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+    rsync error: error in rsync protocol data stream (code 12) at io.c(601) [sender=3.0.7]
+    
+      rsync failed -- run git annex again to resume file transfer
+    failed
+
+Running `git annex upgrade` on bar's machine I get:
+
+    % git annex upgrade
+    upgrade  (v1 to v2) (moving content...) git-annex: Prelude.read: no parse
+
+Again, bar is a bare repo.
+Running the copy job again, I am still getting the same error as above (as expected). Partial contents of annex/objects on bar:
+
+    [...]
+    SHA512:123
+    WORM:SHA512--234
+    [...]
+
+
+-- RichiH
+
+> Upgrading bare repos to v2 generally works fine, so I actually need
+> to see the full content of annex/, not a fragment, in order to debug this.
+> (Filename contents I don't need to see.) Feel free to email me the details at
+> joey@kitenet.net if you don't want to post them here. --[[Joey]]
+
+>> Sent. -- RichiH
+
+>>> Ok, I'm going to go work on my reading comprehension. I see now
+>>> that you
+>>> explained the problem pretty well. The problem is caused by these
+>>> few weird v1 mixed with v2 keys in the annex.
+>>> Ones like "annex/objects/WORM:SHA512--$sha512".
+>>>
+>>> That's a v1 key, but a corrupt form of the key; it's missing the 
+>>> size and mtime fields that all WORM keys have in v1. And 
+>>> the filename is itself a key, a v2 SHA512 key. These were
+>>> created when you did the `git annex copy to the v1 bare repo.
+>>> In v2, git-annex-shell takes a full key object, while in v1,
+>>> it takes a key name and a backend name. This incompatability
+>>> leads to the weird behavior seen.
+>>>
+>>> I had suggested you delete data.. don't. On second thought,
+>>> you shouldn't delete anything. I'll simply make the v2 upgrade
+>>> detect and work around this bug.
+>>> --[[Joey]]
+
+>>>> This should be fixed in current git. The scambled keys will be 
+>>>> fixed up on upgrade. Thanks for your patience! [[done]] --[[Joey]]
+
+>>>>> I should stop reading your answers via git; by the time I got to
+>>>>> "second thoughts", I had already deleted the files & directories
+>>>>> in question, upgraded the bare repo and was busy uploading from my
+>>>>> local repo. I agree that taking care of this in the upgrade code
+>>>>> is the cleanest approach, by the way.
+>>>>> No need to thank me for my patience; thank you for your quickness!
+>>>>> RichiH
+>>>>> 
+>>>>> PS: If I get a handle on the mtime issue in the SHA backend, git
+>>>>> annex will be pretty much perfect :)

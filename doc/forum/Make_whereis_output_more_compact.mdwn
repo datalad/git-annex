@@ -1,0 +1,13 @@
+Hi there,
+
+first of all, great job done on annex! I think I finally found what I was looking for to organize all my data.
+
+My question: when I do git annex whereis Music, I get a detailed list of every single song and its remote locations. I have tens of thousands of songs, so just typing git annex whereis Music gives me way too much information. 
+Here is my proposition: in my case, every file of the Music folder resides in the same remote. So, wouldn't it be better to show just one line of output telling me that Music is on remote bla and blub, and then I know that all files in Music are in remotes bla and blub?
+
+Is that possible now already or would that be a feature request? What do you think?
+
+Cheers,
+Moritz.
+
+PS: I know that I can specify filters, e.g. git annex whereis --in bla --and --not --in blub. That is great!

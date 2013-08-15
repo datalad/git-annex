@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.253.75"
+ subject="comment 15"
+ date="2013-02-22T22:26:22Z"
+ content="""
+I'm seeing a pattern with Android 2.3 failing.. 
+
+This failure mode suggests that the bug is in the installation script. The next build will make the terminal not exit immediately if that script fails, so you can go in to the shell and run it by hand to see what's going wrong.
+"""]]

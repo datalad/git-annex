@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="comment 6"
+ date="2013-01-10T03:00:52Z"
+ content="""
+Is there a way to change these definitions for a given annex?
+
+ie: in this repo make \"client\" mean
+
+    present and exclude=*/archive/* and exclude=archive/*
+"""]]

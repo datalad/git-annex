@@ -1,0 +1,32 @@
+What steps will reproduce the problem?
+
+    $ git clone ~/corbeau/travail/ travail
+    Cloning into 'travail'...
+    done.
+    Checking out files: 100% (8670/8670), done.
+    $ cd travail
+    $ git annex init "portable USB drive"
+    init portable USB drive 
+      Detected a crippled filesystem.
+
+      Enabling direct mode.
+
+    git-annex: /media/LACIE/travail/.git/annex/objects/k1: createDirectory: already exists (File exists)
+    failed
+    git-annex: init: 1 failed
+
+What version of git-annex are you using? On what operating system?
+    $ apt-cache policy git-annex
+    git-annex:
+    Installé : 3.20130216
+
+This on a amd64 debian sid recently updated
+
+
+Please provide any additional information below.
+
+The problem is that git annex already created a /media/LACIE/travail/.git/annex/objects/K1 file (same name in uppercase) and FAT isn't realy case sensitive.
+
+
+> I *think* I've found the place that used createDirectory
+> rather than createDirectoryIfMissing and fixed it. [[done]] --[[Joey]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~arand"
+ nickname="arand"
+ subject="comment 1"
+ date="2013-03-10T21:56:04Z"
+ content="""
+This seems to only occur with the \"--fast\" option.
+
+And the first example above is obviously failing due to '$HOME' as well
+"""]]

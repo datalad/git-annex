@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 7"
+ date="2013-04-12T13:30:24Z"
+ content="""
+As I understand it, nothing will \"be the middleman\" in the sense of, if annex A has remotes B and C, grabbing content from B in order to give it to C without regards for whether or not A wants it.  Annex A doesn't think in terms of moving content from one remote to another remote, only in terms of pulling and pushing to remotes individually.
+
+I get the \"move content from remote B to C\" effect by setting numcopies=2 and making both remotes \"backup.\"  If content is only on remote B, it will migrate to A in order to fulfill numcopies.  Then it will migrate to C because of C's preferred content settings.
+
+(Respecting minimum numcopies is higher priority than respecting preferred content settings, so even if A wouldn't normally \"want\" the content, it will receive it if it needs to in order to fulfill numcopies.)
+
+I've got A set to \"client\" so content in archive directories disappears once the content is on B and C (because numcopies is fulfilled, and so A's preferred content can take effect.)
+
+If you had A set to \"manual,\" then it wouldn't automatically drop content once it moved from B to A to C, though.  Because it would only drop things manually.
+
+"""]]

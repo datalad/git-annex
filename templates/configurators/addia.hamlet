@@ -1,0 +1,32 @@
+<div .span9 .hero-unit>
+  <h2>
+    Adding an Internet Archive item
+  <p>
+    <a href="http://archive.org/">The Internet Archive</a> allows anyone #
+    to publically archive their information, for free. All you need to #
+    get started is to #
+    <a href="http://archive.org/account/login.createaccount.php">
+      Create an account
+  <p>
+    The Internet Archive stores "items". An item can be a single file, or #
+    a related group of files. You can make as many different items as you #
+    like.
+  <p>
+    By default, only files that you place in a special directory #
+    will be uploaded to your Internet Archive item. Any other files #
+    in your repository will remain private.
+  <p>
+    <form method="post" .form-horizontal enctype=#{enctype}>
+      <fieldset>
+        ^{form}
+        ^{webAppFormAuthToken}
+        <div .form-actions>
+          <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+            Add Internet Archive item
+<div .modal .fade #workingmodal>
+  <div .modal-header>
+    <h3>
+      Making item ...
+  <div .modal-body>
+    <p>
+      Setting up your Internet Archive item. This could take a minute.

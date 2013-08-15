@@ -1,0 +1,30 @@
+Setup:
+
+* fresh install of Debian Wheezy with git-annex 4.20130227 pulled in from unstable
+* clone existing repository and activate assistant
+* repository has encrypted rsync remote originally setup with the name `metaarray`
+* this remote was renamed to `ma` a long time ago, using the webapp
+* had to perform this rename on each client
+
+Steps:
+
+* attempt to reactivate special remote using webapp repositories page, on reinstalled machine
+
+Expected:
+
+* special remote starts working
+* renaming special remotes ought to survive clones
+
+Actual:
+
+* firstly, special remote activation page has blank hostname box and the hostname of the machine is in the username box
+* form gives error "cannot change encryption type of existing remote"
+
+Workaround:
+
+* execute `git annex initremote metaarray`
+* rename `metaarray` to `ma` again using the webapp
+
+Perhaps the renaming of the remote not surviving clones is unavoidable, but the webapp should be able to cope with the situation.  Thanks.
+
+[[!tag /design/assistant]]

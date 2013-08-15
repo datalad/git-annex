@@ -1,0 +1,29 @@
+It should be possible for clones to learn about how to contact
+each other without remotes needing to always be explicitly set
+up. Say that `.git-annex/remote.log` is maintained by git-annex
+to contain:
+
+	UUID hostname URI
+
+The URI comes from configured remotes and maybe from 
+`file://$(pwd)`, or even `ssh://$(hostname -f)`
+for the current repo. This format will merge without
+conflicts or data loss.
+
+Then when content is belived to be in a UUID, and no
+configured remote has it, the remote.log can be consulted and
+URIs that look likely tried. (file:// ones if the hostname
+is the same (or maybe always -- a removable drive might tend
+to be mounted at the same location on different hosts),
+otherwise ssh:// ones.)
+
+Question: When should git-annex update the remote.log? 
+(If not just on init.) Whenever it reads in a repo's remotes?
+
+> This sounds useful and the log should be updated every time any remote is being accessed. A counter or timestamp (yes, distributed times may be wrong/different) could be used to auto-prune old entries via a global and per-remote config setting. -- RichiH
+
+---
+
+I no longer think I'd use this myself, I find that my repositories quickly
+grow the paths I actually use, somewhat organically. Unofficial paths
+across university quads come to mind. [[done]] --[[Joey]] 

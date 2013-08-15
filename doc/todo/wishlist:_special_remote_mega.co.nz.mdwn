@@ -1,0 +1,3 @@
+mega.co.nz has 50gb for free accounts. They also have an API, so I guess it wouldn't be too hard to use it as a special remote.
+
+[[done]], see [[tips/megaannex]].

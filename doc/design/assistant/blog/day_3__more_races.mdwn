@@ -1,0 +1,26 @@
+Today I worked on the race conditions, and fixed two of them. Both
+were fixed by avoiding using `git add`, which looks at the files currently
+on disk. Instead, `git annex watch` injects symlinks directly into git's
+index, using `git update-index`.
+
+There is one bad race condition remaining. If multiple processes have a
+file open for write, one can close it, and it will be added to the annex.
+But then the other can still write to it.
+
+----
+
+Getting away from race conditions for a while, I made `git annex watch`
+not annex `.gitignore` and `.gitattributes` files.
+
+And, I made it handle running out of inotify descriptors. By default,
+`/proc/sys/fs/inotify/max_user_watches` is 8192, and that's how many
+directories inotify can watch. Now when it needs more, it will print
+a nice message showing how to increase it with `sysctl`.
+
+FWIW, DropBox also uses inotify and has the same limit. It seems to not
+tell the user how to fix it when it goes over. Here's what `git annex
+watch` will say:
+
+	Too many directories to watch! (Not watching ./dir4299)
+	Increase the limit by running:
+	  echo fs.inotify.max_user_watches=81920 | sudo tee -a /etc/sysctl.conf; sudo sysctl -p

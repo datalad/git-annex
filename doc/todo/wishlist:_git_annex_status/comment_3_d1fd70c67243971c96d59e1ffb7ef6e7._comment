@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-05-17T01:15:10Z"
+ content="""
+What a good idea!
+
+150 lines of haskell later, I have this:
+
+<pre>
+# git annex status
+supported backends: WORM SHA1 SHA256 SHA512 SHA224 SHA384 SHA1E SHA256E SHA512E SHA224E SHA384E URL
+supported remote types: git S3 bup directory rsync hook
+local annex keys: 32
+local annex size: 58 megabytes
+total annex keys: 38158
+total annex size: 6 terabytes (but 1632 keys have unknown size)
+backend usage: 
+	SHA1: 1789
+	WORM: 36369
+</pre>
+"""]]

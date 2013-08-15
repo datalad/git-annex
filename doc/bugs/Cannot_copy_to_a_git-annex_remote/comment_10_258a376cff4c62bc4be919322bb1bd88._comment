@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 10"
+ date="2013-03-19T00:14:59Z"
+ content="""
+Comment 7 was misplaced. Apologies.
+
+Hint for stracing: If you strace \"git-annex\" instead of \"git annex\", you don't need to strace -f, which keeps it a lot simpler.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.141"
+ subject="comment 5"
+ date="2012-09-25T14:49:31Z"
+ content="""
+@Bret my best guess (without any error message from the uuid command) is that your uuid doesn't support the -m parameter. I've made the configure step check for this and it'll fall back to uuid without the parameter.
+"""]]

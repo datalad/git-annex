@@ -1,0 +1,45 @@
+What steps will reproduce the problem?
+
+mkdir annex_stress; cd annex_stress, 
+then execute the following script:
+
+    #! /bin/sh
+    
+    # creating a directory, in which we dump all the files.
+    mkdir probes; cd probes
+    
+    for i in `seq -w 1 25769`; do
+        mkdir probe$i
+        echo "This is an important file, which saved also in backup ('back') directory too.\n Content changes: $i" > probe$i/probe$i.txt
+        echo "This is just an identical content file. Saved in each subdir." > probe$i/defaults.txt
+        echo "This is a variable ($i) content file, which is not backed up in 'back' directory." > probe$i/probe-nb$i.txt
+        mkdir probe$i/back
+        cp probe$i/probe$i.txt probe$i/back/probe$i.txt
+    done
+
+
+It creates about 25000 directory and 3 files in each, two of them are identical.
+
+What is the expected output? What do you see instead?
+
+I expect git annex could import the directory within 12 hours. 
+Yet, it just crashes the gui (starting webapp, uses the cpu 100% and it does not finish after 28hours.)
+
+
+What version of git-annex are you using? On what operating system?
+
+version 2013.04.17
+
+Please provide any additional information below.
+
+I do hope git-annex can be fixed to handle large number of files.
+This stress test models well enough my own directory structure, 
+relatively high number of files relatively low disk space usage 
+(my own directory structure: 750MB, this test creates 605MB).
+
+
+Best, 
+ Laszlo
+
+[[!meta title="assistant Stress test"]]
+[[!tag /design/assistant]]

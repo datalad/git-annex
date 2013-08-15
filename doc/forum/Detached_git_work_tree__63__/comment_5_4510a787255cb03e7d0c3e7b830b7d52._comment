@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.253.75"
+ subject="comment 5"
+ date="2013-02-23T16:44:48Z"
+ content="""
+So, I found and fixed that bug. It really seems to be working now. Although I've thought that at least twice before!
+
+There is an important caveat though, with using `GIT_DIR` and/or `GIT_WORK_TREE`.
+
+git-annex needs to check in symlinks that point at the git repository. If using `GIT_DIR`, those symlinks do not look like \"-> .git/annex/objects/\"; they instead point off to some git repository elsewhere, as a relative path. For example they could look like \"-> ../gitrepo/annex/objects/\". Similar when using `GIT_WORK_TREE`.
+
+But this is a problem if you want to use the same git repo elsewhere, with a git work tree and repo that are not set up the same relative to one-another, because the links will all be wrong. So, if you decide to use `GIT_DIR` or `GIT_WORK_TREE` with git-annex, any clone of the repository will need to place the git directory in the same place relative to the working tree. 
+
+If you later want to change the relative paths between git directory and work tree, it would need to be changed in all clones of the repository, and then you could use `git annex fix` to update the symlinks.
+"""]]

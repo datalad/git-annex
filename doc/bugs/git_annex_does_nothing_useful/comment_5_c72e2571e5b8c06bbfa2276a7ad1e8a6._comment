@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 5"
+ date="2012-07-10T03:03:27Z"
+ content="""
+Well that's odd. You have remotes but no annexed files.. 
+
+Can you post the commands you used to arrive at this situation? I'm not sure how you would have done that.. Maybe you just need a 
+
+    git-annex sync
+
+to get things going? 
+
+I think somehow you cloned the git repo but not the annex stuff. 
+"""]]

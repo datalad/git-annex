@@ -1,0 +1,32 @@
+### Please describe the problem.
+
+While trying to add a ssh remote, the webapp promts the error:
+
+    Reinitialized existing shared Git repository in /home/chris/annex-test/
+    git-annex: please specify a description of this repository
+
+resp.
+
+    Initialized empty shared Git repository in /home/chris/annex-test-2/
+    git-annex: please specify a description of this repository
+
+### What steps will reproduce the problem?
+
+Adding a ssh git remote.
+
+### What version of git-annex are you using? On what operating system?
+
+4.20130704-gaf18656 linux-amd64 and android
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+only successful ssh key generation in daemon.log
+
+# End of transcript or log.
+"""]]
+
+> [[done]]; bad installation. --[[Joey]]

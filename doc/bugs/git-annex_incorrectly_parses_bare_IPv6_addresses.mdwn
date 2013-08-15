@@ -1,0 +1,59 @@
+I have a git remote in a git-annex-enabled repository. Here's what it looks like in .git/config:
+
+<pre>
+[remote "renaissance"]
+        url = ssh://[2001:0:53aa:64c:24ef:5ce4:2ef9:cdda]/home/paulproteus/Music/annex/
+        fetch = +refs/heads/*:refs/remotes/renaissance/*
+        annex-uuid = 2992752e-1a13-11e0-ba68-57d3c800da64
+</pre>
+
+I wanted to "git annex get" some data. git-annex appears to pass incorrectly-formatted IPv6 addresses to rsync:
+
+<pre>
+get primary/emusiq/Arab Strap/Monday At The Hug And Pint/01-The Shy Retirer.mp3 (copying from renaissance...) 
+ssh: Could not resolve hostname [2001:0:53aa:64c:24ef:5ce4:2ef9:cdda]: Name or service not known
+rsync: connection unexpectedly closed (0 bytes received so far) [Receiver]
+rsync error: unexplained error (code 255) at io.c(601) [Receiver=3.0.7]
+
+  rsync failed -- run git annex again to resume file transfer
+  Unable to access these remotes: renaissance
+  Try making some of these repositories available:
+  	2992752e-1a13-11e0-ba68-57d3c800da64
+failed
+</pre>
+
+In this case, the square brackets should not be there.
+
+I tried changing the .git/config syntax slightly, and got a different, also-incorrect behavior:
+
+<pre>
+[remote "renaissance"]
+        url = [2001:0:53aa:64c:24ef:5ce4:2ef9:cdda]:/home/paulproteus/Music/annex/
+        fetch = +refs/heads/*:refs/remotes/renaissance/*
+        annex-uuid = 2992752e-1a13-11e0-ba68-57d3c800da64
+</pre>
+
+<pre>
+paulproteus@pathi:~/Music/annex$ git annex get
+git-annex: bad url ssh://[2001/~/0:53aa:64c:24ef:5ce4:2ef9:cdda]:/home/paulproteus/Music/annex/
+</pre>
+
+(Note that both these .git/config entries work fine with "git fetch".)
+
+-- Asheesh.
+
+> Technically, this seems to be a bug in the haskell URI library; it honors
+> the `[]` in parsing, but does not remove them when the URI is queried for
+> the host part. 
+
+<pre>
+Prelude Network.URI> let (Just u) = parseURI "http://foo@[2001:0:53aa:64c:24ef:5ce4:2ef9:cdda]/bar"
+Prelude Network.URI> let (Just a) = uriAuthority u
+Prelude Network.URI> uriRegName a
+"[2001:0:53aa:64c:24ef:5ce4:2ef9:cdda]"
+Prelude Network.URI> isIPv6address $ uriRegName a
+False
+</pre>
+
+> I have filed a [bug upstream](http://trac.haskell.org/network/ticket/40), and put a workaround in git-annex. [[done]]
+> --[[Joey]] 

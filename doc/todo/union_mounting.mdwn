@@ -1,0 +1,10 @@
+It should be possible to union mount annexes. So if multiple drives have
+content, an annex mounting them both would have available all the 
+content from all the drives.
+
+This could be done by just making .git/annex/KEY link to the actual content
+on the mounted annex.
+
+(Need to make sure the [[copy_tracking|copies]] code does not
+confused and think the symlink is a copy of the content.. Also need to make
+sure that code that writes to .git/annex does not follow symlinks.))

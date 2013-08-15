@@ -1,0 +1,51 @@
+**What steps will reproduce the problem?**
+
+    stone@skynet ~/annex $ git init
+    Initialized empty Git repository in /home/stone/annex/.git/
+    stone@skynet ~/annex $ git annex init "work"
+    init work 
+    *** Please tell me who you are.
+    
+    Run
+    
+      git config --global user.email "you@example.com"
+      git config --global user.name "Your Name"
+    
+    to set your account's default identity.
+    Omit --global to set the identity only in this repository.
+    
+    fatal: empty ident name (for <stone@skynet>) not allowed
+    git-annex: git ["--git-dir=/home/stone/annex/.git","--work-tree=/home/stone/annex","commit-tree","4b825dc652cb6eb9a060e64bf8d69288fbee4904"] exited 128
+    stone@skynet ~/annex $ git config -l
+    user.email=stone@nospam.hu
+    user.name=Stone
+    core.editor=nano
+    color.ui=auto
+    core.repositoryformatversion=0
+    core.filemode=true
+    core.bare=false
+    core.logallrefupdates=true
+    annex.uuid=499fb545-0b98-4bfc-816c-fb3704f3aaa0
+    stone@skynet ~/annex $ cat ~/.gitconfig 
+    [user]
+    	email = stone@nospam.hu
+    	name = Stone
+    [core]
+    	editor = nano
+    [color]
+    	ui = auto
+    stone@skynet ~/annex $ 
+
+**What is the expected output? What do you see instead?**
+
+
+**What version of git-annex are you using? On what operating system?**
+
+commit 56c037c69e75def74d6ea90de8aa8a1954c52178 Arch Linux
+
+**Please provide any additional information below.**
+
+> [[done]] by adding name to the user, in /etc/passwd. --Stone
+
+>> Actually, [[done]] by avoiding clobbering HOME when running some git
+>> commands. --[[Joey]]

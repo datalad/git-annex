@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2011-03-28T07:23:41Z"
+ content="""
+One possible work around is to just create a loopback file system with a case sensitive filesystem. I think I might do that for anything that I really care about for now.
+"""]]

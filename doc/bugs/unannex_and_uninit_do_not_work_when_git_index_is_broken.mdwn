@@ -1,0 +1,14 @@
+git's index broke and I was unable to restore it. While this is not git-annex' problem, it should still be possible to get my data in an un-annexed state.
+
+    % git status
+    fatal: index file smaller than expected
+    % git annex unannex foo
+    fatal: index file smaller than expected
+    % git annex uninit
+    fatal: index file smaller than expected
+    uninit  
+      pre-commit hook (/path/to/git-annex/.git/hooks/pre-commit) contents modified; not deleting. Edit it to remove call to git annex.
+    ok
+    %
+
+Ttbomk, the softlinks and objects are enough to un-annex the files; side-stepping git's index if necessary.

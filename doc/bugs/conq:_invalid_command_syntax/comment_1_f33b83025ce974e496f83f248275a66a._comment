@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-01-03T00:34:59Z"
+ content="""
+AFAICs, you probably just have a \"conq\" program that is running in the background and emitted this error.
+
+The error message is not part of git-annex; it does not run any \"conq\" thing itself. Although you could try passing the --debug parameter to check the commands it does run to see if one of them somehow causes this conq thing.
+"""]]

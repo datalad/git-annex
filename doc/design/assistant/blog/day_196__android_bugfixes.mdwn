@@ -1,0 +1,26 @@
+So it seems the Android app works pretty well on a variety of systems.
+Only report of 100% failure so far is on Cyanogenmod 7.2 (Android 2.3.7).
+
+Worked today on some of the obvious bugs.
+
+* Turns out that getEnvironment is broken on Android, returning no
+  environment, which explains the weird git behavior where it complains
+  that it cannot determine the username and email (because it sees no USER
+  or HOST), and suggests setting them in the global git config (which it
+  ignores, because it sees no HOME). Put in a work around for this
+  that makes `git annex init` more pleasant, and opened a bug report on
+  ghc-android.
+* Made the Android app detect when it's been upgraded, and re-link all
+  the commands, etc.
+* Fixed the bug that made `git-annex assistant` on Android re-add all
+  existing files on startup.
+* Enabled a few useful things in busybox. Including vi.
+* Replaced the service notification icon with one with the git-annex logo.
+* Made the terminal not close immediately when the shell exits, which
+  should aid in debugging of certain types of crashes.
+
+I want to set up an autobuilder for Android, but to do that I need to
+install all the haskell libraries on my server. Since getting them built
+for Android involved several days of hacking the first time, this will
+be an opportunity to make sure I can replicate that. Hopefully in less time.
+;)

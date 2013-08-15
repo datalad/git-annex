@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-03-15T14:08:41Z"
+ content="""
+What is the potential time-frame for this change? As I am not using git-annex for production yet, I can see myself waiting to avoid any potential hassle.
+
+Supporting generic metadata seems like a great idea. Though if you are going this path, wouldn't it make sense to avoid metastore for mtime etc and support this natively without outside dependencies?
+
+-- RichiH
+"""]]

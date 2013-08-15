@@ -1,0 +1,11 @@
+Using the assistant, I have created a repository on my laptop plus a synced repository on a USB disk. Looking into the first repository, I see my files accompanied by a .git directory. However, looking on the USB disk (e.g. /media/usb/annex), all I see is what looks like the content of a .git directory.
+
+This means that it is difficult to retrieve any file directly from this disk -- it has to be synced to another local repository first.
+
+Is there any way to change this ? E.g. to have a copy of the working tree, plus a .git directory, on the disk ?
+
+My use case: I have added plenty of media files to my repository. In addition to using the USB disk as a backup/medium for transfering these files to another computer, I'd like to be able to plug the disk to e.g. a media player and read the files directly from the tree, but it does not work at the moment.
+
+Is there anything I am missing ?
+
+Edited: yes, there is something I was missing: the forum entry at [[forum/USB_backup_with_files_visible/]]

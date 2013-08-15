@@ -1,0 +1,41 @@
+What steps will reproduce the problem?
+
+Create a local and "remote server" repository
+
+Create another local repositorty and keep it seperate from the first one. Fails while creating second repository on the remote.
+
+What is the expected output? What do you see instead?
+
+Expected to get two seperate repositories on the client and server. Only first one works.
+
+Got an error:
+
+    Failed to make repository
+
+    Something went wrong setting up the repository on the remote server.
+
+    Transcript: fatal: unrecognized command 'sh -c 'mkdir -p '"'"'second'"'"'&&cd '"'"'second'"'"'&&git init --bare --shared&&git annex init&&mkdir -p ~/.ssh&&if [ ! -e ~/.ssh/git-annex-shell ]; then (echo '"'"'#!/bin/sh'"'"';echo '"'"'set -e'"'"';echo '"'"'if [ "x$SSH_ORIGINAL_COMMAND" != "x" ]; then'"'"';echo '"'"'exec git-annex-shell -c "$SSH_ORIGINAL_COMMAND"'"'"';echo '"'"'else'"'"';echo '"'"'exec git-annex-shell -c "$@"'"'"';echo '"'"'fi'"'"') > ~/.ssh/git-annex-shell; fi&&chmod 700 ~/.ssh/git-annex-shell&&touch ~/.ssh/authorized_keys&&chmod 600 ~/.ssh/authorized_keys&&echo '"'"'command="GIT_ANNEX_SHELL_DIRECTORY='"'"'"'"'"'"'"'"'second'"'"'"'"'"'"'"'"' ~/.ssh/git-annex-shell",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCvoTn+XBdlw/mQlu+NScAeuddUJqJaVXH6KUsO09OddnUvzv4W185ezbAjXfWDgN7ou0Q0xQzwiCzdoSl7T3USJQ1ywTG5Xt2sBV3RIqxyReNA7Nz0yhwWhZBJcFzof34ezNIsi9NVgEJcK2JEs2XqhO5wK5nxEDeays7ti2bqY6V21iOWSy9hlzjD4VTWTEFxQkDp4BCzDpPN934ztOtInwI8ayiTRJZlNQ+ej/AaA+/zOBWNvIFc/96iuMLKY6lLFThw1jNj5r5N7yPaysLdnwTJ3irtCzDygCpD4mau4frrOPvG90ZdcdrQSfIjRtM9nPZ5jIpohfvz0dIfgNFz marvin@marvin-U-100 '"'"' >>~/.ssh/authorized_keys'' git-annex-shell: git-shell failed
+
+
+What version of git-annex are you using? On what operating system?
+
+4.20130413-g5747bf4 ubuntu 12.10 local
+
+3.20120629 debian wheezy remote (also tried 4.20130413-g5747bf4)
+
+Please provide any additional information below.
+
+> This bug would appear to be the same as a bug I fixed today.
+> 
+> Except this last bit:
+
+**Also noticed if a user has no full name set in unix account, creating
+remote repository always fails**
+
+> So, I'm going to repurpose this bug to track that problem. --[[Joey]]
+
+[[!meta title="assistant can fail to make git repository if remote server is lacking GECOS"]]
+
+>> [[done]]; git-annex always checks for missing gecos and enables
+>> a workaround. This does mean the server needs to be upgraded in order
+>> for the fix to work. --[[Joey]]

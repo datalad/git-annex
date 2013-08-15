@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 7"
+ date="2013-03-04T00:57:38Z"
+ content="""
+With the new Preferences page I added to the webapp today you can also enable debugging while the assistant is running if it starts to misbehave.
+
+However, I'm in no hurry to close this bug just yet.
+"""]]

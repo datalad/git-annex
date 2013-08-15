@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.125"
+ subject="comment 1"
+ date="2013-02-07T18:11:30Z"
+ content="""
+Hmm. The assistant already tries to cater to this case of having an existing key. When setting up a rsync or ssh remote, it first tries to ssh to the server without allowing a password to be prompted for. If this succeeds, it assumes you have a passwordless key and uses it. Otherwise, it sshes in once with a password prompt, and sets up its own key.
+"""]]

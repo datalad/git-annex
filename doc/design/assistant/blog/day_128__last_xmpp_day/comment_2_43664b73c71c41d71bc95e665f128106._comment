@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://phil.0x539.de/"
+ nickname="Philipp Kern"
+ subject="comment 2"
+ date="2012-11-12T11:50:42Z"
+ content="""
+Developing something new based on IPv4 UDP broadcast seems to be insane. IPv6 link-local multicast should be available virtually anywhere. XMPP relies on TCP and a central server to guarantee that a single packet is not split up, which would need quite some protocol engineering to get right over lossy UDP (e.g. segmentation, flow control, congestion avoidance). But TCP as discovered using mDNS might work… Still needs some kind of authentication / encryption, though.
+"""]]

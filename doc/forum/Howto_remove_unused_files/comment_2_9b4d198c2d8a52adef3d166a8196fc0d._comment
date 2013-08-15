@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkbv1oKTKhbBp0Ljh_WGU7BFSWWxBr7D3U"
+ nickname="Pauli"
+ subject="comment 2"
+ date="2013-04-02T19:10:18Z"
+ content="""
+Just to continue my monolog: doing 'git rm -r cities' followed with git annex sync did the trick. Why didn't i find this anywhere ..
+"""]]

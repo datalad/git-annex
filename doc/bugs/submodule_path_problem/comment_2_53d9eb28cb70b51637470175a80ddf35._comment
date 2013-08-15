@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 2"
+ date="2012-10-16T20:28:03Z"
+ content="""
+Cute, it was making the wrong symlink and then noticed it was broken and reverted the add. At least my error unwind works! Anyway, fixed this too.
+"""]]

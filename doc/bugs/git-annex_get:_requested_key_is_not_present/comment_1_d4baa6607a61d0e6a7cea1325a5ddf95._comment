@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-27T19:54:42Z"
+ content="""
+This error message means that the file's content is not present on your server. 
+
+It seems like git-annex *thinks* the file is there, so it sent it there. But something appears to have happened to it.
+
+You can investigate like this:
+
+* Get the file's key, by running `basename $(git cat-file p 'HEAD:Musik/+⁄-/2003 - You Are Here (Bonus Disc)/01 - I've Been Lost.ogg')`
+* Run `find` in /mnt/raid/Audio on the server, and grep for that key.
+
+If that finds any files, we may have a git-annex bug of some kind.
+
+If it finds an empty directory, that's an indication that the file's content was sent to the server before, but has now somehow gotten deleted.
+
+----
+
+You may also want to run, on the client: `git annex fsck --fast --from eifel.fritz.box__mnt_raid_Audio`  
+That will check that all the files it thinks should be on the server are still there. If it says \"fixing location log\",
+then it's found other files that were expected to be on the server but don't seem to be any longer.
+
+"""]]

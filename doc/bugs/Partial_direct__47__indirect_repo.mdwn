@@ -1,0 +1,24 @@
+Setup:
+
+* Fresh install of Debian Wheezy on machines A & B, git-annex 4.20130227 pulled in from unstable
+* On both machines, clone old repository which contains both annexed files and a three small files checked straight into git
+
+Steps:
+
+* On both machines, use webapp to create `~/.config/git-annex/autostart` by just firing it up and typing in location of existing repository
+* Move a new file into B's annex, in a subdirectory that is preferred on both A & B
+
+Expected:
+
+* The new file is copied over to A and everything remains in indirect mode
+* Three files checked straight into git remain checked straight into git (see below for why this is a variant on [[bugs/Switching_between_direct_and_indirect_stomps_on___39__regular__39___git_files/]])
+
+Actual:
+
+* New file copied over but seems to be in direct mode, while all the other content that is present is still symlinked
+* Files checked into git converted to direct mode files too (can tell this has happened by following step:)
+* Typing `git annex indirect` on A & B shows conversion of precisely four files (three files originally checked into git and new file added to B ) back to indirect
+
+Thanks.
+
+> [[done]], webapp now avoids changing existing repos here. --[[Joey]]

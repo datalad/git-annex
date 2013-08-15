@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 2"
+ date="2012-10-17T18:31:58Z"
+ content="""
+You can use `GIT_DIR`. It would not be hard to add a --git-dir option, the only catch is how to communicate that state on to where it constructs its git repository data structure. (I suppose it could just set GIT_DIR..)
+"""]]

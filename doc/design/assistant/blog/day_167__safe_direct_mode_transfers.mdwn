@@ -1,0 +1,12 @@
+Well underway on making direct mode transfers roll back when the file is
+modified while it's transferred.
+
+As expected, it was easy to do for all the special remotes ... Except for
+bup, which does not allow deleting content. For bup it just removes the git
+ref for the bad content, and relies on bup's use of git delta compression
+to keep space use sane.
+
+The problem is also handled by `git-annex-shell sendkey`.
+But not yet for downloads from other git repositories. Bit stuck on that.
+
+Also: A few minor bug fixes.

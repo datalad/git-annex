@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="single-line migration"
+ date="2012-11-22T03:14:45Z"
+ content="""
+i've successfully applied this monster to migrate my repository (as always with such expressions, use it only if you know what it does, and have a backup):
+
+    find . -path './??/??/*' -type d \( -exec python -c 'import sys, hashlib, os; hash = hashlib.md5(sys.argv[1][8:]).hexdigest(); h1 = hash[:3]; h2 = hash[3:6]; os.mkdir(h1) if not os.path.exists(h1) else None; os.mkdir(h1+\"/\"+h2) if not os.path.exists(h1+\"/\"+h2) else None; os.rename(sys.argv[1], h1+\"/\"+h2+\"/\"+sys.argv[1][8:])' '{}' ';' -o -print \) -prune
+
+when executed in an encrypted git annex object directory, it takes all two-letter directories, executes a python expression on them (in case of failure, printing the file name it failed on), and doesn't continue searching there (-prune avoids error messages about moved-away directories).
+
+the python expression itself generates the hash described above, generates the required directories (put awkwardly in an `a if b else c` expression to avoid ifs (which wouldn't fit in a single line) and because python still doesn't have a proper mkdir-p function), and moves the found object there. (nb: using the system's `mkdir -p` would trigger [[another bug|bugs/using_old_remote_format_generates_irritating_output]]).
+"""]]

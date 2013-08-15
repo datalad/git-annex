@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-03-14T16:23:25Z"
+ content="""
+I've made git-annex-shell run the git `hooks/annex-content` after content is received or dropped. 
+
+Note that the clients need to be running at least git-annex version 3.20120227 , which runs git-annex-shell commit, which runs the hook.
+
+"""]]

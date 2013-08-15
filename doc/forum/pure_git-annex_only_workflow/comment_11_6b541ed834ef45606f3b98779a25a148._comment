@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 11"
+ date="2011-12-30T21:49:06Z"
+ content="""
+OMG, my first sizable haskell patch!
+
+So trying this out..
+
+In each repo I want to sync, I first `git branch synced/master`
+
+Then in each repo, I found I had to pull from each of its remotes, to get the tracking branches that `defaultSyncRemotes` looks for to know those remotes are syncable. This was the surprising thing for me, I had expected sync to somehow work out which remotes were syncable without my explicit pull. And it was not very obvious that sync was not doing its thing before I did that, since it still does a lot of \"stuff\".
+
+Once set up properly, `git annex sync` fetches from each remote, merges, and then pushes to each remote that has a synced branch. Changes propigate around even when some links are one-directional. Cool!
+
+So it works fine, but I think more needs to be done to make setting up syncing easier. Ideally, all a user would need to do is run \"git annex sync\" and it syncs from all remotes, without needing to manually set up the synced/master branch.
+
+While this would lose the ability to control which remotes are synced, I think that being able to `git annex sync origin` and only sync from/to origin is sufficient, for the centralized use case.
+
+---
+
+Code review:
+
+Why did you make `branch` strict?
+
+There is a bit of a bug in your use of Command.Merge.start. The git-annex branch merge code only runs once per git-annex run, and often this comes before sync fetches from the remotes, leading to a push conflict. I've fixed this in my \"sync\" branch, along with a few other minor things.
+
+`mergeRemote` merges from `refs/remotes/foo/synced/master`. But that will only be up-to-date if `git annex sync` has recently been run there. Is there any reason it couldn't merge from `refs/remotes/foo/master`?
+"""]]

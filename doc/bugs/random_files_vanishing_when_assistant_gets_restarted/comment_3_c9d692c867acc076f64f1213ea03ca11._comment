@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.194"
+ subject="comment 3"
+ date="2013-01-18T20:18:36Z"
+ content="""
+If you can reproduce the problem, you should be able to see if the file is there when you've ctrl-c the assistant.
+"""]]

@@ -1,0 +1,24 @@
+Last night, revamped the web site, including making a [[/videos]]
+page, which includes a new screencast introducing the git-annex assistant.
+
+Worked on improving my Haskell development environment in vim.
+hdevtools is an excellent but tricky thing to get working. Where before
+it took around 30 seconds per compile for me to see type errors,
+I now see them in under a second each time I save, and can also look up
+types of any expression in the file. Since programming in Haskell is
+mostly driven by reacting to type errors ;) this should speed me up a lot,
+although it's not perfect. Unfortunatly, I got really caught up in tuning
+my setup, and only finished doing that at 5:48 am.
+
+Disasterously late this morning, fixed the assistant's
+`~/.ssh/git-annex-shell` wrapper so it will work when the ssh key does
+not force a command to be run. Also made the webapp behave better
+when it's told to create a git repository that already exists.
+
+After entirely too little sleep, I found a puzzling bug where copying files
+to a local repo fails once the inode cache has been invalidated. This
+turned out to involve running a check in the state monad of the wrong
+repository. A failure mode I'd never encountered before.
+
+Only thing I had brains left to do today was to record another screencast,
+which is rendering now...

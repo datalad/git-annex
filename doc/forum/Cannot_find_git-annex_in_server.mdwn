@@ -1,0 +1,10 @@
+My server is running the precompiled tarball https://downloads.kitenet.net/git-annex/linux/current/
+
+git-annex version: 4.20130531-g5df09b5
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+
+The tarball is untared in "/opt/git-annex.linux" and this location is added to the users path in ".profile", who can launch the webapp as usual and so on.
+
+But when a git-annex client from another computer tries to stablish a remote server repository with the server via ssh, it will complain "/usr/bin/git-annex", "runshell" and so on are missing. And if the binaries in "/opt/git-annex.linux" are symlinked in "/usr/bin" they will start to miss the other bin and libs in the "/opt/git-annex.linux" source tree.
+
+As you can understand, I can't put the whole "/opt/git-annex.linux" folder tree in "/usr/bin". Is there any solution to make the precompiled tarball work properly as a git-annex server?

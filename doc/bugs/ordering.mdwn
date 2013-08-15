@@ -1,0 +1,12 @@
+One would expect "git annex get foo bar" to first retrieve foo, and then
+bar. Actually though, it will operate on them in alphabetical order
+(probably). This is annoying when you wanted to 1st list the most important
+files to get. Maybe you'll run out of time before all can be gotten. The
+workaround of course is to run "git annex get" twice.
+
+This ordering comes from "git ls-files". git-annex passes it all the files
+the user specified. This is a useful optimisation -- earlier it would
+run "git ls-files" once per parameter, and so "git annex get *" could be
+rather slow. But, it produces this ordering problem.
+
+[[done]]

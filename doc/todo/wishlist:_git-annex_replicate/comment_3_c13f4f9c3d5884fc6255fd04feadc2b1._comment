@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 3"
+ date="2011-04-23T17:54:42Z"
+ content="""
+Hmm, so it seems there is almost a way to do this already.
+
+I think the one thing that isn't currently possible is to have 'plain' ssh remotes.. basically something just like the directory remote, but able to take a ssh user@host/path url.  something like sshfs could be used to fake this, but for things like fsck you would want to do the sha1 calculations on the remote host.
+"""]]

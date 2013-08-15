@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-09-30T16:47:27Z"
+ content="""
+`git annex status` now includes a list of all known repositories.
+
+Yes, trust setting propigate on git push/pull like any other git-annex information.
+"""]]

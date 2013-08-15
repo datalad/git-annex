@@ -1,0 +1,197 @@
+### Please describe the problem.
+git annex add hangs on the windows port when adding many files at once. It seems like the magic number is 17. 17 and greater hangs
+
+Running in debug, it hangs on this:
+
+    [2013-06-14 13:59:46 Eastern Daylight Time] feed: git ["--git-dir=C:\\temp\\backup\\q10\\.git","--work-tree=C:\\temp\\backup\\q10","update-index","-z","--index-info"]
+
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+git init t17
+cd t17
+git annex init
+for /l %a in (1,1,17) do @echo %a > %a.txt
+
+git annex add .
+add 1.txt (checksum...) ok
+add 10.txt (checksum...) ok
+add 11.txt (checksum...) ok
+add 12.txt (checksum...) ok
+add 13.txt (checksum...) ok
+add 14.txt (checksum...) ok
+add 15.txt (checksum...) ok
+add 16.txt (checksum...) ok
+add 17.txt (checksum...) ok
+add 2.txt (checksum...) ok
+add 3.txt (checksum...) ok
+add 4.txt (checksum...) ok
+add 5.txt (checksum...) ok
+add 6.txt (checksum...) ok
+add 7.txt (checksum...) ok
+add 8.txt (checksum...) ok
+add 9.txt (checksum...) ok
+(Recording state in git...)
+
+** gets stuck here
+
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+	git-annex version: 4.20130601-gc01f842
+	build flags: Pairing Testsuite S3 WebDAV DNS
+	local repository version: 4
+	default repository version: 3
+	supported repository versions: 3 4
+	upgrade supported from repository versions: 2
+
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+** 16 works fine
+git init t16
+cd t16
+for /l %a in (1,1,16) do @echo %a > %a.txt
+git annex init
+git annex add .
+
+
+** not 17
+git init t18
+cd t18
+for /l %a in (1,1,17) do @echo %a > %a.txt
+
+C:\temp\backup\t18>git annex init
+init
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+(Recording state in git...)
+
+C:\temp\backup\t18>git annex add . --debug
+[2013-06-14 14:05:28 Eastern Daylight Time] read: git ["--git-dir=C:\\temp\\back
+up\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","ls-files","--others","--excl
+ude-standard","-z","--","."]
+[2013-06-14 14:05:28 Eastern Daylight Time] read: git ["--git-dir=C:\\temp\\back
+up\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","ls-files","--modified","-z",
+"--","."]
+[2013-06-14 14:05:28 Eastern Daylight Time] chat: git ["--git-dir=C:\\temp\\back
+up\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","cat-file","--batch"]
+add 1.txt [2013-06-14 14:05:28 Eastern Daylight Time] chat: git ["--git-dir=C:\\
+temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","check-attr","-z","
+--stdin","annex.backend","annex.numcopies","--"]
+(checksum...) [2013-06-14 14:05:28 Eastern Daylight Time] chat: git ["--git-dir=
+C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","cat-file","--b
+atch"]
+[2013-06-14 14:05:28 Eastern Daylight Time] chat: git ["--git-dir=C:\\temp\\back
+up\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","hash-object","-t","blob","-w
+","--stdin"]
+ok
+add 10.txt (checksum...) [2013-06-14 14:05:28 Eastern Daylight Time] chat: git [
+"--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","has
+h-object","-t","blob","-w","--stdin"]
+ok
+add 11.txt (checksum...) [2013-06-14 14:05:28 Eastern Daylight Time] chat: git [
+"--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","has
+h-object","-t","blob","-w","--stdin"]
+ok
+add 12.txt (checksum...) [2013-06-14 14:05:28 Eastern Daylight Time] chat: git [
+"--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","has
+h-object","-t","blob","-w","--stdin"]
+ok
+add 13.txt (checksum...) [2013-06-14 14:05:28 Eastern Daylight Time] chat: git [
+"--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","has
+h-object","-t","blob","-w","--stdin"]
+ok
+add 14.txt (checksum...) [2013-06-14 14:05:28 Eastern Daylight Time] chat: git [
+"--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","has
+h-object","-t","blob","-w","--stdin"]
+ok
+add 15.txt (checksum...) [2013-06-14 14:05:28 Eastern Daylight Time] chat: git [
+"--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","has
+h-object","-t","blob","-w","--stdin"]
+ok
+add 16.txt (checksum...) [2013-06-14 14:05:28 Eastern Daylight Time] chat: git [
+"--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","has
+h-object","-t","blob","-w","--stdin"]
+ok
+add 17.txt (checksum...) [2013-06-14 14:05:29 Eastern Daylight Time] chat: git [
+"--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","has
+h-object","-t","blob","-w","--stdin"]
+ok
+add 2.txt (checksum...) [2013-06-14 14:05:29 Eastern Daylight Time] chat: git ["
+--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","hash
+-object","-t","blob","-w","--stdin"]
+ok
+add 3.txt (checksum...) [2013-06-14 14:05:29 Eastern Daylight Time] chat: git ["
+--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","hash
+-object","-t","blob","-w","--stdin"]
+ok
+add 4.txt (checksum...) [2013-06-14 14:05:29 Eastern Daylight Time] chat: git ["
+--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","hash
+-object","-t","blob","-w","--stdin"]
+ok
+add 5.txt (checksum...) [2013-06-14 14:05:29 Eastern Daylight Time] chat: git ["
+--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","hash
+-object","-t","blob","-w","--stdin"]
+ok
+add 6.txt (checksum...) [2013-06-14 14:05:29 Eastern Daylight Time] chat: git ["
+--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","hash
+-object","-t","blob","-w","--stdin"]
+ok
+add 7.txt (checksum...) [2013-06-14 14:05:29 Eastern Daylight Time] chat: git ["
+--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","hash
+-object","-t","blob","-w","--stdin"]
+ok
+add 8.txt (checksum...) [2013-06-14 14:05:29 Eastern Daylight Time] chat: git ["
+--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","hash
+-object","-t","blob","-w","--stdin"]
+ok
+add 9.txt (checksum...) [2013-06-14 14:05:29 Eastern Daylight Time] chat: git ["
+--git-dir=C:\\temp\\backup\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","hash
+-object","-t","blob","-w","--stdin"]
+ok
+(Recording state in git...)
+[2013-06-14 14:05:29 Eastern Daylight Time] feed: git ["--git-dir=C:\\temp\\back
+up\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","update-index","-z","--index-
+info"]
+[2013-06-14 14:05:29 Eastern Daylight Time] chat: git ["--git-dir=C:\\temp\\back
+up\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","hash-object","-w","--stdin-p
+aths"]
+[2013-06-14 14:05:29 Eastern Daylight Time] feed: git ["--git-dir=C:\\temp\\back
+up\\t18\\.git","--work-tree=C:\\temp\\backup\\t18","update-index","-z","--index-
+info"]
+
+
+**gets stuck here and never finishes**
+
+
+# End of transcript or log.
+"""]]
+
+> Reproduced this, and git update-index was in fact not hanging. 
+> Instead, after that was done, it tried to stop the git hash-object
+> process, and this hung. 
+> 
+> It seems that the use of runInteractiveProcess is at fault somehow,
+> and I guess it must be due to it opening a pipe for stderr, which
+> I don't need or want. Perhaps I need to ensure I read from that pipe,
+> or windows keeps the process from terminating. (Unix would just toss the piped
+> data away.)
+> 
+> That was the only place runInteractiveProcess was used, so I replaced
+> it with an alternative that lets stderr be inherited. With this change,
+> I have successfully added 1000 files to the annex in one go, with no
+> hang. Provisionally [[done]]. --[[Joey]] 

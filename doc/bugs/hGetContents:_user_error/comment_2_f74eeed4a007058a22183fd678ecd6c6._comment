@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.193"
+ subject="comment 2"
+ date="2013-06-30T17:33:55Z"
+ content="""
+See this upstream bug report: <http://hackage.haskell.org/trac/ghc/ticket/7653>
+"""]]

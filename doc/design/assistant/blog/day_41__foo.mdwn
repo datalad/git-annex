@@ -1,0 +1,46 @@
+I made the MountWatcher only use dbus if it sees a client connected to dbus
+that it knows will send mount events, or if it can start up such a client
+via dbus. (Fancy!) Otherwise it falls back to polling. This should be enough
+to support users who manually mount things -- if they have gvfs
+installed, it'll be used to detect their manual mounts, even when a desktop
+is not running, and if they don't have gvfs, they get polling.
+
+Also, I got the MountWatcher to work with KDE. Found a dbus event that's
+emitted when KDE mounts a drive, and this is also used. If anyone with
+some other desktop environment wants me to add support for it, and it uses
+dbus, it should be easy: Run `dbus-monitor`, plug in a drive, get
+it mounted, and send me a transcript.
+
+Of course, it'd also be nice to support anything similar on OSX that can
+provide mount event notifications. Not a priority though, since the polling
+code will work.
+
+---
+
+Some OS X fixes today..
+
+* Jimmy pointed out that my `getmntent` code broke the build on OSX again.
+  Sorry about that.. I keep thinking Unix portability nightmares are a 80's
+  thing, not a 2010's thing. Anyway, adapted a lot of hackish C code
+  to emulate `getmntent` on BSD systems, and it seems to work. (I actually
+  think the BSD interface to this is saner than Linux's, but I'd rather have
+  either one than both, sigh..)
+* Kqueue was blocking all the threads on OSX. This is fixed, and the
+  assistant seems to be working on OSX again.
+
+----
+
+I put together a preliminary page thanking everyone who contributed to the
+git-annex Kickstarter. [[/assistant/thanks]] The wall-o-names is scary crazy humbling.
+
+----
+
+Improved `--debug` mode for the assistant, now every thread says whenever
+it's doing anything interesting, and also there are timestamps.
+
+----
+
+Had been meaning to get on with syncing to drives when they're mounted, but
+got sidetracked with the above. Maybe tomorrow. I did think through it
+in some detail as I was waking up this morning, and think I have a pretty
+good handle on it.

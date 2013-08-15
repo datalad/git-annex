@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 7"
+ date="2013-02-27T17:43:45Z"
+ content="""
+The way this is supposed to (and does) work is that you use the webapp to create a repository on each computer, and then you pair them together using either local pairing or xmpp pairing.
+
+Today's release of git-annex also adds UI in the webapp to create additional local repositories that are connected to the current repository. However these are not really intended to be put on removable drives since the assistant needs to be running on them to keep them up-to-date.
+"""]]

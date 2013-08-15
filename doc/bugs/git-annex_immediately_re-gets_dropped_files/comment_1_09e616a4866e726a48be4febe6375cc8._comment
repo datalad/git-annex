@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-06-18T21:01:03Z"
+ content="""
+The assistant does not have information to guess why a file has changed, it just sees it has, and takes appropriate action to get it in sync. If you want to manually manage which files are present, you should enable manual mode.
+"""]]

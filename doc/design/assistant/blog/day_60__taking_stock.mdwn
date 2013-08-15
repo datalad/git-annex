@@ -1,0 +1,40 @@
+As I prepare to dive back into development, now is a good time to review
+what I've built so far, and how well I'm keeping up with my planned
+[[roadmap|assistant]].
+
+I started working two and a half months ago, so am nearing the end of
+the three months I originally asked to be funded for on Kickstarter.
+
+I've built much of what I planned to build in the first three months --
+[[inotify]] is done (and kqueue is basically working, but needs scalability
+work), local [[syncing]] is done, the [[webapp]] works, and I've built some
+of the first [[configurators]]. It's all functional in a narrow use case
+involving syncing to removable drives. 
+
+[[progressbars]] still need to be dealt with, and network syncing needs to
+be revisited soon, so that I can start building easy configurators for
+further use cases, like using the cloud, or another machine on the local
+network.
+
+I think I'm a little behind my original schedule, but not too bad,
+and at the same time, I think I've built things rather more solidly than I
+expected them to be at this point. I'm particularly happy with how well
+the inotify code works, no matter what is thrown at it, and how nice
+the UI in the webapp is shaping up to be.
+
+----
+
+I also need to get started on fulfilling my Kickstarter rewards, and
+I was happy to spend some time in the airport working on the main
+blocker toward that, a lack of a scalable git-annex logo, which is needed
+for printing on swag.
+
+Turns out that inkscape has some amazing bitmap tracing capabilities.
+I was able to come up with this scalable logo in short order, it 
+actually took longer to add back the colors, as the tracer generated a
+black and white version.
+
+With that roadblock out of the way, I am moving toward ordering large
+quantities of usb drives, etc.
+
+[[logo.svg]]

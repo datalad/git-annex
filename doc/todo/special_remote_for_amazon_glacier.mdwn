@@ -1,0 +1,30 @@
+Amazon's new glacier service would be a nice special remote to support for
+long-term archival.
+
+The main difficulty is that glacier is organized into vaults, and accessing
+a file in a vault takes ~4 hours. A naive implementation would make `git
+annex get` wait for 4 hours, which is certianly not reasonable.
+
+One approach I am pondering is to make each glacier vault a separate
+special remote. You could then request git-annex to spin up a remote, and
+come back later, and be able to access the data stored in it (need to check
+if glacier would also allow adding new data to it then). This is
+conceptually similar to using git-annex with offline removable drives,
+except with glacier, you have a controllable robot to get them plugged in. :)
+
+Ideally, git-annex would arrange for glacier to send it a message when the
+vault becomes available, and the user could queue a list of commands to
+run, or files to transfer, at that point.
+
+--[[Joey]]
+
+> [[done]]! --[[Joey]]
+
+-----
+
+> In the coming months, Amazon S3 will introduce an option that will allow customers to seamlessly move data between Amazon S3 and Amazon Glacier based on data lifecycle policies.
+
+-- <http://aws.amazon.com/glacier/faqs/#How_should_I_choose_between_Amazon_Glacier_and_Amazon_S3>
+
+>> They did, but it's IMHO not very useful for git-annex. It's rather
+>> intended to allow aging S3 storage out to Glacier. --[[Joey]] 

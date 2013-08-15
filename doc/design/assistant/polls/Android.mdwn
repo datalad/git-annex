@@ -1,0 +1,18 @@
+Help me choose a goal for the month of December. The last poll showed 
+a lot of interest in using the git-annex assistant with phones, etc.
+
+Background: git-annex uses symbolic links in its repositories. This makes it
+hard to use with filesystems, such as FAT, that do not support symbolic links.
+FAT filesystems are the main storage available on some Android devices that
+have a micro-SD card. Other, newer Android devices don't have a SD card and so
+avoid this problem.
+
+I can either work on the idea described in
+[[design/assistant/desymlink]], which could solve the symlink problem and
+also could lead to a nicer workflow to editing files that are stored in
+git-annex.
+
+Or, I can work on [[Android_porting|design/assistant/android]], and try to
+get the assistant working on Android's built-in storage.
+
+[[!poll open=no 81 "solve the symlink problem first" 17 "port to Android first" 1 "other"]]

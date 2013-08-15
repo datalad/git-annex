@@ -1,0 +1,243 @@
+The development of the git-annex assistant was made possible by the
+generous donations of many people. I want to say "Thank You!" to each of
+you individually, but until I meet all 951 of you, this page will have to
+do. You have my most sincere thanks. --[[Joey]]
+
+(If I got your name wrong, or you don't want it publically posted here,
+email <joey@kitenet.net>.)
+
+## Major Backers
+
+These people are just inspiring in their enthusiasm and generosity to this
+project.
+
+* Jason Scott
+* strager
+
+## Beta Testers
+
+Whole weeks of my time were made possible thanks to each of these
+people, and their testing is invaluable to the development of
+the git-annex assistant.
+
+* Jimmy Tang
+* David Pollak
+* Pater
+* Francois Marier
+* Paul Sherwood
+* Fred Epma
+* Robert Ristroph
+* Josh Triplett
+* David Haslem
+* AJ Ashton
+* Svenne Krap
+* Drew Hess
+* Peter van Westen
+
+## Prioritizers
+
+These forward-thinking people contributed generously just to help
+set my priorities in which parts of the git-annex assistant were most
+important to develop.
+
+Paul C. Bryan, Paul Tötterman, Don Marti, Dean Thompson, Djoume, David Johnston
+Asokan Pichai, Anders Østhus, Dominik Wagenknecht, Charlie Fox, Yazz D. Atlas,
+fenchel, Erik Penninga, Richard Hartmann, Graham, Stan Yamane, Ben Skelton,
+Ian McEwen, asc, Paul Tagliamonte, Sherif Abouseda, Igor Támara, Anne Wind,
+Mesar Hameed, Brandur K. Holm Petersen, Takahiro Inoue, Kai Hendry,
+Stephen Youndt, Lee Roberson, Ben Strawbridge, Andrew Greenberg, Alfred Adams
+Andrew, Aaron De Vries, Monti Knazze, Jorge Canseco, Hamish, Mark Eichin,
+Sherif Abouseda, Ben Strawbridge, chee rabbits, Pedro Côrte-Real
+
+And special thanks to Kevin McKenzie, who also gave me a login to a Mac OSX
+machine, which has proven invaluable, Jimmy Tang who has helped
+with Mac OSX autobuilding and packaging, and Yury V. Zaytsev who
+provides the Windows autobuilder.
+
+## Other Backers
+
+Most of the success of the Kickstarter is thanks to these folks. Some of
+them spent significant amounts of money in the guise of getting some
+swag. For others, being listed here, and being crucial to making the 
+git-annex assistant happen was reward enough. Large or small, these
+contributions are, literally, my bread and butter this year.
+
+Amitai Schlair, mvime, Romain Lenglet, James Petts, Jouni Uuksulainen,
+Wichert Akkerman, Robert Bellus, Kasper Souren, rob, Michiel Buddingh',
+Kevin, Rob Avina, Alon Levy, Vikash, Michael Alan Dorman, Harley Pig,
+Andreas Olsson, Pietpiet, Christine Spang, Liz Young, Oleg Kosorukov,
+Allard Hoeve, Valentin Haenel, Joost Baaij, Nathan Yergler, Nathan Howell,
+Frédéric Schütz, Matti Eskelinen, Neil McGovern, Lane Lillquist, db48x,
+Stuart Prescott, Mark Matienzo, KarlTheGood, leonm, Drew Slininger, 
+Andreas Fuchs, Conrad Parker, Johannes Engelke, Battlegarden, Justin Kelly,
+Robin Wagner, Thad Ward, crenquis, Trudy Goold, Mike Cochrane, Adam Venturella,
+Russell Foo, furankupan, Giorgio Occhioni, andy, mind, Mike Linksvayer,
+Stefan Strahl, Jelmer Vernooij, Markus Fix, David Hicks, Justin Azoff,
+Iain Nicol, Bob Ippolito, Thomas Lundstrøm, Jason Mandel, federico2,
+Edd Cochran, Jose Ortega, Emmett Agnew, Rudy Garcia, Kodi, Nick Rusnov,
+Michael Rubin, Tom de Grunt, Richard Murray, Peter, Suzanne Pierce, Jared
+Marcotte, folk, Eamon, Jeff Richards, Leo Sutedja, dann frazier, Mikkel
+kristiansen, Matt Thomas, Kilian Evang, Gergely Risko, Kristian Rumberg,
+Peter Kropf, Mark Hepburn, greymont, D. Joe Anderson, Jeremy Zunker, ctebo,
+Manuel Roumain, Jason Walsh, np, Shawn, Johan Tibell, Branden Tyree, Dinyar
+Rabady, Andrew Mason, damond armstead, Ethan Aubin, TomTom Tommie, Jimmy
+Kaplowitz, Steven Zakulec, mike smith, Jacob Kirkwood, Mark Hymers, Nathan
+Collins, Asbjørn Sloth Tønnesen, Misty De Meo, James Shubin,
+Jim Paris, Adam Sjøgren, miniBill, Taneli, Kumar Appaiah, Greg Grossmeier,
+Sten Turpin, Otavio Salvador, Teemu Hukkanen, Brian Stengaard, bob walker,
+bibeneus, andrelo, Yaroslav Halchenko, hesfalling, Tommy L, jlargentaye,
+Serafeim Zanikolas, Don Armstrong, Chris Cormack, shayne.oneill, Radu
+Raduta, Josh S, Robin Sheat, Henrik Mygind, kodx, Christian, Geoff
+Crompton, Brian May, Olivier Berger, Filippo Gadotti, Daniel Curto-Millet,
+Eskild Hustvedt, Douglas Soares de Andrade, Tom L, Michael Nacos, Michaël
+P., William Roe, Joshua Honeycutt, Brian Kelly, Nathan Rasch, jorge, Martin
+Galese, alex cox, Avery Brooks, David Whittington, Dan Martinez, Forrest
+Sutton, Jouni K. Seppänen, Arnold Cano, Robert Beaty, Daniel, Kevin Savetz,
+Randy, Ernie Braganza, Aaron Haviland, Brian Brunswick, asmw, sean, Michael
+Williams, Alexander, Dougal Campbell, Robert Bacchas, Michael Lewis, Collin
+Price, Wes Frazier, Matt Wall, Brandon Barclay, Derek van Vliet, Martin
+DeMello, kitt hodsden, Stephen Kitt, Leif Bergman, Simon Lilburn, Michael
+Prokop, Christiaan Conover, Nick Coombe, Tim Dysinger, Brandon Robinson,
+Philip Newborough, keith, Mike Fullerton, Kyle, Phil Windley, Tyler Head,
+George V. Reilly, Matthew, Ali Gündüz, Vasyl Diakonov, Paolo Capriotti,
+allanfranta, Martin Haeberli, msingle, Vincent Sanders, Steven King, Dmitry
+Gribanov, Brandon High, Ben Hughes, Mike Dank, JohnE, Diggory Hardy,
+Michael Hanke, valhalla, Samuli Tuomola, Jeff Rau, Benjamin Lebsanft, John
+Drago, James, Aidan Cooper, rondie, Paul Kohler, Matthew Knights, Aaron
+Junod, Patrick R McDonald, Christopher Browne, Daniel Engel, John SJ
+Anderson, Peter Sarossy, Mike Prasad, Christoph Ender, Jan Dittberner,
+Zohar, Alexander Jelinek, stefan, Danny O'Brien, Matthew Thode, Nicole
+Aptekar, maurice gaston, Chris Adams, Mike Klemencic, Reedy, Subito, Tobias
+Gruetzmacher, Ole-Morten Duesund, André Koot, mp, gdop, Cole Scott, Blaker,
+Matt Sottile, W. Craig Trader, Louis-Philippe Dubrule, Brian Boucheron,
+Duncan Smith, Brenton Buchbach, Kyle Stevenson, Eliot Lash, Egon Elbre,
+Praveen, williamji, Thomas Schreiber, Neil Ford, Ryan Pratt, Joshua Brand,
+Peter Cox, Markus Engstrom, John Sutherland, Dean Bailey, Ed Summers,
+Hillel Arnold, David Fiander, Kurt Yoder, Trevor Muñoz, keri, Ivan
+Sergeyenko, Shad Bolling, Tal Kelrich, Steve Presley, gerald ocker, Essex
+Taylor, Josh Thomson, Trevor Bramble, Lance Higgins, Frank Motta, Dirk
+Kraft, soundray, Joe Haskins, nmjk, Apurva Desai, Colin Dean, docwhat,
+Joseph Costello, Jst, flamsmark, Alex Lang, Bill Traynor, Anthony David,
+Marc-André Lureau, AlNapp, Giovanni Moretti, John Lawrence, João Paulo
+Pizani Flor, Jim Ray, Gregory Thrush, Alistair McGann, Andrew Wied,
+Koutarou Furukawa, Xiscu Ignacio, Aaron Sachs, Matt, Quirijn, Chet
+Williams, Chris Gray, Bruce Segal, Tom Conder, Louis Tovar, Alex Duryee,
+booltox, d8uv, Decklin Foster, Rafael Cervantes, Micah R Ledbetter, Kevin
+Sjöberg, Johan Strombom, Zachary Cohen, Jason Lewis, Yves Bilgeri, Ville
+Aine, Mark Hurley, Marco Bonetti, Maximilian Haack, Hynek Schlawack,
+Michael Leinartas, Andreas Liebschner, Duotrig, Nat Fairbanks, David
+Deutsch, Colin Hayhurst, calca, Kyle Goodrick, Marc Bobillier, Robert
+Snook, James Kim, Olivier Serres, Jon Redfern, Itai Tavor, Michael
+Fladischer, Rob, Jan Schmid, Thomas H., Anders Söderbäck, Abhishek
+Dasgupta, Jeff Goeke-Smith, Tommy Thorn, bonuswavepilot, Philipp Edelmann,
+Nick, Alejandro Navarro Fulleda, Yann Lallemant, andrew brennan, 
+Dave Allen Barker Jr, Fabian, Lukas Anzinger, Carl Witty, Andy Taylor,
+Andre Klärner, Andrew Chilton, Adam Gibbins, Alexander Wauck, Shane O'Dea,
+Paul Waite, Iain McLaren, Maggie Ellen Robin Hess, Willard Korfhage,
+Nicolas, Eric Nikolaisen, Magnus Enger, Philipp Kern, Andrew Alderwick,
+Raphael Wimmer, Benjamin Schötz, Ana Guerrero, Pete, Pieter van der Eems,
+Aaron Suggs, Fred Benenson, Cedric Howe, Lance Ivy, Tieg Zaharia, Kevin
+Cooney, Jon Williams, Anton Kudris, Roman Komarov, Brad Hilton, Rick Dakan,
+Adam Whitcomb, Paul Casagrande, Evgueni Baldin, Robert Sanders, Kagan
+Kayal, Dean Gardiner, micah altman, Cameron Banga, Ross Mcnairn, Oscar
+Vilaplana, Robin Graham, Dan Gervais, Jon Åslund, Ragan Webber, Noble Hays,
+stephen brown, Sean True, Maciek Swiech, faser, eikenberry, Kai Laborenz,
+Sergey Fedoseev, Chris Fournier, Svend Sorensen, Greg K, wojtek, Johan
+Ribenfors, Anton, Benjamin, Oleg Tsarev, PsychoHazard, John Cochrane,
+Kasper Lauritzen, Patrick Naish, Rob, Keith Nasman, zenmaster, David Royer,
+Max Woolf, Dan Gabber, martin rhoads, Martin Schmidinger, Paul
+Scott-Wilson, Tom Gromak, Andy Webster, Dale Webb, Jim Watson, Stephen
+Hansen, Mircea, Dan Goodenberger, Matthias Fink, Andy Gott, Daniel, Jai
+Nelson, Shrayas Rajagopal, Vladimir Rutsky, Alexander, Thorben Westerhuys,
+hiruki, Tao Neuendorffer Flaherty, Elline, Marco Hegenberg, robert, Balda,
+Brennen Bearnes, Richard Parkins, David Gwilliam, Mark Johnson, Jeff Eaton,
+Reddawn90, Heather Pusey, Chris Heinz, Colin, Phatsaphong Thadabusapa,
+valunthar, Michael Martinez, redlukas, Yury V. Zaytsev, Blake, Tobias
+"betabrain" A., Leon, sopyer, Steve Burnett, bessarabov, sarble, krsch.com,
+Jack Self, Jeff Welch, Sam Pettiford, Jimmy Stridh, Diego Barberá, David
+Steele, Oscar Ciudad, John Braman, Jacob, Nick Jenkins, Ben Sullivan, Brian
+Cleary, James Brosnahan, Darryn Ten, Alex Brem, Jonathan Hitchcock, Jan
+Schmidle, Wolfrzx99, Steve Pomeroy, Matthew Sitton, Finkregh, Derek Reeve,
+GDR!, Cory Chapman, Marc Olivier Chouinard, Andreas Ryland, Justin, Andreas
+Persenius, Games That Teach, Walter Somerville, Bill Haecker, Brandon
+Phenix, Justin Shultz, Colin Scroggins, Tim Goddard, Ben Margolin, Michael
+Martinez, David Hobbs, Andre Le, Jason Roberts, Bob Lopez, Gert Van Gool,
+Robert Carnel, Anders Lundqvist, Aniruddha Sathaye, Marco Gillies, Basti
+von Bejga, Esko Arajärvi, Dominik Deobald, Pavel Yudaev, Fionn Behrens,
+Davide Favargiotti, Perttu Luukko, Silvan Jegen, Marcelo Bittencourt,
+Leonard Peris, smercer, Alexandre Dupas, Solomon Matthews, Peter Hogg,
+Richard E. Varian, Ian Oswald, James W. Sarvey, Ed Grether, Frederic
+Savard, Sebastian Nerz, Hans-Chr. Jehg, Matija Nalis, Josh DiMauro, Jason
+Harris, Adam Byrtek, Tellef, Magnus, Bart Schuurmans, Giel van Schijndel,
+Ryan, kiodos, Richard 'maddog' Collins, PawZubr, Jason Gassel, Alex
+Boisvert, Richard Thompson, maddi bolton, csights, Aaron Bryson, Jason Chu,
+Maxime Côté, Kineteka Systems, Joe Cabezas, Mike Czepiel, Rami Nasra,
+Christian Simonsen, Wouter Beugelsdijk, Adam Gibson, Gal Buki, James
+Marble, Alan Chambers, Bernd Wiehle, Simon Korzun, Daniel Glassey, Eero af
+Heurlin, Mikael, Timo Engelhardt, Wesley Faulkner, Jay Wo, Mike Belle,
+David Fowlkes Jr., Karl-Heinz Strass, Ed Mullins, Sam Flint,
+Hendrica, Mark Emer Anderson, Joshua Cole, Jan Gondol, Henrik Lindhe,
+Albert Delgado, Patrick, Alexa Avellar, Chris, sebsn1349, Maxim Kachur,
+Andrew Marshall, Navjot Narula, Alwin Mathew, Christian Mangelsdorf, Avi
+Shevin, Kevin S., Guillermo Sanchez Estrada, Alex Krieger, Luca Meier, Will
+Jessop, Nick Ruest, Lani Aung, Ulf Benjaminsson, Rudi Engelbrecht, Miles
+Matton, Cpt_Threepwood, Adam Kuyper, reacocard, David Kilsheimer, Peter
+Olson, Bill Fischofer, Prashant Shah, Simon Bonnick, Alexander Grudtsov,
+Antoine Boegli, Richard Warren, Sebastian Rust, AlmostHuman, Timmy
+Crawford, PC, Marek Belski, pontus, Douglas S Butts, Eric Wallmander, Joe
+Pelar, VIjay, Trahloc, Vernon Vantucci, Matthew baya, Viktor Štujber,
+Stephen Akiki, Daniil Zamoldinov, Atley, Chris Thomson, Jacob Briggs, Falko
+Richter, Andy Schmitz, Sergi Sagas, Peder Refsnes, Jonatan, Ben, Bill
+Niblock, Agustin Acuna, Jeff Curl, Tim Humphrey, bib, James Zarbock,
+Lachlan Devantier, Michal Berg, Jeff Lucas, Sid Irish, Franklyn, Jared
+Dickson, Olli Jarva, Adam Gibson, Lukas Loesche, Jukka Määttä, Alexander
+Lin, Dao Tran, Kirk, briankb, Ryan Villasenor, Daniel Wong, barista, Tomas
+Jungwirth, Jesper Hansen, Nivin Singh, Alessandro Tieghi, Billy Roessler,
+Peter Fetterer, Pallav Laskar, jcherney, Tyler Wang, Steve, Gigahost, Beat
+Wolf, Hannibal Skorepa, aktiveradio, Mark Nunnikhoven, Bret Comnes, Alan
+Ruttenberg, Anthony DiSanti, Adam Warkiewicz, Brian Bowman, Jonathan, Mark
+Filley, Tobias Mohr, Christian St. Cyr, j. faceless user, Karl Miller,
+Thomas Taimre, Vikram, Jason Mountcastle, Jason, Paul Elliott, Alexander,
+Stephen Farmer, rayslava, Peter Leurs, Sky Kruse, JP Reeves, John J Schatz,
+Martin Sandmair, Will Thompson, John Hergenroeder, Thomas, Christophe
+Ponsart, Wolfdog, Eagertolearn, LukasM, Federico Hernandez, Vincent Bernat,
+Christian Schmidt, Cameron Colby Thomson, Josh Duff, James Brown, Theron
+Trowbridge, Falke, Don Meares, tauu, Greg Cornford, Max Fenton, Kenneth
+Reitz, Bruce Bensetler, Mark Booth, Herb Mann, Sindre Sorhus, Chris
+Knadler, Daniel Digerås, Derek, Sin Valentine, Ben Gamari, david
+lampenscherf, fardles, Richard Burdeniuk, Tobias Kienzler, Dawid Humbla,
+Bruno Barbaroxa, D Malt, krivar, James Valleroy, Peter, Tim Geddings,
+Matthias Holzinger, Hanen, Petr Vacek, Raymond, Griff Maloney, Andreas
+Helveg Rudolph, Nelson Blaha, Colonel Fubar, Skyjacker Captain Gavin
+Phoenix, shaun, Michael, Kari Salminen, Rodrigo Miranda, Alan Chan, Justin
+Eugene Evans, Isaac, Ben Staffin, Matthew Loar, Magos, Roderik, Eugenio
+Piasini, Nico B, Scott Walter, Lior Amsalem, Thongrop Rodsavas, Alberto de
+Paola, Shawn Poulen, John Swiderski, lluks, Waelen, Mark Slosarek, Jim
+Cristol, mikesol, Bilal Quadri, LuP, Allan Nicolson, Kevin Washington,
+Isaac Wedin, Paul Anguiano, ldacruz, Jason Manheim, Sawyer, Jason
+Woofenden, Joe Danziger, Declan Morahan, KaptainUfolog, Vladron, bart, Jeff
+McNeill, Christian Schlotter, Ben McQuillan, Anthony, Julian, Martin O,
+altruism, Eric Solheim, MarkS, ndrwc, Matthew, David Lehn, Matthew
+Cisneros, Mike Skoglund, Kristy Carey, fmotta, Tom Lowenthal, Branden
+Tyree, Aaron Whitehouse
+
+## Also thanks to
+
+* The Kickstarter team, who have unleashed much good on the world.
+* The Haskell developers, who toiled for 20 years in obscurity
+  before most of us noticed them, and on whose giant shoulders I now stand,
+  in awe of the view.
+* The Git developers, for obvious reasons.
+* All of git-annex's early adopters, who turned it from a personal
+  toy project into something much more, and showed me the interest was there.
+* Rsync.net, for providing me a free account so I can make sure git-annex
+  works well with it.
+* LeastAuthority.com, for providing me a free Tahoe-LAFS grid account,
+  so I can test git-annex with that, and back up the git-annex assistant
+  screencasts.
+* Anna and Mark, for the loan of the video camera; as well as the rest of
+  my family, for your support. Even when I couldn't explain what I was
+  working on.
+* The Hodges, for providing such a congenial place for me to live and work
+  on these first world problems, while you're off helping people in the
+  third world.

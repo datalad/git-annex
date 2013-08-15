@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 7"
+ date="2013-05-13T18:42:14Z"
+ content="""
+@Chris I guess there's no really easy way because searching for a given key is not something many people need to do.
+
+However, git does provide a way. Try `git log --stat -S $KEY`
+"""]]

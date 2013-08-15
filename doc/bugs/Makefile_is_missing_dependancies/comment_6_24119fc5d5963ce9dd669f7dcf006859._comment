@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 6"
+ date="2011-03-23T16:23:56Z"
+ content="""
+I forgot to mention that the statfs64 stuff in OSX seems to be deprecated, see http://developer.apple.com/library/mac/#documentation/Darwin/Reference/ManPages/man2/statfs64.2.html
+
+on a slightly different note, is anonymous pushing to the \"wiki\" over git allowed? I'd prefer to be able to edit stuff inline for updating some of my own comments if I can :P
+"""]]

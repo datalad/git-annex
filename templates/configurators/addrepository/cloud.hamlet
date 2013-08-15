@@ -1,0 +1,26 @@
+<h3>
+  <a href="@{AddBoxComR}">
+    <i .icon-plus-sign></i> Box.com
+<p>
+  Provides free cloud storage for small amounts of data.
+
+<h3>
+  <a href="@{AddRsyncNetR}">
+    <i .icon-plus-sign></i> Rsync.net
+<p>
+  Works very well with git-annex.
+  <br>
+  Offers a discounted rate for git-annex users.
+
+<h3>
+  <a href="@{AddS3R}">
+    <i .icon-plus-sign></i> Amazon S3
+<p>
+  Good choice for professional quality storage.
+
+<h3>
+  <a href="@{AddSshR}">
+    <i .icon-plus-sign></i> Remote server
+<p>
+  Set up a repository on a remote server using #
+  <tt>ssh</tt>.

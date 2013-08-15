@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 3"
+ date="2012-06-15T08:58:17Z"
+ content="""
+I would also be reluctant to use lsof for the sake of non-linux systems or systems that don't have lsof. I've only been playing around with the watch branch of my \"other\" laptop under archlinux. It looks usable, however I would prefer support for OSX before the watch branch gets merged to master ;)
+"""]]

@@ -1,0 +1,16 @@
+Hi, another installation issue on Ubuntu Lucid:
+
+I started with a clean `~/.cabal` directory and did the following:
+
+    andreas@antares:~$ sudo aptitude install cabal-install
+    andreas@antares:~$ cabal update
+    andreas@antares:~$ cabal install git-annex -v --bindir=$HOME/
+
+However, I got some dpendancy error:
+
+    cabal: dependencies conflict: base-3.0.3.2 requires syb ==0.1.0.2 however
+    syb-0.1.0.2 was excluded because json-0.5 requires syb >=0.3.3
+
+Any ideas?
+
+Thanks for your help!

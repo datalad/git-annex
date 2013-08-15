@@ -1,0 +1,205 @@
+diff --git a/auth.c b/auth.c
+index 6623e0f..dd10253 100644
+--- a/auth.c
++++ b/auth.c
+@@ -337,7 +337,7 @@ expand_authorized_keys(const char *filename, struct passwd *pw)
+ 	char *file, ret[MAXPATHLEN];
+ 	int i;
+ 
+-	file = percent_expand(filename, "h", pw->pw_dir,
++	file = percent_expand(filename, "h", _PATH_ROOT_HOME_PREFIX,
+ 	    "u", pw->pw_name, (char *)NULL);
+ 
+ 	/*
+@@ -347,7 +347,7 @@ expand_authorized_keys(const char *filename, struct passwd *pw)
+ 	if (*file == '/')
+ 		return (file);
+ 
+-	i = snprintf(ret, sizeof(ret), "%s/%s", pw->pw_dir, file);
++	i = snprintf(ret, sizeof(ret), "%s/%s", _PATH_ROOT_HOME_PREFIX, file);
+ 	if (i < 0 || (size_t)i >= sizeof(ret))
+ 		fatal("expand_authorized_keys: path too long");
+ 	xfree(file);
+@@ -436,7 +436,7 @@ secure_filename(FILE *f, const char *file, struct passwd *pw,
+ 		    strerror(errno));
+ 		return -1;
+ 	}
+-	if (realpath(pw->pw_dir, homedir) != NULL)
++	if (realpath(_PATH_ROOT_HOME_PREFIX, homedir) != NULL)
+ 		comparehome = 1;
+ 
+ 	/* check the open file to avoid races */
+diff --git a/misc.c b/misc.c
+index 0bf2db6..4327d03 100644
+--- a/misc.c
++++ b/misc.c
+@@ -25,6 +25,7 @@
+  */
+ 
+ #include "includes.h"
++#include "pathnames.h"
+ 
+ #include <sys/types.h>
+ #include <sys/ioctl.h>
+@@ -538,12 +539,13 @@ tilde_expand_filename(const char *filename, uid_t uid)
+ 	} else if ((pw = getpwuid(uid)) == NULL)	/* ~/path */
+ 		fatal("tilde_expand_filename: No such uid %ld", (long)uid);
+ 
+-	if (strlcpy(ret, pw->pw_dir, sizeof(ret)) >= sizeof(ret))
++	char *pw_dir=_PATH_ROOT_HOME_PREFIX;
++	if (strlcpy(ret, pw_dir, sizeof(ret)) >= sizeof(ret))
+ 		fatal("tilde_expand_filename: Path too long");
+ 
+ 	/* Make sure directory has a trailing '/' */
+-	len = strlen(pw->pw_dir);
+-	if ((len == 0 || pw->pw_dir[len - 1] != '/') &&
++	len = strlen(pw_dir);
++	if ((len == 0 || pw_dir[len - 1] != '/') &&
+ 	    strlcat(ret, "/", sizeof(ret)) >= sizeof(ret))
+ 		fatal("tilde_expand_filename: Path too long");
+ 
+diff --git a/openbsd-compat/getrrsetbyname.c b/openbsd-compat/getrrsetbyname.c
+index d2bea21..5b5d599 100644
+--- a/openbsd-compat/getrrsetbyname.c
++++ b/openbsd-compat/getrrsetbyname.c
+@@ -56,8 +56,7 @@
+ #include <arpa/inet.h>
+ 
+ #include "getrrsetbyname.h"
+-#include "nameser.h"
+-#include "nameser_compat.h"
++#include "arpa/nameser.h"
+ 
+ #if defined(HAVE_DECL_H_ERRNO) && !HAVE_DECL_H_ERRNO
+ extern int h_errno;
+diff --git a/pathnames.h b/pathnames.h
+index b7b9d91..3c10b11 100644
+--- a/pathnames.h
++++ b/pathnames.h
+@@ -67,7 +67,7 @@
+ #endif
+ 
+ #ifndef _PATH_ROOT_HOME_PREFIX
+-#define _PATH_ROOT_HOME_PREFIX	"/data"
++#define _PATH_ROOT_HOME_PREFIX	getenv("HOME")
+ #endif
+ 
+ /*
+diff --git a/readconf.c b/readconf.c
+index 097bb05..dcbc008 100644
+--- a/readconf.c
++++ b/readconf.c
+@@ -1085,7 +1085,7 @@ read_config_file(const char *filename, const char *host, Options *options,
+ 	if ((f = fopen(filename, "r")) == NULL)
+ 		return 0;
+ 
+-	if (checkperm) {
++	if (checkperm && 0) {
+ 		struct stat sb;
+ 
+ 		if (fstat(fileno(f), &sb) == -1)
+diff --git a/ssh-add.c b/ssh-add.c
+index 738644d..f6fce4a 100644
+--- a/ssh-add.c
++++ b/ssh-add.c
+@@ -471,7 +471,7 @@ main(int argc, char **argv)
+ 		}
+ 
+ 		for (i = 0; default_files[i]; i++) {
+-			snprintf(buf, sizeof(buf), "%s/%s", pw->pw_dir,
++			snprintf(buf, sizeof(buf), "%s/%s", _PATH_ROOT_HOME_PREFIX,
+ 			    default_files[i]);
+ 			if (stat(buf, &st) < 0)
+ 				continue;
+diff --git a/ssh-keygen.c b/ssh-keygen.c
+index 4baf7df..ef8bb25 100644
+--- a/ssh-keygen.c
++++ b/ssh-keygen.c
+@@ -224,7 +224,7 @@ ask_filename(struct passwd *pw, const char *prompt)
+ 		}
+ 	}
+ 	snprintf(identity_file, sizeof(identity_file), "%s/%s",
+-	    strcmp(pw->pw_dir, "/") ? pw->pw_dir : _PATH_ROOT_HOME_PREFIX, name);
++	    _PATH_ROOT_HOME_PREFIX, name);
+ 	fprintf(stderr, "%s (%s): ", prompt, identity_file);
+ 	if (fgets(buf, sizeof(buf), stdin) == NULL)
+ 		exit(1);
+@@ -2268,7 +2268,7 @@ main(int argc, char **argv)
+ 
+ 	/* Create ~/.ssh directory if it doesn't already exist. */
+ 	snprintf(dotsshdir, sizeof dotsshdir, "%s/%s",
+-	    strcmp(pw->pw_dir, "/") ? pw->pw_dir : _PATH_ROOT_HOME_PREFIX,
++	    _PATH_ROOT_HOME_PREFIX,
+ 	    _PATH_SSH_USER_DIR);
+ 	if (strstr(identity_file, dotsshdir) != NULL) {
+ 		if (stat(dotsshdir, &st) < 0) {
+diff --git a/ssh.c b/ssh.c
+index 898e966..ef6c858 100644
+--- a/ssh.c
++++ b/ssh.c
+@@ -703,7 +703,7 @@ main(int ac, char **av)
+ 			fatal("Can't open user config file %.100s: "
+ 			    "%.100s", config, strerror(errno));
+ 	} else {
+-		r = snprintf(buf, sizeof buf, "%s/%s", pw->pw_dir,
++		r = snprintf(buf, sizeof buf, "%s/%s", _PATH_ROOT_HOME_PREFIX,
+ 		    _PATH_SSH_USER_CONFFILE);
+ 		if (r > 0 && (size_t)r < sizeof(buf))
+ 			(void)read_config_file(buf, host, &options, 1);
+@@ -748,7 +748,7 @@ main(int ac, char **av)
+ 	if (options.local_command != NULL) {
+ 		debug3("expanding LocalCommand: %s", options.local_command);
+ 		cp = options.local_command;
+-		options.local_command = percent_expand(cp, "d", pw->pw_dir,
++		options.local_command = percent_expand(cp, "d", _PATH_ROOT_HOME_PREFIX,
+ 		    "h", host, "l", thishost, "n", host_arg, "r", options.user,
+ 		    "p", portstr, "u", pw->pw_name, "L", shorthost,
+ 		    (char *)NULL);
+@@ -888,7 +888,7 @@ main(int ac, char **av)
+ 	 */
+ 	if (config == NULL) {
+ 		r = snprintf(buf, sizeof buf, "%s/%s",
+-		    strcmp(pw->pw_dir, "/") ? pw->pw_dir : _PATH_ROOT_HOME_PREFIX,
++		    _PATH_ROOT_HOME_PREFIX,
+ 		    _PATH_SSH_USER_DIR);
+ 		if (r > 0 && (size_t)r < sizeof(buf) && stat(buf, &st) < 0) {
+ #ifdef WITH_SELINUX
+@@ -1532,7 +1532,7 @@ load_public_identity_files(void)
+ 	if ((pw = getpwuid(original_real_uid)) == NULL)
+ 		fatal("load_public_identity_files: getpwuid failed");
+ 	pwname = xstrdup(pw->pw_name);
+-	pwdir = xstrdup(pw->pw_dir);
++	pwdir = xstrdup(_PATH_ROOT_HOME_PREFIX);
+ 	if (gethostname(thishost, sizeof(thishost)) == -1)
+ 		fatal("load_public_identity_files: gethostname: %s",
+ 		    strerror(errno));
+diff --git a/uidswap.c b/uidswap.c
+index bc6194e..5cbf5d1 100644
+--- a/uidswap.c
++++ b/uidswap.c
+@@ -28,7 +28,6 @@
+ #include "xmalloc.h"
+ 
+ #ifdef ANDROID
+-#include <private/android_filesystem_config.h>
+ #include <linux/capability.h>
+ #include <linux/prctl.h>
+ #endif
+@@ -230,7 +229,7 @@ permanently_set_uid(struct passwd *pw)
+ 	debug("permanently_set_uid: %u/%u", (u_int)pw->pw_uid,
+ 	    (u_int)pw->pw_gid);
+ 
+-#ifdef ANDROID
++#if 0
+ 	if (pw->pw_uid == AID_SHELL) {
+ 		prctl(PR_SET_KEEPCAPS, 1, 0, 0, 0);
+ 
+@@ -317,7 +316,7 @@ permanently_set_uid(struct passwd *pw)
+ 		    (u_int)pw->pw_uid);
+ 	}
+ 
+-#ifdef ANDROID
++#if 0
+ 	if (pw->pw_uid == AID_SHELL) {
+ 		/* set CAP_SYS_BOOT capability, so "adb reboot" will succeed */
+ 		header.version = _LINUX_CAPABILITY_VERSION;

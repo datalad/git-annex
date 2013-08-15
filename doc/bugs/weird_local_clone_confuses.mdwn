@@ -1,0 +1,20 @@
+See
+<http://www.git.code-experiments.com/blog/2011/01/manage-large-files-with-git-annex-by-joey-hess.html>
+
+If a local repo is cloned with "git clone orig/.git new", then git-annex in
+new cannot see origin. 
+
+the .git/config has "url=/.../orig/.git". Apparently git is ok with that
+weird construction; probably it treats it as a bare git repo. But git-annex
+just sees a directory w/o a .git subdir, and gives up.
+
+---
+
+Just tested, and the new support for bare repositories didn't solve this.
+(Because config.bare is not set.)
+
+I think this is not something git-annex should go out of its way to
+support. [[done]]
+--[[Joey]] 
+
+Later.. Fixed this after all. --[[Joey]] 

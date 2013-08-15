@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://dzsino.myopenid.com/"
+ nickname="dzsino"
+ subject="thanks!"
+ date="2013-06-30T13:10:35Z"
+ content="""
+I'm using git-annex to consolidate all the stuff that accumulated for years on various drives I have. Music I downloaded and bought (don't wanna loose those), photos from 2003 and on, archives of school and work stuff etc. Using it for 6-7 months now, I came to trust git-annex, I very much like the command line robustness it has and I really like that all my files are accessible in a single tree. It would be cool to have some metadata storage (for file dates, tags and such) and maybe spotlight-like search (elastic-search comes to mind).. 
+Still, without these, it has a great problem-solution fit for me!
+
+Thanks Joey for all the great work, I really hope you can continue improving it, I would gladly join to a second kickstarter funding!
+
+"""]]

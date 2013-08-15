@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 1"
+ date="2013-01-17T18:30:06Z"
+ content="""
+AFAICS, the German message is the equivilant of `git status` when a file has been deleted:
+
+<pre>
+# On branch master
+# Changes not staged for commit:
+#   (use \"git add/rm <file>...\" to update what will be committed)
+#   (use \"git checkout -- <file>...\" to discard changes in working directory)
+#
+#	deleted:    bigfile
+#
+no changes added to commit (use \"git add\" and/or \"git commit -a\")
+</pre>
+
+There's no indication here of when the file was deleted, or what deleted it. I need a way to reproduce this to be able to help. At this point it's not clear if the file is deleted by the old assistant that you ctrl-c'd, or if it was deleted while the assistant was not running, or if it somehow gets deleted when the new assistant is started up.
+"""]]

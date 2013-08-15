@@ -1,0 +1,18 @@
+This month's theme is supposed to be fixing up whatever might prevent users
+from using the assistant. To that end, I've posted an open-ended poll,
+[[polls/what is preventing me from using git-annex assistant]]. Please go
+fill it out so I can get an idea of how many people are using the
+assistant, and what needs to be done to get the rest of you, and your
+friends and family able to use it.
+
+In the meantime, today I fixed several bugs that were recently reported in
+the webapp and assistant. Getting it working as widely as possible, even on
+strange IPv6 only systems, and with browsers that didn't like my generated
+javascript code is important, and fits right into this month's theme. I'm
+happy to see lots of bugs being filed, since it means more users are trying
+the assistant out.
+
+Also continued work on making direct mode transfers safe. All transfers to
+local git remotes (wish I had a better phrase!) are now safe in direct mode.
+Only uploading from a direct mode repository over ssh to another git
+repository is still potentially unsafe.

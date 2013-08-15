@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlup4hyZo4eCjF8T85vfRXMKBxGj9bMdl0"
+ nickname="Ben"
+ subject="comment 1"
+ date="2012-09-06T02:28:00Z"
+ content="""
+
+Here is a quick script which reproduces the issue on another Ubuntu 12.04 machine,
+
+     mkdir hi
+     cd hi
+     wget \"http://downloads.sourceforge.net/project/free-cad/FreeCAD%20Source/freecad-0.11.3729.tar.gz\"
+
+     git init
+     git annex init
+     tar -zxf freecad-0.11.3729.tar.gz 
+     git annex add FreeCAD-0.11.3729
+     git annex unannex FreeCAD-0.11.3729
+     echo \"The following links are broken:\"
+     find -L . -type l
+     
+This results in dozens of dead symlinks.
+
+"""]]

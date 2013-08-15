@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="gernot"
+ ip="213.168.117.192"
+ subject="comment 15"
+ date="2011-04-03T15:41:00Z"
+ content="""
+I also ran into problems on a case-insensitive HFS+ file system, it seems.  I
+tried following the instructions in comment 12:
+
+	1. Remove everything in .git-annex besides uuid.log and trust.log
+	2. git annex fsck --fast
+	3. Commit
+
+However, I still see upper and lower case directories in .git-annex.  Did I
+misunderstand that they should all be lower case now?
+
+"""]]

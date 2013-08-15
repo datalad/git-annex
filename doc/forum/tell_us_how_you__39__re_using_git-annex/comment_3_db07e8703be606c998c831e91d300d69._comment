@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://bergey.dreamwidth.org/"
+ ip="66.80.90.109"
+ subject="git-annex, media, emacs"
+ date="2012-08-31T01:47:36Z"
+ content="""
+I've been using git-annex for a month or two to manage my music collection.  It's great to know I can drop files if I need space on the laptop, knowing exactly where I have other copies.  Now I'm writing an emacs mode to help me keep track: https://gitorious.org/emacs-contrib/annex-mode
+
+Locally available files are colored differently, and pressing g runs `git annex get` on the file at point.
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 2"
+ date="2013-02-25T12:44:18Z"
+ content="""
+Update: git annex fsck --fast --from=toshiba fixed this.  Guess I was up too late to think about the obvious.  Sorry bout that.
+
+"""]]

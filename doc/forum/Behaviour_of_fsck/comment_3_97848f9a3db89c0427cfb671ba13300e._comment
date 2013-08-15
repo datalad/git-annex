@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 3"
+ date="2011-03-28T01:16:21Z"
+ content="""
+Another nice thing would be a summary of _what_ is wrong. I.e.
+
+    % git fsck
+    [...]
+    git-annex: 100 total failed
+      50 checksum failed
+      50 not enough copies exit
+
+And the same/similar for all other failure modes.
+
+
+-- RichiH
+"""]]

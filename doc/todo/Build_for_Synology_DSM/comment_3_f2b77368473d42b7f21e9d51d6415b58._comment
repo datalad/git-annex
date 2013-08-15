@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-25T04:42:22Z"
+ content="""
+Which Debian package? Different ones link to different libcs.
+
+(It's not really possible to statically link something with as many dependencies as git-annex on linux anymore, unfortunately.)
+"""]]

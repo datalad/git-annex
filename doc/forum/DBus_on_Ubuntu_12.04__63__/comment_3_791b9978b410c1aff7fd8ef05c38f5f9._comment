@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmU_2tE75oyG0h2ZPN4lcroIKEMC8G-otE"
+ nickname="Michael"
+ subject="Shame on me..."
+ date="2012-08-25T15:43:19Z"
+ content="""
+The build error is:
+
+$ cabal install DBus
+Resolving dependencies...
+Configuring DBus-0.4...
+checking for pkg-config... /usr/bin/pkg-config
+checking pkg-config is at least version 0.9.0... yes
+checking for DBUS... yes
+configure: creating ./config.status
+config.status: creating DBus.buildinfo
+Building DBus-0.4...
+Preprocessing library DBus-0.4...
+
+DBus/Message.hsc:1:14:
+    Warning: -XPatternSignatures is deprecated: use -XScopedTypeVariables or pragma {-# LANGUAGE ScopedTypeVariables #-} instead
+
+DBus/Message.hsc:2:12:
+    Warning: -fglasgow-exts is deprecated: Use individual extensions instead
+[1 of 5] Compiling DBus.Shared      ( dist/build/DBus/Shared.hs, dist/build/DBus/Shared.o )
+[2 of 5] Compiling DBus             ( dist/build/DBus.hs, dist/build/DBus.o )
+
+DBus.hsc:26:49:
+    Warning: In the use of `mkTyCon'
+             (imported from Data.Typeable):
+             Deprecated: \"either derive Typeable, or use mkTyCon3 instead\"
+[3 of 5] Compiling DBus.Internal    ( dist/build/DBus/Internal.hs, dist/build/DBus/Internal.o )
+
+DBus/Internal.hsc:12:27:
+    Module `Control.Exception' does not export `throwDyn'
+cabal: Error: some packages failed to install:
+DBus-0.4 failed during the building phase. The exception was:
+ExitFailure 1
+
+"""]]

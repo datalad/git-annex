@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 5"
+ date="2011-03-28T15:51:11Z"
+ content="""
+I also failed to mention, that in the case when i have stray log files after what has happened in comment 2, I get this left over after a commit when git is confused...
+
+
+<pre>
+jtang@x00:~/sources $ git status
+# On branch master
+# Your branch is ahead of 'origin/master' by 1 commit.
+#
+# Changes not staged for commit:
+#   (use \"git add <file>...\" to update what will be committed)
+#   (use \"git checkout -- <file>...\" to discard changes in working directory)
+#
+#	modified:   .git-annex/1G/X3/WORM-s309910751-m1301311322--l_fcompxe_ia32_2011.2.137.tgz.log
+#	modified:   .git-annex/3W/Xf/WORM-s805764902-m1301312756--l_cproc_p_11.1.075_intel64.log
+#	modified:   .git-annex/9Q/Wz/WORM-s1234430253-m1301311891--l_ccompxe_2011.2.137.log
+#	modified:   .git-annex/FQ/4z/WORM-s318168323-m1301310848--l_cprof_p_11.1.075_ia64.log
+#	modified:   .git-annex/FV/0P/WORM-s710135470-m1301311835--l_ccompxe_intel64_2011.2.137.log
+#	modified:   .git-annex/Jk/zK/WORM-s374617670-m1301312705--l_ipp_7.0.2.137_intel64.log
+#	modified:   .git-annex/Jx/qM/WORM-s599386592-m1301310731--l_fcompxe_2011.2.137.tgz.log
+#	modified:   .git-annex/KX/w1/WORM-s35976002-m1301312193--l_tbb_3.0.6.174.log
+#	modified:   .git-annex/VK/kv/WORM-s584342291-m1301312669--l_cproc_p_11.1.075_ia64.log
+#	modified:   .git-annex/Vw/jK/WORM-s15795178-m1301310913--w_flm_p_1.0.011_intel64.zip.log
+#	modified:   .git-annex/Zq/7X/WORM-s343075585-m1301312233--l_ipp_7.0.2.137_ia32.log
+#	modified:   .git-annex/vW/v1/WORM-s736986678-m1301312794--l_cproc_p_11.1.075_ia32.log
+#
+no changes added to commit (use \"git add\" and/or \"git commit -a\")
+</pre>
+
+
+Up until now I have just been updating the status of the staged files by hand and commiting it on my mac x00, this probably isn't helping. I'd rather not lose the tracking information.
+"""]]

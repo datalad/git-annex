@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="gernot"
+ ip="213.168.117.192"
+ subject="comment 18"
+ date="2011-04-03T19:46:16Z"
+ content="""
+Joey, sorry, I got it wrong.  I thought upgrading git didn't help and you
+adjusted things in git-annex instead.
+
+Anyway, can I get around upgrading on all hosts by reformatting the drive to
+case-sensitive HFS+? Or will I have to upgrade git (currently version 1.7.2.5)
+eventually anyway?
+
+"""]]

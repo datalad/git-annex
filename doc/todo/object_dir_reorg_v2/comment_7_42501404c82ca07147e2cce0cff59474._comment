@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 7"
+ date="2011-03-16T21:05:38Z"
+ content="""
+Ah, OK. I assumed the metadata would be attached to a key, not part of the key. This seems to make upgrades/extensions down the line harder than they need to be, but you are right that this way, merges are not, and never will be, an issue.
+
+Though with the SHA1 backend, changing files can be tracked. This means that tracking changes in mtime or other is possible. It also means that there are potential merge issues. But I won't argue the point endlessly. I can accept design decisions :)
+
+The prefix at work is from a university netblock so yes, it might be on a few hundred proxy lists etc.
+"""]]

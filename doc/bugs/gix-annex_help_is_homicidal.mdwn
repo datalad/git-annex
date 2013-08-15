@@ -1,0 +1,23 @@
+> What steps will reproduce the problem?
+
+Run 'git-annex help'
+
+> What is the expected output?
+
+Something similar to 'git-annex --help', or a pointer to --help.
+
+> What do you see instead?
+
+    git-annex: Unknown command 'help'
+    Did you mean one of these?
+    	drop
+    	dead
+
+> What version of git-annex are you using? On what operating system?
+
+git-annex version 3.20120825 on Arch Linux x86_64, installed from AUR package git-annex and using the [haskell] repository for dependencies.
+
+>> Lol, that's great! Also worth noting that with help.autocorrect=1, it'd
+>> actually run drop. Only with --force can you lose data however.
+>>
+>> I've added a help command. [[done]] --[[Joey]]

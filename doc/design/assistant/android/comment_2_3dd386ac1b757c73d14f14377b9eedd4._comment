@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlhIMPGF1E0XEJKV6j6-PFzAxA1-nIlydo"
+ nickname="Bernhard"
+ subject="re @  gdr-go2 "
+ date="2012-09-10T19:34:00Z"
+ content="""
+`mount` requires root and you'll have still the 4gb limit for your image by FAT. some phones (e.g. galaxy nexus) already use `ext4` for `/sdcard` though.
+"""]]

@@ -1,0 +1,476 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkHZw2Vx0VPtb9XM8vum7nEnh6gHGSCQvM"
+ nickname="Andrew"
+ subject="comment 2"
+ date="2012-11-24T18:48:23Z"
+ content="""
+Not quite. Though this might just be an artifact of me disabling WITH_WEBDAV on account of that not compiling on OS X (can't find module Network.Protocol.HTTP.DAV).
+OS: OS X 10.8.0
+
+    % git branch -v
+    * master d1ba407 Added a comment: git annex fix
+    % grep \"FEATURES?=\" Makefile
+    FEATURES?=$(GIT_ANNEX_LOCAL_FEATURES) -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS
+    $ make
+    ghc -O2 -Wall -outputdir tmp -IUtility  -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS -DWITH_KQUEUE -threaded --make configure
+    [1 of 7] Compiling Utility.Exception ( Utility/Exception.hs, tmp/Utility/Exception.o )
+    [2 of 7] Compiling Utility.Misc     ( Utility/Misc.hs, tmp/Utility/Misc.o )
+    [3 of 7] Compiling Utility.Process  ( Utility/Process.hs, tmp/Utility/Process.o )
+    [4 of 7] Compiling Utility.SafeCommand ( Utility/SafeCommand.hs, tmp/Utility/SafeCommand.o )
+    [5 of 7] Compiling Build.TestConfig ( Build/TestConfig.hs, tmp/Build/TestConfig.o )
+    [6 of 7] Compiling Build.Configure  ( Build/Configure.hs, tmp/Build/Configure.o )
+    [7 of 7] Compiling Main             ( configure.hs, tmp/Main.o )
+    Linking configure ...
+    ./configure
+      checking version... 3.20121113
+      checking git... yes
+      checking git version... 1.7.10.2 (Apple Git-33)
+      checking cp -a... yes
+      checking cp -p... yes
+      checking cp --reflink=auto... no
+      checking uuid generator... uuidgen
+      checking xargs -0... yes
+      checking rsync... yes
+      checking curl... yes
+      checking wget... no
+      checking bup... no
+      checking gpg... no
+      checking lsof... yes
+      checking ssh connection caching... yes
+      checking sha1... sha1sum
+      checking sha256.../bin/sh: sha256sum: command not found
+     gsha256sum
+      checking sha512.../bin/sh: sha512sum: command not found
+     gsha512sum
+      checking sha224.../bin/sh: sha224sum: command not found
+     gsha224sum
+      checking sha384.../bin/sh: sha384sum: command not found
+     gsha384sum
+    hsc2hs Utility/Touch.hsc
+    Touch.hsc:117:2: warning: #warning \"utimensat and lutimes not available; building without symlink timestamp preservation support\"
+    Touch.hsc:117:2: warning: #warning \"utimensat and lutimes not available; building without symlink timestamp preservation support\"
+    Touch.hsc:117:2: warning: #warning \"utimensat and lutimes not available; building without symlink timestamp preservation support\"
+    hsc2hs Utility/Mounts.hsc
+    cc -Wall   -c -o Utility/libdiskfree.o Utility/libdiskfree.c
+    Utility/libdiskfree.c:53:6: warning: 'statfs64' is deprecated: first deprecated in Mac OS X 10.6 [-Wdeprecated-declarations]
+            if (STATCALL(path, &buf) != 0)
+                ^
+    Utility/libdiskfree.c:16:19: note: expanded from macro 'STATCALL'
+    # define STATCALL statfs64
+                      ^
+    /usr/include/sys/mount.h:381:5: note: 'statfs64' declared here
+    int     statfs64(const char *, struct statfs64 *) __OSX_AVAILABLE_BUT_DEPRECATED(__MAC_10_5,__MAC_10_6,__IPHONE_NA,__IPHONE_NA);
+            ^
+    1 warning generated.
+    cc -Wall   -c -o Utility/libmounts.o Utility/libmounts.c
+    cc -Wall   -c -o Utility/libkqueue.o Utility/libkqueue.c
+    install -d tmp
+    ghc -O2 -Wall -outputdir tmp -IUtility  -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS -DWITH_KQUEUE -threaded --make git-annex -o tmp/git-annex Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
+
+    Assistant/Threads/NetWatcher.hs:26:0:
+         warning: #warning Building without dbus support; will poll for network connection changes
+
+    Assistant/Threads/MountWatcher.hs:33:0:
+         warning: #warning Building without dbus support; will use mtab polling
+    [  1 of 285] Compiling Utility.Dot      ( Utility/Dot.hs, tmp/Utility/Dot.o )
+    [  2 of 285] Compiling Utility.Mounts   ( Utility/Mounts.hs, tmp/Utility/Mounts.o )
+    [  3 of 285] Compiling Utility.Yesod    ( Utility/Yesod.hs, tmp/Utility/Yesod.o )
+    [  4 of 285] Compiling Utility.Tense    ( Utility/Tense.hs, tmp/Utility/Tense.o )
+    [  5 of 285] Compiling Utility.Verifiable ( Utility/Verifiable.hs, tmp/Utility/Verifiable.o )
+    [  6 of 285] Compiling Assistant.Types.TransferSlots ( Assistant/Types/TransferSlots.hs, tmp/Assistant/Types/TransferSlots.o )
+    [  7 of 285] Compiling Types.StandardGroups ( Types/StandardGroups.hs, tmp/Types/StandardGroups.o )
+    [  8 of 285] Compiling Utility.Percentage ( Utility/Percentage.hs, tmp/Utility/Percentage.o )
+    [  9 of 285] Compiling Utility.Observed ( Utility/Observed.hs, tmp/Utility/Observed.o )
+    [ 10 of 285] Compiling Utility.Base64   ( Utility/Base64.hs, tmp/Utility/Base64.o )
+    [ 11 of 285] Compiling Utility.DataUnits ( Utility/DataUnits.hs, tmp/Utility/DataUnits.o )
+    [ 12 of 285] Compiling Utility.JSONStream ( Utility/JSONStream.hs, tmp/Utility/JSONStream.o )
+    [ 13 of 285] Compiling Messages.JSON    ( Messages/JSON.hs, tmp/Messages/JSON.o )
+    [ 14 of 285] Compiling Build.SysConfig  ( Build/SysConfig.hs, tmp/Build/SysConfig.o )
+    [ 15 of 285] Compiling Types.KeySource  ( Types/KeySource.hs, tmp/Types/KeySource.o )
+    [ 16 of 285] Compiling Types.Meters     ( Types/Meters.hs, tmp/Types/Meters.o )
+    [ 17 of 285] Compiling Utility.State    ( Utility/State.hs, tmp/Utility/State.o )
+    [ 18 of 285] Compiling Types.UUID       ( Types/UUID.hs, tmp/Types/UUID.o )
+    [ 19 of 285] Compiling Types.Messages   ( Types/Messages.hs, tmp/Types/Messages.o )
+    [ 20 of 285] Compiling Types.Group      ( Types/Group.hs, tmp/Types/Group.o )
+    [ 21 of 285] Compiling Types.TrustLevel ( Types/TrustLevel.hs, tmp/Types/TrustLevel.o )
+    [ 22 of 285] Compiling Types.BranchState ( Types/BranchState.hs, tmp/Types/BranchState.o )
+    [ 23 of 285] Compiling Utility.PartialPrelude ( Utility/PartialPrelude.hs, tmp/Utility/PartialPrelude.o )
+    [ 24 of 285] Compiling Utility.HumanTime ( Utility/HumanTime.hs, tmp/Utility/HumanTime.o )
+    [ 25 of 285] Compiling Utility.Format   ( Utility/Format.hs, tmp/Utility/Format.o )
+    [ 26 of 285] Compiling Utility.FileSystemEncoding ( Utility/FileSystemEncoding.hs, tmp/Utility/FileSystemEncoding.o )
+    [ 27 of 285] Compiling Utility.Touch    ( Utility/Touch.hs, tmp/Utility/Touch.o )
+
+    Utility/Touch.hsc:17:1:
+        Warning: The import of `Utility.FileSystemEncoding' is redundant
+                   except perhaps to import instances from `Utility.FileSystemEncoding'
+                 To import instances alone, use: import Utility.FileSystemEncoding()
+
+    Utility/Touch.hsc:19:1:
+        Warning: The import of `Foreign' is redundant
+                   except perhaps to import instances from `Foreign'
+                 To import instances alone, use: import Foreign()
+
+    Utility/Touch.hsc:21:1:
+        Warning: The import of `Control.Monad' is redundant
+                   except perhaps to import instances from `Control.Monad'
+                 To import instances alone, use: import Control.Monad()
+    [ 28 of 285] Compiling Utility.Applicative ( Utility/Applicative.hs, tmp/Utility/Applicative.o )
+    [ 29 of 285] Compiling Utility.Monad    ( Utility/Monad.hs, tmp/Utility/Monad.o )
+    [ 30 of 285] Compiling Utility.Exception ( Utility/Exception.hs, tmp/Utility/Exception.o )
+    [ 31 of 285] Compiling Utility.Misc     ( Utility/Misc.hs, tmp/Utility/Misc.o )
+    [ 32 of 285] Compiling Utility.Process  ( Utility/Process.hs, tmp/Utility/Process.o )
+    [ 33 of 285] Compiling Utility.SafeCommand ( Utility/SafeCommand.hs, tmp/Utility/SafeCommand.o )
+    [ 34 of 285] Compiling Utility.Network  ( Utility/Network.hs, tmp/Utility/Network.o )
+    [ 35 of 285] Compiling Utility.SRV      ( Utility/SRV.hs, tmp/Utility/SRV.o )
+
+    Utility/SRV.hs:88:1: Warning: Defined but not used: `lookupSRVHost'
+
+    Utility/SRV.hs:94:1: Warning: Defined but not used: `parseSrvHost'
+    [ 36 of 285] Compiling Git.Types        ( Git/Types.hs, tmp/Git/Types.o )
+    [ 37 of 285] Compiling Utility.UserInfo ( Utility/UserInfo.hs, tmp/Utility/UserInfo.o )
+    [ 38 of 285] Compiling Utility.Path     ( Utility/Path.hs, tmp/Utility/Path.o )
+    [ 39 of 285] Compiling Utility.TempFile ( Utility/TempFile.hs, tmp/Utility/TempFile.o )
+    [ 40 of 285] Compiling Utility.Directory ( Utility/Directory.hs, tmp/Utility/Directory.o )
+    [ 41 of 285] Compiling Utility.FreeDesktop ( Utility/FreeDesktop.hs, tmp/Utility/FreeDesktop.o )
+    [ 42 of 285] Compiling Utility.OSX      ( Utility/OSX.hs, tmp/Utility/OSX.o )
+
+    Utility/OSX.hs:10:1:
+        Warning: The import of `Utility.Path' is redundant
+                   except perhaps to import instances from `Utility.Path'
+                 To import instances alone, use: import Utility.Path()
+    [ 43 of 285] Compiling Assistant.Install.AutoStart ( Assistant/Install/AutoStart.hs, tmp/Assistant/Install/AutoStart.o )
+    [ 44 of 285] Compiling Common           ( Common.hs, tmp/Common.o )
+    [ 45 of 285] Compiling Utility.FileMode ( Utility/FileMode.hs, tmp/Utility/FileMode.o )
+    [ 46 of 285] Compiling Git              ( Git.hs, tmp/Git.o )
+    [ 47 of 285] Compiling Git.FilePath     ( Git/FilePath.hs, tmp/Git/FilePath.o )
+    [ 48 of 285] Compiling Utility.Matcher  ( Utility/Matcher.hs, tmp/Utility/Matcher.o )
+    [ 49 of 285] Compiling Utility.Gpg      ( Utility/Gpg.hs, tmp/Utility/Gpg.o )
+    [ 50 of 285] Compiling Types.Crypto     ( Types/Crypto.hs, tmp/Types/Crypto.o )
+    [ 51 of 285] Compiling Types.Key        ( Types/Key.hs, tmp/Types/Key.o )
+    [ 52 of 285] Compiling Types.Backend    ( Types/Backend.hs, tmp/Types/Backend.o )
+    [ 53 of 285] Compiling Types.Remote     ( Types/Remote.hs, tmp/Types/Remote.o )
+    [ 54 of 285] Compiling Meters           ( Meters.hs, tmp/Meters.o )
+    [ 55 of 285] Compiling Git.Sha          ( Git/Sha.hs, tmp/Git/Sha.o )
+    [ 56 of 285] Compiling Utility.CoProcess ( Utility/CoProcess.hs, tmp/Utility/CoProcess.o )
+    [ 57 of 285] Compiling Git.Command      ( Git/Command.hs, tmp/Git/Command.o )
+    [ 58 of 285] Compiling Git.Ref          ( Git/Ref.hs, tmp/Git/Ref.o )
+    [ 59 of 285] Compiling Git.Branch       ( Git/Branch.hs, tmp/Git/Branch.o )
+    [ 60 of 285] Compiling Git.UpdateIndex  ( Git/UpdateIndex.hs, tmp/Git/UpdateIndex.o )
+    [ 61 of 285] Compiling Git.Queue        ( Git/Queue.hs, tmp/Git/Queue.o )
+    [ 62 of 285] Compiling Git.HashObject   ( Git/HashObject.hs, tmp/Git/HashObject.o )
+    [ 63 of 285] Compiling Git.CatFile      ( Git/CatFile.hs, tmp/Git/CatFile.o )
+    [ 64 of 285] Compiling Git.UnionMerge   ( Git/UnionMerge.hs, tmp/Git/UnionMerge.o )
+    [ 65 of 285] Compiling Git.Url          ( Git/Url.hs, tmp/Git/Url.o )
+    [ 66 of 285] Compiling Git.Construct    ( Git/Construct.hs, tmp/Git/Construct.o )
+    [ 67 of 285] Compiling Git.Config       ( Git/Config.hs, tmp/Git/Config.o )
+    [ 68 of 285] Compiling Git.SharedRepository ( Git/SharedRepository.hs, tmp/Git/SharedRepository.o )
+    [ 69 of 285] Compiling Git.Version      ( Git/Version.hs, tmp/Git/Version.o )
+    [ 70 of 285] Compiling Git.CheckAttr    ( Git/CheckAttr.hs, tmp/Git/CheckAttr.o )
+    [ 71 of 285] Compiling Annex            ( Annex.hs, tmp/Annex.o )
+    [ 72 of 285] Compiling Types.Option     ( Types/Option.hs, tmp/Types/Option.o )
+    [ 73 of 285] Compiling Types            ( Types.hs, tmp/Types.o )
+    [ 74 of 285] Compiling Messages         ( Messages.hs, tmp/Messages.o )
+    [ 75 of 285] Compiling Types.Command    ( Types/Command.hs, tmp/Types/Command.o )
+    [ 76 of 285] Compiling Locations        ( Locations.hs, tmp/Locations.o )
+    [ 77 of 285] Compiling Common.Annex     ( Common/Annex.hs, tmp/Common/Annex.o )
+    [ 78 of 285] Compiling Fields           ( Fields.hs, tmp/Fields.o )
+    [ 79 of 285] Compiling Annex.BranchState ( Annex/BranchState.hs, tmp/Annex/BranchState.o )
+    [ 80 of 285] Compiling Annex.CatFile    ( Annex/CatFile.hs, tmp/Annex/CatFile.o )
+    [ 81 of 285] Compiling Annex.Perms      ( Annex/Perms.hs, tmp/Annex/Perms.o )
+    [ 82 of 285] Compiling Crypto           ( Crypto.hs, tmp/Crypto.o )
+    [ 83 of 285] Compiling Annex.Exception  ( Annex/Exception.hs, tmp/Annex/Exception.o )
+    [ 84 of 285] Compiling Annex.Journal    ( Annex/Journal.hs, tmp/Annex/Journal.o )
+    [ 85 of 285] Compiling Annex.Branch     ( Annex/Branch.hs, tmp/Annex/Branch.o )
+    [ 86 of 285] Compiling Usage            ( Usage.hs, tmp/Usage.o )
+    [ 87 of 285] Compiling Annex.CheckAttr  ( Annex/CheckAttr.hs, tmp/Annex/CheckAttr.o )
+    [ 88 of 285] Compiling Remote.Helper.Special ( Remote/Helper/Special.hs, tmp/Remote/Helper/Special.o )
+    [ 89 of 285] Compiling Logs.Presence    ( Logs/Presence.hs, tmp/Logs/Presence.o )
+    [ 90 of 285] Compiling Logs.Location    ( Logs/Location.hs, tmp/Logs/Location.o )
+    [ 91 of 285] Compiling Logs.Web         ( Logs/Web.hs, tmp/Logs/Web.o )
+    [ 92 of 285] Compiling Remote.Helper.Chunked ( Remote/Helper/Chunked.hs, tmp/Remote/Helper/Chunked.o )
+    [ 93 of 285] Compiling Annex.LockPool   ( Annex/LockPool.hs, tmp/Annex/LockPool.o )
+    [ 94 of 285] Compiling Logs.Transfer    ( Logs/Transfer.hs, tmp/Logs/Transfer.o )
+    [ 95 of 285] Compiling Backend.SHA      ( Backend/SHA.hs, tmp/Backend/SHA.o )
+    [ 96 of 285] Compiling Backend.WORM     ( Backend/WORM.hs, tmp/Backend/WORM.o )
+    [ 97 of 285] Compiling Backend.URL      ( Backend/URL.hs, tmp/Backend/URL.o )
+    [ 98 of 285] Compiling Assistant.Types.ScanRemotes ( Assistant/Types/ScanRemotes.hs, tmp/Assistant/Types/ScanRemotes.o )
+    [ 99 of 285] Compiling Assistant.Types.ThreadedMonad ( Assistant/Types/ThreadedMonad.hs, tmp/Assistant/Types/ThreadedMonad.o )
+    [100 of 285] Compiling Assistant.Types.TransferQueue ( Assistant/Types/TransferQueue.hs, tmp/Assistant/Types/TransferQueue.o )
+    [101 of 285] Compiling Assistant.Types.Pushes ( Assistant/Types/Pushes.hs, tmp/Assistant/Types/Pushes.o )
+    [102 of 285] Compiling Assistant.Types.BranchChange ( Assistant/Types/BranchChange.hs, tmp/Assistant/Types/BranchChange.o )
+    [103 of 285] Compiling Logs.UUIDBased   ( Logs/UUIDBased.hs, tmp/Logs/UUIDBased.o )
+    [104 of 285] Compiling Logs.Remote      ( Logs/Remote.hs, tmp/Logs/Remote.o )
+    [105 of 285] Compiling Logs.Group       ( Logs/Group.hs, tmp/Logs/Group.o )
+    [106 of 285] Compiling Utility.DiskFree ( Utility/DiskFree.hs, tmp/Utility/DiskFree.o )
+    [107 of 285] Compiling Utility.Url      ( Utility/Url.hs, tmp/Utility/Url.o )
+    [108 of 285] Compiling Utility.CopyFile ( Utility/CopyFile.hs, tmp/Utility/CopyFile.o )
+    [109 of 285] Compiling Utility.Rsync    ( Utility/Rsync.hs, tmp/Utility/Rsync.o )
+    [110 of 285] Compiling Git.LsFiles      ( Git/LsFiles.hs, tmp/Git/LsFiles.o )
+    [111 of 285] Compiling Git.AutoCorrect  ( Git/AutoCorrect.hs, tmp/Git/AutoCorrect.o )
+    [112 of 285] Compiling Git.CurrentRepo  ( Git/CurrentRepo.hs, tmp/Git/CurrentRepo.o )
+    [113 of 285] Compiling Locations.UserConfig ( Locations/UserConfig.hs, tmp/Locations/UserConfig.o )
+    [114 of 285] Compiling Git.Merge        ( Git/Merge.hs, tmp/Git/Merge.o )
+    [115 of 285] Compiling Utility.Parallel ( Utility/Parallel.hs, tmp/Utility/Parallel.o )
+    [116 of 285] Compiling Git.Remote       ( Git/Remote.hs, tmp/Git/Remote.o )
+    [117 of 285] Compiling Assistant.Ssh    ( Assistant/Ssh.hs, tmp/Assistant/Ssh.o )
+    [118 of 285] Compiling Assistant.Pairing ( Assistant/Pairing.hs, tmp/Assistant/Pairing.o )
+    [119 of 285] Compiling Assistant.Types.NetMessager ( Assistant/Types/NetMessager.hs, tmp/Assistant/Types/NetMessager.o )
+    [120 of 285] Compiling Utility.NotificationBroadcaster ( Utility/NotificationBroadcaster.hs, tmp/Utility/NotificationBroadcaster.o )
+    [121 of 285] Compiling Assistant.Types.Buddies ( Assistant/Types/Buddies.hs, tmp/Assistant/Types/Buddies.o )
+    [122 of 285] Compiling Utility.TSet     ( Utility/TSet.hs, tmp/Utility/TSet.o )
+    [123 of 285] Compiling Assistant.Types.Commits ( Assistant/Types/Commits.hs, tmp/Assistant/Types/Commits.o )
+    [124 of 285] Compiling Assistant.Types.Changes ( Assistant/Types/Changes.hs, tmp/Assistant/Types/Changes.o )
+    [125 of 285] Compiling Utility.WebApp   ( Utility/WebApp.hs, tmp/Utility/WebApp.o )
+    [126 of 285] Compiling Utility.Daemon   ( Utility/Daemon.hs, tmp/Utility/Daemon.o )
+    [127 of 285] Compiling Utility.ThreadScheduler ( Utility/ThreadScheduler.hs, tmp/Utility/ThreadScheduler.o )
+    [128 of 285] Compiling Utility.LogFile  ( Utility/LogFile.hs, tmp/Utility/LogFile.o )
+    [129 of 285] Compiling Git.Filename     ( Git/Filename.hs, tmp/Git/Filename.o )
+    [130 of 285] Compiling Git.LsTree       ( Git/LsTree.hs, tmp/Git/LsTree.o )
+    [131 of 285] Compiling Utility.Types.DirWatcher ( Utility/Types/DirWatcher.hs, tmp/Utility/Types/DirWatcher.o )
+    [132 of 285] Compiling Utility.Kqueue   ( Utility/Kqueue.hs, tmp/Utility/Kqueue.o )
+    [133 of 285] Compiling Utility.DirWatcher ( Utility/DirWatcher.hs, tmp/Utility/DirWatcher.o )
+    [134 of 285] Compiling Utility.Lsof     ( Utility/Lsof.hs, tmp/Utility/Lsof.o )
+    [135 of 285] Compiling Config           ( Config.hs, tmp/Config.o )
+    [136 of 285] Compiling Annex.UUID       ( Annex/UUID.hs, tmp/Annex/UUID.o )
+    [137 of 285] Compiling Logs.UUID        ( Logs/UUID.hs, tmp/Logs/UUID.o )
+    [138 of 285] Compiling Backend          ( Backend.hs, tmp/Backend.o )
+    [139 of 285] Compiling Remote.Helper.Hooks ( Remote/Helper/Hooks.hs, tmp/Remote/Helper/Hooks.o )
+    [140 of 285] Compiling Remote.Helper.Encryptable ( Remote/Helper/Encryptable.hs, tmp/Remote/Helper/Encryptable.o )
+    [141 of 285] Compiling Creds            ( Creds.hs, tmp/Creds.o )
+    [142 of 285] Compiling Remote.Helper.AWS ( Remote/Helper/AWS.hs, tmp/Remote/Helper/AWS.o )
+    [143 of 285] Compiling Annex.Queue      ( Annex/Queue.hs, tmp/Annex/Queue.o )
+    [144 of 285] Compiling Annex.Content    ( Annex/Content.hs, tmp/Annex/Content.o )
+    [145 of 285] Compiling Remote.S3        ( Remote/S3.hs, tmp/Remote/S3.o )
+    [146 of 285] Compiling Remote.Directory ( Remote/Directory.hs, tmp/Remote/Directory.o )
+    [147 of 285] Compiling Remote.Rsync     ( Remote/Rsync.hs, tmp/Remote/Rsync.o )
+    [148 of 285] Compiling Remote.Web       ( Remote/Web.hs, tmp/Remote/Web.o )
+    [149 of 285] Compiling Remote.Glacier   ( Remote/Glacier.hs, tmp/Remote/Glacier.o )
+    [150 of 285] Compiling Remote.Hook      ( Remote/Hook.hs, tmp/Remote/Hook.o )
+    [151 of 285] Compiling Upgrade.V2       ( Upgrade/V2.hs, tmp/Upgrade/V2.o )
+    [152 of 285] Compiling Annex.Ssh        ( Annex/Ssh.hs, tmp/Annex/Ssh.o )
+    [153 of 285] Compiling Remote.Helper.Ssh ( Remote/Helper/Ssh.hs, tmp/Remote/Helper/Ssh.o )
+    [154 of 285] Compiling Remote.Bup       ( Remote/Bup.hs, tmp/Remote/Bup.o )
+    [155 of 285] Compiling Annex.Version    ( Annex/Version.hs, tmp/Annex/Version.o )
+    [156 of 285] Compiling Init             ( Init.hs, tmp/Init.o )
+    [157 of 285] Compiling Checks           ( Checks.hs, tmp/Checks.o )
+    [158 of 285] Compiling Remote.Git       ( Remote/Git.hs, tmp/Remote/Git.o )
+    [159 of 285] Compiling Remote.List      ( Remote/List.hs, tmp/Remote/List.o )
+    [160 of 285] Compiling Logs.Trust       ( Logs/Trust.hs, tmp/Logs/Trust.o )
+    [161 of 285] Compiling Remote           ( Remote.hs, tmp/Remote.o )
+    [162 of 285] Compiling Assistant.Alert  ( Assistant/Alert.hs, tmp/Assistant/Alert.o )
+    [163 of 285] Compiling Assistant.Types.DaemonStatus ( Assistant/Types/DaemonStatus.hs, tmp/Assistant/Types/DaemonStatus.o )
+    [164 of 285] Compiling Assistant.Monad  ( Assistant/Monad.hs, tmp/Assistant/Monad.o )
+    [165 of 285] Compiling Assistant.Types.NamedThread ( Assistant/Types/NamedThread.hs, tmp/Assistant/Types/NamedThread.o )
+    [166 of 285] Compiling Assistant.Common ( Assistant/Common.hs, tmp/Assistant/Common.o )
+    [167 of 285] Compiling Assistant.XMPP   ( Assistant/XMPP.hs, tmp/Assistant/XMPP.o )
+    [168 of 285] Compiling Assistant.XMPP.Buddies ( Assistant/XMPP/Buddies.hs, tmp/Assistant/XMPP/Buddies.o )
+    [169 of 285] Compiling Assistant.NetMessager ( Assistant/NetMessager.hs, tmp/Assistant/NetMessager.o )
+    [170 of 285] Compiling Assistant.Pushes ( Assistant/Pushes.hs, tmp/Assistant/Pushes.o )
+    [171 of 285] Compiling Assistant.ScanRemotes ( Assistant/ScanRemotes.hs, tmp/Assistant/ScanRemotes.o )
+    [172 of 285] Compiling Assistant.Install ( Assistant/Install.hs, tmp/Assistant/Install.o )
+    [173 of 285] Compiling Assistant.XMPP.Client ( Assistant/XMPP/Client.hs, tmp/Assistant/XMPP/Client.o )
+    [174 of 285] Compiling Assistant.Commits ( Assistant/Commits.hs, tmp/Assistant/Commits.o )
+    [175 of 285] Compiling Assistant.BranchChange ( Assistant/BranchChange.hs, tmp/Assistant/BranchChange.o )
+    [176 of 285] Compiling Assistant.Changes ( Assistant/Changes.hs, tmp/Assistant/Changes.o )
+    [177 of 285] Compiling Assistant.WebApp.Types ( Assistant/WebApp/Types.hs, tmp/Assistant/WebApp/Types.o )
+    Loading package ghc-prim ... linking ... done.
+    Loading package integer-gmp ... linking ... done.
+    Loading package base ... linking ... done.
+    Loading object (static) Utility/libdiskfree.o ... done
+    Loading object (static) Utility/libmounts.o ... done
+    Loading object (static) Utility/libkqueue.o ... done
+    final link ... done
+    Loading package bytestring-0.9.2.1 ... linking ... done.
+    Loading package zlib-0.5.4.0 ... linking ... done.
+    Loading package array-0.4.0.0 ... linking ... done.
+    Loading package deepseq-1.3.0.0 ... linking ... done.
+    Loading package primitive-0.5.0.1 ... linking ... done.
+    Loading package vector-0.10.0.1 ... linking ... done.
+    Loading package transformers-0.3.0.0 ... linking ... done.
+    Loading package text-0.11.2.3 ... linking ... done.
+    Loading package old-locale-1.0.0.4 ... linking ... done.
+    Loading package time-1.4 ... linking ... done.
+    Loading package random-1.0.1.1 ... linking ... done.
+    Loading package mtl-2.1.2 ... linking ... done.
+    Loading package parsec-3.1.3 ... linking ... done.
+    Loading package pretty-1.1.1.0 ... linking ... done.
+    Loading package filepath-1.3.0.0 ... linking ... done.
+    Loading package old-time-1.1.0.0 ... linking ... done.
+    Loading package unix-2.5.1.1 ... linking ... done.
+    Loading package directory-1.1.0.2 ... linking ... done.
+    Loading package process-1.1.0.1 ... linking ... done.
+    Loading package containers-0.4.2.1 ... linking ... done.
+    Loading package base64-bytestring-1.0.0.0 ... linking ... done.
+    Loading package cereal-0.3.5.2 ... linking ... done.
+    Loading package base-unicode-symbols-0.2.2.4 ... linking ... done.
+    Loading package transformers-base-0.4.1 ... linking ... done.
+    Loading package monad-control-0.3.1.4 ... linking ... done.
+    Loading package lifted-base-0.2 ... linking ... done.
+    Loading package resourcet-0.4.4 ... linking ... done.
+    Loading package semigroups-0.8.4.1 ... linking ... done.
+    Loading package void-0.5.8 ... linking ... done.
+    Loading package conduit-0.5.4.1 ... linking ... done.
+    Loading package entropy-0.2.1 ... linking ... done.
+    Loading package largeword-1.0.3 ... linking ... done.
+    Loading package tagged-0.4.4 ... linking ... done.
+    Loading package crypto-api-0.10.2 ... linking ... done.
+    Loading package crypto-conduit-0.4.1 ... linking ... done.
+    Loading package cryptohash-0.7.8 ... linking ... done.
+    Loading package template-haskell ... linking ... done.
+    Loading package file-embed-0.0.4.6 ... linking ... done.
+    Loading package blaze-builder-0.3.1.0 ... linking ... done.
+    Loading package hashable-1.1.2.5 ... linking ... done.
+    Loading package case-insensitive-0.4.0.3 ... linking ... done.
+    Loading package http-types-0.7.3.0.1 ... linking ... done.
+    Loading package system-filepath-0.4.7 ... linking ... done.
+    Loading package unix-compat-0.4.0.0 ... linking ... done.
+    Loading package network-2.4.0.1 ... linking ... done.
+    Loading package unordered-containers-0.2.2.1 ... linking ... done.
+    Loading package vault-0.2.0.1 ... linking ... done.
+    Loading package wai-1.3.0.1 ... linking ... done.
+    Loading package blaze-markup-0.5.1.1 ... linking ... done.
+    Loading package blaze-html-0.5.1.0 ... linking ... done.
+    Loading package attoparsec-0.10.2.0 ... linking ... done.
+    Loading package http-date-0.0.3 ... linking ... done.
+    Loading package mime-types-0.1.0.0 ... linking ... done.
+    Loading package system-fileio-0.3.10 ... linking ... done.
+    Loading package wai-app-static-1.3.0.4 ... linking ... done.
+    Loading package dlist-0.5 ... linking ... done.
+    Loading package syb-0.3.7 ... linking ... done.
+    Loading package aeson-0.6.0.2 ... linking ... done.
+    Loading package cpu-0.1.1 ... linking ... done.
+    Loading package crypto-pubkey-types-0.2.0 ... linking ... done.
+    Loading package cryptocipher-0.3.6 ... linking ... done.
+    Loading package cprng-aes-0.2.4 ... linking ... done.
+    Loading package skein-0.1.0.10 ... linking ... done.
+    Loading package clientsession-0.8.0.1 ... linking ... done.
+    Loading package data-default-0.5.0 ... linking ... done.
+    Loading package cookie-0.4.0.1 ... linking ... done.
+    Loading package failure-0.2.0.1 ... linking ... done.
+    Loading package date-cache-0.3.0 ... linking ... done.
+    Loading package unix-time-0.1.2 ... linking ... done.
+    Loading package fast-logger-0.3.1 ... linking ... done.
+    Loading package shakespeare-1.0.2 ... linking ... done.
+    Loading package hamlet-1.1.1.1 ... linking ... done.
+    Loading package monad-logger-0.2.1 ... linking ... done.
+    Loading package path-pieces-0.1.2 ... linking ... done.
+    Loading package shakespeare-css-1.0.2 ... linking ... done.
+    Loading package shakespeare-i18n-1.0.0.2 ... linking ... done.
+    Loading package shakespeare-js-1.1.0 ... linking ... done.
+    Loading package ansi-terminal-0.5.5 ... linking ... done.
+    Loading package blaze-builder-conduit-0.5.0.3 ... linking ... done.
+    Loading package stringsearch-0.3.6.4 ... linking ... done.
+    Loading package byteorder-1.0.3 ... linking ... done.
+    Loading package wai-logger-0.3.0 ... linking ... done.
+    Loading package zlib-bindings-0.1.1.2 ... linking ... done.
+    Loading package zlib-conduit-0.5.0.3 ... linking ... done.
+    Loading package wai-extra-1.3.0.4 ... linking ... done.
+    Loading package yesod-routes-1.1.1.1 ... linking ... done.
+    Loading package yesod-core-1.1.6 ... linking ... done.
+    Loading package yesod-static-1.1.1.1 ... linking ... done.
+    [178 of 285] Compiling Assistant.WebApp ( Assistant/WebApp.hs, tmp/Assistant/WebApp.o )
+    Loading package network-conduit-0.6.1.1 ... linking ... done.
+    Loading package safe-0.3.3 ... linking ... done.
+    Loading package simple-sendfile-0.2.8 ... linking ... done.
+    Loading package warp-1.3.5 ... linking ... done.
+    Loading package yaml-0.8.1.1 ... linking ... done.
+    Loading package yesod-default-1.1.2 ... linking ... done.
+    [179 of 285] Compiling Assistant.WebApp.OtherRepos ( Assistant/WebApp/OtherRepos.hs, tmp/Assistant/WebApp/OtherRepos.o )
+    [180 of 285] Compiling Limit            ( Limit.hs, tmp/Limit.o )
+    [181 of 285] Compiling Option           ( Option.hs, tmp/Option.o )
+    [182 of 285] Compiling Seek             ( Seek.hs, tmp/Seek.o )
+    [183 of 285] Compiling Command          ( Command.hs, tmp/Command.o )
+    [184 of 285] Compiling CmdLine          ( CmdLine.hs, tmp/CmdLine.o )
+    [185 of 285] Compiling Command.ConfigList ( Command/ConfigList.hs, tmp/Command/ConfigList.o )
+    [186 of 285] Compiling Command.InAnnex  ( Command/InAnnex.hs, tmp/Command/InAnnex.o )
+    [187 of 285] Compiling Command.DropKey  ( Command/DropKey.hs, tmp/Command/DropKey.o )
+    [188 of 285] Compiling Command.SendKey  ( Command/SendKey.hs, tmp/Command/SendKey.o )
+    [189 of 285] Compiling Command.RecvKey  ( Command/RecvKey.hs, tmp/Command/RecvKey.o )
+    [190 of 285] Compiling Command.TransferInfo ( Command/TransferInfo.hs, tmp/Command/TransferInfo.o )
+    [191 of 285] Compiling Command.Commit   ( Command/Commit.hs, tmp/Command/Commit.o )
+    [192 of 285] Compiling Command.Add      ( Command/Add.hs, tmp/Command/Add.o )
+    [193 of 285] Compiling Command.Unannex  ( Command/Unannex.hs, tmp/Command/Unannex.o )
+    [194 of 285] Compiling Command.FromKey  ( Command/FromKey.hs, tmp/Command/FromKey.o )
+    [195 of 285] Compiling Command.ReKey    ( Command/ReKey.hs, tmp/Command/ReKey.o )
+    [196 of 285] Compiling Command.Fix      ( Command/Fix.hs, tmp/Command/Fix.o )
+    [197 of 285] Compiling Command.Describe ( Command/Describe.hs, tmp/Command/Describe.o )
+    [198 of 285] Compiling Command.InitRemote ( Command/InitRemote.hs, tmp/Command/InitRemote.o )
+    [199 of 285] Compiling Command.Unlock   ( Command/Unlock.hs, tmp/Command/Unlock.o )
+    [200 of 285] Compiling Command.Lock     ( Command/Lock.hs, tmp/Command/Lock.o )
+    [201 of 285] Compiling Command.PreCommit ( Command/PreCommit.hs, tmp/Command/PreCommit.o )
+    [202 of 285] Compiling Command.Log      ( Command/Log.hs, tmp/Command/Log.o )
+    [203 of 285] Compiling Command.Merge    ( Command/Merge.hs, tmp/Command/Merge.o )
+    [204 of 285] Compiling Command.Group    ( Command/Group.hs, tmp/Command/Group.o )
+    [205 of 285] Compiling Command.Ungroup  ( Command/Ungroup.hs, tmp/Command/Ungroup.o )
+    [206 of 285] Compiling Command.Import   ( Command/Import.hs, tmp/Command/Import.o )
+    [207 of 285] Compiling Logs.Unused      ( Logs/Unused.hs, tmp/Logs/Unused.o )
+    [208 of 285] Compiling Command.AddUnused ( Command/AddUnused.hs, tmp/Command/AddUnused.o )
+    [209 of 285] Compiling Command.Find     ( Command/Find.hs, tmp/Command/Find.o )
+    [210 of 285] Compiling Logs.PreferredContent ( Logs/PreferredContent.hs, tmp/Logs/PreferredContent.o )
+    [211 of 285] Compiling Annex.Wanted     ( Annex/Wanted.hs, tmp/Annex/Wanted.o )
+    [212 of 285] Compiling Command.Whereis  ( Command/Whereis.hs, tmp/Command/Whereis.o )
+    [213 of 285] Compiling Command.Trust    ( Command/Trust.hs, tmp/Command/Trust.o )
+    [214 of 285] Compiling Command.Untrust  ( Command/Untrust.hs, tmp/Command/Untrust.o )
+    [215 of 285] Compiling Command.Semitrust ( Command/Semitrust.hs, tmp/Command/Semitrust.o )
+    [216 of 285] Compiling Command.Dead     ( Command/Dead.hs, tmp/Command/Dead.o )
+    [217 of 285] Compiling Command.Vicfg    ( Command/Vicfg.hs, tmp/Command/Vicfg.o )
+    [218 of 285] Compiling Command.Map      ( Command/Map.hs, tmp/Command/Map.o )
+    [219 of 285] Compiling Command.Init     ( Command/Init.hs, tmp/Command/Init.o )
+    [220 of 285] Compiling Command.Uninit   ( Command/Uninit.hs, tmp/Command/Uninit.o )
+    [221 of 285] Compiling Command.Version  ( Command/Version.hs, tmp/Command/Version.o )
+    [222 of 285] Compiling Upgrade.V1       ( Upgrade/V1.hs, tmp/Upgrade/V1.o )
+    [223 of 285] Compiling Upgrade.V0       ( Upgrade/V0.hs, tmp/Upgrade/V0.o )
+    [224 of 285] Compiling Upgrade          ( Upgrade.hs, tmp/Upgrade.o )
+    [225 of 285] Compiling Command.Upgrade  ( Command/Upgrade.hs, tmp/Command/Upgrade.o )
+    [226 of 285] Compiling Command.Drop     ( Command/Drop.hs, tmp/Command/Drop.o )
+    [227 of 285] Compiling Command.Move     ( Command/Move.hs, tmp/Command/Move.o )
+    [228 of 285] Compiling Command.Copy     ( Command/Copy.hs, tmp/Command/Copy.o )
+    [229 of 285] Compiling Command.Get      ( Command/Get.hs, tmp/Command/Get.o )
+    [230 of 285] Compiling Command.TransferKey ( Command/TransferKey.hs, tmp/Command/TransferKey.o )
+    [231 of 285] Compiling Command.DropUnused ( Command/DropUnused.hs, tmp/Command/DropUnused.o )
+    [232 of 285] Compiling Command.Fsck     ( Command/Fsck.hs, tmp/Command/Fsck.o )
+    [233 of 285] Compiling Command.Reinject ( Command/Reinject.hs, tmp/Command/Reinject.o )
+    [234 of 285] Compiling Command.Migrate  ( Command/Migrate.hs, tmp/Command/Migrate.o )
+    [235 of 285] Compiling Command.Unused   ( Command/Unused.hs, tmp/Command/Unused.o )
+    [236 of 285] Compiling Command.Status   ( Command/Status.hs, tmp/Command/Status.o )
+    [237 of 285] Compiling Command.Sync     ( Command/Sync.hs, tmp/Command/Sync.o )
+    [238 of 285] Compiling Command.Help     ( Command/Help.hs, tmp/Command/Help.o )
+    [239 of 285] Compiling Command.AddUrl   ( Command/AddUrl.hs, tmp/Command/AddUrl.o )
+    [240 of 285] Compiling Assistant.DaemonStatus ( Assistant/DaemonStatus.hs, tmp/Assistant/DaemonStatus.o )
+    [241 of 285] Compiling Assistant.Sync   ( Assistant/Sync.hs, tmp/Assistant/Sync.o )
+    [242 of 285] Compiling Assistant.MakeRemote ( Assistant/MakeRemote.hs, tmp/Assistant/MakeRemote.o )
+    [243 of 285] Compiling Assistant.XMPP.Git ( Assistant/XMPP/Git.hs, tmp/Assistant/XMPP/Git.o )
+    [244 of 285] Compiling Command.XMPPGit  ( Command/XMPPGit.hs, tmp/Command/XMPPGit.o )
+    [245 of 285] Compiling Assistant.Threads.NetWatcher ( Assistant/Threads/NetWatcher.hs, tmp/Assistant/Threads/NetWatcher.o )
+    [246 of 285] Compiling Assistant.NamedThread ( Assistant/NamedThread.hs, tmp/Assistant/NamedThread.o )
+    [247 of 285] Compiling Assistant.WebApp.Notifications ( Assistant/WebApp/Notifications.hs, tmp/Assistant/WebApp/Notifications.o )
+    [248 of 285] Compiling Assistant.WebApp.SideBar ( Assistant/WebApp/SideBar.hs, tmp/Assistant/WebApp/SideBar.o )
+    [249 of 285] Compiling Assistant.WebApp.Configurators.Ssh ( Assistant/WebApp/Configurators/Ssh.hs, tmp/Assistant/WebApp/Configurators/Ssh.o )
+    [250 of 285] Compiling Assistant.WebApp.Configurators.S3 ( Assistant/WebApp/Configurators/S3.hs, tmp/Assistant/WebApp/Configurators/S3.o )
+    [251 of 285] Compiling Assistant.WebApp.Documentation ( Assistant/WebApp/Documentation.hs, tmp/Assistant/WebApp/Documentation.o )
+    [252 of 285] Compiling Assistant.WebApp.Configurators.XMPP ( Assistant/WebApp/Configurators/XMPP.hs, tmp/Assistant/WebApp/Configurators/XMPP.o )
+    [253 of 285] Compiling Assistant.Pairing.Network ( Assistant/Pairing/Network.hs, tmp/Assistant/Pairing/Network.o )
+    [254 of 285] Compiling Assistant.Pairing.MakeRemote ( Assistant/Pairing/MakeRemote.hs, tmp/Assistant/Pairing/MakeRemote.o )
+    [255 of 285] Compiling Assistant.TransferQueue ( Assistant/TransferQueue.hs, tmp/Assistant/TransferQueue.o )
+    [256 of 285] Compiling Assistant.Threads.Merger ( Assistant/Threads/Merger.hs, tmp/Assistant/Threads/Merger.o )
+    [257 of 285] Compiling Assistant.TransferSlots ( Assistant/TransferSlots.hs, tmp/Assistant/TransferSlots.o )
+    [258 of 285] Compiling Assistant.Threads.Transferrer ( Assistant/Threads/Transferrer.hs, tmp/Assistant/Threads/Transferrer.o )
+    [259 of 285] Compiling Assistant.Threads.DaemonStatus ( Assistant/Threads/DaemonStatus.hs, tmp/Assistant/Threads/DaemonStatus.o )
+    [260 of 285] Compiling Assistant.Threads.Pusher ( Assistant/Threads/Pusher.hs, tmp/Assistant/Threads/Pusher.o )
+    [261 of 285] Compiling Assistant.Threads.MountWatcher ( Assistant/Threads/MountWatcher.hs, tmp/Assistant/Threads/MountWatcher.o )
+    [262 of 285] Compiling Assistant.Threads.ConfigMonitor ( Assistant/Threads/ConfigMonitor.hs, tmp/Assistant/Threads/ConfigMonitor.o )
+    [263 of 285] Compiling Assistant.Threads.PairListener ( Assistant/Threads/PairListener.hs, tmp/Assistant/Threads/PairListener.o )
+    [264 of 285] Compiling Assistant.Threads.XMPPClient ( Assistant/Threads/XMPPClient.hs, tmp/Assistant/Threads/XMPPClient.o )
+    [265 of 285] Compiling Assistant.WebApp.Utility ( Assistant/WebApp/Utility.hs, tmp/Assistant/WebApp/Utility.o )
+    [266 of 285] Compiling Assistant.WebApp.Configurators.Edit ( Assistant/WebApp/Configurators/Edit.hs, tmp/Assistant/WebApp/Configurators/Edit.o )
+    [267 of 285] Compiling Assistant.WebApp.Configurators.Local ( Assistant/WebApp/Configurators/Local.hs, tmp/Assistant/WebApp/Configurators/Local.o )
+    [268 of 285] Compiling Assistant.WebApp.Configurators ( Assistant/WebApp/Configurators.hs, tmp/Assistant/WebApp/Configurators.o )
+    [269 of 285] Compiling Assistant.WebApp.DashBoard ( Assistant/WebApp/DashBoard.hs, tmp/Assistant/WebApp/DashBoard.o )
+    [270 of 285] Compiling Assistant.WebApp.Configurators.Pairing ( Assistant/WebApp/Configurators/Pairing.hs, tmp/Assistant/WebApp/Configurators/Pairing.o )
+    [271 of 285] Compiling Assistant.Threads.WebApp ( Assistant/Threads/WebApp.hs, tmp/Assistant/Threads/WebApp.o )
+
+    Assistant/Threads/WebApp.hs:47:1: Not in scope: `getAddBoxComR'
+
+    Assistant/Threads/WebApp.hs:47:1: Not in scope: `getEnableWebDAVR'
+    make: *** [git-annex] Error 1
+"""]]
