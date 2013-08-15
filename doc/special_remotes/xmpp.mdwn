@@ -28,7 +28,7 @@ Provider|Status|Type|Notes
 [[Coderollers|http://www.coderollers.com/xmpp-server/]]|Working|[[Openfire|http://www.igniterealtime.org/projects/openfire/]]
 [[jabber.me|http://jabber.me/]]|Working|[[Tigase|http://www.tigase.org/]]
 [[xmpp.ru.net|https://www.xmpp.ru.net]]|Working|[[jabberd2|http://jabberd2.org/]]
-[[jabber.org|http://jabber.org]]|?|[[Isode M-Link|http://www.isode.com/products/m-link.html]]|Please update. (jabber.org doesn't currently allow new accounts, so if someone have an account, please test. )
+[[jabber.org|http://jabber.org]]|Working|[[Isode M-Link|http://www.isode.com/products/m-link.html]]
 -|Working|[[Prosody|http://prosody.im/]]|No providers tested.
 -|Working|[[Metronome|http://www.lightwitch.org/]]|No providers tested.
 -|[[Failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/]]|ejabberd|[[Authentication bug|https://support.process-one.net/browse/EJAB-1632]]: Fixed in debian unstable with version 2.1.10-5
