@@ -23,23 +23,21 @@ command line.
 
 ## Hosted server support status
 [[!table  data="""
-Server|Status|Notes
-Gmail|Working|Google apps users will have to edit `.git/annex/creds/xmpp` manually
-Facebook|Failing|Maybe non 2-factor will work
-League Of Legends|Failing
+Provider|Status|Type|Notes
+Gmail|Working|?|Google apps users will have to configure `.git/annex/creds/xmpp` manually
+?|Working|[[Prosody|http://prosody.im/]]
+?|Working|[[Metronome|http://www.lightwitch.org/]]
+[[Coderollers|http://www.coderollers.com/xmpp-server/]]|Working|[[Openfire|http://www.igniterealtime.org/projects/openfire/]]
+[[jabber.org|http://jabber.org]]|?|[[Isode M-Link|http://www.isode.com/products/m-link.html]]|Please update. (jabber.org doesn't currently allow new accounts, so if someone have an account, please test. )
+Facebook|Failing|?|Maybe non 2-factor will work
+League Of Legends|Failing|?
+?|[[Failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/]]|ejabberd|[[Authentication bug|https://support.process-one.net/browse/EJAB-1632]]: Fixed in debian unstable with version 2.1.10-5
+?|[[Failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/#comment-4ce5aeabd12ca3016290b3d8255f6ef1]]|jabberd14|No further information
+?|?|iChat Server/jabberd2|Please update
+?|?|Tigase|Please update
 """]]
 
-## Server daemon support status
-[[!table  data="""
-Server|Status|Notes
-[[Prosody|http://prosody.im/]]|Working
-[[Metronome|http://www.lightwitch.org/]]|Working
-Ejabberd|[[Failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/]]|[[Authentication bug|https://support.process-one.net/browse/EJAB-1632]]: Fixed in debian unstable with version 2.1.10-5
-jabberd14|[[Failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/#comment-4ce5aeabd12ca3016290b3d8255f6ef1]]|No further information
-jabberd2|?|Please update
-Openfire|?|Please update
-Tigase|?|Please update
-iChat Server|?|Please update
-"""]]
+## Free public XMPP servers
+[[http://xmpp.net/]]
 
 See also: [[xmpp_protocol_design_notes|design/assistant/xmpp]]
