@@ -23,7 +23,7 @@ command line.
 
 Server support status.
 
-1. Gmail jabber server is working properly. (Google apps users will have to edit .git/annex/creds/xmpp manually)
+1. Gmail jabber server is working properly. (Google apps users will have to edit `.git/annex/creds/xmpp` manually)
 2. Prosody daemon is working properly.
 
 3. Ejabberd is [[failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/]]. ([[Authentication bug|https://support.process-one.net/browse/EJAB-1632]]: Fixed in debian unstable with version 2.1.10-5)
