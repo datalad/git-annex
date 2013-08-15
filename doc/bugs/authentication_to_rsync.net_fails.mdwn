@@ -11,7 +11,7 @@ Received disconnect from 69.43.165.7: 2: Too many authentication failures for 24
 **********************
 
 ### What steps will reproduce the problem?
-See above?  A simple "ssh 2440@usw-s002.rsync.net ls /usr/bin" reveals that indeed no ssh-askpass is available in that namespace.
+See above?  A simple "ssh user@host.rsync.net ls /usr/bin" reveals that indeed no ssh-askpass is available in that namespace.
 
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 4.20130521 on debian linux 7.1.
