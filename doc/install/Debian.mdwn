@@ -7,7 +7,7 @@
 	sudo apt-get install git-annex
 
 Note: This version does not include support for the [[assistant]].
-The version of git-annex in unstable can be easily installed in wheezy.
+A backport is available with the assistant and other new features.
 
 ## Debian 6.0 "squeeze"
 
