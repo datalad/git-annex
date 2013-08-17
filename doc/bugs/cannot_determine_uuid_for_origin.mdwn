@@ -17,9 +17,20 @@ I ran `git pull/push` everwhere in there, and still get the error
 
 ### What version of git-annex are you using? On what operating system?
 
-The laptop runs git annex 4
+`angela` runs:
 
-Marcos runs:
+[[!format txt """
+git-annex version: 4.20130730-ge59a8c6
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+local repository version: 3
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+"""]]
+
+I compiled it by hand from git.
+
+`marcos` runs:
 
 [[!format txt """
 git-annex version: 3.20120629
