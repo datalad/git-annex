@@ -1,0 +1,3 @@
+While running the Git Annex App on Android, the app causes a constant cpu usage of about 50% when idling. I've seen this behavior on two devices (phone and tablet) with a CM 10.1 nightly build. The app causes this high cpu usage even when it is in the background, not performing any synchronization and managing only one repository containing just one file. Unfortunately I couldn't figure out what causes the cpu usage. The daemon.log file remains unchanged and I couldn't find any other log files.
+
+Is this expected behavior or unusual high cpu usage?
