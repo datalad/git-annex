@@ -45,10 +45,14 @@ upgrade supported from repository versions: 0 1 2
 In addition, there's this error on `marcos-bare`:
 
 [[!format sh """
-anarcat@marcos:ohm2013.git$ git annex status
+anarcat@marcos:ohm2013.git$ git annex status -d
 supported backends: SHA256 SHA1 SHA512 SHA224 SHA384 SHA256E SHA1E SHA512E SHA224E SHA384E WORM URL
 supported remote types: git S3 bup directory rsync web hook
-trusted repositories: 0
+trusted repositories: git ["--git-dir=/home/anarcat/repos/presentations/ohm2013.git","show-ref","git-annex"]
+git ["--git-dir=/home/anarcat/repos/presentations/ohm2013.git","show-ref","--hash","refs/heads/git-annex"]
+git ["--git-dir=/home/anarcat/repos/presentations/ohm2013.git","log","refs/heads/git-annex..6063e958c02259a39b87d0f1dc44c9272c52df3f","--oneline","-n1"]
+git ["--git-dir=/home/anarcat/repos/presentations/ohm2013.git","cat-file","--batch"]
+0
 semitrusted repositories: 4
         00000000-0000-0000-0000-000000000001 -- web
         5868f840-02e7-11e3-94e9-9b3701bd28bb -- marcos-checkout
@@ -59,7 +63,8 @@ dead repositories: 0
 available local disk space: 14 gigabytes (+1 megabyte reserved)
 local annex keys: 0
 local annex size: 0 bytes
-known annex keys: fatal: '/home/anarcat/repos/presentations/ohm2013.git' is outside repository
+known annex keys: git ["--git-dir=/home/anarcat/repos/presentations/ohm2013.git","ls-files","--cached","-z","--","/home/anarcat/repos/presentations/ohm2013.git"]
+fatal: '/home/anarcat/repos/presentations/ohm2013.git' is outside repository
 0
 known annex size: 0 bytes
 bloom filter size: 16 mebibytes (0% full)
