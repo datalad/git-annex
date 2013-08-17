@@ -1,3 +1,5 @@
+[[!toc]]
+
 ### Please describe the problem.
 
 I get this error when trying to copy annexed files from my laptop to the bare repository on my server:
