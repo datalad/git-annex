@@ -28,6 +28,8 @@ supported repository versions: 3 4
 upgrade supported from repository versions: 0 1 2
 """]]
 
+I was able to reproduce with the backport version too.
+
 I compiled it by hand from git.
 
 `marcos` runs:
