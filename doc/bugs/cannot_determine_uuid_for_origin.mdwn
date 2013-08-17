@@ -1,0 +1,74 @@
+### Please describe the problem.
+
+I get this error when trying to copy annexed files from my laptop to the bare repository on my server:
+
+    anarcat@angela:ohm2013$ git annex copy -t origin .
+    git-annex: cannot determine uuid for origin
+
+### What steps will reproduce the problem?
+
+Here's my setup:
+
+ * `angela`: regular git repository on my laptop (`angela`) where i ran `git annex init` and `git annex add`ed 4 big files (in `~anarcat/presentations/ohm2013`)
+ * `marcos-bare`: a bare git repository where i ran `git annex init` on a different server (`marcos`) (in `~anarcat/repos/presentations/ohm2013.git`)
+ * `marcos-checkout`: a checkout of the above repository on marcos (in `~anarcat/presentations/ohm2013`)
+
+I ran `git pull/push` everwhere in there, and still get the error
+
+### What version of git-annex are you using? On what operating system?
+
+`angela` runs:
+
+[[!format txt """
+git-annex version: 4.20130730-ge59a8c6
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+local repository version: 3
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+"""]]
+
+I was able to reproduce with the backport version too.
+
+I compiled it by hand from git.
+
+`marcos` runs:
+
+[[!format txt """
+git-annex version: 3.20120629
+local repository version: unknown
+default repository version: 3
+supported repository versions: 3
+upgrade supported from repository versions: 0 1 2
+"""]]
+
+### Please provide any additional information below.
+
+In addition, there's this error on `marcos-bare`:
+
+[[!format sh """
+anarcat@marcos:ohm2013.git$ git annex status -d
+supported backends: SHA256 SHA1 SHA512 SHA224 SHA384 SHA256E SHA1E SHA512E SHA224E SHA384E WORM URL
+supported remote types: git S3 bup directory rsync web hook
+trusted repositories: git ["--git-dir=/home/anarcat/repos/presentations/ohm2013.git","show-ref","git-annex"]
+git ["--git-dir=/home/anarcat/repos/presentations/ohm2013.git","show-ref","--hash","refs/heads/git-annex"]
+git ["--git-dir=/home/anarcat/repos/presentations/ohm2013.git","log","refs/heads/git-annex..6063e958c02259a39b87d0f1dc44c9272c52df3f","--oneline","-n1"]
+git ["--git-dir=/home/anarcat/repos/presentations/ohm2013.git","cat-file","--batch"]
+0
+semitrusted repositories: 4
+        00000000-0000-0000-0000-000000000001 -- web
+        5868f840-02e7-11e3-94e9-9b3701bd28bb -- marcos-checkout
+        aafdd242-02e7-11e3-bb6a-6f16a5c6103e -- here (marcos-bare)
+        befc3057-d23d-4312-843a-0645e93107d8 -- angela
+untrusted repositories: 0
+dead repositories: 0
+available local disk space: 14 gigabytes (+1 megabyte reserved)
+local annex keys: 0
+local annex size: 0 bytes
+known annex keys: git ["--git-dir=/home/anarcat/repos/presentations/ohm2013.git","ls-files","--cached","-z","--","/home/anarcat/repos/presentations/ohm2013.git"]
+fatal: '/home/anarcat/repos/presentations/ohm2013.git' is outside repository
+0
+known annex size: 0 bytes
+bloom filter size: 16 mebibytes (0% full)
+backend usage:
+"""]]
