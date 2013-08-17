@@ -80,3 +80,21 @@ known annex size: 0 bytes
 bloom filter size: 16 mebibytes (0% full)
 backend usage:
 """]]
+
+### Workaround!
+
+I found that I could succesfully push to the non-bare repo, like this:
+
+[[!format txt """
+anarcat@angela:ohm2013$ git remote add marcos-checkout ssh://anarcat.ath.cx/~/presentations/ohm2013
+anarcat@angela:ohm2013$ git fetch marcos-checkout
+From ssh://anarcat.ath.cx/~/presentations/ohm2013
+ * [new branch]      git-annex  -> marcos-checkout/git-annex
+ * [new branch]      master     -> marcos-checkout/master
+anarcat@angela:ohm2013$ git annex copy AlerteRouge.webm --to marcos-checkout
+copy AlerteRouge.webm (checking marcos-checkout...) (to marcos-checkout...)
+SHA256E-s138903105--a69db8d4c3835b03bdb08cb1cccfde5c76f586f934d63283694e7101b25352a8.webm
+[...]
+"""]]
+
+It seems that git-annex doesn't like bare repos at all...
