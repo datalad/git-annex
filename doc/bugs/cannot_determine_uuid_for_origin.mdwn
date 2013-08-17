@@ -98,3 +98,14 @@ SHA256E-s138903105--a69db8d4c3835b03bdb08cb1cccfde5c76f586f934d63283694e7101b253
 """]]
 
 It seems that git-annex doesn't like bare repos at all...
+
+### Fix
+
+It seems that my problem was specifically related to [[bare repositories]], which are not well supported historically. There has been other reports of problems in the past, which I missed in my search because symptoms were different:
+
+ * [[bugs/bare git repos]]
+ * [[forum/get and copy with bare repositories]]
+
+Yet while I was able to do `git annex get --all` *from* the `marcos-bare` repository, I still get the original error message while trying to `git annex copy -t marcos-bare`, which is pretty annoying considering the original files are on my laptop, which is not publicly accessible. So I basically need to add the `marcos-checkout` as a remote, copy there, then get from the bare repo to make this work, which is a rather convoluted way of doing things. :)
+
+It seems to me a proper fix would be to be able to `git annex copy --to marcos-bare`. Thanks!
