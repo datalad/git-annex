@@ -13,7 +13,15 @@ Here's my setup:
  * `marcos-bare`: a bare git repository where i ran `git annex init` on a different server (`marcos`) (in `~anarcat/repos/presentations/ohm2013.git`)
  * `marcos-checkout`: a checkout of the above repository on marcos (in `~anarcat/presentations/ohm2013`)
 
-I ran `git pull/push` everwhere in there, and still get the error
+I ran `git pull/push` everwhere in there, and still get the error.
+
+Remotes on all repos:
+
+ * `angela`: `origin  anarcat.ath.cx:repos/presentations/ohm2013.git`
+ * `marcos-bare`: no remote
+ * `marcos-checkout`: `origin  /home/anarcat/repos/presentations/ohm2013.git`
+
+Note that file added with `git annex addurl` on `marcos-checkout` properly gets propagated on `angela` once i do `git annex get` there.
 
 ### What version of git-annex are you using? On what operating system?
 
