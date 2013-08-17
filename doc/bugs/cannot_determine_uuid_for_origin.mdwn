@@ -111,3 +111,12 @@ It seems that my problem was specifically related to [[bare repositories]], whic
 Yet while I was able to do `git annex get --all` *from* the `marcos-bare` repository, I still get the original error message while trying to `git annex copy -t marcos-bare`, which is pretty annoying considering the original files are on my laptop, which is not publicly accessible. So I basically need to add the `marcos-checkout` as a remote, copy there, then get from the bare repo to make this work, which is a rather convoluted way of doing things. :)
 
 It seems to me a proper fix would be to be able to `git annex copy --to marcos-bare`. Thanks!
+
+Update: it seems te problem was that I had the following in my `.git/config`:
+
+    [remote "marcos-bare"]
+            url = ssh://anarcat.ath.cx/~/repos/presentations/ohm2013.git
+            annex-ignore = true
+            fetch = +refs/heads/*:refs/remotes/marcos-bare/*
+
+I have *no* idea how that `annex-ignore` got there, but that was the root of my problem. Removing it it allowed my to do `git annex copy`. I really don't know how this happened, but I guess this is [[done]], although I believe this error message is really confusing and could be improved.
