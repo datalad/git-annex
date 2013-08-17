@@ -1,3 +1,9 @@
+git-annex (4.20130802~bpo70+2) wheezy-backports; urgency=low
+
+  * Fix dependency on libghc-gnutls-dev.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 17 Aug 2013 04:33:20 -0400
+
 git-annex (4.20130802~bpo70+1) wheezy-backports; urgency=low
 
   * Wheezy backport: Fix build dependency on libghc-network-protocol-xmpp-dev
