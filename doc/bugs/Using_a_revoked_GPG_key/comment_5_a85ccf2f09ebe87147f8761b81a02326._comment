@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://www.rfc1149.net/"
+ nickname="Sam"
+ subject="comment 5"
+ date="2013-08-19T11:35:52Z"
+ content="""
+Indeed, removing the revoked key and putting the new one would be acceptable, there is no reason to keep the revoked one around.
+"""]]
