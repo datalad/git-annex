@@ -15,6 +15,9 @@ import qualified Annex
 import qualified Command.Add
 import qualified Option
 import Utility.CopyFile
+import Backend
+import Remote
+import Types.KeySource
 
 def :: [Command]
 def = [withOptions opts $ notBareRepo $ command "import" paramPaths seek
@@ -65,14 +68,37 @@ start mode (srcfile, destfile) =
 		)
 
 perform :: DuplicateMode -> FilePath -> FilePath -> CommandPerform
-perform mode srcfile destfile = do
-	whenM (liftIO $ doesFileExist destfile) $
-		unlessM (Annex.getState Annex.force) $
-			error $ "not overwriting existing " ++ destfile ++
-				" (use --force to override)"
-
-	liftIO $ createDirectoryIfMissing True (parentDir destfile)
-	liftIO $ if mode == Duplicate
-		then void $ copyFileExternal srcfile destfile
-		else moveFile srcfile destfile
-	Command.Add.perform destfile
+perform mode srcfile destfile =
+	case mode of
+		DeDuplicate -> ifM isdup
+			( deletedup
+			, go
+			)
+		CleanDuplicates -> ifM isdup
+			( deletedup
+			, next $ return True
+			)
+		_ -> go
+  where
+	isdup = do
+		backend <- chooseBackend destfile
+		let ks = KeySource srcfile srcfile Nothing
+		v <- genKey ks backend
+		case v of
+			Just (k, _) -> not . null <$> keyLocations k
+			_ -> return False
+	deletedup = do
+		showNote "duplicate"
+		liftIO $ removeFile srcfile
+		next $ return True
+	go = do
+		whenM (liftIO $ doesFileExist destfile) $
+			unlessM (Annex.getState Annex.force) $
+				error $ "not overwriting existing " ++ destfile ++
+					" (use --force to override)"
+	
+		liftIO $ createDirectoryIfMissing True (parentDir destfile)
+		liftIO $ if mode == Duplicate
+			then void $ copyFileExternal srcfile destfile
+			else moveFile srcfile destfile
+		Command.Add.perform destfile
