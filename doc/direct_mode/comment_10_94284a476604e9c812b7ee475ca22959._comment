@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://olivier.berger.myopenid.com/"
+ nickname="obergix"
+ subject="How to sync changes made in another remote when in direct mode"
+ date="2013-08-17T21:53:57Z"
+ content="""
+Re-reading @joey's reponse above, I see that merge/pull don't seem to be safe and will create dangling symlinks. That corresponds to those files I can see on cifs, I guess.
+
+But then, how can a direct repo sync with changes made in other remotes, if there no pull/fetch available.
+
+Can it then be only the source of changes which will propagate to indirect remotes ?
+"""]]

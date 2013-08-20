@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://www.gl-como.it/author/valhalla/"
+ nickname="valhalla"
+ subject="Direct mode clone of an indirect repo"
+ date="2013-08-18T08:47:35Z"
+ content="""
+I too have issues with mixing direct and indirect mode repositories.
+
+ I have a regular, existing repository with ebooks, shared between various clones on proper :) filesystems; now I would need a copy of some of them on an ereader which only offers a FAT filesystem, so it has to be direct mode.
+
+    mount $READER
+    cd $reader
+    git clone $REPO
+
+I get a directory full of small files, the way git manages links on FAT.
+
+    git annex init \"ebook reader\"
+
+This detects the fact that it is working on a crippled filesystem, enables direct mode and disables ssh connection caching; up to now everything seems to be fine, but then
+
+    git annex get $SOME_BOOK
+
+seems to work, downloads the file somewhere, but when I try to open $SOME_BOOK it is still the fake link, and the file has been downloaded in its destination, as if the repo wasn't in direct mode.
+
+I use version 4.20130723 on debian jessie
+"""]]

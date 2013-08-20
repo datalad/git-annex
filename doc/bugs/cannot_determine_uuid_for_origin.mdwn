@@ -1,3 +1,5 @@
+[[!toc]]
+
 ### Please describe the problem.
 
 I get this error when trying to copy annexed files from my laptop to the bare repository on my server:
@@ -13,7 +15,15 @@ Here's my setup:
  * `marcos-bare`: a bare git repository where i ran `git annex init` on a different server (`marcos`) (in `~anarcat/repos/presentations/ohm2013.git`)
  * `marcos-checkout`: a checkout of the above repository on marcos (in `~anarcat/presentations/ohm2013`)
 
-I ran `git pull/push` everwhere in there, and still get the error
+I ran `git pull/push` everwhere in there, and still get the error.
+
+Remotes on all repos:
+
+ * `angela`: `origin  anarcat.ath.cx:repos/presentations/ohm2013.git`
+ * `marcos-bare`: no remote
+ * `marcos-checkout`: `origin  /home/anarcat/repos/presentations/ohm2013.git`
+
+Note that file added with `git annex addurl` on `marcos-checkout` properly gets propagated on `angela` once i do `git annex get` there.
 
 ### What version of git-annex are you using? On what operating system?
 
@@ -72,3 +82,41 @@ known annex size: 0 bytes
 bloom filter size: 16 mebibytes (0% full)
 backend usage:
 """]]
+
+### Workaround!
+
+I found that I could succesfully push to the non-bare repo, like this:
+
+[[!format txt """
+anarcat@angela:ohm2013$ git remote add marcos-checkout ssh://anarcat.ath.cx/~/presentations/ohm2013
+anarcat@angela:ohm2013$ git fetch marcos-checkout
+From ssh://anarcat.ath.cx/~/presentations/ohm2013
+ * [new branch]      git-annex  -> marcos-checkout/git-annex
+ * [new branch]      master     -> marcos-checkout/master
+anarcat@angela:ohm2013$ git annex copy AlerteRouge.webm --to marcos-checkout
+copy AlerteRouge.webm (checking marcos-checkout...) (to marcos-checkout...)
+SHA256E-s138903105--a69db8d4c3835b03bdb08cb1cccfde5c76f586f934d63283694e7101b25352a8.webm
+[...]
+"""]]
+
+It seems that git-annex doesn't like bare repos at all...
+
+### Fix
+
+It seems that my problem was specifically related to [[bare repositories]], which are not well supported historically. There has been other reports of problems in the past, which I missed in my search because symptoms were different:
+
+ * [[bugs/bare git repos]]
+ * [[forum/get and copy with bare repositories]]
+
+Yet while I was able to do `git annex get --all` *from* the `marcos-bare` repository, I still get the original error message while trying to `git annex copy -t marcos-bare`, which is pretty annoying considering the original files are on my laptop, which is not publicly accessible. So I basically need to add the `marcos-checkout` as a remote, copy there, then get from the bare repo to make this work, which is a rather convoluted way of doing things. :)
+
+It seems to me a proper fix would be to be able to `git annex copy --to marcos-bare`. Thanks!
+
+Update: it seems te problem was that I had the following in my `.git/config`:
+
+    [remote "marcos-bare"]
+            url = ssh://anarcat.ath.cx/~/repos/presentations/ohm2013.git
+            annex-ignore = true
+            fetch = +refs/heads/*:refs/remotes/marcos-bare/*
+
+I have *no* idea how that `annex-ignore` got there, but that was the root of my problem. Removing it it allowed my to do `git annex copy`. I really don't know how this happened, but I guess this is [[done]], although I believe this error message is really confusing and could be improved.
