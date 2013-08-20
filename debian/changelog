@@ -6,6 +6,7 @@ git-annex (4.20130816) UNRELEASED; urgency=low
   * sync, merge: Bug fix: Don't try to merge into master when in a bare repo.
   * import: Add options to control handling of duplicate files:
     --duplicate, --deduplicate, and --clean-duplicates
+  * mirror: New command, makes two repositories contain the same set of files.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 15 Aug 2013 15:47:52 +0200
 

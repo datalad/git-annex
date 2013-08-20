@@ -157,6 +157,24 @@ subdirectories).
   post-receive hook. Then any syncs to the repository will update its working
   copy automatically.
 
+* mirror [path ...]
+  
+  This causes a destination repository to mirror a source repository.
+
+  To use the local repository as the source repository,
+  specify mirror --to remote.
+
+  To use a remote as the source repository, specify mirror --from remote.
+
+  Each specified file in the source repository is mirrored to the destination
+  repository. If a file's content is present in the source repository, it is
+  copied to the destination repository. If a file's content is not present in
+  the source repository, it will be dropped from the destination repository
+  when possible. 
+
+  Note that mirror does not sync the git repository, but only the file
+  contents.
+
 * addurl [url ...]
 
   Downloads each url to its own file, which is added to the annex.

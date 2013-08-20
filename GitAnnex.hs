@@ -56,6 +56,7 @@ import qualified Command.Content
 import qualified Command.Ungroup
 import qualified Command.Vicfg
 import qualified Command.Sync
+import qualified Command.Mirror
 import qualified Command.AddUrl
 #ifdef WITH_FEED
 import qualified Command.ImportFeed
@@ -93,6 +94,7 @@ cmds = concat
 	, Command.Unlock.def
 	, Command.Lock.def
 	, Command.Sync.def
+	, Command.Mirror.def
 	, Command.AddUrl.def
 #ifdef WITH_FEED
 	, Command.ImportFeed.def

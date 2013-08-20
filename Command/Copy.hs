@@ -9,6 +9,7 @@ module Command.Copy where
 
 import Common.Annex
 import Command
+import GitAnnex.Options
 import qualified Command.Move
 import qualified Remote
 import Annex.Wanted
@@ -19,8 +20,8 @@ def = [withOptions Command.Move.moveOptions $ command "copy" paramPaths seek
 
 seek :: [CommandSeek]
 seek =
-	[ withField Command.Move.toOption Remote.byNameWithUUID $ \to ->
-	  withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
+	[ withField toOption Remote.byNameWithUUID $ \to ->
+	  withField fromOption Remote.byNameWithUUID $ \from ->
 	  withKeyOptions (Command.Move.startKey to from False) $
 	  withFilesInGit $ whenAnnexed $ start to from
 	]
