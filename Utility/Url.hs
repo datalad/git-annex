@@ -118,8 +118,16 @@ download' quiet url headers options file =
 	 - downloaded before the resume. -}
 	curl = go "curl" $ headerparams ++ quietopt "-s" ++
 		[Params "-f -L -C - -# -o"]
-	go cmd opts = boolSystem cmd $
-		options++opts++[File file, File url]
+	go cmd opts = do
+		ok <- boolSystem cmd $
+			options++opts++[File file, File url]
+		-- wget sometimes leaves behind an empty file on failure;
+		-- remove this as it sometimes interferes with a re-download
+		unless ok $ do
+			size <- catchMaybeIO $ fileSize <$> getFileStatus file
+			when (size == Just 0) $
+				removeFile file
+		return ok
 	quietopt s
 		| quiet = [Param s]
 		| otherwise = []
