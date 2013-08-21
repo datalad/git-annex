@@ -7,6 +7,7 @@ git-annex (4.20130816) UNRELEASED; urgency=low
   * import: Add options to control handling of duplicate files:
     --duplicate, --deduplicate, and --clean-duplicates
   * mirror: New command, makes two repositories contain the same set of files.
+  * Set --clobber when running wget to ensure resuming works properly.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 15 Aug 2013 15:47:52 +0200
 
