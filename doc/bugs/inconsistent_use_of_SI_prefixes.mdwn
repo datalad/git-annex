@@ -48,7 +48,7 @@ nil.
 > Even though I consider them rather dumb, as is clear if you
 > [read the opionated source code I wrote to handle this]().
 > 
-> If git-annex used "gigabyte", the numbers it reports for disk size
+> If git-annex used "gibibyte", the numbers it reports for disk size
 > would not match the numbers disk vendors and most tools use.
 > 
 > [[bug_is_in_world_not_in_git-annex|done]] --[[Joey]] 
