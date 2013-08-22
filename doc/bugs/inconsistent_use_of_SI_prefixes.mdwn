@@ -36,3 +36,20 @@ Notice `mebibytes` and `gigabytes`. It is unclear whether those are gigabytes (1
 ### Please provide any additional information below.
 
 nil.
+
+> git-annex consistently uses the powers of ten units
+> for disk storage sizes. Its "gigabyte" is the SI gigabyte.
+> 
+> It uses the absurdly named units for powers of 2 for memory sizes,
+> in the few places it deals with memory (probably only the above bloom
+> filter size number). 
+> 
+> AFAIK I am complying with all relevant standards and best practices.
+> Even though I consider them rather dumb, as is clear if you
+> [read the opionated source code I wrote to handle this]().
+> 
+> If git-annex used "gigabyte", the numbers it reports for disk size
+> would not match the numbers disk vendors and most tools use.
+> 
+> [[bug_is_in_world_not_in_git-annex|done]] --[[Joey]] 
+
