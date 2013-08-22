@@ -24,3 +24,5 @@ Nightly build and release from a few days ago - 1.0.52
 
 # End of transcript or log.
 """]]
+
+> [[dup|done]] of [[git-annex_broken_on_Android_4.3]].--[[Joey]] 
