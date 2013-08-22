@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 3"
+ date="2013-08-22T18:44:15Z"
+ content="""
+Since the quvi urls are quite likely to break as the CDNs etc change things around, maybe it would be better to somehow have addurl tag an url as needing to be downloaded with quvi. Then `git annex get` could re-run quvi to get an url to download.
+
+We could expand url syntax for this. `quvi:http://youtube.com/foo`  
+This also allows for future expansion for other similar things. 
+
+I'd be inclined to still make `addurl` automatically try quvi to see if an url is supported, rather than requiring the user fix up the url themselves. But if trying quvi turns out to be too expensive, manually specifying it in the url would also work.
+"""]]
