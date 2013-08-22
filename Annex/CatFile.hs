@@ -12,6 +12,7 @@ module Annex.CatFile (
 	catFileHandle,
 	catKey,
 	catKeyFile,
+	catKeyFileHEAD,
 ) where
 
 import qualified Data.ByteString.Lazy as L
@@ -87,6 +88,9 @@ catKey ref = do
  -}
 catKeyFile :: FilePath -> Annex (Maybe Key)
 catKeyFile f = ifM (Annex.getState Annex.daemon)
-	( catKey $ Ref $ "HEAD:./" ++ f
+	( catKeyFileHEAD f
 	, catKey $ Ref $ ":./" ++ f
 	)
+
+catKeyFileHEAD :: FilePath -> Annex (Maybe Key)
+catKeyFileHEAD f = catKey $ Ref $ "HEAD:./" ++ f

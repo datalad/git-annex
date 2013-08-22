@@ -12,6 +12,8 @@ git-annex (4.20130816) UNRELEASED; urgency=low
   * Unescape characters in 'file://...' URIs. (Thanks, guilhem for the patch.)
   * Better error message when trying to use a git remote that has annex.ignore
     set.
+  * Fix bug that caused typechanged symlinks to be assumed to be unlocked
+    files, so they were added to the annex by the pre-commit hook.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 15 Aug 2013 15:47:52 +0200
 
