@@ -195,6 +195,9 @@ subdirectories).
   alternate locations from which the file can be downloaded. In this mode,
   addurl can be used both to add new files, or to add urls to existing files.
 
+  When quvi is installed, urls are automatically tested to see if they
+  are on a video hosting site, and the video is downloaded instead.
+
 * rmurl file url
 
   Record that the file is no longer available at the url.
@@ -1111,6 +1114,11 @@ Here are all the supported configuration settings.
   Options to use when using wget or curl to download a file from the web.
   (wget is always used in preference to curl if available.)
   For example, to force ipv4 only, set it to "-4"
+
+* `annex.quvi-options`
+
+  Options to pass to quvi when using it to find the url to download for a
+  video.
 
 * `annex.http-headers`
 

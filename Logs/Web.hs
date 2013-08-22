@@ -13,7 +13,10 @@ module Logs.Web (
 	setUrlMissing,
 	urlLog,
 	urlLogKey,
-	knownUrls
+	knownUrls,
+	Downloader(..),
+	getDownloader,
+	setDownloader,
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
@@ -101,3 +104,20 @@ knownUrls = do
   where
 	geturls Nothing = return []
   	geturls (Just logsha) = getLog . L.unpack <$> catObject logsha
+
+data Downloader = DefaultDownloader | QuviDownloader
+	deriving (Eq)
+
+{- Determines the downloader for an URL.
+ -
+ - Some URLs are not downloaded by normal means, and this is indicated
+ - by prefixing them with downloader: when they are recorded in the url
+ - logs. -}
+getDownloader :: URLString -> (URLString, Downloader)
+getDownloader u = case separate (== ':') u of
+	("quvi", u') -> (u', QuviDownloader)
+	_ -> (u, DefaultDownloader)
+
+setDownloader :: URLString -> Downloader -> URLString
+setDownloader u DefaultDownloader = u
+setDownloader u QuviDownloader = "quvi:" ++ u

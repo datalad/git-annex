@@ -11,6 +11,7 @@ quite a lot.
   * [monad-control](http://hackage.haskell.org/package/monad-control)
   * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)
   * [json](http://hackage.haskell.org/package/json)
+  * [aeson](http://hackage.haskell.org/package/aeson)
   * [IfElse](http://hackage.haskell.org/package/IfElse)
   * [dlist](http://hackage.haskell.org/package/dlist)
   * [bloomfilter](http://hackage.haskell.org/package/bloomfilter)

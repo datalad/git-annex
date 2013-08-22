@@ -1,5 +1,10 @@
 git-annex (4.20130816) UNRELEASED; urgency=low
 
+  * Youtube support! (And 53 other video hosts). When quvi is installed,
+    git-annex addurl automatically uses it to detect when an page is
+    a video, and downloads the video file.
+  * web special remote: Also support using quvi, for getting files,
+    or checking if files exist in the web.
   * Debian: Run the builtin test suite as an autopkgtest.
   * Debian: Recommend ssh-askpass, which ssh will use when the assistant
     is run w/o a tty. Closes: #719832

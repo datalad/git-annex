@@ -27,6 +27,8 @@ import Annex.Content.Direct
 import Logs.Location
 import qualified Logs.Transfer as Transfer
 import Utility.Daemon (checkDaemon)
+import Annex.Quvi
+import qualified Utility.Quvi as Quvi
 
 def :: [Command]
 def = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
@@ -51,15 +53,51 @@ seek = [withField fileOption return $ \f ->
 start :: Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
 start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
   where
-	bad = fromMaybe (error $ "bad url " ++ s) $
-		parseURI $ escapeURIString isUnescapedInURI s
-	go url = do
-		pathmax <- liftIO $ fileNameLengthLimit "."
-		let file = fromMaybe (url2file url pathdepth pathmax) optfile
+  	(s', downloader) = getDownloader s
+	bad = fromMaybe (error $ "bad url " ++ s') $
+		parseURI $ escapeURIString isUnescapedInURI s'
+	badquvi = error $ "quvi does not know how to download url " ++ s'
+	choosefile = flip fromMaybe optfile
+	go url
+		| downloader == QuviDownloader = usequvi
+		| otherwise = ifM (liftIO $ Quvi.supported s')
+			( usequvi
+			, do
+				pathmax <- liftIO $ fileNameLengthLimit "."
+				let file = choosefile $ url2file url pathdepth pathmax
+				showStart "addurl" file
+				next $ perform relaxed s' file
+			)
+	usequvi = do
+		page <- fromMaybe badquvi
+			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] s'
+		let link = fromMaybe badquvi $ headMaybe $ Quvi.pageLinks page
+		let file = choosefile $ sanitizeFilePath $
+			Quvi.pageTitle page ++ "." ++ Quvi.linkSuffix link
 		showStart "addurl" file
-		next $ perform relaxed s file
+		next $ performQuvi relaxed s' (Quvi.linkUrl link) file
 
-perform :: Bool -> String -> FilePath -> CommandPerform
+performQuvi :: Bool -> URLString -> URLString -> FilePath -> CommandPerform
+performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
+  where
+  	quviurl = setDownloader pageurl QuviDownloader
+  	addurl (key, _backend) = next $ cleanup quviurl file key Nothing
+	geturl = do
+		key <- Backend.URL.fromUrl quviurl Nothing
+		ifM (pure relaxed <||> Annex.getState Annex.fast)
+			( next $ cleanup quviurl file key Nothing
+			, do
+				tmp <- fromRepo $ gitAnnexTmpLocation key
+				showOutput
+				ok <- Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
+					liftIO $ createDirectoryIfMissing True (parentDir tmp)
+					downloadUrl [videourl] tmp
+				if ok
+					then next $ cleanup quviurl file key (Just tmp)
+					else stop
+			)
+
+perform :: Bool -> URLString -> FilePath -> CommandPerform
 perform relaxed url file = ifAnnexed file addurl geturl
   where
 	geturl = next $ addUrlFile relaxed url file
@@ -78,7 +116,7 @@ perform relaxed url file = ifAnnexed file addurl geturl
 					stop
 				)
 
-addUrlFile :: Bool -> String -> FilePath -> Annex Bool
+addUrlFile :: Bool -> URLString -> FilePath -> Annex Bool
 addUrlFile relaxed url file = do
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
@@ -88,7 +126,7 @@ addUrlFile relaxed url file = do
 			download url file
 		)
 
-download :: String -> FilePath -> Annex Bool
+download :: URLString -> FilePath -> Annex Bool
 download url file = do
 	dummykey <- genkey
 	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
@@ -130,7 +168,7 @@ download url file = do
 			downloadUrl [url] tmp
 		
 
-cleanup :: String -> FilePath -> Key -> Maybe FilePath -> Annex Bool
+cleanup :: URLString -> FilePath -> Key -> Maybe FilePath -> Annex Bool
 cleanup url file key mtmp = do
 	when (isJust mtmp) $
 		logStatus key InfoPresent
@@ -144,7 +182,7 @@ cleanup url file key mtmp = do
 	maybe noop (moveAnnex key) mtmp
 	return True
 
-nodownload :: Bool -> String -> FilePath -> Annex Bool
+nodownload :: Bool -> URLString -> FilePath -> Annex Bool
 nodownload relaxed url file = do
 	headers <- getHttpHeaders
 	(exists, size) <- if relaxed
