@@ -76,8 +76,3 @@ noredir = Params "-e -resolve"
 {- Only return http results, not streaming protocols. -}
 httponly :: CommandParam
 httponly = Params "-c http"
-
-{- Avoids error messages being printed to stderr, instead they are
- - put in the JSON. -}
-hideerrors :: CommandParam
-hideerrors = Params "-l +errors"
