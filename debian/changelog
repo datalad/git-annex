@@ -8,6 +8,7 @@ git-annex (4.20130816) UNRELEASED; urgency=low
     --duplicate, --deduplicate, and --clean-duplicates
   * mirror: New command, makes two repositories contain the same set of files.
   * Set --clobber when running wget to ensure resuming works properly.
+  * unused: Pay attention to symlinks that are not yet staged in the index.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 15 Aug 2013 15:47:52 +0200
 

@@ -8,6 +8,7 @@
 module Git.LsFiles (
 	inRepo,
 	notInRepo,
+	allFiles,
 	deleted,
 	modified,
 	staged,
@@ -40,6 +41,11 @@ notInRepo include_ignored l repo = pipeNullSplit params repo
 	exclude
 		| include_ignored = []
 		| otherwise = [Param "--exclude-standard"]
+
+{- Finds all files in the specified locations, whether checked into git or
+ - not. -}
+allFiles :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+allFiles l = pipeNullSplit $ Params "ls-files --cached --others -z --" : map File l
 
 {- Returns a list of files in the specified locations that have been
  - deleted. -}
