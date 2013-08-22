@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 19"
+ date="2013-08-22T15:25:02Z"
+ content="""
+I would expect user:pass@site.com to work if the site is using http basic auth. `importfeed` just runs `wget` (or `curl`) to do all downloads, and wget's documentation says that works. It also says you can use ~/.netrc to store the password for a site.
+"""]]
