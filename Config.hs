@@ -18,6 +18,9 @@ import Config.Cost
 type UnqualifiedConfigKey = String
 data ConfigKey = ConfigKey String
 
+instance Show ConfigKey where
+	show (ConfigKey s) = s
+
 {- Looks up a setting in git config. -}
 getConfig :: ConfigKey -> String -> Annex String
 getConfig (ConfigKey key) def = fromRepo $ Git.Config.get key def

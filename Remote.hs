@@ -55,6 +55,7 @@ import Logs.UUID
 import Logs.Trust
 import Logs.Location hiding (logStatus)
 import Remote.List
+import Config
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> a) -> Annex (M.Map UUID a)
@@ -81,13 +82,16 @@ byName (Just n) = either error Just <$> byName' n
 
 {- Like byName, but the remote must have a configured UUID. -}
 byNameWithUUID :: Maybe String -> Annex (Maybe Remote)
-byNameWithUUID n = do
-	v <- byName n
-	return $ checkuuid <$> v
+byNameWithUUID = checkuuid <=< byName
   where
-	checkuuid r
-		| uuid r == NoUUID = error $ "cannot determine uuid for " ++ name r
-		| otherwise = r
+  	checkuuid Nothing = return Nothing
+	checkuuid (Just r)
+		| uuid r == NoUUID = do
+			let e = "cannot determine uuid for " ++ name r
+			if remoteAnnexIgnore (gitconfig r)
+				then error $ e ++ " (" ++ show (remoteConfig (repo r) "ignore") ++ " is set)"
+				else error e
+		| otherwise = return $ Just r
 
 byName' :: String -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"

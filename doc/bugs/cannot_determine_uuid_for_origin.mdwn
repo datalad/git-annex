@@ -120,3 +120,16 @@ Update: it seems te problem was that I had the following in my `.git/config`:
             fetch = +refs/heads/*:refs/remotes/marcos-bare/*
 
 I have *no* idea how that `annex-ignore` got there, but that was the root of my problem. Removing it it allowed my to do `git annex copy`. I really don't know how this happened, but I guess this is [[done]], although I believe this error message is really confusing and could be improved.
+
+> `annex-ignore` is set automatically by git-annex if it fails to query
+> the uuid of a remote the first time it tries to use it. It will say
+> when it does that. The assumption
+> is that a remote whose uuid cannot be looked up is a git remote
+> on a server w/o git-annex support (like github) and it would be annoying
+> to constantly be trying and failing to get that uuid.
+> 
+> So, I've improved the error message. Now when annex-ignore is set
+> for a remote, the error you got will mention that.
+> 
+> (Also, there is not currently anything lacking in git-annex's support
+> for bare repositories.) --[[Joey]]
