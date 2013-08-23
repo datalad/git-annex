@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://id.koumbit.net/anarcat"
- ip="72.0.72.144"
- subject="copy --to bare still has issues"
- date="2013-08-17T23:07:48Z"
- content="""
-It seeems that bare repositories *do* work, but only when getting, not pushing. I have documented this in [[bugs/cannot_determine_uuid_for_origin]].
-"""]]
