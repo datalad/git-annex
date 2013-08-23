@@ -74,7 +74,7 @@ downloadKey key _file dest _p = get =<< getUrls key
 			case downloader of
 				QuviDownloader -> flip downloadUrl dest
 					=<< withQuviOptions Quvi.queryLinks [Quvi.httponly, Quvi.quiet] u'
-				_ -> downloadUrl [u'] dest
+				DefaultDownloader -> downloadUrl [u'] dest
 
 downloadKeyCheap :: Key -> FilePath -> Annex Bool
 downloadKeyCheap _ _ = return False
@@ -102,6 +102,6 @@ checkKey' key us = untilTrue us $ \u -> do
 	case downloader of
 		QuviDownloader ->
 			withQuviOptions Quvi.check [Quvi.httponly, Quvi.quiet] u'
-		_ -> do
+		DefaultDownloader -> do
 			headers <- getHttpHeaders
 			liftIO $ Url.check u' headers (keySize key)
