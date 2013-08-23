@@ -56,7 +56,15 @@ A very few commands don't work in direct mode, and will refuse to do anything.
 
 Direct mode also works well with the git-annex assistant.
 
-You can use `git commit --staged`, or plain `git commit`.
+The most important command to use in a direct mode repository is `git annex
+sync`. This will commit any files you have run `git annex add` on, as well
+as files that were added earlier and have been modified. It will push 
+the changes to other repositories for `git annex sync` there to pick up,
+and will pull and merge any changes made on other repositories into the
+local repository.
+
+While you generally will just use `git annex sync`, if you want to,
+you can use `git commit --staged`, or plain `git commit`.
 But not `git commit -a`, or `git commit <file>` ..
 that'd commit whole large files into git!
 
