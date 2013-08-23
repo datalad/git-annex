@@ -18,3 +18,10 @@ git-annex: importfeed: 1 failed
 """]]
 
 (Oh, and using `format` with nono-ASCII seems to break down., at least in the preview.)
+
+> I'm going to close this since I've narrowed it down to a bug in the
+> upstream feed library. [[done]]. Of course, if we get a lot of reports of
+> the library not working, I may need to revisit using it, but for now this
+> seems an isolated problem. Also, I tried validating the feed, and it is
+> not 100% valid, and one of the validity problems is a missing enclosure
+> length. --[[Joey]] 
