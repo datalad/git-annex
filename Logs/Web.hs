@@ -106,7 +106,6 @@ knownUrls = do
   	geturls (Just logsha) = getLog . L.unpack <$> catObject logsha
 
 data Downloader = DefaultDownloader | QuviDownloader
-	deriving (Eq)
 
 {- Determines the downloader for an URL.
  -

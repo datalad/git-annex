@@ -58,9 +58,9 @@ start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 		parseURI $ escapeURIString isUnescapedInURI s'
 	badquvi = error $ "quvi does not know how to download url " ++ s'
 	choosefile = flip fromMaybe optfile
-	go url
-		| downloader == QuviDownloader = usequvi
-		| otherwise = ifM (liftIO $ Quvi.supported s')
+	go url = case downloader of
+		QuviDownloader -> usequvi
+		DefaultDownloader -> ifM (liftIO $ Quvi.supported s')
 			( usequvi
 			, do
 				pathmax <- liftIO $ fileNameLengthLimit "."
