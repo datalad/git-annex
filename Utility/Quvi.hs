@@ -41,9 +41,12 @@ type Query a = [CommandParam] -> URLString -> IO a
 
 {- Throws an error when quvi is not installed. -}
 forceQuery :: Query (Maybe Page)
-forceQuery ps url = flip catchNonAsync (const notinstalled) (query' ps url)
+forceQuery ps url = query' ps url `catchNonAsync` onerr
   where
-  	notinstalled = error "quvi failed, or is not installed"
+	onerr _ = ifM (inPath "quvi")
+		( error "quvi failed"
+		, error "quvi is not installed"
+		)
 
 {- Returns Nothing if the page is not a video page, or quvi is not
  - installed. -}
