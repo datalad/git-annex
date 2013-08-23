@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="77.247.181.162"
+ subject="git-annex assistant on Arm"
+ date="2013-08-23T03:07:11Z"
+ content="""
+I'd like to use the assistant's power on a Raspberry Pi to build an always-on file/sync server. Is there a way to get the assistant running on Arm? I know there's a Debian package, but it's Version 3.20120629 and comes without the assistant. Has anyone ever successfully built a recent git-annex version on Arm? What would I need in order to do it myself? 
+"""]]

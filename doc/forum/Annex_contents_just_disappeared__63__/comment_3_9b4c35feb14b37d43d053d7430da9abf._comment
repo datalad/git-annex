@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 3"
+ date="2013-08-23T04:28:45Z"
+ content="""
+If you change the backend, and then in one repository you run `git annex migrate`, other repositories that have the old keys will not know about the new names. For this reason, then multiple repositories have the files, it's best to run it redundantly in each repository.
+
+TBH, migration is a bit of a PITA because of this. Best to aovid it in most cases.
+
+Git-annex will never perform a migration begind your back. You must have run `git annex migrate` at some point. You can check the git history for details.
+"""]]
