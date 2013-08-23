@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 4"
+ date="2013-08-23T17:55:39Z"
+ content="""
+Just run `git annex sync` to update the direct mode repository on your NAS.
+"""]]
