@@ -59,4 +59,6 @@ My .gitconfig is as follows:
 """]]
 
 > Closing this because all autobuilders have been upgraded
-> to a more recent version of git. [[done]] --[[Joey]] 
+> to a more recent version of git. done --[[Joey]] 
+>> Reopened, because the Linux autobuilds have been downgraded to Debian
+>> stable and have this problem again. --[[Joey]]
