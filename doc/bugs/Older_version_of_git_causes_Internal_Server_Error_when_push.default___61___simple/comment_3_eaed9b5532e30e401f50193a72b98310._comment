@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmTNrhkVQ26GBLaLD5-zNuEiR8syTj4mI8"
+ nickname="Juan"
+ subject="Still happening in the linux autobuild (08/22/2013)"
+ date="2013-08-23T02:04:42Z"
+ content="""
+I've seen that git-annex for linux is still coming with git 1.7, which causes problems with my installed git (1.8.1.2).
+Wasn't that corrected in autobuilds?
+Thanks in advance.
+Keep up the good work.
+Regards,
+       Juan
+"""]]
