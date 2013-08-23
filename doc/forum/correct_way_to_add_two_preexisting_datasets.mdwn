@@ -17,3 +17,7 @@ So, now the questions:
 Thanks in advance and keep up the good work.
 Best regards,
              Juan
+
+EDIT: a couple of questions more:
+4. after finishing, set2 ended with a lot of symlinks but only in one subfolder. To prevent this should I put numcopies in 2?
+5. This data is composed of input datasets and output simulations. Thus, I need to change them often, but not as often as code and in a very partial way (chunks of 50Mb). For me direct mode is the best (or plain git). However, I was wondering, it is possible to drop some files (even in direct mode) and use simlinks instead?
