@@ -26,8 +26,6 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-cabal install MissingH
-
 cabal install --only-dependencies -f"$FLAGS"
 
 # Detect when the last build was an incremental build and failed, 
