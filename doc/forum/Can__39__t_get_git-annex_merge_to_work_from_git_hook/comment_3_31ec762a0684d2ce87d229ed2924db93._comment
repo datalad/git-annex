@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlq495p0WtZDUpxzYN9YnToZGODfCGnqOw"
+ nickname="Stanis"
+ subject="comment 3"
+ date="2013-08-24T13:30:52Z"
+ content="""
+Thanks joey, that's exactly what was happening.
+
+Just to repeat it here, if anyone else runs into the same problem, your post-receive hook has to look like this:
+
+    #!/bin/sh
+    unset GIT_DIR
+    cd ..
+    git annex merge
+
+"""]]
