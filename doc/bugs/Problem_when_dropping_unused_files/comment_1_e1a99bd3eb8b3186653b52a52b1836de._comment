@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 1"
+ date="2013-08-24T05:01:37Z"
+ content="""
+The following command restored some sanity:
+
+    find .git/annex/ -name '*.log' -delete
+"""]]
