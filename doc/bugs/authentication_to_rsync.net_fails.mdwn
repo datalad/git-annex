@@ -25,3 +25,6 @@ git-annex version: 4.20130521 on debian linux 7.1.
 That log is empty.
 # End of transcript or log.
 """]]
+
+> I added ssh-askpass as a recommends, so I suppose
+> I can close this. [[done]] --[[Joey]] 
