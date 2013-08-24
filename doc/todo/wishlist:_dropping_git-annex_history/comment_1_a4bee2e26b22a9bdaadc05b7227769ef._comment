@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 1"
+ date="2013-08-24T19:39:45Z"
+ content="""
+BTW, a motivation for this is that some of us have old repositories that have been upgrades all the way from annex.version 1 and have a lot of cruft in them because of it. (I have repos that have been upgraded from annex.version 0, but this would not help with that cruft which is on the master branch!)
+
+Also, people worry that eg, a large copy back and forth bloats history, and having a way to unbloat it if it ever gets actually annoyingly bloated would stop them pestering me. ;)
+"""]]
