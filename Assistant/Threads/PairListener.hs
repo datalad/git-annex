@@ -27,7 +27,7 @@ pairListenerThread :: UrlRenderer -> NamedThread
 pairListenerThread urlrenderer = namedThread "PairListener" $ do
 	listener <- asIO1 $ go [] []
 	liftIO $ withSocketsDo $
-		runEvery (Seconds 1) $ void $ tryIO $ 
+		runEvery (Seconds 60) $ void $ tryIO $ 
 			listener =<< getsock
   where
 	{- Note this can crash if there's no network interface,
