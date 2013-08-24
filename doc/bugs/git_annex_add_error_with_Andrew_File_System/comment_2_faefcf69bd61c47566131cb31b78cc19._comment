@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 2"
+ date="2013-08-24T19:48:46Z"
+ content="""
+I'm confused by this bug report, because it seems to me I already fixed this same problem in commit a64106dcef5c5aad825662ef115cb2a1cc6985a8. There the problem was that encfs in paranoia mode doesn't support hard links. So I made it detect when createLink fails, and fall back to a code path that doesn't need hard links.
+
+Can you re-check the version you have, and perhaps try with a current daily build?
+"""]]
