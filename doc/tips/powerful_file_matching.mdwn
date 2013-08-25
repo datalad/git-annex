@@ -1,4 +1,4 @@
-git-annex has a powerful syntax for making it act on only certian files.
+git-annex has a powerful syntax for making it act on only certain files.
 
 The simplest thing is to exclude some files, using wild cards:
 
