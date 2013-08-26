@@ -15,4 +15,12 @@ I think that'd work!
 
 --[[Joey]]
 
+Will also allow dropping dead remotes from history. Just remove all
+references to them when rewriting the branch. May or may not be desirable;
+I sometimes care about dead remotes that I hope to one day recuscitate.
+(OTOH, I can always run git annex fsck in them to get their location
+tracking back, if I do manage to get them back.)
+
+--[[Joey]] 
+
 See also : [[forum/safely_dropping_git-annex_history]]
