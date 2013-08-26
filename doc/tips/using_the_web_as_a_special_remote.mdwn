@@ -89,10 +89,10 @@ annex.quvi-options "--format low"` to configure it to download low
 quality videos from YouTube.
 
 Note that for performance reasons, the url is not checked for redirects,
-so shortened urls to sites like youtu.be will not be detected. You can
+so some shortened urls will not be detected. You can
 either load the short url in a browser to get the full url, or you
 can force use of quvi with redirect detection, by prepending "quvi:" to the
-url. For example, `git annex addurl quvi:http://youtu.be/foo`
+url.
 
 Downloading whole YouTube playlists is not currently supported by quvi.
 
