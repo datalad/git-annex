@@ -253,7 +253,7 @@ withKeysReferenced' mdir initial a = do
 				go v' fs
 
 withKeysReferencedInGit :: (Key -> Annex ()) -> Annex ()
-withKeysReferencedInGit a = do
+withKeysReferencedInGit a = 
 	showref >>= mapM_ (withKeysReferencedInGitRef a) . relevantrefs
   where
 	showref = inRepo $ Git.Command.pipeReadStrict [Param "show-ref"]
