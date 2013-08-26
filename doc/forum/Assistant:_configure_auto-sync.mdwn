@@ -1,4 +1,4 @@
-I have large central repositories of data. Therefore, on each client I want to save part data(to save space of disk). On client in command line I do 
+I have large central repositories of data. Therefore, on each client I want to save part data(to save space of disk). In command line I do 
 
 	[...]
 	git-annex webapp
