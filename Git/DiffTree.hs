@@ -10,6 +10,7 @@ module Git.DiffTree (
 	diffTree,
 	diffTreeRecursive,
 	diffIndex,
+	diffWorkTree,
 ) where
 
 import Numeric
@@ -44,12 +45,23 @@ diffTreeRecursive src dst = getdiff (Param "diff-tree")
 {- Diffs between a tree and the index. Does nothing if there is not yet a
  - commit in the repository. -}
 diffIndex :: Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
-diffIndex ref repo = do
+diffIndex ref = diffIndex' ref [Param "--cached"]
+
+{- Diffs between a tree and the working tree. Does nothing if there is not
+ - yet a commit in the repository, of if the repository is bare. -}
+diffWorkTree :: Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffWorkTree ref repo =
+	ifM (Git.Ref.headExists repo)
+                ( diffIndex' ref [] repo
+		, return ([], return True)
+		)
+
+diffIndex' :: Ref -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffIndex' ref params repo =
 	ifM (Git.Ref.headExists repo)
 		( getdiff (Param "diff-index")
-			[ Param "--cached"
-			, Param $ show ref
-			] repo
+			( params ++ [Param $ show ref] )
+			repo
 		, return ([], return True)
 		)
 

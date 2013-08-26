@@ -27,6 +27,7 @@ import qualified Annex
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
+import qualified Git.Branch
 import qualified Git.LsFiles as LsFiles
 import qualified Git.DiffTree as DiffTree
 import qualified Backend
@@ -253,35 +254,49 @@ withKeysReferenced' mdir initial a = do
 				go v' fs
 
 withKeysReferencedInGit :: (Key -> Annex ()) -> Annex ()
-withKeysReferencedInGit a = 
-	showref >>= mapM_ (withKeysReferencedInGitRef a) . relevantrefs
+withKeysReferencedInGit a = do
+	current <- inRepo Git.Branch.currentUnsafe
+	shaHead <- maybe (return Nothing) (inRepo . Git.Ref.sha) current
+	showref >>= mapM_ (withKeysReferencedInGitRef a) .
+			relevantrefs (shaHead, current)
   where
 	showref = inRepo $ Git.Command.pipeReadStrict [Param "show-ref"]
-	relevantrefs = map (Git.Ref . snd) .
-		nubBy uniqref .
+	relevantrefs headRef = addHead headRef .
 		filter ourbranches .
 		map (separate (== ' ')) .
 		lines
-	uniqref (x, _) (y, _) = x == y
+	nubRefs = map (Git.Ref . snd) . nubBy (\(x, _) (y, _) -> x == y)
 	ourbranchend = '/' : show Annex.Branch.name
 	ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
 		&& not ("refs/synced/" `isPrefixOf` b)
+	addHead headRef refs = case headRef of
+		-- if HEAD diverges from all branches (except the branch it
+		-- points to), run the actions on staged keys (and keys
+		-- that are only present in the work tree if the repo is
+		-- non bare)
+		(Just (Git.Ref x), Just (Git.Ref b))
+			| all (\(x',b') -> x /= x' || b == b') refs ->
+				Git.Ref.headRef
+				: nubRefs (filter ((/= x) . fst) refs)
+		_ -> nubRefs refs
 
 {- Runs an action on keys referenced in the given Git reference which
  - differ from those referenced in the index. -}
 withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
 withKeysReferencedInGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
-	(ts, clean) <- inRepo $ DiffTree.diffIndex ref
-	forM_ ts $ \t ->
-		mapM_ (`process` t) [DiffTree.dstsha, DiffTree.srcsha]
+	bare <- isBareRepo
+	(ts,clean) <- inRepo $ if bare
+			then DiffTree.diffIndex ref
+			else DiffTree.diffWorkTree ref
+	let lookAtWorkingTree = not bare && ref == Git.Ref.headRef
+	forM_ ts $ tKey lookAtWorkingTree >=> maybe noop a
 	liftIO $ void clean
   where
-	-- the key will be Nothing for the nullSha
- 	process getsha = catObject . getsha >=>
-		encodeW8 . L.unpack *>=>
-		fileKey . takeFileName *>=>
-		maybe noop a
+	tKey True = Backend.lookupFile . DiffTree.file >=*>
+			fmap fst
+	tKey False = catFile ref . DiffTree.file >=*>
+			fileKey . takeFileName . encodeW8 . L.unpack
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable.
