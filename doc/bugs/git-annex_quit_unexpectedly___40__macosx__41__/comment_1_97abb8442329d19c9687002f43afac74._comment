@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 1"
+ date="2013-08-26T19:51:48Z"
+ content="""
+So this is a crash in the gnutls library used for XMPP. Someone else using OSX reported a similar crash to me by email, reproducible reliably by setting up xmpp with google. This is great debugging info:
+
+<pre>
+Thread 3 Crashed:
+0   libsystem_c.dylib               0x00007fff86ae0bf9 pthread_mutex_lock + 20
+1   H                               0x000000010e9fd29f gnutls_system_mutex_lock + 12
+2   H                               0x000000010ea7fa29 wrap_nettle_rnd_refresh + 20
+3   H                               0x000000010e9fee89 gnutls_deinit + 42
+4   git-annex                       0x000000010caf0a3a 0x10b5e6000 + 22063674
+</pre>
+
+Looks like `gnutls_deinit` was called and it crashed there, inside pthread code. So I think git-annex has already managed to connect to the XMPP server (to test it) and the cleanup is where it's crashing.
+
+This is the second time I have seen a gnutls-related crash using XMPP. The other one was tracked down by John Millikin to a resource allocation bug in haskell-gnutls and fixed. 
+
+I have written a test case that reproduces the problem -- just forking a dozen threads that each try to connect to the google xmpp server and then close the connection. After a dozen or so succeed, one will reliably cause a segfault. Forwarded this test case to John.
+"""]]
