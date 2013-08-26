@@ -21,7 +21,6 @@ import Common.Annex
 import Command
 import Logs.Unused
 import Annex.Content
-import Utility.FileMode
 import Logs.Location
 import Logs.Transfer
 import qualified Annex
@@ -29,7 +28,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.LsFiles as LsFiles
-import qualified Git.LsTree as LsTree
+import qualified Git.DiffTree as DiffTree
 import qualified Backend
 import qualified Remote
 import qualified Annex.Branch
@@ -255,35 +254,31 @@ withKeysReferenced' mdir initial a = do
 
 withKeysReferencedInGit :: (Key -> Annex ()) -> Annex ()
 withKeysReferencedInGit a = do
-	rs <- relevantrefs <$> showref
-	forM_ rs (withKeysReferencedInGitRef a)
+	showref >>= mapM_ (withKeysReferencedInGitRef a) . relevantrefs
   where
 	showref = inRepo $ Git.Command.pipeReadStrict [Param "show-ref"]
-	relevantrefs = map (Git.Ref .  snd) .
+	relevantrefs = map (Git.Ref . snd) .
 		nubBy uniqref .
 		filter ourbranches .
-		map (separate (== ' ')) . lines
+		map (separate (== ' ')) .
+		lines
 	uniqref (x, _) (y, _) = x == y
 	ourbranchend = '/' : show Annex.Branch.name
 	ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
 		&& not ("refs/synced/" `isPrefixOf` b)
 
+{- Runs an action on keys referenced in the given Git reference which
+ - differ from those referenced in the index. -}
 withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
 withKeysReferencedInGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
-	go <=< inRepo $ LsTree.lsTree ref
-  where
-	go [] = noop
-	go (l:ls)
-		| isSymLink (LsTree.mode l) = do
-			content <- encodeW8 . L.unpack
-				<$> catFile ref (LsTree.file l)
-			case fileKey (takeFileName content) of
-				Nothing -> go ls
-				Just k -> do
-					a k
-					go ls
-		| otherwise = go ls
+	(ts,clean) <- inRepo $ DiffTree.diffIndex ref
+	-- if 'dstsha' is 0{40}, the key will be Nothing
+	forM_ ts $ catObject . DiffTree.dstsha >=>
+			encodeW8 . L.unpack *>=>
+			fileKey . takeFileName *>=>
+			maybe noop a
+	liftIO $ void clean
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable.

@@ -41,14 +41,14 @@ diffTreeRecursive :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffTreeRecursive src dst = getdiff (Param "diff-tree")
 	[Param "-r", Param (show src), Param (show dst)]
 
-{- Diffs between the repository and index. Does nothing if there is not
- - yet a commit in the repository. -}
-diffIndex :: Repo -> IO ([DiffTreeItem], IO Bool)
-diffIndex repo = do
+{- Diffs between a tree and the index. Does nothing if there is not yet a
+ - commit in the repository. -}
+diffIndex :: Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffIndex ref repo = do
 	ifM (Git.Ref.headExists repo)
 		( getdiff (Param "diff-index")
 			[ Param "--cached"
-			, Param $ show Git.Ref.headRef
+			, Param $ show ref
 			] repo
 		, return ([], return True)
 		)
