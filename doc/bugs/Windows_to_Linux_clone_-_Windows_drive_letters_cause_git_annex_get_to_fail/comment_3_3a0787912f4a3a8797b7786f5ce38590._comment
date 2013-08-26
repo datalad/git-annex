@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlzWwnBfgJrkhPQakBo6DbPXutJIVDHkj0"
+ nickname="Adam"
+ subject="comment 3"
+ date="2013-08-26T06:56:33Z"
+ content="""
+You're correct. I can see in .git/config that the remote references z:\ which of course will break on the Linux side. Maybe this is a case of the error messages not quite telling me the right thing?
+"""]]
