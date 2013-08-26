@@ -272,7 +272,7 @@ withKeysReferencedInGit a =
 withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
 withKeysReferencedInGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
-	(ts,clean) <- inRepo $ DiffTree.diffIndex ref
+	(ts, clean) <- inRepo $ DiffTree.diffIndex ref
 	-- if 'dstsha' is 0{40}, the key will be Nothing
 	forM_ ts $ catObject . DiffTree.dstsha >=>
 			encodeW8 . L.unpack *>=>
