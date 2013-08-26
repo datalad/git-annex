@@ -273,12 +273,15 @@ withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
 withKeysReferencedInGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
 	(ts, clean) <- inRepo $ DiffTree.diffIndex ref
-	-- if 'dstsha' is 0{40}, the key will be Nothing
-	forM_ ts $ catObject . DiffTree.dstsha >=>
-			encodeW8 . L.unpack *>=>
-			fileKey . takeFileName *>=>
-			maybe noop a
+	forM_ ts $ \t ->
+		mapM_ (`process` t) [DiffTree.dstsha, DiffTree.srcsha]
 	liftIO $ void clean
+  where
+	-- the key will be Nothing for the nullSha
+ 	process getsha = catObject . getsha >=>
+		encodeW8 . L.unpack *>=>
+		fileKey . takeFileName *>=>
+		maybe noop a
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable.
