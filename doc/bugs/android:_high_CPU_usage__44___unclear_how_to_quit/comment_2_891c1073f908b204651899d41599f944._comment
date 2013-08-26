@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 2"
+ date="2013-08-26T18:42:02Z"
+ content="""
+If you shut down the daemon, it seems to me that the process that was still running would probably be `git annex transferkey` which runs in its own process to upload/download file contents. I normally see 0% to 1% cpu use from git-annex when it is running on my android tablet. It's possible that the 1% use is due to it waking up every second, which got fixed in 9dc2373977d583b4c4aa6cf0555dc97309f89991.
+"""]]
