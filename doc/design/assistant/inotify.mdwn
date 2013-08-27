@@ -14,14 +14,6 @@ available!
 
 ## todo
 
-* Run niced and ioniced? Seems to make sense, this is a background job.
-* configurable option to only annex files meeting certian size or
-  filename criteria
-* option to check files not meeting annex criteria into git directly,
-  automatically
-* honor .gitignore, not adding files it excludes (difficult, probably
-  needs my own .gitignore parser to avoid excessive running of git commands
-  to check for ignored files)
 * There needs to be a way for a new version of git-annex, when installed,
   to restart any running watch or assistant daemons. Or for the daemons
   to somehow detect it's been upgraded and restart themselves. Needed

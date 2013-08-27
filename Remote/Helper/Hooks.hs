@@ -15,7 +15,9 @@ import Common.Annex
 import Types.Remote
 import qualified Annex
 import Annex.LockPool
+#ifndef mingw32_HOST_OS
 import Annex.Perms
+#endif
 
 {- Modifies a remote's access functions to first run the
  - annex-start-command hook, and trigger annex-stop-command on shutdown.
@@ -71,8 +73,8 @@ runHooks r starthook stophook a = do
 		run starthook
 
 		Annex.addCleanup (remoteid ++ "-stop-command") $ runstop lck
-	runstop lck = do
 #ifndef __WINDOWS__
+	runstop lck = do
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock
 		-- succeeds, we're the only process using this remote,
@@ -88,5 +90,5 @@ runHooks r starthook stophook a = do
 			Right _ -> run stophook
 		liftIO $ closeFd fd
 #else
-		run stophook
+	runstop _lck = run stophook
 #endif

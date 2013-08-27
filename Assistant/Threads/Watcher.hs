@@ -1,11 +1,11 @@
 {- git-annex assistant tree watcher
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE DeriveDataTypeable, CPP #-}
+{-# LANGUAGE DeriveDataTypeable, BangPatterns, CPP #-}
 
 module Assistant.Threads.Watcher (
 	watchThread,
@@ -33,6 +33,7 @@ import qualified Backend
 import Annex.Direct
 import Annex.Content.Direct
 import Annex.CatFile
+import Annex.CheckIgnore
 import Annex.Link
 import Annex.FileMatcher
 import Annex.ReplaceFile
@@ -141,6 +142,8 @@ startupScan scanner = do
 
 		return (True, r)
 
+{- Hardcoded ignores, passed to the DirWatcher so it can avoid looking
+ - at the entire .git directory. Does not include .gitignores. -}
 ignored :: FilePath -> Bool
 ignored = ig . takeFileName
   where
@@ -151,6 +154,12 @@ ignored = ig . takeFileName
 	ig ".DS_Store" = True
 #endif
 	ig _ = False
+
+unlessIgnored :: FilePath -> Assistant (Maybe Change) -> Assistant (Maybe Change)
+unlessIgnored file a = ifM (liftAnnex $ checkIgnored file)
+	( noChange
+	, a
+	)
 
 type Handler = FilePath -> Maybe FileStatus -> Assistant (Maybe Change)
 
@@ -186,7 +195,9 @@ add bigfilematcher file = ifM (liftAnnex $ checkFileMatcher bigfilematcher file)
 
 onAdd :: FileMatcher -> Handler
 onAdd matcher file filestatus
-	| maybe False isRegularFile filestatus = add matcher file
+	| maybe False isRegularFile filestatus =
+		unlessIgnored file $
+			add matcher file
 	| otherwise = noChange
 
 {- In direct mode, add events are received for both new files, and
@@ -214,9 +225,10 @@ onAddDirect symlinkssupported matcher file fs = do
 					liftAnnex $ changedDirect key file
 					add matcher file
 				)
-		_ -> guardSymlinkStandin Nothing $ do
-			debug ["add direct", file]
-			add matcher file
+		_ -> unlessIgnored file $
+			guardSymlinkStandin Nothing $ do
+				debug ["add direct", file]
+				add matcher file
   where
  	{- On a filesystem without symlinks, we'll get changes for regular
 	 - files that git uses to stand-in for symlinks. Detect when
@@ -240,7 +252,7 @@ onAddDirect symlinkssupported matcher file fs = do
  - before adding it.
  -}
 onAddSymlink :: Bool -> Handler
-onAddSymlink isdirect file filestatus = do
+onAddSymlink isdirect file filestatus = unlessIgnored file $ do
 	linktarget <- liftIO (catchMaybeIO $ readSymbolicLink file)
 	kv <- liftAnnex (Backend.lookupFile file)
 	onAddSymlink' linktarget (fmap fst kv) isdirect file filestatus

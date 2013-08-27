@@ -93,10 +93,10 @@ catObjectDetails (CatFileHandle hdl repo) object = CoProcess.query hdl send rece
 			, Param "-p"
 			, Param query
 			] repo
-		(_, Just h, _, pid) <- withNullHandle $ \null -> 
+		(_, Just h, _, pid) <- withNullHandle $ \h -> 
 			createProcess p
 				{ std_out = CreatePipe
-				, std_err = UseHandle null
+				, std_err = UseHandle h
 				}
 		fileEncoding h
 		content <- L.hGetContents h

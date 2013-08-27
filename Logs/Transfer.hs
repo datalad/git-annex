@@ -129,8 +129,8 @@ runTransfer t file shouldretry a = do
 			unless ok $ recordFailedTransfer t info
 			return ok
   where
-	prep tfile mode info = do
 #ifndef mingw32_HOST_OS
+	prep tfile mode info = do
 		mfd <- catchMaybeIO $
 			openFd (transferLockFile tfile) ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
@@ -145,6 +145,7 @@ runTransfer t file shouldretry a = do
 						void $ tryIO $ writeTransferInfoFile info tfile
 						return (mfd, False)
 #else
+	prep tfile _mode info = do
 		mfd <- catchMaybeIO $ do
 			writeFile (transferLockFile tfile) ""
 			writeTransferInfoFile info tfile

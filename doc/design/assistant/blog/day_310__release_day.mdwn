@@ -1,0 +1,18 @@
+Got the release out, with rather a lot of fiddling to fix broken builds on
+various platforms.
+
+Also released a backport to Debian stable. This backport has the assistant,
+although without WebDAV support. Unfortunately it's an old version from
+May, since ghc transitions and issues have kept newer versions out of
+testing so far. Hope that will clear up soon (probably by dropping haskell
+support for s390x), and I can update it to a newer version. 
+If nothing else it allows using direct mode with Debian stable.
+
+Pleased that the git-cat-files bug was quickly fixed by Peff and has
+already been pulled into Junio's release tree!
+
+----
+
+This evening, I've added an interface around the new improved 
+`git check-ignore` in git 1.8.4. The assistant can finally honor `.gitignore`
+files!

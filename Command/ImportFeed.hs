@@ -13,6 +13,7 @@ import Text.Feed.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Char
+import Data.Time.Clock
 
 import Common.Annex
 import qualified Annex
@@ -23,6 +24,8 @@ import qualified Option
 import qualified Utility.Format
 import Utility.Tmp
 import Command.AddUrl (addUrlFile, relaxedOption)
+import Annex.Perms
+import Backend.URL (fromUrl)
 
 def :: [Command]
 def = [notBareRepo $ withOptions [templateOption, relaxedOption] $
@@ -48,20 +51,30 @@ perform relaxed cache url = do
 	v <- findEnclosures url
 	case v of
 		Just l | not (null l) -> do
-			mapM_ (downloadEnclosure relaxed cache) l
+			ok <- all id
+				<$> mapM (downloadEnclosure relaxed cache) l
+			next $ cleanup url ok
+		_ -> do
+			feedProblem url "bad feed content"
 			next $ return True
-		_ -> stop
+
+cleanup :: URLString -> Bool -> CommandCleanup
+cleanup url ok = do
+	when ok $
+		clearFeedProblem url
+	return ok
 
 data ToDownload = ToDownload
 	{ feed :: Feed
+	, feedurl :: URLString
 	, item :: Item
 	, location :: URLString
 	}
 
-mkToDownload :: Feed -> Item -> Maybe ToDownload
-mkToDownload f i = case getItemEnclosure i of
+mkToDownload :: Feed -> URLString -> Item -> Maybe ToDownload
+mkToDownload f u i = case getItemEnclosure i of
 	Nothing -> Nothing
-	Just (enclosureurl, _, _) -> Just $ ToDownload f i enclosureurl
+	Just (enclosureurl, _, _) -> Just $ ToDownload f u i enclosureurl
 
 data Cache = Cache
 	{ knownurls :: S.Set URLString
@@ -80,13 +93,10 @@ getCache opttemplate = ifM (Annex.getState Annex.force)
 	ret s = return $ Cache s tmpl
 
 findEnclosures :: URLString -> Annex (Maybe [ToDownload])
-findEnclosures url = go =<< downloadFeed url
+findEnclosures url = extract <$> downloadFeed url
   where
-	go Nothing = do
-		warning $ "failed to parse feed " ++ url
-		return Nothing
-	go (Just f) = return $ Just $
-		mapMaybe (mkToDownload f) (feedItems f)
+	extract Nothing = Nothing
+	extract (Just f) = Just $ mapMaybe (mkToDownload f url) (feedItems f)
 
 {- Feeds change, so a feed download cannot be resumed. -}
 downloadFeed :: URLString -> Annex (Maybe Feed)
@@ -95,16 +105,15 @@ downloadFeed url = do
 	liftIO $ withTmpFile "feed" $ \f h -> do
 		fileEncoding h
 		ifM (Url.download url [] [] f)
-			( parseFeedString <$> hGetContentsStrict h
+			( liftIO $ parseFeedString <$> hGetContentsStrict h
 			, return Nothing
 			)
 
 {- Avoids downloading any urls that are already known to be associated
  - with a file in the annex, unless forced. -}
-downloadEnclosure :: Bool -> Cache -> ToDownload -> Annex ()
+downloadEnclosure :: Bool -> Cache -> ToDownload -> Annex Bool
 downloadEnclosure relaxed cache enclosure
-	| S.member url (knownurls cache) =
-		whenM forced go
+	| S.member url (knownurls cache) = ifM forced (go, return True)
 	| otherwise = go
   where
   	forced = Annex.getState Annex.force
@@ -112,13 +121,17 @@ downloadEnclosure relaxed cache enclosure
 	go = do
 		dest <- makeunique (1 :: Integer) $ feedFile (template cache) enclosure
 		case dest of
-			Nothing -> noop
+			Nothing -> return True
 			Just f -> do
 				showStart "addurl" f
-				ifM (addUrlFile relaxed url f)
-					( showEndOk
-					, showEndFail
-					)
+				ok <- addUrlFile relaxed url f
+				if ok
+					then do
+						showEndOk
+						return True
+					else do
+						showEndFail
+						checkFeedBroken (feedurl enclosure)
 	{- Find a unique filename to save the url to.
 	 - If the file exists, prefixes it with a number.
 	 - When forced, the file may already exist and have the same
@@ -169,5 +182,41 @@ feedFile tmpl i = Utility.Format.format tmpl $ M.fromList
 	fieldMaybe k (Just v) = field k v
 
 	sanitize c
+		| c == '.' = c
 		| isSpace c || isPunctuation c || c == '/' = '_'
 		| otherwise = c
+
+{- Called when there is a problem with a feed.
+ - Throws an error if the feed is broken, otherwise shows a warning. -}
+feedProblem :: URLString -> String -> Annex ()
+feedProblem url message = ifM (checkFeedBroken url)
+	( error $ message ++ " (having repeated problems with this feed!)"
+	, warning $ "warning: " ++ message
+	)
+
+{- A feed is only broken if problems have occurred repeatedly, for at
+ - least 23 hours. -}
+checkFeedBroken :: URLString -> Annex Bool
+checkFeedBroken url = checkFeedBroken' url =<< feedState url
+checkFeedBroken' :: URLString -> FilePath -> Annex Bool
+checkFeedBroken' url f = do
+	prev <- maybe Nothing readish <$> liftIO (catchMaybeIO $ readFile f)
+	now <- liftIO getCurrentTime
+	case prev of
+		Nothing -> do
+			createAnnexDirectory (parentDir f)
+			liftIO $ writeFile f $ show now
+			return False
+		Just prevtime -> do
+			let broken = diffUTCTime now prevtime > 60 * 60 * 23
+			when broken $
+				-- Avoid repeatedly complaining about
+				-- broken feed.
+				clearFeedProblem url
+			return broken
+
+clearFeedProblem :: URLString -> Annex ()
+clearFeedProblem url = void $ liftIO . tryIO . removeFile =<< feedState url
+
+feedState :: URLString -> Annex FilePath
+feedState url = fromRepo . gitAnnexFeedState =<< fromUrl url Nothing

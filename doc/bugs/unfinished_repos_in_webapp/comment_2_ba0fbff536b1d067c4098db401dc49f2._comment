@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 2"
+ date="2013-08-08T08:33:32Z"
+ content="""
+Hi, I've sorted this now.  The IP address of my laptop had changed on the local network.  Fixing it then let the new fix fully work and the in-progress status of the bad repo went away.
+
+Is it right that in the UI I don't see the local LAN configured branch (which I setup for speed) - it all seems to come under the jabber account now and makes an appropriate choice?
+"""]]

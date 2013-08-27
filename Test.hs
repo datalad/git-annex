@@ -58,7 +58,7 @@ import qualified Utility.Env
 import qualified Utility.Gpg
 import qualified Utility.Matcher
 import qualified Utility.Exception
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 import qualified GitAnnex
 #endif
 
@@ -75,7 +75,7 @@ main = do
 	putStrLn "  (Do not be alarmed by odd output here; it's normal."
         putStrLn "   wait for the last line to see how it went.)"
 	rs <- runhunit =<< prepare False
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	directrs <- runhunit =<< prepare True
 #else
 	-- Windows is only going to use direct mode, so don't test twice.
@@ -221,7 +221,7 @@ test_add env = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 		git_annex env "add" ["dir"] @? "add of subdir failed"
 		createDirectory "dir2"
 		writeFile ("dir2" </> "foo") $ content annexedfile
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 		{- This does not work on Windows, for whatever reason. -}
 		setCurrentDirectory "dir"
 		git_annex env "add" [".." </> "dir2"] @? "add of ../subdir failed"
@@ -666,7 +666,6 @@ test_union_merge_regression env = "union merge regression" ~:
 						boolSystem "git" [Params "remote add r3", File ("../../" ++ r3)] @? "remote add"
 					git_annex env "get" [annexedfile] @? "get failed"
 					boolSystem "git" [Params "remote rm origin"] @? "remote rm"
-#ifndef __WINDOWS__
 				forM_ [r3, r2, r1] $ \r -> indir env r $
 					git_annex env "sync" [] @? "sync failed"
 				forM_ [r3, r2] $ \r -> indir env r $
@@ -678,7 +677,6 @@ test_union_merge_regression env = "union merge regression" ~:
 					 - mangled location log data and it
 					 - thought the file was still in r2 -}
 					git_annex_expectoutput env "find" ["--in", "r2"] []
-#endif
 
 {- Regression test for the automatic conflict resolution bug fixed
  - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
@@ -707,7 +705,6 @@ test_conflict_resolution env = "automatic conflict resolution" ~:
 						git_annex env "unlock" [annexedfile] @? "unlock failed"		
 						writeFile annexedfile newcontent
 					)
-#ifndef __WINDOWS__
 			{- Sync twice in r1 so it gets the conflict resolution
 			 - update from r2 -}
 			forM_ [r1, r2, r1] $ \r -> indir env r $ do
@@ -721,7 +718,6 @@ test_conflict_resolution env = "automatic conflict resolution" ~:
 			 - been put in it. -}
 			forM_ [r1, r2] $ \r -> indir env r $ do
 			 	git_annex env "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
-#endif
 
 test_map :: TestEnv -> Test
 test_map env = "git-annex map" ~: intmpclonerepo env $ do
@@ -761,7 +757,7 @@ test_whereis env = "git-annex whereis" ~: intmpclonerepo env $ do
 
 test_hook_remote :: TestEnv -> Test
 test_hook_remote env = "git-annex hook remote" ~: intmpclonerepo env $ do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	git_annex env "initremote" (words "foo type=hook encryption=none hooktype=foo") @? "initremote failed"
 	createDirectory dir
 	git_config "annex.foo-store-hook" $
@@ -802,17 +798,14 @@ test_directory_remote env = "git-annex directory remote" ~: intmpclonerepo env $
 	annexed_present annexedfile
 	git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
 	annexed_notpresent annexedfile
-#ifndef __WINDOWS__
-	-- moving from directory special remote fails on Windows TODO
 	git_annex env "move" [annexedfile, "--from", "foo"] @? "move --from directory remote failed"
 	annexed_present annexedfile
 	not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
-#endif
 
 test_rsync_remote :: TestEnv -> Test
 test_rsync_remote env = "git-annex rsync remote" ~: intmpclonerepo env $ do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	createDirectory "dir"
 	git_annex env "initremote" (words $ "foo type=rsync encryption=none rsyncurl=dir") @? "initremote failed"
 	git_annex env "get" [annexedfile] @? "get of file failed"
@@ -849,7 +842,7 @@ test_bup_remote env = "git-annex bup remote" ~: intmpclonerepo env $ when Build.
 -- gpg is not a build dependency, so only test when it's available
 test_crypto :: TestEnv -> Test
 test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ whenM (Utility.Path.inPath Utility.Gpg.gpgcmd) $ do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do
 		createDirectory "dir"
@@ -882,7 +875,7 @@ test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ whenM (Utility.Path
 -- (when the OS allows) so test coverage collection works.
 git_annex :: TestEnv -> String -> [String] -> IO Bool
 git_annex env command params = do
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	forM_ (M.toList env) $ \(var, val) ->
 		Utility.Env.setEnv var val True
 

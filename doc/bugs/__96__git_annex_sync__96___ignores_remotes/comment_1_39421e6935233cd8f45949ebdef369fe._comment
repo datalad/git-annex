@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-08-07T16:13:31Z"
+ content="""
+It seems to me that you must have set `git config remote.zoidberg.annex-sync false`
+(or clicked around in the webapp and caused it to set that). If you set annex-sync back to true, it will sync with all remotes by default.
+"""]]

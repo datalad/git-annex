@@ -10,11 +10,14 @@
 module Annex.Environment where
 
 import Common.Annex
-import Utility.Env
 import Utility.UserInfo
 import qualified Git.Config
 import Config
 import Annex.Exception
+
+#ifndef mingw32_HOST_OS
+import Utility.Env
+#endif
 
 {- Checks that the system's environment allows git to function.
  - Git requires a GECOS username, or suitable git configuration, or

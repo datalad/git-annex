@@ -10,7 +10,7 @@ module Git.Merge where
 import Common
 import Git
 import Git.Command
-import Git.Version
+import Git.BuildVersion
 
 {- Avoids recent git's interactive merge. -}
 mergeNonInteractive :: Ref -> Repo -> IO Bool

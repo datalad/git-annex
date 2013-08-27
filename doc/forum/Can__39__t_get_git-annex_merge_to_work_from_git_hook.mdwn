@@ -1,0 +1,41 @@
+I'm trying to automate syncing of two repos A and B. My goal is to run `git annex sync` from A and have the working copy of B updated automatically. According to the manual page, `git annex merge` should to the trick. It works just fine when I run it manually in B, but not when I run it from the post-receive hook, as suggested in the manual page.
+
+Here is a test script that illustrates the issue: <https://gist.github.com/anonymous/6197019>
+
+The output I get:
+
+    [...]
+    file1 exists after manual git annex merge
+    [...]
+    file2 does not exist after git annex merge in post-receive
+
+From the output I can see that `git annex merge` is run on the remote end, and seems to do it's thing (`file2` is added):
+
+    remote: merge git-annex (merging synced/git-annex into git-annex...)
+    remote: ok
+    remote: merge synced/master Updating 6e5bfba..0dcbcfd
+    remote: Fast-forward
+    remote:  file2 |    1 +
+    remote:  1 file changed, 1 insertion(+)
+    remote:  create mode 120000 file2
+    remote: 
+    remote: ok
+
+However, the working copy in B does not have the file `file2`. Even worse, `git status` in B shows the file as deleted:
+
+    # On branch master
+    # Your branch is ahead of 'origin/master' by 2 commits.
+    #
+    # Changes not staged for commit:
+    #   (use "git add/rm <file>..." to update what will be committed)
+    #   (use "git checkout -- <file>..." to discard changes in working directory)
+    #
+    #	deleted:    file2
+    #
+    no changes added to commit (use "git add" and/or "git commit -a")
+
+So when running `git annex sync` from B now, the file will be deleted from A as well, which is not what I expected.
+
+This is on Ubuntu 12.04, using the precompiled git-annex tarball (amd64).
+
+What am I doing wrong?

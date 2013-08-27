@@ -26,10 +26,12 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-rm -rf MissingH-1.2.0.0
+MISSINGH_VERSION="1.2.0.1"
+
+rm -rf MissingH-${MISSINGH_VERSION}
 cabal unpack MissingH
-cd MissingH-1.2.0.0
-withcyg patch -p1 <../standalone/windows/haskell-patches/MissingH_1.2.0.0-0001-hack-around-strange-build-problem-in-jenkins-autobui.patch
+cd MissingH-${MISSINGH_VERSION}
+withcyg patch -p1 <../standalone/windows/haskell-patches/ccc5967426a14eb7e8978277ed4fa937f8e0c514.patch
 cabal install || true
 cd ..
 

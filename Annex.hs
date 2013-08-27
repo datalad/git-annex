@@ -43,6 +43,7 @@ import qualified Git
 import qualified Git.Config
 import Git.CatFile
 import Git.CheckAttr
+import Git.CheckIgnore
 import Git.SharedRepository
 import qualified Git.Queue
 import Types.Backend
@@ -91,6 +92,7 @@ data AnnexState = AnnexState
 	, repoqueue :: Maybe Git.Queue.Queue
 	, catfilehandles :: M.Map FilePath CatFileHandle
 	, checkattrhandle :: Maybe CheckAttrHandle
+	, checkignorehandle :: Maybe (Maybe CheckIgnoreHandle)
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
 	, limit :: Matcher (FileInfo -> Annex Bool)
@@ -123,6 +125,7 @@ newState gitrepo = AnnexState
 	, repoqueue = Nothing
 	, catfilehandles = M.empty
 	, checkattrhandle = Nothing
+	, checkignorehandle = Nothing
 	, forcebackend = Nothing
 	, forcenumcopies = Nothing
 	, limit = Left []

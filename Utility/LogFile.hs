@@ -58,8 +58,8 @@ redirLog logfd = do
 redirLog _ = error "redirLog TODO"
 #endif
 
-#ifndef mingw32_HOST_OS
 redir :: Fd -> Fd -> IO ()
+#ifndef mingw32_HOST_OS
 redir newh h = do
 	closeFd h
 	void $ dupTo newh h

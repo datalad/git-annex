@@ -28,6 +28,8 @@ module Locations (
 	gitAnnexFsckState,
 	gitAnnexTransferDir,
 	gitAnnexCredsDir,
+	gitAnnexFeedStateDir,
+	gitAnnexFeedState,
 	gitAnnexMergeDir,
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
@@ -189,6 +191,13 @@ gitAnnexFsckState r = gitAnnexDir r </> "fsckstate"
  - remotes. -}
 gitAnnexCredsDir :: Git.Repo -> FilePath
 gitAnnexCredsDir r = addTrailingPathSeparator $ gitAnnexDir r </> "creds"
+
+{- .git/annex/feeds/ is used to record per-key (url) state by importfeeds -}
+gitAnnexFeedStateDir :: Git.Repo -> FilePath
+gitAnnexFeedStateDir r = addTrailingPathSeparator $ gitAnnexDir r </> "feedstate"
+
+gitAnnexFeedState :: Key -> Git.Repo -> FilePath
+gitAnnexFeedState k r = gitAnnexFeedStateDir r </> keyFile k
 
 {- .git/annex/merge/ is used for direct mode merges. -}
 gitAnnexMergeDir :: Git.Repo -> FilePath

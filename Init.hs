@@ -26,21 +26,23 @@ import qualified Annex.Branch
 import Logs.UUID
 import Annex.Version
 import Annex.UUID
-import Utility.UserInfo
 import Utility.Shell
-import Utility.FileMode
 import Config
 import Annex.Direct
 import Annex.Content.Direct
 import Annex.Environment
 import Backend
+#ifndef mingw32_HOST_OS
+import Utility.UserInfo
+import Utility.FileMode
+#endif
 
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
 genDescription Nothing = do
 	reldir <- liftIO . relHome =<< fromRepo Git.repoPath
 	hostname <- fromMaybe "" <$> liftIO getHostname
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	let at = if null hostname then "" else "@"
 	username <- liftIO myUserName
 	return $ concat [username, at, hostname, ":", reldir]
@@ -129,7 +131,7 @@ preCommitScript = unlines
  - or removing write access from files. -}
 probeCrippledFileSystem :: Annex Bool
 probeCrippledFileSystem = do
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 	return True
 #else
 	tmp <- fromRepo gitAnnexTmpDir
@@ -177,7 +179,7 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 
 probeFifoSupport :: Annex Bool
 probeFifoSupport = do
-#ifdef __WINDOWS__
+#ifdef mingw32_HOST_OS
 	return False
 #else
 	tmp <- fromRepo gitAnnexTmpDir

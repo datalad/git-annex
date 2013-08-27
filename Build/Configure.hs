@@ -17,6 +17,7 @@ import Utility.SafeCommand
 import Utility.Monad
 import Utility.Exception
 import Utility.ExternalSHA
+import qualified Git.Version
 
 tests :: [TestCase]
 tests =
@@ -121,10 +122,8 @@ getChangelogVersion = do
 	middle = drop 1 . init
 
 getGitVersion :: Test
-getGitVersion = do
-	s <- readProcess "git" ["--version"] ""
-	let version = unwords $ drop 2 $ words $ head $ lines s
-	return $ Config "gitversion" (StringConfig version)
+getGitVersion = Config "gitversion" . StringConfig . show
+	<$> Git.Version.installed
 
 getSshConnectionCaching :: Test
 getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>

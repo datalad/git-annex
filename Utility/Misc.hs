@@ -17,9 +17,8 @@ import Data.List
 import Control.Applicative
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getAnyProcessStatus)
-#endif
-
 import Utility.Exception
+#endif
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}

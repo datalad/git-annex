@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2013-08-06T14:22:03Z"
+ content="""
+To expand a bit on the use case:
+
+I have several migration directories which I simply moved to new systems or disks with the help of `cp -ax` or `rsync`.
+As I don't _need_ the data per se and merely want to hold on to it in case I ever happen to need it again and as disk space is laughably cheap, I have a lot of duplicates.
+While I can at least detect bit flips with the help of checksum lists, cleaning those duplicates of duplicated duplicates is quite some effort.
+To make things worse, photos, music, videos, letter and whatnot are thrown into the same container directories.
+
+All in all, getting data out of those data dumps and into a clean structure is quite an effort.
+`git annex import --lazy` would help with this effort as I could start with the first directory, sort stuff by hand, and annex it.
+As soon as data lives in any of my annexes, I could simply run `git annex import --lazy` to get rid of all duplicates while retaining the unannexed files.
+Iterating through this process a few times, I will be left with clean annexes on the one hand and stuff I can simply delete on the other hand.
+
+I could script all this by hand on my own machine, but I am _certain_ that others would find easy, integrated, and unit tested support for whittling down data dumps over time useful.
+"""]]

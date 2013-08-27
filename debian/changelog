@@ -1,3 +1,17 @@
+git-annex (4.20130815) unstable; urgency=low
+
+  * assistant, watcher: .gitignore files and other git ignores are now
+    honored, when git 1.8.4 or newer is installed.
+    (Thanks, Adam Spiers, for getting the necessary support into git for this.)
+  * importfeed: Ignores transient problems with feeds. Only exits nonzero
+    when a feed has repeatedly had a problems for at least 1 day.
+  * importfeed: Fix handling of dots in extensions.
+  * Windows: Added support for encrypted special remotes.
+  * Windows: Fixed permissions problem that prevented removing files
+    from directory special remote. Directory special remotes now fully usable.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 15 Aug 2013 10:14:33 +0200
+
 git-annex (4.20130802~bpo70+2) wheezy-backports; urgency=low
 
   * Fix dependency on libghc-gnutls-dev.
