@@ -8,6 +8,8 @@ git-annex (4.20130816) UNRELEASED; urgency=low
   * unused: Is now a minimum of 30 times faster, and typically many
     more times than that (when a repository has several branches).
     (Thanks, guilhem for the patch.)
+  * Android: Fix bug in terminal app that caused it to spin using much 
+    CPU and battery. This problem was introduced in version 4.20130601.
   * unused: Fix bugs in two edge cases involving manually staged changes.
     (Thanks, guilhem for the patch.)
   * Debian: Run the builtin test suite as an autopkgtest.

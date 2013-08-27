@@ -501,8 +501,8 @@ index 8a3a4ac..824025d 100644
 +           	 
 +			    /* Reading from the fifo blocks until a url is written
 +			     * to it. */
-+			    BufferedReader buf = new BufferedReader(new FileReader(webAppFifo));
 +			    while (true) {
++			            BufferedReader buf = new BufferedReader(new FileReader(webAppFifo));
 +				    String s = buf.readLine();
 +				    try {
 +					    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(s));

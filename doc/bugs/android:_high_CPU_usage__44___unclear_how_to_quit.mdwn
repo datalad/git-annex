@@ -23,3 +23,6 @@ the current (4.20130826-g46f422) version on Android.
 
 # End of transcript or log.
 """]]
+
+> [[done]]; I fixed the bug which turned out to be a stupid
+> minunderstanding of how a java library worked. --[[Joey]]
