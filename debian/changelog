@@ -1,4 +1,4 @@
-git-annex (4.20130815) unstable; urgency=low
+git-annex (4.20130815~bpo70+1) wheezy-backports; urgency=low
 
   * assistant, watcher: .gitignore files and other git ignores are now
     honored, when git 1.8.4 or newer is installed.
@@ -10,7 +10,7 @@ git-annex (4.20130815) unstable; urgency=low
   * Windows: Fixed permissions problem that prevented removing files
     from directory special remote. Directory special remotes now fully usable.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 15 Aug 2013 10:14:33 +0200
+ -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 13:28:32 -0400
 
 git-annex (4.20130802~bpo70+2) wheezy-backports; urgency=low
 
