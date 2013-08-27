@@ -1,4 +1,4 @@
-git-annex (4.20130816) UNRELEASED; urgency=low
+git-annex (4.20130827) unstable; urgency=low
 
   * Youtube support! (And 53 other video hosts). When quvi is installed,
     git-annex addurl automatically uses it to detect when an page is
@@ -8,26 +8,25 @@ git-annex (4.20130816) UNRELEASED; urgency=low
   * unused: Is now a minimum of 30 times faster, and typically many
     more times than that (when a repository has several branches).
     (Thanks, guilhem for the patch.)
-  * Android: Fix bug in terminal app that caused it to spin using much 
-    CPU and battery. This problem was introduced in version 4.20130601.
   * unused: Fix bugs in two edge cases involving manually staged changes.
     (Thanks, guilhem for the patch.)
-  * Debian: Run the builtin test suite as an autopkgtest.
-  * Debian: Recommend ssh-askpass, which ssh will use when the assistant
-    is run w/o a tty. Closes: #719832
+  * Android: Fix bug in terminal app that caused it to spin using much 
+    CPU and battery. This problem was introduced in version 4.20130601.
   * sync, merge: Bug fix: Don't try to merge into master when in a bare repo.
   * import: Add options to control handling of duplicate files:
     --duplicate, --deduplicate, and --clean-duplicates
   * mirror: New command, makes two repositories contain the same set of files.
   * Set --clobber when running wget to ensure resuming works properly.
-  * unused: Pay attention to symlinks that are not yet staged in the index.
   * Unescape characters in 'file://...' URIs. (Thanks, guilhem for the patch.)
   * Better error message when trying to use a git remote that has annex.ignore
     set.
   * Fix bug that caused typechanged symlinks to be assumed to be unlocked
     files, so they were added to the annex by the pre-commit hook.
+  * Debian: Run the builtin test suite as an autopkgtest.
+  * Debian: Recommend ssh-askpass, which ssh will use when the assistant
+    is run w/o a tty. Closes: #719832
 
- -- Joey Hess <joeyh@debian.org>  Thu, 15 Aug 2013 15:47:52 +0200
+ -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
 
 git-annex (4.20130815) unstable; urgency=low
 
