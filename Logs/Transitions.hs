@@ -1,0 +1,94 @@
+{- git-annex transitions log
+ -
+ - This is used to record transitions that have been performed on the
+ - git-annex branch, and when the transition was first started.
+ -
+ - We can quickly detect when the local branch has already had an transition
+ - done that is listed in the remote branch by checking that the local
+ - branch contains the same transition, with the same or newer start time.
+ -
+ - When a remote branch that has had an transition performed on it
+ - becomes available for merging into the local git-annex branch,
+ - the transition is first performed on the local branch.
+ -
+ - When merging a remote branch into the local git-annex branch,
+ - all transitions that have been performed on the local branch must also
+ - have been performed on the remote branch already. (Or it would be
+ - possible to perform the transitions on a fixup branch and merge it,
+ - but that would be expensive.)
+ -
+ - Copyright 2013 Joey Hess <joey@kitenet.net>
+ -
+ - Licensed under the GNU GPL version 3 or higher.
+ -}
+
+module Logs.Transitions where
+
+import Data.Time.Clock.POSIX
+import Data.Time
+import System.Locale
+import qualified Data.Set as S
+
+import Common.Annex
+
+transitionsLog :: FilePath
+transitionsLog = "transitions.log"
+
+data Transition
+	= ForgetGitHistory
+	| ForgetDeadRemotes
+	deriving (Show, Ord, Eq, Read)
+
+data TransitionLine = TransitionLine
+	{ transitionStarted :: POSIXTime
+	, transition :: Transition
+	} deriving (Show, Ord, Eq)
+
+type Transitions = S.Set TransitionLine
+
+addTransition :: POSIXTime -> Transition -> Transitions -> Transitions
+addTransition ts t = S.insert $ TransitionLine ts t
+
+showTransitions :: Transitions -> String
+showTransitions = unlines . map showTransitionLine . S.elems
+
+{- If the log contains new transitions we don't support, returns Nothing. -}
+parseTransitions :: String -> Maybe Transitions
+parseTransitions = check . map parseTransitionLine . lines
+  where
+  	check l
+		| all isJust l = Just $ S.fromList $ catMaybes l
+		| otherwise = Nothing
+
+showTransitionLine :: TransitionLine -> String
+showTransitionLine (TransitionLine ts t) = unwords [show t, show ts]
+
+parseTransitionLine :: String -> Maybe TransitionLine
+parseTransitionLine s = TransitionLine <$> pdate ds <*> readish ts
+  where
+  	ws = words s
+  	ts = Prelude.head ws
+	ds = unwords $ Prelude.tail ws
+	pdate = parseTime defaultTimeLocale "%s%Qs" >=*> utcTimeToPOSIXSeconds
+
+{- Compares two sets of transitions, and returns a list of any transitions
+ - from the second set that have not yet been perfomed in the first,
+ - and a list of any transitions from the first set that have not yet been
+ - performed in the second. -}
+diffTransitions :: Transitions -> Transitions -> ([Transition], [Transition])
+diffTransitions a b = (b `diff` a, a `diff` b)
+  where
+  	diff x y = map transition $ S.elems $ S.difference x y
+
+sameTransitions :: Transitions -> Transitions -> Bool
+sameTransitions a b = let (x, y) = diffTransitions a b in null x && null y
+
+{- Typically ran with Annex.Branch.change, but we can't import Annex.Branch
+ - here since it depends on this module. -}
+recordTransition :: (FilePath -> (String -> String) -> Annex ()) -> Transition -> Annex ()
+recordTransition changer o = do
+	t <- liftIO getPOSIXTime
+	changer transitionsLog $
+		showTransitions . addTransition t o . fromMaybe badlog . parseTransitions
+  where
+  	badlog = error $ "unknown transitions exist in " ++ transitionsLog
