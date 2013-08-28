@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="203.45.2.230"
+ subject="comment 3"
+ date="2013-08-28T01:32:38Z"
+ content="""
+One thing I do slightly differently is put comments in my ```feeds``` file so I know what feed is what...
+
+    # NPR - Wait Wait... Don't Tell Me!
+    http://www.npr.org/rss/podcast.php?id=35
+    # NPR - Car Talk
+    http://www.npr.org/rss/podcast.php?id=510208
+
+
+Then I use 
+
+    grep -v '^#' feeds| xargs git-annex importfeed --relaxed
+
+I reckon that makes maintenance easier.
+"""]]
