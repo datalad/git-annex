@@ -488,7 +488,7 @@ subdirectories).
   be located.
   
   To also prune references to remotes that have been marked as dead,
-  specify --forget-dead.
+  specify --dead.
 
   When this rewritten branch is merged into other clones of
   the repository, git-annex will automatically perform the same rewriting

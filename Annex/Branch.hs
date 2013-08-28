@@ -402,6 +402,7 @@ handleTransitions :: Transitions -> [Git.Ref] -> Annex (Maybe (Git.Branch, [Git.
 handleTransitions localts refs = do
 	m <- M.fromList <$> mapM getreftransition refs
 	let remotets = M.elems m
+	liftIO $ print ("transitions", localts, remotets)
 	if all (localts ==) remotets
 		then return Nothing
 		else do

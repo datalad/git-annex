@@ -50,6 +50,9 @@ describeTransition :: Transition -> String
 describeTransition ForgetGitHistory = "forget git history"
 describeTransition ForgetDeadRemotes = "forget dead remotes"
 
+noTransitions :: Transitions
+noTransitions = S.empty
+
 addTransition :: POSIXTime -> Transition -> Transitions -> Transitions
 addTransition ts t = S.insert $ TransitionLine ts t
 
@@ -91,8 +94,7 @@ transitionList = map transition . S.elems
 
 {- Typically ran with Annex.Branch.change, but we can't import Annex.Branch
  - here since it depends on this module. -}
-recordTransition :: (FilePath -> (String -> String) -> Annex ()) -> Transition -> Annex ()
-recordTransition changer o = do
-	t <- liftIO getPOSIXTime
+recordTransitions :: (FilePath -> (String -> String) -> Annex ()) -> Transitions -> Annex ()
+recordTransitions changer t = do
 	changer transitionsLog $
-		showTransitions . addTransition t o . parseTransitionsStrictly "local"
+		showTransitions . S.union t . parseTransitionsStrictly "local"
