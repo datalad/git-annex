@@ -880,7 +880,7 @@ test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ whenM (Utility.Path
 		let a cmd = git_annex env cmd
 			[ "foo"
 			, "type=directory"
-			, "encryption=" ++ Utility.Gpg.testKeyId
+			, "keyid=" ++ Utility.Gpg.testKeyId
 			, "directory=dir"
 			, "highRandomQuality=false"
 			]

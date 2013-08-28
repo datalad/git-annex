@@ -6,8 +6,9 @@ Encryption is needed when using [[special_remotes]] like Amazon S3, where
 file content is sent to an untrusted party who does not have access to the
 git repository.
 
-Such an encrypted remote uses strong GPG encryption on the contents of files,
-as well as HMAC hashing of the filenames. The size of the encrypted files,
+Such an encrypted remote uses strong
+[[symmetric_encryptiondesign/encryption]] on the contents of files, as
+well as HMAC hashing of the filenames. The size of the encrypted files,
 and access patterns of the data, should be the only clues to what is
 stored in such a remote.
 
@@ -34,18 +35,25 @@ to access content that has already been stored in the special remote.
 To add a new key, just run `git annex enableremote` specifying the
 new encryption key:
 
-	git annex enableremote myremote encryption=788A3F4C
+	git annex enableremote myremote keyid+=788A3F4C
 
-Note that once a key has been given access to a remote, it's not
-possible to revoke that access, short of deleting the remote. See
-[[encryption_design|design/encryption]] for other security risks
-associated with encryption.
+While a key can later be removed from the list, it is to be noted that
+it does **not** necessarily prevent the owner of the private material
+from accessing data on the remote (which is by design impossible, short
+of deleting the remote). In fact the only sound use of `keyid-=` is
+probably to replace a (sub-)key by another, where the private part of
+both is owned by the same person/entity:
+
+	git annex enableremote myremote keyid-=2512E3C7 keyid+=788A3F4C
+
+See also [[encryption_design|design/encryption]] for other security
+risks associated with encryption.
 
 ## shared cipher mode
 
 Alternatively, you can configure git-annex to use a shared cipher to
 encrypt data stored in a remote. This shared cipher is stored,
-**unencrypted** in the git repository. So it's shared amoung every
+**unencrypted** in the git repository. So it's shared among every
 clone of the git repository. The advantage is you don't need to set up gpg
 keys. The disadvantage is that this is **insecure** unless you
 trust every clone of the git repository with access to the encrypted data

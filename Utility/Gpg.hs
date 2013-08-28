@@ -24,7 +24,7 @@ import Utility.Env
 import Utility.Tmp
 #endif
 
-newtype KeyIds = KeyIds [String]
+newtype KeyIds = KeyIds { keyIds :: [String] }
 	deriving (Ord, Eq)
 
 {- If a specific gpg command was found at configure time, use it.

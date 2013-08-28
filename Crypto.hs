@@ -78,15 +78,22 @@ genSharedCipher :: Bool -> IO StorableCipher
 genSharedCipher highQuality =
 	SharedCipher <$> Gpg.genRandom highQuality cipherSize
 
-{- Updates an existing Cipher, re-encrypting it to add a keyid. -}
-updateEncryptedCipher :: String -> StorableCipher -> IO StorableCipher
-updateEncryptedCipher _ (SharedCipher _) = undefined
-updateEncryptedCipher keyid encipher@(EncryptedCipher _ ks) = do
-	ks' <- Gpg.findPubKeys keyid
+{- Updates an existing Cipher, re-encrypting it to add or remove keyids,
+ - depending on whether the first component is True or False. -}
+updateEncryptedCipher :: [(Bool, String)] -> StorableCipher -> IO StorableCipher
+updateEncryptedCipher _ SharedCipher{} = undefined
+updateEncryptedCipher [] encipher = return encipher
+updateEncryptedCipher newkeys encipher@(EncryptedCipher _ (KeyIds ks)) = do
+	dropKeys <- listKeyIds [ k | (False, k) <- newkeys ]
+	forM_ dropKeys $ \k -> unless (k `elem` ks) $
+		error $ "Key " ++ k ++ " is not granted access."
+	addKeys <- listKeyIds [ k | (True, k) <- newkeys ]
+	let ks' = (addKeys ++ ks) \\ dropKeys
+	when (null ks') $ error "The new access list would become empty."
 	cipher <- decryptCipher encipher
-	encryptCipher cipher (merge ks ks')
+	encryptCipher cipher $ KeyIds ks'
   where
-	merge (KeyIds a) (KeyIds b) = KeyIds $ a ++ b
+	listKeyIds = mapM (Gpg.findPubKeys >=*> keyIds) >=*> concat
 
 describeCipher :: StorableCipher -> String
 describeCipher (SharedCipher _) = "shared cipher"

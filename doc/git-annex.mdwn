@@ -312,10 +312,11 @@ subdirectories).
   (or encryption=emailaddress) to specify a gpg key that can access
   the encrypted special remote.
 
-  Note that with encryption enabled, a gpg key is created. This requires
-  sufficient entropy. If initremote seems to hang or take a long time
-  while generating the key, you may want to ctrl-c it and re-run with --fast,
-  which causes it to use a lower-quality source of randomness.
+  Note that with encryption enabled, a cryptographic key is created.
+  This requires sufficient entropy. If initremote seems to hang or take
+  a long time while generating the key, you may want to ctrl-c it and
+  re-run with --fast, which causes it to use a lower-quality source of
+  randomness.
 
   Example Amazon S3 remote:
 
@@ -336,10 +337,20 @@ subdirectories).
 
   This command can also be used to modify the configuration of an existing
   special remote, by specifying new values for parameters that were originally
-  set when using initremote. For example, to add a new gpg key to the keys
-  that can access an encrypted remote:
+  set when using initremote. With the exception of some configuration values such
+  as the encryption scheme scheme, which cannot be changed once the
+  remote has been created.
 
-	git annex enableremote mys3 encryption=friend@example.com
+  If encryption is enabled and the remote's access limited to one or
+  more OpenPGP key(s), it is possible to give access to another key ID
+  by specifing the keyid+= parameter. While a key can later be removed
+  from the list, it is to be noted that it does NOT necessarily prevent
+  the owner of the private material from accessing data on the remote
+  (which is by design impossible, short of deleting the remote);
+  however, a fine use-case of keyid-= is to replace a revoked key by
+  a new one superseeding it:
+
+	git annex enableremote mys3 keyid-=revokedkey keyid+=newkey
 
 * trust [repository ...]
 

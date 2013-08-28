@@ -23,27 +23,37 @@ import Utility.Metered
  - updated to be accessible to an additional encryption key. Or the user
  - could opt to use a shared cipher, which is stored unencrypted. -}
 encryptionSetup :: RemoteConfig -> Annex RemoteConfig
-encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
-	(Nothing, Nothing) -> error "Specify encryption=key or encryption=none or encryption=shared"
-	(Just "none", Nothing) -> return c
-	(Nothing, Just _) -> return c
-	(Just "shared", Just (SharedCipher _)) -> return c
-	(Just "none", Just _) -> cannotchange
-	(Just "shared", Just (EncryptedCipher _ _)) -> cannotchange
-	(Just _, Just (SharedCipher _)) -> cannotchange
-	(Just "shared", Nothing) -> use "encryption setup" . genSharedCipher
-		=<< highRandomQuality
-	(Just keyid, Nothing) -> use "encryption setup" . genEncryptedCipher keyid
-		=<< highRandomQuality
-	(Just keyid, Just v) -> use "encryption update" $ updateEncryptedCipher keyid v
+encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
   where
-	cannotchange = error "Cannot change encryption type of existing remote."
+	-- The type of encryption
+	encryption = M.lookup "encryption" c
+	-- Generate a new cipher, depending on the chosen encryption scheme
+	genCipher = case encryption of
+		Just "none" -> return c
+		Just "shared" -> use "encryption setup" . genSharedCipher
+			=<< highRandomQuality
+		-- hybrid encryption by default
+		_ | maybe True (== "hybrid") encryption ->
+			use "encryption setup" . genEncryptedCipher key
+				=<< highRandomQuality
+		_ -> error "Specify encryption=none or encryption=shared or encryption=hybrid (default)."
+	key = fromMaybe (error "Specifiy keyid=...") $ M.lookup "keyid" c
+	newkeys = maybe [] (\k -> [(True,k)]) (M.lookup "keyid+" c) ++
+		maybe [] (\k -> [(False,k)]) (M.lookup "keyid-" c)
+	-- Update an existing cipher if possible.
+	updateCipher v
+		| isJust encryption = error "Cannot set encryption type of existing remote."
+		| otherwise = case v of
+			SharedCipher{} -> return c
+			EncryptedCipher{} ->
+				use "encryption update" $ updateEncryptedCipher newkeys v
 	use m a = do
 		showNote m
 		cipher <- liftIO a
 		showNote $ describeCipher cipher
-		return $ M.delete "encryption" $ M.delete "highRandomQuality" $
-				storeCipher c cipher
+		return $ flip storeCipher cipher $ foldr M.delete c
+				[ "keyid", "keyid+", "keyid-"
+				, "encryption", "highRandomQuality" ]
 	highRandomQuality = 
 		(&&) (maybe True ( /= "false") $ M.lookup "highRandomQuality" c)
 			<$> fmap not (Annex.getState Annex.fast)
