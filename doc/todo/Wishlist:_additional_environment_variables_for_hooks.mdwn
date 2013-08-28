@@ -1,0 +1,14 @@
+It would be nice if a couple of additional environment variables to be set for hook uses.
+
+In particular:
+
+    GIT_ANNEX_DIRECT=`git config annex.direct`
+
+and
+
+    GIT_TOP_LEVEL=`git rev-parse --show-toplevel`
+
+
+I've made some changes to flickrannex to allow the sub-directories above the uploaded image to be added as tags.  This change has been merged into trunk: [[https://github.com/TobiasTheViking/flickrannex]]
+
+What I needed was both the environment variables mentioned above.  One is set as part of the annex-hook and the other I guestimate from the file path.  If it was set in git-annex it would be much cleaner (and accurate).  So...I think this info would be useful for other hook.
