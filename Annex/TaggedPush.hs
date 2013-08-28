@@ -19,7 +19,7 @@ import Utility.Base64
  - the UUID of the repo that will be pushing it, and possibly with other
  - information.
  -
- - Pushing to branches on the remote that have out uuid in them is ugly,
+ - Pushing to branches on the remote that have our uuid in them is ugly,
  - but it reserves those branches for pushing by us, and so our pushes will
  - never conflict with other pushes.
  -
