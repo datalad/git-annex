@@ -1,6 +1,6 @@
 {- management of the git-annex branch
  -
- - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -22,9 +22,12 @@ module Annex.Branch (
 	commit,
 	files,
 	withIndex,
+	performTransitions,
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Set as S
+import qualified Data.Map as M
 
 import Common.Annex
 import Annex.BranchState
@@ -32,6 +35,7 @@ import Annex.Journal
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
+import qualified Git.Sha
 import qualified Git.Branch
 import qualified Git.UnionMerge
 import qualified Git.UpdateIndex
@@ -42,6 +46,8 @@ import Annex.CatFile
 import Annex.Perms
 import qualified Annex
 import Utility.Env
+import Logs.Transitions
+import Annex.ReplaceFile
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -110,6 +116,9 @@ forceUpdate = updateTo =<< siblingBranches
  - later get staged, and might overwrite changes made during the merge.
  - This is only done if some of the Refs do need to be merged.
  -
+ - Also handles performing any Transitions that have not yet been
+ - performed, in either the local branch, or the Refs.
+ -
  - Returns True if any refs were merged in, False otherwise.
  -}
 updateTo :: [(Git.Ref, Git.Branch)] -> Annex Bool
@@ -117,7 +126,8 @@ updateTo pairs = do
 	-- ensure branch exists, and get its current ref
 	branchref <- getBranch
 	dirty <- journalDirty
-	(refs, branches) <- unzip <$> filterM isnewer pairs
+	ignoredrefs <- getIgnoredRefs
+	(refs, branches) <- unzip <$> filterM (isnewer ignoredrefs) pairs
 	if null refs
 		{- Even when no refs need to be merged, the index
 		 - may still be updated if the branch has gotten ahead 
@@ -132,7 +142,9 @@ updateTo pairs = do
 		else lockJournal $ go branchref dirty refs branches
 	return $ not $ null refs
   where
-	isnewer (r, _) = inRepo $ Git.Branch.changed fullname r
+	isnewer ignoredrefs (r, _)
+		| S.member r ignoredrefs = return False
+		| otherwise = inRepo $ Git.Branch.changed fullname r
 	go branchref dirty refs branches = withIndex $ do
 		cleanjournal <- if dirty then stageJournal else return noop
 		let merge_desc = if null branches
@@ -140,16 +152,23 @@ updateTo pairs = do
 			else "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
 				" into " ++ show name
+		localtransitions <- parseTransitionsStrictly "local"
+			<$> getStale transitionsLog
 		unless (null branches) $ do
 			showSideAction merge_desc
 			mergeIndex refs
-		ff <- if dirty
-			then return False
-			else inRepo $ Git.Branch.fastForward fullname refs
-		if ff
-			then updateIndex branchref
-			else commitBranch branchref merge_desc
-				(nub $ fullname:refs)
+		let commitrefs = nub $ fullname:refs
+		transitioned <- handleTransitions localtransitions commitrefs
+		case transitioned of
+			Nothing -> do
+				ff <- if dirty
+					then return False
+					else inRepo $ Git.Branch.fastForward fullname refs
+				if ff
+					then updateIndex branchref
+					else commitBranch branchref merge_desc commitrefs
+			Just (branchref', commitrefs') ->
+				commitBranch branchref' merge_desc commitrefs'
 		liftIO cleanjournal
 
 {- Gets the content of a file, which may be in the journal, or in the index
@@ -361,3 +380,76 @@ stageJournal = withIndex $ do
 		sha <- hashFile h path
 		streamer $ Git.UpdateIndex.updateIndexLine
 			sha FileBlob (asTopFilePath $ fileJournal file)
+
+{- This is run after the refs have been merged into the index,
+ - but before the result is committed to the branch.
+ - Which is why it's passed the contents of the local branches's
+ - transition log before that merge took place.
+ -
+ - When the refs contain transitions that have not yet been done locally,
+ - the transitions are performed on the index, and a new branch
+ - is created from the result, and returned.
+ -
+ - When there are transitions recorded locally that have not been done
+ - to the remote refs, the transitions are performed in the index,
+ - and the existing branch is returned. In this case, the untransitioned
+ - remote refs cannot be merged into the branch (since transitions
+ - throw away history), so none of them are included in the returned
+ - list of refs, and they are added to the list of refs to ignore,
+ - to avoid re-merging content from them again.
+ -}
+handleTransitions :: Transitions -> [Git.Ref] -> Annex (Maybe (Git.Branch, [Git.Ref]))
+handleTransitions localts refs = do
+	m <- M.fromList <$> mapM getreftransition refs
+	let remotets = M.elems m
+	if all (localts ==) remotets
+		then return Nothing
+		else do
+			let allts = combineTransitions (localts:remotets)
+			let (transitionedrefs, untransitionedrefs) =
+				partition (\r -> M.lookup r m == Just allts) refs
+			transitionedbranch <- performTransitions allts (localts /= allts)
+			ignoreRefs untransitionedrefs
+			return $ Just (transitionedbranch, transitionedrefs)
+  where
+  	getreftransition ref = do
+		ts <- parseTransitionsStrictly "remote" . L.unpack
+			<$> catFile ref transitionsLog
+		return (ref, ts)
+
+ignoreRefs :: [Git.Ref] -> Annex ()
+ignoreRefs rs = do
+	old <- getIgnoredRefs
+	let s = S.unions [old, S.fromList rs]
+	f <- fromRepo gitAnnexIgnoredRefs
+	replaceFile f $ \tmp -> liftIO $ writeFile tmp $
+		unlines $ map show $ S.elems s
+
+getIgnoredRefs :: Annex (S.Set Git.Ref)
+getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content
+  where
+  	content = do
+		f <- fromRepo gitAnnexIgnoredRefs
+		liftIO $ catchDefaultIO "" $ readFile f
+
+{- Performs the specified transitions on the contents of the index file,
+ - commits it to the branch, or creates a new branch, and returns 
+ - the branch's ref. -}
+performTransitions :: Transitions -> Bool -> Annex Git.Ref
+performTransitions ts neednewbranch = withIndex $ do
+	when (inTransitions ForgetDeadRemotes ts) $
+		error "TODO ForgetDeadRemotes transition"
+	if neednewbranch
+		then do
+			committedref <- inRepo $ Git.Branch.commit message fullname []
+			setIndexSha committedref
+			return committedref
+		else do
+			ref <- getBranch
+			commitBranch ref message [fullname]
+			getBranch
+  where
+  	message
+		| neednewbranch = "new branch for transition " ++ tdesc
+		| otherwise = "continuing transition " ++ tdesc
+	tdesc = show $ map describeTransition $ transitionList ts

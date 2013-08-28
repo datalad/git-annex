@@ -46,6 +46,10 @@ data TransitionLine = TransitionLine
 
 type Transitions = S.Set TransitionLine
 
+describeTransition :: Transition -> String
+describeTransition ForgetGitHistory = "forget git history"
+describeTransition ForgetDeadRemotes = "forget dead remotes"
+
 addTransition :: POSIXTime -> Transition -> Transitions -> Transitions
 addTransition ts t = S.insert $ TransitionLine ts t
 
@@ -60,6 +64,11 @@ parseTransitions = check . map parseTransitionLine . lines
 		| all isJust l = Just $ S.fromList $ catMaybes l
 		| otherwise = Nothing
 
+parseTransitionsStrictly :: String -> String -> Transitions
+parseTransitionsStrictly source = fromMaybe badsource . parseTransitions
+  where
+	badsource = error $ "unknown transitions listed in " ++ source ++ "; upgrade git-annex!"
+
 showTransitionLine :: TransitionLine -> String
 showTransitionLine (TransitionLine ts t) = unwords [show t, show ts]
 
@@ -71,17 +80,14 @@ parseTransitionLine s = TransitionLine <$> pdate ds <*> readish ts
 	ds = unwords $ Prelude.tail ws
 	pdate = parseTime defaultTimeLocale "%s%Qs" >=*> utcTimeToPOSIXSeconds
 
-{- Compares two sets of transitions, and returns a list of any transitions
- - from the second set that have not yet been perfomed in the first,
- - and a list of any transitions from the first set that have not yet been
- - performed in the second. -}
-diffTransitions :: Transitions -> Transitions -> ([Transition], [Transition])
-diffTransitions a b = (b `diff` a, a `diff` b)
-  where
-  	diff x y = map transition $ S.elems $ S.difference x y
+combineTransitions :: [Transitions] -> Transitions
+combineTransitions = S.unions
 
-sameTransitions :: Transitions -> Transitions -> Bool
-sameTransitions a b = let (x, y) = diffTransitions a b in null x && null y
+inTransitions :: Transition -> Transitions -> Bool
+inTransitions t = not . S.null . S.filter (\l -> transition l == t)
+
+transitionList :: Transitions -> [Transition]
+transitionList = map transition . S.elems
 
 {- Typically ran with Annex.Branch.change, but we can't import Annex.Branch
  - here since it depends on this module. -}
@@ -89,6 +95,4 @@ recordTransition :: (FilePath -> (String -> String) -> Annex ()) -> Transition -
 recordTransition changer o = do
 	t <- liftIO getPOSIXTime
 	changer transitionsLog $
-		showTransitions . addTransition t o . fromMaybe badlog . parseTransitions
-  where
-  	badlog = error $ "unknown transitions exist in " ++ transitionsLog
+		showTransitions . addTransition t o . parseTransitionsStrictly "local"
