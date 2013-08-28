@@ -1,6 +1,6 @@
-Yesterday I spent shopping for a new laptop, since this one is dying.
-(Soon I'll be able to compile git-annex fast-ish! Yay!) And thinking about
-[[wishlist:_dropping_git-annex_history]].
+Yesterday I spent making a release, and shopping for a new laptop, since
+this one is dying. (Soon I'll be able to compile git-annex fast-ish! Yay!)
+And thinking about [[todo/wishlist:_dropping_git-annex_history]].
 
 Today, I added the `git annex forget` command. It's currently been lightly
 tested, seems to work, and is living in the `forget` branch until I gain
