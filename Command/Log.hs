@@ -17,7 +17,7 @@ import Data.Char
 
 import Common.Annex
 import Command
-import qualified Logs.Location
+import Logs
 import qualified Logs.Presence
 import Annex.CatFile
 import qualified Annex.Branch
@@ -135,7 +135,7 @@ getLog :: Key -> [CommandParam] -> Annex [String]
 getLog key os = do
 	top <- fromRepo Git.repoPath
 	p <- liftIO $ relPathCwdToFile top
-	let logfile = p </> Logs.Location.logFile key
+	let logfile = p </> locationLogFile key
 	inRepo $ pipeNullSplitZombie $
 		[ Params "log -z --pretty=format:%ct --raw --abbrev=40"
 		, Param "--remove-empty"

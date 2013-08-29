@@ -27,13 +27,10 @@ import Common.Annex
 import Types.TrustLevel
 import qualified Annex.Branch
 import qualified Annex
+import Logs
 import Logs.UUIDBased
 import Remote.List
 import qualified Types.Remote
-
-{- Filename of trust.log. -}
-trustLog :: FilePath
-trustLog = "trust.log"
 
 {- Returns a list of UUIDs that the trustLog indicates have the
  - specified trust level.
