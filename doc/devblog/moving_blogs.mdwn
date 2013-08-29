@@ -1,0 +1,5 @@
+I've started a new page for my devblog, since I'm not focusing extensively
+on the assistant and so keeping the blog [[here|design/assistant/blog]]
+increasingly felt wrong. Also, my new year of
+[crowdfunded development](https://campaign.joeyh.name)
+formally starts in September, so a new blog seemed good.
