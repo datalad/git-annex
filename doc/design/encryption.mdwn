@@ -107,8 +107,9 @@ A risk of this scheme is that, once the symmetric cipher has been
 obtained, it allows full access to all the encrypted content. Indeed
 anyone owning a key that used to be granted access could already have
 decrypted the cipher and stored a copy. While it is in possible to
-revoke a key with `keyid-=`, it is designed for a
-[[completely_different_purpose|encryption]].
+remove a key with `keyid-=`, it is designed for a
+[[completely_different_purpose|/encryption]] and does not actually revoke
+access.
 
 If git-annex stores the decrypted symmetric cipher in memory, then there
 is a risk that it could be intercepted from there by an attacker. Gpg
