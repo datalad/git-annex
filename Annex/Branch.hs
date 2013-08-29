@@ -175,7 +175,7 @@ updateTo pairs = do
  - (and committed to the branch).
  - 
  - Updates the branch if necessary, to ensure the most up-to-date available
- - content is available.
+ - content is returned.
  -
  - Returns an empty string if the file doesn't exist yet. -}
 get :: FilePath -> Annex String
