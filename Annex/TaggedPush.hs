@@ -49,6 +49,10 @@ fromTaggedBranch b = case split "/" $ show b of
 taggedPush :: UUID -> Maybe String -> Git.Ref -> Remote -> Git.Repo -> IO Bool
 taggedPush u info branch remote = Git.Command.runBool
         [ Param "push"
+	-- This is safe because we "own" the tagged branch we're pushing;
+	-- it has no other writers. Ensures it is pushed even if it has
+	-- been rewritten by a transition.
+	, Param "--force"
         , Param $ Remote.name remote
         , Param $ refspec Annex.Branch.name
         , Param $ refspec branch
