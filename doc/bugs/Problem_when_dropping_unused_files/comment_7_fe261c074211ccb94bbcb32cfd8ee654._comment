@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 7"
+ date="2013-08-30T04:25:45Z"
+ content="""
+I tried your suggestion of cloning the repository and moving `.git/config` and `.git/annex`, and got this:
+
+    fsck Astronomy/12_ATM_2.jpg error: invalid object 100644 06f8fe222f052100101e5c2e77640f2ec3efff98 for '002/0a6/SHA256E-s427690--03aeabcde841b66168b72de80098d74e047f3ffc832d4bbefa1f2f70ee6c92f8.jpg.log'
+    fatal: git-write-tree: error building trees
+    git-annex: failed to read sha from git write-tree
+
+What else can I try?  Note that I can't even find this `.log` anywhere under my `.git` directory for this repository.
+"""]]
