@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="guilhem"
+ ip="129.16.20.209"
+ subject="comment 5"
+ date="2013-08-30T22:51:56Z"
+ content="""
+OK (you just generated 1 byte of base64-encoded random data).
+No, I'm afraid git-annex will croak for each operation using gpg on your remote (which includes get, push, fsck, ...).
+
+This lines specifies how gpg automatically retrieves public keys when you get a signed message for instance. If you don't want to mix configurations, it is easy to create a git-annex-specific GnuPG home directory, but it requires you to point the `GNUPGHOME` to this alternative directory before starting git-annex.
+
+That said, other MacOSX users have encountered the same problem, and it was [[reported_to_be_solved_recently|/bugs/internal_server_error_when_choosing_encrypted_rsync_repo_option/]].
+"""]]

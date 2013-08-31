@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="guilhem"
+ ip="129.16.20.209"
+ subject="comment 3"
+ date="2013-08-30T16:09:58Z"
+ content="""
+Hmm, it looks like a perfectly valid list. Interesting.
+But regardless, gpg doesn't seem to like that line; what gpg version
+are you using? Also, does it work directly on the command-line
+(`gpg -a --gen-random 1 1`)?
+
+Have you tried to setup the remote without that line in the gpg.conf? Of
+course it wouldn't solve the core of the issue, but it's irrelevant for
+random data generation anyway (the same goes for `--trust-model`);
+perhaps this very command should be run with `--no-options`.
+"""]]
