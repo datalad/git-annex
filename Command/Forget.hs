@@ -12,30 +12,41 @@ import Command
 import qualified Annex.Branch as Branch
 import Logs.Transitions
 import qualified Annex
+import qualified Option
 
 import Data.Time.Clock.POSIX
 
 def :: [Command]
-def = [command "forget" paramNothing seek
+def = [withOptions forgetOptions $ command "forget" paramNothing seek
 		SectionMaintenance "prune git-annex branch history"]
 
+forgetOptions :: [Option]
+forgetOptions = [dropDeadOption]
+
+dropDeadOption :: Option
+dropDeadOption = Option.flag [] "drop-dead" "drop references to dead repositories"
+
 seek :: [CommandSeek]
-seek = [withNothing start]
+seek = [withFlag dropDeadOption $ \dropdead ->
+	withNothing $ start dropdead]
 
-start :: CommandStart
-start = do
+start :: Bool -> CommandStart
+start dropdead = do
 	showStart "forget" "git-annex"
-	next $ perform =<< Annex.getState Annex.force
-
-perform :: Bool -> CommandPerform
-perform True = do
 	now <- liftIO getPOSIXTime
-	let ts = addTransition now ForgetGitHistory noTransitions
+	let basets = addTransition now ForgetGitHistory noTransitions
+	let ts = if dropdead
+		then addTransition now ForgetDeadRemotes basets
+		else basets
+	next $ perform ts =<< Annex.getState Annex.force
+
+perform :: Transitions -> Bool -> CommandPerform
+perform ts True = do
 	recordTransitions Branch.change ts
 	-- get branch committed before contining with the transition
 	Branch.update
 	void $ Branch.performTransitions ts True
 	next $ return True
-perform False = do
+perform _ False = do
 	showLongNote "To forget git-annex branch history, you must specify --force. This deletes metadata!"
 	stop

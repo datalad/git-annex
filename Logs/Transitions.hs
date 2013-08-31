@@ -7,16 +7,6 @@
  - done that is listed in the remote branch by checking that the local
  - branch contains the same transition, with the same or newer start time.
  -
- - When a remote branch that has had an transition performed on it
- - becomes available for merging into the local git-annex branch,
- - the transition is first performed on the local branch.
- -
- - When merging a remote branch into the local git-annex branch,
- - all transitions that have been performed on the local branch must also
- - have been performed on the remote branch already. (Or it would be
- - possible to perform the transitions on a fixup branch and merge it,
- - but that would be expensive.)
- -
  - Copyright 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
@@ -85,9 +75,6 @@ parseTransitionLine s = TransitionLine <$> pdate ds <*> readish ts
 
 combineTransitions :: [Transitions] -> Transitions
 combineTransitions = S.unions
-
-inTransitions :: Transition -> Transitions -> Bool
-inTransitions t = not . S.null . S.filter (\l -> transition l == t)
 
 transitionList :: Transitions -> [Transition]
 transitionList = map transition . S.elems

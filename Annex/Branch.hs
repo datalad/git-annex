@@ -46,8 +46,12 @@ import Annex.CatFile
 import Annex.Perms
 import qualified Annex
 import Utility.Env
+import Logs
 import Logs.Transitions
+import Logs.Trust.Pure
 import Annex.ReplaceFile
+import qualified Annex.Queue
+import Annex.Branch.Transitions
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -194,7 +198,10 @@ get' :: FilePath -> Annex String
 get' file = go =<< getJournalFile file
   where
 	go (Just journalcontent) = return journalcontent
-	go Nothing = withIndex $ L.unpack <$> catFile fullname file
+	go Nothing = getRaw file
+	
+getRaw :: FilePath -> Annex String
+getRaw file = withIndex $ L.unpack <$> catFile fullname file
 
 {- Applies a function to modifiy the content of a file.
  -
@@ -272,13 +279,17 @@ commitBranch' branchref message parents = do
 files :: Annex [FilePath]
 files = do
 	update
-	withIndex $ do
-		bfiles <- inRepo $ Git.Command.pipeNullSplitZombie
-			[ Params "ls-tree --name-only -r -z"
-			, Param $ show fullname
-			]
-		jfiles <- getJournalledFiles
-		return $ jfiles ++ bfiles
+	(++)
+		<$> branchFiles
+		<*> getJournalledFiles
+
+{- Files in the branch, not including any from journalled changes,
+ - and without updating the branch. -}
+branchFiles :: Annex [FilePath]
+branchFiles = withIndex $ inRepo $ Git.Command.pipeNullSplitZombie
+	[ Params "ls-tree --name-only -r -z"
+	, Param $ show fullname
+	]
 
 {- Populates the branch's index file with the current branch contents.
  - 
@@ -436,20 +447,60 @@ getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content
  - commits it to the branch, or creates a new branch, and returns 
  - the branch's ref. -}
 performTransitions :: Transitions -> Bool -> Annex Git.Ref
-performTransitions ts neednewbranch = withIndex $ do
-	when (inTransitions ForgetDeadRemotes ts) $
-		error "TODO ForgetDeadRemotes transition"
-	if neednewbranch
-		then do
-			committedref <- inRepo $ Git.Branch.commit message fullname []
-			setIndexSha committedref
-			return committedref
-		else do
-			ref <- getBranch
-			commitBranch ref message [fullname]
-			getBranch
+performTransitions ts neednewbranch = do
+	-- For simplicity & speed, we're going to use the Annex.Queue to
+	-- update the git-annex branch, while it usually holds changes
+	-- for the head branch. Flush any such changes.
+	Annex.Queue.flush
+	withIndex $ do
+		run $ mapMaybe getTransitionCalculator $ transitionList ts
+		Annex.Queue.flush
+		if neednewbranch
+			then do
+				committedref <- inRepo $ Git.Branch.commit message fullname []
+				setIndexSha committedref
+				return committedref
+			else do
+				ref <- getBranch
+				commitBranch ref message [fullname]
+				getBranch
   where
   	message
 		| neednewbranch = "new branch for transition " ++ tdesc
 		| otherwise = "continuing transition " ++ tdesc
 	tdesc = show $ map describeTransition $ transitionList ts
+
+	{- The changes to make to the branch are calculated and applied to
+	 - the branch directly, rather than going through the journal,
+	 - which would be innefficient. (And the journal is not designed
+	 - to hold changes to every file in the branch at once.)
+	 -
+	 - When a file in the branch is changed by transition code,
+	 - that value is remembered and fed into the code for subsequent
+	 - transitions.
+	 -}
+	run [] = noop
+	run changers = do
+		trustmap <- calcTrustMap <$> getRaw trustLog
+		fs <- branchFiles
+		hasher <- inRepo hashObjectStart
+		forM_ fs $ \f -> do
+			content <- getRaw f
+			apply changers hasher f content trustmap
+		liftIO $ hashObjectStop hasher
+	apply [] _ _ _ _ = return ()
+	apply (changer:rest) hasher file content trustmap =
+		case changer file content trustmap of
+			RemoveFile -> do
+				Annex.Queue.addUpdateIndex
+					=<< inRepo (Git.UpdateIndex.unstageFile file)
+				-- File is deleted; can't run any other
+				-- transitions on it.
+				return ()
+			ChangeFile content' -> do
+				sha <- inRepo $ hashObject BlobObject content'
+				Annex.Queue.addUpdateIndex $ Git.UpdateIndex.pureStreamer $
+					Git.UpdateIndex.updateIndexLine sha FileBlob (asTopFilePath file)
+				apply rest hasher file content' trustmap
+			PreserveFile ->
+				apply rest hasher file content trustmap
