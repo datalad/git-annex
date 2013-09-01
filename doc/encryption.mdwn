@@ -6,21 +6,23 @@ Encryption is needed when using [[special_remotes]] like Amazon S3, where
 file content is sent to an untrusted party who does not have access to the
 git repository.
 
-Such an encrypted remote uses strong
-[[symmetric_encryptiondesign/encryption]] on the contents of files, as
-well as HMAC hashing of the filenames. The size of the encrypted files,
-and access patterns of the data, should be the only clues to what is
-stored in such a remote.
+Such an encrypted remote uses strong ([[symmetric|design/encryption]] or
+asymmetric) encryption on the contents of files, as well as HMAC hashing
+of the filenames. The size of the encrypted files, and access patterns
+of the data, should be the only clues to what is stored in such a
+remote.
 
 You should decide whether to use encryption with a special remote before
 any data is stored in it. So, `git annex initremote` requires you
 to specify "encryption=none" when first setting up a remote in order
 to disable encryption.
 
-If you want to use encryption, run `git annex initremote` with
-"encryption=USERID". The value will be passed to `gpg` to find encryption keys.
-Typically, you will say "encryption=2512E3C7" to use a specific gpg key.
-Or, you might say "encryption=joey@kitenet.net" to search for matching keys.
+If you want to generate a cipher that will be used to symmetrically
+encrypt file contents, run `git annex initremote` with
+"encryption=hybrid keyid=USERID".  The value will be passed to `gpg` to
+find encryption keys.  Typically, you will say "keyid=2512E3C7" to use a
+specific gpg key.  Or, you might say "keyid=joey@kitenet.net" to search
+for matching keys.
 
 The default MAC algorithm to be applied on the filenames is HMACSHA1. A
 stronger one, for instance HMACSHA512, one can be chosen upon creation
@@ -61,3 +63,27 @@ stored in the special remote.
 
 To use shared encryption, specify "encryption=shared" when first setting
 up a special remote.
+
+## strict public-key encryption
+
+Special remotes can also be configured to encrypt file contents using
+public-key cryptography. It is significatly slower than symmetric
+encryption, but is also generally considered more secure. Note that
+because filenames are MAC'ed, a cipher needs to be generated (and
+encrypted to the given key ID).
+
+A disavantage is that is not possible to give/revoke anyone's access to
+a non-empty remote. Indeed, although the parameters `keyid+=` and
+`keyid-=` still apply, they have **no effect** on files that are already
+present on the remote. In fact the only sound use of `keyid+=` and
+`keyid-=` is probably, as `keyid-=` for "encryption=hybrid", to replace
+a (sub-)key by another.
+
+Also, since already uploaded files are not re-encrypted, one needs to
+keep the private part of removed keys (with `keyid-=`) to be able to
+decrypt these files. On the other hand, if the reason for revocation is
+that the key has been compromised, it is **insecure** to leave files
+encrypted using that old key, and the user should re-encrypt everything.
+
+To use strict public-key encryption, specify "encryption=pubkey
+keyid=USERID" when first setting up a special remote.

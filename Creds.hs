@@ -52,7 +52,7 @@ setRemoteCredPair c storage = go =<< getRemoteCredPair c storage
 		return c
 
 	storeconfig creds key (Just cipher) = do
-		s <- liftIO $ encrypt (GpgOpts []) cipher
+		s <- liftIO $ encrypt [] cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
 			(readBytes $ return . L.unpack)
 		return $ M.insert key (toB64 s) c

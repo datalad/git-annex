@@ -308,9 +308,15 @@ subdirectories).
   command will prompt for parameters as needed.
 
   All special remotes support encryption. You must either specify
-  encryption=none to disable encryption, or use encryption=keyid
-  (or encryption=emailaddress) to specify a gpg key that can access
-  the encrypted special remote.
+  encryption=none to disable encryption, or encryption=shared to use a
+  shared cipher (stored clear in the git repository), or
+  encryption=hybrid to encrypt the cipher to an OpenPGP key, or
+  encryption=pubkey to encrypt file contents using public-key
+  cryptography. In the two last cases, you also need to specify which
+  key can access the encrypted special remote, which is done by
+  specifiying keyid= (gpg needs to be to be able to find a public key
+  matching that specification, which can be an OpenPGP key ID or an
+  e-mail address for instance).
 
   Note that with encryption enabled, a cryptographic key is created.
   This requires sufficient entropy. If initremote seems to hang or take
@@ -320,7 +326,7 @@ subdirectories).
 
   Example Amazon S3 remote:
 
-	git annex initremote mys3 type=S3 encryption=me@example.com datacenter=EU
+	git annex initremote mys3 type=S3 encryption=hybrid keyid=me@example.com datacenter=EU
 
 * enableremote name [param=value ...]
 
@@ -351,6 +357,13 @@ subdirectories).
   a new one superseeding it:
 
 	git annex enableremote mys3 keyid-=revokedkey keyid+=newkey
+
+  Also, note that for encrypted special remotes using strict public-key
+  encryption (encryption=pubkey), adding or removing a key has NO effect
+  on files that have already been copied to the remote. Hence using
+  keyid+= and keyid-= with such remotes should be used with care, and
+  make little sense unless the private material of the old and new
+  access list is all owned by the same (group of) person.
 
 * trust [repository ...]
 

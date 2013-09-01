@@ -29,6 +29,7 @@ import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Filename
 import qualified Locations
+import qualified Types.Crypto
 import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
@@ -40,6 +41,7 @@ import qualified Logs.Unused
 import qualified Logs.Transfer
 import qualified Logs.Presence
 import qualified Remote
+import qualified Remote.Helper.Encryptable
 import qualified Types.Key
 import qualified Types.Messages
 import qualified Config
@@ -872,18 +874,21 @@ test_bup_remote env = "git-annex bup remote" ~: intmpclonerepo env $ when Build.
 
 -- gpg is not a build dependency, so only test when it's available
 test_crypto :: TestEnv -> Test
-test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ whenM (Utility.Path.inPath Utility.Gpg.gpgcmd) $ do
+test_crypto env = "git-annex crypto" ~: TestList $ flip map ["shared","hybrid","pubkey"] $
+    \scheme -> TestCase $ intmpclonerepo env $ whenM (Utility.Path.inPath Utility.Gpg.gpgcmd) $ do
 #ifndef mingw32_HOST_OS
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do
 		createDirectory "dir"
-		let a cmd = git_annex env cmd
+		let a cmd = git_annex env cmd $
 			[ "foo"
 			, "type=directory"
-			, "keyid=" ++ Utility.Gpg.testKeyId
+			, "encryption=" ++ scheme
 			, "directory=dir"
 			, "highRandomQuality=false"
-			]
+			] ++ if scheme `elem` ["hybrid","pubkey"]
+				then ["keyid=" ++ Utility.Gpg.testKeyId]
+				else []
 		a "initremote" @? "initremote failed"
 		not <$> a "initremote" @? "initremote failed to fail when run twice in a row"
 		a "enableremote" @? "enableremote failed"
@@ -891,6 +896,16 @@ test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ whenM (Utility.Path
 		git_annex env "get" [annexedfile] @? "get of file failed"
 		annexed_present annexedfile
 		git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to encrypted remote failed"
+		(c,k) <- annexeval $ do
+			uuid <- Remote.nameToUUID "foo"
+			rs <- Logs.Remote.readRemoteLog
+			Just (k,_) <- Backend.lookupFile annexedfile
+			return (fromJust $ M.lookup uuid rs, k)
+		let key = if scheme `elem` ["hybrid","pubkey"]
+				then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]
+				else Nothing
+		testEncryptedRemote scheme key c [k] @? "invalid crypto setup"
+
 		annexed_present annexedfile
 		git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
 		annexed_notpresent annexedfile
@@ -898,8 +913,35 @@ test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ whenM (Utility.Path
 		annexed_present annexedfile
 		not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 		annexed_present annexedfile
+  where
+	{- Ensure the configuration complies with the encryption scheme, and
+	 - that all keys are encrypted properly on the given directory remote. -}
+	testEncryptedRemote scheme ks c keys = case Remote.Helper.Encryptable.extractCipher c of
+		Just cip@Crypto.SharedCipher{} | scheme == "shared" && isNothing ks ->
+			checkKeys cip True
+		Just cip@(Crypto.EncryptedCipher encipher sym ks')
+			| checkScheme sym && keysMatch ks' ->
+				checkKeys cip sym <&&> checkCipher encipher ks'
+		_ -> return False
+	  where
+		keysMatch (Utility.Gpg.KeyIds ks') =
+			maybe False (\(Utility.Gpg.KeyIds ks2) ->
+					sort (nub ks2) == sort (nub ks')) ks
+		checkCipher encipher = Utility.Gpg.checkEncryptionStream encipher . Just
+		checkScheme True = scheme == "hybrid"
+		checkScheme False = scheme == "pubkey"
+		checkKeys cip sym = do
+			cipher <- Crypto.decryptCipher cip
+			files <- filterM doesFileExist $
+				map ("dir" </>) $ concatMap (key2files cipher) keys
+			return (not $ null files) <&&> allM (checkFile sym) files
+		checkFile sym filename =
+			Utility.Gpg.checkEncryptionFile filename $
+				if sym then Nothing else ks
+		key2files cipher = Locations.keyPaths .
+			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
-		putStrLn "gpg testing not implemented on Windows"
+	putStrLn "gpg testing not implemented on Windows"
 #endif
 
 -- This is equivilant to running git-annex, but it's all run in-process

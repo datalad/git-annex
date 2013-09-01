@@ -24,7 +24,15 @@ import Utility.Gpg (KeyIds(..))
 -- XXX ideally, this would be a locked memory region
 newtype Cipher = Cipher String
 
-data StorableCipher = EncryptedCipher String KeyIds | SharedCipher String
+data StorableCipher = EncryptedCipher String Bool KeyIds
+		-- ^ The Boolean indicates whether the cipher is used
+		-- both for symmetric encryption of file content and
+		-- MAC'ing of file names (True), or only for MAC'ing,
+		-- while file content is encrypted using public-key
+		-- crypto (False). In the latter case the cipher is
+		-- twice as short, but we don't want to rely on that
+		-- only.
+		| SharedCipher String
 	deriving (Ord, Eq)
 
 {- File names are (client-side) MAC'ed on special remotes.

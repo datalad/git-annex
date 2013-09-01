@@ -23,8 +23,7 @@ module Crypto (
 	readBytes,
 	encrypt,
 	decrypt,	
-	GpgOpts(..),
-	getGpgOpts,
+	Gpg.getGpgEncParams,
 
 	prop_HmacSha1WithCipher_sane
 ) where
@@ -35,7 +34,6 @@ import Control.Applicative
 
 import Common.Annex
 import qualified Utility.Gpg as Gpg
-import Utility.Gpg.Types
 import Types.Key
 import Types.Crypto
 
@@ -66,12 +64,17 @@ cipherPassphrase (Cipher c) = drop cipherBeginning c
 cipherMac :: Cipher -> String
 cipherMac (Cipher c) = take cipherBeginning c
 
-{- Creates a new Cipher, encrypted to the specified key id. -}
-genEncryptedCipher :: String -> Bool -> IO StorableCipher
-genEncryptedCipher keyid highQuality = do
+{- Creates a new Cipher, encrypted to the specified key id. If the
+ - boolean 'symmetric' is true, use that cipher not only for MAC'ing,
+ - but also to symmetrically encrypt annexed file contents. Otherwise,
+ - we don't bother to generate so much random data. -}
+genEncryptedCipher :: String -> Bool -> Bool -> IO StorableCipher
+genEncryptedCipher keyid symmetric highQuality = do
 	ks <- Gpg.findPubKeys keyid
-	random <- Gpg.genRandom highQuality cipherSize
-	encryptCipher (Cipher random) ks
+	random <- Gpg.genRandom highQuality size
+	encryptCipher (Cipher random) symmetric ks
+  where
+	size = if symmetric then cipherSize else cipherBeginning
 
 {- Creates a new, shared Cipher. -}
 genSharedCipher :: Bool -> IO StorableCipher
@@ -83,44 +86,45 @@ genSharedCipher highQuality =
 updateEncryptedCipher :: [(Bool, String)] -> StorableCipher -> IO StorableCipher
 updateEncryptedCipher _ SharedCipher{} = undefined
 updateEncryptedCipher [] encipher = return encipher
-updateEncryptedCipher newkeys encipher@(EncryptedCipher _ (KeyIds ks)) = do
+updateEncryptedCipher newkeys encipher@(EncryptedCipher _ symmetric (KeyIds ks)) = do
 	dropKeys <- listKeyIds [ k | (False, k) <- newkeys ]
 	forM_ dropKeys $ \k -> unless (k `elem` ks) $
 		error $ "Key " ++ k ++ " is not granted access."
 	addKeys <- listKeyIds [ k | (True, k) <- newkeys ]
 	let ks' = (addKeys ++ ks) \\ dropKeys
-	when (null ks') $ error "The new access list would become empty."
+	when (null ks') $ error "That would empty the access list."
 	cipher <- decryptCipher encipher
-	encryptCipher cipher $ KeyIds ks'
+	encryptCipher cipher symmetric $ KeyIds ks'
   where
 	listKeyIds = mapM (Gpg.findPubKeys >=*> keyIds) >=*> concat
 
 describeCipher :: StorableCipher -> String
-describeCipher (SharedCipher _) = "shared cipher"
-describeCipher (EncryptedCipher _ (KeyIds ks)) =
-	"with gpg " ++ keys ks ++ " " ++ unwords ks
+describeCipher SharedCipher{} = "shared cipher"
+describeCipher (EncryptedCipher _ symmetric (KeyIds ks)) =
+	scheme ++ " with gpg " ++ keys ks ++ " " ++ unwords ks
   where
+	scheme = if symmetric then "hybrid cipher" else "pubkey crypto"
 	keys [_] = "key"
 	keys _ = "keys"
 
-{- Encrypts a Cipher to the specified KeyIds. -}
-encryptCipher :: Cipher -> KeyIds -> IO StorableCipher
-encryptCipher (Cipher c) (KeyIds ks) = do
+{- Encrypts a Cipher to the specified KeyIds. The boolean indicates
+ - whether to encrypt an hybrid cipher (True), which is going to be used
+ - both for MAC'ing and symmetric encryption of file contents, or for
+ - MAC'ing only (False), while pubkey crypto is used for file contents.
+ - -}
+encryptCipher :: Cipher -> Bool -> KeyIds -> IO StorableCipher
+encryptCipher (Cipher c) symmetric (KeyIds ks) = do
 	-- gpg complains about duplicate recipient keyids
 	let ks' = nub $ sort ks
-	encipher <- Gpg.pipeStrict (Params "--encrypt" : recipients ks') c
-	return $ EncryptedCipher encipher (KeyIds ks')
-  where
-	recipients l = force_recipients :
-		concatMap (\k -> [Param "--recipient", Param k]) l
-	-- Force gpg to only encrypt to the specified
-	-- recipients, not configured defaults.
-	force_recipients = Params "--no-encrypt-to --no-default-recipient"
+	-- The cipher itself is always encrypted to the given public keys
+	let params = Gpg.pkEncTo ks' ++ Gpg.stdEncryptionParams False
+	encipher <- Gpg.pipeStrict params c
+	return $ EncryptedCipher encipher symmetric (KeyIds ks')
 
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: StorableCipher -> IO Cipher
 decryptCipher (SharedCipher t) = return $ Cipher t
-decryptCipher (EncryptedCipher t _) =
+decryptCipher (EncryptedCipher t _ _) =
 	Cipher <$> Gpg.pipeStrict [ Param "--decrypt" ] t
 
 {- Generates an encrypted form of a Key. The encryption does not need to be
@@ -146,15 +150,21 @@ feedBytes = flip L.hPut
 readBytes :: (L.ByteString -> IO a) -> Reader a
 readBytes a h = L.hGetContents h >>= a
 
-{- Runs a Feeder action, that generates content that is symmetrically encrypted
- - with the Cipher using the given GnuPG options, and then read by the Reader
- - action. -}
-encrypt :: GpgOpts -> Cipher -> Feeder -> Reader a -> IO a
-encrypt opts = Gpg.feedRead ( Params "--symmetric --force-mdc" : toParams opts )
-		. cipherPassphrase
+{- Runs a Feeder action, that generates content that is symmetrically
+ - encrypted with the Cipher (unless it is empty, in which case
+ - public-key encryption is used) using the given gpg options, and then
+ - read by the Reader action.  Note: For public-key encryption,
+ - recipients MUST be included in 'params' (for instance using
+ - 'getGpgEncOpts'). -}
+encrypt :: [CommandParam] -> Cipher -> Feeder -> Reader a -> IO a
+encrypt params cipher = Gpg.feedRead params' pass
+  where
+	pass = cipherPassphrase cipher
+	params' = params ++ Gpg.stdEncryptionParams (not $ null pass)
 
 {- Runs a Feeder action, that generates content that is decrypted with the
- - Cipher, and read by the Reader action. -}
+ - Cipher (or using a private key if the Cipher is empty), and read by the
+ - Reader action. -}
 decrypt :: Cipher -> Feeder -> Reader a -> IO a
 decrypt = Gpg.feedRead [Param "--decrypt"] . cipherPassphrase
 

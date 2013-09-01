@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, FlexibleInstances #-}
 
 module Utility.Gpg where
 
@@ -24,6 +24,10 @@ import Utility.Env
 import Utility.Tmp
 #endif
 
+import qualified Data.Map as M
+import Types.GitConfig
+import Types.Remote hiding (setup)
+
 newtype KeyIds = KeyIds { keyIds :: [String] }
 	deriving (Ord, Eq)
 
@@ -31,6 +35,28 @@ newtype KeyIds = KeyIds { keyIds :: [String] }
  - Otherwise, try to run gpg. -}
 gpgcmd :: FilePath
 gpgcmd = fromMaybe "gpg" SysConfig.gpg
+
+{- Return some options suitable for GnuPG encryption, symmetric or not. -}
+class LensGpgEncParams a where getGpgEncParams :: a -> [CommandParam]
+
+{- Extract the GnuPG options from a pair of a Remote Config and a Remote
+ - Git Config. If the remote is configured to use public-key encryption,
+ - look up the recipient keys and add them to the option list. -}
+instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
+	getGpgEncParams (c,gc) = map Param (remoteAnnexGnupgOptions gc) ++ recipients
+	  where
+		recipients = case M.lookup "encryption" c of
+			Just "pubkey" -> pkEncTo $ maybe [] (split ",") $
+						M.lookup "cipherkeys" c
+			_ -> []
+
+-- Generate an argument list to asymetrically encrypt to the given recipients.
+pkEncTo :: [String] -> [CommandParam]
+pkEncTo = concatMap (\r -> [Param "--recipient", Param r])
+
+{- Extract the GnuPG options from a Remote. -}
+instance LensGpgEncParams (RemoteA a) where
+	getGpgEncParams r = getGpgEncParams (config r, gitconfig r)
 
 stdParams :: [CommandParam] -> IO [String]
 stdParams params = do
@@ -48,8 +74,20 @@ stdParams params = do
 	return $ defaults ++ toCommand params
 #endif
   where
-	-- be quiet, even about checking the trustdb
+	-- Be quiet, even about checking the trustdb. If the one of the
+	-- default param is already present in 'params', don't include it
+	-- twice in the output list.
 	defaults = ["--quiet", "--trust-model", "always"]
+
+{- Usual options for symmetric / public-key encryption. -}
+stdEncryptionParams :: Bool -> [CommandParam]
+stdEncryptionParams symmetric = [enc symmetric, Param "--force-mdc"]
+  where
+	enc True = Param "--symmetric"
+	-- Force gpg to only encrypt to the specified recipients, not
+	-- configured defaults. Recipients are assumed to be specified in
+	-- elsewhere.
+	enc False = Params "--encrypt --no-encrypt-to --no-default-recipient"
 
 {- Runs gpg with some params and returns its stdout, strictly. -}
 readStrict :: [CommandParam] -> IO String
@@ -71,10 +109,11 @@ pipeStrict params input = do
 		hClose to
 		hGetContentsStrict from
 
-{- Runs gpg with some parameters. First sends it a passphrase via
- - --passphrase-fd. Then runs a feeder action that is passed a handle and
- - should write to it all the data to input to gpg. Finally, runs
- - a reader action that is passed a handle to gpg's output. 
+{- Runs gpg with some parameters. First sends it a passphrase (unless it
+ - is empty) via '--passphrase-fd'. Then runs a feeder action that is
+ - passed a handle and should write to it all the data to input to gpg.
+ - Finally, runs a reader action that is passed a handle to gpg's
+ - output.
  -
  - Runs gpg in batch mode; this is necessary to avoid gpg 2.x prompting for
  - the passphrase.
@@ -82,27 +121,28 @@ pipeStrict params input = do
  - Note that to avoid deadlock with the cleanup stage,
  - the reader must fully consume gpg's input before returning. -}
 feedRead :: [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
-feedRead params passphrase feeder reader = do
+feedRead params passphrase feeder reader = if null passphrase
+	then go =<< stdParams (Param "--batch" : params)
+	else do
 #ifndef mingw32_HOST_OS
-	-- pipe the passphrase into gpg on a fd
-	(frompipe, topipe) <- createPipe
-	void $ forkIO $ do
-		toh <- fdToHandle topipe
-		hPutStrLn toh passphrase
-		hClose toh
-	let Fd pfd = frompipe
-	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
+		-- pipe the passphrase into gpg on a fd
+		(frompipe, topipe) <- createPipe
+		void $ forkIO $ do
+			toh <- fdToHandle topipe
+			hPutStrLn toh passphrase
+			hClose toh
+		let Fd pfd = frompipe
+		let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
 
-	params' <- stdParams $ [Param "--batch"] ++ passphrasefd ++ params
-	closeFd frompipe `after` go params'
+		params' <- stdParams $ Param "--batch" : passphrasefd ++ params
+		closeFd frompipe `after` go params'
 #else
-	-- store the passphrase in a temp file for gpg
-	withTmpFile "gpg" $ \tmpfile h -> do
-		hPutStr h passphrase
-		hClose h
+		-- store the passphrase in a temp file for gpg
+		withTmpFile "gpg" $ \tmpfile h -> do
+			hPutStr h passphrase
+			hClose h
 		let passphrasefile = [Param "--passphrase-file", File tmpfile]
-		params' <- stdParams $ [Param "--batch"] ++ passphrasefile ++ params
-		go params'
+		go =<< stdParams $ Param "--batch" : passphrasefile ++ params
 #endif
   where
 	go params' = withBothHandles createProcessSuccess (proc gpgcmd params')
@@ -259,4 +299,42 @@ testTestHarness :: IO Bool
 testTestHarness = do
 	keys <- testHarness $ findPubKeys testKeyId
 	return $ KeyIds [testKeyId] == keys
+#endif
+
+#ifndef mingw32_HOST_OS
+checkEncryptionFile :: FilePath -> Maybe KeyIds -> IO Bool
+checkEncryptionFile filename keys =
+	checkGpgPackets keys =<< readStrict params
+  where
+	params = [Params "--list-packets --list-only", File filename]
+
+checkEncryptionStream :: String -> Maybe KeyIds -> IO Bool
+checkEncryptionStream stream keys =
+	checkGpgPackets keys =<< pipeStrict params stream
+  where
+	params = [Params "--list-packets --list-only"]
+
+{- Parses an OpenPGP packet list, and checks whether data is
+ - symmetrically encrypted (keys is Nothing), or encrypted to some
+ - public key(s).
+ - /!\ The key needs to be in the keyring! -}
+checkGpgPackets :: Maybe KeyIds -> String -> IO Bool
+checkGpgPackets keys str = do
+	let (asym,sym) = partition (pubkeyEncPacket `isPrefixOf`) $
+			filter (\l' -> pubkeyEncPacket `isPrefixOf` l' ||
+				symkeyEncPacket `isPrefixOf` l') $
+			takeWhile (/= ":encrypted data packet:") $
+			lines str
+	case (keys,asym,sym) of
+		(Nothing, [], [_]) -> return True
+		(Just (KeyIds ks), ls, []) -> do
+			-- Find the master key associated with the
+			-- encryption subkey.
+			ks' <- concat <$> mapM (findPubKeys >=*> keyIds)
+					[ k | k:"keyid":_ <- map (reverse . words) ls ]
+			return $ sort (nub ks) == sort (nub ks')
+		_ -> return False
+  where
+	pubkeyEncPacket = ":pubkey enc packet: "
+	symkeyEncPacket = ":symkey enc packet: "
 #endif
