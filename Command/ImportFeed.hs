@@ -54,7 +54,7 @@ perform relaxed cache url = do
 				<$> mapM (downloadEnclosure relaxed cache) l
 			unless ok $
 				feedProblem url "problem downloading item"
-			next $ cleanup url ok
+			next $ cleanup url True
 		_ -> do
 			feedProblem url "bad feed content"
 			next $ return True
