@@ -45,7 +45,7 @@ perform ts True = do
 	recordTransitions Branch.change ts
 	-- get branch committed before contining with the transition
 	Branch.update
-	void $ Branch.performTransitions ts True
+	void $ Branch.performTransitions ts True []
 	next $ return True
 perform _ False = do
 	showLongNote "To forget git-annex branch history, you must specify --force. This deletes metadata!"
