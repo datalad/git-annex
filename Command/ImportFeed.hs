@@ -52,6 +52,8 @@ perform relaxed cache url = do
 		Just l | not (null l) -> do
 			ok <- all id
 				<$> mapM (downloadEnclosure relaxed cache) l
+			unless ok $
+				feedProblem url "problem downloading item"
 			next $ cleanup url ok
 		_ -> do
 			feedProblem url "bad feed content"
