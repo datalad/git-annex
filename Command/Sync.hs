@@ -167,29 +167,45 @@ pushRemote remote branch = go =<< needpush
 			showOutput
 			inRepo $ pushBranch remote branch
 
-{- If the remote is a bare git repository, it's best to push the branch
- - directly to it. On the other hand, if it's not bare, pushing to the
- - checked out branch will fail, and this is why we use the syncBranch.
+{- Pushes a regular branch like master to a remote. Also pushes the git-annex
+ - branch.
+ -
+ - If the remote is a bare git repository, it's best to push the regular 
+ - branch directly to it, so that cloning/pulling will get it.
+ - On the other hand, if it's not bare, pushing to the checked out branch
+ - will fail, and this is why we push to its syncBranch.
  -
  - Git offers no way to tell if a remote is bare or not, so both methods
  - are tried.
  -
  - The direct push is likely to spew an ugly error message, so stderr is
- - elided. Since progress is output to stderr too, the sync push is done
- - first, and actually sends the data. Then the direct push is tried,
- - with stderr discarded, to update the branch ref on the remote.
+ - elided. Since git progress display goes to stderr too, the sync push
+ - is done first, and actually sends the data. Then the direct push is
+ - tried, with stderr discarded, to update the branch ref on the remote.
+ -
+ - The sync push forces the update of the remote synced/git-annex branch.
+ - This is necessary if a transition has rewritten the git-annex branch.
+ - Normally any changes to the git-annex branch get pulled and merged before
+ - this push, so this forcing is unlikely to overwrite new data pushed
+ - in from another repository that is also syncing.
+ -
+ - But overwriting of data on synced/git-annex can happen, in a race.
+ - The only difference caused by using a forced push in that case is that
+ - the last repository to push wins the race, rather than the first to push.
  -}
 pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
-pushBranch remote branch g = tryIO directpush `after` syncpush
+pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
   where
-	syncpush = Git.Command.runBool (pushparams (refspec branch)) g
-	directpush = Git.Command.runQuiet (pushparams (show $ Git.Ref.base branch)) g
-	pushparams b =
+	syncpush = Git.Command.runBool $ pushparams
+		[ Git.Branch.forcePush $ refspec Annex.Branch.name
+		, refspec branch
+		]
+	directpush = Git.Command.runQuiet $ pushparams
+		[show $ Git.Ref.base branch]
+	pushparams branches =
 		[ Param "push"
 		, Param $ Remote.name remote
-		, Param $ refspec Annex.Branch.name
-		, Param b
-		]
+		] ++ map Param branches
 	refspec b = concat 
 		[ show $ Git.Ref.base b
 		,  ":"

@@ -13,6 +13,7 @@ import qualified Annex.Branch
 import qualified Git
 import qualified Git.Ref
 import qualified Git.Command
+import qualified Git.Branch
 import Utility.Base64
 
 {- Converts a git branch into a branch that is tagged with a UUID, typically
@@ -50,7 +51,10 @@ taggedPush :: UUID -> Maybe String -> Git.Ref -> Remote -> Git.Repo -> IO Bool
 taggedPush u info branch remote = Git.Command.runBool
         [ Param "push"
         , Param $ Remote.name remote
-        , Param $ refspec Annex.Branch.name
+	{- Using forcePush here is safe because we "own" the tagged branch
+	 - we're pushing; it has no other writers. Ensures it is pushed
+	 - even if it has been rewritten by a transition. -}
+        , Param $ Git.Branch.forcePush $ refspec Annex.Branch.name
         , Param $ refspec branch
         ]
   where

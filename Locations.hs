@@ -35,6 +35,7 @@ module Locations (
 	gitAnnexJournalLock,
 	gitAnnexIndex,
 	gitAnnexIndexLock,
+	gitAnnexIgnoredRefs,
 	gitAnnexPidFile,
 	gitAnnexDaemonStatusFile,
 	gitAnnexLogFile,
@@ -224,6 +225,10 @@ gitAnnexIndex r = gitAnnexDir r </> "index"
 {- Lock file for .git/annex/index. -}
 gitAnnexIndexLock :: Git.Repo -> FilePath
 gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
+
+{- List of refs that should not be merged into the git-annex branch. -}
+gitAnnexIgnoredRefs :: Git.Repo -> FilePath
+gitAnnexIgnoredRefs r = gitAnnexDir r </> "ignoredrefs"
 
 {- Pid file for daemon mode. -}
 gitAnnexPidFile :: Git.Repo -> FilePath

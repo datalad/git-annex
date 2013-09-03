@@ -67,6 +67,7 @@ import qualified Command.Map
 import qualified Command.Direct
 import qualified Command.Indirect
 import qualified Command.Upgrade
+import qualified Command.Forget
 import qualified Command.Version
 import qualified Command.Help
 #ifdef WITH_ASSISTANT
@@ -139,6 +140,7 @@ cmds = concat
 	, Command.Direct.def
 	, Command.Indirect.def
 	, Command.Upgrade.def
+	, Command.Forget.def
 	, Command.Version.def
 	, Command.Help.def
 #ifdef WITH_ASSISTANT
