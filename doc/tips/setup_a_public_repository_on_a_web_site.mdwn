@@ -9,18 +9,20 @@ Here's how I set it up. --[[Joey]]
 1. Set up a web site. I used Apache, and configured it to follow symlinks.
    `Options FollowSymLinks`
 2. Put some files on the website. Make sure it works.
-4. `git init; git annex init`
-3. We want users to be able to clone the git repository over http, because
+3. `git init; git annex init`
+4. `git config core.sharedrepository world` (Makes sure files
+   are always added with permissions that allow everyone to read them.)
+5. We want users to be able to clone the git repository over http, because
    git-annex can download files from it over http as well. For this to
    work, `git update-server-info` needs to get run after commits. The
    git `post-update` hook will take care of this, you just need to enable
    the hook. `chmod +x .git/hooks/post-update`
-5. `git annex add; git commit -m added`
-6. Make sure users can still download files from the site directly.
-7. Instruct advanced users to clone a http url that ends with the "/.git/"
+6. `git annex add; git commit -m added`
+7. Make sure users can still download files from the site directly.
+8. Instruct advanced users to clone a http url that ends with the "/.git/"
    directory. For example, for downloads.kitenet.net, the clone url
    is `https://downloads.kitenet.net/.git/`
-8. Set up a git `post-receive` hook to update the repository's working tree
+9. Set up a git `post-receive` hook to update the repository's working tree
    when changes are pushed to it. See below for details.
 
 When users clone over http, and run git-annex, it will
