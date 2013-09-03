@@ -279,6 +279,7 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 			then do
 				updateInodeCache key src
 				replaceFile f $ liftIO . moveFile src
+				chmodContent f
 				forM_ fs $
 					addContentWhenNotPresent key f
 			else ifM (goodContent key f)
@@ -498,6 +499,18 @@ freezeContent file = unlessM crippledFileSystem $
 		addModes readModes
 	go _ = modifyFileMode file $
 		removeModes writeModes .
+		addModes [ownerReadMode]
+
+{- Adjusts read mode of annexed file per core.sharedRepository setting. -}
+chmodContent :: FilePath -> Annex ()
+chmodContent file = unlessM crippledFileSystem $
+	liftIO . go =<< fromRepo getSharedRepository
+  where
+	go GroupShared = modifyFileMode file $
+		addModes [ownerReadMode, groupReadMode]
+	go AllShared = modifyFileMode file $
+		addModes readModes
+	go _ = modifyFileMode file $
 		addModes [ownerReadMode]
 
 {- Allows writing to an annexed file that freezeContent was called on
