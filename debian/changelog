@@ -11,6 +11,23 @@ git-annex (4.20130828) UNRELEASED; urgency=low
     from feeds.
   * Honor core.sharedrepository when receiving and adding files in direct
     mode.
+  * enableremote: gpg keys can be removed from those a remote encrypts
+    to by passing "keyid-=$KEYID". keyid+= is also provided, although
+    "encryption=$KEYID" can also be used as always.
+    (Thanks, guilhem for the patch.)
+  * initremote: A new encryption scheme can be selected with
+    "encryption=pubkey keyid=$KEYID"
+    This causes files placed on special remotes to be directly
+    encrypted to the specified key(s). It is not possible to add
+    other keys later and have them immedately be able to access those
+    encrypted files, like can be done with the default encryption scheme.
+    However, pubkey encryption may be considered more secure due to being
+    and more standard use of gpg that avoids symmetric encryption algorythms,
+    or just simpler if you're the only person you ever intend to use a
+    particular encrypted special remote.
+    (Thanks, guilhem for the patch.)
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
 
 git-annex (4.20130827) unstable; urgency=low
 
