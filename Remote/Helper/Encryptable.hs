@@ -33,15 +33,16 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 		Just "none" -> return c
 		Just "shared" -> use "encryption setup" . genSharedCipher
 			=<< highRandomQuality
-		-- hybrid encryption by default
-		_ | maybe True (== "hybrid") encryption ->
+		-- hybrid encryption is the default when a keyid is
+                -- specified but no encryption
+		_ | maybe (M.member "keyid" c) (== "hybrid") encryption ->
 			use "encryption setup" . genEncryptedCipher key True
 				=<< highRandomQuality
 		Just "pubkey" -> use "encryption setup" . genEncryptedCipher key False
 				=<< highRandomQuality
 		_ -> error $ "Specify " ++ intercalate " or "
 			(map ("encryption=" ++)
-				["none","shared","hybrid (default)","pubkey"])
+				["none","shared","hybrid","pubkey"])
 			++ "."
 	key = fromMaybe (error "Specifiy keyid=...") $ M.lookup "keyid" c
 	newkeys = maybe [] (\k -> [(True,k)]) (M.lookup "keyid+" c) ++
