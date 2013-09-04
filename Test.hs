@@ -34,6 +34,7 @@ import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
 import qualified Types
+import qualified Logs
 import qualified Logs.UUIDBased
 import qualified Logs.Trust
 import qualified Logs.Remote
@@ -117,6 +118,7 @@ quickcheck =
 	, check "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
 	, check "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
 	, check "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
+	, check "prop_logs_sane" Logs.prop_logs_sane
 	, check "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
 	, check "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
 	, check "prop_parentDir_basics" Utility.Path.prop_parentDir_basics

@@ -503,6 +503,23 @@ subdirectories).
 
   Upgrades the repository to current layout.
 
+* forget
+
+  Causes the git-annex branch to be rewritten, throwing away historical
+  data about past locations of files. The resulting branch will use less
+  space, but `git annex log` will not be able to show where
+  files used to be located.
+  
+  To also prune references to repositories that have been marked as dead,
+  specify --drop-dead.
+
+  When this rewritten branch is merged into other clones of
+  the repository, git-annex will automatically perform the same rewriting
+  to their local git-annex branches. So the forgetfulness will automatically
+  propigate out from its starting point until all repositories running
+  git-annex have forgotten their old history. (You may need to force
+  git to push the branch to any git repositories not running git-annex.
+
 # QUERY COMMANDS
 
 * version

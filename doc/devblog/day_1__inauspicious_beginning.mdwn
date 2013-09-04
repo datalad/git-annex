@@ -1,0 +1,11 @@
+I try hard to keep this devblog about git-annex development and not me.
+However, it is a shame that what I wanted to be the beginning of my first
+real month of work funded by the new campaign has been marred by my home's
+internet connection being taken out by a lightning strike, and by illness.
+Nearly back on my feet after that, and waiting for my new laptop to
+finally get here.
+
+Today's work: Finished up the `git annex forget` feature and merged it in.
+Fixed the bug that was causing the commit race detection code to
+incorrectly fire on the commit made by the transition code. Few other bits
+and pieces.

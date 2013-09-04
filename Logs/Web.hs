@@ -11,8 +11,6 @@ module Logs.Web (
 	getUrls,
 	setUrlPresent,
 	setUrlMissing,
-	urlLog,
-	urlLogKey,
 	knownUrls,
 	Downloader(..),
 	getDownloader,
@@ -22,9 +20,9 @@ module Logs.Web (
 import qualified Data.ByteString.Lazy.Char8 as L
 
 import Common.Annex
+import Logs
 import Logs.Presence
 import Logs.Location
-import Types.Key
 import qualified Annex.Branch
 import Annex.CatFile
 import qualified Git
@@ -36,35 +34,9 @@ type URLString = String
 webUUID :: UUID
 webUUID = UUID "00000000-0000-0000-0000-000000000001"
 
-urlLogExt :: String
-urlLogExt = ".log.web"
-
-urlLog :: Key -> FilePath
-urlLog key = hashDirLower key </> keyFile key ++ urlLogExt
-
-{- Converts a url log file into a key.
- - (Does not work on oldurlLogs.) -}
-urlLogKey :: FilePath -> Maybe Key
-urlLogKey file
-	| ext == urlLogExt = fileKey base
-	| otherwise = Nothing
-  where
-  	(base, ext) = splitAt (length file - extlen) file
-	extlen = length urlLogExt
-
-isUrlLog :: FilePath -> Bool
-isUrlLog file = urlLogExt `isSuffixOf` file
-
-{- Used to store the urls elsewhere. -}
-oldurlLogs :: Key -> [FilePath]
-oldurlLogs key = 
-	[ "remote/web" </> hashDirLower key </> key2file key ++ ".log"
-	, "remote/web" </> hashDirLower key </> keyFile key ++ ".log"
-	]
-
 {- Gets all urls that a key might be available from. -}
 getUrls :: Key -> Annex [URLString]
-getUrls key = go $ urlLog key : oldurlLogs key
+getUrls key = go $ urlLogFile key : oldurlLogs key
   where
 	go [] = return []
 	go (l:ls) = do
@@ -77,13 +49,13 @@ setUrlPresent :: Key -> URLString -> Annex ()
 setUrlPresent key url = do
 	us <- getUrls key
 	unless (url `elem` us) $ do
-		addLog (urlLog key) =<< logNow InfoPresent url
+		addLog (urlLogFile key) =<< logNow InfoPresent url
 		-- update location log to indicate that the web has the key
 		logChange key webUUID InfoPresent
 
 setUrlMissing :: Key -> URLString -> Annex ()
 setUrlMissing key url = do
-	addLog (urlLog key) =<< logNow InfoMissing url
+	addLog (urlLogFile key) =<< logNow InfoMissing url
 	whenM (null <$> getUrls key) $
 		logChange key webUUID InfoMissing
 

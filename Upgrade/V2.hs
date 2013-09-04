@@ -12,9 +12,9 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
 import qualified Annex.Branch
-import Logs.Location
 import Annex.Content
 import Utility.Tmp
+import Logs
 
 olddir :: Git.Repo -> FilePath
 olddir g
@@ -47,7 +47,7 @@ upgrade = do
 
 	e <- liftIO $ doesDirectoryExist old
 	when e $ do
-		mapM_ (\(k, f) -> inject f $ logFile k) =<< locationLogs
+		mapM_ (\(k, f) -> inject f $ locationLogFile k) =<< locationLogs
 		mapM_ (\f -> inject f f) =<< logFiles old
 
 	saveState False
@@ -73,7 +73,7 @@ locationLogs = do
   where
 	tryDirContents d = catchDefaultIO [] $ dirContents d
 	islogfile f = maybe Nothing (\k -> Just (k, f)) $
-			logFileKey $ takeFileName f
+			locationLogFileKey f
 
 inject :: FilePath -> FilePath -> Annex ()
 inject source dest = do

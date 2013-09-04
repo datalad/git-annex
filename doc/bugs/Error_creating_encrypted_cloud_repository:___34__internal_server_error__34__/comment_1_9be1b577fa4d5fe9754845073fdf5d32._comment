@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="guilhem"
+ ip="129.16.20.209"
+ subject="comment 1"
+ date="2013-08-30T11:39:51Z"
+ content="""
+gpg complains about an invalid parameter for the `auto-key-locate` option, which is not passed by git-annex but found in your gpg.conf.
+
+What is on line 233 of `/Users/adamliter/.gnupg/gpg.conf`?
+"""]]

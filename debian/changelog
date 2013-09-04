@@ -1,3 +1,17 @@
+git-annex (4.20130828) UNRELEASED; urgency=low
+
+  * forget: New command, causes git-annex branch history to be forgotten
+    in a way that will spread to other clones of the repository.
+    (As long as they're running this version or newer of git-annex.)
+  * forget --drop-dead: Completely removes mentions of repositories that
+    have been marked as dead from the git-annex branch.
+  * sync, assistant: Force push of the git-annex branch. Necessary
+    to ensure it gets pushed to remotes after being rewritten by forget.
+  * importfeed: Also ignore transient problems with downloading content
+    from feeds.
+  * Honor core.sharedrepository when receiving and adding files in direct
+    mode.
+
 git-annex (4.20130827) unstable; urgency=low
 
   * Youtube support! (And 53 other video hosts). When quvi is installed,

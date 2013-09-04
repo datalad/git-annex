@@ -25,11 +25,8 @@ import Data.Char
 import Common.Annex
 import qualified Annex.Branch
 import Types.Remote
+import Logs
 import Logs.UUIDBased
-
-{- Filename of remote.log. -}
-remoteLog :: FilePath
-remoteLog = "remote.log"
 
 {- Adds or updates a remote's config in the log. -}
 configSet :: UUID -> RemoteConfig -> Annex ()
