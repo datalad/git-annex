@@ -155,7 +155,7 @@ readBytes a h = L.hGetContents h >>= a
  - public-key encryption is used) using the given gpg options, and then
  - read by the Reader action.  Note: For public-key encryption,
  - recipients MUST be included in 'params' (for instance using
- - 'getGpgEncOpts'). -}
+ - 'getGpgEncParams'). -}
 encrypt :: [CommandParam] -> Cipher -> Feeder -> Reader a -> IO a
 encrypt params cipher = Gpg.feedRead params' pass
   where

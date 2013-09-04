@@ -94,7 +94,7 @@ storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) ->
 		sendAnnex k (void $ remove r enck) $ \src ->
-			liftIO $ encrypt (getGpgEncOpts r) cipher
+			liftIO $ encrypt (getGpgEncParams r) cipher
 				(streamMeteredFile src meterupdate) $
 				readBytes $ storeHelper r enck baseurl user pass
 
