@@ -307,16 +307,20 @@ subdirectories).
   types of special remotes need different configuration values. The
   command will prompt for parameters as needed.
 
-  All special remotes support encryption. You must either specify
-  encryption=none to disable encryption, or encryption=shared to use a
-  shared cipher (stored clear in the git repository), or
-  encryption=hybrid to encrypt the cipher to an OpenPGP key, or
-  encryption=pubkey to encrypt file contents using public-key
-  cryptography. In the two last cases, you also need to specify which
-  key can access the encrypted special remote, which is done by
-  specifiying keyid= (gpg needs to be to be able to find a public key
-  matching that specification, which can be an OpenPGP key ID or an
-  e-mail address for instance).
+  All special remotes support encryption. You can either specify
+  `encryption=none` to disable encryption, or specify 
+  `encryption=hybrid keyid=$keyid ...` to specify a gpg key id (or an email
+  address accociated with a key.
+
+  There are actually three schemes that can be used for management of the
+  encryption keys. When using the encryption=hybrid scheme, additional
+  gpg keys can be given access to the encrypted special remote easily
+  (without re-encrypting everything). When using encryption=shared,
+  a shared key is generated and stored in the git repository, allowing
+  anyone who can clone the git repository to access it. Finally, when using
+  encryption=pubkey, content in the special remote is directly encrypted
+  to the specified gpg keys, and additional ones cannot easily be given
+  access.
 
   Note that with encryption enabled, a cryptographic key is created.
   This requires sufficient entropy. If initremote seems to hang or take
@@ -342,28 +346,28 @@ subdirectories).
   For example, the directory special remote requires a directory= parameter.
 
   This command can also be used to modify the configuration of an existing
-  special remote, by specifying new values for parameters that were originally
-  set when using initremote. With the exception of some configuration values such
-  as the encryption scheme scheme, which cannot be changed once the
-  remote has been created.
+  special remote, by specifying new values for parameters that were
+  originally set when using initremote. (However, some settings such as
+  the as the encryption scheme cannot be changed once a special remote
+  has been created.)
 
-  If encryption is enabled and the remote's access limited to one or
-  more OpenPGP key(s), it is possible to give access to another key ID
-  by specifing the keyid+= parameter. While a key can later be removed
-  from the list, it is to be noted that it does NOT necessarily prevent
-  the owner of the private material from accessing data on the remote
-  (which is by design impossible, short of deleting the remote);
-  however, a fine use-case of keyid-= is to replace a revoked key by
-  a new one superseeding it:
+  The gpg keys that an encrypted special remote is encrypted to can be
+  changed using the keyid+= and keyid-= parameters. These respectively
+  add and remove keys from the list. However, note that removing a key
+  does NOT necessarily prevent the key's owner from accessing data
+  in the encrypted special remote
+  (which is by design impossible, short of deleting the remote).
+
+  One use-case of keyid-= is to replace a revoked key with
+  a new key:
 
 	git annex enableremote mys3 keyid-=revokedkey keyid+=newkey
 
-  Also, note that for encrypted special remotes using strict public-key
+  Also, note that for encrypted special remotes using plain public-key
   encryption (encryption=pubkey), adding or removing a key has NO effect
   on files that have already been copied to the remote. Hence using
   keyid+= and keyid-= with such remotes should be used with care, and
-  make little sense unless the private material of the old and new
-  access list is all owned by the same (group of) person.
+  make little sense except in cases like the revoked key example above.
 
 * trust [repository ...]
 
