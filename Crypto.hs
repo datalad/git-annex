@@ -114,7 +114,6 @@ encryptCipher :: Cipher -> EncryptedCipherVariant -> KeyIds -> IO StorableCipher
 encryptCipher (Cipher c) variant (KeyIds ks) = do
 	-- gpg complains about duplicate recipient keyids
 	let ks' = nub $ sort ks
-	-- The cipher itself is always encrypted to the given public keys
 	let params = Gpg.pkEncTo ks' ++ Gpg.stdEncryptionParams False
 	encipher <- Gpg.pipeStrict params c
 	return $ EncryptedCipher encipher variant (KeyIds ks')
