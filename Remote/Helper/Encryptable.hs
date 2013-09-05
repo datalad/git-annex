@@ -50,7 +50,7 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 	cannotchange = error "Cannot set encryption type of existing remotes."
 	-- Update an existing cipher if possible.
 	updateCipher v = case v of
-		SharedCipher{} | maybe True (== "shared") encryption -> return c'
+		SharedCipher _ | maybe True (== "shared") encryption -> return c'
 		EncryptedCipher _ variant _
 			| maybe True (== if variant == HybridCipher then "hybrid" else "pubkey") encryption ->
 				use "encryption update" $ updateEncryptedCipher newkeys v
