@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnxlx1UrzVhdy6_gFjzmF42x6QXxBUxg00"
+ nickname="Jakukyo"
+ subject="comment 2"
+ date="2013-09-05T12:14:42Z"
+ content="""
+> There are two gotchas...
+
+So just always run `git annex add` after editing a file
+and `git update-index --really-refresh` after migrating
+backend?
+
+"""]]
