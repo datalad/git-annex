@@ -20,6 +20,7 @@ git-annex (4.20130828) UNRELEASED; urgency=low
     rather than the hybrid approach. See documentation for advantages
     and disadvantages, but encryption=hybrid is the recommended scheme still.
     (Thanks, guilhem for the patch.)
+  * Fix Feeds display in build flags.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
 
