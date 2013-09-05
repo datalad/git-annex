@@ -38,9 +38,9 @@ import Types.Key
 import Types.Crypto
 
 {- The beginning of a Cipher is used for MAC'ing; the remainder is used
- - as the GPG symmetric encryption passphrase. Note that the cipher
- - itself is base-64 encoded, hence the string is longer than
- - 'cipherSize': 683 characters, padded to 684.
+ - as the GPG symmetric encryption passphrase when using the hybrid
+ - scheme. Note that the cipher itself is base-64 encoded, hence the
+ - string is longer than 'cipherSize': 683 characters, padded to 684.
  -
  - The 256 first characters that feed the MAC represent at best 192
  - bytes of entropy.  However that's more than enough for both the
@@ -64,17 +64,16 @@ cipherPassphrase (Cipher c) = drop cipherBeginning c
 cipherMac :: Cipher -> String
 cipherMac (Cipher c) = take cipherBeginning c
 
-{- Creates a new Cipher, encrypted to the specified key id. If the
- - boolean 'symmetric' is true, use that cipher not only for MAC'ing,
- - but also to symmetrically encrypt annexed file contents. Otherwise,
- - we don't bother to generate so much random data. -}
-genEncryptedCipher :: String -> Bool -> Bool -> IO StorableCipher
-genEncryptedCipher keyid symmetric highQuality = do
+{- Creates a new Cipher, encrypted to the specified key id. -}
+genEncryptedCipher :: String -> EncryptedCipherVariant -> Bool -> IO StorableCipher
+genEncryptedCipher keyid variant highQuality = do
 	ks <- Gpg.findPubKeys keyid
 	random <- Gpg.genRandom highQuality size
-	encryptCipher (Cipher random) symmetric ks
+	encryptCipher (Cipher random) variant ks
   where
-	size = if symmetric then cipherSize else cipherBeginning
+	size = case variant of
+		HybridCipher -> cipherSize -- used for MAC + symmetric
+		PubKeyCipher -> cipherBeginning -- only used for MAC
 
 {- Creates a new, shared Cipher. -}
 genSharedCipher :: Bool -> IO StorableCipher
@@ -100,27 +99,25 @@ updateEncryptedCipher newkeys encipher@(EncryptedCipher _ symmetric (KeyIds ks))
 	listKeyIds = mapM (Gpg.findPubKeys >=*> keyIds) >=*> concat
 
 describeCipher :: StorableCipher -> String
-describeCipher SharedCipher{} = "shared cipher"
-describeCipher (EncryptedCipher _ symmetric (KeyIds ks)) =
+describeCipher (SharedCipher _) = "shared cipher"
+describeCipher (EncryptedCipher _ variant (KeyIds ks)) =
 	scheme ++ " with gpg " ++ keys ks ++ " " ++ unwords ks
   where
-	scheme = if symmetric then "hybrid cipher" else "pubkey crypto"
+	scheme = case variant of
+		HybridCipher -> "hybrid cipher"
+		PubKeyCipher -> "pubkey crypto"
 	keys [_] = "key"
 	keys _ = "keys"
 
-{- Encrypts a Cipher to the specified KeyIds. The boolean indicates
- - whether to encrypt a hybrid cipher (True), which is going to be used
- - both for MAC'ing and symmetric encryption of file contents, or for
- - MAC'ing only (False), while pubkey crypto is used for file contents.
- - -}
-encryptCipher :: Cipher -> Bool -> KeyIds -> IO StorableCipher
-encryptCipher (Cipher c) symmetric (KeyIds ks) = do
+{- Encrypts a Cipher to the specified KeyIds. -}
+encryptCipher :: Cipher -> EncryptedCipherVariant -> KeyIds -> IO StorableCipher
+encryptCipher (Cipher c) variant (KeyIds ks) = do
 	-- gpg complains about duplicate recipient keyids
 	let ks' = nub $ sort ks
 	-- The cipher itself is always encrypted to the given public keys
 	let params = Gpg.pkEncTo ks' ++ Gpg.stdEncryptionParams False
 	encipher <- Gpg.pipeStrict params c
-	return $ EncryptedCipher encipher symmetric (KeyIds ks')
+	return $ EncryptedCipher encipher variant (KeyIds ks')
 
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: StorableCipher -> IO Cipher

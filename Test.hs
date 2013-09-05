@@ -920,26 +920,26 @@ test_crypto env = "git-annex crypto" ~: TestList $ flip map ["shared","hybrid","
 	 - that all keys are encrypted properly on the given directory remote. -}
 	testEncryptedRemote scheme ks c keys = case Remote.Helper.Encryptable.extractCipher c of
 		Just cip@Crypto.SharedCipher{} | scheme == "shared" && isNothing ks ->
-			checkKeys cip True
-		Just cip@(Crypto.EncryptedCipher encipher sym ks')
-			| checkScheme sym && keysMatch ks' ->
-				checkKeys cip sym <&&> checkCipher encipher ks'
+			checkKeys cip Nothing
+		Just cip@(Crypto.EncryptedCipher encipher v ks')
+			| checkScheme v && keysMatch ks' ->
+				checkKeys cip (Just v) <&&> checkCipher encipher ks'
 		_ -> return False
 	  where
 		keysMatch (Utility.Gpg.KeyIds ks') =
 			maybe False (\(Utility.Gpg.KeyIds ks2) ->
 					sort (nub ks2) == sort (nub ks')) ks
 		checkCipher encipher = Utility.Gpg.checkEncryptionStream encipher . Just
-		checkScheme True = scheme == "hybrid"
-		checkScheme False = scheme == "pubkey"
-		checkKeys cip sym = do
+		checkScheme Types.Crypto.HybridCipher = scheme == "hybrid"
+		checkScheme Types.Crypto.PubKeyCipher = scheme == "pubkey"
+		checkKeys cip mvariant = do
 			cipher <- Crypto.decryptCipher cip
 			files <- filterM doesFileExist $
 				map ("dir" </>) $ concatMap (key2files cipher) keys
-			return (not $ null files) <&&> allM (checkFile sym) files
-		checkFile sym filename =
+			return (not $ null files) <&&> allM (checkFile mvariant) files
+		checkFile mvariant filename =
 			Utility.Gpg.checkEncryptionFile filename $
-				if sym then Nothing else ks
+				if mvariant == Just Types.Crypto.PubKeyCipher then ks else Nothing
 		key2files cipher = Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else

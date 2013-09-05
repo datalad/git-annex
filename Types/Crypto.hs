@@ -8,6 +8,7 @@
 module Types.Crypto (
 	Cipher(..),
 	StorableCipher(..),
+	EncryptedCipherVariant(..),
 	KeyIds(..),
 	Mac(..),
 	readMac,
@@ -24,15 +25,10 @@ import Utility.Gpg (KeyIds(..))
 -- XXX ideally, this would be a locked memory region
 newtype Cipher = Cipher String
 
-data StorableCipher = EncryptedCipher String Bool KeyIds
-		-- ^ The Boolean indicates whether the cipher is used
-		-- both for symmetric encryption of file content and
-		-- MAC'ing of file names (True), or only for MAC'ing,
-		-- while file content is encrypted using public-key
-		-- crypto (False). In the latter case the cipher is
-		-- twice as short, but we don't want to rely on that
-		-- only.
+data StorableCipher = EncryptedCipher String EncryptedCipherVariant KeyIds
 		| SharedCipher String
+	deriving (Ord, Eq)
+data EncryptedCipherVariant = HybridCipher | PubKeyCipher
 	deriving (Ord, Eq)
 
 {- File names are (client-side) MAC'ed on special remotes.

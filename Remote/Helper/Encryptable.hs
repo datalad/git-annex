@@ -36,9 +36,9 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 		-- hybrid encryption is the default when a keyid is
                 -- specified but no encryption
 		_ | maybe (M.member "keyid" c) (== "hybrid") encryption ->
-			use "encryption setup" . genEncryptedCipher key True
+			use "encryption setup" . genEncryptedCipher key HybridCipher
 				=<< highRandomQuality
-		Just "pubkey" -> use "encryption setup" . genEncryptedCipher key False
+		Just "pubkey" -> use "encryption setup" . genEncryptedCipher key PubKeyCipher
 				=<< highRandomQuality
 		_ -> error $ "Specify " ++ intercalate " or "
 			(map ("encryption=" ++)
@@ -51,10 +51,9 @@ encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
 	-- Update an existing cipher if possible.
 	updateCipher v = case v of
 		SharedCipher{} | maybe True (== "shared") encryption -> return c'
-		EncryptedCipher _ symmetric _
-			| maybe True (== if symmetric then "hybrid" else "pubkey")
-				encryption ->
-			use "encryption update" $ updateEncryptedCipher newkeys v
+		EncryptedCipher _ variant _
+			| maybe True (== if variant == HybridCipher then "hybrid" else "pubkey") encryption ->
+				use "encryption update" $ updateEncryptedCipher newkeys v
 		_ -> cannotchange
 	use m a = do
 		showNote m
@@ -162,9 +161,9 @@ extractCipher c = case (M.lookup "cipher" c,
 			M.lookup "cipherkeys" c,
 			M.lookup "encryption" c) of
 	(Just t, Just ks, encryption) | maybe True (== "hybrid") encryption ->
-		Just $ EncryptedCipher (fromB64 t) True (readkeys ks)
+		Just $ EncryptedCipher (fromB64 t) HybridCipher (readkeys ks)
 	(Just t, Just ks, Just "pubkey") ->
-		Just $ EncryptedCipher (fromB64 t) False (readkeys ks)
+		Just $ EncryptedCipher (fromB64 t) PubKeyCipher (readkeys ks)
 	(Just t, Nothing, encryption) | maybe True (== "shared") encryption ->
 		Just $ SharedCipher (fromB64 t)
 	_ -> Nothing
