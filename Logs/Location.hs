@@ -30,9 +30,9 @@ import Annex.UUID
 
 {- Log a change in the presence of a key's value in current repository. -}
 logStatus :: Key -> LogStatus -> Annex ()
-logStatus key status = do
+logStatus key s = do
 	u <- getUUID
-	logChange key u status
+	logChange key u s
 
 {- Log a change in the presence of a key's value in a repository. -}
 logChange :: Key -> UUID -> LogStatus -> Annex ()
