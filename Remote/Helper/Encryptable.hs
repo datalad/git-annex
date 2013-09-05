@@ -143,7 +143,7 @@ cipherKey c k = fmap make <$> remoteCipher c
   where
 	make ciphertext = (cipContent ciphertext, encryptKey mac ciphertext k)
 	cipContent
-                | M.lookup "encryption" c /= Just "pubkey" = id
+		| M.lookup "encryption" c /= Just "pubkey" = id
 		| otherwise = const $ Cipher ""
 	mac = fromMaybe defaultMac $ M.lookup "mac" c >>= readMac
 
