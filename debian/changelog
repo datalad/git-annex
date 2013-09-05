@@ -14,8 +14,7 @@ git-annex (4.20130828) UNRELEASED; urgency=low
   * Honor core.sharedrepository when receiving and adding files in direct
     mode.
   * enableremote: gpg keys can be removed from those a remote encrypts
-    to by passing "keyid-=$KEYID". keyid+= is also provided, although
-    "encryption=$KEYID" can also be used as always.
+    to by passing "keyid-=$KEYID". keyid+= is also provided.
     (Thanks, guilhem for the patch.)
   * Added encryption=pubkey scheme, which encrypts to public keys directly
     rather than the hybrid approach. See documentation for advantages
