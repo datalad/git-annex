@@ -16,7 +16,7 @@ like "2512E3C7"
 
 Next, create the Glacier remote.
 
-	# git annex initremote glacier type=glacier encryption=2512E3C7
+	# git annex initremote glacier type=glacier keyid=2512E3C7
 	initremote glacier (encryption setup with gpg key C910D9222512E3C7) (gpg) ok
 
 The configuration for the Glacier remote is stored in git. So to make another
