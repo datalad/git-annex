@@ -133,18 +133,11 @@ embedCreds c
 	| isJust (M.lookup "cipherkeys" c) && isJust (M.lookup "cipher" c) = True
 	| otherwise = False
 
-{- Gets encryption Cipher, and encrypted version of Key. In case we want
- - asymmetric encryption, leave the first empty, but encrypt the Key
- - regardless. (Empty ciphers imply asymmetric encryption.) We could
- - also check how long is the cipher (MAC'ing-only ciphers are shorter),
- - but we don't want to rely on that only. -}
+{- Gets encryption Cipher, and encrypted version of Key. -}
 cipherKey :: RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
 cipherKey c k = fmap make <$> remoteCipher c
   where
-	make ciphertext = (cipContent ciphertext, encryptKey mac ciphertext k)
-	cipContent
-		| M.lookup "encryption" c /= Just "pubkey" = id
-		| otherwise = const $ Cipher ""
+	make ciphertext = (ciphertext, encryptKey mac ciphertext k)
 	mac = fromMaybe defaultMac $ M.lookup "mac" c >>= readMac
 
 {- Stores an StorableCipher in a remote's configuration. -}

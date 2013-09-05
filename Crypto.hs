@@ -64,20 +64,22 @@ cipherSize = 512
 
 cipherPassphrase :: Cipher -> String
 cipherPassphrase (Cipher c) = drop cipherBeginning c
+cipherPassphrase (MacOnlyCipher _) = error "MAC-only cipher"
 
 cipherMac :: Cipher -> String
 cipherMac (Cipher c) = take cipherBeginning c
+cipherMac (MacOnlyCipher c) = c
 
 {- Creates a new Cipher, encrypted to the specified key id. -}
 genEncryptedCipher :: String -> EncryptedCipherVariant -> Bool -> IO StorableCipher
 genEncryptedCipher keyid variant highQuality = do
 	ks <- Gpg.findPubKeys keyid
 	random <- Gpg.genRandom highQuality size
-	encryptCipher (Cipher random) variant ks
+	encryptCipher (mkCipher random) variant ks
   where
-	size = case variant of
-		HybridCipher -> cipherSize -- used for MAC + symmetric
-		PubKeyCipher -> cipherBeginning -- only used for MAC
+	(mkCipher, size) = case variant of
+		HybridCipher -> (Cipher, cipherSize) -- used for MAC + symmetric
+		PubKeyCipher -> (MacOnlyCipher, cipherBeginning) -- only used for MAC
 
 {- Creates a new, shared Cipher. -}
 genSharedCipher :: Bool -> IO StorableCipher
@@ -89,7 +91,7 @@ genSharedCipher highQuality =
 updateEncryptedCipher :: [(Bool, String)] -> StorableCipher -> IO StorableCipher
 updateEncryptedCipher _ SharedCipher{} = undefined
 updateEncryptedCipher [] encipher = return encipher
-updateEncryptedCipher newkeys encipher@(EncryptedCipher _ symmetric (KeyIds ks)) = do
+updateEncryptedCipher newkeys encipher@(EncryptedCipher _ variant (KeyIds ks)) = do
 	dropKeys <- listKeyIds [ k | (False, k) <- newkeys ]
 	forM_ dropKeys $ \k -> unless (k `elem` ks) $
 		error $ "Key " ++ k ++ " was not present; cannot remove."
@@ -98,7 +100,7 @@ updateEncryptedCipher newkeys encipher@(EncryptedCipher _ symmetric (KeyIds ks))
 	when (null ks') $
 		error "Cannot remove the last key."
 	cipher <- decryptCipher encipher
-	encryptCipher cipher symmetric $ KeyIds ks'
+	encryptCipher cipher variant $ KeyIds ks'
   where
 	listKeyIds = mapM (Gpg.findPubKeys >=*> keyIds) >=*> concat
 
@@ -115,18 +117,26 @@ describeCipher (EncryptedCipher _ variant (KeyIds ks)) =
 
 {- Encrypts a Cipher to the specified KeyIds. -}
 encryptCipher :: Cipher -> EncryptedCipherVariant -> KeyIds -> IO StorableCipher
-encryptCipher (Cipher c) variant (KeyIds ks) = do
+encryptCipher c variant (KeyIds ks) = do
 	-- gpg complains about duplicate recipient keyids
 	let ks' = nub $ sort ks
 	let params = Gpg.pkEncTo ks' ++ Gpg.stdEncryptionParams False
-	encipher <- Gpg.pipeStrict params c
+	encipher <- Gpg.pipeStrict params cipher
 	return $ EncryptedCipher encipher variant (KeyIds ks')
+  where
+	cipher = case c of
+		Cipher x -> x
+		MacOnlyCipher x -> x
 
 {- Decrypting an EncryptedCipher is expensive; the Cipher should be cached. -}
 decryptCipher :: StorableCipher -> IO Cipher
 decryptCipher (SharedCipher t) = return $ Cipher t
-decryptCipher (EncryptedCipher t _ _) =
-	Cipher <$> Gpg.pipeStrict [ Param "--decrypt" ] t
+decryptCipher (EncryptedCipher t variant _) =
+	mkCipher <$> Gpg.pipeStrict [ Param "--decrypt" ] t
+  where
+	mkCipher = case variant of
+		HybridCipher -> Cipher
+		PubKeyCipher -> MacOnlyCipher
 
 {- Generates an encrypted form of a Key. The encryption does not need to be
  - reversable, nor does it need to be the same type of encryption used
@@ -158,16 +168,18 @@ readBytes a h = L.hGetContents h >>= a
  - recipients MUST be included in 'params' (for instance using
  - 'getGpgEncParams'). -}
 encrypt :: [CommandParam] -> Cipher -> Feeder -> Reader a -> IO a
-encrypt params cipher = Gpg.feedRead params' pass
-  where
-	pass = cipherPassphrase cipher
-	params' = params ++ Gpg.stdEncryptionParams (not $ null pass)
+encrypt params cipher = case cipher of
+	Cipher{} -> Gpg.feedRead (params ++ Gpg.stdEncryptionParams True) $
+			cipherPassphrase cipher
+	MacOnlyCipher{} -> Gpg.pipeLazy $ params ++ Gpg.stdEncryptionParams False
 
 {- Runs a Feeder action, that generates content that is decrypted with the
  - Cipher (or using a private key if the Cipher is empty), and read by the
  - Reader action. -}
 decrypt :: Cipher -> Feeder -> Reader a -> IO a
-decrypt = Gpg.feedRead [Param "--decrypt"] . cipherPassphrase
+decrypt cipher = case cipher of
+	Cipher{} -> Gpg.feedRead [Param "--decrypt"] $ cipherPassphrase cipher
+	MacOnlyCipher{} -> Gpg.pipeLazy [Param "--decrypt"]
 
 macWithCipher :: Mac -> Cipher -> String -> String
 macWithCipher mac c = macWithCipher' mac (cipherMac c)

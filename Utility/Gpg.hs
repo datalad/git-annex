@@ -99,31 +99,33 @@ pipeStrict params input = do
  - Note that to avoid deadlock with the cleanup stage,
  - the reader must fully consume gpg's input before returning. -}
 feedRead :: [CommandParam] -> String -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
-feedRead params passphrase feeder reader = if null passphrase
-	then go =<< stdParams (Param "--batch" : params)
-	else do
+feedRead params passphrase feeder reader = do
 #ifndef mingw32_HOST_OS
-		-- pipe the passphrase into gpg on a fd
-		(frompipe, topipe) <- createPipe
-		void $ forkIO $ do
-			toh <- fdToHandle topipe
-			hPutStrLn toh passphrase
-			hClose toh
-		let Fd pfd = frompipe
-		let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
-
-		params' <- stdParams $ Param "--batch" : passphrasefd ++ params
-		closeFd frompipe `after` go params'
+	-- pipe the passphrase into gpg on a fd
+	(frompipe, topipe) <- createPipe
+	void $ forkIO $ do
+		toh <- fdToHandle topipe
+		hPutStrLn toh passphrase
+		hClose toh
+	let Fd pfd = frompipe
+	let passphrasefd = [Param "--passphrase-fd", Param $ show pfd]
+	closeFd frompipe `after` go (passphrasefd ++ params)
 #else
-		-- store the passphrase in a temp file for gpg
-		withTmpFile "gpg" $ \tmpfile h -> do
-			hPutStr h passphrase
-			hClose h
-		let passphrasefile = [Param "--passphrase-file", File tmpfile]
-		go =<< stdParams $ Param "--batch" : passphrasefile ++ params
+	-- store the passphrase in a temp file for gpg
+	withTmpFile "gpg" $ \tmpfile h -> do
+		hPutStr h passphrase
+		hClose h
+	let passphrasefile = [Param "--passphrase-file", File tmpfile]
+	go $ passphrasefile ++ params
 #endif
   where
-	go params' = withBothHandles createProcessSuccess (proc gpgcmd params')
+	go params' = pipeLazy params' feeder reader
+
+{- Like feedRead, but without passphrase. -}
+pipeLazy :: [CommandParam] -> (Handle -> IO ()) -> (Handle -> IO a) -> IO a
+pipeLazy params feeder reader = do
+	params' <- stdParams $ Param "--batch" : params
+	withBothHandles createProcessSuccess (proc gpgcmd params')
 		$ \(to, from) -> do
 			void $ forkIO $ do
 				feeder to

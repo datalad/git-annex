@@ -23,7 +23,7 @@ import Data.Digest.Pure.SHA
 import Utility.Gpg (KeyIds(..))
 
 -- XXX ideally, this would be a locked memory region
-newtype Cipher = Cipher String
+data Cipher = Cipher String | MacOnlyCipher String
 
 data StorableCipher = EncryptedCipher String EncryptedCipherVariant KeyIds
 		| SharedCipher String
