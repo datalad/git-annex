@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, FlexibleInstances #-}
+{-# LANGUAGE CPP #-}
 
 module Utility.Gpg where
 
@@ -24,10 +24,6 @@ import Utility.Env
 import Utility.Tmp
 #endif
 
-import qualified Data.Map as M
-import Types.GitConfig
-import Types.Remote hiding (setup)
-
 newtype KeyIds = KeyIds { keyIds :: [String] }
 	deriving (Ord, Eq)
 
@@ -36,27 +32,9 @@ newtype KeyIds = KeyIds { keyIds :: [String] }
 gpgcmd :: FilePath
 gpgcmd = fromMaybe "gpg" SysConfig.gpg
 
-{- Return some options suitable for GnuPG encryption, symmetric or not. -}
-class LensGpgEncParams a where getGpgEncParams :: a -> [CommandParam]
-
-{- Extract the GnuPG options from a pair of a Remote Config and a Remote
- - Git Config. If the remote is configured to use public-key encryption,
- - look up the recipient keys and add them to the option list. -}
-instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
-	getGpgEncParams (c,gc) = map Param (remoteAnnexGnupgOptions gc) ++ recipients
-	  where
-		recipients = case M.lookup "encryption" c of
-			Just "pubkey" -> pkEncTo $ maybe [] (split ",") $
-						M.lookup "cipherkeys" c
-			_ -> []
-
 -- Generate an argument list to asymetrically encrypt to the given recipients.
 pkEncTo :: [String] -> [CommandParam]
 pkEncTo = concatMap (\r -> [Param "--recipient", Param r])
-
-{- Extract the GnuPG options from a Remote. -}
-instance LensGpgEncParams (RemoteA a) where
-	getGpgEncParams r = getGpgEncParams (config r, gitconfig r)
 
 stdParams :: [CommandParam] -> IO [String]
 stdParams params = do

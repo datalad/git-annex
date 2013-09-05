@@ -8,6 +8,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE FlexibleInstances #-}
+
 module Crypto (
 	Cipher,
 	KeyIds(..),
@@ -22,8 +24,8 @@ module Crypto (
 	feedBytes,
 	readBytes,
 	encrypt,
-	decrypt,	
-	Gpg.getGpgEncParams,
+	decrypt,
+	getGpgEncParams,
 
 	prop_HmacSha1WithCipher_sane
 ) where
@@ -31,11 +33,13 @@ module Crypto (
 import qualified Data.ByteString.Lazy as L
 import Data.ByteString.Lazy.UTF8 (fromString)
 import Control.Applicative
+import qualified Data.Map as M
 
 import Common.Annex
 import qualified Utility.Gpg as Gpg
 import Types.Key
 import Types.Crypto
+import Types.Remote
 
 {- The beginning of a Cipher is used for MAC'ing; the remainder is used
  - as the GPG symmetric encryption passphrase when using the hybrid
@@ -175,3 +179,21 @@ prop_HmacSha1WithCipher_sane :: Bool
 prop_HmacSha1WithCipher_sane = known_good == macWithCipher' HmacSha1 "foo" "bar"
   where
 	known_good = "46b4ec586117154dacd49d664e5d63fdc88efb51"
+
+{- Return some options suitable for GnuPG encryption, symmetric or not. -}
+class LensGpgEncParams a where getGpgEncParams :: a -> [CommandParam]
+
+{- Extract the GnuPG options from a pair of a Remote Config and a Remote
+ - Git Config. If the remote is configured to use public-key encryption,
+ - look up the recipient keys and add them to the option list. -}
+instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
+	getGpgEncParams (c,gc) = map Param (remoteAnnexGnupgOptions gc) ++ recipients
+	  where
+		recipients = case M.lookup "encryption" c of
+			Just "pubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $
+						M.lookup "cipherkeys" c
+			_ -> []
+
+{- Extract the GnuPG options from a Remote. -}
+instance LensGpgEncParams (RemoteA a) where
+	getGpgEncParams r = getGpgEncParams (config r, gitconfig r)
