@@ -917,7 +917,7 @@ test_crypto env = "git-annex crypto" ~: TestList $ flip map ["shared","hybrid","
 		annexed_present annexedfile
   where
 	{- Ensure the configuration complies with the encryption scheme, and
-	 - that all keys are encrypted properly on the given directory remote. -}
+	 - that all keys are encrypted properly for the given directory remote. -}
 	testEncryptedRemote scheme ks c keys = case Remote.Helper.Encryptable.extractCipher c of
 		Just cip@Crypto.SharedCipher{} | scheme == "shared" && isNothing ks ->
 			checkKeys cip Nothing
