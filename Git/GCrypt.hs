@@ -12,7 +12,8 @@ module Git.GCrypt where
 import Common
 import Git.Types
 import Git.Construct
-import Git.Config
+import qualified Git.Config as Config
+import Utility.Gpg
 
 urlPrefix :: String
 urlPrefix = "gcrypt::"
@@ -47,7 +48,26 @@ encryptedRepo baserepo = go
  - which is stored in the repository (in encrypted form)
  - and cached in a per-remote gcrypt-id configuration setting. -}
 remoteRepoId :: Repo -> Repo -> Maybe String
-remoteRepoId baserepo remote = do
+remoteRepoId = getRemoteConfig "gcrypt-id"
+
+getRemoteConfig :: String -> Repo -> Repo -> Maybe String
+getRemoteConfig field baserepo remote = do
 	name <- remoteName remote
-	let key = "remote." ++ name ++ ".gcrypt-id"
-	getMaybe key baserepo
+	Config.getMaybe (remoteConfigKey field name) baserepo
+
+{- Gpg keys that the remote is encrypted for.
+ - If empty, gcrypt uses --default-recipient-self -}
+particiantList :: Maybe Repo -> Repo -> Repo -> KeyIds
+particiantList globalconfigrepo baserepo remote = KeyIds $ parse $ firstJust
+	[ getRemoteConfig "participants" baserepo remote
+	, Config.getMaybe defaultkey baserepo
+	, Config.getMaybe defaultkey =<< globalconfigrepo
+	]
+  where
+	defaultkey = "gcrypt.participants"
+  	parse (Just "simple") = []
+	parse (Just l) = words l
+	parse Nothing = []
+
+remoteConfigKey :: String -> String -> String
+remoteConfigKey key field = "remote." ++ field ++ "." ++ key
