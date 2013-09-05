@@ -28,7 +28,7 @@ data Cipher = Cipher String | MacOnlyCipher String
 data StorableCipher = EncryptedCipher String EncryptedCipherVariant KeyIds
 		| SharedCipher String
 	deriving (Ord, Eq)
-data EncryptedCipherVariant = HybridCipher | PubKeyCipher
+data EncryptedCipherVariant = Hybrid | PubKey
 	deriving (Ord, Eq)
 
 {- File names are (client-side) MAC'ed on special remotes.

@@ -930,8 +930,8 @@ test_crypto env = "git-annex crypto" ~: TestList $ flip map ["shared","hybrid","
 			maybe False (\(Utility.Gpg.KeyIds ks2) ->
 					sort (nub ks2) == sort (nub ks')) ks
 		checkCipher encipher = Utility.Gpg.checkEncryptionStream encipher . Just
-		checkScheme Types.Crypto.HybridCipher = scheme == "hybrid"
-		checkScheme Types.Crypto.PubKeyCipher = scheme == "pubkey"
+		checkScheme Types.Crypto.Hybrid = scheme == "hybrid"
+		checkScheme Types.Crypto.PubKey = scheme == "pubkey"
 		checkKeys cip mvariant = do
 			cipher <- Crypto.decryptCipher cip
 			files <- filterM doesFileExist $
@@ -939,7 +939,7 @@ test_crypto env = "git-annex crypto" ~: TestList $ flip map ["shared","hybrid","
 			return (not $ null files) <&&> allM (checkFile mvariant) files
 		checkFile mvariant filename =
 			Utility.Gpg.checkEncryptionFile filename $
-				if mvariant == Just Types.Crypto.PubKeyCipher then ks else Nothing
+				if mvariant == Just Types.Crypto.PubKey then ks else Nothing
 		key2files cipher = Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else

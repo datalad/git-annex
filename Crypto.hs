@@ -78,8 +78,8 @@ genEncryptedCipher keyid variant highQuality = do
 	encryptCipher (mkCipher random) variant ks
   where
 	(mkCipher, size) = case variant of
-		HybridCipher -> (Cipher, cipherSize) -- used for MAC + symmetric
-		PubKeyCipher -> (MacOnlyCipher, cipherBeginning) -- only used for MAC
+		Hybrid -> (Cipher, cipherSize) -- used for MAC + symmetric
+		PubKey -> (MacOnlyCipher, cipherBeginning) -- only used for MAC
 
 {- Creates a new, shared Cipher. -}
 genSharedCipher :: Bool -> IO StorableCipher
@@ -110,8 +110,8 @@ describeCipher (EncryptedCipher _ variant (KeyIds ks)) =
 	scheme ++ " with gpg " ++ keys ks ++ " " ++ unwords ks
   where
 	scheme = case variant of
-		HybridCipher -> "hybrid cipher"
-		PubKeyCipher -> "pubkey crypto"
+		Hybrid -> "hybrid cipher"
+		PubKey -> "pubkey crypto"
 	keys [_] = "key"
 	keys _ = "keys"
 
@@ -135,8 +135,8 @@ decryptCipher (EncryptedCipher t variant _) =
 	mkCipher <$> Gpg.pipeStrict [ Param "--decrypt" ] t
   where
 	mkCipher = case variant of
-		HybridCipher -> Cipher
-		PubKeyCipher -> MacOnlyCipher
+		Hybrid -> Cipher
+		PubKey -> MacOnlyCipher
 
 {- Generates an encrypted form of a Key. The encryption does not need to be
  - reversable, nor does it need to be the same type of encryption used
