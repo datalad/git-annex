@@ -89,10 +89,11 @@ updateEncryptedCipher [] encipher = return encipher
 updateEncryptedCipher newkeys encipher@(EncryptedCipher _ symmetric (KeyIds ks)) = do
 	dropKeys <- listKeyIds [ k | (False, k) <- newkeys ]
 	forM_ dropKeys $ \k -> unless (k `elem` ks) $
-		error $ "Key " ++ k ++ " is not granted access."
+		error $ "Key " ++ k ++ " was not present; cannot remove."
 	addKeys <- listKeyIds [ k | (True, k) <- newkeys ]
 	let ks' = (addKeys ++ ks) \\ dropKeys
-	when (null ks') $ error "That would empty the access list."
+	when (null ks') $
+		error "Cannot remove the last key."
 	cipher <- decryptCipher encipher
 	encryptCipher cipher symmetric $ KeyIds ks'
   where
@@ -108,7 +109,7 @@ describeCipher (EncryptedCipher _ symmetric (KeyIds ks)) =
 	keys _ = "keys"
 
 {- Encrypts a Cipher to the specified KeyIds. The boolean indicates
- - whether to encrypt an hybrid cipher (True), which is going to be used
+ - whether to encrypt a hybrid cipher (True), which is going to be used
  - both for MAC'ing and symmetric encryption of file contents, or for
  - MAC'ing only (False), while pubkey crypto is used for file contents.
  - -}
