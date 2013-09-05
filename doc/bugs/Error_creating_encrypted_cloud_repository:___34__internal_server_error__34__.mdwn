@@ -20,3 +20,5 @@ The operating system is Mac OS X 10.8.4, and the version of git-annex is 4.20130
 
 # End of transcript or log.
 """]]
+
+[[!meta title "OSX bundled gpg does not work with gpg.conf created by MacGPG"]]
