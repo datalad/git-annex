@@ -26,6 +26,7 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Construct
 import qualified Git.Command
+import qualified Git.GCrypt
 import qualified Annex
 import Logs.Presence
 import Logs.Transfer
@@ -152,6 +153,12 @@ tryGitConfigRead r
 	| Git.repoIsHttp r = do
 		headers <- getHttpHeaders
 		store $ geturlconfig headers
+	| Git.GCrypt.isEncrypted r = do
+		g <- gitRepo
+		case Git.GCrypt.remoteRepoId g r of
+			Nothing -> return r
+			Just v -> store $ liftIO $ setUUID r $
+				genUUIDInNameSpace gCryptNameSpace v
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ onLocal r $ do 
 		ensureInitialized
