@@ -11,6 +11,19 @@ git-annex (4.20130828) UNRELEASED; urgency=low
     from feeds.
   * Honor core.sharedrepository when receiving and adding files in direct
     mode.
+  * initremote: Syntax change when setting up encrypted special remote.
+    Now use: encryption=hybrid keyid=$KEYID
+    (Thanks, guilhem for the patch.)
+  * enableremote: gpg keys can be removed from those a remote encrypts
+    to by passing "keyid-=$KEYID". keyid+= is also provided, although
+    "encryption=$KEYID" can also be used as always.
+    (Thanks, guilhem for the patch.)
+  * Added encryption=pubkey scheme, which encrypts to public keys directly
+    rather than the hybrid approach. See documentation for advantages
+    and disadvantages, but encryption=hybrid is the recommended scheme still.
+    (Thanks, guilhem for the patch.)
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
 
 git-annex (4.20130827) unstable; urgency=low
 

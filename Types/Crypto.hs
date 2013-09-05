@@ -8,6 +8,7 @@
 module Types.Crypto (
 	Cipher(..),
 	StorableCipher(..),
+	EncryptedCipherVariant(..),
 	KeyIds(..),
 	Mac(..),
 	readMac,
@@ -24,7 +25,10 @@ import Utility.Gpg (KeyIds(..))
 -- XXX ideally, this would be a locked memory region
 newtype Cipher = Cipher String
 
-data StorableCipher = EncryptedCipher String KeyIds | SharedCipher String
+data StorableCipher = EncryptedCipher String EncryptedCipherVariant KeyIds
+		| SharedCipher String
+	deriving (Ord, Eq)
+data EncryptedCipherVariant = HybridCipher | PubKeyCipher
 	deriving (Ord, Eq)
 
 {- File names are (client-side) MAC'ed on special remotes.

@@ -14,13 +14,10 @@ Instead, you should use a regular `git clone` of your git-annex repository.
 These parameters can be passed to `git annex initremote` to configure the
 remote:
 
-* `encryption` - Required. Either "none" to disable encryption,
-  or a value that can be looked up (using gpg -k) to find a gpg encryption
-  key that will be given access to the remote, or "shared" which allows
-  every clone of the repository to decrypt the encrypted data.
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]].
 
-  Note that additional gpg keys can be given access to a remote by
-  running enableremote with the new key id. See [[encryption]].
+* `keyid` - Specifies the gpg key to use for [[encryption]].
 
 * `chunksize` - Avoid storing files larger than the specified size in the
   directory. For use on directories on mount points that have file size

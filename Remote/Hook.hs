@@ -38,7 +38,7 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
 	return $ encryptableRemote c
-		(storeEncrypted hooktype $ getGpgOpts gc)
+		(storeEncrypted hooktype $ getGpgEncParams (c,gc))
 		(retrieveEncrypted hooktype)
 		Remote {
 			uuid = u,
@@ -118,7 +118,7 @@ store :: HookName -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store h k _f _p = sendAnnex k (void $ remove h k) $ \src ->
 	runHook h "store" k (Just src) $ return True
 
-storeEncrypted :: HookName -> GpgOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted :: HookName -> [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted h gpgOpts (cipher, enck) k _p = withTmp enck $ \tmp ->
 	sendAnnex k (void $ remove h enck) $ \src -> do
 		liftIO $ encrypt gpgOpts cipher (feedFile src) $

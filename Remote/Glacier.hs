@@ -95,7 +95,7 @@ storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = sendAnnex k (void $ remove r enck) $ \src -> do
 	metered (Just p) k $ \meterupdate ->
 		storeHelper r enck $ \h ->
-			encrypt (getGpgOpts r) cipher (feedFile src)
+			encrypt (getGpgEncParams r) cipher (feedFile src)
 				(readBytes $ meteredWrite meterupdate h)
 
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool

@@ -55,7 +55,7 @@ gen r u c gc = do
 	let o = RsyncOpts url (transport ++ opts) escape
 	    islocal = rsyncUrlIsPath $ rsyncUrl o
 	return $ encryptableRemote c
-		(storeEncrypted o $ getGpgOpts gc)
+		(storeEncrypted o $ getGpgEncParams (c,gc))
 		(retrieveEncrypted o)
 		Remote
 			{ uuid = u
@@ -137,7 +137,7 @@ rsyncUrls o k = map use annexHashes
 store :: RsyncOpts -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store o k _f p = sendAnnex k (void $ remove o k) $ rsyncSend o p k False
 
-storeEncrypted :: RsyncOpts -> GpgOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted :: RsyncOpts -> [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted o gpgOpts (cipher, enck) k p = withTmp enck $ \tmp ->
 	sendAnnex k (void $ remove o enck) $ \src -> do
 		liftIO $ encrypt gpgOpts cipher (feedFile src) $
