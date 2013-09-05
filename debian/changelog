@@ -1,5 +1,7 @@
 git-annex (4.20130828) UNRELEASED; urgency=low
 
+  * initremote: Syntax change when setting up an encrypted special remote.
+    Now use keyid=$KEYID rather than the old encryption=$KEYID
   * forget: New command, causes git-annex branch history to be forgotten
     in a way that will spread to other clones of the repository.
     (As long as they're running this version or newer of git-annex.)
@@ -11,9 +13,6 @@ git-annex (4.20130828) UNRELEASED; urgency=low
     from feeds.
   * Honor core.sharedrepository when receiving and adding files in direct
     mode.
-  * initremote: Syntax change when setting up encrypted special remote.
-    Now use: encryption=hybrid keyid=$KEYID
-    (Thanks, guilhem for the patch.)
   * enableremote: gpg keys can be removed from those a remote encrypts
     to by passing "keyid-=$KEYID". keyid+= is also provided, although
     "encryption=$KEYID" can also be used as always.
