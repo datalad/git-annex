@@ -876,9 +876,9 @@ test_bup_remote env = "git-annex bup remote" ~: intmpclonerepo env $ when Build.
 
 -- gpg is not a build dependency, so only test when it's available
 test_crypto :: TestEnv -> Test
+#ifndef mingw32_HOST_OS
 test_crypto env = "git-annex crypto" ~: TestList $ flip map ["shared","hybrid","pubkey"] $
     \scheme -> TestCase $ intmpclonerepo env $ whenM (Utility.Path.inPath Utility.Gpg.gpgcmd) $ do
-#ifndef mingw32_HOST_OS
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do
 		createDirectory "dir"
@@ -943,7 +943,7 @@ test_crypto env = "git-annex crypto" ~: TestList $ flip map ["shared","hybrid","
 		key2files cipher = Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
-	putStrLn "gpg testing not implemented on Windows"
+test_crypto env = "git-annex crypto" ~: putStrLn "gpg testing not implemented on Windows"
 #endif
 
 -- This is equivilant to running git-annex, but it's all run in-process
