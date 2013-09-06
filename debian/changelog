@@ -21,6 +21,8 @@ git-annex (4.20130828) UNRELEASED; urgency=low
     and disadvantages, but encryption=hybrid is the recommended scheme still.
     (Thanks, guilhem for the patch.)
   * Fix Feeds display in build flags.
+  * Remind user when annex-ignore is set for some remotes, if unable to
+    get or drop a file, possibly because it's on an ignored remote.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
 
