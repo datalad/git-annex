@@ -56,13 +56,13 @@ import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
-import qualified Utility.Gpg
 import qualified Utility.Matcher
 import qualified Utility.Exception
 #ifndef mingw32_HOST_OS
 import qualified GitAnnex
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
+import qualified Utility.Gpg
 #endif
 
 type TestEnv = M.Map String String
@@ -943,7 +943,7 @@ test_crypto env = "git-annex crypto" ~: TestList $ flip map ["shared","hybrid","
 		key2files cipher = Locations.keyPaths .
 			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
-test_crypto env = "git-annex crypto" ~: putStrLn "gpg testing not implemented on Windows"
+test_crypto _env = "git-annex crypto" ~: putStrLn "gpg testing not implemented on Windows"
 #endif
 
 -- This is equivilant to running git-annex, but it's all run in-process
