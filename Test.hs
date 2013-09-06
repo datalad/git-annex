@@ -29,7 +29,6 @@ import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Filename
 import qualified Locations
-import qualified Types.Crypto
 import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
@@ -42,7 +41,6 @@ import qualified Logs.Unused
 import qualified Logs.Transfer
 import qualified Logs.Presence
 import qualified Remote
-import qualified Remote.Helper.Encryptable
 import qualified Types.Key
 import qualified Types.Messages
 import qualified Config
@@ -63,6 +61,8 @@ import qualified Utility.Matcher
 import qualified Utility.Exception
 #ifndef mingw32_HOST_OS
 import qualified GitAnnex
+import qualified Remote.Helper.Encryptable
+import qualified Types.Crypto
 #endif
 
 type TestEnv = M.Map String String
