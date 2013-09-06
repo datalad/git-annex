@@ -115,8 +115,8 @@ feedRead params passphrase feeder reader = do
 	withTmpFile "gpg" $ \tmpfile h -> do
 		hPutStr h passphrase
 		hClose h
-	let passphrasefile = [Param "--passphrase-file", File tmpfile]
-	go $ passphrasefile ++ params
+		let passphrasefile = [Param "--passphrase-file", File tmpfile]
+		go $ passphrasefile ++ params
 #endif
   where
 	go params' = pipeLazy params' feeder reader
