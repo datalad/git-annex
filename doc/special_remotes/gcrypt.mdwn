@@ -34,4 +34,5 @@ If you use encryption=hybrid, you can add more gpg keys that can access
 the files git-annex stored in the gcrypt repository. However, due to the
 way git-remote-gcrypt encrypts the git repository, you will need to somehow
 force it to re-push everything again, so that the encrypted repository can
-be decrypted by the added keys.
+be decrypted by the added keys. Probably this can be done by setting
+`GCRYPT_FULL_REPACK` and doing a forced push of branches.
