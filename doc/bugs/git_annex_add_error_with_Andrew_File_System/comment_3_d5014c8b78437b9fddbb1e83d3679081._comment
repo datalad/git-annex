@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://launchpad.net/~giomasce"
+ nickname="giomasce"
+ subject="comment 3"
+ date="2013-09-07T15:35:48Z"
+ content="""
+Apparently I wrote a wrong version number. The version actually running on the system I tested is much older. Probably I wrote the one of my own laptop instead.
+
+The bug can be closed, sorry for the noise.
+"""]]
