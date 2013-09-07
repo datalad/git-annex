@@ -59,7 +59,11 @@ stdParams params = do
 
 {- Usual options for symmetric / public-key encryption. -}
 stdEncryptionParams :: Bool -> [CommandParam]
-stdEncryptionParams symmetric = [enc symmetric, Param "--force-mdc"]
+stdEncryptionParams symmetric =
+	[ enc symmetric
+	, Param "--force-mdc"
+	, Param "--no-textmode"
+	]
   where
 	enc True = Param "--symmetric"
 	-- Force gpg to only encrypt to the specified recipients, not

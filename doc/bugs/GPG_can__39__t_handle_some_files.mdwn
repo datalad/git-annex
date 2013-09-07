@@ -19,3 +19,5 @@ A workaround is to remove "textmode" from your gpg.conf, but git-annex should fo
 
 7ae625363bcb6e1fc8b3733c1d7814aca05a2368 on Ubuntu 13.04 x86_64
 
+> The sheer number of ways gpg offers of shooting yourself in the foot..
+> Ok [[done]] --[[Joey]] 
