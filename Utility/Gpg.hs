@@ -52,9 +52,7 @@ stdParams params = do
 	return $ defaults ++ toCommand params
 #endif
   where
-	-- Be quiet, even about checking the trustdb. If the one of the
-	-- default param is already present in 'params', don't include it
-	-- twice in the output list.
+	-- Be quiet, even about checking the trustdb.
 	defaults = ["--quiet", "--trust-model", "always"]
 
 {- Usual options for symmetric / public-key encryption. -}
