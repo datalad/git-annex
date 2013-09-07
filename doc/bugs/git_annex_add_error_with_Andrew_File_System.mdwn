@@ -24,3 +24,5 @@ gio@crack:~/nobackup/archive$ logout
 
 It seems to me that AFS doesn't support hard links between different
 directories.
+
+> [[done]] per comments --[[Joey]] 
