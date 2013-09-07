@@ -29,6 +29,7 @@ import Data.ByteString.Lazy.UTF8 (fromString)
 import Data.Digest.Pure.SHA
 import Utility.UserInfo
 import Annex.Content
+import Annex.UUID
 import Utility.Metered
 
 type BupRepo = String
@@ -78,8 +79,10 @@ gen r u c gc = do
   where
 	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
 
-bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-bupSetup u c = do
+bupSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+bupSetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
+
 	-- verify configuration is sane
 	let buprepo = fromMaybe (error "Specify buprepo=") $
 		M.lookup "buprepo" c
@@ -96,7 +99,7 @@ bupSetup u c = do
 	-- persistant state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' "buprepo" buprepo
 
-	return c'
+	return (c', u)
 
 bupParams :: String -> BupRepo -> [CommandParam] -> [CommandParam]
 bupParams command buprepo params = 

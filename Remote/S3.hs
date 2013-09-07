@@ -30,6 +30,7 @@ import Crypto
 import Creds
 import Utility.Metered
 import Annex.Content
+import Annex.UUID
 import Logs.Web
 
 type Bucket = String
@@ -70,8 +71,12 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			remotetype = remote
 		}
 
-s3Setup :: UUID -> RemoteConfig -> Annex RemoteConfig
-s3Setup u c = if isIA c then archiveorg else defaulthost
+s3Setup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+s3Setup mu c = do
+	u <- maybe (liftIO genUUID) return mu
+	s3Setup' u c
+s3Setup' :: UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+s3Setup' u c = if isIA c then archiveorg else defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
@@ -85,7 +90,8 @@ s3Setup u c = if isIA c then archiveorg else defaulthost
 		
 	use fullconfig = do
 		gitConfigSpecialRemote u fullconfig "s3" "true"
-		setRemoteCredPair fullconfig (AWS.creds u)
+		c' <- setRemoteCredPair fullconfig (AWS.creds u)
+		return (c', u)
 
 	defaulthost = do
 		c' <- encryptionSetup c

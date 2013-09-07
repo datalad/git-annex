@@ -68,8 +68,8 @@ makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go =<< Command.InitRemote.findExisting name
   where
   	go Nothing = setupSpecialRemote name Rsync.remote config
-		=<< Command.InitRemote.generateNew name
-	go (Just v) = setupSpecialRemote name Rsync.remote config v
+		(Nothing, Command.InitRemote.newConfig name)
+	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config (Just u, c)
 	config = M.fromList
 		[ ("encryption", "shared")
 		, ("rsyncurl", location)
@@ -89,7 +89,7 @@ initSpecialRemote name remotetype config = go 0
 		r <- Command.InitRemote.findExisting fullname
 		case r of
 			Nothing -> setupSpecialRemote fullname remotetype config
-				=<< Command.InitRemote.generateNew fullname
+				(Nothing, Command.InitRemote.newConfig fullname)
 			Just _ -> go (n + 1)
 
 {- Enables an existing special remote. -}
@@ -98,15 +98,15 @@ enableSpecialRemote name remotetype config = do
 	r <- Command.InitRemote.findExisting name
 	case r of
 		Nothing -> error $ "Cannot find a special remote named " ++ name
-		Just v -> setupSpecialRemote name remotetype config v
+		Just (u, c) -> setupSpecialRemote name remotetype config (Just u, c)
 
-setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> (UUID, R.RemoteConfig) -> Annex RemoteName
-setupSpecialRemote name remotetype config (u, c) = do
+setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> (Maybe UUID, R.RemoteConfig) -> Annex RemoteName
+setupSpecialRemote name remotetype config (mu, c) = do
 	{- Currently, only 'weak' ciphers can be generated from the
 	 - assistant, because otherwise GnuPG may block once the entropy
 	 - pool is drained, and as of now there's no way to tell the user
 	 - to perform IO actions to refill the pool. -}
-	c' <- R.setup remotetype u $
+	(c', u) <- R.setup remotetype mu $
 		M.insert "highRandomQuality" "false" $ M.union config c
 	describeUUID u name
 	configSet u c'

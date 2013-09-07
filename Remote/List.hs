@@ -22,6 +22,7 @@ import qualified Git
 import qualified Git.Config
 
 import qualified Remote.Git
+import qualified Remote.GCrypt
 #ifdef WITH_S3
 import qualified Remote.S3
 #endif
@@ -38,6 +39,7 @@ import qualified Remote.Hook
 remoteTypes :: [RemoteType]
 remoteTypes =
 	[ Remote.Git.remote
+	, Remote.GCrypt.remote
 #ifdef WITH_S3
 	, Remote.S3.remote
 #endif

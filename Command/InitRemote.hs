@@ -14,7 +14,6 @@ import Command
 import qualified Remote
 import qualified Logs.Remote
 import qualified Types.Remote as R
-import Annex.UUID
 import Logs.UUID
 import Logs.Trust
 
@@ -34,18 +33,18 @@ start (name:ws) = ifM (isJust <$> findExisting name)
 	( error $ "There is already a special remote named \"" ++ name ++
 		"\". (Use enableremote to enable an existing special remote.)"
 	, do
-		(u, c) <- generateNew name
+		let c = newConfig name
 		t <- findType config
 
 		showStart "initremote" name
-		next $ perform t u name $ M.union config c
+		next $ perform t name $ M.union config c
 	)
   where
 	config = Logs.Remote.keyValToConfig ws
 
-perform :: RemoteType -> UUID -> String -> R.RemoteConfig -> CommandPerform
-perform t u name c = do
-	c' <- R.setup t u c
+perform :: RemoteType -> String -> R.RemoteConfig -> CommandPerform
+perform t name c = do
+	(c', u) <- R.setup t Nothing c
 	next $ cleanup u name c'
 
 cleanup :: UUID -> String -> R.RemoteConfig -> CommandCleanup
@@ -63,10 +62,8 @@ findExisting name = do
 		<$> Logs.Remote.readRemoteLog
 	return $ headMaybe matches
 
-generateNew :: String -> Annex (UUID, R.RemoteConfig)
-generateNew name = do
-	uuid <- liftIO genUUID
-	return (uuid, M.singleton nameKey name)
+newConfig :: String -> R.RemoteConfig
+newConfig name = M.singleton nameKey name
 
 findByName :: String ->  M.Map UUID R.RemoteConfig -> [(UUID, R.RemoteConfig)]
 findByName n = filter (matching . snd) . M.toList

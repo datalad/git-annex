@@ -18,6 +18,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Annex.Content
+import Annex.UUID
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
@@ -62,13 +63,14 @@ gen r u c gc = do
   where
 	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc	
 
-hookSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-hookSetup u c = do
+hookSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+hookSetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
 	let hooktype = fromMaybe (error "Specify hooktype=") $
 		M.lookup "hooktype" c
 	c' <- encryptionSetup c
 	gitConfigSpecialRemote u c' "hooktype" hooktype
-	return c'
+	return (c', u)
 
 hookEnv :: Action -> Key -> Maybe FilePath -> IO (Maybe [(String, String)])
 hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)

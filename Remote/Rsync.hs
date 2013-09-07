@@ -23,6 +23,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Annex.Content
+import Annex.UUID
 import Annex.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
@@ -111,8 +112,9 @@ gen r u c gc = do
 					++ unwords rsh
 		else return ([], rawurl)
 
-rsyncSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-rsyncSetup u c = do
+rsyncSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+rsyncSetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let url = fromMaybe (error "Specify rsyncurl=") $
 		M.lookup "rsyncurl" c
@@ -121,7 +123,7 @@ rsyncSetup u c = do
 	-- The rsyncurl is stored in git config, not only in this remote's
 	-- persistant state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' "rsyncurl" url
-	return c'
+	return (c', u)
 
 rsyncEscape :: RsyncOpts -> String -> String
 rsyncEscape o s

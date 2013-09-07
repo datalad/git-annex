@@ -26,6 +26,7 @@ import Remote.Helper.Encryptable
 import Remote.Helper.Chunked
 import Crypto
 import Annex.Content
+import Annex.UUID
 import Utility.Metered
 
 remote :: RemoteType
@@ -65,8 +66,9 @@ gen r u c gc = do
   where
 	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc
 
-directorySetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-directorySetup u c = do
+directorySetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+directorySetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let dir = fromMaybe (error "Specify directory=") $
 		M.lookup "directory" c
@@ -78,7 +80,7 @@ directorySetup u c = do
 	-- The directory is stored in git config, not in this remote's
 	-- persistant state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' "directory" absdir
-	return $ M.delete "directory" c'
+	return (M.delete "directory" c', u)
 
 {- Locations to try to access a given Key in the Directory.
  - We try more than since we used to write to different hash directories. -}

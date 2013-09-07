@@ -31,7 +31,7 @@ data RemoteTypeA a = RemoteType {
 	-- generates a remote of this type
 	generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (RemoteA a),
 	-- initializes or changes a remote
-	setup :: UUID -> RemoteConfig -> a RemoteConfig
+	setup :: Maybe UUID -> RemoteConfig -> a (RemoteConfig, UUID)
 }
 
 instance Eq (RemoteTypeA a) where

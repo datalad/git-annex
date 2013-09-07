@@ -70,4 +70,4 @@ calcMac mac = case mac of
 	HmacSha384 -> showDigest $* hmacSha384
 	HmacSha512 -> showDigest $* hmacSha512
   where
-  ($*) g f x y = g $ f x y
+	($*) g f x y = g $ f x y

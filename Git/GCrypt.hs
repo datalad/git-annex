@@ -44,23 +44,25 @@ encryptedRepo baserepo = go
 	go _ = notencrypted
 	notencrypted = error "not a gcrypt encrypted repository"
 
+type RemoteName = String
+
 {- gcrypt gives each encrypted repository a uique gcrypt-id,
  - which is stored in the repository (in encrypted form)
  - and cached in a per-remote gcrypt-id configuration setting. -}
-remoteRepoId :: Repo -> Repo -> Maybe String
+remoteRepoId :: Repo -> Maybe RemoteName -> Maybe String
 remoteRepoId = getRemoteConfig "gcrypt-id"
 
-getRemoteConfig :: String -> Repo -> Repo -> Maybe String
-getRemoteConfig field baserepo remote = do
-	name <- remoteName remote
-	Config.getMaybe (remoteConfigKey field name) baserepo
+getRemoteConfig :: String -> Repo -> Maybe RemoteName -> Maybe String
+getRemoteConfig field repo remotename = do
+	n <- remotename
+	Config.getMaybe (remoteConfigKey field n) repo
 
 {- Gpg keys that the remote is encrypted for.
  - If empty, gcrypt uses --default-recipient-self -}
-particiantList :: Maybe Repo -> Repo -> Repo -> KeyIds
-particiantList globalconfigrepo baserepo remote = KeyIds $ parse $ firstJust
-	[ getRemoteConfig "participants" baserepo remote
-	, Config.getMaybe defaultkey baserepo
+getParticiantList :: Maybe Repo -> Repo -> Maybe RemoteName -> KeyIds
+getParticiantList globalconfigrepo repo remotename = KeyIds $ parse $ firstJust
+	[ getRemoteConfig "gcrypt-participants" repo remotename
+	, Config.getMaybe defaultkey repo
 	, Config.getMaybe defaultkey =<< globalconfigrepo
 	]
   where
@@ -69,5 +71,8 @@ particiantList globalconfigrepo baserepo remote = KeyIds $ parse $ firstJust
 	parse (Just l) = words l
 	parse Nothing = []
 
-remoteConfigKey :: String -> String -> String
-remoteConfigKey key field = "remote." ++ field ++ "." ++ key
+remoteParticipantConfigKey :: RemoteName -> String
+remoteParticipantConfigKey = remoteConfigKey "gcrypt-participants"
+
+remoteConfigKey :: String -> RemoteName -> String
+remoteConfigKey key remotename = "remote." ++ remotename ++ "." ++ key
