@@ -19,14 +19,7 @@ On debian wheezy i386
 
 The repository contains a lot of files:
 
-   $ cd .git/objects
-   $ find . -type f | wc -l 
-   1091548
+    $ cd .git/objects
+    $ find . -type f | wc -l 
+    1091548
 
-[[!format sh """
-# If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
-
-
-# End of transcript or log.
-"""]]
