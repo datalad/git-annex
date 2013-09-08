@@ -4,6 +4,9 @@ remote allows git-annex to also store its files in such repositories.
 Naturally, git-annex encrypts the files it stores too, so everything
 stored on the remote is encrypted.
 
+See [[tips/fully_encrypted_git_repositories_with_gcrypt]] for some examples
+of using gcrypt.
+
 ## configuration
 
 These parameters can be passed to `git annex initremote` to configure
