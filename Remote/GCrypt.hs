@@ -8,6 +8,7 @@
 module Remote.GCrypt (remote, gen) where
 
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 
 import Common.Annex
 import Types.Remote
@@ -66,7 +67,7 @@ gen' r u c gc = new <$> remoteCost gc defcst
 			, storeKey = \_ _ _ -> noCrypto
 			, retrieveKeyFile = \_ _ _ _ -> noCrypto
 			, retrieveKeyFileCheap = \_ _ -> return False
-			, removeKey = remove
+			, removeKey = remove this
 			, hasKey = checkPresent this
 			, hasKeyCheap = repoCheap r
 			, whereisKey = Nothing
@@ -81,6 +82,9 @@ gen' r u c gc = new <$> remoteCost gc defcst
 
 noCrypto :: Annex a
 noCrypto = error "cannot use gcrypt remote without encryption enabled"
+
+unsupportedUrl :: Annex a
+unsupportedUrl = error "using non-ssh remote repo url with gcrypt is not supported"
 
 gCryptSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
 gCryptSetup mu c = go $ M.lookup "gitrepo" c
@@ -134,8 +138,8 @@ store r (cipher, enck) k p
 			createDirectoryIfMissing True $ parentDir dest
 			readBytes (meteredWriteFile meterupdate dest) h
 			return True
-	| Git.repoIsSsh (repo r) = sendwith $ \h -> undefined
-	| otherwise = error "storing on non-ssh remote repo not supported"
+	| Git.repoIsSsh (repo r) = sendwith $ \meterupdate h -> undefined
+	| otherwise = unsupportedUrl
   where
 	dest = gCryptLocation r enck
   	sendwith a = metered (Just p) k $ \meterupdate ->
@@ -144,10 +148,28 @@ store r (cipher, enck) k p
 				encrypt (getGpgEncParams r) cipher (feedFile src) (a meterupdate)
 
 retrieve :: Remote -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieve r (cipher, enck) k d p = undefined
+retrieve r (cipher, enck) k d p
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
+		retrievewith $ L.readFile src
+		return True
+	| Git.repoIsSsh (repo r) = undefined
+	| otherwise = unsupportedUrl
+  where
+	src = gCryptLocation r enck
+	retrievewith a = metered (Just p) k $ \meterupdate -> liftIO $
+		a >>= \b -> 
+			decrypt cipher (feedBytes b)
+				(readBytes $ meteredWriteFile meterupdate d)
 
-remove :: Key -> Annex Bool
-remove k = undefined
+remove :: Remote -> Key -> Annex Bool
+remove r k
+	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
+		liftIO $ removeDirectoryRecursive (parentDir dest)
+		return True
+	| Git.repoIsSsh (repo r) = undefined
+	| otherwise = unsupportedUrl
+  where
+	dest = gCryptLocation r k
 
 checkPresent :: Remote -> Key -> Annex (Either String Bool)
 checkPresent r k
@@ -156,7 +178,7 @@ checkPresent r k
 			liftIO $ catchDefaultIO unknown $
 				Right <$> doesFileExist (gCryptLocation r k)
 	| Git.repoIsSsh (repo r) = undefined
-	| otherwise = error "storing on non-ssh remote repo not supported"
+	| otherwise = unsupportedUrl
   where
 	unknown = Left $ "unable to check " ++ Git.repoDescribe (repo r) ++ show (repo r)
 
