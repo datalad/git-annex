@@ -144,13 +144,7 @@ tryGitConfigRead r
 	| Git.repoIsHttp r = do
 		headers <- getHttpHeaders
 		store $ geturlconfig headers
-	| Git.GCrypt.isEncrypted r = do
-		-- Generate a UUID from the gcrypt-id
-		g <- gitRepo
-		case Git.GCrypt.remoteRepoId g (Git.remoteName r) of
-			Nothing -> return r
-			Just v -> store $ liftIO $ setUUID r $
-				genUUIDInNameSpace gCryptNameSpace v
+	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ onLocal r $ do 
 		ensureInitialized
@@ -218,6 +212,15 @@ tryGitConfigRead r
 			let k = "remote." ++ n ++ ".annex-ignore"
 			warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting " ++ k
 			inRepo $ Git.Command.run [Param "config", Param k, Param "true"]
+		
+	handlegcrypt Nothing = return r
+	handlegcrypt (Just _cacheduuid) = do
+		-- Generate UUID from the gcrypt-id
+		g <- gitRepo
+		case Git.GCrypt.remoteRepoId g (Git.remoteName r) of
+			Nothing -> return r
+			Just v -> store $ liftIO $ setUUID r $
+				genUUIDInNameSpace gCryptNameSpace v
 
 {- Checks if a given remote has the content for a key inAnnex.
  - If the remote cannot be accessed, or if it cannot determine

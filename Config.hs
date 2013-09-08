@@ -25,6 +25,9 @@ instance Show ConfigKey where
 getConfig :: ConfigKey -> String -> Annex String
 getConfig (ConfigKey key) def = fromRepo $ Git.Config.get key def
 
+getConfigMaybe :: ConfigKey -> Annex (Maybe String)
+getConfigMaybe (ConfigKey key) = fromRepo $ Git.Config.getMaybe key
+
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig (ConfigKey key) value = do

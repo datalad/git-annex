@@ -25,6 +25,7 @@ import Config
 import Config.Cost
 import Remote.Helper.Git
 import Remote.Helper.Encryptable
+import Remote.Helper.Special
 import Utility.Metered
 import Crypto
 import Annex.UUID
@@ -145,7 +146,9 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 			Just v -> do
 				let u = genUUIDInNameSpace gCryptNameSpace v
 				if Just u == mu || mu == Nothing
-					then return (c', u)
+					then do
+						gitConfigSpecialRemote u c' "gcrypt" "true"
+						return (c', u)
 					else error "uuid mismatch"
 
 store :: Remote -> Remote.Rsync.RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
