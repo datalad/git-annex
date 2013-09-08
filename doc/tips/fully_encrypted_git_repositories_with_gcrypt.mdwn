@@ -43,7 +43,7 @@ key, or another gpg key you have.
 To restore from the backup, just plug the drive into any machine that has
 the gpg key used to encrypt it, and then:
 
-	git clone /mnt/encryptedbackup restored
+	git clone gcrypt::/mnt/encryptedbackup restored
 	cd restored
 	git annex enableremote encryptedbackup gitrepo=/mnt/encryptedbackup
 	git annex get --from encryptedbackup
@@ -70,7 +70,7 @@ include their keyids, by specifying keyid= repeatedly.
 Now that the repo is set up, anyone who has access to it and has one of the keys
 used to encrypt it can check it out:
 
-	git clone ssh://my.server/home/me/encryptedrepo myrepo
+	git clone gcrypt::ssh://my.server/home/me/encryptedrepo myrepo
 	cd myrepo
 	git annex enableremote encryptedrepo gitrepo=ssh://my.server/home/me/encryptedrepo
 	git annex get --from encryptedrepo
@@ -87,6 +87,11 @@ only used to store your git repository itself.
 
 Now you can carry on using git-annex with your new repository. For example,
 `git annex sync` will sync with it.
+
+To check out the repository from the hosting site, use the same gcrypt::
+url you used when setting it up:
+
+	git clone gcrypt::ssh://hostingsite/myrepo.git
 
 ## multiuser encrypted git remote on hosting site
 
