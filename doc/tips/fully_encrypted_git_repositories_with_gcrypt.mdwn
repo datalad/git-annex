@@ -6,6 +6,8 @@ the files it stores too, so everything stored on the remote is encrypted.
 
 Here are some ways you can use this awesome stuff..
 
+[[!toc ]]
+
 ## prerequisites
 
 * Install
