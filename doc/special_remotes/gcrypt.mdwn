@@ -21,6 +21,8 @@ gcrypt:
   for gcrypt to use. This repository should be either empty, or an existing
   gcrypt repositry.
 
+* `shellescape` - See [[rsync]] for the details of this option.
+
 ## notes
 
 For git-annex to store files in a repository on a remote server, you need

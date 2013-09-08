@@ -24,6 +24,9 @@ git-annex (4.20130828) UNRELEASED; urgency=low
   * Remind user when annex-ignore is set for some remotes, if unable to
     get or drop a file, possibly because it's on an ignored remote.
   * gpg: Force --no-textmode in case the user has it turned on in config.
+  * Added gcrypt support. This combines a fully encrypted git
+    repository (using git-remote-gcrypt) with an encrypted git-annex special
+    remote.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
 

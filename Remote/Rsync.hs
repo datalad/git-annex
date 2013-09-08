@@ -7,7 +7,16 @@
 
 {-# LANGUAGE CPP #-}
 
-module Remote.Rsync (remote) where
+module Remote.Rsync (
+	remote,
+	storeEncrypted,
+	retrieveEncrypted,
+	remove,
+	checkPresent,
+	withRsyncScratchDir,
+	genRsyncOpts,
+	RsyncOpts
+) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -52,9 +61,10 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
-	(transport, url) <- rsyncTransport
-	let o = RsyncOpts url (transport ++ opts) escape
-	    islocal = rsyncUrlIsPath $ rsyncUrl o
+	(transport, url) <- rsyncTransport gc $
+		fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
+	let o = genRsyncOpts c gc transport url
+	let islocal = rsyncUrlIsPath $ rsyncUrl o
 	return $ encryptableRemote c
 		(storeEncrypted o $ getGpgEncParams (c,gc))
 		(retrieveEncrypted o)
@@ -79,6 +89,9 @@ gen r u c gc = do
 			, globallyAvailable = not $ islocal
 			, remotetype = remote
 			}
+
+genRsyncOpts :: RemoteConfig -> RemoteGitConfig -> [CommandParam] -> RsyncUrl -> RsyncOpts
+genRsyncOpts c gc transport url = RsyncOpts url (transport ++ opts) escape
   where
 	opts = map Param $ filter safe $ remoteAnnexRsyncOptions gc
 	escape = M.lookup "shellescape" c /= Just "no"
@@ -89,28 +102,30 @@ gen r u c gc = do
 		| opt == "--delete" = False
 		| opt == "--delete-excluded" = False
 		| otherwise = True
-	rawurl = fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
+
+rsyncTransport :: RemoteGitConfig -> RsyncUrl -> Annex ([CommandParam], RsyncUrl)
+rsyncTransport gc rawurl
+	| rsyncUrlIsShell rawurl =
+		(\rsh -> return (rsyncShell rsh, resturl)) =<<
+		case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
+			"ssh":sshopts -> do
+				let (port, sshopts') = sshReadPort sshopts
+				    host = takeWhile (/=':') resturl
+				-- Connection caching
+				(Param "ssh":) <$> sshCachingOptions
+					(host, port)
+					(map Param $ loginopt ++ sshopts')
+			"rsh":rshopts -> return $ map Param $ "rsh" :
+				loginopt ++ rshopts
+			rsh -> error $ "Unknown Rsync transport: "
+				++ unwords rsh
+	| otherwise = return ([], rawurl)
+  where
 	(login,resturl) = case separate (=='@') rawurl of
-			(h, "") -> (Nothing, h)
-			(l, h)  -> (Just l, h)
+		(h, "") -> (Nothing, h)
+		(l, h)  -> (Just l, h)
 	loginopt = maybe [] (\l -> ["-l",l]) login
-	fromNull as xs | null xs = as
-		       | otherwise = xs
-	rsyncTransport = if rsyncUrlIsShell rawurl
-		then (\rsh -> return (rsyncShell rsh, resturl)) =<<
-			case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
-				"ssh":sshopts -> do
-					let (port, sshopts') = sshReadPort sshopts
-					    host = takeWhile (/=':') resturl
-					-- Connection caching
-					(Param "ssh":) <$> sshCachingOptions
-						(host, port)
-						(map Param $ loginopt ++ sshopts')
-				"rsh":rshopts -> return $ map Param $ "rsh" :
-					loginopt ++ rshopts
-				rsh -> error $ "Unknown Rsync transport: "
-					++ unwords rsh
-		else return ([], rawurl)
+	fromNull as xs = if null xs then as else xs
 
 rsyncSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
 rsyncSetup mu c = do
