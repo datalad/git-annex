@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.255.110"
+ subject="comment 1"
+ date="2013-09-09T15:45:17Z"
+ content="""
+The relevant part of the log is:
+
+<pre>
+65332/0x53591a:  open(\"/Users/gsolsberry/annex/.git/annex/journal.lck\0\", 0x601, 0x1B6)          = 8 0
+65332/0x53591a:  fcntl(0x8, 0x9, 0x107009D60)            = -1 Err#-1
+</pre>
+
+waitToSetLock thinks fcntl is failing to lock the file due to something else having it locked, and retries, leading to the hang.
+
+I'm told on irc that this was installed using the prebuilt image, and that a previous version of it didn't have the problem.
+"""]]
