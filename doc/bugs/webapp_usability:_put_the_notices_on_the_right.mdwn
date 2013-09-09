@@ -16,4 +16,4 @@ This is a screenshot:
 
 [[!img 2013090823:04:44.png align="right" size="" alt=""]]
 
-This is admittedly a very mild problem, but from a usability perspective, it would be less confusing to show those on the right. When they were gone, I thought git-annex was broken somewhat...
+This is admittedly a very mild problem, but from a usability perspective, it would be less confusing to show those on the right. When they were gone, I thought git-annex was broken somewhat... -- [[anarcat]]
