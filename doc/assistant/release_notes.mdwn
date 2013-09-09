@@ -1,3 +1,9 @@
+## version 4.20130909
+
+This release fixes a crash that could occur when using XMPP with the
+assitant. It has only been seen on OS X so far. The bug is not believed to
+be explitable, but upgrading is still recommended.
+
 ## version 4.20130802
 
 This release fixes several bugs, including a reversion introduced in the last
