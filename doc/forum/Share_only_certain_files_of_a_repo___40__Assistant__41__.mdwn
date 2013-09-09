@@ -1,0 +1,6 @@
+Hi,
+
+When using git-annex assistant, is there a possibility to share only certain files or directories from a repository (similar to what Dropbox can do), or do we have to share whole repositories so far?
+Could this be a nice wishlist item, or is there a strong reason against adding this feature to git-annex?
+
+Thanks a lot!
