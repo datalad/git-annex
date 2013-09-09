@@ -27,6 +27,11 @@ git-annex (4.20130828) UNRELEASED; urgency=low
   * Added gcrypt support. This combines a fully encrypted git
     repository (using git-remote-gcrypt) with an encrypted git-annex special
     remote.
+  * webapp: Improve javascript's handling of longpolling connection
+    failures, by reloading the current page in this case.
+    Works around chromium behavior where ajax connections to urls
+    that were already accessed are denied after navigating back to
+    a previous page.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
 
