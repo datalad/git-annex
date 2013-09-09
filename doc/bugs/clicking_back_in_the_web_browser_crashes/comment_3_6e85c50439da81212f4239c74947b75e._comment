@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.255.110"
+ subject="comment 3"
+ date="2013-09-09T05:22:49Z"
+ content="""
+Actually I am able to reproduce it. One thing I can see is that git-annex does not see any connection attempts from the browser when these longpolling attempts are made and fail. So this is all failing on the javascript side. Increasing the connection failure counter does not help. Every ajax request fails, no matter how many times it tries. Chromium has apparently decided that, because we've navigated back to a page, it should not be allowed to load any new resources. This seems to be new, buggy behavior.
+
+It seems the only way out of this bad state would be for the javacript to force a reload of the page. Of course, if git-annex has legitimately exited, that would fail to reload. I suppose the chromium \"this webpage is not available\" that would result is at least accurate...
+
+(At some point, I should probably try to add support for something more modern than long polling.)
+"""]]
