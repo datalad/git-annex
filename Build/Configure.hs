@@ -32,6 +32,7 @@ tests =
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
+	, TestCase "quvi" $ testCmd "quvi" "quvi --version >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
 	, TestCase "gpg" $ maybeSelectCmd "gpg"
 		[ ("gpg", "--version >/dev/null")

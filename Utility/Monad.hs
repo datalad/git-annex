@@ -8,7 +8,7 @@
 module Utility.Monad where
 
 import Data.Maybe
-import Control.Monad (liftM)
+import Control.Monad
 
 {- Return the first value from a list, if any, satisfying the given
  - predicate -}
@@ -52,6 +52,16 @@ ma <&&> mb = ifM ma ( mb , return False )
 {- Same fixity as && and || -}
 infixr 3 <&&>
 infixr 2 <||>
+
+{- Left-to-right Kleisli composition with a pure left/right hand side. -}
+(*>=>) :: Monad m => (a -> b) -> (b -> m c) -> (a -> m c)
+f *>=> g = return . f >=> g
+
+(>=*>) :: Monad m => (a -> m b) -> (b -> c) -> (a -> m c)
+f >=*> g = f >=> return . g
+
+{- Same fixity as >=> and <=< -}
+infixr 1 *>=>, >=*>
 
 {- Runs an action, passing its value to an observer before returning it. -}
 observe :: Monad m => (a -> m b) -> m a -> m a

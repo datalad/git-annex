@@ -91,7 +91,7 @@ fromUrl url
 
 fromUrlStrict :: String -> IO Repo
 fromUrlStrict url
-	| startswith "file://" url = fromAbsPath $ uriPath u
+	| startswith "file://" url = fromAbsPath $ unEscapeString $ uriPath u
 	| otherwise = newFrom $ Url u
   where
 	u = fromMaybe bad $ parseURI url

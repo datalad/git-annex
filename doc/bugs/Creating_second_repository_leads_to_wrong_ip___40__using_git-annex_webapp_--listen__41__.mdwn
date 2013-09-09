@@ -31,3 +31,5 @@ Linux nas 3.8.0-27-generic #40-Ubuntu SMP Tue Jul 9 00:19:35 UTC 2013 i686 i686 
 
 # End of transcript or log.
 """]]
+
+> This is a different effect of the same bug in [[Hangs on creating repository when using --listen]]. Closing as [[dup|done]] --[[Joey]]  

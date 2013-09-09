@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 7"
+ date="2013-08-23T18:30:04Z"
+ content="""
+I don't feel that git-annex is the best thing to use for this. Maildir has some specific semantics for the filenames used in it that let imap clients resolve inconsistencies, such as a message that was read on machine A, and deleted on machine B. git-annex is unlikely to work as well.
+
+However, I have to say that the very beginning of this thread has a wrong statement in it. 
+
+> I tried setting it up with the webUI to the assistant but it only offers encrypted storage[1] on the remote server.
+
+If you install git and git-annex on your remote server, the git-annex assistant will detect this, and offer the choice between a regular git repository, and encrypted storage. If you don't have them installed, it tells you you don't, offers to let you retry once you do install them, and offers encrypted storage as the only option that works given what's installed on the server.
+
+(Also, the bug you linked to in [1] has nothing at all to do with what you were talking about.)
+"""]]

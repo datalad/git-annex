@@ -41,5 +41,5 @@ I'm interested in your thoughts.
 Best, 
  Laszlo
 
-[[!tag /design/assistant moreinfo]]
+[[!tag /design/assistant]]
 [[!meta title="assistant can try to add too many files at once in batch add mode"]]

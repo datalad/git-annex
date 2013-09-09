@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 2"
+ date="2013-08-23T18:23:52Z"
+ content="""
+If you need to preserve mtimes, or differentiate between files with identical content but different mtimes, neither git nor git-annex is going to do what you want, since git doesn't care about preserving much file metadata.
+
+As far as importing two sets of files on two computers, the best thing to do is import each, and then let the two sync up. Otherwise, when you're running the assistant it will start downloading the first set you import to the second computer, before the second set is added there, and do extra work. Although once the duplicate files from the second set land in the second git repository, the assistant will avoid any additional redundant transfers.
+
+(The assistant never *moves* files, if both repositories are configured to be in the default client repository group. It only copies.)
+
+I don't understand question #1. \"set2 ended with a lot of symlinks but only in one subfolder\" doesn't make sense to me, or rather I could interpret it to mean any of dozen things (none of which seem likely)
+
+You can `git annex drop` files in direct mode. However, if you're running the assistant, it will try to get them back. You can configure your repository to be in manual mode to prevent the assistant doing that, or not use the assistant, or configure a [[preferred_content]] expression to make the assistant do something more custom like not try to get files located in a \"olddata\" directory.
+"""]]

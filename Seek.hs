@@ -26,6 +26,7 @@ import qualified Option
 import Config
 import Logs.Location
 import Logs.Unused
+import Annex.CatFile
 
 seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
 seekHelper a params = do
@@ -86,12 +87,16 @@ withFilesUnlocked = withFilesUnlocked' LsFiles.typeChanged
 withFilesUnlockedToBeCommitted :: (FilePath -> CommandStart) -> CommandSeek
 withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 
+{- Unlocked files have changed type from a symlink to a regular file.
+ -
+ - Furthermore, unlocked files used to be a git-annex symlink,
+ - not some other sort of symlink.
+ -}
 withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> CommandSeek
-withFilesUnlocked' typechanged a params = do
-	-- unlocked files have changed type from a symlink to a regular file
-	typechangedfiles <- seekHelper typechanged params
-	let unlockedfiles = liftIO $ filterM notSymlink typechangedfiles
-	prepFiltered a unlockedfiles
+withFilesUnlocked' typechanged a params = prepFiltered a unlockedfiles
+  where
+  	check f = liftIO (notSymlink f) <&&> isJust <$> catKeyFileHEAD f
+	unlockedfiles = filterM check =<< seekHelper typechanged params
 
 {- Finds files that may be modified. -}
 withFilesMaybeModified :: (FilePath -> CommandStart) -> CommandSeek

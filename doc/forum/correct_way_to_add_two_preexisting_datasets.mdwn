@@ -1,0 +1,25 @@
+I've been syncronizing my data since long time, mainly using rsync or unison. Thus I had two 3.5Gb datasets set1 (usb drive, hfs+ partition) and set2 (hdd, ext4 ubuntu 13.04 box) which differed only in 50Mb (new on set1 ). This was double checked using diff -r before doing anything.
+
+I created a git annex repo in direct mode for set2 from command line, and after that I let the assistant scan it.
+After that created the repo for set1 and added it to the assistant. I think here comes my mistake (I think).
+
+Instead of keeping them apart, at told assistant to sync with set2.
+Why I think this was a mistake? Because set2 was indexed and set1 no, and I'm seeing a lot of file moving a copying, which in my humble opinion should not happen.
+What I expected it only the difference to be transferred from set1 to set2.
+What it seems to be doing is moving away all content in set1, and copying it back from set2. I think it will end correctly, but with a lot of unnecessary and risky operations.
+
+I think I should have independently added both datasets, let them be scanned and then connect to each other.
+So, now the questions:
+
+1. Is that the correct way to proceed?
+2. What if I have to identical files with different modifying times, I hope they are not synced, right?
+3. Is it posssible to achieve this behaviour of copying only the 50Mb?
+
+Thanks in advance and keep up the good work.
+Best regards,
+             Juan
+
+EDIT: a couple of questions more:
+
+4. after finishing, set2 ended with a lot of symlinks but only in one subfolder. To prevent this should I put numcopies in 2?
+5. This data is composed of input datasets and output simulations. Thus, I need to change them often, but not as often as code and in a very partial way (chunks of 50Mb). For me direct mode is the best (or plain git). However, I was wondering, it is possible to drop some files (even in direct mode) and use simlinks instead?

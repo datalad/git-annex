@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 1"
+ date="2013-08-24T19:58:54Z"
+ content="""
+I don't know if git-annex is the right vehicle to fix this. It seems that a more generic fix that would work in non-git-annex repos would be better.
+
+I can answer your question though: The metadata such as urls and locations that git-annex stores in the git-annex branch is attached to objects, and not to work tree paths.
+"""]]

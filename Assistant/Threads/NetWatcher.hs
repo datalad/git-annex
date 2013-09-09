@@ -39,7 +39,11 @@ netWatcherThread = thread noop
  - network connection changes, but it also ensures that
  - any networked remotes that may have not been routable for a
  - while (despite the local network staying up), are synced with
- - periodically. -}
+ - periodically.
+ -
+ - Note that it does not call notifyNetMessagerRestart, because
+ - it doesn't know that the network has changed.
+ -}
 netWatcherFallbackThread :: NamedThread
 netWatcherFallbackThread = namedThread "NetWatcherFallback" $
 	runEvery (Seconds 3600) <~> handleConnection

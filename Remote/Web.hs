@@ -15,9 +15,11 @@ import Annex.Content
 import Config
 import Config.Cost
 import Logs.Web
-import qualified Utility.Url as Url
 import Types.Key
 import Utility.Metered
+import qualified Utility.Url as Url
+import Annex.Quvi
+import qualified Utility.Quvi as Quvi
 
 import qualified Data.Map as M
 
@@ -67,7 +69,12 @@ downloadKey key _file dest _p = get =<< getUrls key
 		return False
 	get urls = do
 		showOutput -- make way for download progress bar
-		downloadUrl urls dest
+		untilTrue urls $ \u -> do
+			let (u', downloader) = getDownloader u
+			case downloader of
+				QuviDownloader -> flip downloadUrl dest
+					=<< withQuviOptions Quvi.queryLinks [Quvi.httponly, Quvi.quiet] u'
+				DefaultDownloader -> downloadUrl [u'] dest
 
 downloadKeyCheap :: Key -> FilePath -> Annex Bool
 downloadKeyCheap _ _ = return False
@@ -90,6 +97,11 @@ checkKey key = do
 		else return . Right =<< checkKey' key us
 checkKey' :: Key -> [URLString] -> Annex Bool
 checkKey' key us = untilTrue us $ \u -> do
-	showAction $ "checking " ++ u
-	headers <- getHttpHeaders
-	liftIO $ Url.check u headers (keySize key)
+	let (u', downloader) = getDownloader u
+	showAction $ "checking " ++ u'
+	case downloader of
+		QuviDownloader ->
+			withQuviOptions Quvi.check [Quvi.httponly, Quvi.quiet] u'
+		DefaultDownloader -> do
+			headers <- getHttpHeaders
+			liftIO $ Url.check u' headers (keySize key)

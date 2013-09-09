@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="oh yeah, i can run top in adb.."
+ date="2013-08-26T20:14:13Z"
+ content="""
+So, I can tell that on my tablet, the terminal app is using 82% cpu while idle.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkjQhXk8KAh9yD0p1R6QzT-Sw7FtHE3d54"
+ nickname="Scott"
+ subject="comment 4"
+ date="2013-08-20T16:18:24Z"
+ content="""
+When I try to setup my Jabber client, using my gmail address, the assistant crashes.  I thought this might be due to having two-factor authentication enabled so I generated an application specific password and tried that.  The assistant still crashes.  The log is huge, I am not sure what would be relevant to show here.
+"""]]

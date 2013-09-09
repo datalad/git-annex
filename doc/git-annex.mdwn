@@ -157,6 +157,24 @@ subdirectories).
   post-receive hook. Then any syncs to the repository will update its working
   copy automatically.
 
+* mirror [path ...]
+  
+  This causes a destination repository to mirror a source repository.
+
+  To use the local repository as the source repository,
+  specify mirror --to remote.
+
+  To use a remote as the source repository, specify mirror --from remote.
+
+  Each specified file in the source repository is mirrored to the destination
+  repository. If a file's content is present in the source repository, it is
+  copied to the destination repository. If a file's content is not present in
+  the source repository, it will be dropped from the destination repository
+  when possible. 
+
+  Note that mirror does not sync the git repository, but only the file
+  contents.
+
 * addurl [url ...]
 
   Downloads each url to its own file, which is added to the annex.
@@ -177,6 +195,9 @@ subdirectories).
   alternate locations from which the file can be downloaded. In this mode,
   addurl can be used both to add new files, or to add urls to existing files.
 
+  When quvi is installed, urls are automatically tested to see if they
+  are on a video hosting site, and the video is downloaded instead.
+
 * rmurl file url
 
   Record that the file is no longer available at the url.
@@ -189,6 +210,28 @@ subdirectories).
   subdirectory structure inside it is preserved.
 
 	git annex import /media/camera/DCIM/
+
+  By default, importing two files with the same contents from two different
+  locations will result in both files being added to the repository.
+  (With all checksumming backends, including the default SHA256E,
+  only one copy of the data will be stored.)
+
+  To not delete files from the import location, use the
+  --duplicate option. This could allow importing the same files repeatedly
+  to different locations in a repository. More likely, it could be used to
+  import the same files to a number of different branches or separate git
+  repositories.
+
+  To only import files whose content has not been seen before by git-annex,
+  use the --deduplicate option. Duplicate files will be deleted from the
+  import location.
+  
+  The --clean-duplicates option does not import any new files, but any files
+  found in the import location that are duplicates of content in the annex
+  are deleted.
+  
+  (Note that using --deduplicate or --clean-duplicates with the WORM
+  backend does not look at file content, but filename and mtime.)
 
 * importfeed [url ...]
 
@@ -1071,6 +1114,11 @@ Here are all the supported configuration settings.
   Options to use when using wget or curl to download a file from the web.
   (wget is always used in preference to curl if available.)
   For example, to force ipv4 only, set it to "-4"
+
+* `annex.quvi-options`
+
+  Options to pass to quvi when using it to find the url to download for a
+  video.
 
 * `annex.http-headers`
 

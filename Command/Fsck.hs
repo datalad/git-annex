@@ -33,7 +33,7 @@ import qualified Option
 import Types.Key
 import Utility.HumanTime
 import Git.FilePath
-import GitAnnex.Options
+import GitAnnex.Options hiding (fromOption)
 
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)

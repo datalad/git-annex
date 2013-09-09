@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 2"
+ date="2013-08-24T18:52:11Z"
+ content="""
+This also affects creating a second repository in the webapp, not just the repository creation at first startup.
+"""]]

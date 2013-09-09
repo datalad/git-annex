@@ -12,6 +12,7 @@ import Command
 import qualified Command.Add
 import qualified Command.Fix
 import qualified Git.DiffTree
+import qualified Git.Ref
 import Annex.CatFile
 import Annex.Content.Direct
 import Git.Sha
@@ -38,7 +39,7 @@ startIndirect file = next $ do
 
 startDirect :: [String] -> CommandStart
 startDirect _ = next $ do
-	(diffs, clean) <- inRepo $ Git.DiffTree.diffIndex
+	(diffs, clean) <- inRepo $ Git.DiffTree.diffIndex Git.Ref.headRef
 	forM_ diffs go
 	next $ liftIO clean
   where

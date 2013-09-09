@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 7"
+ date="2013-08-26T20:00:39Z"
+ content="""
+It's certianly possible that the terminal app eats cpu for some reason even when sitting idle. It's hard for me to tell since I've been measuring cpu use by running top inside that terminal, which necessarily seems to use a lot of the CPU just to draw the screen.
+
+If it's the terminal at fault, it would continue after you shutdown the git-annex daemon, since that doesn't close the terminal.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 2"
+ date="2013-08-17T08:59:11Z"
+ content="""
+When it says \"arbitrary urls\", it means it. The only requirement is that the url be well formed and that wget or whatever command you have it configured to use via annex.web-download-command knows how to download it.
+"""]]

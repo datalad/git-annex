@@ -15,23 +15,23 @@ import Logs.Location
 import Logs.Transfer
 import qualified Remote
 import Types.Remote
-import qualified Command.Move
+import GitAnnex.Options
 import qualified Option
 
 def :: [Command]
-def = [withOptions options $
+def = [withOptions transferKeyOptions $
 	noCommit $ command "transferkey" paramKey seek SectionPlumbing
 		"transfers a key from or to a remote"]
 
-options :: [Option]
-options = [fileOption, Command.Move.fromOption, Command.Move.toOption]
+transferKeyOptions :: [Option]
+transferKeyOptions = fileOption : fromToOptions
 
 fileOption :: Option
 fileOption = Option.field [] "file" paramFile "the associated file"
 
 seek :: [CommandSeek]
-seek = [withField Command.Move.toOption Remote.byNameWithUUID $ \to ->
-	withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
+seek = [withField toOption Remote.byNameWithUUID $ \to ->
+	withField fromOption Remote.byNameWithUUID $ \from ->
 	withField fileOption return $ \file ->
 		withKeys $ start to from file]
 

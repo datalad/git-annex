@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://olivier.berger.myopenid.com/"
+ nickname="obergix"
+ subject="Experimenting with a CIFS mount point of the NAS and direct mode"
+ date="2013-08-17T22:11:19Z"
+ content="""
+I've been experimenting with a direct mode repo on a CIFS mount of the SMB share of the NAS.
+
+Unfortunately, it seems I can't propagate changes made on the laptop to the mount point by issueing a git pull or merge, as it is part of the unsafe commands that don't support direct mode (see details in <http://git-annex.branchable.com/direct_mode/#comment-fca93776b9526341e6aae4fe2c53038c>)... direct mode wouldn't be very useful then : I intend to mirror on the NAS the files I've been managing locally. For instance I will sort my photos in subdirs, on the laptop, and intend to mirror that on the NAS.
+"""]]

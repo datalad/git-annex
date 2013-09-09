@@ -101,10 +101,13 @@ mergeLocal :: Git.Ref -> CommandStart
 mergeLocal branch = go =<< needmerge
   where
 	syncbranch = syncBranch branch
-	needmerge = do
-		unlessM (inRepo $ Git.Ref.exists syncbranch) $
-			inRepo $ updateBranch syncbranch
-		inRepo $ Git.Branch.changed branch syncbranch
+	needmerge = ifM isBareRepo
+		( return False
+		, do
+			unlessM (inRepo $ Git.Ref.exists syncbranch) $
+				inRepo $ updateBranch syncbranch
+			inRepo $ Git.Branch.changed branch syncbranch
+		)
 	go False = stop
 	go True = do
 		showStart "merge" $ Git.Ref.describe syncbranch

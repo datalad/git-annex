@@ -37,6 +37,7 @@ data GitConfig = GitConfig
 	, annexAutoCommit :: Bool
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
+	, annexQuviOptions :: [String]
 	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
@@ -62,6 +63,7 @@ extractGitConfig r = GitConfig
 	, annexAutoCommit = getbool (annex "autocommit") True
 	, annexDebug = getbool (annex "debug") False
 	, annexWebOptions = getwords (annex "web-options")
+	, annexQuviOptions = getwords (annex "quvi-options")
 	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")

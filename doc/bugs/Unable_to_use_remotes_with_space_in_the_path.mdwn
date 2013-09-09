@@ -30,3 +30,6 @@ I'm using debian testing (jessie) on a i386 machine.
 ### Please provide any additional information below.
 
 I don't use git annex assistant nor the webapp
+
+> Tested and only file:// and not other urls have this problem.
+> guilhem provided a fix. [[done]] --[[Joey]] 

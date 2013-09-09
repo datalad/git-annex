@@ -65,3 +65,12 @@ keyOptions =
 	, Option ['U'] ["unused"] (NoArg (Annex.setFlag "unused"))
 		"operate on files found by last run of git-annex unused"
 	]
+
+fromOption :: Option
+fromOption = Option.field ['f'] "from" paramRemote "source remote"
+
+toOption :: Option
+toOption = Option.field ['t'] "to" paramRemote "destination remote"
+
+fromToOptions :: [Option]
+fromToOptions = [fromOption, toOption]

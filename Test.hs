@@ -587,6 +587,37 @@ test_unused env = "git-annex unused/dropunused" ~: intmpclonerepoInDirect env $ 
 	checkunused [] "after dropunused"
 	not <$> git_annex env "dropunused" ["--force", "10", "501"] @? "dropunused failed to fail on bogus numbers"
 
+	-- unused used to miss symlinks that were not staged and pointed 
+	-- at annexed content, and think that content was unused
+	writeFile "unusedfile" "unusedcontent"
+	git_annex env "add" ["unusedfile"] @? "add of unusedfile failed"
+	unusedfilekey <- annexeval $ findkey "unusedfile"
+	renameFile "unusedfile" "unusedunstagedfile"
+	boolSystem "git" [Params "rm -qf", File "unusedfile"] @? "git rm failed"
+	checkunused [] "with unstaged link"
+	removeFile "unusedunstagedfile"
+	checkunused [unusedfilekey] "with unstaged link deleted"
+
+	-- unused used to miss symlinks that were deleted or modified
+	-- manually, but commited as such.
+	writeFile "unusedfile" "unusedcontent"
+	git_annex env "add" ["unusedfile"] @? "add of unusedfile failed"
+	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
+	unusedfilekey' <- annexeval $ findkey "unusedfile"
+	checkunused [] "with staged deleted link"
+	boolSystem "git" [Params "rm -qf", File "unusedfile"] @? "git rm failed"
+	checkunused [unusedfilekey'] "with staged link deleted"
+
+	-- unused used to miss symlinks that were deleted or modified
+	-- manually, but not staged as such.
+	writeFile "unusedfile" "unusedcontent"
+	git_annex env "add" ["unusedfile"] @? "add of unusedfile failed"
+	boolSystem "git" [Param "add", File "unusedfile"] @? "git add failed"
+	unusedfilekey'' <- annexeval $ findkey "unusedfile"
+	checkunused [] "with unstaged deleted link"
+	removeFile "unusedfile"
+	checkunused [unusedfilekey''] "with unstaged link deleted"
+
   where
 	checkunused expectedkeys desc = do
 		git_annex env "unused" [] @? "unused failed"

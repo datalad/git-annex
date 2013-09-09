@@ -110,7 +110,7 @@ download' quiet url headers options file =
 		_ -> return False
   where
 	headerparams = map (\h -> Param $ "--header=" ++ h) headers
-	wget = go "wget" $ headerparams ++ quietopt "-q" ++ [Params "-c -O"]
+	wget = go "wget" $ headerparams ++ quietopt "-q" ++ [Params "--clobber -c -O"]
 	{- Uses the -# progress display, because the normal
 	 - one is very confusing when resuming, showing
 	 - the remainder to download as the whole file,
