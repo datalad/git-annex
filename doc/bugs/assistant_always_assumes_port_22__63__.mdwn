@@ -9,7 +9,7 @@ Using my version of git-annex, I assume.
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 3.20121112ubuntu2
 
-xubuntu
+xubuntu 13.04
 
 ### Please provide any additional information below.
 I don't see any .git/annex/daemon.log.
