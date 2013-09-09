@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkgH7oNEqNbh3g-N1-UHXuqleXaRYDgj1U"
+ nickname="Adam"
+ subject="comment 2"
+ date="2013-09-09T06:12:44Z"
+ content="""
+This is what is in the logs after I turned on debugging:
+
+    [2013-09-09 02:04:22 EDT] XMPPSendPack: finished running push Pushing \"a29\" (PushRequest (UUID \"c96c8493-b702-4ca0-9a88-f8a38dd6c3f5\")) True
+    [2013-09-09 02:04:22 EDT] XMPPSendPack: started running push Pushing \"a29\" (PushRequest (UUID \"c96c8493-b702-4ca0-9a88-f8a38dd6c3f5\"))
+    [2013-09-09 02:04:22 EDT] read: git [\"--git-dir=/Users/adamliter/Library/texmf/.git\",\"--work-tree=/Users/adamliter/Library/texmf\",\"symbolic-ref\",\"HEAD\"]
+    [2013-09-09 02:04:22 EDT] read: git [\"--git-dir=/Users/adamliter/Library/texmf/.git\",\"--work-tree=/Users/adamliter/Library/texmf\",\"show-ref\",\"refs/heads/master\"]
+    [2013-09-09 02:04:22 EDT] call: git [\"--git-dir=/Users/adamliter/Library/texmf/.git\",\"--work-tree=/Users/adamliter/Library/texmf\",\"branch\",\"-f\",\"synced/master\"]
+    [2013-09-09 02:04:22 EDT] XMPPSendPack: Syncing with adam.liter 
+    [2013-09-09 02:04:22 EDT] call: git [\"--git-dir=/Users/adamliter/Library/texmf/.git\",\"--work-tree=/Users/adamliter/Library/texmf\",\"push\",\"adam.liter\",\"git-annex:refs/synced/6258750b-9b0d-4f05-b443-61f4fb0a3f66/YWRhbS5saXRlckBnbWFpbC5jb20=/git-annex\",\"refs/heads/master:refs/synced/6258750b-9b0d-4f05-b443-61f4fb0a3f66/YWRhbS5saXRlckBnbWFpbC5jb20=/master\"]
+    [2013-09-09 02:04:22 EDT] XMPPClient: sending: Pushing \"a29\" (StartingPush (UUID \"6258750b-9b0d-4f05-b443-61f4fb0a3f66\"))
+    [2013-09-09 02:04:22 EDT] XMPPClient: to client: a10/F4E99F98
+    [2013-09-09 02:04:23 EDT] XMPPReceivePack: timeout waiting for git send-pack output via XMPP
+    fatal: The remote end hung up unexpectedly
+    [2013-09-09 02:04:23 EDT] XMPPReceivePack: finished running push Pushing \"a29\" (StartingPush (UUID \"c96c8493-b702-4ca0-9a88-f8a38dd6c3f5\")) True
+    [2013-09-09 02:04:23 EDT] XMPPClient: sending: Pushing \"a29\" (ReceivePackDone (ExitFailure 128))
+    [2013-09-09 02:04:23 EDT] XMPPReceivePack: started running push Pushing \"a29\" (StartingPush (UUID \"c96c8493-b702-4ca0-9a88-f8a38dd6c3f5\"))
+    [2013-09-09 02:04:23 EDT] XMPPClient: to client: a10/F4E99F98
+    [2013-09-09 02:04:23 EDT] XMPPReceivePack: Syncing with adam.liter 
+    [2013-09-09 02:04:23 EDT] chat: git [\"receive-pack\",\"/Users/adamliter/Library/texmf\"]
+    [2013-09-09 02:04:23 EDT] XMPPClient: sending: Pushing \"a29\" (ReceivePackOutput 1 \"<elided>\")
+    [2013-09-09 02:04:23 EDT] XMPPClient: to client: a10/F4E99F98
+    [2013-09-09 02:04:23 EDT] XMPPClient: sending: Pushing \"a29\" (ReceivePackOutput 2 \"<elided>\")
+    [2013-09-09 02:04:23 EDT] XMPPClient: to client: a10/F4E99F98
+    [2013-09-09 02:04:23 EDT] XMPPClient: received: [\"Pushing \\"a29\\" (StartingPush (UUID \\"c96c8493-b702-4ca0-9a88-f8a38dd6c3f5\\"))\"]
+    [2013-09-09 02:04:23 EDT] XMPPClient: received: [\"Unknown message\"]
+
+
+
+
+"""]]
