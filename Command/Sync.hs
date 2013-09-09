@@ -67,12 +67,12 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 		| otherwise = listed
 	listed = do
 		l <- catMaybes <$> mapM (Remote.byName . Just) rs
-		let s = filter Remote.specialRemote l
+		let s = filter (not . Remote.syncableRemote) l
 		unless (null s) $
 			error $ "cannot sync special remotes: " ++
 				unwords (map Types.Remote.name s)
 		return l
-	available = filter (not . Remote.specialRemote)
+	available = filter Remote.syncableRemote
 		. filter (remoteAnnexSync . Types.Remote.gitconfig)
 		<$> Remote.remoteList
 	good = filterM $ Remote.Git.repoAvail . Types.Remote.repo

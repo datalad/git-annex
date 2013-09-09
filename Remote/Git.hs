@@ -125,6 +125,14 @@ gen r u c gc
 repoAvail :: Git.Repo -> Annex Bool
 repoAvail r 
 	| Git.repoIsHttp r = return True
+	| Git.GCrypt.isEncrypted r = do
+		g <- gitRepo
+		liftIO $ do
+			er <- Git.GCrypt.encryptedRepo g r
+			if Git.repoIsLocal er || Git.repoIsLocalUnknown er
+				then catchBoolIO $
+					void (Git.Config.read er) >> return True
+				else return True
 	| Git.repoIsUrl r = return True
 	| Git.repoIsLocalUnknown r = return False
 	| otherwise = liftIO $ catchBoolIO $ onLocal r $ return True

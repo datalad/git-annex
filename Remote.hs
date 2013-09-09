@@ -19,7 +19,7 @@ module Remote (
 
 	remoteTypes,
 	remoteList,
-	specialRemote,
+	syncableRemote,
 	remoteMap,
 	uuidDescriptions,
 	byName,
