@@ -51,4 +51,7 @@ buildFlags = filter (not . null)
 #ifdef WITH_FEED
 	, "Feeds"
 #endif
+#ifdef WITH_QUVI
+	, "Quvi"
+#endif
 	]

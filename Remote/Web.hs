@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Remote.Web (remote) where
 
 import Common.Annex
@@ -18,8 +20,10 @@ import Logs.Web
 import Types.Key
 import Utility.Metered
 import qualified Utility.Url as Url
+#ifdef WITH_QUVI
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi
+#endif
 
 import qualified Data.Map as M
 
@@ -72,8 +76,14 @@ downloadKey key _file dest _p = get =<< getUrls key
 		untilTrue urls $ \u -> do
 			let (u', downloader) = getDownloader u
 			case downloader of
-				QuviDownloader -> flip downloadUrl dest
-					=<< withQuviOptions Quvi.queryLinks [Quvi.httponly, Quvi.quiet] u'
+				QuviDownloader -> do
+#ifdef WITH_QUVI
+					flip downloadUrl dest
+						=<< withQuviOptions Quvi.queryLinks [Quvi.httponly, Quvi.quiet] u'
+#else
+					warning "quvi support needed for this url"
+					return False
+#endif
 				DefaultDownloader -> downloadUrl [u'] dest
 
 downloadKeyCheap :: Key -> FilePath -> Annex Bool
@@ -94,14 +104,25 @@ checkKey key = do
 	us <- getUrls key
 	if null us
 		then return $ Right False
-		else return . Right =<< checkKey' key us
-checkKey' :: Key -> [URLString] -> Annex Bool
-checkKey' key us = untilTrue us $ \u -> do
+		else return =<< checkKey' key us
+checkKey' :: Key -> [URLString] -> Annex (Either String Bool)
+checkKey' key us = firsthit us (Right False) $ \u -> do
 	let (u', downloader) = getDownloader u
 	showAction $ "checking " ++ u'
 	case downloader of
 		QuviDownloader ->
-			withQuviOptions Quvi.check [Quvi.httponly, Quvi.quiet] u'
+#ifdef WITH_QUVI
+			Right <$> withQuviOptions Quvi.check [Quvi.httponly, Quvi.quiet] u'
+#else
+			return $ Left "quvi support needed for this url"
+#endif
 		DefaultDownloader -> do
 			headers <- getHttpHeaders
-			liftIO $ Url.check u' headers (keySize key)
+			liftIO $ Right <$> Url.check u' headers (keySize key)
+  where
+  	firsthit [] miss _ = return miss
+	firsthit (u:rest) _ a = do
+		r <- a u
+		case r of
+			Right _ -> return r
+			Left _ -> firsthit rest r a

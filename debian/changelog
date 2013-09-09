@@ -32,6 +32,7 @@ git-annex (4.20130828) UNRELEASED; urgency=low
     Works around chromium behavior where ajax connections to urls
     that were already accessed are denied after navigating back to
     a previous page.
+  * Allow building without quvi support.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
 
