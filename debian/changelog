@@ -1,4 +1,4 @@
-git-annex (4.20130827) unstable; urgency=low
+git-annex (4.20130827~bpo70+1) wheezy-backports; urgency=low
 
   * Youtube support! (And 53 other video hosts). When quvi is installed,
     git-annex addurl automatically uses it to detect when an page is
@@ -26,7 +26,7 @@ git-annex (4.20130827) unstable; urgency=low
   * Debian: Recommend ssh-askpass, which ssh will use when the assistant
     is run w/o a tty. Closes: #719832
 
- -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 09 Sep 2013 16:34:08 -0400
 
 git-annex (4.20130815~bpo70+1) wheezy-backports; urgency=low
 
