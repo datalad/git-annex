@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.255.110"
+ subject="comment 1"
+ date="2013-09-09T19:44:57Z"
+ content="""
+Everyone can see the names of every file that is put into the git repository. Whether the contents of those files is transferred from the machine where they were created to other clones of the repository is configurable using [[preferred_content]], but it's not really intended as an access control mechanism.
+"""]]

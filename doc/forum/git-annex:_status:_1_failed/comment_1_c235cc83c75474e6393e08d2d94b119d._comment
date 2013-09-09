@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.255.110"
+ subject="comment 1"
+ date="2013-09-09T19:38:50Z"
+ content="""
+You might try moving the .git/annex/transfer/ directory out of the way. 
+
+What version of git-annex do you have installed?
+"""]]
