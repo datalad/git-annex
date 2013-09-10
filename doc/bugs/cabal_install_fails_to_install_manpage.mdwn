@@ -1,0 +1,17 @@
+### Please describe the problem.
+
+The git-annex manual page is not installed when using [[install/cabal]] to install git-annex.
+
+### What steps will reproduce the problem?
+
+Follow [[install/cabal]] with `--bin-dir=/usr/local` and try `man git-annex`.
+
+I was expecting the manpage to be installed in `/usr/local/share/man`.
+
+### What version of git-annex are you using? On what operating system?
+
+git annex from a recent git build (4.20130909-g7f079d6) in Debian wheezy.
+
+### Please provide any additional information below.
+
+This could be just a documentation problem... --[[anarcat]]
