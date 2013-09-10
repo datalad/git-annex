@@ -40,3 +40,13 @@ you want, and use cabal as follows inside its source tree:
 	cabal configure
 	cabal build
 	cabal install --bindir=$HOME/bin
+
+## installing some binary dependencies
+
+Some binary dependencies can be installed by hand. This saves compilation time because `cabal` will find those packages and use them as is:
+
+    apt-get install libghc-mtl-dev libghc-missingh-dev libghc-hslogger-dev libghc-pcre-light-dev libghc-sha-dev libghc-regex-tdfa-dev libghc-dataenc-dev libghc-utf8-string-dev libghc-hs3-dev libghc-quickcheck2-dev libghc-monad-control-dev libghc-monadcatchio-transformers-dev libghc-unix-compat-dev libghc-dlist-dev libghc-uuid-dev libghc-json-dev libghc-aeson-dev libghc-ifelse-dev libghc-bloomfilter-dev libghc-edit-distance-dev libghc-extensible-exceptions-dev  libghc-stm-dev libghc-dbus-dev libghc-case-insensitive-dev libghc-http-types-dev libghc-blaze-builder-dev libghc-crypto-api-dev libghc-network-multicast-dev libghc-network-info-dev libghc-safesemaphore-dev libghc-network-protocol-xmpp-dev libghc-gnutls-dev libghc-async-dev libghc-http-dev libghc-feed-dev
+
+Those may also be available at the right version if you are running sid or jessie:
+
+    apt-get install libghc-yesod-dev libghc-yesod-static-dev libghc-yesod-default-dev libghc-warp-dev libghc-wai-dev libghc-wai-logger-dev libghc-hamlet-dev libghc-clientsession-dev libghc-dav-dev libghc-extensible-exceptions-dev libghc-hinotify-dev
