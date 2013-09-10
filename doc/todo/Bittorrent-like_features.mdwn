@@ -1,12 +1,11 @@
 There are two different possible ways git-annex could use bittorrent:
 
- 1. by downloading any file from multiple git-annex daemons, using the bittorrent protocol
- 2. by downloading specific files using an external bittorrent client
-
 Let's describe those one by one.
 
-The assistant as a bittorrent client
-====================================
+[[!toc]]
+
+Downloading files from multiple git-annex sources simultaneously
+================================================================
 
 Having your remotes (optionally!) act like a swarm would be an awesome feature to have because you bring in a lot of new features that optimize storage, bandwidth, and overall traffic usage. This would be made a lot easier if parts of it were implemented in small steps that added a nifty feature. The best part is, each of these could be implemented by themselves, and they're all features that would be really useful.
 
@@ -30,8 +29,8 @@ Another thing, this would be completely trackerless. You just use remote groups 
 
 This was originally posted [[as a forum post|forum/Wishlist:_Bittorrent-like_transfers]] by [[users/GLITTAH]].
 
-Using an external bittorrent client
-===================================
+Using an external client (addurl torrent support)
+=================================================
 
 The alternative to this would be to add `addurl` support for bittorrent files. The same way we can now add Youtube videos to a git-annex repository thanks to [[quvi]], we could also simply do:
 
