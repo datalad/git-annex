@@ -17,7 +17,8 @@ Start with `marcos`, with the complete directory:
     cd /srv/mp3
     git init
     git annex init
-    git annex add
+    git annex add .
+    git commit -m"git annex yay"
 
 You may want to use [[direct mode]] if you want to avoid creating a forest of symlinks there, but this is generally error-prone and should be avoided.
 
@@ -51,3 +52,11 @@ Once you are sure things went on okay, you can synchronise this with `marcos`:
     git annex sync
 
 This will push the metadata information to marcos, so it knows which files are available on `angela`. From there on, you can freely get and move files between the two repos!
+
+Importing files from a third directory
+--------------------------------------
+
+Say that some files on `angela` are actually spread out outside of the `~/mp3` directory. You can use the `git annex import` command to add those extra directories:
+
+    cd ~/mp3
+    git annex import ~/music/
