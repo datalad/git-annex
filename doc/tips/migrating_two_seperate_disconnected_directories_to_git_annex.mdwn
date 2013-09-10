@@ -71,3 +71,5 @@ This will show files that are on `angela` and not on `marcos`. They could be new
     git annex drop <file>
 
 If the file is a renamed or modified version from the original, you may need to use `--force`, but be careful! If you delete the wrong file, it will be lost forever!
+
+> (!) Maybe this wouldn't happen with [[direct mode]] and an fsck? --[[anarcat]]
