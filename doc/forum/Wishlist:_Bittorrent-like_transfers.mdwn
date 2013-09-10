@@ -1,4 +1,4 @@
-**EDIT: Mistakenly posted this thread in the forum.  I created a new post in todo. Link: http://git-annex.branchable.com/todo/Bittorrent-like_features/?updated**
+**EDIT: Mistakenly posted this thread in the forum.  I created a new post in [[todo|todo/Bittorrent-like_features]]
 
 Do you think it would be possible to have bittorrent-like transfers between remotes, so that no one remote gets pegged too hard with transfers? It would be great if you distribute your files between multiple bandwidth-capped remotes, and want fast down speed.  Obviously, this isn't a simple task, but the protocol is already there, it just needs to be adapted for the purpose (and re-written in Haskell...).  Maybe some day in the future after the more important stuff gets taken care of?  It could be an enticing stretch goal.
 
