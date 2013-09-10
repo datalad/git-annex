@@ -29,6 +29,8 @@ Now if another application that is not aware of git's `sharedRepository` configu
 
 You will also need to start the process with a proper [[!wikipedia umask]] (`002` instead of `022`).
 
+(!) I haven't actually tested this part. --[[anarcat]]
+
 See also
 ========
 
