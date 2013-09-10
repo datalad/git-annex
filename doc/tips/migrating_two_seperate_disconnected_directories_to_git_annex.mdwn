@@ -60,3 +60,14 @@ Say that some files on `angela` are actually spread out outside of the `~/mp3` d
 
     cd ~/mp3
     git annex import ~/music/
+
+Deleting deleted files
+----------------------
+
+It is quite possible some files were removed (or renamed!) on `marcos` but not on `angela`, since it was synchronised only some time ago. A good way to find out about those files is to use the `--not --in` argument, for example, on `angela`:
+
+    git annex whereis --in here --not --in marcos
+
+This will show files that are on `angela` and not on `marcos`. They could be new files that were only added on `angela`, so be careful! A manual analysis is necessary, but let's say you are certain those files are not relevant anymore, you can delete them from `angela`:
+
+    git annex drop <file>
