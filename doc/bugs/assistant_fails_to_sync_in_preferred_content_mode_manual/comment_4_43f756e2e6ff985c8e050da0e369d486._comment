@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlQsgfXntaEvZPKgd_K0dfoFcYBJXKcaFE"
+ nickname="Sten"
+ subject="output of git annex sync "
+ date="2013-09-10T03:19:51Z"
+ content="""
+When running sync on B after copying file content from A to S (manually or automatically), I saw the following output (copied just the end of it):
+ ...
+ file.pdf                                              |    1 +
+ file.txt                                              |    1 +
+ 762 files changed, 762 insertions(+)
+ ...
+ create mode 120000 file.pdf
+ create mode 120000 file.txt
+
+git-annex: /home/sten/Documents/.git/annex/merge/: getDirectoryContents: does not exist (No such file or directory)
+failed
+push server 
+Everything up-to-date
+ok
+git-annex: sync: 1 failed
+
+A subsequent sync worked without error.
+
+"""]]
