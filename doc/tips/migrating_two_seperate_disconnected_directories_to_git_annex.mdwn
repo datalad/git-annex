@@ -20,8 +20,6 @@ Start with `marcos`, with the complete directory:
     git annex add .
     git commit -m"git annex yay"
 
-You may want to use [[direct mode]] if you want to avoid creating a forest of symlinks there, but this is generally error-prone and should be avoided.
-
 This will checksum all files and add them to the `git-annex` branch of the git repository. Wait for this process to complete.
 
 Create the smaller repo and synchronise
