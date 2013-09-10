@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlQsgfXntaEvZPKgd_K0dfoFcYBJXKcaFE"
+ nickname="Sten"
+ subject="computer in manual mode seems to be the reason, not server"
+ date="2013-09-10T02:21:59Z"
+ content="""
+If I create a setup like originally described with the only difference being S set to full backup mode, I see no change in sync behavior. 
+
+In detail, what happens is: A gets files added. These changes are committed and synced. Because S is in full backup mode, the file content is also sent from A to S (this is different, but expected). However, B still does not sync until manually run. I would expect that B's manual mode only applies to file content (it is the preferred content setting), not to changes to the git repo, thus I'd expect git changes to sync to all involved (and accessible) repos.
+"""]]
