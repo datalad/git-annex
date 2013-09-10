@@ -1,7 +1,4 @@
-I made an oops and created a wishlist thread in the forum regarding bittorrent-like behaviour.  Sorry, my bad.
-
-Here's the original thread:
-http://git-annex.branchable.com/forum/Wishlist:_Bittorrent-like_transfers/
+I made an oops and created a wishlist thread in the forum regarding bittorrent-like behaviour.  Sorry, my bad. Here's the [[original thread|forum/Wishlist:_Bittorrent-like_transfers]].
 
 I think I summed up pretty well what bittorrent-like features could be added to git-annex in one of the posts, so I'll copy and paste some of it here (with slight clarifications added in).
 
