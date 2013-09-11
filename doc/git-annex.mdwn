@@ -60,50 +60,50 @@ files in the directory. When no path is specified, most git-annex commands
 default to acting on all relevant files in the current directory (and
 subdirectories).
 
-* add [path ...]
+* `add [path ...]`
 
   Adds files in the path to the annex. Files that are already checked into
   git, or that git has been configured to ignore will be silently skipped.
-  (Use --force to add ignored files.) Dotfiles are skipped unless explicitly
+  (Use `--force` to add ignored files.) Dotfiles are skipped unless explicitly
   listed.
 
-* get [path ...]
+* `get [path ...]`
 
   Makes the content of annexed files available in this repository. This
   will involve copying them from another repository, or downloading them,
   or transferring them from some kind of key-value store.
 
   Normally git-annex will choose which repository to copy the content from,
-  but you can override this using the --from option.
+  but you can override this using the `--from` option.
 
-* drop [path ...]
+* `drop [path ...]`
 
   Drops the content of annexed files from this repository. 
 
   git-annex will refuse to drop content if it cannot verify it is
-  safe to do so. This can be overridden with the --force switch.
+  safe to do so. This can be overridden with the `--force` switch.
 
-  To drop content from a remote, specify --from.
+  To drop content from a remote, specify `--from`.
 
-* move [path ...]
+* `move [path ...]`
   
-  When used with the --from option, moves the content of annexed files
+  When used with the `--from` option, moves the content of annexed files
   from the specified repository to the current one.
 
-  When used with the --to option, moves the content of annexed files from
+  When used with the `--to` option, moves the content of annexed files from
   the current repository to the specified one.
 
-* copy [path ...]
+* `copy [path ...]`
 
-  When used with the --from option, copies the content of annexed files
+  When used with the `--from` option, copies the content of annexed files
   from the specified repository to the current one.
 
-  When used with the --to option, copies the content of annexed files from
+  When used with the `--to` option, copies the content of annexed files from
   the current repository to the specified one.
 
-  To avoid contacting the remote to check if it has every file, specify --fast
+  To avoid contacting the remote to check if it has every file, specify `--fast`
 
-* unlock [path ...]
+* `unlock [path ...]`
 
   Normally, the content of annexed files is protected from being changed.
   Unlocking a annexed file allows it to be modified. This replaces the
@@ -111,24 +111,24 @@ subdirectories).
   You can then modify it and `git annex add` (or `git commit`) to inject
   it back into the annex.
 
-* edit [path ...]
+* `edit [path ...]`
 
   This is an alias for the unlock command. May be easier to remember,
   if you think of this as allowing you to edit an annexed file.
 
-* lock [path ...]
+* `lock [path ...]`
 
   Use this to undo an unlock command if you don't want to modify
   the files, or have made modifications you want to discard.
 
-* sync [remote ...]
+* `sync [remote ...]`
 
   Use this command when you want to synchronize the local repository with
   one or more of its remotes. You can specifiy the remotes to sync with;
-  the default is to sync with all remotes. Or specify --fast to sync with
+  the default is to sync with all remotes. Or specify `--fast` to sync with
   the remotes with the lowest annex-cost value.
 
-  The sync process involves first committing all local changes (git commit -a),
+  The sync process involves first committing all local changes (`git commit -a`),
   then fetching and merging the `synced/master` and the `git-annex` branch
   from the remote repositories and finally pushing the changes back to
   those branches on the remote repositories. You can use standard git
@@ -148,7 +148,7 @@ subdirectories).
   Note that sync does not transfer any file contents from or to the remote
   repositories.
 
-* merge
+* `merge`
 
   This performs the same merging that is done by the sync command, but
   without pushing or pulling any data.
@@ -157,14 +157,14 @@ subdirectories).
   post-receive hook. Then any syncs to the repository will update its working
   copy automatically.
 
-* mirror [path ...]
+* `mirror [path ...]`
   
   This causes a destination repository to mirror a source repository.
 
   To use the local repository as the source repository,
-  specify mirror --to remote.
+  specify mirror `--to` remote.
 
-  To use a remote as the source repository, specify mirror --from remote.
+  To use a remote as the source repository, specify mirror `--from` remote.
 
   Each specified file in the source repository is mirrored to the destination
   repository. If a file's content is present in the source repository, it is
@@ -175,22 +175,22 @@ subdirectories).
   Note that mirror does not sync the git repository, but only the file
   contents.
 
-* addurl [url ...]
+* `addurl [url ...]`
 
   Downloads each url to its own file, which is added to the annex.
 
-  To avoid immediately downloading the url, specify --fast.
+  To avoid immediately downloading the url, specify `--fast`.
 
   To avoid storing the size of the url's content, and accept whatever
-  is there at a future point, specify --relaxed. (Implies --fast.)
+  is there at a future point, specify `--relaxed`. (Implies `--fast`.)
 
   Normally the filename is based on the full url, so will look like
   "www.example.com_dir_subdir_bigfile". For a shorter filename, specify
-  --pathdepth=N. For example, --pathdepth=1 will use "dir/subdir/bigfile",
-  while --pathdepth=3 will use "bigfile". It can also be negative;
-  --pathdepth=-2 will use the last two parts of the url.
+  `--pathdepth=N`. For example, `--pathdepth=1` will use "dir/subdir/bigfile",
+  while `--pathdepth=3` will use "bigfile". It can also be negative;
+  `--pathdepth=-2` will use the last two parts of the url.
 
-  Or, to directly specify what file the url is added to, specify --file.
+  Or, to directly specify what file the url is added to, specify `--file`.
   This changes the behavior; now all the specified urls are recorded as
   alternate locations from which the file can be downloaded. In this mode,
   addurl can be used both to add new files, or to add urls to existing files.
@@ -198,18 +198,18 @@ subdirectories).
   When quvi is installed, urls are automatically tested to see if they
   are on a video hosting site, and the video is downloaded instead.
 
-* rmurl file url
+* `rmurl file url`
 
   Record that the file is no longer available at the url.
 
-* import [path ...]
+* `import [path ...]`
 
   Moves files from somewhere outside the git working copy, and adds them to
   the annex. Individual files to import can be specified. 
   If a directory is specified, all files in it are imported, and any
   subdirectory structure inside it is preserved.
 
-	git annex import /media/camera/DCIM/
+        	git annex import /media/camera/DCIM/
 
   By default, importing two files with the same contents from two different
   locations will result in both files being added to the repository.
@@ -217,36 +217,36 @@ subdirectories).
   only one copy of the data will be stored.)
 
   To not delete files from the import location, use the
-  --duplicate option. This could allow importing the same files repeatedly
+  `--duplicate` option. This could allow importing the same files repeatedly
   to different locations in a repository. More likely, it could be used to
   import the same files to a number of different branches or separate git
   repositories.
 
   To only import files whose content has not been seen before by git-annex,
-  use the --deduplicate option. Duplicate files will be deleted from the
+  use the `--deduplicate` option. Duplicate files will be deleted from the
   import location.
   
-  The --clean-duplicates option does not import any new files, but any files
+  The `--clean-duplicates` option does not import any new files, but any files
   found in the import location that are duplicates of content in the annex
   are deleted.
   
-  (Note that using --deduplicate or --clean-duplicates with the WORM
+  (Note that using `--deduplicate` or `--clean-duplicates` with the WORM
   backend does not look at file content, but filename and mtime.)
 
-* importfeed [url ...]
+* `importfeed [url ...]`
 
   Imports the contents of podcast feeds. Only downloads files whose
   urls have not already been added to the repository before, so you can
   delete, rename, etc the resulting files and repeated runs won't duplicate
-  them. (Use --force to force downloading urls it's seen before.)
+  them. (Use `--force` to force downloading urls it's seen before.)
 
-  Use --template to control where the files are stored.
+  Use `--template` to control where the files are stored.
   The default template is '${feedtitle}/${itemtitle}${extension}'
   (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid)
 
-  The --relaxed and --fast options behave the same as they do in addurl.
+  The `--relaxed` and `--fast` options behave the same as they do in addurl.
 
-* watch
+* `watch`
 
   Watches for changes to files in the current directory and its subdirectories,
   and takes care of automatically adding new files, as well as dealing with
@@ -254,18 +254,18 @@ subdirectories).
   background, you no longer need to manually run git commands when
   manipulating your files.
 
-  To not daemonize, run with --foreground ; to stop a running daemon,
-  run with --stop
+  To not daemonize, run with `--foreground` ; to stop a running daemon,
+  run with `--stop`
 
-* assistant
+* `assistant`
 
   Like watch, but also automatically syncs changes to other remotes.
   Typically started at boot, or when you log in.
 
-  With the --autostart option, the assistant is started in any repositories
+  With the `--autostart` option, the assistant is started in any repositories
   it has created. These are listed in `~/.config/git-annex/autostart`
 
-* webapp
+* `webapp`
 
   Opens a web app, that allows easy setup of a git-annex repository,
   and control of the git-annex assistant.
@@ -273,7 +273,7 @@ subdirectories).
   By default, the webapp can only be accessed from localhost, and running
   it opens a browser window.
 
-  With the --listen=address[:port] option, the webapp can be made to listen
+  With the `--listen=address[:port]` option, the webapp can be made to listen
   for connections on the specified address. This disables running a
   local web browser, and outputs the url you can use to open the webapp
   from a remote computer.
@@ -281,7 +281,7 @@ subdirectories).
 
 # REPOSITORY SETUP COMMANDS
 
-* init [description]
+* `init [description]`
 
   Until a repository (or one of its remotes) has been initialized,
   git-annex will refuse to operate on it, to avoid accidentially
@@ -291,7 +291,7 @@ subdirectories).
   of a repository with its own description. If you don't provide one,
   one will be generated.
 
-* describe repository description
+* `describe repository description`
 
   Changes the description of a repository.
 
@@ -299,7 +299,7 @@ subdirectories).
   by uuid. To change the description of the current repository, use
   "here".
 
-* initremote name [param=value ...]
+* `initremote name [param=value ...]`
 
   Creates a new special remote, and adds it to `.git/config`. 
 
@@ -325,14 +325,14 @@ subdirectories).
   Note that with encryption enabled, a cryptographic key is created.
   This requires sufficient entropy. If initremote seems to hang or take
   a long time while generating the key, you may want to ctrl-c it and
-  re-run with --fast, which causes it to use a lower-quality source of
+  re-run with `--fast`, which causes it to use a lower-quality source of
   randomness.
 
   Example Amazon S3 remote:
 
-	git annex initremote mys3 type=S3 encryption=hybrid keyid=me@example.com datacenter=EU
+    	git annex initremote mys3 type=S3 encryption=hybrid keyid=me@example.com datacenter=EU
 
-* enableremote name [param=value ...]
+* `enableremote name [param=value ...]`
 
   Enables use of an existing special remote in the current repository,
   which may be a different repository than the one in which it was
@@ -361,7 +361,7 @@ subdirectories).
   One use-case of keyid-= is to replace a revoked key with
   a new key:
 
-	git annex enableremote mys3 keyid-=revokedkey keyid+=newkey
+        	git annex enableremote mys3 keyid-=revokedkey keyid+=newkey
 
   Also, note that for encrypted special remotes using plain public-key
   encryption (encryption=pubkey), adding or removing a key has NO effect
@@ -369,55 +369,55 @@ subdirectories).
   keyid+= and keyid-= with such remotes should be used with care, and
   make little sense except in cases like the revoked key example above.
 
-* trust [repository ...]
+* `trust [repository ...]`
 
   Records that a repository is trusted to not unexpectedly lose
   content. Use with care.
 
   To trust the current repository, use "here".
 
-* untrust [repository ...]
+* `untrust [repository ...]`
 
   Records that a repository is not trusted and could lose content
   at any time.
 
-* semitrust [repository ...]
+* `semitrust [repository ...]`
 
   Returns a repository to the default semi trusted state.
 
-* dead [repository ...]
+* `dead [repository ...]`
 
   Indicates that the repository has been irretrevably lost.
   (To undo, use semitrust.)
 
-* group repository groupname
+* `group repository groupname`
 
   Adds a repository to a group, such as "archival", "enduser", or "transfer".
   The groupname must be a single word.
 
-* ungroup repository groupname
+* `ungroup repository groupname`
 
   Removes a repository from a group.
 
-* content repository [expression]
+* `content repository [expression]`
 
   When run with an expression, configures the content that is preferred
   to be held in the archive. See PREFERRED CONTENT below.
 
   For example:
 
-	git annex content . "include=*.mp3 or include=*.ogg"
+        	git annex content . "include=*.mp3 or include=*.ogg"
 
   Without an expression, displays the current preferred content setting
   of the repository.
 
-* vicfg
+* `vicfg`
 
   Opens EDITOR on a temp file containing most of the above configuration
   settings, and when it exits, stores any changes made back to the git-annex
   branch.
 
-* direct
+* `direct`
 
   Switches a repository to use direct mode, where rather than symlinks to
   files, the files are directly present in the repository.
@@ -428,7 +428,7 @@ subdirectories).
   use in direct mode repositories, and can result in data loss or other
   bad behavior.
 
-* indirect
+* `indirect`
 
   Switches a repository back from direct mode to the default, indirect mode.
 
@@ -436,23 +436,23 @@ subdirectories).
 
 # REPOSITORY MAINTENANCE COMMANDS
 
-* fsck [path ...]
+* `fsck [path ...]`
 
   With no parameters, this command checks the whole annex for consistency,
   and warns about or fixes any problems found.
 
   With parameters, only the specified files are checked.
 
-  To check a remote to fsck, specify --from.
+  To check a remote to fsck, specify `--from`.
 
   To avoid expensive checksum calculations (and expensive transfers when
-  fscking a remote), specify --fast.
+  fscking a remote), specify `--fast`.
 
-  To start a new incremental fsck, specify --incremental. Then
-  the next time you fsck, you can specify --more to skip over
+  To start a new incremental fsck, specify `--incremental`. Then
+  the next time you fsck, you can specify `--more` to skip over
   files that have already been checked, and continue where it left off.
 
-  The --incremental-schedule option makes a new incremental fsck be
+  The `--incremental-schedule` option makes a new incremental fsck be
   started a configurable time after the last incremental fsck was started.
   Once the current incremental fsck has completely finished, it causes
   a new one to start.
@@ -462,52 +462,52 @@ subdirectories).
   have been fscked. And once it's done, you'd like a new fsck pass to start,
   but no more often than once a month. Then put this in a nightly cron job:
 
-	git annex fsck --incremental-schedule 30d --time-limit 5h
+        	git annex fsck --incremental-schedule 30d --time-limit 5h
 
   To verify data integrity only while disregarding required number of copies,
-  use --numcopies=1.
+  use `--numcopies=1`.
 
-* unused
+* `unused`
 
   Checks the annex for data that does not correspond to any files present
   in any tag or branch, and prints a numbered list of the data.
 
-  To only show unused temp and bad files, specify --fast.
+  To only show unused temp and bad files, specify `--fast`.
 
-  To check for annexed data on a remote, specify --from.
+  To check for annexed data on a remote, specify `--from`.
 
-  After running this command, you can use the --unused option to
+  After running this command, you can use the `--unused` option to
   operate on all the unused data that was found. For example, to
   move all unused data to origin:
 
-	git annex unused; git annex move --unused --to origin
+        	git annex unused; git annex move --unused --to origin
 
-* dropunused [number|range ...]
+* `dropunused [number|range ...]`
 
   Drops the data corresponding to the numbers, as listed by the last
   `git annex unused`
 
   You can also specify ranges of numbers, such as "1-1000".
 
-  To drop the data from a remote, specify --from.
+  To drop the data from a remote, specify `--from.`
 
-* addunused [number|range ...]
+* `addunused [number|range ...]`
 
   Adds back files for the content corresponding to the numbers or ranges,
   as listed by the last `git annex unused`. The files will have names
   starting with "unused."
 
-* fix [path ...]
+* `fix [path ...]`
 
   Fixes up symlinks that have become broken to again point to annexed content.
   This is useful to run if you have been moving the symlinks around,
   but is done automatically when committing a change with git too.
 
-* upgrade
+* `upgrade`
 
   Upgrades the repository to current layout.
 
-* forget
+* `forget`
 
   Causes the git-annex branch to be rewritten, throwing away historical
   data about past locations of files. The resulting branch will use less
@@ -515,61 +515,61 @@ subdirectories).
   files used to be located.
   
   To also prune references to repositories that have been marked as dead,
-  specify --drop-dead.
+  specify `--drop-dead`.
 
   When this rewritten branch is merged into other clones of
-  the repository, git-annex will automatically perform the same rewriting
-  to their local git-annex branches. So the forgetfulness will automatically
+  the repository, `git-annex` will automatically perform the same rewriting
+  to their local `git-annex` branches. So the forgetfulness will automatically
   propigate out from its starting point until all repositories running
   git-annex have forgotten their old history. (You may need to force
   git to push the branch to any git repositories not running git-annex.
 
 # QUERY COMMANDS
 
-* version
+* `version`
 
   Shows the version of git-annex, as well as repository version information.
 
-* find [path ...]
+* `find [path ...]`
 
   Outputs a list of annexed files in the specified path. With no path,
   finds files in the current directory and its subdirectories.
 
   By default, only lists annexed files whose content is currently present.
   This can be changed by specifying file matching options. To list all
-  annexed files, present or not, specify --include "*". To list all
-  annexed files whose content is not present, specify --not --in=here
+  annexed files, present or not, specify `--include "*"`. To list all
+  annexed files whose content is not present, specify `--not --in=here`
 
   To output filenames terminated with nulls, for use with xargs -0,
-  specify --print0. Or, a custom output formatting can be specified using
-  --format. The default output format is the same as --format='${file}\\n'
+  specify `--print0`. Or, a custom output formatting can be specified using
+  `--format`. The default output format is the same as `--format='${file}\\n'`
 
   These variables are available for use in formats: file, key, backend,
   bytesize, humansize
 
-* whereis [path ...]
+* `whereis [path ...]`
 
   Displays a list of repositories known to contain the content of the
   specified file or files.
 
-* log [path ...]
+* `log [path ...]`
 
   Displays the location log for the specified file or files,
   showing each repository they were added to ("+") and removed from ("-").
 
   To limit how far back to seach for location log changes, the options
-  --since, --after, --until, --before, and --max-count can be specified.
-  They are passed through to git log. For example, --since "1 month ago"
+  `--since`, `--after`, `--until`, `--before`, and `--max-count` can be specified.
+  They are passed through to git log. For example, `--since "1 month ago"`
 
   To generate output suitable for the gource visualisation program,
-  specify --gource.
+  specify `--gource`.
 
-* status [directory ...]
+* `status [directory ...]`
 
   Displays some statistics and other information, including how much data
   is in the annex and a list of all known repositories.
 
-  To only show the data that can be gathered quickly, use --fast.
+  To only show the data that can be gathered quickly, use `--fast`.
 
   When a directory is specified, shows only an abbreviated status
   display for that directory. In this mode, all of the file matching
@@ -580,15 +580,15 @@ subdirectories).
   would first like to see how much disk space that will use.
   Then run:
 
-	git annex status . --not --in here
+        	git annex status . --not --in here
 
-* map
+* `map`
 
   Helps you keep track of your repositories, and the connections between them,
   by going out and looking at all the ones it can get to, and generating a
   Graphviz file displaying it all. If the `dot` command is available, it is
   used to display the file to your screen (using x11 backend). (To disable
-  this display, specify --fast)
+  this display, specify `--fast`)
 
   This command only connects to hosts that the host it's run on can
   directly connect to. It does not try to tunnel through intermediate hosts.
@@ -602,10 +602,10 @@ subdirectories).
 
 # UTILITY COMMANDS
 
-* migrate [path ...]
+* `migrate [path ...]`
 
   Changes the specified annexed files to use the default key-value backend
-  (or the one specified with --backend). Only files whose content
+  (or the one specified with `--backend`). Only files whose content
   is currently available are migrated.
 
   Note that the content is also still available using the old key after
@@ -615,7 +615,7 @@ subdirectories).
   However, if a backend changes the information it uses to construct a key,
   this can also be used to migrate files to use the new key format.
 
-* reinject src dest
+* `reinject src dest`
 
   Moves the src file into the annex as the content of the dest file.
   This can be useful if you have obtained the content of a file from
@@ -626,9 +626,9 @@ subdirectories).
 
   Example:
 
-	git annex reinject /tmp/foo.iso foo.iso
+        	git annex reinject /tmp/foo.iso foo.iso
 
-* unannex [path ...]
+* `unannex [path ...]`
 
   Use this to undo an accidental `git annex add` command. You can use
   `git annex unannex` to move content out of the annex at any point,
@@ -638,10 +638,10 @@ subdirectories).
   file and don't want its contents any more. In that case you should use
   `git annex drop` instead, and you can also `git rm` the file.
 
-  In --fast mode, this command leaves content in the annex, simply making
+  In `--fast` mode, this command leaves content in the annex, simply making
   a hard link to it.
 
-* uninit
+* `uninit`
 
   Use this to stop using git annex. It will unannex every file in the
   repository, and remove all of git-annex's other data, leaving you with a
@@ -649,7 +649,7 @@ subdirectories).
 
 # PLUMBING COMMANDS
 
-* pre-commit [path ...]
+* `pre-commit [path ...]`
 
   Fixes up symlinks that are staged as part of a commit, to ensure they
   point to annexed content. Also handles injecting changes to unlocked
@@ -658,12 +658,12 @@ subdirectories).
   This is meant to be called from git's pre-commit hook. `git annex init`
   automatically creates a pre-commit hook using this.
 
-* fromkey key file
+* `fromkey key file`
 
   This plumbing-level command can be used to manually set up a file
   in the git repository to link to a specified key.
 
-* dropkey [key ...]
+* `dropkey [key ...]`
 
   This plumbing-level command drops the annexed data for the specified
   keys from this repository.
@@ -673,48 +673,48 @@ subdirectories).
 
   Example:
 
-	git annex dropkey SHA1-s10-7da006579dd64330eb2456001fd01948430572f2
+        	git annex dropkey SHA1-s10-7da006579dd64330eb2456001fd01948430572f2
 
-* transferkeys
+* `transferkeys`
 
   This plumbing-level command is used by the assistant to transfer data.
 
-* rekey [file key ...]
+* `rekey [file key ...]`
 
   This plumbing-level command is similar to migrate, but you specify
   both the file, and the new key to use for it.
 
-  With --force, even files whose content is not currently available will
+  With `--force`, even files whose content is not currently available will
   be rekeyed. Use with caution.
 
-* test
+* `test`
 
   This runs git-annex's built-in test suite.
 
-* xmppgit
+* `xmppgit`
 
   This command is used internally to perform git pulls over XMPP.
 
 # OPTIONS
 
-* --force
+* `--force`
 
   Force unsafe actions, such as dropping a file's content when no other
   source of it can be verified to still exist, or adding ignored files.
   Use with care.
 
-* --fast
+* `--fast`
 
   Enables less expensive, but also less thorough versions of some commands.
   What is avoided depends on the command.
 
-* --auto
+* `--auto`
 
   Enables automatic mode. Commands that get, drop, or move file contents
   will only do so when needed to help satisfy the setting of annex.numcopies,
   and preferred content configuration.
 
-* --all
+* `--all`
 
   Operate on all data that has been stored in the git annex,
   including old versions of files. This is the default behavior when
@@ -722,56 +722,56 @@ subdirectories).
   normal behavior is to only operate on specified files in the working
   tree.
 
-* --unused
+* `--unused`
 
   Operate on all data that has been determined to be unused by
   a previous run of `git-annex unused`.
 
-* --quiet
+* `--quiet`
 
   Avoid the default verbose display of what is done; only show errors
   and progress displays.
 
-* --verbose
+* `--verbose`
 
   Enable verbose display.
 
-* --json
+* `--json`
 
   Rather than the normal output, generate JSON. This is intended to be
   parsed by programs that use git-annex. Each line of output is a JSON
   object. Note that json output is only usable with some git-annex commands,
   like status and find.
 
-* --debug
+* `--debug`
 
   Show debug messages.
 
-* --no-debug
+* `--no-debug`
 
   Disable debug messages.
 
-* --from=repository
+* `--from=repository`
 
   Specifies a repository that content will be retrieved from, or that
   should otherwise be acted on.
 
   It should be specified using the name of a configured remote.
 
-* --to=repository
+* `--to=repository`
 
   Specifies a repository that content will be sent to.
 
   It should be specified using the name of a configured remote.
 
-* --numcopies=n
+* `--numcopies=n`
 
   Overrides the `annex.numcopies` setting, forcing git-annex to ensure the
   specified number of copies exist. 
 
   Note that setting numcopies to 0 is very unsafe.
 
-* --time-limit=time
+* `--time-limit=time`
 
   Limits how long a git-annex command runs. The time can be something
   like "5h", or "30m" or even "45s" or "10d".
@@ -782,16 +782,16 @@ subdirectories).
   Also, note that if the time limit prevents git-annex from doing all it 
   was asked to, it will exit with a special code, 101.
 
-* --trust=repository
-* --semitrust=repository
-* --untrust=repository
+* `--trust=repository`
+* `--semitrust=repository`
+* `--untrust=repository`
 
   Overrides trust settings for a repository. May be specified more than once.
 
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository.
 
-* --trust-glacier-inventory
+* `--trust-glacier-inventory`
 
   Amazon Glacier inventories take hours to retrieve, and may not represent
   the current state of a repository. So git-annex does not trust that
@@ -802,14 +802,14 @@ subdirectories).
   removed a file from Glacier. If you try to drop the only other copy of the
   file, and this switch is enabled, you could lose data!  
 
-* --backend=name
+* `--backend=name`
 
   Specifies which key-value backend to use. This can be used when
   adding a file to the annex, or migrating a file. Once files
   are in the annex, their backend is known and this option is not
   necessary.
 
-* --format=value
+* `--format=value`
 
   Specifies a custom output format. The value is a format string, 
   in which '${var}' is expanded to the value of a variable. To right-justify
@@ -819,7 +819,7 @@ subdirectories).
 
   Also, '\\n' is a newline, '\\000' is a NULL, etc.
 
-* -c name=value
+* `-c name=value`
 
   Used to override git configuration settings. May be specified multiple times.
 
@@ -836,21 +836,21 @@ For example:
 The above example prevents git-annex from working on mp3 files whose
 file contents are present at either of two repositories.
 
-* --exclude=glob
+* `--exclude=glob`
 
   Skips files matching the glob pattern. The glob is matched relative to
   the current directory. For example:
 
-	--exclude='*.mp3' --exclude='subdir/*'
+        	--exclude='*.mp3' --exclude='subdir/*'
 
-* --include=glob
+* `--include=glob`
 
-  Skips files not matching the glob pattern.  (Same as --not --exclude.)
+  Skips files not matching the glob pattern.  (Same as `--not --exclude`.)
   For example, to include only mp3 and ogg files:
 
-	--include='*.mp3' --or --include='*.ogg'
+        	--include='*.mp3' --or --include='*.ogg'
 
-* --in=repository
+* `--in=repository`
 
   Matches only files that git-annex believes have their contents present
   in a repository. Note that it does not check the repository to verify
@@ -858,15 +858,15 @@ file contents are present at either of two repositories.
 
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository. For the current repository,
-  use --in=here
+  use `--in=here`
 
-* --copies=number
+* `--copies=number`
 
   Matches only files that git-annex believes to have the specified number
   of copies, or more. Note that it does not check remotes to verify that
   the copies still exist.
 
-* --copies=trustlevel:number
+* `--copies=trustlevel:number`
 
   Matches only files that git-annex believes have the specified number of
   copies, on remotes with the specified trust level. For example,
@@ -875,24 +875,24 @@ file contents are present at either of two repositories.
   To match any trust level at or higher than a given level,
   use 'trustlevel+'. For example, "--copies=semitrusted+:2"
 
-* --copies=groupname:number
+* `--copies=groupname:number`
 
   Matches only files that git-annex believes have the specified number of
   copies, on remotes in the specified group. For example,
   "--copies=archive:2"
 
-* --inbackend=name
+* `--inbackend=name`
 
   Matches only files whose content is stored using the specified key-value
   backend.
 
-* --inallgroup=groupname
+* `--inallgroup=groupname`
 
   Matches only files that git-annex believes are present in all repositories
   in the specified group.
 
-* --smallerthan=size
-* --largerthan=size
+* `--smallerthan=size`
+* `--largerthan=size`
 
   Matches only files whose content is smaller than, or larger than the
   specified size.
@@ -900,25 +900,25 @@ file contents are present at either of two repositories.
   The size can be specified with any commonly used units, for example,
   "0.5 gb" or "100 KiloBytes"
 
-* --not
+* `--not`
 
   Inverts the next file matching option. For example, to only act on
-  files with less than 3 copies, use --not --copies=3
+  files with less than 3 copies, use `--not --copies=3`
 
-* --and
+* `--and`
 
   Requires that both the previous and the next file matching option matches.
   The default.
 
-* --or
+* `--or`
 
   Requires that either the previous, or the next file matching option matches.
 
-* -(
+* `-(`
 
   Opens a group of file matching options.
 
-* -)
+* `-)`
 
   Closes a group of file matching options.
 
@@ -937,7 +937,7 @@ For example:
 
 The main differences are that `exclude=` and `include=` always
 match relative to the top of the git repository, and that there is
-no equivilant to --in.
+no equivilant to `--in`.
 
 # CONFIGURATION
 
@@ -980,7 +980,7 @@ Here are all the supported configuration settings.
 
   Example:
 
-	annex.largefiles = largerthan=100kb and not (include=*.c or include=*.h)
+        	annex.largefiles = largerthan=100kb and not (include=*.c or include=*.h)
 
 * `annex.queuesize`
 
@@ -1084,7 +1084,7 @@ Here are all the supported configuration settings.
 
   If set to `true`, prevents git-annex
   from storing file contents on this remote by default.
-  (You can still request it be used by the --from and --to options.)
+  (You can still request it be used by the `--from` and `--to` options.)
 
   This is, for example, useful if the remote is located somewhere
   without git-annex-shell. (For example, if it's on GitHub).

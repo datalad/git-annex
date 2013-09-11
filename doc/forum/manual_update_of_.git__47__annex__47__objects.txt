@@ -1,0 +1,8 @@
+Let's suppose that I've manually modified files in .git/annex/objects,
+for example I ran an rsync or some other file synchronization software
+to copy files. As a result, some objects have disappeared, others have
+appeared. After that `git annex whereis .' displays stale information,
+it doesn't take the manual modifications to accound. `git annex fsck'
+seems to fix this, but it runs the rehashing of all new files, so it's
+slow. Is there a fast alternative, which notices all the object file
+changes, trusts them, and just updates .git/annex/index quickly?

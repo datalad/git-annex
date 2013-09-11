@@ -1,0 +1,20 @@
+Tobias Ussing
+
+See:
+
+[[https://github.com/TobiasTheViking/flickrannex/]]
+
+[[https://github.com/TobiasTheViking/imapannex]]
+
+[[https://github.com/TobiasTheViking/dropboxannex]]
+
+[[https://github.com/TobiasTheViking/skydriveannex]]
+
+[[https://github.com/TobiasTheViking/googledriveannex]]
+
+[[https://github.com/TobiasTheViking/owncloudannex]]
+
+[[https://github.com/TobiasTheViking/megaannex]]
+
+[[http://git-annex.branchable.com/forum/nntp__47__usenet_special_remote/]]
+
