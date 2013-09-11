@@ -10,3 +10,4 @@ designed to interoperate with it.
 * [sizes](http://hackage.haskell.org/package/sizes) is another du-like
   utility, with a `-A` switch that enables git-annex support.
 * Emacs Org mode can auto-commit attached files to git-annex.
+* [[todo/nicer whereis output]] improves the output of the whereis command to be more human-readable.
