@@ -1,8 +1,8 @@
-git-annex (4.20130910) UNRELEASED; urgency=low
+git-annex (4.20130911) unstable; urgency=low
 
   * Fix problem with test suite in non-unicode locale.
 
- -- Joey Hess <joeyh@debian.org>  Wed, 11 Sep 2013 12:07:28 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 11 Sep 2013 12:14:16 -0400
 
 git-annex (4.20130909) unstable; urgency=low
 
