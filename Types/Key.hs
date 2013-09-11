@@ -81,7 +81,7 @@ file2key s = if key == Just stubKey then Nothing else key
 
 instance Arbitrary Key where
 	arbitrary = Key
-		<$> (listOf1 $ elements $ ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "\r\n \t")
+		<$> (listOf1 $ elements $ ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "-_\r\n \t")
 		<*> (listOf1 $ elements ['A'..'Z']) -- BACKEND
 		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
 		<*> arbitrary
