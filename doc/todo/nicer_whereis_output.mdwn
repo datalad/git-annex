@@ -38,12 +38,12 @@ Fourth version: tuning and blocked
 
 This required more advanced parsing of the remotes, and instead of starting to do some JSON parsing, [[anarcat]] figured it was time to learn some Haskell instead.
 
-Current status: needs work
-==========================
+Current status: needs review
+============================
 
-So right now, the most recent version is in [anarcat's gist](https://gist.github.com/anarcat/6502988) and works reasonably well. However, it doesn't distinguish between trusted and untrusted repos and so on.
+So right now, the most recent version of the python script is in [anarcat's gist](https://gist.github.com/anarcat/6502988) and works reasonably well. However, it doesn't distinguish between trusted and untrusted repos and so on.
 
-Furthermore, we'd like to see this factored into the `whereis` command directly.
+Furthermore, we'd like to see this factored into the `whereis` command directly. A [raw.hs](http://codepad.org/miVJb5oK) file has been programmed by `mastensg`, and is now available in the above gist. It fits the desired output and prototypes.
 
 Desired output
 --------------
