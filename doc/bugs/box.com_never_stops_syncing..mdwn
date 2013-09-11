@@ -11,6 +11,8 @@ git-annex version: 4.20130827
 
 But i have never seen it work satisfactory in any version.
 
+Also, i have seen this is 10+ different clean git-annexes. So it isn't annex specific. 
+
 ### Please provide any additional information below.
 
 I am going to add more debug to this bug constantly. (I intend to do a full 'git annex copy --to box.com --not --in box.com' daily, and see if the same files are transfered again and again)
