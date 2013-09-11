@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnxlx1UrzVhdy6_gFjzmF42x6QXxBUxg00"
+ nickname="Jakukyo"
+ subject="pre-commit hook of git annex"
+ date="2013-09-11T00:58:09Z"
+ content="""
+The pre-commit hook of git annex throws an 'out of memory' error, too.
+
+As a workaround, I've deleted ~/.git/hooks/pre-commit, and use `git merge` manually.
+"""]]
