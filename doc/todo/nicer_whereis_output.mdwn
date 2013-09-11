@@ -1,0 +1,79 @@
+We had some informal discussions on IRC about improving the output of the `whereis` command.
+
+[[!toc levels=2]]
+
+First version: columns
+======================
+
+[[mastensg]] started by implementing a [simple formatter](https://gist.github.com/mastensg/6500982) that would display things in columns [screenshot](http://www.ping.uio.no/~mastensg/whereis.png)
+
+Second version: Xs
+==================
+
+After some suggestions from [[joey]], [[mastensg]] changed the format slightly ([screenshot](http://www.ping.uio.no/~mastensg/whereis2.png)):
+
+[[!format txt """
+17:01:34 <joeyh> foo
+17:01:34 <joeyh> |bar
+17:01:34 <joeyh> ||baz (untrusted)
+17:01:34 <joeyh> |||
+17:01:34 <joeyh> XXx 3?  img.png
+17:01:36 <joeyh> _X_ 1!  bigfile
+17:01:37 <joeyh> XX_ 2   zort
+17:01:39 <joeyh> __x 1?! maybemissing
+17:02:09 * joeyh does a s/\?/+/ in the above
+17:02:24 <joeyh> and decrements the counters for untrusted
+17:03:37 <joeyh> __x 0+! maybemissing
+"""]]
+
+Third version: incremental
+==========================
+
+Finally, [[anarcat]] worked on making it run faster on large repositories, in a [fork](https://gist.github.com/anarcat/6502988) of that first gist. Then paging was added (so headers are repeated). 
+
+Fourth version: tuning and blocked
+==================================
+
+[[TobiasTheViking]] provided some bugfixes, and the next step was to implement the trusted/untrusted detection, and have a counter.
+
+This required more advanced parsing of the remotes, and instead of starting to do some JSON parsing, [[anarcat]] figured it was time to learn some Haskell instead.
+
+Current status: needs work
+==========================
+
+So right now, the most recent version is in [anarcat's gist](https://gist.github.com/anarcat/6502988) and works reasonably well. However, it doesn't distinguish between trusted and untrusted repos and so on.
+
+Furthermore, we'd like to see this factored into the `whereis` command directly.
+
+Desired output
+--------------
+
+The output we're aiming for is:
+
+    foo
+    |bar
+    ||baz (untrusted)
+    |||
+    XXx 2+  img.png
+    _X_ 1!  bigfile
+    XX_ 2   zort
+    __x 0+! maybemissing
+
+Legend:
+
+ * `_` - file missing from repo
+ * `x` - file may be present in untrusted repo
+ * `X` - file is present in trusted repo
+ * `[0-9]` - number of copies present in trusted repos
+ * `+` - indicates there may be more copies present
+ * `!` - indicates only one copy is left
+
+Implementation notes
+--------------------
+
+[[!format txt """
+20:48:18 <joeyh> if someone writes me a headerWhereis ::  [(RemoteName, TrustLevel)] -> String  and a formatWhereis :: [(RemoteName, TrustLevel, UUID)] -> [UUD] -> FileName -> String   , I can do the rest ;)
+20:49:22 <joeyh> make that second one formatWhereis :: [(RemoteName, TrueLevel, Bool)] -> FileName -> String
+20:49:37 <joeyh> gah, typos
+20:49:45 <joeyh> suppose you don't need the RemoteName either
+"""]]
