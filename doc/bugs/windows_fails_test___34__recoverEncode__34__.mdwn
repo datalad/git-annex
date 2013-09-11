@@ -34,3 +34,6 @@ Install git-annex-installer (2013-09-09)
 
 # End of transcript or log.
 """]]
+
+> I've released a fix for this problem. Thanks for reporting! [[done]]
+> --[[Joey]]
