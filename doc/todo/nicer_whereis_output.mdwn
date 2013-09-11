@@ -38,12 +38,14 @@ Fourth version: tuning and blocked
 
 This required more advanced parsing of the remotes, and instead of starting to do some JSON parsing, [[anarcat]] figured it was time to learn some Haskell instead.
 
-Current status: needs review
-============================
+Current status: needs merge
+===========================
 
 So right now, the most recent version of the python script is in [anarcat's gist](https://gist.github.com/anarcat/6502988) and works reasonably well. However, it doesn't distinguish between trusted and untrusted repos and so on.
 
-Furthermore, we'd like to see this factored into the `whereis` command directly. A [raw.hs](http://codepad.org/miVJb5oK) file has been programmed by `mastensg`, and is now available in the above gist. It fits the desired output and prototypes.
+Furthermore, we'd like to see this factored into the `whereis` command directly. A [raw.hs](http://codepad.org/miVJb5oK) file has been programmed by `mastensg`, and is now available in the above gist. It fits the desired output and prototypes, and has been `haskellized` thanks to [[guilhem]].
+
+Now we just need to merge those marvelous functions in `Whereis.hs` - but I can't quite figure out where to throw that code, so I'll leave it to someone more familiar with the internals of git-annex. The most recent version is still in [anarcat's gist](https://gist.github.com/anarcat/6502988). --[[anarcat]]
 
 Desired output
 --------------
