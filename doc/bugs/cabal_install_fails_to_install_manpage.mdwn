@@ -14,4 +14,4 @@ git annex from a recent git build (4.20130909-g7f079d6) in Debian wheezy.
 
 ### Please provide any additional information below.
 
-This could be just a documentation problem... --[[anarcat]]
+<del>This could be just a documentation problem...</del> Actually, the manpage can be read directly from the source tree in `doc/git-annex.mdwn`, but I still think it should be installed, for [[!wikipedia POLA]]'s sake. --[[anarcat]]
