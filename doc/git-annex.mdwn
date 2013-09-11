@@ -186,7 +186,7 @@ subdirectories).
 
   Normally the filename is based on the full url, so will look like
   "www.example.com_dir_subdir_bigfile". For a shorter filename, specify
-  --pathdepth=N. For example, `--pathdepth=1` will use "dir/subdir/bigfile",
+  `--pathdepth=N`. For example, `--pathdepth=1` will use "dir/subdir/bigfile",
   while `--pathdepth=3` will use "bigfile". It can also be negative;
   `--pathdepth=-2` will use the last two parts of the url.
 
@@ -223,14 +223,14 @@ subdirectories).
   repositories.
 
   To only import files whose content has not been seen before by git-annex,
-  use the --deduplicate option. Duplicate files will be deleted from the
+  use the `--deduplicate` option. Duplicate files will be deleted from the
   import location.
   
-  The --clean-duplicates option does not import any new files, but any files
+  The `--clean-duplicates` option does not import any new files, but any files
   found in the import location that are duplicates of content in the annex
   are deleted.
   
-  (Note that using --deduplicate or --clean-duplicates with the WORM
+  (Note that using `--deduplicate` or `--clean-duplicates` with the WORM
   backend does not look at file content, but filename and mtime.)
 
 * importfeed [url ...]
@@ -238,13 +238,13 @@ subdirectories).
   Imports the contents of podcast feeds. Only downloads files whose
   urls have not already been added to the repository before, so you can
   delete, rename, etc the resulting files and repeated runs won't duplicate
-  them. (Use --force to force downloading urls it's seen before.)
+  them. (Use `--force` to force downloading urls it's seen before.)
 
-  Use --template to control where the files are stored.
+  Use `--template` to control where the files are stored.
   The default template is '${feedtitle}/${itemtitle}${extension}'
   (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid)
 
-  The --relaxed and --fast options behave the same as they do in addurl.
+  The `--relaxed` and `--fast` options behave the same as they do in addurl.
 
 * watch
 
@@ -254,15 +254,15 @@ subdirectories).
   background, you no longer need to manually run git commands when
   manipulating your files.
 
-  To not daemonize, run with --foreground ; to stop a running daemon,
-  run with --stop
+  To not daemonize, run with `--foreground` ; to stop a running daemon,
+  run with `--stop`
 
 * assistant
 
   Like watch, but also automatically syncs changes to other remotes.
   Typically started at boot, or when you log in.
 
-  With the --autostart option, the assistant is started in any repositories
+  With the `--autostart` option, the assistant is started in any repositories
   it has created. These are listed in `~/.config/git-annex/autostart`
 
 * webapp
@@ -273,7 +273,7 @@ subdirectories).
   By default, the webapp can only be accessed from localhost, and running
   it opens a browser window.
 
-  With the --listen=address[:port] option, the webapp can be made to listen
+  With the `--listen=address[:port]` option, the webapp can be made to listen
   for connections on the specified address. This disables running a
   local web browser, and outputs the url you can use to open the webapp
   from a remote computer.
@@ -325,7 +325,7 @@ subdirectories).
   Note that with encryption enabled, a cryptographic key is created.
   This requires sufficient entropy. If initremote seems to hang or take
   a long time while generating the key, you may want to ctrl-c it and
-  re-run with --fast, which causes it to use a lower-quality source of
+  re-run with `--fast`, which causes it to use a lower-quality source of
   randomness.
 
   Example Amazon S3 remote:
@@ -845,7 +845,7 @@ file contents are present at either of two repositories.
 
 * --include=glob
 
-  Skips files not matching the glob pattern.  (Same as --not --exclude.)
+  Skips files not matching the glob pattern.  (Same as `--not --exclude`.)
   For example, to include only mp3 and ogg files:
 
         	--include='*.mp3' --or --include='*.ogg'
@@ -858,7 +858,7 @@ file contents are present at either of two repositories.
 
   The repository should be specified using the name of a configured remote,
   or the UUID or description of a repository. For the current repository,
-  use --in=here
+  use `--in=here`
 
 * --copies=number
 
