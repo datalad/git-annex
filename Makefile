@@ -76,7 +76,8 @@ clean:
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs
-	find -name \*.o -or -name \*.hi -exec rm {} \;
+	find -name \*.o -exec rm {} \;
+	find -name \*.hi -exec rm {} \;
 
 Build/InstallDesktopFile: Build/InstallDesktopFile.hs
 	$(GHC) --make $@
