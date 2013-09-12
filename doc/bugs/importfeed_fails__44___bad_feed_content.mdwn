@@ -32,3 +32,5 @@ Saving to: ‘/tmp/feed12649’
   warning: bad feed content
 ok
 """]]
+
+> upstream bug <https://github.com/sof/feed/issues/5> ; [[done]] --[[Joey]]  
