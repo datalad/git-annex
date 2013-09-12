@@ -88,3 +88,13 @@ Implementation notes
 > --[[Joey]]
 
 > > I would have prefered this to be optional since I don't explicitely configure all remotes in git, especially if I can't reach them all the time (e.g. my laptop). It seems to me this should at least be an option, but I am confused as to why `Remote.List.remoteList` doesn't list all remotes the same way `Remote.remote_list` does... Also, it's unfortunate that the +/!/count flags have been dropped, it would have been useful... Thanks for the merge anyways! --[[done]]
+> > 
+> > The more I look at this, the more i think there are a few things wrong with the new `remotes` command.
+> > 
+> >  1. the name is confusing: being a git addict, I would expect the `git annex remote` command to behave like the `git remote` command: list remotes, add remotes, remove remotes and so on. it would actually be useful to have such a command (which would replace `initremote`, I guess). i recommend replacing the current `whereis` command, even if enabled through a special flag
+> > 
+> >  2. its behavior is inconsistent with other git annex commands: `git annex status`, for example, lists information about all remotes, regardless of whether they are configured in git. `remotes` (whatever it's called), should do the same, or at least provide an option to allow the user to list files on all remotes. The way things stand, there is no way to list files on non-git remotes, even if they are added explicitely as a remote, if the remote is not actually reachable: the files are just marked as absent (even thought `whereis` actually finds them). i recommend showing all remotes regardless, either opt-in or opt-out using a flag.
+> > 
+> >  3. having the `!` flag, at least, would be useful because it would allow users to intuitively grep for problematic files without having to learn extra syntax. same with + and having an explicit count.
+> > 
+> > thanks. --[[anarcat]]
