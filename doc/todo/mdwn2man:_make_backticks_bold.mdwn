@@ -18,3 +18,5 @@ index ba5919b..7f819ad 100755
 """]]
 
 I tested it against the git-annex manpage and it seems to work well. --[[anarcat]]
+
+> [[done]], thanks --[[Joey]]
