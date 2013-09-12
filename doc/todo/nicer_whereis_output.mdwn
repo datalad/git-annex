@@ -79,3 +79,10 @@ Implementation notes
 20:49:37 <joeyh> gah, typos
 20:49:45 <joeyh> suppose you don't need the RemoteName either
 """]]
+
+> So, I incorporated this, in a new remotes command.
+> Showing all known repositories seemed a bit much
+> (I have 30-some known repositories in some cases),
+> so just showing configured remotes seems a good simplification.
+> [[done]]
+> --[[Joey]]
