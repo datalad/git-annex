@@ -42,7 +42,7 @@ remote = RemoteType {
 	setup = bupSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	bupr <- liftIO $ bup2GitRemote buprepo
 	cst <- remoteCost gc $
@@ -72,7 +72,7 @@ gen r u c gc = do
 		, globallyAvailable = not $ bupLocal buprepo
 		, readonly = False
 		}
-	return $ encryptableRemote c
+	return $ Just $ encryptableRemote c
 		(storeEncrypted new buprepo)
 		(retrieveEncrypted buprepo)
 		new

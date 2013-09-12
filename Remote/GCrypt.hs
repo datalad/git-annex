@@ -18,6 +18,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.Config
 import qualified Git.GCrypt
+import qualified Git.Construct
 import qualified Git.Types as Git ()
 import qualified Annex.Branch
 import qualified Annex.Content
@@ -32,6 +33,7 @@ import Annex.UUID
 import Annex.Ssh
 import qualified Remote.Rsync
 import Utility.Rsync
+import Logs.Remote
 
 remote :: RemoteType
 remote = RemoteType {
@@ -43,7 +45,7 @@ remote = RemoteType {
 	setup = gCryptSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen gcryptr u c gc = do
 	g <- gitRepo
 	-- get underlying git repo with real path, not gcrypt path
@@ -53,9 +55,32 @@ gen gcryptr u c gc = do
 	r'' <- if Git.repoIsLocalUnknown r'
 		then liftIO $ catchDefaultIO r' $ Git.Config.read r'
 		else return r'
-	gen' r'' u c gc
+	-- doublecheck that local cache matches underlying repo's gcrypt-id
+	-- (which might not be set)
+	case (Git.Config.getMaybe "core.gcrypt-id" r'', Git.GCrypt.remoteRepoId g (Git.remoteName gcryptr)) of
+		(Just gcryptid, Just cachedgcryptid)
+			| gcryptid /= cachedgcryptid -> resetup gcryptid r''
+		_ -> gen' r'' u c gc
+  where
+	-- A different drive may have been mounted, making a different
+	-- gcrypt remote available. So need to set the cached
+	-- gcrypt-id and annex-uuid of the remote to match the remote
+	-- that is now available. Also need to set the gcrypt particiants
+	-- correctly.
+	resetup gcryptid r = do
+		let u' = genUUIDInNameSpace gCryptNameSpace gcryptid
+		v <- (M.lookup u' <$> readRemoteLog)
+		case (Git.remoteName gcryptr, v) of
+			(Just remotename, Just c') -> do
+				setGcryptEncryption c' remotename
+				setConfig (remoteConfig gcryptr "uuid") (fromUUID u')
+				setConfig (ConfigKey $ Git.GCrypt.remoteConfigKey "gcrypt-id" remotename) gcryptid
+				gen' r u' c' gc
+			_ -> do
+				warning $ "not using unknown gcrypt repository pointed to by remote " ++ Git.repoDescribe r
+				return Nothing
 
-gen' :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen' :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen' r u c gc = do
 	cst <- remoteCost gc $
 		if repoCheap r then nearlyCheapRemoteCost else expensiveRemoteCost
@@ -80,7 +105,7 @@ gen' r u c gc = do
 		, globallyAvailable = globallyAvailableCalc r
 		, remotetype = remote
 	}
-	return $ encryptableRemote c
+	return $ Just $ encryptableRemote c
 		(store this rsyncopts)
 		(retrieve this rsyncopts)
 		this
@@ -117,14 +142,7 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 			, Param $ Git.GCrypt.urlPrefix ++ gitrepo
 			]
 
-		{- Configure gcrypt to use the same list of keyids that
-		 - were passed to initremote, unless shared encryption
-		 - was used. -}
-		case extractCipher c' of
-			Nothing -> noCrypto
-			Just (EncryptedCipher _ _ (KeyIds { keyIds = ks})) ->
-				setConfig (ConfigKey $ Git.GCrypt.remoteParticipantConfigKey remotename) (unwords ks)
-			_ -> noop
+		setGcryptEncryption c' remotename
 
 		{- Run a git fetch and a push to the git repo in order to get
 		 - its gcrypt-id set up, so that later git annex commands
@@ -143,13 +161,33 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 		g <- inRepo Git.Config.reRead
 		case Git.GCrypt.remoteRepoId g (Just remotename) of
 			Nothing -> error "unable to determine gcrypt-id of remote"
-			Just v -> do
-				let u = genUUIDInNameSpace gCryptNameSpace v
+			Just gcryptid -> do
+				let u = genUUIDInNameSpace gCryptNameSpace gcryptid
 				if Just u == mu || mu == Nothing
 					then do
+						-- Store gcrypt-id in local
+						-- gcrypt repository, for later
+						-- double-check.
+						r <- inRepo $ Git.Construct.fromRemoteLocation gitrepo
+						when (Git.repoIsLocalUnknown r) $ do
+							r' <- liftIO $ Git.Config.read r
+							liftIO $ Git.Command.run [Param "config", Param "core.gcrypt-id", Param gcryptid] r'
 						gitConfigSpecialRemote u c' "gcrypt" "true"
 						return (c', u)
 					else error "uuid mismatch"
+
+{- Configure gcrypt to use the same list of keyids that
+ - were passed to initremote. (For shared encryption,
+ - gcrypt's default behavior is used.) -}
+setGcryptEncryption :: RemoteConfig -> String -> Annex ()
+setGcryptEncryption c remotename = do
+	let participants = ConfigKey $ Git.GCrypt.remoteParticipantConfigKey remotename
+	case extractCipher c of
+		Nothing -> noCrypto
+		Just (EncryptedCipher _ _ (KeyIds { keyIds = ks})) ->
+			setConfig participants (unwords ks)
+		Just (SharedCipher _) ->
+			unsetConfig participants
 
 store :: Remote -> Remote.Rsync.RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 store r rsyncopts (cipher, enck) k p

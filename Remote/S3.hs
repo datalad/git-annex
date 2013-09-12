@@ -43,10 +43,10 @@ remote = RemoteType {
 	setup = s3Setup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
   where
-	new cst = encryptableRemote c
+	new cst = Just $ encryptableRemote c
 		(storeEncrypted this)
 		(retrieveEncrypted this)
 		this

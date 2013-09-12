@@ -1,5 +1,6 @@
 git-annex (4.20130912) UNRELEASED; urgency=low
 
+  * Support hot-swapping of removable drives containing gcrypt repositories.
   * remotes: New command, displays a compact table of remotes that
     contain files.
     (Thanks, anarcat for display code and mastensg for inspiration.)

@@ -35,10 +35,10 @@ remote = RemoteType {
 	setup = hookSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
-	return $ encryptableRemote c
+	return $ Just $ encryptableRemote c
 		(storeEncrypted hooktype $ getGpgEncParams (c,gc))
 		(retrieveEncrypted hooktype)
 		Remote {

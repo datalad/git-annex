@@ -29,7 +29,7 @@ data RemoteTypeA a = RemoteType {
 	-- enumerates remotes of this type
 	enumerate :: a [Git.Repo],
 	-- generates a remote of this type
-	generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (RemoteA a),
+	generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (Maybe (RemoteA a)),
 	-- initializes or changes a remote
 	setup :: Maybe UUID -> RemoteConfig -> a (RemoteConfig, UUID)
 }

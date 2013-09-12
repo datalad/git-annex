@@ -58,14 +58,14 @@ remote = RemoteType {
 	setup = rsyncSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
 	(transport, url) <- rsyncTransport gc $
 		fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
 	let o = genRsyncOpts c gc transport url
 	let islocal = rsyncUrlIsPath $ rsyncUrl o
-	return $ encryptableRemote c
+	return $ Just $ encryptableRemote c
 		(storeEncrypted o $ getGpgEncParams (c,gc))
 		(retrieveEncrypted o)
 		Remote

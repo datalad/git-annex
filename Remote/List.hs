@@ -67,7 +67,7 @@ remoteList = do
 			return rs'
 		else return rs
   where
-	process m t = enumerate t >>= mapM (remoteGen m t)
+	process m t = enumerate t >>= mapM (remoteGen m t) >>= return . catMaybes
 
 {- Forces the remoteList to be re-generated, re-reading the git config. -}
 remoteListRefresh :: Annex [Remote]
@@ -80,16 +80,17 @@ remoteListRefresh = do
 	remoteList
 
 {- Generates a Remote. -}
-remoteGen :: (M.Map UUID RemoteConfig) -> RemoteType -> Git.Repo -> Annex Remote
+remoteGen :: (M.Map UUID RemoteConfig) -> RemoteType -> Git.Repo -> Annex (Maybe Remote)
 remoteGen m t r = do
 	u <- getRepoUUID r
 	g <- fromRepo id
 	let gc = extractRemoteGitConfig g (Git.repoDescribe r)
 	let c = fromMaybe M.empty $ M.lookup u m
-	addHooks <$> generate t r u c gc
+	mrmt <- generate t r u c gc
+	return $ addHooks <$> mrmt
 
 {- Updates a local git Remote, re-reading its git config. -}
-updateRemote :: Remote -> Annex Remote
+updateRemote :: Remote -> Annex (Maybe Remote)
 updateRemote remote = do
 	m <- readRemoteLog
 	remote' <- updaterepo $ repo remote

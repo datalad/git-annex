@@ -92,13 +92,13 @@ configRead r = do
 		(False, _, NoUUID) -> tryGitConfigRead r
 		_ -> return r
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc
 	| Git.GCrypt.isEncrypted r = Remote.GCrypt.gen r u c gc
 	| otherwise = go <$> remoteCost gc defcst
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
-	go cst = new
+	go cst = Just new
 	  where
 		new = Remote 
 			{ uuid = u

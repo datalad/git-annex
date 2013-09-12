@@ -37,11 +37,11 @@ remote = RemoteType {
 	setup = directorySetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc cheapRemoteCost
 	let chunksize = chunkSize c
-	return $ encryptableRemote c
+	return $ Just $ encryptableRemote c
 		(storeEncrypted dir (getGpgEncParams (c,gc)) chunksize)
 		(retrieveEncrypted dir chunksize)
 		Remote {

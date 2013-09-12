@@ -174,14 +174,14 @@ remotesUnder dir = do
 	pairs <- liftAnnex $ mapM (checkremote repotop) rs
 	let (waschanged, rs') = unzip pairs
 	when (any id waschanged) $ do
-		liftAnnex $ Annex.changeState $ \s -> s { Annex.remotes = rs' }
+		liftAnnex $ Annex.changeState $ \s -> s { Annex.remotes = catMaybes rs' }
 		updateSyncRemotes
-	return $ map snd $ filter fst pairs
+	return $ catMaybes $ map snd $ filter fst pairs
   where
 	checkremote repotop r = case Remote.localpath r of
 		Just p | dirContains dir (absPathFrom repotop p) ->
 			(,) <$> pure True <*> updateRemote r
-		_ -> return (False, r)
+		_ -> return (False, Just r)
 
 type MountPoints = S.Set Mntent
 
