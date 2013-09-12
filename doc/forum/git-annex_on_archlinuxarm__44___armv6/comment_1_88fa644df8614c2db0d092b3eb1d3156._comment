@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 1"
+ date="2013-09-12T16:56:50Z"
+ content="""
+You seem to be trying to take a binary built for one distribution with one CPU architecture and use it on another distribution on another CPU architecture. It's not very susprising that this does not work.
+
+Compiling git-annex from source for your particular architecture and distribution should not be difficult.
+"""]]
