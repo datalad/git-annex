@@ -45,4 +45,4 @@ To install documentation and manpages, you will actually want to use the makefil
 
         make install PREFIX=$HOME
 
-(!) Note that this will install git-annex in `/usr` and not `$HOME`, a bug report has been opened about this: [[todo/makefile: respect $PREFIX]]. --[[anarcat]]
+(!) We are working on fixing cabal so it installs manpages properly, see [[bugs/cabal_install_fails_to_install_manpage]]. --[[anarcat]]
