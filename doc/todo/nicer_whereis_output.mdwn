@@ -86,3 +86,5 @@ Implementation notes
 > so just showing configured remotes seems a good simplification.
 > [[done]]
 > --[[Joey]]
+
+> > I would have prefered this to be optional since I don't explicitely configure all remotes in git, especially if I can't reach them all the time (e.g. my laptop). It seems to me this should at least be an option, but I am confused as to why `Remote.List.remoteList` doesn't list all remotes the same way `Remote.remote_list` does... Also, it's unfortunate that the +/!/count flags have been dropped, it would have been useful... Thanks for the merge anyways! --[[done]]
