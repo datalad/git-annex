@@ -4,7 +4,7 @@
  subject="comment 2"
  date="2013-09-12T09:49:56Z"
  content="""
-What version of git-annex are you using on what OS?
+What OS are you using?
 
-All my UUIDs are lower case, as should be expected.
+versions 4.20130827 and 4.20130911 on Debian Sid print UUIDs which are lower case, as should be expected.
 """]]
