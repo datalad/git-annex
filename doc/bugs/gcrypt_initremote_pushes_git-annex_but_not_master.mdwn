@@ -7,3 +7,13 @@ Manually pushing the branch makes `git annex sync` sync both branches with the g
 I think that it should push the current branch upon creation of the special remote, since for at least me, the whole reason for wanting `git-remote-gcrypt` is that metadata as well as data can be stored encrypted on an SSH server.
 
 Thanks for considering this.
+
+> The git-annex branch is pushed by initremote because I have to push
+> *something* to determine the gcrypt-id. However, this is an implementation
+> detail, and not a feature of initremote. (It's more like a bug of
+> git-remote-gcrypt.)
+> 
+> `git annex sync` will always push your currently checked out branch,
+> as well as the git-annex branch, no matter what `initremote` has done.
+> 
+> [[done]] --[[Joey]] 
