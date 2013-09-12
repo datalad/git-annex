@@ -1,0 +1,230 @@
+### Please describe the problem.
+
+I had set up git-annex on a mac; I had created an initial repository at ~/annex; I had created a second repository on an external drive, at /Volumes/Biblio/annex; I had paired with three other machines on the same network, (two linux, one other mac) and set up a remote server as a backup-type repository. All seemed well. It had finally finished syncing everything to the remote server (my upload speeds are slow).
+
+I closed the firefox window showing the dashboard. I wanted to reopen it, so I ran the git-annex.app again, presuming on a running instance that that just opens the browser back at the webapp. Firefox window opened, but the only repository was the second one I'd made on the external drive.
+
+I restarted, as best as I could work out: git-annex assistant --stop, then because that left behind a process, killall git-annex. Then restarted the app.
+
+Firefox opened on the webapp. I had two repositories: The one on the external drive (now the "Here" repo) and the one on ~/annex but only as if it was paired from a different machine.
+
+ie: I see only "celestia.local (rachel@celestia.local~/annex)". This machine *is* celestia.local.
+
+That's it. Startup scan took a couple of minutes but didn't add anything. Then it decided to sync to celestia.local, which it took a little time over but didn't apparently do anything.
+
+If I drop files into ~/annex they are not synced anywhere. ~/annex still has a .git directory, populated with git files, it looks intact. It's just not being seen.
+
+Is it possible because the user is prompted to create their initial repo at ~/Desktop/annex it will by default only look there, then start looking in external drives for it? So the fact I didn't want it on my desktop, but put it directly in home, meant it got lost on restart?
+
+git-annex vicfg in ~/annex shows me this:
+
+[[!format sh """
+# git-annex configuration
+#
+# Changes saved to this file will be recorded in the git-annex branch.
+#
+# Lines in this file have the format:
+#   setting uuid = value
+
+# Repository trust configuration
+# (Valid trust levels: trusted semitrusted untrusted dead)
+# (for web)
+#trust 00000000-0000-0000-0000-000000000001 = semitrusted
+# (for rachel@octavia:~/annex)
+#trust 161dec38-e8be-43b8-86c5-555d35ce3416 = semitrusted
+# (for rachel@celestia.local:~/annex)
+#trust 179fcddf-e247-4577-804b-267feed8abb1 = semitrusted
+# (for 192.168.1.103_annex (rachel@rainbow.local:~/annex))
+#trust 256d5762-150d-4d5d-9340-517de298c874 = semitrusted
+# (for twilight.local_annex (rachel@twilight:~/annex))
+#trust aeef7490-ce27-4255-b800-1947706c4a06 = semitrusted
+# (for rachel@octavia:~/annex)
+#trust c469fbce-f3b4-4e27-a54f-0b747797a7d5 = semitrusted
+# (for annex (Biblio's Copy))
+#trust c9e307e2-1189-47ed-8ad4-03b5c1b64e36 = semitrusted
+# (for luna.strangenoises.org_annex)
+#trust f36dbdf8-1bba-11e3-9dbe-f33cfb0e2bed = semitrusted
+# (for octavia.local_annex (rachel@octavia:~/annex))
+#trust f748a5ed-d870-48fb-b3ec-811488eb2faa = semitrusted
+# (for rachel@twilight:~/annex)
+#trust fcaba03e-1ba5-11e3-90f1-57fe1467e006 = semitrusted
+
+# Repository groups
+# (Standard groups: client transfer backup incrementalbackup smallarchive archive source manual public unwanted)
+# (Separate group names with spaces)
+# (for rachel@octavia:~/annex)
+group 161dec38-e8be-43b8-86c5-555d35ce3416 = client
+# (for rachel@celestia.local:~/annex)
+group 179fcddf-e247-4577-804b-267feed8abb1 = client
+# (for 192.168.1.103_annex (rachel@rainbow.local:~/annex))
+group 256d5762-150d-4d5d-9340-517de298c874 = client
+# (for twilight.local_annex (rachel@twilight:~/annex))
+group aeef7490-ce27-4255-b800-1947706c4a06 = client
+# (for rachel@octavia:~/annex)
+group c469fbce-f3b4-4e27-a54f-0b747797a7d5 = client
+# (for annex (Biblio's Copy))
+group c9e307e2-1189-47ed-8ad4-03b5c1b64e36 = client
+# (for octavia.local_annex (rachel@octavia:~/annex))
+group f748a5ed-d870-48fb-b3ec-811488eb2faa = client
+# (for rachel@twilight:~/annex)
+group fcaba03e-1ba5-11e3-90f1-57fe1467e006 = client
+# (for luna.strangenoises.org_annex)
+group f36dbdf8-1bba-11e3-9dbe-f33cfb0e2bed = transfer
+# (for web)
+#group 00000000-0000-0000-0000-000000000001 =
+
+# Repository preferred contents
+# (for rachel@octavia:~/annex)
+content 161dec38-e8be-43b8-86c5-555d35ce3416 = standard
+# (for rachel@celestia.local:~/annex)
+content 179fcddf-e247-4577-804b-267feed8abb1 = standard
+# (for 192.168.1.103_annex (rachel@rainbow.local:~/annex))
+content 256d5762-150d-4d5d-9340-517de298c874 = standard
+# (for twilight.local_annex (rachel@twilight:~/annex))
+content aeef7490-ce27-4255-b800-1947706c4a06 = standard
+# (for rachel@octavia:~/annex)
+content c469fbce-f3b4-4e27-a54f-0b747797a7d5 = standard
+# (for annex (Biblio's Copy))
+content c9e307e2-1189-47ed-8ad4-03b5c1b64e36 = standard
+# (for luna.strangenoises.org_annex)
+content f36dbdf8-1bba-11e3-9dbe-f33cfb0e2bed = standard
+# (for octavia.local_annex (rachel@octavia:~/annex))
+content f748a5ed-d870-48fb-b3ec-811488eb2faa = standard
+# (for rachel@twilight:~/annex)
+content fcaba03e-1ba5-11e3-90f1-57fe1467e006 = standard
+# (for web)
+#content 00000000-0000-0000-0000-000000000001 =
+"""]]
+
+while the same command in /Volumes/Biblio/annex gives:
+
+[[!format sh """
+# git-annex configuration
+#
+# Changes saved to this file will be recorded in the git-annex branch.
+#
+# Lines in this file have the format:
+#   setting uuid = value
+
+# Repository trust configuration
+# (Valid trust levels: trusted semitrusted untrusted dead)
+# (for web)
+#trust 00000000-0000-0000-0000-000000000001 = semitrusted
+# (for rachel@octavia:~/annex)
+#trust 161dec38-e8be-43b8-86c5-555d35ce3416 = semitrusted
+# (for celestia.local (rachel@celestia.local:~/annex))
+#trust 179fcddf-e247-4577-804b-267feed8abb1 = semitrusted
+# (for rachel@rainbow.local:~/annex)
+#trust 256d5762-150d-4d5d-9340-517de298c874 = semitrusted
+# (for rachel@twilight:~/annex)
+#trust aeef7490-ce27-4255-b800-1947706c4a06 = semitrusted
+# (for rachel@octavia:~/annex)
+#trust c469fbce-f3b4-4e27-a54f-0b747797a7d5 = semitrusted
+# (for Biblio's Copy)
+#trust c9e307e2-1189-47ed-8ad4-03b5c1b64e36 = semitrusted
+# (for )
+#trust f36dbdf8-1bba-11e3-9dbe-f33cfb0e2bed = semitrusted
+# (for rachel@octavia:~/annex)
+#trust f748a5ed-d870-48fb-b3ec-811488eb2faa = semitrusted
+# (for rachel@twilight:~/annex)
+#trust fcaba03e-1ba5-11e3-90f1-57fe1467e006 = semitrusted
+
+# Repository groups
+# (Standard groups: client transfer backup incrementalbackup smallarchive archive source manual public unwanted)
+# (Separate group names with spaces)
+# (for rachel@octavia:~/annex)
+group 161dec38-e8be-43b8-86c5-555d35ce3416 = client
+# (for celestia.local (rachel@celestia.local:~/annex))
+group 179fcddf-e247-4577-804b-267feed8abb1 = client
+# (for rachel@rainbow.local:~/annex)
+group 256d5762-150d-4d5d-9340-517de298c874 = client
+# (for rachel@twilight:~/annex)
+group aeef7490-ce27-4255-b800-1947706c4a06 = client
+# (for rachel@octavia:~/annex)
+group c469fbce-f3b4-4e27-a54f-0b747797a7d5 = client
+# (for Biblio's Copy)
+group c9e307e2-1189-47ed-8ad4-03b5c1b64e36 = client
+# (for rachel@octavia:~/annex)
+group f748a5ed-d870-48fb-b3ec-811488eb2faa = client
+# (for rachel@twilight:~/annex)
+group fcaba03e-1ba5-11e3-90f1-57fe1467e006 = client
+# (for )
+group f36dbdf8-1bba-11e3-9dbe-f33cfb0e2bed = transfer
+# (for web)
+#group 00000000-0000-0000-0000-000000000001 =
+
+# Repository preferred contents
+# (for rachel@octavia:~/annex)
+content 161dec38-e8be-43b8-86c5-555d35ce3416 = standard
+# (for celestia.local (rachel@celestia.local:~/annex))
+content 179fcddf-e247-4577-804b-267feed8abb1 = standard
+# (for rachel@rainbow.local:~/annex)
+content 256d5762-150d-4d5d-9340-517de298c874 = standard
+# (for rachel@twilight:~/annex)
+content aeef7490-ce27-4255-b800-1947706c4a06 = standard
+# (for rachel@octavia:~/annex)
+content c469fbce-f3b4-4e27-a54f-0b747797a7d5 = standard
+# (for Biblio's Copy)
+content c9e307e2-1189-47ed-8ad4-03b5c1b64e36 = standard
+# (for )
+content f36dbdf8-1bba-11e3-9dbe-f33cfb0e2bed = standard
+# (for rachel@octavia:~/annex)
+content f748a5ed-d870-48fb-b3ec-811488eb2faa = standard
+# (for rachel@twilight:~/annex)
+content fcaba03e-1ba5-11e3-90f1-57fe1467e006 = standard
+# (for web)
+#content 00000000-0000-0000-0000-000000000001 =
+"""]]
+
+### What steps will reproduce the problem?
+
+As above. I have no idea what just happened, but apart from git-annex assistant --stop and having to mop up leftover processes, I didn't use the git-annex commandline for anything.
+
+### What version of git-annex are you using? On what operating system?
+
+Mac OS X 10.8.4
+
+    Version: 4.20130909-ga29f960
+    Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi 
+
+### Please provide any additional information below.
+
+The log on ~/annex/.git/annex/daemon.log is huge and full of transfers of files with my personal filenames. I'd rather not. It appears to end normally.
+
+Now there is a short log in /Volumes/Biblio/annex/.git/annex/daemon.log from, I guess, the time I tried to restart. For some reason therefore, after the successful session finished, on restart it only looks here. This log is appended.
+
+[[!format sh """
+[2013-09-12 21:35:39 BST] main: starting assistant version 4.20130909-ga29f960
+
+[2013-09-12 21:35:39 BST] TransferScanner: Syncing with celestia.local
+Already up-to-date.
+
+(scanning...) [2013-09-12 21:35:39 BST] Watcher: Performing startup scan
+From /Users/rachel/annex
+ * [new branch]      git-annex  -> celestia.local/git-annex
+ * [new branch]      master     -> celestia.local/master
+ * [new branch]      synced/git-annex -> celestia.local/synced/git-annex
+ * [new branch]      synced/master -> celestia.local/synced/master
+Updating 4f974a8..74770d9
+Fast-forward
+Already up-to-date.
+Already up-to-date.
+Already up-to-date.
+[2013-09-12 21:36:39 BST] Pusher: Syncing with celestia.local
+(merging celestia.local/git-annex celestia.local/synced/git-annex into git-annex...)
+(Recording state in git...)
+
+
+
+
+(started...) error: Ref refs/heads/synced/git-annex is at 5b4ed9b3098e936d60b61a1d3915fa29e8c823d0 but expected 792d2a5c14b0b6327d2089e174063c474ba5a764
+remote: error: failed to lock refs/heads/synced/git-annex
+To /Users/rachel/annex
+   792d2a5..5b4ed9b  git-annex -> synced/git-annex
+To /Users/rachel/annex
+ ! [remote rejected] git-annex -> synced/git-annex (failed to lock)
+error: failed to push some refs to '/Users/rachel/annex'
+Everything up-to-date
+"""]]
+
+Well, I see that thing about "failed to lock". I can imagine that my 'killall git-annex' to kill a leftover process that was hanging around after I'd done git-annex assistant --stop might have left stale lock files, somewhere... but of course I only got as far as doing that because I was already encountering problems, just trying to return to the webapp.
