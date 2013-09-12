@@ -1,0 +1,1 @@
+That would make assessing weird reports like [[bugs/Should_UUID__39__s_for_Remotes_be_case_sensitive__63__/]] easier and quicker.

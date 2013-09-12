@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="gueux"
+ ip="2a01:240:fe6d:0:7986:3659:a8bd:64f1"
+ subject="syntax"
+ date="2013-09-12T14:05:16Z"
+ content="""
+use \"itemdate\" and \"feeddate\" as names?
+
+use ${itemdate=%Y-%m-%D} syntax option?
+"""]]

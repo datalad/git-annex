@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmOsy6nbvPyXLd--qqjPMLnVIzxgZwtKlQ"
+ nickname="Nicolas"
+ subject="comment 4"
+ date="2013-09-11T23:24:58Z"
+ content="""
+Another problem with the current behaviour is that when deleting a directory and its contents on a repository, the contents are deleted on the other repositories but empty directories are left behind...
+"""]]
