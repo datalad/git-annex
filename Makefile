@@ -3,7 +3,7 @@ all=git-annex $(mans) docs
 
 GHC?=ghc
 GHCMAKE=$(GHC) $(GHCFLAGS) --make
-PREFIX=/usr
+PREFIX?=/usr
 CABAL?=cabal # set to "./Setup" if you lack a cabal program
 
 # Am I typing :make in vim? Do a fast build.
