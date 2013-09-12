@@ -16,4 +16,12 @@ git annex from a recent git build (4.20130909-g7f079d6) in Debian wheezy.
 
 <del>This could be just a documentation problem...</del> Actually, the manpage can be read directly from the source tree in `doc/git-annex.mdwn`, but I still think it should be installed, for [[!wikipedia POLA]]'s sake. --[[anarcat]]
 
-I figured it out - that stuff is in the makefile, I updated [[install/cabal]] accordingly, so [[done]]. --[[anarcat]]
+I figured it out - that stuff is in the makefile, I updated [[install/cabal]] accordingly, so done. --[[anarcat]]
+
+> Doesn't seem right to me; Setup.hs has some stuff to do with
+> installing man pages. This does currently require that they 
+> are distributed in pre-built form in the .tar.gz on hackage, 
+> which I've just checked and they are.
+> 
+> Perhaps cabal put the man pages somewhere else? After all, you 
+> apparently did not set --datadir --[[Joey]] 
