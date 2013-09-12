@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 1"
+ date="2013-09-12T21:29:39Z"
+ content="""
+The git-annex webapp displays a view from \"inside\" one git repsitory at a time. It seems to me that you have two or more local git repositories; one in ~/annex and one on a removable drive. The webapp is coming up viewing from inside your removable drive's repository. You can change the repository that the webapp views by going to the Repository menu in the upper-right corner and selecting Switch repository. The webapp will remember which repository it viewed last, and come back up showing that same repository.
+
+It's BTW an unusual configuration to have the git-annex assistant directly running on a removable drive as you seem to have done. You must have previously went to the Repository menu and selected \"Add another local repository\", and then added the removable drive, and then connected that repository up to your ~/annex repository. Which would explain why the webapp was last showing the repository on the removable drive. The more usual way to add a removable drive is to use the \"Add another repository\" button and select \"Removable drive\".
+
+I think, but am not sure, that the error \"Ref refs/heads/synced/git-annex is at 5b4ed9b3098e936d60b61a1d3915fa29e8c823d0 but expected 792d2a5c14b0b6327d2089e174063c474ba5a764\" is due to having two git-annex assistants running in these two different repositories and both updating them both at the same time. You might want to stop all git-annex processes, edit `~/.config/git-annex/autostart` and remove the removable drive repository from that list, leaving only `~/annex` in the list.
+"""]]
