@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 1"
+ date="2013-09-12T20:29:14Z"
+ content="""
+It seems you are getting a lot of timeouts from box.com, both when checking if content is present there and when uploading content that it does not have.
+
+I have heard some grumbles about box.com not being very reliable right now.
+"""]]
