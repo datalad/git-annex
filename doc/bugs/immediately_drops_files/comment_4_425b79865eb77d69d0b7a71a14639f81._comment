@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 4"
+ date="2013-09-13T19:27:51Z"
+ content="""
+> both are set to manual, and both have the other set as manual as well
+
+I'm not sure what you mean by that. Do you mean that when you run git annex vicfg, it is in group manual?
+"""]]

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 4"
+ date="2013-09-13T19:29:25Z"
+ content="""
+I'd suggest that you run git annex get --debug to see if it is doing anything obviously wrong. The mostly likely culprit is your SMB setup, which I am not going to be able to replicate.
+
+"""]]
