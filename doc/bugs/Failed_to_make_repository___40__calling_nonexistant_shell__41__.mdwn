@@ -24,3 +24,5 @@ Ubuntu 10.04 on both desktop and server.
 ### Please provide any additional information below.
 
 The problem seems to be runshell trying to call /home/annex/sh, which does not exist. Why would it do that?
+
+> [[done]]
