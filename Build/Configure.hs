@@ -38,6 +38,7 @@ tests =
 		[ ("gpg", "--version >/dev/null")
 		, ("gpg2", "--version >/dev/null") ]
 	, TestCase "lsof" $ findCmdPath "lsof" "lsof"
+	, TestCase "gcrypt" $ findCmdPath "gcrypt" "git-remote-gcrypt"
 	, TestCase "ssh connection caching" getSshConnectionCaching
 	] ++ shaTestCases
 	[ (1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")

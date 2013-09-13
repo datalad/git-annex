@@ -35,6 +35,7 @@ bundledPrograms = catMaybes
 	, ifset SysConfig.wget "wget"
 	, ifset SysConfig.bup "bup"
 	, SysConfig.lsof
+	, SysConfig.gcrypt
 	, SysConfig.sha1
 	, SysConfig.sha256
 	, SysConfig.sha512
