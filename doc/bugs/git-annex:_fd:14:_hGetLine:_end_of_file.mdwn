@@ -1,3 +1,5 @@
+[[!tag moreinfo]]
+
 ### Please describe the problem.
 
 git-annex webapp won't run 
