@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="develop"
+ subject="Logs"
+ date="2013-09-13T11:43:22Z"
+ content="""
+So have two days of logs now, and it doesn't look like it is retrying old files.
+
+http://paste.ubuntu.com/6101255/ <- day 1
+
+http://paste.ubuntu.com/6101256/ <- day 2
+
+Setting the computer to do the following loop over the weekend, lets see if everything is done come monday.
+
+for i in `seq 3 2000`; do git annex copy --to box.com --not --in box.com 2>&1 | tee ../work-annex-copy-to-box.com-not-in-box.com-run$i.log; done
+
+"""]]
