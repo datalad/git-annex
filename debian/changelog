@@ -4,6 +4,8 @@ git-annex (4.20130912) UNRELEASED; urgency=low
   * remotes: New command, displays a compact table of remotes that
     contain files.
     (Thanks, anarcat for display code and mastensg for inspiration.)
+  * fsck: Fix detection and fixing of present direct mode files that are
+    wrongly represented as standin symlinks on crippled filesystems.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 12 Sep 2013 12:14:46 -0400
 
