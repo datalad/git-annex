@@ -13,3 +13,5 @@ Windows 7.
 
 ### Please provide any additional information below.
 Installing Cygwin and adding to path seems to fix issue.
+
+[[!tag moreinfo]]
