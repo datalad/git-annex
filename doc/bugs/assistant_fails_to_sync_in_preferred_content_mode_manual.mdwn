@@ -20,3 +20,5 @@ A is running Debian testing with git-annex 4.20130827, B and S are running Debia
 I tried this setup before with direct mode and different preferred content settings (A, B as client, S as backup or archive), and syncing of git and file data was working then.
 
 Despite being able to run 'sync' it is at least inconvenient to not have automatically updated file location information when I run the assistant. (I could then just run without it, but I had it happen to me that I setup a local repo w/o assistant, and when I ran assistant, expecting it would tell me "there are no local repos, would you like to create one?" it somehow automatically found the manually created one and started copying files. But that's another problem.)
+
+> [[done]] unless my diagnosis is wrong. --[[Joey]] 

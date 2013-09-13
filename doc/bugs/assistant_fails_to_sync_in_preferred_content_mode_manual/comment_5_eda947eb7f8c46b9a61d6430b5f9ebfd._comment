@@ -6,7 +6,7 @@
  content="""
 You have described the following git-annex network:
 
-  A --(ssh)-- S --(ssh)-- B
+	A --(ssh)-- S --(ssh)-- B
 
 So A automatically syncs to S. But there is no way at all for A to tell B that it has made changes. So B does not automatically sync.
 
@@ -16,8 +16,8 @@ The git-annex webapp will detect this kind of situation, and display this alert:
 
 Once you set up an XMPP account, the network will look like: 
 
-  A --(ssh)-- S --(ssh)-- B
-   \_________(XMPP)_______/
+	A --(ssh)-- S --(ssh)-- B
+	\_________(XMPP)_______/
                     
 And now B will immediatly know when A has pushed a change to S, and will go get it.                                          
 
