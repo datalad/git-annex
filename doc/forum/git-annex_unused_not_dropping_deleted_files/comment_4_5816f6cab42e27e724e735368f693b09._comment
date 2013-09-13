@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 4"
+ date="2013-09-13T17:57:38Z"
+ content="""
+Which one of those branches I can safely delete? this is a central repo all other clients drop their stuff here it does not have any remotes (I did clones it from a client then removed origin section from config.)
+"""]]
