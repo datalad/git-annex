@@ -15,7 +15,7 @@ import qualified Git.DiffTree as DiffTree
 import Git.Sha
 import Git.Types
 import Annex.CatFile
-import Utility.FileMode
+import Git.FileMode
 import qualified Annex.Queue
 import Logs.Location
 import Backend

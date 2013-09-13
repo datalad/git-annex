@@ -6,6 +6,8 @@ git-annex (4.20130912) UNRELEASED; urgency=low
     (Thanks, anarcat for display code and mastensg for inspiration.)
   * fsck: Fix detection and fixing of present direct mode files that are
     wrongly represented as standin symlinks on crippled filesystems.
+  * sync: Fix bug that caused direct mode mappings to not be updated
+    when merging files into the tree on Windows.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 12 Sep 2013 12:14:46 -0400
 
