@@ -3,3 +3,9 @@ I'm curious if there's a possibility to support lossy remotes. It may be handy t
 1. an online place that their videos are available from
 2. a worst-case scenario "backup"
 3. a remote that they could download smaller video files
+
+> [[done]]; lossy remotes are supported as seen with `git annex addurl
+> --fast` and also with the new addurl support for using quvi to get
+> videos fro youtube. Just make a key with a URL or something in it, and 
+> no size or checksum, and any content will be assumed to be the right
+> content. --[[Joey]]
