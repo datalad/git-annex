@@ -39,6 +39,7 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 -- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek
 seek rs = do
+	prepMerge
 	branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
 	remotes <- syncRemotes rs
 	return $ concat
@@ -51,6 +52,11 @@ seek rs = do
 		]
   where
 	nobranch = error "no branch is checked out"
+
+{- Merging may delete the current directory, so go to the top
+ - of the repo. -}
+prepMerge :: Annex ()
+prepMerge = liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
 
 syncBranch :: Git.Ref -> Git.Ref
 syncBranch = Git.Ref.under "refs/heads/synced/"

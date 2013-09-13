@@ -8,6 +8,8 @@ git-annex (4.20130912) UNRELEASED; urgency=low
     wrongly represented as standin symlinks on crippled filesystems.
   * sync: Fix bug that caused direct mode mappings to not be updated
     when merging files into the tree on Windows.
+  * sync: Don't fail if the directory it is run in gets removed by the
+    sync.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 12 Sep 2013 12:14:46 -0400
 
