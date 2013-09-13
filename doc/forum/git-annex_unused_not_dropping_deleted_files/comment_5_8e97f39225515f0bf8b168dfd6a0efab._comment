@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 5"
+ date="2013-09-13T18:23:02Z"
+ content="""
+So this is a bare repository?
+
+It seems to have had an origin at one point; see the remotes/origin/* branches. If it no longer has that remote, then of course those branches will not be getting updated, and so will contain the old files and that's why unused won't find them. In that case, you could safely remove the remotes/origin/* branches.
+"""]]
