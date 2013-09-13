@@ -185,3 +185,8 @@ ok
 
 # End of transcript or log.
 """]]
+
+> We seem to have reached a point of confusion, lack of information,
+> and/or diminishing returns with this bug report. I have fixed
+> it as best I can. If you have any problems, please file a new bug report
+> with as complete information as possible. [[done]] --[[Joey]]
