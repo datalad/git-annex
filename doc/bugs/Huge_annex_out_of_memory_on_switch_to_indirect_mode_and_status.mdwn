@@ -1,5 +1,7 @@
 ### Please describe the problem.
 
+[[!tag moreinfo]]
+
 I added a lot of files to my annex in direct mode. Now I want to switch to indirect mode. git-annex status and indirect create an out-of-memory error.
 
 ### What steps will reproduce the problem?
