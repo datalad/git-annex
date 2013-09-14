@@ -310,7 +310,7 @@ subdirectories).
   All special remotes support encryption. You can either specify
   `encryption=none` to disable encryption, or specify 
   `encryption=hybrid keyid=$keyid ...` to specify a gpg key id (or an email
-  address accociated with a key.
+  address associated with a key.)
 
   There are actually three schemes that can be used for management of the
   encryption keys. When using the encryption=hybrid scheme, additional
