@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnsuhFUIfWNT-Q-C02FDaSQqceFDge5M9w"
+ nickname="Florian"
+ subject="comment 2"
+ date="2013-09-14T08:49:23Z"
+ content="""
+Is there any way to get the transcript from a log file, not from the web page? The output is so enormous that it crashed my browser out of memory (which is 16 GiB) when I tried to paste it. daemon.log contains no interesting output.
+"""]]
