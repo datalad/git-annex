@@ -54,3 +54,7 @@ anarcat@marcos:clips$ file .git/annex/objects/qZ/q1/SHA256E-s123162--96fe8634aaf
 .git/annex/objects/qZ/q1/SHA256E-s123162--96fe8634aaf035373077473ac2b166c5ad22bfe099112c414eee9fe753f4ce2b/SHA256E-s123162--96fe8634aaf035373077473ac2b166c5ad22bfe099112c414eee9fe753f4ce2b: HTML document, UTF-8 Unicode text, with very long lines
 # End of transcript or log.
 """]]
+
+### Workaround
+
+Use the `quvi` prefix.
