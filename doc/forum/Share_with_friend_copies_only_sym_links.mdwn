@@ -1,0 +1,18 @@
+I just setup git-annex across three macs, using git-annex assistant.  I have one repository working fine, which successfully syncs between two of my own accounts on two different machines, via S3.
+
+Now I'm trying to get the "share with a friend" feature to work.  The problem is that only Mac Alias's / sym links are created, for example:
+
+Machine 1:
+- Copy file into ~/annex/
+
+Machine 2:
+- The file is synced as a sym-link, with a link into a file in .git that doesn't exist.
+
+The config is:
+- Two macs
+- Share with friend over Jabber
+- Use Box as the cloud sync service with encryption enabled.  Box is setup as a transfer repository.
+
+I've looked through the logs in .git/annex/daemon.log* and there doesn't look to be any problems.
+
+Any ideas what I should look at next?  Thanks in advance :-)
