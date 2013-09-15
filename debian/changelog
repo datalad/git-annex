@@ -11,6 +11,8 @@ git-annex (4.20130912) UNRELEASED; urgency=low
   * sync: Don't fail if the directory it is run in gets removed by the
     sync.
   * addurl: Fix quvi audodetection, broken in last release.
+  * status: In local mode, displays information about variance from configured
+    numcopies levels.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 12 Sep 2013 12:14:46 -0400
 

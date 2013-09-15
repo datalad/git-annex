@@ -13,6 +13,7 @@ import "mtl" Control.Monad.State.Strict
 import qualified Data.Map as M
 import Text.JSON
 import Data.Tuple
+import Data.Ord
 import System.PosixCompat.Files
 
 import Common.Annex
@@ -49,10 +50,24 @@ data KeyData = KeyData
 	, backendsKeys :: M.Map String Integer
 	}
 
+data NumCopiesStats = NumCopiesStats
+	{ numCopiesVarianceMap :: M.Map Variance Integer
+	}
+
+newtype Variance = Variance Int
+	deriving (Eq, Ord)
+
+instance Show Variance where
+	show (Variance n)
+		| n == 0 = "numcopies satisfied"
+		| n > 0 = "numcopies +" ++ show n
+		| otherwise = "numcopies " ++ show n
+
 -- cached info that multiple Stats use
 data StatInfo = StatInfo
 	{ presentData :: Maybe KeyData
 	, referencedData :: Maybe KeyData
+	, numCopiesStats :: Maybe NumCopiesStats
 	}
 
 -- a state monad for running Stats in
@@ -82,7 +97,7 @@ globalStatus = do
 		then global_fast_stats
 		else global_fast_stats ++ global_slow_stats
 	showCustom "status" $ do
-		evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing)
+		evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing Nothing)
 		return True
 
 localStatus :: FilePath -> Annex ()
@@ -123,6 +138,7 @@ local_stats =
 	, const local_annex_size
 	, const known_annex_keys
 	, const known_annex_size
+	, const numcopies_stats
 	]
 
 stat :: String -> (String -> StatState String) -> Stat
@@ -255,6 +271,14 @@ backend_usage = stat "backend usage" $ nojson $
 		reverse $ sort $ map swap $ M.toList $
 		M.unionWith (+) x y
 
+numcopies_stats :: Stat
+numcopies_stats = stat "numcopies stats" $ nojson $
+	calc <$> (maybe M.empty numCopiesVarianceMap <$> cachedNumCopiesStats)
+  where
+	calc = multiLine
+		. map (\(variance, count) -> show variance ++ ": " ++ show count)
+		. reverse . sortBy (comparing snd) . M.toList
+
 cachedPresentData :: StatState KeyData
 cachedPresentData = do
 	s <- get
@@ -276,28 +300,36 @@ cachedReferencedData = do
 			put s { referencedData = Just v }
 			return v
 
+-- currently only available for local status
+cachedNumCopiesStats :: StatState (Maybe NumCopiesStats)
+cachedNumCopiesStats = numCopiesStats <$> get
+
 getLocalStatInfo :: FilePath -> Annex StatInfo
 getLocalStatInfo dir = do
 	matcher <- Limit.getMatcher
-	(presentdata, referenceddata) <-
+	(presentdata, referenceddata, numcopiesstats) <-
 		Command.Unused.withKeysFilesReferencedIn dir initial
 			(update matcher)
-	return $ StatInfo (Just presentdata) (Just referenceddata)
+	return $ StatInfo (Just presentdata) (Just referenceddata) (Just numcopiesstats)
   where
-	initial = (emptyKeyData, emptyKeyData)
-	update matcher key file vs@(presentdata, referenceddata) =
+	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats)
+	update matcher key file vs@(presentdata, referenceddata, numcopiesstats) =
 		ifM (matcher $ FileInfo file file)
-			( (,)
+			( (,,)
 				<$> ifM (inAnnex key)
 					( return $ addKey key presentdata
 					, return presentdata
 					)
 				<*> pure (addKey key referenceddata)
+				<*> updateNumCopiesStats key file numcopiesstats
 			, return vs
 			)
 
 emptyKeyData :: KeyData
 emptyKeyData = KeyData 0 0 0 M.empty
+
+emptyNumCopiesStats :: NumCopiesStats
+emptyNumCopiesStats = NumCopiesStats $ M.empty
 
 foldKeys :: [Key] -> KeyData
 foldKeys = foldl' (flip addKey) emptyKeyData
@@ -313,6 +345,13 @@ addKey key (KeyData count size unknownsize backends) =
 	!size' = maybe size (+ size) ks
 	!unknownsize' = maybe (unknownsize + 1) (const unknownsize) ks
 	ks = keySize key
+
+updateNumCopiesStats :: Key -> FilePath -> NumCopiesStats -> Annex NumCopiesStats
+updateNumCopiesStats key file stats = do
+	variance <- Variance <$> numCopiesCheck file key (-)
+	return $ stats { numCopiesVarianceMap = update (numCopiesVarianceMap stats) variance }
+  where
+  	update m variance = M.insertWith' (+) variance 1 m
 
 showSizeKeys :: KeyData -> String
 showSizeKeys d = total ++ missingnote

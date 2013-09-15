@@ -577,7 +577,7 @@ subdirectories).
 
   To only show the data that can be gathered quickly, use `--fast`.
 
-  When a directory is specified, shows only an abbreviated status
+  When a directory is specified, shows a differently formatted status
   display for that directory. In this mode, all of the file matching
   options can be used to filter the files that will be included in
   the status.
@@ -586,7 +586,7 @@ subdirectories).
   would first like to see how much disk space that will use.
   Then run:
 
-        	git annex status . --not --in here
+        	git annex status --fast . --not --in here
 
 * `map`
 

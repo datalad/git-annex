@@ -111,7 +111,7 @@ numCopies file = do
 		Just n -> return $ Just n
 		Nothing -> readish <$> checkAttr "annex.numcopies" file
 
-numCopiesCheck :: FilePath -> Key -> (Int -> Int -> Bool) -> Annex Bool
+numCopiesCheck :: FilePath -> Key -> (Int -> Int -> v) -> Annex v
 numCopiesCheck file key vs = do
 	numcopiesattr <- numCopies file
 	needed <- getNumCopies numcopiesattr
