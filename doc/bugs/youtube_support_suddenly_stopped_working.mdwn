@@ -58,3 +58,5 @@ anarcat@marcos:clips$ file .git/annex/objects/qZ/q1/SHA256E-s123162--96fe8634aaf
 ### Workaround
 
 Use the `quvi` prefix.
+
+> Typo introduced in last release. [[fixed|done]] --[[Joey]]
