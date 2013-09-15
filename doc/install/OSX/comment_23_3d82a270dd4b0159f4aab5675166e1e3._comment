@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmL8pteP2jbYJUn1M3CbeLDvz2SWAA1wtg"
+ nickname="Kristian"
+ subject="Build failure using Haskel Platform"
+ date="2013-09-15T18:49:01Z"
+ content="""
+I get this error when I try to build git-annex using \"cabal install git-annex\"
+
+    [ 34 of 347] Compiling Utility.Misc     ( Utility/Misc.hs, dist/build/git-annex/git-annex-tmp/Utility/Misc.o )
+    [ 35 of 347] Compiling Utility.Process  ( Utility/Process.hs, dist/build/git-annex/git-annex-tmp/Utility/Process.o )
+    [ 36 of 347] Compiling Utility.Network  ( Utility/Network.hs, dist/build/git-annex/git-annex-tmp/Utility/Network.o )
+    [ 37 of 347] Compiling Utility.SRV      ( Utility/SRV.hs, dist/build/git-annex/git-annex-tmp/Utility/SRV.o )
+    
+    Utility/SRV.hs:70:54:
+        Couldn't match expected type `Maybe
+                                        [(Int, Int, Integer, B8.ByteString)]'
+                    with actual type `Either
+                                        dns-1.0.0:Network.DNS.Internal.DNSError
+                                        [(Int, Int, Int, dns-1.0.0:Network.DNS.Internal.Domain)]'
+        In the third argument of `maybe', namely `r'
+        In the second argument of `($)', namely
+          `maybe [] (orderHosts . map tohosts) r'
+        In a stmt of a 'do' block:
+          return $ maybe [] (orderHosts . map tohosts) r
+    Failed to install git-annex-4.20130909
+    cabal: Error: some packages failed to install:
+    git-annex-4.20130909 failed during the building phase. The exception was:
+    ExitFailure 1
+
+"""]]
