@@ -12,7 +12,7 @@ git-annex (4.20130912) UNRELEASED; urgency=low
     sync.
   * addurl: Fix quvi audodetection, broken in last release.
   * status: In local mode, displays information about variance from configured
-    numcopies levels.
+    numcopies levels. (--fast avoids calculating these)
 
  -- Joey Hess <joeyh@debian.org>  Thu, 12 Sep 2013 12:14:46 -0400
 

@@ -59,8 +59,7 @@ newtype Variance = Variance Int
 
 instance Show Variance where
 	show (Variance n)
-		| n == 0 = "numcopies satisfied"
-		| n > 0 = "numcopies +" ++ show n
+		| n >= 0 = "numcopies +" ++ show n
 		| otherwise = "numcopies " ++ show n
 
 -- cached info that multiple Stats use
@@ -92,19 +91,25 @@ start ps = do
 
 globalStatus :: Annex ()
 globalStatus = do
-	fast <- Annex.getState Annex.fast
-	let stats = if fast
-		then global_fast_stats
-		else global_fast_stats ++ global_slow_stats
+	stats <- selStats global_fast_stats global_slow_stats
 	showCustom "status" $ do
 		evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing Nothing)
 		return True
 
 localStatus :: FilePath -> Annex ()
 localStatus dir = showCustom (unwords ["status", dir]) $ do
-	let stats = map (\s -> s dir) local_stats
+	stats <- selStats (tostats local_fast_stats) (tostats local_slow_stats)
 	evalStateT (mapM_ showStat stats) =<< getLocalStatInfo dir
 	return True
+  where
+  	tostats = map (\s -> s dir)
+
+selStats :: [Stat] -> [Stat] -> Annex [Stat]
+selStats fast_stats slow_stats = do
+	fast <- Annex.getState Annex.fast
+	return $ if fast
+		then fast_stats
+		else fast_stats ++ slow_stats
 
 {- Order is significant. Less expensive operations, and operations
  - that share data go together.
@@ -131,14 +136,17 @@ global_slow_stats =
 	, bloom_info
 	, backend_usage
 	]
-local_stats :: [FilePath -> Stat]
-local_stats =
+local_fast_stats :: [FilePath -> Stat]
+local_fast_stats =
 	[ local_dir
 	, const local_annex_keys
 	, const local_annex_size
 	, const known_annex_keys
 	, const known_annex_size
-	, const numcopies_stats
+	]
+local_slow_stats :: [FilePath -> Stat]
+local_slow_stats =
+	[ const numcopies_stats
 	]
 
 stat :: String -> (String -> StatState String) -> Stat
@@ -306,14 +314,15 @@ cachedNumCopiesStats = numCopiesStats <$> get
 
 getLocalStatInfo :: FilePath -> Annex StatInfo
 getLocalStatInfo dir = do
+	fast <- Annex.getState Annex.fast
 	matcher <- Limit.getMatcher
 	(presentdata, referenceddata, numcopiesstats) <-
 		Command.Unused.withKeysFilesReferencedIn dir initial
-			(update matcher)
+			(update matcher fast)
 	return $ StatInfo (Just presentdata) (Just referenceddata) (Just numcopiesstats)
   where
 	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats)
-	update matcher key file vs@(presentdata, referenceddata, numcopiesstats) =
+	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats) =
 		ifM (matcher $ FileInfo file file)
 			( (,,)
 				<$> ifM (inAnnex key)
@@ -321,7 +330,9 @@ getLocalStatInfo dir = do
 					, return presentdata
 					)
 				<*> pure (addKey key referenceddata)
-				<*> updateNumCopiesStats key file numcopiesstats
+				<*> if fast
+					then return numcopiesstats
+					else updateNumCopiesStats key file numcopiesstats
 			, return vs
 			)
 
