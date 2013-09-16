@@ -29,4 +29,41 @@ Debian wheezy.
 
 Ideally, there would be a way to just tell git annex it's really still in direct mode and migrate the remaining files.
 
-The workaround is, obviously, to make sure you own all those files before messing around...
+The workaround is, obviously, to make sure you own all those files before messing around:
+
+    chown -R you *
+    chmod -R u+w *
+
+A [[patch]], maybe, that allows you to flip cleanly between the two modes:
+
+[[!format diff """
+From a21dfc97da96883b2a088bb5f3f466296f08d858 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Antoine=20Beaupr=C3=A9?= <anarcat@koumbit.org>
+Date: Mon, 16 Sep 2013 13:58:29 -0400
+Subject: [PATCH] do not commit -a when going back to direct mode
+
+without this, if we switched to indirect mode but failed doing so
+(because of a permission problem, for example), going back to
+direct mode will commit all files to git, which we really want 
+to avoid.
+
+---
+ Command/Direct.hs |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/Command/Direct.hs b/Command/Direct.hs
+index 7835988..ed8ea6c 100644
+--- a/Command/Direct.hs
++++ b/Command/Direct.hs
+@@ -33,7 +33,6 @@ perform = do
+        showOutput
+        _ <- inRepo $ Git.Command.runBool
+                [ Param "commit"
+-               , Param "-a"
+                , Param "-m"
+                , Param "commit before switching to direct mode"
+                ]
+--
+1.7.10.4
+
+"""]]
