@@ -11,6 +11,7 @@ module Utility.Gpg where
 
 import Control.Applicative
 import Control.Concurrent
+import qualified Data.Map as M
 
 import Common
 import qualified Build.SysConfig as SysConfig
@@ -23,8 +24,11 @@ import Utility.Env
 #else
 import Utility.Tmp
 #endif
+import Utility.Format (decode_c)
 
-newtype KeyIds = KeyIds { keyIds :: [String] }
+type KeyId = String
+
+newtype KeyIds = KeyIds { keyIds :: [KeyId] }
 	deriving (Ord, Eq)
 
 {- If a specific gpg command was found at configure time, use it.
@@ -138,12 +142,31 @@ pipeLazy params feeder reader = do
  - a key id, or a name; See the section 'HOW TO SPECIFY A USER ID' of
  - GnuPG's manpage.) -}
 findPubKeys :: String -> IO KeyIds
-findPubKeys for = KeyIds . parse <$> readStrict params
+findPubKeys for = KeyIds . parse . lines <$> readStrict params
   where
 	params = [Params "--with-colons --list-public-keys", Param for]
-	parse = catMaybes . map (keyIdField . split ":") . lines
+	parse = catMaybes . map (keyIdField . split ":")
 	keyIdField ("pub":_:_:_:f:_) = Just f
 	keyIdField _ = Nothing
+
+type UserId = String
+
+{- All of the user's secret keys, with their UserIds.
+ - Note that the UserId may be empty. -}
+secretKeys :: IO (M.Map KeyId UserId)
+secretKeys = M.fromList . parse . lines <$> readStrict params
+  where
+  	params = [Params "--with-colons --list-secret-keys --fixed-list-mode"]
+	parse = extract [] Nothing . map (split ":")
+	extract c (Just keyid) (("uid":_:_:_:_:_:_:_:_:userid:_):rest) =
+		extract ((keyid, decode_c userid):c) Nothing rest
+	extract c (Just keyid) rest =
+		extract ((keyid, ""):c) Nothing rest
+	extract c _ [] = c
+	extract c _ (("sec":_:_:_:keyid:_):rest) =
+		extract c (Just keyid) rest
+	extract c k (_:rest) =
+		extract c k rest
 
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
