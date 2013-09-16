@@ -398,8 +398,12 @@ initRepo False _ dir desc = inDir dir $ do
 
 initRepo' :: Maybe String -> Annex ()
 initRepo' desc = do
-	unlessM isInitialized $
+	unlessM isInitialized $ do
 		initialize desc
+		{- Ensure branch gets committed right away so it is
+		 - available for merging when a removable drive repo is being
+		 - added. -}
+		Annex.Branch.commit "update"
 
 {- Checks if the user can write to a directory.
  -
