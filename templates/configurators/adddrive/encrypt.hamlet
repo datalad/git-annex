@@ -6,7 +6,7 @@
     <tt>#{mountPoint drive}</tt> #
     will prevent the data stored in it from being exposed if the drive #
     falls into the wrong hands. However, encryption #
-    will also prevent you from sharing the drive with friends, or #
+    will also prevent you from sharing the repository with friends, or #
     easily accessing its contents on another computer.
   <p>
     <a .btn onclick="$('#setupmodal').modal('show');" href="@{FinishAddDriveR (RemovableDriveKey drive Nothing)}">
