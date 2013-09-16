@@ -168,10 +168,37 @@ secretKeys = M.fromList . parse . lines <$> readStrict params
 	extract c k (_:rest) =
 		extract c k rest
 
+type Passphrase = String
+type Size = Int
+data KeyType = Algo Int | DSA | RSA
+
+{- Generates a secret key using the experimental batch mode.
+ - The key is added to the secret key ring.
+ - Can take a very long time, depending on system entropy levels.
+ -}
+genSecretKey :: KeyType -> Passphrase -> UserId -> Size -> IO ()
+genSecretKey keytype passphrase userid keysize =
+	withHandle StdinHandle createProcessSuccess (proc gpgcmd params) feeder
+  where
+	params = ["--batch", "--gen-key"]
+  	feeder h = do
+		hPutStr h $ unlines
+			[ "Key-Type: " ++ 
+				case keytype of
+					DSA -> "DSA"
+					RSA -> "RSA"
+					Algo n -> show n
+			, "Key-Length: " ++ show keysize
+			, "Name-Real: " ++ userid
+			, "Expire-Date: 0"
+			, "Passphrase: " ++ passphrase
+			]
+		hClose h
+
 {- Creates a block of high-quality random data suitable to use as a cipher.
  - It is armored, to avoid newlines, since gpg only reads ciphers up to the
  - first newline. -}
-genRandom :: Bool -> Int -> IO String
+genRandom :: Bool -> Size -> IO String
 genRandom highQuality size = checksize <$> readStrict
 	[ Params params
 	, Param $ show randomquality
