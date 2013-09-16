@@ -29,4 +29,3 @@
         <button .btn .btn-primary type=submit onclick="$('#clonemodal').modal('show');">Use this drive</button> #
         <a .btn href="@{AddDriveR}">
           Rescan for removable drives
-^{cloneModal}

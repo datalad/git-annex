@@ -34,10 +34,15 @@ import Logs.PreferredContent
 import Logs.UUID
 import Utility.UserInfo
 import Config
+import Utility.Gpg
+import qualified Annex.Branch
+import qualified Remote.GCrypt as GCrypt
+import qualified Types.Remote
 
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Char
+import Data.Ord
 import qualified Text.Hamlet as Hamlet
 
 data RepositoryPath = RepositoryPath Text
@@ -236,43 +241,63 @@ postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 {- The repo may already exist, when adding removable media
  - that has already been used elsewhere. If so, check
  - the UUID of the repo and see if it's one we know. If not,
- - the user must confirm the repository merge. -}
+ - the user must confirm the repository merge.
+ -
+ - If the repo does not already exist on the drive, prompt about
+ - encryption. -}
 getConfirmAddDriveR :: RemovableDrive -> Handler Html
-getConfirmAddDriveR drive = do
-	ifM (needconfirm)
-		( page "Combine repositories?" (Just Configuration) $
-			$(widgetFile "configurators/adddrive/confirm")
-		, do
-			getFinishAddDriveR drive
-		)
+getConfirmAddDriveR drive = ifM (liftIO $ doesDirectoryExist dir)
+	( do
+		mu <- liftIO $ catchMaybeIO $ inDir dir $ getUUID
+		case mu of
+			Nothing -> knownrepo
+			Just driveuuid -> 
+				ifM (M.member driveuuid <$> liftAnnex uuidMap)
+					( knownrepo
+					, askcombine
+					)
+	, newrepo
+	)
   where
   	dir = removableDriveRepository drive
-	needconfirm = ifM (liftIO $ doesDirectoryExist dir)
-		( liftAnnex $ do
-			mu <- liftIO $ catchMaybeIO $
-				inDir dir $ getUUID
-			case mu of
-				Nothing -> return False
-				Just driveuuid -> not .
-					M.member driveuuid <$> uuidMap
-		, return False
-		)
+  	newrepo = do
+		secretkeys <- sortBy (comparing snd) . M.toList
+			<$> liftIO secretKeys
+		page "Encrypt repository?" (Just Configuration) $
+			$(widgetFile "configurators/adddrive/encrypt")
+	knownrepo = getFinishAddDriveR (RemovableDriveKey drive Nothing)
+	askcombine = page "Combine repositories?" (Just Configuration) $
+		$(widgetFile "configurators/adddrive/combine")
 
 cloneModal :: Widget
 cloneModal = $(widgetFile "configurators/adddrive/clonemodal")
 
-getFinishAddDriveR :: RemovableDrive -> Handler Html
-getFinishAddDriveR drive = make >>= redirect . EditNewRepositoryR
+getFinishAddDriveR :: RemovableDriveKey -> Handler Html
+getFinishAddDriveR (RemovableDriveKey drive mkeyid) =
+	make >>= redirect . EditNewRepositoryR
   where
   	make = do
 		liftIO $ createDirectoryIfMissing True dir
 		isnew <- liftIO $ makeRepo dir True
-		u <- liftIO $ initRepo isnew False dir $ Just remotename
 		{- Removable drives are not reliable media, so enable fsync. -}
 		liftIO $ inDir dir $
 			setConfig (ConfigKey "core.fsyncobjectfiles")
 				(Git.Config.boolConfig True)
+		maybe (setupclear isnew) setupencrypted mkeyid
+	setupclear isnew = do
+		u <- liftIO $ initRepo isnew False dir $ Just remotename
 		r <- combineRepos dir remotename
+		finishsetup u r
+	setupencrypted keyid = do
+		r <- liftAnnex $ addRemote $ 
+			initSpecialRemote remotename GCrypt.remote $ M.fromList
+				[ ("type", "gcrypt")
+				, ("gitrepo", dir)
+				, configureEncryption HybridEncryption
+				, ("keyid", keyid)
+				]
+		finishsetup (Types.Remote.uuid r) r
+	finishsetup u r = do
 		liftAnnex $ setStandardGroup u TransferGroup
 		liftAssistant $ syncRemote r
 		return u
@@ -361,7 +386,7 @@ makeRepo path bare = ifM alreadyexists
 		| bare = baseparams ++ [Param "--bare", File path]
 		| otherwise = baseparams ++ [File path]
 
-{- Runs an action in the git-annex repository in the specified directory. -}
+{- Runs an action in the git repository in the specified directory. -}
 inDir :: FilePath -> Annex a -> IO a
 inDir dir a = do
 	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir

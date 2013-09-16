@@ -1,5 +1,8 @@
 git-annex (4.20130912) UNRELEASED; urgency=low
 
+  * webapp: Initial support for setting up encrypted removable drives.
+  * Recommend using my patched gcrypt, which fixes some bugs:
+    https://github.com/joeyh/git-remote-gcrypt
   * Support hot-swapping of removable drives containing gcrypt repositories.
   * remotes: New command, displays a compact table of remotes that
     contain files.
