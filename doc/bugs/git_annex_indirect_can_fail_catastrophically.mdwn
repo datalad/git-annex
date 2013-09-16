@@ -1,0 +1,32 @@
+### Please describe the problem.
+
+I have a repo that I initialized in direct mode because i felt unconfortable with the "symlink forest" approach.
+
+Now that I prefer that, i want to switch back to indirect mode. The problem is, when I did that, I realized that some files in the repo were not writable by my user, and git annex indirect crashed, and didn't "indirect" all the files. Now the repo is in a "half-direct" state, and I seem to be unable to recover.
+
+### What steps will reproduce the problem?
+
+[[!format txt """
+git init
+git annex init
+git annex direct
+git annex add . # make sure some files are not writable by your user
+git annex indirect
+"""]]
+
+The `indirect` step will stop at the file that is not writable and will fail to move some files to `.git/annex`. And then the repo is in `indirect` mode yet some files are still not symlinks.
+
+Doing a `git annex direct` will try to commit all those nasty files into git, as it does a `git commit -a`.
+
+### What version of git-annex are you using? On what operating system?
+
+    git-annex version: 4.20130912-ga1faca3
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS Feeds Quvi
+
+Debian wheezy.
+
+### Please provide any additional information below.
+
+Ideally, there would be a way to just tell git annex it's really still in direct mode and migrate the remaining files.
+
+The workaround is, obviously, to make sure you own all those files before messing around...
