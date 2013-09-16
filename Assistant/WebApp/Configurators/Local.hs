@@ -269,8 +269,8 @@ getConfirmAddDriveR drive = ifM (liftIO $ doesDirectoryExist dir)
 	askcombine = page "Combine repositories?" (Just Configuration) $
 		$(widgetFile "configurators/adddrive/combine")
 
-cloneModal :: Widget
-cloneModal = $(widgetFile "configurators/adddrive/clonemodal")
+setupDriveModal :: Widget
+setupDriveModal = $(widgetFile "configurators/adddrive/setupmodal")
 
 getFinishAddDriveR :: RemovableDriveKey -> Handler Html
 getFinishAddDriveR (RemovableDriveKey drive mkeyid) =
