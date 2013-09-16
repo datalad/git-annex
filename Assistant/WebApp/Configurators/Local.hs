@@ -274,33 +274,35 @@ cloneModal = $(widgetFile "configurators/adddrive/clonemodal")
 
 getFinishAddDriveR :: RemovableDriveKey -> Handler Html
 getFinishAddDriveR (RemovableDriveKey drive mkeyid) =
-	make >>= redirect . EditNewRepositoryR
+	maybe setupclear setupencrypted mkeyid
   where
-  	make = do
+	setupclear = makewith $ \isnew -> (,)
+		<$> liftIO (initRepo isnew False dir $ Just remotename)
+		<*> combineRepos dir remotename
+	setupencrypted keyid = ifM (liftIO $ inPath "git-remote-gcrypt")
+		( makewith $ \_ -> do
+			r <- liftAnnex $ addRemote $ 
+				initSpecialRemote remotename GCrypt.remote $ M.fromList
+					[ ("type", "gcrypt")
+					, ("gitrepo", dir)
+					, configureEncryption HybridEncryption
+					, ("keyid", keyid)
+					]
+			return (Types.Remote.uuid r, r)
+		, page "Encrypt repository" (Just Configuration) $
+			$(widgetFile "configurators/needgcrypt")
+		)
+	makewith a = do
 		liftIO $ createDirectoryIfMissing True dir
 		isnew <- liftIO $ makeRepo dir True
 		{- Removable drives are not reliable media, so enable fsync. -}
 		liftIO $ inDir dir $
 			setConfig (ConfigKey "core.fsyncobjectfiles")
 				(Git.Config.boolConfig True)
-		maybe (setupclear isnew) setupencrypted mkeyid
-	setupclear isnew = do
-		u <- liftIO $ initRepo isnew False dir $ Just remotename
-		r <- combineRepos dir remotename
-		finishsetup u r
-	setupencrypted keyid = do
-		r <- liftAnnex $ addRemote $ 
-			initSpecialRemote remotename GCrypt.remote $ M.fromList
-				[ ("type", "gcrypt")
-				, ("gitrepo", dir)
-				, configureEncryption HybridEncryption
-				, ("keyid", keyid)
-				]
-		finishsetup (Types.Remote.uuid r) r
-	finishsetup u r = do
+		(u, r) <- a isnew
 		liftAnnex $ setStandardGroup u TransferGroup
 		liftAssistant $ syncRemote r
-		return u
+		redirect $ EditNewRepositoryR u
   	mountpoint = T.unpack (mountPoint drive)
 	dir = removableDriveRepository drive
 	remotename = takeFileName mountpoint

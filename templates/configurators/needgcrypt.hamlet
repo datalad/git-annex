@@ -1,0 +1,10 @@
+<div .span9 .hero-unit>
+  <h2>
+    Need git-remote-gcrypt
+  <p>
+    To encrypt git repositories, you need to install #
+    <a href="https://github.com/joeyh/git-remote-gcrypt">
+      git-remote-gcrypt
+  <p>
+    <a .btn .btn-primary .btn-large href="">
+      Retry
