@@ -1,7 +1,8 @@
 Hi,
 
-There seems to be a bug, that prevents me from adding a file,
-that does not belong to me as the first file.
+[ sorry for the wrong bugreport in the last version of this entry ]
+
+It seems as if I can only add my own file to the annex, even if I have group write permissions.  Is that correct?  Can that be circumvented other than copying/deleting the large file?
 
 Here is some demonstration:
 
@@ -9,18 +10,13 @@ Here is some demonstration:
     > git config user.name dtr
     > git config user.email dtrn@dtrn.com
     
-    > dd if=/dev/zero of=test1.bin count=1000
     > dd if/dev/zero of=test2.bin count=1000
     
     > ll
-    total 1000
-    -rw-rw-r-- 1 dtr dtr 512000 Sep 16  2013 test1.bin
     -rw-rw-r-- 1 dtr dtr 512000 Sep 16  2013 test2.bin
     
     > sudo chown someone test2.bin
     > ll
-    total 1000
-    -rw-rw-r-- 1 dtr dtr 512000 Sep 16  2013 test1.bin
     -rw-rw-r-- 1 someone dtr 512000 Sep 16  2013 test2.bin
     
     > git annex init
@@ -29,10 +25,3 @@ Here is some demonstration:
     git-annex: /test-git-annex/.git/annex/objects/Fq/f6/SHA256-s512000--2d4da04b861bb9dbe77c871415931785a18138d6db035f1bbcd0cf8277c6fc23/SHA256-s512000--2d4da04b861bb9dbe77c871415931785a18138d6db035f1bbcd0cf8277c6fc23: setFileMode: permission denied (Operation not permitted)
     failed
     git-annex: add: 1 failed
-    
-    > git annex add test1.bin
-    add test1.bin (checksum...) ok
-    (Recording state in git...)
-    > git annex add test2.bin
-    add test2.bin (checksum...) ok
-    (Recording state in git...)
