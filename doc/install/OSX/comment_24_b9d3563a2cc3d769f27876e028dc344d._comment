@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.128"
+ subject="comment 24"
+ date="2013-09-17T15:56:17Z"
+ content="""
+@Kristian, a new version of the DNS library has caused this. A workaround is to pass `-f-DNS` to the cabal command.
+
+I am in the process of adding support for the new DNS library version in git now.
+
+By the way, please [[file_a_bug|bugs]] if you have a big ugly looking build failure like that, so as to not clutter up this page.
+"""]]
