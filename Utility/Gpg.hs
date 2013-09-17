@@ -172,6 +172,11 @@ type Passphrase = String
 type Size = Int
 data KeyType = Algo Int | DSA | RSA
 
+{- The maximum key size that gpg currently offers in its UI when
+ - making keys. -}
+maxRecommendedKeySize :: Size
+maxRecommendedKeySize = 4096
+
 {- Generates a secret key using the experimental batch mode.
  - The key is added to the secret key ring.
  - Can take a very long time, depending on system entropy levels.
@@ -182,16 +187,18 @@ genSecretKey keytype passphrase userid keysize =
   where
 	params = ["--batch", "--gen-key"]
   	feeder h = do
-		hPutStr h $ unlines
-			[ "Key-Type: " ++ 
+		hPutStr h $ unlines $ catMaybes
+			[ Just $  "Key-Type: " ++ 
 				case keytype of
 					DSA -> "DSA"
 					RSA -> "RSA"
 					Algo n -> show n
-			, "Key-Length: " ++ show keysize
-			, "Name-Real: " ++ userid
-			, "Expire-Date: 0"
-			, "Passphrase: " ++ passphrase
+			, Just $ "Key-Length: " ++ show keysize
+			, Just $ "Name-Real: " ++ userid
+			, Just $ "Expire-Date: 0"
+			, if null passphrase
+				then Nothing
+				else Just $ "Passphrase: " ++ passphrase
 			]
 		hClose h
 

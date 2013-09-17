@@ -160,7 +160,7 @@ data RemovableDrive = RemovableDrive
 	}
 	deriving (Read, Show, Eq, Ord)
 
-data RemovableDriveKey = RemovableDriveKey RemovableDrive (Maybe KeyId)
+data RepoKey = RepoKey KeyId | NoRepoKey
 	deriving (Read, Show, Eq, Ord)
 
 {- Only needed to work around old-yesod bug that emits a warning message
@@ -176,7 +176,7 @@ instance PathPiece RemovableDrive where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
 
-instance PathPiece RemovableDriveKey where
+instance PathPiece RepoKey where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
 

@@ -265,21 +265,50 @@ getConfirmAddDriveR drive = ifM (liftIO $ doesDirectoryExist dir)
 			<$> liftIO secretKeys
 		page "Encrypt repository?" (Just Configuration) $
 			$(widgetFile "configurators/adddrive/encrypt")
-	knownrepo = getFinishAddDriveR (RemovableDriveKey drive Nothing)
+	knownrepo = getFinishAddDriveR drive NoRepoKey
 	askcombine = page "Combine repositories?" (Just Configuration) $
 		$(widgetFile "configurators/adddrive/combine")
 
 setupDriveModal :: Widget
 setupDriveModal = $(widgetFile "configurators/adddrive/setupmodal")
 
-getFinishAddDriveR :: RemovableDriveKey -> Handler Html
-getFinishAddDriveR (RemovableDriveKey drive mkeyid) =
-	maybe setupclear setupencrypted mkeyid
+genKeyModal :: Widget
+genKeyModal = $(widgetFile "configurators/genkeymodal")
+
+getGenKeyForDriveR :: RemovableDrive -> Handler Html
+getGenKeyForDriveR drive = do
+	userid <- liftIO $ newUserId
+	liftIO $ genSecretKey RSA "" userid maxRecommendedKeySize
+	results <- M.keys . M.filter (== userid) <$> liftIO secretKeys
+	case results of
+		[] -> error "Failed to generate gpg key!"
+		(key:_) -> do
+			{- Generating a key takes a long time, and 
+			 - the removable drive may have been disconnected
+			 - in the meantime. Check that it is still mounted
+			 - before finishing. -}
+			ifM (liftIO $ any (\d -> mountPoint d == mountPoint drive) <$> driveList)
+				( getFinishAddDriveR drive (RepoKey key)
+				, getAddDriveR
+				)
+
+newUserId :: IO UserId
+newUserId = do
+	oldkeys <- secretKeys
+	username <- myUserName
+  	let basekeyname = username ++ " git-annex"
+	return $ Prelude.head $ filter (\n -> M.null $ M.filter (== n) oldkeys)
+		( basekeyname
+		: map (\n -> basekeyname ++ show n) ([2..] :: [Int])
+		)
+
+getFinishAddDriveR :: RemovableDrive -> RepoKey -> Handler Html
+getFinishAddDriveR drive = go
   where
-	setupclear = makewith $ \isnew -> (,)
+	go NoRepoKey = makewith $ \isnew -> (,)
 		<$> liftIO (initRepo isnew False dir $ Just remotename)
 		<*> combineRepos dir remotename
-	setupencrypted keyid = ifM (liftIO $ inPath "git-remote-gcrypt")
+	go (RepoKey keyid) = ifM (liftIO $ inPath "git-remote-gcrypt")
 		( makewith $ \_ -> do
 			r <- liftAnnex $ addRemote $ 
 				initSpecialRemote remotename GCrypt.remote $ M.fromList
