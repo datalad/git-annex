@@ -74,5 +74,8 @@ getParticiantList globalconfigrepo repo remotename = KeyIds $ parse $ firstJust
 remoteParticipantConfigKey :: RemoteName -> String
 remoteParticipantConfigKey = remoteConfigKey "gcrypt-participants"
 
+remoteSigningKey :: RemoteName -> String
+remoteSigningKey = remoteConfigKey "gcrypt-signingkey"
+
 remoteConfigKey :: String -> RemoteName -> String
 remoteConfigKey key remotename = "remote." ++ remotename ++ "." ++ key

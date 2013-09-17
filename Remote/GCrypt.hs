@@ -34,6 +34,7 @@ import Annex.Ssh
 import qualified Remote.Rsync
 import Utility.Rsync
 import Logs.Remote
+import Utility.Gpg
 
 remote :: RemoteType
 remote = RemoteType {
@@ -177,15 +178,24 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 					else error "uuid mismatch"
 
 {- Configure gcrypt to use the same list of keyids that
- - were passed to initremote. (For shared encryption,
- - gcrypt's default behavior is used.) -}
+ - were passed to initremote as its participants.
+ - Also, configure it to use a signing key that is in the list of
+ - participants, which gcrypt requires is the case, and may not be
+ - depending on system configuration.
+ -
+ - (For shared encryption, gcrypt's default behavior is used.) -}
 setGcryptEncryption :: RemoteConfig -> String -> Annex ()
 setGcryptEncryption c remotename = do
 	let participants = ConfigKey $ Git.GCrypt.remoteParticipantConfigKey remotename
 	case extractCipher c of
 		Nothing -> noCrypto
-		Just (EncryptedCipher _ _ (KeyIds { keyIds = ks})) ->
+		Just (EncryptedCipher _ _ (KeyIds { keyIds = ks})) -> do
 			setConfig participants (unwords ks)
+			let signingkey = ConfigKey $ Git.GCrypt.remoteSigningKey remotename
+			skeys <- M.keys <$> liftIO secretKeys
+			case filter (`elem` ks) skeys of
+				[] -> noop
+				(k:_) -> setConfig signingkey k
 		Just (SharedCipher _) ->
 			unsetConfig participants
 
