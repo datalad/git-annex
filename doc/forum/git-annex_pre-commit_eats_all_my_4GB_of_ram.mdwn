@@ -1,0 +1,24 @@
+Hi all,
+
+git-annex basically renders my repository unmanageble.  What is the
+best and save (!) way to recover?
+
+Here is my situation:
+
+I have a fairly large repository with ~8000 managed files taking about
+65GB of disk space.
+
+git-annex worked well there.  But some programs choke on the
+symlinks.  So, I converted the repository to direct mode.  The
+transition worked well.
+
+Now git status reports a type change for the ~8000 files.
+
+But as soon as I run
+
+    git commit -m "typechange" even-only-one-of-the-files
+
+the process `git-annex pre-commit .` eats 3.5GB of ram, where I
+usually kill it, as I only have 4GB of ram....
+
+-- Andreas
