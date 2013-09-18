@@ -1,0 +1,55 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWg4VvDTer9f49Y3z-R0AH16P4d1ygotA"
+ nickname="Tobias"
+ subject="Update"
+ date="2013-09-18T11:17:33Z"
+ content="""
+Only just got back to work now. The script has done 10 iteration. This is the status:
+
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run1.log |grep \" ok\"| wc -l
+137
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run2.log |grep \" ok\"| wc -l
+77
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run3.log |grep \" ok\"| wc -l
+116
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run4.log |grep \" ok\"| wc -l
+70
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run5.log |grep \" ok\"| wc -l
+26
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run6.log |grep \" ok\"| wc -l
+6
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run7.log |grep \" ok\"| wc -l
+6
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run8.log |grep \" ok\"| wc -l
+0
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run9.log |grep \" ok\"| wc -l
+0
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run10.log |grep \" ok\"| wc -l
+0
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run11.log |grep \" ok\"| wc -l
+0
+
+tou@DSK1049:~$ cat work-annex-copy-to-box.com-not-in-box.com-run12.log |grep \" ok\"| wc -l
+0
+
+I have all the log files of course.
+
+tou@DSK1049:~/work-annex$ git annex find --not --in box.com| wc -l
+1639
+
+So, of the last 5 iteration 0 files of 1639 missing were transfered. Most of these files are <10kbyte
+
+http://paste.ubuntu.com/6123459/ <- pastebin of work-annex-copy-to-box.com-not-in-box.com-run11.log if it is of any use.
+
+"""]]
