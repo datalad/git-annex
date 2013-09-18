@@ -9,5 +9,5 @@ that the assistant doesn't help with is gpg key management.
 
 Plan is to make a release on Friday, and then try to also add support for
 encrypted git repositories on remote servers. Tomorrow I will try to get
-through some of the communications backlock that has been piling up while I
+through some of the communications backlog that has been piling up while I
 was head down working on gcrypt.
