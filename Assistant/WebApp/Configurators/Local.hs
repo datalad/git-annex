@@ -11,6 +11,7 @@ module Assistant.WebApp.Configurators.Local where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.OtherRepos
+import Assistant.WebApp.Gpg
 import Assistant.MakeRemote
 import Assistant.Sync
 import Init
@@ -276,30 +277,14 @@ genKeyModal :: Widget
 genKeyModal = $(widgetFile "configurators/genkeymodal")
 
 getGenKeyForDriveR :: RemovableDrive -> Handler Html
-getGenKeyForDriveR drive = do
-	userid <- liftIO $ newUserId
-	liftIO $ genSecretKey RSA "" userid maxRecommendedKeySize
-	results <- M.keys . M.filter (== userid) <$> liftIO secretKeys
-	case results of
-		[] -> error "Failed to generate gpg key!"
-		(key:_) -> do
-			{- Generating a key takes a long time, and 
-			 - the removable drive may have been disconnected
-			 - in the meantime. Check that it is still mounted
-			 - before finishing. -}
-			ifM (liftIO $ any (\d -> mountPoint d == mountPoint drive) <$> driveList)
-				( getFinishAddDriveR drive (RepoKey key)
-				, getAddDriveR
-				)
-
-newUserId :: IO UserId
-newUserId = do
-	oldkeys <- secretKeys
-	username <- myUserName
-  	let basekeyname = username ++ " git-annex"
-	return $ Prelude.head $ filter (\n -> M.null $ M.filter (== n) oldkeys)
-		( basekeyname
-		: map (\n -> basekeyname ++ show n) ([2..] :: [Int])
+getGenKeyForDriveR drive = withNewSecretKey $ \key -> do
+	{- Generating a key takes a long time, and 
+	 - the removable drive may have been disconnected
+	 - in the meantime. Check that it is still mounted
+	 - before finishing. -}
+	ifM (liftIO $ any (\d -> mountPoint d == mountPoint drive) <$> driveList)
+		( getFinishAddDriveR drive (RepoKey key)
+		, getAddDriveR
 		)
 
 getFinishAddDriveR :: RemovableDrive -> RepoKey -> Handler Html

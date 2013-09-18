@@ -16,13 +16,7 @@
       <p>
         <a .btn onclick="$('#setupmodal').modal('show');" href="@{FinishAddDriveR drive (RepoKey keyid)}">
           <i .icon-ok-sign></i> Encrypt repository #
-        to
-        <span title="key id #{keyid}">
-          <i .icon-user></i> #
-          $if null name
-            key id #{keyid}
-          $else
-            #{name}
+        to ^{gpgKeyDisplay keyid (Just name)}
   <p>
     <a .btn onclick="$('#genkeymodal').modal('show');" href="@{GenKeyForDriveR drive}">
       <i .icon-plus-sign></i> Encrypt repository #
