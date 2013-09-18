@@ -38,6 +38,7 @@ import Config
 import Utility.Gpg
 import qualified Annex.Branch
 import qualified Remote.GCrypt as GCrypt
+import qualified Git.GCrypt
 import qualified Types.Remote
 
 import qualified Data.Text as T
@@ -247,16 +248,13 @@ postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
  - If the repo does not already exist on the drive, prompt about
  - encryption. -}
 getConfirmAddDriveR :: RemovableDrive -> Handler Html
-getConfirmAddDriveR drive = ifM (liftIO $ doesDirectoryExist dir)
+getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
 	( do
-		mu <- liftIO $ catchMaybeIO $ inDir dir $ getUUID
+		mu <- liftIO $ probeUUID dir
 		case mu of
-			Nothing -> knownrepo
-			Just driveuuid -> 
-				ifM (M.member driveuuid <$> liftAnnex uuidMap)
-					( knownrepo
-					, askcombine
-					)
+			Nothing -> maybe askcombine isknownuuid
+				=<< liftIO (probeGCryptRemoteUUID dir)
+			Just driveuuid -> isknownuuid driveuuid
 	, newrepo
 	)
   where
@@ -269,6 +267,11 @@ getConfirmAddDriveR drive = ifM (liftIO $ doesDirectoryExist dir)
 	knownrepo = getFinishAddDriveR drive NoRepoKey
 	askcombine = page "Combine repositories?" (Just Configuration) $
 		$(widgetFile "configurators/adddrive/combine")
+	isknownuuid driveuuid =
+		ifM (M.member driveuuid <$> liftAnnex uuidMap)
+			( knownrepo
+			, askcombine
+			)
 
 setupDriveModal :: Widget
 setupDriveModal = $(widgetFile "configurators/adddrive/setupmodal")
@@ -290,9 +293,7 @@ getGenKeyForDriveR drive = withNewSecretKey $ \key -> do
 getFinishAddDriveR :: RemovableDrive -> RepoKey -> Handler Html
 getFinishAddDriveR drive = go
   where
-	go NoRepoKey = makewith $ \isnew -> (,)
-		<$> liftIO (initRepo isnew False dir $ Just remotename)
-		<*> combineRepos dir remotename
+  	{- Set up new gcrypt special remote. -}
 	go (RepoKey keyid) = ifM (liftIO $ inPath "git-remote-gcrypt")
 		( makewith $ \_ -> do
 			r <- liftAnnex $ addRemote $ 
@@ -306,6 +307,33 @@ getFinishAddDriveR drive = go
 		, page "Encrypt repository" (Just Configuration) $
 			$(widgetFile "configurators/needgcrypt")
 		)
+	{- Either making a new unencrypted repo, or combining with
+	 - an existing unencrypted repo, or combining with an existing
+	 - gcrypt special remot, or some other existing gcrypt repo. -}
+	go NoRepoKey = do
+		mu <- liftIO $ probeGCryptRemoteUUID dir
+		case mu of
+			Just u -> enablegcryptremote u
+			Nothing ->
+				ifM (liftAnnex $ inRepo $ Git.GCrypt.probeGCryptRepo dir)
+					( error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+					, makeunencrypted
+					)
+	{- Sync the git-annex branch from the gcrypt repo, in order to
+	 - make sure we know how the special remote should be set up. -}
+	enablegcryptremote u = do
+		mname <- liftAnnex $ getGCryptRemoteName u dir
+		case mname of
+			Nothing -> error $ "Unable to use the gcrypt remote at " ++ dir ++ ". Perhaps it is encrypted using a GnuPG key that you do not have?"
+			Just name -> makewith $ const $ do
+				r <- liftAnnex $ addRemote $
+					enableSpecialRemote name GCrypt.remote $ M.fromList
+						[("gitrepo", dir)]
+				return (u, r)
+	{- Making a new unencrypted repo, or combining with an existing one. -}
+	makeunencrypted = makewith $ \isnew -> (,)
+		<$> liftIO (initRepo isnew False dir $ Just remotename)
+		<*> combineRepos dir remotename
 	makewith a = do
 		liftIO $ createDirectoryIfMissing True dir
 		isnew <- liftIO $ makeRepo dir True
@@ -385,7 +413,7 @@ startFullAssistant path repogroup setup = do
 {- Makes a new git repository. Or, if a git repository already
  - exists, returns False. -}
 makeRepo :: FilePath -> Bool -> IO Bool
-makeRepo path bare = ifM alreadyexists
+makeRepo path bare = ifM (probeRepoExists path)
 	( return False
 	, do
 		(transcript, ok) <-
@@ -395,8 +423,6 @@ makeRepo path bare = ifM alreadyexists
 		return True
 	)
   where
-  	alreadyexists = isJust <$> 
-		catchDefaultIO Nothing (Git.Construct.checkForRepo path)
 	baseparams = [Param "init", Param "--quiet"]
 	params
 		| bare = baseparams ++ [Param "--bare", File path]
@@ -455,3 +481,23 @@ canWrite dir = do
 	tocheck <- ifM (doesDirectoryExist dir)
 		(return dir, return $ parentDir dir)
 	catchBoolIO $ fileAccess tocheck False True False
+
+{- Checks if a git repo exists at a location. -}
+probeRepoExists :: FilePath -> IO Bool
+probeRepoExists dir = isJust <$>
+	catchDefaultIO Nothing (Git.Construct.checkForRepo dir)
+
+{- Gets the UUID of the git repo at a location, which may not exist, or
+ - not be a git-annex repo. -}
+probeUUID :: FilePath -> IO (Maybe UUID)
+probeUUID dir = catchDefaultIO Nothing $ inDir dir $ do
+	u <- getUUID
+	return $ if u == NoUUID then Nothing else Just u
+
+{- Gets the UUID of the gcrypt repo at a location, which may not exist.
+ - Only works if the gcrypt repo was created as a git-annex remote. -}
+probeGCryptRemoteUUID :: FilePath -> IO (Maybe UUID)
+probeGCryptRemoteUUID dir = catchDefaultIO Nothing $ do
+	r <- Git.Construct.fromAbsPath dir
+	(genUUIDInNameSpace gCryptNameSpace <$>) . fst
+		<$> GCrypt.getGCryptId r

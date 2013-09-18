@@ -12,6 +12,12 @@ module Assistant.WebApp.Gpg where
 import Assistant.WebApp.Common
 import Utility.Gpg
 import Utility.UserInfo
+import qualified Git.Command
+import qualified Git.Remote
+import qualified Annex.Branch
+import qualified Git.GCrypt
+import Assistant.MakeRemote
+import Logs.Remote
 
 import qualified Data.Map as M
 
@@ -45,3 +51,25 @@ withNewSecretKey use = do
 	case results of
 		[] -> error "Failed to generate gpg key!"
 		(key:_) -> use key
+
+{- Tries to find the name used in remote.log for a gcrypt repository
+ - with a given uuid.
+ -
+ - The gcrypt remote may not be on that is listed in the local remote.log
+ - (or the info may be out of date), so this actually fetches the git-annex
+ - branch from the gcrypt remote and merges it in, and then looks up
+ - the name.
+ -}
+getGCryptRemoteName :: UUID -> String -> Annex (Maybe Git.Remote.RemoteName)
+getGCryptRemoteName u repoloc = do
+	tmpremote <- uniqueRemoteName "tmpgcryptremote" 0 <$> gitRepo
+	void $ inRepo $ Git.Command.runBool
+		[Params "remote add", Param tmpremote, Param $ Git.GCrypt.urlPrefix ++ repoloc]
+	mname <- ifM (inRepo $ Git.Command.runBool [Param "fetch", Param tmpremote])
+		( do
+			void $ Annex.Branch.forceUpdate
+			(M.lookup "name" <=< M.lookup u) <$> readRemoteLog
+		, return Nothing
+		)
+	void $ inRepo $ Git.Remote.remove tmpremote
+	return mname

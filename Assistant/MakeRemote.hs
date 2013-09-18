@@ -27,8 +27,6 @@ import Creds
 import qualified Data.Text as T
 import qualified Data.Map as M
 
-type RemoteName = String
-
 {- Sets up and begins syncing with a new ssh or rsync remote. -}
 makeSshRemote :: Bool -> SshData -> Maybe Cost -> Assistant Remote
 makeSshRemote forcersync sshdata mcost = do

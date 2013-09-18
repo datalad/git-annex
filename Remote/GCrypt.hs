@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.GCrypt (remote, gen) where
+module Remote.GCrypt (remote, gen, getGCryptId) where
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
@@ -52,13 +52,10 @@ gen gcryptr u c gc = do
 	-- get underlying git repo with real path, not gcrypt path
 	r <- liftIO $ Git.GCrypt.encryptedRepo g gcryptr
 	let r' = r { Git.remoteName = Git.remoteName gcryptr }
-	-- read config of underlying repo if it's local
-	r'' <- if Git.repoIsLocalUnknown r'
-		then liftIO $ catchDefaultIO r' $ Git.Config.read r'
-		else return r'
+	(mgcryptid, r'') <- liftIO $ getGCryptId r'
 	-- doublecheck that local cache matches underlying repo's gcrypt-id
 	-- (which might not be set)
-	case (Git.Config.getMaybe "core.gcrypt-id" r'', Git.GCrypt.remoteRepoId g (Git.remoteName gcryptr)) of
+	case (mgcryptid, Git.GCrypt.remoteRepoId g (Git.remoteName gcryptr)) of
 		(Just gcryptid, Just cachedgcryptid)
 			| gcryptid /= cachedgcryptid -> resetup gcryptid r''
 		_ -> gen' r'' u c gc
@@ -80,6 +77,17 @@ gen gcryptr u c gc = do
 			_ -> do
 				warning $ "not using unknown gcrypt repository pointed to by remote " ++ Git.repoDescribe r
 				return Nothing
+
+{- gcrypt repos set up by git-annex as special remotes have a
+ - core.gcrypt-id setting in their config, which can be mapped back to
+ - the remote's UUID. This only works for local repos.
+ - (Also returns a version of input repo with its config read.) -}
+getGCryptId :: Git.Repo -> IO (Maybe Git.GCrypt.GCryptId, Git.Repo)
+getGCryptId r
+	| Git.repoIsLocalUnknown r = do
+		r' <- catchDefaultIO r $ Git.Config.read r
+		return (Git.Config.getMaybe "core.gcrypt-id" r', r')
+	| otherwise = return (Nothing, r)
 
 gen' :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen' r u c gc = do
