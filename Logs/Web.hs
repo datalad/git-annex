@@ -18,6 +18,7 @@ module Logs.Web (
 ) where
 
 import qualified Data.ByteString.Lazy.Char8 as L
+import Data.Tuple.Utils
 
 import Common.Annex
 import Logs
@@ -70,7 +71,7 @@ knownUrls = do
 	Annex.Branch.withIndex $ do
 		top <- fromRepo Git.repoPath
 		(l, cleanup) <- inRepo $ Git.LsFiles.stagedDetails [top]
-		r <- mapM (geturls . snd) $ filter (isUrlLog . fst) l
+		r <- mapM (geturls . snd3) $ filter (isUrlLog . fst3) l
 		void $ liftIO cleanup
 		return $ concat r
   where

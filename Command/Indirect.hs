@@ -14,6 +14,7 @@ import Command
 import qualified Git
 import qualified Git.Command
 import qualified Git.LsFiles
+import Git.FileMode
 import Config
 import qualified Annex
 import Annex.Direct
@@ -67,8 +68,7 @@ perform = do
 	{- Walk tree from top and move all present direct mode files into
 	 - the annex, replacing with symlinks. Also delete direct mode
 	 - caches and mappings. -}
-	go (_, Nothing) = noop
-	go (f, Just sha) = do
+	go (f, Just sha, Just mode) | isSymLink mode = do
 		r <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus f
 		case r of
 			Just s
@@ -80,6 +80,7 @@ perform = do
 					maybe noop (fromdirect f)
 						=<< catKey sha
 			_ -> noop
+	go _ = noop
 
 	fromdirect f k = do
 		showStart "indirect" f

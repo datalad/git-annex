@@ -28,6 +28,9 @@ import Git.Command
 import Git.Types
 import Git.Sha
 
+import Numeric
+import System.Posix.Types
+
 {- Scans for files that are checked into git at the specified locations. -}
 inRepo :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 inRepo l = pipeNullSplit $ Params "ls-files --cached -z --" : map File l
@@ -78,16 +81,16 @@ staged' ps l = pipeNullSplit $ prefix ++ ps ++ suffix
 
 {- Returns details about files that are staged in the index,
  - as well as files not yet in git. Skips ignored files. -}
-stagedOthersDetails :: [FilePath] -> Repo -> IO ([(FilePath, Maybe Sha)], IO Bool)
+stagedOthersDetails :: [FilePath] -> Repo -> IO ([(FilePath, Maybe Sha, Maybe FileMode)], IO Bool)
 stagedOthersDetails = stagedDetails' [Params "--others --exclude-standard"]
 
 {- Returns details about all files that are staged in the index. -}
-stagedDetails :: [FilePath] -> Repo -> IO ([(FilePath, Maybe Sha)], IO Bool)
+stagedDetails :: [FilePath] -> Repo -> IO ([(FilePath, Maybe Sha, Maybe FileMode)], IO Bool)
 stagedDetails = stagedDetails' []
 
 {- Gets details about staged files, including the Sha of their staged
  - contents. -}
-stagedDetails' :: [CommandParam] -> [FilePath] -> Repo -> IO ([(FilePath, Maybe Sha)], IO Bool)
+stagedDetails' :: [CommandParam] -> [FilePath] -> Repo -> IO ([(FilePath, Maybe Sha, Maybe FileMode)], IO Bool)
 stagedDetails' ps l repo = do
 	(ls, cleanup) <- pipeNullSplit params repo
 	return (map parse ls, cleanup)
@@ -95,10 +98,12 @@ stagedDetails' ps l repo = do
 	params = Params "ls-files --stage -z" : ps ++ 
 		Param "--" : map File l
 	parse s
-		| null file = (s, Nothing)
-		| otherwise = (file, extractSha $ take shaSize $ drop 7 metadata)
+		| null file = (s, Nothing, Nothing)
+		| otherwise = (file, extractSha $ take shaSize rest, readmode mode)
 	  where
 		(metadata, file) = separate (== '\t') s
+		(mode, rest) = separate (== ' ') metadata
+		readmode = headMaybe . readOct >=*> fst
 
 {- Returns a list of the files in the specified locations that are staged
  - for commit, and whose type has changed. -}
