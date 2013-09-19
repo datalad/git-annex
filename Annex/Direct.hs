@@ -14,7 +14,6 @@ import qualified Git.Merge
 import qualified Git.DiffTree as DiffTree
 import Git.Sha
 import Git.Types
-import Git.FileMode
 import Annex.CatFile
 import qualified Annex.Queue
 import Logs.Location
@@ -46,9 +45,7 @@ stageDirect = do
 	 - efficiently as we can, by getting any key that's associated
 	 - with it in git, as well as its stat info. -}
 	go (file, Just sha, Just mode) = do
-		shakey <- if isSymLink mode
-			then catKey sha
-			else return Nothing
+		shakey <- catKey sha mode
 		mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 		filekey <- isAnnexLink file
 		case (shakey, filekey, mstat, toInodeCache =<< mstat) of
@@ -149,10 +146,9 @@ mergeDirectCleanup d oldsha newsha = do
 	  where
 		go getsha getmode a araw
 			| getsha item == nullSha = noop
-			| isSymLink (getmode item) =
+			| otherwise =
 				maybe (araw f) (\k -> void $ a k f)
-					=<< catKey (getsha item)
-			| otherwise = araw f
+					=<< catKey (getsha item) (getmode item)
 		f = DiffTree.file item
 
 	moveout = removeDirect

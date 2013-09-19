@@ -130,4 +130,4 @@ catTree h treeref = go <$> catObjectDetails h treeref
 	parsemodefile b = 
 		let (modestr, file) = separate (== ' ') (encodeW8 $ L.unpack b)
 		in (file, readmode modestr)
-	readmode = fst . Prelude.head . readOct
+	readmode = fst . fromMaybe (0, undefined) . headMaybe . readOct

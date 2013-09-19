@@ -29,6 +29,7 @@ import qualified Remote.Git
 import Types.Key
 import Config
 import Annex.ReplaceFile
+import Git.FileMode
 
 import Data.Hash.MD5
 
@@ -321,7 +322,7 @@ resolveMerge' u
 		case msha of
 			Nothing -> a Nothing
 			Just sha -> do
-				key <- catKey sha
+				key <- catKey sha symLinkMode
 				maybe (return False) (a . Just) key
 
 {- The filename to use when resolving a conflicted merge of a file,

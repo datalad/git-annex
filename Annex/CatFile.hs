@@ -8,6 +8,7 @@
 module Annex.CatFile (
 	catFile,
 	catObject,
+	catTree,
 	catObjectDetails,
 	catFileHandle,
 	catKey,
@@ -17,6 +18,7 @@ module Annex.CatFile (
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
+import System.PosixCompat.Types
 
 import Common.Annex
 import qualified Git
@@ -24,6 +26,7 @@ import qualified Git.CatFile
 import qualified Annex
 import Git.Types
 import Git.FilePath
+import Git.FileMode
 
 catFile :: Git.Branch -> FilePath -> Annex L.ByteString
 catFile branch file = do
@@ -34,6 +37,11 @@ catObject :: Git.Ref -> Annex L.ByteString
 catObject ref = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catObject h ref
+
+catTree :: Git.Ref -> Annex [(FilePath, FileMode)]
+catTree ref = do
+	h <- catFileHandle
+	liftIO $ Git.CatFile.catTree h ref
 
 catObjectDetails :: Git.Ref -> Annex (Maybe (L.ByteString, Sha))
 catObjectDetails ref = do
@@ -55,13 +63,39 @@ catFileHandle = do
 			Annex.changeState $ \s -> s { Annex.catfilehandles = m' }
 			return h
 
-{- From the Sha or Ref of a symlink back to the key. -}
-catKey :: Ref -> Annex (Maybe Key)
-catKey ref = do
-	l <- fromInternalGitPath . encodeW8 . L.unpack <$> catObject ref
-	return $ if isLinkToAnnex l
-		then fileKey $ takeFileName l
-		else Nothing
+{- From the Sha or Ref of a symlink back to the key.
+ -
+ - Requires a mode witness, to guarantee that the file is a symlink.
+ -}
+catKey :: Ref -> FileMode -> Annex (Maybe Key)
+catKey ref mode
+	| isSymLink mode = do
+		l <- fromInternalGitPath . encodeW8 . L.unpack <$> catObject ref
+		return $ if isLinkToAnnex l
+			then fileKey $ takeFileName l
+			else Nothing
+	| otherwise = return Nothing
+
+{- Looks up the file mode corresponding to the Ref using the running
+ - cat-file.
+ -
+ - Currently this always has to look in HEAD, because cat-file --batch
+ - does not offer a way to specify that we want to look up a tree object
+ - in the index. So if the index has a file staged not as a symlink,
+ - and it is a sylink in head, the wrong mode is gotten. This is a bug.
+ - Also, we have to assume the file is a symlink if it's not yet committed
+ - to HEAD.
+ -}
+catKeyChecked :: Bool -> Ref -> Annex (Maybe Key)
+catKeyChecked needhead ref@(Ref r) = 
+	catKey ref =<< findmode <$> catTree treeref
+  where
+  	pathparts = split "/" r
+	dir = intercalate "/" $ take (length pathparts - 1) pathparts
+	file = fromMaybe "" $ lastMaybe pathparts
+	treeref = Ref $ if needhead then "HEAD" ++ dir ++ "/" else dir ++ "/"
+	findmode = fromMaybe symLinkMode . headMaybe .
+		 map snd . filter (\p -> fst p == file)
 
 {- From a file in the repository back to the key.
  -
@@ -76,7 +110,8 @@ catKey ref = do
  -
  - For command-line git-annex use, that doesn't matter. It's perfectly
  - reasonable for things staged in the index after the currently running
- - git-annex process to not be noticed by it.
+ - git-annex process to not be noticed by it. However, we do want to see
+ - what's in the index, since it may have uncommitted changes not in HEAD>
  -
  - For the assistant, this is much more of a problem, since it commits
  - files and then needs to be able to immediately look up their keys.
@@ -89,8 +124,8 @@ catKey ref = do
 catKeyFile :: FilePath -> Annex (Maybe Key)
 catKeyFile f = ifM (Annex.getState Annex.daemon)
 	( catKeyFileHEAD f
-	, catKey $ Ref $ ":./" ++ f
+	, catKeyChecked True (Ref $ ":./" ++ f)
 	)
 
 catKeyFileHEAD :: FilePath -> Annex (Maybe Key)
-catKeyFileHEAD f = catKey $ Ref $ "HEAD:./" ++ f
+catKeyFileHEAD f = catKeyChecked False (Ref $ "HEAD:./" ++ f)

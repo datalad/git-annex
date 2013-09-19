@@ -61,3 +61,9 @@ commit  git-annex: out of memory (requested 985661440 bytes)
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]]. However, if you saw this behavior,
+> you have large files checked directly into git. You may
+> want to examine your repository and use git filter-branch to clean
+> it up.
+> --[[Joey]] 

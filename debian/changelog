@@ -18,8 +18,8 @@ git-annex (4.20130912) UNRELEASED; urgency=low
     numcopies levels. (--fast avoids calculating these)
   * gcrypt: Ensure that signing key is set to one of the participants keys.
   * webapp: Show encryption information when editing a remote.
-  * sync, pre-commit, indirect: Avoid unnecessarily catting non-symlink
-    files from git, which can be so large it runs out of memory.
+  * Avoid unnecessarily catting non-symlink files from git, which can be
+    so large it runs out of memory.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 12 Sep 2013 12:14:46 -0400
 

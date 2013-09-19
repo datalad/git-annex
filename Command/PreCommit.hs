@@ -16,7 +16,6 @@ import qualified Git.Ref
 import Annex.CatFile
 import Annex.Content.Direct
 import Git.Sha
-import Git.FileMode
 
 def :: [Command]
 def = [command "pre-commit" paramPaths seek SectionPlumbing
@@ -48,8 +47,8 @@ startDirect _ = next $ do
 		withkey (Git.DiffTree.srcsha diff) (Git.DiffTree.srcmode diff) removeAssociatedFile
 		withkey (Git.DiffTree.dstsha diff) (Git.DiffTree.dstmode diff) addAssociatedFile
 	  where
-		withkey sha mode a = when (sha /= nullSha && isSymLink mode) $ do
-			k <- catKey sha
+		withkey sha mode a = when (sha /= nullSha) $ do
+			k <- catKey sha mode
 			case k of
 				Nothing -> noop
 				Just key -> void $ a key (Git.DiffTree.file diff)
