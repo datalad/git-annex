@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Command.Remotes where
+module Command.List where
 
 import qualified Data.Set as S
 
@@ -16,7 +16,7 @@ import Logs.Trust
 import Annex.UUID
 
 def :: [Command]
-def = [noCommit $ command "remotes" paramPaths seek
+def = [noCommit $ command "list" paramPaths seek
 	SectionQuery "show which remotes contain files"]
 
 seek :: [CommandSeek]

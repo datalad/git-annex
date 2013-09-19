@@ -552,7 +552,7 @@ subdirectories).
   Displays a list of repositories known to contain the contents of the
   specified file or files.
 
-* `remotes [path ...]`
+* `list [path ...]`
 
   Displays a table of remotes that contain the contents of the specified
   files. Unlike whereis, this only shows configured remotes, not other
