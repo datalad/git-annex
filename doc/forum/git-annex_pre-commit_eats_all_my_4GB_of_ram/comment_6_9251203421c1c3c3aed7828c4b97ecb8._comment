@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="ringprince"
+ ip="134.76.140.110"
+ subject="comment 6"
+ date="2013-09-19T22:27:38Z"
+ content="""
+Thanks a bunch!  That is what I did now.  Seems good.
+
+May I additionally suggest a change in the man page of git annex?  There I read
+
+    sync [remote ...]
+              ...
+              The sync process involves first committing all local changes (git commit -a), ...
+              ...
+
+which made me think, I could do `git commit -a` manually as well.
+"""]]
