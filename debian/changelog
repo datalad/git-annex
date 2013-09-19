@@ -4,7 +4,7 @@ git-annex (4.20130912) UNRELEASED; urgency=low
   * Recommend using my patched gcrypt, which fixes some bugs:
     https://github.com/joeyh/git-remote-gcrypt
   * Support hot-swapping of removable drives containing gcrypt repositories.
-  * remotes: New command, displays a compact table of remotes that
+  * list: New command, displays a compact table of remotes that
     contain files.
     (Thanks, anarcat for display code and mastensg for inspiration.)
   * fsck: Fix detection and fixing of present direct mode files that are

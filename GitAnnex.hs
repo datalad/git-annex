@@ -42,7 +42,7 @@ import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.Find
 import qualified Command.Whereis
-import qualified Command.Remotes
+import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
 import qualified Command.Status
@@ -133,7 +133,7 @@ cmds = concat
 	, Command.AddUnused.def
 	, Command.Find.def
 	, Command.Whereis.def
-	, Command.Remotes.def
+	, Command.List.def
 	, Command.Log.def
 	, Command.Merge.def
 	, Command.Status.def
