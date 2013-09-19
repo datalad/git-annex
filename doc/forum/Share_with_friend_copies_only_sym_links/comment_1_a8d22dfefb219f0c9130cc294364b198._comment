@@ -7,7 +7,7 @@
 git-annex can only share the contents of files with a friend when you both have access to a transfer repository. Your friend's git-annex webapp should detect that it does not have such a repository, and should be displaying an alert like this:
 
 [[assistant/cloudnudge.png]]
-(But in this case it should say \"Unable to download files from <yourname>\")
+(But in this case it should say \"Unable to download files from YourName\")
 
 So, you need to give your friend access to the S3 repository that you're already using to keep your 2 computers in sync. Or, set up some other transfer repository that you both can access.
 
