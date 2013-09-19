@@ -876,16 +876,16 @@ file contents are present at either of two repositories.
 
   Matches only files that git-annex believes have the specified number of
   copies, on remotes with the specified trust level. For example,
-  "--copies=trusted:2"
+  `--copies=trusted:2`
 
   To match any trust level at or higher than a given level,
-  use 'trustlevel+'. For example, "--copies=semitrusted+:2"
+  use 'trustlevel+'. For example, `--copies=semitrusted+:2`
 
 * `--copies=groupname:number`
 
   Matches only files that git-annex believes have the specified number of
   copies, on remotes in the specified group. For example,
-  "--copies=archive:2"
+  `--copies=archive:2`
 
 * `--inbackend=name`
 
@@ -1129,7 +1129,7 @@ Here are all the supported configuration settings.
 
   Options to use when using rsync
   to or from this remote. For example, to force ipv6, and limit
-  the bandwidth to 100Kbyte/s, set it to "-6 --bwlimit 100"
+  the bandwidth to 100Kbyte/s, set it to `-6 --bwlimit 100`
 
 * `remote.<name>.annex-rsync-transport`
 
@@ -1143,14 +1143,14 @@ Here are all the supported configuration settings.
 * `remote.<name>.annex-bup-split-options`
 
   Options to pass to bup split when storing content in this remote.
-  For example, to limit the bandwidth to 100Kbyte/s, set it to "--bwlimit 100k"
+  For example, to limit the bandwidth to 100Kbyte/s, set it to `--bwlimit 100k`
   (There is no corresponding option for bup join.)
 
 * `remote.<name>.annex-gnupg-options`
 
   Options to pass to GnuPG for symmetric encryption. For instance, to
   use the AES cipher with a 256 bits key and disable compression, set it
-  to "--cipher-algo AES256 --compress-algo none". (These options take
+  to `--cipher-algo AES256 --compress-algo none`. (These options take
   precedence over the default GnuPG configuration, which is otherwise
   used.)
 
