@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="comment 3"
+ date="2013-09-19T18:53:14Z"
+ content="""
+I just fixed a memory leak that occurred when large files were checked directly into git (perhaps by accident by committing files manually when using direct mode). However, I don't think it affected `git annex merge`. 
+
+Still need information about how to reproduce this bug...
+"""]]
