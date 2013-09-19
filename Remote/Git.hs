@@ -128,7 +128,7 @@ repoAvail r
 	| Git.GCrypt.isEncrypted r = do
 		g <- gitRepo
 		liftIO $ do
-			er <- Git.GCrypt.encryptedRepo g r
+			er <- Git.GCrypt.encryptedRemote g r
 			if Git.repoIsLocal er || Git.repoIsLocalUnknown er
 				then catchBoolIO $
 					void (Git.Config.read er) >> return True

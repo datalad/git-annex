@@ -307,24 +307,21 @@ getFinishAddDriveR drive = go
 		, page "Encrypt repository" (Just Configuration) $
 			$(widgetFile "configurators/needgcrypt")
 		)
-	{- Either making a new unencrypted repo, or combining with
-	 - an existing unencrypted repo, or combining with an existing
-	 - gcrypt special remot, or some other existing gcrypt repo. -}
 	go NoRepoKey = do
-		mu <- liftIO $ probeGCryptRemoteUUID dir
-		case mu of
-			Just u -> enablegcryptremote u
-			Nothing ->
-				ifM (liftAnnex $ inRepo $ Git.GCrypt.probeGCryptRepo dir)
-					( error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
-					, makeunencrypted
-					)
-	{- Sync the git-annex branch from the gcrypt repo, in order to
-	 - make sure we know how the special remote should be set up. -}
+		pr <- liftAnnex $ inRepo $ Git.GCrypt.probeRepo dir
+		case pr of
+			Git.GCrypt.Decryptable -> do
+				mu <- liftIO $ probeGCryptRemoteUUID dir
+				case mu of
+					Just u -> enablegcryptremote u
+					Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+			Git.GCrypt.NotDecryptable ->
+				error $ "The drive contains a git repository that is encrypted with a GnuPG key that you do not have."
+			Git.GCrypt.NotEncrypted -> makeunencrypted
 	enablegcryptremote u = do
 		mname <- liftAnnex $ getGCryptRemoteName u dir
 		case mname of
-			Nothing -> error $ "Unable to use the gcrypt remote at " ++ dir ++ ". Perhaps it is encrypted using a GnuPG key that you do not have?"
+			Nothing -> error $ "Cannot find configuration for the gcrypt remote at " ++ dir
 			Just name -> makewith $ const $ do
 				r <- liftAnnex $ addRemote $
 					enableSpecialRemote name GCrypt.remote $ M.fromList

@@ -32,8 +32,8 @@ isEncrypted _ = False
  - Throws an exception if an url is invalid or the repo does not use
  - gcrypt.
  -}
-encryptedRepo :: Repo -> Repo -> IO Repo
-encryptedRepo baserepo = go
+encryptedRemote :: Repo -> Repo -> IO Repo
+encryptedRemote baserepo = go
   where
   	go Repo { location = Url url }
 		| urlPrefix `isPrefixOf` u =
@@ -45,20 +45,26 @@ encryptedRepo baserepo = go
 	go _ = notencrypted
 	notencrypted = error "not a gcrypt encrypted repository"
 
-{- Checks if the git repo at a location is a gcrypt repo that
- - we can decrypt. This works by trying to fetch from the repo
- - at the location, into the baserepo.
- -
- - Returns false if the git repo is not using gcrypt, or if it is using
- - gcrypt but cannot be decrypted. We do not try to detect gcrypt
- - repos that cannot be decrypted, because gcrypt may change in the future
- - to avoid easy fingerprinting of gcrypt repos.
+data ProbeResult = Decryptable | NotDecryptable | NotEncrypted
+
+{- Checks if the git repo at a location uses gcrypt.
+ - 
+ - Rather expensive -- many need to fetch the entire repo contents.
+ - (Which is fine if the repo is going to be added as a remote..)
  -}
-probeGCryptRepo :: FilePath -> Repo -> IO Bool
-probeGCryptRepo dir baserepo = catchBoolIO $ Command.runBool
-	[ Param "fetch"
-	, Param $ urlPrefix ++ dir
-	] baserepo
+probeRepo :: String -> Repo -> IO ProbeResult
+probeRepo loc baserepo = do
+	let p = proc "git" $ toCommand $ Command.gitCommandLine
+		[ Param "remote-gcrypt"
+		, Param "--check"
+		, Param loc
+		] baserepo
+	(_, _, _, pid) <- createProcess p
+	code <- waitForProcess pid
+	return $ case code of
+		ExitSuccess -> Decryptable
+		ExitFailure 1 -> NotDecryptable
+		ExitFailure _ -> NotEncrypted
 
 type RemoteName = String
 type GCryptId = String

@@ -50,7 +50,7 @@ gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remot
 gen gcryptr u c gc = do
 	g <- gitRepo
 	-- get underlying git repo with real path, not gcrypt path
-	r <- liftIO $ Git.GCrypt.encryptedRepo g gcryptr
+	r <- liftIO $ Git.GCrypt.encryptedRemote g gcryptr
 	let r' = r { Git.remoteName = Git.remoteName gcryptr }
 	(mgcryptid, r'') <- liftIO $ getGCryptId r'
 	-- doublecheck that local cache matches underlying repo's gcrypt-id
