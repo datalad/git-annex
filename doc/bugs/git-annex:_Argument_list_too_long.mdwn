@@ -33,3 +33,8 @@ Log from the web GUI:
 
 # End of transcript or log.
 """]]
+
+> [[done]]; I have added a guard to runshell to detect when it has
+> started to loop. Although I don't understand how a system could be
+> misconfigured to let that happen, without going far out of your way to 
+> mess it up, it's a failure mode that's worth guarding against. --[[Joey]]
