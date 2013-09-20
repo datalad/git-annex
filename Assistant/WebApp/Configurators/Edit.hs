@@ -242,4 +242,4 @@ encrypted using gpg key:
     <li>
       ^{gpgKeyDisplay k (M.lookup k knownkeys)}
 |]
-getRepoEncryption _ _ = [whamlet||] -- local repo
+getRepoEncryption _ _ = return () -- local repo

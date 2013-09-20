@@ -25,12 +25,11 @@ gpgKeyDisplay :: KeyId -> Maybe UserId -> Widget
 gpgKeyDisplay keyid userid = [whamlet|
   <span title="key id #{keyid}">
     <i .icon-user></i> #
-      ^{displayname}
+      $maybe name <- userid
+        #{name}
+      $nothing
+        key id #{keyid}
 |]
-  where
-  	displayname = case userid of
-		Just name | not (null name) -> [whamlet|#{name}|]
-		_ -> [whamlet|key id #{keyid}|]
 
 {- Generates a gpg user id that is not used by any existing secret key -}
 newUserId :: IO UserId
