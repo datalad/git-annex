@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4830:1600:187::2"
+ subject="comment 6"
+ date="2013-09-20T15:36:25Z"
+ content="""
+I tried to reproduce this behavior, but failed. My configuration was 2 repos, A and B, with B the origin of A. A was configured with \"exclude=archive/kronos/*\"
+(also tried \"(exclude=archive/kronos/* ) or (not copies=semitrusted+:1)\")
+
+<pre>
+joey@darkstar:~/tmp/A>git annex get --auto
+joey@darkstar:~/tmp/A>git annex get
+get archive/kronos/foo (from origin...) ok
+(Recording state in git...)
+joey@darkstar:~/tmp/A>git annex drop --auto
+drop archive/kronos/foo ok
+(Recording state in git...)
+joey@darkstar:~/tmp/A>git annex get --auto
+joey@darkstar:~/tmp/A>
+</pre>
+
+... Which is how you want it to behave.
+
+So I wonder if it's something else in your configuration. The best thing to do would be if you can come up with a series of commands I can follow to build repositories that exhibit the problem.
+"""]]
