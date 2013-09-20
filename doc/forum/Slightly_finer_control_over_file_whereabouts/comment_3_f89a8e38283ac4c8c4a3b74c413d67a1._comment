@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="comment 3"
+ date="2013-09-20T00:15:07Z"
+ content="""
+does `git annex get --auto` also get them?
+"""]]
