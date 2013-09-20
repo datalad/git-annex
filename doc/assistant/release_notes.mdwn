@@ -1,3 +1,8 @@
+## version 4.20130920
+
+This release is the first to support fully encrypted git repositories
+stored on removable drives. This can be set up easily using the webapp.
+
 ## version 4.20130909
 
 This release fixes a crash that could occur when using XMPP with the
