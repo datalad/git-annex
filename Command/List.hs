@@ -9,30 +9,53 @@
 module Command.List where
 
 import qualified Data.Set as S
+import qualified Data.Map as M
+import Data.Function
+import Data.Tuple.Utils
+import Data.Ord
 
 import Common.Annex
 import Command
 import Remote
 import Logs.Trust
+import Logs.UUID
 import Annex.UUID
+import qualified Option
+import qualified Annex
 
 def :: [Command]
-def = [noCommit $ command "list" paramPaths seek
+def = [noCommit $ withOptions [allrepos] $ command "list" paramPaths seek
 	SectionQuery "show which remotes contain files"]
+
+allrepos :: Option
+allrepos = Option.flag [] "allrepos" "show all repositories, not only remotes"
 
 seek :: [CommandSeek]
 seek = 
-	[ withValue getList $ \l -> withNothing $ startHeader l
-	, withValue getList $ \l -> withFilesInGit $ whenAnnexed $ start l
+	[ withValue getList $ withNothing . startHeader
+	, withValue getList $ withFilesInGit . whenAnnexed . start
 	]
 
 getList :: Annex [(UUID, RemoteName, TrustLevel)]
-getList = do
-	rs <- remoteList
-	ts <- mapM (lookupTrust . uuid) rs
-	hereu <- getUUID
-	heretrust <- lookupTrust hereu
-	return $ (hereu, "here", heretrust) : zip3 (map uuid rs) (map name rs) ts
+getList = ifM (Annex.getFlag $ Option.name allrepos)
+	( nubBy ((==) `on` fst3) <$> ((++) <$> getRemotes <*> getAll)
+	, getRemotes
+	)
+  where
+	getRemotes = do
+		rs <- remoteList
+		ts <- mapM (lookupTrust . uuid) rs
+		hereu <- getUUID
+		heretrust <- lookupTrust hereu
+		return $ (hereu, "here", heretrust) : zip3 (map uuid rs) (map name rs) ts
+	getAll = do
+		rs <- M.toList <$> uuidMap
+		rs3 <- forM rs $ \(u, n) -> (,,)
+			<$> pure u
+			<*> pure n
+			<*> lookupTrust u
+		return $ sortBy (comparing snd3) $
+			filter (\t -> thd3 t /= DeadTrusted) rs3
 
 startHeader :: [(UUID, RemoteName, TrustLevel)] -> CommandStart
 startHeader l = do

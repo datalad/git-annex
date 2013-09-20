@@ -549,14 +549,14 @@ subdirectories).
 
 * `whereis [path ...]`
 
-  Displays a list of repositories known to contain the contents of the
-  specified file or files.
+  Displays a information about where the contents of files are located.
 
 * `list [path ...]`
 
   Displays a table of remotes that contain the contents of the specified
-  files. Unlike whereis, this only shows configured remotes, not other
-  repositories. However it is a more compact display.
+  files. This is similar to whereis but a more compact display. Only
+  configured remotes are shown by default; specify --allrepos to list
+  all repositories.
 
 * `log [path ...]`
 
