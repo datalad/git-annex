@@ -68,13 +68,23 @@ catFileHandle = do
  - Requires a mode witness, to guarantee that the file is a symlink.
  -}
 catKey :: Ref -> FileMode -> Annex (Maybe Key)
-catKey ref mode
+catKey = catKey' True
+
+catKey' :: Bool -> Ref -> FileMode -> Annex (Maybe Key)
+catKey' modeguaranteed ref mode
 	| isSymLink mode = do
-		l <- fromInternalGitPath . encodeW8 . L.unpack <$> catObject ref
+		l <- fromInternalGitPath . encodeW8 . L.unpack <$> get
 		return $ if isLinkToAnnex l
 			then fileKey $ takeFileName l
 			else Nothing
 	| otherwise = return Nothing
+  where
+  	-- If the mode is not guaranteed to be correct, avoid
+	-- buffering the whole file content, which might be large.
+	-- 8192 is enough if it really is a symlink.
+  	get
+		| modeguaranteed = catObject ref
+		| otherwise = L.take 8192 <$> catObject ref
 
 {- Looks up the file mode corresponding to the Ref using the running
  - cat-file.
@@ -82,13 +92,13 @@ catKey ref mode
  - Currently this always has to look in HEAD, because cat-file --batch
  - does not offer a way to specify that we want to look up a tree object
  - in the index. So if the index has a file staged not as a symlink,
- - and it is a sylink in head, the wrong mode is gotten. This is a bug.
+ - and it is a symlink in head, the wrong mode is gotten.
  - Also, we have to assume the file is a symlink if it's not yet committed
- - to HEAD.
+ - to HEAD. For these reasons, modeguaranteed is not set.
  -}
 catKeyChecked :: Bool -> Ref -> Annex (Maybe Key)
-catKeyChecked needhead ref@(Ref r) = 
-	catKey ref =<< findmode <$> catTree treeref
+catKeyChecked needhead ref@(Ref r) =
+	catKey' False ref =<< findmode <$> catTree treeref
   where
   	pathparts = split "/" r
 	dir = intercalate "/" $ take (length pathparts - 1) pathparts
