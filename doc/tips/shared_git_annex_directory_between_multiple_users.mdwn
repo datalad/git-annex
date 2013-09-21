@@ -36,3 +36,4 @@ See also
 
  * [[tips/setup a public repository on a web site]]
  * [[news/version 4.20130909]]
+ * [[bugs/acl not honoured in rsync remote]]: why this does not work on encrypted remotes
