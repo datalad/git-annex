@@ -2,18 +2,12 @@
 # Bootstraps from an empty cabal to all the necessary haskell packages
 # being installed, with the necessary patches to work on Android.
 #
+# You should install ghc-android first.
+#
 # Note that the newest version of packages is installed. 
 # It attempts to reuse patches for older versions, but 
 # new versions of packages often break cross-compilation by adding TH, 
 # etc
-# 
-# Needs some extra C libraries and packages to be installed
-# on the host system:
-# libgnutls-dev libxml2-dev libgsasl7-dev pkg-config c2hs
-#
-# Also needs some C libraries to be installed inside the cross-compiler
-# lib directory (~/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/sysroot/usr/lib/)
-# , cross-compiled for Android: libgnutls libxml2
 
 set -e
 
@@ -40,13 +34,9 @@ patched () {
 			$SHELL
 		fi
 	done
-	cabalinstall "$@"
+	cabalinstall --force-reinstalls "$@"
 	rm -rf $pkg*
 	cd ..
-}
-
-unpatched () {
-	cabalinstall "$@"
 }
 
 installgitannexdeps () {
@@ -76,24 +66,28 @@ install_pkgs () {
 	patched socks
 	patched entropy
 	patched vector
-	patched wai-app-static
 	patched persistent
 	patched profunctors
 	patched skein
 	patched lens
+	patched DAV
+	patched persistent-template
+	patched file-embed
+	patched wai-app-static
+	patched hamlet
 	patched shakespeare
 	patched shakespeare-css
         patched shakespeare-js
-	patched DAV
-	patched persistent-template
-	patched hamlet
+	patched yesod-routes
 	patched yesod-core
 	patched yesod-persistent
 	patched yesod-form
 	patched yesod-auth
 	patched yesod
+	patched async
+	patched gnuidn
 
-	installgitannexdeps -f-Pairing -f-XMPP
+	installgitannexdeps -fAndroid -f-Pairing
 
 	cd ..
 	rm -rf tmp

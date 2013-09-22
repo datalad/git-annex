@@ -160,12 +160,12 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	rm -f tmp/git-annex.dmg.bz2
 	bzip2 --fast tmp/git-annex.dmg
 
-ANDROID_FLAGS?=
+ANDROID_FLAGS?=-f-XMPP
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android: Build/EvilSplicer
 	echo "Running native build, to get TH splices.."
-	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f"-Production $(ANDROID_FLAGS)" -O0; fi
+	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f-Production -O0 $(ANDROID_FLAGS);  fi
 	mkdir -p tmp
 	if ! $(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices; then tail tmp/dump-splices >&2; exit 1; fi
 	echo "Setting up Android build tree.."
@@ -183,9 +183,9 @@ android: Build/EvilSplicer
 # Cabal cannot cross compile with custom build type, so workaround.
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
 	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
-		cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -f"Android $(ANDROID_FLAGS)"; \
+		cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
 	fi
-	cd tmp/androidtree && $(CABAL) build
+	cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal build
 
 adb:
 	ANDROID_FLAGS="-Production" $(MAKE) android
