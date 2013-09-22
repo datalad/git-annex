@@ -1,7 +1,7 @@
 ### use case: The Archivist
 
-Bob has many drives to archive his data, most of them kept offline, in a
-safe place.
+Bob has many drives to archive his data, most of them 
+[[kept offline|tips/offline_archive_drives]], in a safe place.
 
 With git-annex, Bob has a single directory tree that includes all
 his files, even if their content is being stored offline. He can
