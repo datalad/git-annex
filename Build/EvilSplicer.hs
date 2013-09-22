@@ -294,6 +294,7 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
 mangleCode = flip_colon
+	. remove_unnecessary_type_signatures
 	. lambdaparens
 	. declaration_parens
 	. case_layout
@@ -438,6 +439,19 @@ mangleCode = flip_colon
 	{- GHC does not properly parenthesise generated data type
 	 - declarations. -}
 	declaration_parens = replace "StaticR Route Static" "StaticR (Route Static)"
+
+	{- A type signature is sometimes given for an entire lambda,
+	 - which is not properly parenthesized or laid out. This is a
+	 - hack to remove one specific case where this happens and the
+	 - signature is easily inferred, so is just removed.
+	 -}
+	remove_unnecessary_type_signatures = parsecAndReplace $ do
+		string " ::"
+		newline
+		many1 $ char ' '
+		string "Text.Css.Block Text.Css.Resolved"
+		newline
+		return ""
 
 	{- GHC may add full package and version qualifications for
 	 - symbols from unimported modules. We don't want these.
