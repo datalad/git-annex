@@ -332,6 +332,12 @@ mangleCode = flip_colon
 		preindent <- many1 $ oneOf " \n"
 		string "\\ "
 		lambdaparams <- restofline
+		continuedlambdaparams <- many $ do
+			indent <- many1 $ char ' '
+			p <- satisfy isLetter
+			aram <- many $ satisfy isAlphaNum <|> oneOf "_"
+			newline
+			return $ indent ++ p:aram
 		indent <- many1 $ char ' '
 		string "-> "
 		firstline <- restofline
@@ -342,7 +348,7 @@ mangleCode = flip_colon
 			return $ indent ++ " " ++ l
 		return $ concat 
 			[ prefix:preindent
-			, "(\\ " ++ lambdaparams ++ "\n"
+			, "(\\ " ++ lambdaparams ++ "\n" ++ intercalate "\n" continuedlambdaparams
 			, indent ++ "-> "
 			, lambdaparens $ intercalate "\n" (firstline:lambdalines)
 			, ")\n"
