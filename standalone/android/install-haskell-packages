@@ -28,6 +28,8 @@ patched () {
 	cabal unpack $pkg
 	cd $pkg*
 	git init
+	git config user.name dummy
+	git config user.email dummy@example.com
 	git add .
 	git commit -m "pre-patched state of $pkg"
 	for patch in ../../haskell-patches/${pkg}_*; do
