@@ -1,27 +1,30 @@
-From bbb49942123f06a36b170966e445692297f71d26 Mon Sep 17 00:00:00 2001
-From: Joey Hess <joey@kitenet.net>
-Date: Thu, 18 Apr 2013 19:14:30 -0400
-Subject: [PATCH] build without TH
+From 3141355f14d6acb9382bebcf8723c411be5aa62f Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sun, 22 Sep 2013 00:31:39 +0000
+Subject: [PATCH] various hacking to cross build
 
 ---
- lens.cabal                          | 13 +------------
- src/Control/Exception/Lens.hs       |  2 +-
- src/Control/Lens.hs                 |  6 +++---
- src/Control/Lens/Equality.hs        |  4 ++--
- src/Control/Lens/Fold.hs            |  6 +++---
- src/Control/Lens/Internal.hs        |  2 +-
- src/Control/Lens/Internal/Zipper.hs |  2 +-
- src/Control/Lens/Iso.hs             |  2 --
- src/Control/Lens/Lens.hs            |  2 +-
- src/Control/Lens/Operators.hs       |  2 +-
- src/Control/Lens/Plated.hs          |  2 +-
- src/Control/Lens/Setter.hs          |  2 --
- src/Control/Lens/TH.hs              |  2 +-
- src/Data/Data/Lens.hs               |  6 +++---
- 14 files changed, 19 insertions(+), 34 deletions(-)
+ lens.cabal                             |   12 +-----------
+ src/Control/Exception/Lens.hs          |    2 +-
+ src/Control/Lens.hs                    |    6 +++---
+ src/Control/Lens/Equality.hs           |    4 ++--
+ src/Control/Lens/Fold.hs               |    6 +++---
+ src/Control/Lens/Internal.hs           |    2 +-
+ src/Control/Lens/Internal/Exception.hs |   26 +-------------------------
+ src/Control/Lens/Internal/Instances.hs |   14 --------------
+ src/Control/Lens/Internal/Zipper.hs    |    2 +-
+ src/Control/Lens/Iso.hs                |    2 --
+ src/Control/Lens/Lens.hs               |    2 +-
+ src/Control/Lens/Operators.hs          |    2 +-
+ src/Control/Lens/Plated.hs             |    2 +-
+ src/Control/Lens/Prism.hs              |    2 --
+ src/Control/Lens/Setter.hs             |    2 --
+ src/Control/Lens/TH.hs                 |    2 +-
+ src/Data/Data/Lens.hs                  |    6 +++---
+ 17 files changed, 20 insertions(+), 74 deletions(-)
 
 diff --git a/lens.cabal b/lens.cabal
-index a06b3ce..a654b3d 100644
+index 2a94e1e..1f9a4b7 100644
 --- a/lens.cabal
 +++ b/lens.cabal
 @@ -10,7 +10,7 @@ stability:     provisional
@@ -33,15 +36,7 @@ index a06b3ce..a654b3d 100644
  tested-with:   GHC == 7.0.4, GHC == 7.4.1, GHC == 7.4.2, GHC == 7.6.1, GHC == 7.7.20121213, GHC == 7.7.20130117
  synopsis:      Lenses, Folds and Traversals
  description:
-@@ -171,7 +171,6 @@ library
-     containers                >= 0.4.0    && < 0.6,
-     distributive              >= 0.3      && < 1,
-     filepath                  >= 1.2.0.0  && < 1.4,
--    generic-deriving          == 1.4.*,
-     ghc-prim,
-     hashable                  >= 1.1.2.3  && < 1.3,
-     MonadCatchIO-transformers >= 0.3      && < 0.4,
-@@ -233,14 +232,12 @@ library
+@@ -238,14 +238,12 @@ library
      Control.Lens.Review
      Control.Lens.Setter
      Control.Lens.Simple
@@ -56,7 +51,7 @@ index a06b3ce..a654b3d 100644
      Control.Parallel.Strategies.Lens
      Control.Seq.Lens
      Data.Array.Lens
-@@ -264,12 +261,8 @@ library
+@@ -269,12 +267,8 @@ library
      Data.Typeable.Lens
      Data.Vector.Lens
      Data.Vector.Generic.Lens
@@ -69,7 +64,7 @@ index a06b3ce..a654b3d 100644
      Numeric.Lens
  
    if flag(safe)
-@@ -368,7 +361,6 @@ test-suite doctests
+@@ -373,7 +367,6 @@ test-suite doctests
        deepseq,
        doctest        >= 0.9.1,
        filepath,
@@ -77,7 +72,7 @@ index a06b3ce..a654b3d 100644
        mtl,
        nats,
        parallel,
-@@ -394,7 +386,6 @@ benchmark plated
+@@ -399,7 +392,6 @@ benchmark plated
      comonad,
      criterion,
      deepseq,
@@ -85,7 +80,7 @@ index a06b3ce..a654b3d 100644
      lens,
      transformers
  
-@@ -429,7 +420,6 @@ benchmark unsafe
+@@ -434,7 +426,6 @@ benchmark unsafe
      comonads-fd,
      criterion,
      deepseq,
@@ -93,7 +88,7 @@ index a06b3ce..a654b3d 100644
      lens,
      transformers
  
-@@ -446,6 +436,5 @@ benchmark zipper
+@@ -451,6 +442,5 @@ benchmark zipper
      comonads-fd,
      criterion,
      deepseq,
@@ -101,7 +96,7 @@ index a06b3ce..a654b3d 100644
      lens,
      transformers
 diff --git a/src/Control/Exception/Lens.hs b/src/Control/Exception/Lens.hs
-index 5c26d4e..9909132 100644
+index 4bc3926..28f55be 100644
 --- a/src/Control/Exception/Lens.hs
 +++ b/src/Control/Exception/Lens.hs
 @@ -112,7 +112,7 @@ import Prelude
@@ -114,7 +109,7 @@ index 5c26d4e..9909132 100644
  -- $setup
  -- >>> :set -XNoOverloadedStrings
 diff --git a/src/Control/Lens.hs b/src/Control/Lens.hs
-index 8481e44..74700ae 100644
+index 242c3c1..2ab9cdb 100644
 --- a/src/Control/Lens.hs
 +++ b/src/Control/Lens.hs
 @@ -59,7 +59,7 @@ module Control.Lens
@@ -157,10 +152,10 @@ index 982c2d7..3a3fe1a 100644
  -- $setup
  -- >>> import Control.Lens
 diff --git a/src/Control/Lens/Fold.hs b/src/Control/Lens/Fold.hs
-index ae5100d..467eb37 100644
+index 32a4073..cc7da1e 100644
 --- a/src/Control/Lens/Fold.hs
 +++ b/src/Control/Lens/Fold.hs
-@@ -161,9 +161,9 @@ import Data.Traversable
+@@ -163,9 +163,9 @@ import Data.Traversable
  -- >>> let g :: Expr -> Expr; g = Debug.SimpleReflect.Vars.g
  -- >>> let timingOut :: NFData a => a -> IO a; timingOut = fmap (fromMaybe (error "timeout")) . timeout (5*10^6) . evaluate . force
  
@@ -183,6 +178,90 @@ index 295662e..539642d 100644
  
 -{-# ANN module "HLint: ignore Use import/export shortcut" #-}
 +
+diff --git a/src/Control/Lens/Internal/Exception.hs b/src/Control/Lens/Internal/Exception.hs
+index 387203e..8bea89b 100644
+--- a/src/Control/Lens/Internal/Exception.hs
++++ b/src/Control/Lens/Internal/Exception.hs
+@@ -36,6 +36,7 @@ import Data.Monoid
+ import Data.Proxy
+ import Data.Reflection
+ import Data.Typeable
++import Data.Typeable
+ import System.IO.Unsafe
+ 
+ ------------------------------------------------------------------------------
+@@ -128,18 +129,6 @@ class Handleable e (m :: * -> *) (h :: * -> *) | h -> e m where
+   handler_ l = handler l . const
+   {-# INLINE handler_ #-}
+ 
+-instance Handleable SomeException IO Exception.Handler where
+-  handler = handlerIO
+-
+-instance Handleable SomeException m (CatchIO.Handler m) where
+-  handler = handlerCatchIO
+-
+-handlerIO :: forall a r. Getting (First a) SomeException a -> (a -> IO r) -> Exception.Handler r
+-handlerIO l f = reify (preview l) $ \ (_ :: Proxy s) -> Exception.Handler (\(Handling a :: Handling a s IO) -> f a)
+-
+-handlerCatchIO :: forall m a r. Getting (First a) SomeException a -> (a -> m r) -> CatchIO.Handler m r
+-handlerCatchIO l f = reify (preview l) $ \ (_ :: Proxy s) -> CatchIO.Handler (\(Handling a :: Handling a s m) -> f a)
+-
+ ------------------------------------------------------------------------------
+ -- Helpers
+ ------------------------------------------------------------------------------
+@@ -159,21 +148,8 @@ supply = unsafePerformIO $ newIORef 0
+ -- | This permits the construction of an \"impossible\" 'Control.Exception.Handler' that matches only if some function does.
+ newtype Handling a s (m :: * -> *) = Handling a
+ 
+--- the m parameter exists simply to break the Typeable1 pattern, so we can provide this without overlap.
+--- here we simply generate a fresh TypeRep so we'll fail to compare as equal to any other TypeRep.
+-instance Typeable (Handling a s m) where
+-  typeOf _ = unsafePerformIO $ do
+-    i <- atomicModifyIORef supply $ \a -> let a' = a + 1 in a' `seq` (a', a)
+-    return $ mkTyConApp (mkTyCon3 "lens" "Control.Lens.Internal.Exception" ("Handling" ++ show i)) []
+-  {-# INLINE typeOf #-}
+-
+ -- The @Handling@ wrapper is uninteresting, and should never be thrown, so you won't get much benefit here.
+ instance Show (Handling a s m) where
+   showsPrec d _ = showParen (d > 10) $ showString "Handling ..."
+   {-# INLINE showsPrec #-}
+ 
+-instance Reifies s (SomeException -> Maybe a) => Exception (Handling a s m) where
+-  toException _ = SomeException HandlingException
+-  {-# INLINE toException #-}
+-  fromException = fmap Handling . reflect (Proxy :: Proxy s)
+-  {-# INLINE fromException #-}
+diff --git a/src/Control/Lens/Internal/Instances.hs b/src/Control/Lens/Internal/Instances.hs
+index 6783f33..17715ce 100644
+--- a/src/Control/Lens/Internal/Instances.hs
++++ b/src/Control/Lens/Internal/Instances.hs
+@@ -24,26 +24,12 @@ import Data.Traversable
+ -- Orphan Instances
+ -------------------------------------------------------------------------------
+ 
+-instance Foldable ((,) b) where
+-  foldMap f (_, a) = f a
+-
+ instance Foldable1 ((,) b) where
+   foldMap1 f (_, a) = f a
+ 
+-instance Traversable ((,) b) where
+-  traverse f (b, a) = (,) b <$> f a
+-
+ instance Traversable1 ((,) b) where
+   traverse1 f (b, a) = (,) b <$> f a
+ 
+-instance Foldable (Either a) where
+-  foldMap _ (Left _) = mempty
+-  foldMap f (Right a) = f a
+-
+-instance Traversable (Either a) where
+-  traverse _ (Left b) = pure (Left b)
+-  traverse f (Right a) = Right <$> f a
+-
+ instance Foldable (Const m) where
+   foldMap _ _ = mempty
+ 
 diff --git a/src/Control/Lens/Internal/Zipper.hs b/src/Control/Lens/Internal/Zipper.hs
 index 95875b7..76060be 100644
 --- a/src/Control/Lens/Internal/Zipper.hs
@@ -197,12 +276,12 @@ index 95875b7..76060be 100644
  ------------------------------------------------------------------------------
  -- * Jacket
 diff --git a/src/Control/Lens/Iso.hs b/src/Control/Lens/Iso.hs
-index 62d40ef..235511a 100644
+index 1152af4..80c3175 100644
 --- a/src/Control/Lens/Iso.hs
 +++ b/src/Control/Lens/Iso.hs
-@@ -70,8 +70,6 @@ import Data.Profunctor.Unsafe
- import Unsafe.Coerce
- #endif
+@@ -82,8 +82,6 @@ import Data.Maybe
+ import Data.Profunctor
+ import Data.Profunctor.Unsafe
  
 -{-# ANN module "HLint: ignore Use on" #-}
 -
@@ -210,12 +289,12 @@ index 62d40ef..235511a 100644
  -- >>> :set -XNoOverloadedStrings
  -- >>> import Control.Lens
 diff --git a/src/Control/Lens/Lens.hs b/src/Control/Lens/Lens.hs
-index ff2a45f..5401ec4 100644
+index b26cc06..6f84943 100644
 --- a/src/Control/Lens/Lens.hs
 +++ b/src/Control/Lens/Lens.hs
-@@ -120,7 +120,7 @@ import Data.Profunctor
- import Data.Profunctor.Rep
+@@ -126,7 +126,7 @@ import Data.Profunctor.Rep
  import Data.Profunctor.Unsafe
+ import Data.Void
  
 -{-# ANN module "HLint: ignore Use ***" #-}
 +
@@ -223,17 +302,17 @@ index ff2a45f..5401ec4 100644
  -- $setup
  -- >>> :set -XNoOverloadedStrings
 diff --git a/src/Control/Lens/Operators.hs b/src/Control/Lens/Operators.hs
-index d88cb49..fa7b37e 100644
+index 11868e0..475c945 100644
 --- a/src/Control/Lens/Operators.hs
 +++ b/src/Control/Lens/Operators.hs
-@@ -107,4 +107,4 @@ import Control.Lens.Review
+@@ -108,4 +108,4 @@ import Control.Lens.Review
  import Control.Lens.Setter
  import Control.Lens.Zipper
  
 -{-# ANN module "HLint: ignore Use import/export shortcut" #-}
 +
 diff --git a/src/Control/Lens/Plated.hs b/src/Control/Lens/Plated.hs
-index 07d9212..27070c0 100644
+index a8c4d20..cef574e 100644
 --- a/src/Control/Lens/Plated.hs
 +++ b/src/Control/Lens/Plated.hs
 @@ -95,7 +95,7 @@ import           Data.Data.Lens
@@ -245,6 +324,19 @@ index 07d9212..27070c0 100644
  
  -- | A 'Plated' type is one where we know how to extract its immediate self-similar children.
  --
+diff --git a/src/Control/Lens/Prism.hs b/src/Control/Lens/Prism.hs
+index 45b5cfe..88c7ff9 100644
+--- a/src/Control/Lens/Prism.hs
++++ b/src/Control/Lens/Prism.hs
+@@ -53,8 +53,6 @@ import Unsafe.Coerce
+ import Data.Profunctor.Unsafe
+ #endif
+ 
+-{-# ANN module "HLint: ignore Use camelCase" #-}
+-
+ -- $setup
+ -- >>> :set -XNoOverloadedStrings
+ -- >>> import Control.Lens
 diff --git a/src/Control/Lens/Setter.hs b/src/Control/Lens/Setter.hs
 index 2acbfa6..4a12c6b 100644
 --- a/src/Control/Lens/Setter.hs
@@ -259,7 +351,7 @@ index 2acbfa6..4a12c6b 100644
  -- >>> import Control.Lens
  -- >>> import Control.Monad.State
 diff --git a/src/Control/Lens/TH.hs b/src/Control/Lens/TH.hs
-index fbf4adb..ee723d7 100644
+index a05eb07..49218b5 100644
 --- a/src/Control/Lens/TH.hs
 +++ b/src/Control/Lens/TH.hs
 @@ -87,7 +87,7 @@ import Language.Haskell.TH
@@ -289,5 +381,5 @@ index cf1e7c9..b39dacf 100644
  -- $setup
  -- >>> :set -XNoOverloadedStrings
 -- 
-1.8.2.rc3
+1.7.10.4
 

@@ -1,0 +1,25 @@
+From 0b9df0de3aa45918a2a9226a2da6be4680276419 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sun, 22 Sep 2013 03:31:55 +0000
+Subject: [PATCH] stub out
+
+---
+ persistent-template.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/persistent-template.cabal b/persistent-template.cabal
+index 8216ce7..f23234b 100644
+--- a/persistent-template.cabal
++++ b/persistent-template.cabal
+@@ -23,7 +23,7 @@ library
+                    , containers
+                    , aeson
+                    , monad-logger
+-    exposed-modules: Database.Persist.TH
++    exposed-modules: 
+     ghc-options:     -Wall
+     if impl(ghc >= 7.4)
+        cpp-options: -DGHC_7_4
+-- 
+1.7.10.4
+

@@ -1,31 +1,25 @@
-From 32d0741c64e6bd280e46f7c452db9462fbac05f9 Mon Sep 17 00:00:00 2001
-From: Joey Hess <joey@kitenet.net>
-Date: Tue, 7 May 2013 18:21:04 -0400
-Subject: [PATCH] fix build
+From 5c57c4ae7dac0c1aa940005f5ea55fdcd4fcd1f5 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sat, 21 Sep 2013 22:46:42 +0000
+Subject: [PATCH] fix build with new base
 
 ---
- HTTP.cabal |    4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ HTTP.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/HTTP.cabal b/HTTP.cabal
-index 76cb5d6..edddf26 100644
+index 76cb5d6..bb38f24 100644
 --- a/HTTP.cabal
 +++ b/HTTP.cabal
-@@ -85,12 +85,12 @@ Library
+@@ -85,7 +85,7 @@ Library
                   Network.HTTP.Utils
                   Paths_HTTP
    GHC-options: -fwarn-missing-signatures -Wall
 -  Build-depends: base >= 2 && < 4.7, network < 2.5, parsec
-+  Build-depends: base >= 2 && < 4.8, network < 2.5, parsec
++  Build-depends: base >= 2 && < 4.9, network < 2.5, parsec
    Extensions: FlexibleInstances
    if flag(old-base)
      Build-depends: base < 3
-   else
--    Build-depends: base >= 3, array, old-time, bytestring
-+    Build-depends: base >= 3, array, old-time, bytestring (>= 0.10.3.0)
- 
-   if flag(mtl1)
-     Build-depends: mtl >= 1.1 && < 1.2
 -- 
 1.7.10.4
 

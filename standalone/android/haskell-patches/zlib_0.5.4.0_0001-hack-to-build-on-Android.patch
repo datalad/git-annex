@@ -30,19 +30,6 @@ index fe851e6..c6168f4 100644
      c_deflateInit2_ z a b c d e versionStr (#{const sizeof(z_stream)} :: CInt)
  
  foreign import ccall unsafe "zlib.h deflateSetDictionary"
-diff --git a/zlib.cabal b/zlib.cabal
-index f2d1f5d..751bfab 100644
---- a/zlib.cabal
-+++ b/zlib.cabal
-@@ -36,7 +36,7 @@ library
-   other-modules:   Codec.Compression.Zlib.Stream
-   extensions:      CPP, ForeignFunctionInterface
-   build-depends:   base >= 3 && < 5,
--                   bytestring >= 0.9 && < 0.12
-+                   bytestring >= 0.10.3.0
-   includes:        zlib.h
-   ghc-options:     -Wall
-   if !os(windows)
 -- 
 1.7.10.4
 

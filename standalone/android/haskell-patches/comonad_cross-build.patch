@@ -1,0 +1,25 @@
+From 2cb43c46d345341d1aa77c4b2a88514c056d3122 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sat, 21 Sep 2013 22:25:18 +0000
+Subject: [PATCH] cross build
+
+---
+ comonad.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/comonad.cabal b/comonad.cabal
+index e01f1a7..e807e05 100644
+--- a/comonad.cabal
++++ b/comonad.cabal
+@@ -13,7 +13,7 @@ copyright:     Copyright (C) 2008-2013 Edward A. Kmett,
+                Copyright (C) 2004-2008 Dave Menendez
+ synopsis:      Haskell 98 compatible comonads
+ description:   Haskell 98 compatible comonads
+-build-type:    Custom
++build-type:    Simple
+ extra-source-files:
+   .gitignore
+   .travis.yml
+-- 
+1.7.10.4
+

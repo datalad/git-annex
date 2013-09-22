@@ -22,11 +22,14 @@ of Bath CS department.
 git-annex can be built for Android, with `make android`. It's not an easy
 process:
 
-* First, install <https://github.com/neurocyte/ghc-android>.
+* First, install <https://github.com/joeyh/ghc-android>.
+  The easiest way is to follow the instructions at the end of its README.md
+  to install in a Debian stable chroot.
+* In git-annex's `standalone/android/` directory, run
+  `./install-haskell-packages native && ./install-haskell-packages cross`
 * You will need to have the Android SDK and NDK installed; see
   `standalone/android/Makefile` to configure the paths to them. You'll also
   need ant, and the JDK.
-* In `standalone/android/`, run `install-haskell-packages native`
 * You also need to install git and all the utilities listed on [[fromscratch]],
   on the system doing the building.
 * Then to build the full Android app bundle, use `make androidapp`

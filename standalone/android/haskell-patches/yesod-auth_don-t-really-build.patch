@@ -1,0 +1,34 @@
+From 3eb7b0a42099721dc19363ac41319efeed4ac5f9 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sun, 22 Sep 2013 05:19:53 +0000
+Subject: [PATCH] don't really build
+
+---
+ yesod-auth.cabal |   11 +----------
+ 1 file changed, 1 insertion(+), 10 deletions(-)
+
+diff --git a/yesod-auth.cabal b/yesod-auth.cabal
+index 591ced5..11217be 100644
+--- a/yesod-auth.cabal
++++ b/yesod-auth.cabal
+@@ -52,16 +52,7 @@ library
+                    , safe
+                    , time
+ 
+-    exposed-modules: Yesod.Auth
+-                     Yesod.Auth.BrowserId
+-                     Yesod.Auth.Dummy
+-                     Yesod.Auth.Email
+-                     Yesod.Auth.OpenId
+-                     Yesod.Auth.Rpxnow
+-                     Yesod.Auth.HashDB
+-                     Yesod.Auth.Message
+-                     Yesod.Auth.GoogleEmail
+-    other-modules:   Yesod.Auth.Routes
++    exposed-modules: 
+     ghc-options:     -Wall
+ 
+ source-repository head
+-- 
+1.7.10.4
+
