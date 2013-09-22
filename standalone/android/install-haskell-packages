@@ -76,7 +76,6 @@ install_pkgs () {
 	patched profunctors
 	patched skein
 	patched lens
-	patched DAV
 	patched persistent-template
 	patched file-embed
 	patched wai-app-static
@@ -92,6 +91,7 @@ install_pkgs () {
 	patched yesod
 	patched async
 	patched gnuidn
+	patched DAV
 
 	installgitannexdeps -fAndroid -f-Pairing
 
