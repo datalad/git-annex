@@ -40,7 +40,7 @@ patched () {
 			$SHELL
 		fi
 	done
-	cabalinstall --force-reinstalls "$@"
+	cabalinstall "$@"
 	rm -rf $pkg*
 	cd ..
 }
@@ -80,8 +80,8 @@ install_pkgs () {
 	patched persistent-template
 	patched file-embed
 	patched wai-app-static
-	patched hamlet
 	patched shakespeare
+	patched hamlet
 	patched shakespeare-css
         patched shakespeare-js
 	patched yesod-routes
