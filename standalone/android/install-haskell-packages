@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 # Bootstraps from an empty cabal to all the necessary haskell packages
 # being installed, with the necessary patches to work on Android.
 #
@@ -46,8 +46,10 @@ patched () {
 }
 
 installgitannexdeps () {
-	echo cabal install git-annex --only-dependencies
-	cabal install git-annex --only-dependencies "$@"
+	pushd ../..
+	echo cabal install --only-dependencies
+	cabal install --only-dependencies "$@"
+	popd
 }
 
 install_pkgs () {
