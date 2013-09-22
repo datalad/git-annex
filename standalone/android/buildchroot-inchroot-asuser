@@ -2,6 +2,7 @@
 # Runs inside the chroot set up by buildchroot, as the user it creates
 set -e
 
+cd
 rm -rf .ghc .cabal
 cabal update
 cabal install happy alex --bindir=$HOME/bin
