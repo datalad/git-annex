@@ -11,6 +11,10 @@
 
 set -e
 
+if [ ! -d haskell-patches ]; then
+	cd standalone/android
+fi
+
 cabalopts="$@"
 
 cabalinstall () {
