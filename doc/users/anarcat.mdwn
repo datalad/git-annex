@@ -1,4 +1,4 @@
-Miaou.
+I use git-annex to manage huge files, mostly video and audio attached to other git repositories (such as presentations), but I also use git-annex to manage my music collection across multiple devices. I also use it to manage the `ISO` images I download, podcasts, and youtube videos.
 
 See <http://anarc.at/>.
 
