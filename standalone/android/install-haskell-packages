@@ -103,7 +103,6 @@ echo
 echo
 echo native build
 echo
-cabal install cabal-install
 cabal update
 installgitannexdeps
 
@@ -112,6 +111,5 @@ echo
 echo cross build
 echo
 PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH
-cabal install cabal-install
 cabal update
 install_pkgs
