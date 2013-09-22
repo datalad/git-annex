@@ -1,6 +1,6 @@
 {- git-annex SHA backends
  -
- - Copyright 2011,2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,10 +12,10 @@ import qualified Annex
 import Types.Backend
 import Types.Key
 import Types.KeySource
+import Utility.Hash
 import Utility.ExternalSHA
 
 import qualified Build.SysConfig as SysConfig
-import Data.Digest.Pure.SHA
 import qualified Data.ByteString.Lazy as L
 import Data.Char
 
@@ -70,12 +70,14 @@ shaCommand shasize filesize
 	| shasize == 512 = use SysConfig.sha512 sha512
 	| otherwise = error $ "bad sha size " ++ show shasize
   where
-	use Nothing sha = Left $ showDigest . sha
-	use (Just c) sha
-		{- use builtin, but slower sha for small files
-		 - benchmarking indicates it's faster up to
-		 - and slightly beyond 50 kb files -}
-		| filesize < 51200 = use Nothing sha
+	use Nothing hasher = Left $ show . hasher
+	use (Just c) hasher
+		{- Use builtin, but slightly slower hashing for
+		 - smallish files. Cryptohash benchmarks 90 to 101%
+		 - faster than external hashers, depending on the hash
+		 - and system. So there is no point forking an external
+		 - process unless the file is large. -}
+		| filesize < 1048576 = use Nothing hasher
 		| otherwise = Right c
 
 {- A key is a checksum of its contents. -}

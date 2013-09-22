@@ -18,7 +18,6 @@ module Git.CatFile (
 import System.IO
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
-import Data.Digest.Pure.SHA
 import Data.Char
 import System.Process (std_out, std_err)
 import Numeric
@@ -31,6 +30,7 @@ import Git.Command
 import Git.Types
 import Git.FilePath
 import qualified Utility.CoProcess as CoProcess
+import Utility.Hash
 
 data CatFileHandle = CatFileHandle CoProcess.CoProcessHandle Repo
 
@@ -103,7 +103,7 @@ catObjectDetails (CatFileHandle hdl repo) object = CoProcess.query hdl send rece
 				}
 		fileEncoding h
 		content <- L.hGetContents h
-		let sha = (\s -> length s `seq` s) (showDigest $ sha1 content)
+		let sha = (\s -> length s `seq` s) (show $ sha1 content)
 		ok <- checkSuccessProcess pid
 		return $ if ok
 			then Just (content, Ref sha)
