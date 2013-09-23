@@ -132,7 +132,7 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/term/build-stamp: term.patch icons
 	# app, if it's also installed.
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && find -name .git -prune -o -type f -print0 | xargs -0 perl -pi -e 's/jackpal/ga/g'
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && perl -pi -e 's/Terminal Emulator/Git Annex/g' res/*/strings.xml
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && tools/update.sh >/dev/null 2>&1
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && echo y | tools/update.sh
 	touch $@
 
 source: $(GIT_ANNEX_ANDROID_SOURCETREE)
