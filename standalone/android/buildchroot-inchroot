@@ -6,6 +6,7 @@ if [ "$(whoami)" != root ]; then
 	exit 1
 fi
 
+# java needs this mounted to work
 mount -t proc proc /proc
 
 echo "deb-src http://ftp.us.debian.org/debian stable main" >> /etc/apt/sources.list
@@ -22,5 +23,3 @@ dpkg -i automake*.deb
 rm *.deb
 useradd androidbuilder --create-home
 su androidbuilder -c $0-asuser
-
-umount /proc
