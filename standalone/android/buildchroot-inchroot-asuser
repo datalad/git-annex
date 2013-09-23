@@ -8,6 +8,8 @@ cabal update
 cabal install happy alex --bindir=$HOME/bin
 PATH=$HOME/bin:$PATH
 export PATH
+mkdir -p .android
+cd .android
 git clone https://github.com/joeyh/ghc-android
 cd ghc-android
 git checkout stable-ghc-snapshot
@@ -30,6 +32,7 @@ rm -rf adt-bundle-linux-x86/eclipse
 ln -s arm-linux-androideabi-gcc \
 	$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/cc
 
+cd
 git clone git://git-annex.branchable.com/ git-annex
 
 git config --global user.email androidbuilder@example.com

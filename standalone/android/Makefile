@@ -6,12 +6,12 @@ ANDROID_CROSS_COMPILER?=$(HOME)/.ghc/android-14/arm-linux-androideabi-4.7/bin
 PATH:=$(ANDROID_CROSS_COMPILER):$(PATH)
 
 # Paths to the Android SDK and NDK.
-export ANDROID_SDK_ROOT?=$(HOME)/adt-bundle-linux-x86/sdk
-export ANDROID_NDK_ROOT?=$(HOME)/android-ndk
+export ANDROID_SDK_ROOT?=$(HOME)/.android/adt-bundle-linux-x86/sdk
+export ANDROID_NDK_ROOT?=$(HOME)/.android/android-ndk
 
 # Where to store the source tree used to build utilities. This
 # directory will be created by `make source`.
-GIT_ANNEX_ANDROID_SOURCETREE?=$(HOME)/android-sourcetree
+GIT_ANNEX_ANDROID_SOURCETREE?=$(HOME)/.android/git-annex-sourcetree
 
 GITTREE=$(GIT_ANNEX_ANDROID_SOURCETREE)/git/installed-tree
 
