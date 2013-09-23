@@ -106,7 +106,8 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/git/build-stamp:
 	touch $@
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/build-stamp: rsync.patch
-	cat rsync.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && git reset --hard origin/master && git am)
+	# This is a known-good version that the patch works with.
+	cat rsync.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && git reset --hard eec26089b1c7bdbb260674480ffe6ece257bca63 && git am)
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/automake/lib/config.sub $(GIT_ANNEX_ANDROID_SOURCETREE)/automake/lib/config.guess $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && ./configure --host=arm-linux-androideabi --disable-locale --disable-iconv-open --disable-iconv --disable-acl-support --disable-xattr-support
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && $(MAKE)
