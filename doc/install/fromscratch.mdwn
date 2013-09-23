@@ -7,6 +7,7 @@ quite a lot.
   * [MissingH](http://github.com/jgoerzen/missingh/wiki)
   * [utf8-string](http://hackage.haskell.org/package/utf8-string)
   * [SHA](http://hackage.haskell.org/package/SHA)
+  * [cryptohash](http://hackage.haskell.org/package/cryptohash)
   * [dataenc](http://hackage.haskell.org/package/dataenc)
   * [monad-control](http://hackage.haskell.org/package/monad-control)
   * [QuickCheck 2](http://hackage.haskell.org/package/QuickCheck)

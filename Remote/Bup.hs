@@ -10,6 +10,7 @@ module Remote.Bup (remote) where
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import System.Process
+import Data.ByteString.Lazy.UTF8 (fromString)
 
 import Common.Annex
 import Types.Remote
@@ -25,8 +26,7 @@ import Remote.Helper.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
-import Data.ByteString.Lazy.UTF8 (fromString)
-import Data.Digest.Pure.SHA
+import Utility.Hash
 import Utility.UserInfo
 import Annex.Content
 import Annex.UUID
@@ -277,7 +277,7 @@ bup2GitRemote r
 bupRef :: Key -> String
 bupRef k
 	| Git.Ref.legal True shown = shown
-	| otherwise = "git-annex-" ++ showDigest (sha256 (fromString shown))
+	| otherwise = "git-annex-" ++ show (sha256 (fromString shown))
   where
 	shown = key2file k
 
