@@ -51,8 +51,7 @@ installs ghc-android.
 And, I hacked on the EvilSplicer (which is sadly still needed) to
 work with the new ghc/yesod/etc.
 
-At this point, I have git-annex successfully building, but still
-need to do some work to get the APK to build.
+At this point, I have git-annex successfully building, including the APK!
 
 ----
 
