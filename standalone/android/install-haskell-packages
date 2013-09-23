@@ -8,6 +8,9 @@
 # It attempts to reuse patches for older versions, but 
 # new versions of packages often break cross-compilation by adding TH, 
 # etc
+#
+# Future work: Convert to using the method used here:
+# https://github.com/kaoskorobase/ghc-ios-cabal-scripts/
 
 set -e
 
