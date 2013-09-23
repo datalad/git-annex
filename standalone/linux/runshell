@@ -20,7 +20,7 @@ if [ ! -e "$base/bin/git" ]; then
 	exit 1
 fi
 if [ -n "$GIT_ANNEX_STANDLONE_ENV" ]; then
-	echo "** runshell loop detected!"> &2
+	echo "** runshell loop detected!" >&2
 fi
 
 # Get absolute path to base, to avoid breakage when things change directories.
