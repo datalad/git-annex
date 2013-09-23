@@ -295,6 +295,7 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 mangleCode :: String -> String
 mangleCode = flip_colon
 	. remove_unnecessary_type_signatures
+	. lambdaparenhack
 	. lambdaparens
 	. declaration_parens
 	. case_layout
@@ -353,6 +354,41 @@ mangleCode = flip_colon
 			, indent ++ "-> "
 			, lambdaparens $ intercalate "\n" (firstline:lambdalines)
 			, ")\n"
+			]
+	
+	{- Hack to add missing parens in a specific case in yesod
+	 - static route code.
+	 -
+	 -     StaticR
+	 -     yesod_dispatch_env_a4iDV
+	 -     (\ p_a4iE2 r_a4iE3
+	 -        -> r_a4iE3 {Network.Wai.pathInfo = p_a4iE2}
+	 -        xrest_a4iDT req_a4iDW)) }
+	 -
+	 - Need to add another paren around the lambda, and close it
+	 - before its parameters. lambdaparens misses this one because
+	 - there is already one paren present.
+	 -
+	 - FIXME: This is a hack. lambdaparens could just always add a
+	 - layer of parens even when a lambda seems to be in parent.
+	 -}
+	lambdaparenhack = parsecAndReplace $ do
+		indent <- many1 $ char ' '
+		staticr <- string "StaticR"
+		newline
+		string indent
+		yesod_dispatch_env <- restofline
+		string indent
+		lambdaprefix <- string "(\\ "
+		l1 <- restofline
+		string indent
+		lambdaarrow <- string "   ->"
+		l2 <- restofline
+		return $ unlines
+			[ indent, staticr
+			, indent, yesod_dispatch_env
+			, indent, "(", lambdaprefix, l1
+			, indent, lambdaarrow, l2, ")"
 			]
 
 	restofline = manyTill (noneOf "\n") newline
