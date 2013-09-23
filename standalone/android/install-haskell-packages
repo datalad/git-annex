@@ -11,6 +11,10 @@
 
 set -e
 
+if [ ! -d haskell-patches ]; then
+	cd standalone/android
+fi
+
 cabalopts="$@"
 
 cabalinstall () {
@@ -24,6 +28,8 @@ patched () {
 	cabal unpack $pkg
 	cd $pkg*
 	git init
+	git config user.name dummy
+	git config user.email dummy@example.com
 	git add .
 	git commit -m "pre-patched state of $pkg"
 	for patch in ../../haskell-patches/${pkg}_*; do
@@ -34,7 +40,7 @@ patched () {
 			$SHELL
 		fi
 	done
-	cabalinstall --force-reinstalls "$@"
+	cabalinstall "$@"
 	rm -rf $pkg*
 	cd ..
 }
@@ -50,6 +56,7 @@ install_pkgs () {
 	cd tmp
 
 	patched network
+	patched unix-time
 	patched lifted-base
 	patched zlib
 	patched process
@@ -70,12 +77,11 @@ install_pkgs () {
 	patched profunctors
 	patched skein
 	patched lens
-	patched DAV
 	patched persistent-template
 	patched file-embed
 	patched wai-app-static
-	patched hamlet
 	patched shakespeare
+	patched hamlet
 	patched shakespeare-css
         patched shakespeare-js
 	patched yesod-routes
@@ -86,6 +92,7 @@ install_pkgs () {
 	patched yesod
 	patched async
 	patched gnuidn
+	patched DAV
 
 	installgitannexdeps -fAndroid -f-Pairing
 
