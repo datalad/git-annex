@@ -1,0 +1,25 @@
+From eff7034f0c9f80fd30c9d8952b3fd0a343adccc8 Mon Sep 17 00:00:00 2001
+From: foo <bar>
+Date: Mon, 23 Sep 2013 00:12:35 +0000
+Subject: [PATCH] hack for Bionic
+
+---
+ cbits/conv.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/cbits/conv.c b/cbits/conv.c
+index 7ff7b87..2e4c870 100644
+--- a/cbits/conv.c
++++ b/cbits/conv.c
+@@ -55,7 +55,7 @@ time_t c_parse_unix_time_gmt(char *fmt, char *src) {
+ #else
+     strptime(src, fmt, &dst);
+ #endif
+-    return timegm(&dst);
++    return NULL; /* timegm(&dst); (not in Bionic) */
+ }
+ 
+ size_t c_format_unix_time(char *fmt, time_t src, char* dst, int siz) {
+-- 
+1.7.10.4
+
