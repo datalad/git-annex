@@ -2,22 +2,21 @@
 # and builds the Android app.
 
 # Add Android cross-compiler to PATH (as installed by ghc-android)
-# (This directory also needs to have a cc that is a symlink to the prefixed
-# gcc cross-compiler executable.)
 ANDROID_CROSS_COMPILER?=$(HOME)/.ghc/android-14/arm-linux-androideabi-4.7/bin
 PATH:=$(ANDROID_CROSS_COMPILER):$(PATH)
 
 # Paths to the Android SDK and NDK.
-export ANDROID_SDK_ROOT?=$(HOME)/tmp/adt-bundle-linux-x86/sdk
-export ANDROID_NDK_ROOT?=$(HOME)/tmp/android-ndk-r8d
+export ANDROID_SDK_ROOT?=$(HOME)/adt-bundle-linux-x86/sdk
+export ANDROID_NDK_ROOT?=$(HOME)/android-ndk
 
 # Where to store the source tree used to build utilities. This
 # directory will be created by `make source`.
-GIT_ANNEX_ANDROID_SOURCETREE?=$(HOME)/tmp/android-sourcetree
+GIT_ANNEX_ANDROID_SOURCETREE?=$(HOME)/android-sourcetree
 
 GITTREE=$(GIT_ANNEX_ANDROID_SOURCETREE)/git/installed-tree
 
 build: start
+	if [ ! -e "$(GIT_ANNEX_ANDROID_SOURCETREE)" ]; then $(MAKE) source; fi
 	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl/build-stamp
 	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/build-stamp
 	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/build-stamp

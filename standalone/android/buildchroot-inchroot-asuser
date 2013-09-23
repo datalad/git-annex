@@ -12,3 +12,19 @@ git clone https://github.com/joeyh/ghc-android
 cd ghc-android
 git checkout stable-ghc-snapshot
 ./build
+
+# Set up android SDK where the git-annex android Makefile
+# expects to find it.
+cd ..
+ln -s ghc-android/android-ndk-* android-ndk
+wget http://dl.google.com/android/adt/adt-bundle-linux-x86-20130917.zip
+unzip adt*.zip
+rm adt*.zip
+mv adt-bundle-linux-x86-* adt-bundle-linux-x86
+rm -rf adt-bundle-linux-x86/eclipse
+
+# The git-annex android Makefile needs this cc symlink.
+ln -s arm-linux-androideabi-gcc \
+	$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/cc
+
+git clone git://git-annex.branchable.com/ git-annex

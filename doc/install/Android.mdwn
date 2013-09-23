@@ -30,10 +30,3 @@ git-annex can be built from source for Android.
    this happens.
 3. Finally, once the chroot is set up, you can build an Android binary
    with `make android`, and `make androidapp` will build the complete APK.
-
-* You will need to have the Android SDK and NDK installed; see
-  `standalone/android/Makefile` to configure the paths to them. You'll also
-  need ant, and the JDK.
-* You also need to install git and all the utilities listed on [[fromscratch]],
-  on the system doing the building.
-* Then to build the full Android app bundle, use `make androidapp`
