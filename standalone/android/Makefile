@@ -121,7 +121,8 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg/build-stamp:
 	touch $@
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/term/build-stamp: term.patch icons
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && git reset --hard
+	# This is a known-good version that the patch works with.
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && git reset --hard 3d34b3c42295c215b62e70f3ee696dd664ba08ce
 	cat term.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && patch -p1)
 	(cd icons && tar c .) | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term/res && tar x)
 	# This renaming has a purpose. It makes the path to the app's

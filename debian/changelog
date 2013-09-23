@@ -3,6 +3,8 @@ git-annex (4.20130921) UNRELEASED; urgency=low
   * Use cryptohash rather than SHA for hashing when no external hash program
     is available. This is a significant speedup for SHA256 on OSX, for
     example.
+  * Android build redone from scratch, many dependencies updated,
+    and entire build can now be done using provided scripts.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 
