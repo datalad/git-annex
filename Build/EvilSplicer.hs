@@ -385,10 +385,10 @@ mangleCode = flip_colon
 		lambdaarrow <- string "   ->"
 		l2 <- restofline
 		return $ unlines
-			[ indent, staticr
-			, indent, yesod_dispatch_env
-			, indent, "(", lambdaprefix, l1
-			, indent, lambdaarrow, l2, ")"
+			[ indent ++ staticr
+			, indent ++ yesod_dispatch_env
+			, indent ++ "(" ++ lambdaprefix ++ l1
+			, indent ++ lambdaarrow ++ l2 ++ ")"
 			]
 
 	restofline = manyTill (noneOf "\n") newline
