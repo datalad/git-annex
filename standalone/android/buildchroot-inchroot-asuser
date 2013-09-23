@@ -28,3 +28,6 @@ ln -s arm-linux-androideabi-gcc \
 	$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/cc
 
 git clone git://git-annex.branchable.com/ git-annex
+
+git config --global user.email androidbuilder@example.com
+git config --global user.name androidbuilder
