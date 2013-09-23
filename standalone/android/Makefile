@@ -2,22 +2,21 @@
 # and builds the Android app.
 
 # Add Android cross-compiler to PATH (as installed by ghc-android)
-# (This directory also needs to have a cc that is a symlink to the prefixed
-# gcc cross-compiler executable.)
 ANDROID_CROSS_COMPILER?=$(HOME)/.ghc/android-14/arm-linux-androideabi-4.7/bin
 PATH:=$(ANDROID_CROSS_COMPILER):$(PATH)
 
 # Paths to the Android SDK and NDK.
-export ANDROID_SDK_ROOT?=$(HOME)/tmp/adt-bundle-linux-x86/sdk
-export ANDROID_NDK_ROOT?=$(HOME)/tmp/android-ndk-r8d
+export ANDROID_SDK_ROOT?=$(HOME)/adt-bundle-linux-x86/sdk
+export ANDROID_NDK_ROOT?=$(HOME)/android-ndk
 
 # Where to store the source tree used to build utilities. This
 # directory will be created by `make source`.
-GIT_ANNEX_ANDROID_SOURCETREE?=$(HOME)/tmp/android-sourcetree
+GIT_ANNEX_ANDROID_SOURCETREE?=$(HOME)/android-sourcetree
 
 GITTREE=$(GIT_ANNEX_ANDROID_SOURCETREE)/git/installed-tree
 
 build: start
+	if [ ! -e "$(GIT_ANNEX_ANDROID_SOURCETREE)" ]; then $(MAKE) source; fi
 	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl/build-stamp
 	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/build-stamp
 	$(MAKE) $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/build-stamp
@@ -85,7 +84,9 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl/build-stamp:
 	touch $@
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/build-stamp: openssh.patch openssh.config.h
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && git reset --hard
+	# This is a known-good version that the patch works with.
+	# TODO: Upgrade
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && git reset --hard 0a8617ed5af2f0248d0e9648e26b224e16ada742
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && ./configure --host=arm-linux-androideabi --with-ssl-dir=../openssl --without-openssl-header-check
 	cat openssh.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh && patch -p1)
 	cp openssh.config.h $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/config.h
@@ -105,7 +106,8 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/git/build-stamp:
 	touch $@
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/build-stamp: rsync.patch
-	cat rsync.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && git reset --hard origin/master && git am)
+	# This is a known-good version that the patch works with.
+	cat rsync.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && git reset --hard eec26089b1c7bdbb260674480ffe6ece257bca63 && git am)
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/automake/lib/config.sub $(GIT_ANNEX_ANDROID_SOURCETREE)/automake/lib/config.guess $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync/
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && ./configure --host=arm-linux-androideabi --disable-locale --disable-iconv-open --disable-iconv --disable-acl-support --disable-xattr-support
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync && $(MAKE)
@@ -119,7 +121,8 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg/build-stamp:
 	touch $@
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/term/build-stamp: term.patch icons
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && git reset --hard
+	# This is a known-good version that the patch works with.
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && git reset --hard 3d34b3c42295c215b62e70f3ee696dd664ba08ce
 	cat term.patch | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && patch -p1)
 	(cd icons && tar c .) | (cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term/res && tar x)
 	# This renaming has a purpose. It makes the path to the app's
@@ -129,21 +132,21 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/term/build-stamp: term.patch icons
 	# app, if it's also installed.
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && find -name .git -prune -o -type f -print0 | xargs -0 perl -pi -e 's/jackpal/ga/g'
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && perl -pi -e 's/Terminal Emulator/Git Annex/g' res/*/strings.xml
-	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && tools/update.sh >/dev/null 2>&1
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && echo y | tools/update.sh
 	touch $@
 
 source: $(GIT_ANNEX_ANDROID_SOURCETREE)
 
 $(GIT_ANNEX_ANDROID_SOURCETREE):
 	mkdir -p $(GIT_ANNEX_ANDROID_SOURCETREE)
-	git clone --bare git://git.savannah.gnu.org/automake.git $(GIT_ANNEX_ANDROID_SOURCETREE)/automake
-	git clone --bare git://git.debian.org/git/d-i/busybox $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox
-	git clone --bare git://git.kernel.org/pub/scm/git/git.git $(GIT_ANNEX_ANDROID_SOURCETREE)/git
-	git clone --bare git://git.samba.org/rsync.git $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync
-	git clone --bare git://git.gnupg.org/gnupg.git $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg
-	git clone --bare git://git.openssl.org/openssl $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl
-	git clone --bare git://github.com/CyanogenMod/android_external_openssh.git $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh
-	git clone --bare git://github.com/jackpal/Android-Terminal-Emulator.git $(GIT_ANNEX_ANDROID_SOURCETREE)/term
+	git clone git://git.savannah.gnu.org/automake.git $(GIT_ANNEX_ANDROID_SOURCETREE)/automake
+	git clone git://git.debian.org/git/d-i/busybox $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox
+	git clone git://git.kernel.org/pub/scm/git/git.git $(GIT_ANNEX_ANDROID_SOURCETREE)/git
+	git clone git://git.samba.org/rsync.git $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync
+	git clone git://git.gnupg.org/gnupg.git $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg
+	git clone git://git.openssl.org/openssl $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl
+	git clone git://github.com/CyanogenMod/android_external_openssh.git $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh
+	git clone git://github.com/jackpal/Android-Terminal-Emulator.git $(GIT_ANNEX_ANDROID_SOURCETREE)/term
 
 clean:
 	rm -rf $(GITTREE)

@@ -6,6 +6,7 @@
  - ** DO NOT COMMIT ** 
  -}
 import qualified Data.Monoid
+import qualified Data.Set
 import qualified Data.Map
 import qualified Data.Map as Data.Map.Base
 import qualified Data.Foldable
@@ -16,12 +17,16 @@ import qualified Text.Hamlet
 import qualified Text.Julius
 import qualified Text.Css
 import qualified "blaze-markup" Text.Blaze.Internal
-import qualified Yesod.Widget
+import qualified Yesod.Core.Widget
 import qualified Yesod.Routes.TH.Types
 import qualified Yesod.Routes.Dispatch
 import qualified WaiAppStatic.Storage.Embedded
+import qualified WaiAppStatic.Storage.Embedded.Runtime
 import qualified Data.FileEmbed
 import qualified Data.ByteString.Internal
+import qualified Data.Text.Encoding
+import qualified Network.Wai
+import qualified Yesod.Core.Types
 {- End EvilSplicer headers. -}
 
 

@@ -1,0 +1,36 @@
+From 010db89634eb0f64e7961581e65da3acbb2b9f3d Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sat, 21 Sep 2013 22:05:41 +0000
+Subject: [PATCH] fix build with new base
+
+---
+ src/Control/Concurrent/MSampleVar.hs |    6 +-----
+ 1 file changed, 1 insertion(+), 5 deletions(-)
+
+diff --git a/src/Control/Concurrent/MSampleVar.hs b/src/Control/Concurrent/MSampleVar.hs
+index d029c64..16ad6c5 100644
+--- a/src/Control/Concurrent/MSampleVar.hs
++++ b/src/Control/Concurrent/MSampleVar.hs
+@@ -30,7 +30,7 @@ module Control.Concurrent.MSampleVar
+ import Control.Monad(void,join)
+ import Control.Concurrent.MVar(MVar,newMVar,newEmptyMVar,tryTakeMVar,takeMVar,putMVar,withMVar,isEmptyMVar)
+ import Control.Exception(mask_)
+-import Data.Typeable(Typeable1(typeOf1),mkTyCon,mkTyConApp)
++import Data.Typeable(mkTyConApp)
+ 
+ -- |
+ -- Sample variables are slightly different from a normal 'MVar':
+@@ -62,10 +62,6 @@ data MSampleVar a = MSampleVar { readQueue :: MVar ()
+                                , lockedStore :: MVar (MVar a) }
+   deriving (Eq)
+ 
+-instance Typeable1 MSampleVar where
+-  typeOf1 _ = mkTyConApp tc []
+-    where tc = mkTyCon "MSampleVar"
+-
+ 
+ -- | 'newEmptySV' allocates a new MSampleVar in an empty state.  No futher
+ -- allocation is done when using the 'MSampleVar'.
+-- 
+1.7.10.4
+
