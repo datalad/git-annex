@@ -9,6 +9,7 @@ Build-Depends:
 	libghc-hslogger-dev,
 	libghc-pcre-light-dev,
 	libghc-sha-dev,
+	libghc-cryptohash-dev,
 	libghc-regex-tdfa-dev [!mips !mipsel !s390],
 	libghc-dataenc-dev,
 	libghc-utf8-string-dev,
