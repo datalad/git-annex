@@ -58,6 +58,7 @@ install_pkgs () {
 	cd tmp
 
 	patched network
+	patched unix-time
 	patched lifted-base
 	patched zlib
 	patched process
