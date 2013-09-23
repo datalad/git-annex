@@ -13,6 +13,9 @@ cd ghc-android
 git checkout stable-ghc-snapshot
 ./build
 
+# This saves 2 gb, and the same sources are in build-*/ghc
+rm -rf stage0
+
 # Set up android SDK where the git-annex android Makefile
 # expects to find it.
 cd ..
