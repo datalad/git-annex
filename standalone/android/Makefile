@@ -135,14 +135,14 @@ source: $(GIT_ANNEX_ANDROID_SOURCETREE)
 
 $(GIT_ANNEX_ANDROID_SOURCETREE):
 	mkdir -p $(GIT_ANNEX_ANDROID_SOURCETREE)
-	git clone --bare git://git.savannah.gnu.org/automake.git $(GIT_ANNEX_ANDROID_SOURCETREE)/automake
-	git clone --bare git://git.debian.org/git/d-i/busybox $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox
-	git clone --bare git://git.kernel.org/pub/scm/git/git.git $(GIT_ANNEX_ANDROID_SOURCETREE)/git
-	git clone --bare git://git.samba.org/rsync.git $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync
-	git clone --bare git://git.gnupg.org/gnupg.git $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg
-	git clone --bare git://git.openssl.org/openssl $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl
-	git clone --bare git://github.com/CyanogenMod/android_external_openssh.git $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh
-	git clone --bare git://github.com/jackpal/Android-Terminal-Emulator.git $(GIT_ANNEX_ANDROID_SOURCETREE)/term
+	git clone git://git.savannah.gnu.org/automake.git $(GIT_ANNEX_ANDROID_SOURCETREE)/automake
+	git clone git://git.debian.org/git/d-i/busybox $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox
+	git clone git://git.kernel.org/pub/scm/git/git.git $(GIT_ANNEX_ANDROID_SOURCETREE)/git
+	git clone git://git.samba.org/rsync.git $(GIT_ANNEX_ANDROID_SOURCETREE)/rsync
+	git clone git://git.gnupg.org/gnupg.git $(GIT_ANNEX_ANDROID_SOURCETREE)/gnupg
+	git clone git://git.openssl.org/openssl $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl
+	git clone git://github.com/CyanogenMod/android_external_openssh.git $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh
+	git clone git://github.com/jackpal/Android-Terminal-Emulator.git $(GIT_ANNEX_ANDROID_SOURCETREE)/term
 
 clean:
 	rm -rf $(GITTREE)
