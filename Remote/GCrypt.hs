@@ -5,7 +5,12 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Remote.GCrypt (remote, gen, getGCryptId) where
+module Remote.GCrypt (
+	remote,
+	gen,
+	getGCryptUUID,
+	coreGCryptId
+) where
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
@@ -27,6 +32,8 @@ import Config.Cost
 import Remote.Helper.Git
 import Remote.Helper.Encryptable
 import Remote.Helper.Special
+import Remote.Helper.Messages
+import qualified Remote.Helper.Ssh as Ssh
 import Utility.Metered
 import Crypto
 import Annex.UUID
@@ -34,7 +41,9 @@ import Annex.Ssh
 import qualified Remote.Rsync
 import Utility.Rsync
 import Logs.Remote
+import Logs.Transfer
 import Utility.Gpg
+import Annex.Content
 
 remote :: RemoteType
 remote = RemoteType {
@@ -78,22 +87,29 @@ gen gcryptr u c gc = do
 				warning $ "not using unknown gcrypt repository pointed to by remote " ++ Git.repoDescribe r
 				return Nothing
 
+getGCryptUUID :: Git.Repo -> IO (Maybe UUID)
+getGCryptUUID r = (genUUIDInNameSpace gCryptNameSpace <$>) . fst
+	<$> getGCryptId r
+
+coreGCryptId :: String
+coreGCryptId = "core.gcrypt-id"
+
 {- gcrypt repos set up by git-annex as special remotes have a
  - core.gcrypt-id setting in their config, which can be mapped back to
  - the remote's UUID. This only works for local repos.
  - (Also returns a version of input repo with its config read.) -}
 getGCryptId :: Git.Repo -> IO (Maybe Git.GCrypt.GCryptId, Git.Repo)
 getGCryptId r
-	| Git.repoIsLocalUnknown r = do
+	| Git.repoIsLocal r = do
 		r' <- catchDefaultIO r $ Git.Config.read r
-		return (Git.Config.getMaybe "core.gcrypt-id" r', r')
+		return (Git.Config.getMaybe coreGCryptId r', r')
 	| otherwise = return (Nothing, r)
 
 gen' :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen' r u c gc = do
 	cst <- remoteCost gc $
 		if repoCheap r then nearlyCheapRemoteCost else expensiveRemoteCost
-	(rsynctransport, rsyncurl) <- rsyncTransport r
+	(rsynctransport, rsyncurl) <- rsyncTransportToObjects r
 	let rsyncopts = Remote.Rsync.genRsyncOpts c gc rsynctransport rsyncurl
 	let this = Remote 
 		{ uuid = u
@@ -119,7 +135,12 @@ gen' r u c gc = do
 		(retrieve this rsyncopts)
 		this
 
-rsyncTransport :: Git.Repo -> Annex ([CommandParam], String)
+rsyncTransportToObjects :: Git.Repo -> Annex ([CommandParam], String)
+rsyncTransportToObjects r = do
+	(rsynctransport, rsyncurl, _) <- rsyncTransport r
+	return (rsynctransport, rsyncurl ++ "/annex/objects")
+
+rsyncTransport :: Git.Repo -> Annex ([CommandParam], String, AccessMethod)
 rsyncTransport r
 	| "ssh://" `isPrefixOf` loc = sshtransport $ break (== '/') $ drop (length "ssh://") loc
 	| "//:" `isInfixOf` loc = othertransport
@@ -129,8 +150,8 @@ rsyncTransport r
   	loc = Git.repoLocation r
 	sshtransport (host, path) = do
 		opts <- sshCachingOptions (host, Nothing) []
-		return (rsyncShell $ Param "ssh" : opts, host ++ ":" ++ path)
-	othertransport = return ([], loc)
+		return (rsyncShell $ Param "ssh" : opts, host ++ ":" ++ path, AccessShell)
+	othertransport = return ([], loc, AccessDirect)
 
 noCrypto :: Annex a
 noCrypto = error "cannot use gcrypt remote without encryption enabled"
@@ -174,16 +195,63 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 				let u = genUUIDInNameSpace gCryptNameSpace gcryptid
 				if Just u == mu || mu == Nothing
 					then do
-						-- Store gcrypt-id in local
-						-- gcrypt repository, for later
-						-- double-check.
-						r <- inRepo $ Git.Construct.fromRemoteLocation gitrepo
-						when (Git.repoIsLocalUnknown r) $ do
-							r' <- liftIO $ Git.Config.read r
-							liftIO $ Git.Command.run [Param "config", Param "core.gcrypt-id", Param gcryptid] r'
-						gitConfigSpecialRemote u c' "gcrypt" "true"
+						method <- setupRepo gcryptid =<< inRepo (Git.Construct.fromRemoteLocation gitrepo)
+						gitConfigSpecialRemote u c' "gcrypt" (fromAccessMethod method)
 						return (c', u)
 					else error "uuid mismatch"
+
+{- Sets up the gcrypt repository. The repository is either a local
+ - repo, or it is accessed via rsync directly, or it is accessed over ssh
+ - and git-annex-shell is available to manage it.
+ -
+ - The gcrypt-id is stored in the gcrypt repository for later
+ - double-checking and identification. This is always done using rsync.
+ -}
+setupRepo :: Git.GCrypt.GCryptId -> Git.Repo -> Annex AccessMethod
+setupRepo gcryptid r
+	| Git.repoIsUrl r = rsyncsetup
+	| Git.repoIsLocalUnknown r = localsetup =<< liftIO (Git.Config.read r)
+	| otherwise = localsetup r
+  where
+	localsetup r' = do
+		liftIO $ Git.Command.run [Param "config", Param coreGCryptId, Param gcryptid] r'
+		return AccessDirect
+
+	{- Download any git config file from the remote,
+	 - add the gcryptid to it, and send it back.
+	 -
+	 - At the same time, create the objectDir on the remote,
+	 - which is needed for direct rsync to work.
+	 -}
+  	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
+		liftIO $ createDirectoryIfMissing True $ tmp </> objectDir
+		(rsynctransport, rsyncurl, accessmethod) <- rsyncTransport r
+		let tmpconfig = tmp </> "config"
+		void $ liftIO $ rsync $ rsynctransport ++
+			[ Param $ rsyncurl ++ "/config"
+			, Param tmpconfig
+			]
+		liftIO $ appendFile tmpconfig $ unlines
+			[ ""
+			, "[core]"
+			, "\tgcrypt-id = " ++ gcryptid
+			]
+		ok <- liftIO $ rsync $ rsynctransport ++
+			[ Params "--recursive"
+			, Param $ tmp ++ "/"
+			, Param $ rsyncurl
+			]
+		unless ok $
+			error "Failed to connect to remote to set it up."
+		return accessmethod
+
+shellOrRsync :: Remote -> Annex a -> Annex a -> Annex a
+shellOrRsync r ashell arsync = case method of
+	AccessShell -> ashell
+	_ -> arsync
+  where
+  	method = toAccessMethod $ fromMaybe "" $
+		remoteAnnexGCrypt $ gitconfig r
 
 {- Configure gcrypt to use the same list of keyids that
  - were passed to initremote as its participants.
@@ -210,26 +278,32 @@ setGcryptEncryption c remotename = do
 store :: Remote -> Remote.Rsync.RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 store r rsyncopts (cipher, enck) k p
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $
-		sendwith $ \meterupdate h -> do
+		metered (Just p) k $ \meterupdate -> spoolencrypted $ \h -> do
+			let dest = gCryptLocation r enck
 			createDirectoryIfMissing True $ parentDir dest
 			readBytes (meteredWriteFile meterupdate dest) h
 			return True
-	| Git.repoIsSsh (repo r) = Remote.Rsync.storeEncrypted rsyncopts gpgopts (cipher, enck) k p
+	| Git.repoIsSsh (repo r) = shellOrRsync r storeshell storersync
 	| otherwise = unsupportedUrl
   where
   	gpgopts = getGpgEncParams r
-	dest = gCryptLocation r enck
-  	sendwith a = metered (Just p) k $ \meterupdate ->
-		Annex.Content.sendAnnex k noop $ \src ->
-			liftIO $ catchBoolIO $
-				encrypt gpgopts cipher (feedFile src) (a meterupdate)
+	storersync = Remote.Rsync.storeEncrypted rsyncopts gpgopts (cipher, enck) k p
+	storeshell = withTmp enck $ \tmp ->
+		ifM (spoolencrypted $ readBytes $ \b -> catchBoolIO $ L.writeFile tmp b >> return True)
+			( Ssh.rsyncHelper (Just p)
+				=<< Ssh.rsyncParamsRemote r Upload enck tmp Nothing
+			, return False
+			)
+	spoolencrypted a = Annex.Content.sendAnnex k noop $ \src ->
+		liftIO $ catchBoolIO $
+			encrypt gpgopts cipher (feedFile src) a
 
 retrieve :: Remote -> Remote.Rsync.RsyncOpts -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
 retrieve r rsyncopts (cipher, enck) k d p
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
 		retrievewith $ L.readFile src
 		return True
-	| Git.repoIsSsh (repo r) = Remote.Rsync.retrieveEncrypted rsyncopts (cipher, enck) k d p
+	| Git.repoIsSsh (repo r) = shellOrRsync r retrieveshell retrieversync
 	| otherwise = unsupportedUrl
   where
 	src = gCryptLocation r enck
@@ -237,30 +311,51 @@ retrieve r rsyncopts (cipher, enck) k d p
 		a >>= \b -> 
 			decrypt cipher (feedBytes b)
 				(readBytes $ meteredWriteFile meterupdate d)
+	retrieversync = Remote.Rsync.retrieveEncrypted rsyncopts (cipher, enck) k d p
+	retrieveshell = withTmp enck $ \tmp ->
+		ifM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote r Download enck tmp Nothing)
+			( liftIO $ catchBoolIO $ do
+				decrypt cipher (feedFile tmp) $
+					readBytes $ L.writeFile d
+				return True
+			, return False
+			)
 
 remove :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex Bool
 remove r rsyncopts k
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
-		liftIO $ removeDirectoryRecursive (parentDir dest)
+		liftIO $ removeDirectoryRecursive $ parentDir $ gCryptLocation r k
 		return True
-	| Git.repoIsSsh (repo r) = Remote.Rsync.remove rsyncopts k
+	| Git.repoIsSsh (repo r) = shellOrRsync r removeshell removersync
 	| otherwise = unsupportedUrl
   where
-	dest = gCryptLocation r k
+	removersync = Remote.Rsync.remove rsyncopts k
+	removeshell = Ssh.dropKey (repo r) k
 
 checkPresent :: Remote -> Remote.Rsync.RsyncOpts -> Key -> Annex (Either String Bool)
 checkPresent r rsyncopts k
 	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) unknown $
-			liftIO $ catchDefaultIO unknown $
+		guardUsable (repo r) (cantCheck $ repo r) $
+			liftIO $ catchDefaultIO (cantCheck $ repo r) $
 				Right <$> doesFileExist (gCryptLocation r k)
-	| Git.repoIsSsh (repo r) = Remote.Rsync.checkPresent (repo r) rsyncopts k
+	| Git.repoIsSsh (repo r) = shellOrRsync r checkshell checkrsync
 	| otherwise = unsupportedUrl
   where
-	unknown = Left $ "unable to check " ++ Git.repoDescribe (repo r) ++ show (repo r)
+  	checkrsync = Remote.Rsync.checkPresent (repo r) rsyncopts k
+	checkshell = Ssh.inAnnex (repo r) k
 
-{- Annexed objects are stored directly under the top of the gcrypt repo
- - (not in annex/objects), and are hashed using lower-case directories for max
+{- Annexed objects are hashed using lower-case directories for max
  - portability. -}
 gCryptLocation :: Remote -> Key -> FilePath
-gCryptLocation r key = Git.repoLocation (repo r) </> keyPath key hashDirLower
+gCryptLocation r key = Git.repoLocation (repo r) </> objectDir </> keyPath key hashDirLower
+
+data AccessMethod = AccessDirect | AccessShell
+
+fromAccessMethod :: AccessMethod -> String
+fromAccessMethod AccessShell = "shell"
+fromAccessMethod AccessDirect = "true"
+
+toAccessMethod :: String -> AccessMethod
+toAccessMethod "shell" = AccessShell
+toAccessMethod _ = AccessDirect
+

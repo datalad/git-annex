@@ -1,5 +1,9 @@
 git-annex (4.20130921) UNRELEASED; urgency=low
 
+  * Note that the layout of gcrypt repositories has changed, and
+    if you created one you must manually upgrade it.
+    See http://git-annex.branchable.com/upgrades/gcrypt/
+  * git-annex-shell: Added support for operating inside gcrypt repositories.
   * Use cryptohash rather than SHA for hashing when no external hash program
     is available. This is a significant speedup for SHA256 on OSX, for
     example.

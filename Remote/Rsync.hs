@@ -236,7 +236,7 @@ sendParams = ifM crippledFileSystem
 
 {- Runs an action in an empty scratch directory that can be used to build
  - up trees for rsync. -}
-withRsyncScratchDir :: (FilePath -> Annex Bool) -> Annex Bool
+withRsyncScratchDir :: (FilePath -> Annex a) -> Annex a
 withRsyncScratchDir a = do
 #ifndef mingw32_HOST_OS
 	v <- liftIO getProcessID

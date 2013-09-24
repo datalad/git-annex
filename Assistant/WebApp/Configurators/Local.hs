@@ -495,6 +495,4 @@ probeUUID dir = catchDefaultIO Nothing $ inDir dir $ do
  - Only works if the gcrypt repo was created as a git-annex remote. -}
 probeGCryptRemoteUUID :: FilePath -> IO (Maybe UUID)
 probeGCryptRemoteUUID dir = catchDefaultIO Nothing $ do
-	r <- Git.Construct.fromAbsPath dir
-	(genUUIDInNameSpace gCryptNameSpace <$>) . fst
-		<$> GCrypt.getGCryptId r
+	GCrypt.getGCryptUUID =<< Git.Construct.fromAbsPath dir

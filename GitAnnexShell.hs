@@ -19,6 +19,9 @@ import Annex (setField)
 import qualified Option
 import Fields
 import Utility.UserInfo
+import Remote.GCrypt (getGCryptUUID)
+import qualified Annex
+import Init
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
@@ -44,23 +47,28 @@ cmds_notreadonly = concat
 	]
 
 cmds :: [Command]
-cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
+cmds = map gitAnnexShellCheck $ map adddirparam $ cmds_readonly ++ cmds_notreadonly
   where
 	adddirparam c = c { cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c }
 
 options :: [OptDescr (Annex ())]
 options = Option.common ++
-	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "local repository uuid"
+	[ Option [] ["uuid"] (ReqArg checkUUID paramUUID) "local repository uuid"
 	]
   where
-	checkuuid expected = getUUID >>= check
+	checkUUID expected = getUUID >>= check
 	  where
 		check u | u == toUUID expected = noop
-		check NoUUID = unexpected "uninitialized repository"
-		check u = unexpected $ "UUID " ++ fromUUID u
-		unexpected s = error $
-			"expected repository UUID " ++
-			expected ++ " but found " ++ s
+		check NoUUID = checkGCryptUUID expected
+		check u = unexpectedUUID expected u
+	checkGCryptUUID expected = inRepo getGCryptUUID >>= check
+	  where
+	  	check (Just u) | u == toUUID expected = noop
+		check Nothing = unexpected expected "uninitialized repository"
+		check (Just u) = unexpectedUUID expected u
+	unexpectedUUID expected u = unexpected expected $ "UUID " ++ fromUUID u
+	unexpected expected s = error $
+		"expected repository UUID " ++ expected ++ " but found " ++ s
 
 header :: String
 header = "git-annex-shell [-c] command [parameters ...] [option ...]"
@@ -180,3 +188,11 @@ checkEnv var = do
 		Nothing -> noop
 		Just "" -> noop
 		Just _ -> error $ "Action blocked by " ++ var
+
+{- Modifies a Command to check that it is run in either a git-annex
+ - repository, or a repository with a gcrypt-id set. -}
+gitAnnexShellCheck :: Command -> Command
+gitAnnexShellCheck = addCheck okforshell . dontCheck repoExists
+  where
+	okforshell = unlessM (isInitialized <||> isJust . gcryptId <$> Annex.getGitConfig) $
+		error "Not a git-annex or gcrypt repository."

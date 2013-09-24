@@ -1230,6 +1230,15 @@ Here are all the supported configuration settings.
   Used to identify the XMPP address of a Jabber buddy.
   Normally this is set up by the git-annex assistant when pairing over XMPP.
 
+* `remote.<name>.gcrypt`
+
+  Used to identify gcrypt special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+  It is set to "true" if this is a gcrypt remote.
+  If the gcrypt remote is accessible over ssh and has git-annex-shell
+  available to manage it, it's set to "shell"
+
 # CONFIGURATION VIA .gitattributes
 
 The key-value backend used when adding a new file to the annex can be
