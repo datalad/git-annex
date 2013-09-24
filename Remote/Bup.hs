@@ -22,9 +22,10 @@ import qualified Git.Construct
 import qualified Git.Ref
 import Config
 import Config.Cost
-import Remote.Helper.Ssh
+import qualified Remote.Helper.Ssh as Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
+import Remote.Helper.Messages
 import Crypto
 import Utility.Hash
 import Utility.UserInfo
@@ -185,7 +186,7 @@ rollback k bupr = go =<< liftIO (bup2GitRemote bupr)
 checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either String Bool)
 checkPresent r bupr k
 	| Git.repoIsUrl bupr = do
-		showAction $ "checking " ++ Git.repoDescribe r
+		showChecking r
 		ok <- onBupRemote bupr boolSystem "git" params
 		return $ Right ok
 	| otherwise = liftIO $ catchMsgIO $
@@ -220,7 +221,7 @@ storeBupUUID u buprepo = do
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
 onBupRemote r a command params = do
-	sshparams <- sshToRepo r [Param $
+	sshparams <- Ssh.toRepo r [Param $
 			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
 	liftIO $ a "ssh" sshparams
   where
