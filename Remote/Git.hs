@@ -165,18 +165,16 @@ tryGitConfigRead r
 	safely a = either (const $ return r) return
 			=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
-	pipedconfig cmd params = try run :: IO (Either SomeException Git.Repo)
-	  where
-	  	run = withHandle StdoutHandle createProcessSuccess p $ \h -> do
- 			fileEncoding h
-			val <- hGetContentsStrict h
-			r' <- Git.Config.store val r
-			when (getUncachedUUID r' == NoUUID && not (null val)) $ do
-				warningIO $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
-				warningIO $ "Instead, got: " ++ show val
-				warningIO $ "This is unexpected; please check the network transport!"
-			return r'
-		p = proc cmd $ toCommand params
+	pipedconfig cmd params = do
+		v <- Git.Config.fromPipe r cmd params
+		case v of
+			Right (r', val) -> do
+				when (getUncachedUUID r' == NoUUID && not (null val)) $ do
+					warningIO $ "Failed to get annex.uuid configuration of repository " ++ Git.repoDescribe r
+					warningIO $ "Instead, got: " ++ show val
+					warningIO $ "This is unexpected; please check the network transport!"
+				return $ Right r'
+			Left l -> return $ Left l
 
 	geturlconfig headers = do
 		v <- liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do

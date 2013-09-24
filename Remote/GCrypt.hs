@@ -209,7 +209,14 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
  -}
 setupRepo :: Git.GCrypt.GCryptId -> Git.Repo -> Annex AccessMethod
 setupRepo gcryptid r
-	| Git.repoIsUrl r = rsyncsetup
+	| Git.repoIsUrl r = do
+		accessmethod <- rsyncsetup
+		case accessmethod of
+			AccessDirect -> return AccessDirect
+			AccessShell -> ifM usablegitannexshell
+				( return AccessShell
+				, return AccessDirect
+				)
 	| Git.repoIsLocalUnknown r = localsetup =<< liftIO (Git.Config.read r)
 	| otherwise = localsetup r
   where
@@ -244,6 +251,11 @@ setupRepo gcryptid r
 		unless ok $
 			error "Failed to connect to remote to set it up."
 		return accessmethod
+
+	{-  Check if git-annex shell is installed, and is a new enough
+	 -  version to work in a gcrypt repo. -}
+	usablegitannexshell = either (const False) (const True)
+		<$> Ssh.onRemote r (Git.Config.fromPipe r, Left undefined) "configlist" [] []
 
 shellOrRsync :: Remote -> Annex a -> Annex a -> Annex a
 shellOrRsync r ashell arsync = case method of
