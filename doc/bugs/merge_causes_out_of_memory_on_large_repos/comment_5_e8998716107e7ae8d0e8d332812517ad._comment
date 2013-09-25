@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.220"
+ subject="comment 5"
+ date="2013-09-25T18:36:39Z"
+ content="""
+That doesn't look very big, I merge one 3x that large on a 128 mb machine.
+
+I think you will need to either email me privately so I can get a copy of your repository to investigate with ... or you can try to investigate on your own. 
+
+I think the first things I would try to debug this are to look over `git annex merge --debug` and see if I see anything unusual, and then I would probably `git checkout git-annex` in the repository, and wc -l on all the files and see if any file has a lot of lines, or is otherwise very large.
+
+If that found nothing, my next step would be to rebuild git-annex from source with memory profiling enabled, as explained in this book, and try to get a memory profiling graph that explained what was using up the memory. <http://book.realworldhaskell.org/read/profiling-and-optimization.html>
+"""]]
