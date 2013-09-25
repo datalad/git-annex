@@ -22,4 +22,4 @@ into an `annex/objects` directory.
 Probably those are the only 3 letter things inside your git repository,
 so this will probably work:
 
-	mkdir annex ; mkdir annex/objects ; mv ??? annex
+	mkdir annex ; mkdir annex/objects ; mv ??? annex/objects
