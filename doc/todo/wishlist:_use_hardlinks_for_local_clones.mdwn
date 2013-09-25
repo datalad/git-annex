@@ -5,3 +5,5 @@ as far as I know, if you `git clone` locally a git-annex enabled repository, it 
 this would be especially useful for [ikiwiki](http://ikiwiki.info/forum/ikiwiki_and_big_files).
 
 This is a [[wishlist]], but I would also welcome implementation pointers to do this myself, thanks! --[[anarcat]]
+
+> [[dup|done]]
