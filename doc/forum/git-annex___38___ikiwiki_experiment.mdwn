@@ -8,7 +8,7 @@ The [website in question](http://stockholm.kalleswork.net) just went online and 
 
 ### Setting things up
 
-To start with I set up the wiki on the server and git clone to into `$wrkdir` on my laptop. I then initialize a git-annex repo in the `$srcdir` on the server. Leaving the `$gitdir` untouched. The `$scrdir` git-annex repo has to be in `direct` mode. Before doing any syncing I edit the `.git/config` file to add `annex-ignore = true` and `annex-sync = false` in `.git/config` for the origin repo (`$gitdir`) this is to prevent polluting `$gitdir` with git-annex data`. The same process is repeated in the `$wrkdir` on the laptop.
+To start with I set up the wiki on the server and git clone to into `$wrkdir` on my laptop. I then initialize a git-annex repo in the `$srcdir` on the server. Leaving the `$gitdir` untouched. The `$scrdir` git-annex repo has to be in `direct` mode. Before doing any syncing I edit the `.git/config` file to add `annex-ignore = true` and `annex-sync = false` in `.git/config` for the origin repo (`$gitdir`) this is to prevent polluting `$gitdir` with git-annex data. The same process is repeated in the `$wrkdir` on the laptop.
 
 ### Pushing and syncing
 
