@@ -81,8 +81,7 @@ transferScannerThread urlrenderer = namedThread "TransferScanner" $ do
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: Remote -> Assistant ()
 failedTransferScan r = do
-	failed <- liftAnnex $ getFailedTransfers (Remote.uuid r)
-	liftAnnex $ mapM_ removeFailedTransfer $ map fst failed
+	failed <- liftAnnex $ clearFailedTransfers (Remote.uuid r)
 	mapM_ retry failed
   where
 	retry (t, info)
@@ -98,7 +97,7 @@ failedTransferScan r = do
 			 - key, so it's not redundantly checked here. -}
 			requeue t info
 	requeue t info = queueTransferWhenSmall "retrying failed transfer" (associatedFile info) t r
-
+	
 {- This is a expensive scan through the full git work tree, finding
  - files to transfer. The scan is blocked when the transfer queue gets
  - too large. 
@@ -118,8 +117,12 @@ expensiveScan :: UrlRenderer -> [Remote] -> Assistant ()
 expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 	debug ["starting scan of", show visiblers]
 
+	let us = map Remote.uuid rs
+
+	mapM_ (liftAnnex . clearFailedTransfers) us
+
 	unwantedrs <- liftAnnex $ S.fromList
-		<$> filterM inUnwantedGroup (map Remote.uuid rs)
+		<$> filterM inUnwantedGroup us
 
 	g <- liftAnnex gitRepo
 	(files, cleanup) <- liftIO $ LsFiles.inRepo [] g
