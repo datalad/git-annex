@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawknwkXgi8SnK4QT32ANl3GMKvFLyQGeHqo"
+ nickname="Florian"
+ subject="comment 2"
+ date="2013-09-25T21:19:23Z"
+ content="""
+Aaaah ok ... the *host* command is not installed by default on Arch Linux. I've installed it ... now it works ... will report it to the package maintainer.
+"""]]
