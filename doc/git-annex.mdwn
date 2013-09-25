@@ -206,10 +206,9 @@ subdirectories).
 
   Moves files from somewhere outside the git working copy, and adds them to
   the annex. Individual files to import can be specified. 
-  If a directory is specified, all files in it are imported, and any
-  subdirectory structure inside it is preserved.
+  If a directory is specified, the entire directory is imported.
 
-        	git annex import /media/camera/DCIM/
+        	git annex import /media/camera/DCIM/*
 
   By default, importing two files with the same contents from two different
   locations will result in both files being added to the repository.
