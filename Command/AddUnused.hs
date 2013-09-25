@@ -29,7 +29,7 @@ start = startUnused "addunused" perform
 perform :: Key -> CommandPerform
 perform key = next $ do
 	logStatus key InfoPresent
-	Command.Add.addLink file key False
+	Command.Add.addLink file key Nothing
 	return True
   where
 	file = "unused." ++ key2file key

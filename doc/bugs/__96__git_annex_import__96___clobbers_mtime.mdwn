@@ -58,3 +58,5 @@ mtimes are clobbered with what I think is the time of the first time `git annex`
     upgrade supported from repository versions: 0 1 2
 
 Debian unstable amd64
+
+> [[fixed|done]] --[[Joey]]

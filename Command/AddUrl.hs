@@ -189,7 +189,7 @@ cleanup url file key mtmp = do
 	when (isJust mtmp) $
 		logStatus key InfoPresent
 	setUrlPresent key url
-	Command.Add.addLink file key False
+	Command.Add.addLink file key Nothing
 	whenM isDirect $ do
 		void $ addAssociatedFile key file
 		{- For moveAnnex to work in direct mode, the symlink

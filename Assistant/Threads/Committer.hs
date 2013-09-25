@@ -319,10 +319,10 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	add change@(InProcessAddChange { keySource = ks }) = 
 		catchDefaultIO Nothing <~> do
 			sanitycheck ks $ do
-				key <- liftAnnex $ do
+				(mkey, mcache) <- liftAnnex $ do
 					showStart "add" $ keyFilename ks
 					Command.Add.ingest $ Just ks
-				maybe (failedingest change) (done change $ keyFilename ks) key
+				maybe (failedingest change) (done change mcache $ keyFilename ks) mkey
 	add _ = return Nothing
 
 	{- In direct mode, avoid overhead of re-injesting a renamed
@@ -349,7 +349,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	fastadd change key = do
 		let source = keySource change
 		liftAnnex $ Command.Add.finishIngestDirect key source
-		done change (keyFilename source) key
+		done change Nothing (keyFilename source) key
 
 	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
 	removedKeysMap ct l = do
@@ -365,11 +365,11 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		liftAnnex showEndFail
 		return Nothing
 
-	done change file key = liftAnnex $ do
+	done change mcache file key = liftAnnex $ do
 		logStatus key InfoPresent
 		link <- ifM isDirect
 			( inRepo $ gitAnnexLink file key
-			, Command.Add.link file key True
+			, Command.Add.link file key mcache
 			)
 		whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
 			stageSymlink file =<< hashSymlink link

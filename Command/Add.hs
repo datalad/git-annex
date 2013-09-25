@@ -77,7 +77,7 @@ start file = ifAnnexed file addpresent add
 		-- is present but not yet added to git
 		showStart "add" file
 		liftIO $ removeFile file
-		next $ next $ cleanup file key =<< inAnnex key
+		next $ next $ cleanup file key Nothing =<< inAnnex key
 
 {- The file that's being added is locked down before a key is generated,
  - to prevent it from being modified in between. This lock down is not
@@ -134,8 +134,8 @@ lockDown file = ifM crippledFileSystem
  - In direct mode, leaves the file alone, and just updates bookkeeping
  - information.
  -}
-ingest :: Maybe KeySource -> Annex (Maybe Key)
-ingest Nothing = return Nothing
+ingest :: Maybe KeySource -> Annex (Maybe Key, Maybe InodeCache)
+ingest Nothing = return (Nothing, Nothing)
 ingest (Just source) = do
 	backend <- chooseBackend $ keyFilename source
 	k <- genKey source backend
@@ -147,24 +147,24 @@ ingest (Just source) = do
   where
 	go k cache = ifM isDirect ( godirect k cache , goindirect k cache )
 
-	goindirect (Just (key, _)) _ = do
+	goindirect (Just (key, _)) mcache = do
 		catchAnnex (moveAnnex key $ contentLocation source)
 			(undo (keyFilename source) key)
 		liftIO $ nukeFile $ keyFilename source
-		return $ Just key
+		return $ (Just key, mcache)
 	goindirect Nothing _ = failure "failed to generate a key"
 
 	godirect (Just (key, _)) (Just cache) = do
 		addInodeCache key cache
 		finishIngestDirect key source
-		return $ Just key
+		return $ (Just key, Just cache)
 	godirect _ _ = failure "failed to generate a key"
 
 	failure msg = do
 		warning $ keyFilename source ++ " " ++ msg
 		when (contentLocation source /= keyFilename source) $
 			liftIO $ nukeFile $ contentLocation source
-		return Nothing		
+		return (Nothing, Nothing)
 
 finishIngestDirect :: Key -> KeySource -> Annex ()
 finishIngestDirect key source = do
@@ -178,9 +178,10 @@ finishIngestDirect key source = do
 		addContentWhenNotPresent key (keyFilename source)
 
 perform :: FilePath -> CommandPerform
-perform file = 
-	maybe stop (\key -> next $ cleanup file key True)
-		=<< ingest =<< lockDown file
+perform file = lockDown file >>= ingest >>= go
+  where
+  	go (Just key, cache) = next $ cleanup file key cache True
+	go (Nothing, _) = stop
 
 {- On error, put the file back so it doesn't seem to have vanished.
  - This can be called before or after the symlink is in place. -}
@@ -199,18 +200,17 @@ undo file key e = do
 		liftIO $ moveFile src file
 
 {- Creates the symlink to the annexed content, returns the link target. -}
-link :: FilePath -> Key -> Bool -> Annex String
-link file key hascontent = flip catchAnnex (undo file key) $ do
+link :: FilePath -> Key -> Maybe InodeCache -> Annex String
+link file key mcache = flip catchAnnex (undo file key) $ do
 	l <- inRepo $ gitAnnexLink file key
 	replaceFile file $ makeAnnexLink l
 
 #ifndef __ANDROID__
-	when hascontent $
-		-- touch the symlink to have the same mtime as the
-		-- file it points to
-		liftIO $ do
-			mtime <- modificationTime <$> getFileStatus file
-			touch file (TimeSpec mtime) False
+	-- touch symlink to have same time as the original file,
+	-- as provided in the InodeCache
+	case mcache of
+		Just c -> liftIO $ touch file (TimeSpec $ inodeCacheToMtime c) False
+		Nothing -> noop
 #endif
 
 	return l
@@ -224,28 +224,28 @@ link file key hascontent = flip catchAnnex (undo file key) $ do
  - Also, using git add allows it to skip gitignored files, unless forced
  - to include them.
  -}
-addLink :: FilePath -> Key -> Bool -> Annex ()
-addLink file key hascontent = ifM (coreSymlinks <$> Annex.getGitConfig)
+addLink :: FilePath -> Key -> Maybe InodeCache -> Annex ()
+addLink file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 	( do
-		_ <- link file key hascontent
+		_ <- link file key mcache
 		params <- ifM (Annex.getState Annex.force)
 			( return [Param "-f"]
 			, return []
 			)
 		Annex.Queue.addCommand "add" (params++[Param "--"]) [file]
 	, do
-		l <- link file key hascontent
+		l <- link file key mcache
 		addAnnexLink l file
 	)
 
-cleanup :: FilePath -> Key -> Bool -> CommandCleanup
-cleanup file key hascontent = do
+cleanup :: FilePath -> Key -> Maybe InodeCache -> Bool -> CommandCleanup
+cleanup file key mcache hascontent = do
 	when hascontent $
 		logStatus key InfoPresent
 	ifM (isDirect <&&> pure hascontent)
 		( do
 			l <- inRepo $ gitAnnexLink file key
 			stageSymlink file =<< hashSymlink l
-		, addLink file key hascontent
+		, addLink file key mcache
 		)
 	return True
