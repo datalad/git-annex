@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="comment 4"
+ date="2013-09-25T18:28:40Z"
+ content="""
+@Joey
+
+    > I don't know why you don't want to let git-annex sync its data to $gitdir.
+
+Well neither do I! :) It seemed to be the way to avoid duplicating data while still having the images picked up by the ikiwiki album plugin. Wouldn't the files in the $gitdir end up duplicated in $srcdir?
+
+    > The symlinks could be occuring because of a bug in direct mode. 
+    > (I have fixed many past bugs that caused that.) But just as likely
+    > it's because ikiwiki will run git pull in the srcdir.
+
+When you mention it I've had similar problems with my vfat usb annex repos. Using the post-receive merge hook to make files visible for non git-annex devices about town. Nothing I can reliably recreate but I will keep my eye out for bugs.
+
+    > I think it would make more sense to use the underlay plugin and keep 
+    > your annexed repository in a separate underlay. 
+
+Yep that would be ideal. For my usecase the album plugin is vital and I can't understand how album would pick up and deal with images in an underlay dir. This is a bit OT for this site though most of my questions are ikiwiki related.
+"""]]
