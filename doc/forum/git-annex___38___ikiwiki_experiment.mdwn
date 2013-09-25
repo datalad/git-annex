@@ -1,0 +1,28 @@
+Hi,
+
+I've been experimenting with combining [ikiwiki](http://ikiwiki.info) with git-annex and it seems to work. Thought I'd post my process. I've [commented](http://ikiwiki.info/todo/git-annex_support/discussion/) on the ikiwiki website as well but perhaps it'd be of interest to git-annex folks.
+
+I have very little understanding of any of the tools involved and have just attempted to make it work using my limited knowledge. I don't use the web interface for ikiwiki which simplifies things.
+
+The [website in question](http://stockholm.kalleswork.net) just went online and is currently an archive of architectural photographs and the site relies heavily on the ikiwiki osm and album plugins.
+
+### Setting things up
+
+To start with I set up the wiki on the server and git clone to into `$wrkdir` on my laptop. I then initialize a git-annex repo in the `$srcdir` on the server. Leaving the `$gitdir` untouched. The `$scrdir` git-annex repo has to be in `direct` mode. Before doing any syncing I add `annex-ignore = true` and `annex-sync = false` to `.git/config` in the origin repo (`$gitdir`): this is to prevent polluting `$gitdir` with git-annex data. The same process is repeated in the `$wrkdir` on the laptop.
+
+### Pushing and syncing
+
+With this setup I can then `git add remote $srcdir`, `git add $file` and `git-push` mdwn files and other lightweight data from the laptop. While `git annex-add`, `git-annex sync` and `git-annex copy --to $srcdir` jpg's and other heavy files. All pure git commands work as expected with ikiwiki and the website recompiles etc.
+
+### Snags
+
+I'm frequently left with (non-dangling) symlinks in the `$srcdir` despite the annex repo being in direct mode. When this happens `git-annex fsck` sorts things out.
+
+Uploading image files does require a bit of manual work. But as this is done less frequently it's not much of an issue for me. I'm guessing that by doing things it the correct order (whatever that might be) I could avoid some of the manual work.
+
+The thing to keep in mind is to never `git-add` the typechanged annexed files in the $srcdir. In general I never use git commands in the $srcdir.
+
+The main problem is the symlinks though as they demand a manual `git-annex fsck`. I have no idea what causes the symlinks in a direct mode repo.
+
+Any comments? 
+
