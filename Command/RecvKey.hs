@@ -32,7 +32,7 @@ seek = [withKeys start]
 start :: Key -> CommandStart
 start key = ifM (inAnnex key)
 	( error "key is already present in annex"
-	, fieldTransfer Download key $ \_p -> do
+	, fieldTransfer Download key $ \_p ->
 		ifM (getViaTmp key go)
 			( do
 				-- forcibly quit after receiving one key,

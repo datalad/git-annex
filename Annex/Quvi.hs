@@ -14,7 +14,7 @@ import qualified Annex
 import Utility.Quvi
 import Utility.Url
 
-withQuviOptions :: forall a. (Query a) -> [CommandParam] -> URLString -> Annex a
+withQuviOptions :: forall a. Query a -> [CommandParam] -> URLString -> Annex a
 withQuviOptions a ps url = do
 	opts <- map Param . annexQuviOptions <$> Annex.getGitConfig
 	liftIO $ a (ps++opts) url

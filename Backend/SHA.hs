@@ -31,11 +31,11 @@ backends :: [Backend]
 backends = catMaybes $ map genBackendE sizes ++ map genBackend sizes
 
 genBackend :: SHASize -> Maybe Backend
-genBackend size = Just $ Backend
+genBackend size = Just Backend
 	{ name = shaName size
 	, getKey = keyValue size
 	, fsckKey = Just $ checkKeyChecksum size
-	, canUpgradeKey = Just $ needsUpgrade
+	, canUpgradeKey = Just needsUpgrade
 	}
 
 genBackendE :: SHASize -> Maybe Backend

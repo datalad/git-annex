@@ -50,8 +50,7 @@ perform relaxed cache url = do
 	v <- findEnclosures url
 	case v of
 		Just l | not (null l) -> do
-			ok <- all id
-				<$> mapM (downloadEnclosure relaxed cache) l
+			ok <- and <$> mapM (downloadEnclosure relaxed cache) l
 			unless ok $
 				feedProblem url "problem downloading item"
 			next $ cleanup url True

@@ -42,7 +42,7 @@ sshCachingOptions (host, port) opts = go =<< sshInfo (host, port)
 	-- If the lock pool is empty, this is the first ssh of this
 	-- run. There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
-	cleanstale = whenM (not . any isLock . M.keys <$> getPool) $
+	cleanstale = whenM (not . any isLock . M.keys <$> getPool)
 		sshCleanup
 
 {- Returns a filename to use for a ssh connection caching socket, and
@@ -57,9 +57,9 @@ sshInfo (host, port) = go =<< sshCacheDir
 			then return (Just socketfile, sshConnectionCachingParams socketfile)
 			else do
 				socketfile' <- liftIO $ relPathCwdToFile socketfile
-				if valid_unix_socket_path socketfile'
-					then return (Just socketfile', sshConnectionCachingParams socketfile')
-					else return (Nothing, [])
+				return $ if valid_unix_socket_path socketfile'
+					then (Just socketfile', sshConnectionCachingParams socketfile')
+					else (Nothing, [])
 
 sshConnectionCachingParams :: FilePath -> [CommandParam]
 sshConnectionCachingParams socketfile = 

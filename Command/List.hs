@@ -72,9 +72,9 @@ type RemoteName = String
 type Present = Bool
 
 header :: [(RemoteName, TrustLevel)] -> String
-header remotes = (unlines $ zipWith formatheader [0..] remotes) ++ (pipes (length remotes))
+header remotes = unlines (zipWith formatheader [0..] remotes) ++ pipes (length remotes)
   where
-    formatheader n (remotename, trustlevel) = (pipes n) ++ remotename ++ (trust trustlevel)
+    formatheader n (remotename, trustlevel) = pipes n ++ remotename ++ trust trustlevel
     pipes = flip replicate '|'
     trust UnTrusted = " (untrusted)"
     trust _ = ""

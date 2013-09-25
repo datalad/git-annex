@@ -86,20 +86,19 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: CommandStart
-commit = next $ next $ do
-	ifM isDirect
-		( do
-			void $ stageDirect
-			runcommit []
-		, runcommit [Param "-a"]
-		)
+commit = next $ next $ ifM isDirect
+	( do
+		void stageDirect
+		runcommit []
+	, runcommit [Param "-a"]
+	)
   where
 	runcommit ps = do
 		showStart "commit" ""
 		showOutput
 		Annex.Branch.commit "update"
 		-- Commit will fail when the tree is clean, so ignore failure.
-		let params = (Param "commit") : ps ++
+		let params = Param "commit" : ps ++
 			[Param "-m", Param "git-annex automatic sync"]
 		_ <- inRepo $ tryIO . Git.Command.runQuiet params
 		return True
@@ -151,12 +150,12 @@ pullRemote remote branch = do
  - were committed (or pushed changes, if this is a bare remote),
  - while the synced/master may have changes that some
  - other remote synced to this remote. So, merge them both. -}
-mergeRemote :: Remote -> (Maybe Git.Ref) -> CommandCleanup
+mergeRemote :: Remote -> Maybe Git.Ref -> CommandCleanup
 mergeRemote remote b = case b of
 	Nothing -> do
 		branch <- inRepo Git.Branch.currentUnsafe
-		all id <$> (mapM merge $ branchlist branch)
-	Just _ -> all id <$> (mapM merge =<< tomerge (branchlist b))
+		and <$> mapM merge (branchlist branch)
+	Just _ -> and <$> (mapM merge =<< tomerge (branchlist b))
   where
 	merge = mergeFrom . remoteBranch remote
 	tomerge branches = filterM (changed remote) branches
@@ -221,7 +220,7 @@ pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
 
 mergeAnnex :: CommandStart
 mergeAnnex = do
-	void $ Annex.Branch.forceUpdate
+	void Annex.Branch.forceUpdate
 	stop
 
 {- Merges from a branch into the current branch. -}
@@ -244,7 +243,7 @@ mergeFrom branch = do
 				mergeDirectCleanup d oldsha newsha
 			_ -> noop
 		return r
-	runmerge a = ifM (a)
+	runmerge a = ifM a
 		( return True
 		, resolveMerge
 		)
@@ -268,7 +267,7 @@ resolveMerge :: Annex Bool
 resolveMerge = do
 	top <- fromRepo Git.repoPath
 	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
-	merged <- all id <$> mapM resolveMerge' fs
+	merged <- and <$> mapM resolveMerge' fs
 	void $ liftIO cleanup
 
 	(deleted, cleanup2) <- inRepo (LsFiles.deleted [top])
@@ -291,7 +290,7 @@ resolveMerge' u
 		withKey LsFiles.valUs $ \keyUs ->
 			withKey LsFiles.valThem $ \keyThem -> do
 				ifM isDirect
-					( maybe noop (\k -> removeDirect k file) keyUs
+					( maybe noop (`removeDirect` file) keyUs
 					, liftIO $ nukeFile file
 					)
 				Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
@@ -307,14 +306,13 @@ resolveMerge' u
 			makelink keyThem
 			return True
 	file = LsFiles.unmergedFile u
-	issymlink select = any (select (LsFiles.unmergedBlobType u) ==)
-		[Just SymlinkBlob, Nothing]
+	issymlink select = select (LsFiles.unmergedBlobType u) `elem` [Just SymlinkBlob, Nothing]
 	makelink (Just key) = do
 		let dest = mergeFile file key
 		l <- inRepo $ gitAnnexLink dest key
 		replaceFile dest $ makeAnnexLink l
 		stageSymlink dest =<< hashSymlink l
-		whenM (isDirect) $
+		whenM isDirect $
 			toDirect key dest
 	makelink _ = noop
 	withKey select a = do

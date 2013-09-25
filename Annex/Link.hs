@@ -68,9 +68,9 @@ getAnnexLinkTarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 				-- characters, or whitespace, we
 				-- certianly don't have a link to a
 				-- git-annex key.
-				if any (`elem` s) "\0\n\r \t"
-					then return ""
-					else return s
+				return $ if any (`elem` s) "\0\n\r \t"
+					then ""
+					else s
 
 {- Creates a link on disk.
  -

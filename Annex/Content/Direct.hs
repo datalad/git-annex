@@ -199,7 +199,7 @@ compareInodeCachesWith = ifM inodesChanged ( return Weakly, return Strongly )
 addContentWhenNotPresent :: Key -> FilePath -> FilePath -> Annex ()
 addContentWhenNotPresent key contentfile associatedfile = do
 	v <- isAnnexLink associatedfile
-	when (Just key == v) $ do
+	when (Just key == v) $
 		replaceFile associatedfile $
 			liftIO . void . copyFileExternal contentfile
 	updateInodeCache key associatedfile	

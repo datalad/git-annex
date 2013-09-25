@@ -24,7 +24,7 @@ import Common.Annex
 
 {- Runs an Annex action, with setup and cleanup both in the IO monad. -}
 bracketIO :: IO v -> (v -> IO b) -> (v -> Annex a) -> Annex a
-bracketIO setup cleanup go = M.bracket (liftIO setup) (liftIO . cleanup) go
+bracketIO setup cleanup = M.bracket (liftIO setup) (liftIO . cleanup)
 
 {- try in the Annex monad -}
 tryAnnex :: Annex a -> Annex (Either SomeException a)

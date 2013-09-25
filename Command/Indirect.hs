@@ -46,7 +46,7 @@ start = ifM isDirect
 perform :: CommandPerform
 perform = do
 	showStart "commit" ""
-	whenM (stageDirect) $ do
+	whenM stageDirect $ do
 		showOutput
 		void $ inRepo $ Git.Command.runBool
 			[ Param "commit"

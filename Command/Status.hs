@@ -238,10 +238,10 @@ transfer_list :: Stat
 transfer_list = stat "transfers in progress" $ nojson $ lift $ do
 	uuidmap <- Remote.remoteMap id
 	ts <- getTransfers
-	if null ts
-		then return "none"
-		else return $ multiLine $
-			map (\(t, i) -> line uuidmap t i) $ sort ts
+	return $ if null ts
+		then "none"
+		else multiLine $
+			map (uncurry $ line uuidmap) $ sort ts
   where
 	line uuidmap t i = unwords
 		[ showLcDirection (transferDirection t) ++ "ing"
@@ -340,7 +340,7 @@ emptyKeyData :: KeyData
 emptyKeyData = KeyData 0 0 0 M.empty
 
 emptyNumCopiesStats :: NumCopiesStats
-emptyNumCopiesStats = NumCopiesStats $ M.empty
+emptyNumCopiesStats = NumCopiesStats M.empty
 
 foldKeys :: [Key] -> KeyData
 foldKeys = foldl' (flip addKey) emptyKeyData

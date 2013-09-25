@@ -275,7 +275,7 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		thawContentDir =<< calcRepo (gitAnnexLocation key)
 		thawContent src
 		v <- isAnnexLink f
-		if (Just key == v)
+		if Just key == v
 			then do
 				updateInodeCache key src
 				replaceFile f $ liftIO . moveFile src

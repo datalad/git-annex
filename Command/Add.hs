@@ -98,13 +98,13 @@ start file = ifAnnexed file addpresent add
  - Lockdown can fail if a file gets deleted, and Nothing will be returned.
  -}
 lockDown :: FilePath -> Annex (Maybe KeySource)
-lockDown file = ifM (crippledFileSystem)
+lockDown file = ifM crippledFileSystem
 	( liftIO $ catchMaybeIO nohardlink
 	, do
 		tmp <- fromRepo gitAnnexTmpDir
 		createAnnexDirectory tmp
-		unlessM (isDirect) $ liftIO $
-			void $ tryIO $ preventWrite file
+		unlessM isDirect $ 
+			void $ liftIO $ tryIO $ preventWrite file
 		liftIO $ catchMaybeIO $ do
 			(tmpfile, h) <- openTempFile tmp $
 				relatedTemplate $ takeFileName file
@@ -115,7 +115,7 @@ lockDown file = ifM (crippledFileSystem)
   where
   	nohardlink = do
 		cache <- genInodeCache file
-		return $ KeySource
+		return KeySource
 			{ keyFilename = file
 			, contentLocation = file
 			, inodeCache = cache
@@ -123,7 +123,7 @@ lockDown file = ifM (crippledFileSystem)
 	withhardlink tmpfile = do
 		createLink file tmpfile
 		cache <- genInodeCache tmpfile
-		return $ KeySource
+		return KeySource
 			{ keyFilename = file
 			, contentLocation = tmpfile
 			, inodeCache = cache
@@ -134,7 +134,7 @@ lockDown file = ifM (crippledFileSystem)
  - In direct mode, leaves the file alone, and just updates bookkeeping
  - information.
  -}
-ingest :: (Maybe KeySource) -> Annex (Maybe Key)
+ingest :: Maybe KeySource -> Annex (Maybe Key)
 ingest Nothing = return Nothing
 ingest (Just source) = do
 	backend <- chooseBackend $ keyFilename source
@@ -205,7 +205,7 @@ link file key hascontent = flip catchAnnex (undo file key) $ do
 	replaceFile file $ makeAnnexLink l
 
 #ifndef __ANDROID__
-	when hascontent $ do
+	when hascontent $
 		-- touch the symlink to have the same mtime as the
 		-- file it points to
 		liftIO $ do

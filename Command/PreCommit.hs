@@ -24,7 +24,7 @@ def = [command "pre-commit" paramPaths seek SectionPlumbing
 seek :: [CommandSeek]
 seek =
 	-- fix symlinks to files being committed
-	[ whenNotDirect $ withFilesToBeCommitted $ whenAnnexed $ Command.Fix.start
+	[ whenNotDirect $ withFilesToBeCommitted $ whenAnnexed Command.Fix.start
 	-- inject unlocked files into the annex
 	, whenNotDirect $ withFilesUnlockedToBeCommitted startIndirect
 	-- update direct mode mappings for committed files

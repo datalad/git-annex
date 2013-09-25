@@ -55,7 +55,7 @@ start = start' True
 
 start' :: Bool -> Maybe HostName -> CommandStart
 start' allowauto listenhost = do
-	liftIO $ ensureInstalled
+	liftIO ensureInstalled
 	ifM isInitialized ( go , auto )
 	stop
   where
@@ -209,7 +209,7 @@ openBrowser mcmd htmlshim realurl outh errh = do
 			, std_err = maybe Inherit UseHandle errh
 			}
 		exitcode <- waitForProcess pid
-		unless (exitcode == ExitSuccess) $ do
+		unless (exitcode == ExitSuccess) $
 			hPutStrLn (fromMaybe stderr errh) "failed to start web browser"
 
 {- web.browser is a generic git config setting for a web browser program -}
