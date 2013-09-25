@@ -8,6 +8,7 @@
 module Command.Indirect where
 
 import System.PosixCompat.Files
+import Control.Exception.Extensible
 
 import Common.Annex
 import Command
@@ -22,7 +23,9 @@ import Annex.Content
 import Annex.CatFile
 import Annex.Version
 import Annex.Perms
+import Annex.Exception
 import Init
+import qualified Command.Add
 
 def :: [Command]
 def = [notBareRepo $ noDaemonRunning $
@@ -87,15 +90,24 @@ perform = do
 		thawContentDir =<< calcRepo (gitAnnexLocation k)
 		cleandirect k -- clean before content directory gets frozen
 		whenM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f) $ do
-			moveAnnex k f
-			l <- inRepo $ gitAnnexLink f k
-			liftIO $ createSymbolicLink l f
+			v <-tryAnnexIO (moveAnnex k f)
+			case v of
+				Right _ -> do 
+					l <- inRepo $ gitAnnexLink f k
+					liftIO $ createSymbolicLink l f
+				Left e -> catchAnnex (Command.Add.undo f k e)
+					warnlocked
 		showEndOk
+
+ 	warnlocked :: SomeException -> Annex ()
+	warnlocked e = do
+		warning $ show e
+		warning "leaving this file as-is; correct this problem and run git annex add on it"
 
 	cleandirect k = do
 		liftIO . nukeFile =<< calcRepo (gitAnnexInodeCache k)
 		liftIO . nukeFile =<< calcRepo (gitAnnexMapping k)
-
+	
 cleanup :: CommandCleanup
 cleanup = do
 	setVersion defaultVersion

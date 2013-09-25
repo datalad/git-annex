@@ -13,6 +13,8 @@ git-annex (4.20130921) UNRELEASED; urgency=low
   * assistant: Clear the list of failed transfers when doing a full transfer
     scan. This prevents repeated retries to download files that are not
     available, or are not referenced by the current git tree.
+  * indirect: Better behavior when a file in direct mode is not owned by
+    the user running the conversion.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 
