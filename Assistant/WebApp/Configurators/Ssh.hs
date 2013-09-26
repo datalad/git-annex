@@ -364,9 +364,9 @@ getMakeRsyncNetSharedR sshdata = makeSshRepo True setupGroup sshdata
 
 {- Make a gcrypt special remote on rsync.net. -}
 getMakeRsyncNetGCryptR :: SshData -> RepoKey -> Handler Html
-getMakeRsyncNetGCryptR sshdata NoRepoKey = withNewSecretKey $ \keyid -> 
-	getMakeRsyncNetGCryptR sshdata (RepoKey keyid)
-getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = do
+getMakeRsyncNetGCryptR sshdata NoRepoKey = whenGcryptInstalled $
+	withNewSecretKey $ getMakeRsyncNetGCryptR sshdata . RepoKey
+getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $ do
 	sshSetup [sshhost, gitinit] [] $ do
 		r <- liftAnnex $ addRemote $
 			makeGCryptRemote (sshRepoName sshdata) (sshUrl True sshdata) keyid
