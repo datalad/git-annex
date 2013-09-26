@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="comment 7"
+ date="2013-09-26T13:05:53Z"
+ content="""
+@anarcat
+
+    > Can we have step by step instructions on how to set this up?
+
+[I described the ikiwiki album setup](http://ikiwiki.info/forum/ikiwiki_with_album___38___underlay_plugins/) on the ikiwiki website as there are no git-annex tricks anymore. Just standard behaviour.
+
+    > So how does this actually work in practice? Is the underlay directory a 
+    > completely disconnected repository?
+
+Yes they are completely separate repos. Really the underlay dir could be managed in any way you like svn, rsync, ftp etc. I didn't expect the album plugin to pick everything up but apparently it does! Perhaps underlays are completely integrated and appear as 'normal' to all of ikiwiki?
+"""]]
