@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkeJKC5Sy0stmcTWyePOLEVv0G-x1yaT_w"
+ nickname="Josef"
+ subject="wishlist"
+ date="2013-09-26T11:11:19Z"
+ content="""
+Posted the above yesterday before realizing that it should probably go to wishlist requests. I am sorry about that.
+
+Basically it is a request to extend import options and perhaps make the options easier to use/understand.
+
+Suggested Import Options:
+
+- source directory,
+- destination directory,
+- deduplicate in annex ( yes, no )
+- delete source files ( yes, no )
+- trial run ( screen output only )
+
+Many thanks for a great product!
+
+"""]]
