@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE QuasiQuotes, TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Gpg where
 
@@ -72,3 +72,10 @@ getGCryptRemoteName u repoloc = do
 		)
 	void $ inRepo $ Git.Remote.remove tmpremote
 	return mname
+
+whenGcryptInstalled :: Handler Html -> Handler Html
+whenGcryptInstalled a = ifM (liftIO $ inPath "git-remote-gcrypt")
+	( a
+	, page "Need git-remote-gcrypt" (Just Configuration) $
+		$(widgetFile "configurators/needgcrypt")
+	)

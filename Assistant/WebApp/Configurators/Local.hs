@@ -294,19 +294,15 @@ getFinishAddDriveR :: RemovableDrive -> RepoKey -> Handler Html
 getFinishAddDriveR drive = go
   where
   	{- Set up new gcrypt special remote. -}
-	go (RepoKey keyid) = ifM (liftIO $ inPath "git-remote-gcrypt")
-		( makewith $ \_ -> do
-			r <- liftAnnex $ addRemote $ 
-				initSpecialRemote remotename GCrypt.remote $ M.fromList
-					[ ("type", "gcrypt")
-					, ("gitrepo", dir)
-					, configureEncryption HybridEncryption
-					, ("keyid", keyid)
-					]
-			return (Types.Remote.uuid r, r)
-		, page "Encrypt repository" (Just Configuration) $
-			$(widgetFile "configurators/needgcrypt")
-		)
+	go (RepoKey keyid) = whenGcryptInstalled $ makewith $ const $ do
+		r <- liftAnnex $ addRemote $ 
+			initSpecialRemote remotename GCrypt.remote $ M.fromList
+				[ ("type", "gcrypt")
+				, ("gitrepo", dir)
+				, configureEncryption HybridEncryption
+				, ("keyid", keyid)
+				]
+		return (Types.Remote.uuid r, r)
 	go NoRepoKey = do
 		pr <- liftAnnex $ inRepo $ Git.GCrypt.probeRepo dir
 		case pr of
