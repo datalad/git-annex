@@ -149,8 +149,11 @@ rsyncTransport r
   where
   	loc = Git.repoLocation r
 	sshtransport (host, path) = do
+		let rsyncpath = if "/~/" `isPrefixOf` path
+			then drop 3 path
+			else path
 		opts <- sshCachingOptions (host, Nothing) []
-		return (rsyncShell $ Param "ssh" : opts, host ++ ":" ++ path, AccessShell)
+		return (rsyncShell $ Param "ssh" : opts, host ++ ":" ++ rsyncpath, AccessShell)
 	othertransport = return ([], loc, AccessDirect)
 
 noCrypto :: Annex a
