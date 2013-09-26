@@ -93,7 +93,7 @@ lookupHook hookname action = do
 	command <- getConfig (annexConfig hook) ""
 	if null command
 		then do
-			fallback <- getConfig (annexConfig $ hookfallback) ""
+			fallback <- getConfig (annexConfig hookfallback) ""
 			if null fallback
 				then do
 					warning $ "missing configuration for " ++ hook ++ " or " ++ hookfallback

@@ -80,7 +80,7 @@ remoteListRefresh = do
 	remoteList
 
 {- Generates a Remote. -}
-remoteGen :: (M.Map UUID RemoteConfig) -> RemoteType -> Git.Repo -> Annex (Maybe Remote)
+remoteGen :: M.Map UUID RemoteConfig -> RemoteType -> Git.Repo -> Annex (Maybe Remote)
 remoteGen m t r = do
 	u <- getRepoUUID r
 	g <- fromRepo id

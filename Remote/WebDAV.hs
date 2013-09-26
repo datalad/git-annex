@@ -181,9 +181,9 @@ checkPresent r k = davAction r noconn go
 		 - or perhaps this was an intermittent error. -}
 		onerr url = do
 			v <- davUrlExists url user pass
-			if v == Right True
-				then return $ Left $ "failed to read " ++ url
-				else return v
+			return $ if v == Right True
+				then Left $ "failed to read " ++ url
+				else v
 
 withStoredFiles
 	:: Remote

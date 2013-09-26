@@ -209,7 +209,7 @@ tryGitConfigRead r
 		Nothing -> return r
 		Just n -> do
 			whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $
-				set_ignore $ "does not have git-annex installed"
+				set_ignore "does not have git-annex installed"
 			return r
 	
 	set_ignore msg = case Git.remoteName r of
@@ -326,7 +326,7 @@ copyFromRemote' r key file dest
 			: maybe [] (\f -> [(Fields.associatedFile, f)]) file
 		Just (cmd, params) <- Ssh.git_annex_shell (repo r) "transferinfo" 
 			[Param $ key2file key] fields
-		v <- liftIO $ (newEmptySV :: IO (MSampleVar Integer))
+		v <- liftIO (newEmptySV :: IO (MSampleVar Integer))
 		tid <- liftIO $ forkIO $ void $ tryIO $ do
 			bytes <- readSV v
 			p <- createProcess $
@@ -337,7 +337,7 @@ copyFromRemote' r key file dest
 			hClose $ stderrHandle p
 			let h = stdinHandle p
 			let send b = do
-				hPutStrLn h $ show b
+				hPrint h b
 				hFlush h
 			send bytes
 			forever $
@@ -414,7 +414,7 @@ rsyncOrCopyFile rsyncparams src dest p =
 #else
 	ifM (sameDeviceIds src dest) (docopy, dorsync)
   where
-	sameDeviceIds a b = (==) <$> (getDeviceId a) <*> (getDeviceId b)
+	sameDeviceIds a b = (==) <$> getDeviceId a <*> getDeviceId b
 	getDeviceId f = deviceID <$> liftIO (getFileStatus $ parentDir f)
 	docopy = liftIO $ bracket
 		(forkIO $ watchfilesize zeroBytesProcessed)
@@ -450,7 +450,7 @@ commitOnCleanup r a = go `after` a
 			-- Throw away stderr, since the remote may not
 			-- have a new enough git-annex shell to
 			-- support committing.
-			liftIO $ catchMaybeIO $ do
+			liftIO $ catchMaybeIO $
 				withQuietOutput createProcessSuccess $
 					proc shellcmd $
 						toCommand shellparams

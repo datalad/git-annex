@@ -265,7 +265,7 @@ getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles
 clearFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]
 clearFailedTransfers u = do
 	failed <- getFailedTransfers u
-	mapM_ removeFailedTransfer $ map fst failed
+	mapM_ (removeFailedTransfer . fst) failed
 	return failed
 
 removeFailedTransfer :: Transfer -> Annex ()

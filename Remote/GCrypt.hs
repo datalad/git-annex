@@ -76,7 +76,7 @@ gen gcryptr u c gc = do
 	-- correctly.
 	resetup gcryptid r = do
 		let u' = genUUIDInNameSpace gCryptNameSpace gcryptid
-		v <- (M.lookup u' <$> readRemoteLog)
+		v <- M.lookup u' <$> readRemoteLog
 		case (Git.remoteName gcryptr, v) of
 			(Just remotename, Just c') -> do
 				setGcryptEncryption c' remotename
@@ -186,14 +186,14 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 		void $ inRepo $ Git.Command.runBool
 			[ Param "push"
 			, Param remotename
-			, Param $ show $ Annex.Branch.fullname
+			, Param $ show Annex.Branch.fullname
 			]
 		g <- inRepo Git.Config.reRead
 		case Git.GCrypt.remoteRepoId g (Just remotename) of
 			Nothing -> error "unable to determine gcrypt-id of remote"
 			Just gcryptid -> do
 				let u = genUUIDInNameSpace gCryptNameSpace gcryptid
-				if Just u == mu || mu == Nothing
+				if Just u == mu || isNothing mu
 					then do
 						method <- setupRepo gcryptid =<< inRepo (Git.Construct.fromRemoteLocation gitrepo)
 						gitConfigSpecialRemote u c' "gcrypt" (fromAccessMethod method)
@@ -246,7 +246,7 @@ setupRepo gcryptid r
 		ok <- liftIO $ rsync $ rsynctransport ++
 			[ Params "--recursive"
 			, Param $ tmp ++ "/"
-			, Param $ rsyncurl
+			, Param rsyncurl
 			]
 		unless ok $
 			error "Failed to connect to remote to set it up."

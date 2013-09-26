@@ -68,7 +68,7 @@ storeChunks key tmp dest chunksize storer recorder finalizer = either onerr retu
   where
 	go = do
 		stored <- storer tmpdests
-		when (chunksize /= Nothing) $ do
+		when (isNothing chunksize) $ do
 			let chunkcount = basef ++ chunkCount
 			recorder chunkcount (show $ length stored)
 		finalizer tmp dest
@@ -79,7 +79,7 @@ storeChunks key tmp dest chunksize storer recorder finalizer = either onerr retu
 
 	basef = tmp ++ keyFile key
 	tmpdests
-		| chunksize == Nothing = [basef]
+		| isNothing chunksize = [basef]
 		| otherwise = map (basef ++ ) chunkStream
 
 {- Given a list of destinations to use, chunks the data according to the
@@ -123,5 +123,5 @@ storeChunked chunksize dests storer content = either onerr return
 meteredWriteFileChunks :: MeterUpdate -> FilePath -> [v] -> (v -> IO L.ByteString) -> IO ()
 meteredWriteFileChunks meterupdate dest chunks feeder =
 	withBinaryFile dest WriteMode $ \h ->
-		forM_ chunks $ \c ->
-			meteredWrite meterupdate h =<< feeder c
+		forM_ chunks $
+			meteredWrite meterupdate h <=< feeder

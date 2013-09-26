@@ -82,6 +82,5 @@ transitionList = map transition . S.elems
 {- Typically ran with Annex.Branch.change, but we can't import Annex.Branch
  - here since it depends on this module. -}
 recordTransitions :: (FilePath -> (String -> String) -> Annex ()) -> Transitions -> Annex ()
-recordTransitions changer t = do
-	changer transitionsLog $
-		showTransitions . S.union t . parseTransitionsStrictly "local"
+recordTransitions changer t = changer transitionsLog $
+	showTransitions . S.union t . parseTransitionsStrictly "local"

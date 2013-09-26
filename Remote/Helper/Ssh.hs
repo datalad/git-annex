@@ -125,9 +125,9 @@ rsyncParamsRemote r direction key file afile = do
 	-- Convert the ssh command into rsync command line.
 	let eparam = rsyncShell (Param shellcmd:shellparams)
 	let o = rsyncParams r
-	if direction == Download
-		then return $ o ++ rsyncopts eparam dummy (File file)
-		else return $ o ++ rsyncopts eparam (File file) dummy
+	return $ if direction == Download
+		then o ++ rsyncopts eparam dummy (File file)
+		else o ++ rsyncopts eparam (File file) dummy
   where
 	rsyncopts ps source dest
 		| end ps == [dashdash] = ps ++ [source, dest]
@@ -143,6 +143,6 @@ rsyncParamsRemote r direction key file afile = do
 
 -- --inplace to resume partial files
 rsyncParams :: Remote -> [CommandParam]
-rsyncParams r = [Params "--progress --inplace"] ++
+rsyncParams r = Params "--progress --inplace" :
 	map Param (remoteAnnexRsyncOptions $ gitconfig r)
 
