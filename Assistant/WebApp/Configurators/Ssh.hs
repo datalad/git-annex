@@ -131,6 +131,13 @@ postAddSshR = sshConfigurator $ do
 sshTestModal :: Widget
 sshTestModal = $(widgetFile "configurators/ssh/testmodal")
 
+{- This only handles gcrypt repositories that are located on ssh servers;
+ - ones on local drives are handled via another part of the UI. -}
+getEnableGCryptR :: UUID -> Handler Html
+getEnableGCryptR = postEnableGCryptR
+postEnableGCryptR :: UUID -> Handler Html
+postEnableGCryptR u = error "TODO"
+
 {- To enable an existing rsync special remote, parse the SshInput from
  - its rsyncurl, and display a form whose only real purpose is to check
  - if ssh public keys need to be set up. From there, we can proceed with

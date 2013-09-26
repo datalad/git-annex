@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Git.Remote where
 
 import Common
@@ -13,6 +15,8 @@ import qualified Git.Command
 import qualified Git.BuildVersion
 
 import Data.Char
+import qualified Data.Map as M
+import Network.URI
 
 type RemoteName = String
 
@@ -48,3 +52,58 @@ remove remotename = Git.Command.run
 			else "remove"
 	, Param remotename
 	]
+
+data RemoteLocation = RemoteUrl String | RemotePath FilePath
+
+remoteLocationIsUrl :: RemoteLocation -> Bool
+remoteLocationIsUrl (RemoteUrl _) = True
+remoteLocationIsUrl _ = False
+
+{- Determines if a given remote location is an url, or a local
+ - path. Takes the repository's insteadOf configuration into account. -}
+parseRemoteLocation :: String -> Repo -> RemoteLocation
+parseRemoteLocation s repo = ret $ calcloc s
+  where
+  	ret v
+#ifdef mingw32_HOST_OS
+		| dosstyle v = RemotePath (dospath v)
+#endif
+		| scpstyle v = RemoteUrl (scptourl v)
+		| urlstyle v = RemoteUrl v
+		| otherwise = RemotePath v
+	-- insteadof config can rewrite remote location
+	calcloc l
+		| null insteadofs = l
+		| otherwise = replacement ++ drop (length bestvalue) l
+	  where
+		replacement = drop (length prefix) $
+			take (length bestkey - length suffix) bestkey
+		(bestkey, bestvalue) = maximumBy longestvalue insteadofs
+		longestvalue (_, a) (_, b) = compare b a
+		insteadofs = filterconfig $ \(k, v) -> 
+			startswith prefix k &&
+			endswith suffix k &&
+			startswith v l
+		filterconfig f = filter f $
+			concatMap splitconfigs $ M.toList $ fullconfig repo
+		splitconfigs (k, vs) = map (\v -> (k, v)) vs
+		(prefix, suffix) = ("url." , ".insteadof")
+	urlstyle v = isURI v || ":" `isInfixOf` v && "//" `isInfixOf` v
+	-- git remotes can be written scp style -- [user@]host:dir
+	-- but foo::bar is a git-remote-helper location instead
+	scpstyle v = ":" `isInfixOf` v 
+		&& not ("//" `isInfixOf` v)
+		&& not ("::" `isInfixOf` v)
+	scptourl v = "ssh://" ++ host ++ slash dir
+	  where
+		(host, dir) = separate (== ':') v
+		slash d	| d == "" = "/~/" ++ d
+			| "/" `isPrefixOf` d = d
+			| "~" `isPrefixOf` d = '/':d
+			| otherwise = "/~/" ++ d
+#ifdef mingw32_HOST_OS
+	-- git on Windows will write a path to .git/config with "drive:",
+	-- which is not to be confused with a "host:"
+	dosstyle = hasDrive
+	dospath = fromInternalGitPath
+#endif

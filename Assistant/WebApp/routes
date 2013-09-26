@@ -65,6 +65,7 @@
 /config/repository/pair/xmpp/friend/finish/#PairKey FinishXMPPPairFriendR GET
 
 /config/repository/enable/rsync/#UUID EnableRsyncR GET POST
+/config/repository/enable/gcrypt/#UUID EnableGCryptR GET POST
 /config/repository/enable/directory/#UUID EnableDirectoryR GET
 /config/repository/enable/S3/#UUID EnableS3R GET POST
 /config/repository/enable/IA/#UUID EnableIAR GET POST
