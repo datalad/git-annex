@@ -17,6 +17,7 @@ git-annex (4.20130921) UNRELEASED; urgency=low
     the user running the conversion.
   * add, import, assistant: Better preserve the mtime of symlinks,
     when when adding content that gets deduplicated.
+  * webapp: Support storing encrypted git repositories on rsync.net.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 

@@ -10,8 +10,8 @@
 module Assistant.WebApp.Gpg where
 
 import Assistant.WebApp.Common
+import Assistant.Gpg
 import Utility.Gpg
-import Utility.UserInfo
 import qualified Git.Command
 import qualified Git.Remote
 import qualified Annex.Branch
@@ -31,16 +31,15 @@ gpgKeyDisplay keyid userid = [whamlet|
         key id #{keyid}
 |]
 
-{- Generates a gpg user id that is not used by any existing secret key -}
-newUserId :: IO UserId
-newUserId = do
-	oldkeys <- secretKeys
-	username <- myUserName
-  	let basekeyname = username ++ "'s git-annex encryption key"
-	return $ Prelude.head $ filter (\n -> M.null $ M.filter (== n) oldkeys)
-		( basekeyname
-		: map (\n -> basekeyname ++ show n) ([2..] :: [Int])
-		)
+genKeyModal :: Widget
+genKeyModal = $(widgetFile "configurators/genkeymodal")
+
+whenGcryptInstalled :: Handler Html -> Handler Html
+whenGcryptInstalled a = ifM (liftIO $ inPath "git-remote-gcrypt")
+	( a
+	, page "Need git-remote-gcrypt" (Just Configuration) $
+		$(widgetFile "configurators/needgcrypt")
+	)
 
 withNewSecretKey :: (KeyId -> Handler Html) -> Handler Html
 withNewSecretKey use = do
@@ -73,9 +72,3 @@ getGCryptRemoteName u repoloc = do
 	void $ inRepo $ Git.Remote.remove tmpremote
 	return mname
 
-whenGcryptInstalled :: Handler Html -> Handler Html
-whenGcryptInstalled a = ifM (liftIO $ inPath "git-remote-gcrypt")
-	( a
-	, page "Need git-remote-gcrypt" (Just Configuration) $
-		$(widgetFile "configurators/needgcrypt")
-	)

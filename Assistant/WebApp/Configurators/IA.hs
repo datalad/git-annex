@@ -24,6 +24,7 @@ import Logs.PreferredContent
 import Logs.Remote
 import qualified Utility.Url as Url
 import Creds
+import Assistant.Gpg
 
 import qualified Data.Text as T
 import qualified Data.Map as M

@@ -24,6 +24,7 @@ import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.PreferredContent
 import Creds
+import Assistant.Gpg
 
 import qualified Data.Text as T
 import qualified Data.Map as M

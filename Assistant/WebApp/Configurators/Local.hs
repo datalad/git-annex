@@ -276,17 +276,14 @@ getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
 setupDriveModal :: Widget
 setupDriveModal = $(widgetFile "configurators/adddrive/setupmodal")
 
-genKeyModal :: Widget
-genKeyModal = $(widgetFile "configurators/genkeymodal")
-
 getGenKeyForDriveR :: RemovableDrive -> Handler Html
-getGenKeyForDriveR drive = withNewSecretKey $ \key -> do
+getGenKeyForDriveR drive = withNewSecretKey $ \keyid -> do
 	{- Generating a key takes a long time, and 
 	 - the removable drive may have been disconnected
 	 - in the meantime. Check that it is still mounted
 	 - before finishing. -}
 	ifM (liftIO $ any (\d -> mountPoint d == mountPoint drive) <$> driveList)
-		( getFinishAddDriveR drive (RepoKey key)
+		( getFinishAddDriveR drive (RepoKey keyid)
 		, getAddDriveR
 		)
 
@@ -295,13 +292,8 @@ getFinishAddDriveR drive = go
   where
   	{- Set up new gcrypt special remote. -}
 	go (RepoKey keyid) = whenGcryptInstalled $ makewith $ const $ do
-		r <- liftAnnex $ addRemote $ 
-			initSpecialRemote remotename GCrypt.remote $ M.fromList
-				[ ("type", "gcrypt")
-				, ("gitrepo", dir)
-				, configureEncryption HybridEncryption
-				, ("keyid", keyid)
-				]
+		r <- liftAnnex $ addRemote $
+			makeGCryptRemote remotename dir keyid
 		return (Types.Remote.uuid r, r)
 	go NoRepoKey = do
 		pr <- liftAnnex $ inRepo $ Git.GCrypt.probeRepo dir

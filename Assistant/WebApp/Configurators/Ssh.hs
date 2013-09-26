@@ -11,6 +11,7 @@
 module Assistant.WebApp.Configurators.Ssh where
 
 import Assistant.WebApp.Common
+import Assistant.WebApp.Gpg
 import Assistant.Ssh
 import Assistant.MakeRemote
 import Utility.Rsync (rsyncUrlIsShell)
@@ -19,10 +20,13 @@ import Remote
 import Logs.PreferredContent
 import Types.StandardGroups
 import Utility.UserInfo
+import Utility.Gpg
+import Assistant.Sync
 
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Network.Socket
+import Data.Ord
 
 sshConfigurator :: Widget -> Handler Html
 sshConfigurator = page "Add a remote server" (Just Configuration)
@@ -147,7 +151,7 @@ postEnableRsyncR u = do
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (inputHostname sshinput') ->
-						void $ liftH $ makeRsyncNet sshinput' reponame (const noop)
+						void $ liftH $ enableRsyncNet sshinput' reponame (const noop)
 					| otherwise -> do
 						s <- liftIO $ testServer sshinput'
 						case s of
@@ -320,19 +324,17 @@ postAddRsyncNetR = do
 	((result, form), enctype) <- runFormPost $
 		renderBootstrap $ sshInputAForm hostnamefield $
 			SshInput Nothing Nothing Nothing 22
-	let showform status = page "Add a Rsync.net repository" (Just Configuration) $
-		$(widgetFile "configurators/addrsync.net")
+	let showform status = inpage $
+		$(widgetFile "configurators/rsync.net/add")
 	case result of
 		FormSuccess sshinput
-			| isRsyncNet (inputHostname sshinput) -> do
-				let reponame = genSshRepoName "rsync.net" 
-					(maybe "" T.unpack $ inputDirectory sshinput)
-				makeRsyncNet sshinput reponame setupGroup
+			| isRsyncNet (inputHostname sshinput) -> prep sshinput
 			| otherwise ->
 				showform $ UnusableServer
 					"That is not a rsync.net host name."
 		_ -> showform UntestedServer
   where
+  	inpage = page "Add a Rsync.net repository" (Just Configuration)
 	hostnamefield = textField `withExpandableNote` ("Help", help)
 	help = [whamlet|
 <div>
@@ -342,9 +344,41 @@ postAddRsyncNetR = do
   The host name will be something like "usw-s001.rsync.net", and the #
   user name something like "7491"
 |]
+	prep sshinput = do
+		let reponame = genSshRepoName "rsync.net" 
+			(maybe "" T.unpack $ inputDirectory sshinput)
+		prepRsyncNet sshinput reponame $ \sshdata -> inpage $ do
+			secretkeys <- sortBy (comparing snd) . M.toList
+				<$> liftIO secretKeys
+			$(widgetFile "configurators/rsync.net/encrypt")					
 
-makeRsyncNet :: SshInput -> String -> (Remote -> Handler ()) -> Handler Html
-makeRsyncNet sshinput reponame setup = do
+getMakeRsyncNetSharedR :: SshData -> Handler Html
+getMakeRsyncNetSharedR sshdata = makeSshRepo True setupGroup sshdata
+
+{- Make a gcrypt special remote on rsync.net. -}
+getMakeRsyncNetGCryptR :: SshData -> RepoKey -> Handler Html
+getMakeRsyncNetGCryptR sshdata NoRepoKey = withNewSecretKey $ \keyid -> 
+	getMakeRsyncNetGCryptR sshdata (RepoKey keyid)
+getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = do
+	sshSetup [sshhost, gitinit] [] $ do
+		r <- liftAnnex $ addRemote $
+			makeGCryptRemote (sshRepoName sshdata) (sshUrl True sshdata) keyid
+		setupGroup r
+		liftAssistant $ syncRemote r
+		redirect $ EditNewCloudRepositoryR $ Remote.uuid r
+  where
+	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
+	gitinit = "git init --bare " ++ T.unpack (sshDirectory sshdata)
+
+enableRsyncNet :: SshInput -> String -> (Remote -> Handler ()) -> Handler Html
+enableRsyncNet sshinput reponame setup = 
+	prepRsyncNet sshinput reponame $ \sshdata ->
+		makeSshRepo True setup sshdata
+
+{- Prepares rsync.net ssh key, and if successful, runs an action with
+ - its SshData. -}
+prepRsyncNet :: SshInput -> String -> (SshData -> Handler Html) -> Handler Html
+prepRsyncNet sshinput reponame a = do
 	knownhost <- liftIO $ maybe (return False) knownHost (inputHostname sshinput)
 	keypair <- liftIO $ genSshKeyPair
 	sshdata <- liftIO $ setupSshKeyPair keypair $
@@ -371,8 +405,7 @@ makeRsyncNet sshinput reponame setup = do
 		, genSshHost (sshHostName sshdata) (sshUserName sshdata)
 		, remotecommand
 		]
-	sshSetup sshopts (sshPubKey keypair) $
-		makeSshRepo True setup sshdata
+	sshSetup sshopts (sshPubKey keypair) $ a sshdata
 
 isRsyncNet :: Maybe Text -> Bool
 isRsyncNet Nothing = False

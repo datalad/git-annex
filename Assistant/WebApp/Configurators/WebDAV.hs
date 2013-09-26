@@ -20,6 +20,7 @@ import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.PreferredContent
 import Logs.Remote
+import Assistant.Gpg
 
 import qualified Data.Map as M
 #endif

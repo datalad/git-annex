@@ -14,6 +14,7 @@ import qualified Types.Remote as R
 import qualified Remote
 import Remote.List
 import qualified Remote.Rsync as Rsync
+import qualified Remote.GCrypt as GCrypt
 import qualified Git
 import qualified Git.Command
 import qualified Command.InitRemote
@@ -23,6 +24,8 @@ import Git.Remote
 import Config
 import Config.Cost
 import Creds
+import Assistant.Gpg
+import Utility.Gpg (KeyId)
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -31,7 +34,8 @@ import qualified Data.Map as M
 makeSshRemote :: Bool -> SshData -> Maybe Cost -> Assistant Remote
 makeSshRemote forcersync sshdata mcost = do
 	r <- liftAnnex $
-		addRemote $ maker (sshRepoName sshdata) sshurl
+		addRemote $ maker (sshRepoName sshdata)
+			(sshUrl forcersync sshdata)
 	liftAnnex $ maybe noop (setRemoteCost r) mcost
 	syncRemote r
 	return r
@@ -40,17 +44,20 @@ makeSshRemote forcersync sshdata mcost = do
 	maker
 		| rsync = makeRsyncRemote
 		| otherwise = makeGitRemote
-	sshurl = T.unpack $ T.concat $
-		if rsync
-			then [u, h, T.pack ":", sshDirectory sshdata, T.pack "/"]
-			else [T.pack "ssh://", u, h, d, T.pack "/"]
-	  where
-		u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
-		h = sshHostName sshdata
-		d
-			| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = sshDirectory sshdata
-			| T.pack "~/" `T.isPrefixOf` sshDirectory sshdata = T.concat [T.pack "/", sshDirectory sshdata]
-			| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
+
+{- Generates a ssh or rsync url from a SshData. -}
+sshUrl :: Bool -> SshData -> String
+sshUrl forcersync sshdata = T.unpack $ T.concat $
+	if (forcersync || rsyncOnly sshdata)
+		then [u, h, T.pack ":", sshDirectory sshdata, T.pack "/"]
+		else [T.pack "ssh://", u, h, d, T.pack "/"]
+  where
+	u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
+	h = sshHostName sshdata
+	d
+		| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = sshDirectory sshdata
+		| T.pack "~/" `T.isPrefixOf` sshDirectory sshdata = T.concat [T.pack "/", sshDirectory sshdata]
+		| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
 	
 {- Runs an action that returns a name of the remote, and finishes adding it. -}
 addRemote :: Annex RemoteName -> Annex Remote
@@ -72,6 +79,16 @@ makeRsyncRemote name location = makeRemote name location $ const $ void $
 		[ ("encryption", "shared")
 		, ("rsyncurl", location)
 		, ("type", "rsync")
+		]
+
+{- Inits a gcrypt special remote, and returns its name. -}
+makeGCryptRemote :: RemoteName -> String -> KeyId -> Annex RemoteName
+makeGCryptRemote remotename location keyid = 
+	initSpecialRemote remotename GCrypt.remote $ M.fromList
+		[ ("type", "gcrypt")
+		, ("gitrepo", location)
+		, configureEncryption HybridEncryption
+		, ("keyid", keyid)
 		]
 
 type SpecialRemoteMaker = RemoteName -> RemoteType -> R.RemoteConfig -> Annex RemoteName

@@ -27,14 +27,14 @@
         ^{form}
         ^{webAppFormAuthToken}
         <div .form-actions>
-          <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
+          <button .btn .btn-primary type=submit onclick="$('#setupmodal').modal('show');">
             Use this rsync.net repository
-<div .modal .fade #testmodal>
+<div .modal .fade #setupmodal>
   <div .modal-header>
     <h3>
-      Making repository ...
+      Checking access to rsync.net ...
   <div .modal-body>
     <p>
-      Setting up your rsync.net repository. This could take a minute.
+      This could take a minute.
     <p>
       You may be prompted for your rsync.net ssh password.
