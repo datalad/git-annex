@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlu7K3h7Ry1uDAU_ERYGuqt0LoGNJqGuRo"
+ nickname="Nathan"
+ subject="Cabal installing git-annex on Ubuntu 12.04 Precise with GHC 7.6.3"
+ date="2013-09-25T22:39:04Z"
+ content="""
+I now realize [there is a Ubuntu 12.04 Precise PPA with a current
+version of
+git-annex](http://git-annex.branchable.com/install/Ubuntu/), so that's
+probably a better choice, but here's how I cabal isntalled git-annex.
+
+1. Apt install non-cabal dependencies:
+
+       sudo aptitude install c2hs libgsasl7-dev libxml2-dev
+
+2. Manually cabal install yesod-platform to avoid the [cryptocipher problem 
+   mentioned above](
+   http://git-annex.branchable.com/install/cabal/#comment-1807da37dc144b572b76aaf4b574bb54):
+
+       cabal install yesod-platform
+
+3. Cabal install git-annex with DNS flag disabled:
+
+       cabal install git-annex -f\"-dns\"
+
+I was getting this error building git-annex before disabling the DNS flag:
+
+    Utility/SRV.hs:70:54:
+        Couldn't match expected type `Maybe
+                                        [(Int, Int, Integer, B8.ByteString)]'
+                    with actual type `Either
+                                        dns-1.0.0:Network.DNS.Internal.DNSError
+                                        [(Int, Int, Int, dns-1.0.0:Network.DNS.Internal.Domain)]'
+        In the third argument of `maybe', namely `r'
+        In the second argument of `($)', namely
+          `maybe [] (orderHosts . map tohosts) r'
+        In a stmt of a 'do' block:
+          return $ maybe [] (orderHosts . map tohosts) r
+
+Looking at Utiltity/SRV.hs, it appears that disabling the DNS flag
+just makes git annex use a different DNS library (ADNS), not
+actually disable DNS lookups.
+
+"""]]
