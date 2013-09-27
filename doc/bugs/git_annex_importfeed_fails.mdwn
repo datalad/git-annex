@@ -56,3 +56,6 @@ etc
 
 # End of transcript or log.
 """]]
+
+> This is a bug in the feed library: <https://github.com/sof/feed/issues/7>  
+> [[forwarded|done]] --[[Joey]] 
