@@ -10,7 +10,7 @@ encrypted repository is a backup and you're restoring from it. It wouldn't
 do for the assistant, in that case, to make a *new* encrypted repo and
 push it over top of your backup!
 
-Handling that neat trick. It has to do quite a lot of probing, including
+Handling that was a neat trick. It has to do quite a lot of probing, including
 downloading the whole encrypted git repo so it can decrypt it and merge it,
 to find out about the special remote configuration used for it. This all
 works with just 2 ssh connections, and only 1 ssh password prompt max.
