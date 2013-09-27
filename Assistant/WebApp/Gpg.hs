@@ -72,3 +72,11 @@ getGCryptRemoteName u repoloc = do
 	void $ inRepo $ Git.Remote.remove tmpremote
 	return mname
 
+checkGCryptRepoEncryption :: String -> Handler Html -> Handler Html -> Handler Html
+checkGCryptRepoEncryption location notencrypted encrypted = 
+	dispatch =<< liftAnnex (inRepo $ Git.GCrypt.probeRepo location)
+  where
+	dispatch Git.GCrypt.Decryptable = encrypted
+	dispatch Git.GCrypt.NotEncrypted = notencrypted
+	dispatch Git.GCrypt.NotDecryptable =
+		error "This git repository is encrypted with a GnuPG key that you do not have."

@@ -38,7 +38,6 @@ import Config
 import Utility.Gpg
 import qualified Annex.Branch
 import qualified Remote.GCrypt as GCrypt
-import qualified Git.GCrypt
 import qualified Types.Remote
 
 import qualified Data.Text as T
@@ -295,17 +294,11 @@ getFinishAddDriveR drive = go
 		r <- liftAnnex $ addRemote $
 			makeGCryptRemote remotename dir keyid
 		return (Types.Remote.uuid r, r)
-	go NoRepoKey = do
-		pr <- liftAnnex $ inRepo $ Git.GCrypt.probeRepo dir
-		case pr of
-			Git.GCrypt.Decryptable -> do
-				mu <- liftIO $ probeGCryptRemoteUUID dir
-				case mu of
-					Just u -> enablegcryptremote u
-					Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
-			Git.GCrypt.NotDecryptable ->
-				error $ "The drive contains a git repository that is encrypted with a GnuPG key that you do not have."
-			Git.GCrypt.NotEncrypted -> makeunencrypted
+	go NoRepoKey = checkGCryptRepoEncryption dir makeunencrypted $ do
+			mu <- liftIO $ probeGCryptRemoteUUID dir
+			case mu of
+				Just u -> enablegcryptremote u
+				Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
 	enablegcryptremote u = do
 		mname <- liftAnnex $ getGCryptRemoteName u dir
 		case mname of

@@ -21,8 +21,6 @@ import Logs.PreferredContent
 import Types.StandardGroups
 import Utility.UserInfo
 import Utility.Gpg
-import qualified Remote.GCrypt as GCrypt
-import qualified Git.GCrypt
 import Types.Remote (RemoteConfigKey)
 import Git.Remote
 import Assistant.WebApp.Utility
@@ -393,16 +391,12 @@ enableRsyncNetGCrypt :: SshInput -> String -> Handler Html
 enableRsyncNetGCrypt sshinput reponame = 
 	prepRsyncNet sshinput reponame $ \sshdata -> do
   		let repourl = sshUrl True sshdata
-		pr <- liftAnnex $ inRepo $ Git.GCrypt.probeRepo repourl
-		case pr of
-			Git.GCrypt.Decryptable ->
-				setupCloudRemote TransferGroup $ 
-					enableSpecialRemote reponame GCrypt.remote $ M.fromList
-						[("gitrepo", repourl)]
-			Git.GCrypt.NotDecryptable ->
-				error "The drive contains a git repository that is encrypted with a GnuPG key that you do not have."
-			Git.GCrypt.NotEncrypted ->
-				error "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."
+		checkGCryptRepoEncryption repourl notencrypted $
+			setupCloudRemote TransferGroup $ 
+				enableSpecialRemote reponame GCrypt.remote $ M.fromList
+					[("gitrepo", repourl)]
+  where
+  	notencrypted = error "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."
 
 {- Prepares rsync.net ssh key, and if successful, runs an action with
  - its SshData. -}
