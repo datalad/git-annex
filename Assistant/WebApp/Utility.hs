@@ -24,11 +24,16 @@ import Config.Files
 import Git.Config
 import Assistant.Threads.Watcher
 import Assistant.NamedThread
+import Types.StandardGroups
+import Git.Remote
+import Logs.PreferredContent
+import Assistant.MakeRemote
 
 import qualified Data.Map as M
 import Control.Concurrent
 import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
 import System.Posix.Process (getProcessGroupIDOf)
+import Utility.Yesod
 
 {- Use Nothing to change autocommit setting; or a remote to change
  - its sync setting. -}
@@ -118,3 +123,14 @@ startTransfer t = do
 
 getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers <$> liftAssistant getDaemonStatus
+
+{- Runs an action that creates or enables a cloud remote,
+ - and finishes setting it up; adding it to a group if it's not already in
+ - one, starts syncing with it, and finishes by displaying the page to edit
+ - it. -}
+setupCloudRemote :: StandardGroup -> Annex RemoteName -> Handler a
+setupCloudRemote defaultgroup maker = do
+	r <- liftAnnex $ addRemote maker
+	liftAnnex $ setStandardGroup (Remote.uuid r) defaultgroup
+	liftAssistant $ syncRemote r
+	redirect $ EditNewCloudRepositoryR $ Remote.uuid r

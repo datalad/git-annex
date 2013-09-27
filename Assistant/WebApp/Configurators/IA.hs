@@ -20,7 +20,6 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Types.StandardGroups
 import Types.Remote (RemoteConfig)
-import Logs.PreferredContent
 import Logs.Remote
 import qualified Utility.Url as Url
 import Creds
@@ -131,7 +130,7 @@ postAddIAR = iaConfigurator $ do
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = escapeBucket $ T.unpack $ itemName input
-			AWS.makeAWSRemote initSpecialRemote S3.remote (extractCreds input) name setgroup $
+			AWS.makeAWSRemote initSpecialRemote S3.remote PublicGroup (extractCreds input) name $
 				M.fromList $ catMaybes
 					[ Just $ configureEncryption NoEncryption
 					, Just ("type", "S3")
@@ -147,9 +146,6 @@ postAddIAR = iaConfigurator $ do
 					, Just ("preferreddir", name)
 					]
 		_ -> $(widgetFile "configurators/addia")
-  where
-	setgroup r = liftAnnex $
-		setStandardGroup (Remote.uuid r) PublicGroup
 #else
 postAddIAR = error "S3 not supported by this build"
 #endif
@@ -175,7 +171,7 @@ enableIARemote uuid = do
 			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m
-			AWS.makeAWSRemote enableSpecialRemote S3.remote creds name (const noop) M.empty
+			AWS.makeAWSRemote enableSpecialRemote S3.remote PublicGroup creds name M.empty
 		_ -> do
 			description <- liftAnnex $
 				T.pack <$> Remote.prettyUUID uuid

@@ -21,11 +21,11 @@ import Logs.PreferredContent
 import Types.StandardGroups
 import Utility.UserInfo
 import Utility.Gpg
-import Assistant.Sync
 import qualified Remote.GCrypt as GCrypt
 import qualified Git.GCrypt
 import Types.Remote (RemoteConfigKey)
 import Git.Remote
+import Assistant.WebApp.Utility
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -296,26 +296,26 @@ getRetrySshR sshdata = do
 	redirect $ either (const $ ConfirmSshR sshdata) ConfirmSshR s
 
 getMakeSshGitR :: SshData -> Handler Html
-getMakeSshGitR = makeSsh False setupGroup
+getMakeSshGitR = makeSsh False
 
 getMakeSshRsyncR :: SshData -> Handler Html
-getMakeSshRsyncR = makeSsh True setupGroup
+getMakeSshRsyncR = makeSsh True
 
-makeSsh :: Bool -> (Remote -> Handler ()) -> SshData -> Handler Html
-makeSsh rsync setup sshdata
+makeSsh :: Bool -> SshData -> Handler Html
+makeSsh rsync sshdata
 	| needsPubKey sshdata = do
 		keypair <- liftIO genSshKeyPair
 		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
-		makeSsh' rsync setup sshdata sshdata' (Just keypair)
+		makeSsh' rsync sshdata sshdata' (Just keypair)
 	| sshPort sshdata /= 22 = do
 		sshdata' <- liftIO $ setSshConfig sshdata []
-		makeSsh' rsync setup sshdata sshdata' Nothing
-	| otherwise = makeSsh' rsync setup sshdata sshdata Nothing
+		makeSsh' rsync sshdata sshdata' Nothing
+	| otherwise = makeSsh' rsync sshdata sshdata Nothing
 
-makeSsh' :: Bool -> (Remote -> Handler ()) -> SshData -> SshData -> Maybe SshKeyPair -> Handler Html
-makeSsh' rsync setup origsshdata sshdata keypair = do
+makeSsh' :: Bool -> SshData -> SshData -> Maybe SshKeyPair -> Handler Html
+makeSsh' rsync origsshdata sshdata keypair = do
 	sshSetup ["-p", show (sshPort origsshdata), sshhost, remoteCommand] "" $
-		makeSshRepo rsync setup sshdata
+		makeSshRepo rsync sshdata
   where
 	sshhost = genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
 	remotedir = T.unpack $ sshDirectory sshdata
@@ -329,10 +329,10 @@ makeSsh' rsync setup origsshdata sshdata keypair = do
 			else Nothing
 		]
 
-makeSshRepo :: Bool -> (Remote -> Handler ()) -> SshData -> Handler Html
-makeSshRepo forcersync setup sshdata = do
+makeSshRepo :: Bool -> SshData -> Handler Html
+makeSshRepo forcersync sshdata = do
 	r <- liftAssistant $ makeSshRemote forcersync sshdata Nothing
-	setup r
+	liftAnnex $ setStandardGroup (Remote.uuid r) TransferGroup
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
 
 getAddRsyncNetR :: Handler Html
@@ -371,27 +371,23 @@ postAddRsyncNetR = do
 			$(widgetFile "configurators/rsync.net/encrypt")					
 
 getMakeRsyncNetSharedR :: SshData -> Handler Html
-getMakeRsyncNetSharedR sshdata = makeSshRepo True setupGroup sshdata
+getMakeRsyncNetSharedR sshdata = makeSshRepo True sshdata
 
 {- Make a gcrypt special remote on rsync.net. -}
 getMakeRsyncNetGCryptR :: SshData -> RepoKey -> Handler Html
 getMakeRsyncNetGCryptR sshdata NoRepoKey = whenGcryptInstalled $
 	withNewSecretKey $ getMakeRsyncNetGCryptR sshdata . RepoKey
 getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $ do
-	sshSetup [sshhost, gitinit] [] $ do
-		r <- liftAnnex $ addRemote $
+	sshSetup [sshhost, gitinit] [] $
+		setupCloudRemote TransferGroup $ 
 			makeGCryptRemote (sshRepoName sshdata) (sshUrl True sshdata) keyid
-		setupGroup r
-		liftAssistant $ syncRemote r
-		redirect $ EditNewCloudRepositoryR $ Remote.uuid r
   where
 	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
 	gitinit = "git init --bare " ++ T.unpack (sshDirectory sshdata)
 
 enableRsyncNet :: SshInput -> String -> Handler Html
 enableRsyncNet sshinput reponame = 
-	prepRsyncNet sshinput reponame $ \sshdata ->
-		makeSshRepo True (const noop) sshdata
+	prepRsyncNet sshinput reponame $ makeSshRepo True
 
 enableRsyncNetGCrypt :: SshInput -> String -> Handler Html
 enableRsyncNetGCrypt sshinput reponame = 
@@ -399,13 +395,10 @@ enableRsyncNetGCrypt sshinput reponame =
   		let repourl = sshUrl True sshdata
 		pr <- liftAnnex $ inRepo $ Git.GCrypt.probeRepo repourl
 		case pr of
-			Git.GCrypt.Decryptable -> do
-				r <- liftAnnex $ addRemote $
+			Git.GCrypt.Decryptable ->
+				setupCloudRemote TransferGroup $ 
 					enableSpecialRemote reponame GCrypt.remote $ M.fromList
 						[("gitrepo", repourl)]
-				setupGroup r
-				liftAssistant $ syncRemote r
-				redirect $ EditNewCloudRepositoryR $ Remote.uuid r		
 			Git.GCrypt.NotDecryptable ->
 				error "The drive contains a git repository that is encrypted with a GnuPG key that you do not have."
 			Git.GCrypt.NotEncrypted ->
@@ -446,6 +439,3 @@ prepRsyncNet sshinput reponame a = do
 isRsyncNet :: Maybe Text -> Bool
 isRsyncNet Nothing = False
 isRsyncNet (Just host) = ".rsync.net" `T.isSuffixOf` T.toLower host
-
-setupGroup :: Remote -> Handler ()
-setupGroup r = liftAnnex $ setStandardGroup (Remote.uuid r) TransferGroup
