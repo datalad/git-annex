@@ -22,6 +22,10 @@ import Types.StandardGroups
 import Utility.UserInfo
 import Utility.Gpg
 import Assistant.Sync
+import qualified Remote.GCrypt as GCrypt
+import qualified Git.GCrypt
+import Types.Remote (RemoteConfigKey)
+import Git.Remote
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -131,39 +135,48 @@ postAddSshR = sshConfigurator $ do
 sshTestModal :: Widget
 sshTestModal = $(widgetFile "configurators/ssh/testmodal")
 
-{- This only handles gcrypt repositories that are located on ssh servers;
- - ones on local drives are handled via another part of the UI. -}
-getEnableGCryptR :: UUID -> Handler Html
-getEnableGCryptR = postEnableGCryptR
-postEnableGCryptR :: UUID -> Handler Html
-postEnableGCryptR u = error "TODO"
-
-{- To enable an existing rsync special remote, parse the SshInput from
- - its rsyncurl, and display a form whose only real purpose is to check
- - if ssh public keys need to be set up. From there, we can proceed with
- - the usual repo setup; all that code is idempotent.
- -
- - Note that there's no EnableSshR because ssh remotes are not special
+{- Note that there's no EnableSshR because ssh remotes are not special
  - remotes, and so their configuration is not shared between repositories.
  -}
 getEnableRsyncR :: UUID -> Handler Html
 getEnableRsyncR = postEnableRsyncR
 postEnableRsyncR :: UUID -> Handler Html
-postEnableRsyncR u = do
+postEnableRsyncR = enableSpecialSshRemote "rsyncurl" enableRsyncNet enablersync
+  where
+	enablersync sshdata = redirect $ ConfirmSshR $
+		sshdata { rsyncOnly = True }
+
+{- This only handles gcrypt repositories that are located on ssh servers;
+ - ones on local drives are handled via another part of the UI. -}
+getEnableGCryptR :: UUID -> Handler Html
+getEnableGCryptR = postEnableGCryptR
+postEnableGCryptR :: UUID -> Handler Html
+postEnableGCryptR u = whenGcryptInstalled $
+	enableSpecialSshRemote "gitrepo" enableRsyncNetGCrypt enablersync u
+  where
+  	enablersync sshdata = error "TODO enable ssh gcrypt remote"
+
+{- To enable an special remote that uses ssh as its transport, 
+ - parse a config key to get its url, and display a form whose
+ - only real purpose is to check if ssh public keys need to be
+ - set up.
+ -}
+enableSpecialSshRemote :: RemoteConfigKey -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> Handler ()) -> UUID -> Handler Html
+enableSpecialSshRemote urlkey rsyncnetsetup genericsetup u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
-	case (parseSshRsyncUrl =<< M.lookup "rsyncurl" m, M.lookup "name" m) of
+	case (parseSshRsyncUrl =<< M.lookup urlkey m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- liftH $
 				runFormPost $ renderBootstrap $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (inputHostname sshinput') ->
-						void $ liftH $ enableRsyncNet sshinput' reponame (const noop)
+						void $ liftH $ rsyncnetsetup sshinput' reponame
 					| otherwise -> do
 						s <- liftIO $ testServer sshinput'
 						case s of
 							Left status -> showform form enctype status
-							Right sshdata -> enable sshdata
+							Right sshdata -> liftH $ genericsetup sshdata
 								{ sshRepoName = reponame }
 				_ -> showform form enctype UntestedServer
 		_ -> redirect AddSshR
@@ -171,8 +184,6 @@ postEnableRsyncR u = do
 	showform form enctype status = do
 		description <- liftAnnex $ T.pack <$> prettyUUID u
 		$(widgetFile "configurators/ssh/enable")
-	enable sshdata = liftH $ redirect $ ConfirmSshR $
-		sshdata { rsyncOnly = True }
 
 {- Converts a rsyncurl value to a SshInput. But only if it's a ssh rsync
  - url; rsync:// urls or bare path names are not supported.
@@ -377,10 +388,28 @@ getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $ do
 	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
 	gitinit = "git init --bare " ++ T.unpack (sshDirectory sshdata)
 
-enableRsyncNet :: SshInput -> String -> (Remote -> Handler ()) -> Handler Html
-enableRsyncNet sshinput reponame setup = 
+enableRsyncNet :: SshInput -> String -> Handler Html
+enableRsyncNet sshinput reponame = 
 	prepRsyncNet sshinput reponame $ \sshdata ->
-		makeSshRepo True setup sshdata
+		makeSshRepo True (const noop) sshdata
+
+enableRsyncNetGCrypt :: SshInput -> String -> Handler Html
+enableRsyncNetGCrypt sshinput reponame = 
+	prepRsyncNet sshinput reponame $ \sshdata -> do
+  		let repourl = sshUrl True sshdata
+		pr <- liftAnnex $ inRepo $ Git.GCrypt.probeRepo repourl
+		case pr of
+			Git.GCrypt.Decryptable -> do
+				r <- liftAnnex $ addRemote $
+					enableSpecialRemote reponame GCrypt.remote $ M.fromList
+						[("gitrepo", repourl)]
+				setupGroup r
+				liftAssistant $ syncRemote r
+				redirect $ EditNewCloudRepositoryR $ Remote.uuid r		
+			Git.GCrypt.NotDecryptable ->
+				error "The drive contains a git repository that is encrypted with a GnuPG key that you do not have."
+			Git.GCrypt.NotEncrypted ->
+				error "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."
 
 {- Prepares rsync.net ssh key, and if successful, runs an action with
  - its SshData. -}

@@ -15,6 +15,7 @@ import Git.Construct
 import qualified Git.Config as Config
 import qualified Git.Command as Command
 import Utility.Gpg
+import Git.Remote
 
 urlPrefix :: String
 urlPrefix = "gcrypt::"
@@ -66,7 +67,6 @@ probeRepo loc baserepo = do
 		ExitFailure 1 -> NotDecryptable
 		ExitFailure _ -> NotEncrypted
 
-type RemoteName = String
 type GCryptId = String
 
 {- gcrypt gives each encrypted repository a uique gcrypt-id,

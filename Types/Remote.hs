@@ -18,6 +18,7 @@ import Types.UUID
 import Types.GitConfig
 import Config.Cost
 import Utility.Metered
+import Git.Remote
 
 type RemoteConfigKey = String
 type RemoteConfig = M.Map RemoteConfigKey String
@@ -42,7 +43,7 @@ data RemoteA a = Remote {
 	-- each Remote has a unique uuid
 	uuid :: UUID,
 	-- each Remote has a human visible name
-	name :: String,
+	name :: RemoteName,
 	-- Remotes have a use cost; higher is more expensive
 	cost :: Cost,
 	-- Transfers a key to the remote.

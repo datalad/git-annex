@@ -2,9 +2,8 @@
   <h2>
     Enabling #{description}
   <p>
-    Another repository uses this server, but the server is not #
-    yet enabled for use here. The first step to enable it is to check if it's #
-    usable here.
+    To enable this repository, you first need to check that its ssh server #
+    is usable from here.
   <p>
   <p>
     <form method="post" .form-horizontal enctype=#{enctype}>

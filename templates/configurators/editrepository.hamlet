@@ -1,7 +1,7 @@
 <div .span9 .hero-unit>
   <h2>
     $if new
-      Repository created
+      Setup complete
     $else
       Editing repository
   $if new

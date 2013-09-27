@@ -56,6 +56,7 @@ import Logs.Trust
 import Logs.Location hiding (logStatus)
 import Remote.List
 import Config
+import Git.Remote
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> a) -> Annex (M.Map UUID a)
@@ -68,7 +69,7 @@ remoteMap c = M.fromList . map (\r -> (uuid r, c r)) .
 uuidDescriptions :: Annex (M.Map UUID String)
 uuidDescriptions = M.unionWith addName <$> uuidMap <*> remoteMap name
 
-addName :: String -> String -> String
+addName :: String -> RemoteName -> String
 addName desc n
 	| desc == n = desc
 	| null desc = n
@@ -76,12 +77,12 @@ addName desc n
 
 {- When a name is specified, looks up the remote matching that name.
  - (Or it can be a UUID.) -}
-byName :: Maybe String -> Annex (Maybe Remote)
+byName :: Maybe RemoteName -> Annex (Maybe Remote)
 byName Nothing = return Nothing
 byName (Just n) = either error Just <$> byName' n
 
 {- Like byName, but the remote must have a configured UUID. -}
-byNameWithUUID :: Maybe String -> Annex (Maybe Remote)
+byNameWithUUID :: Maybe RemoteName -> Annex (Maybe Remote)
 byNameWithUUID = checkuuid <=< byName
   where
   	checkuuid Nothing = return Nothing
@@ -93,7 +94,7 @@ byNameWithUUID = checkuuid <=< byName
 				else error e
 		| otherwise = return $ Just r
 
-byName' :: String -> Annex (Either String Remote)
+byName' :: RemoteName -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"
 byName' n = handle . filter matching <$> remoteList
   where
@@ -104,7 +105,7 @@ byName' n = handle . filter matching <$> remoteList
 {- Looks up a remote by name (or by UUID, or even by description),
  - and returns its UUID. Finds even remotes that are not configured in
  - .git/config. -}
-nameToUUID :: String -> Annex UUID
+nameToUUID :: RemoteName -> Annex UUID
 nameToUUID "." = getUUID -- special case for current repo
 nameToUUID "here" = getUUID
 nameToUUID "" = error "no remote specified"

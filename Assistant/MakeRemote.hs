@@ -47,10 +47,10 @@ makeSshRemote forcersync sshdata mcost = do
 
 {- Generates a ssh or rsync url from a SshData. -}
 sshUrl :: Bool -> SshData -> String
-sshUrl forcersync sshdata = T.unpack $ T.concat $
+sshUrl forcersync sshdata = addtrailingslash $ T.unpack $ T.concat $
 	if (forcersync || rsyncOnly sshdata)
-		then [u, h, T.pack ":", sshDirectory sshdata, T.pack "/"]
-		else [T.pack "ssh://", u, h, d, T.pack "/"]
+		then [u, h, T.pack ":", sshDirectory sshdata]
+		else [T.pack "ssh://", u, h, d]
   where
 	u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
 	h = sshHostName sshdata
@@ -58,7 +58,10 @@ sshUrl forcersync sshdata = T.unpack $ T.concat $
 		| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = sshDirectory sshdata
 		| T.pack "~/" `T.isPrefixOf` sshDirectory sshdata = T.concat [T.pack "/", sshDirectory sshdata]
 		| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
-	
+	addtrailingslash s
+		| "/" `isSuffixOf` s = s
+		| otherwise = s ++ "/"
+
 {- Runs an action that returns a name of the remote, and finishes adding it. -}
 addRemote :: Annex RemoteName -> Annex Remote
 addRemote a = do
