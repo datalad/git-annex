@@ -26,7 +26,7 @@
 /config/repository/new/androidcamera AndroidCameraRepositoryR GET
 /config/repository/switcher RepositorySwitcherR GET
 /config/repository/switchto/#FilePath SwitchToRepositoryR GET
-/config/repository/combine/#FilePathAndUUID CombineRepositoryR GET
+/config/repository/combine/#FilePath/#UUID CombineRepositoryR GET
 /config/repository/edit/#UUID EditRepositoryR GET POST
 /config/repository/edit/new/#UUID EditNewRepositoryR GET POST
 /config/repository/edit/new/cloud/#UUID EditNewCloudRepositoryR GET POST
