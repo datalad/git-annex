@@ -27,6 +27,7 @@ import Git.Config
 import Git.Remote
 import Assistant.Sync
 import Config.Cost
+import Utility.NotificationBroadcaster
 import qualified Git
 #ifdef WITH_XMPP
 #endif
@@ -83,8 +84,8 @@ notWanted _ = False
  -
  - Returns a div, which will be inserted into the calling page.
  -}
-getRepoListR :: RepoListNotificationId -> Handler Html
-getRepoListR (RepoListNotificationId nid reposelector) = do
+getRepoListR :: NotificationId -> RepoSelector -> Handler Html
+getRepoListR nid reposelector = do
 	waitNotifier getRepoListBroadcaster nid
 	p <- widgetToPageContent $ repoListDisplay reposelector
 	giveUrlRenderer $ [hamlet|^{pageBody p}|]

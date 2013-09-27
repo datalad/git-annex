@@ -150,9 +150,6 @@ data RepoSelector = RepoSelector
 	}
 	deriving (Read, Show, Eq)
 
-data RepoListNotificationId = RepoListNotificationId NotificationId RepoSelector
-	deriving (Read, Show, Eq)
-
 data RemovableDrive = RemovableDrive 
 	{ diskFree :: Maybe Integer
 	, mountPoint :: Text
@@ -204,10 +201,6 @@ instance PathPiece BuddyKey where
 	fromPathPiece = readish . unpack
 
 instance PathPiece PairKey where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
-
-instance PathPiece RepoListNotificationId where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
 

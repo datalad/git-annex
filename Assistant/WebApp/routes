@@ -90,7 +90,7 @@
 /buddylist/#NotificationId BuddyListR GET
 /notifier/buddylist NotifierBuddyListR GET
 
-/repolist/#RepoListNotificationId RepoListR GET
+/repolist/#NotificationId/#RepoSelector RepoListR GET
 /notifier/repolist/#RepoSelector NotifierRepoListR GET
 
 /alert/close/#AlertId CloseAlert GET
