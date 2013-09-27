@@ -17,4 +17,4 @@ Also spent a while fixing a bug in git-remote-gcrypt. Oddly
 `gpg --list-keys --fast-list --fingerprint` does not show the fingerprints
 of some keys.
 
-Today's work was sponsored by Thomas Djärv.
+Today's work was sponsored by Cloudier - Thomas Djärv.
