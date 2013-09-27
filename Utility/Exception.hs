@@ -14,6 +14,7 @@ import qualified Control.Exception as E
 import Control.Applicative
 import Control.Monad
 import System.IO.Error (isDoesNotExistError)
+import Utility.Data
 
 {- Catches IO errors and returns a Bool -}
 catchBoolIO :: IO Bool -> IO Bool
@@ -54,5 +55,5 @@ tryNonAsync a = (Right <$> a) `catchNonAsync` (return . Left)
 
 {- Catches only DoesNotExist exceptions, and lets all others through. -}
 tryWhenExists :: IO a -> IO (Maybe a)
-tryWhenExists a = either (const Nothing) Just <$>
+tryWhenExists a = eitherToMaybe <$>
 	tryJust (guard . isDoesNotExistError) a

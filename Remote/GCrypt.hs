@@ -14,6 +14,7 @@ module Remote.GCrypt (
 
 import qualified Data.Map as M
 import qualified Data.ByteString.Lazy as L
+import Control.Exception.Extensible
 
 import Common.Annex
 import Types.Remote
@@ -374,22 +375,24 @@ coreGCryptId = "core.gcrypt-id"
  - (Also returns a version of input repo with its config read.) -}
 getGCryptId :: Bool -> Git.Repo -> Annex (Maybe Git.GCrypt.GCryptId, Git.Repo)
 getGCryptId fast r
-	| Git.repoIsLocal r = extract
-		=<< liftIO (catchDefaultIO r $ Git.Config.read r)
-	| not fast = do
-		fromshell <- Ssh.onRemote r (Git.Config.fromPipe r, Left undefined) "configlist" [] []
-		case fromshell of
-			Right (r', _) -> extract r'
-			Left _ -> do
-				(rsynctransport, rsyncurl, _) <- rsyncTransport r
-				fromrsync <- liftIO $ do
-					withTmpFile "tmpconfig" $ \tmpconfig _ -> do
-						void $ rsync $ rsynctransport ++
-							[ Param $ rsyncurl ++ "/config"
-							, Param tmpconfig
-							]
-						Git.Config.fromFile r tmpconfig
-				extract $ either (const r) fst fromrsync
+	| Git.repoIsLocal r = extract <$>
+		liftIO (catchMaybeIO $ Git.Config.read r)
+	| not fast = extract . liftM fst <$> getM (eitherToMaybe <$>)
+		[ Ssh.onRemote r (Git.Config.fromPipe r, Left undefined) "configlist" [] []
+		, getConfigViaRsync r
+		]
 	| otherwise = return (Nothing, r)
   where
-	extract r' = return (Git.Config.getMaybe coreGCryptId r', r')
+	extract Nothing = (Nothing, r)
+	extract (Just r') = (Git.Config.getMaybe coreGCryptId r', r')
+
+getConfigViaRsync :: Git.Repo -> Annex (Either SomeException (Git.Repo, String))
+getConfigViaRsync r = do
+	(rsynctransport, rsyncurl, _) <- rsyncTransport r
+	liftIO $ do
+		withTmpFile "tmpconfig" $ \tmpconfig _ -> do
+			void $ rsync $ rsynctransport ++
+				[ Param $ rsyncurl ++ "/config"
+				, Param tmpconfig
+				]
+			Git.Config.fromFile r tmpconfig
