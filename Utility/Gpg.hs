@@ -369,7 +369,7 @@ checkGpgPackets keys str = do
 		(Just (KeyIds ks), ls, []) -> do
 			-- Find the master key associated with the
 			-- encryption subkey.
-			ks' <- concat <$> mapM (findPubKeys >=*> keyIds)
+			ks' <- concat <$> mapM (keyIds <$$> findPubKeys)
 					[ k | k:"keyid":_ <- map (reverse . words) ls ]
 			return $ sort (nub ks) == sort (nub ks')
 		_ -> return False

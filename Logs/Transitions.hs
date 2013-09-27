@@ -71,7 +71,7 @@ parseTransitionLine s = TransitionLine <$> pdate ds <*> readish ts
   	ws = words s
   	ts = Prelude.head ws
 	ds = unwords $ Prelude.tail ws
-	pdate = parseTime defaultTimeLocale "%s%Qs" >=*> utcTimeToPOSIXSeconds
+	pdate = utcTimeToPOSIXSeconds <$$> parseTime defaultTimeLocale "%s%Qs"
 
 combineTransitions :: [Transitions] -> Transitions
 combineTransitions = S.unions

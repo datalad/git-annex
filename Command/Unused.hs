@@ -293,10 +293,9 @@ withKeysReferencedInGitRef a ref = do
 	forM_ ts $ tKey lookAtWorkingTree >=> maybe noop a
 	liftIO $ void clean
   where
-	tKey True = Backend.lookupFile . DiffTree.file >=*>
-			fmap fst
-	tKey False = catFile ref . DiffTree.file >=*>
-			fileKey . takeFileName . encodeW8 . L.unpack
+	tKey True = fmap fst <$$> Backend.lookupFile . DiffTree.file
+	tKey False = fileKey . takeFileName . encodeW8 . L.unpack <$$>
+		catFile ref . DiffTree.file
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable.
