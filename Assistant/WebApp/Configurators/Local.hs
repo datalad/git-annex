@@ -252,7 +252,7 @@ getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
 		mu <- liftIO $ probeUUID dir
 		case mu of
 			Nothing -> maybe askcombine isknownuuid
-				=<< liftIO (probeGCryptRemoteUUID dir)
+				=<< liftAnnex (probeGCryptRemoteUUID dir)
 			Just driveuuid -> isknownuuid driveuuid
 	, newrepo
 	)
@@ -295,19 +295,17 @@ getFinishAddDriveR drive = go
 			makeGCryptRemote remotename dir keyid
 		return (Types.Remote.uuid r, r)
 	go NoRepoKey = checkGCryptRepoEncryption dir makeunencrypted $ do
-			mu <- liftIO $ probeGCryptRemoteUUID dir
+			mu <- liftAnnex $ probeGCryptRemoteUUID dir
 			case mu of
-				Just u -> enablegcryptremote u
+				Just u -> enableexistinggcryptremote u
 				Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
-	enablegcryptremote u = do
-		mname <- liftAnnex $ getGCryptRemoteName u dir
-		case mname of
-			Nothing -> error $ "Cannot find configuration for the gcrypt remote at " ++ dir
-			Just name -> makewith $ const $ do
-				r <- liftAnnex $ addRemote $
-					enableSpecialRemote name GCrypt.remote $ M.fromList
-						[("gitrepo", dir)]
-				return (u, r)
+	enableexistinggcryptremote u = do
+		remotename' <- liftAnnex $ getGCryptRemoteName u dir
+		makewith $ const $ do
+			r <- liftAnnex $ addRemote $
+				enableSpecialRemote remotename' GCrypt.remote $ M.fromList
+					[("gitrepo", dir)]
+			return (u, r)
 	{- Making a new unencrypted repo, or combining with an existing one. -}
 	makeunencrypted = makewith $ \isnew -> (,)
 		<$> liftIO (initRepo isnew False dir $ Just remotename)
@@ -471,9 +469,3 @@ probeUUID :: FilePath -> IO (Maybe UUID)
 probeUUID dir = catchDefaultIO Nothing $ inDir dir $ do
 	u <- getUUID
 	return $ if u == NoUUID then Nothing else Just u
-
-{- Gets the UUID of the gcrypt repo at a location, which may not exist.
- - Only works if the gcrypt repo was created as a git-annex remote. -}
-probeGCryptRemoteUUID :: FilePath -> IO (Maybe UUID)
-probeGCryptRemoteUUID dir = catchDefaultIO Nothing $ do
-	GCrypt.getGCryptUUID =<< Git.Construct.fromAbsPath dir

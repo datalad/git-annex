@@ -40,6 +40,7 @@ import Annex.UUID
 import Annex.Ssh
 import qualified Remote.Rsync
 import Utility.Rsync
+import Utility.Tmp
 import Logs.Remote
 import Logs.Transfer
 import Utility.Gpg
@@ -61,9 +62,9 @@ gen gcryptr u c gc = do
 	-- get underlying git repo with real path, not gcrypt path
 	r <- liftIO $ Git.GCrypt.encryptedRemote g gcryptr
 	let r' = r { Git.remoteName = Git.remoteName gcryptr }
-	(mgcryptid, r'') <- liftIO $ getGCryptId r'
-	-- doublecheck that local cache matches underlying repo's gcrypt-id
-	-- (which might not be set)
+	-- doublecheck that cache matches underlying repo's gcrypt-id
+	-- (which might not be set), only for local repos
+	(mgcryptid, r'') <- getGCryptId True r'
 	case (mgcryptid, Git.GCrypt.remoteRepoId g (Git.remoteName gcryptr)) of
 		(Just gcryptid, Just cachedgcryptid)
 			| gcryptid /= cachedgcryptid -> resetup gcryptid r''
@@ -86,24 +87,6 @@ gen gcryptr u c gc = do
 			_ -> do
 				warning $ "not using unknown gcrypt repository pointed to by remote " ++ Git.repoDescribe r
 				return Nothing
-
-getGCryptUUID :: Git.Repo -> IO (Maybe UUID)
-getGCryptUUID r = (genUUIDInNameSpace gCryptNameSpace <$>) . fst
-	<$> getGCryptId r
-
-coreGCryptId :: String
-coreGCryptId = "core.gcrypt-id"
-
-{- gcrypt repos set up by git-annex as special remotes have a
- - core.gcrypt-id setting in their config, which can be mapped back to
- - the remote's UUID. This only works for local repos.
- - (Also returns a version of input repo with its config read.) -}
-getGCryptId :: Git.Repo -> IO (Maybe Git.GCrypt.GCryptId, Git.Repo)
-getGCryptId r
-	| Git.repoIsLocal r = do
-		r' <- catchDefaultIO r $ Git.Config.read r
-		return (Git.Config.getMaybe coreGCryptId r', r')
-	| otherwise = return (Nothing, r)
 
 gen' :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen' r u c gc = do
@@ -374,3 +357,39 @@ toAccessMethod :: String -> AccessMethod
 toAccessMethod "shell" = AccessShell
 toAccessMethod _ = AccessDirect
 
+getGCryptUUID :: Bool -> Git.Repo -> Annex (Maybe UUID)
+getGCryptUUID fast r = (genUUIDInNameSpace gCryptNameSpace <$>) . fst
+	<$> getGCryptId fast r
+
+coreGCryptId :: String
+coreGCryptId = "core.gcrypt-id"
+
+{- gcrypt repos set up by git-annex as special remotes have a
+ - core.gcrypt-id setting in their config, which can be mapped back to
+ - the remote's UUID.
+ -
+ - In fast mode, only checks local repos. To check a remote repo,
+ - tries git-annex-shell and direct rsync of the git config file.
+ -
+ - (Also returns a version of input repo with its config read.) -}
+getGCryptId :: Bool -> Git.Repo -> Annex (Maybe Git.GCrypt.GCryptId, Git.Repo)
+getGCryptId fast r
+	| Git.repoIsLocal r = extract
+		=<< liftIO (catchDefaultIO r $ Git.Config.read r)
+	| not fast = do
+		fromshell <- Ssh.onRemote r (Git.Config.fromPipe r, Left undefined) "configlist" [] []
+		case fromshell of
+			Right (r', _) -> extract r'
+			Left _ -> do
+				(rsynctransport, rsyncurl, _) <- rsyncTransport r
+				fromrsync <- liftIO $ do
+					withTmpFile "tmpconfig" $ \tmpconfig _ -> do
+						void $ rsync $ rsynctransport ++
+							[ Param $ rsyncurl ++ "/config"
+							, Param tmpconfig
+							]
+						Git.Config.fromFile r tmpconfig
+				extract $ either (const r) fst fromrsync
+	| otherwise = return (Nothing, r)
+  where
+	extract r' = return (Git.Config.getMaybe coreGCryptId r', r')

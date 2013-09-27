@@ -168,3 +168,12 @@ fromPipe r cmd params = try $
   where
 	p = proc cmd $ toCommand params
 
+{- Reads git config from a specified file and returns the repo populated
+ - with the configuration. -}
+fromFile :: Repo -> FilePath -> IO (Either SomeException (Repo, String))
+fromFile r f = fromPipe r "git"
+	[ Param "config"
+	, Param "--file"
+	, File f
+	, Param "--list"
+	]

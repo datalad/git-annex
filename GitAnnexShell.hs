@@ -61,7 +61,7 @@ options = Option.common ++
 		check u | u == toUUID expected = noop
 		check NoUUID = checkGCryptUUID expected
 		check u = unexpectedUUID expected u
-	checkGCryptUUID expected = inRepo getGCryptUUID >>= check
+	checkGCryptUUID expected = check =<< getGCryptUUID True =<< gitRepo
 	  where
 	  	check (Just u) | u == toUUID expected = noop
 		check Nothing = unexpected expected "uninitialized repository"

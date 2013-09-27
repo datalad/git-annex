@@ -24,6 +24,7 @@ import Utility.Gpg
 import Types.Remote (RemoteConfigKey)
 import Git.Remote
 import Assistant.WebApp.Utility
+import qualified Remote.GCrypt as GCrypt
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -344,7 +345,8 @@ postAddRsyncNetR = do
 		$(widgetFile "configurators/rsync.net/add")
 	case result of
 		FormSuccess sshinput
-			| isRsyncNet (inputHostname sshinput) -> prep sshinput
+			| isRsyncNet (inputHostname sshinput) ->
+				go sshinput
 			| otherwise ->
 				showform $ UnusableServer
 					"That is not a rsync.net host name."
@@ -360,13 +362,28 @@ postAddRsyncNetR = do
   The host name will be something like "usw-s001.rsync.net", and the #
   user name something like "7491"
 |]
-	prep sshinput = do
+	go sshinput = do
 		let reponame = genSshRepoName "rsync.net" 
 			(maybe "" T.unpack $ inputDirectory sshinput)
-		prepRsyncNet sshinput reponame $ \sshdata -> inpage $ do
-			secretkeys <- sortBy (comparing snd) . M.toList
-				<$> liftIO secretKeys
-			$(widgetFile "configurators/rsync.net/encrypt")					
+		prepRsyncNet sshinput reponame $ \sshdata -> inpage $ 
+			checkexistinggcrypt sshdata $ do
+				secretkeys <- sortBy (comparing snd) . M.toList
+					<$> liftIO secretKeys
+				$(widgetFile "configurators/rsync.net/encrypt")
+	{- Detect if the user entered an existing gcrypt repository,
+	 - and enable it. -}
+	checkexistinggcrypt sshdata a = ifM (liftIO isGcryptInstalled)
+		( checkGCryptRepoEncryption repourl a $ do
+			mu <- liftAnnex $ probeGCryptRemoteUUID repourl
+			case mu of
+				Just u -> do
+					reponame <- liftAnnex $ getGCryptRemoteName u repourl
+					void $ liftH $ enableRsyncNetGCrypt' sshdata reponame
+				Nothing -> error "The location contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+		, a
+		)
+	  where
+	  	repourl = sshUrl True sshdata
 
 getMakeRsyncNetSharedR :: SshData -> Handler Html
 getMakeRsyncNetSharedR sshdata = makeSshRepo True sshdata
@@ -387,16 +404,18 @@ enableRsyncNet :: SshInput -> String -> Handler Html
 enableRsyncNet sshinput reponame = 
 	prepRsyncNet sshinput reponame $ makeSshRepo True
 
-enableRsyncNetGCrypt :: SshInput -> String -> Handler Html
+enableRsyncNetGCrypt :: SshInput -> RemoteName -> Handler Html
 enableRsyncNetGCrypt sshinput reponame = 
-	prepRsyncNet sshinput reponame $ \sshdata -> do
-  		let repourl = sshUrl True sshdata
-		checkGCryptRepoEncryption repourl notencrypted $
-			setupCloudRemote TransferGroup $ 
-				enableSpecialRemote reponame GCrypt.remote $ M.fromList
-					[("gitrepo", repourl)]
+	prepRsyncNet sshinput reponame $ \sshdata ->
+		checkGCryptRepoEncryption (sshUrl True sshdata) notencrypted $
+			enableRsyncNetGCrypt' sshdata reponame
   where
-  	notencrypted = error "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."
+	notencrypted = error "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."
+enableRsyncNetGCrypt' :: SshData -> RemoteName -> Handler Html
+enableRsyncNetGCrypt' sshdata reponame = 
+	setupCloudRemote TransferGroup $ 
+		enableSpecialRemote reponame GCrypt.remote $ M.fromList
+			[("gitrepo", sshUrl True sshdata)]
 
 {- Prepares rsync.net ssh key, and if successful, runs an action with
  - its SshData. -}

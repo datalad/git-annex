@@ -14,8 +14,10 @@ import Assistant.Gpg
 import Utility.Gpg
 import qualified Git.Command
 import qualified Git.Remote
+import qualified Git.Construct
 import qualified Annex.Branch
 import qualified Git.GCrypt
+import qualified Remote.GCrypt as GCrypt
 import Assistant.MakeRemote
 import Logs.Remote
 
@@ -34,8 +36,11 @@ gpgKeyDisplay keyid userid = [whamlet|
 genKeyModal :: Widget
 genKeyModal = $(widgetFile "configurators/genkeymodal")
 
+isGcryptInstalled :: IO Bool
+isGcryptInstalled = inPath "git-remote-gcrypt"
+
 whenGcryptInstalled :: Handler Html -> Handler Html
-whenGcryptInstalled a = ifM (liftIO $ inPath "git-remote-gcrypt")
+whenGcryptInstalled a = ifM (liftIO isGcryptInstalled)
 	( a
 	, page "Need git-remote-gcrypt" (Just Configuration) $
 		$(widgetFile "configurators/needgcrypt")
@@ -58,7 +63,7 @@ withNewSecretKey use = do
  - branch from the gcrypt remote and merges it in, and then looks up
  - the name.
  -}
-getGCryptRemoteName :: UUID -> String -> Annex (Maybe Git.Remote.RemoteName)
+getGCryptRemoteName :: UUID -> String -> Annex Git.Remote.RemoteName
 getGCryptRemoteName u repoloc = do
 	tmpremote <- uniqueRemoteName "tmpgcryptremote" 0 <$> gitRepo
 	void $ inRepo $ Git.Command.runBool
@@ -70,9 +75,11 @@ getGCryptRemoteName u repoloc = do
 		, return Nothing
 		)
 	void $ inRepo $ Git.Remote.remove tmpremote
-	return mname
+	maybe missing return mname
+  where
+	missing = error $ "Cannot find configuration for the gcrypt remote at " ++ repoloc
 
-checkGCryptRepoEncryption :: String -> Handler Html -> Handler Html -> Handler Html
+checkGCryptRepoEncryption :: (Monad m, LiftAnnex m) => String -> m a -> m a -> m a
 checkGCryptRepoEncryption location notencrypted encrypted = 
 	dispatch =<< liftAnnex (inRepo $ Git.GCrypt.probeRepo location)
   where
@@ -80,3 +87,10 @@ checkGCryptRepoEncryption location notencrypted encrypted =
 	dispatch Git.GCrypt.NotEncrypted = notencrypted
 	dispatch Git.GCrypt.NotDecryptable =
 		error "This git repository is encrypted with a GnuPG key that you do not have."
+
+{- Gets the UUID of the gcrypt repo at a location, which may not exist.
+ - Only works if the gcrypt repo was created as a git-annex remote. -}
+probeGCryptRemoteUUID :: String -> Annex (Maybe UUID)
+probeGCryptRemoteUUID repolocation = do
+	r <- inRepo $ Git.Construct.fromRemoteLocation repolocation
+	GCrypt.getGCryptUUID False r
