@@ -8,3 +8,8 @@ The man page claims there exists a query command 'list' but:
 ### What version of git-annex are you using? On what operating system?
 
 man page online and git-annex version 4.20130909.
+
+> Your last line explains the problem. The online man page
+> documents the latest release, or in some cases
+> unrelased git version. You have a version 2 releases old installed.
+> [[done]] --[[Joey]]
