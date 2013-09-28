@@ -58,4 +58,7 @@ etc
 """]]
 
 > This is a bug in the feed library: <https://github.com/sof/feed/issues/7>  
-> [[forwarded|done]] --[[Joey]] 
+> And already fixed upstream this morning, so if you need the fix 
+> immediately, build with cabal. Otherwise fix will percolate out to
+> builds eventually.
+> [[done]] --[[Joey]] 
