@@ -28,7 +28,7 @@ The git-annex assistant makes it easy to set up rsync remotes using this last sc
 None of these use cases are particular to particular special remote types. Most special remotes can all be used in these and other ways. It largely doesn't matter for your use what underlying transport the special remote uses.
 
 Here are specific instructions
-for various cloud things:
+for using git-annex with various services:
 
 * [[Amazon_S3|tips/using_Amazon_S3]]
 * [[Amazon_Glacier|tips/using_Amazon_Glacier]]
@@ -43,6 +43,7 @@ for various cloud things:
 * [[Flickr|tips/flickrannex]]
 * [[IMAP|forum/special_remote_for_IMAP]]
 * [[Usenet|forum/nntp__47__usenet special remote]]
+* [chef-vault](https://github.com/3ofcoins/knife-annex/)
 
 ## Unused content on special remotes
 
