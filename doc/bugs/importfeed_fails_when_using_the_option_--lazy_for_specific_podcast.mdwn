@@ -41,3 +41,33 @@ git-annex importfeed --fast http://schoolsucksproject.com/category/podcast/feed/
       unable to access url: http://schoolsucks.podomatic.com/enclosure/2013-09-16T10_10_06-07_00.mp3
     failed 
     ...
+
+> (There is no --lazy option. You seem to mean --fast.)
+> 
+> This fine web server rejects the User-Agent used by curl:
+
+<pre> 
+joey@darkstar:~>curl http://schoolsucks.podomatic.com/enclosure/2013-09-18T20_40_40-07_00.mp3
+Forbidden
+joey@darkstar:~>wget http://schoolsucks.podomatic.com/enclosure/2013-09-18T20_40_40-07_00.mp3
+--2013-09-28 11:18:36--  http://schoolsucks.podomatic.com/enclosure/2013-09-18T20_40_40-07_00.mp3
+Resolving schoolsucks.podomatic.com (schoolsucks.podomatic.com)... 38.99.42.46, 38.110.155.212
+Connecting to schoolsucks.podomatic.com (schoolsucks.podomatic.com)|38.99.42.46|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+<pre>
+
+> git-annex always uses curl for checking file sizes. So the workaround
+> is to use `git annex addurl --relaxed` on this url, which will skip
+> the size check. However, if you only had curl installed, `git-annex get`
+> would again try to use curl to get the file, and would still fail.
+> It only happens to successfully download because git-annex chose
+> to use wget and this site has apparently forgotten to block that.
+> 
+> I don't know if it makes sense for git-annex to vary the user-agent
+> to get around such (incredibly stupid) blocking. It could retry
+> with a random user-agent, but that could be construed as abusive
+> behavior; this site has asked us to go away. The only choices
+> that seem really defensible would be to add a --user-agent
+> switch, and/or to make git-annex set a default user agent header
+> of "git-annex", rather than relying on the curl/wget defaults.
+> --[[Joey]] 
