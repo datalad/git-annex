@@ -30,7 +30,7 @@ import Annex.Exception
 import qualified Annex.Content
 import qualified Annex.BranchState
 import qualified Annex.Branch
-import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 import Utility.Tmp
 import Config
 import Config.Cost
@@ -177,9 +177,10 @@ tryGitConfigRead r
 			Left l -> return $ Left l
 
 	geturlconfig headers = do
+		ua <- Url.getUserAgent
 		v <- liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			hClose h
-			ifM (Url.downloadQuiet (Git.repoLocation r ++ "/config") headers [] tmpfile)
+			ifM (Url.downloadQuiet (Git.repoLocation r ++ "/config") headers [] tmpfile ua)
 				( pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 				, return $ Left undefined
 				)
@@ -240,7 +241,7 @@ inAnnex r key
   where
 	checkhttp headers = do
 		showChecking r
-		liftIO $ ifM (anyM (\u -> Url.check u headers (keySize key)) (keyUrls r key))
+		ifM (anyM (\u -> Url.withUserAgent $ Url.check u headers (keySize key)) (keyUrls r key))
 			( return $ Right True
 			, return $ Left "not found"
 			)

@@ -18,6 +18,9 @@ git-annex (4.20130921) UNRELEASED; urgency=low
   * add, import, assistant: Better preserve the mtime of symlinks,
     when when adding content that gets deduplicated.
   * webapp: Support storing encrypted git repositories on rsync.net.
+  * Send a git-annex user-agent when downloading urls.
+    Overridable with --user-agent option.
+    (Not yet done for S3 or WebDAV due to limitations of libraries used.)
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 

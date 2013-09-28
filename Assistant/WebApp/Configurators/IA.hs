@@ -21,7 +21,7 @@ import qualified Types.Remote as Remote
 import Types.StandardGroups
 import Types.Remote (RemoteConfig)
 import Logs.Remote
-import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 import Creds
 import Assistant.Gpg
 
@@ -190,7 +190,8 @@ escapeHeader = escapeURIString (\c -> isUnescapedInURI c && c /= ' ')
 
 getRepoInfo :: RemoteConfig -> Widget
 getRepoInfo c = do
-	exists <- liftIO $ catchDefaultIO False $ fst <$> Url.exists url []
+	ua <- liftAnnex Url.getUserAgent
+	exists <- liftIO $ catchDefaultIO False $ fst <$> Url.exists url [] ua
 	[whamlet|
 <a href="#{url}">
   Internet Archive item

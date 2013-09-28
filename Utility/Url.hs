@@ -9,6 +9,7 @@
 
 module Utility.Url (
 	URLString,
+	UserAgent,
 	check,
 	exists,
 	download,
@@ -27,10 +28,12 @@ type URLString = String
 
 type Headers = [String]
 
+type UserAgent = String
+
 {- Checks that an url exists and could be successfully downloaded,
  - also checking that its size, if available, matches a specified size. -}
-check :: URLString -> Headers -> Maybe Integer -> IO Bool
-check url headers expected_size = handle <$> exists url headers
+check :: URLString -> Headers -> Maybe Integer -> Maybe UserAgent -> IO Bool
+check url headers expected_size = handle <$$> exists url headers
   where
 	handle (False, _) = False
 	handle (True, Nothing) = True
@@ -44,8 +47,8 @@ check url headers expected_size = handle <$> exists url headers
  - Uses curl otherwise, when available, since curl handles https better
  - than does Haskell's Network.Browser.
  -}
-exists :: URLString -> Headers -> IO (Bool, Maybe Integer)
-exists url headers = case parseURIRelaxed url of
+exists :: URLString -> Headers -> Maybe UserAgent -> IO (Bool, Maybe Integer)
+exists url headers ua = case parseURIRelaxed url of
 	Just u
 		| uriScheme u == "file:" -> do
 			s <- catchMaybeIO $ getFileStatus (unEscapeString $ uriPath u)
@@ -54,12 +57,12 @@ exists url headers = case parseURIRelaxed url of
 				Nothing -> dne
 		| otherwise -> if Build.SysConfig.curl
 			then do
-				output <- readProcess "curl" curlparams
+				output <- readProcess "curl" $ toCommand curlparams
 				case lastMaybe (lines output) of
 					Just ('2':_:_) -> return (True, extractsize output)
 					_ -> dne
 			else do
-				r <- request u headers HEAD
+				r <- request u headers HEAD ua
 				case rspCode r of
 					(2,_,_) -> return (True, size r)
 					_ -> return (False, Nothing)
@@ -67,13 +70,12 @@ exists url headers = case parseURIRelaxed url of
   where
 	dne = return (False, Nothing)
 
-	curlparams = 
-		[ "-s"
-		, "--head"
-		, "-L"
-		, url
-		, "-w", "%{http_code}"
-		] ++ concatMap (\h -> ["-H", h]) headers
+	curlparams = addUserAgent ua $
+		[ Param "-s"
+		, Param "--head"
+		, Param "-L", Param url
+		, Param "-w", Param "%{http_code}"
+		] ++ concatMap (\h -> [Param "-H", Param h]) headers
 
 	extractsize s = case lastMaybe $ filter ("Content-Length:" `isPrefixOf`) (lines s) of
 		Just l -> case lastMaybe $ words l of
@@ -83,6 +85,11 @@ exists url headers = case parseURIRelaxed url of
 
 	size = liftM Prelude.read . lookupHeader HdrContentLength . rspHeaders
 
+-- works for both wget and curl commands
+addUserAgent :: Maybe UserAgent -> [CommandParam] -> [CommandParam]
+addUserAgent Nothing ps = ps
+addUserAgent (Just ua) ps = ps ++ [Param "--user-agent", Param ua] 
+
 {- Used to download large files, such as the contents of keys.
  -
  - Uses wget or curl program for its progress bar. (Wget has a better one,
@@ -90,15 +97,15 @@ exists url headers = case parseURIRelaxed url of
  - would not be appropriate to test at configure time and build support
  - for only one in.
  -}
-download :: URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
+download :: URLString -> Headers -> [CommandParam] -> FilePath -> Maybe UserAgent -> IO Bool
 download = download' False
 
 {- No output, even on error. -}
-downloadQuiet :: URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
+downloadQuiet :: URLString -> Headers -> [CommandParam] -> FilePath -> Maybe UserAgent -> IO Bool
 downloadQuiet = download' True
 
-download' :: Bool -> URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
-download' quiet url headers options file = 
+download' :: Bool -> URLString -> Headers -> [CommandParam] -> FilePath -> Maybe UserAgent -> IO Bool
+download' quiet url headers options file ua = 
 	case parseURIRelaxed url of
 		Just u
 			| uriScheme u == "file:" -> do
@@ -119,7 +126,7 @@ download' quiet url headers options file =
 	curl = go "curl" $ headerparams ++ quietopt "-s" ++
 		[Params "-f -L -C - -# -o"]
 	go cmd opts = boolSystem cmd $
-		options++opts++[File file, File url]
+		addUserAgent ua $ options++opts++[File file, File url]
 	quietopt s
 		| quiet = [Param s]
 		| otherwise = []
@@ -134,13 +141,14 @@ download' quiet url headers options file =
  - Unfortunately, does not handle https, so should only be used
  - when curl is not available.
  -}
-request :: URI -> Headers -> RequestMethod -> IO (Response String)
-request url headers requesttype = go 5 url
+request :: URI -> Headers -> RequestMethod -> Maybe UserAgent -> IO (Response String)
+request url headers requesttype ua = go 5 url
   where
 	go :: Int -> URI -> IO (Response String)
 	go 0 _ = error "Too many redirects "
 	go n u = do
 		rsp <- Browser.browse $ do
+			maybe noop Browser.setUserAgent ua
 			Browser.setErrHandler ignore
 			Browser.setOutHandler ignore
 			Browser.setAllowRedirects False

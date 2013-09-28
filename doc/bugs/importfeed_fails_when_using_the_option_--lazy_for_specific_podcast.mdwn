@@ -71,3 +71,7 @@ HTTP request sent, awaiting response... 200 OK
 > switch, and/or to make git-annex set a default user agent header
 > of "git-annex", rather than relying on the curl/wget defaults.
 > --[[Joey]] 
+
+> I've [[done]] what's discussed above, and verified it fixes
+> behavior for this specific server too.
+> --[[Joey]] 

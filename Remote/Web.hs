@@ -19,7 +19,7 @@ import Config.Cost
 import Logs.Web
 import Types.Key
 import Utility.Metered
-import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 #ifdef WITH_QUVI
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi
@@ -118,7 +118,7 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 #endif
 		DefaultDownloader -> do
 			headers <- getHttpHeaders
-			liftIO $ Right <$> Url.check u' headers (keySize key)
+			Right <$> Url.withUserAgent (Url.check u' headers $ keySize key)
   where
   	firsthit [] miss _ = return miss
 	firsthit (u:rest) _ a = do

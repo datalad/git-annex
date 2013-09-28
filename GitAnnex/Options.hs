@@ -48,6 +48,8 @@ options = Option.common ++
 		"skip files smaller than a size"
 	, Option ['T'] ["time-limit"] (ReqArg Limit.addTimeLimit paramTime)
 		"stop after the specified amount of time"
+	, Option [] ["user-agent"] (ReqArg setuseragent paramName)
+		"override default User-Agent"
 	, Option [] ["trust-glacier"] (NoArg (Annex.setFlag "trustglacier"))
 		"Trust Amazon Glacier inventory"
 	] ++ Option.matcher
@@ -55,6 +57,7 @@ options = Option.common ++
 	setnumcopies v = maybe noop
 		(\n -> Annex.changeState $ \s -> s { Annex.forcenumcopies = Just n })
 		(readish v)
+	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
 	setgitconfig v = Annex.changeGitRepo =<< inRepo (Git.Config.store v)
 	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
 

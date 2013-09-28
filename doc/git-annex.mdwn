@@ -824,6 +824,10 @@ subdirectories).
 
   Also, '\\n' is a newline, '\\000' is a NULL, etc.
 
+* `--user-agent=value`
+
+  Overrides the User-Agent to use when downloading files from the web.
+
 * `-c name=value`
 
   Used to override git configuration settings. May be specified multiple times.
