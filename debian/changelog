@@ -24,6 +24,8 @@ git-annex (4.20130921) UNRELEASED; urgency=low
   * webapp: Fixed a bug where when a new remote is added, one file
     may fail to sync to or from it due to the transferrer process not
     yet knowing about the new remote.
+  * OSX: Bundled gpg upgraded, now compatible with config files
+    written by MacGPG.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 

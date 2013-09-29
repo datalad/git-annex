@@ -22,3 +22,7 @@ The operating system is Mac OS X 10.8.4, and the version of git-annex is 4.20130
 """]]
 
 [[!meta title="OSX bundled gpg does not work with gpg.conf created by MacGPG"]]
+
+> [[done]]; I have updated the gpg to version 1.4.14 which
+> manages to build with the missing features.
+> --[[Joey]]
