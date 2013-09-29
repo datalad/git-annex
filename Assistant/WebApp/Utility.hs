@@ -20,6 +20,7 @@ import qualified Remote.List as Remote
 import qualified Assistant.Threads.Transferrer as Transferrer
 import Logs.Transfer
 import qualified Config
+import Config.Cost
 import Config.Files
 import Git.Config
 import Assistant.Threads.Watcher
@@ -125,12 +126,13 @@ getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers <$> liftAssistant getDaemonStatus
 
 {- Runs an action that creates or enables a cloud remote,
- - and finishes setting it up; adding it to a group if it's not already in
- - one, starts syncing with it, and finishes by displaying the page to edit
- - it. -}
-setupCloudRemote :: StandardGroup -> Annex RemoteName -> Handler a
-setupCloudRemote defaultgroup maker = do
+ - and finishes setting it up, then starts syncing with it,
+ - and finishes by displaying the page to edit it. -}
+setupCloudRemote :: StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
+setupCloudRemote defaultgroup mcost maker = do
 	r <- liftAnnex $ addRemote maker
-	liftAnnex $ setStandardGroup (Remote.uuid r) defaultgroup
+	liftAnnex $ do
+		setStandardGroup (Remote.uuid r) defaultgroup
+		maybe noop (Config.setRemoteCost r) mcost
 	liftAssistant $ syncRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r

@@ -25,9 +25,15 @@ data SshData = SshData
 	, sshRepoName :: String
 	, sshPort :: Int
 	, needsPubKey :: Bool
-	, rsyncOnly :: Bool
+	, sshCapabilities :: [SshServerCapability]
 	}
 	deriving (Read, Show, Eq)
+
+data SshServerCapability = GitAnnexShellCapable | GitCapable | RsyncCapable
+	deriving (Read, Show, Eq)
+
+hasCapability :: SshData -> SshServerCapability -> Bool
+hasCapability d c = c `elem` sshCapabilities d
 
 data SshKeyPair = SshKeyPair
 	{ sshPubKey :: String

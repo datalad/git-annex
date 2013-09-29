@@ -9,7 +9,6 @@ module Assistant.MakeRemote where
 
 import Assistant.Common
 import Assistant.Ssh
-import Assistant.Sync
 import qualified Types.Remote as R
 import qualified Remote
 import Remote.List
@@ -21,8 +20,6 @@ import qualified Command.InitRemote
 import Logs.UUID
 import Logs.Remote
 import Git.Remote
-import Config
-import Config.Cost
 import Creds
 import Assistant.Gpg
 import Utility.Gpg (KeyId)
@@ -30,17 +27,12 @@ import Utility.Gpg (KeyId)
 import qualified Data.Text as T
 import qualified Data.Map as M
 
-{- Sets up and begins syncing with a new ssh or rsync remote. -}
-makeSshRemote :: Bool -> SshData -> Maybe Cost -> Assistant Remote
-makeSshRemote forcersync sshdata mcost = do
-	r <- liftAnnex $
-		addRemote $ maker (sshRepoName sshdata)
-			(sshUrl forcersync sshdata)
-	liftAnnex $ maybe noop (setRemoteCost r) mcost
-	syncRemote r
-	return r
+{- Sets up a new ssh or rsync remote. -}
+makeSshRemote :: Bool -> SshData -> Annex RemoteName
+makeSshRemote forcersync sshdata = 
+	maker (sshRepoName sshdata) (sshUrl forcersync sshdata)
   where
-	rsync = forcersync || rsyncOnly sshdata
+	rsync = forcersync || sshCapabilities sshdata == [RsyncCapable]
 	maker
 		| rsync = makeRsyncRemote
 		| otherwise = makeGitRemote
@@ -48,7 +40,7 @@ makeSshRemote forcersync sshdata mcost = do
 {- Generates a ssh or rsync url from a SshData. -}
 sshUrl :: Bool -> SshData -> String
 sshUrl forcersync sshdata = addtrailingslash $ T.unpack $ T.concat $
-	if (forcersync || rsyncOnly sshdata)
+	if (forcersync || sshCapabilities sshdata == [RsyncCapable])
 		then [u, h, T.pack ":", sshDirectory sshdata]
 		else [T.pack "ssh://", u, h, d]
   where
@@ -146,7 +138,6 @@ makeRemote basename location a = do
 	g <- gitRepo
 	if not (any samelocation $ Git.remotes g)
 		then do
-			
 			let name = uniqueRemoteName basename 0 g
 			a name
 			return name

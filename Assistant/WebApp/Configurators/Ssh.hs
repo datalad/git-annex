@@ -17,7 +17,6 @@ import Assistant.MakeRemote
 import Utility.Rsync (rsyncUrlIsShell)
 import Logs.Remote
 import Remote
-import Logs.PreferredContent
 import Types.StandardGroups
 import Utility.UserInfo
 import Utility.Gpg
@@ -54,7 +53,7 @@ mkSshData s = SshData
 		(maybe "" T.unpack $ inputDirectory s)
 	, sshPort = inputPort s
 	, needsPubKey = False
-	, rsyncOnly = False
+	, sshCapabilities = [] -- untested
 	}
 
 mkSshInput :: SshData -> SshInput
@@ -103,15 +102,12 @@ sshInputAForm hostnamefield def = SshInput
 data ServerStatus
 	= UntestedServer
 	| UnusableServer Text -- reason why it's not usable
-	| UsableRsyncServer
-	| UsableSshInput
+	| UsableServer [SshServerCapability]
 	deriving (Eq)
 
-usable :: ServerStatus -> Bool
-usable UntestedServer = False
-usable (UnusableServer _) = False
-usable UsableRsyncServer = True
-usable UsableSshInput = True
+capabilities :: ServerStatus -> [SshServerCapability]
+capabilities (UsableServer cs) = cs
+capabilities _ = []
 
 getAddSshR :: Handler Html
 getAddSshR = postAddSshR
@@ -143,7 +139,7 @@ postEnableRsyncR :: UUID -> Handler Html
 postEnableRsyncR = enableSpecialSshRemote "rsyncurl" enableRsyncNet enablersync
   where
 	enablersync sshdata = redirect $ ConfirmSshR $
-		sshdata { rsyncOnly = True }
+		sshdata { sshCapabilities = [RsyncCapable] }
 
 {- This only handles gcrypt repositories that are located on ssh servers;
  - ones on local drives are handled via another part of the UI. -}
@@ -214,8 +210,9 @@ parseSshRsyncUrl u
  - passwordless login is already enabled, use it. Otherwise,
  - a special ssh key will need to be generated just for this server.
  -
- - Once logged into the server, probe to see if git-annex-shell is
- - available, or rsync. Note that, ~/.ssh/git-annex-shell may be
+ - Once logged into the server, probe to see if git-annex-shell,
+ - git, and rsync are available. 
+ - Note that, ~/.ssh/git-annex-shell may be
  - present, while git-annex-shell is not in PATH.
  -}
 testServer :: SshInput -> IO (Either ServerStatus SshData)
@@ -223,22 +220,23 @@ testServer (SshInput { inputHostname = Nothing }) = return $
 	Left $ UnusableServer "Please enter a host name."
 testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 	status <- probe [sshOpt "NumberOfPasswordPrompts" "0"]
-	if usable status
-		then ret status False
-		else do
+	case capabilities status of
+		[] -> do
 			status' <- probe []
-			if usable status'
-				then ret status' True
-				else return $ Left status'
+			case capabilities status' of
+				[] -> return $ Left status'
+				cs -> ret cs True
+		cs -> ret cs False
   where
-	ret status needspubkey = return $ Right $ (mkSshData sshinput)
+	ret cs needspubkey = return $ Right $ (mkSshData sshinput)
 		{ needsPubKey = needspubkey
-		, rsyncOnly = status == UsableRsyncServer
+		, sshCapabilities = cs
 		}
 	probe extraopts = do
 		let remotecommand = shellWrap $ intercalate ";"
 			[ report "loggedin"
 			, checkcommand "git-annex-shell"
+			, checkcommand "git"
 			, checkcommand "rsync"
 			, checkcommand shim
 			]
@@ -256,14 +254,19 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 			, remotecommand
 			]
 		parsetranscript . fst <$> sshTranscript sshopts Nothing
-	parsetranscript s
-		| reported "git-annex-shell" = UsableSshInput
-		| reported shim = UsableSshInput
-		| reported "rsync" = UsableRsyncServer
-		| reported "loggedin" = UnusableServer
-			"Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
-		| otherwise = UnusableServer $ T.pack $
-			"Failed to ssh to the server. Transcript: " ++ s
+	parsetranscript s =
+		let cs = map snd $ filter (reported . fst)
+			[ ("git-annex-shell", GitAnnexShellCapable)
+			, (shim, GitAnnexShellCapable)
+			, ("git", GitCapable)
+			, ("rsync", RsyncCapable)
+			]
+		in if null cs
+			then if reported "loggedin"
+				then UnusableServer "Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
+				else UnusableServer $ T.pack $
+					"Failed to ssh to the server. Transcript: " ++ s
+			else UsableServer cs
 	  where
 		reported r = token r `isInfixOf` s
 	
@@ -286,7 +289,9 @@ showSshErr msg = sshConfigurator $
 	$(widgetFile "configurators/ssh/error")
 
 getConfirmSshR :: SshData -> Handler Html
-getConfirmSshR sshdata = sshConfigurator $
+getConfirmSshR sshdata = sshConfigurator $ do
+	secretkeys <- sortBy (comparing snd) . M.toList
+		<$> liftIO secretKeys
 	$(widgetFile "configurators/ssh/confirm")
 
 getRetrySshR :: SshData -> Handler ()
@@ -300,6 +305,9 @@ getMakeSshGitR = makeSsh False
 getMakeSshRsyncR :: SshData -> Handler Html
 getMakeSshRsyncR = makeSsh True
 
+getMakeSshGCryptR :: SshData -> RepoKey -> Handler Html
+getMakeSshGCryptR sshdata repokey = error "TODO"
+
 makeSsh :: Bool -> SshData -> Handler Html
 makeSsh rsync sshdata
 	| needsPubKey sshdata = do
@@ -312,27 +320,25 @@ makeSsh rsync sshdata
 	| otherwise = makeSsh' rsync sshdata sshdata Nothing
 
 makeSsh' :: Bool -> SshData -> SshData -> Maybe SshKeyPair -> Handler Html
-makeSsh' rsync origsshdata sshdata keypair = do
+makeSsh' rsynconly origsshdata sshdata keypair = do
 	sshSetup ["-p", show (sshPort origsshdata), sshhost, remoteCommand] "" $
-		makeSshRepo rsync sshdata
+		makeSshRepo rsynconly sshdata
   where
 	sshhost = genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
 	remotedir = T.unpack $ sshDirectory sshdata
 	remoteCommand = shellWrap $ intercalate "&&" $ catMaybes
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
 		, Just $ "cd " ++ shellEscape remotedir
-		, if rsync then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
-		, if rsync then Nothing else Just "git annex init"
+		, if rsynconly then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
+		, if rsynconly then Nothing else Just "git annex init"
 		, if needsPubKey sshdata
-			then addAuthorizedKeysCommand (rsync || rsyncOnly sshdata) remotedir . sshPubKey <$> keypair
+			then addAuthorizedKeysCommand rsynconly remotedir . sshPubKey <$> keypair
 			else Nothing
 		]
 
 makeSshRepo :: Bool -> SshData -> Handler Html
-makeSshRepo forcersync sshdata = do
-	r <- liftAssistant $ makeSshRemote forcersync sshdata Nothing
-	liftAnnex $ setStandardGroup (Remote.uuid r) TransferGroup
-	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
+makeSshRepo forcersync sshdata = setupCloudRemote TransferGroup Nothing $
+	makeSshRemote forcersync sshdata
 
 getAddRsyncNetR :: Handler Html
 getAddRsyncNetR = postAddRsyncNetR
@@ -394,7 +400,7 @@ getMakeRsyncNetGCryptR sshdata NoRepoKey = whenGcryptInstalled $
 	withNewSecretKey $ getMakeRsyncNetGCryptR sshdata . RepoKey
 getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $ do
 	sshSetup [sshhost, gitinit] [] $
-		setupCloudRemote TransferGroup $ 
+		setupCloudRemote TransferGroup Nothing $ 
 			makeGCryptRemote (sshRepoName sshdata) (sshUrl True sshdata) keyid
   where
 	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
@@ -413,7 +419,7 @@ enableRsyncNetGCrypt sshinput reponame =
 	notencrypted = error "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."
 enableRsyncNetGCrypt' :: SshData -> RemoteName -> Handler Html
 enableRsyncNetGCrypt' sshdata reponame = 
-	setupCloudRemote TransferGroup $ 
+	setupCloudRemote TransferGroup Nothing $ 
 		enableSpecialRemote reponame GCrypt.remote $ M.fromList
 			[("gitrepo", sshUrl True sshdata)]
 
@@ -427,7 +433,7 @@ prepRsyncNet sshinput reponame a = do
 		(mkSshData sshinput)
 			{ sshRepoName = reponame 
 			, needsPubKey = True
-			, rsyncOnly = True
+			, sshCapabilities = [RsyncCapable]
 			}
 	{- I'd prefer to separate commands with && , but
 	 - rsync.net's shell does not support that.

@@ -126,7 +126,8 @@ postEnableWebDAVR _ = error "WebDAV not supported by this build"
 makeWebDavRemote :: SpecialRemoteMaker -> RemoteName -> CredPair -> RemoteConfig -> Handler ()
 makeWebDavRemote maker name creds config = do
 	liftIO $ WebDAV.setCredsEnv creds
-	setupCloudRemote TransferGroup $ maker name WebDAV.remote config
+	setupCloudRemote TransferGroup Nothing $
+		maker name WebDAV.remote config
 
 {- Only returns creds previously used for the same hostname. -}
 previouslyUsedWebDAVCreds :: String -> Annex (Maybe CredPair)
