@@ -22,6 +22,7 @@ import Logs.Trust
 import Logs.Remote
 import Logs.PreferredContent
 import Types.StandardGroups
+import Annex.UUID
 
 import System.IO.HVFS (SystemFS(..))
 import qualified Data.Text as T
@@ -29,9 +30,13 @@ import qualified Data.Map as M
 import System.Path
 
 notCurrentRepo :: UUID -> Handler Html -> Handler Html
-notCurrentRepo uuid a = go =<< liftAnnex (Remote.remoteFromUUID uuid)
+notCurrentRepo uuid a = do
+	u <- liftAnnex getUUID
+	if u == uuid
+		then redirect DeleteCurrentRepositoryR
+		else go =<< liftAnnex (Remote.remoteFromUUID uuid)
   where
-  	go Nothing = redirect DeleteCurrentRepositoryR
+  	go Nothing = error "Unknown UUID"
 	go (Just _) = a
 
 getDisableRepositoryR :: UUID -> Handler Html

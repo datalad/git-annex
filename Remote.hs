@@ -168,13 +168,19 @@ prettyListUUIDs uuids = do
 prettyUUID :: UUID -> Annex String
 prettyUUID u = concat <$> prettyListUUIDs [u]
 
-{- Gets the remote associated with a UUID.
- - There's no associated remote when this is the UUID of the local repo. -}
+{- Gets the remote associated with a UUID. -}
 remoteFromUUID :: UUID -> Annex (Maybe Remote)
 remoteFromUUID u = ifM ((==) u <$> getUUID)
 	( return Nothing
-	, Just . fromMaybe (error "Unknown UUID") . M.lookup u <$> remoteMap id
+	, do
+		maybe tryharder (return . Just) =<< findinmap
 	)
+  where
+	findinmap = M.lookup u <$> remoteMap id
+	{- Re-read remote list in case a new remote has popped up. -}
+	tryharder = do
+		void remoteListRefresh
+		findinmap
 
 {- Filters a list of remotes to ones that have the listed uuids. -}
 remotesWithUUID :: [Remote] -> [UUID] -> [Remote]

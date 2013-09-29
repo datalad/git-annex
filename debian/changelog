@@ -21,6 +21,9 @@ git-annex (4.20130921) UNRELEASED; urgency=low
   * Send a git-annex user-agent when downloading urls.
     Overridable with --user-agent option.
     (Not yet done for S3 or WebDAV due to limitations of libraries used.)
+  * webapp: Fixed a bug where when a new remote is added, one file
+    may fail to sync to or from it due to the transferrer process not
+    yet knowing about the new remote.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 
