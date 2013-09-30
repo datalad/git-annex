@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="comment 4"
+ date="2013-09-30T01:31:26Z"
+ content="""
+Hum, I'm not allowed to upload images:
+    git-annex-webapp1.png 		prohibited by allowed_attachments (user is not an admin) 
+"""]]
