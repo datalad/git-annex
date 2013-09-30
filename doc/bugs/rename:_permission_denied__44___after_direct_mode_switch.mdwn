@@ -75,3 +75,7 @@ failed
 git-annex: copy: 1 failed
 camaar%
 """]]
+
+> Put in a fix that works, although perhaps not ideal as I do not
+> understand how the repo got into the original problem state. [[done]]
+> --[[Joey]]
