@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://olivier.mehani.name/"
- nickname="olivier-mehani"
- subject="comment 3"
- date="2013-09-30T01:12:42Z"
- content="""
-Ha! I don't have a ~/.git  directory (I have a ~/.gitconfig file, with very little in it). Manually creating it and restarting the webapp (with the --debug) flag doesn't change a thing.
-"""]]
