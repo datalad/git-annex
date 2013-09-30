@@ -26,6 +26,8 @@ git-annex (4.20130921) UNRELEASED; urgency=low
     yet knowing about the new remote.
   * OSX: Bundled gpg upgraded, now compatible with config files
     written by MacGPG.
+  * assistant: More robust inotify handling; avoid crashing if a directory
+    cannot be read.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 
