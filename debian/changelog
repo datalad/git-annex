@@ -3,7 +3,11 @@ git-annex (4.20130921) UNRELEASED; urgency=low
   * Note that the layout of gcrypt repositories has changed, and
     if you created one you must manually upgrade it.
     See http://git-annex.branchable.com/upgrades/gcrypt/
+  * webapp: Support setting up and using encrypted git repositories on
+    any ssh server, as well as on rsync.net.
   * git-annex-shell: Added support for operating inside gcrypt repositories.
+  * Disable receive.denyNonFastForwards when setting up a gcrypt special
+    remote, since gcrypt needs to be able to fast-forward the master branch.
   * import: Preserve top-level directory structure.
   * Use cryptohash rather than SHA for hashing when no external hash program
     is available. This is a significant speedup for SHA256 on OSX, for
@@ -17,7 +21,6 @@ git-annex (4.20130921) UNRELEASED; urgency=low
     the user running the conversion.
   * add, import, assistant: Better preserve the mtime of symlinks,
     when when adding content that gets deduplicated.
-  * webapp: Support storing encrypted git repositories on rsync.net.
   * Send a git-annex user-agent when downloading urls.
     Overridable with --user-agent option.
     (Not yet done for S3 or WebDAV due to limitations of libraries used.)
@@ -28,8 +31,6 @@ git-annex (4.20130921) UNRELEASED; urgency=low
     written by MacGPG.
   * assistant: More robust inotify handling; avoid crashing if a directory
     cannot be read.
-  * Disable receive.denyNonFastForwards when setting up a gcrypt special
-    remote, since gcrypt needs to be able to fast-forward the master branch.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 
