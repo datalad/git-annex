@@ -14,13 +14,12 @@ import Assistant.WebApp.Common
 import Assistant.WebApp.Gpg
 import Assistant.Ssh
 import Assistant.MakeRemote
-import Utility.Rsync (rsyncUrlIsShell)
 import Logs.Remote
 import Remote
 import Types.StandardGroups
 import Utility.UserInfo
 import Utility.Gpg
-import Types.Remote (RemoteConfigKey)
+import Types.Remote (RemoteConfig)
 import Git.Remote
 import Assistant.WebApp.Utility
 import qualified Remote.GCrypt as GCrypt
@@ -136,10 +135,11 @@ sshTestModal = $(widgetFile "configurators/ssh/testmodal")
 getEnableRsyncR :: UUID -> Handler Html
 getEnableRsyncR = postEnableRsyncR
 postEnableRsyncR :: UUID -> Handler Html
-postEnableRsyncR = enableSpecialSshRemote "rsyncurl" enableRsyncNet enablersync
+postEnableRsyncR = enableSpecialSshRemote getsshinput enableRsyncNet enablersync
   where
 	enablersync sshdata = redirect $ ConfirmSshR $
 		sshdata { sshCapabilities = [RsyncCapable] }
+	getsshinput = parseSshUrl <=< M.lookup "rsyncurl"
 
 {- This only handles gcrypt repositories that are located on ssh servers;
  - ones on local drives are handled via another part of the UI. -}
@@ -147,22 +147,23 @@ getEnableGCryptR :: UUID -> Handler Html
 getEnableGCryptR = postEnableGCryptR
 postEnableGCryptR :: UUID -> Handler Html
 postEnableGCryptR u = whenGcryptInstalled $
-	enableSpecialSshRemote "gitrepo" enableRsyncNetGCrypt enablegcrypt u
+	enableSpecialSshRemote getsshinput enableRsyncNetGCrypt enablegcrypt u
   where
   	enablegcrypt sshdata = prepSsh True sshdata $ \sshdata' ->
 		sshConfigurator $
 			checkExistingGCrypt sshdata' $
 				error "Expected to find an encrypted git repository, but did not."
+	getsshinput = parseSshUrl <=< M.lookup "gitrepo"
 
-{- To enable an special remote that uses ssh as its transport, 
+{- To enable a special remote that uses ssh as its transport, 
  - parse a config key to get its url, and display a form whose
  - only real purpose is to check if ssh public keys need to be
  - set up.
  -}
-enableSpecialSshRemote :: RemoteConfigKey -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> Handler Html) -> UUID -> Handler Html
-enableSpecialSshRemote urlkey rsyncnetsetup genericsetup u = do
+enableSpecialSshRemote :: (RemoteConfig -> Maybe SshData) -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> Handler Html) -> UUID -> Handler Html
+enableSpecialSshRemote getsshinput rsyncnetsetup genericsetup u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
-	case (parseSshRsyncUrl =<< M.lookup urlkey m, M.lookup "name" m) of
+	case (mkSshInput . unmangle <$> getsshinput m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- liftH $
 				runFormPost $ renderBootstrap $ sshInputAForm textField sshinput
@@ -179,32 +180,13 @@ enableSpecialSshRemote urlkey rsyncnetsetup genericsetup u = do
 				_ -> showform form enctype UntestedServer
 		_ -> redirect AddSshR
   where
+  	unmangle sshdata = sshdata
+		{ sshHostName = T.pack $ unMangleSshHostName $
+			T.unpack $ sshHostName sshdata
+		}
 	showform form enctype status = do
 		description <- liftAnnex $ T.pack <$> prettyUUID u
 		$(widgetFile "configurators/ssh/enable")
-
-{- Converts a rsyncurl value to a SshInput. But only if it's a ssh rsync
- - url; rsync:// urls or bare path names are not supported.
- -
- - The hostname is stored mangled in the remote log for rsync special
- - remotes configured by this webapp. So that mangling has to reversed
- - here to get back the original hostname.
- -}
-parseSshRsyncUrl :: String -> Maybe SshInput
-parseSshRsyncUrl u
-	| not (rsyncUrlIsShell u) = Nothing
-	| otherwise = Just $ SshInput
-			{ inputHostname = val $ unMangleSshHostName host
-			, inputUsername = if null user then Nothing else val user
-			, inputDirectory = val dir
-			, inputPort = 22
-			}
-  where
-	val = Just . T.pack
-	(userhost, dir) = separate (== ':') u
-	(user, host) = if '@' `elem` userhost
-		then separate (== '@') userhost
-		else (userhost, "")
 
 {- Test if we can ssh into the server.
  -
@@ -331,14 +313,14 @@ checkExistingGCrypt sshdata nope = ifM (liftIO isGcryptInstalled)
 	, nope
 	)
   where
-  	repourl = sshUrl sshdata
+  	repourl = genSshUrl sshdata
 
 {- Enables an existing gcrypt special remote. -}
 enableGCrypt :: SshData -> RemoteName -> Handler Html
 enableGCrypt sshdata reponame = 
 	setupCloudRemote TransferGroup Nothing $ 
 		enableSpecialRemote reponame GCrypt.remote $ M.fromList
-			[("gitrepo", sshUrl sshdata)]
+			[("gitrepo", genSshUrl sshdata)]
 
 {- Sets up remote repository for ssh, or directory for rsync. -}
 prepSsh :: Bool -> SshData -> (SshData -> Handler Html) -> Handler Html
@@ -375,7 +357,7 @@ makeSshRepo sshdata = setupCloudRemote TransferGroup Nothing $
 
 makeGCryptRepo :: KeyId -> SshData -> Handler Html
 makeGCryptRepo keyid sshdata = setupCloudRemote TransferGroup Nothing $ 
-	makeGCryptRemote (sshRepoName sshdata) (sshUrl sshdata) keyid
+	makeGCryptRemote (sshRepoName sshdata) (genSshUrl sshdata) keyid
 
 getAddRsyncNetR :: Handler Html
 getAddRsyncNetR = postAddRsyncNetR
@@ -434,7 +416,7 @@ enableRsyncNet sshinput reponame =
 enableRsyncNetGCrypt :: SshInput -> RemoteName -> Handler Html
 enableRsyncNetGCrypt sshinput reponame = 
 	prepRsyncNet sshinput reponame $ \sshdata ->
-		checkGCryptRepoEncryption (sshUrl sshdata) notencrypted $
+		checkGCryptRepoEncryption (genSshUrl sshdata) notencrypted $
 			enableGCrypt sshdata reponame
   where
 	notencrypted = error "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."

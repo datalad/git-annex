@@ -1,6 +1,6 @@
 {- git-annex assistant ssh utilities
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ import Common.Annex
 import Utility.Tmp
 import Utility.UserInfo
 import Utility.Shell
+import Utility.Rsync
 import Git.Remote
 
 import Data.Text (Text)
@@ -60,6 +61,48 @@ sshDir = do
 {- user@host or host -}
 genSshHost :: Text -> Maybe Text -> String
 genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
+
+{- Generates a ssh or rsync url from a SshData. -}
+genSshUrl :: SshData -> String
+genSshUrl sshdata = addtrailingslash $ T.unpack $ T.concat $
+	if (onlyCapability sshdata RsyncCapable)
+		then [u, h, T.pack ":", sshDirectory sshdata]
+		else [T.pack "ssh://", u, h, d]
+  where
+	u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
+	h = sshHostName sshdata
+	d
+		| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = sshDirectory sshdata
+		| T.pack "~/" `T.isPrefixOf` sshDirectory sshdata = T.concat [T.pack "/", sshDirectory sshdata]
+		| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
+	addtrailingslash s
+		| "/" `isSuffixOf` s = s
+		| otherwise = s ++ "/"
+
+{- Reverses genSshUrl -}
+parseSshUrl :: String -> Maybe SshData
+parseSshUrl u
+	| "ssh://" `isPrefixOf` u = fromssh (drop (length "ssh://") u)
+	| otherwise = fromrsync u
+  where
+	mkdata (userhost, dir) = Just $ SshData
+		{ sshHostName = T.pack host
+		, sshUserName = if null user then Nothing else Just $ T.pack user
+		, sshDirectory = T.pack dir
+		, sshRepoName = genSshRepoName host dir
+		-- dummy values, cannot determine from url
+		, sshPort = 22
+		, needsPubKey = True
+		, sshCapabilities = []
+		}
+	  where
+	  	(user, host) = if '@' `elem` userhost
+			then separate (== '@') userhost
+			else ("", userhost)
+	fromrsync s
+		| not (rsyncUrlIsShell u) = Nothing
+		| otherwise = mkdata $ separate (== ':') s
+	fromssh = mkdata . break (== '/')
 
 {- Generates a git remote name, like host_dir or host -}
 genSshRepoName :: String -> FilePath -> String

@@ -24,33 +24,15 @@ import Creds
 import Assistant.Gpg
 import Utility.Gpg (KeyId)
 
-import qualified Data.Text as T
 import qualified Data.Map as M
 
 {- Sets up a new git or rsync remote, accessed over ssh. -}
 makeSshRemote :: SshData -> Annex RemoteName
-makeSshRemote sshdata = maker (sshRepoName sshdata) (sshUrl sshdata)
+makeSshRemote sshdata = maker (sshRepoName sshdata) (genSshUrl sshdata)
   where
 	maker
 		| onlyCapability sshdata RsyncCapable = makeRsyncRemote
 		| otherwise = makeGitRemote
-
-{- Generates a ssh or rsync url from a SshData. -}
-sshUrl :: SshData -> String
-sshUrl sshdata = addtrailingslash $ T.unpack $ T.concat $
-	if (onlyCapability sshdata RsyncCapable)
-		then [u, h, T.pack ":", sshDirectory sshdata]
-		else [T.pack "ssh://", u, h, d]
-  where
-	u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
-	h = sshHostName sshdata
-	d
-		| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = sshDirectory sshdata
-		| T.pack "~/" `T.isPrefixOf` sshDirectory sshdata = T.concat [T.pack "/", sshDirectory sshdata]
-		| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
-	addtrailingslash s
-		| "/" `isSuffixOf` s = s
-		| otherwise = s ++ "/"
 
 {- Runs an action that returns a name of the remote, and finishes adding it. -}
 addRemote :: Annex RemoteName -> Annex Remote
