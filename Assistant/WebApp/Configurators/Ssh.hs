@@ -335,21 +335,23 @@ prepSsh gcrypt sshdata a
 	| otherwise = prepSsh' gcrypt sshdata sshdata Nothing a
 
 prepSsh' :: Bool -> SshData -> SshData -> Maybe SshKeyPair -> (SshData -> Handler Html) -> Handler Html
-prepSsh' gcrypt origsshdata sshdata keypair a =
-	sshSetup ["-p", show (sshPort origsshdata), sshhost, remoteCommand] "" (a origsshdata)
+prepSsh' gcrypt origsshdata sshdata keypair a = sshSetup
+	 [ "-p", show (sshPort origsshdata)
+	 , genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
+	 , remoteCommand
+	 ] "" (a sshdata)
   where
-	sshhost = genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
 	remotedir = T.unpack $ sshDirectory sshdata
 	remoteCommand = shellWrap $ intercalate "&&" $ catMaybes
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
 		, Just $ "cd " ++ shellEscape remotedir
 		, if rsynconly then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
 		, if (rsynconly || gcrypt) then Nothing else Just "git annex init"
-		, if needsPubKey sshdata
-			then addAuthorizedKeysCommand (hasCapability sshdata GitAnnexShellCapable) remotedir . sshPubKey <$> keypair
+		, if needsPubKey origsshdata
+			then addAuthorizedKeysCommand (hasCapability origsshdata GitAnnexShellCapable) remotedir . sshPubKey <$> keypair
 			else Nothing
 		]
-	rsynconly = onlyCapability sshdata RsyncCapable
+	rsynconly = onlyCapability origsshdata RsyncCapable
 
 makeSshRepo :: SshData -> Handler Html
 makeSshRepo sshdata = setupCloudRemote TransferGroup Nothing $
