@@ -13,7 +13,7 @@ git-annex (4.20130921) UNRELEASED; urgency=low
   * assistant: Clear the list of failed transfers when doing a full transfer
     scan. This prevents repeated retries to download files that are not
     available, or are not referenced by the current git tree.
-  * indirect: Better behavior when a file in direct mode is not owned by
+  * indirect, direct: Better behavior when a file is not owned by
     the user running the conversion.
   * add, import, assistant: Better preserve the mtime of symlinks,
     when when adding content that gets deduplicated.
@@ -21,6 +21,13 @@ git-annex (4.20130921) UNRELEASED; urgency=low
   * Send a git-annex user-agent when downloading urls.
     Overridable with --user-agent option.
     (Not yet done for S3 or WebDAV due to limitations of libraries used.)
+  * webapp: Fixed a bug where when a new remote is added, one file
+    may fail to sync to or from it due to the transferrer process not
+    yet knowing about the new remote.
+  * OSX: Bundled gpg upgraded, now compatible with config files
+    written by MacGPG.
+  * assistant: More robust inotify handling; avoid crashing if a directory
+    cannot be read.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 
