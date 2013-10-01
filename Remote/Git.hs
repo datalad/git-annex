@@ -296,9 +296,10 @@ copyFromRemote' r key file dest
 					upload u key file noRetry
 						(rsyncOrCopyFile params object dest)
 						<&&> checksuccess
-	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> 
+	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> do
+		direct <- isDirect
 		Ssh.rsyncHelper (Just feeder) 
-			=<< Ssh.rsyncParamsRemote r Download key dest file
+			=<< Ssh.rsyncParamsRemote direct r Download key dest file
 	| Git.repoIsHttp (repo r) = Annex.Content.downloadUrl (keyUrls (repo r) key) dest
 	| otherwise = error "copying from non-ssh, non-http remote not supported"
   where
@@ -370,9 +371,10 @@ copyToRemote r key file p
 		guardUsable (repo r) False $ commitOnCleanup r $
 			copylocal =<< Annex.Content.prepSendAnnex key
 	| Git.repoIsSsh (repo r) = commitOnCleanup r $
-		Annex.Content.sendAnnex key noop $ \object ->
+		Annex.Content.sendAnnex key noop $ \object -> do
+			direct <- isDirect
 			Ssh.rsyncHelper (Just p)
-				=<< Ssh.rsyncParamsRemote r Upload key object file
+				=<< Ssh.rsyncParamsRemote direct r Upload key object file
 	| otherwise = error "copying to non-ssh repo not supported"
   where
 	copylocal Nothing = return False

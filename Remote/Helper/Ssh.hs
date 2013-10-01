@@ -19,7 +19,6 @@ import Types.Key
 import Remote.Helper.Messages
 import Utility.Metered
 import Utility.Rsync
-import Config
 import Types.Remote
 import Logs.Transfer
 
@@ -111,10 +110,9 @@ rsyncHelper callback params = do
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}
-rsyncParamsRemote :: Remote -> Direction -> Key -> FilePath -> AssociatedFile -> Annex [CommandParam]
-rsyncParamsRemote r direction key file afile = do
+rsyncParamsRemote :: Bool -> Remote -> Direction -> Key -> FilePath -> AssociatedFile -> Annex [CommandParam]
+rsyncParamsRemote direct r direction key file afile = do
 	u <- getUUID
-	direct <- isDirect
 	let fields = (Fields.remoteUUID, fromUUID u)
 		: (Fields.direct, if direct then "1" else "")
 		: maybe [] (\f -> [(Fields.associatedFile, f)]) afile

@@ -290,7 +290,7 @@ store r rsyncopts (cipher, enck) k p
 	storeshell = withTmp enck $ \tmp ->
 		ifM (spoolencrypted $ readBytes $ \b -> catchBoolIO $ L.writeFile tmp b >> return True)
 			( Ssh.rsyncHelper (Just p)
-				=<< Ssh.rsyncParamsRemote r Upload enck tmp Nothing
+				=<< Ssh.rsyncParamsRemote False r Upload enck tmp Nothing
 			, return False
 			)
 	spoolencrypted a = Annex.Content.sendAnnex k noop $ \src ->
@@ -312,7 +312,7 @@ retrieve r rsyncopts (cipher, enck) k d p
 				(readBytes $ meteredWriteFile meterupdate d)
 	retrieversync = Remote.Rsync.retrieveEncrypted rsyncopts (cipher, enck) k d p
 	retrieveshell = withTmp enck $ \tmp ->
-		ifM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote r Download enck tmp Nothing)
+		ifM (Ssh.rsyncHelper (Just p) =<< Ssh.rsyncParamsRemote False r Download enck tmp Nothing)
 			( liftIO $ catchBoolIO $ do
 				decrypt cipher (feedFile tmp) $
 					readBytes $ L.writeFile d
