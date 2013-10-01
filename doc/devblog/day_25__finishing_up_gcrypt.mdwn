@@ -1,0 +1,25 @@
+Long day, but I did finally finish up with gcrypt support. More or less.
+
+Got both creating and enabling existing gcrypt repositories on ssh servers
+working in the webapp. (But I ran out of time to make it detect when the
+user is manually entering a gcrypt repo that already exists. Should be easy
+so maybe tomorrow.)
+
+Fixed several bugs in git-annex's gcrypt support that turned up in testing.
+Made git-annex ensure that a gcrypt repository does not have
+receive.denyNonFastForwards set, because gcrypt relies on always forcing
+the push of the branch it stores its manifest on. Fixed a bug in
+`git-annex-shell recvkey` when it was receiving a file from an annex in
+direct mode.
+
+Also had to add a new `git annex shell gcryptsetup` command, which is
+needed to make setting up a gcrypt repository work when the assistant
+has set up a locked-down ssh key that can only run git-annex-shell. Painted
+myself into a bit of a corner there.
+
+And tested, tested, tested. So many possibilities and edge cases in this
+part of the code..
+
+----
+
+Today's work was sponsored by Hendrik Müller Hofstede.
