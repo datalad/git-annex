@@ -27,20 +27,18 @@ import Utility.Gpg (KeyId)
 import qualified Data.Text as T
 import qualified Data.Map as M
 
-{- Sets up a new ssh or rsync remote. -}
-makeSshRemote :: Bool -> SshData -> Annex RemoteName
-makeSshRemote forcersync sshdata = 
-	maker (sshRepoName sshdata) (sshUrl forcersync sshdata)
+{- Sets up a new git or rsync remote, accessed over ssh. -}
+makeSshRemote :: SshData -> Annex RemoteName
+makeSshRemote sshdata = maker (sshRepoName sshdata) (sshUrl sshdata)
   where
-	rsync = forcersync || sshCapabilities sshdata == [RsyncCapable]
 	maker
-		| rsync = makeRsyncRemote
+		| onlyCapability sshdata RsyncCapable = makeRsyncRemote
 		| otherwise = makeGitRemote
 
 {- Generates a ssh or rsync url from a SshData. -}
-sshUrl :: Bool -> SshData -> String
-sshUrl forcersync sshdata = addtrailingslash $ T.unpack $ T.concat $
-	if (forcersync || sshCapabilities sshdata == [RsyncCapable])
+sshUrl :: SshData -> String
+sshUrl sshdata = addtrailingslash $ T.unpack $ T.concat $
+	if (onlyCapability sshdata RsyncCapable)
 		then [u, h, T.pack ":", sshDirectory sshdata]
 		else [T.pack "ssh://", u, h, d]
   where

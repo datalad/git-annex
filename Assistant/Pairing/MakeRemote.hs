@@ -24,7 +24,7 @@ import qualified Data.Text as T
 setupAuthorizedKeys :: PairMsg -> FilePath -> IO ()
 setupAuthorizedKeys msg repodir = do
 	validateSshPubKey pubkey
-	unlessM (liftIO $ addAuthorizedKeys False repodir pubkey) $
+	unlessM (liftIO $ addAuthorizedKeys True repodir pubkey) $
 		error "failed setting up ssh authorized keys"
   where
 	pubkey = remoteSshPubKey $ pairMsgData msg
@@ -45,7 +45,7 @@ finishedLocalPairing msg keypair = do
 			, "git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata)
 			]
 			Nothing
-	r <- liftAnnex $ addRemote $ makeSshRemote False sshdata
+	r <- liftAnnex $ addRemote $ makeSshRemote sshdata
 	liftAnnex $ setRemoteCost r semiExpensiveRemoteCost
 	syncRemote r
 

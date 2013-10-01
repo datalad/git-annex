@@ -152,7 +152,7 @@ postFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
   where
 	alert = pairRequestAcknowledgedAlert (pairRepo msg) . Just
 	setup repodir = setupAuthorizedKeys msg repodir
-	cleanup repodir = removeAuthorizedKeys False repodir $
+	cleanup repodir = removeAuthorizedKeys True repodir $
 		remoteSshPubKey $ pairMsgData msg
 	uuid = Just $ pairUUID $ pairMsgData msg
 #else

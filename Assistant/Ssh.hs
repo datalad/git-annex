@@ -35,6 +35,9 @@ data SshServerCapability = GitAnnexShellCapable | GitCapable | RsyncCapable
 hasCapability :: SshData -> SshServerCapability -> Bool
 hasCapability d c = c `elem` sshCapabilities d
 
+onlyCapability :: SshData -> SshServerCapability -> Bool
+onlyCapability d c = all (== c) (sshCapabilities d)
+
 data SshKeyPair = SshKeyPair
 	{ sshPubKey :: String
 	, sshPrivKey :: String
@@ -98,12 +101,12 @@ validateSshPubKey pubkey
 	safeincomment c = isAlphaNum c || c == '@' || c == '-' || c == '_' || c == '.'
 
 addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
-addAuthorizedKeys rsynconly dir pubkey = boolSystem "sh"
-	[ Param "-c" , Param $ addAuthorizedKeysCommand rsynconly dir pubkey ]
+addAuthorizedKeys gitannexshellonly dir pubkey = boolSystem "sh"
+	[ Param "-c" , Param $ addAuthorizedKeysCommand gitannexshellonly dir pubkey ]
 
 removeAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO ()
-removeAuthorizedKeys rsynconly dir pubkey = do
-	let keyline = authorizedKeysLine rsynconly dir pubkey
+removeAuthorizedKeys gitannexshellonly dir pubkey = do
+	let keyline = authorizedKeysLine gitannexshellonly dir pubkey
 	sshdir <- sshDir
 	let keyfile = sshdir </> "authorized_keys"
 	ls <- lines <$> readFileStrict keyfile
@@ -116,7 +119,7 @@ removeAuthorizedKeys rsynconly dir pubkey = do
  - present.
  -}
 addAuthorizedKeysCommand :: Bool -> FilePath -> SshPubKey -> String
-addAuthorizedKeysCommand rsynconly dir pubkey = intercalate "&&"
+addAuthorizedKeysCommand gitannexshellonly dir pubkey = intercalate "&&"
 	[ "mkdir -p ~/.ssh"
 	, intercalate "; "
 		[ "if [ ! -e " ++ wrapper ++ " ]"
@@ -128,7 +131,7 @@ addAuthorizedKeysCommand rsynconly dir pubkey = intercalate "&&"
 	, "chmod 600 ~/.ssh/authorized_keys"
 	, unwords
 		[ "echo"
-		, shellEscape $ authorizedKeysLine rsynconly dir pubkey
+		, shellEscape $ authorizedKeysLine gitannexshellonly dir pubkey
 		, ">>~/.ssh/authorized_keys"
 		]
 	]
@@ -147,11 +150,11 @@ addAuthorizedKeysCommand rsynconly dir pubkey = intercalate "&&"
 	runshell var = "exec git-annex-shell -c \"" ++ var ++ "\""
 
 authorizedKeysLine :: Bool -> FilePath -> SshPubKey -> String
-authorizedKeysLine rsynconly dir pubkey
+authorizedKeysLine gitannexshellonly dir pubkey
+	| gitannexshellonly = limitcommand ++ pubkey
 	{- TODO: Locking down rsync is difficult, requiring a rather
 	 - long perl script. -}
-	| rsynconly = pubkey
-	| otherwise = limitcommand ++ pubkey
+	| otherwise = pubkey
   where
 	limitcommand = "command=\"GIT_ANNEX_SHELL_DIRECTORY="++shellEscape dir++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
 
