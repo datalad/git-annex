@@ -375,7 +375,7 @@ coreGCryptId = "core.gcrypt-id"
  - (Also returns a version of input repo with its config read.) -}
 getGCryptId :: Bool -> Git.Repo -> Annex (Maybe Git.GCrypt.GCryptId, Git.Repo)
 getGCryptId fast r
-	| Git.repoIsLocal r = extract <$>
+	| Git.repoIsLocal r || Git.repoIsLocalUnknown r = extract <$>
 		liftIO (catchMaybeIO $ Git.Config.read r)
 	| not fast = extract . liftM fst <$> getM (eitherToMaybe <$>)
 		[ Ssh.onRemote r (Git.Config.fromPipe r, Left undefined) "configlist" [] []
