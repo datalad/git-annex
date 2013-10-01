@@ -164,7 +164,7 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 
 		{- Run a git fetch and a push to the git repo in order to get
 		 - its gcrypt-id set up, so that later git annex commands
-		 - will use the remote as a ggcrypt remote. The fetch is
+		 - will use the remote as a gcrypt remote. The fetch is
 		 - needed if the repo already exists; the push is needed
 		 - if the repo has not yet been initialized by gcrypt. -}
 		void $ inRepo $ Git.Command.runBool
@@ -186,7 +186,7 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 						method <- setupRepo gcryptid =<< inRepo (Git.Construct.fromRemoteLocation gitrepo)
 						gitConfigSpecialRemote u c' "gcrypt" (fromAccessMethod method)
 						return (c', u)
-					else error "uuid mismatch"
+					else error $ "uuid mismatch " ++ show (u, mu, gcryptid)
 
 {- Sets up the gcrypt repository. The repository is either a local
  - repo, or it is accessed via rsync directly, or it is accessed over ssh
