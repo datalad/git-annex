@@ -30,24 +30,26 @@ import qualified Command.RecvKey
 import qualified Command.SendKey
 import qualified Command.TransferInfo
 import qualified Command.Commit
+import qualified Command.GCryptSetup
 
 cmds_readonly :: [Command]
 cmds_readonly = concat
-	[ Command.ConfigList.def
-	, Command.InAnnex.def
-	, Command.SendKey.def
-	, Command.TransferInfo.def
+	[ gitAnnexShellCheck Command.ConfigList.def
+	, gitAnnexShellCheck Command.InAnnex.def
+	, gitAnnexShellCheck Command.SendKey.def
+	, gitAnnexShellCheck Command.TransferInfo.def
 	]
 
 cmds_notreadonly :: [Command]
 cmds_notreadonly = concat
-	[ Command.RecvKey.def
-	, Command.DropKey.def
-	, Command.Commit.def
+	[ gitAnnexShellCheck Command.RecvKey.def
+	, gitAnnexShellCheck Command.DropKey.def
+	, gitAnnexShellCheck Command.Commit.def
+	, Command.GCryptSetup.def
 	]
 
 cmds :: [Command]
-cmds = map gitAnnexShellCheck $ map adddirparam $ cmds_readonly ++ cmds_notreadonly
+cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
   where
 	adddirparam c = c { cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c }
 
@@ -191,8 +193,8 @@ checkEnv var = do
 
 {- Modifies a Command to check that it is run in either a git-annex
  - repository, or a repository with a gcrypt-id set. -}
-gitAnnexShellCheck :: Command -> Command
-gitAnnexShellCheck = addCheck okforshell . dontCheck repoExists
+gitAnnexShellCheck :: [Command] -> [Command]
+gitAnnexShellCheck = map $ addCheck okforshell . dontCheck repoExists
   where
 	okforshell = unlessM (isInitialized <||> isJust . gcryptId <$> Annex.getGitConfig) $
 		error "Not a git-annex or gcrypt repository."

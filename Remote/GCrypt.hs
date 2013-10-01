@@ -9,7 +9,8 @@ module Remote.GCrypt (
 	remote,
 	gen,
 	getGCryptUUID,
-	coreGCryptId
+	coreGCryptId,
+	setupRepo
 ) where
 
 import qualified Data.Map as M
@@ -198,12 +199,12 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 setupRepo :: Git.GCrypt.GCryptId -> Git.Repo -> Annex AccessMethod
 setupRepo gcryptid r
 	| Git.repoIsUrl r = do
-		accessmethod <- rsyncsetup
+		(_, _, accessmethod) <- rsyncTransport r
 		case accessmethod of
-			AccessDirect -> return AccessDirect
-			AccessShell -> ifM usablegitannexshell
+			AccessDirect -> rsyncsetup
+			AccessShell -> ifM gitannexshellsetup
 				( return AccessShell
-				, return AccessDirect
+				, rsyncsetup
 				)
 	| Git.repoIsLocalUnknown r = localsetup =<< liftIO (Git.Config.read r)
 	| otherwise = localsetup r
@@ -220,15 +221,15 @@ setupRepo gcryptid r
 	 -}
   	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
 		liftIO $ createDirectoryIfMissing True $ tmp </> objectDir
-		(rsynctransport, rsyncurl, accessmethod) <- rsyncTransport r
+		(rsynctransport, rsyncurl, _) <- rsyncTransport r
 		let tmpconfig = tmp </> "config"
 		void $ liftIO $ rsync $ rsynctransport ++
 			[ Param $ rsyncurl ++ "/config"
 			, Param tmpconfig
 			]
 		liftIO $ do
-			Git.Config.changeFile tmpconfig coreGCryptId gcryptid
-			Git.Config.changeFile tmpconfig denyNonFastForwards (Git.Config.boolConfig False)
+			void $ Git.Config.changeFile tmpconfig coreGCryptId gcryptid
+			void $ Git.Config.changeFile tmpconfig denyNonFastForwards (Git.Config.boolConfig False)
 		ok <- liftIO $ rsync $ rsynctransport ++
 			[ Params "--recursive"
 			, Param $ tmp ++ "/"
@@ -236,12 +237,12 @@ setupRepo gcryptid r
 			]
 		unless ok $
 			error "Failed to connect to remote to set it up."
-		return accessmethod
+		return AccessDirect
 
-	{-  Check if git-annex shell is installed, and is a new enough
-	 -  version to work in a gcrypt repo. -}
-	usablegitannexshell = either (const False) (const True)
-		<$> Ssh.onRemote r (Git.Config.fromPipe r, Left undefined) "configlist" [] []
+	{-  Ask git-annex-shell to configure the repository as a gcrypt
+	 -  repository. May fail if it is too old. -}
+	gitannexshellsetup = Ssh.onRemote r (boolSystem, False)
+		"gcryptsetup" [ Param gcryptid ] []
 
 	denyNonFastForwards = "receive.denyNonFastForwards"
 
