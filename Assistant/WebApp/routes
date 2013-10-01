@@ -44,6 +44,7 @@
 /config/repository/add/ssh/retry/#SshData RetrySshR GET
 /config/repository/add/ssh/make/git/#SshData MakeSshGitR GET
 /config/repository/add/ssh/make/rsync/#SshData MakeSshRsyncR GET
+/config/repository/add/ssh/make/gcrypt/#SshData/#RepoKey MakeSshGCryptR GET
 /config/repository/add/cloud/rsync.net AddRsyncNetR GET POST
 /config/repository/add/cloud/rsync.net/shared/#SshData MakeRsyncNetSharedR GET
 /config/repository/add/cloud/rsync.net/gcrypt/#SshData/#RepoKey MakeRsyncNetGCryptR GET

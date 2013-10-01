@@ -9,7 +9,8 @@ module Remote.GCrypt (
 	remote,
 	gen,
 	getGCryptUUID,
-	coreGCryptId
+	coreGCryptId,
+	setupRepo
 ) where
 
 import qualified Data.Map as M
@@ -163,7 +164,7 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 
 		{- Run a git fetch and a push to the git repo in order to get
 		 - its gcrypt-id set up, so that later git annex commands
-		 - will use the remote as a ggcrypt remote. The fetch is
+		 - will use the remote as a gcrypt remote. The fetch is
 		 - needed if the repo already exists; the push is needed
 		 - if the repo has not yet been initialized by gcrypt. -}
 		void $ inRepo $ Git.Command.runBool
@@ -185,51 +186,50 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 						method <- setupRepo gcryptid =<< inRepo (Git.Construct.fromRemoteLocation gitrepo)
 						gitConfigSpecialRemote u c' "gcrypt" (fromAccessMethod method)
 						return (c', u)
-					else error "uuid mismatch"
+					else error $ "uuid mismatch " ++ show (u, mu, gcryptid)
 
 {- Sets up the gcrypt repository. The repository is either a local
  - repo, or it is accessed via rsync directly, or it is accessed over ssh
  - and git-annex-shell is available to manage it.
  -
- - The gcrypt-id is stored in the gcrypt repository for later
- - double-checking and identification. This is always done using rsync.
+ - The GCryptID is recorded in the repository's git config for later use.
+ - Also, if the git config has receive.denyNonFastForwards set, disable
+ - it; gcrypt relies on being able to fast-forward branches.
  -}
 setupRepo :: Git.GCrypt.GCryptId -> Git.Repo -> Annex AccessMethod
 setupRepo gcryptid r
 	| Git.repoIsUrl r = do
-		accessmethod <- rsyncsetup
+		(_, _, accessmethod) <- rsyncTransport r
 		case accessmethod of
-			AccessDirect -> return AccessDirect
-			AccessShell -> ifM usablegitannexshell
+			AccessDirect -> rsyncsetup
+			AccessShell -> ifM gitannexshellsetup
 				( return AccessShell
-				, return AccessDirect
+				, rsyncsetup
 				)
 	| Git.repoIsLocalUnknown r = localsetup =<< liftIO (Git.Config.read r)
 	| otherwise = localsetup r
   where
 	localsetup r' = do
-		liftIO $ Git.Command.run [Param "config", Param coreGCryptId, Param gcryptid] r'
+		let setconfig k v = liftIO $ Git.Command.run [Param "config", Param k, Param v] r'
+		setconfig coreGCryptId gcryptid
+		setconfig denyNonFastForwards (Git.Config.boolConfig False)
 		return AccessDirect
 
-	{- Download any git config file from the remote,
-	 - add the gcryptid to it, and send it back.
-	 -
-	 - At the same time, create the objectDir on the remote,
-	 - which is needed for direct rsync to work.
+	{- As well as modifying the remote's git config, 
+	 - create the objectDir on the remote,
+	 - which is needed for direct rsync of objects to work.
 	 -}
   	rsyncsetup = Remote.Rsync.withRsyncScratchDir $ \tmp -> do
 		liftIO $ createDirectoryIfMissing True $ tmp </> objectDir
-		(rsynctransport, rsyncurl, accessmethod) <- rsyncTransport r
+		(rsynctransport, rsyncurl, _) <- rsyncTransport r
 		let tmpconfig = tmp </> "config"
 		void $ liftIO $ rsync $ rsynctransport ++
 			[ Param $ rsyncurl ++ "/config"
 			, Param tmpconfig
 			]
-		liftIO $ appendFile tmpconfig $ unlines
-			[ ""
-			, "[core]"
-			, "\tgcrypt-id = " ++ gcryptid
-			]
+		liftIO $ do
+			void $ Git.Config.changeFile tmpconfig coreGCryptId gcryptid
+			void $ Git.Config.changeFile tmpconfig denyNonFastForwards (Git.Config.boolConfig False)
 		ok <- liftIO $ rsync $ rsynctransport ++
 			[ Params "--recursive"
 			, Param $ tmp ++ "/"
@@ -237,12 +237,14 @@ setupRepo gcryptid r
 			]
 		unless ok $
 			error "Failed to connect to remote to set it up."
-		return accessmethod
+		return AccessDirect
 
-	{-  Check if git-annex shell is installed, and is a new enough
-	 -  version to work in a gcrypt repo. -}
-	usablegitannexshell = either (const False) (const True)
-		<$> Ssh.onRemote r (Git.Config.fromPipe r, Left undefined) "configlist" [] []
+	{-  Ask git-annex-shell to configure the repository as a gcrypt
+	 -  repository. May fail if it is too old. -}
+	gitannexshellsetup = Ssh.onRemote r (boolSystem, False)
+		"gcryptsetup" [ Param gcryptid ] []
+
+	denyNonFastForwards = "receive.denyNonFastForwards"
 
 shellOrRsync :: Remote -> Annex a -> Annex a -> Annex a
 shellOrRsync r ashell arsync = case method of

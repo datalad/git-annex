@@ -12,7 +12,9 @@ import Assistant.Ssh
 import Assistant.Pairing
 import Assistant.Pairing.Network
 import Assistant.MakeRemote
+import Assistant.Sync
 import Config.Cost
+import Config
 
 import Network.Socket
 import qualified Data.Text as T
@@ -22,7 +24,7 @@ import qualified Data.Text as T
 setupAuthorizedKeys :: PairMsg -> FilePath -> IO ()
 setupAuthorizedKeys msg repodir = do
 	validateSshPubKey pubkey
-	unlessM (liftIO $ addAuthorizedKeys False repodir pubkey) $
+	unlessM (liftIO $ addAuthorizedKeys True repodir pubkey) $
 		error "failed setting up ssh authorized keys"
   where
 	pubkey = remoteSshPubKey $ pairMsgData msg
@@ -43,7 +45,9 @@ finishedLocalPairing msg keypair = do
 			, "git-annex-shell -c configlist " ++ T.unpack (sshDirectory sshdata)
 			]
 			Nothing
-	void $ makeSshRemote False sshdata (Just semiExpensiveRemoteCost)
+	r <- liftAnnex $ addRemote $ makeSshRemote sshdata
+	liftAnnex $ setRemoteCost r semiExpensiveRemoteCost
+	syncRemote r
 
 {- Mostly a straightforward conversion.  Except:
  -  * Determine the best hostname to use to contact the host.
@@ -63,7 +67,7 @@ pairMsgToSshData msg = do
 		, sshRepoName = genSshRepoName hostname dir
 		, sshPort = 22
 		, needsPubKey = True
-		, rsyncOnly = False
+		, sshCapabilities = [GitAnnexShellCapable, GitCapable, RsyncCapable]
 		}
 
 {- Finds the best hostname to use for the host that sent the PairMsg.

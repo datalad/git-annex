@@ -177,3 +177,14 @@ fromFile r f = fromPipe r "git"
 	, File f
 	, Param "--list"
 	]
+
+{- Changes a git config setting in the specified config file.
+ - (Creates the file if it does not already exist.) -}
+changeFile :: FilePath -> String -> String -> IO Bool
+changeFile f k v = boolSystem "git"
+	[ Param "config"
+	, Param "--file"
+	, File f
+	, Param k
+	, Param v
+	]

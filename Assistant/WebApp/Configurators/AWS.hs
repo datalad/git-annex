@@ -205,7 +205,8 @@ enableAWSRemote _ _ = error "S3 not supported by this build"
 makeAWSRemote :: SpecialRemoteMaker -> RemoteType -> StandardGroup -> AWSCreds -> RemoteName -> RemoteConfig -> Handler ()
 makeAWSRemote maker remotetype defaultgroup (AWSCreds ak sk) name config = do
 	liftIO $ AWS.setCredsEnv (T.unpack ak, T.unpack sk)
-	setupCloudRemote defaultgroup $ maker hostname remotetype config
+	setupCloudRemote defaultgroup Nothing $
+		maker hostname remotetype config
   where
 	{- AWS services use the remote name as the basis for a host
 	 - name, so filter it to contain valid characters. -}

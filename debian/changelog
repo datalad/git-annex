@@ -28,6 +28,8 @@ git-annex (4.20130921) UNRELEASED; urgency=low
     written by MacGPG.
   * assistant: More robust inotify handling; avoid crashing if a directory
     cannot be read.
+  * Disable receive.denyNonFastForwards when setting up a gcrypt special
+    remote, since gcrypt needs to be able to fast-forward the master branch.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 

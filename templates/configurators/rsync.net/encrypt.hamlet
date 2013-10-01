@@ -26,11 +26,11 @@
   <p>
     $forall (keyid, name) <- secretkeys
       <p>
-        <a .btn onclick="$('#setupmodal').modal('show');" href="@{MakeRsyncNetGCryptR sshdata (RepoKey keyid)}">
+        <a .btn href="@{MakeRsyncNetGCryptR sshdata (RepoKey keyid)}" onclick="$('#setupmodal').modal('show');">
           <i .icon-lock></i> Encrypt repository #
         to ^{gpgKeyDisplay keyid (Just name)}
   <p>
-    <a .btn onclick="$('#genkeymodal').modal('show');" href="@{MakeRsyncNetGCryptR sshdata NoRepoKey}">
+    <a .btn href="@{MakeRsyncNetGCryptR sshdata NoRepoKey}" onclick="$('#genkeymodal').modal('show');">
       <i .icon-plus-sign></i> Encrypt repository #
     with a new encryption key
 ^{genKeyModal}
