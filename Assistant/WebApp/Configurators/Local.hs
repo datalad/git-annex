@@ -100,7 +100,7 @@ checkRepositoryPath p = do
 			Nothing -> Right $ Just $ T.pack basepath
 			Just prob -> Left prob
   where
-	runcheck (chk, msg) = ifM (chk) ( return $ Just msg, return Nothing )
+	runcheck (chk, msg) = ifM chk ( return $ Just msg, return Nothing )
 	expandTilde home ('~':'/':path) = home </> path
 	expandTilde _ path = path
 
@@ -113,7 +113,7 @@ checkRepositoryPath p = do
  - browsed to a directory with git-annex and run it from there. -}
 defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
-	cwd <- liftIO $ getCurrentDirectory
+	cwd <- liftIO getCurrentDirectory
 	home <- myHomeDir
 	if home == cwd && firstrun
 		then inhome
@@ -136,7 +136,7 @@ newRepositoryForm defpath msg = do
 		(Just $ T.pack $ addTrailingPathSeparator defpath)
 	let (err, errmsg) = case pathRes of
 		FormMissing -> (False, "")
-		FormFailure l -> (True, concat $ map T.unpack l)
+		FormFailure l -> (True, concatMap T.unpack l)
 		FormSuccess _ -> (False, "")
 	let form = do
 		webAppFormAuthToken
@@ -230,7 +230,7 @@ getAddDriveR :: Handler Html
 getAddDriveR = postAddDriveR
 postAddDriveR :: Handler Html
 postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
-	removabledrives <- liftIO $ driveList
+	removabledrives <- liftIO driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
 	((res, form), enctype) <- liftH $ runFormPost $
@@ -276,7 +276,7 @@ setupDriveModal :: Widget
 setupDriveModal = $(widgetFile "configurators/adddrive/setupmodal")
 
 getGenKeyForDriveR :: RemovableDrive -> Handler Html
-getGenKeyForDriveR drive = withNewSecretKey $ \keyid -> do
+getGenKeyForDriveR drive = withNewSecretKey $ \keyid ->
 	{- Generating a key takes a long time, and 
 	 - the removable drive may have been disconnected
 	 - in the meantime. Check that it is still mounted
@@ -329,7 +329,7 @@ getFinishAddDriveR drive = go
  - Next call syncRemote to get them in sync. -}
 combineRepos :: FilePath -> String -> Handler Remote
 combineRepos dir name = liftAnnex $ do
-	hostname <- maybe "host" id <$> liftIO getHostname
+	hostname <- fromMaybe "host" <$> liftIO getHostname
 	hostlocation <- fromRepo Git.repoLocation
 	liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
 	addRemote $ makeGitRemote name dir
@@ -380,7 +380,7 @@ startFullAssistant path repogroup setup = do
 		u <- initRepo isnew True path Nothing
 		inDir path $ do
 			setStandardGroup u repogroup
-			maybe noop id setup
+			fromMaybe noop setup
 		addAutoStartFile path
 		setCurrentDirectory path
 		fromJust $ postFirstRun webapp
@@ -440,13 +440,12 @@ initRepo False _ dir desc = inDir dir $ do
 	getUUID
 
 initRepo' :: Maybe String -> Annex ()
-initRepo' desc = do
-	unlessM isInitialized $ do
-		initialize desc
-		{- Ensure branch gets committed right away so it is
-		 - available for merging when a removable drive repo is being
-		 - added. -}
-		Annex.Branch.commit "update"
+initRepo' desc = unlessM isInitialized $ do
+	initialize desc
+	{- Ensure branch gets committed right away so it is
+	 - available for merging when a removable drive repo is being
+	 - added. -}
+	Annex.Branch.commit "update"
 
 {- Checks if the user can write to a directory.
  -
