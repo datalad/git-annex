@@ -1,4 +1,4 @@
-git-annex (4.20130921) UNRELEASED; urgency=low
+git-annex (4.20131002) unstable; urgency=low
 
   * Note that the layout of gcrypt repositories has changed, and
     if you created one you must manually upgrade it.
@@ -35,7 +35,7 @@ git-annex (4.20130921) UNRELEASED; urgency=low
   * Moved list of backends and remote types from status to version
     command.
 
- -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 02 Oct 2013 16:00:39 -0400
 
 git-annex (4.20130920) unstable; urgency=low
 
