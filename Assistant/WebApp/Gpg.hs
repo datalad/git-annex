@@ -48,7 +48,7 @@ whenGcryptInstalled a = ifM (liftIO isGcryptInstalled)
 
 withNewSecretKey :: (KeyId -> Handler Html) -> Handler Html
 withNewSecretKey use = do
-	userid <- liftIO $ newUserId
+	userid <- liftIO newUserId
 	liftIO $ genSecretKey RSA "" userid maxRecommendedKeySize
 	results <- M.keys . M.filter (== userid) <$> liftIO secretKeys
 	case results of
@@ -70,7 +70,7 @@ getGCryptRemoteName u repoloc = do
 		[Params "remote add", Param tmpremote, Param $ Git.GCrypt.urlPrefix ++ repoloc]
 	mname <- ifM (inRepo $ Git.Command.runBool [Param "fetch", Param tmpremote])
 		( do
-			void $ Annex.Branch.forceUpdate
+			void Annex.Branch.forceUpdate
 			(M.lookup "name" <=< M.lookup u) <$> readRemoteLog
 		, return Nothing
 		)

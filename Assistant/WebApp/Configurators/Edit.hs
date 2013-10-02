@@ -62,7 +62,7 @@ getRepoConfig uuid mremote = do
 		Nothing -> (RepoGroupCustom $ unwords $ S.toList groups, Nothing)
 		Just g -> (RepoGroupStandard g, associatedDirectory remoteconfig g)
 	
-	description <- maybe Nothing (Just . T.pack) . M.lookup uuid <$> uuidMap
+	description <- fmap T.pack . M.lookup uuid <$> uuidMap
 
 	syncable <- case mremote of
 		Just r -> return $ remoteAnnexSync $ Remote.gitconfig r
@@ -99,7 +99,7 @@ setRepoConfig uuid mremote oldc newc = do
 				, Param $ T.unpack $ repoName oldc
 				, Param name
 				]
-			void $ Remote.remoteListRefresh
+			void Remote.remoteListRefresh
 		liftAssistant updateSyncRemotes
 	when associatedDirectoryChanged $ case repoAssociatedDirectory newc of
 		Nothing -> noop
@@ -120,11 +120,9 @@ setRepoConfig uuid mremote oldc newc = do
 		 - so avoid queueing a duplicate scan. -}
 		when (repoSyncable newc && not syncableChanged) $ liftAssistant $
 			case mremote of
-				Just remote -> do
-					addScanRemotes True [remote]
-				Nothing -> do
-					addScanRemotes True
-						=<< syncDataRemotes <$> getDaemonStatus
+				Just remote -> addScanRemotes True [remote]
+				Nothing -> addScanRemotes True
+					=<< syncDataRemotes <$> getDaemonStatus
 	when syncableChanged $
 		changeSyncable mremote (repoSyncable newc)
   where

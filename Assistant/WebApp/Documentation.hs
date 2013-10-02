@@ -38,5 +38,5 @@ getLicenseR = do
 			$(widgetFile "documentation/license")
 
 getRepoGroupR :: Handler Html
-getRepoGroupR = page "About repository groups" (Just About) $ do
+getRepoGroupR = page "About repository groups" (Just About) $
 	$(widgetFile "documentation/repogroup")

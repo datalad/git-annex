@@ -17,7 +17,7 @@ import Assistant.XMPP.Client
 
 {- The main configuration screen. -}
 getConfigurationR :: Handler Html
-getConfigurationR = ifM (inFirstRun)
+getConfigurationR = ifM inFirstRun
 	( redirect FirstRepositoryR
 	, page "Configuration" (Just Configuration) $ do
 #ifdef WITH_XMPP

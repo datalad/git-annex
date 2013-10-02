@@ -38,7 +38,7 @@ import Utility.Yesod
 
 {- Use Nothing to change autocommit setting; or a remote to change
  - its sync setting. -}
-changeSyncable :: (Maybe Remote) -> Bool -> Handler ()
+changeSyncable :: Maybe Remote -> Bool -> Handler ()
 changeSyncable Nothing enable = do
 	liftAnnex $ Config.setConfig key (boolConfig enable)
 	liftIO . maybe noop (`throwTo` signal)
@@ -53,7 +53,7 @@ changeSyncable (Just r) True = do
 	liftAssistant $ syncRemote r
 changeSyncable (Just r) False = do
 	changeSyncFlag r False
-	liftAssistant $ updateSyncRemotes
+	liftAssistant updateSyncRemotes
 	{- Stop all transfers to or from this remote.
 	 - XXX Can't stop any ongoing scan, or git syncs. -}
 	void $ liftAssistant $ dequeueTransfers tofrom
@@ -66,7 +66,7 @@ changeSyncable (Just r) False = do
 changeSyncFlag :: Remote -> Bool -> Handler ()
 changeSyncFlag r enabled = liftAnnex $ do
 	Config.setConfig key (boolConfig enabled)
-	void $ Remote.remoteListRefresh
+	void Remote.remoteListRefresh
   where
 	key = Config.remoteConfig (Remote.repo r) "sync"
 

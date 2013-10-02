@@ -428,7 +428,7 @@ enableRsyncNetGCrypt sshinput reponame =
 prepRsyncNet :: SshInput -> String -> (SshData -> Handler Html) -> Handler Html
 prepRsyncNet sshinput reponame a = do
 	knownhost <- liftIO $ maybe (return False) knownHost (inputHostname sshinput)
-	keypair <- liftIO $ genSshKeyPair
+	keypair <- liftIO genSshKeyPair
 	sshdata <- liftIO $ setupSshKeyPair keypair $
 		(mkSshData sshinput)
 			{ sshRepoName = reponame 

@@ -111,7 +111,7 @@ previouslyUsedIACreds = previouslyUsedCredPair AWS.creds S3.remote $
 #endif
 
 accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text
-accessKeyIDFieldWithHelp def = AWS.accessKeyIDField help def
+accessKeyIDFieldWithHelp = AWS.accessKeyIDField help
   where
 	help = [whamlet|
 <a href="http://archive.org/account/s3.php">

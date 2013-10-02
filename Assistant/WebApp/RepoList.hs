@@ -35,6 +35,7 @@ import qualified Git
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
+import Data.Function
 
 data Actions
 	= DisabledRepoActions
@@ -100,7 +101,7 @@ mainRepoSelector = RepoSelector
 
 {- List of cloud repositories, configured and not. -}
 cloudRepoList :: Widget
-cloudRepoList = repoListDisplay $ RepoSelector
+cloudRepoList = repoListDisplay RepoSelector
 	{ onlyCloud = True
 	, onlyConfigured = False
 	, includeHere = False
@@ -161,7 +162,7 @@ repoList reposelector
 		g <- gitRepo
 		map snd . catMaybes . filter selectedremote 
 			. map (findinfo m g)
-			<$> (trustExclude DeadTrusted $ M.keys m)
+			<$> trustExclude DeadTrusted (M.keys m)
 	selectedrepo r
 		| Remote.readonly r = False
 		| onlyCloud reposelector = Git.repoIsUrl (Remote.repo r) && not (isXMPPRemote r)
@@ -192,7 +193,7 @@ repoList reposelector
 	  	getconfig k = M.lookup k =<< M.lookup u m
 		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
 	list l = liftAnnex $ do
-		let l' = nubBy (\x y -> fst x == fst y) l
+		let l' = nubBy ((==) `on` fst) l
 		l'' <- zip
 			<$> Remote.prettyListUUIDs (map fst l')
 			<*> pure l'
@@ -258,7 +259,7 @@ getRetryUnfinishedRepositoriesR = do
 	redirect DashboardR
   where
 	unstall r = do
-		liftIO $ fixSshKeyPair
+		liftIO fixSshKeyPair
 		liftAnnex $ setConfig 
 			(remoteConfig (Remote.repo r) "ignore")
 			(boolConfig False)

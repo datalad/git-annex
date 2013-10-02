@@ -94,10 +94,10 @@ awsCredsAForm defcreds = AWSCreds
 	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
 
 accessKeyIDField :: Widget -> Maybe Text -> MkAForm Text
-accessKeyIDField help def = areq (textField `withNote` help) "Access Key ID" def
+accessKeyIDField help = areq (textField `withNote` help) "Access Key ID"
 
 accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text
-accessKeyIDFieldWithHelp def = accessKeyIDField help def
+accessKeyIDFieldWithHelp = accessKeyIDField help
   where
 	help = [whamlet|
 <a href="https://portal.aws.amazon.com/gp/aws/securityCredentials#id_block">
@@ -105,7 +105,7 @@ accessKeyIDFieldWithHelp def = accessKeyIDField help def
 |]
 
 secretAccessKeyField :: Maybe Text -> MkAForm Text
-secretAccessKeyField def = areq passwordField "Secret Access Key" def
+secretAccessKeyField = areq passwordField "Secret Access Key"
 
 datacenterField :: AWS.Service -> MkAForm Text
 datacenterField service = areq (selectFieldList list) "Datacenter" defregion
