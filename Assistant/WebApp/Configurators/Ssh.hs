@@ -86,7 +86,7 @@ sshInputAForm hostnamefield def = SshInput
 		let h = T.unpack t
 		let canonname = Just $ defaultHints { addrFlags = [AI_CANONNAME] }
 		r <- catchMaybeIO $ getAddrInfo canonname (Just h) Nothing
-		return $ case catMaybes . map addrCanonName <$> r of
+		return $ case mapMaybe addrCanonName <$> r of
 			-- canonicalize input hostname if it had no dot
 			Just (fullname:_)
 				| '.' `elem` h -> Right t
@@ -247,9 +247,9 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 			, ("rsync", RsyncCapable)
 			]
 		in if null cs
-			then if reported "loggedin"
-				then UnusableServer "Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
-				else UnusableServer $ T.pack $
+			then UnusableServer $ if reported "loggedin"
+				then "Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
+				else T.pack $
 					"Failed to ssh to the server. Transcript: " ++ s
 			else UsableServer cs
 	  where
@@ -346,7 +346,7 @@ prepSsh' gcrypt origsshdata sshdata keypair a = sshSetup
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
 		, Just $ "cd " ++ shellEscape remotedir
 		, if rsynconly then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
-		, if (rsynconly || gcrypt) then Nothing else Just "git annex init"
+		, if rsynconly || gcrypt then Nothing else Just "git annex init"
 		, if needsPubKey origsshdata
 			then addAuthorizedKeysCommand (hasCapability origsshdata GitAnnexShellCapable) remotedir . sshPubKey <$> keypair
 			else Nothing
@@ -405,7 +405,7 @@ getMakeRsyncNetSharedR = makeSshRepo . rsyncOnly
 getMakeRsyncNetGCryptR :: SshData -> RepoKey -> Handler Html
 getMakeRsyncNetGCryptR sshdata NoRepoKey = whenGcryptInstalled $
 	withNewSecretKey $ getMakeRsyncNetGCryptR sshdata . RepoKey
-getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $ do
+getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $
 	sshSetup [sshhost, gitinit] [] $ makeGCryptRepo keyid sshdata
   where
 	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
