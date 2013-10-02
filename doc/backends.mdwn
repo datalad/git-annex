@@ -21,6 +21,8 @@ can use different ones for different files.
    but are not concerned about security.
 * `SHA384`, `SHA384E`, `SHA224`, `SHA224E` -- Hashes for people who like
   unusual sizes.
+* `SKEIN512`, `SKEIN256` -- [Skein hash](http://en.wikipedia.org/wiki/Skein_hash),
+  a well-regarded SHA3 hash competition finalist.
 
 The `annex.backends` git-config setting can be used to list the backends
 git-annex should use. The first one listed will be used by default when

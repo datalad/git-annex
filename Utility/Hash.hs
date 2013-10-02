@@ -26,4 +26,8 @@ sha512 = hashlazy
 --sha3 :: L.ByteString -> Digest SHA3
 --sha3 = hashlazy
 
+skein256 :: L.ByteString -> Digest Skein256_256
+skein256 = hashlazy
 
+skein512 :: L.ByteString -> Digest Skein512_512
+skein512 = hashlazy

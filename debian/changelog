@@ -12,6 +12,7 @@ git-annex (4.20130921) UNRELEASED; urgency=low
   * Use cryptohash rather than SHA for hashing when no external hash program
     is available. This is a significant speedup for SHA256 on OSX, for
     example.
+  * Added SKEIN256 and SKEIN512 backends.
   * Android build redone from scratch, many dependencies updated,
     and entire build can now be done using provided scripts.
   * assistant: Clear the list of failed transfers when doing a full transfer
