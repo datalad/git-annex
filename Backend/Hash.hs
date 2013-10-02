@@ -136,12 +136,6 @@ hashFile hash file filesize = do
 				=<< externalSHA command hashsize file
 	go (SkeinHash hashsize) = skeinHasher hashsize <$> L.readFile file
 
-skeinHasher :: HashSize -> (L.ByteString -> String)
-skeinHasher hashsize 
-	| hashsize == 256 = show . skein256
-	| hashsize == 512 = show . skein512
-	| otherwise = error $ "bad skein size " ++ show hashsize
-
 shaCommand :: HashSize -> Integer -> Either (L.ByteString -> String) String
 shaCommand hashsize filesize
 	| hashsize == 1 = use SysConfig.sha1 sha1
@@ -160,3 +154,9 @@ shaCommand hashsize filesize
 		 - process unless the file is large. -}
 		| filesize < 1048576 = use Nothing hasher
 		| otherwise = Right c
+
+skeinHasher :: HashSize -> (L.ByteString -> String)
+skeinHasher hashsize 
+	| hashsize == 256 = show . skein256
+	| hashsize == 512 = show . skein512
+	| otherwise = error $ "bad skein size " ++ show hashsize
