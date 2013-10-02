@@ -32,6 +32,8 @@ git-annex (4.20130921) UNRELEASED; urgency=low
     written by MacGPG.
   * assistant: More robust inotify handling; avoid crashing if a directory
     cannot be read.
+  * Moved list of backends and remote types from status to version
+    command.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 22 Sep 2013 19:42:29 -0400
 
