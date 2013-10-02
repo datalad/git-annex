@@ -129,15 +129,15 @@ hashFile hash file filesize = do
 	showAction "checksum"
 	liftIO $ go hash
   where
-  	go (SHAHash hashsize) = case shaCommand hashsize filesize of
+  	go (SHAHash hashsize) = case shaHasher hashsize filesize of
 		Left sha -> sha <$> L.readFile file
 		Right command ->
 			either error return 
 				=<< externalSHA command hashsize file
 	go (SkeinHash hashsize) = skeinHasher hashsize <$> L.readFile file
 
-shaCommand :: HashSize -> Integer -> Either (L.ByteString -> String) String
-shaCommand hashsize filesize
+shaHasher :: HashSize -> Integer -> Either (L.ByteString -> String) String
+shaHasher hashsize filesize
 	| hashsize == 1 = use SysConfig.sha1 sha1
 	| hashsize == 256 = use SysConfig.sha256 sha256
 	| hashsize == 224 = use SysConfig.sha224 sha224
