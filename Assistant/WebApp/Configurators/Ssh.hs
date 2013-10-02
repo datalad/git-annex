@@ -23,6 +23,8 @@ import Types.Remote (RemoteConfig)
 import Git.Remote
 import Assistant.WebApp.Utility
 import qualified Remote.GCrypt as GCrypt
+import Annex.UUID
+import Logs.UUID
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -112,16 +114,16 @@ getAddSshR :: Handler Html
 getAddSshR = postAddSshR
 postAddSshR :: Handler Html
 postAddSshR = sshConfigurator $ do
-	u <- liftIO $ T.pack <$> myUserName
+	username <- liftIO $ T.pack <$> myUserName
 	((result, form), enctype) <- liftH $
 		runFormPost $ renderBootstrap $ sshInputAForm textField $
-			SshInput Nothing (Just u) Nothing 22
+			SshInput Nothing (Just username) Nothing 22
 	case result of
 		FormSuccess sshinput -> do
 			s <- liftIO $ testServer sshinput
 			case s of
 				Left status -> showform form enctype status
-				Right sshdata -> liftH $ redirect $ ConfirmSshR sshdata
+				Right (sshdata, u) -> liftH $ redirect $ ConfirmSshR sshdata u
 		_ -> showform form enctype UntestedServer
   where
 	showform form enctype status = $(widgetFile "configurators/ssh/add")
@@ -129,27 +131,27 @@ postAddSshR = sshConfigurator $ do
 sshTestModal :: Widget
 sshTestModal = $(widgetFile "configurators/ssh/testmodal")
 
-{- Note that there's no EnableSshR because ssh remotes are not special
- - remotes, and so their configuration is not shared between repositories.
- -}
+sshSetupModal :: SshData -> Widget
+sshSetupModal sshdata = $(widgetFile "configurators/ssh/setupmodal")
+
 getEnableRsyncR :: UUID -> Handler Html
 getEnableRsyncR = postEnableRsyncR
 postEnableRsyncR :: UUID -> Handler Html
 postEnableRsyncR = enableSpecialSshRemote getsshinput enableRsyncNet enablersync
   where
-	enablersync sshdata = redirect $ ConfirmSshR $
-		sshdata { sshCapabilities = [RsyncCapable] }
+	enablersync sshdata u = redirect $ ConfirmSshR
+		(sshdata { sshCapabilities = [RsyncCapable] }) u
 	getsshinput = parseSshUrl <=< M.lookup "rsyncurl"
 
 {- This only handles gcrypt repositories that are located on ssh servers;
  - ones on local drives are handled via another part of the UI. -}
-getEnableGCryptR :: UUID -> Handler Html
-getEnableGCryptR = postEnableGCryptR
-postEnableGCryptR :: UUID -> Handler Html
-postEnableGCryptR u = whenGcryptInstalled $
+getEnableSshGCryptR :: UUID -> Handler Html
+getEnableSshGCryptR = postEnableSshGCryptR
+postEnableSshGCryptR :: UUID -> Handler Html
+postEnableSshGCryptR u = whenGcryptInstalled $
 	enableSpecialSshRemote getsshinput enableRsyncNetGCrypt enablegcrypt u
   where
-  	enablegcrypt sshdata = prepSsh True sshdata $ \sshdata' ->
+  	enablegcrypt sshdata _ = prepSsh True sshdata $ \sshdata' ->
 		sshConfigurator $
 			checkExistingGCrypt sshdata' $
 				error "Expected to find an encrypted git repository, but did not."
@@ -160,7 +162,7 @@ postEnableGCryptR u = whenGcryptInstalled $
  - only real purpose is to check if ssh public keys need to be
  - set up.
  -}
-enableSpecialSshRemote :: (RemoteConfig -> Maybe SshData) -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> Handler Html) -> UUID -> Handler Html
+enableSpecialSshRemote :: (RemoteConfig -> Maybe SshData) -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> UUID -> Handler Html) -> UUID -> Handler Html
 enableSpecialSshRemote getsshinput rsyncnetsetup genericsetup u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
 	case (mkSshInput . unmangle <$> getsshinput m, M.lookup "name" m) of
@@ -175,8 +177,8 @@ enableSpecialSshRemote getsshinput rsyncnetsetup genericsetup u = do
 						s <- liftIO $ testServer sshinput'
 						case s of
 							Left status -> showform form enctype status
-							Right sshdata -> void $ liftH $ genericsetup sshdata
-								{ sshRepoName = reponame }
+							Right (sshdata, _u) -> void $ liftH $ genericsetup
+								( sshdata { sshRepoName = reponame } ) u
 				_ -> showform form enctype UntestedServer
 		_ -> redirect AddSshR
   where
@@ -199,24 +201,29 @@ enableSpecialSshRemote getsshinput rsyncnetsetup genericsetup u = do
  - git, and rsync are available. 
  - Note that, ~/.ssh/git-annex-shell may be
  - present, while git-annex-shell is not in PATH.
+ -
+ - Also probe to see if there is already a git repository at the location
+ - with either an annex-uuid or a gcrypt-id set. (If not, returns NoUUID.)
  -}
-testServer :: SshInput -> IO (Either ServerStatus SshData)
+testServer :: SshInput -> IO (Either ServerStatus (SshData, UUID))
 testServer (SshInput { inputHostname = Nothing }) = return $
 	Left $ UnusableServer "Please enter a host name."
 testServer sshinput@(SshInput { inputHostname = Just hn }) = do
-	status <- probe [sshOpt "NumberOfPasswordPrompts" "0"]
+	(status, u) <- probe [sshOpt "NumberOfPasswordPrompts" "0"]
 	case capabilities status of
 		[] -> do
-			status' <- probe []
+			(status', u') <- probe []
 			case capabilities status' of
 				[] -> return $ Left status'
-				cs -> ret cs True
-		cs -> ret cs False
+				cs -> ret cs True u'
+		cs -> ret cs False u
   where
-	ret cs needspubkey = return $ Right $ (mkSshData sshinput)
-		{ needsPubKey = needspubkey
-		, sshCapabilities = cs
-		}
+	ret cs needspubkey u = do
+		let sshdata = (mkSshData sshinput)
+			{ needsPubKey = needspubkey
+			, sshCapabilities = cs
+			}
+		return $ Right (sshdata, u)
 	probe extraopts = do
 		let remotecommand = shellWrap $ intercalate ";"
 			[ report "loggedin"
@@ -224,6 +231,7 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 			, checkcommand "git"
 			, checkcommand "rsync"
 			, checkcommand shim
+			, getgitconfig (T.unpack <$> inputDirectory sshinput)
 			]
 		knownhost <- knownHost hn
 		let sshopts = filter (not . null) $ extraopts ++
@@ -246,19 +254,28 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 			, ("git", GitCapable)
 			, ("rsync", RsyncCapable)
 			]
+		    u = fromMaybe NoUUID $ headMaybe $ mapMaybe finduuid $
+			map (separate (== '=')) $ lines s
 		in if null cs
-			then UnusableServer $ if reported "loggedin"
-				then "Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
-				else T.pack $
-					"Failed to ssh to the server. Transcript: " ++ s
-			else UsableServer cs
+			then (UnusableServer unusablereason, u)
+			else (UsableServer cs, u)
 	  where
 		reported r = token r `isInfixOf` s
+		unusablereason = if reported "loggedin"
+				then "Neither rsync nor git-annex are installed on the server. Perhaps you should go install them?"
+				else T.pack $ "Failed to ssh to the server. Transcript: " ++ s
+		finduuid (k, v)
+			| k == "annex.uuid" = Just $ toUUID v
+			| k == GCrypt.coreGCryptId = Just $ genUUIDInNameSpace gCryptNameSpace v
+			| otherwise = Nothing
 	
 	checkcommand c = "if which " ++ c ++ "; then " ++ report c ++ "; fi"
 	token r = "git-annex-probe " ++ r
 	report r = "echo " ++ token r
 	shim = "~/.ssh/git-annex-shell"
+	getgitconfig (Just d)
+		| not (null d) = "cd " ++ shellEscape d ++ " && git config --list"
+	getgitconfig _ = "echo"
 
 {- Runs a ssh command; if it fails shows the user the transcript,
  - and if it succeeds, runs an action. -}
@@ -273,16 +290,39 @@ showSshErr :: String -> Handler Html
 showSshErr msg = sshConfigurator $
 	$(widgetFile "configurators/ssh/error")
 
-getConfirmSshR :: SshData -> Handler Html
-getConfirmSshR sshdata = sshConfigurator $ do
-	secretkeys <- sortBy (comparing snd) . M.toList
-		<$> liftIO secretKeys
-	$(widgetFile "configurators/ssh/confirm")
+{- The UUID will be NoUUID when the repository does not already exist. -}
+getConfirmSshR :: SshData -> UUID -> Handler Html
+getConfirmSshR sshdata u
+	| u == NoUUID = handlenew
+	| otherwise = handleexisting =<< (M.lookup u <$> liftAnnex uuidMap)
+  where
+	handlenew = sshConfigurator $ do
+		secretkeys <- sortBy (comparing snd) . M.toList
+			<$> liftIO secretKeys
+		$(widgetFile "configurators/ssh/confirm")
+  	handleexisting Nothing = sshConfigurator $
+		-- Not a UUID we know, so prompt about combining.
+		$(widgetFile "configurators/ssh/combine")
+	handleexisting (Just _) = prepSsh False sshdata $ \sshdata' -> do
+		m <- liftAnnex readRemoteLog
+		case M.lookup "type" =<< M.lookup u m of
+			Just "gcrypt" -> combineExistingGCrypt sshdata' u
+			-- This handles enabling git repositories
+			-- that already exist.
+			_ -> makeSshRepo sshdata'
+
+{- The user has confirmed they want to combine with a ssh repository,
+ - which is not known to us. So it might be using gcrypt. -}
+getCombineSshR :: SshData -> Handler Html
+getCombineSshR sshdata = prepSsh False sshdata $ \sshdata' ->
+	sshConfigurator $
+		checkExistingGCrypt sshdata' $
+			void $ liftH $ makeSshRepo sshdata'
 
 getRetrySshR :: SshData -> Handler ()
 getRetrySshR sshdata = do
 	s <- liftIO $ testServer $ mkSshInput sshdata
-	redirect $ either (const $ ConfirmSshR sshdata) ConfirmSshR s
+	redirect $ either (const $ ConfirmSshR sshdata NoUUID) (uncurry ConfirmSshR) s
 
 getMakeSshGitR :: SshData -> Handler Html
 getMakeSshGitR sshdata = prepSsh False sshdata makeSshRepo
@@ -306,9 +346,8 @@ checkExistingGCrypt sshdata nope = ifM (liftIO isGcryptInstalled)
 	( checkGCryptRepoEncryption repourl nope $ do
 		mu <- liftAnnex $ probeGCryptRemoteUUID repourl
 		case mu of
-			Just u -> do
-				reponame <- liftAnnex $ getGCryptRemoteName u repourl
-				void $ liftH $ enableGCrypt sshdata reponame
+			Just u -> void $ liftH $
+				combineExistingGCrypt sshdata u
 			Nothing -> error "The location contains a gcrypt repository that is not a git-annex special remote. This is not supported."
 	, nope
 	)
@@ -322,20 +361,29 @@ enableGCrypt sshdata reponame =
 		enableSpecialRemote reponame GCrypt.remote $ M.fromList
 			[("gitrepo", genSshUrl sshdata)]
 
+{- Combining with a gcrypt repository that may not be
+ - known in remote.log, so probe the gcrypt repo. -}
+combineExistingGCrypt :: SshData -> UUID -> Handler Html
+combineExistingGCrypt sshdata u = do
+	reponame <- liftAnnex $ getGCryptRemoteName u repourl
+	enableGCrypt sshdata reponame
+  where
+  	repourl = genSshUrl sshdata
+
 {- Sets up remote repository for ssh, or directory for rsync. -}
 prepSsh :: Bool -> SshData -> (SshData -> Handler Html) -> Handler Html
-prepSsh gcrypt sshdata a
+prepSsh newgcrypt sshdata a
 	| needsPubKey sshdata = do
 		keypair <- liftIO genSshKeyPair
 		sshdata' <- liftIO $ setupSshKeyPair keypair sshdata
-		prepSsh' gcrypt sshdata sshdata' (Just keypair) a
+		prepSsh' newgcrypt sshdata sshdata' (Just keypair) a
 	| sshPort sshdata /= 22 = do
 		sshdata' <- liftIO $ setSshConfig sshdata []
-		prepSsh' gcrypt sshdata sshdata' Nothing a
-	| otherwise = prepSsh' gcrypt sshdata sshdata Nothing a
+		prepSsh' newgcrypt sshdata sshdata' Nothing a
+	| otherwise = prepSsh' newgcrypt sshdata sshdata Nothing a
 
 prepSsh' :: Bool -> SshData -> SshData -> Maybe SshKeyPair -> (SshData -> Handler Html) -> Handler Html
-prepSsh' gcrypt origsshdata sshdata keypair a = sshSetup
+prepSsh' newgcrypt origsshdata sshdata keypair a = sshSetup
 	 [ "-p", show (sshPort origsshdata)
 	 , genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
 	 , remoteCommand
@@ -346,7 +394,7 @@ prepSsh' gcrypt origsshdata sshdata keypair a = sshSetup
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
 		, Just $ "cd " ++ shellEscape remotedir
 		, if rsynconly then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
-		, if rsynconly || gcrypt then Nothing else Just "git annex init"
+		, if rsynconly || newgcrypt then Nothing else Just "git annex init"
 		, if needsPubKey origsshdata
 			then addAuthorizedKeysCommand (hasCapability origsshdata GitAnnexShellCapable) remotedir . sshPubKey <$> keypair
 			else Nothing

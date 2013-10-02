@@ -186,7 +186,7 @@ repoList reposelector
 			-- handled separately.
 			case getconfig "gitrepo" of
 				Just rr	| remoteLocationIsUrl (parseRemoteLocation rr g) ->
-					val True EnableGCryptR
+					val True EnableSshGCryptR
 				_ -> Nothing
 		_ -> Nothing
 	  where
