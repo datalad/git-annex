@@ -3,7 +3,7 @@ all=git-annex $(mans) docs
 
 GHC?=ghc
 GHCMAKE=$(GHC) $(GHCFLAGS) --make
-PREFIX=/usr
+PREFIX?=/usr
 CABAL?=cabal # set to "./Setup" if you lack a cabal program
 
 # Am I typing :make in vim? Do a fast build.
@@ -76,7 +76,8 @@ clean:
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs
-	find -name \*.o -or -name \*.hi -exec rm {} \;
+	find -name \*.o -exec rm {} \;
+	find -name \*.hi -exec rm {} \;
 
 Build/InstallDesktopFile: Build/InstallDesktopFile.hs
 	$(GHC) --make $@

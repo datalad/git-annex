@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="comment 4"
+ date="2013-09-16T01:23:58Z"
+ content="""
+Done [0]. Not much debug output, unfortunately...
+
+[0] http://git-annex.branchable.com/bugs/Assistant_stalls_when_adding__47__creating_repo_on_ArchLinux/?updated
+"""]]

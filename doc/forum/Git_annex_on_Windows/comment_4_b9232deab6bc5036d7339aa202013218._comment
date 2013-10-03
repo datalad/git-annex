@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 4"
+ date="2013-09-12T20:58:30Z"
+ content="""
+Once `git annex get` has downloaded the file, it will replace the symlink with the contents of the file.
+
+If that is not happening, you might try running `git annex fsck`
+
+
+"""]]

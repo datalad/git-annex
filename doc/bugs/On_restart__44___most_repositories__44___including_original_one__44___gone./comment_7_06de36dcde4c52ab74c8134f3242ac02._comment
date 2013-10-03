@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlEhzszkzOIy8-Rx8b2mcr75QcnIc6O_OA"
+ nickname="Rachel"
+ subject="comment 7"
+ date="2013-09-13T10:54:37Z"
+ content="""
+... and resolved for myself by just deleting (dropping in the trash for now) the annex on the external volume, restarting git-annex assistant and *disabling* that repo from the menu rather than deleting it.
+
+"""]]

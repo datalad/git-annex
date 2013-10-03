@@ -17,6 +17,8 @@ import qualified Data.Map as M
 
 import Types.UUID
 
+-- This order may seem backwards, but we generally want to list dead
+-- remotes last and trusted ones first.
 data TrustLevel = Trusted | SemiTrusted | UnTrusted | DeadTrusted
 	deriving (Eq, Enum, Ord, Bounded)
 

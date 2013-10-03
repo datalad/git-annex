@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="2001:1928:1:9::1"
+ subject="comment 2"
+ date="2013-09-09T04:31:30Z"
+ content="""
+i can reproduce reliably alright. It's quite systematic. I have found the `longpolling.js` file in the inspector, but I am not very familiar with in-browser javascript debugging, so I am not sure where to go from here.
+
+Note that the assistant doesn't actually crash. This is also reproducable in Debian sid.
+"""]]

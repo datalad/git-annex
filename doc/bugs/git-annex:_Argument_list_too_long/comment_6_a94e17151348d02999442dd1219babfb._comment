@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="comment 6"
+ date="2013-09-19T17:31:46Z"
+ content="""
+I have tried to reproduce this bug, running the amd64 build on i386, and cannot. When I run the git-annex shell script included in the standalone bundle, it runs runshell, which in turn tries to run bin/git-annex. Since the architecture is wrong, that fails.
+
+I suppose your shell could instead, if presented with a binary of the wrong architecture, skip it and keep searching PATH for another one. That would be a most odd behavior, but if that were the case and you put the git-annex script into PATH, it would lead to what you describe.
+"""]]

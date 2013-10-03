@@ -352,3 +352,7 @@ USB Device: Bluetooth USB Host Controller, apple_vendor_id, 0x8286, 0x1d181300 /
 
 # End of transcript or log.
 """]]
+
+> This got fixed in haskell gnutls 0.1.5. I have updated the Mtn Lion
+> autobuilder and it will be in tonight's build. [[done]]
+> --[[Joey]] 

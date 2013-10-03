@@ -12,3 +12,4 @@ upgrade supported from repository versions: 0 1 2
 
 on Debian Gnu Linux sid
 
+> [[fixed|done]] --[[Joey]]

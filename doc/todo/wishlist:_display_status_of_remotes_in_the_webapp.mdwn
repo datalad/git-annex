@@ -1,0 +1,1 @@
+It would be nice to have an indication of the status of the remotes in the webapp, for example with a field showing "In Sync", "Syncing", or the date of the last successful synchronization for unreachable remotes.

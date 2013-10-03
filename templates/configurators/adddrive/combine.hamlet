@@ -1,0 +1,19 @@
+<div .span9 .hero-unit>
+  <h2>
+    Combine repositories?
+  <p>
+    The removable drive at <tt>#{mountPoint drive}</tt> already
+    has files in its repository <tt>#{driveRepoPath drive}</tt>
+  <p>
+    Do you want to combine these files into your repository?
+  <p>
+    <a .btn onclick="$('#setupmodal').modal('show');" href="@{FinishAddDriveR drive NoRepoKey}">
+      <i .icon-resize-small></i> Combine the repositories #
+    The combined repositories will sync and share their files.
+  <p>
+  <p>
+    <a .btn href="@{AddDriveR}">
+      <i .icon-resize-full></i> Go back #
+    Use a different directory than <tt>#{driveRepoPath drive}</tt> to #
+    avoid combining the repositories.
+^{setupDriveModal}

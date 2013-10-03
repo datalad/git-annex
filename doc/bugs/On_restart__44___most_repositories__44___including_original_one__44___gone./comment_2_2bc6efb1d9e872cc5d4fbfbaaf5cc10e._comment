@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlEhzszkzOIy8-Rx8b2mcr75QcnIc6O_OA"
+ nickname="Rachel"
+ subject="I don't know whether I've fixed it or confused things further"
+ date="2013-09-12T21:30:44Z"
+ content="""
+I shut down the daemon that was running from the webapp itself.
+
+Instead of launching by using the app, I did:
+
+[[!format txt \"\"\"
+celestia:~ rachel$ cd annex/
+celestia:annex rachel$ git-annex assistant
+(merging synced/git-annex into git-annex...)
+celestia:annex rachel$ git-annex webapp
+Launching web browser on file:///Users/rachel/annex/.git/annex/webapp.html
+celestia:annex rachel$ 
+\"\"\"]]
+
+It opened the webapp. I could see all the repos back again.
+
+It also seems to be syncing to everything else, sending the files all over again, even though they haven't changed.
+
+It's just about possible it's completing the job, as I'm not sure I saw the files syncing now, being synced earlier. But... in that earlier session it had run the queue dry, *it* thought it had completed syncing.
+
+What's going on?
+"""]]

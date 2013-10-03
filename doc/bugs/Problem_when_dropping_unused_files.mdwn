@@ -15,3 +15,7 @@ I have no idea, but once it happens I can't interact with unused files anymore. 
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 4.20130815, OS X 10.8.4
+
+> [[done]]; no indication this is anything other than a corrupt git
+> repository, which can be caused by system crash, disk data loss, 
+> cosmic rays, etc. This is why we keep backups... --[[Joey]] 

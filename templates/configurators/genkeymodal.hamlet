@@ -1,0 +1,12 @@
+<div .modal .fade #genkeymodal>
+  <div .modal-header>
+    <h3>
+      <img src="@{StaticR activityicon_gif}" alt=""> #
+      Generating a #{maxRecommendedKeySize} bit GnuPg key.
+  <div .modal-body>
+    <p>
+      Generating a GnuPg key can take a long time. To speed up the process, #
+      it actually helps to use your computer for other things, which helps #
+      generate random numbers that keep the GnuPg key secure.
+    <p>
+      So if this is taking too long, go play a game or something!

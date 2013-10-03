@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+I just added a new podcast to my feeds list and it is complaining of "bad feed content" when trying to import.
+
+### What steps will reproduce the problem?
+
+1. git-annex importfeed --fast http://redecentralize.org/podcast/feed.rss
+3. see the sad error "warning: bad feed content"
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 4.20130827
+
+### Please provide any additional information below.
+
+[[!format sh """
+greg@x200s:~/annex/Podcasts$ git-annex importfeed --fast http://redecentralize.org/podcast/feed.rss
+(checking known urls...)
+importfeed http://redecentralize.org/podcast/feed.rss 
+--2013-09-09 15:05:17--  http://redecentralize.org/podcast/feed.rss
+Resolving redecentralize.org (redecentralize.org)... 204.232.175.78
+Connecting to redecentralize.org (redecentralize.org)|204.232.175.78|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 4331 (4.2K) [text/xml]
+Saving to: ‘/tmp/feed12649’
+
+100%[==============================================================>] 4,331       --.-K/s   in 0.08s   
+
+2013-09-09 15:05:17 (56.0 KB/s) - ‘/tmp/feed12649’ saved [4331/4331]
+
+
+  warning: bad feed content
+ok
+"""]]
+
+> upstream bug <https://github.com/sof/feed/issues/5> ; [[done]] --[[Joey]]  

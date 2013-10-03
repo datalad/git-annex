@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 9"
+ date="2013-08-30T06:20:58Z"
+ content="""
+And yet again it happens:
+
+    error: invalid object 100644 3edb1d4a44ffba1ea1491693ae7d9faa82aad717 for '000/4ce/SHA256E-s175006724--a0edc4f880223028b3fa3a27b142c8e027ddf66db973b8272ca845a4a9e01d3e.mp4.log'  fatal: git-write-tree: error building trees
+
+This was in a repository that was working perfectly well until I tried to `git-annex get`.  The weird thing is that I don't even have any `SHA256E` files anymore.
+
+I think that after my recent migration, none of my repositories can be trusted.  This is just happening too often (more than 10 times in the last week, across many repositories on many machines).  I will just rebuild them all.  But I do wish git-annex was more resilient about this.
+"""]]

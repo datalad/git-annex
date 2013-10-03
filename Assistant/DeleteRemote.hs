@@ -17,8 +17,7 @@ import Logs.Location
 import Assistant.DaemonStatus
 import qualified Remote
 import Remote.List
-import qualified Git.Command
-import qualified Git.BuildVersion
+import qualified Git.Remote
 import Logs.Trust
 import qualified Annex
 
@@ -35,15 +34,7 @@ disableRemote uuid = do
 	remote <- fromMaybe (error "unknown remote")
 		<$> liftAnnex (Remote.remoteFromUUID uuid)
 	liftAnnex $ do
-		inRepo $ Git.Command.run
-			[ Param "remote"
-			-- name of this subcommand changed
-			, Param $
-				if Git.BuildVersion.older "1.8.0"
-					then "rm"
-					else "remove"
-			, Param (Remote.name remote)
-			]
+		inRepo $ Git.Remote.remove (Remote.name remote)
 		void $ remoteListRefresh
 	updateSyncRemotes
 	return remote

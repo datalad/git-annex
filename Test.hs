@@ -33,6 +33,7 @@ import qualified Types.KeySource
 import qualified Types.Backend
 import qualified Types.TrustLevel
 import qualified Types
+import qualified Logs
 import qualified Logs.UUIDBased
 import qualified Logs.Trust
 import qualified Logs.Remote
@@ -55,11 +56,13 @@ import qualified Utility.Process
 import qualified Utility.Misc
 import qualified Utility.InodeCache
 import qualified Utility.Env
-import qualified Utility.Gpg
 import qualified Utility.Matcher
 import qualified Utility.Exception
 #ifndef mingw32_HOST_OS
 import qualified GitAnnex
+import qualified Remote.Helper.Encryptable
+import qualified Types.Crypto
+import qualified Utility.Gpg
 #endif
 
 type TestEnv = M.Map String String
@@ -115,6 +118,7 @@ quickcheck =
 	, check "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
 	, check "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
 	, check "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
+	, check "prop_logs_sane" Logs.prop_logs_sane
 	, check "prop_idempotent_configEscape" Logs.Remote.prop_idempotent_configEscape
 	, check "prop_parse_show_Config" Logs.Remote.prop_parse_show_Config
 	, check "prop_parentDir_basics" Utility.Path.prop_parentDir_basics
@@ -872,18 +876,21 @@ test_bup_remote env = "git-annex bup remote" ~: intmpclonerepo env $ when Build.
 
 -- gpg is not a build dependency, so only test when it's available
 test_crypto :: TestEnv -> Test
-test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ whenM (Utility.Path.inPath Utility.Gpg.gpgcmd) $ do
 #ifndef mingw32_HOST_OS
+test_crypto env = "git-annex crypto" ~: TestList $ flip map ["shared","hybrid","pubkey"] $
+    \scheme -> TestCase $ intmpclonerepo env $ whenM (Utility.Path.inPath Utility.Gpg.gpgcmd) $ do
 	Utility.Gpg.testTestHarness @? "test harness self-test failed"
 	Utility.Gpg.testHarness $ do
 		createDirectory "dir"
-		let a cmd = git_annex env cmd
+		let a cmd = git_annex env cmd $
 			[ "foo"
 			, "type=directory"
-			, "encryption=" ++ Utility.Gpg.testKeyId
+			, "encryption=" ++ scheme
 			, "directory=dir"
 			, "highRandomQuality=false"
-			]
+			] ++ if scheme `elem` ["hybrid","pubkey"]
+				then ["keyid=" ++ Utility.Gpg.testKeyId]
+				else []
 		a "initremote" @? "initremote failed"
 		not <$> a "initremote" @? "initremote failed to fail when run twice in a row"
 		a "enableremote" @? "enableremote failed"
@@ -891,6 +898,16 @@ test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ whenM (Utility.Path
 		git_annex env "get" [annexedfile] @? "get of file failed"
 		annexed_present annexedfile
 		git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to encrypted remote failed"
+		(c,k) <- annexeval $ do
+			uuid <- Remote.nameToUUID "foo"
+			rs <- Logs.Remote.readRemoteLog
+			Just (k,_) <- Backend.lookupFile annexedfile
+			return (fromJust $ M.lookup uuid rs, k)
+		let key = if scheme `elem` ["hybrid","pubkey"]
+				then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]
+				else Nothing
+		testEncryptedRemote scheme key c [k] @? "invalid crypto setup"
+
 		annexed_present annexedfile
 		git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed"
 		annexed_notpresent annexedfile
@@ -898,8 +915,35 @@ test_crypto env = "git-annex crypto" ~: intmpclonerepo env $ whenM (Utility.Path
 		annexed_present annexedfile
 		not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 		annexed_present annexedfile
+  where
+	{- Ensure the configuration complies with the encryption scheme, and
+	 - that all keys are encrypted properly for the given directory remote. -}
+	testEncryptedRemote scheme ks c keys = case Remote.Helper.Encryptable.extractCipher c of
+		Just cip@Crypto.SharedCipher{} | scheme == "shared" && isNothing ks ->
+			checkKeys cip Nothing
+		Just cip@(Crypto.EncryptedCipher encipher v ks')
+			| checkScheme v && keysMatch ks' ->
+				checkKeys cip (Just v) <&&> checkCipher encipher ks'
+		_ -> return False
+	  where
+		keysMatch (Utility.Gpg.KeyIds ks') =
+			maybe False (\(Utility.Gpg.KeyIds ks2) ->
+					sort (nub ks2) == sort (nub ks')) ks
+		checkCipher encipher = Utility.Gpg.checkEncryptionStream encipher . Just
+		checkScheme Types.Crypto.Hybrid = scheme == "hybrid"
+		checkScheme Types.Crypto.PubKey = scheme == "pubkey"
+		checkKeys cip mvariant = do
+			cipher <- Crypto.decryptCipher cip
+			files <- filterM doesFileExist $
+				map ("dir" </>) $ concatMap (key2files cipher) keys
+			return (not $ null files) <&&> allM (checkFile mvariant) files
+		checkFile mvariant filename =
+			Utility.Gpg.checkEncryptionFile filename $
+				if mvariant == Just Types.Crypto.PubKey then ks else Nothing
+		key2files cipher = Locations.keyPaths .
+			Crypto.encryptKey Types.Crypto.HmacSha1 cipher
 #else
-		putStrLn "gpg testing not implemented on Windows"
+test_crypto _env = "git-annex crypto" ~: putStrLn "gpg testing not implemented on Windows"
 #endif
 
 -- This is equivilant to running git-annex, but it's all run in-process

@@ -1,0 +1,63 @@
+Started work on [gcrypt](https://github.com/blake2-ppc/git-remote-gcrypt)
+support.
+
+The first question is, should git-annex leave it up to gcrypt to transport
+the data to the encrypted repository on a push/pull? gcrypt hooks into git
+nicely to make that just work. However, if I go this route, it limits
+the places the encrypted git repositores can be stored to regular git
+remotes (and rsync). The alternative is to somehow use gcrypt to
+generate/consume the data, but use the git-annex special remotes to store
+individual files. Which would allow for a git repo stored on S3, etc.
+For now, I am going with the simple option, but I have not ruled out
+trying to make the latter work. It seems it would need changes to gcrypt
+though.
+
+Next question: Given a remote that uses gcrypt, how do I determine the
+annex.uuid of that repository. I found a nice solutuon to this. gcrypt has
+its own gcrypt-id, and I convert it to a UUID in a 
+[[reproducible, and even standards-compliant way|design/gcrypt]]. So
+the same encrypted remote will automatically get the same annex.uuid
+wherever it's used. Nice. Does mean that git-annex cannot find a uuid
+until `git pull` or `git push` has been used, to let gcrypt get the
+gcrypt-id. Implemented that.
+
+The next step is actually making git-annex store data on gcrypt remotes.
+And it needs to store it encrypted of course. It seems best to avoid
+needing a `git annex initremote` for these gcrypt remotes, and just have
+git-annex automatically encrypt data stored on them. But I don't
+know. Without initializing them like a special remote is, I'm limited to
+using the gpg keys that gcrypt is configured to encrypt to, and cannot use
+the regular git-annex hybrid encryption scheme. Also, I need to generate
+and store a nonce anyway to HMAC ecrypt keys. (Or modify gcrypt
+to put enough entropy in gcrypt-id that I can use it?) 
+
+Another concern I have is that gcrypt's own encryption scheme is simply
+to use a list of public keys to encrypt to. It would be nicer if the
+full set of git-annex encryption schemes could be used. Then the webapp
+could use shared encryption to avoid needing to make the user set up a gpg
+key, or hybrid encryption could be used to add keys later, etc.
+
+But I see why gcrypt works the way it does. Otherwise, you can't make an
+encrypted repo with a friend set as one of the particpants and have them be
+able to git clone it. Both hybrid and shared encryption store a secret
+inside the repo, which is not accessible if it's encrypted using that
+secret. There are use cases where not being able to blindly clone a gcrypt
+repo would be ok. For example, you use the assistant to pair with a friend
+and then set up an encrypted repo in the cloud for both of you to use.
+
+Anyway, for now, I will need to deal with
+setting up gpg keys etc in the assistant. I don't want to tackle
+full [[design/assistant/gpgkeys]] yet. Instead, I think I will start by
+adding some simple stuff to the assistant:
+
+* When adding a USB drive, offer to encrypt the repository on the drive
+  so that only you can see it.
+* When adding a ssh remote make a similar offer.
+* Add a UI to add an arbitrary git remote with encryption.
+  Let the user paste in the url to an empty remote they have,
+  which could be to eg github. (In most cases this won't be used for
+  annexed content..)
+* When the user has no gpg key, prompt to set one up. (Securely!)
+* Maybe have an interface to add another gpg key that can access the gcrypt
+  repo. Note that this will need to re-encrypt and re-push the whole
+  git history.

@@ -1,0 +1,1 @@
+When addWatcher gets a permission denied, it would be helpful to display the name of the object on which the permission was denied, in the error message which shows in the webapp.

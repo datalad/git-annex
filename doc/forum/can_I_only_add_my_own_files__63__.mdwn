@@ -1,0 +1,27 @@
+Hi,
+
+[ sorry for the wrong bugreport in the last version of this entry ]
+
+It seems as if I can only add my own file to the annex, even if I have group write permissions.  Is that correct?  Can that be circumvented other than copying/deleting the large file?
+
+Here is some demonstration:
+
+    > git init
+    > git config user.name dtr
+    > git config user.email dtrn@dtrn.com
+    
+    > dd if/dev/zero of=test2.bin count=1000
+    
+    > ll
+    -rw-rw-r-- 1 dtr dtr 512000 Sep 16  2013 test2.bin
+    
+    > sudo chown someone test2.bin
+    > ll
+    -rw-rw-r-- 1 someone dtr 512000 Sep 16  2013 test2.bin
+    
+    > git annex init
+    > git annex add test2.bin
+    add test2.bin (checksum...) 
+    git-annex: /test-git-annex/.git/annex/objects/Fq/f6/SHA256-s512000--2d4da04b861bb9dbe77c871415931785a18138d6db035f1bbcd0cf8277c6fc23/SHA256-s512000--2d4da04b861bb9dbe77c871415931785a18138d6db035f1bbcd0cf8277c6fc23: setFileMode: permission denied (Operation not permitted)
+    failed
+    git-annex: add: 1 failed

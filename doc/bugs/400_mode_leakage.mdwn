@@ -15,3 +15,11 @@ files transit through a special remote, using modes to limit access to
 individual files is not wise.)
 
 --[[Joey]]
+
+> Revisiting this, git-annex already honors core.sharedrepository settings,
+> so I just needed to set it to `world` to allow everyone to read.
+> 
+> There was a code path in direct mode where that didn't work; fixed that.
+> 
+> [[done]]
+> --[[Joey]] 

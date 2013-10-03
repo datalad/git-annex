@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Command.AddUrl where
 
 import Network.URI
@@ -27,8 +29,10 @@ import Annex.Content.Direct
 import Logs.Location
 import qualified Logs.Transfer as Transfer
 import Utility.Daemon (checkDaemon)
+#ifdef WITH_QUVI
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi
+#endif
 
 def :: [Command]
 def = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
@@ -56,18 +60,25 @@ start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
   	(s', downloader) = getDownloader s
 	bad = fromMaybe (error $ "bad url " ++ s') $
 		parseURI $ escapeURIString isUnescapedInURI s'
-	badquvi = error $ "quvi does not know how to download url " ++ s'
 	choosefile = flip fromMaybe optfile
 	go url = case downloader of
 		QuviDownloader -> usequvi
-		DefaultDownloader -> ifM (liftIO $ Quvi.supported s')
-			( usequvi
-			, do
-				pathmax <- liftIO $ fileNameLengthLimit "."
-				let file = choosefile $ url2file url pathdepth pathmax
-				showStart "addurl" file
-				next $ perform relaxed s' file
-			)
+		DefaultDownloader -> 
+#ifdef WITH_QUVI
+			ifM (liftIO $ Quvi.supported s')
+				( usequvi
+				, regulardownload url
+				)
+#else
+			regulardownload url
+#endif
+	regulardownload url = do
+		pathmax <- liftIO $ fileNameLengthLimit "."
+		let file = choosefile $ url2file url pathdepth pathmax
+		showStart "addurl" file
+		next $ perform relaxed s' file
+#ifdef WITH_QUVI
+	badquvi = error $ "quvi does not know how to download url " ++ s'
 	usequvi = do
 		page <- fromMaybe badquvi
 			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] s'
@@ -76,7 +87,11 @@ start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 			Quvi.pageTitle page ++ "." ++ Quvi.linkSuffix link
 		showStart "addurl" file
 		next $ performQuvi relaxed s' (Quvi.linkUrl link) file
+#else
+	usequvi = error "not built with quvi support"
+#endif
 
+#ifdef WITH_QUVI
 performQuvi :: Bool -> URLString -> URLString -> FilePath -> CommandPerform
 performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
   where
@@ -96,6 +111,7 @@ performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
 					then next $ cleanup quviurl file key (Just tmp)
 					else stop
 			)
+#endif
 
 perform :: Bool -> URLString -> FilePath -> CommandPerform
 perform relaxed url file = ifAnnexed file addurl geturl

@@ -33,3 +33,5 @@
     Repository information
   <p>
     ^{repoInfo}
+  <p>
+    ^{repoEncryption}

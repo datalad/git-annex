@@ -8,6 +8,7 @@
 module Types.Crypto (
 	Cipher(..),
 	StorableCipher(..),
+	EncryptedCipherVariant(..),
 	KeyIds(..),
 	Mac(..),
 	readMac,
@@ -22,9 +23,12 @@ import Data.Digest.Pure.SHA
 import Utility.Gpg (KeyIds(..))
 
 -- XXX ideally, this would be a locked memory region
-newtype Cipher = Cipher String
+data Cipher = Cipher String | MacOnlyCipher String
 
-data StorableCipher = EncryptedCipher String KeyIds | SharedCipher String
+data StorableCipher = EncryptedCipher String EncryptedCipherVariant KeyIds
+		| SharedCipher String
+	deriving (Ord, Eq)
+data EncryptedCipherVariant = Hybrid | PubKey
 	deriving (Ord, Eq)
 
 {- File names are (client-side) MAC'ed on special remotes.
@@ -66,4 +70,4 @@ calcMac mac = case mac of
 	HmacSha384 -> showDigest $* hmacSha384
 	HmacSha512 -> showDigest $* hmacSha512
   where
-  ($*) g f x y = g $ f x y
+	($*) g f x y = g $ f x y

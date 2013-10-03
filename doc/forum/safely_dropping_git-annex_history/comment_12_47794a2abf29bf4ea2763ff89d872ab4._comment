@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4830:1600:187::2"
+ subject="comment 12"
+ date="2013-09-04T06:38:00Z"
+ content="""
+`git annex forget` automates this now, without needing to force-push or have a flag day. Needs a version of git-annex supporting it installed on *all* the computers you use the repo on. Repos notice they need to forget when git annex is run in them, and do, automatically.
+"""]]

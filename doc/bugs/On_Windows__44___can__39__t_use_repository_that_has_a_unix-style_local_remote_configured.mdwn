@@ -18,3 +18,5 @@ Debian Linux: 3.20120629 (from the package manager)
 I experienced this bug several times with a plain git-annex install, and the only workaround was removing the unix-style remotes from remote repos.
 
 After other hackery to get git-annex working on Windows, I can't currently reproduce the issue.
+
+[[!tag moreinfo]]

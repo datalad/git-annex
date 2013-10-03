@@ -1,0 +1,68 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawknruiCHUcOh2mmpkh7OFJ4iNfAOOamRVs"
+ nickname="Renaud"
+ subject="comment 1"
+ date="2013-08-29T06:38:44Z"
+ content="""
+I wonder if it isn't related to the fact that even if I do `git annex drop` on windows, the file is still marked as modified in git.
+What is in repository is the path to the file's data using unix style folder separator but what is in my working directory is a file containing the path using windows style folder separator.
+
+I paste a transcript to describe what I mean:
+
+[[!format sh \"\"\"
+$ mkdir tmp
+
+$ cd tmp
+
+$ git init
+Initialized empty Git repository in c:/Users/raz/tmp/tmp/.git/
+
+$ git annex init test
+init test
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+(Recording state in git...)
+
+$ echo test > test
+
+$ git annex add
+add test (checksum...) ok
+(Recording state in git...)
+
+$ git annex sync
+commit
+ok
+git-annex: no branch is checked out
+
+$ git annex drop --force
+drop test ok
+(Recording state in git...)
+
+$ git status
+# On branch master
+# Changes not staged for commit:
+#   (use \"git add <file>...\" to update what will be committed)
+#   (use \"git checkout -- <file>...\" to discard changes in working directory)
+#
+#       modified:   test
+#
+no changes added to commit (use \"git add\" and/or \"git commit -a\")
+
+$ git diff
+diff --git a/test b/test
+index a9dd439..62343b2 120000
+--- a/test
++++ b/test
+@@ -1 +1 @@
+-.git/annex/objects/w8/pv/SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93
+\ No newline at end of file
++.git\annex\objects\w8\pv\SHA256E-s5--f2ca1bb6c7e907d06dafe4687e579fce76b37e4e93
+\ No newline at end of file
+\"\"\"]]
+"""]]

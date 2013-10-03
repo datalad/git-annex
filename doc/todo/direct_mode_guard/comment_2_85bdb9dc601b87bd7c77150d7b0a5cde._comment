@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="comment 2"
+ date="2013-09-20T11:29:04Z"
+ content="""
+Maybe make a git sub-namespace of commands. Yeah, I know, something like git annex git-add sounds a bit on the verbose side, but it would allow access to possibly all git commands regardless of name clashes. 
+"""]]

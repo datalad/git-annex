@@ -35,7 +35,7 @@ Notice `mebibytes` and `gigabytes`. It is unclear whether those are gigabytes (1
 
 ### Please provide any additional information below.
 
-nil.
+nil. --[[anarcat]]
 
 > git-annex consistently uses the powers of ten units
 > for disk storage sizes. Its "gigabyte" is the SI gigabyte.

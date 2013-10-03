@@ -1,0 +1,38 @@
+I just setup git-annex across three macs, using git-annex assistant.  I have one repository working fine, which successfully syncs between two of my own accounts on two different machines, via S3.
+
+Now I'm trying to get the "share with a friend" feature to work.  The problem is that only Mac Alias's / sym links are created, for example:
+
+Machine 1:
+- Copy file into ~/annex/
+
+Machine 2:
+- The file is synced as a sym-link, with a link into a file in .git that doesn't exist.
+
+The config is:
+- Version: 4.20130909-ga29f960 - Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi
+- Two macs
+- Share with friend over Jabber
+- Use Box as the cloud sync service with encryption enabled.  Box is setup as a transfer repository.
+
+I've looked through the logs in .git/annex/daemon.log* and there doesn't look to be any problems.
+
+This is what the log looks like:
+
+    [2013-09-14 19:55:47 PDT] Committer: Adding 20120101-..084-1.jpg
+    failed
+    add /Users/nick/Shared/20120101-GOPR0084-1.jpg (checksum...) ok 
+    add /Users/nick/Shared/20120101-GOPR0084-1.jpg (checksum...) ok 
+    add /Users/nick/Shared/20120101-GOPR0084-1.jpg (checksum...) ok 
+    add /Users/nick/Shared/20120101-GOPR0084-1.jpg (checksum...) ok 
+    add /Users/nick/Shared/20120101-GOPR0084-1.jpg (checksum...) [2013-09-14 19:55:47 PDT] Committer: Committing changes to git
+    [2013-09-14 19:55:48 PDT] XMPPSendPack: Syncing with USER2 
+    Already up-to-date.
+    To xmpp::USER2@gmail.com
+       7b65b15..183b91c  git-annex -> refs/synced/6163ef8e-c36a-4b09-919b-9c18ade55234/bmlja2JsYWNrMUBnbWFpbC5jb20=/git-annex
+       3104275..96afa09  master -> refs/synced/6163ef8e-c36a-4b09-919b-9c18ade55234/bmlja2JsYWNrMUBnbWFpbC5jb20=/master
+    [2013-09-14 19:55:49 PDT] XMPPSendPack: Syncing with USER2 
+    Everything up-to-date
+    recv: resource vanished (Connection reset by peer)
+
+
+Any ideas what I should look at next?  Thanks in advance :-)

@@ -1,3 +1,73 @@
+git-annex (4.20130920) unstable; urgency=low
+
+  * webapp: Initial support for setting up encrypted removable drives.
+  * Recommend using my patched gcrypt, which fixes some bugs:
+    https://github.com/joeyh/git-remote-gcrypt
+  * Support hot-swapping of removable drives containing gcrypt repositories.
+  * list: New command, displays a compact table of remotes that
+    contain files.
+    (Thanks, anarcat for display code and mastensg for inspiration.)
+  * fsck: Fix detection and fixing of present direct mode files that are
+    wrongly represented as standin symlinks on crippled filesystems.
+  * sync: Fix bug that caused direct mode mappings to not be updated
+    when merging files into the tree on Windows.
+  * sync: Don't fail if the directory it is run in gets removed by the
+    sync.
+  * addurl: Fix quvi audodetection, broken in last release.
+  * status: In local mode, displays information about variance from configured
+    numcopies levels. (--fast avoids calculating these)
+  * gcrypt: Ensure that signing key is set to one of the participants keys.
+  * webapp: Show encryption information when editing a remote.
+  * Avoid unnecessarily catting non-symlink files from git, which can be
+    so large it runs out of memory.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 20 Sep 2013 10:34:51 -0400
+
+git-annex (4.20130911) unstable; urgency=low
+
+  * Fix problem with test suite in non-unicode locale.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 11 Sep 2013 12:14:16 -0400
+
+git-annex (4.20130909) unstable; urgency=low
+
+  * initremote: Syntax change when setting up an encrypted special remote.
+    Now use keyid=$KEYID rather than the old encryption=$KEYID
+  * forget: New command, causes git-annex branch history to be forgotten
+    in a way that will spread to other clones of the repository.
+    (As long as they're running this version or newer of git-annex.)
+  * forget --drop-dead: Completely removes mentions of repositories that
+    have been marked as dead from the git-annex branch.
+  * sync, assistant: Force push of the git-annex branch. Necessary
+    to ensure it gets pushed to remotes after being rewritten by forget.
+  * Added gcrypt support. This combines a fully encrypted git
+    repository (using git-remote-gcrypt) with an encrypted git-annex special
+    remote.
+  * sync: Support syncing with gcrypt remotes.
+  * importfeed: Also ignore transient problems with downloading content
+    from feeds.
+  * Honor core.sharedrepository when receiving and adding files in direct
+    mode.
+  * enableremote: gpg keys can be removed from those a remote encrypts
+    to by passing "keyid-=$KEYID". keyid+= is also provided.
+    (Thanks, guilhem for the patch.)
+  * Added encryption=pubkey scheme, which encrypts to public keys directly
+    rather than the hybrid approach. See documentation for advantages
+    and disadvantages, but encryption=hybrid is the recommended scheme still.
+    (Thanks, guilhem for the patch.)
+  * Fix Feeds display in build flags.
+  * Remind user when annex-ignore is set for some remotes, if unable to
+    get or drop a file, possibly because it's on an ignored remote.
+  * gpg: Force --no-textmode in case the user has it turned on in config.
+  * webapp: Improve javascript's handling of longpolling connection
+    failures, by reloading the current page in this case.
+    Works around chromium behavior where ajax connections to urls
+    that were already accessed are denied after navigating back to
+    a previous page.
+  * Allow building without quvi support.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 09 Sep 2013 09:47:02 -0400
+
 git-annex (4.20130827~bpo70+1) wheezy-backports; urgency=low
 
   * Youtube support! (And 53 other video hosts). When quvi is installed,

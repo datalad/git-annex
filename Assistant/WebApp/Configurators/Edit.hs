@@ -11,6 +11,7 @@ module Assistant.WebApp.Configurators.Edit where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.Utility
+import Assistant.WebApp.Gpg
 import Assistant.DaemonStatus
 import Assistant.MakeRemote (uniqueRemoteName)
 import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
@@ -33,6 +34,9 @@ import qualified Git.Command
 import qualified Git.Config
 import qualified Annex
 import Git.Remote
+import Remote.Helper.Encryptable (extractCipher)
+import Types.Crypto
+import Utility.Gpg
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -187,8 +191,9 @@ editForm new uuid = page "Edit repository" (Just Configuration) $ do
 			redirect DashboardR
 		_ -> do
 			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
-			repoInfo <- getRepoInfo mremote . M.lookup uuid
-				<$> liftAnnex readRemoteLog
+			config <- liftAnnex $ M.lookup uuid <$> readRemoteLog
+			let repoInfo = getRepoInfo mremote config
+			let repoEncryption = getRepoEncryption mremote config
 			$(widgetFile "configurators/editrepository")
 
 {- Makes any directory associated with the repository. -}
@@ -221,3 +226,20 @@ getGitRepoInfo :: Git.Repo -> Widget
 getGitRepoInfo r = do
 	let loc = Git.repoLocation r
 	[whamlet|git repository located at <tt>#{loc}</tt>|]
+
+getRepoEncryption :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
+getRepoEncryption (Just _) (Just c) = case extractCipher c of
+  	Nothing ->
+		[whamlet|not encrypted|]
+	(Just (SharedCipher _)) ->
+		[whamlet|encrypted: encryption key stored in git repository|]
+	(Just (EncryptedCipher _ _ (KeyIds { keyIds = ks }))) -> do
+		knownkeys <- liftIO secretKeys
+		[whamlet|
+encrypted using gpg key:
+<ul style="list-style: none">
+  $forall k <- ks
+    <li>
+      ^{gpgKeyDisplay k (M.lookup k knownkeys)}
+|]
+getRepoEncryption _ _ = [whamlet||] -- local repo

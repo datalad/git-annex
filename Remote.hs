@@ -19,7 +19,7 @@ module Remote (
 
 	remoteTypes,
 	remoteList,
-	specialRemote,
+	syncableRemote,
 	remoteMap,
 	uuidDescriptions,
 	byName,
@@ -231,6 +231,9 @@ showLocations key exclude nolocmsg = do
 	ppuuidswanted <- Remote.prettyPrintUUIDs "wanted" uuidswanted
 	ppuuidsskipped <- Remote.prettyPrintUUIDs "skipped" uuidsskipped
 	showLongNote $ message ppuuidswanted ppuuidsskipped
+	ignored <- filter (remoteAnnexIgnore . gitconfig) <$> remoteList
+	unless (null ignored) $
+		showLongNote $ "(Note that these git remotes have annex-ignore set: " ++ unwords (map name ignored) ++ ")"
   where
 	filteruuids l x = filter (`notElem` x) l
 	message [] [] = nolocmsg

@@ -25,3 +25,7 @@ Latest.
 
 # End of transcript or log.
 """]]
+
+> This seems to be [[done]], at least the bug reporter didn't feel the need
+> to follow up with the info I asked for and says the problem does not
+> affect him. --[[Joey]]

@@ -1,0 +1,50 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlEhzszkzOIy8-Rx8b2mcr75QcnIc6O_OA"
+ nickname="Rachel"
+ subject="And this morning..."
+ date="2013-09-13T10:38:35Z"
+ content="""
+I tried removing the second repo, by deleting it, it seemed to begin normally. Then it just hung, and hung.
+
+Looking at logs, it seemed to be hung on dropping one file - a very small file in fact, but it was probably the most recent file to be added. So the end of the log just looked like:
+
+[[!format txt \"\"\"
+drop annex old stuff/renegade/issue7back.pdf ok
+drop annex old stuff/renegade/issue7fiction.pdf ok
+drop annex postgresql 9.0->9.1 upgrade process 
+\"\"\"]]
+
+After a while I started getting problems in other terminal shells where I was doing stuff unrelated to git annex. eg: on trying to open a new terminal window, it would open, then shut immediately, or it would open with just:
+
+[[!format txt \"\"\"
+forkpty: Resource temporarily unavailable
+Could not create a new process and open a pseudo-tty.
+\"\"\"]]
+
+Various other commands that would have resulted in a fork were failing too. In the end I shut down git annex (using the shutdown daemon open in the menu in the webapp), and everything went back to normal.
+
+This is the end of the daemon.log from this morning. I don't want to paste the whole thing, as essentially it lists all my private filenames, and there's a lot. In fact I wonder if the quantity of files may be a factor:
+
+[[!format txt \"\"\"
+drop annex old stuff/renegade/index.html ok
+drop annex old stuff/renegade/issue1.pdf ok
+drop annex old stuff/renegade/issue2.pdf ok
+drop annex old stuff/renegade/issue3.pdf ok
+drop annex old stuff/renegade/issue4.pdf ok
+drop annex old stuff/renegade/issue4coverpic.pdf ok
+drop annex old stuff/renegade/issue6articles.pdf ok
+drop annex old stuff/renegade/issue6cover.pdf ok
+drop annex old stuff/renegade/issue6fiction.pdf ok
+drop annex old stuff/renegade/issue7articles.pdf ok
+drop annex old stuff/renegade/issue7back.pdf ok
+drop annex old stuff/renegade/issue7fiction.pdf ok
+drop annex postgresql 9.0->9.1 upgrade process [2013-09-13 11:25:07 BST] NetWatcherFallback: Syncing with twilight.local_annex, octavia.local_annex, 192.168.1.103_annex, luna.strangenoises.org_annex 
+NetWatcherFallback crashed: git: createProcess: resource exhausted (Resource temporarily unavailable)
+[2013-09-13 11:25:07 BST] NetWatcherFallback: warning NetWatcherFallback crashed: git: createProcess: resource exhausted (Resource temporarily unavailable)
+recv: resource vanisrhreeecdcv v:(: C rorenesnsoeoucurtrciceoe n v varanenisiseshthe edbd y ( (CpCoeonennrne)ec
+cttiioonn  rreesseett  bbyy  ppeeeerr))
+
+[2013-09-13 11:26:32 BST] main: warning git-annex has been shut down
+\"\"\"]]
+
+"""]]

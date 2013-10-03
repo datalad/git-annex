@@ -8,6 +8,7 @@ print ".TH $prog $section\n";
 
 while (<>) {
 	s{(\\?)\[\[([^\s\|\]]+)(\|[^\s\]]+)?\]\]}{$1 ? "[[$2]]" : $2}eg;
+	s/\`([^\`]*)\`/\\fB$1\\fP/g;
 	s/\`//g;
 	s/^\s*\./\\&./g;
 	if (/^#\s/) {
@@ -25,7 +26,7 @@ while (<>) {
 		$inlist=1;
 		$spippara=0;
 	}
-	elsif (/.SH/) {
+	elsif (/^.SH/) {
 		$skippara=0;
 		$inlist=0;
 	}

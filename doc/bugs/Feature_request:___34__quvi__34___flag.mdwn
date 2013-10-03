@@ -1,0 +1,14 @@
+### Please describe the problem.
+git-annex v4.20130827 can't be built on ARM. Technically it's vector that can't be built due to a lack of Template Haskell compilers for this architecture. Vector is a dependency of aeson, which is a dependency of git-annex, which therefore fails to compile.
+
+The only functionality that relies on aeson is, to my knowledge, quvi. Thus my feature request: If you were to introduce a flag to switch quvi support on or off, ARM users like me could circumvent the aeson dependency at build time. In this case we weren't stuck with 4.20130815 (the latest version to not depend on aeson) and could use current and future versions of git-annex. I would appreciate it.
+
+
+### What steps will reproduce the problem?
+See above.
+
+
+### What version of git-annex are you using? On what operating system?
+I'm running Raspbian Wheezy on a Raspberry Pi. The git-annex version to be built is 4.20130827. 
+
+> [[done]] --[[Joey]]

@@ -1,3 +1,5 @@
+[[!tag moreinfo]]
+
 ### Please describe the problem.
 git annex get on a clone of a repository created on Windows fails.
 

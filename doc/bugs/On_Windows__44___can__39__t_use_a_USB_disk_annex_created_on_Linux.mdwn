@@ -14,3 +14,5 @@ On Windows, git-annex is unable to 'annex get' from a repository hosted on an ex
 Windows 7: 4.20140627-g8a36ec5 (from the git-annex download page)
 
 Debian Linux: 3.20120629 (from the package manager)
+
+[[!tag moreinfo]]

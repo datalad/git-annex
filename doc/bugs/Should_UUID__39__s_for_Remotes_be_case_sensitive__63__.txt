@@ -1,0 +1,46 @@
+> git annex status
+supported backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+supported remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 8
+	00000000-0000-0000-0000-000000000001 -- web
+ 	44AF00F1-511F-4902-8235-DFF741B09400 -- here
+ 	44af00f1-511f-4902-8235-dff741b09400 -- chrissy
+ 	53499200-CA18-4B51-B6B3-651C18208349 -- stevedave
+ 	56C56658-0995-4613-8A1B-B2FA534A834C -- olaf
+ 	8FE9B19F-4FC8-4CFA-AD89-4B70EB432EDC -- passport
+ 	AFC75641-B34A-4644-B566-C8D3127823F7 -- glacier
+ 	B3238A12-D81B-40EA-BE89-3BDB318AE2B7 -- brodie
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 78.8 gigabytes (+1 gigabyte reserved)
+local annex keys: 3915
+local annex size: 81.37 gigabytes
+known annex keys: 5728
+known annex size: 641.36 gigabytes
+bloom filter size: 16 mebibytes (0.8% full)
+backend usage:
+	SHA256E: 8716
+	URL: 927
+
+> git annex version
+git-annex version: 4.20130909
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi
+local repository version: 3
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+
+> git-annex intentionally treats UUIDs as opaque strings,
+> so it is not going to go to any bother to consider 
+> different byte sequences to be the same UUID, sorry.
+> (The standard may be arbitrarily complicated, but I have arbitrarily
+> decided to ignore it.)
+> 
+> Since git-annex only ever generates each UUID once, and copies
+> the exact sequence of bytes as necessary, the only way the situation
+> you show above can happen is if you have manually gone in and entered
+> UUIDs in two different cases.
+> 
+> [[done]] --[[Joey]] 

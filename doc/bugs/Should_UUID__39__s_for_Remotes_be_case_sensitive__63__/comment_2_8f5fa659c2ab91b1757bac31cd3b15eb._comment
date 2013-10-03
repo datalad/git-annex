@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2013-09-12T09:49:56Z"
+ content="""
+What OS are you using?
+
+versions 4.20130827 and 4.20130911 on Debian Sid print UUIDs which are lower case, as should be expected.
+"""]]

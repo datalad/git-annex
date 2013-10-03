@@ -19,3 +19,5 @@ Debian Linux: 3.20120629 (from the package manager)
 there is no <filehash>.<extension> file in the relevant directories, there are only .map and .cache files. The Windows annex is in direct mode, and the Linux annex fails to annex get from this correctly.
 
 [[!meta title="can't use a direct mode repository as a http remote"]]
+
+> [[done]]; unsupported configuration. --[[Joey]] 

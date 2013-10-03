@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://droggl.myopenid.com/"
+ ip="2001:638:602:1181:a6ba:dbff:fedd:8041"
+ subject="comment 1"
+ date="2013-09-11T11:55:27Z"
+ content="""
+Nice!
+However I didnt find any documentation yet on how to actually resolve the situation as a user (sorry if I'm being blind).
+To be more specific: Say a conflict occurs on foo.txt and i now have two files foo.variant-dead.txt and foo.variant-beef.txt.
+Now what? Say I used my favorite merge diffmerge tool to create a merged version foo-merged.txt, should I rename that to foo.txt?
+Should I delete the variant files? Or drop them? Or would that lead to another merge for systems that still have the old foo.txt?
+(You see I'm kind of confused of what happens here ;))
+
+TIA for any helpers
+"""]]

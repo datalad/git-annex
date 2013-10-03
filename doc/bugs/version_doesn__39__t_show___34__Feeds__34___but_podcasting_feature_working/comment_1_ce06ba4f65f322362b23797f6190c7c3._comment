@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="203.45.2.230"
+ subject="comment 1"
+ date="2013-09-04T01:36:46Z"
+ content="""
+This still is not fixed.  :-(
+
+    $ git annex version
+    git-annex version: 4.20130827
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
+
+
+...but the ```importfeed``` functionality works.
+
+I know this isn't a particularly high priority bug...
+"""]]

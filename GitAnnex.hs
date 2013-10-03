@@ -42,6 +42,7 @@ import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.Find
 import qualified Command.Whereis
+import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
 import qualified Command.Status
@@ -67,6 +68,7 @@ import qualified Command.Map
 import qualified Command.Direct
 import qualified Command.Indirect
 import qualified Command.Upgrade
+import qualified Command.Forget
 import qualified Command.Version
 import qualified Command.Help
 #ifdef WITH_ASSISTANT
@@ -131,6 +133,7 @@ cmds = concat
 	, Command.AddUnused.def
 	, Command.Find.def
 	, Command.Whereis.def
+	, Command.List.def
 	, Command.Log.def
 	, Command.Merge.def
 	, Command.Status.def
@@ -139,6 +142,7 @@ cmds = concat
 	, Command.Direct.def
 	, Command.Indirect.def
 	, Command.Upgrade.def
+	, Command.Forget.def
 	, Command.Version.def
 	, Command.Help.def
 #ifdef WITH_ASSISTANT

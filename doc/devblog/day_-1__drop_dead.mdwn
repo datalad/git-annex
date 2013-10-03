@@ -1,0 +1,5 @@
+Implemented `git annex forget --drop-dead`, which is finally a way to
+remove all references to old repositories that you've marked as dead.
+
+I've still not merged in the `forget` branch, because I developed this
+while slightly ill, and have not tested it very well yet.

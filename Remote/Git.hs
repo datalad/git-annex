@@ -13,9 +13,6 @@ module Remote.Git (
 	repoAvail,
 ) where
 
-import qualified Data.Map as M
-import Control.Exception.Extensible
-
 import Common.Annex
 import Utility.Rsync
 import Remote.Helper.Ssh
@@ -26,6 +23,7 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Construct
 import qualified Git.Command
+import qualified Git.GCrypt
 import qualified Annex
 import Logs.Presence
 import Logs.Transfer
@@ -46,10 +44,14 @@ import Utility.Metered
 #ifndef mingw32_HOST_OS
 import Utility.CopyFile
 #endif
+import Remote.Helper.Git
+import qualified Remote.GCrypt
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import System.Process (std_in, std_err)
+import qualified Data.Map as M
+import Control.Exception.Extensible
 
 remote :: RemoteType
 remote = RemoteType {
@@ -90,14 +92,13 @@ configRead r = do
 		(False, _, NoUUID) -> tryGitConfigRead r
 		_ -> return r
 
-repoCheap :: Git.Repo -> Bool
-repoCheap = not . Git.repoIsUrl
-
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
-gen r u _ gc = go <$> remoteCost gc defcst
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
+gen r u c gc
+	| Git.GCrypt.isEncrypted r = Remote.GCrypt.gen r u c gc
+	| otherwise = go <$> remoteCost gc defcst
   where
 	defcst = if repoCheap r then cheapRemoteCost else expensiveRemoteCost
-	go cst = new
+	go cst = Just new
 	  where
 		new = Remote 
 			{ uuid = u
@@ -111,14 +112,12 @@ gen r u _ gc = go <$> remoteCost gc defcst
 			, hasKeyCheap = repoCheap r
 			, whereisKey = Nothing
 			, config = M.empty
-			, localpath = if Git.repoIsLocal r || Git.repoIsLocalUnknown r
-				then Just $ Git.repoPath r
-				else Nothing
+			, localpath = localpathCalc r
 			, repo = r
 			, gitconfig = gc
 				{ remoteGitConfig = Just $ extractGitConfig r }
 			, readonly = Git.repoIsHttp r
-			, globallyAvailable = not $ Git.repoIsLocal r || Git.repoIsLocalUnknown r
+			, globallyAvailable = globallyAvailableCalc r
 			, remotetype = remote
 			}
 
@@ -126,16 +125,17 @@ gen r u _ gc = go <$> remoteCost gc defcst
 repoAvail :: Git.Repo -> Annex Bool
 repoAvail r 
 	| Git.repoIsHttp r = return True
+	| Git.GCrypt.isEncrypted r = do
+		g <- gitRepo
+		liftIO $ do
+			er <- Git.GCrypt.encryptedRemote g r
+			if Git.repoIsLocal er || Git.repoIsLocalUnknown er
+				then catchBoolIO $
+					void (Git.Config.read er) >> return True
+				else return True
 	| Git.repoIsUrl r = return True
 	| Git.repoIsLocalUnknown r = return False
 	| otherwise = liftIO $ catchBoolIO $ onLocal r $ return True
-
-{- Avoids performing an action on a local repository that's not usable.
- - Does not check that the repository is still available on disk. -}
-guardUsable :: Git.Repo -> a -> Annex a -> Annex a
-guardUsable r onerr a
-	| Git.repoIsLocalUnknown r = return onerr
-	| otherwise = a
 
 {- Tries to read the config for a specified remote, updates state, and
  - returns the updated repo. -}
@@ -152,6 +152,7 @@ tryGitConfigRead r
 	| Git.repoIsHttp r = do
 		headers <- getHttpHeaders
 		store $ geturlconfig headers
+	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ onLocal r $ do 
 		ensureInitialized
@@ -219,6 +220,15 @@ tryGitConfigRead r
 			let k = "remote." ++ n ++ ".annex-ignore"
 			warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting " ++ k
 			inRepo $ Git.Command.run [Param "config", Param k, Param "true"]
+		
+	handlegcrypt Nothing = return r
+	handlegcrypt (Just _cacheduuid) = do
+		-- Generate UUID from the gcrypt-id
+		g <- gitRepo
+		case Git.GCrypt.remoteRepoId g (Git.remoteName r) of
+			Nothing -> return r
+			Just v -> store $ liftIO $ setUUID r $
+				genUUIDInNameSpace gCryptNameSpace v
 
 {- Checks if a given remote has the content for a key inAnnex.
  - If the remote cannot be accessed, or if it cannot determine
@@ -253,17 +263,6 @@ inAnnex r key
 		dispatch (Right Nothing) = unknown
 	unknown = Left $ "unable to check " ++ Git.repoDescribe r
 	showchecking = showAction $ "checking " ++ Git.repoDescribe r
-
-{- Runs an action on a local repository inexpensively, by making an annex
- - monad using that repository. -}
-onLocal :: Git.Repo -> Annex a -> IO a
-onLocal r a = do
-	s <- Annex.new r
-	Annex.eval s $ do
-		-- No need to update the branch; its data is not used
-		-- for anything onLocal is used to do.
-		Annex.BranchState.disableUpdate
-		a
 
 keyUrls :: Git.Repo -> Key -> [String]
 keyUrls r key = map tourl locs
@@ -408,15 +407,16 @@ copyToRemote r key file p
 							(\d -> rsyncOrCopyFile params object d p)
 			)
 
-rsyncHelper :: Maybe MeterUpdate -> [CommandParam] -> Annex Bool
-rsyncHelper callback params = do
-	showOutput -- make way for progress bar
-	ifM (liftIO $ (maybe rsync rsyncProgress callback) params)
-		( return True
-		, do
-			showLongNote "rsync failed -- run git annex again to resume file transfer"
-			return False
-		)
+{- Runs an action on a local repository inexpensively, by making an annex
+ - monad using that repository. -}
+onLocal :: Git.Repo -> Annex a -> IO a
+onLocal r a = do
+	s <- Annex.new r
+	Annex.eval s $ do
+		-- No need to update the branch; its data is not used
+		-- for anything onLocal is used to do.
+		Annex.BranchState.disableUpdate
+		a
 
 {- Copys a file with rsync unless both locations are on the same
  - filesystem. Then cp could be faster. -}
@@ -448,6 +448,16 @@ rsyncOrCopyFile rsyncparams src dest p =
 #endif
 	dorsync = rsyncHelper (Just p) $
 		rsyncparams ++ [File src, File dest]
+
+rsyncHelper :: Maybe MeterUpdate -> [CommandParam] -> Annex Bool
+rsyncHelper callback params = do
+	showOutput -- make way for progress bar
+	ifM (liftIO $ (maybe rsync rsyncProgress callback) params)
+		( return True
+		, do
+			showLongNote "rsync failed -- run git annex again to resume file transfer"
+			return False
+		)
 
 {- Generates rsync parameters that ssh to the remote and asks it
  - to either receive or send the key's content. -}

@@ -25,4 +25,4 @@ importfeed http://feeds.feedburner.com/OpenMetalcast/ogg
 ....<downloads the episodes etc>
 """]]
 
-> Forgot I had to manually add that. [[done]] --[[Joey]]
+> Forgot I had to manually add that. [[done]] (really this time!) --[[Joey]]

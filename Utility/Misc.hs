@@ -91,6 +91,12 @@ massReplace vs = go [] vs
 			go (replacement:acc) vs (drop (length val) s)
 		| otherwise = go acc rest s
 
+{- First item in the list that is not Nothing. -}
+firstJust :: Eq a => [Maybe a] -> Maybe a
+firstJust ms = case dropWhile (== Nothing) ms of
+	[] -> Nothing
+	(md:_) -> md
+
 {- Given two orderings, returns the second if the first is EQ and returns
  - the first otherwise.
  -

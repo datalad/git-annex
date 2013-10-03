@@ -1,0 +1,7 @@
+In certain situations different client annexes might get the same remote repository added, but before being synced.
+
+Once the two clients sync they will both have two remotes with the same name. But only one UUID will have any content(Assuming only one client pushed).
+
+It would be nice to have some (automatic?) way to resolve this conflict.
+
+Not sure if anything sane can be done if both clients have pushed?

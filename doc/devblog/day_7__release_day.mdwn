@@ -1,0 +1,10 @@
+Got git annex sync working with gcrypt. So went ahead and made a release
+today. Lots of nice new features!
+
+Unfortunately the linux 64 bit daily build is failing, because my build
+host only has 2 gb of memory and it is no longer enough. I am looking for a
+new build host, ideally one that doesn't cost me $40/month for 3 gb of ram
+and 15 gb of disk. (Extra special ideally one that I can run multiple builds
+per day on, rather than the current situation of only building overnight to
+avoid loading the machine during the day.) Until this is sorted out, no
+new 64 bit linux builds..

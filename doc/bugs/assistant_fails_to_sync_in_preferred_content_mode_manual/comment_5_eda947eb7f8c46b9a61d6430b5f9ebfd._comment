@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 5"
+ date="2013-09-13T18:30:53Z"
+ content="""
+You have described the following git-annex network:
+
+	A --(ssh)-- S --(ssh)-- B
+
+So A automatically syncs to S. But there is no way at all for A to tell B that it has made changes. So B does not automatically sync.
+
+The git-annex webapp will detect this kind of situation, and display this alert:
+
+[[assistant/xmppnudge.png]]
+
+Once you set up an XMPP account, the network will look like: 
+
+	A --(ssh)-- S --(ssh)-- B
+	\_________(XMPP)_______/
+                    
+And now B will immediatly know when A has pushed a change to S, and will go get it.                                          
+
+(The `getDirectoryContents` error is probably because you are running git annex sync in a repository that the git-annex assistant is running in, and they are both using the same tmp directory for merging branches sync pulled. It does not seem to be worth worrying about.)
+"""]]

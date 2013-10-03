@@ -29,3 +29,6 @@ git-annex: user error (gpg ["--quiet","--trust-model","always","--encrypt","--no
 failed
 git-annex: enableremote: 1 failed
 """]]
+
+> [[done]]; can now use: `git annex enableremote foo keyid-=REVOKEDKEY
+> keyid+=NEWKEY` to remove it, and add a new key. --[[Joey]]  

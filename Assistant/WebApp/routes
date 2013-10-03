@@ -37,7 +37,8 @@
 
 /config/repository/add/drive AddDriveR GET POST
 /config/repository/add/drive/confirm/#RemovableDrive ConfirmAddDriveR GET
-/config/repository/add/drive/finish/#RemovableDrive FinishAddDriveR GET
+/config/repository/add/drive/genkey/#RemovableDrive GenKeyForDriveR GET
+/config/repository/add/drive/finish/#RemovableDrive/#RepoKey FinishAddDriveR GET
 /config/repository/add/ssh AddSshR GET POST
 /config/repository/add/ssh/confirm/#SshData ConfirmSshR GET
 /config/repository/add/ssh/retry/#SshData RetrySshR GET

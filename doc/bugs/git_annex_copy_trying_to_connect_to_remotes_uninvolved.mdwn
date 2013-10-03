@@ -23,3 +23,5 @@ I'm running git-annex 4.20130627 as shipped with debian unstable.
 Jason
 
 P.S. 192.168.1.5 is set as the HostName for one of my other remotes in my ~/.ssh/config, so this isn't _totally_ out of the blue. 
+
+> [[done]]; see comment's explanation. --[[Joey]]

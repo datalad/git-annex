@@ -1,0 +1,1 @@
+With numcopies it is possible to control how many copies there should be of a file overall in all of the remotes. Is it also possible, using .gitattributes or something else, to force one of the repos (e.g. a server) to contain a copy of all files, or does this have to be done manually?

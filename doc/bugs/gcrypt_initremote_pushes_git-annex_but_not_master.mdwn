@@ -1,0 +1,19 @@
+git-annex 4.20130911 on Debian Wheezy.
+
+Using `git annex initremote type=gcrypt` as described [here](http://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt/) creates the repository and pushes the `git-annex` branch to it.  It doesn't push `master` (or more generally: the currently checked out branch), as I have verified using `git remote show`.
+
+Manually pushing the branch makes `git annex sync` sync both branches with the gcrypt remote.
+
+I think that it should push the current branch upon creation of the special remote, since for at least me, the whole reason for wanting `git-remote-gcrypt` is that metadata as well as data can be stored encrypted on an SSH server.
+
+Thanks for considering this.
+
+> The git-annex branch is pushed by initremote because I have to push
+> *something* to determine the gcrypt-id. However, this is an implementation
+> detail, and not a feature of initremote. (It's more like a bug of
+> git-remote-gcrypt.)
+> 
+> `git annex sync` will always push your currently checked out branch,
+> as well as the git-annex branch, no matter what `initremote` has done.
+> 
+> [[done]] --[[Joey]] 

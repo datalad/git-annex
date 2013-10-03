@@ -7,3 +7,8 @@ We would like to be able to get the files without updating the `git-annex` branc
 I think the easiest way would be to just add an option to not update the `git-annex` branch when `annex get` is executed.
 
 Thoughts?
+
+> See [[untracked_remotes]] for a todo item that will probably
+> be useful in this sitation. Since that describes better what
+> this bug report seems to be asking for, I am closing this one.
+> [[closed|done]] --[[Joey]]

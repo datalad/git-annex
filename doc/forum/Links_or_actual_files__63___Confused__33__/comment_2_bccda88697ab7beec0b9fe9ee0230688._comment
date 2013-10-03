@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlEhzszkzOIy8-Rx8b2mcr75QcnIc6O_OA"
+ nickname="Rachel"
+ subject="webapp/direct"
+ date="2013-09-12T18:17:51Z"
+ content="""
+well, i did it using the webapp both times; i've barely scratched at the git-annex commandline so far.
+
+However... I then tried to repeat it on another linux box (running ubuntu saucy and the version of git-annex in that repo) and it worked as expected: Real files in the annex directory, ie: as I understand it, direct mode.
+
+So, went back to the first linux box (running ubuntu raring), and cleared everything off, quit and started again, doing the same thing again, and *it* did the direct mode thing itself this time.
+
+Which I think leaves me with it the way I want it. :-)
+
+My only guess is, maybe it got set up in non-direct mode when I first started using the older git-annex in the raring repos, before failing with the bad comment in ssh public key bug, at which point I switched to the downloaded-today tarball and just tried to resume. Starting from scratch with the newer version worked.
+
+I'm sure more questions to come later; am a Dropbox fugitive by way of ownCloud (won't-fix bug on version upgrades) basically trying to replicate that kind of convenience. But those are for other postings.
+"""]]

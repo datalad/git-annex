@@ -75,7 +75,7 @@ withExpandableNote field (toggle, note) = withNote field $ [whamlet|
   where
   	ident = "toggle_" ++ toggle
 
-data EnableEncryption = SharedEncryption | NoEncryption
+data EnableEncryption = HybridEncryption | SharedEncryption | NoEncryption
 	deriving (Eq)
 
 {- Adds a check box to an AForm to control encryption. -}
@@ -96,3 +96,4 @@ enableEncryptionField = areq (selectFieldList choices) "Encryption" (Just Shared
 configureEncryption :: EnableEncryption -> (RemoteConfigKey, String)
 configureEncryption SharedEncryption = ("encryption", "shared")
 configureEncryption NoEncryption = ("encryption", "none")
+configureEncryption HybridEncryption = ("encryption", "hybrid")

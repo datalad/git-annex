@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRai_qFYPVvEgC6i1nlM1bh-C__jbhqS0"
+ nickname="Matthew"
+ subject="Looks great"
+ date="2013-08-29T12:45:10Z"
+ content="""
+This looks great as I have:
+
+ * A preference for multiple small repositories.
+ * Old versions for `git-annex` due to being on Ubuntu LTS for my server.
+ * A Samsung Galaxy Nexus which somehow seems too slow to run the assistant.
+
+So these steps combined with some locking and maybe `inotify` seem perfect
+"""]]

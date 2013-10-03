@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 4.20130827
+Version: 4.20130920
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -68,6 +68,9 @@ Flag TDFA
 Flag Feed
   Description: Enable podcast feed support
 
+Flag Quvi
+  Description: Enable use of quvi to download videos
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
@@ -76,7 +79,7 @@ Executable git-annex
    extensible-exceptions, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.8), monad-control, MonadCatchIO-transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
-   SafeSemaphore, uuid, random, dlist, unix-compat, aeson
+   SafeSemaphore, uuid, random, dlist, unix-compat
   -- Need to list these because they're generated from .hsc files.
   Other-Modules: Utility.Touch Utility.Mounts
   Include-Dirs: Utility
@@ -143,7 +146,7 @@ Executable git-annex
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      case-insensitive, http-types, transformers, wai, wai-logger, warp,
      blaze-builder, crypto-api, hamlet, clientsession,
-     template-haskell, data-default
+     template-haskell, data-default, aeson
     CPP-Options: -DWITH_WEBAPP
 
   if flag(Pairing)
@@ -161,6 +164,10 @@ Executable git-annex
   if flag(Feed)
     Build-Depends: feed
     CPP-Options: -DWITH_FEED
+  
+  if flag(Quvi)
+    Build-Depends: aeson
+    CPP-Options: -DWITH_QUVI
 
 source-repository head
   type: git

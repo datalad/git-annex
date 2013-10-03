@@ -10,6 +10,7 @@ module Git.CatFile (
 	catFileStart,
 	catFileStop,
 	catFile,
+	catTree,
 	catObject,
 	catObjectDetails,
 ) where
@@ -20,6 +21,8 @@ import qualified Data.ByteString.Lazy as L
 import Data.Digest.Pure.SHA
 import Data.Char
 import System.Process (std_out, std_err)
+import Numeric
+import System.Posix.Types
 
 import Common
 import Git
@@ -105,3 +108,26 @@ catObjectDetails (CatFileHandle hdl repo) object = CoProcess.query hdl send rece
 		return $ if ok
 			then Just (content, Ref sha)
 			else Nothing
+
+{- Gets a list of files and directories in a tree. (Not recursive.) -}
+catTree :: CatFileHandle -> Ref -> IO [(FilePath, FileMode)]
+catTree h treeref = go <$> catObjectDetails h treeref
+  where
+  	go Nothing = []
+	go (Just (b, _)) = parsetree [] b
+
+	parsetree c b = case L.break (== 0) b of
+		(modefile, rest)
+			| L.null modefile -> c
+			| otherwise -> parsetree
+				(parsemodefile modefile:c)
+				(dropsha rest)
+
+	-- these 20 bytes after the NUL hold the file's sha
+	-- TODO: convert from raw form to regular sha
+	dropsha = L.drop 21
+
+	parsemodefile b = 
+		let (modestr, file) = separate (== ' ') (encodeW8 $ L.unpack b)
+		in (file, readmode modestr)
+	readmode = fst . fromMaybe (0, undefined) . headMaybe . readOct

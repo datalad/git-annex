@@ -44,11 +44,11 @@ startDirect _ = next $ do
 	next $ liftIO clean
   where
 	go diff = do
-		withkey (Git.DiffTree.srcsha diff) removeAssociatedFile
-		withkey (Git.DiffTree.dstsha diff) addAssociatedFile
+		withkey (Git.DiffTree.srcsha diff) (Git.DiffTree.srcmode diff) removeAssociatedFile
+		withkey (Git.DiffTree.dstsha diff) (Git.DiffTree.dstmode diff) addAssociatedFile
 	  where
-		withkey sha a = when (sha /= nullSha) $ do
-			k <- catKey sha
+		withkey sha mode a = when (sha /= nullSha) $ do
+			k <- catKey sha mode
 			case k of
 				Nothing -> noop
 				Just key -> void $ a key (Git.DiffTree.file diff)

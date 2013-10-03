@@ -21,6 +21,7 @@ import Utility.NotificationBroadcaster
 import Utility.WebApp
 import Utility.Yesod
 import Logs.Transfer
+import Utility.Gpg (KeyId)
 import Build.SysConfig (packageversion)
 
 import Yesod.Static
@@ -159,6 +160,9 @@ data RemovableDrive = RemovableDrive
 	}
 	deriving (Read, Show, Eq, Ord)
 
+data RepoKey = RepoKey KeyId | NoRepoKey
+	deriving (Read, Show, Eq, Ord)
+
 {- Only needed to work around old-yesod bug that emits a warning message
  - when a route has two parameters. -}
 data FilePathAndUUID = FilePathAndUUID FilePath UUID
@@ -169,6 +173,10 @@ instance PathPiece FilePathAndUUID where
 	fromPathPiece = readish . unpack
 
 instance PathPiece RemovableDrive where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece RepoKey where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
 

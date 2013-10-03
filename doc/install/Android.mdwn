@@ -12,7 +12,8 @@ onto your Android device, and open it to install.
 
 ## autobuilds
 
-A daily build is also available.
+A daily build is also available, thanks to Mesar Hameed and the University
+of Bath CS department.
 
 * [download apk](http://downloads.kitenet.net/git-annex/autobuild/android/git-annex.apk) ([build logs](http://downloads.kitenet.net/git-annex/autobuild/android/))
 

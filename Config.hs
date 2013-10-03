@@ -25,6 +25,9 @@ instance Show ConfigKey where
 getConfig :: ConfigKey -> String -> Annex String
 getConfig (ConfigKey key) def = fromRepo $ Git.Config.get key def
 
+getConfigMaybe :: ConfigKey -> Annex (Maybe String)
+getConfigMaybe (ConfigKey key) = fromRepo $ Git.Config.getMaybe key
+
 {- Changes a git config setting in both internal state and .git/config -}
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig (ConfigKey key) value = do
@@ -33,8 +36,11 @@ setConfig (ConfigKey key) value = do
 
 {- Unsets a git config setting. (Leaves it in state currently.) -}
 unsetConfig :: ConfigKey -> Annex ()
-unsetConfig (ConfigKey key) = inRepo $ Git.Command.run
-	[Param "config", Param "--unset", Param key]
+unsetConfig ck@(ConfigKey key) = ifM (isJust <$> getConfigMaybe ck)
+	( inRepo $ Git.Command.run
+		[Param "config", Param "--unset", Param key]
+	, noop -- avoid unsetting something not set; that would fail
+	)
 
 {- A per-remote config setting in git config. -}
 remoteConfig :: Git.Repo -> UnqualifiedConfigKey -> ConfigKey

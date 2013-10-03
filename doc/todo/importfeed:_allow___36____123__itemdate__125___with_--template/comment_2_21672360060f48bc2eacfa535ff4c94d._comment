@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 2"
+ date="2013-09-13T19:53:52Z"
+ content="""
+getItemPublishDate returns a String, which can contain any of several date formats. Deferred until the feed library has something more sane.
+Upstream bug: <https://github.com/sof/feed/issues/6>
+
+As for how to format the date in the feed, I would be ok with having itemdate (YYYYMMDD), itemyear (YYYY), itemmonth (MM) and itemday (DD). Full date formatting seems like overkill here.
+"""]]

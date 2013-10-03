@@ -25,6 +25,7 @@ import Creds
 import Utility.Metered
 import qualified Annex
 import Annex.Content
+import Annex.UUID
 
 import System.Process
 
@@ -39,10 +40,10 @@ remote = RemoteType {
 	setup = glacierSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
   where
-	new cst = encryptableRemote c
+	new cst = Just $ encryptableRemote c
 		(storeEncrypted this)
 		(retrieveEncrypted this)
 		this
@@ -67,13 +68,18 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			remotetype = remote
 		}
 
-glacierSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-glacierSetup u c = do
+glacierSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+glacierSetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
+	glacierSetup' u c
+glacierSetup' :: UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+glacierSetup' u c = do
 	c' <- encryptionSetup c
 	let fullconfig = c' `M.union` defaults
 	genVault fullconfig u
 	gitConfigSpecialRemote u fullconfig "glacier" "true"
-	setRemoteCredPair fullconfig (AWS.creds u)
+	c'' <- setRemoteCredPair fullconfig (AWS.creds u)
+	return (c'', u)
   where
 	remotename = fromJust (M.lookup "name" c)
 	defvault = remotename ++ "-" ++ fromUUID u
@@ -95,7 +101,7 @@ storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = sendAnnex k (void $ remove r enck) $ \src -> do
 	metered (Just p) k $ \meterupdate ->
 		storeHelper r enck $ \h ->
-			encrypt (getGpgOpts r) cipher (feedFile src)
+			encrypt (getGpgEncParams r) cipher (feedFile src)
 				(readBytes $ meteredWrite meterupdate h)
 
 retrieve :: Remote -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool

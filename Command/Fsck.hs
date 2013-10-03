@@ -271,7 +271,7 @@ verifyDirectMapping key file = do
 {- Ensures that files whose content is available are in direct mode. -}
 verifyDirectMode :: Key -> FilePath -> Annex Bool
 verifyDirectMode key file = do
-	whenM (isDirect <&&> islink) $ do
+	whenM (isDirect <&&> isJust <$> isAnnexLink file) $ do
 		v <- toDirectGen key file
 		case v of
 			Nothing -> noop
@@ -279,8 +279,6 @@ verifyDirectMode key file = do
 				showNote "fixing direct mode"
 				a
 	return True
-  where
-	islink = liftIO $ isSymbolicLink <$> getSymbolicLinkStatus file
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 2"
+ date="2013-09-10T23:11:27Z"
+ content="""
+Everything is all setup now to build git-annex on both systems, at most once per hour (if there have been new Git commits), and only between 2am and 4pm.  Just contact me on IRC or e-mail and I'll setup you up with credentials so that you can manipulate the jobs and access the build artifacts.
+"""]]

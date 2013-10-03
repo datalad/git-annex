@@ -24,3 +24,5 @@ tracking back, if I do manage to get them back.)
 --[[Joey]] 
 
 See also : [[forum/safely_dropping_git-annex_history]]
+
+> [[done]] --[[Joey]]

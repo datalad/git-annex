@@ -119,7 +119,7 @@ Update: it seems te problem was that I had the following in my `.git/config`:
             annex-ignore = true
             fetch = +refs/heads/*:refs/remotes/marcos-bare/*
 
-I have *no* idea how that `annex-ignore` got there, but that was the root of my problem. Removing it it allowed my to do `git annex copy`. I really don't know how this happened, but I guess this is [[done]], although I believe this error message is really confusing and could be improved.
+I have *no* idea how that `annex-ignore` got there, but that was the root of my problem. Removing it it allowed my to do `git annex copy`. I really don't know how this happened, but I guess this is [[done]], although I believe this error message is really confusing and could be improved. --[[anarcat]]
 
 > `annex-ignore` is set automatically by git-annex if it fails to query
 > the uuid of a remote the first time it tries to use it. It will say

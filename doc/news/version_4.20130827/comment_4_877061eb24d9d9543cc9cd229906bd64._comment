@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://sunny256.sunbase.org/"
+ nickname="sunny256"
+ subject="comment 4"
+ date="2013-08-30T11:49:20Z"
+ content="""
+And some additional info, I'm using `http://downloads.kitenet.net/.git/` as the address to your annex. Maybe this repo is missing a `git update-server-info` in the `post-update` hook or something.
+"""]]

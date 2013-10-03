@@ -11,6 +11,7 @@ module Assistant.WebApp.Configurators.Local where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.OtherRepos
+import Assistant.WebApp.Gpg
 import Assistant.MakeRemote
 import Assistant.Sync
 import Init
@@ -34,10 +35,16 @@ import Logs.PreferredContent
 import Logs.UUID
 import Utility.UserInfo
 import Config
+import Utility.Gpg
+import qualified Annex.Branch
+import qualified Remote.GCrypt as GCrypt
+import qualified Git.GCrypt
+import qualified Types.Remote
 
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Char
+import Data.Ord
 import qualified Text.Hamlet as Hamlet
 
 data RepositoryPath = RepositoryPath Text
@@ -236,46 +243,105 @@ postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 {- The repo may already exist, when adding removable media
  - that has already been used elsewhere. If so, check
  - the UUID of the repo and see if it's one we know. If not,
- - the user must confirm the repository merge. -}
+ - the user must confirm the repository merge.
+ -
+ - If the repo does not already exist on the drive, prompt about
+ - encryption. -}
 getConfirmAddDriveR :: RemovableDrive -> Handler Html
-getConfirmAddDriveR drive = do
-	ifM (needconfirm)
-		( page "Combine repositories?" (Just Configuration) $
-			$(widgetFile "configurators/adddrive/confirm")
-		, do
-			getFinishAddDriveR drive
-		)
+getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
+	( do
+		mu <- liftIO $ probeUUID dir
+		case mu of
+			Nothing -> maybe askcombine isknownuuid
+				=<< liftIO (probeGCryptRemoteUUID dir)
+			Just driveuuid -> isknownuuid driveuuid
+	, newrepo
+	)
   where
   	dir = removableDriveRepository drive
-	needconfirm = ifM (liftIO $ doesDirectoryExist dir)
-		( liftAnnex $ do
-			mu <- liftIO $ catchMaybeIO $
-				inDir dir $ getUUID
-			case mu of
-				Nothing -> return False
-				Just driveuuid -> not .
-					M.member driveuuid <$> uuidMap
-		, return False
+  	newrepo = do
+		secretkeys <- sortBy (comparing snd) . M.toList
+			<$> liftIO secretKeys
+		page "Encrypt repository?" (Just Configuration) $
+			$(widgetFile "configurators/adddrive/encrypt")
+	knownrepo = getFinishAddDriveR drive NoRepoKey
+	askcombine = page "Combine repositories?" (Just Configuration) $
+		$(widgetFile "configurators/adddrive/combine")
+	isknownuuid driveuuid =
+		ifM (M.member driveuuid <$> liftAnnex uuidMap)
+			( knownrepo
+			, askcombine
+			)
+
+setupDriveModal :: Widget
+setupDriveModal = $(widgetFile "configurators/adddrive/setupmodal")
+
+genKeyModal :: Widget
+genKeyModal = $(widgetFile "configurators/genkeymodal")
+
+getGenKeyForDriveR :: RemovableDrive -> Handler Html
+getGenKeyForDriveR drive = withNewSecretKey $ \key -> do
+	{- Generating a key takes a long time, and 
+	 - the removable drive may have been disconnected
+	 - in the meantime. Check that it is still mounted
+	 - before finishing. -}
+	ifM (liftIO $ any (\d -> mountPoint d == mountPoint drive) <$> driveList)
+		( getFinishAddDriveR drive (RepoKey key)
+		, getAddDriveR
 		)
 
-cloneModal :: Widget
-cloneModal = $(widgetFile "configurators/adddrive/clonemodal")
-
-getFinishAddDriveR :: RemovableDrive -> Handler Html
-getFinishAddDriveR drive = make >>= redirect . EditNewRepositoryR
+getFinishAddDriveR :: RemovableDrive -> RepoKey -> Handler Html
+getFinishAddDriveR drive = go
   where
-  	make = do
+  	{- Set up new gcrypt special remote. -}
+	go (RepoKey keyid) = ifM (liftIO $ inPath "git-remote-gcrypt")
+		( makewith $ \_ -> do
+			r <- liftAnnex $ addRemote $ 
+				initSpecialRemote remotename GCrypt.remote $ M.fromList
+					[ ("type", "gcrypt")
+					, ("gitrepo", dir)
+					, configureEncryption HybridEncryption
+					, ("keyid", keyid)
+					]
+			return (Types.Remote.uuid r, r)
+		, page "Encrypt repository" (Just Configuration) $
+			$(widgetFile "configurators/needgcrypt")
+		)
+	go NoRepoKey = do
+		pr <- liftAnnex $ inRepo $ Git.GCrypt.probeRepo dir
+		case pr of
+			Git.GCrypt.Decryptable -> do
+				mu <- liftIO $ probeGCryptRemoteUUID dir
+				case mu of
+					Just u -> enablegcryptremote u
+					Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+			Git.GCrypt.NotDecryptable ->
+				error $ "The drive contains a git repository that is encrypted with a GnuPG key that you do not have."
+			Git.GCrypt.NotEncrypted -> makeunencrypted
+	enablegcryptremote u = do
+		mname <- liftAnnex $ getGCryptRemoteName u dir
+		case mname of
+			Nothing -> error $ "Cannot find configuration for the gcrypt remote at " ++ dir
+			Just name -> makewith $ const $ do
+				r <- liftAnnex $ addRemote $
+					enableSpecialRemote name GCrypt.remote $ M.fromList
+						[("gitrepo", dir)]
+				return (u, r)
+	{- Making a new unencrypted repo, or combining with an existing one. -}
+	makeunencrypted = makewith $ \isnew -> (,)
+		<$> liftIO (initRepo isnew False dir $ Just remotename)
+		<*> combineRepos dir remotename
+	makewith a = do
 		liftIO $ createDirectoryIfMissing True dir
 		isnew <- liftIO $ makeRepo dir True
-		u <- liftIO $ initRepo isnew False dir $ Just remotename
 		{- Removable drives are not reliable media, so enable fsync. -}
 		liftIO $ inDir dir $
 			setConfig (ConfigKey "core.fsyncobjectfiles")
 				(Git.Config.boolConfig True)
-		r <- combineRepos dir remotename
+		(u, r) <- a isnew
 		liftAnnex $ setStandardGroup u TransferGroup
 		liftAssistant $ syncRemote r
-		return u
+		redirect $ EditNewRepositoryR u
   	mountpoint = T.unpack (mountPoint drive)
 	dir = removableDriveRepository drive
 	remotename = takeFileName mountpoint
@@ -344,7 +410,7 @@ startFullAssistant path repogroup setup = do
 {- Makes a new git repository. Or, if a git repository already
  - exists, returns False. -}
 makeRepo :: FilePath -> Bool -> IO Bool
-makeRepo path bare = ifM alreadyexists
+makeRepo path bare = ifM (probeRepoExists path)
 	( return False
 	, do
 		(transcript, ok) <-
@@ -354,14 +420,12 @@ makeRepo path bare = ifM alreadyexists
 		return True
 	)
   where
-  	alreadyexists = isJust <$> 
-		catchDefaultIO Nothing (Git.Construct.checkForRepo path)
 	baseparams = [Param "init", Param "--quiet"]
 	params
 		| bare = baseparams ++ [Param "--bare", File path]
 		| otherwise = baseparams ++ [File path]
 
-{- Runs an action in the git-annex repository in the specified directory. -}
+{- Runs an action in the git repository in the specified directory. -}
 inDir :: FilePath -> Annex a -> IO a
 inDir dir a = do
 	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir
@@ -398,8 +462,12 @@ initRepo False _ dir desc = inDir dir $ do
 
 initRepo' :: Maybe String -> Annex ()
 initRepo' desc = do
-	unlessM isInitialized $
+	unlessM isInitialized $ do
 		initialize desc
+		{- Ensure branch gets committed right away so it is
+		 - available for merging when a removable drive repo is being
+		 - added. -}
+		Annex.Branch.commit "update"
 
 {- Checks if the user can write to a directory.
  -
@@ -410,3 +478,23 @@ canWrite dir = do
 	tocheck <- ifM (doesDirectoryExist dir)
 		(return dir, return $ parentDir dir)
 	catchBoolIO $ fileAccess tocheck False True False
+
+{- Checks if a git repo exists at a location. -}
+probeRepoExists :: FilePath -> IO Bool
+probeRepoExists dir = isJust <$>
+	catchDefaultIO Nothing (Git.Construct.checkForRepo dir)
+
+{- Gets the UUID of the git repo at a location, which may not exist, or
+ - not be a git-annex repo. -}
+probeUUID :: FilePath -> IO (Maybe UUID)
+probeUUID dir = catchDefaultIO Nothing $ inDir dir $ do
+	u <- getUUID
+	return $ if u == NoUUID then Nothing else Just u
+
+{- Gets the UUID of the gcrypt repo at a location, which may not exist.
+ - Only works if the gcrypt repo was created as a git-annex remote. -}
+probeGCryptRemoteUUID :: FilePath -> IO (Maybe UUID)
+probeGCryptRemoteUUID dir = catchDefaultIO Nothing $ do
+	r <- Git.Construct.fromAbsPath dir
+	(genUUIDInNameSpace gCryptNameSpace <$>) . fst
+		<$> GCrypt.getGCryptId r

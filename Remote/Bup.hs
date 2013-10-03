@@ -29,6 +29,7 @@ import Data.ByteString.Lazy.UTF8 (fromString)
 import Data.Digest.Pure.SHA
 import Utility.UserInfo
 import Annex.Content
+import Annex.UUID
 import Utility.Metered
 
 type BupRepo = String
@@ -41,7 +42,7 @@ remote = RemoteType {
 	setup = bupSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	bupr <- liftIO $ bup2GitRemote buprepo
 	cst <- remoteCost gc $
@@ -71,15 +72,17 @@ gen r u c gc = do
 		, globallyAvailable = not $ bupLocal buprepo
 		, readonly = False
 		}
-	return $ encryptableRemote c
+	return $ Just $ encryptableRemote c
 		(storeEncrypted new buprepo)
 		(retrieveEncrypted buprepo)
 		new
   where
 	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
 
-bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-bupSetup u c = do
+bupSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+bupSetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
+
 	-- verify configuration is sane
 	let buprepo = fromMaybe (error "Specify buprepo=") $
 		M.lookup "buprepo" c
@@ -96,7 +99,7 @@ bupSetup u c = do
 	-- persistant state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' "buprepo" buprepo
 
-	return c'
+	return (c', u)
 
 bupParams :: String -> BupRepo -> [CommandParam] -> [CommandParam]
 bupParams command buprepo params = 
@@ -133,7 +136,7 @@ storeEncrypted r buprepo (cipher, enck) k _p =
 	sendAnnex k (rollback enck buprepo) $ \src -> do
 		params <- bupSplitParams r buprepo enck []
 		liftIO $ catchBoolIO $
-			encrypt (getGpgOpts r) cipher (feedFile src) $ \h ->
+			encrypt (getGpgEncParams r) cipher (feedFile src) $ \h ->
 				pipeBup params (Just h) Nothing
 
 retrieve :: BupRepo -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool

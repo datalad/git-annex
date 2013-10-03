@@ -101,3 +101,7 @@ commit message branch parentrefs repo = do
 	return sha
   where
 	ps = concatMap (\r -> ["-p", show r]) parentrefs
+
+{- A leading + makes git-push force pushing a branch. -}
+forcePush :: String -> String
+forcePush b = "+" ++ b

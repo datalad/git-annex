@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.140"
+ subject="comment 6"
+ date="2013-09-05T16:30:52Z"
+ content="""
+I have verified the gpg build I am currently using on OSX fails with that line. MacGPG doesn't but I had problems including it in the build before.
+If you remove the \"cert\" and the \"pkg\" from the line it will work. It seems I need to update the gpg build to support these DNS based key finding methods.
+"""]]

@@ -1,0 +1,39 @@
+### Please describe the problem.
+git-annex assistant always assumes port 22 (I use a different port), despite my editing .ssh/config to correct this.
+
+Also, assistant doesn't give me a port option like it did in the intro screencast.
+
+### What steps will reproduce the problem?
+Using my version of git-annex, I assume.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 3.20121112ubuntu2
+
+xubuntu 13.04
+
+### Please provide any additional information below.
+I don't see any .git/annex/daemon.log.
+
+I click the "remote server" link, sign in just fine [note below]. I click "Use a git repository on the server" (but "Use an encrypted rsync repository on the server" also does this), and eventually I get an error:
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+Failed to make repository
+
+Something went wrong setting up the repository on the remote server.
+
+Transcript: ssh: connect to host <host> port 22: Connection timed out 
+
+# End of transcript or log.
+"""]]
+
+> Your version of git-annex is too old. 
+> Support for setting the port was added in version 3.20121211 --
+> about a month after the version you have installed
+> (ah, the period where everything was 11 and 12.. I don't miss it!)
+> 
+> I don't recommend using such an old version of the assistant,
+> *massive* numbers of bugs have been fixed since then. Upgrade to 
+> the Ubuntu PPA. [[done]] --[[Joey]]
+
+note:  if I use "git-annex webapp" in the terminal it works fine; if I use xfce's "internet -> git annex" menu, it errors trying to use ssh_askpass, which I don't have. I'm going to make a new thread about this.
