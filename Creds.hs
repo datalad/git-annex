@@ -15,9 +15,7 @@ import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigKey)
 import Remote.Helper.Encryptable (remoteCipher, embedCreds)
-#ifndef mingw32_HOST_OS
 import Utility.Env (setEnv, getEnv)
-#endif
 
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
