@@ -23,7 +23,7 @@ import Assistant.Types.Changes
 import Assistant.Alert
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
-import Utility.Lsof
+import qualified Utility.Lsof as Lsof
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git
@@ -50,7 +50,7 @@ import Data.Time.Clock
 checkCanWatch :: Annex ()
 checkCanWatch
 	| canWatch = do
-		liftIO setupLsof
+		liftIO Lsof.setup
 		unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force)
 			needLsof
 	| otherwise = error "watch mode is not available on this system"
@@ -122,6 +122,7 @@ waitFor sig next = do
 {- Initial scartup scan. The action should return once the scan is complete. -}
 startupScan :: IO a -> Assistant a
 startupScan scanner = do
+	checkStaleIndexLock
 	liftAnnex $ showAction "scanning"
 	alertWhile' startupScanAlert $ do
 		r <- liftIO scanner
@@ -141,6 +142,40 @@ startupScan scanner = do
 		modifyDaemonStatus_ $ \s -> s { scanComplete = True }
 
 		return (True, r)
+
+{- Detect when .git/index.lock exists and has no git process currently
+ - writing to it. This strongly suggests it is a stale lock file, because
+ - git writes the new index to index.lock and renames it over top.
+ -
+ - However, this could be on a network filesystem. Which is not very safe
+ - anyway (the assistant relies on being able to check when files have
+ - no writers to know when to commit them). Just in case, when the file
+ - appears stale, we delay for one minute, and check its size. If the size
+ - changed, delay for another minute, and so on.
+ -}
+checkStaleIndexLock :: Assistant ()
+checkStaleIndexLock = do
+	dir <- liftAnnex $ fromRepo Git.localGitDir
+	checkStale $ dir </> "index.lock"
+checkStale :: FilePath -> Assistant ()
+checkStale indexlock = go =<< getsize
+  where
+  	getsize = liftIO $ catchMaybeIO $ fileSize <$> getFileStatus indexlock
+	go Nothing = return ()
+	go oldsize = ifM (liftIO $ null <$> Lsof.query ["--", indexlock])
+		( do
+			waitforit "to check stale"
+			size <- getsize
+			if size == oldsize
+				then liftIO $ nukeFile indexlock
+				else go size
+		, do
+			waitforit "for writer on"
+			go =<< getsize
+		)
+	waitforit why = do
+		notice ["Waiting for 60 seconds", why, indexlock]
+		liftIO $ threadDelaySeconds $ Seconds 60
 
 {- Hardcoded ignores, passed to the DirWatcher so it can avoid looking
  - at the entire .git directory. Does not include .gitignores. -}

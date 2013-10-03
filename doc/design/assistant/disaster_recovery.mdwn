@@ -7,8 +7,17 @@ There are a few ways a git repository can get broken that are easily fixed.
 One is left over index.lck files. When a commit to a repository fails,
 check that nothing else is using it, fix the problem, and redo the commit.
 
-This should be done on both the current repository and any local
-repositories. Maybe also make git-annex-shell be able to do it remotely?
+* **done** for .git/annex/index.lock, can be handled safely and automatically.
+* **done** for .git/index.lock, only when the assistant is starting up.
+* What about local remotes, eg removable drives? git-annex does attempt
+  to commit to the git-annex branch of those. It will use the atomatic
+  fix if any are dangling. It does not commit to the master branch; indeed
+  a removable drive typically has a bare repository. So I think nothing to
+  do here.
+* What about git-annex-shell? If the ssh remote has the assistant running,
+  it can take care of it, and if not, it's a server, and perhaps the user
+  should be required to fix up if it crashes during a commit. This should
+  not affect the assistant anyway.
 
 ## incremental fsck
 
