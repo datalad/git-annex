@@ -1,4 +1,4 @@
-git-annex (4.20130920) unstable; urgency=low
+git-annex (4.20130920~bpo70+1) wheezy-backports; urgency=low
 
   * webapp: Initial support for setting up encrypted removable drives.
   * Recommend using my patched gcrypt, which fixes some bugs:
