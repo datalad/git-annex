@@ -54,7 +54,7 @@ runHandler handler file _filestatus =
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr msg = error msg
+onErr = error
 
 {- Called when a new branch ref is written, or a branch ref is modified.
  -
@@ -110,7 +110,7 @@ equivBranches x y = base x == base y
 isAnnexBranch :: FilePath -> Bool
 isAnnexBranch f = n `isSuffixOf` f
   where
-	n = "/" ++ show Annex.Branch.name
+	n = '/' : show Annex.Branch.name
 
 fileToBranch :: FilePath -> Git.Ref
 fileToBranch f = Git.Ref $ "refs" </> base

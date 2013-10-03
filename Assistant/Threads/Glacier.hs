@@ -30,7 +30,7 @@ glacierThread = namedThread "Glacier" $ runEvery (Seconds 3600) <~> go
 	go = do
 		rs <- filter isglacier . syncDataRemotes <$> getDaemonStatus
 		forM_ rs $ \r -> 
-			check r =<< (liftAnnex $ getFailedTransfers $ Remote.uuid r)
+			check r =<< liftAnnex (getFailedTransfers $ Remote.uuid r)
 	check _ [] = noop
 	check r l = do
 		let keys = map getkey l

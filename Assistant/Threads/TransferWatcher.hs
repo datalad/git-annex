@@ -51,7 +51,7 @@ runHandler handler file _filestatus =
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr msg = error msg
+onErr = error
 
 {- Called when a new transfer information file is written. -}
 onAdd :: Handler
@@ -70,10 +70,9 @@ onAdd file = case parseTransferFile file of
  - The only thing that should change in the transfer info is the
  - bytesComplete, so that's the only thing updated in the DaemonStatus. -}
 onModify :: Handler
-onModify file = do
-	case parseTransferFile file of
-		Nothing -> noop
-		Just t -> go t =<< liftIO (readTransferInfoFile Nothing file)
+onModify file = case parseTransferFile file of
+	Nothing -> noop
+	Just t -> go t =<< liftIO (readTransferInfoFile Nothing file)
   where
 	go _ Nothing = noop
 	go t (Just newinfo) = alterTransferInfo t $

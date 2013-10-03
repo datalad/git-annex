@@ -34,7 +34,7 @@ import qualified Control.Exception as E
 #endif
 
 mountWatcherThread :: NamedThread
-mountWatcherThread = namedThread "MountWatcher" $
+mountWatcherThread = namedThread "MountWatcher"
 #if WITH_DBUS
 	dbusThread
 #else
@@ -173,10 +173,10 @@ remotesUnder dir = do
 	rs <- liftAnnex remoteList
 	pairs <- liftAnnex $ mapM (checkremote repotop) rs
 	let (waschanged, rs') = unzip pairs
-	when (any id waschanged) $ do
+	when (or waschanged) $ do
 		liftAnnex $ Annex.changeState $ \s -> s { Annex.remotes = catMaybes rs' }
 		updateSyncRemotes
-	return $ catMaybes $ map snd $ filter fst pairs
+	return $ mapMaybe snd $ filter fst pairs
   where
 	checkremote repotop r = case Remote.localpath r of
 		Just p | dirContains dir (absPathFrom repotop p) ->

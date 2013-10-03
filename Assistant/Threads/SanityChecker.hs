@@ -42,7 +42,7 @@ sanityCheckerDailyThread = namedThread "SanityCheckerDaily" $ forever $ do
 	go = do
 		modifyDaemonStatus_ $ \s -> s { sanityCheckRunning = True }
 
-		now <- liftIO $ getPOSIXTime -- before check started
+		now <- liftIO getPOSIXTime -- before check started
 		r <- either showerr return =<< (tryIO . batch) <~> dailyCheck
 
 		modifyDaemonStatus_ $ \s -> s
@@ -78,7 +78,7 @@ dailyCheck = do
 
 	-- Find old unstaged symlinks, and add them to git.
 	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo False ["."] g
-	now <- liftIO $ getPOSIXTime
+	now <- liftIO getPOSIXTime
 	forM_ unstaged $ \file -> do
 		ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 		case ms of

@@ -54,7 +54,7 @@ type Configs = S.Set (FilePath, String)
 {- All git-annex's config files, and actions to run when they change. -}
 configFilesActions :: [(FilePath, Annex ())]
 configFilesActions =
-	[ (uuidLog, void $ uuidMapLoad)
+	[ (uuidLog, void uuidMapLoad)
 	, (remoteLog, void remoteListRefresh)
 	, (trustLog, void trustMapLoad)
 	, (groupLog, void groupMapLoad)
@@ -71,7 +71,7 @@ reloadConfigs changedconfigs = do
 	{- Changes to the remote log, or the trust log, can affect the
 	 - syncRemotes list. Changes to the uuid log may affect its
 	 - display so are also included. -}
-	when (any (`elem` fs) [remoteLog, trustLog, uuidLog]) $
+	when (any (`elem` fs) [remoteLog, trustLog, uuidLog])
 		updateSyncRemotes
   where
 	(fs, as) = unzip $ filter (flip S.member changedfiles . fst)

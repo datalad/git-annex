@@ -31,7 +31,7 @@ transfererThread :: NamedThread
 transfererThread = namedThread "Transferrer" $ do
 	program <- liftIO readProgramFile
 	forever $ inTransferSlot program $
-		maybe (return Nothing) (uncurry $ genTransfer)
+		maybe (return Nothing) (uncurry genTransfer)
 			=<< getNextTransfer notrunning
   where
 	{- Skip transfers that are already running. -}
@@ -96,7 +96,7 @@ genTransfer t info = case (transferRemote info, associatedFile info) of
 					True (transferKey t)
 					(associatedFile info)
 					(Just remote)
-			void $ recordCommit
+			void recordCommit
 		, whenM (liftAnnex $ isNothing <$> checkTransfer t) $
 			void $ removeTransfer t
 		)
