@@ -404,7 +404,8 @@ stageJournal = withIndex $ do
  - remote refs cannot be merged into the branch (since transitions
  - throw away history), so they are added to the list of refs to ignore,
  - to avoid re-merging content from them again.
- -}
+ -
+ - Should be called only inside lockJournal. -}
 handleTransitions :: Transitions -> [Git.Ref] -> Annex Bool
 handleTransitions localts refs = do
 	m <- M.fromList <$> mapM getreftransition refs
@@ -415,7 +416,7 @@ handleTransitions localts refs = do
 			let allts = combineTransitions (localts:remotets)
 			let (transitionedrefs, untransitionedrefs) =
 				partition (\r -> M.lookup r m == Just allts) refs
-			performTransitions allts (localts /= allts) transitionedrefs
+			performTransitionsLocked allts (localts /= allts) transitionedrefs
 			ignoreRefs untransitionedrefs
 			return True
   where
@@ -440,9 +441,13 @@ getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content
 		liftIO $ catchDefaultIO "" $ readFile f
 
 {- Performs the specified transitions on the contents of the index file,
- - commits it to the branch, or creates a new branch. -}
+ - commits it to the branch, or creates a new branch.
+ -}
 performTransitions :: Transitions -> Bool -> [Ref] -> Annex ()
-performTransitions ts neednewlocalbranch transitionedrefs = do
+performTransitions ts neednewlocalbranch transitionedrefs = lockJournal $
+	performTransitionsLocked ts neednewlocalbranch transitionedrefs
+performTransitionsLocked :: Transitions -> Bool -> [Ref] -> Annex ()
+performTransitionsLocked ts neednewlocalbranch transitionedrefs = do
 	-- For simplicity & speed, we're going to use the Annex.Queue to
 	-- update the git-annex branch, while it usually holds changes
 	-- for the head branch. Flush any such changes.

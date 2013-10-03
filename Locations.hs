@@ -223,7 +223,8 @@ gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
 gitAnnexIndex :: Git.Repo -> FilePath
 gitAnnexIndex r = gitAnnexDir r </> "index"
 
-{- Lock file for .git/annex/index. -}
+{- Lock file for .git/annex/index. Not to be confused with git's 
+ - index.lock. -}
 gitAnnexIndexLock :: Git.Repo -> FilePath
 gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
 
