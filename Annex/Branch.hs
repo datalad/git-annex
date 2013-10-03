@@ -168,7 +168,7 @@ updateTo pairs = do
 				else inRepo $ Git.Branch.fastForward fullname refs
 			if ff
 				then updateIndex branchref
-				else commitBranch branchref merge_desc commitrefs
+				else commitBranch jl branchref merge_desc commitrefs
 		liftIO cleanjournal
 
 {- Gets the content of a file, which may be in the journal, or in the index
@@ -213,7 +213,7 @@ commit :: String -> Annex ()
 commit message = whenM journalDirty $ lockJournal $ \jl -> do
 	cleanjournal <- stageJournal jl
 	ref <- getBranch
-	withIndex $ commitBranch ref message [fullname]
+	withIndex $ commitBranch jl ref message [fullname]
 	liftIO cleanjournal
 
 {- Commits the staged changes in the index to the branch.
@@ -233,15 +233,13 @@ commit message = whenM journalDirty $ lockJournal $ \jl -> do
  - The branchref value can have been obtained using getBranch at any
  - previous point, though getting it a long time ago makes the race
  - more likely to occur.
- -
- - Should be called only inside lockJournal.
  -}
-commitBranch :: Git.Ref -> String -> [Git.Ref] -> Annex ()
-commitBranch branchref message parents = do
+commitBranch :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
+commitBranch jl branchref message parents = do
 	showStoringStateAction
-	commitBranch' branchref message parents
-commitBranch' :: Git.Ref -> String -> [Git.Ref] -> Annex ()
-commitBranch' branchref message parents = do
+	commitBranch' jl branchref message parents
+commitBranch' :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
+commitBranch' jl branchref message parents = do
 	updateIndex branchref
 	committedref <- inRepo $ Git.Branch.commit message fullname parents
 	setIndexSha committedref
@@ -267,7 +265,7 @@ commitBranch' branchref message parents = do
 	 - into the index, and recommit on top of the bad commit. -}
 	fixrace committedref lostrefs = do
 		mergeIndex lostrefs
-		commitBranch committedref racemessage [committedref]
+		commitBranch jl committedref racemessage [committedref]
 		
 	racemessage = message ++ " (recovery from race)"
 
@@ -444,7 +442,7 @@ performTransitions :: Transitions -> Bool -> [Ref] -> Annex ()
 performTransitions ts neednewlocalbranch transitionedrefs = lockJournal $ \jl ->
 	performTransitionsLocked jl ts neednewlocalbranch transitionedrefs
 performTransitionsLocked :: JournalLocked -> Transitions -> Bool -> [Ref] -> Annex ()
-performTransitionsLocked _jl ts neednewlocalbranch transitionedrefs = do
+performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	-- For simplicity & speed, we're going to use the Annex.Queue to
 	-- update the git-annex branch, while it usually holds changes
 	-- for the head branch. Flush any such changes.
@@ -458,7 +456,7 @@ performTransitionsLocked _jl ts neednewlocalbranch transitionedrefs = do
 				setIndexSha committedref
 			else do
 				ref <- getBranch
-				commitBranch ref message (nub $ fullname:transitionedrefs)
+				commitBranch jl ref message (nub $ fullname:transitionedrefs)
   where
   	message
 		| neednewlocalbranch && null transitionedrefs = "new branch for transition " ++ tdesc
