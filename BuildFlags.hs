@@ -54,4 +54,10 @@ buildFlags = filter (not . null)
 #ifdef WITH_QUVI
 	, "Quvi"
 #endif
+#ifdef WITH_TDFA
+	, "TDFA"
+#endif
+#ifdef WITH_CRYPTOHASH
+	, "CryptoHash"
+#endif
 	]

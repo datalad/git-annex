@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Backend.Hash (backends) where
 
 import Common.Annex
@@ -27,7 +29,9 @@ type HashSize = Int
 hashes :: [Hash]
 hashes = concat 
 	[ map SHAHash [256, 1, 512, 224, 384]
+#ifdef WITH_CRYPTOHASH
 	, map SkeinHash [256, 512]
+#endif
 	]
 
 {- The SHA256E backend is the default, so genBackendE comes first. -}
@@ -143,7 +147,7 @@ shaHasher hashsize filesize
 	| hashsize == 224 = use SysConfig.sha224 sha224
 	| hashsize == 384 = use SysConfig.sha384 sha384
 	| hashsize == 512 = use SysConfig.sha512 sha512
-	| otherwise = error $ "bad sha size " ++ show hashsize
+	| otherwise = error $ "unsupported sha size " ++ show hashsize
   where
 	use Nothing hasher = Left $ show . hasher
 	use (Just c) hasher
@@ -157,6 +161,8 @@ shaHasher hashsize filesize
 
 skeinHasher :: HashSize -> (L.ByteString -> String)
 skeinHasher hashsize 
+#ifdef WITH_CRYPTOHASH
 	| hashsize == 256 = show . skein256
 	| hashsize == 512 = show . skein512
-	| otherwise = error $ "bad skein size " ++ show hashsize
+#endif
+	| otherwise = error $ "unsupported skein size " ++ show hashsize
