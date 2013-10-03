@@ -18,6 +18,8 @@ check that nothing else is using it, fix the problem, and redo the commit.
   it can take care of it, and if not, it's a server, and perhaps the user
   should be required to fix up if it crashes during a commit. This should
   not affect the assistant anyway.
+* TODO Seems that refs can also have stale lock files, for example
+  '/storage/emulated/legacy/DCIM/.git/refs/remotes/flick_phonecamera/synced/git-annex.lock'
 
 ## incremental fsck
 
