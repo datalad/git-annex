@@ -17,6 +17,9 @@ import qualified Git.BuildVersion
 import Data.Char
 import qualified Data.Map as M
 import Network.URI
+#ifdef mingw32_HOST_OS
+import Git.FilePath
+#endif
 
 type RemoteName = String
 

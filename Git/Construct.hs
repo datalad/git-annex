@@ -25,8 +25,6 @@ module Git.Construct (
 
 #ifndef mingw32_HOST_OS
 import System.Posix.User
-#else
-import Git.FilePath
 #endif
 import qualified Data.Map as M hiding (map, split)
 import Network.URI
