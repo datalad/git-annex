@@ -7,7 +7,7 @@ release.
 
 The [[design/roadmap]] has this month devoted to improving git-annex's
 support for recovering from disasters, broken repos, and so on. Today I've
-been working on the first thing on [[the_list|design/disaster_recovery]],
+been working on the first thing on [[the_list|design/assistant/disaster_recovery]],
 stale git index lock files.
 
 It's unfortunate that git uses simple files for locking, and does not use
