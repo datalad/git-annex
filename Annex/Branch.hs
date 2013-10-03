@@ -351,18 +351,18 @@ forceUpdateIndex branchref = do
 {- Checks if the index needs to be updated. -}
 needUpdateIndex :: Git.Ref -> Annex Bool
 needUpdateIndex branchref = do
-	lock <- fromRepo gitAnnexIndexLock
-	lockref <- Git.Ref . firstLine <$>
-		liftIO (catchDefaultIO "" $ readFileStrict lock)
-	return (lockref /= branchref)
+	f <- fromRepo gitAnnexIndexStatus
+	committedref <- Git.Ref . firstLine <$>
+		liftIO (catchDefaultIO "" $ readFileStrict f)
+	return (committedref /= branchref)
 
 {- Record that the branch's index has been updated to correspond to a
  - given ref of the branch. -}
 setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
-	lock <- fromRepo gitAnnexIndexLock
-	liftIO $ writeFile lock $ show ref ++ "\n"
-	setAnnexPerm lock
+	f <- fromRepo gitAnnexIndexStatus
+	liftIO $ writeFile f $ show ref ++ "\n"
+	setAnnexPerm f
 
 {- Stages the journal into the index and returns an action that will
  - clean up the staged journal files, which should only be run once

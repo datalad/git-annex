@@ -35,7 +35,7 @@ module Locations (
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
 	gitAnnexIndex,
-	gitAnnexIndexLock,
+	gitAnnexIndexStatus,
 	gitAnnexIgnoredRefs,
 	gitAnnexPidFile,
 	gitAnnexDaemonStatusFile,
@@ -223,10 +223,12 @@ gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
 gitAnnexIndex :: Git.Repo -> FilePath
 gitAnnexIndex r = gitAnnexDir r </> "index"
 
-{- Lock file for .git/annex/index. Not to be confused with git's 
- - index.lock. -}
-gitAnnexIndexLock :: Git.Repo -> FilePath
-gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
+{- Holds the ref of the git-annex branch that the index was last updated to.
+ -
+ - The .lck in the name is a historical accident; this is not used as a
+ - lock. -}
+gitAnnexIndexStatus :: Git.Repo -> FilePath
+gitAnnexIndexStatus r = gitAnnexDir r </> "index.lck"
 
 {- List of refs that should not be merged into the git-annex branch. -}
 gitAnnexIgnoredRefs :: Git.Repo -> FilePath
