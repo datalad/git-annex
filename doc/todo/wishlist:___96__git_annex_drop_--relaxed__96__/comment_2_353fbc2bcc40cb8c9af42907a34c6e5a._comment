@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.243"
+ subject="comment 2"
+ date="2013-10-04T20:17:07Z"
+ content="""
+I don't think that a third state would be necessary. Actually dropping the file when it happens would need to do the same numcopies verification that `git annex drop` does now.
+
+I agree it might be simpler to first improve the power of preferred content expressions. Unfortunately one thing that cannot be put in them is anything that probes the current state of the system. This is because repo A on machine X needs to be able to calculate the preferred content of repo B on machine Y.
+But I could certainly add file size as a preferred content term, since that info is known throughout the network.
+"""]]
