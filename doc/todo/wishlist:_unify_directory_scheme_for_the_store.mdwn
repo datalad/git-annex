@@ -9,8 +9,11 @@ My use case is: I synchronize a git repo, say containing photos, to a server on 
 At least it would be valuable (to get around above problem) to have a plumbing command giving the 2-directory prefix from a given key, for example:
 
 $ git annex prefix-dir SHA1-s2--3f786850e387550fdab836ed7e6dc881
+
 7w/88
+
 f18/122
+
 
 Even if the 2 schemes were unified, this prefix-dir command would still be useful when hacking around git-annex (for now I need to maintain a dictionary structure).
 
