@@ -83,7 +83,10 @@ webAppThread assistantdata urlrenderer noannex listenhost postfirstrun onstartup
 			urlfile <- runThreadState st $ fromRepo gitAnnexUrlFile
 			go addr webapp htmlshim (Just urlfile)
   where
-	thread = namedThread "WebApp"
+  	-- The webapp thread does not wait for the startupSanityCheckThread
+	-- to finish, so that the user interface remains responsive while
+	-- that's going on.
+	thread = namedThreadUnchecked "WebApp"
 	getreldir
 		| noannex = return Nothing
 		| otherwise = Just <$>

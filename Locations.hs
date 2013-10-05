@@ -10,6 +10,7 @@ module Locations (
 	fileKey,
 	keyPaths,
 	keyPath,
+	annexDir,
 	objectDir,
 	gitAnnexLocation,
 	gitAnnexLink,

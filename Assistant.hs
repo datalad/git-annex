@@ -136,6 +136,9 @@ startDaemon assistant foreground listenhost startbrowser = do
 			, assist $ configMonitorThread
 			, assist $ glacierThread
 			, watch $ watchThread
+			-- must come last so that all threads that wait
+			-- on it have already started waiting
+			, watch $ sanityCheckerStartupThread
 			]
 	
 		liftIO waitForTermination
