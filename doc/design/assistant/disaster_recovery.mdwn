@@ -10,7 +10,7 @@ check that nothing else is using it, fix the problem, and redo the commit.
 * **done** for .git/annex/index.lock, can be handled safely and automatically.
 * **done** for .git/index.lock, only when the assistant is starting up.
 * What about local remotes, eg removable drives? git-annex does attempt
-  to commit to the git-annex branch of those. It will use the atomatic
+  to commit to the git-annex branch of those. It will use the automatic
   fix if any are dangling. It does not commit to the master branch; indeed
   a removable drive typically has a bare repository. So I think nothing to
   do here.
@@ -18,13 +18,19 @@ check that nothing else is using it, fix the problem, and redo the commit.
   it can take care of it, and if not, it's a server, and perhaps the user
   should be required to fix up if it crashes during a commit. This should
   not affect the assistant anyway.
-* TODO Seems that refs can also have stale lock files, for example
+* **done** Seems that refs can also have stale lock files, for example
   '/storage/emulated/legacy/DCIM/.git/refs/remotes/flick_phonecamera/synced/git-annex.lock'
+  All git lock files are now handled (except gc lock files).
 
 ## incremental fsck
 
 Add webapp UI to enable incremental fsck, and choose when to start and how
-long to run each day.
+long to run each day, and what the goal is (ie, to fsck all files once
+per month).
+
+Of course, incremental fsck will run as an niced (and ioniced) background
+job. There will need to be a button in the webapp to stop it, in case it's
+annoying.
 
 When fsck finds a damanged file, queue a download of the file from a
 remote. If no accessible remote has the file, prompt the user to eg, connect
