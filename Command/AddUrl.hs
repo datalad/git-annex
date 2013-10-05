@@ -223,6 +223,6 @@ url2file url pathdepth pathmax = case pathdepth of
   where
 	fullurl = uriRegName auth ++ uriPath url ++ uriQuery url
 	frombits a = intercalate "/" $ a urlbits
-	urlbits = map (truncateFilePath pathmax . escape) $ filter (not . null) $ split "/" fullurl
+	urlbits = map (truncateFilePath pathmax . sanitizeFilePath) $
+		filter (not . null) $ split "/" fullurl
 	auth = fromMaybe (error $ "bad url " ++ show url) $ uriAuthority url
-	escape = replace "/" "_" . replace "?" "_"

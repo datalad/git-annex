@@ -6,6 +6,7 @@ git-annex (4.20131003) UNRELEASED; urgency=low
   * watcher: Detect at startup time when there is a stale .git/lock,
     and remove it so it does not interfere with the automatic
     commits of changed files.
+  * addurl: Better sanitization of generated filenames.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Oct 2013 15:41:24 -0400
 
