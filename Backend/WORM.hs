@@ -11,6 +11,7 @@ import Common.Annex
 import Types.Backend
 import Types.Key
 import Types.KeySource
+import Backend.Utilities
 
 backends :: [Backend]
 backends = [backend]
@@ -33,9 +34,10 @@ backend = Backend
 keyValue :: KeySource -> Annex (Maybe Key)
 keyValue source = do
 	stat <- liftIO $ getFileStatus $ contentLocation source
-	return $ Just Key {
-		keyName = takeFileName $ keyFilename source,
-		keyBackendName = name backend,
-		keySize = Just $ fromIntegral $ fileSize stat,
-		keyMtime = Just $ modificationTime stat
-	}
+	n <- genKeyName $ keyFilename source
+	return $ Just Key
+		{ keyName = n
+		, keyBackendName = name backend
+		, keySize = Just $ fromIntegral $ fileSize stat
+		, keyMtime = Just $ modificationTime stat
+		}

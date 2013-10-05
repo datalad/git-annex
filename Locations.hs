@@ -51,6 +51,7 @@ module Locations (
 	annexHashes,
 	hashDirMixed,
 	hashDirLower,
+	preSanitizeKeyName,
 
 	prop_idempotent_fileKey
 ) where
@@ -58,6 +59,7 @@ module Locations (
 import Data.Bits
 import Data.Word
 import Data.Hash.MD5
+import Data.Char
 
 import Common
 import Types
@@ -284,6 +286,32 @@ gitAnnexAssistantDefaultDir = "annex"
 isLinkToAnnex :: FilePath -> Bool
 isLinkToAnnex s = (pathSeparator:objectDir) `isInfixOf` s
 
+{- Sanitizes a String that will be used as part of a Key's keyName,
+ - dealing with characters that cause problems on substandard filesystems.
+ -
+ - This is used when a new Key is initially being generated, eg by getKey.
+ - Unlike keyFile and fileKey, it does not need to be a reversable
+ - escaping. Also, it's ok to change this to add more problimatic
+ - characters later. Unlike changing keyFile, which could result in the
+ - filenames used for existing keys changing and contents getting lost.
+ -
+ - It is, however, important that the input and output of this function
+ - have a 1:1 mapping, to avoid two different inputs from mapping to the
+ - same key.
+ -}
+preSanitizeKeyName :: String -> String
+preSanitizeKeyName = concatMap escape
+  where
+  	escape c
+		| isAsciiUpper c || isAsciiLower c || isDigit c = [c]
+		| c `elem` ".-_ " = [c] -- common, assumed safe
+		| c `elem` "/%:" = [c] -- handled by keyFile
+		-- , is safe and uncommon, so will be used to escape
+		-- other characters. By itself, it is escaped to 
+		-- doubled form.
+		| c == ',' = ",,"
+		| otherwise = ',' : show(ord(c))
+
 {- Converts a key into a filename fragment without any directory.
  -
  - Escape "/" in the key name, to keep a flat tree of files and avoid
@@ -293,8 +321,10 @@ isLinkToAnnex s = (pathSeparator:objectDir) `isInfixOf` s
  -     a slash
  - "%" is escaped to "&s", and "&" to "&a"; this ensures that the mapping
  -     is one to one.
- - ":" is escaped to "&c", because despite it being 20XX people still care
- -     about FAT.
+ - ":" is escaped to "&c", because it seemed like a good idea at the time.
+ -
+ - Changing what this function escapes and how is not a good idea, as it
+ - can cause existing objects to get lost.
  -}
 keyFile :: Key -> FilePath
 keyFile key = replace "/" "%" $ replace ":" "&c" $
