@@ -83,7 +83,8 @@ start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 		page <- fromMaybe badquvi
 			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] s'
 		let link = fromMaybe badquvi $ headMaybe $ Quvi.pageLinks page
-		let file = choosefile $ sanitizeFilePath $
+		pathmax <- liftIO $ fileNameLengthLimit "."
+		let file = choosefile $ truncateFilePath pathmax $ sanitizeFilePath $
 			Quvi.pageTitle page ++ "." ++ Quvi.linkSuffix link
 		showStart "addurl" file
 		next $ performQuvi relaxed s' (Quvi.linkUrl link) file
@@ -214,7 +215,7 @@ nodownload relaxed url file = do
 
 url2file :: URI -> Maybe Int -> Int -> FilePath
 url2file url pathdepth pathmax = case pathdepth of
-	Nothing -> truncateFilePath pathmax $ escape fullurl
+	Nothing -> truncateFilePath pathmax $ sanitizeFilePath fullurl
 	Just depth
 		| depth >= length urlbits -> frombits id
 		| depth > 0 -> frombits $ drop depth
