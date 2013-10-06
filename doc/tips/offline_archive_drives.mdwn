@@ -31,7 +31,7 @@ Or you can use the assistant to set up the drive for you.
 (Nice video tutorial here: [[videos/git-annex_assistant_archiving]])
 
 (Keeping the archive drive in an offsite location? Consider encrypting
-it! See [[fully_encrypted_git_repositories_with_gcrypt].])
+it! See [[fully_encrypted_git_repositories_with_gcrypt]].)
 
 Then, when the archive drive is plugged in, you can easily copy files to
 it:
