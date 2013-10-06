@@ -24,6 +24,7 @@ drive). Also, give the drive a description that matches something you write on
 its label, so you can find it later:
 
 	git annex group archivedrive archive
+	git annex content archivedrive standard
 	git annex describe archivedrive "my first archive drive (SATA)"
 
 Or you can use the assistant to set up the drive for you.  
