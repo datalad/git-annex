@@ -2,7 +2,6 @@ mans=git-annex.1 git-annex-shell.1
 all=git-annex $(mans) docs
 
 GHC?=ghc
-GHCMAKE=$(GHC) $(GHCFLAGS) --make
 PREFIX?=/usr
 CABAL?=cabal # set to "./Setup" if you lack a cabal program
 
