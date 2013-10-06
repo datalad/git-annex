@@ -73,7 +73,7 @@ runHooks r starthook stophook a = do
 		run starthook
 
 		Annex.addCleanup (remoteid ++ "-stop-command") $ runstop lck
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	runstop lck = do
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock
