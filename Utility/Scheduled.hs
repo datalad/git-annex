@@ -10,14 +10,17 @@ module Utility.Scheduled (
 	Recurrance(..),
 	TimeOfDay(..),
 	fromSchedule,
-	toSchedule
+	toSchedule,
+	parseSchedule,
+	prop_schedule_roundtrips
 ) where
 
 import Common
+import Utility.QuickCheck
 
 {- Some sort of scheduled event. -}
 data Schedule = Schedule Recurrance TimeOfDay Duration
-  deriving (Show)
+  deriving (Eq, Show, Ord)
 
 data Recurrance
 	= Daily
@@ -26,7 +29,7 @@ data Recurrance
 	| Yearly YearDay
 	-- Divisible 3 Daily is every day of the year evenly divisible by 3
 	| Divisable Int Recurrance
-  deriving (Show)
+  deriving (Eq, Show, Ord)
 
 type WeekDay = Int
 type MonthDay = Int
@@ -35,14 +38,14 @@ type YearDay = Int
 data TimeOfDay
 	= AnyTime
 	| Hour Int
-  deriving (Show)
+  deriving (Eq, Show, Ord)
 
 data Duration = MinutesDuration Int
-  deriving (Show)
+  deriving (Eq, Show, Ord)
 
 fromRecurrance :: Recurrance -> String
 fromRecurrance (Divisable n r) =
-	fromRecurrance' (++ "s divisible by " ++ show n) r
+	fromRecurrance' (\u -> "on " ++ u ++ "s divisible by " ++ show n) r
 fromRecurrance r = fromRecurrance' ("every " ++) r
 
 fromRecurrance' :: (String -> String) -> Recurrance -> String
@@ -58,7 +61,7 @@ onday n s = s ++ " on day " ++ show n
 toRecurrance :: String -> Maybe Recurrance
 toRecurrance s = case words s of
 	("every":something:l) -> parse something l
-	(something:"divisible":"by":sn:l) -> do
+	("on":something:"divisible":"by":sn:l) -> do
 		r <- parse something l
 		n <- readish sn
 		if n > 0
@@ -105,12 +108,54 @@ fromSchedule (Schedule recurrance timeofday duration) = unwords
 	]
 
 toSchedule :: String -> Maybe Schedule
-toSchedule s = Schedule
-	<$> toRecurrance (unwords recurrance)
-	<*> toTimeOfDay (unwords timeofday)
-	<*> toDuration (unwords duration)
+toSchedule = eitherToMaybe . parseSchedule
+
+parseSchedule :: String -> Either String Schedule
+parseSchedule s = do
+	r <- maybe (Left $ "bad recurrance: " ++ recurrance) Right
+		(toRecurrance recurrance)
+	t <- maybe (Left $ "bad time of day: " ++ timeofday) Right
+		(toTimeOfDay timeofday)
+	d <- maybe (Left $ "bad duration: " ++ duration) Right
+		(toDuration duration)
+	Right $ Schedule r t d
   where
   	ws = words s
-	(recurrance, ws') = separate (== "at") ws
-	(timeofday, duration) = separate (== "for") ws'
+	(rws, ws') = separate (== "at") ws
+	(tws, dws) = separate (== "for") ws'
+	recurrance = unwords rws
+	timeofday = unwords tws
+	duration = unwords dws
 
+instance Arbitrary Schedule where
+	arbitrary = Schedule <$> arbitrary <*> arbitrary <*> arbitrary
+
+instance Arbitrary Duration where
+	arbitrary = MinutesDuration <$> nonNegative arbitrary
+
+instance Arbitrary TimeOfDay where
+	arbitrary = oneof
+		[ pure AnyTime
+		, Hour <$> nonNegative arbitrary
+		]
+
+instance Arbitrary Recurrance where
+	arbitrary = oneof
+		[ pure Daily
+		, Weekly <$> nonNegative arbitrary
+		, Monthly <$> nonNegative arbitrary
+		, Yearly <$> nonNegative arbitrary
+		, Divisable
+			<$> positive arbitrary
+			<*> oneof -- no nested Divisibles
+				[ pure Daily
+				, Weekly <$> nonNegative arbitrary
+				, Monthly <$> nonNegative arbitrary
+				, Yearly <$> nonNegative arbitrary
+				]
+		]
+
+prop_schedule_roundtrips :: Schedule -> Bool
+prop_schedule_roundtrips s = case toSchedule $ fromSchedule s of
+	Just s' | s == s' -> True
+	_ -> False
