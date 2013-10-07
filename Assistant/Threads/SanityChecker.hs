@@ -162,7 +162,7 @@ checkStaleGitLocks :: Assistant ()
 checkStaleGitLocks = do
 	lockfiles <- filter (not . isInfixOf "gc.pid") 
 		. filter (".lock" `isSuffixOf`)
-		<$> (liftIO . dirContentsRecursiveSkipping (annexDir `isInfixOf`)
+		<$> (liftIO . dirContentsRecursiveSkipping (== dropTrailingPathSeparator annexDir)
 			=<< liftAnnex (fromRepo Git.localGitDir))
 	checkStaleLocks lockfiles
 checkStaleLocks :: [FilePath] -> Assistant ()

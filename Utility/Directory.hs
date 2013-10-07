@@ -40,12 +40,13 @@ dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
 dirContentsRecursive :: FilePath -> IO [FilePath]
 dirContentsRecursive topdir = dirContentsRecursiveSkipping (const False) topdir
 
+{- Skips directories whose basenames match the skipdir. -}
 dirContentsRecursiveSkipping :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
 dirContentsRecursiveSkipping skipdir topdir = go [topdir]
   where
   	go [] = return []
 	go (dir:dirs)
-		| skipdir dir = go dirs
+		| skipdir (takeFileName dir) = go dirs
 		| otherwise = unsafeInterleaveIO $ do
 			(files, dirs') <- collect [] []
 				=<< catchDefaultIO [] (dirContents dir)

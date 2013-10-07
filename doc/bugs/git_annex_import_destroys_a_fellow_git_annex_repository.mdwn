@@ -124,3 +124,7 @@ anarcat@angela:foo$
 """]]
 
 Thanks! --[[anarcat]]
+
+> Would have thought this was obviously something you shouldn't do
+> (sorta like running git-annex import on your home directory),
+> but ok, it can skip .git directories. [[done]] --[[Joey]]
