@@ -14,18 +14,25 @@ import Types.UUID
 data ScheduledActivity 
 	= ScheduledSelfFsck Schedule 
 	| ScheduledRemoteFsck UUID Schedule
+  deriving (Eq, Show, Ord)
 
 fromScheduledActivity :: ScheduledActivity -> String
 fromScheduledActivity (ScheduledSelfFsck s) = 
-	"fsck self at " ++ fromSchedule s
+	"fsck self " ++ fromSchedule s
 fromScheduledActivity (ScheduledRemoteFsck u s) = 
-	"fsck " ++ fromUUID u ++ " at " ++ fromSchedule s
+	"fsck " ++ fromUUID u ++ fromSchedule s
 
 toScheduledActivity :: String -> Maybe ScheduledActivity
-toScheduledActivity s = case words s of
-	("fsck":"self":rest) -> ScheduledSelfFsck
-		<$> toSchedule (unwords rest)
-	("fsck":u:rest) -> ScheduledRemoteFsck
+toScheduledActivity = eitherToMaybe . parseScheduledActivity
+
+parseScheduledActivity :: String -> Either String ScheduledActivity
+parseScheduledActivity s = case words s of
+	("fsck":"self":rest) -> qualified $ ScheduledSelfFsck
+		<$> parseSchedule (unwords rest)
+	("fsck":u:rest) -> qualified $ ScheduledRemoteFsck
 		<$> pure (toUUID u)
-		<*> toSchedule (unwords rest)
-	_ -> Nothing
+		<*> parseSchedule (unwords rest)
+	_ -> qualified $ Left "unknown activity"
+  where
+	qualified (Left e) = Left $ e ++ " in \"" ++ s ++ "\""
+	qualified v = v

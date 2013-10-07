@@ -9,6 +9,7 @@ module Logs.Schedule (
 	scheduleLog,
 	scheduleSet,
 	scheduleGet,
+	scheduleMap,
 ) where
 
 import qualified Data.Map as M

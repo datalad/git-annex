@@ -9,6 +9,7 @@ module Utility.Scheduled (
 	Schedule(..),
 	Recurrance(..),
 	TimeOfDay(..),
+	Duration(..),
 	fromSchedule,
 	toSchedule,
 	parseSchedule,

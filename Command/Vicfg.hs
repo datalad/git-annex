@@ -12,6 +12,7 @@ import qualified Data.Set as S
 import System.Environment (getEnv)
 import Data.Tuple (swap)
 import Data.Char (isSpace)
+import Data.Either
 
 import Common.Annex
 import Command
@@ -21,7 +22,9 @@ import Types.Group
 import Logs.Trust
 import Logs.Group
 import Logs.PreferredContent
+import Logs.Schedule
 import Types.StandardGroups
+import Types.ScheduledActivity
 import Remote
 
 def :: [Command]
@@ -59,6 +62,7 @@ data Cfg = Cfg
 	{ cfgTrustMap :: TrustMap
 	, cfgGroupMap :: M.Map UUID (S.Set Group)
 	, cfgPreferredContentMap :: M.Map UUID String
+	, cfgScheduleMap :: M.Map UUID [ScheduledActivity]
 	}
 
 getCfg :: Annex Cfg
@@ -66,22 +70,25 @@ getCfg = Cfg
 	<$> trustMapRaw -- without local trust overrides
 	<*> (groupsByUUID <$> groupMap)
 	<*> preferredContentMapRaw
+	<*> scheduleMap
 
 setCfg :: Cfg -> Cfg -> Annex ()
 setCfg curcfg newcfg = do
-	let (trustchanges, groupchanges, preferredcontentchanges) = diffCfg curcfg newcfg
+	let (trustchanges, groupchanges, preferredcontentchanges, schedulechanges) = diffCfg curcfg newcfg
 	mapM_ (uncurry trustSet) $ M.toList trustchanges
 	mapM_ (uncurry groupSet) $ M.toList groupchanges
 	mapM_ (uncurry preferredContentSet) $ M.toList preferredcontentchanges
+	mapM_ (uncurry scheduleSet) $ M.toList schedulechanges
 
-diffCfg :: Cfg -> Cfg -> (TrustMap, M.Map UUID (S.Set Group), M.Map UUID String)
-diffCfg curcfg newcfg = (diff cfgTrustMap, diff cfgGroupMap, diff cfgPreferredContentMap)
+diffCfg :: Cfg -> Cfg -> (TrustMap, M.Map UUID (S.Set Group), M.Map UUID String, M.Map UUID [ScheduledActivity])
+diffCfg curcfg newcfg = (diff cfgTrustMap, diff cfgGroupMap, diff cfgPreferredContentMap, diff cfgScheduleMap)
   where
 	diff f = M.differenceWith (\x y -> if x == y then Nothing else Just x)
 		(f newcfg) (f curcfg)
 
 genCfg :: Cfg -> M.Map UUID String -> String
-genCfg cfg descs = unlines $ concat [intro, trust, groups, preferredcontent]
+genCfg cfg descs = unlines $ concat
+	[intro, trust, groups, preferredcontent, schedule]
   where
 	intro =
 		[ com "git-annex configuration"
@@ -119,6 +126,14 @@ genCfg cfg descs = unlines $ concat [intro, trust, groups, preferredcontent]
 		]
 		(\(s, u) -> line "content" u s)
 		(\u -> line "content" u "")
+
+	schedule = settings cfgScheduleMap
+		[ ""
+		, com "Scheduled activities"
+		, com "(Separate multiple activities with \"; \")"
+		]
+		(\(l, u) -> line "schedule" u $ intercalate "; " $ map fromScheduledActivity l)
+		(\u -> line "schedule" u "")
 
 	settings field desc showvals showdefaults = concat
 		[ desc
@@ -173,6 +188,14 @@ parseCfg curcfg = go [] curcfg . lines
 				Nothing ->
 					let m = M.insert u value (cfgPreferredContentMap cfg)
 					in Right $ cfg { cfgPreferredContentMap = m }
+		| setting == "schedule" =
+			let (bad, good) = partitionEithers $ 
+				map parseScheduledActivity $ split "; " value
+			in if null bad
+				then 
+					let m = M.insert u good (cfgScheduleMap cfg)
+					in Right $ cfg { cfgScheduleMap = m }
+				else Left $ intercalate "; " bad
 		| otherwise = badval "setting" setting
 
 	showerr (Just msg, l) = [parseerr ++ msg, l]
