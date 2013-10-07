@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="comment 3"
+ date="2013-10-07T13:33:40Z"
+ content="""
+By the way, I just had the case above, i.e. convert a bare repo to non-bare. In order to keep the annex files, I cloned the bare one, and git-annex move'ed all annex content to the new repo, and to my surprise it was slow, as if all files where copied (or maybe they were only checksummed?), instead of being only renamed (old and new repos were on the same partition). So I restate that at least a command line tool giving the prefix dirs would be useful, to allow scripting for this kind of situation.
+"""]]
