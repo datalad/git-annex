@@ -122,3 +122,5 @@ fatal: Not a git repository (or any of the parent directories): .git
 anarcat@angela:foo$
 # End of transcript or log.
 """]]
+
+Thanks! --[[anarcat]]
