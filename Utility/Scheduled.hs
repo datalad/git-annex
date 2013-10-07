@@ -28,7 +28,6 @@ data Recurrance
 	| Weekly WeekDay
 	| Monthly MonthDay
 	| Yearly YearDay
-	-- Divisible 3 Daily is every day of the year evenly divisible by 3
 	| Divisable Int Recurrance
   deriving (Eq, Show, Ord)
 
@@ -38,15 +37,18 @@ type YearDay = Int
 
 data TimeOfDay
 	= AnyTime
-	| Hour Int
+	| SpecificTime Hour Minute
   deriving (Eq, Show, Ord)
+
+type Hour = Int
+type Minute = Int
 
 data Duration = MinutesDuration Int
   deriving (Eq, Show, Ord)
 
 fromRecurrance :: Recurrance -> String
 fromRecurrance (Divisable n r) =
-	fromRecurrance' (\u -> "on " ++ u ++ "s divisible by " ++ show n) r
+	fromRecurrance' (++ "s divisible by " ++ show n) r
 fromRecurrance r = fromRecurrance' ("every " ++) r
 
 fromRecurrance' :: (String -> String) -> Recurrance -> String
@@ -57,38 +59,42 @@ fromRecurrance' a (Yearly n) = onday n (a "year")
 fromRecurrance' a (Divisable _n r) = fromRecurrance' a r -- not used
 
 onday :: Int -> String -> String
-onday n s = s ++ " on day " ++ show n
+onday n s = "on day " ++ show n ++ " of " ++ s
 
 toRecurrance :: String -> Maybe Recurrance
 toRecurrance s = case words s of
-	("every":something:l) -> parse something l
-	("on":something:"divisible":"by":sn:l) -> do
-		r <- parse something l
-		n <- readish sn
-		if n > 0
-			then Just $ Divisable n r
-			else Nothing
+	("every":"day":[]) -> Just Daily
+	("on":"day":sd:"of":"every":something:[]) -> parse something sd
+	("days":"divisible":"by":sn:[]) -> 
+		Divisable <$> getdivisor sn <*> pure Daily
+	("on":"day":sd:"of":something:"divisible":"by":sn:[]) -> 
+		Divisable
+			<$> getdivisor sn
+			<*> parse something sd
 	_ -> Nothing
   where
-	parse "day" [] = Just Daily
-	parse "week" l = withday Weekly l
-	parse "month" l = withday Monthly l
-	parse "year" l = withday Yearly l
-	parse v l
-		| "s" `isSuffixOf` v = parse (reverse $ drop 1 $ reverse v) l
+	parse "week" sd = withday Weekly sd
+	parse "month" sd = withday Monthly sd
+	parse "year" sd = withday Yearly sd
+	parse v sd
+		| "s" `isSuffixOf` v = parse (reverse $ drop 1 $ reverse v) sd
 		| otherwise = Nothing
-	withday a ("on":"day":n:[]) = a <$> readish n
-	withday _ _ = Nothing
+	withday c sd = c <$> readish sd
+	getdivisor sn = do
+		n <- readish sn
+		if n > 0
+			then Just n
+			else Nothing
 
 fromTimeOfDay :: TimeOfDay -> String
 fromTimeOfDay AnyTime = "any time"
-fromTimeOfDay (Hour n) = "hour " ++ show n
+fromTimeOfDay (SpecificTime h m) = show h ++ ":" ++ show m
 
 toTimeOfDay :: String -> Maybe TimeOfDay
-toTimeOfDay s = case words s of
-	("any":"time":[]) -> Just AnyTime
-	("hour":n:[]) -> Hour <$> readish n
-	_ -> Nothing
+toTimeOfDay "any time" = Just AnyTime
+toTimeOfDay s =
+	let (h, m) = separate (== ':') s
+	in SpecificTime <$> readish h <*> readish m
 
 fromDuration :: Duration -> String
 fromDuration (MinutesDuration n) = show n ++ " minutes"
@@ -137,7 +143,9 @@ instance Arbitrary Duration where
 instance Arbitrary TimeOfDay where
 	arbitrary = oneof
 		[ pure AnyTime
-		, Hour <$> nonNegative arbitrary
+		, SpecificTime 
+			<$> nonNegative arbitrary 
+			<*> nonNegative arbitrary
 		]
 
 instance Arbitrary Recurrance where
