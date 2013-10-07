@@ -16,6 +16,7 @@ module Annex.Ssh (
 
 import qualified Data.Map as M
 import Data.Hash.MD5
+import System.Process (cwd)
 
 import Common.Annex
 import Annex.LockPool
@@ -112,9 +113,8 @@ sshCleanup = go =<< sshCacheDir
   where
 	go Nothing = noop
 	go (Just dir) = do
-		sockets <- liftIO $ filter (not . isLock) . catMaybes 
-			<$> (mapM bestSocketPath
-				=<< catchDefaultIO [] (dirContents dir))
+		sockets <- liftIO $ filter (not . isLock)
+			<$> catchDefaultIO [] (dirContents dir)
 		forM_ sockets cleanup
 	cleanup socketfile = do
 #ifndef mingw32_HOST_OS
@@ -137,13 +137,15 @@ sshCleanup = go =<< sshCacheDir
 		stopssh socketfile
 #endif
 	stopssh socketfile = do
-		let params = sshConnectionCachingParams socketfile
+		let (dir, base) = splitFileName socketfile
+		let params = sshConnectionCachingParams base
 		-- "ssh -O stop" is noisy on stderr even with -q
 		void $ liftIO $ catchMaybeIO $
 			withQuietOutput createProcessSuccess $
-				proc "ssh" $ toCommand $
+				(proc "ssh" $ toCommand $
 					[ Params "-O stop"
-					] ++ params ++ [Param "any"]
+					] ++ params ++ [Param "any"])
+					{ cwd = Just dir }
 		-- Cannot remove the lock file; other processes may
 		-- be waiting on our exclusive lock to use it.
 
