@@ -8,6 +8,7 @@ Build-Depends:
 	libghc-missingh-dev,
 	libghc-hslogger-dev,
 	libghc-pcre-light-dev,
+	libghc-vector-dev,
 	libghc-sha-dev,
 	libghc-cryptohash-dev,
 	libghc-regex-tdfa-dev [!mips !mipsel !s390],

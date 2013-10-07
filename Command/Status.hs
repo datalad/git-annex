@@ -11,6 +11,8 @@ module Command.Status where
 
 import "mtl" Control.Monad.State.Strict
 import qualified Data.Map as M
+import qualified Data.Vector as V
+import qualified Data.Vector.Mutable as MV
 import Text.JSON
 import Data.Tuple
 import Data.Ord
@@ -48,16 +50,23 @@ data KeyData = KeyData
 	}
 
 data NumCopiesStats = NumCopiesStats
-	{ numCopiesVarianceMap :: M.Map Variance Integer
+	{ numCopiesVariances :: V.Vector Int
 	}
 
-newtype Variance = Variance Int
-	deriving (Eq, Ord)
+{- Since variances can be negative, maxVariance will be
+ - added to a variance to get its position within the vector. -}
+maxVariance :: Int
+maxVariance = 1000
 
-instance Show Variance where
-	show (Variance n)
-		| n >= 0 = "numcopies +" ++ show n
-		| otherwise = "numcopies " ++ show n
+toVariance :: Int -> Int
+toVariance n = n + maxVariance
+
+showVariance :: Int -> String
+showVariance v
+	| n >= 0 = "numcopies +" ++ show n
+	| otherwise = "numcopies -" ++ show n
+  where
+  	n = v - maxVariance
 
 -- cached info that multiple Stats use
 data StatInfo = StatInfo
@@ -267,12 +276,14 @@ backend_usage = stat "backend usage" $ nojson $
 		M.unionWith (+) x y
 
 numcopies_stats :: Stat
-numcopies_stats = stat "numcopies stats" $ nojson $
-	calc <$> (maybe M.empty numCopiesVarianceMap <$> cachedNumCopiesStats)
+numcopies_stats = stat "numcopies stats" $ nojson $ do
+	gen . calc . maybe [] (V.toList . numCopiesVariances)
+		<$> cachedNumCopiesStats
   where
-	calc = multiLine
-		. map (\(variance, count) -> show variance ++ ": " ++ show count)
-		. reverse . sortBy (comparing snd) . M.toList
+	gen = multiLine
+		. map (\(variance, count) -> showVariance variance ++ ": " ++ show count)
+		. reverse . sortBy (comparing snd)
+	calc = filter (\(_variance, count) -> count > 0) . zip [0..]
 
 cachedPresentData :: StatState KeyData
 cachedPresentData = do
@@ -328,7 +339,7 @@ emptyKeyData :: KeyData
 emptyKeyData = KeyData 0 0 0 M.empty
 
 emptyNumCopiesStats :: NumCopiesStats
-emptyNumCopiesStats = NumCopiesStats M.empty
+emptyNumCopiesStats = NumCopiesStats $ V.replicate (maxVariance * 2) 0
 
 foldKeys :: [Key] -> KeyData
 foldKeys = foldl' (flip addKey) emptyKeyData
@@ -346,11 +357,19 @@ addKey key (KeyData count size unknownsize backends) =
 	ks = keySize key
 
 updateNumCopiesStats :: Key -> FilePath -> NumCopiesStats -> Annex NumCopiesStats
-updateNumCopiesStats key file (NumCopiesStats m) = do
-	!variance <- Variance <$> numCopiesCheck file key (-)
-	let !m' = M.insertWith' (+) variance 1 m
-	let !ret = NumCopiesStats m'
+updateNumCopiesStats key file (NumCopiesStats v) = do
+	!variance <- toVariance <$> numCopiesCheck file key (-)
+	let !v' = V.modify (update variance) v
+	let !ret = NumCopiesStats v'
 	return ret
+  where
+  	update variance mv
+		-- ignore really large variances (extremely unlikely)
+		| variance < 0 || variance >= maxVariance * 2 = noop
+		| otherwise = do
+			n <- MV.read mv variance
+			let !n' = n+1
+			MV.write mv variance n'
 
 showSizeKeys :: KeyData -> String
 showSizeKeys d = total ++ missingnote
