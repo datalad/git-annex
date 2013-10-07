@@ -7,6 +7,9 @@ git-annex (4.20131003) UNRELEASED; urgency=low
   * addurl: Better sanitization of generated filenames.
   * Better sanitization of problem characters when generating URL and WORM
     keys.
+  * The control socket path passed to ssh needs to be 17 characters
+    shorter than the maximum unix domain socket length, because ssh
+    appends stuff to it to make a temporary filename. Closes: #725512
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Oct 2013 15:41:24 -0400
 
