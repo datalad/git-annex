@@ -311,15 +311,16 @@ getLocalStatInfo dir = do
 	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats)
 	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats) =
 		ifM (matcher $ FileInfo file file)
-			( (,,)
-				<$> ifM (inAnnex key)
+			( do
+				!presentdata' <- ifM (inAnnex key)
 					( return $ addKey key presentdata
 					, return presentdata
 					)
-				<*> pure (addKey key referenceddata)
-				<*> if fast
+				let !referenceddata' = addKey key referenceddata
+				!numcopiesstats' <- if fast
 					then return numcopiesstats
 					else updateNumCopiesStats key file numcopiesstats
+				return $! (presentdata', referenceddata', numcopiesstats')
 			, return vs
 			)
 
@@ -345,11 +346,11 @@ addKey key (KeyData count size unknownsize backends) =
 	ks = keySize key
 
 updateNumCopiesStats :: Key -> FilePath -> NumCopiesStats -> Annex NumCopiesStats
-updateNumCopiesStats key file stats = do
-	variance <- Variance <$> numCopiesCheck file key (-)
-	return $ stats { numCopiesVarianceMap = update (numCopiesVarianceMap stats) variance }
-  where
-  	update m variance = M.insertWith' (+) variance 1 m
+updateNumCopiesStats key file (NumCopiesStats m) = do
+	!variance <- Variance <$> numCopiesCheck file key (-)
+	let !m' = M.insertWith' (+) variance 1 m
+	let !ret = NumCopiesStats m'
+	return ret
 
 showSizeKeys :: KeyData -> String
 showSizeKeys d = total ++ missingnote
