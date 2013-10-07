@@ -59,6 +59,8 @@ Say that some files on `angela` are actually spread out outside of the `~/mp3` d
     cd ~/mp3
     git annex import ~/music/
 
+(!) Be careful that `~/music` is not a git-annex repository, or this will [[destroy it!|bugs/git annex import destroys a fellow git annex repository]].
+
 Deleting deleted files
 ----------------------
 
