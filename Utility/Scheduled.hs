@@ -9,7 +9,7 @@ module Utility.Scheduled (
 	Schedule(..),
 	Recurrance(..),
 	ScheduledTime(..),
-	Duration(..),
+	NextTime(..),
 	nextTime,
 	fromSchedule,
 	toSchedule,
@@ -28,7 +28,7 @@ import Data.Time.Calendar.OrdinalDate
 import Data.Tuple.Utils
 
 {- Some sort of scheduled event. -}
-data Schedule = Schedule Recurrance ScheduledTime Duration
+data Schedule = Schedule Recurrance ScheduledTime
   deriving (Eq, Read, Show, Ord)
 
 data Recurrance
@@ -53,9 +53,6 @@ data ScheduledTime
 type Hour = Int
 type Minute = Int
 
-data Duration = MinutesDuration Int
-  deriving (Eq, Read, Show, Ord)
-
 {- Next time a Schedule should take effect. The NextTimeWindow is used
  - when a Schedule is allowed to start at some point within the window. -}
 data NextTime
@@ -72,7 +69,7 @@ nextTime schedule lasttime = do
 {- Calculate the next time that fits a Schedule, based on the
  - last time it occurred, and the current time. -}
 calcNextTime :: Schedule -> Maybe LocalTime -> LocalTime -> Maybe NextTime
-calcNextTime (Schedule recurrance scheduledtime _duration) lasttime currenttime
+calcNextTime (Schedule recurrance scheduledtime) lasttime currenttime
 	| scheduledtime == AnyTime = do
 		start <- findfromtoday
 		return $ NextTimeWindow
@@ -196,22 +193,11 @@ toScheduledTime s =
 	let (h, m) = separate (== ':') s
 	in SpecificTime <$> readish h <*> readish m
 
-fromDuration :: Duration -> String
-fromDuration (MinutesDuration n) = show n ++ " minutes"
-
-toDuration :: String -> Maybe Duration
-toDuration s = case words s of
-	(n:"minutes":[]) -> MinutesDuration <$> readish n
-	(n:"minute":[]) -> MinutesDuration <$> readish n
-	_ -> Nothing
-
 fromSchedule :: Schedule -> String
-fromSchedule (Schedule recurrance scheduledtime duration) = unwords
+fromSchedule (Schedule recurrance scheduledtime) = unwords
 	[ fromRecurrance recurrance
 	, "at"
 	, fromScheduledTime scheduledtime
-	, "for"
-	, fromDuration duration
 	]
 
 toSchedule :: String -> Maybe Schedule
@@ -223,22 +209,14 @@ parseSchedule s = do
 		(toRecurrance recurrance)
 	t <- maybe (Left $ "bad time of day: " ++ scheduledtime) Right
 		(toScheduledTime scheduledtime)
-	d <- maybe (Left $ "bad duration: " ++ duration) Right
-		(toDuration duration)
-	Right $ Schedule r t d
+	Right $ Schedule r t
   where
-  	ws = words s
-	(rws, ws') = separate (== "at") ws
-	(tws, dws) = separate (== "for") ws'
+	(rws, tws) = separate (== "at") (words s)
 	recurrance = unwords rws
 	scheduledtime = unwords tws
-	duration = unwords dws
 
 instance Arbitrary Schedule where
-	arbitrary = Schedule <$> arbitrary <*> arbitrary <*> arbitrary
-
-instance Arbitrary Duration where
-	arbitrary = MinutesDuration <$> nonNegative arbitrary
+	arbitrary = Schedule <$> arbitrary <*> arbitrary
 
 instance Arbitrary ScheduledTime where
 	arbitrary = oneof
@@ -265,6 +243,4 @@ instance Arbitrary Recurrance where
 		]
 
 prop_schedule_roundtrips :: Schedule -> Bool
-prop_schedule_roundtrips s = case toSchedule $ fromSchedule s of
-	Just s' | s == s' -> True
-	_ -> False
+prop_schedule_roundtrips s = toSchedule (fromSchedule s) == Just s
