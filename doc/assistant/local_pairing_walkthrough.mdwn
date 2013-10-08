@@ -34,6 +34,14 @@ git-annex folders. Just like that you can share files.
 
 ----
 
+## Requirements
+
+For local pairing to work, you must have sshd (ssh server daemon) installed and working on all machines involved. That means you must allow at least local connections to sshd. On most Linux distributions, sshd is packaged in either openssh (openSUSE) or openssh-server (Debian). 
+
+It is highly recommended that you disable root login and login from outside of your local network. To do this, after installing sshd, edit the sshd config (usually /etc/ssh/sshd_config file). See man sshd_config for details.
+
+## Tips
+
 Something to keep in mind, especially if pairing doesn't seem to be
 working, is that the two computers need to be on the same network for this
 pairing process to work. Sometimes a building will have more than one

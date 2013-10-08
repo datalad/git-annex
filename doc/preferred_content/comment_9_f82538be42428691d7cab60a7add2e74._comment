@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkC0W3ZQERUaTkHoks6k68Tsp1tz510nGo"
+ nickname="Georg"
+ subject="drop only files located in archive"
+ date="2013-10-08T17:53:08Z"
+ content="""
+Is there a way to drop only the files that are located in an \"archive\" directory?
+I want to drop all files when calling
+
+    git annex drop --auto
+
+if I move them to the archive. But I want to keep the files that are outside of the archive, even if they are already present in other repos. As far as I have seen and tested, as soon as I have the files in an other repo all files get dropped, also the ones outside the archive directory. Or do I have to increase \"numcopies\" in order to circumvent the \"(not copies=semitrusted+:1)\" case?
+"""]]
