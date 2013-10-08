@@ -115,23 +115,16 @@ calcNextTime (Schedule recurrance scheduledtime _duration) lasttime currenttime
 				then findnextday r False (addDays 365 day)
 				else Just day
 			| otherwise -> findnextday r False (addDays 1 day)
-		Divisible n r'@Daily
-			| n > 0 && n <= maxyday ->
-				findnextdaywhere r' (divisible n . yday) afterday day
-			| otherwise -> Nothing
-		Divisible n r'@(Weekly _)
-			| n > 0 && n <= maxwnum ->
-				findnextdaywhere r' (divisible n . wnum) afterday day
-			| otherwise -> Nothing
-		Divisible n r'@(Monthly _)
-			| n > 0 && n <= maxmnum -> 
-				findnextdaywhere r' (divisible n . mnum) afterday day
-			| otherwise -> Nothing
-		Divisible n r'@(Yearly _)
-			| n > 0 -> 
-				findnextdaywhere r' (divisible n . year) afterday day
-			| otherwise -> Nothing
+		Divisible n r'@Daily -> handlediv n r' yday (Just maxyday)
+		Divisible n r'@(Weekly _) -> handlediv n r' wnum (Just maxwnum)
+		Divisible n r'@(Monthly _) -> handlediv n r' mnum (Just maxmnum)
+		Divisible n r'@(Yearly _) -> handlediv n r' year Nothing
 		Divisible _ r'@(Divisible _ _) -> findnextday r' afterday day
+	  where
+	  	handlediv n r' getval mmax
+			| n > 0 && maybe True (n <=) mmax =
+				findnextdaywhere r' (divisible n . getval) afterday day
+			| otherwise = Nothing
 	findnextdaywhere r p afterday day
 		| maybe True p d = d
 		| otherwise = maybe d (findnextdaywhere r p True) d
