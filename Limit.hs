@@ -238,7 +238,8 @@ limitSize vs s = case readSize dataUnits s of
 
 addTimeLimit :: String -> Annex ()
 addTimeLimit s = do
-	let seconds = fromMaybe (error "bad time-limit") $ parseDuration s
+	let seconds = maybe (error "bad time-limit") durationToPOSIXTime $
+		parseDuration s
 	start <- liftIO getPOSIXTime
 	let cutoff = start + seconds
 	addLimit $ Right $ const $ const $ do
