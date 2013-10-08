@@ -10,10 +10,14 @@ module Logs.Schedule (
 	scheduleSet,
 	scheduleGet,
 	scheduleMap,
+	getLastRunTimes,
+	setLastRunTime,
 ) where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Time.Clock.POSIX
+import Data.Time.LocalTime
 
 import Common.Annex
 import Types.ScheduledActivity
@@ -37,7 +41,19 @@ scheduleMap = simpleMap
   where
 	parser _uuid = Just . mapMaybe toScheduledActivity . split "; "
 
-scheduleGet :: UUID -> Annex [ScheduledActivity]
+scheduleGet :: UUID -> Annex (S.Set ScheduledActivity)
 scheduleGet u = do
 	m <- scheduleMap
-	return $ fromMaybe [] $ M.lookup u m
+	return $ maybe S.empty S.fromList (M.lookup u m)
+
+getLastRunTimes :: Annex (M.Map ScheduledActivity LocalTime)
+getLastRunTimes = do
+	f <- fromRepo gitAnnexScheduleState
+	liftIO $ fromMaybe M.empty
+		<$> catchDefaultIO Nothing (readish <$> readFile f)
+
+setLastRunTime :: ScheduledActivity -> LocalTime -> Annex ()
+setLastRunTime activity lastrun = do
+	f <- fromRepo gitAnnexScheduleState
+	liftIO . writeFile f . show . M.insert activity lastrun
+		=<< getLastRunTimes

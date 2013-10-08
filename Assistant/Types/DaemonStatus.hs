@@ -62,6 +62,9 @@ data DaemonStatus = DaemonStatus
 	, alertNotifier :: NotificationBroadcaster
 	-- Broadcasts notifications when the syncRemotes change
 	, syncRemotesNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when the scheduleLog changes
+	, scheduleLogNotifier :: NotificationBroadcaster
+	-- Broadcasts a notification once the startup sanity check has run.
 	, startupSanityCheckNotifier :: NotificationBroadcaster
 	-- When the XMPP client is connected, this will contain the XMPP
 	-- address.
@@ -90,6 +93,7 @@ newDaemonStatus = DaemonStatus
 	<*> pure False
 	<*> pure S.empty
 	<*> pure Nothing
+	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster

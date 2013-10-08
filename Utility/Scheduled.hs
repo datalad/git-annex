@@ -29,7 +29,7 @@ import Data.Tuple.Utils
 
 {- Some sort of scheduled event. -}
 data Schedule = Schedule Recurrance ScheduledTime Duration
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Read, Show, Ord)
 
 data Recurrance
 	= Daily
@@ -39,7 +39,7 @@ data Recurrance
 	-- Days, Weeks, or Months of the year evenly divisible by a number.
 	-- (Divisible Year is years evenly divisible by a number.)
 	| Divisible Int Recurrance
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Read, Show, Ord)
 
 type WeekDay = Int
 type MonthDay = Int
@@ -48,20 +48,20 @@ type YearDay = Int
 data ScheduledTime
 	= AnyTime
 	| SpecificTime Hour Minute
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Read, Show, Ord)
 
 type Hour = Int
 type Minute = Int
 
 data Duration = MinutesDuration Int
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Read, Show, Ord)
 
 {- Next time a Schedule should take effect. The NextTimeWindow is used
  - when a Schedule is allowed to start at some point within the window. -}
 data NextTime
 	= NextTimeExactly LocalTime
 	| NextTimeWindow LocalTime LocalTime
-  deriving (Eq, Show)
+  deriving (Eq, Read, Show)
 
 nextTime :: Schedule -> Maybe LocalTime -> IO (Maybe NextTime)
 nextTime schedule lasttime = do

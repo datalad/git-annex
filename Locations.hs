@@ -28,6 +28,7 @@ module Locations (
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
 	gitAnnexFsckState,
+	gitAnnexScheduleState,
 	gitAnnexTransferDir,
 	gitAnnexCredsDir,
 	gitAnnexFeedStateDir,
@@ -191,6 +192,11 @@ gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 {- .git/annex/fsckstate is used to store information about incremental fscks. -}
 gitAnnexFsckState :: Git.Repo -> FilePath
 gitAnnexFsckState r = gitAnnexDir r </> "fsckstate"
+
+{- .git/annex/schedulestate is used to store information about when
+ - scheduled jobs were last run. -}
+gitAnnexScheduleState :: Git.Repo -> FilePath
+gitAnnexScheduleState r = gitAnnexDir r </> "schedulestate"
 
 {- .git/annex/creds/ is used to store credentials to access some special
  - remotes. -}

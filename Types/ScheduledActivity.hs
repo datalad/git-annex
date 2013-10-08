@@ -14,7 +14,7 @@ import Types.UUID
 data ScheduledActivity 
 	= ScheduledSelfFsck Schedule 
 	| ScheduledRemoteFsck UUID Schedule
-  deriving (Eq, Show, Ord)
+  deriving (Eq, Read, Show, Ord)
 
 fromScheduledActivity :: ScheduledActivity -> String
 fromScheduledActivity (ScheduledSelfFsck s) = 
