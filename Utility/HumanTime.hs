@@ -10,13 +10,16 @@ module Utility.HumanTime (
 	durationToPOSIXTime,
 	parseDuration,
 	fromDuration,
+	prop_duration_roundtrips
 ) where
 
 import Utility.PartialPrelude
 import Utility.Applicative
+import Utility.QuickCheck
 
 import Data.Time.Clock.POSIX (POSIXTime)
 import Data.Char
+import Control.Applicative
 import qualified Data.Map as M
 
 newtype Duration = Duration { durationSeconds :: Integer }
@@ -37,14 +40,16 @@ parseDuration = Duration <$$> go 0
 		go (n + num * u) rest
 
 fromDuration :: Duration -> String
-fromDuration = concat . map showunit . go [] units . durationSeconds
+fromDuration Duration { durationSeconds = d }
+	| d == 0 = "0s"
+	| otherwise = concat $ map showunit $ go [] units d
   where
 	showunit (u, n)
 		| n > 0 = show n ++ [u]
 		| otherwise = ""
 	go c [] _ = reverse c
-	go c ((u, n):us) d =
-		let (q,r) = d `quotRem` n
+	go c ((u, n):us) v =
+		let (q,r) = v `quotRem` n
 		in go ((u, q):c) us r
 
 units :: [(Char, Integer)]
@@ -70,3 +75,10 @@ hsecs = msecs * 60
 
 msecs :: Integer
 msecs = 60
+
+-- Durations cannot be negative.
+instance Arbitrary Duration where
+	arbitrary = Duration <$> nonNegative arbitrary
+
+prop_duration_roundtrips :: Duration -> Bool
+prop_duration_roundtrips d = parseDuration (fromDuration d) == Just d
