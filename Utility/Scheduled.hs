@@ -148,7 +148,7 @@ calcNextTime (Schedule recurrance scheduledtime _duration) lasttime currenttime
 	year = fromIntegral . fst . toOrdinalDate
 
 	maxyday = 366 -- with leap days
-	maxwnum = 53 -- some years have more than 53
+	maxwnum = 53 -- some years have more than 52
 	maxmday = 31
 	maxmnum = 12
 	maxwday = 7
