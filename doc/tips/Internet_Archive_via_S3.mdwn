@@ -31,7 +31,7 @@ specify `x-archive-meta*` headers to add metadata as explained in their
 [documentation](http://www.archive.org/help/abouts3.txt).
 
 [[!template id=note text="""
-/!\ There seems to be a bug in either hS3 or the archive that breaks
+/!\ There seems to be a [[bug|bugs/S3 buckets with capital letters breaks authentication]] in either hS3 or the archive that breaks
 authentication when the bucket name contains spaces or upper-case letters..
 use all lowercase and no spaces when making the bucket with `initremote`.
 """]]
