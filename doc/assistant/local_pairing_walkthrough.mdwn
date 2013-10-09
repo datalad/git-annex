@@ -38,7 +38,18 @@ git-annex folders. Just like that you can share files.
 
 For local pairing to work, you must have sshd (ssh server daemon) installed and working on all machines involved. That means you must allow at least local connections to sshd. On most Linux distributions, sshd is packaged in either openssh (openSUSE) or openssh-server (Debian). 
 
-It is highly recommended that you disable root login and login from outside of your local network. To do this, after installing sshd, edit the sshd config (usually /etc/ssh/sshd_config file). See man sshd_config for details.
+It is highly recommended that you disable root login and login from outside of your local network. 
+
+To disable root, after installing sshd, edit the sshd config (usually /etc/ssh/sshd_config file) and disable root login by adding:
+
+    PermitRootLogin no
+
+Restart sshd. See man sshd_config for details.
+
+To restrict login to your local network only (not allow internet users from trying to log into your computer) edit the hosts.deny file (usually /etc/hosts.deny) by adding the following:
+
+    sshd : ALL EXCEPT LOCAL
+
 
 ## Tips
 
