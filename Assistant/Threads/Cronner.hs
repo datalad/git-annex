@@ -122,7 +122,7 @@ secondsUntilLocalTime :: LocalTime -> IO Seconds
 secondsUntilLocalTime t = do
 	now <- getCurrentTime
 	tz <- getTimeZone now
-	let secs = truncate $ diffUTCTime now (localTimeToUTC tz t)
+	let secs = truncate $ diffUTCTime (localTimeToUTC tz t) now
 	return $ if secs > 0
 		then Seconds secs
 		else Seconds 0
