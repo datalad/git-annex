@@ -81,7 +81,7 @@ finishRemovingRemote :: UrlRenderer -> UUID -> Assistant ()
 #ifdef WITH_WEBAPP
 finishRemovingRemote urlrenderer uuid = do
 	desc <- liftAnnex $ Remote.prettyUUID uuid
-	button <- mkAlertButton (T.pack "Finish deletion process") urlrenderer $
+	button <- mkAlertButton True (T.pack "Finish deletion process") urlrenderer $
 		FinishDeleteRepositoryR uuid
 	void $ addAlert $ remoteRemovalAlert desc button
 #else

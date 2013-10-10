@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE DeriveDataTypeable, CPP #-}
 
 module Assistant.Threads.Cronner (
 	cronnerThread
@@ -25,6 +25,11 @@ import qualified Build.SysConfig
 import Assistant.TransferQueue
 import Annex.Content
 import Logs.Transfer
+import Assistant.Types.UrlRenderer
+import Assistant.Alert
+#ifdef WITH_WEBAPP
+import Assistant.WebApp.Types
+#endif
 
 import Control.Concurrent.Async
 import Data.Time.LocalTime
@@ -32,6 +37,7 @@ import Data.Time.Clock
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Control.Exception as E
+import qualified Data.Text as T
 
 {- Loads schedules for this repository, and fires off one thread for each 
  - scheduled event. These threads sleep until the next time the event
@@ -41,8 +47,8 @@ import qualified Control.Exception as E
  - schedules. When there's a change, compare the old and new list of
  - schedules to find deleted and added ones. Start new threads for added
  - ones, and kill the threads for deleted ones. -}
-cronnerThread :: NamedThread
-cronnerThread = namedThreadUnchecked "Cronner" $ do
+cronnerThread :: UrlRenderer -> NamedThread
+cronnerThread urlrenderer = namedThreadUnchecked "Cronner" $ do
 	dstatus <- getDaemonStatus
 	h <- liftIO $ newNotificationHandle False (scheduleLogNotifier dstatus)
 	go h M.empty
@@ -70,7 +76,7 @@ cronnerThread = namedThreadUnchecked "Cronner" $ do
 			(M.filterWithKey (\k _ -> S.member k removedactivities) m)
 		go h m'
   	startactivities as lastruntimes = forM as $ \activity -> do
-		runner <- asIO2 activityThread
+		runner <- asIO2 (activityThread urlrenderer)
 		a <- liftIO $ async $
 			runner activity (M.lookup activity lastruntimes)
 		return (activity, a)
@@ -79,8 +85,8 @@ cronnerThread = namedThreadUnchecked "Cronner" $ do
  - sleep until that time, and run it. Then call setLastRunTime, and
  - loop.
  -}
-activityThread :: ScheduledActivity -> Maybe LocalTime -> Assistant ()
-activityThread activity lasttime = go lasttime =<< getnexttime lasttime
+activityThread :: UrlRenderer -> ScheduledActivity -> Maybe LocalTime -> Assistant ()
+activityThread urlrenderer activity lasttime = go lasttime =<< getnexttime lasttime
   where
   	getnexttime = liftIO . nextTime schedule
   	go _ Nothing = debug ["no scheduled events left for", desc]
@@ -111,7 +117,7 @@ activityThread activity lasttime = go lasttime =<< getnexttime lasttime
 				(localTimeToUTC tz t) > 600
 	run nowt = do
 		debug ["starting", desc]
-		runActivity activity
+		runActivity urlrenderer activity
 		debug ["finished", desc]
 		liftAnnex $ setLastRunTime activity nowt
 		go (Just nowt) =<< getnexttime (Just nowt)
@@ -125,13 +131,23 @@ secondsUntilLocalTime t = do
 		then Seconds secs
 		else Seconds 0
 
-runActivity :: ScheduledActivity -> Assistant ()
-runActivity (ScheduledSelfFsck _ d) = do
+runActivity :: UrlRenderer -> ScheduledActivity -> Assistant ()
+runActivity urlrenderer (ScheduledSelfFsck _ d) = do
 	program <- liftIO $ readProgramFile
-	void $ liftIO $ niceShell $
-		program ++ " fsck --incremental-schedule=1d --time-limit=" ++ fromDuration d
+#ifdef WITH_WEBAPP
+	button <- mkAlertButton False (T.pack "Configure") urlrenderer ConfigFsckR
+	r <- alertDuring (fsckAlert button) $ liftIO $ do
+		E.try (runfsck program) :: IO (Either E.SomeException ExitCode)
+	either (liftIO . E.throwIO) (const noop) r
+#else
+	runfsck program
+#endif
 	queueBad
-runActivity (ScheduledRemoteFsck _ _ _) =
+  where
+  	runfsck program = niceShell $
+		program ++ " fsck --incremental-schedule=1d --time-limit=" ++ fromDuration d
+
+runActivity _ (ScheduledRemoteFsck _ _ _) =
 	debug ["remote fsck not implemented yet"]
 
 queueBad :: Assistant ()

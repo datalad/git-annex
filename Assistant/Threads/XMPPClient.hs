@@ -336,7 +336,7 @@ pairMsgReceived urlrenderer PairReq theiruuid selfjid theirjid
 		finishXMPPPairing theirjid theiruuid
 	-- Show an alert to let the user decide if they want to pair.
 	showalert = do
-		button <- mkAlertButton (T.pack "Respond") urlrenderer $
+		button <- mkAlertButton True (T.pack "Respond") urlrenderer $
 			ConfirmXMPPPairFriendR $
 				PairKey theiruuid $ formatJID theirjid
 		void $ addAlert $ pairRequestReceivedAlert

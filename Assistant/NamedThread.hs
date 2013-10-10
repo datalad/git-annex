@@ -76,7 +76,7 @@ startNamedThread urlrenderer (NamedThread afterstartupsanitycheck name a) = do
 					]
 				hPutStrLn stderr msg
 #ifdef WITH_WEBAPP
-				button <- runAssistant d $ mkAlertButton
+				button <- runAssistant d $ mkAlertButton True
 					(T.pack "Restart Thread")
 					urlrenderer 
 					(RestartThreadR name)

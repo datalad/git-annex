@@ -134,7 +134,7 @@ startDaemon assistant foreground listenhost startbrowser = do
 			, assist $ netWatcherThread
 			, assist $ netWatcherFallbackThread
 			, assist $ transferScannerThread urlrenderer
-			, assist $ cronnerThread
+			, assist $ cronnerThread urlrenderer
 			, assist $ configMonitorThread
 			, assist $ glacierThread
 			, watch $ watchThread
