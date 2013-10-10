@@ -29,12 +29,6 @@ import Data.Time.Clock
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Control.Exception as E
-import Data.Typeable
-
-data ActivityException = PleaseTerminate
-	deriving (Typeable, Show)
-
-instance E.Exception ActivityException
 
 {- Loads schedules for this repository, and fires off one thread for each 
  - scheduled event. These threads sleep until the next time the event
@@ -43,8 +37,7 @@ instance E.Exception ActivityException
  - In the meantime the main thread waits for any changes to the
  - schedules. When there's a change, compare the old and new list of
  - schedules to find deleted and added ones. Start new threads for added
- - ones, and send the threads a PleaseTerminate exception for the deleted
- - ones. -}
+ - ones, and kill the threads for deleted ones. -}
 cronnerThread :: NamedThread
 cronnerThread = namedThreadUnchecked "Cronner" $ do
 	dstatus <- getDaemonStatus
@@ -57,13 +50,18 @@ cronnerThread = namedThreadUnchecked "Cronner" $ do
 		let addedactivities = activities `S.difference` M.keysSet m
 		let removedactivities = M.keysSet m `S.difference` activities
 
-		liftIO $ forM_ (mapMaybe (`M.lookup` m) $ S.toList removedactivities) $ 
-			flip cancelWith PleaseTerminate
+		forM_ (S.toList removedactivities) $ \activity ->
+			case M.lookup activity m of
+				Just a -> do
+					debug ["stopping removed job for", fromScheduledActivity activity, show (asyncThreadId a)]
+					liftIO $ cancel a
+				Nothing -> noop
 
 		lastruntimes <- liftAnnex getLastRunTimes
 		addedm <- M.fromList <$> startactivities (S.toList addedactivities) lastruntimes
 
 		liftIO $ waitNotification h
+		debug ["reloading changed activities"]
 
 		let m' = M.difference (M.union addedm m)
 			(M.filterWithKey (\k _ -> S.member k removedactivities) m)
@@ -77,9 +75,6 @@ cronnerThread = namedThreadUnchecked "Cronner" $ do
 {- Calculate the next time the activity is scheduled to run, then
  - sleep until that time, and run it. Then call setLastRunTime, and
  - loop.
- -
- - At any point, a PleaseTerminate could be received. This should result in
- - the thread and any processes it has run shutting down.
  -}
 activityThread :: ScheduledActivity -> Maybe LocalTime -> Assistant ()
 activityThread activity lasttime = go lasttime =<< getnexttime lasttime
@@ -128,18 +123,30 @@ secondsUntilLocalTime t = do
 		else Seconds 0
 
 runActivity :: ScheduledActivity -> Assistant ()
-runActivity (ScheduledSelfFsck _ d) = do
-	program <- liftIO $ readProgramFile
-	void $ liftIO $ niceShell $
+runActivity (ScheduledSelfFsck _ d) = liftIO $ do
+	program <- readProgramFile
+	void $ niceShell $
 		program ++ " fsck --incremental-schedule=1d --time-limit=" ++ fromDuration d
 runActivity (ScheduledRemoteFsck _ _ _) =
 	debug ["remote fsck not implemented yet"]
 
-niceShell :: String -> IO Bool
-niceShell command = boolSystem "sh"
-	[ Param "-c"
-	, Param nicedcommand
-	]
+{- Runs a shell command niced, until it terminates.
+ - 
+ - When an async exception is received, the command is sent a SIGTERM,
+ - and after it finishes shutting down the exception is re-raised.  -}
+niceShell :: String -> IO ExitCode
+niceShell command = do
+	(_, _, _, pid) <- createProcess $ proc "sh"
+		[ "-c"
+		, "exec " ++ nicedcommand
+		]
+	r <- E.try (waitForProcess pid) :: IO (Either E.SomeException ExitCode)
+	case r of
+		Right exitcode -> return exitcode
+		Left asyncexception -> do
+			terminateProcess pid
+			void $ waitForProcess pid
+			E.throwIO asyncexception
   where
   	nicedcommand
 		| Build.SysConfig.nice = "nice " ++ command
