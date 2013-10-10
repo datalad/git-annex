@@ -22,6 +22,9 @@ import Types.ScheduledActivity
 import Utility.ThreadScheduler
 import Utility.HumanTime
 import qualified Build.SysConfig
+import Assistant.TransferQueue
+import Annex.Content
+import Logs.Transfer
 
 import Control.Concurrent.Async
 import Data.Time.LocalTime
@@ -123,12 +126,18 @@ secondsUntilLocalTime t = do
 		else Seconds 0
 
 runActivity :: ScheduledActivity -> Assistant ()
-runActivity (ScheduledSelfFsck _ d) = liftIO $ do
-	program <- readProgramFile
-	void $ niceShell $
+runActivity (ScheduledSelfFsck _ d) = do
+	program <- liftIO $ readProgramFile
+	void $ liftIO $ niceShell $
 		program ++ " fsck --incremental-schedule=1d --time-limit=" ++ fromDuration d
+	queueBad
 runActivity (ScheduledRemoteFsck _ _ _) =
 	debug ["remote fsck not implemented yet"]
+
+queueBad :: Assistant ()
+queueBad = mapM_ queue =<< liftAnnex (dirKeys gitAnnexBadDir)
+  where
+	queue k = queueTransfers "fsck found bad file; redownloading" Next k Nothing Download
 
 {- Runs a shell command niced, until it terminates.
  - 

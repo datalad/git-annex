@@ -304,7 +304,7 @@ withKeysReferencedInGitRef a ref = do
  -}
 staleKeysPrune :: (Git.Repo -> FilePath) -> Bool -> Annex [Key]
 staleKeysPrune dirspec nottransferred = do
-	contents <- staleKeys dirspec
+	contents <- dirKeys dirspec
 	
 	dups <- filterM inAnnex contents
 	let stale = contents `exclude` dups
@@ -318,18 +318,6 @@ staleKeysPrune dirspec nottransferred = do
 				<$> getTransfers
 			return $ filter (`S.notMember` inprogress) stale
 		else return stale
-
-staleKeys :: (Git.Repo -> FilePath) -> Annex [Key]
-staleKeys dirspec = do
-	dir <- fromRepo dirspec
-	ifM (liftIO $ doesDirectoryExist dir)
-		( do
-			contents <- liftIO $ getDirectoryContents dir
-			files <- liftIO $ filterM doesFileExist $
-				map (dir </>) contents
-			return $ mapMaybe (fileKey . takeFileName) files
-		, return []
-		)
 
 data UnusedMaps = UnusedMaps
 	{ unusedMap :: UnusedMap
