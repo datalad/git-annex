@@ -131,7 +131,7 @@ runActivity :: ScheduledActivity -> Assistant ()
 runActivity (ScheduledSelfFsck _ d) = do
 	program <- liftIO $ readProgramFile
 	void $ liftIO $ niceShell $
-		program ++ " fsck --incremental-schedule=1d --duration=" ++ fromDuration d
+		program ++ " fsck --incremental-schedule=1d --time-limit=" ++ fromDuration d
 runActivity (ScheduledRemoteFsck _ _ _) =
 	debug ["remote fsck not implemented yet"]
 
