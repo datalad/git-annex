@@ -185,7 +185,9 @@ toRecurrance s = case words s of
 
 fromScheduledTime :: ScheduledTime -> String
 fromScheduledTime AnyTime = "any time"
-fromScheduledTime (SpecificTime h m) = show h ++ ":" ++ show m
+fromScheduledTime (SpecificTime h m) = show h ++ ":" ++ pad 2 (show m)
+  where
+  	pad n s = take (n - length s) (repeat '0') ++ s
 
 toScheduledTime :: String -> Maybe ScheduledTime
 toScheduledTime "any time" = Just AnyTime
