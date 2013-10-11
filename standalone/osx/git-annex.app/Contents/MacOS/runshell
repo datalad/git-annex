@@ -21,9 +21,6 @@ if [ ! -e "$bundle/git" ]; then
 	echo "** bundle directory $bundle does not contain git" >&2
 	exit 1
 fi
-if [ -n "$GIT_ANNEX_STANDLONE_ENV" ]; then
-	echo "** runshell loop detected!" >&2
-fi
 
 # Get absolute path to base, to avoid breakage when things change directories.
 orig="$(pwd)"
