@@ -1,0 +1,9 @@
+#{msg}
+<p>
+  <div .input-prepend .input-append>
+    Check this repository for #
+    ^{fvInput durationView} minutes #
+    starting at ^{fvInput timeView}
+    ^{fvInput recurranceView}
+    <button type=submit .btn .btn-primary>
+      Add

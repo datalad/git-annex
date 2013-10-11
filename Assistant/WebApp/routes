@@ -19,7 +19,7 @@
 /config/xmpp/for/self XMPPConfigForPairSelfR GET POST
 /config/xmpp/for/frield XMPPConfigForPairFriendR GET POST
 /config/xmpp/needcloudrepo/#UUID NeedCloudRepoR GET
-/config/fsck ConfigFsckR GET
+/config/fsck ConfigFsckR GET POST
 
 /config/addrepository AddRepositoryR GET
 /config/repository/new NewRepositoryR GET POST
