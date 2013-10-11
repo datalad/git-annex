@@ -70,7 +70,7 @@ data StatInfo = StatInfo
 type StatState = StateT StatInfo Annex
 
 def :: [Command]
-def = [command "status" paramPaths seek
+def = [noCommit $ command "status" paramPaths seek
 	SectionQuery "shows status information about the annex"]
 
 seek :: [CommandSeek]
