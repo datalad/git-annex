@@ -9,10 +9,14 @@
 
 module Utility.Batch where
 
+import Common
+import qualified Build.SysConfig
+
 #if defined(linux_HOST_OS) || defined(__ANDROID__)
 import Control.Concurrent.Async
 import System.Posix.Process
 #endif
+import qualified Control.Exception as E
 
 {- Runs an operation, at batch priority.
  -
@@ -38,3 +42,27 @@ batch a = a
 
 maxNice :: Int
 maxNice = 19
+
+{- Runs a command in a way that's suitable for batch jobs.
+ - The command is run niced. If the calling thread receives an async
+ - exception, it sends the command a SIGTERM, and after the command
+ - finishes shuttting down, it re-raises the async exception. -}
+batchCommand :: String -> [CommandParam] -> IO Bool
+batchCommand command params = do
+	(_, _, _, pid) <- createProcess $ proc "sh"
+		[ "-c"
+		, "exec " ++ nicedcommand
+		]
+	r <- E.try (waitForProcess pid) :: IO (Either E.SomeException ExitCode)
+	case r of
+		Right ExitSuccess -> return True
+		Right _ -> return False
+		Left asyncexception -> do
+			terminateProcess pid
+			void $ waitForProcess pid
+			E.throwIO asyncexception
+  where
+  	commandline = unwords $ map shellEscape $ command : toCommand params
+  	nicedcommand
+		| Build.SysConfig.nice = "nice " ++ commandline
+		| otherwise = commandline

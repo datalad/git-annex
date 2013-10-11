@@ -15,6 +15,7 @@ import Assistant.Alert.Utility
 import qualified Remote
 import Utility.Tense
 import Logs.Transfer
+import Git.Remote (RemoteName)
 
 import Data.String
 import qualified Data.Text as T
@@ -149,9 +150,11 @@ sanityCheckFixAlert msg = Alert
 	alerthead = "The daily sanity check found and fixed a problem:"
 	alertfoot = "If these problems persist, consider filing a bug report."
 
-fsckAlert :: AlertButton -> Alert
-fsckAlert button = baseActivityAlert
-	{ alertData = [ UnTensed "Consistency check in progress" ]
+fsckAlert :: AlertButton -> Maybe RemoteName -> Alert
+fsckAlert button n = baseActivityAlert
+	{ alertData = case n of
+		Nothing -> [ UnTensed $ T.pack $ "Consistency check in progress" ]
+		Just remotename -> [ UnTensed $ T.pack $ "Consistency check of " ++ remotename ++ " in progress"]
 	, alertButton = Just button
 	}
 

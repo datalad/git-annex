@@ -16,6 +16,7 @@ module Remote (
 	hasKey,
 	hasKeyCheap,
 	whereisKey,
+	remoteFsck,
 
 	remoteTypes,
 	remoteList,

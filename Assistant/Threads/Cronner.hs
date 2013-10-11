@@ -21,15 +21,17 @@ import Utility.Scheduled
 import Types.ScheduledActivity
 import Utility.ThreadScheduler
 import Utility.HumanTime
-import qualified Build.SysConfig
+import Utility.Batch
 import Assistant.TransferQueue
 import Annex.Content
 import Logs.Transfer
 import Assistant.Types.UrlRenderer
 import Assistant.Alert
+import Remote
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
 #endif
+import Git.Remote (RemoteName)
 
 import Control.Concurrent.Async
 import Data.Time.LocalTime
@@ -134,45 +136,44 @@ secondsUntilLocalTime t = do
 runActivity :: UrlRenderer -> ScheduledActivity -> Assistant ()
 runActivity urlrenderer (ScheduledSelfFsck _ d) = do
 	program <- liftIO $ readProgramFile
+	void $ runFsck urlrenderer Nothing $
+  		batchCommand program (Param "fsck" : fsckParams d)
+	mapM_ reget =<< liftAnnex (dirKeys gitAnnexBadDir)
+  where
+	reget k = queueTransfers "fsck found bad file; redownloading" Next k Nothing Download
+runActivity urlrenderer (ScheduledRemoteFsck u s d) = go =<< liftAnnex (remoteFromUUID u)
+  where
+	go (Just r) = void $ case Remote.remoteFsck r of
+		Nothing -> void $ runFsck urlrenderer (Just $ Remote.name r) $ do
+			program <- readProgramFile
+			batchCommand program $ 
+				[ Param "fsck"
+				-- avoid downloading files
+				, Param "--fast"
+				, Param "--from"
+				, Param $ Remote.name r
+				] ++ fsckParams d
+		Just mkfscker ->
+			{- Note that having mkfsker return an IO action
+			 - avoids running a long duration fsck in the
+			 - Annex monad. -}
+			void . runFsck urlrenderer (Just $ Remote.name r)
+				=<< liftAnnex (mkfscker (fsckParams d))
+	go Nothing = debug ["skipping remote fsck of uuid without a configured remote", fromUUID u, fromSchedule s]
+
+runFsck :: UrlRenderer -> Maybe RemoteName -> IO Bool -> Assistant Bool
+runFsck urlrenderer remotename a = do
 #ifdef WITH_WEBAPP
 	button <- mkAlertButton False (T.pack "Configure") urlrenderer ConfigFsckR
-	r <- alertDuring (fsckAlert button) $ liftIO $ do
-		E.try (runfsck program) :: IO (Either E.SomeException ExitCode)
-	either (liftIO . E.throwIO) (const noop) r
+	r <- alertDuring (fsckAlert button remotename) $ liftIO $ do
+		E.try a :: IO (Either E.SomeException Bool)
+	either (liftIO . E.throwIO) return r
 #else
-	runfsck program
+	a
 #endif
-	queueBad
-  where
-  	runfsck program = niceShell $
-		program ++ " fsck --incremental-schedule=1d --time-limit=" ++ fromDuration d
 
-runActivity _ (ScheduledRemoteFsck _ _ _) =
-	debug ["remote fsck not implemented yet"]
-
-queueBad :: Assistant ()
-queueBad = mapM_ queue =<< liftAnnex (dirKeys gitAnnexBadDir)
-  where
-	queue k = queueTransfers "fsck found bad file; redownloading" Next k Nothing Download
-
-{- Runs a shell command niced, until it terminates.
- - 
- - When an async exception is received, the command is sent a SIGTERM,
- - and after it finishes shutting down the exception is re-raised.  -}
-niceShell :: String -> IO ExitCode
-niceShell command = do
-	(_, _, _, pid) <- createProcess $ proc "sh"
-		[ "-c"
-		, "exec " ++ nicedcommand
-		]
-	r <- E.try (waitForProcess pid) :: IO (Either E.SomeException ExitCode)
-	case r of
-		Right exitcode -> return exitcode
-		Left asyncexception -> do
-			terminateProcess pid
-			void $ waitForProcess pid
-			E.throwIO asyncexception
-  where
-  	nicedcommand
-		| Build.SysConfig.nice = "nice " ++ command
-		| otherwise = command
+fsckParams :: Duration -> [CommandParam]
+fsckParams d =
+	[ Param "--incremental-schedule=1d"
+	, Param $ "--time-limit=" ++ fromDuration d
+	]
