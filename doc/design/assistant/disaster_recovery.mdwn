@@ -24,7 +24,7 @@ check that nothing else is using it, fix the problem, and redo the commit.
 
 ## incremental fsck
 
-TODO: Add webapp UI to enable incremental fsck
+Add webapp UI to enable incremental fsck **done**
 
 Of course, incremental fsck will run as an niced (and ioniced) background
 job. There will need to be a button in the webapp to stop it, in case it's
@@ -33,8 +33,16 @@ annoying. **done**
 When fsck finds a damanged file, queue a download of the file from a
 remote. **done**
 
-TODO: If no accessible remote has the file, prompt the user to eg, connect
-a drive containing it
+TODO: If no accessible remote has a file that fsck reported missing,
+prompt the user to eg, connect a drive containing it. Or perhaps this is a
+special case of a general problem, and the webapp should prompt the user
+when any desired file is available on a remote that's not mounted?
+
+TODO: Detect when a removable drive is connected in the Cronner, and check
+and try to run its remote fsck jobs.
+
+TODO: git-annex-shell fsck support, which would allow cheap fast fscks
+of ssh remotes.
 
 ## git-annex-shell remote fsck
 
