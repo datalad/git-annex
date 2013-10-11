@@ -13,7 +13,7 @@
     <p>
       Currently scheduled checks:
       $forall check <- checks
-        ^{fsckForm False check}
+        ^{showFsckForm False check}
   <p>
     Add a check:
-    ^{fsckForm True defaultFsck}
+    ^{showFsckForm True defaultFsck}

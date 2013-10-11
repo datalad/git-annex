@@ -1,7 +1,7 @@
 #{msg}
 <p>
   <div .input-prepend .input-append>
-    Check this repository for #
+    Check ^{fvInput reposView} for #
     ^{fvInput durationView} minutes #
     ^{fvInput recurranceView} #
     starting at ^{fvInput timeView} #
@@ -13,4 +13,3 @@
         Save
       <a .btn href="@{RemoveActivityR u activity}">
         Remove
-
