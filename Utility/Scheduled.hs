@@ -12,6 +12,10 @@ module Utility.Scheduled (
 	NextTime(..),
 	nextTime,
 	fromSchedule,
+	fromScheduledTime,
+	toScheduledTime,
+	fromRecurrance,
+	toRecurrance,
 	toSchedule,
 	parseSchedule,
 	prop_schedule_roundtrips
@@ -26,6 +30,7 @@ import Data.Time.Calendar
 import Data.Time.Calendar.WeekDate
 import Data.Time.Calendar.OrdinalDate
 import Data.Tuple.Utils
+import Data.Char
 
 {- Some sort of scheduled event. -}
 data Schedule = Schedule Recurrance ScheduledTime
@@ -185,15 +190,34 @@ toRecurrance s = case words s of
 
 fromScheduledTime :: ScheduledTime -> String
 fromScheduledTime AnyTime = "any time"
-fromScheduledTime (SpecificTime h m) = show h ++ ":" ++ pad 2 (show m)
+fromScheduledTime (SpecificTime h m) = 
+	show h' ++ (if m > 0 then ":" ++ pad 2 (show m) else "") ++ " " ++ ampm
   where
   	pad n s = take (n - length s) (repeat '0') ++ s
+	(h', ampm)
+		| h == 0 = (12, "AM")
+		| h < 12 = (h, "AM")
+		| h == 12 = (h, "PM")
+		| otherwise = (h - 12, "PM")
 
 toScheduledTime :: String -> Maybe ScheduledTime
 toScheduledTime "any time" = Just AnyTime
-toScheduledTime s =
-	let (h, m) = separate (== ':') s
-	in SpecificTime <$> readish h <*> readish m
+toScheduledTime v = case words v of
+	(s:ampm:[])
+		| map toUpper ampm == "AM" ->
+			go s (\h -> if h == 12 then 0 else h)
+		| map toUpper ampm == "PM" ->
+			go s (+ 12)
+		| otherwise -> Nothing
+	(s:[]) -> go s id
+	_ -> Nothing
+  where
+  	go :: String -> (Int -> Int) -> Maybe ScheduledTime
+	go s adjust =
+		let (h, m) = separate (== ':') s
+		in SpecificTime
+			<$> (adjust <$> readish h)
+			<*> if null m then Just 0 else readish m
 
 fromSchedule :: Schedule -> String
 fromSchedule (Schedule recurrance scheduledtime) = unwords
