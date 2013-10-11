@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="72.0.72.144"
+ subject="still a bug, filed separately!"
+ date="2013-10-11T18:49:06Z"
+ content="""
+Aaah, of course, sorry for the noise here. It turns out that this is *not* because the filesize (or even the checksum, for that matter) are different, so there's clearly a bug there, and i filed it in [[bugs/addurl_fails_on_the_internet_archive]]. Thanks!
+"""]]
