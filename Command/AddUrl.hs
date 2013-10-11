@@ -124,14 +124,16 @@ perform relaxed url file = ifAnnexed file addurl geturl
 			next $ return True
 		| otherwise = do
 			headers <- getHttpHeaders
-			ifM (Url.withUserAgent $ Url.check url headers $ keySize key)
-				( do
+			(exists, samesize) <- Url.withUserAgent $ Url.check url headers $ keySize key
+			if exists && samesize
+				then do
 					setUrlPresent key url
 					next $ return True
-				, do
-					warning $ "failed to verify url exists: " ++ url
+				else do
+					warning $ if exists
+						then "url does not have expected file size (use --relaxed to bypass this check) " ++ url
+						else "failed to verify url exists: " ++ url
 					stop
-				)
 
 addUrlFile :: Bool -> URLString -> FilePath -> Annex Bool
 addUrlFile relaxed url file = do

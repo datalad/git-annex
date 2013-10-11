@@ -13,6 +13,8 @@ git-annex (4.20131003) UNRELEASED; urgency=low
   * status: Fix space leak in local mode, introduced in version 4.20130920.
   * import: Skip .git directories.
   * Remove bogus runshell loop check.
+  * addurl: Improve message when adding url with wrong size to existing file.
+  * Fixed handling of URL keys that have no recorded size.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Oct 2013 15:41:24 -0400
 

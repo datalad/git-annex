@@ -118,7 +118,7 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 #endif
 		DefaultDownloader -> do
 			headers <- getHttpHeaders
-			Right <$> Url.withUserAgent (Url.check u' headers $ keySize key)
+			Right <$> Url.withUserAgent (Url.checkBoth u' headers $ keySize key)
   where
   	firsthit [] miss _ = return miss
 	firsthit (u:rest) _ a = do
