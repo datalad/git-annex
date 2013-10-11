@@ -19,9 +19,6 @@ if [ ! -e "$base/bin/git" ]; then
 	echo "** base directory $base does not contain bin/git" >&2
 	exit 1
 fi
-if [ -n "$GIT_ANNEX_STANDLONE_ENV" ]; then
-	echo "** runshell loop detected!" >&2
-fi
 
 # Get absolute path to base, to avoid breakage when things change directories.
 orig="$(pwd)"

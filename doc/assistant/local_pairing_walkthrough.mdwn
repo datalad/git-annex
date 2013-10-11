@@ -34,6 +34,36 @@ git-annex folders. Just like that you can share files.
 
 ----
 
+## Requirements
+
+For local pairing to work, you must have sshd (ssh server daemon) installed and working on all machines involved. That means you must allow at least local connections to sshd. On most Linux distributions, sshd is packaged in either openssh (openSUSE) or openssh-server (Debian). 
+
+It is highly recommended that you disable root login, disable password login to sshd and just enable key based authentication instead. No one will be able to login without your key.
+
+To disable root, after installing sshd, edit the sshd config (usually /etc/ssh/sshd_config file) and disable root login by adding:
+
+    PermitRootLogin no
+
+Restart sshd. See man sshd_config for details.
+
+To disable password login and enable key based authentication, edit the sshd config (just like above) by uncommenting and changing the following options:
+
+    ChallengeResponseAuthentication no
+    PasswordAuthentication no
+    UsePAM no
+    
+    PubkeyAuthentication yes
+
+Restart sshd. See man sshd_config for details.
+
+You can also restrict login to your local network only (not allow internet users from trying to log into your computer). Edit the hosts.deny file (usually /etc/hosts.deny) by adding the following:
+
+    sshd : ALL EXCEPT LOCAL
+
+Do note that restricting login to your local network may or may not block git-annex. Also note that this will not work on Mac OSX because Apple decided to disable this feature and replace it with a crippled version made by Apple.
+
+## Tips
+
 Something to keep in mind, especially if pairing doesn't seem to be
 working, is that the two computers need to be on the same network for this
 pairing process to work. Sometimes a building will have more than one

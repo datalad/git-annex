@@ -241,7 +241,7 @@ inAnnex r key
   where
 	checkhttp headers = do
 		showChecking r
-		ifM (anyM (\u -> Url.withUserAgent $ Url.check u headers (keySize key)) (keyUrls r key))
+		ifM (anyM (\u -> Url.withUserAgent $ Url.checkBoth u headers (keySize key)) (keyUrls r key))
 			( return $ Right True
 			, return $ Left "not found"
 			)

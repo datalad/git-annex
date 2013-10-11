@@ -11,6 +11,7 @@ module Utility.Url (
 	URLString,
 	UserAgent,
 	check,
+	checkBoth,
 	exists,
 	download,
 	downloadQuiet
@@ -32,12 +33,18 @@ type UserAgent = String
 
 {- Checks that an url exists and could be successfully downloaded,
  - also checking that its size, if available, matches a specified size. -}
-check :: URLString -> Headers -> Maybe Integer -> Maybe UserAgent -> IO Bool
+checkBoth :: URLString -> Headers -> Maybe Integer -> Maybe UserAgent -> IO Bool
+checkBoth url headers expected_size ua = do
+	v <- check url headers expected_size ua
+	return (fst v && snd v)
+check :: URLString -> Headers -> Maybe Integer -> Maybe UserAgent -> IO (Bool, Bool)
 check url headers expected_size = handle <$$> exists url headers
   where
-	handle (False, _) = False
-	handle (True, Nothing) = True
-	handle (True, s) = expected_size == s
+	handle (False, _) = (False, False)
+	handle (True, Nothing) = (True, True)
+	handle (True, s) = case expected_size of
+		Just _ -> (True, expected_size == s)
+		Nothing -> (True, True)
 
 {- Checks that an url exists and could be successfully downloaded,
  - also returning its size if available. 

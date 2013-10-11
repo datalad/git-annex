@@ -8,10 +8,14 @@ Here are some ways you can use this awesome stuff..
 
 [[!toc ]]
 
+This page will show how to set it up at the command line, but the git-annex
+[[assistant]] can also be used to help you set up encrypted git
+repositories.
+
 ## prerequisites
 
 * Install
-[git-remote-gcrypt](https://github.com/blake2-ppc/git-remote-gcrypt/)
+[git-remote-gcrypt](https://github.com/joeyh/git-remote-gcrypt/)
 * Install git-annex version 4.20130909 or newer.
 
 ## encrypted backup drive

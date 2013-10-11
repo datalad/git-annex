@@ -24,17 +24,17 @@ check that nothing else is using it, fix the problem, and redo the commit.
 
 ## incremental fsck
 
-Add webapp UI to enable incremental fsck, and choose when to start and how
-long to run each day, and what the goal is (ie, to fsck all files once
-per month).
+TODO: Add webapp UI to enable incremental fsck
 
 Of course, incremental fsck will run as an niced (and ioniced) background
 job. There will need to be a button in the webapp to stop it, in case it's
-annoying.
+annoying. **done**
 
 When fsck finds a damanged file, queue a download of the file from a
-remote. If no accessible remote has the file, prompt the user to eg, connect
-a drive containing it.
+remote. **done**
+
+TODO: If no accessible remote has the file, prompt the user to eg, connect
+a drive containing it
 
 ## git-annex-shell remote fsck
 

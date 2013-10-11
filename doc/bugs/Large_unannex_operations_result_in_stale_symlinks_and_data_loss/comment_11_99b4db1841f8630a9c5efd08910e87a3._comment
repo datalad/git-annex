@@ -1,0 +1,104 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmVV_nBwlsyCv53BXoJt8YpCX_wZPfzpyo"
+ nickname="Peter"
+ subject="Productive Annoyance"
+ date="2013-10-10T04:30:47Z"
+ content="""
+Ok, so I'm annoyed by this enough (and desperate enough to want to get my data back) that I wrote up a few scripts to help with this.  I make no claims regarding how well these will work, but they seem to work with some minimal testing on a Fedora 17 machine.
+
+READ THROUGH THESE SCRIPTS BEFORE RUNNING THEM TO MAKE SURE YOU ARE OK WITH WHAT THEY ARE DOING!!!
+
+First, a script to create a bad git-annex: one with missing files (with a few corner case names) after a git unannex. Specify the directory you'd like to make the annex at the top of the file.  ALL CONTENTS OF THIS DIRECTORY WILL BE REMOVED!!! 
+
+	#!/bin/bash
+
+	#This is the folder you'd like to create and unannex
+	FOLDERTOUNANNEX='/tmp/badAnnex'
+
+	pushd .
+
+	if [ ! -d \"$FOLDERTOUNANNEX\" ] ; then
+		mkdir \"$FOLDERTOUNANNEX\"
+	fi
+
+	cd \"$FOLDERTOUNANNEX\"
+
+	rm -rf *
+
+	mkdir subdir
+	echo \"hi\" > 1one.txt
+	echo \"hi\" > 2two.txt
+	echo \"hi\" > \"3thr re ee.boo\"
+	echo \"hi\" > \"4f o u r.boo\"
+	echo \"hi\" > 5
+	echo \"hi\" > \"6\"
+	echo \"hi\" > \"subdir/7\"
+	echo \"hi\" > \"subdir/8.cat\"
+	echo \"hi\" > \"subdir/9.cat\"
+
+	echo \"* annex.backend=SHA512E\" > .gitattributes
+
+	chmod g-r 5 6
+	chmod o-r 6
+
+	ls -la
+
+	git init
+	git annex init \"stupid\"
+	git annex add *
+	ls -la
+	git annex unannex *
+	ls -la
+
+	popd
+
+
+Then, a script to recover the files left missing by the above script.  Note this might be very slow as it has to generate SHA512 hashes for all the files in your annex.  Again, change the paths at the top of this file to work in your environment:
+
+	#!/bin/bash
+
+	#Set this to some place outside your annex, where we can store our hashes while we search for them
+	#It will be fastest if this is on a different physical disk than the annexed folder
+	#You can manually delete the file afterwards
+	HASHFILE='/backup3/tmp.sha'
+	#This is the folder you'd like to unannex
+	FOLDERTOUNANNEX='/tmp/badAnnex'
+
+
+
+
+	HASHLEN=128
+
+	pushd .
+	cd \"$FOLDERTOUNANNEX\"
+
+	find \"$FOLDERTOUNANNEX\" ! -path '*.git*' -exec sha512sum \{\} \; > \"$HASHFILE\"
+
+	find -L \"$FOLDERTOUNANNEX\" -type l | while read BROKENFILE; do
+		POINTSTO=`file \"$BROKENFILE\" | sed -r 's/^.*broken symbolic link to .(.*).$/\1/g'`
+		
+		HASH=`echo \"$POINTSTO\" | sed -r \"s/^.*--([^-\/.]{$HASHLEN}).*$/\1/g\"`
+
+		EXT=`echo \"$POINTSTO\" | sed -r \"s/^.*--[^-\/.]{$HASHLEN}(.[^.]+)?$/\1/g\"`
+		
+		echo \"-\"
+		echo \"FILE:$BROKENFILE\"
+		echo \"POINTSTO:$POINTSTO\"
+		echo \"HASH:$HASH\"
+		echo \"EXT:$EXT\"
+		
+		SOURCEFILE=`grep $HASH $HASHFILE | grep -m 1 \"$EXT\" | sed -r \"s/^.{$HASHLEN}  (.*)$/\1/g\"`
+		
+		echo \"SOURCEFILE:$SOURCEFILE\"
+		if [ -f \"$SOURCEFILE\" ];
+		then
+			cp --backup --suffix=\"~GIT_ANNEX_IS_DANGEROUS~\" -a \"$SOURCEFILE\" \"$BROKENFILE\"
+		else
+			echo \"ERROR: Cant find sourcefile\"
+		fi
+	done;
+
+	popd
+
+I have not yet run this repair script on my rather large broken annex.  I cannot seem to figure out how to restore file ownership and permissions which seem to have been lost when the second file is just linked to the matching previously annexed file (note: this is visible after \"fixing\" the bad annex created by the first script above in that after \"fixing\" file \"6\" is readable by other, whereas originally he was NOT readable by other.  The permissions of 6 have been copied from 5.)  Any thoughts or improvements on this are appreciated. 
+"""]]

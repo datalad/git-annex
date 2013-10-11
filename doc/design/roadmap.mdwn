@@ -5,7 +5,7 @@ Now in the
 (starting September 2013).
 
 * Month 1 [[!traillink assistant/encrypted_git_remotes]]
-* Month 2 [[!traillink assistant/disaster_recovery]]
+* **Month 2 [[!traillink assistant/disaster_recovery]]**
 * Month 3 user-driven features and polishing
 * Month 4 improve special remote interface & git-annex enhancement contest
 * Month 5 [[!traillink assistant/xmpp_security]]

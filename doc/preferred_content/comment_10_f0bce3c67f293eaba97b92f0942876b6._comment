@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.22"
+ subject="comment 10"
+ date="2013-10-11T17:12:00Z"
+ content="""
+Georg, `drop --auto` will only drop files that are not preferred content. I'd need to know what preferred content expression you're using to say more.
+"""]]

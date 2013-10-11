@@ -31,4 +31,4 @@ of Bath CS department.
 Eskild Hustvedt has contributed a
 [gitannex-install](https://github.com/zerodogg/scriptbucket/blob/master/gitannex-install)
 script to manage keeping up to date with new releases using the standalone
-built.
+build.
