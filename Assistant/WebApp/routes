@@ -84,6 +84,10 @@
 /config/repository/delete/finish/#UUID FinishDeleteRepositoryR GET
 /config/repository/delete/here DeleteCurrentRepositoryR GET POST
 
+/config/activity/add/#UUID AddActivityR GET POST
+/config/activity/change/#UUID/#ScheduledActivity ChangeActivityR GET POST
+/config/activity/remove/#UUID/#ScheduledActivity RemoveActivityR GET
+
 /transfers/#NotificationId TransfersR GET
 /notifier/transfers NotifierTransfersR GET
 

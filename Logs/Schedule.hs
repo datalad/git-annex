@@ -8,6 +8,9 @@
 module Logs.Schedule (
 	scheduleLog,
 	scheduleSet,
+	scheduleAdd,
+	scheduleRemove,
+	scheduleChange,
 	scheduleGet,
 	scheduleMap,
 	getLastRunTimes,
@@ -45,6 +48,15 @@ scheduleGet :: UUID -> Annex (S.Set ScheduledActivity)
 scheduleGet u = do
 	m <- scheduleMap
 	return $ maybe S.empty S.fromList (M.lookup u m)
+
+scheduleRemove :: UUID -> ScheduledActivity -> Annex ()
+scheduleRemove u activity = scheduleChange u $ S.delete activity
+
+scheduleAdd :: UUID -> ScheduledActivity -> Annex ()
+scheduleAdd u activity = scheduleChange u $ S.insert activity
+
+scheduleChange :: UUID -> (S.Set ScheduledActivity -> S.Set ScheduledActivity) -> Annex ()
+scheduleChange u a = scheduleSet u . S.toList . a =<< scheduleGet u
 
 getLastRunTimes :: Annex (M.Map ScheduledActivity LocalTime)
 getLastRunTimes = do

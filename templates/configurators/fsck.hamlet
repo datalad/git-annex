@@ -9,6 +9,11 @@
     Running the consistency check involves reading all the files in the #
     repository, which can take a long time if it's large. Running just a #
     little at a time will eventually check the whole repository.
+  $if (not (null checks))
+    <p>
+      Currently scheduled checks:
+      $forall check <- checks
+        ^{fsckForm False check}
   <p>
-    <form method="post" .form-inline enctype=#{enctype}>
-      ^{form}
+    Add a check:
+    ^{fsckForm True defaultFsck}

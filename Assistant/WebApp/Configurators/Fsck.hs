@@ -11,6 +11,7 @@
 module Assistant.WebApp.Configurators.Fsck where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import qualified Data.Text as T
 import qualified Text.Hamlet as Hamlet
 
@@ -18,18 +19,44 @@ import Assistant.WebApp.Common
 import Types.ScheduledActivity
 import Utility.HumanTime
 import Utility.Scheduled
+import Logs.Schedule
+import Annex.UUID
 
-fsckForm :: ScheduledActivity -> Hamlet.Html -> MkMForm ScheduledActivity
-fsckForm (ScheduledSelfFsck (Schedule r t) d) msg = do
+{- This adds a form to the page. It does not handle posting of the form,
+ - because unlike a typical yesod form that posts using the same url
+ - that generated it, this form posts using one of two other routes. -}
+fsckForm :: Bool -> ScheduledActivity -> Widget
+fsckForm new activity = do
+	u <- liftAnnex getUUID
+	let action = if new
+		then AddActivityR u
+		else ChangeActivityR u activity
+	((res, form), enctype) <- liftH $ runFormPost $ fsckForm' new activity
+	case res of
+		FormSuccess _ -> noop
+		_ -> $(widgetFile "configurators/fsck/form")
+
+{- This does not display a form, but it does get it from a post, and run
+ - some Annex action on it. -}
+withFsckForm :: (ScheduledActivity -> Annex ()) -> Handler ()
+withFsckForm a = do
+	((res, _form), _enctype) <- runFormPost $ fsckForm' False defaultFsck
+	case res of
+		FormSuccess activity -> liftAnnex $ a activity
+		_ -> noop
+
+fsckForm' :: Bool -> ScheduledActivity -> Hamlet.Html -> MkMForm ScheduledActivity
+fsckForm' new activity@(ScheduledSelfFsck (Schedule r t) d) msg = do
 	(durationRes, durationView) <- mreq intField "" (Just $ durationSeconds d `quot` 60 )
 	(timeRes, timeView) <- mreq (selectFieldList times) "" (Just t)
 	(recurranceRes, recurranceView) <- mreq (selectFieldList recurrances) "" (Just r)
 	let form = do
 		webAppFormAuthToken
-		$(widgetFile "configurators/fsck/form")
+		u <- liftAnnex getUUID
+		$(widgetFile "configurators/fsck/formcontent")
 	let formresult = ScheduledSelfFsck
 		<$> (Schedule <$> recurranceRes <*> timeRes)
-		<*> (Duration <$> durationRes)
+		<*> (Duration <$> ((60 *) <$> durationRes))
 	return (formresult, form)
   where
 	times :: [(Text, ScheduledTime)]
@@ -55,7 +82,7 @@ fsckForm (ScheduledSelfFsck (Schedule r t) d) msg = do
 	ensurevalue v desc l = case M.lookup v (M.fromList $ map (\(x,y) -> (y,x)) l) of
 		Just _ -> l
 		Nothing -> (desc, v) : l
-fsckForm (ScheduledRemoteFsck u s d) _msg = error "TODO"
+fsckForm' new (ScheduledRemoteFsck u s d) _msg = error "TODO"
 
 defaultFsck :: ScheduledActivity
 defaultFsck = ScheduledSelfFsck (Schedule Daily AnyTime) (Duration $ 60*60)
@@ -64,7 +91,25 @@ getConfigFsckR :: Handler Html
 getConfigFsckR = postConfigFsckR
 postConfigFsckR :: Handler Html
 postConfigFsckR = page "Consistency checks" (Just Configuration) $ do
-	((res, form), enctype) <- liftH $ runFormPost $ fsckForm defaultFsck
-	case res of
-		FormSuccess s -> error "TODO"
-		_ -> $(widgetFile "configurators/fsck")
+	checks <- liftAnnex $ S.toList <$> (scheduleGet =<< getUUID)
+	$(widgetFile "configurators/fsck")
+
+getRemoveActivityR :: UUID -> ScheduledActivity -> Handler Html
+getRemoveActivityR u activity = do
+	liftAnnex $ scheduleRemove u activity
+	redirect ConfigFsckR
+
+getAddActivityR :: UUID -> Handler Html
+getAddActivityR = postAddActivityR
+postAddActivityR :: UUID -> Handler Html
+postAddActivityR u = do
+	withFsckForm $ scheduleAdd u
+	redirect ConfigFsckR
+
+getChangeActivityR :: UUID -> ScheduledActivity -> Handler Html
+getChangeActivityR = postChangeActivityR
+postChangeActivityR :: UUID -> ScheduledActivity -> Handler Html
+postChangeActivityR u oldactivity = do
+	withFsckForm $ \newactivity -> scheduleChange u $
+			S.insert newactivity . S.delete oldactivity
+	redirect ConfigFsckR
