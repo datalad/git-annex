@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.22"
+ subject="comment 4"
+ date="2013-10-12T23:31:16Z"
+ content="""
+Git simply creates a file as a lock file, and does not use any form of locking on it, so if the git process dies for any reason before it gets a chance to remove the lock file, a stale lock file remains, and future git commands will fall over it.
+
+It's really surprisingly bad..
+"""]]
