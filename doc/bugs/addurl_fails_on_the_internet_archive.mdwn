@@ -41,6 +41,8 @@ The second is probably simply that quvi doesn't support the internet archive, an
 
 my good old faithful `4.20130921-g434dc22` i compiled manually some time ago. :)
 
+This is [[done]] in git-annex version: 4.20131011-g2c0badc. Thanks!
+
 ### Please provide any additional information below.
 
 [[!format sh """
