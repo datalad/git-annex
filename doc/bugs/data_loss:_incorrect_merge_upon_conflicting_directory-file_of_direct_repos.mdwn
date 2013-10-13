@@ -1,7 +1,7 @@
 ### Please describe the problem.
 Data loss due to incorrect merge of repos in direct mode.
 
-Given 2 repos A and B, in direct mode, where a has no remotes and b has a as remote (not sure if the latter is relevant):
+Given 2 repos A and B, in direct mode:
 1. in A: mkdir f, with a file f in it
 2. in B: touch f
 3. in B: sync 
