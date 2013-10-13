@@ -16,8 +16,7 @@ what happens, is that once i try to copy from the windows machine where the file
 
 the file in tmp has no permissions at all:
 
-    me@linux annex]$ ls -lart tmp/SHA256E-s10--937a89b559820f86588921ef3eb12c13074d
-078b62ef205bb597bf2e895408c3
+    me@linux annex]$ ls -lart tmp/SHA256E-s10--937a89b559820f86588921ef3eb12c13074d078b62ef205bb597bf2e895408c3
     ----------. 1 me me 10 Oct 13 22:50 tmp/SHA256Es10--937a89b559820f86588921ef3eb12c13074d078b62ef205bb597bf2e895408c3
 
 (just consider this if the above makes any sense:) in another case (i cannot reproduce it now, possibly due to having upgraded git annex from some 2012 release), it happened that a failed download via copy/move from linux to windows (failed for permissions) would not be recorded as failed (on windows side), causing files to possibly be killed at the first subsequent drop command.
