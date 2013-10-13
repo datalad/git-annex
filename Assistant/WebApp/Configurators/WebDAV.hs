@@ -18,7 +18,6 @@ import qualified Remote
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.Remote
-import Assistant.Gpg
 import Assistant.WebApp.Utility
 import Git.Remote
 
@@ -26,6 +25,7 @@ import qualified Data.Map as M
 #endif
 import qualified Data.Text as T
 import Network.URI
+import Assistant.Gpg
 
 webDAVConfigurator :: Widget -> Handler Html
 webDAVConfigurator = page "Add a WebDAV repository" (Just Configuration)
