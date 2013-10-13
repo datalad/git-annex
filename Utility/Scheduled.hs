@@ -76,19 +76,19 @@ nextTime schedule lasttime = do
 calcNextTime :: Schedule -> Maybe LocalTime -> LocalTime -> Maybe NextTime
 calcNextTime (Schedule recurrance scheduledtime) lasttime currenttime
 	| scheduledtime == AnyTime = do
-		start <- findfromtoday
+		start <- findfromtoday True
 		return $ NextTimeWindow
 			start
 			(LocalTime (localDay start) (TimeOfDay 23 59 0))
-	| otherwise = NextTimeExactly <$> findfromtoday
+	| otherwise = NextTimeExactly <$> findfromtoday False
   where
-  	findfromtoday = 
+  	findfromtoday anytime = 
 		LocalTime <$> nextday <*> pure nexttime
 	  where
 	  	nextday = findnextday recurrance afterday today
 	  	today = localDay currenttime
 		afterday = sameaslastday || toolatetoday
-		toolatetoday = localTimeOfDay currenttime >= nexttime
+		toolatetoday = not anytime && localTimeOfDay currenttime >= nexttime
 		sameaslastday = (localDay <$> lasttime) == Just today
 	nexttime = case scheduledtime of
 		AnyTime -> TimeOfDay 0 0 0
