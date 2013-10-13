@@ -22,6 +22,7 @@ import Logs.UUID
 import Annex.UUID
 import qualified Option
 import qualified Annex
+import Git.Remote
 
 def :: [Command]
 def = [noCommit $ withOptions [allrepos] $ command "list" paramPaths seek
@@ -68,13 +69,12 @@ start l file (key, _) = do
 	liftIO $ putStrLn $ format (map (\(u, _, t) -> (t, S.member u ls)) l) file
 	stop
 
-type RemoteName = String
 type Present = Bool
 
 header :: [(RemoteName, TrustLevel)] -> String
-header remotes = (unlines $ zipWith formatheader [0..] remotes) ++ (pipes (length remotes))
+header remotes = unlines (zipWith formatheader [0..] remotes) ++ pipes (length remotes)
   where
-    formatheader n (remotename, trustlevel) = (pipes n) ++ remotename ++ (trust trustlevel)
+    formatheader n (remotename, trustlevel) = pipes n ++ remotename ++ trust trustlevel
     pipes = flip replicate '|'
     trust UnTrusted = " (untrusted)"
     trust _ = ""

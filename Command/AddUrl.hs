@@ -17,8 +17,8 @@ import Backend
 import qualified Command.Add
 import qualified Annex
 import qualified Annex.Queue
+import qualified Annex.Url as Url
 import qualified Backend.URL
-import qualified Utility.Url as Url
 import Annex.Content
 import Logs.Web
 import qualified Option
@@ -123,7 +123,7 @@ perform relaxed url file = ifAnnexed file addurl geturl
 			next $ return True
 		| otherwise = do
 			headers <- getHttpHeaders
-			ifM (liftIO $ Url.check url headers $ keySize key)
+			ifM (Url.withUserAgent $ Url.check url headers $ keySize key)
 				( do
 					setUrlPresent key url
 					next $ return True
@@ -174,7 +174,7 @@ download url file = do
 		size <- ifM (liftIO $ isJust <$> checkDaemon pidfile)
 			( do
 				headers <- getHttpHeaders
-				liftIO $ snd <$> Url.exists url headers
+				snd <$> Url.withUserAgent (Url.exists url headers)
 			, return Nothing
 			)
 		Backend.URL.fromUrl url size
@@ -189,7 +189,7 @@ cleanup url file key mtmp = do
 	when (isJust mtmp) $
 		logStatus key InfoPresent
 	setUrlPresent key url
-	Command.Add.addLink file key False
+	Command.Add.addLink file key Nothing
 	whenM isDirect $ do
 		void $ addAssociatedFile key file
 		{- For moveAnnex to work in direct mode, the symlink
@@ -203,7 +203,7 @@ nodownload relaxed url file = do
 	headers <- getHttpHeaders
 	(exists, size) <- if relaxed
 		then pure (True, Nothing)
-		else liftIO $ Url.exists url headers
+		else Url.withUserAgent $ Url.exists url headers
 	if exists
 		then do
 			key <- Backend.URL.fromUrl url size

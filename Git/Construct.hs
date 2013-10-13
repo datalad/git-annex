@@ -23,8 +23,6 @@ module Git.Construct (
 	checkForRepo,
 ) where
 
-{-# LANGUAGE CPP #-}
-
 #ifndef mingw32_HOST_OS
 import System.Posix.User
 #else
@@ -36,6 +34,7 @@ import Network.URI
 import Common
 import Git.Types
 import Git
+import Git.Remote
 import qualified Git.Url as Url
 import Utility.UserInfo
 
@@ -143,51 +142,10 @@ remoteNamedFromKey k = remoteNamed basename
 {- Constructs a new Repo for one of a Repo's remotes using a given
  - location (ie, an url). -}
 fromRemoteLocation :: String -> Repo -> IO Repo
-fromRemoteLocation s repo = gen $ calcloc s
+fromRemoteLocation s repo = gen $ parseRemoteLocation s repo
   where
-	gen v	
-#ifdef mingw32_HOST_OS
-		| dosstyle v = fromRemotePath (dospath v) repo
-#endif
-		| scpstyle v = fromUrl $ scptourl v
-		| urlstyle v = fromUrl v
-		| otherwise = fromRemotePath v repo
-	-- insteadof config can rewrite remote location
-	calcloc l
-		| null insteadofs = l
-		| otherwise = replacement ++ drop (length bestvalue) l
-	  where
-		replacement = drop (length prefix) $
-			take (length bestkey - length suffix) bestkey
-		(bestkey, bestvalue) = maximumBy longestvalue insteadofs
-		longestvalue (_, a) (_, b) = compare b a
-		insteadofs = filterconfig $ \(k, v) -> 
-			startswith prefix k &&
-			endswith suffix k &&
-			startswith v l
-		filterconfig f = filter f $
-			concatMap splitconfigs $ M.toList $ fullconfig repo
-		splitconfigs (k, vs) = map (\v -> (k, v)) vs
-		(prefix, suffix) = ("url." , ".insteadof")
-	urlstyle v = isURI v || ":" `isInfixOf` v && "//" `isInfixOf` v
-	-- git remotes can be written scp style -- [user@]host:dir
-	-- but foo::bar is a git-remote-helper location instead
-	scpstyle v = ":" `isInfixOf` v 
-		&& not ("//" `isInfixOf` v)
-		&& not ("::" `isInfixOf` v)
-	scptourl v = "ssh://" ++ host ++ slash dir
-	  where
-		(host, dir) = separate (== ':') v
-		slash d	| d == "" = "/~/" ++ d
-			| "/" `isPrefixOf` d = d
-			| "~" `isPrefixOf` d = '/':d
-			| otherwise = "/~/" ++ d
-#ifdef mingw32_HOST_OS
-	-- git on Windows will write a path to .git/config with "drive:",
-	-- which is not to be confused with a "host:"
-	dosstyle = hasDrive
-	dospath = fromInternalGitPath
-#endif
+	gen (RemotePath p) = fromRemotePath p repo
+	gen (RemoteUrl u) = fromUrl u
 
 {- Constructs a Repo from the path specified in the git remotes of
  - another Repo. -}

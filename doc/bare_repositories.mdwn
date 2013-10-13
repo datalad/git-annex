@@ -31,7 +31,7 @@ Here is a quick example of how to set this up, using `origin` as the remote name
 On the server:
 
     git init --bare bare-annex.git
-    git annex init origin
+    cd bare-annex.git && git annex init origin
 
 Now configure the remote and do the initial push:
 

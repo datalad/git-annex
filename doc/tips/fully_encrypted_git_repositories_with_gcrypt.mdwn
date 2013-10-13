@@ -50,13 +50,17 @@ the gpg key used to encrypt it, and then:
 
 ## encrypted git-annex repository on a ssh server
 
-If you have a ssh server that has git-annex and rsync installed, you can
-set up an encrypted repository there. Works just like the encrypted drive
-except without the cable.
+If you have a ssh server that has rsync installed, you can set up an
+encrypted repository there. Works just like the encrypted drive except
+without the cable.
 
 First, on the server, run:
 
 	git init --bare encryptedrepo
+
+(Also, install git-annex on the server if it's possible & easy to do so.
+While this will work without git-annex being installed on the server, it
+is recommended to have it installed.)
 
 Now, in your existing git-annex repository:
 

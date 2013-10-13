@@ -34,7 +34,7 @@ start (src:dest:[])
 start _ = error "specify a src file and a dest file"
 
 perform :: FilePath -> FilePath -> (Key, Backend) -> CommandPerform
-perform src _dest (key, backend) = do
+perform src _dest (key, backend) =
 	{- Check the content before accepting it. -}
 	ifM (Command.Fsck.checkKeySizeOr reject key src
 		<&&> Command.Fsck.checkBackendOr reject backend key src)

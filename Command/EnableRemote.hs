@@ -43,7 +43,7 @@ unknownNameError prefix = do
 	error $ prefix ++
 		if null names
 			then ""
-			else " Known special remotes: " ++ intercalate " " names
+			else " Known special remotes: " ++ unwords names
 
 perform :: RemoteType -> UUID -> R.RemoteConfig -> CommandPerform
 perform t u c = do

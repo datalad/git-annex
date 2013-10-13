@@ -10,6 +10,7 @@ module Remote.Bup (remote) where
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import System.Process
+import Data.ByteString.Lazy.UTF8 (fromString)
 
 import Common.Annex
 import Types.Remote
@@ -21,12 +22,12 @@ import qualified Git.Construct
 import qualified Git.Ref
 import Config
 import Config.Cost
-import Remote.Helper.Ssh
+import qualified Remote.Helper.Ssh as Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
+import Remote.Helper.Messages
 import Crypto
-import Data.ByteString.Lazy.UTF8 (fromString)
-import Data.Digest.Pure.SHA
+import Utility.Hash
 import Utility.UserInfo
 import Annex.Content
 import Annex.UUID
@@ -185,7 +186,7 @@ rollback k bupr = go =<< liftIO (bup2GitRemote bupr)
 checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either String Bool)
 checkPresent r bupr k
 	| Git.repoIsUrl bupr = do
-		showAction $ "checking " ++ Git.repoDescribe r
+		showChecking r
 		ok <- onBupRemote bupr boolSystem "git" params
 		return $ Right ok
 	| otherwise = liftIO $ catchMsgIO $
@@ -220,7 +221,7 @@ storeBupUUID u buprepo = do
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
 onBupRemote r a command params = do
-	sshparams <- sshToRepo r [Param $
+	sshparams <- Ssh.toRepo r [Param $
 			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
 	liftIO $ a "ssh" sshparams
   where
@@ -277,7 +278,7 @@ bup2GitRemote r
 bupRef :: Key -> String
 bupRef k
 	| Git.Ref.legal True shown = shown
-	| otherwise = "git-annex-" ++ showDigest (sha256 (fromString shown))
+	| otherwise = "git-annex-" ++ show (sha256 (fromString shown))
   where
 	shown = key2file k
 

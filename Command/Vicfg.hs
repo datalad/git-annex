@@ -123,14 +123,14 @@ genCfg cfg descs = unlines $ concat [intro, trust, groups, preferredcontent]
 	settings field desc showvals showdefaults = concat
 		[ desc
 		, concatMap showvals $ sort $ map swap $ M.toList $ field cfg
-		, concatMap (\u -> lcom $ showdefaults u) $ missing field
+		, concatMap (lcom . showdefaults) $ missing field
 		]
 
 	line setting u value =
-		[ com $ "(for " ++ (fromMaybe "" $ M.lookup u descs) ++ ")"
+		[ com $ "(for " ++ fromMaybe "" (M.lookup u descs) ++ ")"
 		, unwords [setting, fromUUID u, "=", value]
 		]
-	lcom = map (\l -> if "#" `isPrefixOf` l then l else "#" ++ l)
+	lcom = map (\l -> if "#" `isPrefixOf` l then l else '#' : l)
 	missing field = S.toList $ M.keysSet descs `S.difference` M.keysSet (field cfg)
 
 {- If there's a parse error, returns a new version of the file,
@@ -139,7 +139,7 @@ parseCfg :: Cfg -> String -> Either String Cfg
 parseCfg curcfg = go [] curcfg . lines
   where
 	go c cfg []
-		| null (catMaybes $ map fst c) = Right cfg
+		| null (mapMaybe fst c) = Right cfg
 		| otherwise = Left $ unlines $
 			badheader ++ concatMap showerr (reverse c)
 	go c cfg (l:ls) = case parse (dropWhile isSpace l) cfg of

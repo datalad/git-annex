@@ -1,3 +1,15 @@
+## version 4.20131002
+
+Now you can use the webapp to set up an encrypted git repository on a
+remote ssh server, or on rsync.net, and use it as a live cloud backup. Or,
+use the webapp to make an encrypted git repository on a removable drive,
+and store it offsite as a secure backup.
+
+## version 4.20130920
+
+This release is the first to support fully encrypted git repositories
+stored on removable drives. This can be set up easily using the webapp.
+
 ## version 4.20130909
 
 This release fixes a crash that could occur when using XMPP with the

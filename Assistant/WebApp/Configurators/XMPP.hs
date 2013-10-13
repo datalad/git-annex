@@ -151,6 +151,8 @@ buddyListDisplay = do
 		catMaybes . map (buddySummary pairedwith)
 			<$> (getBuddyList <<~ buddyList)
 	$(widgetFile "configurators/xmpp/buddylist")
+#else
+	noop
 #endif
   where
 	ident = "buddylist"

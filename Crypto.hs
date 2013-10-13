@@ -102,7 +102,7 @@ updateEncryptedCipher newkeys encipher@(EncryptedCipher _ variant (KeyIds ks)) =
 	cipher <- decryptCipher encipher
 	encryptCipher cipher variant $ KeyIds ks'
   where
-	listKeyIds = mapM (Gpg.findPubKeys >=*> keyIds) >=*> concat
+	listKeyIds = concat <$$> mapM (keyIds <$$> Gpg.findPubKeys)
 
 describeCipher :: StorableCipher -> String
 describeCipher (SharedCipher _) = "shared cipher"

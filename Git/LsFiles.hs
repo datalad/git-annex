@@ -103,7 +103,7 @@ stagedDetails' ps l repo = do
 	  where
 		(metadata, file) = separate (== '\t') s
 		(mode, rest) = separate (== ' ') metadata
-		readmode = headMaybe . readOct >=*> fst
+		readmode = fst <$$> headMaybe . readOct
 
 {- Returns a list of the files in the specified locations that are staged
  - for commit, and whose type has changed. -}

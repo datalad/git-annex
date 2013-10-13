@@ -17,8 +17,6 @@ import Data.Ord
 import System.PosixCompat.Files
 
 import Common.Annex
-import qualified Types.Backend as B
-import qualified Types.Remote as R
 import qualified Remote
 import qualified Command.Unused
 import qualified Git
@@ -28,7 +26,6 @@ import Utility.DataUnits
 import Utility.DiskFree
 import Annex.Content
 import Types.Key
-import Backend
 import Logs.UUID
 import Logs.Trust
 import Remote
@@ -116,9 +113,7 @@ selStats fast_stats slow_stats = do
  -}
 global_fast_stats :: [Stat]
 global_fast_stats = 
-	[ supported_backends
-	, supported_remote_types
-	, repository_mode
+	[ repository_mode
 	, remote_list Trusted
 	, remote_list SemiTrusted
 	, remote_list UnTrusted
@@ -170,14 +165,6 @@ showStat s = maybe noop calc =<< s
 	calc (desc, a) = do
 		(lift . showHeader) desc
 		lift . showRaw =<< a
-
-supported_backends :: Stat
-supported_backends = stat "supported backends" $ json unwords $
-	return $ map B.name Backend.list
-
-supported_remote_types :: Stat
-supported_remote_types = stat "supported remote types" $ json unwords $
-	return $ map R.typename Remote.remoteTypes
 
 repository_mode :: Stat
 repository_mode = stat "repository mode" $ json id $ lift $
@@ -238,10 +225,10 @@ transfer_list :: Stat
 transfer_list = stat "transfers in progress" $ nojson $ lift $ do
 	uuidmap <- Remote.remoteMap id
 	ts <- getTransfers
-	if null ts
-		then return "none"
-		else return $ multiLine $
-			map (\(t, i) -> line uuidmap t i) $ sort ts
+	return $ if null ts
+		then "none"
+		else multiLine $
+			map (uncurry $ line uuidmap) $ sort ts
   where
 	line uuidmap t i = unwords
 		[ showLcDirection (transferDirection t) ++ "ing"
@@ -340,7 +327,7 @@ emptyKeyData :: KeyData
 emptyKeyData = KeyData 0 0 0 M.empty
 
 emptyNumCopiesStats :: NumCopiesStats
-emptyNumCopiesStats = NumCopiesStats $ M.empty
+emptyNumCopiesStats = NumCopiesStats M.empty
 
 foldKeys :: [Key] -> KeyData
 foldKeys = foldl' (flip addKey) emptyKeyData

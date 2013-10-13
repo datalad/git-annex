@@ -86,7 +86,7 @@ gen r u c gc = do
 				then Just $ rsyncUrl o
 				else Nothing
 			, readonly = False
-			, globallyAvailable = not $ islocal
+			, globallyAvailable = not islocal
 			, remotetype = remote
 			}
 
@@ -236,7 +236,7 @@ sendParams = ifM crippledFileSystem
 
 {- Runs an action in an empty scratch directory that can be used to build
  - up trees for rsync. -}
-withRsyncScratchDir :: (FilePath -> Annex Bool) -> Annex Bool
+withRsyncScratchDir :: (FilePath -> Annex a) -> Annex a
 withRsyncScratchDir a = do
 #ifndef mingw32_HOST_OS
 	v <- liftIO getProcessID
@@ -262,7 +262,7 @@ rsyncRetrieve o k dest callback =
 		, File dest
 		]
 
-rsyncRemote :: RsyncOpts -> (Maybe MeterUpdate) -> [CommandParam] -> Annex Bool
+rsyncRemote :: RsyncOpts -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
 rsyncRemote o callback params = do
 	showOutput -- make way for progress bar
 	ifM (liftIO $ (maybe rsync rsyncProgress callback) ps)

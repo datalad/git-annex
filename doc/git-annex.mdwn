@@ -206,10 +206,9 @@ subdirectories).
 
   Moves files from somewhere outside the git working copy, and adds them to
   the annex. Individual files to import can be specified. 
-  If a directory is specified, all files in it are imported, and any
-  subdirectory structure inside it is preserved.
+  If a directory is specified, the entire directory is imported.
 
-        	git annex import /media/camera/DCIM/
+        	git annex import /media/camera/DCIM/*
 
   By default, importing two files with the same contents from two different
   locations will result in both files being added to the repository.
@@ -825,6 +824,10 @@ subdirectories).
 
   Also, '\\n' is a newline, '\\000' is a NULL, etc.
 
+* `--user-agent=value`
+
+  Overrides the User-Agent to use when downloading files from the web.
+
 * `-c name=value`
 
   Used to override git configuration settings. May be specified multiple times.
@@ -1229,6 +1232,15 @@ Here are all the supported configuration settings.
 
   Used to identify the XMPP address of a Jabber buddy.
   Normally this is set up by the git-annex assistant when pairing over XMPP.
+
+* `remote.<name>.gcrypt`
+
+  Used to identify gcrypt special remotes.
+  Normally this is automatically set up by `git annex initremote`.
+
+  It is set to "true" if this is a gcrypt remote.
+  If the gcrypt remote is accessible over ssh and has git-annex-shell
+  available to manage it, it's set to "shell"
 
 # CONFIGURATION VIA .gitattributes
 

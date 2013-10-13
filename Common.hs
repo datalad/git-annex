@@ -28,6 +28,7 @@ import Utility.Process as X
 import Utility.Path as X
 import Utility.Directory as X
 import Utility.Monad as X
+import Utility.Data as X
 import Utility.Applicative as X
 import Utility.FileSystemEncoding as X
 

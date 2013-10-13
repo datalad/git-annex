@@ -20,19 +20,25 @@ import qualified Remote.List as Remote
 import qualified Assistant.Threads.Transferrer as Transferrer
 import Logs.Transfer
 import qualified Config
+import Config.Cost
 import Config.Files
 import Git.Config
 import Assistant.Threads.Watcher
 import Assistant.NamedThread
+import Types.StandardGroups
+import Git.Remote
+import Logs.PreferredContent
+import Assistant.MakeRemote
 
 import qualified Data.Map as M
 import Control.Concurrent
 import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
 import System.Posix.Process (getProcessGroupIDOf)
+import Utility.Yesod
 
 {- Use Nothing to change autocommit setting; or a remote to change
  - its sync setting. -}
-changeSyncable :: (Maybe Remote) -> Bool -> Handler ()
+changeSyncable :: Maybe Remote -> Bool -> Handler ()
 changeSyncable Nothing enable = do
 	liftAnnex $ Config.setConfig key (boolConfig enable)
 	liftIO . maybe noop (`throwTo` signal)
@@ -47,7 +53,7 @@ changeSyncable (Just r) True = do
 	liftAssistant $ syncRemote r
 changeSyncable (Just r) False = do
 	changeSyncFlag r False
-	liftAssistant $ updateSyncRemotes
+	liftAssistant updateSyncRemotes
 	{- Stop all transfers to or from this remote.
 	 - XXX Can't stop any ongoing scan, or git syncs. -}
 	void $ liftAssistant $ dequeueTransfers tofrom
@@ -60,7 +66,7 @@ changeSyncable (Just r) False = do
 changeSyncFlag :: Remote -> Bool -> Handler ()
 changeSyncFlag r enabled = liftAnnex $ do
 	Config.setConfig key (boolConfig enabled)
-	void $ Remote.remoteListRefresh
+	void Remote.remoteListRefresh
   where
 	key = Config.remoteConfig (Remote.repo r) "sync"
 
@@ -118,3 +124,15 @@ startTransfer t = do
 
 getCurrentTransfers :: Handler TransferMap
 getCurrentTransfers = currentTransfers <$> liftAssistant getDaemonStatus
+
+{- Runs an action that creates or enables a cloud remote,
+ - and finishes setting it up, then starts syncing with it,
+ - and finishes by displaying the page to edit it. -}
+setupCloudRemote :: StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
+setupCloudRemote defaultgroup mcost maker = do
+	r <- liftAnnex $ addRemote maker
+	liftAnnex $ do
+		setStandardGroup (Remote.uuid r) defaultgroup
+		maybe noop (Config.setRemoteCost r) mcost
+	liftAssistant $ syncRemote r
+	redirect $ EditNewCloudRepositoryR $ Remote.uuid r

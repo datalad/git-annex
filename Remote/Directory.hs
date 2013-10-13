@@ -12,7 +12,6 @@ module Remote.Directory (remote) where
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
 import qualified Data.Map as M
-import qualified Control.Exception as E
 import Data.Int
 
 import Common.Annex
@@ -109,7 +108,7 @@ withCheckedFiles check (Just _) d k a = go $ locations d k
 		ifM (check chunkcount)
 			( do
 				chunks <- listChunks f <$> readFile chunkcount
-				ifM (all id <$> mapM check chunks)
+				ifM (and <$> mapM check chunks)
 					( a chunks , return False )
 			, go fs
 			)
@@ -159,7 +158,7 @@ storeSplit' :: MeterUpdate -> Int64 -> [FilePath] -> [S.ByteString] -> [FilePath
 storeSplit' _ _ [] _ _ = error "ran out of dests"
 storeSplit' _ _  _ [] c = return $ reverse c
 storeSplit' meterupdate chunksize (d:dests) bs c = do
-	bs' <- E.bracket (openFile d WriteMode) hClose $
+	bs' <- withFile d WriteMode $
 		feed zeroBytesProcessed chunksize bs
 	storeSplit' meterupdate chunksize dests bs' (d:c)
   where
@@ -206,7 +205,7 @@ retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> MeterU
 retrieve d chunksize k _ f p = metered (Just p) k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d k $ \files ->
 		catchBoolIO $ do
-			meteredWriteFileChunks meterupdate f files $ L.readFile
+			meteredWriteFileChunks meterupdate f files L.readFile
 			return True
 
 retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
@@ -217,7 +216,7 @@ retrieveEncrypted d chunksize (cipher, enck) k f p = metered (Just p) k $ \meter
 				readBytes $ meteredWriteFile meterupdate f
 			return True
   where
-	feeder files h = forM_ files $ \file -> L.hPut h =<< L.readFile file
+	feeder files h = forM_ files $ L.hPut h <=< L.readFile
 
 retrieveCheap :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
 retrieveCheap _ (Just _) _ _ = return False -- no cheap retrieval for chunks

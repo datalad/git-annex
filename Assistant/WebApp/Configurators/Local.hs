@@ -38,7 +38,6 @@ import Config
 import Utility.Gpg
 import qualified Annex.Branch
 import qualified Remote.GCrypt as GCrypt
-import qualified Git.GCrypt
 import qualified Types.Remote
 
 import qualified Data.Text as T
@@ -101,7 +100,7 @@ checkRepositoryPath p = do
 			Nothing -> Right $ Just $ T.pack basepath
 			Just prob -> Left prob
   where
-	runcheck (chk, msg) = ifM (chk) ( return $ Just msg, return Nothing )
+	runcheck (chk, msg) = ifM chk ( return $ Just msg, return Nothing )
 	expandTilde home ('~':'/':path) = home </> path
 	expandTilde _ path = path
 
@@ -114,7 +113,7 @@ checkRepositoryPath p = do
  - browsed to a directory with git-annex and run it from there. -}
 defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
-	cwd <- liftIO $ getCurrentDirectory
+	cwd <- liftIO getCurrentDirectory
 	home <- myHomeDir
 	if home == cwd && firstrun
 		then inhome
@@ -137,7 +136,7 @@ newRepositoryForm defpath msg = do
 		(Just $ T.pack $ addTrailingPathSeparator defpath)
 	let (err, errmsg) = case pathRes of
 		FormMissing -> (False, "")
-		FormFailure l -> (True, concat $ map T.unpack l)
+		FormFailure l -> (True, concatMap T.unpack l)
 		FormSuccess _ -> (False, "")
 	let form = do
 		webAppFormAuthToken
@@ -196,8 +195,8 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 		mainrepo <- fromJust . relDir <$> liftH getYesod
 		$(widgetFile "configurators/newrepository/combine")
 
-getCombineRepositoryR :: FilePathAndUUID -> Handler Html
-getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
+getCombineRepositoryR :: FilePath -> UUID -> Handler Html
+getCombineRepositoryR newrepopath newrepouuid = do
 	r <- combineRepos newrepopath remotename
 	liftAssistant $ syncRemote r
 	redirect $ EditRepositoryR newrepouuid
@@ -231,7 +230,7 @@ getAddDriveR :: Handler Html
 getAddDriveR = postAddDriveR
 postAddDriveR :: Handler Html
 postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
-	removabledrives <- liftIO $ driveList
+	removabledrives <- liftIO driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
 	((res, form), enctype) <- liftH $ runFormPost $
@@ -253,7 +252,7 @@ getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
 		mu <- liftIO $ probeUUID dir
 		case mu of
 			Nothing -> maybe askcombine isknownuuid
-				=<< liftIO (probeGCryptRemoteUUID dir)
+				=<< liftAnnex (probeGCryptRemoteUUID dir)
 			Just driveuuid -> isknownuuid driveuuid
 	, newrepo
 	)
@@ -276,17 +275,14 @@ getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
 setupDriveModal :: Widget
 setupDriveModal = $(widgetFile "configurators/adddrive/setupmodal")
 
-genKeyModal :: Widget
-genKeyModal = $(widgetFile "configurators/genkeymodal")
-
 getGenKeyForDriveR :: RemovableDrive -> Handler Html
-getGenKeyForDriveR drive = withNewSecretKey $ \key -> do
+getGenKeyForDriveR drive = withNewSecretKey $ \keyid ->
 	{- Generating a key takes a long time, and 
 	 - the removable drive may have been disconnected
 	 - in the meantime. Check that it is still mounted
 	 - before finishing. -}
 	ifM (liftIO $ any (\d -> mountPoint d == mountPoint drive) <$> driveList)
-		( getFinishAddDriveR drive (RepoKey key)
+		( getFinishAddDriveR drive (RepoKey keyid)
 		, getAddDriveR
 		)
 
@@ -294,39 +290,22 @@ getFinishAddDriveR :: RemovableDrive -> RepoKey -> Handler Html
 getFinishAddDriveR drive = go
   where
   	{- Set up new gcrypt special remote. -}
-	go (RepoKey keyid) = ifM (liftIO $ inPath "git-remote-gcrypt")
-		( makewith $ \_ -> do
-			r <- liftAnnex $ addRemote $ 
-				initSpecialRemote remotename GCrypt.remote $ M.fromList
-					[ ("type", "gcrypt")
-					, ("gitrepo", dir)
-					, configureEncryption HybridEncryption
-					, ("keyid", keyid)
-					]
-			return (Types.Remote.uuid r, r)
-		, page "Encrypt repository" (Just Configuration) $
-			$(widgetFile "configurators/needgcrypt")
-		)
-	go NoRepoKey = do
-		pr <- liftAnnex $ inRepo $ Git.GCrypt.probeRepo dir
-		case pr of
-			Git.GCrypt.Decryptable -> do
-				mu <- liftIO $ probeGCryptRemoteUUID dir
-				case mu of
-					Just u -> enablegcryptremote u
-					Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
-			Git.GCrypt.NotDecryptable ->
-				error $ "The drive contains a git repository that is encrypted with a GnuPG key that you do not have."
-			Git.GCrypt.NotEncrypted -> makeunencrypted
-	enablegcryptremote u = do
-		mname <- liftAnnex $ getGCryptRemoteName u dir
-		case mname of
-			Nothing -> error $ "Cannot find configuration for the gcrypt remote at " ++ dir
-			Just name -> makewith $ const $ do
-				r <- liftAnnex $ addRemote $
-					enableSpecialRemote name GCrypt.remote $ M.fromList
-						[("gitrepo", dir)]
-				return (u, r)
+	go (RepoKey keyid) = whenGcryptInstalled $ makewith $ const $ do
+		r <- liftAnnex $ addRemote $
+			makeGCryptRemote remotename dir keyid
+		return (Types.Remote.uuid r, r)
+	go NoRepoKey = checkGCryptRepoEncryption dir makeunencrypted $ do
+			mu <- liftAnnex $ probeGCryptRemoteUUID dir
+			case mu of
+				Just u -> enableexistinggcryptremote u
+				Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+	enableexistinggcryptremote u = do
+		remotename' <- liftAnnex $ getGCryptRemoteName u dir
+		makewith $ const $ do
+			r <- liftAnnex $ addRemote $
+				enableSpecialRemote remotename' GCrypt.remote $ M.fromList
+					[("gitrepo", dir)]
+			return (u, r)
 	{- Making a new unencrypted repo, or combining with an existing one. -}
 	makeunencrypted = makewith $ \isnew -> (,)
 		<$> liftIO (initRepo isnew False dir $ Just remotename)
@@ -350,7 +329,7 @@ getFinishAddDriveR drive = go
  - Next call syncRemote to get them in sync. -}
 combineRepos :: FilePath -> String -> Handler Remote
 combineRepos dir name = liftAnnex $ do
-	hostname <- maybe "host" id <$> liftIO getHostname
+	hostname <- fromMaybe "host" <$> liftIO getHostname
 	hostlocation <- fromRepo Git.repoLocation
 	liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
 	addRemote $ makeGitRemote name dir
@@ -401,7 +380,7 @@ startFullAssistant path repogroup setup = do
 		u <- initRepo isnew True path Nothing
 		inDir path $ do
 			setStandardGroup u repogroup
-			maybe noop id setup
+			fromMaybe noop setup
 		addAutoStartFile path
 		setCurrentDirectory path
 		fromJust $ postFirstRun webapp
@@ -461,13 +440,12 @@ initRepo False _ dir desc = inDir dir $ do
 	getUUID
 
 initRepo' :: Maybe String -> Annex ()
-initRepo' desc = do
-	unlessM isInitialized $ do
-		initialize desc
-		{- Ensure branch gets committed right away so it is
-		 - available for merging when a removable drive repo is being
-		 - added. -}
-		Annex.Branch.commit "update"
+initRepo' desc = unlessM isInitialized $ do
+	initialize desc
+	{- Ensure branch gets committed right away so it is
+	 - available for merging when a removable drive repo is being
+	 - added. -}
+	Annex.Branch.commit "update"
 
 {- Checks if the user can write to a directory.
  -
@@ -490,11 +468,3 @@ probeUUID :: FilePath -> IO (Maybe UUID)
 probeUUID dir = catchDefaultIO Nothing $ inDir dir $ do
 	u <- getUUID
 	return $ if u == NoUUID then Nothing else Just u
-
-{- Gets the UUID of the gcrypt repo at a location, which may not exist.
- - Only works if the gcrypt repo was created as a git-annex remote. -}
-probeGCryptRemoteUUID :: FilePath -> IO (Maybe UUID)
-probeGCryptRemoteUUID dir = catchDefaultIO Nothing $ do
-	r <- Git.Construct.fromAbsPath dir
-	(genUUIDInNameSpace gCryptNameSpace <$>) . fst
-		<$> GCrypt.getGCryptId r

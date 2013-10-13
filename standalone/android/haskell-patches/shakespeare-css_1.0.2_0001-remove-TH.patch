@@ -1,15 +1,13 @@
-From 8f058e84892a8c4202275f524f74bd6a7097ad40 Mon Sep 17 00:00:00 2001
-From: Joey Hess <joey@kitenet.net>
-Date: Wed, 8 May 2013 02:07:15 -0400
+From 05d0b6e6d2f84cd8ff53b8ee3e42021fa02fe8e4 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sat, 21 Sep 2013 23:21:52 +0000
 Subject: [PATCH] remove TH
 
 ---
- Text/Cassius.hs       |   23 --------------
- Text/Css.hs           |   84 -------------------------------------------------
- Text/CssCommon.hs     |    4 ---
- Text/Lucius.hs        |   30 +-----------------
- shakespeare-css.cabal |    2 +-
- 5 files changed, 2 insertions(+), 141 deletions(-)
+ Text/Cassius.hs   |   23 -----------------------
+ Text/CssCommon.hs |    4 ----
+ Text/Lucius.hs    |   30 +-----------------------------
+ 3 files changed, 1 insertion(+), 56 deletions(-)
 
 diff --git a/Text/Cassius.hs b/Text/Cassius.hs
 index ce05374..ae56b0a 100644
@@ -64,117 +62,6 @@ index ce05374..ae56b0a 100644
  -- | Determine which identifiers are used by the given template, useful for
  -- creating systems like yesod devel.
  cassiusUsedIdentifiers :: String -> [(Deref, VarType)]
-diff --git a/Text/Css.hs b/Text/Css.hs
-index 8e6fc09..401a166 100644
---- a/Text/Css.hs
-+++ b/Text/Css.hs
-@@ -108,19 +108,6 @@ cssUsedIdentifiers toi2b parseBlocks s' =
-         (scope, rest') = go rest
-     go' (k, v) = k ++ v
- 
--cssFileDebug :: Bool -- ^ perform the indent-to-brace conversion
--             -> Q Exp -> Parser [TopLevel] -> FilePath -> Q Exp
--cssFileDebug toi2b parseBlocks' parseBlocks fp = do
--    s <- fmap TL.unpack $ qRunIO $ readUtf8File fp
--#ifdef GHC_7_4
--    qAddDependentFile fp
--#endif
--    let vs = cssUsedIdentifiers toi2b parseBlocks s
--    c <- mapM vtToExp vs
--    cr <- [|cssRuntime toi2b|]
--    parseBlocks'' <- parseBlocks'
--    return $ cr `AppE` parseBlocks'' `AppE` (LitE $ StringL fp) `AppE` ListE c
--
- combineSelectors :: Selector -> Selector -> Selector
- combineSelectors a b = do
-     a' <- a
-@@ -202,17 +189,6 @@ cssRuntime toi2b parseBlocks fp cd render' = unsafePerformIO $ do
- 
-     addScope scope = map (DerefIdent . Ident *** CDPlain . fromString) scope ++ cd
- 
--vtToExp :: (Deref, VarType) -> Q Exp
--vtToExp (d, vt) = do
--    d' <- lift d
--    c' <- c vt
--    return $ TupE [d', c' `AppE` derefToExp [] d]
--  where
--    c :: VarType -> Q Exp
--    c VTPlain = [|CDPlain . toCss|]
--    c VTUrl = [|CDUrl|]
--    c VTUrlParam = [|CDUrlParam|]
--
- getVars :: Monad m => [(String, String)] -> Content -> m [(Deref, VarType)]
- getVars _ ContentRaw{} = return []
- getVars scope (ContentVar d) =
-@@ -268,68 +244,8 @@ compressBlock (Block x y blocks) =
-     cc (ContentRaw a:ContentRaw b:c) = cc $ ContentRaw (a ++ b) : c
-     cc (a:b) = a : cc b
- 
--blockToCss :: Name -> Scope -> Block -> Q Exp
--blockToCss r scope (Block sel props subblocks) =
--    [|(:) (Css' $(selectorToBuilder r scope sel) $(listE $ map go props))
--      . foldr (.) id $(listE $ map subGo subblocks)
--    |]
--  where
--    go (x, y) = tupE [contentsToBuilder r scope x, contentsToBuilder r scope y]
--    subGo (Block sel' b c) =
--        blockToCss r scope $ Block sel'' b c
--      where
--        sel'' = combineSelectors sel sel'
--
--selectorToBuilder :: Name -> Scope -> Selector -> Q Exp
--selectorToBuilder r scope sels =
--    contentsToBuilder r scope $ intercalate [ContentRaw ","] sels
--
--contentsToBuilder :: Name -> Scope -> [Content] -> Q Exp
--contentsToBuilder r scope contents =
--    appE [|mconcat|] $ listE $ map (contentToBuilder r scope) contents
--
--contentToBuilder :: Name -> Scope -> Content -> Q Exp
--contentToBuilder _ _ (ContentRaw x) =
--    [|fromText . pack|] `appE` litE (StringL x)
--contentToBuilder _ scope (ContentVar d) =
--    case d of
--        DerefIdent (Ident s)
--            | Just val <- lookup s scope -> [|fromText . pack|] `appE` litE (StringL val)
--        _ -> [|toCss|] `appE` return (derefToExp [] d)
--contentToBuilder r _ (ContentUrl u) =
--    [|fromText|] `appE`
--        (varE r `appE` return (derefToExp [] u) `appE` listE [])
--contentToBuilder r _ (ContentUrlParam u) =
--    [|fromText|] `appE`
--        ([|uncurry|] `appE` varE r `appE` return (derefToExp [] u))
--
- type Scope = [(String, String)]
- 
--topLevelsToCassius :: [TopLevel] -> Q Exp
--topLevelsToCassius a = do
--    r <- newName "_render"
--    lamE [varP r] $ appE [|CssNoWhitespace . foldr ($) []|] $ fmap ListE $ go r [] a
--  where
--    go _ _ [] = return []
--    go r scope (TopBlock b:rest) = do
--        e <- [|(++) $ map Css ($(blockToCss r scope b) [])|]
--        es <- go r scope rest
--        return $ e : es
--    go r scope (TopAtBlock name s b:rest) = do
--        let s' = contentsToBuilder r scope s
--        e <- [|(:) $ AtBlock $(lift name) $(s') $(blocksToCassius r scope b)|]
--        es <- go r scope rest
--        return $ e : es
--    go r scope (TopAtDecl dec cs:rest) = do
--        e <- [|(:) $ AtDecl $(lift dec) $(contentsToBuilder r scope cs)|]
--        es <- go r scope rest
--        return $ e : es
--    go r scope (TopVar k v:rest) = go r ((k, v) : scope) rest
--
--blocksToCassius :: Name -> Scope -> [Block] -> Q Exp
--blocksToCassius r scope a = do
--    appE [|foldr ($) []|] $ listE $ map (blockToCss r scope) a
--
- renderCss :: Css -> TL.Text
- renderCss css =
-     toLazyText $ mconcat $ map go tops-- FIXME use a foldr
 diff --git a/Text/CssCommon.hs b/Text/CssCommon.hs
 index 719e0a8..8c40e8c 100644
 --- a/Text/CssCommon.hs
@@ -192,10 +79,10 @@ index 719e0a8..8c40e8c 100644
 -mkSizeType "ExSize" "ex"
 -mkSizeType "PixelSize" "px"
 diff --git a/Text/Lucius.hs b/Text/Lucius.hs
-index b71614e..a902e1c 100644
+index 89328bd..0a1cf5e 100644
 --- a/Text/Lucius.hs
 +++ b/Text/Lucius.hs
-@@ -6,12 +6,8 @@
+@@ -8,12 +8,8 @@
  {-# OPTIONS_GHC -fno-warn-missing-fields #-}
  module Text.Lucius
      ( -- * Parsing
@@ -203,13 +90,13 @@ index b71614e..a902e1c 100644
 -    , luciusFile
 -    , luciusFileDebug
 -    , luciusFileReload
+       -- ** Mixins
+-    , luciusMixin
++     luciusMixin
+     , Mixin
        -- ** Runtime
--    , luciusRT
-+      luciusRT
-     , luciusRT'
-     , -- * Datatypes
-       Css
-@@ -31,11 +27,8 @@ module Text.Lucius
+     , luciusRT
+@@ -40,11 +36,8 @@ module Text.Lucius
      , AbsoluteUnit (..)
      , AbsoluteSize (..)
      , absoluteSize
@@ -221,9 +108,9 @@ index b71614e..a902e1c 100644
        -- * Internal
      , parseTopLevels
      , luciusUsedIdentifiers
-@@ -57,18 +50,6 @@ import Data.Either (partitionEithers)
- import Data.Monoid (mconcat)
+@@ -66,18 +59,6 @@ import Data.Monoid (mconcat)
  import Data.List (isSuffixOf)
+ import Control.Arrow (second)
  
 --- |
 ---
@@ -240,7 +127,7 @@ index b71614e..a902e1c 100644
  whiteSpace :: Parser ()
  whiteSpace = many whiteSpace1 >> return ()
  
-@@ -179,15 +160,6 @@ parseComment = do
+@@ -217,15 +198,6 @@ parseComment = do
      _ <- manyTill anyChar $ try $ string "*/"
      return $ ContentRaw ""
  
@@ -253,22 +140,9 @@ index b71614e..a902e1c 100644
 -luciusFileDebug = cssFileDebug False [|parseTopLevels|] parseTopLevels
 -luciusFileReload = luciusFileDebug
 -
- parseTopLevels :: Parser [TopLevel]
+ parseTopLevels :: Parser [TopLevel Unresolved]
  parseTopLevels =
      go id
-diff --git a/shakespeare-css.cabal b/shakespeare-css.cabal
-index de2497b..874a3b5 100644
---- a/shakespeare-css.cabal
-+++ b/shakespeare-css.cabal
-@@ -33,7 +33,7 @@ library
-                    , shakespeare      >= 1.0     && < 1.1
-                    , template-haskell
-                    , text             >= 0.11.1.1 && < 0.12
--                   , process          >= 1.0      && < 1.2
-+                   , process          >= 1.0      && < 1.3
-                    , parsec           >= 2        && < 4
-                    , transformers
- 
 -- 
 1.7.10.4
 

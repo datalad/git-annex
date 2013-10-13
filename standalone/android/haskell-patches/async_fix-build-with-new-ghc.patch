@@ -1,0 +1,25 @@
+From 0035f0366e426af213244b2eb25ffb63cb9e74d0 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sun, 22 Sep 2013 06:14:50 +0000
+Subject: [PATCH] fix build with new ghc
+
+---
+ async.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/async.cabal b/async.cabal
+index 8e47d9d..98e6312 100644
+--- a/async.cabal
++++ b/async.cabal
+@@ -70,7 +70,7 @@ source-repository head
+ 
+ library
+     exposed-modules:     Control.Concurrent.Async
+-    build-depends:       base >= 4.3 && < 4.7, stm >= 2.2 && < 2.5
++    build-depends:       base >= 4.3 && < 4.9, stm >= 2.2 && < 2.5
+ 
+ test-suite test-async
+     type:       exitcode-stdio-1.0
+-- 
+1.7.10.4
+

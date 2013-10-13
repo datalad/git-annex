@@ -1,0 +1,14 @@
+Thank you for adding import options to handle duplicates. Very handy when consolidating data from various sources.
+
+Can deletion of the source files be decoupled from annex duplication/deduplication options? For example, I would like to import source files without deleting them and at the same time do not import duplicates.
+
+Better yet, since deletion of source files is potentially dangerous, a delete option could be required for deletion to be performed. Example:
+
+git annex import --deduplicate --delete_all_source_files
+git annex import --deduplicate --delete_source_duplicates
+
+Also, it would be great to have import "status" option which goes over files to be imported and logs their status ( to be imported, duplicate etc. ) without actually performing any changes. It would be great for testing and trial runs.
+
+I hope the above make sense. It would make import feature more flexible.
+
+Cheers, 

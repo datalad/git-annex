@@ -36,7 +36,7 @@ seek = [withWords start]
  -}
 start :: [String] -> CommandStart
 start (k:[]) = do
-	case (file2key k) of
+	case file2key k of
 		Nothing -> error "bad key"
 		(Just key) -> whenM (inAnnex key) $ do
 			file <- Fields.getField Fields.associatedFile

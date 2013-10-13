@@ -58,6 +58,7 @@ import qualified Utility.InodeCache
 import qualified Utility.Env
 import qualified Utility.Matcher
 import qualified Utility.Exception
+import qualified Utility.Hash
 #ifndef mingw32_HOST_OS
 import qualified GitAnnex
 import qualified Remote.Helper.Encryptable
@@ -136,6 +137,7 @@ quickcheck =
 	, check "prop_parse_show_log" Logs.Presence.prop_parse_show_log
 	, check "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
 	, check "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog
+	, check "prop_hashes_stable" Utility.Hash.prop_hashes_stable
 	]
   where
 	check desc prop = do

@@ -65,7 +65,7 @@ costBetween x y
 	| x == y = x
 	| x > y = -- avoid fractions unless needed
 		let mid = y + (x - y) / 2
-		    mid' = fromIntegral ((floor mid) :: Int)
+		    mid' = fromIntegral (floor mid :: Int)
 		in if mid' > y then mid' else mid
 	| otherwise = costBetween y x
 

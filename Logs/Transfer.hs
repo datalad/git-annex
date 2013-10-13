@@ -262,6 +262,12 @@ getFailedTransfers u = catMaybes <$> (liftIO . getpairs =<< concat <$> findfiles
 	findfiles = liftIO . mapM dirContentsRecursive
 		=<< mapM (fromRepo . failedTransferDir u) [Download, Upload]
 
+clearFailedTransfers :: UUID -> Annex [(Transfer, TransferInfo)]
+clearFailedTransfers u = do
+	failed <- getFailedTransfers u
+	mapM_ (removeFailedTransfer . fst) failed
+	return failed
+
 removeFailedTransfer :: Transfer -> Annex ()
 removeFailedTransfer t = do
 	f <- fromRepo $ failedTransferFile t

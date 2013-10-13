@@ -17,7 +17,7 @@ import Data.Time.Clock
 import Common.Annex
 import qualified Annex
 import Command
-import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 import Logs.Web
 import qualified Option
 import qualified Utility.Format
@@ -50,8 +50,7 @@ perform relaxed cache url = do
 	v <- findEnclosures url
 	case v of
 		Just l | not (null l) -> do
-			ok <- all id
-				<$> mapM (downloadEnclosure relaxed cache) l
+			ok <- and <$> mapM (downloadEnclosure relaxed cache) l
 			unless ok $
 				feedProblem url "problem downloading item"
 			next $ cleanup url True
@@ -103,9 +102,10 @@ findEnclosures url = extract <$> downloadFeed url
 downloadFeed :: URLString -> Annex (Maybe Feed)
 downloadFeed url = do
 	showOutput
+	ua <- Url.getUserAgent
 	liftIO $ withTmpFile "feed" $ \f h -> do
 		fileEncoding h
-		ifM (Url.download url [] [] f)
+		ifM (Url.download url [] [] f ua)
 			( liftIO $ parseFeedString <$> hGetContentsStrict h
 			, return Nothing
 			)

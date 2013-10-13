@@ -41,7 +41,7 @@ seek = [withField readFdOption convertFd $ \readh ->
 
 convertFd :: Maybe String -> Annex (Maybe Handle)
 convertFd Nothing = return Nothing
-convertFd (Just s) = liftIO $ do
+convertFd (Just s) = liftIO $ 
 	case readish s of
 		Nothing -> error "bad fd"
 		Just fd -> Just <$> fdToHandle fd

@@ -24,8 +24,10 @@ import Logs.Trust
 import Logs.Group
 import Config
 import Git.Config
+import Git.Remote
 import Assistant.Sync
 import Config.Cost
+import Utility.NotificationBroadcaster
 import qualified Git
 #ifdef WITH_XMPP
 #endif
@@ -33,6 +35,7 @@ import qualified Git
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
+import Data.Function
 
 data Actions
 	= DisabledRepoActions
@@ -82,8 +85,8 @@ notWanted _ = False
  -
  - Returns a div, which will be inserted into the calling page.
  -}
-getRepoListR :: RepoListNotificationId -> Handler Html
-getRepoListR (RepoListNotificationId nid reposelector) = do
+getRepoListR :: NotificationId -> RepoSelector -> Handler Html
+getRepoListR nid reposelector = do
 	waitNotifier getRepoListBroadcaster nid
 	p <- widgetToPageContent $ repoListDisplay reposelector
 	giveUrlRenderer $ [hamlet|^{pageBody p}|]
@@ -98,7 +101,7 @@ mainRepoSelector = RepoSelector
 
 {- List of cloud repositories, configured and not. -}
 cloudRepoList :: Widget
-cloudRepoList = repoListDisplay $ RepoSelector
+cloudRepoList = repoListDisplay RepoSelector
 	{ onlyCloud = True
 	, onlyConfigured = False
 	, includeHere = False
@@ -156,9 +159,10 @@ repoList reposelector
 				else return l
 	unconfigured = liftAnnex $ do
 		m <- readRemoteLog
+		g <- gitRepo
 		map snd . catMaybes . filter selectedremote 
-			. map (findinfo m)
-			<$> (trustExclude DeadTrusted $ M.keys m)
+			. map (findinfo m g)
+			<$> trustExclude DeadTrusted (M.keys m)
 	selectedrepo r
 		| Remote.readonly r = False
 		| onlyCloud reposelector = Git.repoIsUrl (Remote.repo r) && not (isXMPPRemote r)
@@ -167,7 +171,7 @@ repoList reposelector
 	selectedremote (Just (iscloud, _))
 		| onlyCloud reposelector = iscloud
 		| otherwise = True
-	findinfo m u = case M.lookup "type" =<< M.lookup u m of
+	findinfo m g u = case getconfig "type" of
 		Just "rsync" -> val True EnableRsyncR
 		Just "directory" -> val False EnableDirectoryR
 #ifdef WITH_S3
@@ -177,11 +181,19 @@ repoList reposelector
 #ifdef WITH_WEBDAV
 		Just "webdav" -> val True EnableWebDAVR
 #endif
+		Just "gcrypt" ->
+			-- Skip gcrypt repos on removable drives;
+			-- handled separately.
+			case getconfig "gitrepo" of
+				Just rr	| remoteLocationIsUrl (parseRemoteLocation rr g) ->
+					val True EnableSshGCryptR
+				_ -> Nothing
 		_ -> Nothing
 	  where
+	  	getconfig k = M.lookup k =<< M.lookup u m
 		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
 	list l = liftAnnex $ do
-		let l' = nubBy (\x y -> fst x == fst y) l
+		let l' = nubBy ((==) `on` fst) l
 		l'' <- zip
 			<$> Remote.prettyListUUIDs (map fst l')
 			<*> pure l'
@@ -247,7 +259,7 @@ getRetryUnfinishedRepositoriesR = do
 	redirect DashboardR
   where
 	unstall r = do
-		liftIO $ fixSshKeyPair
+		liftIO fixSshKeyPair
 		liftAnnex $ setConfig 
 			(remoteConfig (Remote.repo r) "ignore")
 			(boolConfig False)

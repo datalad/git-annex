@@ -29,7 +29,9 @@ gcrypt:
 ## notes
 
 For git-annex to store files in a repository on a remote server, you need
-shell access, and `rsync` must be installed. 
+shell access, and `rsync` must be installed. Those are the minimum
+requirements, but it's also recommended to install git-annex on the remote
+server, so that [[git-annex-shell]] can be used.
 
 While you can use git-remote-gcrypt with servers like github, git-annex
 can't store files on them. In such a case, you can just use

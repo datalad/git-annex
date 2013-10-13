@@ -56,7 +56,7 @@ getSwitchToRepositoryR repo = do
 				( return url
 				, delayed $ waiturl urlfile
 				)
-	listening url = catchBoolIO $ fst <$> Url.exists url []
+	listening url = catchBoolIO $ fst <$> Url.exists url [] Nothing
 	delayed a = do
 		threadDelay 100000 -- 1/10th of a second
 		a

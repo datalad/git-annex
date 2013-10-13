@@ -32,7 +32,7 @@ seek = [withKeys start]
 start :: Key -> CommandStart
 start key = ifM (inAnnex key)
 	( error "key is already present in annex"
-	, fieldTransfer Download key $ \_p -> do
+	, fieldTransfer Download key $ \_p ->
 		ifM (getViaTmp key go)
 			( do
 				-- forcibly quit after receiving one key,
@@ -72,7 +72,18 @@ start key = ifM (inAnnex key)
 				return $ size == size'
 		if oksize
 			then case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
-				Nothing -> return False
-				Just backend -> maybe (return True) (\a -> a key tmp)
+				Nothing -> do
+					warning "recvkey: received key from direct mode repository using unknown backend; cannot check; discarding"
+					return False
+				Just backend -> maybe (return True) runfsck
 					(Types.Backend.fsckKey backend)
-			else return False
+			else do
+				warning "recvkey: received key with wrong size; discarding"
+				return False
+	  where
+	  	runfsck check = ifM (check key tmp)
+			( return True
+			, do
+				warning "recvkey: received key from direct mode repository seems to have changed as it was transferred; discarding"
+				return False
+			)

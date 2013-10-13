@@ -60,7 +60,7 @@ withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
 withPathContents a params = map a . concat <$> liftIO (mapM get params)
   where
 	get p = ifM (isDirectory <$> getFileStatus p)
-		( map (\f -> (f, makeRelative p f)) <$> dirContentsRecursive p
+		( map (\f -> (f, makeRelative (parentDir p) f)) <$> dirContentsRecursive p
 		, return [(p, takeFileName p)]
 		)
 

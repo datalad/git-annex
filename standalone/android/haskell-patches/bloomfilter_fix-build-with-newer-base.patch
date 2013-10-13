@@ -1,0 +1,26 @@
+From 09bcaf4f203c39c967a6951d56fd015347bb5dae Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sat, 21 Sep 2013 21:57:21 +0000
+Subject: [PATCH] fix build with newer base
+
+---
+ Data/BloomFilter/Array.hs |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+diff --git a/Data/BloomFilter/Array.hs b/Data/BloomFilter/Array.hs
+index e085bbe..d94757a 100644
+--- a/Data/BloomFilter/Array.hs
++++ b/Data/BloomFilter/Array.hs
+@@ -3,7 +3,8 @@
+ 
+ module Data.BloomFilter.Array (newArray) where
+ 
+-import Control.Monad.ST (ST, unsafeIOToST)
++import Control.Monad.ST (ST)
++import Control.Monad.ST.Unsafe (unsafeIOToST)
+ import Data.Array.Base (MArray, STUArray(..), unsafeNewArray_)
+ #if __GLASGOW_HASKELL__ >= 704
+ import Foreign.C.Types (CInt(..), CSize(..))
+-- 
+1.7.10.4
+

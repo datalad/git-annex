@@ -20,7 +20,7 @@ import qualified Annex
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
-import Remote.Helper.Ssh
+import qualified Remote.Helper.Ssh as Ssh
 import qualified Utility.Dot as Dot
 
 -- a link from the first repository to the second (its remote)
@@ -203,9 +203,9 @@ tryScan r
 	  where
 		p = proc cmd $ toCommand params
 
-	configlist = onRemote r (pipedconfig, Nothing) "configlist" [] []
+	configlist = Ssh.onRemote r (pipedconfig, Nothing) "configlist" [] []
 	manualconfiglist = do
-		sshparams <- sshToRepo r [Param sshcmd]
+		sshparams <- Ssh.toRepo r [Param sshcmd]
 		liftIO $ pipedconfig "ssh" sshparams
 	  where
 		sshcmd = cddir ++ " && " ++

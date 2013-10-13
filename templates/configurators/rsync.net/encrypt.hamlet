@@ -1,0 +1,43 @@
+<div .span9 .hero-unit>
+  <h2>
+    Ready to use rsync.net
+  <p>
+    All data will be encrypted before it is sent to rsync.net. #
+    There are two options for how to encrypt your data.
+  <h3>
+    Simple shared encryption
+  <p>
+    This allows everyone who has a clone of this repository to decrypt the #
+    files stored on rsync.net. That makes it good for sharing. #
+    And it's easy to set up and use.
+  <p>
+    <a .btn href="@{MakeRsyncNetSharedR sshdata}" onclick="$('#setupmodal').modal('show');">
+      <i .icon-lock></i> Use shared encryption
+  <p style="text-align: center">
+    -or-
+  <h3>
+    Encrypt with GnuPG key
+  <p>
+    This stores an encrypted clone of your repository on rsync.net, #
+    unlike shared encryption which only stores file contents on rsync.net. #
+    So it's good for backups. But the encryption will prevent you from #
+    sharing the rsync.net repository with friends, or easily accessing #
+    its contents on another computer.
+  <p>
+    $forall (keyid, name) <- secretkeys
+      <p>
+        <a .btn href="@{MakeRsyncNetGCryptR sshdata (RepoKey keyid)}" onclick="$('#setupmodal').modal('show');">
+          <i .icon-lock></i> Encrypt repository #
+        to ^{gpgKeyDisplay keyid (Just name)}
+  <p>
+    <a .btn href="@{MakeRsyncNetGCryptR sshdata NoRepoKey}" onclick="$('#genkeymodal').modal('show');">
+      <i .icon-plus-sign></i> Encrypt repository #
+    with a new encryption key
+^{genKeyModal}
+<div .modal .fade #setupmodal>
+  <div .modal-header>
+    <h3>
+      Making repository ...
+  <div .modal-body>
+    <p>
+      Setting up your rsync.net repository. This could take a minute.

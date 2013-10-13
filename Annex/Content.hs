@@ -43,7 +43,7 @@ import qualified Annex.Queue
 import qualified Annex.Branch
 import Utility.DiskFree
 import Utility.FileMode
-import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 import Types.Key
 import Utility.DataUnits
 import Utility.CopyFile
@@ -275,7 +275,7 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		thawContentDir =<< calcRepo (gitAnnexLocation key)
 		thawContent src
 		v <- isAnnexLink f
-		if (Just key == v)
+		if Just key == v
 			then do
 				updateInodeCache key src
 				replaceFile f $ liftIO . moveFile src
@@ -458,7 +458,7 @@ downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   	go Nothing = do
 		opts <- map Param . annexWebOptions <$> Annex.getGitConfig
 		headers <- getHttpHeaders
-		liftIO $ anyM (\u -> Url.download u headers opts file) urls
+		anyM (\u -> Url.withUserAgent $ Url.download u headers opts file) urls
 	go (Just basecmd) = liftIO $ anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =
 		boolSystem "sh" [Param "-c", Param $ gencmd url basecmd]

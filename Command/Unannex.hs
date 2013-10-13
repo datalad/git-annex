@@ -46,7 +46,7 @@ performIndirect file key = do
 	-- git as a normal non-annexed file, to thinking that the
 	-- file has been unlocked and needs to be re-annexed.
 	(s, reap) <- inRepo $ LsFiles.staged [file]
-	when (not $ null s) $
+	unless (null s) $
 		inRepo $ Git.Command.run
 			[ Param "commit"
 			, Param "-q"

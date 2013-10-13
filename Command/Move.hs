@@ -38,7 +38,7 @@ start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> C
 start to from move file (key, _) = start' to from move (Just file) key
 
 startKey :: Maybe Remote -> Maybe Remote -> Bool -> Key -> CommandStart
-startKey to from move key = start' to from move Nothing key
+startKey to from move = start' to from move Nothing
 
 start' :: Maybe Remote -> Maybe Remote -> Bool -> AssociatedFile -> Key -> CommandStart
 start' to from move afile key = do

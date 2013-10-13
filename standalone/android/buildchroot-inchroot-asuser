@@ -1,0 +1,39 @@
+#!/bin/sh
+# Runs inside the chroot set up by buildchroot, as the user it creates
+set -e
+
+cd
+rm -rf .ghc .cabal
+cabal update
+cabal install happy alex --bindir=$HOME/bin
+PATH=$HOME/bin:$PATH
+export PATH
+mkdir -p .android
+cd .android
+git clone https://github.com/joeyh/ghc-android
+cd ghc-android
+git checkout stable-ghc-snapshot
+./build
+
+# This saves 2 gb, and the same sources are in build-*/ghc
+rm -rf stage0
+
+# Set up android SDK where the git-annex android Makefile
+# expects to find it.
+cd ..
+ln -s ghc-android/android-ndk-* android-ndk
+wget http://dl.google.com/android/adt/adt-bundle-linux-x86-20130917.zip
+unzip adt*.zip
+rm adt*.zip
+mv adt-bundle-linux-x86-* adt-bundle-linux-x86
+rm -rf adt-bundle-linux-x86/eclipse
+
+# The git-annex android Makefile needs this cc symlink.
+ln -s arm-linux-androideabi-gcc \
+	$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/cc
+
+cd
+git clone git://git-annex.branchable.com/ git-annex
+
+git config --global user.email androidbuilder@example.com
+git config --global user.name androidbuilder

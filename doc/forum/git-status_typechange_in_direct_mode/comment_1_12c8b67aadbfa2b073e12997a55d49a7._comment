@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4830:1600:187::2"
+ subject="comment 1"
+ date="2013-09-20T15:24:25Z"
+ content="""
+These messages are normal in direct mode. 
+
+They happen because git status does not know about git-annex's direct mode. So it sees a file that has a symlink checked into git, but a normal file in place in the working tree. Thus, its type has changed. Short of hacking or wrapping git, or switching to indirect mode ;), there's not much that can be done about this.
+
+You might want to read [[direct_mode]] for more about this, and some of the problems it can cause when running certian git commands.
+"""]]

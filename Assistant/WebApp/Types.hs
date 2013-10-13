@@ -150,9 +150,6 @@ data RepoSelector = RepoSelector
 	}
 	deriving (Read, Show, Eq)
 
-data RepoListNotificationId = RepoListNotificationId NotificationId RepoSelector
-	deriving (Read, Show, Eq)
-
 data RemovableDrive = RemovableDrive 
 	{ diskFree :: Maybe Integer
 	, mountPoint :: Text
@@ -162,15 +159,6 @@ data RemovableDrive = RemovableDrive
 
 data RepoKey = RepoKey KeyId | NoRepoKey
 	deriving (Read, Show, Eq, Ord)
-
-{- Only needed to work around old-yesod bug that emits a warning message
- - when a route has two parameters. -}
-data FilePathAndUUID = FilePathAndUUID FilePath UUID
-	deriving (Read, Show, Eq)
-
-instance PathPiece FilePathAndUUID where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
 
 instance PathPiece RemovableDrive where
 	toPathPiece = pack . show
@@ -213,10 +201,6 @@ instance PathPiece BuddyKey where
 	fromPathPiece = readish . unpack
 
 instance PathPiece PairKey where
-	toPathPiece = pack . show
-	fromPathPiece = readish . unpack
-
-instance PathPiece RepoListNotificationId where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
 
