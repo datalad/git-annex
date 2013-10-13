@@ -68,7 +68,7 @@ number takes that many paths from the end.
 
 ## videos
 
-<a name=quvi />
+<a name=quvi></a>
 
 There's support for downloading videos from sites like YouTube, Vimeo,
 and many more. This relies on [quvi](http://quvi.sourceforge.net/) to find
