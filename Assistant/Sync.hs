@@ -44,13 +44,17 @@ import Control.Concurrent
  - they push to us. Since XMPP pushes run ansynchronously, any scan of the
  - XMPP remotes has to be deferred until they're done pushing to us, so
  - all XMPP remotes are marked as possibly desynced.
+ -
+ - Also handles signaling any connectRemoteNotifiers, after the syncing is
+ - done.
  -}
 reconnectRemotes :: Bool -> [Remote] -> Assistant ()
 reconnectRemotes _ [] = noop
 reconnectRemotes notifypushes rs = void $ do
 	modifyDaemonStatus_ $ \s -> s
 		{ desynced = S.union (S.fromList $ map Remote.uuid xmppremotes) (desynced s) }
-	syncAction rs (const go)
+	void $ syncAction rs (const go)
+	mapM_ signal rs
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
 	(xmppremotes, nonxmppremotes) = partition isXMPPRemote rs
@@ -73,6 +77,9 @@ reconnectRemotes notifypushes rs = void $ do
 			filter (not . remoteAnnexIgnore . Remote.gitconfig)
 				nonxmppremotes
 		return failed
+	signal r = liftIO . mapM_ (flip tryPutMVar ())
+		=<< fromMaybe [] . M.lookup (Remote.uuid r) . connectRemoteNotifiers
+			<$> getDaemonStatus
 
 {- Updates the local sync branch, then pushes it to all remotes, in
  - parallel, along with the git-annex branch. This is the same

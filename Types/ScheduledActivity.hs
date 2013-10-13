@@ -19,6 +19,12 @@ data ScheduledActivity
 	| ScheduledRemoteFsck UUID Schedule Duration
   deriving (Eq, Read, Show, Ord)
 
+{- Activities that run on a remote, within a time window, so
+ - should be run when the remote gets connected. -}
+connectActivityUUID :: ScheduledActivity -> Maybe UUID
+connectActivityUUID (ScheduledRemoteFsck u (Schedule _ AnyTime) _) = Just u
+connectActivityUUID _ = Nothing
+
 getSchedule :: ScheduledActivity -> Schedule
 getSchedule (ScheduledSelfFsck s _) = s
 getSchedule (ScheduledRemoteFsck _ s _) = s
