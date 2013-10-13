@@ -371,10 +371,11 @@ staleSize label dirspec = go =<< lift (dirKeys dirspec)
 	onsize size = stat label $
 		json (++ aside "clean up with git-annex unused") $
 			return $ roughSize storageUnits False size
-	keysizes keys = map (fromIntegral . fileSize) <$> stats keys
-	stats keys = do
+	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
-		liftIO $ forM keys $ \k -> getFileStatus (dir </> keyFile k)
+		liftIO $ forM keys $ \k -> catchDefaultIO 0 $
+			fromIntegral . fileSize 
+				<$> getFileStatus (dir </> keyFile k)
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"
