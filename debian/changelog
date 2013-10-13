@@ -12,7 +12,7 @@ git-annex (4.20131002~bpo70+1) wheezy-backports; urgency=low
   * Use cryptohash rather than SHA for hashing when no external hash program
     is available. This is a significant speedup for SHA256 on OSX, for
     example.
-  * Added SKEIN256 and SKEIN512 backends.
+  * Added SKEIN256 and SKEIN512 backends. (Not available in this backport.)
   * Android build redone from scratch, many dependencies updated,
     and entire build can now be done using provided scripts.
   * assistant: Clear the list of failed transfers when doing a full transfer
