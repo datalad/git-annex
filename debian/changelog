@@ -1,5 +1,8 @@
 git-annex (4.20131003) UNRELEASED; urgency=low
 
+  * The assitant can now run scheduled incremental fsck jobs on the local
+    repository and remotes. These can be configured using vicfg or with the
+    webapp.
   * Automatically and safely detect and recover from dangling
     .git/annex/index.lock files, which would prevent git from
     committing to the git-annex branch, eg after a crash.

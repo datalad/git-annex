@@ -410,6 +410,12 @@ subdirectories).
   Without an expression, displays the current preferred content setting
   of the repository.
 
+* `schedule repository [expression]`
+
+  When run with an expression, configures scheduled jobs to run at a
+  particular time. This can be used to make the assistant periodically run
+  incremental fscks. See SCHEDULED JOBS below.
+
 * `vicfg`
 
   Opens EDITOR on a temp file containing most of the above configuration
@@ -935,8 +941,8 @@ file contents are present at either of two repositories.
 
 Each repository has a preferred content setting, which specifies content
 that the repository wants to have present. These settings can be configured
-using `git annex vicfg`. They are used by the `--auto` option, and
-by the git-annex assistant.
+using `git annex vicfg` or `git annex content`.
+They are used by the `--auto` option, and by the git-annex assistant.
 
 The preferred content settings are similar, but not identical to
 the file matching options specified above, just without the dashes.
@@ -952,7 +958,31 @@ When a repository is in one of the standard predefined groups, like "backup"
 and "client", setting its preferred content to "standard" will use a
 built-in preferred content expression ddeveloped for that group.
 
-# CONFIGURATION
+# SCHEDULED JOBS
+
+The git-annex assistant daemon can be configured to run jobs at scheduled
+times. This is similar to cron (and you can use cron if you prefer), but
+has the advantage of being integrated into git-annex, and so being able
+to eg, fsck a repository on a removable drive when the drive gets
+connected.
+
+The scheduled jobs can be configured using `git annex vicfg` or
+`git annex schedule`. 
+
+These actions are available: "fsck self", "fsck UUID" (where UUID
+is the UUID of a remote to fsck). After the action comes the duration
+to allow the action to run, and finally the schedule of when to run it.
+
+To schedule multiple jobs, separate them with "; ".
+
+Some examples:
+
+	fsck self 30m every day at any time
+	fsck self 1h every day at 3 AM
+	fsck self 1h on day 1 of every month at any time
+	fsck self 1h on day 1 of weeks divisible by 2 at any time
+
+# CONFIGURATION VIA .git/config
 
 Like other git commands, git-annex is configured via `.git/config`.
 Here are all the supported configuration settings.

@@ -12,7 +12,6 @@ import qualified Data.Set as S
 import System.Environment (getEnv)
 import Data.Tuple (swap)
 import Data.Char (isSpace)
-import Data.Either
 
 import Common.Annex
 import Command
@@ -132,7 +131,7 @@ genCfg cfg descs = unlines $ concat
 		, com "Scheduled activities"
 		, com "(Separate multiple activities with \"; \")"
 		]
-		(\(l, u) -> line "schedule" u $ intercalate "; " $ map fromScheduledActivity l)
+		(\(l, u) -> line "schedule" u $ fromScheduledActivities l)
 		(\u -> line "schedule" u "")
 
 	settings field desc showvals showdefaults = concat
@@ -188,14 +187,11 @@ parseCfg curcfg = go [] curcfg . lines
 				Nothing ->
 					let m = M.insert u value (cfgPreferredContentMap cfg)
 					in Right $ cfg { cfgPreferredContentMap = m }
-		| setting == "schedule" =
-			let (bad, good) = partitionEithers $ 
-				map parseScheduledActivity $ split "; " value
-			in if null bad
-				then 
-					let m = M.insert u good (cfgScheduleMap cfg)
-					in Right $ cfg { cfgScheduleMap = m }
-				else Left $ intercalate "; " bad
+		| setting == "schedule" = case parseScheduledActivities value of
+			Left e -> Left e
+			Right l -> 
+				let m = M.insert u l (cfgScheduleMap cfg)
+				in Right $ cfg { cfgScheduleMap = m }
 		| otherwise = badval "setting" setting
 
 	showerr (Just msg, l) = [parseerr ++ msg, l]

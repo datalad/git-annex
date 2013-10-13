@@ -12,6 +12,8 @@ import Utility.Scheduled
 import Utility.HumanTime
 import Types.UUID
 
+import Data.Either
+
 data ScheduledActivity 
 	= ScheduledSelfFsck Schedule Duration
 	| ScheduledRemoteFsck UUID Schedule Duration
@@ -48,3 +50,14 @@ parseScheduledActivity s = case words s of
 	qualified (Left e) = Left $ e ++ " in \"" ++ s ++ "\""
 	qualified v = v
 	getduration d = maybe (Left $ "failed to parse duration \""++d++"\"") Right (parseDuration d)
+
+fromScheduledActivities :: [ScheduledActivity] -> String
+fromScheduledActivities = intercalate "; " . map fromScheduledActivity
+
+parseScheduledActivities :: String -> Either String [ScheduledActivity]
+parseScheduledActivities s
+	| null bad = Right good
+	| otherwise = Left $ intercalate "; " bad
+  where
+	(bad, good) = partitionEithers $
+		map parseScheduledActivity $ split "; " s
