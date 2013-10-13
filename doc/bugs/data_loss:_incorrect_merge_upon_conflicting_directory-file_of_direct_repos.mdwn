@@ -1,12 +1,15 @@
 ### Please describe the problem.
-Data loss due to incorrect merge of repos in direct mode.
+Data loss due to incorrect merge of repos in direct mode. (I tested the same scenario in indirect mode and it worked fine there)
 
 Given 2 repos A and B, in direct mode:
+
 1. in A: mkdir f, with a file f in it
 2. in B: touch f
 3. in B: sync 
 
 Result: Only an f.variant-f###remains, which is file f of B, and the merge conflict has already been automatically resolved. I.e. Directory f containing file f, is lost.
+
+Expected result: remaining contents: f.variant-AAA which is file f of B, f.variant-BBB which is directory f of A, containing a file f. Merge conflict marked resolved.
 
 ### What steps will reproduce the problem?
 Execute the script given below in additional information.
