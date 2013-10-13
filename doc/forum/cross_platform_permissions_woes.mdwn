@@ -5,7 +5,7 @@ my "servers" would be linux, i am actually using fedora and i upgraded from fc17
 what happens, is that once i try to copy from the windows machine where the file is to the linux through ssh+rsync, i receive this error - as long as the user owning the linux repository isn't root:
 
     c:\locale>git annex copy --to linux myfile
-    copy bella (checking linux...) (to linux...)
+    copy myfile (checking linux...) (to linux...)
     rsync: failed to open "/linux/annex/tmp/SHA256E-s10--937a89b559820f8658892"
     myfile
           10 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
