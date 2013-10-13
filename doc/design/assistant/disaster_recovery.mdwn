@@ -38,8 +38,9 @@ prompt the user to eg, connect a drive containing it. Or perhaps this is a
 special case of a general problem, and the webapp should prompt the user
 when any desired file is available on a remote that's not mounted?
 
-TODO: Detect when a removable drive is connected in the Cronner, and check
-and try to run its remote fsck jobs.
+Detect when a removable drive is connected in the Cronner, and check
+and try to run its remote fsck jobs. **done** (Same mechanism will work for
+network remotes becoming connected.)
 
 TODO: git-annex-shell fsck support, which would allow cheap fast fscks
 of ssh remotes.
