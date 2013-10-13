@@ -1,4 +1,4 @@
-git-annex (4.20131002) unstable; urgency=low
+git-annex (4.20131002~bpo70+1) wheezy-backports; urgency=low
 
   * Note that the layout of gcrypt repositories has changed, and
     if you created one you must manually upgrade it.
