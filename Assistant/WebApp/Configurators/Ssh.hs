@@ -116,7 +116,7 @@ postAddSshR :: Handler Html
 postAddSshR = sshConfigurator $ do
 	username <- liftIO $ T.pack <$> myUserName
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ sshInputAForm textField $
+		runFormPostNoToken $ renderBootstrap $ sshInputAForm textField $
 			SshInput Nothing (Just username) Nothing 22
 	case result of
 		FormSuccess sshinput -> do
@@ -168,7 +168,7 @@ enableSpecialSshRemote getsshinput rsyncnetsetup genericsetup u = do
 	case (mkSshInput . unmangle <$> getsshinput m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- liftH $
-				runFormPost $ renderBootstrap $ sshInputAForm textField sshinput
+				runFormPostNoToken $ renderBootstrap $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (inputHostname sshinput') ->
@@ -413,7 +413,7 @@ getAddRsyncNetR :: Handler Html
 getAddRsyncNetR = postAddRsyncNetR
 postAddRsyncNetR :: Handler Html
 postAddRsyncNetR = do
-	((result, form), enctype) <- runFormPost $
+	((result, form), enctype) <- runFormPostNoToken $
 		renderBootstrap $ sshInputAForm hostnamefield $
 			SshInput Nothing Nothing Nothing 22
 	let showform status = inpage $

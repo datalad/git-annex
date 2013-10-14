@@ -126,7 +126,7 @@ postAddIAR :: Handler Html
 postAddIAR = iaConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ iaInputAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ iaInputAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = escapeBucket $ T.unpack $ itemName input
@@ -165,7 +165,7 @@ enableIARemote :: UUID -> Widget
 enableIARemote uuid = do
 	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ iaCredsAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ iaCredsAForm defcreds
 	case result of
 		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog

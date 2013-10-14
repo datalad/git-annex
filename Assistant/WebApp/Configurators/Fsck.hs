@@ -59,7 +59,7 @@ runFsckForm new activity = case activity of
   	go (Schedule r t) d ru = do
 		u <- liftAnnex getUUID
 		repolist <- liftAssistant (getrepolist ru)
-		runFormPost $ \msg -> do
+		runFormPostNoToken $ \msg -> do
 			(reposRes, reposView) <- mreq (selectFieldList repolist) "" (Just ru)
 			(durationRes, durationView) <- mreq intField "" (Just $ durationSeconds d `quot` 60 )
 			(timeRes, timeView) <- mreq (selectFieldList times) "" (Just t)

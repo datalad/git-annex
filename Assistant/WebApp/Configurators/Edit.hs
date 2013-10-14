@@ -181,7 +181,7 @@ editForm new uuid = page "Edit repository" (Just Configuration) $ do
 	curr <- liftAnnex $ getRepoConfig uuid mremote
 	liftAnnex $ checkAssociatedDirectory curr mremote
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ editRepositoryAForm (isNothing mremote) curr
+		runFormPostNoToken $ renderBootstrap $ editRepositoryAForm (isNothing mremote) curr
 	case result of
 		FormSuccess input -> liftH $ do
 			setRepoConfig uuid mremote curr input

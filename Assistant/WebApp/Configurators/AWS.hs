@@ -121,7 +121,7 @@ postAddS3R :: Handler Html
 postAddS3R = awsConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ s3InputAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ s3InputAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = T.unpack $ repoName input
@@ -144,7 +144,7 @@ postAddGlacierR :: Handler Html
 postAddGlacierR = glacierConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ glacierInputAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ glacierInputAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = T.unpack $ repoName input
@@ -187,7 +187,7 @@ enableAWSRemote :: RemoteType -> UUID -> Widget
 enableAWSRemote remotetype uuid = do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ awsCredsAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ awsCredsAForm defcreds
 	case result of
 		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog

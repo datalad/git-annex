@@ -112,7 +112,7 @@ xmppform :: Route WebApp -> Handler Html
 xmppform next = xmppPage $ do
 	((result, form), enctype) <- liftH $ do
 		oldcreds <- liftAnnex getXMPPCreds
-		runFormPost $ renderBootstrap $ xmppAForm $
+		runFormPostNoToken $ renderBootstrap $ xmppAForm $
 			creds2Form <$> oldcreds
 	let showform problem = $(widgetFile "configurators/xmpp")
 	case result of

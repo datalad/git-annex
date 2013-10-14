@@ -81,7 +81,7 @@ deleteCurrentRepository = dangerPage $ do
 	havegitremotes <- haveremotes syncGitRemotes
 	havedataremotes <- haveremotes syncDataRemotes
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ sanityVerifierAForm $
+		runFormPostNoToken $ renderBootstrap $ sanityVerifierAForm $
 			SanityVerifier magicphrase
 	case result of
 		FormSuccess _ -> liftH $ do

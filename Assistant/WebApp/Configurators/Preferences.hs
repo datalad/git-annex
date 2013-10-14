@@ -90,7 +90,7 @@ postPreferencesR :: Handler Html
 postPreferencesR = page "Preferences" (Just Configuration) $ do
 	((result, form), enctype) <- liftH $ do
 		current <- liftAnnex getPrefs
-		runFormPost $ renderBootstrap $ prefsAForm current
+		runFormPostNoToken $ renderBootstrap $ prefsAForm current
 	case result of
 		FormSuccess new -> liftH $ do
 			liftAnnex $ storePrefs new
