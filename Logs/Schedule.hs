@@ -27,6 +27,7 @@ import Types.ScheduledActivity
 import qualified Annex.Branch
 import Logs
 import Logs.UUIDBased
+import Utility.Tmp
 
 scheduleSet :: UUID -> [ScheduledActivity] -> Annex ()
 scheduleSet uuid@(UUID _) activities = do
@@ -67,5 +68,5 @@ getLastRunTimes = do
 setLastRunTime :: ScheduledActivity -> LocalTime -> Annex ()
 setLastRunTime activity lastrun = do
 	f <- fromRepo gitAnnexScheduleState
-	liftIO . writeFile f . show . M.insert activity lastrun
+	liftIO . viaTmp writeFile f . show . M.insert activity lastrun
 		=<< getLastRunTimes
