@@ -1,8 +1,6 @@
 ### Please describe the problem.
 git add hangs.
 Maybe because of encrypted sdcard?
-/dev/block/dm-2 /mnt/sdcard vfat rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702,allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
-tmpfs /mnt/sdcard/.android_secure tmpfs ro,relatime,size=0k,mode=000 0 0
 
 
 
@@ -31,7 +29,8 @@ tmpfs /mnt/sdcard/.android_secure tmpfs ro,relatime,size=0k,mode=000 0 0
     [2013-10-13 22:05:17 CEST] chat: git ["--git-dir=/mnt/sdcard/annex/.git","--work-tree=/mnt/sdcard/annex","cat-file","--batch"]
     add lala [2013-10-13 22:05:17 CEST] chat: git ["--git-dir=/mnt/sdcard/annex/.git","--work-tree=/mnt/sdcard/annex","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
     ** HANGS **
-    
+  
+
 
 The same will happen when just running and asking assistant to create annex for camera.
 
@@ -245,6 +244,12 @@ lsof | grep git:
     9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1177784]
 
 
+vfat/sdcard entry:
+    /dev/block/dm-2 /mnt/sdcard vfat     rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702, \ 
+    allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+    tmpfs /mnt/sdcard/.android_secure tmpfs ro,relatime,size=0k,mode=000 0 0
+
+
 
 ### What version of git-annex are you using? On what operating system?
 Version from git annex version:
@@ -253,6 +258,10 @@ Version from git annex version:
 I tried both daily build and most recent 'stable' with the same effect.
 
 Android 4.0.3 (Htc One V)
+
+The same happens on my another android device; Samsung tablet with... also 4.0.3.
+Tried to gather strace information on git, but couldn't. If anything more is necessary,
+please let me know.
 
 ### Please provide any additional information below.
 
