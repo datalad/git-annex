@@ -71,3 +71,5 @@ git-annex: Nothing listed in /home/omehani/.config/git-annex/autostart
 
 # End of transcript or log.
 """]]
+
+> workaround is in place [[done]] --[[Joey]]

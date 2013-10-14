@@ -67,7 +67,7 @@ postAddBoxComR :: Handler Html
 postAddBoxComR = boxConfigurator $ do
 	defcreds <- liftAnnex $ previouslyUsedWebDAVCreds "box.com"
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ boxComAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ boxComAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ 
 			makeWebDavRemote initSpecialRemote "box.com" (toCredPair input) $ M.fromList
@@ -110,7 +110,7 @@ postEnableWebDAVR uuid = do
 			maybe (pure Nothing) previouslyUsedWebDAVCreds $
 				urlHost url
 		((result, form), enctype) <- liftH $
-			runFormPost $ renderBootstrap $ webDAVCredsAForm defcreds
+			runFormPostNoToken $ renderBootstrap $ webDAVCredsAForm defcreds
 		case result of
 			FormSuccess input -> liftH $
 				makeWebDavRemote enableSpecialRemote name (toCredPair input) M.empty
