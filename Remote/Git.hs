@@ -42,6 +42,7 @@ import Utility.Metered
 #ifndef mingw32_HOST_OS
 import Utility.CopyFile
 #endif
+import Utility.Env
 import Utility.Batch
 import Remote.Helper.Git
 import Remote.Helper.Messages
@@ -410,7 +411,13 @@ fsckOnRemote r params
 			Just (c, ps) -> batchCommand c ps
 	| otherwise = return $ do
 		program <- readProgramFile
-		batchCommand program $ Param "fsck" : params
+		env <- getEnvironment
+		r' <- Git.Config.read r
+		let env' =
+			[ ("GIT_WORK_TREE", Git.repoPath r')
+			, ("GIT_DIR", Git.localGitDir r')
+			] ++ env
+		batchCommandEnv program (Param "fsck" : params) (Just env')
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}

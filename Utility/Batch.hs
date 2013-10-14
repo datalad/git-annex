@@ -17,6 +17,7 @@ import Control.Concurrent.Async
 import System.Posix.Process
 #endif
 import qualified Control.Exception as E
+import System.Process (env)
 
 {- Runs an operation, at batch priority.
  -
@@ -48,11 +49,11 @@ maxNice = 19
  - exception, it sends the command a SIGTERM, and after the command
  - finishes shuttting down, it re-raises the async exception. -}
 batchCommand :: String -> [CommandParam] -> IO Bool
-batchCommand command params = do
-	(_, _, _, pid) <- createProcess $ proc "sh"
-		[ "-c"
-		, "exec " ++ nicedcommand
-		]
+batchCommand command params = batchCommandEnv command params Nothing
+
+batchCommandEnv :: String -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
+batchCommandEnv command params environ = do
+	(_, _, _, pid) <- createProcess $ p { env = environ }
 	r <- E.try (waitForProcess pid) :: IO (Either E.SomeException ExitCode)
 	case r of
 		Right ExitSuccess -> return True
@@ -62,6 +63,10 @@ batchCommand command params = do
 			void $ waitForProcess pid
 			E.throwIO asyncexception
   where
+  	p = proc "sh"
+		[ "-c"
+		, "exec " ++ nicedcommand
+		]
   	commandline = unwords $ map shellEscape $ command : toCommand params
   	nicedcommand
 		| Build.SysConfig.nice = "nice " ++ commandline
