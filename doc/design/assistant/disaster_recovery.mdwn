@@ -42,14 +42,16 @@ Detect when a removable drive is connected in the Cronner, and check
 and try to run its remote fsck jobs. **done** (Same mechanism will work for
 network remotes becoming connected.)
 
+## git-annex-shell remote fsck
+
 TODO: git-annex-shell fsck support, which would allow cheap fast fscks
 of ssh remotes.
 
-## git-annex-shell remote fsck
-
 Would be nice; otherwise remote fsck is too expensive (downloads
-everything) to have the assistant do. (remote fsck --fast might be worth
-having the assistant do)
+everything) to have the assistant do.
+
+Note that Remote.Git already tries to use this, but the assistant does not
+call it for non-local remotes.
 
 ## git fsck
 
