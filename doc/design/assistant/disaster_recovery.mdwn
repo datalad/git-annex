@@ -33,14 +33,20 @@ annoying. **done**
 When fsck finds a damanged file, queue a download of the file from a
 remote. **done**
 
+Detect when a removable drive is connected in the Cronner, and check
+and try to run its remote fsck jobs. **done** (Same mechanism will work for
+network remotes becoming connected.)
+
 TODO: If no accessible remote has a file that fsck reported missing,
 prompt the user to eg, connect a drive containing it. Or perhaps this is a
 special case of a general problem, and the webapp should prompt the user
 when any desired file is available on a remote that's not mounted?
 
-Detect when a removable drive is connected in the Cronner, and check
-and try to run its remote fsck jobs. **done** (Same mechanism will work for
-network remotes becoming connected.)
+TODO: Enhance the Recurrance type to be able to do eg, events that run
+once per month on any day, or once per year, or once per week. This
+would be especially useful for removable drives, which might not be
+plugged in on the 1st of the month. This should be the default in the
+webapp (it's already worded to suggest this.)
 
 ## git-annex-shell remote fsck
 
