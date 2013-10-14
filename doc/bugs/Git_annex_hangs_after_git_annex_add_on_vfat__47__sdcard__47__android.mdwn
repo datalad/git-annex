@@ -263,6 +263,8 @@ The same happens on my another android device; Samsung tablet with... also 4.0.3
 Tried to gather strace information on git, but couldn't. If anything more is necessary,
 please let me know.
 
+The same happens when I git annex add in /data/data/ga.androidterm/anntmp - so it's not sdcard nor vfat. 
+
 ### Please provide any additional information below.
 
 [[!format sh """
