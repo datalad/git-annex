@@ -403,14 +403,14 @@ copyToRemote r key file p
 
 fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
 fsckOnRemote r params
-	| Git.repoIsUrl r = return $ do
-		program <- readProgramFile
-		batchCommand program $ Param "fsck" : params
-	| otherwise = do
+	| Git.repoIsUrl r = do
 		s <- Ssh.git_annex_shell r "fsck" params []
 		return $ case s of
 			Nothing -> return False
 			Just (c, ps) -> batchCommand c ps
+	| otherwise = return $ do
+		program <- readProgramFile
+		batchCommand program $ Param "fsck" : params
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}
