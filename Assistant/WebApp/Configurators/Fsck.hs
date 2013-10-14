@@ -22,6 +22,7 @@ import Logs.Schedule
 import Annex.UUID
 import qualified Remote
 import Assistant.DaemonStatus
+import qualified Annex.Branch
 
 {- This adds a form to the page. It does not handle posting of the form,
  - because unlike a typical yesod form that posts using the same url
@@ -125,22 +126,25 @@ postConfigFsckR = page "Consistency checks" (Just Configuration) $ do
 	checks <- liftAnnex $ S.toList <$> (scheduleGet =<< getUUID)
 	$(widgetFile "configurators/fsck")
 
-getRemoveActivityR :: UUID -> ScheduledActivity -> Handler Html
-getRemoveActivityR u activity = do
-	liftAnnex $ scheduleRemove u activity
+changeSchedule :: Handler () -> Handler Html
+changeSchedule a = do
+	a
+	liftAnnex $ Annex.Branch.commit "update"
 	redirect ConfigFsckR
+
+getRemoveActivityR :: UUID -> ScheduledActivity -> Handler Html
+getRemoveActivityR u activity = changeSchedule $
+	liftAnnex $ scheduleRemove u activity
 
 getAddActivityR :: UUID -> Handler Html
 getAddActivityR = postAddActivityR
 postAddActivityR :: UUID -> Handler Html
-postAddActivityR u = do
+postAddActivityR u = changeSchedule $
 	withFsckForm $ scheduleAdd u
-	redirect ConfigFsckR
 
 getChangeActivityR :: UUID -> ScheduledActivity -> Handler Html
 getChangeActivityR = postChangeActivityR
 postChangeActivityR :: UUID -> ScheduledActivity -> Handler Html
-postChangeActivityR u oldactivity = do
+postChangeActivityR u oldactivity = changeSchedule $
 	withFsckForm $ \newactivity -> scheduleChange u $
 			S.insert newactivity . S.delete oldactivity
-	redirect ConfigFsckR
