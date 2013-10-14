@@ -52,6 +52,7 @@ gen r u c gc = do
 			hasKey = checkPresent r hooktype,
 			hasKeyCheap = False,
 			whereisKey = Nothing,
+			remoteFsck = Nothing,
 			config = M.empty,
 			localpath = Nothing,
 			repo = r,

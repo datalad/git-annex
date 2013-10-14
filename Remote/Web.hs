@@ -56,6 +56,7 @@ gen r _ _ gc =
 		hasKey = checkKey,
 		hasKeyCheap = False,
 		whereisKey = Just getUrls,
+		remoteFsck = Nothing,
 		config = M.empty,
 		gitconfig = gc,
 		localpath = Nothing,

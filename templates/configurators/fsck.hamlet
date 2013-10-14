@@ -1,0 +1,21 @@
+<div .span9 .hero-unit>
+  <h2>
+    Consistency checks
+  <p>
+    Checking the contents of a repository periodically will ensure that #
+    your data is in good shape. Any problems that are detected will #
+    be automatically fixed.
+  <p>
+    Running the consistency check involves reading all the files in the #
+    repository, which can take a long time if it's large. Running just a #
+    little at a time will eventually check the whole repository.
+  $if (not (null checks))
+    <p>
+      Currently scheduled checks:
+      $forall check <- checks
+        ^{showFsckForm False check}
+        <div style="margin-left: 5em">
+          ^{showFsckStatus check}
+  <p>
+    Add a check:
+    ^{showFsckForm True defaultFsck}

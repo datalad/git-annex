@@ -79,6 +79,7 @@ gen r u c gc = do
 			, hasKey = checkPresent r o
 			, hasKeyCheap = False
 			, whereisKey = Nothing
+			, remoteFsck = Nothing
 			, config = M.empty
 			, repo = r
 			, gitconfig = gc

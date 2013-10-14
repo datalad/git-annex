@@ -54,6 +54,7 @@ gen r u c gc = do
 			hasKey = checkPresent dir chunksize,
 			hasKeyCheap = True,
 			whereisKey = Nothing,
+			remoteFsck = Nothing,
 			config = M.empty,
 			repo = r,
 			gitconfig = gc,

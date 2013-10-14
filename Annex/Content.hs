@@ -30,6 +30,7 @@ module Annex.Content (
 	freezeContent,
 	thawContent,
 	cleanObjectLoc,
+	dirKeys,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -522,3 +523,18 @@ thawContent file = unlessM crippledFileSystem $
 	go GroupShared = groupWriteRead file
 	go AllShared = groupWriteRead file
 	go _ = allowWrite file
+
+{- Finds files directly inside a directory like gitAnnexBadDir 
+ - (not in subdirectories) and returns the corresponding keys. -}
+dirKeys :: (Git.Repo -> FilePath) -> Annex [Key]
+dirKeys dirspec = do
+	dir <- fromRepo dirspec
+	ifM (liftIO $ doesDirectoryExist dir)
+		( do
+			contents <- liftIO $ getDirectoryContents dir
+			files <- liftIO $ filterM doesFileExist $
+				map (dir </>) contents
+			return $ mapMaybe (fileKey . takeFileName) files
+		, return []
+		)
+

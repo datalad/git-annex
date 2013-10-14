@@ -18,6 +18,7 @@ import Assistant.Types.NetMessager
 import Assistant.Types.Alert
 
 import Control.Concurrent.STM
+import Control.Concurrent.MVar
 import Control.Concurrent.Async
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
@@ -62,10 +63,15 @@ data DaemonStatus = DaemonStatus
 	, alertNotifier :: NotificationBroadcaster
 	-- Broadcasts notifications when the syncRemotes change
 	, syncRemotesNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when the scheduleLog changes
+	, scheduleLogNotifier :: NotificationBroadcaster
+	-- Broadcasts a notification once the startup sanity check has run.
 	, startupSanityCheckNotifier :: NotificationBroadcaster
 	-- When the XMPP client is connected, this will contain the XMPP
 	-- address.
 	, xmppClientID :: Maybe ClientID
+	-- MVars to signal when a remote gets connected.
+	, connectRemoteNotifiers :: M.Map UUID [MVar ()]
 	}
 
 type TransferMap = M.Map Transfer TransferInfo
@@ -95,4 +101,6 @@ newDaemonStatus = DaemonStatus
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
+	<*> newNotificationBroadcaster
 	<*> pure Nothing
+	<*> pure M.empty

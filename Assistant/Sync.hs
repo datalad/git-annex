@@ -44,13 +44,19 @@ import Control.Concurrent
  - they push to us. Since XMPP pushes run ansynchronously, any scan of the
  - XMPP remotes has to be deferred until they're done pushing to us, so
  - all XMPP remotes are marked as possibly desynced.
+ -
+ - Also handles signaling any connectRemoteNotifiers, after the syncing is
+ - done.
  -}
 reconnectRemotes :: Bool -> [Remote] -> Assistant ()
 reconnectRemotes _ [] = noop
 reconnectRemotes notifypushes rs = void $ do
-	modifyDaemonStatus_ $ \s -> s
-		{ desynced = S.union (S.fromList $ map Remote.uuid xmppremotes) (desynced s) }
-	syncAction rs (const go)
+	rs' <- filterM (checkavailable . Remote.repo) rs
+	unless (null rs') $ do
+		modifyDaemonStatus_ $ \s -> s
+			{ desynced = S.union (S.fromList $ map Remote.uuid xmppremotes) (desynced s) }
+		failedrs <- syncAction rs' (const go)
+		mapM_ signal $ filter (`notElem` failedrs) rs'
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
 	(xmppremotes, nonxmppremotes) = partition isXMPPRemote rs
@@ -73,6 +79,13 @@ reconnectRemotes notifypushes rs = void $ do
 			filter (not . remoteAnnexIgnore . Remote.gitconfig)
 				nonxmppremotes
 		return failed
+	signal r = liftIO . mapM_ (flip tryPutMVar ())
+		=<< fromMaybe [] . M.lookup (Remote.uuid r) . connectRemoteNotifiers
+			<$> getDaemonStatus
+	checkavailable r
+		| Git.repoIsLocal r || Git.repoIsLocalUnknown r =
+			liftIO $ doesDirectoryExist $ Git.repoPath r
+		| otherwise = return True
 
 {- Updates the local sync branch, then pushes it to all remotes, in
  - parallel, along with the git-annex branch. This is the same

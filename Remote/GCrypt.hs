@@ -107,6 +107,7 @@ gen' r u c gc = do
 		, hasKey = checkPresent this rsyncopts
 		, hasKeyCheap = repoCheap r
 		, whereisKey = Nothing
+		, remoteFsck = Nothing
 		, config = M.empty
 		, localpath = localpathCalc r
 		, repo = r

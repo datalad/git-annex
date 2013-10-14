@@ -102,7 +102,7 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 pairReqReceived :: Bool -> UrlRenderer -> PairMsg -> Assistant ()
 pairReqReceived True _ _ = noop -- ignore our own PairReq
 pairReqReceived False urlrenderer msg = do
-	button <- mkAlertButton (T.pack "Respond") urlrenderer (FinishLocalPairR msg)
+	button <- mkAlertButton True (T.pack "Respond") urlrenderer (FinishLocalPairR msg)
 	void $ addAlert $ pairRequestReceivedAlert repo button
   where
 	repo = pairRepo msg

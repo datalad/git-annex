@@ -22,6 +22,7 @@ import Assistant.Threads.Merger
 import Assistant.Threads.TransferWatcher
 import Assistant.Threads.Transferrer
 import Assistant.Threads.SanityChecker
+import Assistant.Threads.Cronner
 #ifdef WITH_CLIBS
 import Assistant.Threads.MountWatcher
 #endif
@@ -133,6 +134,7 @@ startDaemon assistant foreground listenhost startbrowser = do
 			, assist $ netWatcherThread
 			, assist $ netWatcherFallbackThread
 			, assist $ transferScannerThread urlrenderer
+			, assist $ cronnerThread urlrenderer
 			, assist $ configMonitorThread
 			, assist $ glacierThread
 			, watch $ watchThread

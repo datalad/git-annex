@@ -63,6 +63,7 @@ gen r u c gc = do
 		, hasKey = checkPresent r bupr'
 		, hasKeyCheap = bupLocal buprepo
 		, whereisKey = Nothing
+		, remoteFsck = Nothing
 		, config = c
 		, repo = r
 		, gitconfig = gc

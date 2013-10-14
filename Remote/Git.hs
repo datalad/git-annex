@@ -42,10 +42,13 @@ import Utility.Metered
 #ifndef mingw32_HOST_OS
 import Utility.CopyFile
 #endif
+import Utility.Env
+import Utility.Batch
 import Remote.Helper.Git
 import Remote.Helper.Messages
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
+import Config.Files
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -111,6 +114,9 @@ gen r u c gc
 			, hasKey = inAnnex r
 			, hasKeyCheap = repoCheap r
 			, whereisKey = Nothing
+			, remoteFsck = if Git.repoIsUrl r
+				then Nothing
+				else Just $ fsckOnRemote r
 			, config = M.empty
 			, localpath = localpathCalc r
 			, repo = r
@@ -395,6 +401,23 @@ copyToRemote r key file p
 						Annex.Content.getViaTmpChecked (liftIO checksuccessio) key
 							(\d -> rsyncOrCopyFile params object d p)
 			)
+
+fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
+fsckOnRemote r params
+	| Git.repoIsUrl r = do
+		s <- Ssh.git_annex_shell r "fsck" params []
+		return $ case s of
+			Nothing -> return False
+			Just (c, ps) -> batchCommand c ps
+	| otherwise = return $ do
+		program <- readProgramFile
+		env <- getEnvironment
+		r' <- Git.Config.read r
+		let env' =
+			[ ("GIT_WORK_TREE", Git.repoPath r')
+			, ("GIT_DIR", Git.localGitDir r')
+			] ++ env
+		batchCommandEnv program (Param "fsck" : params) (Just env')
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}

@@ -55,7 +55,7 @@ checkCloudRepos :: UrlRenderer -> Remote -> Assistant ()
 checkCloudRepos urlrenderer r =
 	unlessM (syncingToCloudRemote <$> getDaemonStatus) $ do
 		buddyname <- getBuddyName $ Remote.uuid r
-		button <- mkAlertButton "Add a cloud repository" urlrenderer $
+		button <- mkAlertButton True "Add a cloud repository" urlrenderer $
 			NeedCloudRepoR $ Remote.uuid r
 		void $ addAlert $ cloudRepoNeededAlert buddyname button
 #else

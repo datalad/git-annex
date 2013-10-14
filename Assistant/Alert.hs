@@ -15,6 +15,7 @@ import Assistant.Alert.Utility
 import qualified Remote
 import Utility.Tense
 import Logs.Transfer
+import Git.Remote (RemoteName)
 
 import Data.String
 import qualified Data.Text as T
@@ -27,17 +28,19 @@ import Assistant.WebApp
 import Yesod
 #endif
 
-{- Makes a button for an alert that opens a Route. The button will
- - close the alert it's attached to when clicked. -}
+{- Makes a button for an alert that opens a Route. 
+ -
+ - If autoclose is set, the button will close the alert it's
+ - attached to when clicked. -}
 #ifdef WITH_WEBAPP
-mkAlertButton :: T.Text -> UrlRenderer -> Route WebApp -> Assistant AlertButton
-mkAlertButton label urlrenderer route = do
+mkAlertButton :: Bool -> T.Text -> UrlRenderer -> Route WebApp -> Assistant AlertButton
+mkAlertButton autoclose label urlrenderer route = do
 	close <- asIO1 removeAlert
 	url <- liftIO $ renderUrl urlrenderer route []
 	return $ AlertButton
 		{ buttonLabel = label
 		, buttonUrl = url
-		, buttonAction = Just close
+		, buttonAction = if autoclose then Just close else Nothing
 		}
 #endif
 
@@ -146,6 +149,14 @@ sanityCheckFixAlert msg = Alert
 	render alert = tenseWords $ alerthead : alertData alert ++ [alertfoot]
 	alerthead = "The daily sanity check found and fixed a problem:"
 	alertfoot = "If these problems persist, consider filing a bug report."
+
+fsckAlert :: AlertButton -> Maybe RemoteName -> Alert
+fsckAlert button n = baseActivityAlert
+	{ alertData = case n of
+		Nothing -> [ UnTensed $ T.pack $ "Consistency check in progress" ]
+		Just remotename -> [ UnTensed $ T.pack $ "Consistency check of " ++ remotename ++ " in progress"]
+	, alertButton = Just button
+	}
 
 pairingAlert :: AlertButton -> Alert
 pairingAlert button = baseActivityAlert

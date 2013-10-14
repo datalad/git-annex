@@ -363,7 +363,7 @@ showSizeKeys d = total ++ missingnote
 			" keys of unknown size"
 
 staleSize :: String -> (Git.Repo -> FilePath) -> Stat
-staleSize label dirspec = go =<< lift (Command.Unused.staleKeys dirspec)
+staleSize label dirspec = go =<< lift (dirKeys dirspec)
   where
 	go [] = nostat
 	go keys = onsize =<< sum <$> keysizes keys

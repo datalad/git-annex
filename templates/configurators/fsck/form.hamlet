@@ -1,0 +1,2 @@
+<form method="post" .form-inline enctype=#{enctype} action="@{action}">
+  ^{form}
