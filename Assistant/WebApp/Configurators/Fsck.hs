@@ -112,6 +112,12 @@ runFsckForm new activity = case activity of
 defaultFsck :: ScheduledActivity
 defaultFsck = ScheduledSelfFsck (Schedule Daily AnyTime) (Duration $ 60*60)
 
+showFsckStatus :: ScheduledActivity -> Widget
+showFsckStatus activity = do
+	m <- liftAnnex getLastRunTimes
+	let lastrun = M.lookup activity m
+	$(widgetFile "configurators/fsck/status")
+
 getConfigFsckR :: Handler Html
 getConfigFsckR = postConfigFsckR
 postConfigFsckR :: Handler Html

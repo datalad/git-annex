@@ -14,6 +14,8 @@
       Currently scheduled checks:
       $forall check <- checks
         ^{showFsckForm False check}
+        <div style="margin-left: 5em">
+          ^{showFsckStatus check}
   <p>
     Add a check:
     ^{showFsckForm True defaultFsck}
