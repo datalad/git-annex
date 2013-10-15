@@ -274,3 +274,7 @@ The same happens when I git annex add in /data/data/ga.androidterm/anntmp - so i
 
 # End of transcript or log.
 """]]
+
+> I have updated git-annex to work with the new git, which will be 1.8.5.
+> This fix should appear in the android autobuild within an hour if you
+> want to try it. [[done]] --[[Joey]]

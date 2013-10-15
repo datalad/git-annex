@@ -20,6 +20,7 @@ git-annex (4.20131003) UNRELEASED; urgency=low
   * Fixed handling of URL keys that have no recorded size.
   * status: Fix a crash if a temp file went away while its size was
     being checked for status.
+  * Deal with git check-attr -z output format change in git 1.8.5.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Oct 2013 15:41:24 -0400
 
