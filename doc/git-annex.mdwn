@@ -960,9 +960,9 @@ built-in preferred content expression ddeveloped for that group.
 
 # SCHEDULED JOBS
 
-The git-annex assistant daemon can be configured to run jobs at scheduled
-times. This is similar to cron (and you can use cron if you prefer), but
-has the advantage of being integrated into git-annex, and so being able
+The git-annex assistant daemon can be configured to run scheduled jobs.
+This is similar to cron and anacron (and you can use them if you prefer),
+but has the advantage of being integrated into git-annex, and so being able
 to eg, fsck a repository on a removable drive when the drive gets
 connected.
 
@@ -978,9 +978,9 @@ To schedule multiple jobs, separate them with "; ".
 Some examples:
 
 	fsck self 30m every day at any time
-	fsck self 1h every day at 3 AM
+	fsck self 1h every month at 3 AM
 	fsck self 1h on day 1 of every month at any time
-	fsck self 1h on day 1 of weeks divisible by 2 at any time
+	fsck self 1h every week divisible by 2 at any time
 
 # CONFIGURATION VIA .git/config
 
