@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkr_EUIHZ8CTtOGm-j-guMBzaYuOzrXJwg"
+ nickname="Christoph"
+ subject="be aware of the 2-step verification"
+ date="2013-10-15T20:03:12Z"
+ content="""
+if you enabled the \"2-step verification\" in our google account (Account -> Security -> 2-step verification: Status: ON) you have to make a \"Application-specific passwords\" for your Jabber login.
+
+NoXorius
+"""]]

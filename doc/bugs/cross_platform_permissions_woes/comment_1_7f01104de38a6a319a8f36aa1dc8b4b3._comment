@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-15T18:29:10Z"
+ content="""
+Based on the '/linux/annex/' path, your \"linux\" git remote is set up using some sort of network mount of your Linux box to Windows. 
+
+If that's the case, then rsync is running on Windows and probably doesn't know anything about permissions, to probably does something horrible when it's told to write a file to the linux filesystem.
+
+If I'm right about that, I can easily fix it, by making git-annex on Windows not use rsync for such file to file copies. But I first need you to verify if I'm right about how your \"linux\" git remote is configured.
+
+(Also, you should be able to work around the problem by changing the git remote to use a ssh:// url to the linux system.)
+"""]]
