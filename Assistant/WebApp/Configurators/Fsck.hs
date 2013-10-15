@@ -82,18 +82,18 @@ runFsckForm new activity = case activity of
 		recurrances :: [(Text, Recurrance)]
 		recurrances = ensurevalue r (T.pack $ fromRecurrance r) $
 			[ ("every day", Daily)
-			, ("every Sunday", Weekly 1)
-			, ("every Monday", Weekly 2)
-			, ("every Tuesday", Weekly 3)
-			, ("every Wednesday", Weekly 4)
-			, ("every Thursday", Weekly 5)
-			, ("every Friday", Weekly 6)
-			, ("every Saturday", Weekly 7)
-			, ("monthly", Monthly 1)
-			, ("twice a month", Divisible 2 (Weekly 1))
-			, ("yearly", Yearly 1)
-			, ("twice a year", Divisible 6 (Monthly 1))
-			, ("quarterly", Divisible 4 (Monthly 1))
+			, ("every Sunday", Weekly $ Just 1)
+			, ("every Monday", Weekly $ Just 2)
+			, ("every Tuesday", Weekly $ Just 3)
+			, ("every Wednesday", Weekly $ Just 4)
+			, ("every Thursday", Weekly $ Just 5)
+			, ("every Friday", Weekly $ Just 6)
+			, ("every Saturday", Weekly $ Just 7)
+			, ("monthly", Monthly Nothing)
+			, ("twice a month", Divisible 2 (Weekly Nothing))
+			, ("yearly", Yearly Nothing)
+			, ("twice a year", Divisible 6 (Monthly Nothing))
+			, ("quarterly", Divisible 4 (Monthly Nothing))
 			]
 	ensurevalue v desc l = case M.lookup v (M.fromList $ map (\(x,y) -> (y,x)) l) of
 		Just _ -> l
