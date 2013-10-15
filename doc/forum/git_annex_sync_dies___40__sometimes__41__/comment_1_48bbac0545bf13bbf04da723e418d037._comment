@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-15T18:16:23Z"
+ content="""
+Since this seems to be a problem with ssh connection caching, you can disable that:
+
+git config annex.sshcaching false
+
+Seems like the problem would be in the version of ssh you have installed on your linux client. Or possibly some interaction between its version and the server's version. 
+
+Since linux 2.6.32 is quite old, I'll bet you have an old ssh too.. what version?
+"""]]
