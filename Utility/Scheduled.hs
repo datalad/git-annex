@@ -233,6 +233,10 @@ toRecurrance s = case words s of
 		Divisible
 			<$> getdivisor sn
 			<*> noday something
+	(something:"divisible":"by":sn:[]) -> 
+		Divisible
+			<$> getdivisor sn
+			<*> noday something
 	_ -> Nothing
   where
 	constructor "week" = Just Weekly
