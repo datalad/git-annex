@@ -31,6 +31,7 @@ import Config
 import Annex.ReplaceFile
 import Git.FileMode
 
+import qualified Data.Set as S
 import Data.Hash.MD5
 
 def :: [Command]
@@ -272,15 +273,18 @@ resolveMerge :: Annex Bool
 resolveMerge = do
 	top <- fromRepo Git.repoPath
 	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
-	merged <- and <$> mapM resolveMerge' fs
+	mergedfs <- catMaybes <$> mapM resolveMerge' fs
+	let merged = not (null mergedfs)
 	void $ liftIO cleanup
 
 	(deleted, cleanup2) <- inRepo (LsFiles.deleted [top])
 	unless (null deleted) $
 		Annex.Queue.addCommand "rm" [Params "--quiet -f --"] deleted
 	void $ liftIO cleanup2
-	
+
 	when merged $ do
+		unlessM isDirect $
+			cleanConflictCruft mergedfs top
 		Annex.Queue.flush
 		void $ inRepo $ Git.Command.runBool
 			[ Param "commit"
@@ -289,7 +293,7 @@ resolveMerge = do
 			]
 	return merged
 
-resolveMerge' :: LsFiles.Unmerged -> Annex Bool
+resolveMerge' :: LsFiles.Unmerged -> Annex (Maybe FilePath)
 resolveMerge' u
 	| issymlink LsFiles.valUs && issymlink LsFiles.valThem = do
 		kus <- getKey LsFiles.valUs
@@ -303,24 +307,31 @@ resolveMerge' u
 					else do
 						makelink keyUs
 						makelink keyThem
-				return True
+				return $ Just file
 			-- Our side is annexed, other side is not.
 			(Just keyUs, Nothing) -> do
-				removeoldfile keyUs
-				makelink keyUs
-				-- Move newly added non-annexed object
-				-- out of merge directory.
-				whenM isDirect $ do
-					d <- fromRepo gitAnnexMergeDir
-					liftIO $ rename (d </> file) file
-				return True
+				ifM isDirect
+					-- Move newly added non-annexed object
+					-- out of direct mode merge directory.
+					( do
+						removeoldfile keyUs
+						makelink keyUs
+						d <- fromRepo gitAnnexMergeDir
+						liftIO $ rename (d </> file) file
+					-- cleaup tree after git merge
+					, do
+						unstageoldfile
+						makelink keyUs
+					)
+				return $ Just file
 			-- Our side is not annexed, other side is.
 			(Nothing, Just keyThem) -> do
 				makelink keyThem
-				return True
+				unstageoldfile
+				return $ Just file
 			-- Neither side is annexed; cannot resolve.
-			(Nothing, Nothing) -> return False
-	| otherwise = return False
+			(Nothing, Nothing) -> return Nothing
+	| otherwise = return Nothing
   where
 	file = LsFiles.unmergedFile u
 	issymlink select = select (LsFiles.unmergedBlobType u) `elem` [Just SymlinkBlob, Nothing]
@@ -337,9 +348,31 @@ resolveMerge' u
 			, liftIO $ nukeFile file
 			)
 		Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
+	unstageoldfile = Annex.Queue.addCommand "rm" [Params "--quiet -f --cached --"] [file]
 	getKey select = case select (LsFiles.unmergedSha u) of
 		Nothing -> return Nothing
 		Just sha -> catKey sha symLinkMode
+
+{- git-merge moves conflicting files away to files
+ - named something like f~HEAD or f~branch, but the
+ - exact name chosen can vary. Once the conflict is resolved,
+ - this cruft can be deleted. To avoid deleting legitimate
+ - files that look like this, only delete files that are
+ - A) not staged in git and B) look like git-annex symlinks.
+ -}
+cleanConflictCruft :: [FilePath] -> FilePath -> Annex ()
+cleanConflictCruft resolvedfs top = do
+	(fs, cleanup) <- inRepo $ LsFiles.notInRepo False [top]
+	mapM_ clean fs
+	void $ liftIO cleanup
+  where
+	clean f
+		| matchesresolved f = whenM (isJust <$> isAnnexLink f) $
+			liftIO $ nukeFile f
+		| otherwise = noop
+	s = S.fromList resolvedfs
+	matchesresolved f = S.member (base f) s
+	base f = reverse $ drop 1 $ dropWhile (/= '~') $ reverse f
 
 {- The filename to use when resolving a conflicted merge of a file,
  - that points to a key.
