@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="fmarier"
+ ip="207.134.53.206"
+ subject="Re: comment 10"
+ date="2013-10-16T13:43:37Z"
+ content="""
+Jacob: make sure you have the right URL for the PPA: https://launchpad.net/~fmarier/+archive/git-annex
+
+It used to be in my main PPA, now it's in a separate PPA by itself. The package was removed from the original PPA (hence it won't update) but is fully up to date in the new one.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmK0703vNSIQsP1mGf-4MAPnsBZiSc6yVo"
+ nickname="Emre"
+ subject="What am I missing?"
+ date="2013-10-15T21:54:07Z"
+ content="""
+I've setup repositories on both my linux PC & android mini pc and added jabber account on both. They are both at my home network. They detected each other fine. But when it comes to syncing files, there's a message which says \"Unable to download files from your other devices\" with a button for \"add a cloud repository\". I don't need to add a cloud repository since both computers are at the same network? Or am I missing something in the architecture of git-annex that even to sync two local computers in the same LAN, annex would still need an external repo? (and if so, why would that be?)
+I'm not really willing to add an external repository as I intend to add large files and I don't want that they are first uploaded using a slow connection & then re-downloaded.
+What am I missing?
+"""]]
