@@ -720,25 +720,20 @@ test_union_merge_regression env = "union merge regression" ~:
 					 - thought the file was still in r2 -}
 					git_annex_expectoutput env "find" ["--in", "r2"] []
 
-{- Regression test for the automatic conflict resolution bug fixed
- - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
 test_conflict_resolution :: TestEnv -> Test
 test_conflict_resolution env = "automatic conflict resolution" ~:
-	withtmpclonerepo env False $ \r1 -> do
+	TestList [movein_bug, check_mixed_conflict True, check_mixed_conflict False]
+  where
+	{- Regression test for the automatic conflict resolution bug fixed
+	 - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
+	movein_bug = TestCase $ withtmpclonerepo env False $ \r1 -> do
 		withtmpclonerepo env False $ \r2 -> do
 			let rname r = if r == r1 then "r1" else "r2"
 			forM_ [r1, r2] $ \r -> indir env r $ do
 				{- Get all files, see check below. -}
 				git_annex env "get" [] @? "get failed"
-				{- Set up repos as remotes of each other;
-				 - remove origin since we're going to sync
-				 - some changes to a file. -}
-				when (r /= r1) $
-					boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
-				when (r /= r2) $
-					boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
-				boolSystem "git" [Params "remote rm origin"] @? "remote rm"
-
+			pair r1 r2
+			forM_ [r1, r2] $ \r -> indir env r $ do
 				{- Set up a conflict. -}
 				let newcontent = content annexedfile ++ rname r
 				ifM (annexeval Config.isDirect)
@@ -760,6 +755,36 @@ test_conflict_resolution env = "automatic conflict resolution" ~:
 			 - been put in it. -}
 			forM_ [r1, r2] $ \r -> indir env r $ do
 			 	git_annex env "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
+
+	{- Check merge conflict resolution when one side is an annexed
+	 - file, and the other is a directory. -}
+	check_mixed_conflict inr1 = TestCase $ withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			indir env r1 $ do
+				writeFile conflictor "conflictor"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed"
+			indir env r2 $ do
+				createDirectory conflictor
+				writeFile (conflictor </> "subfile") "subfile"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed"
+			pair r1 r2
+			let r = if inr1 then r1 else r2
+			indir env r $ do
+				git_annex env "sync" [] @? "sync failed in mixed conflict"
+	  where
+		conflictor = "conflictor"
+
+	{- Set up repos as remotes of each other;
+	 - remove origin since we're going to sync
+	 - some changes to a file. -}
+	pair r1 r2 = forM_ [r1, r2] $ \r -> indir env r $ do
+		when (r /= r1) $
+			boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
+		when (r /= r2) $
+			boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
+		boolSystem "git" [Params "remote rm origin"] @? "remote rm"
 
 test_map :: TestEnv -> Test
 test_map env = "git-annex map" ~: intmpclonerepo env $ do
