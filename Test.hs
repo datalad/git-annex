@@ -119,6 +119,7 @@ quickcheck =
 	, check "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
 	, check "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
 	, check "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
+	, check "prop_idempotent_key_decode" Types.Key.prop_idempotent_key_decode
 	, check "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
 	, check "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
 	, check "prop_logs_sane" Logs.prop_logs_sane

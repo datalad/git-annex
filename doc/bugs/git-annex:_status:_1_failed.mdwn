@@ -14,3 +14,12 @@ i get :
 how could i fix this issue ?
 
 many thanks for help
+
+> [[done]]; I managed to reproduce this bug by making a temp file named
+> ".git/annex/tmp/foo-", or indeed with any dash in it. This is enough
+> to make git-annex think it's a key, but badly formed enough that
+> it fails trying to use that key. Fixed to ignore such non-key files.
+> 
+> I'm unsure why `.git/annex/tmp` would have such files in it.
+> Perhaps the assistant was running, but crashed while adding files?
+> --[[Joey]]

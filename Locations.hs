@@ -346,7 +346,9 @@ fileKey file = file2key $
 
 {- for quickcheck -}
 prop_idempotent_fileKey :: String -> Bool
-prop_idempotent_fileKey s = Just k == fileKey (keyFile k)
+prop_idempotent_fileKey s
+	| null s = True -- it's not legal for a key to have no keyName
+	| otherwise= Just k == fileKey (keyFile k)
   where
 	k = stubKey { keyName = s, keyBackendName = "test" }
 
