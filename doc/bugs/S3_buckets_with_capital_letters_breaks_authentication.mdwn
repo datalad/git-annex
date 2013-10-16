@@ -28,3 +28,5 @@ initremote archive-moglenrepublica (Internet Archive mode) git-annex: The reques
 """]]
 
 Just thought it would be better to have a separate thread for this bug. :)
+
+> [[fixed|done]] --[[Joey]]
