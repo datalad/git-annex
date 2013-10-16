@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 27"
+ date="2013-10-16T15:14:53Z"
+ content="""
+The git-annex assistant uses **file level** FSevents to detect which files have been changed. Would it be possible to make it work with older versions that don't provide file-level events? Probably. The code for BSD kqueue deals with similar limitations in needing to scan the directory to find the files that actually changed. If someone cares about old versions of OSX and wants to do that work I'll happily support you.
+"""]]
