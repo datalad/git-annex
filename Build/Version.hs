@@ -32,7 +32,7 @@ getVersion = do
 		( return changelogversion
 		, catchDefaultIO changelogversion $ do
 			let major = takeWhile (/= '.') changelogversion
-			autoversion <- takeWhile isAlphaNum <$> readProcess "sh"
+			autoversion <- takeWhile (\c -> isAlphaNum c || c == '-') <$> readProcess "sh"
 				[ "-c"
 				, "git log -n 1 --format=format:'%ci %h'| sed -e 's/-//g' -e 's/ .* /-g/'"
 				] ""
