@@ -195,3 +195,5 @@ Date:   Sat Oct 12 15:09:40 2013 +0200
  create mode 120000 firstfile
 
 """]]
+
+> Bug fixed; test case added; [[done]] --[[Joey]]
