@@ -59,7 +59,7 @@ checkAttr (h, attrs, cwd) want file = do
 		| '\0' `elem` s = if "\0" `isSuffixOf` s
 			then
 				let bits = segment (== '\0') s
-				in if length bits == numattrs * 3
+				in if length bits == (numattrs * 3) + 1
 					then Just $ getattrvalues bits []
 					else Nothing -- more attributes to come
 			else Nothing -- output incomplete
