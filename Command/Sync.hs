@@ -257,11 +257,16 @@ mergeFrom branch = do
  -
  - This uses the Keys pointed to by the files to construct new
  - filenames. So when both sides modified file foo, 
- - it will be deleted, and replaced with files foo.KEYA and foo.KEYB.
+ - it will be deleted, and replaced with files foo.variant-A and
+ - foo.variant-B.
  -
  - On the other hand, when one side deleted foo, and the other modified it,
  - it will be deleted, and the modified version stored as file
- - foo.KEYA (or KEYB).
+ - foo.variant-A (or B).
+ -
+ - It's also possible that one side has foo as an annexed file, and
+ - the other as a directory or non-annexed file. The annexed file
+ - is renamed to resolve the merge, and the other object is preserved as-is.
  -}
 resolveMerge :: Annex Bool
 resolveMerge = do
@@ -286,42 +291,55 @@ resolveMerge = do
 
 resolveMerge' :: LsFiles.Unmerged -> Annex Bool
 resolveMerge' u
-	| issymlink LsFiles.valUs && issymlink LsFiles.valThem =
-		withKey LsFiles.valUs $ \keyUs ->
-			withKey LsFiles.valThem $ \keyThem -> do
-				ifM isDirect
-					( maybe noop (`removeDirect` file) keyUs
-					, liftIO $ nukeFile file
-					)
-				Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
-				go keyUs keyThem
+	| issymlink LsFiles.valUs && issymlink LsFiles.valThem = do
+		kus <- getKey LsFiles.valUs
+		kthem <- getKey LsFiles.valThem
+		case (kus, kthem) of
+			-- Both sides of conflict are annexed files
+			(Just keyUs, Just keyThem) -> do
+				removeoldfile keyUs
+				if keyUs == keyThem
+					then makelink keyUs
+					else do
+						makelink keyUs
+						makelink keyThem
+				return True
+			-- Our side is annexed, other side is not.
+			(Just keyUs, Nothing) -> do
+				removeoldfile keyUs
+				makelink keyUs
+				-- Move newly added non-annexed object
+				-- out of merge directory.
+				whenM isDirect $ do
+					d <- fromRepo gitAnnexMergeDir
+					liftIO $ rename (d </> file) file
+				return True
+			-- Our side is not annexed, other side is.
+			(Nothing, Just keyThem) -> do
+				makelink keyThem
+				return True
+			-- Neither side is annexed; cannot resolve.
+			(Nothing, Nothing) -> return False
 	| otherwise = return False
   where
-	go keyUs keyThem
-		| keyUs == keyThem = do
-			makelink keyUs
-			return True
-		| otherwise = do
-			makelink keyUs
-			makelink keyThem
-			return True
 	file = LsFiles.unmergedFile u
 	issymlink select = select (LsFiles.unmergedBlobType u) `elem` [Just SymlinkBlob, Nothing]
-	makelink (Just key) = do
+	makelink key = do
 		let dest = mergeFile file key
 		l <- inRepo $ gitAnnexLink dest key
 		replaceFile dest $ makeAnnexLink l
 		stageSymlink dest =<< hashSymlink l
 		whenM isDirect $
 			toDirect key dest
-	makelink _ = noop
-	withKey select a = do
-		let msha = select $ LsFiles.unmergedSha u
-		case msha of
-			Nothing -> a Nothing
-			Just sha -> do
-				key <- catKey sha symLinkMode
-				maybe (return False) (a . Just) key
+	removeoldfile keyUs = do
+		ifM isDirect
+			( removeDirect keyUs file
+			, liftIO $ nukeFile file
+			)
+		Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
+	getKey select = case select (LsFiles.unmergedSha u) of
+		Nothing -> return Nothing
+		Just sha -> catKey sha symLinkMode
 
 {- The filename to use when resolving a conflicted merge of a file,
  - that points to a key.

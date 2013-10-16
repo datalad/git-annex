@@ -23,6 +23,8 @@ git-annex (4.20131003) UNRELEASED; urgency=low
   * Deal with git check-attr -z output format change in git 1.8.5.
   * Work around sed output difference that led to version containing a newline
     on OSX.
+  * sync: Fix automatic resolution of merge conflicts where one side is an
+    annexed file, and the other side is a non-annexed file, or a directory.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Oct 2013 15:41:24 -0400
 
