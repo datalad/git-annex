@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZEanlyzay_QlEAL0CWpyZcRTyN7vay8U"
+ nickname="Carlo"
+ subject="comment 27"
+ date="2013-10-16T09:40:23Z"
+ content="""
+The [FSevents framework itself has been around since leopard](http://arstechnica.com/apple/2007/10/mac-os-x-10-5/7/).
+
+[This fsevents wrapper project](https://github.com/rastersize/CDEvents) supports snow leopard and even leopard, maybe it will provide some clues on how it was done.
+
+I'm guessing it would be worth it, [snow leopard is still the most popular OSX as of April](http://www.patentlyapple.com/patently-apple/2013/04/snow-leopard-remains-the-most-popular-version-of-os-x.html). From my own experience, snow leopard is a huge life extender for 2+ year old hardware. Lion just makes them sluggishly painful to use.
+
+Maybe someone could volunteer an SL machine for remote development? Sorry, mine are tied down :(
+"""]]
