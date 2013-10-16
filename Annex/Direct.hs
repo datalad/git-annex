@@ -122,6 +122,8 @@ addDirect file cache = do
  -}
 mergeDirect :: FilePath -> Git.Ref -> Git.Repo -> IO Bool
 mergeDirect d branch g = do
+	whenM (doesDirectoryExist d) $
+		removeDirectoryRecursive d
 	createDirectoryIfMissing True d
 	let g' = g { location = Local { gitdir = Git.localGitDir g, worktree = Just d } }
 	Git.Merge.mergeNonInteractive branch g'
