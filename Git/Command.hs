@@ -15,6 +15,9 @@ import Common
 import Git
 import Git.Types
 import qualified Utility.CoProcess as CoProcess
+#ifdef mingw32_HOST_OS
+import Git.Filename
+#endif
 
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
