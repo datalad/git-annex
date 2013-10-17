@@ -24,7 +24,7 @@ import Annex.Link
 import qualified Annex
 import qualified Annex.Queue
 #ifndef __ANDROID__
-#ifdef WTTH_CLIBS
+#ifdef WITH_CLIBS
 import Utility.Touch
 #endif
 #endif
