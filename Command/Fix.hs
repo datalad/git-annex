@@ -15,7 +15,9 @@ import Common.Annex
 import Command
 import qualified Annex.Queue
 #ifndef __ANDROID__
+#ifdef WITH_CLIBS
 import Utility.Touch
+#endif
 #endif
 
 def :: [Command]
@@ -37,15 +39,19 @@ perform :: FilePath -> FilePath -> CommandPerform
 perform file link = do
 	liftIO $ do
 #ifndef __ANDROID__
+#ifdef WITH_CLIBS
 		-- preserve mtime of symlink
 		mtime <- catchMaybeIO $ TimeSpec . modificationTime
 			<$> getSymbolicLinkStatus file
+#endif
 #endif
 		createDirectoryIfMissing True (parentDir file)
 		removeFile file
 		createSymbolicLink link file
 #ifndef __ANDROID__
+#ifdef WITH_CLIBS
 		maybe noop (\t -> touch file t False) mtime
+#endif
 #endif
 	next $ cleanup file
 
