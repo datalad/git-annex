@@ -149,7 +149,7 @@ Executable git-annex
     Build-Depends: dbus (>= 0.10.3)
     CPP-Options: -DWITH_DBUS
 
-  if flag(Webapp)
+  if flag(Webapp) && (! os(windows))
     Build-Depends:
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      case-insensitive, http-types, transformers, wai, wai-logger, warp,
@@ -161,7 +161,7 @@ Executable git-annex
     Build-Depends: network-multicast, network-info
     CPP-Options: -DWITH_PAIRING
 
-  if flag(XMPP)
+  if flag(XMPP) && (! os(windows))
     Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
     CPP-Options: -DWITH_XMPP
 
