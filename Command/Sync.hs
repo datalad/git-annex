@@ -33,6 +33,7 @@ import Git.FileMode
 
 import qualified Data.Set as S
 import Data.Hash.MD5
+import Control.Concurrent.MVar
 
 def :: [Command]
 def = [command "sync" (paramOptional (paramRepeating paramRemote))
@@ -42,18 +43,29 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 seek :: CommandSeek
 seek rs = do
 	prepMerge
-	branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
+
+	-- There may not be a branch checked out until after the commit,
+	-- so only look it up once needed, and only look it up once.
+	mvar <- liftIO newEmptyMVar
+	let getbranch = ifM (liftIO $ isEmptyMVar mvar)
+		( do
+			branch <- fromMaybe (error "no branch is checked out")
+				<$> inRepo Git.Branch.current
+			liftIO $ putMVar mvar branch
+			return branch
+		, liftIO $ readMVar mvar
+		)
+	let withbranch a = a =<< getbranch
+
 	remotes <- syncRemotes rs
 	return $ concat
 		[ [ commit ]
-		, [ mergeLocal branch ]
-		, [ pullRemote remote branch | remote <- remotes ]
+		, [ withbranch mergeLocal ]
+		, [ withbranch (pullRemote remote) | remote <- remotes ]
 		, [ mergeAnnex ]
-		, [ pushLocal branch ]
-		, [ pushRemote remote branch | remote <- remotes ]
+		, [ withbranch pushLocal ]
+		, [ withbranch (pushRemote remote) | remote <- remotes ]
 		]
-  where
-	nobranch = error "no branch is checked out"
 
 {- Merging may delete the current directory, so go to the top
  - of the repo. -}
