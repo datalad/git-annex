@@ -63,6 +63,7 @@ batchCommandEnv command params environ = do
 			void $ waitForProcess pid
 			E.throwIO asyncexception
   where
+#ifndef mingw32_HOST_OS
   	p = proc "sh"
 		[ "-c"
 		, "exec " ++ nicedcommand
@@ -71,3 +72,6 @@ batchCommandEnv command params environ = do
   	nicedcommand
 		| Build.SysConfig.nice = "nice " ++ commandline
 		| otherwise = commandline
+#else
+	p = proc command (toCommand paras)
+#endif
