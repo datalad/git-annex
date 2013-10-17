@@ -73,5 +73,5 @@ batchCommandEnv command params environ = do
 		| Build.SysConfig.nice = "nice " ++ commandline
 		| otherwise = commandline
 #else
-	p = proc command (toCommand paras)
+	p = proc command (toCommand params)
 #endif
