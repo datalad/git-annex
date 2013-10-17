@@ -24,7 +24,10 @@ bundledPrograms = catMaybes
 	, Just "git"
 #endif
 	, Just "cp"
+#ifndef mingw32_HOST_OS
+	-- using xargs on windows led to problems, so it's not used there
 	, Just "xargs"
+#endif
 	, Just "rsync"
 	, Just "ssh"
 #ifndef mingw32_HOST_OS
