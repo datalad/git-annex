@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkGCmVc5qIJaQQgG82Hc5zzBdAVdhe2JEM"
+ nickname="Bruno"
+ subject="comment 2"
+ date="2013-10-16T22:47:46Z"
+ content="""
+There's no other repo yet. I have the same problem when I try to sync between two repos but I simplified the instructions to reproduce the bug easily.
+
+Here's the instructions on Debian :
+[[!format sh \"\"\"
+bruno@debian:~$ mkdir annex
+bruno@debian:~$ cd annex
+bruno@debian:~/annex$ git init
+Initialized empty Dépôt git dans /home/bruno/annex/.git/
+bruno@debian:~/annex$ git annex init
+init  ok
+(Recording state in git...)
+bruno@debian:~/annex$ echo test > test
+bruno@debian:~/annex$ git annex add .
+add test (checksum...) ok
+(Recording state in git...)
+bruno@debian:~/annex$ git commit -a -m added
+[master (root-commit) 631049d] added
+ 1 file changed, 1 insertion(+)
+ create mode 120000 test
+bruno@debian:~/annex$ git annex sync
+commit
+ok
+bruno@debian:~/annex$\"\"\"]]
+
+It seems --git-dir wants 'c:/...' instead of 'c:\\...'.
+
+[[!format sh \"\"\"
+C:\Users\Bruno\annex>git --git-dir=C:\\Users\\Bruno\\annex\\.git --work-tree=C:\\Users\\Bruno\\annex add -f test
+fatal: unable to access '../../../../C:\\Users\\Bruno\\annex\\.git/config': Invalid argument
+
+C:\Users\Bruno\annex>git --git-dir=C:/Users/Bruno/annex/.git --work-tree=C:\\Users\\Bruno\\annex add -f test
+
+C:\Users\Bruno\annex>\"\"\"]]
+
+It's weird that I don't have any problem with the following command:
+[[!format sh \"\"\"C:\Users\Bruno\annex>git --git-dir=C:\\Users\\Bruno\\annex\\.git --work-tree=C:\\Users\\Bruno\\annex config -l
+core.symlinks=false
+core.autocrlf=true
+[...]\"\"\"]]
+
+Maybe there's a problem with `git version 1.8.4.msysgit.0`.
+"""]]
