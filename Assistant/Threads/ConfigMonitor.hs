@@ -19,6 +19,7 @@ import Logs.PreferredContent
 import Logs.Group
 import Remote.List (remoteListRefresh)
 import qualified Git.LsTree as LsTree
+import Git.FilePath
 import qualified Annex.Branch
 
 import qualified Data.Set as S
@@ -83,4 +84,4 @@ getConfigs = S.fromList . map extract
 	<$> liftAnnex (inRepo $ LsTree.lsTreeFiles Annex.Branch.fullname files)
   where
 	files = map fst configFilesActions
-	extract treeitem = (LsTree.file treeitem, LsTree.sha treeitem)
+	extract treeitem = (getTopFilePath $ LsTree.file treeitem, LsTree.sha treeitem)
