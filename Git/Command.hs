@@ -29,7 +29,9 @@ gitCommandLine params Repo { location = l@(Local _ _ ) } = setdir : settree ++ p
 		Just t -> [Param $ "--work-tree=" ++ gitpath t]
 #ifdef mingw32_HOST_OS
 	-- despite running on windows, msysgit wants a unix-formatted path
-	gitpath = dropDrive . toInternalGitPath
+	gitpath s
+		| isAbsulute s = "/" ++ dropDrive (toInternalGitPath s)
+		| otherwise = s
 #else
 	gitpath = id
 #endif
