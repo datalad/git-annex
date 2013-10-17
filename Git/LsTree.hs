@@ -20,13 +20,14 @@ import Common
 import Git
 import Git.Command
 import Git.Sha
+import Git.FilePath
 import qualified Git.Filename
 
 data TreeItem = TreeItem
 	{ mode :: FileMode
 	, typeobj :: String
 	, sha :: String
-	, file :: FilePath
+	, file :: TopFilePath
 	} deriving Show
 
 {- Lists the complete contents of a tree, with lazy output. -}
@@ -48,7 +49,7 @@ parseLsTree l = TreeItem
 	{ mode = fst $ Prelude.head $ readOct m
 	, typeobj = t
 	, sha = s
-	, file = Git.Filename.decode f
+	, file = asTopFilePath $ Git.Filename.decode f
 	}
   where
 	-- l = <mode> SP <type> SP <sha> TAB <file>

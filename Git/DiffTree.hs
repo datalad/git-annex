@@ -20,6 +20,7 @@ import Common
 import Git
 import Git.Sha
 import Git.Command
+import Git.FilePath
 import qualified Git.Filename
 import qualified Git.Ref
 
@@ -29,7 +30,7 @@ data DiffTreeItem = DiffTreeItem
 	, srcsha :: Sha -- nullSha if file was added
 	, dstsha :: Sha -- nullSha if file was deleted
 	, status :: String
-	, file :: FilePath
+	, file :: TopFilePath
 	} deriving Show
 
 {- Diffs two tree Refs. -}
@@ -86,7 +87,7 @@ parseDiffTree l = go l []
 		, srcsha = fromMaybe (error "bad srcsha") $ extractSha ssha
 		, dstsha = fromMaybe (error "bad dstsha") $ extractSha dsha
 		, status = s
-		, file = Git.Filename.decode f
+		, file = asTopFilePath $ Git.Filename.decode f
 		}
 	  where
 		readmode = fst . Prelude.head . readOct

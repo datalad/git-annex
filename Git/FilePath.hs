@@ -14,6 +14,7 @@
 
 module Git.FilePath (
 	TopFilePath,
+	fromTopFilePath,
 	getTopFilePath,
 	toTopFilePath,
 	asTopFilePath,
@@ -27,6 +28,11 @@ import Git
 
 {- A FilePath, relative to the top of the git repository. -}
 newtype TopFilePath = TopFilePath { getTopFilePath :: FilePath }
+	deriving (Show)
+
+{- Returns an absolute FilePath. -}
+fromTopFilePath :: TopFilePath -> Git.Repo -> FilePath
+fromTopFilePath p repo = absPathFrom (repoPath repo) (getTopFilePath p)
 
 {- The input FilePath can be absolute, or relative to the CWD. -}
 toTopFilePath :: FilePath -> Git.Repo -> IO TopFilePath
