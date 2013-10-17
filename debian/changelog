@@ -29,6 +29,8 @@ git-annex (4.20131003) UNRELEASED; urgency=low
   * assistant: Bug fix: When run in a subdirectory, files from incoming merges
     were wrongly added to that subdirectory, and removed from their original
     locations.
+  * Windows: Deal with strange msysgit 1.8.4 behavior of not understanding
+    DOS formatted paths for --git-dir and --work-tree.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Oct 2013 15:41:24 -0400
 

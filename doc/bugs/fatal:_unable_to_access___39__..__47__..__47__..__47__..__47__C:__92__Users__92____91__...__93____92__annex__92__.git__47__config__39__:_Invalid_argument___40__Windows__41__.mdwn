@@ -57,3 +57,7 @@ upgrade supported from repository versions: 2
 
 ### Please provide any additional information below.
 C:\Users\Bruno\annex\.git\config exists
+
+> xargs was one problem; also msysgit seems to just not
+> accept DOS style paths anymore in --git-dir or --git-work-tree.
+> megaweird. [[fixed|done]] --[[Joey]]

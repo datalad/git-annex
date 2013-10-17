@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Git.Command where
 
 import System.Process (std_out, env)
@@ -18,10 +20,16 @@ import qualified Utility.CoProcess as CoProcess
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
 gitCommandLine params Repo { location = l@(Local _ _ ) } = setdir : settree ++ params
   where
-	setdir = Param $ "--git-dir=" ++ gitdir l
+	setdir = Param $ "--git-dir=" ++ gitpath (gitdir l)
 	settree = case worktree l of
 		Nothing -> []
-		Just t -> [Param $ "--work-tree=" ++ t]
+		Just t -> [Param $ "--work-tree=" ++ gitpath t]
+#ifdef mingw32_HOST_OS
+	-- despite running on windows, msysgit wants a unix-formatted path
+	gitpath = dropDrive . toInternalGitPath
+#else
+	gitpath = id
+#endif
 gitCommandLine _ repo = assertLocal repo $ error "internal"
 
 {- Runs git in the specified repo. -}
