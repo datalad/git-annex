@@ -25,3 +25,10 @@ Note that manually doing a git-annex sync in B's subdir does not cause this
 to happen. It's specific to the assistant somehow.
 
 --[[Joey]] 
+
+Before 2407170eaf78d9aa38d73d1af68c20da9882779b, git-annex sync in a subdir
+had the same problem. That made it always run from the top of the work
+tree, which its code actually assumes is the case. 
+
+The assistant, however, does not do that, and it's useful in general to
+only run it in a subdir. 
