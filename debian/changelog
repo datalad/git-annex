@@ -26,6 +26,9 @@ git-annex (4.20131003) UNRELEASED; urgency=low
   * sync: Fix automatic resolution of merge conflicts where one side is an
     annexed file, and the other side is a non-annexed file, or a directory.
   * S3: Try to ensure bucket name is valid for archive.org.
+  * assistant: Bug fix: When run in a subdirectory, files from incoming merges
+    were wrongly added to that subdirectory, and removed from their original
+    locations.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Oct 2013 15:41:24 -0400
 

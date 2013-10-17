@@ -101,7 +101,7 @@ addAssociatedFile key file = do
 			else file':files
 
 {- Associated files are always stored relative to the top of the repository.
- - The input FilePath is relative to the CWD. -}
+ - The input FilePath is relative to the CWD, or is absolute. -}
 normaliseAssociatedFile :: FilePath -> Annex FilePath
 normaliseAssociatedFile file = do
 	top <- fromRepo Git.repoPath

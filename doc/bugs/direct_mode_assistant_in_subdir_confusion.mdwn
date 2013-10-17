@@ -32,3 +32,6 @@ tree, which its code actually assumes is the case.
 
 The assistant, however, does not do that, and it's useful in general to
 only run it in a subdir. 
+
+> Made sync merge code handle this correctly. Conflicted merge handing code
+> was already ok. [[fixed|done]] --[[Joey]]
