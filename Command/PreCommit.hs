@@ -16,6 +16,7 @@ import qualified Git.Ref
 import Annex.CatFile
 import Annex.Content.Direct
 import Git.Sha
+import Git.FilePath
 
 def :: [Command]
 def = [command "pre-commit" paramPaths seek SectionPlumbing
@@ -40,10 +41,11 @@ startIndirect file = next $ do
 startDirect :: [String] -> CommandStart
 startDirect _ = next $ do
 	(diffs, clean) <- inRepo $ Git.DiffTree.diffIndex Git.Ref.headRef
-	forM_ diffs go
+	makeabs <- flip fromTopFilePath <$> gitRepo
+	forM_ diffs (go makeabs)
 	next $ liftIO clean
   where
-	go diff = do
+	go makeabs diff = do
 		withkey (Git.DiffTree.srcsha diff) (Git.DiffTree.srcmode diff) removeAssociatedFile
 		withkey (Git.DiffTree.dstsha diff) (Git.DiffTree.dstmode diff) addAssociatedFile
 	  where
@@ -51,4 +53,5 @@ startDirect _ = next $ do
 			k <- catKey sha mode
 			case k of
 				Nothing -> noop
-				Just key -> void $ a key (Git.DiffTree.file diff)
+				Just key -> void $ a key $
+					makeabs $ Git.DiffTree.file diff
