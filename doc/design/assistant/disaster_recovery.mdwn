@@ -1,6 +1,8 @@
 The assistant should help the user recover their repository when things go
 wrong.
 
+[[!toc ]]
+
 ## dangling lock files
 
 There are a few ways a git repository can get broken that are easily fixed.
@@ -79,6 +81,9 @@ clone the remote, sync from all other remotes, move over .git/config and
 .git/annex/objects, and tar up the old broken git repo and `git annex add`
 it. This should be automatable and get the user back on their feet. User
 could just click a button and have this be done.
+
+This is useful outside git-annex as well, so make it a
+git-recover-repository command.
 
 ### detailed design
 
