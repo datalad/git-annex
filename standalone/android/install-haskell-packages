@@ -68,7 +68,6 @@ install_pkgs () {
 	patched MissingH
 	patched bloomfilter
 	patched SafeSemaphore
-	patched unordered-containers
 	patched comonad
 	patched HTTP
 	patched MonadCatchIO-transformers
