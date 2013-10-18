@@ -68,10 +68,10 @@ install_pkgs () {
 	patched MissingH
 	patched bloomfilter
 	patched SafeSemaphore
+	patched distributive
 	patched comonad
 	patched HTTP
 	patched MonadCatchIO-transformers
-	patched distributive
 	patched iproute
 	patched primitive
 	patched socks
