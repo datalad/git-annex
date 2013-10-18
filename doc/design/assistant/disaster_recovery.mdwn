@@ -118,16 +118,16 @@ branch -- have to first delete the .git/HEAD file if it points to the
 broken ref.)
 
 The basic idea then is to reset the branch to the last good commit
-that was found for it. (Or if no good commit was found, reset the branch to
-a synthetic commit of an empty tree.) The details of how to do that
-depends on the branch:
+that was found for it.
 
-* For the HEAD branch, can just reset it. This will
+* For the HEAD branch, can just reset it. (If no last good commit was found
+  for the HEAD branch, reset it to a dummy empty commit.) This will
   leave git showing any changes made since then as staged in the index and
   uncommitted. Or if the index is missing/corrupt, any files in the tree will
   show as modified and uncommitted. User (or git-annex assistant) can then
   commit as appropriate. Print appropriate warning message.
-* Special handling for git-annex branch: Reset to last good commit, and 
+* Special handling for git-annex branch: Reset to last good commit
+  (or to dummy empty commit is there is not one), and 
   then commit `.git/annex/index` over top of that, and then run a
   `git annex fsck --fast` to fix up any object location info.
 * Remote tracking branches can just be removed, and then `git fetch`
@@ -135,4 +135,5 @@ depends on the branch:
   reinstate the tracking branch.
 * For other branches (or tags), it's best to not rewrite them, because
   that could get really confusing. Instead, delete the old broken branch,
-  and make a "recovered/$branch" that holds the last good commit.
+  and make a "recovered/$branch" that holds the last good commit (if one
+  was found).
