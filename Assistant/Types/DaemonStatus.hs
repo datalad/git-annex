@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, ImpredicativeTypes #-}
-
 module Assistant.Types.DaemonStatus where
 
 import Common.Annex
