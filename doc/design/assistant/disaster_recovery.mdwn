@@ -79,3 +79,41 @@ clone the remote, sync from all other remotes, move over .git/config and
 .git/annex/objects, and tar up the old broken git repo and `git annex add`
 it. This should be automatable and get the user back on their feet. User
 could just click a button and have this be done.
+
+### detailed design
+
+Run `git fsck` and parse output to find bad objects, and determine
+from its output if they are a commit, a tree, or a blob.
+
+Check if there's a remote. If so, and if the bad objects are all
+present on it, can simply get all bad objects from it, and inject them
+back into .git/objects to recover.
+How to best re-get bad objects from a remote? May need to re-clone from
+the remote, and rsync .git/objects from the clone.
+
+Otherwise, find commits in each local branch that are broken by
+all found bad objects. Some of this can be parsed from git fsck
+output, but for eg bad blobs, the commits need to be walked to
+walk the trees, to find trees that refer to the blobs.
+
+For each branch that is affected, look in the reflog and/or `git log
+$branch` to find the last good change that predates all broken commits. (If
+the head commit of a branch is broken, git log is not going to show
+anything useful, but the reflog can be used to find past refs for the
+branch -- have to first delete the .git/HEAD file if it points to the
+broken ref.)
+
+Reset the branch to the last good change. This will leave git showing any
+changes made since then as staged in the index and uncommitted. Or if
+the index is missing/corrupt, any files in the tree will show as modified
+and uncommitted. User (or git-annex assistant) can then commit as
+appropriate.
+
+(Special handling for git-annex branch: Commit .git/annex/index over
+top of the reset git-annex branch, and then run a `git annex fsck --fast`
+to fix up any object location info.)
+
+Also should check all remote tracking branches. If such a branch refers
+to a bad object, it is sufficient to remove the tracking
+branch and then `git fetch` from the remote, which will re-download missing
+objects from it and reinstate the tracking branch.
