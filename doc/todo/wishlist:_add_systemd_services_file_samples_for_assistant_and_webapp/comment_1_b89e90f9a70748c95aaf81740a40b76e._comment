@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-19T15:33:18Z"
+ content="""
+Wouldn't this involve running it as root or a dedicated user? Neither is ideal. git-annex already uses .desktop files to auto-start when the user who is using it logs in.
+"""]]
