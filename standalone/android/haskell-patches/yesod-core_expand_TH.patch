@@ -1,18 +1,15 @@
-From 9e15d4af1f53c76a402ec1782e0306a4bee7eec7 Mon Sep 17 00:00:00 2001
-From: foo <foo@bar>
-Date: Sun, 22 Sep 2013 04:03:56 +0000
-Subject: [PATCH] expad TH
+From 7583457fb410d07f480a2aa7d6c2f174324b3592 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Sat, 19 Oct 2013 02:03:18 +0000
+Subject: [PATCH] hackity
 
-used EvilSplicer
-Has to remove some logger TH splices which didn't come out.
 ---
  Yesod/Core.hs              |    2 -
  Yesod/Core/Class/Yesod.hs  |  247 ++++++++++++++++++++++++++++++--------------
  Yesod/Core/Dispatch.hs     |    7 --
  Yesod/Core/Handler.hs      |   24 ++---
  Yesod/Core/Internal/Run.hs |    2 -
- Yesod/Core/Widget.hs       |    2 +
- 6 files changed, 181 insertions(+), 103 deletions(-)
+ 5 files changed, 179 insertions(+), 103 deletions(-)
 
 diff --git a/Yesod/Core.hs b/Yesod/Core.hs
 index 12e59d5..f1ff21c 100644
@@ -409,19 +406,6 @@ index 35f1d3f..8b92e99 100644
      return $ YRPlain
          H.status500
          []
-diff --git a/Yesod/Core/Widget.hs b/Yesod/Core/Widget.hs
-index be97764..874f018 100644
---- a/Yesod/Core/Widget.hs
-+++ b/Yesod/Core/Widget.hs
-@@ -47,6 +47,8 @@ module Yesod.Core.Widget
-     , handlerToWidget
-       -- * Internal
-     , whamletFileWithSettings
-+      -- used by TH
-+    , asWidgetT
-     ) where
- 
- import Data.Monoid
 -- 
 1.7.10.4
 

@@ -1,23 +1,37 @@
-From 3a17bd1223fcd7a750bc0e5e94ec5b97ad2e573b Mon Sep 17 00:00:00 2001
-From: foo <foo@bar>
-Date: Sun, 22 Sep 2013 05:14:21 +0000
+From c5b0db193fd6e9fd6be22891ae988babbfac3ff0 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Sat, 19 Oct 2013 02:14:38 +0000
 Subject: [PATCH] spliced TH
 
 Used EvilSplicer. Needed a few syntax fixes, and a lot of added imports.
+
+Removed some things I don't need, rather than re-splicing to handle a new version.
 ---
- Yesod/Form/Fields.hs    |  747 ++++++++++++++++++++++++++++++++++++-----------
+ Yesod/Form/Fields.hs    |  771 +++++++++++++++++++++++++++++++++++------------
  Yesod/Form/Functions.hs |  237 ++++++++++++---
  Yesod/Form/Jquery.hs    |  125 ++++++--
- Yesod/Form/MassInput.hs |  233 ++++++++++++---
+ Yesod/Form/MassInput.hs |  233 +++++++++++---
  Yesod/Form/Nic.hs       |   61 +++-
  yesod-form.cabal        |    1 +
- 6 files changed, 1123 insertions(+), 281 deletions(-)
+ 6 files changed, 1123 insertions(+), 305 deletions(-)
 
 diff --git a/Yesod/Form/Fields.hs b/Yesod/Form/Fields.hs
-index 5c16d7e..edd9715 100644
+index b8109df..9bde340 100644
 --- a/Yesod/Form/Fields.hs
 +++ b/Yesod/Form/Fields.hs
-@@ -41,8 +41,6 @@ module Yesod.Form.Fields
+@@ -1,4 +1,3 @@
+-{-# LANGUAGE QuasiQuotes #-}
+ {-# LANGUAGE TypeFamilies #-}
+ {-# LANGUAGE OverloadedStrings #-}
+ {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+@@ -36,15 +35,11 @@ module Yesod.Form.Fields
+     , selectFieldList
+     , radioField
+     , radioFieldList
+-    , checkboxesFieldList
+-    , checkboxesField
+     , multiSelectField
+     , multiSelectFieldList
      , Option (..)
      , OptionList (..)
      , mkOptionList
@@ -26,7 +40,7 @@ index 5c16d7e..edd9715 100644
      , optionsPairs
      , optionsEnum
      ) where
-@@ -68,6 +66,15 @@ import Text.HTML.SanitizeXSS (sanitizeBalance)
+@@ -70,6 +65,15 @@ import Text.HTML.SanitizeXSS (sanitizeBalance)
  import Control.Monad (when, unless)
  import Data.Maybe (listToMaybe, fromMaybe)
  
@@ -42,7 +56,7 @@ index 5c16d7e..edd9715 100644
  import qualified Blaze.ByteString.Builder.Html.Utf8 as B
  import Blaze.ByteString.Builder (writeByteString, toLazyByteString)
  import Blaze.ByteString.Builder.Internal.Write (fromWriteList)
-@@ -80,14 +87,12 @@ import Data.Text (Text, unpack, pack)
+@@ -82,14 +86,12 @@ import Data.Text (Text, unpack, pack)
  import qualified Data.Text.Read
  
  import qualified Data.Map as Map
@@ -57,7 +71,7 @@ index 5c16d7e..edd9715 100644
  
  defaultFormMessage :: FormMessage -> Text
  defaultFormMessage = englishFormMessage
-@@ -100,10 +105,24 @@ intField = Field
+@@ -102,10 +104,24 @@ intField = Field
              Right (a, "") -> Right a
              _ -> Left $ MsgInvalidInteger s
  
@@ -86,7 +100,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -117,10 +136,24 @@ doubleField = Field
+@@ -119,10 +135,24 @@ doubleField = Field
              Right (a, "") -> Right a
              _ -> Left $ MsgInvalidNumber s
  
@@ -115,7 +129,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . show)
-@@ -128,10 +161,24 @@ $newline never
+@@ -130,10 +160,24 @@ $newline never
  dayField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Day
  dayField = Field
      { fieldParse = parseHelper $ parseDate . unpack
@@ -144,7 +158,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . show)
-@@ -139,10 +186,23 @@ $newline never
+@@ -141,10 +185,23 @@ $newline never
  timeField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m TimeOfDay
  timeField = Field
      { fieldParse = parseHelper parseTime
@@ -172,7 +186,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -155,10 +215,18 @@ $newline never
+@@ -157,10 +214,18 @@ $newline never
  htmlField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Html
  htmlField = Field
      { fieldParse = parseHelper $ Right . preEscapedText . sanitizeBalance
@@ -195,7 +209,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . renderHtml)
-@@ -166,7 +234,7 @@ $newline never
+@@ -168,7 +233,7 @@ $newline never
  -- | A newtype wrapper around a 'Text' that converts newlines to HTML
  -- br-tags.
  newtype Textarea = Textarea { unTextarea :: Text }
@@ -204,7 +218,7 @@ index 5c16d7e..edd9715 100644
  instance ToHtml Textarea where
      toHtml =
          unsafeByteString
-@@ -184,10 +252,18 @@ instance ToHtml Textarea where
+@@ -186,10 +251,18 @@ instance ToHtml Textarea where
  textareaField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Textarea
  textareaField = Field
      { fieldParse = parseHelper $ Right . Textarea
@@ -227,7 +241,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -195,10 +271,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
+@@ -197,10 +270,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
              => Field m p
  hiddenField = Field
      { fieldParse = parseHelper $ maybe (Left MsgValueRequired) Right . fromPathPiece
@@ -251,7 +265,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -206,20 +291,55 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
+@@ -208,20 +290,55 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
  textField = Field
      { fieldParse = parseHelper $ Right
      , fieldView = \theId name attrs val isReq ->
@@ -315,7 +329,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -291,10 +411,24 @@ emailField = Field
+@@ -293,10 +410,24 @@ emailField = Field
              case Email.canonicalizeEmail $ encodeUtf8 s of
                  Just e -> Right $ decodeUtf8With lenientDecode e
                  Nothing -> Left $ MsgInvalidEmail s
@@ -344,7 +358,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -303,20 +437,78 @@ searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus
+@@ -305,20 +436,78 @@ searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus
  searchField autoFocus = Field
      { fieldParse = parseHelper Right
      , fieldView = \theId name attrs val isReq -> do
@@ -435,7 +449,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -327,7 +519,30 @@ urlField = Field
+@@ -329,7 +518,30 @@ urlField = Field
              Nothing -> Left $ MsgInvalidUrl s
              Just _ -> Right s
      , fieldView = \theId name attrs val isReq ->
@@ -467,7 +481,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -340,18 +555,56 @@ selectField :: (Eq a, RenderMessage site FormMessage)
+@@ -342,18 +554,56 @@ selectField :: (Eq a, RenderMessage site FormMessage)
              => HandlerT site IO (OptionList a)
              -> Field (HandlerT site IO) a
  selectField = selectFieldHelper
@@ -536,7 +550,7 @@ index 5c16d7e..edd9715 100644
  
  multiSelectFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
                       => [(msg, a)]
-@@ -374,11 +627,48 @@ multiSelectField ioptlist =
+@@ -376,11 +626,48 @@ multiSelectField ioptlist =
      view theId name attrs val isReq = do
          opts <- fmap olOptions $ handlerToWidget ioptlist
          let selOpts = map (id &&& (optselected val)) opts
@@ -590,7 +604,33 @@ index 5c16d7e..edd9715 100644
          where
              optselected (Left _) _ = False
              optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
-@@ -392,41 +682,167 @@ radioField :: (Eq a, RenderMessage site FormMessage)
+@@ -390,67 +677,172 @@ radioFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
+                -> Field (HandlerT site IO) a
+ radioFieldList = radioField . optionsPairs
+ 
+-checkboxesFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg) => [(msg, a)]
+-                     -> Field (HandlerT site IO) [a]
+-checkboxesFieldList = checkboxesField . optionsPairs
+-
+-checkboxesField :: (Eq a, RenderMessage site FormMessage)
+-                 => HandlerT site IO (OptionList a)
+-                 -> Field (HandlerT site IO) [a]
+-checkboxesField ioptlist = (multiSelectField ioptlist)
+-    { fieldView =
+-        \theId name attrs val isReq -> do
+-            opts <- fmap olOptions $ handlerToWidget ioptlist
+-            let optselected (Left _) _ = False
+-                optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
+-            [whamlet|
+-                <span ##{theId}>
+-                    $forall opt <- opts
+-                        <label>
+-                            <input type=checkbox name=#{name} value=#{optionExternalValue opt} *{attrs} :optselected val opt:checked>
+-                            #{optionDisplay opt}
+-                |]
+-    }
+ 
+ radioField :: (Eq a, RenderMessage site FormMessage)
             => HandlerT site IO (OptionList a)
             -> Field (HandlerT site IO) a
  radioField = selectFieldHelper
@@ -695,10 +735,6 @@ index 5c16d7e..edd9715 100644
 -  $if not isReq
 -      <input id=#{theId}-none *{attrs} type=radio name=#{name} value=none checked>
 -      <label for=#{theId}-none>_{MsgSelectNone}
--
--
--<input id=#{theId}-yes *{attrs} type=radio name=#{name} value=yes :showVal id val:checked>
--<label for=#{theId}-yes>_{MsgBoolYes}
 +      , fieldView = \theId name attrs val isReq ->       do { Text.Hamlet.condH
 +             [(not isReq, 
 +               do { (Yesod.Core.Widget.asWidgetT . toWidget)
@@ -782,13 +818,17 @@ index 5c16d7e..edd9715 100644
 +           (Yesod.Core.Widget.asWidgetT . toWidget)
 +             ((Text.Blaze.Internal.preEscapedText . pack) "</label>") }
  
+-
+-<input id=#{theId}-yes *{attrs} type=radio name=#{name} value=yes :showVal id val:checked>
+-<label for=#{theId}-yes>_{MsgBoolYes}
+-
 -<input id=#{theId}-no *{attrs} type=radio name=#{name} value=no :showVal not val:checked>
 -<label for=#{theId}-no>_{MsgBoolNo}
 -|]
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -452,10 +868,25 @@ $newline never
+@@ -476,10 +868,25 @@ $newline never
  checkBoxField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Bool
  checkBoxField = Field
      { fieldParse = \e _ -> return $ checkBoxParser e
@@ -818,7 +858,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -499,49 +930,7 @@ optionsPairs opts = do
+@@ -523,49 +930,7 @@ optionsPairs opts = do
  optionsEnum :: (MonadHandler m, Show a, Enum a, Bounded a) => m (OptionList a)
  optionsEnum = optionsPairs $ map (\x -> (pack $ show x, x)) [minBound..maxBound]
  
@@ -869,7 +909,7 @@ index 5c16d7e..edd9715 100644
  
  selectFieldHelper
          :: (Eq a, RenderMessage site FormMessage)
-@@ -585,9 +974,21 @@ fileField = Field
+@@ -609,9 +974,21 @@ fileField = Field
          case files of
              [] -> Right Nothing
              file:_ -> Right $ Just file
@@ -894,7 +934,7 @@ index 5c16d7e..edd9715 100644
      , fieldEnctype = Multipart
      }
  
-@@ -614,10 +1015,20 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
+@@ -638,10 +1015,20 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
              { fvLabel = toHtml $ renderMessage site langs $ fsLabel fs
              , fvTooltip = fmap (toHtml . renderMessage site langs) $ fsTooltip fs
              , fvId = id'
@@ -919,7 +959,7 @@ index 5c16d7e..edd9715 100644
              , fvErrors = errs
              , fvRequired = True
              }
-@@ -646,10 +1057,20 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
+@@ -670,10 +1057,20 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
              { fvLabel = toHtml $ renderMessage master langs $ fsLabel fs
              , fvTooltip = fmap (toHtml . renderMessage master langs) $ fsTooltip fs
              , fvId = id'
@@ -1730,7 +1770,7 @@ index 2862678..7b49b1a 100644
      }
    where
 diff --git a/yesod-form.cabal b/yesod-form.cabal
-index f6ebbe0..46e3dd7 100644
+index afd2de5..49fd684 100644
 --- a/yesod-form.cabal
 +++ b/yesod-form.cabal
 @@ -19,6 +19,7 @@ library

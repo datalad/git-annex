@@ -1,0 +1,25 @@
+From c1b166ad1dbed80f7eed7b9c1b2dc5c668eeb8fc Mon Sep 17 00:00:00 2001
+From: androidbuilder <androidbuilder@example.com>
+Date: Fri, 18 Oct 2013 23:28:56 +0000
+Subject: [PATCH] cross build
+
+---
+ stm-chans.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/stm-chans.cabal b/stm-chans.cabal
+index 89d4780..2119a74 100644
+--- a/stm-chans.cabal
++++ b/stm-chans.cabal
+@@ -6,7 +6,7 @@
+ -- and source-repository:.
+ Cabal-Version:  >= 1.6
+ -- We need a custom build in order to define __HADDOCK__
+-Build-Type:     Custom
++Build-Type:     Simple
+ 
+ Name:           stm-chans
+ Version:        3.0.0
+-- 
+1.7.10.4
+

@@ -1,19 +1,18 @@
-From ddf49377d37c82575c1b0b712a476fa93fc00d6b Mon Sep 17 00:00:00 2001
-From: Joey Hess <joey@kitenet.net>
-Date: Thu, 18 Apr 2013 17:39:28 -0400
-Subject: [PATCH] fixes for cross build
+From 6cd7b7d3a8e38ada9b1e3989770525c63f9f1d7d Mon Sep 17 00:00:00 2001
+From: androidbuilder <androidbuilder@example.com>
+Date: Fri, 18 Oct 2013 23:10:16 +0000
+Subject: [PATCH] cross build
 
 ---
- distributive.cabal       | 2 +-
- src/Data/Distributive.hs | 2 --
- 2 files changed, 1 insertion(+), 3 deletions(-)
+ distributive.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/distributive.cabal b/distributive.cabal
-index 66ac73c..5204755 100644
+index 5d4ac69..82d7593 100644
 --- a/distributive.cabal
 +++ b/distributive.cabal
 @@ -12,7 +12,7 @@ bug-reports:   http://github.com/ekmett/distributive/issues
- copyright:     Copyright (C) 2011 Edward A. Kmett
+ copyright:     Copyright (C) 2011-2013 Edward A. Kmett
  synopsis:      Haskell 98 Distributive functors -- Dual to Traversable
  description:   Haskell 98 Distributive functors -- Dual to Traversable
 -build-type:    Custom
@@ -21,19 +20,6 @@ index 66ac73c..5204755 100644
  extra-source-files:
    .ghci
    .travis.yml
-diff --git a/src/Data/Distributive.hs b/src/Data/Distributive.hs
-index 6f5613d..66eaed2 100644
---- a/src/Data/Distributive.hs
-+++ b/src/Data/Distributive.hs
-@@ -26,8 +26,6 @@ import Data.Functor.Identity
- import Data.Functor.Product
- import Data.Functor.Reverse
- 
--{-# ANN module "ignore Use section" #-}
--
- -- | This is the categorical dual of 'Traversable'. However, there appears
- -- to be little benefit to allow the distribution via an arbitrary comonad
- -- so we restrict ourselves to 'Functor'.
 -- 
-1.8.2.rc3
+1.7.10.4
 
