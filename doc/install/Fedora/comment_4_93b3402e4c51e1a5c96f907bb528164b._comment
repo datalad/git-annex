@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkJafmCf-sg9_OM0pynFYM3AO4WCgJiaMI"
+ nickname="Michele"
+ subject="installing on fc19"
+ date="2013-10-18T21:05:56Z"
+ content="""
+i share my experience in installing from source on fc19, I must admit these are useful only for haskell novices:
+should cabal complain about missing libffi.so.5 (as it happened to me), do 
+
+     yum install compat-libffi
+
+and you'll get the missing library (the shipping version with fc19 is libffi.so.6)
+also: in order for the git annex to be picked up globally or better to end up in the default path i had to:
+
+     cabal install --global 
+"""]]
