@@ -77,17 +77,15 @@ install_pkgs () {
 	patched socks
 	patched entropy
 	patched vector
+	patched stm-chans
 	patched persistent
 	patched profunctors
 	patched skein
 	patched lens
 	patched persistent-template
-	patched file-embed
 	patched wai-app-static
 	patched shakespeare
-	patched hamlet
 	patched shakespeare-css
-        patched shakespeare-js
 	patched yesod-routes
 	patched yesod-core
 	patched yesod-persistent
