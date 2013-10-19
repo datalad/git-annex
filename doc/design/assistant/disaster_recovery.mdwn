@@ -99,14 +99,14 @@ and inject them back into .git/objects to recover:
    packs it can handle (which may include parts of corrupt packs) 
    back to loose objects. And delete all packs.
 2. Delete all loose corrupt objects.
-3. Make a new (bare) clone from the remote. Use `--reference` pointing
-   at the broken repository, to avoid re-downloading objects that
-   are present in it. (git does not seem to provide an easy way to just
-   fetch specific missing objects from a remote; `git fetch-pack` only
-   operates on refs... but this clone method should be pretty efficient)
-4. Unpack any packs in the clone, so we can operate on loose objects.
-5. Copy each missing object from the new clone's .git/objects to the
-   repository.
+3. Make a new (bare) clone from the remote.
+   (Note: git does not seem to provide a way to fetch specific missing
+   objects from the remote. Also, cannot use `--reference` against
+   a repository with missing refs. So this seems unavoidably
+   network-expensive.)
+5. Use git-cat-file in raw mode on the clone to dump each missing object,
+   and feed it into git-hash-object in the corrupt repo. (This avoids
+   needing to unpack packs in the clone.)
 6. If each bad object was able to be repaired this way, we're done!
    (If not, can reuse the clone for getting objects from the next remote.)
 
