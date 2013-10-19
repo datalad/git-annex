@@ -1,0 +1,6 @@
+It could be useful for Linux users and package maintainers to have systemd .service file samples to launch the assistant and the webapp.
+
+For multi-user systems, we could have a git-annex-webapp@username.service .
+
+See [systemd documentation](http://www.freedesktop.org/software/systemd/man/systemd.service.html) for informations about those files.
+See [archlinux wiki](https://wiki.archlinux.org/index.php/Systemd/Services) for .service examples.
