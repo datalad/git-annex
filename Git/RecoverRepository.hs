@@ -45,20 +45,24 @@ cleanCorruptObjects r = do
 	check =<< findBroken r
   where
   	check Nothing = do
-		notice "git fsck found a problem but no specific broken objects. Perhaps a corrupt pack file? Unpacking all pack files."
-		explodePacks r
-		retry S.empty
+		notice "git fsck found a problem but no specific broken objects. Perhaps a corrupt pack file?"
+		ifM (explodePacks r)
+			( retry S.empty
+			, return S.empty
+			)
 	check (Just bad)
 		| S.null bad = return S.empty
 		| otherwise = do
 			notice $ unwords 
 				[ "git fsck found"
 				, show (S.size bad)
-				, "broken objects. Unpacking all pack files."
+				, "broken objects."
 				]
-			explodePacks r
-			removeLoose r bad
-			retry bad
+			exploded <- explodePacks r
+			removed <- removeLoose r bad
+			if exploded || removed
+				then retry bad
+				else return bad
 	retry oldbad = do
 		notice "Re-running git fsck to see if it finds more problems."
 		v <- findBroken r
@@ -69,26 +73,36 @@ cleanCorruptObjects r = do
 				, "corrupt objects."
 				]
 			Just newbad -> do
-				removeLoose r newbad
+				removed <- removeLoose r newbad
 				let s = S.union oldbad newbad
-				if s == oldbad
+				if not removed || s == oldbad
 					then return s
 					else retry s
 
-removeLoose :: Repo -> S.Set Sha -> IO ()
+removeLoose :: Repo -> S.Set Sha -> IO Bool
 removeLoose r s = do
 	let fs = map (looseObjectFile r) (S.toList s)
 	count <- length <$> filterM doesFileExist fs
-	when (count > 0) $ do
-		notice $ unwords
-			[ "removing"
-			, show count
-			, "corrupt loose objects"
-			]
-		mapM_ nukeFile fs
+	if (count > 0)
+		then do
+			notice $ unwords
+				[ "removing"
+				, show count
+				, "corrupt loose objects"
+				]
+			mapM_ nukeFile fs
+			return True
+		else return False
 
-explodePacks :: Repo -> IO ()
-explodePacks r = mapM_ go =<< listPackFiles r
+explodePacks :: Repo -> IO Bool
+explodePacks r = do
+	packs <- listPackFiles r
+	if null packs
+		then return False
+		else do
+			notice "Unpacking all pack files."
+			mapM_ go packs
+			return True
   where
 	go packfile = do
 		-- May fail, if pack file is corrupt.
