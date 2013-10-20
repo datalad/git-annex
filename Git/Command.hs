@@ -1,6 +1,6 @@
 {- running git commands
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -85,13 +85,13 @@ pipeReadStrict params repo = assertLocal repo $
   where
 	p  = gitCreateProcess params repo
 
-{- Runs a git command, feeding it input, and returning its output,
+{- Runs a git command, feeding it an input, and returning its output,
  - which is expected to be fairly small, since it's all read into memory
  - strictly. -}
-pipeWriteRead :: [CommandParam] -> String -> Repo -> IO String
-pipeWriteRead params s repo = assertLocal repo $
+pipeWriteRead :: [CommandParam] -> Maybe (Handle -> IO ()) -> Repo -> IO String
+pipeWriteRead params writer repo = assertLocal repo $
 	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
-		(gitEnv repo) s (Just adjusthandle)
+		(gitEnv repo) writer (Just adjusthandle)
   where
   	adjusthandle h = do
 		fileEncoding h

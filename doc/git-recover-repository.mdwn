@@ -1,0 +1,28 @@
+# NAME
+
+git-recover-repository - Fix a broken git repository
+
+# SYNOPSIS
+
+git-recover-repository [--force]
+
+# DESCRIPTION
+
+This can fix a corrupt or broken git repository, which git fsck would
+only complain has problems.
+
+It does by deleting all corrupt objects, and retreiving all missing
+objects that it can from the remotes of the repository.
+
+If that is not sufficient to fully recover the repository, it can also
+reset branches back to commits before the corruption happened. It will only
+do this if run with the --force option, since that rewrites history
+and throws out missing data.
+
+# AUTHOR
+
+Joey Hess <joey@kitenet.net>
+
+<http://git-annex.branchable.com/>
+
+Warning: Automatically converted into a man page by mdwn2man. Edit with care

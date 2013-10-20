@@ -96,7 +96,7 @@ commit message branch parentrefs repo = do
 		pipeReadStrict [Param "write-tree"] repo
 	sha <- getSha "commit-tree" $ pipeWriteRead
 		(map Param $ ["commit-tree", show tree] ++ ps)
-		message repo
+		(Just $ flip hPutStr message) repo
 	run [Param "update-ref", Param $ show branch, Param $ show sha] repo
 	return sha
   where

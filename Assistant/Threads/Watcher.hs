@@ -300,7 +300,7 @@ addLink file link mk = do
 	liftAnnex $ do
 		v <- catObjectDetails $ Ref $ ':':file
 		case v of
-			Just (currlink, sha)
+			Just (currlink, sha, _type)
 				| s2w8 link == L.unpack currlink ->
 					stageSymlink file sha
 			_ -> stageSymlink file =<< hashSymlink link

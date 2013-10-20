@@ -8,6 +8,7 @@
 module Git.CatFile (
 	CatFileHandle,
 	catFileStart,
+	catFileStart',
 	catFileStop,
 	catFile,
 	catTree,
@@ -18,8 +19,7 @@ module Git.CatFile (
 import System.IO
 import qualified Data.ByteString as S
 import qualified Data.ByteString.Lazy as L
-import Data.Char
-import System.Process (std_out, std_err)
+import Data.Tuple.Utils
 import Numeric
 import System.Posix.Types
 
@@ -30,13 +30,15 @@ import Git.Command
 import Git.Types
 import Git.FilePath
 import qualified Utility.CoProcess as CoProcess
-import Utility.Hash
 
 data CatFileHandle = CatFileHandle CoProcess.CoProcessHandle Repo
 
 catFileStart :: Repo -> IO CatFileHandle
-catFileStart repo = do
-	coprocess <- CoProcess.rawMode =<< gitCoProcessStart True
+catFileStart = catFileStart' True
+
+catFileStart' :: Bool -> Repo -> IO CatFileHandle
+catFileStart' restartable repo = do
+	coprocess <- CoProcess.rawMode =<< gitCoProcessStart restartable
 		[ Param "cat-file"
 		, Param "--batch"
 		] repo
@@ -53,11 +55,10 @@ catFile h branch file = catObject h $ Ref $
 {- Uses a running git cat-file read the content of an object.
  - Objects that do not exist will have "" returned. -}
 catObject :: CatFileHandle -> Ref -> IO L.ByteString
-catObject h object = maybe L.empty fst <$> catObjectDetails h object
+catObject h object = maybe L.empty fst3 <$> catObjectDetails h object
 
-{- Gets both the content of an object, and its Sha. -}
-catObjectDetails :: CatFileHandle -> Ref -> IO (Maybe (L.ByteString, Sha))
-catObjectDetails (CatFileHandle hdl repo) object = CoProcess.query hdl send receive
+catObjectDetails :: CatFileHandle -> Ref -> IO (Maybe (L.ByteString, Sha, ObjectType))
+catObjectDetails (CatFileHandle hdl _) object = CoProcess.query hdl send receive
   where
 	query = show object
 	send to = hPutStrLn to query
@@ -65,19 +66,18 @@ catObjectDetails (CatFileHandle hdl repo) object = CoProcess.query hdl send rece
 		header <- hGetLine from
 		case words header of
 			[sha, objtype, size]
-				| length sha == shaSize &&
-				  isJust (readObjectType objtype) -> 
-					case reads size of
-						[(bytes, "")] -> readcontent bytes from sha
+				| length sha == shaSize ->
+					case (readObjectType objtype, reads size) of
+						(Just t, [(bytes, "")]) -> readcontent t bytes from sha
 						_ -> dne
 				| otherwise -> dne
 			_
 				| header == show object ++ " missing" -> dne
 				| otherwise -> error $ "unknown response from git cat-file " ++ show (header, object)
-	readcontent bytes from sha = do
+	readcontent objtype bytes from sha = do
 		content <- S.hGet from bytes
 		eatchar '\n' from
-		return $ Just (L.fromChunks [content], Ref sha)
+		return $ Just (L.fromChunks [content], Ref sha, objtype)
 	dne = return Nothing
 	eatchar expected from = do
 		c <- hGetChar from
@@ -88,8 +88,8 @@ catObjectDetails (CatFileHandle hdl repo) object = CoProcess.query hdl send rece
 catTree :: CatFileHandle -> Ref -> IO [(FilePath, FileMode)]
 catTree h treeref = go <$> catObjectDetails h treeref
   where
-  	go Nothing = []
-	go (Just (b, _)) = parsetree [] b
+	go (Just (b, _, TreeObject)) = parsetree [] b
+  	go _ = []
 
 	parsetree c b = case L.break (== 0) b of
 		(modefile, rest)

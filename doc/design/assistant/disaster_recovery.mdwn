@@ -87,18 +87,23 @@ git-recover-repository command.
 
 ### detailed design
 
-Run `git fsck` and parse output to find bad objects, and determine
-from its output if they are a commit, a tree, or a blob.
-
-Check if there's a remote. If so, and if the bad objects are all
-present on it, can simply get all bad objects from the remote,
-and inject them back into .git/objects to recover:
+Run `git fsck` and parse output to find bad objects. Note that
+fsck may fall over and fail to print out all bad objects, when
+files are corrupt. So if the fsck exits nonzero, need to collect all
+bad objects it did find, and:
 
 1. If the local repository contains packs, the packs may be corrupt.
    So, start by using `git unpack-objects` to unpack all
    packs it can handle (which may include parts of corrupt packs) 
    back to loose objects. And delete all packs.
 2. Delete all loose corrupt objects.
+
+Repeat until fsck finds no new problems.
+
+Check if there's a remote. If so, and if the bad objects are all
+present on it, can simply get all bad objects from the remote,
+and inject them back into .git/objects to recover:
+
 3. Make a new (bare) clone from the remote.
    (Note: git does not seem to provide a way to fetch specific missing
    objects from the remote. Also, cannot use `--reference` against

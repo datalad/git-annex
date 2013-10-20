@@ -43,7 +43,7 @@ catTree ref = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catTree h ref
 
-catObjectDetails :: Git.Ref -> Annex (Maybe (L.ByteString, Sha))
+catObjectDetails :: Git.Ref -> Annex (Maybe (L.ByteString, Sha, ObjectType))
 catObjectDetails ref = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catObjectDetails h ref
