@@ -87,7 +87,7 @@ git-recover-repository command.
 
 ### detailed design
 
-Run `git fsck` and parse output to find bad objects. Note that
+Run `git fsck` and parse output to find bad objects. **done** Note that
 fsck may fall over and fail to print out all bad objects, when
 files are corrupt. So if the fsck exits nonzero, need to collect all
 bad objects it did find, and:
@@ -95,10 +95,10 @@ bad objects it did find, and:
 1. If the local repository contains packs, the packs may be corrupt.
    So, start by using `git unpack-objects` to unpack all
    packs it can handle (which may include parts of corrupt packs) 
-   back to loose objects. And delete all packs.
-2. Delete all loose corrupt objects.
+   back to loose objects. And delete all packs. **done**
+2. Delete all loose corrupt objects. **done**
 
-Repeat until fsck finds no new problems.
+Repeat until fsck finds no new problems. **done**
 
 Check if there's a remote. If so, and if the bad objects are all
 present on it, can simply get all bad objects from the remote,
@@ -108,12 +108,13 @@ and inject them back into .git/objects to recover:
    (Note: git does not seem to provide a way to fetch specific missing
    objects from the remote. Also, cannot use `--reference` against
    a repository with missing refs. So this seems unavoidably
-   network-expensive.)
-5. Use git-cat-file in raw mode on the clone to dump each missing object,
-   and feed it into git-hash-object in the corrupt repo. (This avoids
-   needing to unpack packs in the clone.)
+   network-expensive.) **done**
+5. Rsync objects over. (Turned out to work better than git-cat-file, 
+   because we don't have to walk the graph to add missing objects.)
+   **done**
 6. If each bad object was able to be repaired this way, we're done!
    (If not, can reuse the clone for getting objects from the next remote.)
+   **done**
 
 If some missing objects cannot be recovered from remotes, find commits in each
 local branch that are broken by all remaining missing objects. Some of this can
