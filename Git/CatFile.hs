@@ -73,10 +73,7 @@ catObjectDetails (CatFileHandle hdl repo) object = CoProcess.query hdl send rece
 				| otherwise -> dne
 			_
 				| header == show object ++ " missing" -> dne
-				| otherwise -> 
-					if any isSpace query
-						then fallback
-						else error $ "unknown response from git cat-file " ++ show (header, object)
+				| otherwise -> error $ "unknown response from git cat-file " ++ show (header, object)
 	readcontent bytes from sha = do
 		content <- S.hGet from bytes
 		eatchar '\n' from
@@ -86,28 +83,6 @@ catObjectDetails (CatFileHandle hdl repo) object = CoProcess.query hdl send rece
 		c <- hGetChar from
 		when (c /= expected) $
 			error $ "missing " ++ (show expected) ++ " from git cat-file"
-
-	{- Work around a bug in git 1.8.4 rc0 which broke it for filenames
-	 - containing spaces. http://bugs.debian.org/718517   
-	 - Slow! Also can use a lot of memory, if the object is large. -}
-	fallback = do
-		let p = gitCreateProcess 
-			[ Param "cat-file"
-			, Param "-p"
-			, Param query
-			] repo
-		(_, Just h, _, pid) <- withNullHandle $ \h -> 
-			createProcess p
-				{ std_out = CreatePipe
-				, std_err = UseHandle h
-				}
-		fileEncoding h
-		content <- L.hGetContents h
-		let sha = (\s -> length s `seq` s) (show $ sha1 content)
-		ok <- checkSuccessProcess pid
-		return $ if ok
-			then Just (content, Ref sha)
-			else Nothing
 
 {- Gets a list of files and directories in a tree. (Not recursive.) -}
 catTree :: CatFileHandle -> Ref -> IO [(FilePath, FileMode)]
