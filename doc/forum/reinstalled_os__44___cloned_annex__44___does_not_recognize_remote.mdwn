@@ -1,0 +1,8 @@
+Hi,
+
+I switched distribution and cloned my annex from the backup afterwards. getting the files from my backup worked fine, but i have a remote on an external disk and git-annex keeps saying it's unavailable despite it being there. I have the same username and hostname as on my old system so and the remote repo still has the uuid 3d661c5e-c84e-4902-b52e-decbafadfa4f. The only thing that changed is the path, it's know mounted unter /var/run/media/phaer/95... but a symlinked to the path below did not help. Any suggestions? 
+
+    3d661c5e-c84e-4902-b52e-decbafadfa4f -- phaer@kassiopeia:/media/phaer/9502bc14-b83e-471a-95a8-80ff9072a4ab/annex
+
+
+and thank you for this amazing piece of software.
