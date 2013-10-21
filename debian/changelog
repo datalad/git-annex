@@ -34,6 +34,7 @@ git-annex (4.20131003) UNRELEASED; urgency=low
   * Removed workaround for bug in git 1.8.4r0.
   * Added git-recover-repository command to git-annex source
     (not built by default; this needs to move to someplace else).
+  * webapp: Move sidebar to the right hand side of the screen.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 03 Oct 2013 15:41:24 -0400
 
