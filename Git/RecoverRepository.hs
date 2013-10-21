@@ -10,6 +10,7 @@ module Git.RecoverRepository (
 	retrieveMissingObjects,
 	resetLocalBranches,
 	removeTrackingBranches,
+	emptyGoodCommits,
 ) where
 
 import Common
@@ -17,12 +18,12 @@ import Git
 import Git.Command
 import Git.Fsck
 import Git.Objects
-import Git.HashObject
-import Git.Types
+import Git.Sha
 import qualified Git.Config
 import qualified Git.Construct
+import qualified Git.LsTree as LsTree
+import qualified Git.Ref as Ref
 import Utility.Tmp
-import Utility.Monad
 import Utility.Rsync
 
 import qualified Data.Set as S
@@ -39,7 +40,7 @@ import System.Log.Logger
  - To remove corrupt objects, unpack all packs, and remove the packs
  - (to handle corrupt packs), and remove loose object files.
  -}
-cleanCorruptObjects :: Repo -> IO (S.Set Sha)
+cleanCorruptObjects :: Repo -> IO MissingObjects
 cleanCorruptObjects r = do
 	notice "Running git fsck ..."
 	check =<< findBroken r
@@ -79,7 +80,7 @@ cleanCorruptObjects r = do
 					then return s
 					else retry s
 
-removeLoose :: Repo -> S.Set Sha -> IO Bool
+removeLoose :: Repo -> MissingObjects -> IO Bool
 removeLoose r s = do
 	let fs = map (looseObjectFile r) (S.toList s)
 	count <- length <$> filterM doesFileExist fs
@@ -115,7 +116,7 @@ explodePacks r = do
 {- Try to retrieve a set of missing objects, from the remotes of a
  - repository. Returns any that could not be retreived.
  -}
-retrieveMissingObjects :: S.Set Sha -> Repo -> IO (S.Set Sha)
+retrieveMissingObjects :: MissingObjects -> Repo -> IO MissingObjects
 retrieveMissingObjects missing r
 	| S.null missing = return missing
 	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
@@ -127,7 +128,7 @@ retrieveMissingObjects missing r
 			then return stillmissing
 			else pullremotes tmpr (remotes r) fetchallrefs stillmissing
   where
-	pullremotes tmpr [] _ stillmissing = return stillmissing
+	pullremotes _tmpr [] _ stillmissing = return stillmissing
 	pullremotes tmpr (rmt:rmts) fetchrefs s
 		| S.null s = return s
 		| otherwise = do
@@ -170,16 +171,170 @@ copyObjects srcr destr = rsync
  - local branches to point to an old commit before the missing
  - objects.
  -}
-resetLocalBranches :: S.Set Sha -> Repo -> IO [Branch]
-resetLocalBranches missing r = do
+resetLocalBranches :: MissingObjects -> GoodCommits -> Repo -> IO [Branch]
+resetLocalBranches missing goodcommits r = do
 	error "TODO"
 
 {- To deal with missing objects that cannot be recovered, removes
- - any remote tracking branches that reference them.
+ - any remote tracking branches that reference them. Returns a list of
+ - all removed branches.
  -}
-removeTrackingBranches :: S.Set Sha -> Repo -> IO [Branch]
-removeTrackingBranches missing r = do
-	error "TODO"
+removeTrackingBranches :: MissingObjects -> GoodCommits -> Repo -> IO ([Branch], GoodCommits)
+removeTrackingBranches missing goodcommits r =
+	go [] goodcommits =<< filter istrackingbranch <$> getAllRefs r
+  where
+  	istrackingbranch b = "refs/remotes/" `isPrefixOf` show b
+	go removed gcs [] = return (removed, gcs)
+	go removed gcs (b:bs) = do
+		(ok, gcs') <- verifyCommit missing gcs b r
+		if ok
+			then go removed gcs' bs
+			else do
+				nukeBranchRef b r
+				go (b:removed) gcs' bs
+
+{- Gets all refs, including ones that are corrupt.
+ - git show-ref does not output refs to commits that are directly
+ - corrupted, so it is not used.
+ -}
+getAllRefs :: Repo -> IO [Ref]
+getAllRefs r = do
+	packedrs <- mapMaybe parsePacked . lines
+		<$> catchDefaultIO "" (readFile $ packedRefsFile r)
+	loosers <- map toref <$> dirContentsRecursive (localGitDir r </> "refs")
+	return $ packedrs ++ loosers
+  where
+  	refdir = localGitDir r </> "refs"
+	toref = Ref . relPathDirToFile (localGitDir r)
+
+packedRefsFile :: Repo -> FilePath
+packedRefsFile r = localGitDir r </> "packed-refs"
+
+parsePacked :: String -> Maybe Ref
+parsePacked l = case words l of
+	(sha:ref:[])
+		| isJust (extractSha sha) -> Just $ Ref ref
+	_ -> Nothing
+
+{- git-branch -d cannot be used to remove a branch that is directly
+ - pointing to a corrupt commit. However, it's tried first. -}
+nukeBranchRef :: Branch -> Repo -> IO ()
+nukeBranchRef b r = void $ usegit <||> byhand
+  where
+	usegit = runBool
+		[ Param "branch"
+		, Params "-r -d"
+		, Param $ show $ Ref.base b
+		] r
+	byhand = do
+		nukeFile $ localGitDir r </> show b
+		whenM (doesFileExist packedrefs) $
+			withTmpFile "packed-refs" $ \tmp h -> do
+				ls <- lines <$> readFile packedrefs
+				hPutStr h $ unlines $
+					filter (not . skiprefline) ls
+				hClose h
+				renameFile tmp packedrefs
+		return True
+	skiprefline l = case parsePacked l of
+		Just packedref
+			| packedref == b -> True
+		_ -> False
+	packedrefs = packedRefsFile r
+
+{- Finds the most recent commit to a branch that does not need any
+ - of the missing objects. If the input branch is good as-is, returns it.
+ - Otherwise, tries to traverse the commits in the branch to find one
+ - that is ok (might fail, if one of them is corrupt).
+ -}
+findUncorruptedCommit :: MissingObjects -> GoodCommits -> Branch -> Repo -> IO (Maybe Sha, GoodCommits)
+findUncorruptedCommit missing goodcommits branch r = do
+	(ok, goodcommits') <- verifyCommit missing goodcommits branch r
+	if ok
+		then return (Just branch, goodcommits')
+		else do
+			(ls, cleanup) <- pipeNullSplit
+				[ Param "log"
+				, Param "--format=%H"
+				, Param (show branch)
+				] r
+			cleanup `after` findfirst goodcommits (catMaybes $ map extractSha ls)
+  where
+	findfirst gcs [] = return (Nothing, gcs)
+	findfirst gcs (c:cs) = do
+		(ok, gcs') <- verifyCommit missing gcs c r
+		if ok
+			then return (Just c, gcs')
+			else findfirst gcs' cs
+
+{- Looks through the reflog to find an old version of a branch that
+ - does not need any of the missing objects.
+ -}
+findOldBranch :: MissingObjects -> GoodCommits -> Branch -> Repo -> IO (Maybe Sha, GoodCommits)
+findOldBranch missing goodcommits branch r = error "TODO"
+
+{- Verifies tha none of the missing objects in the set are used by
+ - the commit. Also adds to a set of commit shas that have been verified to
+ - be good, which can be passed into subsequent calls to avoid
+ - redundant work when eg, chasing down branches to find the first
+ - uncorrupted commit. -}
+verifyCommit :: MissingObjects -> GoodCommits -> Sha -> Repo -> IO (Bool, GoodCommits)
+verifyCommit missing goodcommits commit r
+	| checkGoodCommit commit goodcommits = return (True, goodcommits)
+	| otherwise = do
+		(ls, cleanup) <- pipeNullSplit
+			[ Param "log"
+			, Param "--format=%H %T"
+			, Param (show commit)
+			] r
+		let committrees = map parse ls
+		if any isNothing committrees
+			then do
+				void cleanup
+				return (False, goodcommits)
+			else do
+				let cts = catMaybes committrees
+				ifM (cleanup <&&> check cts)
+					( return (True, addGoodCommits (map fst cts) goodcommits)
+					, return (False, goodcommits)
+					)
+  where
+	parse l = case words l of
+		(commitsha:treesha:[]) -> (,)
+			<$> extractSha commitsha
+			<*> extractSha treesha
+		_ -> Nothing
+	check [] = return False
+	check ((commit, tree):rest)
+		| checkGoodCommit commit goodcommits = return True
+		| otherwise = verifyTree missing tree r <&&> check rest
+
+{- Verifies that a tree is good, including all trees and blobs
+ - referenced by it. -}
+verifyTree :: MissingObjects -> Sha -> Repo -> IO Bool
+verifyTree missing treesha r
+	| S.member treesha missing = return False
+	| otherwise = do
+		(ls, cleanup) <- pipeNullSplit (LsTree.lsTreeParams treesha) r
+		let objshas = map (extractSha . LsTree.sha . LsTree.parseLsTree) ls
+		if any isNothing objshas || any (`S.member` missing) (catMaybes objshas)
+			then do
+				void cleanup
+				return False
+			-- as long as ls-tree succeeded, we're good
+			else cleanup
+
+newtype GoodCommits = GoodCommits (S.Set Sha)
+
+emptyGoodCommits :: GoodCommits
+emptyGoodCommits = GoodCommits S.empty
+
+checkGoodCommit :: Sha -> GoodCommits -> Bool
+checkGoodCommit sha (GoodCommits s) = S.member sha s
+
+addGoodCommits :: [Sha] -> GoodCommits -> GoodCommits
+addGoodCommits shas (GoodCommits s) = GoodCommits $
+	S.union s (S.fromList shas)
 
 notice :: String -> IO ()
 notice = noticeM "RecoverRepository"

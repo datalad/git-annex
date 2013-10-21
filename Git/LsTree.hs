@@ -8,6 +8,7 @@
 module Git.LsTree (
 	TreeItem(..),
 	lsTree,
+	lsTreeParams,
 	lsTreeFiles,
 	parseLsTree
 ) where
@@ -33,9 +34,11 @@ data TreeItem = TreeItem
 {- Lists the complete contents of a tree, recursing into sub-trees,
  - with lazy output. -}
 lsTree :: Ref -> Repo -> IO [TreeItem]
-lsTree t repo = map parseLsTree <$> pipeNullSplitZombie ps repo
-  where
-  	ps = [Params "ls-tree --full-tree -z -r --", File $ show t]
+lsTree t repo = map parseLsTree
+	<$> pipeNullSplitZombie (lsTreeParams t) repo
+
+lsTreeParams :: Ref -> [CommandParam]
+lsTreeParams t = [ Params "ls-tree --full-tree -z -r --", File $ show t ]
 
 {- Lists specified files in a tree. -}
 lsTreeFiles :: Ref -> [FilePath] -> Repo -> IO [TreeItem]

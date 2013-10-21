@@ -7,7 +7,8 @@
 
 module Git.Fsck (
 	findBroken,
-	findMissing
+	findMissing,
+	MissingObjects
 ) where
 
 import Common
@@ -17,6 +18,8 @@ import Git.Sha
 import Git.CatFile
 
 import qualified Data.Set as S
+
+type MissingObjects = S.Set Sha
 
 {- Runs fsck to find some of the broken objects in the repository.
  - May not find all broken objects, if fsck fails on bad data in some of
@@ -28,7 +31,7 @@ import qualified Data.Set as S
  - to be a git sha. Not all such shas are of broken objects, so ask git
  - to try to cat the object, and see if it fails.
  -}
-findBroken :: Repo -> IO (Maybe (S.Set Sha))
+findBroken :: Repo -> IO (Maybe MissingObjects)
 findBroken r = do
 	(output, fsckok) <- processTranscript "git" (toCommand $ fsckParams r) Nothing
 	let objs = parseFsckOutput output
@@ -39,7 +42,7 @@ findBroken r = do
 
 {- Finds objects that are missing from the git repsitory, or are corrupt.
  - Note that catting a corrupt object will cause cat-file to crash. -}
-findMissing :: [Sha] -> Repo -> IO (S.Set Sha)
+findMissing :: [Sha] -> Repo -> IO MissingObjects
 findMissing objs r = go objs [] =<< start
   where
 	start = catFileStart' False r

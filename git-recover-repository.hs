@@ -59,14 +59,14 @@ main = do
 				]
 			if forced
 				then do
-					remotebranches <- Git.RecoverRepository.removeTrackingBranches stillmissing g
+					(remotebranches, goodcommits) <- Git.RecoverRepository.removeTrackingBranches stillmissing Git.RecoverRepository.emptyGoodCommits g
 					unless (null remotebranches) $
 						putStrLn $ unwords
 							[ "removed"
 							, show (length remotebranches)
 							, "remote tracking branches that referred to missing objects"
 							]
-					localbranches <- Git.RecoverRepository.resetLocalBranches stillmissing g
+					localbranches <- Git.RecoverRepository.resetLocalBranches stillmissing goodcommits g
 					unless (null localbranches) $ do
 						putStrLn "Reset these local branches to old versions before the missing objects were committed:"
 						putStr $ unlines $ map show localbranches
