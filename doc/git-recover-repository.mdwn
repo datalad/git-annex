@@ -23,8 +23,9 @@ tags, even if they are no longer usable due to missing data.
 
 After running this command, you will probably want to run `git fsck` to
 verify it fixed the repository. Note that fsck may still complain about
-objects referenced by the reflog, if they were unable to be recovered.
-Use `git fsck --no-reflogs` to skip such objects.
+objects referenced by the reflog, or the stash, if they were unable to be
+recovered. This command does not try to clean up either the reflog or the
+stash.
 
 Since this command unpacks all packs in the repository, you may want to
 run `git gc` afterwards.
