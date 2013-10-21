@@ -32,3 +32,5 @@ technicalities:
 "server": linux version:
 
     git-annex version: 3.20130207
+
+> [[done]]; fixed in newer git-annex versions. --[[Joey]]
