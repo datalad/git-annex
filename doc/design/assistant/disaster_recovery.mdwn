@@ -143,8 +143,7 @@ that was found for it.
   `git annex fsck --fast` to fix up any object location info.
 * Remote tracking branches can just be removed, and then `git fetch`
   from the remote, which will re-download missing objects from it and
-  reinstate the tracking branch.
-* For other branches (or tags), it's best to not rewrite them, because
-  that could get really confusing. Instead, delete the old broken branch,
-  and make a "recovered/$branch" that holds the last good commit (if one
-  was found).
+  reinstate the tracking branch. **done**
+* For other branches, reset them to last good commit, or delete
+  if none was found.
+* (Decided not to touch tags.)

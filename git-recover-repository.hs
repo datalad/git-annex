@@ -16,6 +16,7 @@ import Common
 import qualified Git.CurrentRepo
 import qualified Git.RecoverRepository
 import qualified Git.Config
+import qualified Git.Branch
 
 header :: String
 header = "Usage: git-recover-repository"
@@ -34,7 +35,7 @@ parseArgs = do
 enableDebugOutput :: IO ()
 enableDebugOutput = do
 	s <- setFormatter
-		<$> streamHandler stderr NOTICE
+		<$> streamHandler stderr DEBUG -- NOTICE
 		<*> pure (simpleLogFormatter "$msg")
 	updateGlobalLogger rootLoggerName (setLevel DEBUG . setHandlers [s])
 
@@ -66,8 +67,20 @@ main = do
 							, show (length remotebranches)
 							, "remote tracking branches that referred to missing objects"
 							]
-					localbranches <- Git.RecoverRepository.resetLocalBranches stillmissing goodcommits g
-					unless (null localbranches) $ do
+					(resetbranches, deletedbranches, _) <- Git.RecoverRepository.resetLocalBranches stillmissing goodcommits g
+					unless (null resetbranches) $ do
 						putStrLn "Reset these local branches to old versions before the missing objects were committed:"
-						putStr $ unlines $ map show localbranches
+						putStr $ unlines $ map show resetbranches
+					unless (null deletedbranches) $ do
+						putStrLn "Deleted these local branches, which could not be recovered due to missing objects:"
+						putStr $ unlines $ map show deletedbranches
+					mcurr <- Git.Branch.currentUnsafe g
+					case mcurr of
+						Nothing -> return ()
+						Just curr -> when (any (== curr) (resetbranches ++ deletedbranches)) $ do
+							putStrLn $ unwords
+								[ "You currently have"
+								, show curr
+								, "checked out. You may have staged changes in the index that can be committed to recover the lost state of this branch!"
+								]
 				else putStrLn "To force a recovery to a usable state, run this command again with the --force parameter."

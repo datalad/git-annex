@@ -169,11 +169,40 @@ copyObjects srcr destr = rsync
 
 {- To deal with missing objects that cannot be recovered, resets any
  - local branches to point to an old commit before the missing
- - objects.
+ - objects. Returns all branches that were changed, and deleted.
  -}
-resetLocalBranches :: MissingObjects -> GoodCommits -> Repo -> IO [Branch]
-resetLocalBranches missing goodcommits r = do
-	error "TODO"
+resetLocalBranches :: MissingObjects -> GoodCommits -> Repo -> IO ([Branch], [Branch], GoodCommits)
+resetLocalBranches missing goodcommits r =
+	go [] [] goodcommits =<< filter islocalbranch <$> getAllRefs r
+  where
+	islocalbranch b = "refs/heads/" `isPrefixOf` show b
+	go changed deleted gcs [] = return (changed, deleted, gcs)
+	go changed deleted gcs (b:bs) = do
+		(mc, gcs') <- findUncorruptedCommit missing gcs b r
+		case mc of
+			Just c
+				| c == b -> go changed deleted gcs' bs
+				| otherwise -> do
+					reset b c
+					go (b:changed) deleted gcs' bs
+			Nothing -> do
+				(mc', gcs'') <- findOldBranch missing gcs' b r
+				case mc' of
+					Just c
+						| c == b -> go changed deleted gcs' bs
+						| otherwise -> do
+							reset b c
+							go (b:changed) deleted gcs'' bs
+					Nothing -> do
+						nukeBranchRef b r
+						go changed (b:deleted) gcs'' bs
+	reset b c = do
+		nukeBranchRef b	r
+		void $ runBool
+			[ Param "branch"
+			, Param (show $ Ref.base b)
+			, Param (show c)
+			] r
 
 {- To deal with missing objects that cannot be recovered, removes
  - any remote tracking branches that reference them. Returns a list of
@@ -255,6 +284,7 @@ findUncorruptedCommit missing goodcommits branch r = do
 		else do
 			(ls, cleanup) <- pipeNullSplit
 				[ Param "log"
+				, Param "-z"
 				, Param "--format=%H"
 				, Param (show branch)
 				] r
@@ -284,11 +314,12 @@ verifyCommit missing goodcommits commit r
 	| otherwise = do
 		(ls, cleanup) <- pipeNullSplit
 			[ Param "log"
+			, Param "-z"
 			, Param "--format=%H %T"
 			, Param (show commit)
 			] r
 		let committrees = map parse ls
-		if any isNothing committrees
+		if any isNothing committrees || null committrees
 			then do
 				void cleanup
 				return (False, goodcommits)
@@ -304,7 +335,7 @@ verifyCommit missing goodcommits commit r
 			<$> extractSha commitsha
 			<*> extractSha treesha
 		_ -> Nothing
-	check [] = return False
+	check [] = return True
 	check ((commit, tree):rest)
 		| checkGoodCommit commit goodcommits = return True
 		| otherwise = verifyTree missing tree r <&&> check rest
