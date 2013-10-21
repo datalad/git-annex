@@ -119,14 +119,14 @@ and inject them back into .git/objects to recover:
 If some missing objects cannot be recovered from remotes, find commits in each
 local branch that are broken by all remaining missing objects. Some of this can
 be parsed from git fsck output, but for eg blobs, the commits need to
-be walked to walk the trees, to find trees that refer to the blobs.
+be walked to walk the trees, to find trees that refer to the blobs. **done**
 
 For each branch that is affected, look in the reflog and/or `git log
 $branch` to find the last good commit that predates all broken commits. (If
 the head commit of a branch is broken, git log is not going to show
 anything useful, but the reflog can be used to find past refs for the
 branch -- have to first delete the .git/HEAD file if it points to the
-broken ref.)
+broken ref.) **done**
 
 The basic idea then is to reset the branch to the last good commit
 that was found for it.
@@ -136,8 +136,8 @@ that was found for it.
   leave git showing any changes made since then as staged in the index and
   uncommitted. Or if the index is missing/corrupt, any files in the tree will
   show as modified and uncommitted. User (or git-annex assistant) can then
-  commit as appropriate. Print appropriate warning message.
-* Special handling for git-annex branch: Reset to last good commit
+  commit as appropriate. Print appropriate warning message. **done**
+* TODO: Special handling for git-annex branch: Reset to last good commit
   (or to dummy empty commit is there is not one), and 
   then commit `.git/annex/index` over top of that, and then run a
   `git annex fsck --fast` to fix up any object location info.
@@ -145,5 +145,11 @@ that was found for it.
   from the remote, which will re-download missing objects from it and
   reinstate the tracking branch. **done**
 * For other branches, reset them to last good commit, or delete
-  if none was found.
+  if none was found. **done**
 * (Decided not to touch tags.)
+
+TODO: The index file can still refer to objects that were missing.
+This prevents git commit from working. And simply re-staging things doesn't
+seem to help; git sees the sha is "known" and does not re-add it,
+apparently. So, need to do something to clean up the index, while ideally
+not losing any staged changes.
