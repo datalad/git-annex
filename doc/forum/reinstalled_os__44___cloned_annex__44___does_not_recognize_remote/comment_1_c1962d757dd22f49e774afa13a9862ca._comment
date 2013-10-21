@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-21T22:24:35Z"
+ content="""
+It might help if you pasted the actual error message that git-annex shows when you try to use this remote. Along with the part of .git/config that configures this remote.
+
+In general, git-annex does not are if you've reinstalled your OS, moved things around, etc. As long as the git remote's path points to a repository, git-annex will see it and be able to use it.
+"""]]
