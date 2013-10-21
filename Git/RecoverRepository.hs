@@ -23,6 +23,7 @@ import qualified Git.Config
 import qualified Git.Construct
 import qualified Git.LsTree as LsTree
 import qualified Git.Ref as Ref
+import qualified Git.RefLog as RefLog
 import Utility.Tmp
 import Utility.Rsync
 
@@ -186,16 +187,8 @@ resetLocalBranches missing goodcommits r =
 					reset b c
 					go (b:changed) deleted gcs' bs
 			Nothing -> do
-				(mc', gcs'') <- findOldBranch missing gcs' b r
-				case mc' of
-					Just c
-						| c == b -> go changed deleted gcs' bs
-						| otherwise -> do
-							reset b c
-							go (b:changed) deleted gcs'' bs
-					Nothing -> do
-						nukeBranchRef b r
-						go changed (b:deleted) gcs'' bs
+				nukeBranchRef b r
+				go changed (b:deleted) gcs' bs
 	reset b c = do
 		nukeBranchRef b	r
 		void $ runBool
@@ -274,7 +267,9 @@ nukeBranchRef b r = void $ usegit <||> byhand
 {- Finds the most recent commit to a branch that does not need any
  - of the missing objects. If the input branch is good as-is, returns it.
  - Otherwise, tries to traverse the commits in the branch to find one
- - that is ok (might fail, if one of them is corrupt).
+ - that is ok. That might fail, if one of them is corrupt, or if an object
+ - at the root of the branch is missing. Finally, looks for an old version
+ - of the branch from the reflog.
  -}
 findUncorruptedCommit :: MissingObjects -> GoodCommits -> Branch -> Repo -> IO (Maybe Sha, GoodCommits)
 findUncorruptedCommit missing goodcommits branch r = do
@@ -288,7 +283,12 @@ findUncorruptedCommit missing goodcommits branch r = do
 				, Param "--format=%H"
 				, Param (show branch)
 				] r
-			cleanup `after` findfirst goodcommits (catMaybes $ map extractSha ls)
+			let branchshas = catMaybes $ map extractSha ls
+			reflogshas <- RefLog.get branch r
+			-- XXX Could try a bit harder here, and look
+			-- for uncorrupted old commits in branches in the
+			-- reflog.
+			cleanup `after` findfirst goodcommits (branchshas ++ reflogshas)
   where
 	findfirst gcs [] = return (Nothing, gcs)
 	findfirst gcs (c:cs) = do
@@ -296,12 +296,6 @@ findUncorruptedCommit missing goodcommits branch r = do
 		if ok
 			then return (Just c, gcs')
 			else findfirst gcs' cs
-
-{- Looks through the reflog to find an old version of a branch that
- - does not need any of the missing objects.
- -}
-findOldBranch :: MissingObjects -> GoodCommits -> Branch -> Repo -> IO (Maybe Sha, GoodCommits)
-findOldBranch missing goodcommits branch r = error "TODO"
 
 {- Verifies tha none of the missing objects in the set are used by
  - the commit. Also adds to a set of commit shas that have been verified to

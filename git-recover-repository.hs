@@ -35,7 +35,7 @@ parseArgs = do
 enableDebugOutput :: IO ()
 enableDebugOutput = do
 	s <- setFormatter
-		<$> streamHandler stderr DEBUG -- NOTICE
+		<$> streamHandler stderr NOTICE
 		<*> pure (simpleLogFormatter "$msg")
 	updateGlobalLogger rootLoggerName (setLevel DEBUG . setHandlers [s])
 
