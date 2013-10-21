@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-21T22:20:53Z"
+ content="""
+You have two choices:
+
+1. Install git-annex on your server. You can then use the webapp to set up a git repository, or use the git repository you've already set up.
+
+2. Don't install git-annex on your server. Select the option in the webapp to use an encrypred rsync repository on your server. (The screen you described the webapp showing had a button to use this option, but you seem to have misread it.)
+"""]]
