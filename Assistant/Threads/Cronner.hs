@@ -192,7 +192,7 @@ runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
 	when (Git.Fsck.foundBroken fsckresults) $ do
 		u <- liftAnnex getUUID
 		liftAnnex $ writeFsckResults u fsckresults
-		button <- mkAlertButton True (T.pack "Repair") urlrenderer $
+		button <- mkAlertButton True (T.pack "Click Here") urlrenderer $
 			RepairRepositoryR u
 		void $ addAlert $ brokenRepositoryAlert button
 	mapM_ reget =<< liftAnnex (dirKeys gitAnnexBadDir)

@@ -57,10 +57,14 @@ call it for non-local remotes.
 
 ## git fsck
 
-Have the sanity checker run git fsck periodically (it's fairly inexpensive,
-but still not too often, and should be ioniced and niced). 
+Add git fsck to scheduled self fsck **done**
 
-If committing to the repository fails, after resolving any dangling lock
+TODO: Add git fsck of local remotes to scheduled remote fscks.
+
+TODO: Display an alert to nudge user to schedule a fsck, if none is
+scheduled. Without being annoying about it.
+
+TODO: If committing to the repository fails, after resolving any dangling lock
 files (see above), it should git fsck.
 
 If git fsck finds problems, launch git repository repair.

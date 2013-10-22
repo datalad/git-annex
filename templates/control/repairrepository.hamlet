@@ -1,6 +1,6 @@
 <div .span9 .hero-unit>
   <p>
-    A periodic #
+    A #
     <a href="@{ConfigFsckR}">
       consistency check #
     found corrupt data in the git repository #{repodesc}.
@@ -9,10 +9,10 @@
     often without data loss.
   <p>
     When possible, the corrupt data will be recovered from other #
-    repositories. You should make sure any other repositories #
-    are available before continuing. Ie, plug in any removable drive #
-    that contains a repository, or make sure your network connection #
-    to other repositories is active.
+    repositories. You should make sure any other repositories that might #
+    have this data are available before continuing. So, plug in any #
+    removable drive that contains a repository, or make sure your network #
+    connection to other repositories is active.
   <p>
     <a .btn .btn-primary href="@{RepairRepositoryRunR u}" onclick="$('#workingmodal').modal('show');">
       Start Repair Process

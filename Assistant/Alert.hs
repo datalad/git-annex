@@ -82,7 +82,7 @@ warningAlert name msg = Alert
 errorAlert :: String -> AlertButton -> Alert
 errorAlert msg button = Alert
 	{ alertClass = Error
-	, alertHeader = Just $ tenseWords ["error"]
+	, alertHeader = Nothing
 	, alertMessageRender = renderData
 	, alertData = [UnTensed $ T.pack msg]
 	, alertCounter = 0
@@ -175,7 +175,7 @@ fsckAlert button n = baseActivityAlert
 	}
 
 brokenRepositoryAlert :: AlertButton -> Alert
-brokenRepositoryAlert = errorAlert "Your repository needs repairs."
+brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"
 
 pairingAlert :: AlertButton -> Alert
 pairingAlert button = baseActivityAlert
