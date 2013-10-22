@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-22T17:41:58Z"
+ content="""
+You're basically correct. Typically if you have a central machine, it's a server, so at that point you're not pairing, but are just adding a ssh server, or some other type of remote.
+
+I think that systems like AeroFS are pretty neat, but my goal is not really to build another one of those. I'd rather make git-annex be able to use such things as [[special_remotes]].
+"""]]
