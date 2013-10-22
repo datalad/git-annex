@@ -11,7 +11,6 @@ import Common
 import Git
 import Git.Command
 import Git.Sha
-import Git.CatFile
 
 {- Gets the reflog for a given branch. -}
 get :: Branch -> Repo -> IO [Sha]

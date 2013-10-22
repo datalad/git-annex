@@ -228,7 +228,7 @@ getAllRefs :: Repo -> IO [Ref]
 getAllRefs r = do
 	packedrs <- mapMaybe parsePacked . lines
 		<$> catchDefaultIO "" (readFile $ packedRefsFile r)
-	loosers <- map toref <$> dirContentsRecursive (localGitDir r </> "refs")
+	loosers <- map toref <$> dirContentsRecursive refdir
 	return $ packedrs ++ loosers
   where
   	refdir = localGitDir r </> "refs"
@@ -335,9 +335,9 @@ verifyCommit missing goodcommits commit r
 			<*> extractSha treesha
 		_ -> Nothing
 	check [] = return True
-	check ((commit, tree):rest)
-		| checkGoodCommit commit goodcommits = return True
-		| otherwise = verifyTree missing tree r <&&> check rest
+	check ((c, t):rest)
+		| checkGoodCommit c goodcommits = return True
+		| otherwise = verifyTree missing t r <&&> check rest
 
 {- Verifies that a tree is good, including all trees and blobs
  - referenced by it. -}
@@ -361,13 +361,13 @@ rewriteIndex missing r
 	| repoIsLocalBare r = return []
 	| otherwise = do
 		(indexcontents, cleanup) <- LsFiles.stagedDetails [Git.repoPath r] r
-		let (missing, present) = partition ismissing indexcontents
-		unless (null missing) $ do
+		let (bad, good) = partition ismissing indexcontents
+		unless (null bad) $ do
 			nukeFile (localGitDir r </> "index")
 			UpdateIndex.streamUpdateIndex r
-				=<< (catMaybes <$> mapM reinject present)
+				=<< (catMaybes <$> mapM reinject good)
 		void cleanup
-		return $ map fst3 missing
+		return $ map fst3 bad
   where
 	getblob (_file, Just sha, Just _mode) = Just sha
 	getblob _ = Nothing
