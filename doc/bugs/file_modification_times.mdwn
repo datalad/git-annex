@@ -9,3 +9,5 @@ The files created in another remote when syncing is "now" rather than keeping th
 ### What version of git-annex are you using? On what operating system?
 Ubuntu 13.10 32bit version 4.20130815 from apt-get.
 
+> duplicate of [[todo/add_metadata_to_annexed_files]] --[[Joey]]
+> [[done]]
