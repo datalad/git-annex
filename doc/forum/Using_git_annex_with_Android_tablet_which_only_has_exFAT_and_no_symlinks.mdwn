@@ -1,0 +1,8 @@
+Hallo,
+
+I have got a Samsung Galaxy Note 10.1 I want to sync with a remote ssh-Server, but the tablet only supports exFAT and FAT file Systems, so I cannot use symlinks.
+
+Does any solution exist for this? 
+
+Mebus
+
