@@ -13,6 +13,7 @@ import System.Log.Handler.Simple
 import qualified Data.Set as S
 
 import Common
+import qualified Git
 import qualified Git.CurrentRepo
 import qualified Git.RecoverRepository
 import qualified Git.Config
@@ -75,16 +76,21 @@ main = do
 					deindexedfiles <- Git.RecoverRepository.rewriteIndex stillmissing g
 					printList deindexedfiles
 						"Removed these missing files from the index. You should look at what files are present in your working tree and git add them back to the index when appropriate."
-					mcurr <- Git.Branch.currentUnsafe g
-					case mcurr of
-						Nothing -> return ()
-						Just curr -> when (any (== curr) (resetbranches ++ deletedbranches)) $ do
-							putStrLn $ unwords
-								[ "You currently have"
-								, show curr
-								, "checked out. You may have staged changes in the index that can be committed to recover the lost state of this branch!"
-								]
-				else putStrLn "To force a recovery to a usable state, run this command again with the --force parameter."
+					unless (Git.repoIsLocalBare g) $ do
+						mcurr <- Git.Branch.currentUnsafe g
+						case mcurr of
+							Nothing -> return ()
+							Just curr -> when (any (== curr) (resetbranches ++ deletedbranches)) $ do
+								putStrLn $ unwords
+									[ "You currently have"
+									, show curr
+									, "checked out. You may have staged changes in the index that can be committed to recover the lost state of this branch!"
+									]
+				else if Git.repoIsLocalBare g
+					then do
+						putStrLn "If you have a clone of this bare repository, you should add it as a remote of this repository, and re-run git-recover-repository."
+						putStrLn "If there are no clones of this repository, you can instead run git-recover-repository with the --force parameter to force recovery to a possibly usable state."
+					else putStrLn "To force a recovery to a usable state, run this command again with the --force parameter."
 
 printList :: [String] -> String -> IO ()
 printList items header
