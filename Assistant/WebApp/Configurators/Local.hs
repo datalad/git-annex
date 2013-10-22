@@ -294,11 +294,11 @@ getFinishAddDriveR drive = go
 		r <- liftAnnex $ addRemote $
 			makeGCryptRemote remotename dir keyid
 		return (Types.Remote.uuid r, r)
-	go NoRepoKey = checkGCryptRepoEncryption dir makeunencrypted $ do
-			mu <- liftAnnex $ probeGCryptRemoteUUID dir
-			case mu of
-				Just u -> enableexistinggcryptremote u
-				Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+	go NoRepoKey = checkGCryptRepoEncryption dir makeunencrypted makeunencrypted $ do
+		mu <- liftAnnex $ probeGCryptRemoteUUID dir
+		case mu of
+			Just u -> enableexistinggcryptremote u
+			Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
 	enableexistinggcryptremote u = do
 		remotename' <- liftAnnex $ getGCryptRemoteName u dir
 		makewith $ const $ do

@@ -79,9 +79,18 @@ getGCryptRemoteName u repoloc = do
   where
 	missing = error $ "Cannot find configuration for the gcrypt remote at " ++ repoloc
 
-checkGCryptRepoEncryption :: (Monad m, LiftAnnex m) => String -> m a -> m a -> m a
-checkGCryptRepoEncryption location notencrypted encrypted = 
-	dispatch =<< liftAnnex (inRepo $ Git.GCrypt.probeRepo location)
+{- Checks to see if a repo is encrypted with gcrypt, and runs one action if
+ - it's not an another if it is.
+ -
+ - Since the probing requires gcrypt to be installed, a third action must
+ - be provided to run if it's not installed.
+ -}
+checkGCryptRepoEncryption :: (Monad m, MonadIO m, LiftAnnex m) => String -> m a -> m a -> m a -> m a
+checkGCryptRepoEncryption location notencrypted notinstalled encrypted = 
+	ifM (liftIO isGcryptInstalled)
+		( dispatch =<< liftAnnex (inRepo $ Git.GCrypt.probeRepo location)
+		, notinstalled
+		)
   where
 	dispatch Git.GCrypt.Decryptable = encrypted
 	dispatch Git.GCrypt.NotEncrypted = notencrypted

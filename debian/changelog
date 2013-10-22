@@ -1,5 +1,7 @@
 git-annex (4.20131003) UNRELEASED; urgency=low
 
+  * webapp: Fix bug when adding a remote and git-remote-gcrypt
+    is not installed.
   * The assitant can now run scheduled incremental fsck jobs on the local
     repository and remotes. These can be configured using vicfg or with the
     webapp.
