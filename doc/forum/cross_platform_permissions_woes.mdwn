@@ -1,2 +1,0 @@
-This bug report has been moved to [[bugs/cross_platform_permissions_woes]]
---[[Joey]]

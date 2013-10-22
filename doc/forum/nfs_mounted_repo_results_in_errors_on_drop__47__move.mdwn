@@ -1,4 +1,0 @@
-Bug reports should be posted in [[bugs]], not in the forum. I have moved
-this misplaced bug report to
-[[bugs/nfs_mounted_repo_results_in_errors_on_drop_move]].
---[[Joey]] 
