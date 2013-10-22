@@ -13,3 +13,5 @@ problems.
 [[!img /assistant/brokenrepositoryalert.png]]
 
 [[!img /assistant/repairrepository.png]]
+
+[[!meta title="the user interface I hope noone ever sees"]]
