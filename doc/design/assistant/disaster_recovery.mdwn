@@ -69,6 +69,9 @@ files (see above), it should git fsck.
 
 If git fsck finds problems, launch git repository repair.
 
+TODO: along with displaying alert when there is a problem, send an email
+alert. (Using system MTA?)
+
 ## git repository repair
 
 There are several ways git repositories can get damanged. 
