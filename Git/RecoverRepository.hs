@@ -36,22 +36,22 @@ import qualified Data.ByteString.Lazy as L
 import System.Log.Logger
 import Data.Tuple.Utils
 
-{- Finds and removes corrupt objects from the repository, returning a list
- - of all such objects, which need to be found elsewhere to finish
- - recovery.
+{- Given a set of bad objects found by git fsck, removes all
+ - corrupt objects, and returns a list of missing objects,
+ - which need to be found elsewhere to finish recovery.
  -
- - Strategy: Run git fsck, remove objects it identifies as corrupt,
- - and repeat until git fsck finds no new objects.
+ - Since git fsck may crash on corrupt objects, and so not
+ - report the full set of corrupt or missing objects,
+ - this removes corrupt objects, and re-runs fsck, until it
+ - stabalizes.
  -
  - To remove corrupt objects, unpack all packs, and remove the packs
  - (to handle corrupt packs), and remove loose object files.
  -}
-cleanCorruptObjects :: Repo -> IO MissingObjects
-cleanCorruptObjects r = do
-	notice "Running git fsck ..."
-	check =<< findBroken r
+cleanCorruptObjects :: Maybe MissingObjects -> Repo -> IO MissingObjects
+cleanCorruptObjects mmissing r = check mmissing
   where
-  	check Nothing = do
+	check Nothing = do
 		notice "git fsck found a problem but no specific broken objects. Perhaps a corrupt pack file?"
 		ifM (explodePacks r)
 			( retry S.empty
@@ -72,7 +72,7 @@ cleanCorruptObjects r = do
 				else return bad
 	retry oldbad = do
 		notice "Re-running git fsck to see if it finds more problems."
-		v <- findBroken r
+		v <- findBroken False r
 		case v of
 			Nothing -> error $ unwords
 				[ "git fsck found a problem, which was not corrected after removing"

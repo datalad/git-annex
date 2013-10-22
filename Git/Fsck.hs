@@ -16,6 +16,7 @@ import Git
 import Git.Command
 import Git.Sha
 import Git.CatFile
+import Utility.Batch
 
 import qualified Data.Set as S
 
@@ -31,17 +32,25 @@ type MissingObjects = S.Set Sha
  - to be a git sha. Not all such shas are of broken objects, so ask git
  - to try to cat the object, and see if it fails.
  -}
-findBroken :: Repo -> IO (Maybe MissingObjects)
-findBroken r = do
-	(output, fsckok) <- processTranscript "git" (toCommand $ fsckParams r) Nothing
+findBroken :: Bool -> Repo -> IO (Maybe MissingObjects)
+findBroken batchmode r = do
+	(output, fsckok) <- processTranscript command' (toCommand params') Nothing
 	let objs = parseFsckOutput output
 	badobjs <- findMissing objs r
 	if S.null badobjs && not fsckok
 		then return Nothing
 		else return $ Just badobjs
+  where
+	(command, params) = ("git", fsckParams r)
+	(command', params')
+		| batchmode = toBatchCommand (command, params)
+		| otherwise = (command, params)
 
 {- Finds objects that are missing from the git repsitory, or are corrupt.
- - Note that catting a corrupt object will cause cat-file to crash. -}
+ -
+ - Note that catting a corrupt object will cause cat-file to crash;
+ - this is detected and it's restarted.
+ -}
 findMissing :: [Sha] -> Repo -> IO MissingObjects
 findMissing objs r = go objs [] =<< start
   where

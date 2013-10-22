@@ -1,6 +1,6 @@
 {- git-recover-repository program
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,6 +15,7 @@ import qualified Data.Set as S
 import Common
 import qualified Git
 import qualified Git.CurrentRepo
+import qualified Git.Fsck
 import qualified Git.RecoverRepository
 import qualified Git.Config
 import qualified Git.Branch
@@ -46,7 +47,9 @@ main = do
 	forced <- parseArgs
 	
 	g <- Git.Config.read =<< Git.CurrentRepo.get
-	missing <- Git.RecoverRepository.cleanCorruptObjects g
+	putStrLn "Running git fsck ..."
+	fsckresult <- Git.Fsck.findBroken False g
+	missing <- Git.RecoverRepository.cleanCorruptObjects fsckresult g
 	stillmissing <- Git.RecoverRepository.retrieveMissingObjects missing g
 	if S.null stillmissing
 		then putStr $ unlines
