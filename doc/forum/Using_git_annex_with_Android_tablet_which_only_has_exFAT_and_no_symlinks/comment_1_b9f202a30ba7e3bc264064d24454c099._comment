@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-22T17:37:44Z"
+ content="""
+The sad state of affairs that in the supposedly modern 21st century, popular operating systems are regressing in functionality? 
+
+Yes, git-annex can deal with this. `git annex init` will detect when it's run on a crippled filesystem and enable various workarounds, including [[direct_mode]].
+
+The git-annex android app deals with all this automatically when creating a repository.
+"""]]
