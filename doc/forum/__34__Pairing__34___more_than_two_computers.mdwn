@@ -1,0 +1,11 @@
+I need some help understanding here.
+
+We use AeroFS at work to sync the normal user files across computers. I'll quite likely be replacing that with git annex as soon as Windows port is stable enough.
+
+How it works is that you create a repo, and share it with one or more users. Then AeroFS discovers what other repos are online and if they're on the local network, and syncs from wherever is most convenient.
+
+This sounds a little like pairing, but with pairing you need to arrange more than 2 devices in a "star" or "chain". This is fine for my own devices, but it becomes brittle if you have lots of devices syncing from each other, which may or may not be online at any given time. The only way around it seems to be to pair each device with each other device, with the labor rising exponentially.
+
+Is this correct? Best compromise for my use case seems to be to just do a star setup and pair everything with an always-on machine. Do you agree?
+
+Thanks! Carlo
