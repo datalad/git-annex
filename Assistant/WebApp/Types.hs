@@ -216,4 +216,3 @@ instance PathPiece ThreadName where
 instance PathPiece ScheduledActivity where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
-

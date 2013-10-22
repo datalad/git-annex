@@ -48,7 +48,7 @@ import Data.Tuple.Utils
  - To remove corrupt objects, unpack all packs, and remove the packs
  - (to handle corrupt packs), and remove loose object files.
  -}
-cleanCorruptObjects :: Maybe MissingObjects -> Repo -> IO MissingObjects
+cleanCorruptObjects :: FsckResults -> Repo -> IO MissingObjects
 cleanCorruptObjects mmissing r = check mmissing
   where
 	check Nothing = do

@@ -28,6 +28,7 @@ module Locations (
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
 	gitAnnexFsckState,
+	gitAnnexFsckResultsLog,
 	gitAnnexScheduleState,
 	gitAnnexTransferDir,
 	gitAnnexCredsDir,
@@ -66,6 +67,7 @@ import Data.Char
 import Common
 import Types
 import Types.Key
+import Types.UUID
 import qualified Git
 
 {- Conventions:
@@ -192,6 +194,10 @@ gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 {- .git/annex/fsckstate is used to store information about incremental fscks. -}
 gitAnnexFsckState :: Git.Repo -> FilePath
 gitAnnexFsckState r = gitAnnexDir r </> "fsckstate"
+
+{- .git/annex/fsckresults/uuid is used to store results of git fscks -}
+gitAnnexFsckResultsLog :: UUID -> Git.Repo -> FilePath
+gitAnnexFsckResultsLog u r = gitAnnexDir r </> "fsckresults" </> fromUUID u
 
 {- .git/annex/schedulestate is used to store information about when
  - scheduled jobs were last run. -}

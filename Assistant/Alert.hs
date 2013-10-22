@@ -79,6 +79,22 @@ warningAlert name msg = Alert
 	, alertButton = Nothing
 	}
 
+errorAlert :: String -> AlertButton -> Alert
+errorAlert msg button = Alert
+	{ alertClass = Error
+	, alertHeader = Just $ tenseWords ["error"]
+	, alertMessageRender = renderData
+	, alertData = [UnTensed $ T.pack msg]
+	, alertCounter = 0
+	, alertBlockDisplay = True
+	, alertClosable = True
+	, alertPriority = Pinned
+	, alertIcon = Just ErrorIcon
+	, alertCombiner = Nothing
+	, alertName = Nothing
+	, alertButton = Just button
+	}
+
 activityAlert :: Maybe TenseText -> [TenseChunk] -> Alert
 activityAlert header dat = baseActivityAlert
 	{ alertHeader = header
@@ -157,6 +173,9 @@ fsckAlert button n = baseActivityAlert
 		Just remotename -> [ UnTensed $ T.pack $ "Consistency check of " ++ remotename ++ " in progress"]
 	, alertButton = Just button
 	}
+
+brokenRepositoryAlert :: AlertButton -> Alert
+brokenRepositoryAlert = errorAlert "Your repository needs repairs."
 
 pairingAlert :: AlertButton -> Alert
 pairingAlert button = baseActivityAlert

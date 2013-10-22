@@ -108,4 +108,7 @@
 /transfer/start/#Transfer StartTransferR GET POST
 /transfer/cancel/#Transfer CancelTransferR GET POST
 
+/repair/#UUID RepairRepositoryR GET POST
+/repair/run/#UUID RepairRepositoryRunR GET POST
+
 /static StaticR Static getStatic

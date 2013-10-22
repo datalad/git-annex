@@ -33,6 +33,7 @@ import Assistant.WebApp.Configurators.Fsck
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.Control
 import Assistant.WebApp.OtherRepos
+import Assistant.WebApp.Repair
 import Assistant.Types.ThreadedMonad
 import Utility.WebApp
 import Utility.Tmp

@@ -32,6 +32,8 @@ import Remote
 import Assistant.WebApp.Types
 #endif
 import Git.Remote (RemoteName)
+import qualified Git.Fsck
+import Logs.FsckResults
 
 import Control.Concurrent.Async
 import Control.Concurrent.MVar
@@ -182,15 +184,24 @@ runActivity urlrenderer activity nowt = do
 runActivity' :: UrlRenderer -> ScheduledActivity -> Assistant ()
 runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
 	program <- liftIO $ readProgramFile
-	void $ runFsck urlrenderer Nothing $
-  		batchCommand program (Param "fsck" : fsckParams d)
+	g <- liftAnnex gitRepo
+	fsckresults <- showFscking urlrenderer Nothing $ tryNonAsync $ do
+		r <- Git.Fsck.findBroken True g
+		void $ batchCommand program (Param "fsck" : annexFsckParams d)
+		return r
+	when (Git.Fsck.foundBroken fsckresults) $ do
+		u <- liftAnnex getUUID
+		liftAnnex $ writeFsckResults u fsckresults
+		button <- mkAlertButton True (T.pack "Repair") urlrenderer $
+			RepairRepositoryR u
+		void $ addAlert $ brokenRepositoryAlert button
 	mapM_ reget =<< liftAnnex (dirKeys gitAnnexBadDir)
   where
 	reget k = queueTransfers "fsck found bad file; redownloading" Next k Nothing Download
 runActivity' urlrenderer (ScheduledRemoteFsck u s d) = go =<< liftAnnex (remoteFromUUID u)
   where
 	go (Just r) = void $ case Remote.remoteFsck r of
-		Nothing -> void $ runFsck urlrenderer (Just $ Remote.name r) $ do
+		Nothing -> void $ showFscking urlrenderer (Just $ Remote.name r) $ tryNonAsync $ do
 			program <- readProgramFile
 			batchCommand program $ 
 				[ Param "fsck"
@@ -198,28 +209,28 @@ runActivity' urlrenderer (ScheduledRemoteFsck u s d) = go =<< liftAnnex (remoteF
 				, Param "--fast"
 				, Param "--from"
 				, Param $ Remote.name r
-				] ++ fsckParams d
+				] ++ annexFsckParams d
 		Just mkfscker ->
 			{- Note that having mkfsker return an IO action
 			 - avoids running a long duration fsck in the
 			 - Annex monad. -}
-			void . runFsck urlrenderer (Just $ Remote.name r)
-				=<< liftAnnex (mkfscker (fsckParams d))
+			void . showFscking urlrenderer (Just $ Remote.name r) . tryNonAsync
+				=<< liftAnnex (mkfscker (annexFsckParams d))
 	go Nothing = debug ["skipping remote fsck of uuid without a configured remote", fromUUID u, fromSchedule s]
 
-runFsck :: UrlRenderer -> Maybe RemoteName -> IO Bool -> Assistant Bool
-runFsck urlrenderer remotename a = do
+showFscking :: UrlRenderer -> Maybe RemoteName -> IO (Either E.SomeException a) -> Assistant a
+showFscking urlrenderer remotename a = do
 #ifdef WITH_WEBAPP
 	button <- mkAlertButton False (T.pack "Configure") urlrenderer ConfigFsckR
-	r <- alertDuring (fsckAlert button remotename) $ liftIO $ do
-		E.try a :: IO (Either E.SomeException Bool)
+	r <- alertDuring (fsckAlert button remotename) $
+		liftIO a
 	either (liftIO . E.throwIO) return r
 #else
 	a
 #endif
 
-fsckParams :: Duration -> [CommandParam]
-fsckParams d =
+annexFsckParams :: Duration -> [CommandParam]
+annexFsckParams d =
 	[ Param "--incremental-schedule=1d"
 	, Param $ "--time-limit=" ++ fromDuration d
 	]
