@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="excellent idea"
+ date="2013-10-22T22:13:58Z"
+ content="""
+Added to my todo. I think it would require the system have an MTA though, I really don't want git-annex to grow to the point it can send email. ;)
+"""]]
