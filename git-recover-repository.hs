@@ -68,12 +68,13 @@ main = do
 							, "remote tracking branches that referred to missing objects"
 							]
 					(resetbranches, deletedbranches, _) <- Git.RecoverRepository.resetLocalBranches stillmissing goodcommits g
-					unless (null resetbranches) $ do
-						putStrLn "Reset these local branches to old versions before the missing objects were committed:"
-						putStr $ unlines $ map show resetbranches
-					unless (null deletedbranches) $ do
-						putStrLn "Deleted these local branches, which could not be recovered due to missing objects:"
-						putStr $ unlines $ map show deletedbranches
+					printList (map show resetbranches)
+						"Reset these local branches to old versions before the missing objects were committed:"
+					printList (map show deletedbranches)
+						"Deleted these local branches, which could not be recovered due to missing objects:"
+					deindexedfiles <- Git.RecoverRepository.rewriteIndex stillmissing g
+					printList deindexedfiles
+						"Removed these missing files from the index. You should look at what files are present in your working tree and git add them back to the index when appropriate."
 					mcurr <- Git.Branch.currentUnsafe g
 					case mcurr of
 						Nothing -> return ()
@@ -84,3 +85,15 @@ main = do
 								, "checked out. You may have staged changes in the index that can be committed to recover the lost state of this branch!"
 								]
 				else putStrLn "To force a recovery to a usable state, run this command again with the --force parameter."
+
+printList :: [String] -> String -> IO ()
+printList items header
+	| null items = return ()
+	| otherwise = do
+		putStrLn header
+		putStr $ unlines $ map (\i -> "\t" ++ i) truncateditems
+  where
+  	numitems = length items
+	truncateditems
+		| numitems > 10 = take 10 items ++ ["(and " ++ show (numitems - 10) ++ " more)"]
+		| otherwise = items

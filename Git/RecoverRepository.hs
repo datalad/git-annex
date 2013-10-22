@@ -10,6 +10,7 @@ module Git.RecoverRepository (
 	retrieveMissingObjects,
 	resetLocalBranches,
 	removeTrackingBranches,
+	rewriteIndex,
 	emptyGoodCommits,
 ) where
 
@@ -19,17 +20,21 @@ import Git.Command
 import Git.Fsck
 import Git.Objects
 import Git.Sha
+import Git.Types
 import qualified Git.Config
 import qualified Git.Construct
 import qualified Git.LsTree as LsTree
+import qualified Git.LsFiles as LsFiles
 import qualified Git.Ref as Ref
 import qualified Git.RefLog as RefLog
+import qualified Git.UpdateIndex as UpdateIndex
 import Utility.Tmp
 import Utility.Rsync
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
 import System.Log.Logger
+import Data.Tuple.Utils
 
 {- Finds and removes corrupt objects from the repository, returning a list
  - of all such objects, which need to be found elsewhere to finish
@@ -348,6 +353,30 @@ verifyTree missing treesha r
 				return False
 			-- as long as ls-tree succeeded, we're good
 			else cleanup
+
+{- Rewrites the index file, removing from it any files whose blobs are
+ - missing. Returns the list of affected files. -}
+rewriteIndex :: MissingObjects -> Repo -> IO [FilePath]
+rewriteIndex missing r
+	| repoIsLocalBare r = return []
+	| otherwise = do
+		(indexcontents, cleanup) <- LsFiles.stagedDetails [Git.repoPath r] r
+		let (missing, present) = partition ismissing indexcontents
+		unless (null missing) $ do
+			nukeFile (localGitDir r </> "index")
+			UpdateIndex.streamUpdateIndex r
+				=<< (catMaybes <$> mapM reinject present)
+		void cleanup
+		return $ map fst3 missing
+  where
+	getblob (_file, Just sha, Just _mode) = Just sha
+	getblob _ = Nothing
+	ismissing = maybe False (`S.member` missing) . getblob
+	reinject (file, Just sha, Just mode) = case toBlobType mode of
+		Nothing -> return Nothing
+		Just blobtype -> Just <$>
+			UpdateIndex.stageFile sha blobtype file r
+	reinject _ = return Nothing
 
 newtype GoodCommits = GoodCommits (S.Set Sha)
 

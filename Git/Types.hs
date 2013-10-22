@@ -9,6 +9,7 @@ module Git.Types where
 
 import Network.URI
 import qualified Data.Map as M
+import System.Posix.Types
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -
@@ -81,3 +82,9 @@ readBlobType "100644" = Just FileBlob
 readBlobType "100755" = Just ExecutableBlob
 readBlobType "120000" = Just SymlinkBlob
 readBlobType _ = Nothing
+
+toBlobType :: FileMode -> Maybe BlobType
+toBlobType 0o100644 = Just FileBlob
+toBlobType 0o100755 = Just ExecutableBlob
+toBlobType 0o120000 = Just SymlinkBlob
+toBlobType _ = Nothing

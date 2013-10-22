@@ -13,6 +13,7 @@ module Git.UpdateIndex (
 	streamUpdateIndex,
 	lsTree,
 	updateIndexLine,
+	stageFile,
 	unstageFile,
 	stageSymlink
 ) where
@@ -60,6 +61,11 @@ lsTree (Ref x) repo streamer = do
 updateIndexLine :: Sha -> BlobType -> TopFilePath -> String
 updateIndexLine sha filetype file =
 	show filetype ++ " blob " ++ show sha ++ "\t" ++ indexPath file
+
+stageFile :: Sha -> BlobType -> FilePath -> Repo -> IO Streamer
+stageFile sha filetype file repo = do
+	p <- toTopFilePath file repo
+	return $ pureStreamer $ updateIndexLine sha filetype p
 
 {- A streamer that removes a file from the index. -}
 unstageFile :: FilePath -> Repo -> IO Streamer

@@ -148,8 +148,5 @@ that was found for it.
   if none was found. **done**
 * (Decided not to touch tags.)
 
-TODO: The index file can still refer to objects that were missing.
-This prevents git commit from working. And simply re-staging things doesn't
-seem to help; git sees the sha is "known" and does not re-add it,
-apparently. So, need to do something to clean up the index, while ideally
-not losing any staged changes.
+The index file can still refer to objects that were missing.
+Rewrite to remove them. **done**
