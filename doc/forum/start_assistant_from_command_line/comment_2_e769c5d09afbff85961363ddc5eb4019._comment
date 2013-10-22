@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkj7tMEJKcZpNXIFkHAAcNi5qJFSFyjn6o"
+ nickname="thissideup"
+ subject="comment 2"
+ date="2013-10-22T11:05:13Z"
+ content="""
+ah okay. That was what I was trying to do, but git-annex failed on my. Remembering that I was on Debian and checking the version (which was June 2012) - I supposed that I wasn't able to use the assistant yet. 
+
+So now I am trying to compile from source using cabal, however I sadly ran into a roadblock: http://git-annex.branchable.com/forum/cabal_install_fails_on_uuid/
+"""]]
