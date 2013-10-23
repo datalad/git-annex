@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://alan.petitepomme.net/"
+ nickname="Alan Schmitt"
+ subject="comment 2"
+ date="2013-10-23T16:21:30Z"
+ content="""
+I think I found the problem, after much googling.
+
+The command line you suggest is indeed tried, and rejected by the server.
+
+The answer came from [here](http://stackoverflow.com/questions/253055/how-do-i-push-amended-commit-to-the-remote-git-repo) where it says (speaking of a forced push)
+
+> Even this may not work as git allows remote repositories to refuse non-fastforward pushes at the far end by using the config variable 'receive.denynonfastforwards'.
+
+Indeed this is set in my annex repository. Note that this is a local setting, and that repository was created by the assistant.
+
+I removed this setting, and I can now push. Could the setting of this bit be a bug in the assistant?
+
+In any case, thanks a lot for indicating where to look at.
+"""]]

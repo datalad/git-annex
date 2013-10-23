@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="comment 8"
+ date="2013-10-23T03:00:58Z"
+ content="""
+I just tried installing git-annex using Cabal today, but only got git-annex-4.20131002, even from source, which seems to predate your last comment, and no other branch seem to provide the yesod fix. Should I get the source from somewhere else than kitenet to try this out (if you think it is in shape to be tested)?
+"""]]

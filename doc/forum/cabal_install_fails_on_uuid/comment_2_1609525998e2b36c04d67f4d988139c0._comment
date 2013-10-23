@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkj7tMEJKcZpNXIFkHAAcNi5qJFSFyjn6o"
+ nickname="thissideup"
+ subject="comment 2"
+ date="2013-10-23T11:15:20Z"
+ content="""
+I contacted the maintainer of the uuid-package and he fixed the issue in the current release, so everythings fine now. and: everything compiled beautifully. 
+
+But to answer your question: I tend to rather compile things myself if I don't find them (or a current enough version) in the repos - but that's purely personal. ;)
+"""]]

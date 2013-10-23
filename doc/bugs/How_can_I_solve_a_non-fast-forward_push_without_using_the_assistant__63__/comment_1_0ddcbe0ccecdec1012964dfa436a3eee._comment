@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-23T15:21:34Z"
+ content="""
+<pre>
+To ssh://schmitta@git-annex-**.**.**.**-schmitta_annex.2Farchive/~/annex/archive/
+ ! [remote rejected] git-annex -> synced/git-annex (non-fast-forward)
+</pre>
+
+Since version 4.20130909, git-annex is supposed to have avoided this problem by forcing the push of the git-annex branch. If you run `git annex sync --debug`, you should see:
+
+[2013-10-23 11:12:54 EDT] call: git [\"--git-dir=annex/.git\",\"--work-tree=annex\",\"push\",\"foo\",\"+git-annex:synced/git-annex\",\"master:synced/master\"]
+
+The \"+\" flag before the branch name forces git push to update the remote branch even if it's not a fast-forward.
+
+You should be able to verify if git-annex is doing that, and run the same git push command manually to investigate why it might not be working. I have not seen this problem since putting in that fix, and I saw it before. Perhaps your server has an old or broken version of git that ignores this flag, or some git configuration setting I am not aware of that prevents it from working.
+"""]]
