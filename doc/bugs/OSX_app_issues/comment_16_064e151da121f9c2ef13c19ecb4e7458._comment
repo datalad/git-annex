@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="Remy"
+ ip="83.87.21.84"
+ subject="Crashes on OSX 10.9"
+ date="2013-10-23T20:30:12Z"
+ content="""
+I just installed OSX Mavericks. I also took the latest autobuild and copied it over the old git-annex.app to be sure it doesn't work.
+When I execute \"git-annex status\" I get the following message
+
+
+> dyld: Symbol not found: _objc_debug_taggedpointer_mask
+>   Referenced from: /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+>   Expected in: /Applications/git-annex.app/Contents/MacOS/bundle/I
+>  in /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+> [1]    1361 trace trap  git-annex status
+"""]]
