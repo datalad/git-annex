@@ -14,6 +14,7 @@ import qualified Git.Repair
 import qualified Annex.Branch
 import Git.Fsck (MissingObjects)
 import Git.Types
+import Annex.Version
 
 def :: [Command]
 def = [noCommit $ dontCheck repoExists $
@@ -29,7 +30,10 @@ runRepair :: Bool -> Annex Bool
 runRepair forced = do
 	(ok, stillmissing, modifiedbranches) <- inRepo $
 		Git.Repair.runRepair forced
-	repairAnnexBranch stillmissing modifiedbranches
+	-- This command can be run in git repos not using git-annex,
+	-- so avoid git annex branch stuff in that case.
+	whenM (isJust <$> getVersion) $
+		repairAnnexBranch stillmissing modifiedbranches
 	return ok
 
 {- After git repository repair, the .git/annex/index file could
