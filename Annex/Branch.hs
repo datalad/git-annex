@@ -20,6 +20,7 @@ module Annex.Branch (
 	get,
 	change,
 	commit,
+	forceCommit,
 	files,
 	withIndex,
 	performTransitions,
@@ -168,7 +169,7 @@ updateTo pairs = do
 				else inRepo $ Git.Branch.fastForward fullname refs
 			if ff
 				then updateIndex jl branchref
-				else commitBranch jl branchref merge_desc commitrefs
+				else commitIndex jl branchref merge_desc commitrefs
 		liftIO cleanjournal
 
 {- Gets the content of a file, which may be in the journal, or in the index
@@ -210,10 +211,15 @@ set = setJournalFile
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
-commit message = whenM journalDirty $ lockJournal $ \jl -> do
+commit = whenM journalDirty . forceCommit
+
+{- Commits the current index to the branch even without any journalleda
+ - changes. -}
+forceCommit :: String -> Annex ()
+forceCommit message = lockJournal $ \jl -> do
 	cleanjournal <- stageJournal jl
 	ref <- getBranch
-	withIndex $ commitBranch jl ref message [fullname]
+	withIndex $ commitIndex jl ref message [fullname]
 	liftIO cleanjournal
 
 {- Commits the staged changes in the index to the branch.
@@ -234,12 +240,12 @@ commit message = whenM journalDirty $ lockJournal $ \jl -> do
  - previous point, though getting it a long time ago makes the race
  - more likely to occur.
  -}
-commitBranch :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
-commitBranch jl branchref message parents = do
+commitIndex :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
+commitIndex jl branchref message parents = do
 	showStoringStateAction
-	commitBranch' jl branchref message parents
-commitBranch' :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
-commitBranch' jl branchref message parents = do
+	commitIndex' jl branchref message parents
+commitIndex' :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
+commitIndex' jl branchref message parents = do
 	updateIndex jl branchref
 	committedref <- inRepo $ Git.Branch.commit message fullname parents
 	setIndexSha committedref
@@ -265,7 +271,7 @@ commitBranch' jl branchref message parents = do
 	 - into the index, and recommit on top of the bad commit. -}
 	fixrace committedref lostrefs = do
 		mergeIndex jl lostrefs
-		commitBranch jl committedref racemessage [committedref]
+		commitIndex jl committedref racemessage [committedref]
 		
 	racemessage = message ++ " (recovery from race)"
 
@@ -482,7 +488,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 				setIndexSha committedref
 			else do
 				ref <- getBranch
-				commitBranch jl ref message (nub $ fullname:transitionedrefs)
+				commitIndex jl ref message (nub $ fullname:transitionedrefs)
   where
   	message
 		| neednewlocalbranch && null transitionedrefs = "new branch for transition " ++ tdesc

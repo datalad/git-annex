@@ -12,7 +12,7 @@ import Common
 import qualified Git
 import qualified Git.CurrentRepo
 import qualified Git.Fsck
-import qualified Git.RecoverRepository
+import qualified Git.Repair
 import qualified Git.Config
 import qualified Git.Branch
 
@@ -35,7 +35,7 @@ main = do
 	forced <- parseArgs
 	
 	g <- Git.Config.read =<< Git.CurrentRepo.get
-	ifM (Git.RecoverRepository.runRecovery forced g)
+	ifM (fst <$> Git.Repair.runRepair forced g)
 		( exitSuccess
 		, exitFailure
 		)

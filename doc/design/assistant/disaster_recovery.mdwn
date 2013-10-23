@@ -55,7 +55,7 @@ everything) to have the assistant do.
 Note that Remote.Git already tries to use this, but the assistant does not
 call it for non-local remotes.
 
-## git fsck
+## git fsck and repair
 
 Add git fsck to scheduled self fsck **done**
 
@@ -64,10 +64,13 @@ TODO: Add git fsck of local remotes to scheduled remote fscks.
 TODO: Display an alert to nudge user to schedule a fsck, if none is
 scheduled. Without being annoying about it.
 
-TODO: If committing to the repository fails, after resolving any dangling lock
-files (see above), it should git fsck.
+TODO: If committing to the repository fails, after resolving any dangling
+lock files (see above), it should git fsck.
 
 If git fsck finds problems, launch git repository repair.
+
+TODO: git annex fsck --fast at end of repository repair to ensure
+git-annex branch is accurate.
 
 TODO: along with displaying alert when there is a problem, send an email
 alert. (Using system MTA?)
@@ -144,10 +147,7 @@ that was found for it.
   uncommitted. Or if the index is missing/corrupt, any files in the tree will
   show as modified and uncommitted. User (or git-annex assistant) can then
   commit as appropriate. Print appropriate warning message. **done**
-* TODO: Special handling for git-annex branch: Reset to last good commit
-  (or to dummy empty commit is there is not one), and 
-  then commit `.git/annex/index` over top of that, and then run a
-  `git annex fsck --fast` to fix up any object location info.
+* Special handling for git-annex branch and index. **done**
 * Remote tracking branches can just be removed, and then `git fetch`
   from the remote, which will re-download missing objects from it and
   reinstate the tracking branch. **done**

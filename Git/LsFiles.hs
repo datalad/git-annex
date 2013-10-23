@@ -20,6 +20,7 @@ module Git.LsFiles (
 	Conflicting(..),
 	Unmerged(..),
 	unmerged,
+	StagedDetails,
 ) where
 
 import Common
@@ -79,18 +80,20 @@ staged' ps l = pipeNullSplit $ prefix ++ ps ++ suffix
 	prefix = [Params "diff --cached --name-only -z"]
 	suffix = Param "--" : map File l
 
+type StagedDetails = (FilePath, Maybe Sha, Maybe FileMode)
+
 {- Returns details about files that are staged in the index,
  - as well as files not yet in git. Skips ignored files. -}
-stagedOthersDetails :: [FilePath] -> Repo -> IO ([(FilePath, Maybe Sha, Maybe FileMode)], IO Bool)
+stagedOthersDetails :: [FilePath] -> Repo -> IO ([StagedDetails], IO Bool)
 stagedOthersDetails = stagedDetails' [Params "--others --exclude-standard"]
 
 {- Returns details about all files that are staged in the index. -}
-stagedDetails :: [FilePath] -> Repo -> IO ([(FilePath, Maybe Sha, Maybe FileMode)], IO Bool)
+stagedDetails :: [FilePath] -> Repo -> IO ([StagedDetails], IO Bool)
 stagedDetails = stagedDetails' []
 
 {- Gets details about staged files, including the Sha of their staged
  - contents. -}
-stagedDetails' :: [CommandParam] -> [FilePath] -> Repo -> IO ([(FilePath, Maybe Sha, Maybe FileMode)], IO Bool)
+stagedDetails' :: [CommandParam] -> [FilePath] -> Repo -> IO ([StagedDetails], IO Bool)
 stagedDetails' ps l repo = do
 	(ls, cleanup) <- pipeNullSplit params repo
 	return (map parse ls, cleanup)

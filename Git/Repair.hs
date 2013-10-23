@@ -5,13 +5,14 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Git.RecoverRepository (
-	runRecovery,
+module Git.Repair (
+	runRepair,
 	cleanCorruptObjects,
 	retrieveMissingObjects,
 	resetLocalBranches,
 	removeTrackingBranches,
 	rewriteIndex,
+	checkIndex,
 	emptyGoodCommits,
 ) where
 
@@ -355,14 +356,33 @@ verifyTree missing treesha r
 			-- as long as ls-tree succeeded, we're good
 			else cleanup
 
+{- Checks that the index file only refers to objects that are not missing. -}
+checkIndex :: MissingObjects -> Repo -> IO Bool
+checkIndex missing r = do
+	(bad, _good, cleanup) <- partitionIndex missing r
+	if null bad
+		then cleanup
+		else do
+			void cleanup
+			return False
+
+partitionIndex :: MissingObjects -> Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
+partitionIndex missing r = do
+	(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
+	let (bad, good) = partition ismissing indexcontents
+	return (bad, good, cleanup)
+  where
+	getblob (_file, Just sha, Just _mode) = Just sha
+	getblob _ = Nothing
+	ismissing = maybe False (`S.member` missing) . getblob
+
 {- Rewrites the index file, removing from it any files whose blobs are
  - missing. Returns the list of affected files. -}
 rewriteIndex :: MissingObjects -> Repo -> IO [FilePath]
 rewriteIndex missing r
 	| repoIsLocalBare r = return []
 	| otherwise = do
-		(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
-		let (bad, good) = partition ismissing indexcontents
+		(bad, good, cleanup) <- partitionIndex missing r
 		unless (null bad) $ do
 			nukeFile (localGitDir r </> "index")
 			UpdateIndex.streamUpdateIndex r
@@ -370,9 +390,6 @@ rewriteIndex missing r
 		void cleanup
 		return $ map fst3 bad
   where
-	getblob (_file, Just sha, Just _mode) = Just sha
-	getblob _ = Nothing
-	ismissing = maybe False (`S.member` missing) . getblob
 	reinject (file, Just sha, Just mode) = case toBlobType mode of
 		Nothing -> return Nothing
 		Just blobtype -> Just <$>
@@ -404,14 +421,14 @@ displayList items header
 		| otherwise = items
 
 {- Put it all together. -}
-runRecovery :: Bool -> Repo -> IO Bool
-runRecovery forced g = do
+runRepair :: Bool -> Repo -> IO (Bool, MissingObjects)
+runRepair forced g = do
 	putStrLn "Running git fsck ..."
 	fsckresult <- findBroken False g
 	missing <- cleanCorruptObjects fsckresult g
 	stillmissing <- retrieveMissingObjects missing g
 	if S.null stillmissing
-		then successfulfinish
+		then successfulfinish stillmissing
 		else do
 			putStrLn $ unwords
 				[ show (S.size stillmissing)
@@ -435,7 +452,7 @@ runRecovery forced g = do
 					displayList deindexedfiles
 						"Removed these missing files from the index. You should look at what files are present in your working tree and git add them back to the index when appropriate."
 					if null resetbranches && null deletedbranches
-						then successfulfinish
+						then successfulfinish stillmissing
 						else do
 							unless (repoIsLocalBare g) $ do
 								mcurr <- Branch.currentUnsafe g
@@ -449,19 +466,19 @@ runRecovery forced g = do
 											]
 							putStrLn "Successfully recovered repository!"
 							putStrLn "Please carefully check that the changes mentioned above are ok.."
-							return True
+							return (True, stillmissing)
 				else do
 					if repoIsLocalBare g
 						then do
 							putStrLn "If you have a clone of this bare repository, you should add it as a remote of this repository, and re-run git-recover-repository."
 							putStrLn "If there are no clones of this repository, you can instead run git-recover-repository with the --force parameter to force recovery to a possibly usable state."
 						else putStrLn "To force a recovery to a usable state, run this command again with the --force parameter."
-					return False
+					return (False, stillmissing)
   where
-	successfulfinish = do
+	successfulfinish stillmissing = do
 		mapM_ putStrLn
 			[ "Successfully recovered repository!"
 			, "You should run \"git fsck\" to make sure, but it looks like"
 			, "everything was recovered ok."
 			]
-		return True
+		return (True, stillmissing)
