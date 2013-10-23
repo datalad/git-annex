@@ -7,6 +7,7 @@
 
 import System.Environment
 import qualified Data.Set as S
+import Data.Tuple.Utils
 
 import Common
 import qualified Git
@@ -35,7 +36,7 @@ main = do
 	forced <- parseArgs
 	
 	g <- Git.Config.read =<< Git.CurrentRepo.get
-	ifM (fst <$> Git.Repair.runRepair forced g)
+	ifM (fst3 <$> Git.Repair.runRepair forced g)
 		( exitSuccess
 		, exitFailure
 		)
