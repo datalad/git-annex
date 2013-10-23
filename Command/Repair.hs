@@ -29,8 +29,7 @@ runRepair :: Bool -> Annex Bool
 runRepair forced = do
 	(ok, stillmissing, modifiedbranches) <- inRepo $
 		Git.Repair.runRepair forced
-	when ok $
-		repairAnnexBranch stillmissing modifiedbranches
+	repairAnnexBranch stillmissing modifiedbranches
 	return ok
 
 {- After git repository repair, the .git/annex/index file could

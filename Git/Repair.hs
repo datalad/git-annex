@@ -7,6 +7,7 @@
 
 module Git.Repair (
 	runRepair,
+	runRepairOf,
 	cleanCorruptObjects,
 	retrieveMissingObjects,
 	resetLocalBranches,
@@ -426,24 +427,25 @@ runRepair forced g = do
 	putStrLn "Running git fsck ..."
 	fsckresult <- findBroken False g
 	if foundBroken fsckresult
-		then makerepairs fsckresult
+		then runRepairOf fsckresult forced g
 		else do
 			putStrLn "No problems found."
 			return (True, S.empty, [])
+runRepairOf :: FsckResults -> Bool -> Repo -> IO (Bool, MissingObjects, [Branch])
+runRepairOf fsckresult forced g = do
+	missing <- cleanCorruptObjects fsckresult g
+	stillmissing <- retrieveMissingObjects missing g
+	if S.null stillmissing
+		then successfulfinish stillmissing []
+		else do
+			putStrLn $ unwords
+				[ show (S.size stillmissing)
+				, "missing objects could not be recovered!"
+				]
+			if forced
+				then continuerepairs stillmissing
+				else unsuccessfulfinish stillmissing
   where
-	makerepairs fsckresult = do
-		missing <- cleanCorruptObjects fsckresult g
-		stillmissing <- retrieveMissingObjects missing g
-		if S.null stillmissing
-			then successfulfinish stillmissing []
-			else do
-				putStrLn $ unwords
-					[ show (S.size stillmissing)
-					, "missing objects could not be recovered!"
-					]
-				if forced
-					then continuerepairs stillmissing
-					else unsuccessfulfinish stillmissing
 	continuerepairs stillmissing = do
 		(remotebranches, goodcommits) <- removeTrackingBranches stillmissing emptyGoodCommits g
 		unless (null remotebranches) $
