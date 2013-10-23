@@ -61,8 +61,7 @@ Add git fsck to scheduled self fsck **done**
 
 TODO: Add git fsck of local remotes to scheduled remote fscks.
 
-TODO: Display an alert to nudge user to schedule a fsck, if none is
-scheduled. Without being annoying about it.
+TODO: git fsck on ssh remotes? Probably not worth the complexity..
 
 TODO: If committing to the repository fails, after resolving any dangling
 lock files (see above), it should git fsck.
@@ -74,6 +73,24 @@ git-annex branch is accurate. **done**
 
 TODO: along with displaying alert when there is a problem detected
 by consistency check, send an email alert. (Using system MTA?)
+
+## nudge user to schedule fscks
+
+Make the webapp encourage users to schedule fscks of their
+local repositories. The goal here was that it should not be obnoxious about
+repeatedly pestering the user to set that up, but should still encourage
+anyone who cares to set it up.
+
+Maybe: Display a message only once per week, and only after the repository
+has existed for at least one full day. But, this will require storing
+quite a lot of state.
+
+Or: Display a message whenever a removable drive is detected to have been
+connected. I like this, but what about nudging the main repo? Could do it
+every webapp startup, perhaps?
+
+There should be a "No thanks" button that prevents it nudging again for a
+repo.
 
 ## git repository repair
 
