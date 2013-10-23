@@ -6,6 +6,7 @@
  -}
 
 module Git.RecoverRepository (
+	runRecovery,
 	cleanCorruptObjects,
 	retrieveMissingObjects,
 	resetLocalBranches,
@@ -17,23 +18,23 @@ module Git.RecoverRepository (
 import Common
 import Git
 import Git.Command
-import Git.Fsck
 import Git.Objects
 import Git.Sha
 import Git.Types
-import qualified Git.Config
-import qualified Git.Construct
+import Git.Fsck
+import qualified Git.Config as Config
+import qualified Git.Construct as Construct
 import qualified Git.LsTree as LsTree
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Ref as Ref
 import qualified Git.RefLog as RefLog
 import qualified Git.UpdateIndex as UpdateIndex
+import qualified Git.Branch as Branch
 import Utility.Tmp
 import Utility.Rsync
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
-import System.Log.Logger
 import Data.Tuple.Utils
 
 {- Given a set of bad objects found by git fsck, removes all
@@ -52,7 +53,7 @@ cleanCorruptObjects :: FsckResults -> Repo -> IO MissingObjects
 cleanCorruptObjects mmissing r = check mmissing
   where
 	check Nothing = do
-		notice "git fsck found a problem but no specific broken objects. Perhaps a corrupt pack file?"
+		putStrLn "git fsck found a problem but no specific broken objects. Perhaps a corrupt pack file?"
 		ifM (explodePacks r)
 			( retry S.empty
 			, return S.empty
@@ -60,7 +61,7 @@ cleanCorruptObjects mmissing r = check mmissing
 	check (Just bad)
 		| S.null bad = return S.empty
 		| otherwise = do
-			notice $ unwords 
+			putStrLn $ unwords 
 				[ "git fsck found"
 				, show (S.size bad)
 				, "broken objects."
@@ -71,7 +72,7 @@ cleanCorruptObjects mmissing r = check mmissing
 				then retry bad
 				else return bad
 	retry oldbad = do
-		notice "Re-running git fsck to see if it finds more problems."
+		putStrLn "Re-running git fsck to see if it finds more problems."
 		v <- findBroken False r
 		case v of
 			Nothing -> error $ unwords
@@ -92,7 +93,7 @@ removeLoose r s = do
 	count <- length <$> filterM doesFileExist fs
 	if (count > 0)
 		then do
-			notice $ unwords
+			putStrLn $ unwords
 				[ "removing"
 				, show count
 				, "corrupt loose objects"
@@ -107,7 +108,7 @@ explodePacks r = do
 	if null packs
 		then return False
 		else do
-			notice "Unpacking all pack files."
+			putStrLn "Unpacking all pack files."
 			mapM_ go packs
 			return True
   where
@@ -128,7 +129,7 @@ retrieveMissingObjects missing r
 	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
 		unlessM (boolSystem "git" [Params "init", File tmpdir]) $
 			error $ "failed to create temp repository in " ++ tmpdir
-		tmpr <- Git.Config.read =<< Git.Construct.fromAbsPath tmpdir
+		tmpr <- Config.read =<< Construct.fromAbsPath tmpdir
 		stillmissing <- pullremotes tmpr (remotes r) fetchrefstags missing
 		if S.null stillmissing
 			then return stillmissing
@@ -138,14 +139,14 @@ retrieveMissingObjects missing r
 	pullremotes tmpr (rmt:rmts) fetchrefs s
 		| S.null s = return s
 		| otherwise = do
-			notice $ "Trying to recover missing objects from remote " ++ repoDescribe rmt
+			putStrLn $ "Trying to recover missing objects from remote " ++ repoDescribe rmt
 			ifM (fetchsome rmt fetchrefs tmpr)
 				( do
 					void $ copyObjects tmpr r
 					stillmissing <- findMissing (S.toList s) r
 					pullremotes tmpr rmts fetchrefs stillmissing
 				, do
-					notice $ unwords
+					putStrLn $ unwords
 						[ "failed to fetch from remote"
 						, repoDescribe rmt
 						, "(will continue without it, but making this remote available may improve recovery)"
@@ -360,7 +361,7 @@ rewriteIndex :: MissingObjects -> Repo -> IO [FilePath]
 rewriteIndex missing r
 	| repoIsLocalBare r = return []
 	| otherwise = do
-		(indexcontents, cleanup) <- LsFiles.stagedDetails [Git.repoPath r] r
+		(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
 		let (bad, good) = partition ismissing indexcontents
 		unless (null bad) $ do
 			nukeFile (localGitDir r </> "index")
@@ -390,5 +391,77 @@ addGoodCommits :: [Sha] -> GoodCommits -> GoodCommits
 addGoodCommits shas (GoodCommits s) = GoodCommits $
 	S.union s (S.fromList shas)
 
-notice :: String -> IO ()
-notice = noticeM "RecoverRepository"
+displayList :: [String] -> String -> IO ()
+displayList items header
+	| null items = return ()
+	| otherwise = do
+		putStrLn header
+		putStr $ unlines $ map (\i -> "\t" ++ i) truncateditems
+  where
+  	numitems = length items
+	truncateditems
+		| numitems > 10 = take 10 items ++ ["(and " ++ show (numitems - 10) ++ " more)"]
+		| otherwise = items
+
+{- Put it all together. -}
+runRecovery :: Bool -> Repo -> IO Bool
+runRecovery forced g = do
+	putStrLn "Running git fsck ..."
+	fsckresult <- findBroken False g
+	missing <- cleanCorruptObjects fsckresult g
+	stillmissing <- retrieveMissingObjects missing g
+	if S.null stillmissing
+		then successfulfinish
+		else do
+			putStrLn $ unwords
+				[ show (S.size stillmissing)
+				, "missing objects could not be recovered!"
+				]
+			if forced
+				then do
+					(remotebranches, goodcommits) <- removeTrackingBranches stillmissing emptyGoodCommits g
+					unless (null remotebranches) $
+						putStrLn $ unwords
+							[ "removed"
+							, show (length remotebranches)
+							, "remote tracking branches that referred to missing objects"
+							]
+					(resetbranches, deletedbranches, _) <- resetLocalBranches stillmissing goodcommits g
+					displayList (map show resetbranches)
+						"Reset these local branches to old versions before the missing objects were committed:"
+					displayList (map show deletedbranches)
+						"Deleted these local branches, which could not be recovered due to missing objects:"
+					deindexedfiles <- rewriteIndex stillmissing g
+					displayList deindexedfiles
+						"Removed these missing files from the index. You should look at what files are present in your working tree and git add them back to the index when appropriate."
+					if null resetbranches && null deletedbranches
+						then successfulfinish
+						else do
+							unless (repoIsLocalBare g) $ do
+								mcurr <- Branch.currentUnsafe g
+								case mcurr of
+									Nothing -> return ()
+									Just curr -> when (any (== curr) (resetbranches ++ deletedbranches)) $ do
+										putStrLn $ unwords
+											[ "You currently have"
+											, show curr
+											, "checked out. You may have staged changes in the index that can be committed to recover the lost state of this branch!"
+											]
+							putStrLn "Successfully recovered repository!"
+							putStrLn "Please carefully check that the changes mentioned above are ok.."
+							return True
+				else do
+					if repoIsLocalBare g
+						then do
+							putStrLn "If you have a clone of this bare repository, you should add it as a remote of this repository, and re-run git-recover-repository."
+							putStrLn "If there are no clones of this repository, you can instead run git-recover-repository with the --force parameter to force recovery to a possibly usable state."
+						else putStrLn "To force a recovery to a usable state, run this command again with the --force parameter."
+					return False
+  where
+	successfulfinish = do
+		mapM_ putStrLn
+			[ "Successfully recovered repository!"
+			, "You should run \"git fsck\" to make sure, but it looks like"
+			, "everything was recovered ok."
+			]
+		return True

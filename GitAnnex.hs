@@ -34,6 +34,7 @@ import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
 import qualified Command.Fsck
+import qualified Command.Repair
 import qualified Command.Unused
 import qualified Command.DropUnused
 import qualified Command.AddUnused
@@ -130,6 +131,7 @@ cmds = concat
 	, Command.ReKey.def
 	, Command.Fix.def
 	, Command.Fsck.def
+	, Command.Repair.def
 	, Command.Unused.def
 	, Command.DropUnused.def
 	, Command.AddUnused.def

@@ -444,7 +444,8 @@ subdirectories).
 * `fsck [path ...]`
 
   With no parameters, this command checks the whole annex for consistency,
-  and warns about or fixes any problems found.
+  and warns about or fixes any problems found. This is a good compliment to
+  `git fsck`.
 
   With parameters, only the specified files are checked.
 
@@ -528,6 +529,37 @@ subdirectories).
   propigate out from its starting point until all repositories running
   git-annex have forgotten their old history. (You may need to force
   git to push the branch to any git repositories not running git-annex.
+
+* `repair`
+
+  This can repair many of the problems with git repositories that `git fsck` 
+  detects, but does not itself fix. It's useful if a repository has become
+  badly damaged. One way this can happen is if a repisitory used by git-annex
+  is on a removable drive that gets unplugged at the wrong time.
+  
+  This command can actually be used inside git repositories that do not
+  use git-annex at all; when used in a repository using git-annex, it
+  does additional repairs of the git-annex branch.
+
+  It works by deleting any corrupt objects from the git repository, and
+  retriving all missing objects it can from the remotes of the repository.
+
+  If that is not sufficient to fully recover the repository, it can also
+  reset branches back to commits before the corruption happened, delete
+  branches that are no longer available due to the lost data, and remove any
+  missing files from the index. It will only do this if run with the
+  `--force` option, since that rewrites history and throws out missing data.
+  Note that the `--force` option never touches tags, even if they are no
+  longer usable due to missing data.
+
+  After running this command, you will probably want to run `git fsck` to
+  verify it fixed the repository. Note that fsck may still complain about
+  objects referenced by the reflog, or the stash, if they were unable to be
+  recovered. This command does not try to clean up either the reflog or the
+  stash.
+
+  It is also a good idea to run `git annex fsck --fast` after this command,
+  to make sure that the git-annex branch reflects reality.
 
 # QUERY COMMANDS
 
