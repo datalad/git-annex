@@ -12,10 +12,10 @@
   $if (not (null checks))
     <p>
       Currently scheduled checks:
-      $forall check <- checks
-        ^{showFsckForm False check}
+      $forall c <- checks
+        ^{showFsckForm False c}
         <div style="margin-left: 5em">
-          ^{showFsckStatus check}
+          ^{showFsckStatus c}
   <p>
     Add a check:
     ^{showFsckForm True defaultFsck}
