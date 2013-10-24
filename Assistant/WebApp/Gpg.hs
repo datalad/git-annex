@@ -85,9 +85,9 @@ getGCryptRemoteName u repoloc = do
  - Since the probing requires gcrypt to be installed, a third action must
  - be provided to run if it's not installed.
  -}
-checkGCryptRepoEncryption :: (Monad m, MonadIO m, LiftAnnex m) => String -> m a -> m a -> m a -> m a
+checkGCryptRepoEncryption :: (Monad m, LiftAnnex m) => String -> m a -> m a -> m a -> m a
 checkGCryptRepoEncryption location notencrypted notinstalled encrypted = 
-	ifM (liftIO isGcryptInstalled)
+	ifM (liftAnnex $ liftIO isGcryptInstalled)
 		( dispatch =<< liftAnnex (inRepo $ Git.GCrypt.probeRepo location)
 		, notinstalled
 		)
