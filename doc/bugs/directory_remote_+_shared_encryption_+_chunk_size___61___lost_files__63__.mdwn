@@ -11,7 +11,7 @@ Assume `~/annex` is a normal git annex repository and it contains a file `data.f
          # cd ~/annex
          # mkdir /tmp/remote
          # git annex initremote dirremote type=directory directory=/tmp/remote encryption=shared chunksize="300 megabytes"
-             initremote remote4 (encryption setup) (shared cipher) ok
+             initremote dirremote (encryption setup) (shared cipher) ok
              (Recording state in git...)
          # git annex copy --to dirremote data.file
              copy data.file (gpg) (to dirremote...)
