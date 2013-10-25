@@ -14,7 +14,7 @@ Assume `~/annex` is a normal git annex repository and it contains a file `data.f
              initremote remote4 (encryption setup) (shared cipher) ok
              (Recording state in git...)
          # git annex copy --to dirremote data.file
-             copy data.file (gpg) (to remote4...)
+             copy data.file (gpg) (to dirremote...)
              ok
              (Recording state in git...)
          # git annex fsck --from dirremote
