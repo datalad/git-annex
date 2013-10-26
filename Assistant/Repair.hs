@@ -5,29 +5,53 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 
 module Assistant.Repair where
 
 import Assistant.Common
 import Command.Repair (repairAnnexBranch)
+import Git.Fsck (FsckResults)
 import Git.Repair (runRepairOf)
 import Logs.FsckResults
 import Annex.UUID
 import Utility.Batch
 import Config.Files
 import Assistant.Sync
+import Assistant.Alert
+import Assistant.DaemonStatus
+import Assistant.Types.UrlRenderer
+#ifdef WITH_WEBAPP
+import Assistant.WebApp.Types
+#endif
 
+import qualified Data.Text as T
 import Control.Concurrent.Async
 
-runRepair :: UUID -> Assistant ()
-runRepair u = do
+{- Try to do a non-destructive repair. If that fails, pop up an alert. -}
+brokenRepositoryDetected :: FsckResults -> UrlRenderer -> UUID -> Assistant ()
+brokenRepositoryDetected fsckresults urlrenderer u = do
+	liftAnnex $ writeFsckResults u fsckresults
+	handle =<< runRepair u False
+  where
+	handle True = return ()
+	handle False = do
+#ifdef WITH_WEBAPP
+		button <- mkAlertButton True (T.pack "Click Here") urlrenderer $
+			RepairRepositoryR u
+		void $ addAlert $ brokenRepositoryAlert button
+#else
+		return ()
+#endif
+
+runRepair :: UUID -> Bool -> Assistant Bool
+runRepair u destructiverepair = do
 	-- Stop the watcher from running while running repairs.
 	changeSyncable Nothing False
 
 	fsckresults <- liftAnnex $ readFsckResults u
 	myu <- liftAnnex getUUID
-	if u == myu
+	ok <- if u == myu
 		then localrepair fsckresults
 		else remoterepair fsckresults
 	liftAnnex $ writeFsckResults u Nothing
@@ -36,20 +60,28 @@ runRepair u = do
 	-- startup scan, which is especially important if the git repo
 	-- repair removed files from the index file. Those files will be
 	-- seen as new, and re-added to the repository.
-	changeSyncable Nothing True
+	when ok $
+		changeSyncable Nothing True
+
+	return ok
   where
   	localrepair fsckresults = do
 		-- This intentionally runs the repair inside the Annex
 		-- monad, which is not strictly necessary, but keeps
 		-- other threads that might be trying to use the Annex
 		-- from running until it completes.
-		needfsck <- liftAnnex $ do
+		ok <- liftAnnex $ do
 			(ok, stillmissing, modifiedbranches) <- inRepo $
-				runRepairOf fsckresults True
-			repairAnnexBranch stillmissing modifiedbranches
-			return (not ok)
-		when needfsck $
+				runRepairOf fsckresults destructiverepair
+			when destructiverepair $
+				repairAnnexBranch stillmissing modifiedbranches
+			return ok
+		-- Run a background fast fsck if a destructive repair had
+		-- to be done, to ensure that the git-annex branch
+		-- reflects the current state of the repo.
+		when (destructiverepair && not ok) $
 			backgroundfsck [ Param "--fast" ]
+		return ok
 
 	remoterepair _fsckresults = do
 		error "TODO: remote repair"

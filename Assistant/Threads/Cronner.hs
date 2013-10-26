@@ -33,7 +33,7 @@ import Assistant.WebApp.Types
 #endif
 import Git.Remote (RemoteName)
 import qualified Git.Fsck
-import Logs.FsckResults
+import Assistant.Repair
 
 import Control.Concurrent.Async
 import Control.Concurrent.MVar
@@ -189,12 +189,9 @@ runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
 		r <- Git.Fsck.findBroken True g
 		void $ batchCommand program (Param "fsck" : annexFsckParams d)
 		return r
-	when (Git.Fsck.foundBroken fsckresults) $ do
-		u <- liftAnnex getUUID
-		liftAnnex $ writeFsckResults u fsckresults
-		button <- mkAlertButton True (T.pack "Click Here") urlrenderer $
-			RepairRepositoryR u
-		void $ addAlert $ brokenRepositoryAlert button
+	when (Git.Fsck.foundBroken fsckresults) $
+		brokenRepositoryDetected fsckresults urlrenderer
+			=<< liftAnnex getUUID
 	mapM_ reget =<< liftAnnex (dirKeys gitAnnexBadDir)
   where
 	reget k = queueTransfers "fsck found bad file; redownloading" Next k Nothing Download

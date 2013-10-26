@@ -25,7 +25,7 @@ getRepairRepositoryRunR :: UUID -> Handler Html
 getRepairRepositoryRunR = postRepairRepositoryRunR
 postRepairRepositoryRunR :: UUID -> Handler Html
 postRepairRepositoryRunR u = do
-	liftAssistant $ runRepair u
+	void $ liftAssistant $ runRepair u True
 	page "Repair repository" Nothing $ do
 		let repolist = repoListDisplay $
 			mainRepoSelector { nudgeAddMore = True }
