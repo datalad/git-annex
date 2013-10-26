@@ -144,3 +144,9 @@ upgrade supported from repository versions: 0 1 2
 
 # End of transcript or log.
 """]]
+
+> If `git log -S` does not find the key, then it was not used for any
+> commit currently in the git repository. Which is certianly possible;
+> for example `git annex add file; git rm file`.
+> 
+> This is a dup of [[todo/wishlist: option to print more info with 'unused']]; [[done]] --[[Joey]] 
