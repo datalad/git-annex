@@ -390,7 +390,7 @@ prepSsh' newgcrypt origsshdata sshdata keypair a = sshSetup
 	remoteCommand = shellWrap $ intercalate "&&" $ catMaybes
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
 		, Just $ "cd " ++ shellEscape remotedir
-		, if rsynconly then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
+		, if rsynconly then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared && git config receive.denyNonFastforwards false; fi"
 		, if rsynconly || newgcrypt then Nothing else Just "git annex init"
 		, if needsPubKey origsshdata
 			then addAuthorizedKeysCommand (hasCapability origsshdata GitAnnexShellCapable) remotedir . sshPubKey <$> keypair

@@ -285,3 +285,11 @@ Everything up-to-date
 
 # End of transcript or log.
 """]]
+
+> So, receive.denyNonFastforwards was the problem. It turns out that
+> `git init --bare --shared` sets that by default, and the webapp
+> uses that to create repositories on ssh server. I have made the webapp
+> unset receive.denyNonFastforwards when setting up such a repository.
+> 
+> Also added something to the assistant release notes about this
+> to handle existing repositories. [[done]] --[[Joey]]
