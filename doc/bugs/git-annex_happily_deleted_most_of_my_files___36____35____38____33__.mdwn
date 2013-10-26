@@ -54,3 +54,5 @@ aur/git-annex-bin 4.20131002-1
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
