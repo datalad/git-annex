@@ -4,6 +4,9 @@ git-annex (4.20131025) UNRELEASED; urgency=low
     scan, to avoid contending with the user's desktop login process.
   * webapp: When setting up a bare shared repository, enable non-fast-forward
     pushes.
+  * directory, webdav: Fix bug introduced in version 4.20131002 that
+    caused the chunkcount file to not be written. Work around repositories
+    without such a file, so files can still be retreived from them.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 26 Oct 2013 12:11:48 -0400
 

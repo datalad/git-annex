@@ -67,3 +67,8 @@ fsck webdav again, now all is fine ("fixing location log"):
 10672 open("/media/1und1/git-annex/dcf/85a/GPGHMACSHA1--10ff9e1cc8191235670c2fd95375bccf62004f33/GPGHMACSHA1--10ff9e1cc8191235670c2fd95375bccf62004f33.chunk1", O_RDONLY|O_NOCTTY|O_NONBLOCK|O_LARGEFILE) = 20
 # End of transcript or log.
 """]]
+
+> There was a bug that caused it not to write the chunkcount file.
+> I have fixed it, and put in a workaround so fsck, etc, will
+> see that the file is stored on the remote despite there being no
+> chunkcount file present. [[done]] --[[Joey]]

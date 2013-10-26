@@ -43,6 +43,10 @@ type ChunkExt = String
 chunkCount :: ChunkExt
 chunkCount = ".chunkcount"
 
+{- An infinite stream of extensions to use for chunks. -}
+chunkStream :: [ChunkExt]
+chunkStream = map (\n -> ".chunk" ++ show n) [1 :: Integer ..]
+
 {- Parses the String from the chunkCount file, and returns the files that
  - are used to store the chunks. -}
 listChunks :: FilePath -> String -> [FilePath]
@@ -50,9 +54,22 @@ listChunks basedest chunkcount = take count $ map (basedest ++) chunkStream
   where
 	count = fromMaybe 0 $ readish chunkcount
 
-{- An infinite stream of extensions to use for chunks. -}
-chunkStream :: [ChunkExt]
-chunkStream = map (\n -> ".chunk" ++ show n) [1 :: Integer ..]
+{- For use when there is no chunkCount file; uses the action to find
+ - chunks, and returns them, or Nothing if none found. Relies on
+ - storeChunks's finalizer atomically moving the chunks into place once all
+ - are written.
+ -
+ - This is only needed to work around a bug that caused the chunkCount file
+ - not to be written.
+ -}
+probeChunks :: FilePath -> (FilePath -> IO Bool) -> IO [FilePath]
+probeChunks basedest check = go [] $ map (basedest ++) chunkStream
+  where
+	go l [] = return (reverse l)
+	go l (c:cs) = ifM (check c)
+		( go (c:l) cs
+		, go l []
+		)
 
 {- Given the base destination to use to store a value,
  - generates a stream of temporary destinations (just one when not chunking)
