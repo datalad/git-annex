@@ -58,7 +58,7 @@ chunkStream = map (\n -> ".chunk" ++ show n) [1 :: Integer ..]
  - generates a stream of temporary destinations (just one when not chunking)
  - and passes it to an action, which should chunk and store the data,
  - and return the destinations it stored to, or [] on error. Then
- - calls the storer to write the chunk count (if chunking). Finally, the
+ - calls the recorder to write the chunk count (if chunking). Finally, the
  - finalizer is called to rename the tmp into the dest 
  - (and do any other cleanup).
  -}
@@ -68,7 +68,7 @@ storeChunks key tmp dest chunksize storer recorder finalizer = either onerr retu
   where
 	go = do
 		stored <- storer tmpdests
-		when (isNothing chunksize) $ do
+		when (isJust chunksize) $ do
 			let chunkcount = basef ++ chunkCount
 			recorder chunkcount (show $ length stored)
 		finalizer tmp dest
