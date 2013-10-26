@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 4"
+ date="2013-10-26T19:26:22Z"
+ content="""
+I have moreinfoed this bug, until I hear back with a better problem description.
+
+Using `git log --stat` to investigate any commits where files were removed would probably be a useful way to get a handle on what happened.
+"""]]
