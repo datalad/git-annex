@@ -12,7 +12,6 @@ module Assistant.WebApp.RepoList where
 import Assistant.WebApp.Common
 import Assistant.DaemonStatus
 import Assistant.WebApp.Notifications
-import Assistant.WebApp.Utility
 import Assistant.Ssh
 import qualified Annex
 import qualified Remote
@@ -208,7 +207,7 @@ getDisableSyncR = flipSync False
 flipSync :: Bool -> UUID -> Handler ()
 flipSync enable uuid = do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
-	changeSyncable mremote enable
+	liftAssistant $ changeSyncable mremote enable
 	redirectBack
 
 getRepositoriesReorderR :: Handler ()

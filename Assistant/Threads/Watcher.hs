@@ -9,7 +9,7 @@
 
 module Assistant.Threads.Watcher (
 	watchThread,
-	WatcherException(..),
+	WatcherControl(..),
 	checkCanWatch,
 	needLsof,
 	onAddSymlink,
@@ -64,10 +64,10 @@ needLsof = error $ unlines
 	]
 
 {- A special exception that can be thrown to pause or resume the watcher. -}
-data WatcherException = PauseWatcher | ResumeWatcher
+data WatcherControl = PauseWatcher | ResumeWatcher
         deriving (Show, Eq, Typeable)
 
-instance E.Exception WatcherException
+instance E.Exception WatcherControl
 
 watchThread :: NamedThread
 watchThread = namedThread "Watcher" $
@@ -107,7 +107,7 @@ runWatcher = do
   where
 	hook a = Just <$> asIO2 (runHandler a)
 
-waitFor :: WatcherException -> Assistant () -> Assistant ()
+waitFor :: WatcherControl -> Assistant () -> Assistant ()
 waitFor sig next = do
 	r <- liftIO (E.try pause :: IO (Either E.SomeException ()))
 	case r of

@@ -9,9 +9,7 @@ module Assistant.Threads.TransferWatcher where
 
 import Assistant.Common
 import Assistant.DaemonStatus
-import Assistant.TransferQueue
-import Assistant.Drop
-import Annex.Content
+import Assistant.TransferSlots
 import Logs.Transfer
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
@@ -98,28 +96,3 @@ onDel file = case parseTransferFile file of
 			 - runs. -}
 			threadDelay 10000000 -- 10 seconds
 			finished t minfo
-
-{- Queue uploads of files downloaded to us, spreading them
- - out to other reachable remotes.
- -
- - Downloading a file may have caused a remote to not want it;
- - so check for drops from remotes.
- -
- - Uploading a file may cause the local repo, or some other remote to not
- - want it; handle that too.
- -}
-finishedTransfer :: Transfer -> Maybe TransferInfo -> Assistant ()
-finishedTransfer t (Just info)
-	| transferDirection t == Download =
-		whenM (liftAnnex $ inAnnex $ transferKey t) $ do
-			dodrops False
-			queueTransfersMatching (/= transferUUID t)
-				"newly received object"
-				Later (transferKey t) (associatedFile info) Upload
-	| otherwise = dodrops True
-  where
-	dodrops fromhere = handleDrops
-		("drop wanted after " ++ describeTransfer t info)
-		fromhere (transferKey t) (associatedFile info) Nothing
-finishedTransfer _ _ = noop
-

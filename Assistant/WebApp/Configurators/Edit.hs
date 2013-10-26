@@ -10,12 +10,12 @@
 module Assistant.WebApp.Configurators.Edit where
 
 import Assistant.WebApp.Common
-import Assistant.WebApp.Utility
 import Assistant.WebApp.Gpg
 import Assistant.DaemonStatus
 import Assistant.MakeRemote (uniqueRemoteName)
 import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
 import Assistant.ScanRemotes
+import Assistant.Sync
 import qualified Assistant.WebApp.Configurators.AWS as AWS
 import qualified Assistant.WebApp.Configurators.IA as IA
 #ifdef WITH_S3
@@ -124,7 +124,7 @@ setRepoConfig uuid mremote oldc newc = do
 				Nothing -> addScanRemotes True
 					=<< syncDataRemotes <$> getDaemonStatus
 	when syncableChanged $
-		changeSyncable mremote (repoSyncable newc)
+		liftAssistant $ changeSyncable mremote (repoSyncable newc)
   where
   	syncableChanged = repoSyncable oldc /= repoSyncable newc
 	associatedDirectoryChanged = repoAssociatedDirectory oldc /= repoAssociatedDirectory newc

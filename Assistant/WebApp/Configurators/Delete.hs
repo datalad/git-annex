@@ -14,6 +14,7 @@ import Assistant.DeleteRemote
 import Assistant.WebApp.Utility
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
+import Assistant.Sync
 import qualified Remote
 import qualified Git
 import Config.Files
@@ -91,9 +92,10 @@ deleteCurrentRepository = dangerPage $ do
 			{- Disable syncing to this repository, and all
 			 - remotes. This stops all transfers, and all
 			 - file watching. -}
-			changeSyncable Nothing False
-			rs <- liftAssistant $ syncRemotes <$> getDaemonStatus
-			mapM_ (\r -> changeSyncable (Just r) False) rs
+			liftAssistant $ do
+				changeSyncable Nothing False
+				rs <- syncRemotes <$> getDaemonStatus
+				mapM_ (\r -> changeSyncable (Just r) False) rs
 
 			{- Make all directories writable, so all annexed
 			 - content can be deleted. -}

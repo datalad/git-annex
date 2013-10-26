@@ -10,10 +10,10 @@
 module Assistant.WebApp.DashBoard where
 
 import Assistant.WebApp.Common
-import Assistant.WebApp.Utility
 import Assistant.WebApp.RepoList
 import Assistant.WebApp.Notifications
 import Assistant.TransferQueue
+import Assistant.TransferSlots
 import Assistant.DaemonStatus
 import Utility.NotificationBroadcaster
 import Logs.Transfer
@@ -31,7 +31,7 @@ import Control.Concurrent
 transfersDisplay :: Bool -> Widget
 transfersDisplay warnNoScript = do
 	webapp <- liftH getYesod
-	current <- liftH $ M.toList <$> getCurrentTransfers
+	current <- liftAssistant $ M.toList <$> getCurrentTransfers
 	queued <- take 10 <$> liftAssistant getTransferQueue
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
 	let transfers = simplifyTransfers $ current ++ queued
@@ -139,15 +139,15 @@ openFileBrowser = do
 getPauseTransferR :: Transfer -> Handler ()
 getPauseTransferR = noscript postPauseTransferR
 postPauseTransferR :: Transfer -> Handler ()
-postPauseTransferR = pauseTransfer
+postPauseTransferR = liftAssistant . pauseTransfer
 getStartTransferR :: Transfer -> Handler ()
 getStartTransferR = noscript postStartTransferR
 postStartTransferR :: Transfer -> Handler ()
-postStartTransferR = startTransfer
+postStartTransferR = liftAssistant . startTransfer
 getCancelTransferR :: Transfer -> Handler ()
 getCancelTransferR = noscript postCancelTransferR
 postCancelTransferR :: Transfer -> Handler ()
-postCancelTransferR = cancelTransfer False
+postCancelTransferR = liftAssistant . cancelTransfer False
 
 noscript :: (Transfer -> Handler ()) -> Transfer -> Handler ()
 noscript a t = a t >> redirectBack
