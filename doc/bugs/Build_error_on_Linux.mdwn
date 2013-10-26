@@ -24,3 +24,6 @@ This is the patch I applied to `git-annex.cabal`:
        if os(linux) && flag(Dbus)
          Build-Depends: dbus (>= 0.10.3)
          CPP-Options: -DWITH_DBUS
+
+> Feel async is core enough it should depend on it unconditionally.
+> [[done]] --[[Joey]]
