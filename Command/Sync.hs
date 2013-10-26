@@ -184,7 +184,11 @@ pushRemote remote branch = go =<< needpush
 		showStart "push" (Remote.name remote)
 		next $ next $ do
 			showOutput
-			inRepo $ pushBranch remote branch
+			ok <- inRepo $ pushBranch remote branch
+			unless ok $ do
+				warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
+				showNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
+			return ok
 
 {- Pushes a regular branch like master to a remote. Also pushes the git-annex
  - branch.
@@ -211,6 +215,9 @@ pushRemote remote branch = go =<< needpush
  - But overwriting of data on synced/git-annex can happen, in a race.
  - The only difference caused by using a forced push in that case is that
  - the last repository to push wins the race, rather than the first to push.
+ -
+ - The sync push will fail to overwrite if receive.denyNonFastforwards is
+ - set on the remote.
  -}
 pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
 pushBranch remote branch g = tryIO (directpush g) `after` syncpush g

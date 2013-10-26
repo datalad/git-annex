@@ -377,3 +377,8 @@ $
 
 # End of transcript or log.
 """]]
+
+> Apparently `test.git` had `receive.denyNonFastForwards`
+> set to true, which prevents the forced pushing `git annex sync`
+> needs to do. I have made it print out a hint about this setting
+> when a push failes. [[done]] --[[Joey]]

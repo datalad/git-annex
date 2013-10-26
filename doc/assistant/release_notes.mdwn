@@ -1,12 +1,3 @@
-## 4.20131025
-
-Note that all past versions of the assistant, when used to create a
-git repository on a ssh server, set up the repository in a way that
-prevents `git annex sync` from working (although the assistant can sync
-with it). To fix this misconfiguration, you can ssh to the server
-and run this command inside the bare git repository:
-`git config receive.denyNonFastforwards false`
-
 ## version 4.20131024
 
 This version fixes several different bugs that could cause the webapp to
