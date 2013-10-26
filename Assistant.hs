@@ -48,6 +48,7 @@ import Assistant.Types.UrlRenderer
 import qualified Utility.Daemon
 import Utility.LogFile
 import Utility.ThreadScheduler
+import Utility.HumanTime
 import qualified Build.SysConfig as SysConfig
 
 import System.Log.Logger
@@ -61,8 +62,8 @@ stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
  -
  - startbrowser is passed the url and html shim file, as well as the original
  - stdout and stderr descriptors. -}
-startDaemon :: Bool -> Bool -> Maybe HostName ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
-startDaemon assistant foreground listenhost startbrowser = do
+startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe HostName ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
+startDaemon assistant foreground startdelay listenhost startbrowser = do
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
@@ -140,7 +141,7 @@ startDaemon assistant foreground listenhost startbrowser = do
 			, watch $ watchThread
 			-- must come last so that all threads that wait
 			-- on it have already started waiting
-			, watch $ sanityCheckerStartupThread
+			, watch $ sanityCheckerStartupThread startdelay
 			]
 	
 		liftIO waitForTermination

@@ -69,7 +69,7 @@ start' allowauto listenhost = do
 					url <- liftIO . readFile
 						=<< fromRepo gitAnnexUrlFile
 					liftIO $ openBrowser browser f url Nothing Nothing
-			, startDaemon True True listenhost $ Just $ 
+			, startDaemon True True Nothing listenhost $ Just $ 
 				\origout origerr url htmlshim ->
 					if isJust listenhost
 						then maybe noop (`hPutStrLn` url) origout
@@ -155,7 +155,7 @@ firstRun listenhost = do
 			_wait <- takeMVar v
 			state <- Annex.new =<< Git.CurrentRepo.get
 			Annex.eval state $
-				startDaemon True True listenhost $ Just $
+				startDaemon True True Nothing listenhost $ Just $
 					sendurlback v
 	sendurlback v _origout _origerr url _htmlshim = do
 		recordUrl url

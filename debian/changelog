@@ -1,3 +1,10 @@
+git-annex (4.20131025) UNRELEASED; urgency=low
+
+  * assistant: When autostarted, wait 5 seconds before running the startup
+    scan, to avoid contending with the user's desktop login process.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 26 Oct 2013 12:11:48 -0400
+
 git-annex (4.20131024) unstable; urgency=low
 
   * webapp: Fix bug when adding a remote and git-remote-gcrypt

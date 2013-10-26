@@ -25,15 +25,22 @@ import Utility.NotificationBroadcaster
 import Config
 import qualified Git
 import qualified Utility.Lsof as Lsof
+import Utility.HumanTime
 
 import Data.Time.Clock.POSIX
 
 {- This thread runs once at startup, and most other threads wait for it
  - to finish. (However, the webapp thread does not, to prevent the UI
  - being nonresponsive.) -}
-sanityCheckerStartupThread :: NamedThread
-sanityCheckerStartupThread = namedThreadUnchecked "SanityCheckerStartup" $
-	startupCheck
+sanityCheckerStartupThread :: Maybe Duration -> NamedThread
+sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerStartup" $ do
+	checkStaleGitLocks
+
+	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay
+
+	{- Notify other threads that the startup sanity check is done. -}
+	status <- getDaemonStatus
+	liftIO $ sendNotification $ startupSanityCheckNotifier status
 
 {- This thread wakes up hourly for inxepensive frequent sanity checks. -}
 sanityCheckerHourlyThread :: NamedThread
@@ -79,14 +86,6 @@ waitForNextCheck = do
 		| lastcheck < now = max oneDay $
 			oneDay - truncate (now - lastcheck)
 		| otherwise = oneDay
-
-startupCheck :: Assistant ()
-startupCheck = do
-	checkStaleGitLocks
-
-	{- Notify other threads that the startup sanity check is done. -}
-	status <- getDaemonStatus
-	liftIO $ sendNotification $ startupSanityCheckNotifier status
 
 {- It's important to stay out of the Annex monad as much as possible while
  - running potentially expensive parts of this check, since remaining in it

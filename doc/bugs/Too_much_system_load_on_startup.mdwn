@@ -18,3 +18,7 @@ to
 Exec=sleep 5 ionice -c 3 /usr/bin/git-annex assistant --autostart
 
 This delays the start of git-annex for 5 seconds, letting the desktop get started, and forces git-annex to yield IO to other programs -preventing it from slowing them down by forcing them to wait for disk access. Since this is a background daemon with potentially high IO usage, but no need for quick responsiveness, perhaps that would make a decent default?
+
+> Added 5 second delay to existing ionice. Provisionally [[done]],
+> although it does occur to me that the startup scan could add some delays
+> in between actions to run more as a batch job. --[[Joey]]
