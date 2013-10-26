@@ -35,9 +35,11 @@ parseDuration = Duration <$$> go 0
   	go n [] = return n
   	go n s = do
 		num <- readish s :: Maybe Integer
-		let (c:rest) = dropWhile isDigit s
-		u <- M.lookup c unitmap
-		go (n + num * u) rest
+		case dropWhile isDigit s of
+			(c:rest) -> do
+				u <- M.lookup c unitmap
+				go (n + num * u) rest
+			_ -> return $ n + num
 
 fromDuration :: Duration -> String
 fromDuration Duration { durationSeconds = d }
