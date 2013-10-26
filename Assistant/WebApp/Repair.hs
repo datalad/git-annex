@@ -72,7 +72,7 @@ runRepair u = do
 		when needfsck $
 			backgroundfsck [ Param "--fast" ]
 
-	remoterepair fsckresults = do
+	remoterepair _fsckresults = do
 		error "TODO: remote repair"
 	
 	backgroundfsck params = liftIO $ void $ async $ do
