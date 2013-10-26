@@ -49,3 +49,5 @@ gcrypt:   git config gcrypt.participants YOURKEYID
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
