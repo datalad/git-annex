@@ -1,3 +1,5 @@
+[[!toc]]
+
 git-annex mostly does not use encryption. Anyone with access to a git
 repository can see all the filenames in it, its history, and can access
 any annexed file contents.
