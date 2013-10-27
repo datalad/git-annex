@@ -69,6 +69,8 @@ If git fsck finds problems, launch git repository repair. **done**
 git annex fsck --fast at end of repository repair to ensure
 git-annex branch is accurate. **done**
 
+If syncing with a local repository fails, try to repair it. **done**
+
 TODO: "Repair" gcrypt remotes, by removing all refs and objects,
 and re-pushing. (Since the objects are encrypted data, there is no way
 to pull missing ones from anywhere..) 

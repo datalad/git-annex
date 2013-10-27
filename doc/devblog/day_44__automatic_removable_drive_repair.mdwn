@@ -1,0 +1,16 @@
+Finally got the assistant to repair git repositories on removable drives,
+or other local repos. Mostly this happens entirely automatically, whatever
+data in the git repo on the drive has been corrupted can just be copied
+to it from `~/annex/.git`.
+
+And, the assistant will launch a git fsck of such a repo whenever it fails
+to sync with it, so the user does not even need to schedule periodic fscks.
+Although it's still a good idea, since some git repository problems don't
+prevent syncing from happening.
+
+Watching git annex heal problems like this is quite cool!
+
+One thing I had to defer till later is repairing corrupted gcrypt
+repositories. I don't see a way to do it without deleting all the objects
+in the gcrypt repository, and re-pushing everything. And even doing that
+is tricky, since the `gcrypt-id` needs to stay the same.
