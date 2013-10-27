@@ -69,6 +69,8 @@ data RemoteA a = Remote {
 	-- without transferring all the data to the local repo
 	-- The parameters are passed to the fsck command on the remote.
 	remoteFsck :: Maybe ([CommandParam] -> a (IO Bool)),
+	-- Runs an action to repair the remote's git repository.
+	repairRepo :: Maybe (a Bool -> a (IO Bool)),
 	-- a Remote has a persistent configuration store
 	config :: RemoteConfig,
 	-- git repo for the Remote

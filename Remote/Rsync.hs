@@ -80,6 +80,7 @@ gen r u c gc = do
 			, hasKeyCheap = False
 			, whereisKey = Nothing
 			, remoteFsck = Nothing
+			, repairRepo = Nothing
 			, config = M.empty
 			, repo = r
 			, gitconfig = gc

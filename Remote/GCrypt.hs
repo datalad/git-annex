@@ -108,6 +108,7 @@ gen' r u c gc = do
 		, hasKeyCheap = repoCheap r
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
+		, repairRepo = Nothing
 		, config = M.empty
 		, localpath = localpathCalc r
 		, repo = r

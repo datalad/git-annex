@@ -59,8 +59,6 @@ call it for non-local remotes.
 
 Add git fsck to scheduled self fsck **done**
 
-TODO: Add git fsck of local remotes to scheduled remote fscks.
-
 TODO: git fsck on ssh remotes? Probably not worth the complexity..
 
 TODO: If committing to the repository fails, after resolving any dangling
@@ -70,6 +68,11 @@ If git fsck finds problems, launch git repository repair. **done**
 
 git annex fsck --fast at end of repository repair to ensure
 git-annex branch is accurate. **done**
+
+TODO: "Repair" gcrypt remotes, by removing all refs and objects,
+and re-pushing. (Since the objects are encrypted data, there is no way
+to pull missing ones from anywhere..) 
+Need to preserve gcrypt-id while doing this!
 
 TODO: along with displaying alert when there is a problem detected
 by consistency check, send an email alert. (Using system MTA?)

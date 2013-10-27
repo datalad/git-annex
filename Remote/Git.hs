@@ -117,6 +117,9 @@ gen r u c gc
 			, remoteFsck = if Git.repoIsUrl r
 				then Nothing
 				else Just $ fsckOnRemote r
+			, repairRepo = if Git.repoIsUrl r
+				then Nothing
+				else Just $ repairRemote r
 			, config = M.empty
 			, localpath = localpathCalc r
 			, repo = r
@@ -418,6 +421,10 @@ fsckOnRemote r params
 			, ("GIT_DIR", Git.localGitDir r')
 			] ++ env
 		batchCommandEnv program (Param "fsck" : params) (Just env')
+
+{- The passed repair action is run in the Annex monad of the remote. -}
+repairRemote :: Git.Repo -> Annex Bool -> Annex (IO Bool)
+repairRemote r a = return $ Remote.Git.onLocal r a
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}

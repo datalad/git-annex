@@ -124,9 +124,13 @@ explodePacks r = do
 
 {- Try to retrieve a set of missing objects, from the remotes of a
  - repository. Returns any that could not be retreived.
+ - 
+ - If another clone of the repository exists locally, which might not be a
+ - remote of the repo being repaired, its path can be passed as a reference
+ - repository.
  -}
-retrieveMissingObjects :: MissingObjects -> Repo -> IO MissingObjects
-retrieveMissingObjects missing r
+retrieveMissingObjects :: MissingObjects -> Maybe FilePath -> Repo -> IO MissingObjects
+retrieveMissingObjects missing referencerepo r
 	| S.null missing = return missing
 	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
 		unlessM (boolSystem "git" [Params "init", File tmpdir]) $
@@ -137,12 +141,19 @@ retrieveMissingObjects missing r
 			then return stillmissing
 			else pullremotes tmpr (remotes r) fetchallrefs stillmissing
   where
-	pullremotes _tmpr [] _ stillmissing = return stillmissing
+	pullremotes tmpr [] fetchrefs stillmissing = case referencerepo of
+		Nothing -> return stillmissing
+		Just p -> ifM (fetchfrom p fetchrefs tmpr)
+			( do
+				void $ copyObjects tmpr r
+				findMissing (S.toList stillmissing) r
+			, return stillmissing
+			)
 	pullremotes tmpr (rmt:rmts) fetchrefs s
 		| S.null s = return s
 		| otherwise = do
 			putStrLn $ "Trying to recover missing objects from remote " ++ repoDescribe rmt
-			ifM (fetchsome rmt fetchrefs tmpr)
+			ifM (fetchfrom (repoLocation rmt) fetchrefs tmpr)
 				( do
 					void $ copyObjects tmpr r
 					stillmissing <- findMissing (S.toList s) r
@@ -155,9 +166,9 @@ retrieveMissingObjects missing r
 						]
 					pullremotes tmpr rmts fetchrefs s
 				)
-	fetchsome rmt ps = runBool $
+	fetchfrom fetchurl ps = runBool $
 		[ Param "fetch"
-		, Param (repoLocation rmt)
+		, Param fetchurl
 		, Params "--force --update-head-ok --quiet"
 		] ++ ps
 	-- fetch refs and tags
@@ -427,14 +438,15 @@ runRepair forced g = do
 	putStrLn "Running git fsck ..."
 	fsckresult <- findBroken False g
 	if foundBroken fsckresult
-		then runRepairOf fsckresult forced g
+		then runRepairOf fsckresult forced Nothing g
 		else do
 			putStrLn "No problems found."
 			return (True, S.empty, [])
-runRepairOf :: FsckResults -> Bool -> Repo -> IO (Bool, MissingObjects, [Branch])
-runRepairOf fsckresult forced g = do
+
+runRepairOf :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, MissingObjects, [Branch])
+runRepairOf fsckresult forced referencerepo g = do
 	missing <- cleanCorruptObjects fsckresult g
-	stillmissing <- retrieveMissingObjects missing g
+	stillmissing <- retrieveMissingObjects missing referencerepo g
 	if S.null stillmissing
 		then successfulfinish stillmissing []
 		else do

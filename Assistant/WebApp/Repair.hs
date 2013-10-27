@@ -11,7 +11,8 @@ module Assistant.WebApp.Repair where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.RepoList
-import Remote (prettyUUID)
+import Remote (prettyUUID, remoteFromUUID)
+import Annex.UUID (getUUID)
 import Assistant.Repair
 
 getRepairRepositoryR :: UUID -> Handler Html
@@ -19,13 +20,15 @@ getRepairRepositoryR = postRepairRepositoryR
 postRepairRepositoryR :: UUID -> Handler Html
 postRepairRepositoryR u = page "Repair repository" Nothing $ do
 	repodesc <- liftAnnex $ prettyUUID u
+	repairingmainrepo <- (==) u <$> liftAnnex getUUID
 	$(widgetFile "control/repairrepository")
 
 getRepairRepositoryRunR :: UUID -> Handler Html
 getRepairRepositoryRunR = postRepairRepositoryRunR
 postRepairRepositoryRunR :: UUID -> Handler Html
 postRepairRepositoryRunR u = do
-	void $ liftAssistant $ runRepair u True
+	r <- liftAnnex $ remoteFromUUID u
+	void $ liftAssistant $ runRepair u r True
 	page "Repair repository" Nothing $ do
 		let repolist = repoListDisplay $
 			mainRepoSelector { nudgeAddMore = True }

@@ -177,6 +177,12 @@ fsckAlert button n = baseActivityAlert
 brokenRepositoryAlert :: AlertButton -> Alert
 brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"
 
+repairingAlert :: String -> Alert
+repairingAlert repodesc = activityAlert Nothing
+	[ Tensed "Attempting to repair" "Repaired"
+	, UnTensed $ T.pack repodesc
+	]
+
 pairingAlert :: AlertButton -> Alert
 pairingAlert button = baseActivityAlert
 	{ alertData = [ UnTensed "Pairing in progress" ]

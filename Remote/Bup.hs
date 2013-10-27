@@ -64,6 +64,7 @@ gen r u c gc = do
 		, hasKeyCheap = bupLocal buprepo
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
+		, repairRepo = Nothing
 		, config = c
 		, repo = r
 		, gitconfig = gc

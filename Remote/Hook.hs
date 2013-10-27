@@ -53,6 +53,7 @@ gen r u c gc = do
 			hasKeyCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
+			repairRepo = Nothing,
 			config = M.empty,
 			localpath = Nothing,
 			repo = r,

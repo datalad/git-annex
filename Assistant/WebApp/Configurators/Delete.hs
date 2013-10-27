@@ -11,7 +11,6 @@ module Assistant.WebApp.Configurators.Delete where
 
 import Assistant.WebApp.Common
 import Assistant.DeleteRemote
-import Assistant.WebApp.Utility
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
 import Assistant.Sync

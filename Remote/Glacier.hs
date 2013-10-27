@@ -60,6 +60,7 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			hasKeyCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
+			repairRepo = Nothing,
 			config = c,
 			repo = r,
 			gitconfig = gc,

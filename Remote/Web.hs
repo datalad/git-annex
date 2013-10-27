@@ -57,6 +57,7 @@ gen r _ _ gc =
 		hasKeyCheap = False,
 		whereisKey = Just getUrls,
 		remoteFsck = Nothing,
+		repairRepo = Nothing,
 		config = M.empty,
 		gitconfig = gc,
 		localpath = Nothing,

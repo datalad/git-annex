@@ -28,12 +28,14 @@ import Logs.Transfer
 import Assistant.Types.UrlRenderer
 import Assistant.Alert
 import Remote
+import qualified Types.Remote as Remote
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
 #endif
 import Git.Remote (RemoteName)
 import qualified Git.Fsck
 import Assistant.Repair
+import qualified Git
 
 import Control.Concurrent.Async
 import Control.Concurrent.MVar
@@ -186,34 +188,39 @@ runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
 	program <- liftIO $ readProgramFile
 	g <- liftAnnex gitRepo
 	fsckresults <- showFscking urlrenderer Nothing $ tryNonAsync $ do
-		r <- Git.Fsck.findBroken True g
 		void $ batchCommand program (Param "fsck" : annexFsckParams d)
-		return r
-	when (Git.Fsck.foundBroken fsckresults) $
-		brokenRepositoryDetected fsckresults urlrenderer
-			=<< liftAnnex getUUID
+		Git.Fsck.findBroken True g
+	u <- liftAnnex getUUID
+	repairWhenNecessary urlrenderer u Nothing fsckresults
 	mapM_ reget =<< liftAnnex (dirKeys gitAnnexBadDir)
   where
 	reget k = queueTransfers "fsck found bad file; redownloading" Next k Nothing Download
-runActivity' urlrenderer (ScheduledRemoteFsck u s d) = go =<< liftAnnex (remoteFromUUID u)
+runActivity' urlrenderer (ScheduledRemoteFsck u s d) = handle =<< liftAnnex (remoteFromUUID u)
   where
-	go (Just r) = void $ case Remote.remoteFsck r of
-		Nothing -> void $ showFscking urlrenderer (Just $ Remote.name r) $ tryNonAsync $ do
+	handle Nothing = debug ["skipping remote fsck of uuid without a configured remote", fromUUID u, fromSchedule s]
+	handle (Just rmt) = void $ case Remote.remoteFsck rmt of
+		Nothing -> go rmt $ do
 			program <- readProgramFile
-			batchCommand program $ 
+			void $ batchCommand program $ 
 				[ Param "fsck"
 				-- avoid downloading files
 				, Param "--fast"
 				, Param "--from"
-				, Param $ Remote.name r
+				, Param $ Remote.name rmt
 				] ++ annexFsckParams d
-		Just mkfscker ->
+		Just mkfscker -> do
 			{- Note that having mkfsker return an IO action
 			 - avoids running a long duration fsck in the
 			 - Annex monad. -}
-			void . showFscking urlrenderer (Just $ Remote.name r) . tryNonAsync
-				=<< liftAnnex (mkfscker (annexFsckParams d))
-	go Nothing = debug ["skipping remote fsck of uuid without a configured remote", fromUUID u, fromSchedule s]
+			go rmt =<< liftAnnex (mkfscker (annexFsckParams d))
+	go rmt annexfscker = do
+		fsckresults <- showFscking urlrenderer (Just $ Remote.name rmt) $ tryNonAsync $ do
+			void annexfscker
+			let r = Remote.repo rmt
+			if Git.repoIsLocal r && not (Git.repoIsLocalUnknown r)
+				then Just <$> Git.Fsck.findBroken True r
+				else pure Nothing
+		maybe noop (repairWhenNecessary urlrenderer u (Just rmt)) fsckresults
 
 showFscking :: UrlRenderer -> Maybe RemoteName -> IO (Either E.SomeException a) -> Assistant a
 showFscking urlrenderer remotename a = do
