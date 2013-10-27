@@ -8,10 +8,12 @@ machine dies?
 h2. I have done the following:
 
 1. copied my ssh public key to a remote server
-1. created a directory and started git annex assistant 
-    mkdir ~/test_annex
-    cd ~/test_annex
-    git annex webapp
+1. created a directory and started git annex assistant
+ 
+   mkdir ~/test_annex
+   cd ~/test_annex
+   git annex webapp
+
 1. clicked Repository->Add another local repository
 1. Assistant: Where do you want to put this new repository? Me: ~/test_annex "Make Repository"
 1. Assistant "Combine repositories?" Me: "Keep repositories separate"
