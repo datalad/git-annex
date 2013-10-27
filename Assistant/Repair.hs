@@ -33,24 +33,21 @@ import Control.Concurrent.Async
 
 {- When the FsckResults require a repair, tries to do a non-destructive
  - repair. If that fails, pops up an alert. -}
-repairWhenNecessary :: UrlRenderer -> UUID -> Maybe Remote -> FsckResults -> Assistant ()
+repairWhenNecessary :: UrlRenderer -> UUID -> Maybe Remote -> FsckResults -> Assistant Bool
 repairWhenNecessary urlrenderer u mrmt fsckresults
 	| foundBroken fsckresults = do
 		liftAnnex $ writeFsckResults u fsckresults
 		repodesc <- liftAnnex $ Remote.prettyUUID u
-		handle =<< alertDuring (repairingAlert repodesc)
+		ok <- alertWhile (repairingAlert repodesc)
 			(runRepair u mrmt False)
-	| otherwise = noop
-  where
-	handle True = return ()
-	handle False = do
 #ifdef WITH_WEBAPP
-		button <- mkAlertButton True (T.pack "Click Here") urlrenderer $
-			RepairRepositoryR u
-		void $ addAlert $ brokenRepositoryAlert button
-#else
-		return ()
+		unless ok $ do
+			button <- mkAlertButton True (T.pack "Click Here") urlrenderer $
+				RepairRepositoryR u
+			void $ addAlert $ brokenRepositoryAlert button
+		return ok
 #endif
+	| otherwise = return False
 
 runRepair :: UUID -> Maybe Remote -> Bool -> Assistant Bool
 runRepair u mrmt destructiverepair = do

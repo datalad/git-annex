@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE DeriveDataTypeable, CPP #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 module Assistant.Threads.Cronner (
 	cronnerThread
@@ -29,10 +29,6 @@ import Assistant.Types.UrlRenderer
 import Assistant.Alert
 import Remote
 import qualified Types.Remote as Remote
-#ifdef WITH_WEBAPP
-import Assistant.WebApp.Types
-#endif
-import Git.Remote (RemoteName)
 import qualified Git.Fsck
 import Assistant.Repair
 import qualified Git
@@ -43,8 +39,6 @@ import Data.Time.LocalTime
 import Data.Time.Clock
 import qualified Data.Map as M
 import qualified Data.Set as S
-import qualified Control.Exception as E
-import qualified Data.Text as T
 
 {- Loads schedules for this repository, and fires off one thread for each 
  - scheduled event that runs on this repository. Each thread sleeps until
@@ -191,7 +185,7 @@ runActivity' urlrenderer (ScheduledSelfFsck _ d) = do
 		void $ batchCommand program (Param "fsck" : annexFsckParams d)
 		Git.Fsck.findBroken True g
 	u <- liftAnnex getUUID
-	repairWhenNecessary urlrenderer u Nothing fsckresults
+	void $ repairWhenNecessary urlrenderer u Nothing fsckresults
 	mapM_ reget =<< liftAnnex (dirKeys gitAnnexBadDir)
   where
 	reget k = queueTransfers "fsck found bad file; redownloading" Next k Nothing Download
@@ -220,18 +214,7 @@ runActivity' urlrenderer (ScheduledRemoteFsck u s d) = handle =<< liftAnnex (rem
 			if Git.repoIsLocal r && not (Git.repoIsLocalUnknown r)
 				then Just <$> Git.Fsck.findBroken True r
 				else pure Nothing
-		maybe noop (repairWhenNecessary urlrenderer u (Just rmt)) fsckresults
-
-showFscking :: UrlRenderer -> Maybe RemoteName -> IO (Either E.SomeException a) -> Assistant a
-showFscking urlrenderer remotename a = do
-#ifdef WITH_WEBAPP
-	button <- mkAlertButton False (T.pack "Configure") urlrenderer ConfigFsckR
-	r <- alertDuring (fsckAlert button remotename) $
-		liftIO a
-	either (liftIO . E.throwIO) return r
-#else
-	a
-#endif
+		maybe noop (void . repairWhenNecessary urlrenderer u (Just rmt)) fsckresults
 
 annexFsckParams :: Duration -> [CommandParam]
 annexFsckParams d =

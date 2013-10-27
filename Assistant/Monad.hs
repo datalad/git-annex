@@ -39,6 +39,7 @@ import Assistant.Types.Pushes
 import Assistant.Types.BranchChange
 import Assistant.Types.Commits
 import Assistant.Types.Changes
+import Assistant.Types.RemoteProblem
 import Assistant.Types.Buddies
 import Assistant.Types.NetMessager
 import Assistant.Types.ThreadName
@@ -63,6 +64,7 @@ data AssistantData = AssistantData
 	, failedPushMap :: FailedPushMap
 	, commitChan :: CommitChan
 	, changePool :: ChangePool
+	, remoteProblemChan :: RemoteProblemChan
 	, branchChangeHandle :: BranchChangeHandle
 	, buddyList :: BuddyList
 	, netMessager :: NetMessager
@@ -80,6 +82,7 @@ newAssistantData st dstatus = AssistantData
 	<*> newFailedPushMap
 	<*> newCommitChan
 	<*> newChangePool
+	<*> newRemoteProblemChan
 	<*> newBranchChangeHandle
 	<*> newBuddyList
 	<*> newNetMessager

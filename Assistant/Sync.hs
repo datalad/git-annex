@@ -33,6 +33,7 @@ import Assistant.NamedThread
 import Assistant.Threads.Watcher (watchThread, WatcherControl(..))
 import Assistant.TransferSlots
 import Assistant.TransferQueue
+import Assistant.RemoteProblem
 import Logs.Transfer
 
 import Data.Time.Clock
@@ -59,11 +60,14 @@ import Control.Concurrent
 reconnectRemotes :: Bool -> [Remote] -> Assistant ()
 reconnectRemotes _ [] = noop
 reconnectRemotes notifypushes rs = void $ do
-	rs' <- filterM (checkavailable . Remote.repo) rs
+	rs' <- liftIO $ filterM (Remote.checkAvailable True) rs
 	unless (null rs') $ do
 		modifyDaemonStatus_ $ \s -> s
 			{ desynced = S.union (S.fromList $ map Remote.uuid xmppremotes) (desynced s) }
 		failedrs <- syncAction rs' (const go)
+		forM_ failedrs $ \r ->
+			whenM (liftIO $ Remote.checkAvailable False r) $
+				remoteHasProblem r
 		mapM_ signal $ filter (`notElem` failedrs) rs'
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
@@ -90,10 +94,6 @@ reconnectRemotes notifypushes rs = void $ do
 	signal r = liftIO . mapM_ (flip tryPutMVar ())
 		=<< fromMaybe [] . M.lookup (Remote.uuid r) . connectRemoteNotifiers
 			<$> getDaemonStatus
-	checkavailable r
-		| Git.repoIsLocal r || Git.repoIsLocalUnknown r =
-			liftIO $ doesDirectoryExist $ Git.repoPath r
-		| otherwise = return True
 
 {- Updates the local sync branch, then pushes it to all remotes, in
  - parallel, along with the git-annex branch. This is the same

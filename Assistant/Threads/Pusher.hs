@@ -13,6 +13,7 @@ import Assistant.Pushes
 import Assistant.DaemonStatus
 import Assistant.Sync
 import Utility.ThreadScheduler
+import qualified Remote
 import qualified Types.Remote as Remote
 
 {- This thread retries pushes that failed before. -}
@@ -42,7 +43,7 @@ pushThread = namedThread "Pusher" $ runEvery (Seconds 2) <~> do
  - to avoid ugly messages when a removable drive is not attached.
  -}
 pushTargets :: Assistant [Remote]
-pushTargets = liftIO . filterM available =<< candidates <$> getDaemonStatus
+pushTargets = liftIO . filterM (Remote.checkAvailable True)
+	=<< candidates <$> getDaemonStatus
   where
 	candidates = filter (not . Remote.readonly) . syncGitRemotes
-	available = maybe (return True) doesDirectoryExist . Remote.localpath

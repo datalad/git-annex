@@ -19,6 +19,7 @@ import Git.Remote (RemoteName)
 
 import Data.String
 import qualified Data.Text as T
+import qualified Control.Exception as E
 
 #ifdef WITH_WEBAPP
 import Assistant.Monad
@@ -173,6 +174,17 @@ fsckAlert button n = baseActivityAlert
 		Just remotename -> [ UnTensed $ T.pack $ "Consistency check of " ++ remotename ++ " in progress"]
 	, alertButton = Just button
 	}
+
+showFscking :: UrlRenderer -> Maybe RemoteName -> IO (Either E.SomeException a) -> Assistant a
+showFscking urlrenderer remotename a = do
+#ifdef WITH_WEBAPP
+	button <- mkAlertButton False (T.pack "Configure") urlrenderer ConfigFsckR
+	r <- alertDuring (fsckAlert button remotename) $
+		liftIO a
+	either (liftIO . E.throwIO) return r
+#else
+	a
+#endif
 
 brokenRepositoryAlert :: AlertButton -> Alert
 brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"
