@@ -5,7 +5,7 @@ Basically I do not know how to use the data which was copied in case my local
 machine dies?
 
 
-# h2 I have done the following:
+## I have done the following:
 ---
 1. copied my ssh public key to a remote server
 1. created a directory and started git annex assistant
