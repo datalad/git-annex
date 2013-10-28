@@ -48,9 +48,9 @@ options = Option.common ++
 	, Option [] ["smallerthan"] (ReqArg Limit.addSmallerThan paramSize)
 		"match files smaller than a size"
 	, Option [] ["want-get"] (NoArg Limit.Wanted.addWantGet)
-		"match files preferred content wants to get"
+		"match files the repository wants to get"
 	, Option [] ["want-drop"] (NoArg Limit.Wanted.addWantDrop)
-		"match files preferred-content wants to drop"
+		"match files the repository wants to drop"
 	, Option ['T'] ["time-limit"] (ReqArg Limit.addTimeLimit paramTime)
 		"stop after the specified amount of time"
 	, Option [] ["user-agent"] (ReqArg setuseragent paramName)
