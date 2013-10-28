@@ -22,12 +22,13 @@ import qualified Data.Text as T
 import qualified Control.Exception as E
 
 #ifdef WITH_WEBAPP
-import Assistant.Monad
 import Assistant.DaemonStatus
 import Assistant.WebApp.Types
-import Assistant.WebApp
+import Assistant.WebApp (renderUrl)
 import Yesod
 #endif
+import Assistant.Monad
+import Assistant.Types.UrlRenderer
 
 {- Makes a button for an alert that opens a Route. 
  -
@@ -181,10 +182,10 @@ showFscking urlrenderer remotename a = do
 	button <- mkAlertButton False (T.pack "Configure") urlrenderer ConfigFsckR
 	r <- alertDuring (fsckAlert button remotename) $
 		liftIO a
-	either (liftIO . E.throwIO) return r
 #else
-	a
+	r <- liftIO a
 #endif
+	either (liftIO . E.throwIO) return r
 
 brokenRepositoryAlert :: AlertButton -> Alert
 brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"

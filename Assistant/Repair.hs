@@ -26,9 +26,9 @@ import Assistant.DaemonStatus
 import Assistant.Types.UrlRenderer
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
+import qualified Data.Text as T
 #endif
 
-import qualified Data.Text as T
 import Control.Concurrent.Async
 
 {- When the FsckResults require a repair, tries to do a non-destructive
@@ -45,8 +45,8 @@ repairWhenNecessary urlrenderer u mrmt fsckresults
 			button <- mkAlertButton True (T.pack "Click Here") urlrenderer $
 				RepairRepositoryR u
 			void $ addAlert $ brokenRepositoryAlert button
-		return ok
 #endif
+		return ok
 	| otherwise = return False
 
 runRepair :: UUID -> Maybe Remote -> Bool -> Assistant Bool
