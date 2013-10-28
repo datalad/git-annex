@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Command.Content where
+module Command.Wanted where
 
 import Common.Annex
 import Command
@@ -15,7 +15,7 @@ import Logs.PreferredContent
 import qualified Data.Map as M
 
 def :: [Command]
-def = [command "content" (paramPair paramRemote (paramOptional paramExpression)) seek
+def = [command "wanted" (paramPair paramRemote (paramOptional paramExpression)) seek
 	SectionSetup "get or set preferred content expression"]
 
 seek :: [CommandSeek]
@@ -26,7 +26,7 @@ start = parse
   where
   	parse (name:[]) = go name performGet
 	parse (name:expr:[]) = go name $ \uuid -> do
-		showStart "content" name
+		showStart "wanted" name
 		performSet expr uuid
 	parse _ = error "Specify a repository."
 

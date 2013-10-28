@@ -39,7 +39,7 @@ After the setup has finished, it will print the git-annex configure lines.
 The photo name on flickr is currently the GPGHMACSHA1 version.
 
 Run the following command in your annex directory
-   git annex content flickr uuid include=*.jpg or include=*.jpeg or include=*.gif or include=*.png
+   git annex wanted flickr uuid include=*.jpg or include=*.jpeg or include=*.gif or include=*.png
 
 ## Encrypted mode
 The current version base64 encodes all the data, which results in ~35% larger filesize.
@@ -47,7 +47,7 @@ The current version base64 encodes all the data, which results in ~35% larger fi
 I might look into yyenc instead. I'm not sure if it will work in the tEXt field.
 
 Run the following command in your annex directory
-   git annex content flickr exclude=largerthan=30mb
+   git annex wanted flickr exclude=largerthan=30mb
 
 ## Including directories as tags
 Get get each of the directories below the top level git directory added as tags to uploads:

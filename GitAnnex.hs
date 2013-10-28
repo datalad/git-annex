@@ -54,7 +54,7 @@ import qualified Command.Untrust
 import qualified Command.Semitrust
 import qualified Command.Dead
 import qualified Command.Group
-import qualified Command.Content
+import qualified Command.Wanted
 import qualified Command.Schedule
 import qualified Command.Ungroup
 import qualified Command.Vicfg
@@ -118,7 +118,7 @@ cmds = concat
 	, Command.Semitrust.def
 	, Command.Dead.def
 	, Command.Group.def
-	, Command.Content.def
+	, Command.Wanted.def
 	, Command.Schedule.def
 	, Command.Ungroup.def
 	, Command.Vicfg.def

@@ -6,5 +6,5 @@
  content="""
 The example was missing a preferred content setting, without which --auto doesn't copy anything unless needed to satisfy numcopies:
 
-git annex content archivedrive standard
+git annex wanted archivedrive standard
 """]]
