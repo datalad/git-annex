@@ -12,3 +12,6 @@ git's index broke and I was unable to restore it. While this is not git-annex' p
     %
 
 Ttbomk, the softlinks and objects are enough to un-annex the files; side-stepping git's index if necessary.
+
+> `git annex repair` can now repair broken index files and other
+> git repository corruption. [[done]] --[[Joey]]
