@@ -13,6 +13,7 @@ import Common.Annex
 import Limit
 import Utility.Matcher
 import Types.Group
+import Types.Limit
 import Logs.Group
 import Logs.Remote
 import Annex.UUID

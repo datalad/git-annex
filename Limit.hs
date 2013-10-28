@@ -27,6 +27,7 @@ import Types.TrustLevel
 import Types.Key
 import Types.Group
 import Types.FileMatcher
+import Types.Limit
 import Logs.Group
 import Utility.HumanTime
 import Utility.DataUnits
@@ -40,10 +41,6 @@ import System.Path.WildMatch
 import Types.FileMatcher
 #endif
 #endif
-
-type MatchFiles = AssumeNotPresent -> FileInfo -> Annex Bool
-type MkLimit = String -> Either String MatchFiles
-type AssumeNotPresent = S.Set UUID
 
 {- Checks if there are user-specified limits. -}
 limited :: Annex Bool
