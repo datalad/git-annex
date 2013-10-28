@@ -13,7 +13,7 @@ module Assistant.WebApp.Configurators.Ssh where
 import Assistant.WebApp.Common
 import Assistant.WebApp.Gpg
 import Assistant.Ssh
-import Assistant.MakeRemote
+import Assistant.WebApp.MakeRemote
 import Logs.Remote
 import Remote
 import Types.StandardGroups
@@ -21,7 +21,6 @@ import Utility.UserInfo
 import Utility.Gpg
 import Types.Remote (RemoteConfig)
 import Git.Remote
-import Assistant.WebApp.Utility
 import qualified Remote.GCrypt as GCrypt
 import Annex.UUID
 import Logs.UUID

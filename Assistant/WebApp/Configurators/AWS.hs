@@ -10,7 +10,7 @@
 module Assistant.WebApp.Configurators.AWS where
 
 import Assistant.WebApp.Common
-import Assistant.MakeRemote
+import Assistant.WebApp.MakeRemote
 #ifdef WITH_S3
 import qualified Remote.S3 as S3
 #endif
@@ -24,7 +24,6 @@ import Types.StandardGroups
 import Creds
 import Assistant.Gpg
 import Git.Remote
-import Assistant.WebApp.Utility
 
 import qualified Data.Text as T
 import qualified Data.Map as M

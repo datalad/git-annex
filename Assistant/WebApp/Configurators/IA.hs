@@ -14,7 +14,7 @@ import qualified Assistant.WebApp.Configurators.AWS as AWS
 #ifdef WITH_S3
 import qualified Remote.S3 as S3
 import qualified Remote.Helper.AWS as AWS
-import Assistant.MakeRemote
+import Assistant.WebApp.MakeRemote
 #endif
 import qualified Remote
 import qualified Types.Remote as Remote

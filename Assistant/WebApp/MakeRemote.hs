@@ -1,11 +1,14 @@
-{- git-annex assistant webapp utilities
+{- git-annex assistant webapp making remotes
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-module Assistant.WebApp.Utility where
+module Assistant.WebApp.MakeRemote (
+	module Assistant.MakeRemote,
+	module Assistant.WebApp.MakeRemote
+) where
 
 import Assistant.Common
 import Assistant.WebApp.Types

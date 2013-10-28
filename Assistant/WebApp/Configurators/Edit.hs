@@ -12,7 +12,7 @@ module Assistant.WebApp.Configurators.Edit where
 import Assistant.WebApp.Common
 import Assistant.WebApp.Gpg
 import Assistant.DaemonStatus
-import Assistant.MakeRemote (uniqueRemoteName)
+import Assistant.WebApp.MakeRemote (uniqueRemoteName)
 import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
 import Assistant.ScanRemotes
 import Assistant.Sync

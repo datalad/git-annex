@@ -13,12 +13,11 @@ import Assistant.WebApp.Common
 import Creds
 #ifdef WITH_WEBDAV
 import qualified Remote.WebDAV as WebDAV
-import Assistant.MakeRemote
+import Assistant.WebApp.MakeRemote
 import qualified Remote
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.Remote
-import Assistant.WebApp.Utility
 import Git.Remote
 
 import qualified Data.Map as M

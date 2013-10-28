@@ -18,7 +18,7 @@ import qualified Git.Construct
 import qualified Annex.Branch
 import qualified Git.GCrypt
 import qualified Remote.GCrypt as GCrypt
-import Assistant.MakeRemote
+import Assistant.WebApp.MakeRemote
 import Logs.Remote
 
 import qualified Data.Map as M
