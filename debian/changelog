@@ -18,6 +18,15 @@ git-annex (4.20131025) UNRELEASED; urgency=low
     (eg, on removable drives).
   * add: Fix reversion in 4.20130827 when adding unlocked files that have
     not yet been committed.
+  * unannex: New, much slower, but more safe behavior: Copies files out of
+    the annex. This avoids an unannex of one file breaking other files that
+    link to the same content. Also, it means that the content
+    remains in the annex using up space until cleaned up with 
+    "git annex unused".
+    (The behavior of unannex --fast has not changed; it still hard links
+    to content in the annex. --fast was not made the default because it is
+    potentially unsafe; editing such a hard linked file can unexpectedly
+    change content stored in the annex.)
 
  -- Joey Hess <joeyh@debian.org>  Sat, 26 Oct 2013 12:11:48 -0400
 

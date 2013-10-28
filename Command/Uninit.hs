@@ -38,7 +38,7 @@ check = do
 seek :: [CommandSeek]
 seek = 
 	[ withFilesNotInGit $ whenAnnexed startCheckIncomplete
-	, withFilesInGit $ whenAnnexed startUnannex
+	, withFilesInGit $ whenAnnexed Command.Unannex.start
 	, withNothing start
 	]
 
@@ -50,14 +50,6 @@ startCheckIncomplete file _ = error $ unlines
 	, "Perhaps this was left behind by an interrupted git annex add?"
 	, "Not continuing with uninit; either delete or git annex add the file and retry."
 	]
-
-startUnannex :: FilePath -> (Key, Backend) -> CommandStart
-startUnannex file info = do
-	-- Force fast mode before running unannex. This way, if multiple
-	-- files link to a key, it will be left in the annex and hardlinked
-	-- to by each.
-	Annex.changeState $ \s -> s { Annex.fast = True }
-	Command.Unannex.start file info
 
 start :: CommandStart
 start = next $ next $ do

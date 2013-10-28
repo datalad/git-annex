@@ -13,11 +13,11 @@ import Common.Annex
 import Command
 import Config
 import qualified Annex
-import Logs.Location
 import Annex.Content
 import Annex.Content.Direct
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
+import Utility.CopyFile
 
 def :: [Command]
 def = [command "unannex" paramPaths seek SectionUtility
@@ -60,28 +60,24 @@ performIndirect file key = do
 
 cleanupIndirect :: FilePath -> Key -> CommandCleanup
 cleanupIndirect file key = do
+	src <- calcRepo $ gitAnnexLocation key
 	ifM (Annex.getState Annex.fast)
-		( goFast
-		, go
+		( hardlinkfrom src
+		, copyfrom src
 		)
-	return True
   where
-#ifdef mingw32_HOST_OS
-	goFast = go
-#else
-	goFast = do
-		-- fast mode: hard link to content in annex
-		src <- calcRepo $ gitAnnexLocation key
-		-- creating a hard link could fall; fall back to non fast mode
+	copyfrom src = 
+		thawContent file `after` liftIO (copyFileExternal src file)
+	hardlinkfrom src =
+#ifndef mingw32_HOST_OS
+		-- creating a hard link could fall; fall back to copying
 		ifM (liftIO $ catchBoolIO $ createLink src file >> return True)
-			( thawContent file
-			, go
+			( return True
+			, copyfrom src
 			)
+#else
+		copyfrom src
 #endif
-	go = do
-		fromAnnex key file
-		logStatus key InfoMissing
-
 
 performDirect :: FilePath -> Key -> CommandPerform
 performDirect file key = do

@@ -673,16 +673,20 @@ subdirectories).
 
 * `unannex [path ...]`
 
-  Use this to undo an accidental `git annex add` command. You can use
-  `git annex unannex` to move content out of the annex at any point,
-  even if you've already committed it.
+  Use this to undo an accidental `git annex add` command. It puts the
+  file back how it was before the add.
+
+  Note that for safety, the content of the file remains in the annex (as a
+  hard link), until you use `git annex unused` and `git annex dropunused`.
 
   This is not the command you should use if you intentionally annexed a
   file and don't want its contents any more. In that case you should use
   `git annex drop` instead, and you can also `git rm` the file.
 
-  In `--fast` mode, this command leaves content in the annex, simply making
-  a hard link to it.
+  Normally this does a slow copy of the file. In `--fast` mode, it
+  instead makes a hard link from the file to the content in the annex.
+  But use --fast mode with caution, because editing the file will
+  change the content in the annex.
 
 * `uninit`
 

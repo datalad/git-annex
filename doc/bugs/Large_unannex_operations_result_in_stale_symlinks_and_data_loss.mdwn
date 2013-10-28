@@ -48,3 +48,10 @@ For this reason, it seems likely this is due to some sort of race condition.
 This is on Ubuntu 12.04 with git-annex revision a1e2bc4.
 
 
+> There was no good soluton to this, so I picked a bad one that 
+> will not have users complainging git-annex ate their data.
+> They will complain that `git annex unannex` is slow since it now copies
+> the file, and  perhaps instead use --fast, and hopefully avoid destroying
+> their own data by editing the resulting hard links.
+> 
+> [[done]] --[[Joey]] 
