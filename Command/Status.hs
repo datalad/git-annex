@@ -126,7 +126,7 @@ global_slow_stats =
 	, bad_data_size
 	, local_annex_keys
 	, local_annex_size
-	, known_annex_keys
+	, known_annex_files
 	, known_annex_size
 	, bloom_info
 	, backend_usage
@@ -136,7 +136,7 @@ local_fast_stats =
 	[ local_dir
 	, const local_annex_keys
 	, const local_annex_size
-	, const known_annex_keys
+	, const known_annex_files
 	, const known_annex_size
 	]
 local_slow_stats :: [FilePath -> Stat]
@@ -183,21 +183,21 @@ remote_list level = stat n $ nojson $ lift $ do
 local_dir :: FilePath -> Stat
 local_dir dir = stat "directory" $ json id $ return dir
 
-local_annex_size :: Stat
-local_annex_size = stat "local annex size" $ json id $
-	showSizeKeys <$> cachedPresentData
-
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $ json show $
 	countKeys <$> cachedPresentData
 
-known_annex_size :: Stat
-known_annex_size = stat "known annex size" $ json id $
-	showSizeKeys <$> cachedReferencedData
+local_annex_size :: Stat
+local_annex_size = stat "local annex size" $ json id $
+	showSizeKeys <$> cachedPresentData
 
-known_annex_keys :: Stat
-known_annex_keys = stat "known annex items" $ json show $
+known_annex_files :: Stat
+known_annex_files = stat "annexed files in working tree" $ json show $
 	countKeys <$> cachedReferencedData
+
+known_annex_size :: Stat
+known_annex_size = stat "size of annexed files in working tree" $ json id $
+	showSizeKeys <$> cachedReferencedData
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
@@ -360,7 +360,7 @@ showSizeKeys d = total ++ missingnote
 		| unknownSizeKeys d == 0 = ""
 		| otherwise = aside $
 			"+ " ++ show (unknownSizeKeys d) ++
-			" keys of unknown size"
+			" unknown size"
 
 staleSize :: String -> (Git.Repo -> FilePath) -> Stat
 staleSize label dirspec = go =<< lift (dirKeys dirspec)
