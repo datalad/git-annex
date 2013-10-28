@@ -96,7 +96,8 @@ withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> CommandSeek
 withFilesUnlocked' typechanged a params = prepFiltered a unlockedfiles
   where
-  	check f = liftIO (notSymlink f) <&&> isJust <$> catKeyFileHEAD f
+  	check f = liftIO (notSymlink f) <&&> 
+		(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 	unlockedfiles = filterM check =<< seekHelper typechanged params
 
 {- Finds files that may be modified. -}

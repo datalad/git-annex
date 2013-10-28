@@ -12,6 +12,8 @@ git-annex (4.20131025) UNRELEASED; urgency=low
     be done without losing data.
   * assistant: Support repairing git remotes that are locally accessible
     (eg, on removable drives).
+  * add: Fix reversion in 4.20130827 when adding unlocked files that have
+    not yet been committed.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 26 Oct 2013 12:11:48 -0400
 
