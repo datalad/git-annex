@@ -139,7 +139,7 @@ notEnoughCopies key need have skip bad = do
 	unsafe = showNote "unsafe"
 	hint = showLongNote "(Use --force to override this check, or adjust annex.numcopies.)"
 
-{- In auto mode, only runs the action if there are enough copies
+{- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories.
  -
  - Passes any numcopies attribute of the file on to the action as an

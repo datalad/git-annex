@@ -1,6 +1,9 @@
 git-annex (4.20131025) UNRELEASED; urgency=low
 
   * The "git annex content" command is renamed to "git annex wanted".
+  * New --want-get and --want-drop options which can be used to
+    test preferred content settings.
+    For example, "git annex find --in . --want-drop"
   * assistant: When autostarted, wait 5 seconds before running the startup
     scan, to avoid contending with the user's desktop login process.
   * webapp: When setting up a bare shared repository, enable non-fast-forward

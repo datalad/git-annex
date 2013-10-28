@@ -84,6 +84,16 @@ The name of the directory can be configured using
 
 (If no directory name is configured, it uses "public" by default.)
 
+## testing preferred content settings
+
+To check at the command line which files are matched by preferred content
+settings, you can use the --want-get and --want-drop options.
+
+For example, "git annex find --want-get --not --in ." will find all the
+files that "git annex get --auto" will want to get, and "git annex find
+--want-drop --in ." will find all the files that "git annex drop --auto"
+will want to drop.
+
 ## standard expressions
 
 git-annex comes with some standard preferred content expressions, that can

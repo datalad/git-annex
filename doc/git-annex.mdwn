@@ -947,6 +947,18 @@ file contents are present at either of two repositories.
   The size can be specified with any commonly used units, for example,
   "0.5 gb" or "100 KiloBytes"
 
+* `--want-get`
+
+  Matches files that the preferred content settings for the repository
+  make it want to get. Note that this will match even files that are
+  already present, unless limited with eg, `--not --in .`
+
+* `--want-drop`
+
+  Matches files that the preferred content settings for the repository
+  make it want to drop. Note that this will match even files that have
+  already been dropped, unless limited with eg, `--in .`
+
 * `--not`
 
   Inverts the next file matching option. For example, to only act on
