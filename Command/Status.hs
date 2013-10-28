@@ -196,7 +196,7 @@ known_annex_size = stat "known annex size" $ json id $
 	showSizeKeys <$> cachedReferencedData
 
 known_annex_keys :: Stat
-known_annex_keys = stat "known annex keys" $ json show $
+known_annex_keys = stat "known annex items" $ json show $
 	countKeys <$> cachedReferencedData
 
 tmp_size :: Stat
