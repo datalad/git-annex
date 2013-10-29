@@ -5,14 +5,14 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Assistant.Types.RemoteProblem where
+module Assistant.Types.RepoProblem where
 
 import Types
 import Utility.TList
 
 import Control.Concurrent.STM
 
-type RemoteProblemChan = TList Remote
+type RepoProblemChan = TList UUID
 
-newRemoteProblemChan :: IO RemoteProblemChan
-newRemoteProblemChan = atomically newTList
+newRepoProblemChan :: IO RepoProblemChan
+newRepoProblemChan = atomically newTList

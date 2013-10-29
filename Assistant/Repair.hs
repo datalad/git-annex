@@ -28,6 +28,8 @@ import Assistant.Types.UrlRenderer
 import Assistant.WebApp.Types
 import qualified Data.Text as T
 #endif
+import qualified Utility.Lsof as Lsof
+import Utility.ThreadScheduler
 
 import Control.Concurrent.Async
 
@@ -105,3 +107,43 @@ runRepair u mrmt destructiverepair = do
 	backgroundfsck params = liftIO $ void $ async $ do
 		program <- readProgramFile
 		batchCommand program (Param "fsck" : params)
+
+{- Detect when a git lock file exists and has no git process currently
+ - writing to it. This strongly suggests it is a stale lock file.
+ -
+ - However, this could be on a network filesystem. Which is not very safe
+ - anyway (the assistant relies on being able to check when files have
+ - no writers to know when to commit them). Just in case, when the lock
+ - file appears stale, we delay for one minute, and check its size. If
+ - the size changed, delay for another minute, and so on. This will at
+ - least work to detect is another machine is writing out a new index
+ - file, since git does so by writing the new content to index.lock.
+ -}
+checkStaleGitLocks :: Assistant ()
+checkStaleGitLocks = do
+	lockfiles <- filter (not . isInfixOf "gc.pid") 
+		. filter (".lock" `isSuffixOf`)
+		<$> (liftIO . dirContentsRecursiveSkipping (== dropTrailingPathSeparator annexDir)
+			=<< liftAnnex (fromRepo Git.localGitDir))
+	checkStaleLocks lockfiles
+checkStaleLocks :: [FilePath] -> Assistant ()
+checkStaleLocks lockfiles = go =<< getsizes
+  where
+  	getsize lf = catchMaybeIO $ 
+		(\s -> (lf, fileSize s)) <$> getFileStatus lf
+  	getsizes = liftIO $ catMaybes <$> mapM getsize lockfiles
+	go [] = return ()
+	go l = ifM (liftIO $ null <$> Lsof.query ("--" : map fst l))
+		( do
+			waitforit "to check stale git lock file"
+			l' <- getsizes
+			if l' == l
+				then liftIO $ mapM_ nukeFile (map fst l)
+				else go l'
+		, do
+			waitforit "for git lock file writer"
+			go =<< getsizes
+		)
+	waitforit why = do
+		notice ["Waiting for 60 seconds", why]
+		liftIO $ threadDelaySeconds $ Seconds 60

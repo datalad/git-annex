@@ -33,7 +33,7 @@ import Assistant.NamedThread
 import Assistant.Threads.Watcher (watchThread, WatcherControl(..))
 import Assistant.TransferSlots
 import Assistant.TransferQueue
-import Assistant.RemoteProblem
+import Assistant.RepoProblem
 import Logs.Transfer
 
 import Data.Time.Clock
@@ -67,7 +67,7 @@ reconnectRemotes notifypushes rs = void $ do
 		failedrs <- syncAction rs' (const go)
 		forM_ failedrs $ \r ->
 			whenM (liftIO $ Remote.checkAvailable False r) $
-				remoteHasProblem r
+				repoHasProblem (Remote.uuid r)
 		mapM_ signal $ filter (`notElem` failedrs) rs'
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
