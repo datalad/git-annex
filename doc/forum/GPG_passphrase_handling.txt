@@ -9,4 +9,5 @@ make this post to begin with :))
 Is this behavior normal? What should I do to work around it?
 
 Yes, I am using gpg-agent. When other applications ask for my passphrase I get
-the pinentry dialog from GPGTools, but this isn't the case with git-annex.
+the pinentry dialog from GPGTools, just like I've configured it in
+~/.gnupg/gpg-agent.conf, but this isn't the case with git-annex.
