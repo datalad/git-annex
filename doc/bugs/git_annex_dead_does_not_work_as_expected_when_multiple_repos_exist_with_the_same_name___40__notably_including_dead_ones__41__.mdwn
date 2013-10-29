@@ -6,36 +6,34 @@ I think preferring to mark live repos dead and printing a warning when multiple 
 
 ### What steps will reproduce the problem?
 
-1. Create a new repo /somecopy
+[[!format sh """
+# Create a new repo /somecopy
+git clone /central /somecopy
+cd /somecopy
+git annex init somecopy
+git annex sync
+cd /
 
-    git clone /central /somecopy
-    cd /somecopy
-    git annex init somecopy
-    git annex sync
-    cd /
+# Now, git annex status shows somecopy as an existing repo.
 
-Now, git annex status shows somecopy as an existing repo.
+# Destroy the new repo
+rm -rf /somecopy
+cd /central
+git annex dead somecopy
 
-2. Destroy the new repo
+# git annex status correctly hides somecopy, and it is properly dead.
 
-    rm -rf /somecopy
-    cd /central
-    git annex dead somecopy
+# create it again with the same name, but new UUID
+git clone /central /somecopy
+cd /somecopy
+git annex init somecopy
+git annex sync
+cd /
 
-git annex status correctly hides somecopy, and it is properly dead.
-
-3. create it again with the same name, but new UUID
-
-    git clone /central /somecopy
-    cd /somecopy
-    git annex init somecopy
-    git annex sync
-    cd /
-
-4. Destroy the second repo
-
-    rm -rf /somecopy
-    cd /central
+# Destroy the second repo
+rm -rf /somecopy
+cd /central
+"""]]
 
 Now, git annex dead somecopy will randomly (based on the order of the UUIDs?) choose to mark dead the already dead old repo or the new repo, in both cases showing success to the user.
 
