@@ -1,0 +1,12 @@
+Hello!
+I'm using OSX 10.9 and have installed gpg (and gpg2, if it matters) through
+homebrew and git-annex through cabal.
+
+Whenever I'm trying to add an encrypted remote through the web ui I get a
+lot of "You need a passphrase to unlock the secret key for user:" on stdout
+and, obviously, I can't enter my passphrase (If this was the case I wouldn't
+make this post to begin with :))
+Is this behavior normal? What should I do to avoid it?
+
+Yes, I am using gpg-agent. When other applications ask for my passphrase I get
+the "enter passphrase" dialog from GPGTools, but this isn't the case with git-annex.
