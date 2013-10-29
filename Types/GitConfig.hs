@@ -41,6 +41,7 @@ data GitConfig = GitConfig
 	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
+	, annexFsckNudge :: Bool
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
 	}
@@ -68,6 +69,7 @@ extractGitConfig r = GitConfig
 	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
+	, annexFsckNudge = getbool (annex "fscknudge") True
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
 	}

@@ -132,7 +132,7 @@ startDaemon assistant foreground startdelay listenhost startbrowser = do
 			, assist $ sanityCheckerHourlyThread
 			, assist $ problemFixerThread urlrenderer
 #ifdef WITH_CLIBS
-			, assist $ mountWatcherThread
+			, assist $ mountWatcherThread urlrenderer
 #endif
 			, assist $ netWatcherThread
 			, assist $ netWatcherFallbackThread

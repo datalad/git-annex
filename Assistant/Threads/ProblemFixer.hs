@@ -54,7 +54,7 @@ handleRemoteProblem urlrenderer rmt
 		ifM (liftIO $ checkAvailable True rmt)
 			( do
 				fixedlocks <- repairStaleGitLocks r
-				fsckresults <- showFscking urlrenderer (Just $ Remote.name rmt) $ tryNonAsync $
+				fsckresults <- showFscking urlrenderer (Just rmt) $ tryNonAsync $
 					Git.Fsck.findBroken True r
 				repaired <- repairWhenNecessary urlrenderer (Remote.uuid rmt) (Just rmt) fsckresults
 				return $ fixedlocks || repaired
@@ -66,5 +66,5 @@ handleRemoteProblem urlrenderer rmt
 
 {- This is not yet used, and should probably do a fsck. -}
 handleLocalRepoProblem :: UrlRenderer -> Assistant Bool
-handleLocalRepoProblem urlrenderer = do
+handleLocalRepoProblem _urlrenderer = do
 	repairStaleGitLocks =<< liftAnnex gitRepo

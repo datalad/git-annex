@@ -14,8 +14,9 @@ check that nothing else is using it, fix the problem, and redo the commit.
 * What about local remotes, eg removable drives? git-annex does attempt
   to commit to the git-annex branch of those. It will use the automatic
   fix if any are dangling. It does not commit to the master branch; indeed
-  a removable drive typically has a bare repository. So I think nothing to
-  do here.
+  a removable drive typically has a bare repository.
+  However, it does a scan for broken locks anyway if there's a problem
+  syncing. **done**
 * What about git-annex-shell? If the ssh remote has the assistant running,
   it can take care of it, and if not, it's a server, and perhaps the user
   should be required to fix up if it crashes during a commit. This should
@@ -95,10 +96,10 @@ quite a lot of state.
 
 Or: Display a message whenever a removable drive is detected to have been
 connected. I like this, but what about nudging the main repo? Could do it
-every webapp startup, perhaps?
+every webapp startup, perhaps? **done**
 
 There should be a "No thanks" button that prevents it nudging again for a
-repo.
+repo. **done**
 
 ## git repository repair
 

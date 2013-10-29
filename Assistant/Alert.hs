@@ -15,7 +15,6 @@ import Assistant.Alert.Utility
 import qualified Remote
 import Utility.Tense
 import Logs.Transfer
-import Git.Remote (RemoteName)
 
 import Data.String
 import qualified Data.Text as T
@@ -168,24 +167,53 @@ sanityCheckFixAlert msg = Alert
 	alerthead = "The daily sanity check found and fixed a problem:"
 	alertfoot = "If these problems persist, consider filing a bug report."
 
-fsckAlert :: AlertButton -> Maybe RemoteName -> Alert
-fsckAlert button n = baseActivityAlert
-	{ alertData = case n of
+fsckingAlert :: AlertButton -> Maybe Remote -> Alert
+fsckingAlert button mr = baseActivityAlert
+	{ alertData = case mr of
 		Nothing -> [ UnTensed $ T.pack $ "Consistency check in progress" ]
-		Just remotename -> [ UnTensed $ T.pack $ "Consistency check of " ++ remotename ++ " in progress"]
+		Just r -> [ UnTensed $ T.pack $ "Consistency check of " ++ Remote.name r ++ " in progress"]
 	, alertButton = Just button
 	}
 
-showFscking :: UrlRenderer -> Maybe RemoteName -> IO (Either E.SomeException a) -> Assistant a
-showFscking urlrenderer remotename a = do
+showFscking :: UrlRenderer -> Maybe Remote -> IO (Either E.SomeException a) -> Assistant a
+showFscking urlrenderer mr a = do
 #ifdef WITH_WEBAPP
 	button <- mkAlertButton False (T.pack "Configure") urlrenderer ConfigFsckR
-	r <- alertDuring (fsckAlert button remotename) $
+	r <- alertDuring (fsckingAlert button mr) $
 		liftIO a
 #else
 	r <- liftIO a
 #endif
 	either (liftIO . E.throwIO) return r
+
+notFsckedNudge :: UrlRenderer -> Maybe Remote -> Assistant ()
+#ifdef WITH_WEBAPP
+notFsckedNudge urlrenderer mr = do
+	button <- mkAlertButton True (T.pack "Configure") urlrenderer ConfigFsckR
+	void $ addAlert (notFsckedAlert mr button)
+#else
+notFsckedNudge _ = noop
+#endif
+
+notFsckedAlert :: Maybe Remote -> AlertButton -> Alert
+notFsckedAlert mr button = Alert
+	{ alertHeader = Just $ fromString $ concat
+		[ "You should enable consistency checking to protect your data"
+		, maybe "" (\r -> " in " ++ Remote.name r) mr
+		, "."
+		]
+	, alertIcon = Just InfoIcon
+	, alertPriority = High
+	, alertButton = Just button
+	, alertClosable = True
+	, alertClass = Message
+	, alertMessageRender = renderData
+	, alertCounter = 0
+	, alertBlockDisplay = True
+	, alertName = Just NotFsckedAlert
+	, alertCombiner = Just $ dataCombiner $ \_old new -> new
+	, alertData = []
+	}
 
 brokenRepositoryAlert :: AlertButton -> Alert
 brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"

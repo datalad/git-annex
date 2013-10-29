@@ -22,6 +22,10 @@ import Annex.UUID
 import qualified Remote
 import Assistant.DaemonStatus
 import qualified Annex.Branch
+import Assistant.Fsck
+import Config
+import Git.Config
+import qualified Annex
 
 {- This adds a form to the page. It does not handle posting of the form,
  - because unlike a typical yesod form that posts using the same url
@@ -41,7 +45,7 @@ showFsckForm new activity = do
  - some Annex action on it. -}
 withFsckForm :: (ScheduledActivity -> Annex ()) -> Handler ()
 withFsckForm a = do
-	((res, _form), _enctype) <- runFsckForm False defaultFsck
+	((res, _form), _enctype) <- runFsckForm False $ defaultFsck Nothing
 	case res of
 		FormSuccess activity -> liftAnnex $ a activity
 		_ -> noop
@@ -109,8 +113,9 @@ runFsckForm new activity = case activity of
 		liftAnnex $ 
 			zip <$> (map T.pack <$> Remote.prettyListUUIDs us) <*> pure us
 
-defaultFsck :: ScheduledActivity
-defaultFsck = ScheduledSelfFsck (Schedule Daily AnyTime) (Duration $ 60*60)
+defaultFsck :: Maybe Remote -> ScheduledActivity
+defaultFsck Nothing = ScheduledSelfFsck (Schedule Daily AnyTime) (Duration $ 60*60)
+defaultFsck (Just r) = ScheduledRemoteFsck (Remote.uuid r) (Schedule Daily AnyTime) (Duration $ 60*60)
 
 showFsckStatus :: ScheduledActivity -> Widget
 showFsckStatus activity = do
@@ -122,7 +127,12 @@ getConfigFsckR :: Handler Html
 getConfigFsckR = postConfigFsckR
 postConfigFsckR :: Handler Html
 postConfigFsckR = page "Consistency checks" (Just Configuration) $ do
-	checks <- liftAnnex $ S.toList <$> (scheduleGet =<< getUUID)
+	scheduledchecks <- liftAnnex $
+		S.toList <$> (scheduleGet =<< getUUID)
+	rs <- liftAssistant $
+		filter fsckableRemote . syncRemotes <$> getDaemonStatus
+	recommendedchecks <- liftAnnex $ map defaultFsck
+		<$> filterM (not <$$> checkFscked) (Nothing : map Just rs)
 	$(widgetFile "configurators/fsck")
 
 changeSchedule :: Handler () -> Handler Html
@@ -147,3 +157,39 @@ postChangeActivityR :: UUID -> ScheduledActivity -> Handler Html
 postChangeActivityR u oldactivity = changeSchedule $
 	withFsckForm $ \newactivity -> scheduleChange u $
 			S.insert newactivity . S.delete oldactivity
+
+data FsckPreferences = FsckPreferences
+	{ enableFsckNudge :: Bool
+	}
+
+getFsckPreferences :: Annex FsckPreferences
+getFsckPreferences = FsckPreferences
+	<$> (annexFsckNudge <$> Annex.getGitConfig)
+
+fsckPreferencesAForm :: FsckPreferences -> MkAForm FsckPreferences
+fsckPreferencesAForm def = FsckPreferences
+	<$> areq (checkBoxField `withNote` nudgenote) "Reminders" (Just $ enableFsckNudge def)
+  where
+	nudgenote = [whamlet|Remind me when using repositories that lack consistency checks.|]
+
+runFsckPreferencesForm :: Handler ((FormResult FsckPreferences, Widget), Enctype)
+runFsckPreferencesForm = do
+	prefs <- liftAnnex getFsckPreferences
+	runFormPostNoToken $ renderBootstrap $ fsckPreferencesAForm prefs
+
+showFsckPreferencesForm :: Widget
+showFsckPreferencesForm = do
+	((res, form), enctype) <- liftH $ runFsckPreferencesForm
+	case res of
+		FormSuccess _ -> noop
+		_ -> $(widgetFile "configurators/fsck/preferencesform")
+
+postConfigFsckPreferencesR :: Handler Html
+postConfigFsckPreferencesR = do
+	((res, _form), _enctype) <- runFsckPreferencesForm
+	case res of
+		FormSuccess prefs ->
+			liftAnnex $ setConfig (annexConfig "fscknudge")
+				(boolConfig $ enableFsckNudge prefs)
+		_ -> noop
+	redirect ConfigFsckR

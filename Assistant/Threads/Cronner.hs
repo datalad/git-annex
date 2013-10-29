@@ -29,9 +29,10 @@ import Assistant.Types.UrlRenderer
 import Assistant.Alert
 import Remote
 import qualified Types.Remote as Remote
-import qualified Git.Fsck
-import Assistant.Repair
 import qualified Git
+import qualified Git.Fsck
+import Assistant.Fsck
+import Assistant.Repair
 
 import Control.Concurrent.Async
 import Control.Concurrent.MVar
@@ -55,6 +56,7 @@ import qualified Data.Set as S
  - ones, and kill the threads for deleted ones. -}
 cronnerThread :: UrlRenderer -> NamedThread
 cronnerThread urlrenderer = namedThreadUnchecked "Cronner" $ do
+	fsckNudge urlrenderer Nothing
 	dstatus <- getDaemonStatus
 	h <- liftIO $ newNotificationHandle False (scheduleLogNotifier dstatus)
 	go h M.empty M.empty
@@ -208,7 +210,7 @@ runActivity' urlrenderer (ScheduledRemoteFsck u s d) = handle =<< liftAnnex (rem
 			 - Annex monad. -}
 			go rmt =<< liftAnnex (mkfscker (annexFsckParams d))
 	go rmt annexfscker = do
-		fsckresults <- showFscking urlrenderer (Just $ Remote.name rmt) $ tryNonAsync $ do
+		fsckresults <- showFscking urlrenderer (Just rmt) $ tryNonAsync $ do
 			void annexfscker
 			let r = Remote.repo rmt
 			if Git.repoIsLocal r && not (Git.repoIsLocalUnknown r)

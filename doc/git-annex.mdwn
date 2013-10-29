@@ -1118,6 +1118,11 @@ Here are all the supported configuration settings.
   to close it. On Mac OSX, when not using direct mode this defaults to
   1 second, to work around a bad interaction with software there.
 
+* `annex.fscknudge`
+
+  When set to false, prevents the webapp from reminding you when using
+  repositories that lack consistency checks.
+
 * `annex.autocommit`
 
   Set to false to prevent the git-annex assistant from automatically

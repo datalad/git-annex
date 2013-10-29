@@ -33,8 +33,10 @@ import Data.Time.Clock.POSIX
  - being nonresponsive.) -}
 sanityCheckerStartupThread :: Maybe Duration -> NamedThread
 sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerStartup" $ do
+	{- Stale git locks can prevent commits from happening, etc. -}
 	void $ repairStaleGitLocks =<< liftAnnex gitRepo
 
+	{- If there's a startup delay, it's done here. -}
 	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay
 
 	{- Notify other threads that the startup sanity check is done. -}
