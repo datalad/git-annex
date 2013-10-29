@@ -2,7 +2,7 @@
 
 Creating two repos with the same name causes git annex dead to randomly choose one. This is reasonable except that it can choose to mark an already dead remote dead (as long as it shares the name), causing it to actually do nothing.
 
-I think preferring to mark live repos dead and printing a warning when multiple repos could have been chosen would be a good solution.
+I think preferring to mark live repos dead and printing a warning when multiple repos could have been chosen (or if the repo is already marked dead) would be a good solution.
 
 ### What steps will reproduce the problem?
 
