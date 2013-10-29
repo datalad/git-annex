@@ -62,7 +62,10 @@ Add git fsck to scheduled self fsck **done**
 TODO: git fsck on ssh remotes? Probably not worth the complexity..
 
 TODO: If committing to the repository fails, after resolving any dangling
-lock files (see above), it should git fsck.
+lock files (see above), it should git fsck. This is difficult, because
+git commit will also fail if the commit turns out to be empty, or due to
+other transient problems.. So commit failures are currently ignored by the
+assistant.
 
 If git fsck finds problems, launch git repository repair. **done**
 

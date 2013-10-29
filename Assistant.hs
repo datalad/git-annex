@@ -23,7 +23,7 @@ import Assistant.Threads.TransferWatcher
 import Assistant.Threads.Transferrer
 import Assistant.Threads.SanityChecker
 import Assistant.Threads.Cronner
-import Assistant.Threads.ProblemChecker
+import Assistant.Threads.ProblemFixer
 #ifdef WITH_CLIBS
 import Assistant.Threads.MountWatcher
 #endif
@@ -130,7 +130,7 @@ startDaemon assistant foreground startdelay listenhost startbrowser = do
 			, assist $ daemonStatusThread
 			, assist $ sanityCheckerDailyThread
 			, assist $ sanityCheckerHourlyThread
-			, assist $ problemCheckerThread urlrenderer
+			, assist $ problemFixerThread urlrenderer
 #ifdef WITH_CLIBS
 			, assist $ mountWatcherThread
 #endif

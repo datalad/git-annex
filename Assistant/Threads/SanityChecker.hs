@@ -33,7 +33,7 @@ import Data.Time.Clock.POSIX
  - being nonresponsive.) -}
 sanityCheckerStartupThread :: Maybe Duration -> NamedThread
 sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerStartup" $ do
-	repairStaleGitLocks =<< liftAnnex gitRepo
+	void $ repairStaleGitLocks =<< liftAnnex gitRepo
 
 	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay
 

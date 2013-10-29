@@ -118,13 +118,16 @@ runRepair u mrmt destructiverepair = do
  - the size changed, delay for another minute, and so on. This will at
  - least work to detect is another machine is writing out a new index
  - file, since git does so by writing the new content to index.lock.
+ -
+ - Returns true if locks were cleaned up.
  -}
-repairStaleGitLocks :: Git.Repo -> Assistant ()
+repairStaleGitLocks :: Git.Repo -> Assistant Bool
 repairStaleGitLocks r = do
 	lockfiles <- filter (not . isInfixOf "gc.pid") 
 		. filter (".lock" `isSuffixOf`)
 		<$> liftIO (findgitfiles r)
 	repairStaleLocks lockfiles
+	return $ not $ null lockfiles
   where
 	findgitfiles = dirContentsRecursiveSkipping (== dropTrailingPathSeparator annexDir) . Git.localGitDir
 repairStaleLocks :: [FilePath] -> Assistant ()

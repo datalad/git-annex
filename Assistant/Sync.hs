@@ -67,7 +67,7 @@ reconnectRemotes notifypushes rs = void $ do
 		failedrs <- syncAction rs' (const go)
 		forM_ failedrs $ \r ->
 			whenM (liftIO $ Remote.checkAvailable False r) $
-				repoHasProblem (Remote.uuid r)
+				repoHasProblem (Remote.uuid r) (syncRemote r)
 		mapM_ signal $ filter (`notElem` failedrs) rs'
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
