@@ -41,6 +41,7 @@ handleRemoteProblem :: UrlRenderer -> Remote -> Assistant ()
 handleRemoteProblem urlrenderer rmt
 	| Git.repoIsLocal r && not (Git.repoIsLocalUnknown r) =
 		whenM (liftIO $ checkAvailable True rmt) $ do
+			repairStaleGitLocks r
 			fsckresults <- showFscking urlrenderer (Just $ Remote.name rmt) $ tryNonAsync $
 				Git.Fsck.findBroken True r
 			whenM (repairWhenNecessary urlrenderer (Remote.uuid rmt) (Just rmt) fsckresults) $
@@ -50,4 +51,5 @@ handleRemoteProblem urlrenderer rmt
 	r = Remote.repo rmt
 
 handleLocalRepoProblem :: UrlRenderer -> Assistant ()
-handleLocalRepoProblem urlrenderer = error "TODO"
+handleLocalRepoProblem urlrenderer = do
+	repairStaleGitLocks =<< liftAnnex gitRepo
