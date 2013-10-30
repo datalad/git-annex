@@ -27,3 +27,13 @@ failed
 Yes, I am using gpg-agent. When other applications ask for my passphrase I get
 the pinentry dialog from GPGTools, just like I've configured it in
 ~/.gnupg/gpg-agent.conf, but this isn't the case with git-annex.
+
+If I remove GPGTools from /usr/local/bin with: ``brew link --overwrite gnupg &&
+brew link --overwrite gnupg2'' it works *slightly* better. 
+I get that pinentry dialog I want but when I do a copy I get:
+-----
+$ git annex copy --to rsync.net
+copy MySecretFile (gpg) (checking rsync.net...) (to rsync.net...) gpg: no valid addressees
+gpg: [stdin]: encryption failed: no such user id
+failed
+-----
