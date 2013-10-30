@@ -37,3 +37,8 @@ copy MySecretFile (gpg) (checking rsync.net...) (to rsync.net...) gpg: no valid 
 gpg: [stdin]: encryption failed: no such user id
 failed
 -----
+
+--debug shows me it is executing gpg llke so:
+-----
+gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--batch","--encrypt","--no-encrypt-to","--no-default-recipient","--force-mdc","--no-textmode"]
+-----
