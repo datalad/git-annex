@@ -1,0 +1,18 @@
+Hi,
+
+Here is my setup:
+
+* I have a locally networked server Server-A with a large storage hard drive auto-mounted.
+* I have two personal client computers: Client-A and Client-B.
+* Client-A is my primary (desktop) computer. 
+* Client-B is my secondary (laptop) computer that I use less often.
+* Git-annex is installed on all 3 computers and I use git-annex assistant on both Client-A and Client-B.
+* Both Client-A and Client-B need to share the same repository/files.
+
+
+What is the best or recommended git-annex assistant repository configuration for this setup? Ideally I want Server-A to have a full backup of the shared repository. I currently have a client repository for both Client-A and Client-B. Also, both Client-A and Client-B have a "full backup" repository pointing to the same repository hosted on Server-A. Is this OK? Should only one of the the client's have this repository as a "full backup"? Will this current setup also have git annex assistant auto-sync the repositories between the clients? I have both clients setup right now and they have both successfully cloned the shared repository, but I have noticed that they have yet to sync up modifications made on the other client. An alternative setup I can think of would be to have Client-A keep its current configuration and have Client-B switch the "full backup" repository to be just a "transfer" repository.
+
+I hope my intentions are clear. Please give me your recommendations.
+
+Regards,
+Blake
