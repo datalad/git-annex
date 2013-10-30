@@ -8,6 +8,9 @@ lot of "You need a passphrase to unlock the secret key for user:" on stdout
 and, obviously, I can't enter my passphrase (If this was the case I wouldn't
 make this post to begin with :))
 Is this behavior normal? What should I do to work around it?
+I did also try to not use the web UI by using this command:
+git annex initremote rsync.net type=gcrypt gitrepo=user@host:directory encryption=pubkey keyid=X
+
 Because of this I can't copy files to my remotes. All I get is:
 -----
 You need a passphrase to unlock the secret key for
