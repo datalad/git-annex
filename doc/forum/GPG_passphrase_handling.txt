@@ -5,8 +5,8 @@ https://github.com/joeyh/git-remote-gcrypt like the UI told me.
 
 Whenever I'm trying to add an encrypted remote through the web UI I get a
 lot of "You need a passphrase to unlock the secret key for user:" on stdout
-and, obviously, I can't enter my passphrase (If this was the case I wouldn't
-make this post to begin with :))
+and, obviously, I can't enter my passphrase (If I could I wouldn't make this
+post to begin with :))
 Is this behavior normal? What should I do to work around it?
 I did also try to not use the web UI by using this command:
 git annex initremote rsync.net type=gcrypt gitrepo=user@host:directory encryption=pubkey keyid=X
