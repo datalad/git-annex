@@ -13,6 +13,8 @@ git annex initremote rsync.net type=gcrypt gitrepo=user@host:directory encryptio
 
 Because of this I can't copy files to my remotes. All I get is:
 -----
+$ git annex copy --to rsync.net
+copy MySecretFile (gpg) 
 You need a passphrase to unlock the secret key for
 user: "user"
 4096-bit RSA key, ID X, created 2013-10-01 (main key ID Y)
