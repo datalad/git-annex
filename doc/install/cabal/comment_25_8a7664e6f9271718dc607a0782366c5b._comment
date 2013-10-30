@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="141.138.141.208"
+ subject="Bad version on Hackage"
+ date="2013-10-30T18:56:25Z"
+ content="""
+Quick note: The latest version in the Hackage repository (git-annex-4.20131024) fails to build, due to a faulty version of Assistant/Threads/Cronner.hs. 
+"""]]
