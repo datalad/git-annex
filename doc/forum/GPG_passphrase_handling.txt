@@ -8,6 +8,16 @@ lot of "You need a passphrase to unlock the secret key for user:" on stdout
 and, obviously, I can't enter my passphrase (If this was the case I wouldn't
 make this post to begin with :))
 Is this behavior normal? What should I do to work around it?
+Because of this I can't copy files to my remotes. All I get is:
+-----
+You need a passphrase to unlock the secret key for
+user: "user"
+4096-bit RSA key, ID X, created 2013-10-01 (main key ID Y)
+
+(checking rsync.net...) (to rsync.net...) gpg: no valid addressees
+gpg: [stdin]: encryption failed: No user ID
+failed
+-----
 
 Yes, I am using gpg-agent. When other applications ask for my passphrase I get
 the pinentry dialog from GPGTools, just like I've configured it in
