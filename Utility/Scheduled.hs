@@ -275,13 +275,16 @@ toScheduledTime "any time" = Just AnyTime
 toScheduledTime v = case words v of
 	(s:ampm:[])
 		| map toUpper ampm == "AM" ->
-			go s (\h -> if h == 12 then 0 else h)
+			go s h0
 		| map toUpper ampm == "PM" ->
-			go s (+ 12)
+			go s (\h -> (h0 h) + 12)
 		| otherwise -> Nothing
 	(s:[]) -> go s id
 	_ -> Nothing
   where
+  	h0 h
+		| h == 12 = 0
+		| otherwise = h
   	go :: String -> (Int -> Int) -> Maybe ScheduledTime
 	go s adjust =
 		let (h, m) = separate (== ':') s
@@ -318,8 +321,8 @@ instance Arbitrary ScheduledTime where
 	arbitrary = oneof
 		[ pure AnyTime
 		, SpecificTime 
-			<$> nonNegative arbitrary 
-			<*> nonNegative arbitrary
+			<$> nonNegative arbitrary `suchThat` (<= 23)
+			<*> nonNegative arbitrary `suchThat` (<= 59)
 		]
 
 instance Arbitrary Recurrance where
