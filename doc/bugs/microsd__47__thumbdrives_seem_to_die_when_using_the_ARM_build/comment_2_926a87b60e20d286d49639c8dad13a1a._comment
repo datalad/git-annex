@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="correlation does not imply causation"
+ date="2013-11-01T16:37:31Z"
+ content="""
+I've been using git-annex on thumbdrives for years without problems. It seems more likely to me that you have a general problem with your hardware than that one program that does nothing special is somehow at fault.
+"""]]
