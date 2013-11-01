@@ -11,7 +11,6 @@ import Common.Annex
 import Command
 import qualified Git
 import qualified Git.Command
-import qualified Annex
 import qualified Command.Unannex
 import Init
 import qualified Annex.Branch
