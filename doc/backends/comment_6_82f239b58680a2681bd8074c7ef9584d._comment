@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 6"
+ date="2013-11-01T15:47:26Z"
+ content="""
+Some examples of problems with the raw SHA backends include, IIRC, calibre, and many programs on OSX. These programs look at the extension of the filename the symlink points at.
+"""]]
