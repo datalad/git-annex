@@ -187,7 +187,7 @@ pushRemote remote branch = go =<< needpush
 			ok <- inRepo $ pushBranch remote branch
 			unless ok $ do
 				warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
-				showNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
+				showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
 			return ok
 
 {- Pushes a regular branch like master to a remote. Also pushes the git-annex
