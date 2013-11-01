@@ -321,8 +321,8 @@ instance Arbitrary ScheduledTime where
 	arbitrary = oneof
 		[ pure AnyTime
 		, SpecificTime 
-			<$> nonNegative arbitrary `suchThat` (<= 23)
-			<*> nonNegative arbitrary `suchThat` (<= 59)
+			<$> choose (0, 23)
+			<*> choose (1, 59)
 		]
 
 instance Arbitrary Recurrance where
