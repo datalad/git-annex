@@ -806,7 +806,6 @@ test_uninit env = "git-annex uninit" ~: TestList [inbranch, normal]
 		_ <- git_annex env "uninit" [] -- exit status not checked; does abnormal exit
 		checkregularfile annexedfile
 		doesDirectoryExist ".git" @? ".git vanished in uninit"
-		not <$> doesDirectoryExist ".git/annex" @? ".git/annex still present after uninit"
 
 test_upgrade :: TestEnv -> Test
 test_upgrade env = "git-annex upgrade" ~: intmpclonerepo env $ do
