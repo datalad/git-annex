@@ -1,4 +1,4 @@
-git-annex (4.20131025) UNRELEASED; urgency=low
+git-annex (4.20131101) unstable; urgency=low
 
   * The "git annex content" command is renamed to "git annex wanted".
   * New --want-get and --want-drop options which can be used to
@@ -28,7 +28,7 @@ git-annex (4.20131025) UNRELEASED; urgency=low
     potentially unsafe; editing such a hard linked file can unexpectedly
     change content stored in the annex.)
 
- -- Joey Hess <joeyh@debian.org>  Sat, 26 Oct 2013 12:11:48 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 01 Nov 2013 11:34:27 -0400
 
 git-annex (4.20131024) unstable; urgency=low
 
