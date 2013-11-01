@@ -370,13 +370,13 @@ test_preferred_content env = "git-annex preferred-content" ~: TestCase $ intmpcl
 	git_annex env "get" ["--auto", annexedfile] @? "get --auto of file failed with default preferred content"
 	annexed_notpresent annexedfile
 
-	git_annex env "content" [".", "standard"] @? "set expression to standard failed"
+	git_annex env "wanted" [".", "standard"] @? "set expression to standard failed"
 	git_annex env "group" [".", "client"] @? "set group to standard failed"
 	git_annex env "get" ["--auto", annexedfile] @? "get --auto of file failed for client"
 	annexed_present annexedfile
 	git_annex env "ungroup" [".", "client"] @? "ungroup failed"
 
-	git_annex env "content" [".", "standard"] @? "set expression to standard failed"
+	git_annex env "wanted" [".", "standard"] @? "set expression to standard failed"
 	git_annex env "group" [".", "manual"] @? "set group to manual failed"
 	-- drop --auto with manual leaves the file where it is
 	git_annex env "drop" ["--auto", annexedfile] @? "drop --auto of file failed with manual preferred content"
@@ -388,7 +388,7 @@ test_preferred_content env = "git-annex preferred-content" ~: TestCase $ intmpcl
 	annexed_notpresent annexedfile
 	git_annex env "ungroup" [".", "client"] @? "ungroup failed"
 	
-	git_annex env "content" [".", "exclude=*"] @? "set expression to exclude=* failed"
+	git_annex env "wanted" [".", "exclude=*"] @? "set expression to exclude=* failed"
 	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex env "drop" ["--auto", annexedfile] @? "drop --auto of file failed with exclude=*"
