@@ -1,0 +1,96 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="Super confused"
+ date="2013-11-02T23:30:41Z"
+ content="""
+I think now I'm double- or triple-confused.  Here is me@desktop:~/annex/.git/config:
+
+[[!format sh \"\"\"
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[annex]
+        uuid = 80709bc2-3cbe-434b-b7b9-306278b9a4e9
+        version = 3
+        direct = true
+        fscknudge = true
+[gc]
+        auto = 0
+[remote \"laptop\"]
+        url = ssh://me@git-annex-laptop-me_annex/~/annex/
+        annex-uuid = 946f9095-588b-4421-b66a-4a1e5632ff6b
+        annex-cost = 175.0
+        fetch = +refs/heads/*:refs/remotes/laptop/*
+[remote \"Remote\"]
+        annex-rsyncurl = username@example.net:annex/
+        annex-uuid = 33930bae-63d2-4a52-b330-58872aaeb1bf
+        fetch = 
+        annex-sync = false
+[remote \"backupOndesktop\"]
+        url = /mnt/debian/home/me/annex-backup
+        annex-uuid = 86535965-6ca7-4bf3-89af-bca3a07f96f9
+        fetch = +refs/heads/*:refs/remotes/backupOndesktop/*
+\"\"\"]]
+
+What I have set up (or intended to set up) is:
+
+* Client: me@laptop:~/annex
+* Client: me@desktop:~/annex
+* Transfer: username@example.net:~/annex
+* Full Backup: me@desktop:/mnt/debian/home/me/annex-backup
+
+What I expected was that:
+
+1.  The two Client repos would sync directly over the LAN whenever possible.
+2.  The transfer repo would be used only to sync the laptop and desktop, and then only if my laptop were not on the LAN with my desktop.
+3.  The Full Backup repo would be synced directly with the me@desktop Client repo, within the same system, from one hard disk to the other.
+
+But what I'm seeing is...not quite that.
+
+1.  It's very confusing (to me, at least) that on my desktop system I can look at my annex setup from the \"perspective\" of both local repos.  When I \"switch\" to the other repo, the setup looks different: even the same repos can have different names and descriptions, and can be enabled and disabled independently depending on the \"perspective\"...but their Type is still the same.
+
+2.  Looking from the \"perspective\" of the Full Backup repo, I'm seeing files being transferred to the Transfer repo, even though those files are already present in both Client repos, and even though the webapp says that the Full Backup repo has been synced.  When I disable and reenable the Transfer repo, it starts those transfers over again, even though they aren't necessary.  For example, here is the log from disabling and reenabling the Transfer repo from the \"perspective\" of the Full Backup repo:
+
+[[!format sh \"\"\"
+[2013-11-02 18:24:35 CDT] main: Syncing with example.net_annex 
+(gpg) 
+gpg: Terminated caught ... exiting
+[2013-11-02 18:24:49 CDT] call: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"config\",\"remote.example.net_annex.annex-sync\",\"true\"]
+[2013-11-02 18:24:49 CDT] read: git [\"config\",\"--null\",\"--list\"]
+[2013-11-02 18:24:49 CDT] read: git [\"config\",\"--null\",\"--list\"]
+[2013-11-02 18:24:49 CDT] read: git [\"config\",\"--null\",\"--list\"]
+[2013-11-02 18:24:49 CDT] main: Syncing with example.net_annex 
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"symbolic-ref\",\"HEAD\"]
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"show-ref\",\"refs/heads/master\"]
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"show-ref\",\"git-annex\"]
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"log\",\"refs/heads/git-annex..2c42d607c099b6ec4a20603b809f44d161e42489\",\"--oneline\",\"-n1\"]
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"symbolic-ref\",\"HEAD\"]
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"show-ref\",\"refs/heads/master\"]
+[2013-11-02 18:24:49 CDT] TransferScanner: starting scan of [Remote { name =\"example.net_annex\" }]
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"ls-files\",\"--cached\",\"-z\",\"--\"]
+[2013-11-02 18:24:49 CDT] TransferScanner: queued Upload UUID \"33930bae-63d2-4a52-b330-58872aaeb1bf\" video.flv Nothing : expensive scan found missing object
+[2013-11-02 18:24:49 CDT] Transferrer: Transferring: Upload UUID \"33930bae-63d2-4a52-b330-58872aaeb1bf\" video.flv Nothing
+[2013-11-02 18:24:49 CDT] TransferScanner: queued Upload UUID \"33930bae-63d2-4a52-b330-58872aaeb1bf\" image.jpg Nothing : expensive scan found missing object
+[2013-11-02 18:24:49 CDT] call: /home/me/.bin/git-annex.linux/git-annex [\"transferkeys\",\"--readfd\",\"35\",\"--writefd\",\"34\"]
+[2013-11-02 18:24:49 CDT] TransferScanner: queued Upload UUID \"33930bae-63d2-4a52-b330-58872aaeb1bf\" linux-image-3.8.0-29-generic_3.8.0-29.42_i386.deb Nothing : expensive scan found missing object
+[2013-11-02 18:24:49 CDT] TransferScanner: finished scan of [Remote { name =\"example.net_annex\" }]
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"show-ref\",\"git-annex\"]
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2013-11-02 18:24:49 CDT] read: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"log\",\"refs/heads/git-annex..2c42d607c099b6ec4a20603b809f44d161e42489\",\"--oneline\",\"-n1\"]
+[2013-11-02 18:24:49 CDT] chat: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"cat-file\",\"--batch\"]
+[2013-11-02 18:24:49 CDT] read: git [\"config\",\"--null\",\"--list\"]
+[2013-11-02 18:24:49 CDT] TransferWatcher: transfer starting: Upload UUID \"33930bae-63d2-4a52-b330-58872aaeb1bf\" video.flv Nothing
+(gpg) [2013-11-02 18:24:49 CDT] chat: gpg [\"--batch\",\"--no-tty\",\"--use-agent\",\"--quiet\",\"--trust-model\",\"always\",\"--batch\",\"--passphrase-fd\",\"20\",\"--symmetric\",\"--force-mdc\",\"--no-textmode\"]
+[2013-11-02 18:24:50 CDT] call: git [\"--git-dir=/mnt/debian/home/me/annex-backup/.git\",\"--work-tree=/mnt/debian/home/me/annex-backup\",\"config\",\"remote.example.net_annex.annex-sync\",\"false\"]
+[2013-11-02 18:24:50 CDT] read: git [\"config\",\"--null\",\"--list\"]
+[2013-11-02 18:24:50 CDT] read: git [\"config\",\"--null\",\"--list\"]
+[2013-11-02 18:24:50 CDT] read: git [\"config\",\"--null\",\"--list\"]
+
+gpg: Terminated caught ... exiting\"\"\"]]
+
+I have no idea why it's doing that, because all three of those files are already in both Client repos and the Full Backup repo.
+"""]]
