@@ -1,0 +1,78 @@
+I'm trying to follow the steps of the "walkthrough" but I'm experiencing the following issue: when
+I sync one repository and do "git annex get ." I don't get the files from the other repository.
+Here is the transcript of the steps I followed - I've put them in a script (ga.sh) so I can replay
+them and show them on the shell while executing.
+Basically I have two repositories, "/tmp/a/annex" and "/tmp/b/annex", the second cloned from
+the first. All the other steps are the same as in the walkthrough.
+-----------------------------------
+> bash -x ga.sh 
++ cd /tmp
++ mkdir a
++ mkdir b
++ cd a
++ mkdir annex
++ cd annex
++ git init
+Initialized empty Git repository in /tmp/a/annex/.git/
++ git annex init a
+init a ok
+(Recording state in git...)
++ cd /tmp/b
++ git clone /tmp/a/annex
+Cloning into 'annex'...
+done.
+warning: remote HEAD refers to nonexistent ref, unable to checkout.
+
++ cd annex
++ git annex init b
+init b ok
+(Recording state in git...)
++ git remote add a /tmp/a/annex
++ cd /tmp/a/annex
++ git remote add b /tmp/b/annex
++ dd if=/dev/urandom of=first bs=1024 count=1
+1+0 records in
+1+0 records out
+1024 bytes (1.0 kB) copied, 9.9167e-05 s, 10.3 MB/s
++ dd if=/dev/urandom of=second bs=1024 count=1
+1+0 records in
+1+0 records out
+1024 bytes (1.0 kB) copied, 0.000241635 s, 4.2 MB/s
++ git annex add .
+add first (checksum...) ok
+add second (checksum...) ok
+(Recording state in git...)
++ git commit -am added
+[master (root-commit) 5078564] added
+ 2 files changed, 2 insertions(+)
+ create mode 120000 first
+ create mode 120000 second
++ git mv first e
++ mkdir x
++ git mv second x
++ git commit -m moved
+fix x/second ok
+(Recording state in git...)
+[master 422492d] moved
+ 3 files changed, 1 insertion(+), 1 deletion(-)
+ rename first => e (100%)
+ delete mode 120000 second
+ create mode 120000 x/second
++ cd /tmp/b/annex
++ git annex sync a
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+commit  
+ok
+git-annex: no branch is checked out
++ git annex get .
+-------------------
+
+The last "git annex get ." does not retrieve the files in /tmp/a/annex ... why?
+I guess the issue starts when cloning /tmp/a/annex where no commit was done.
+
+Emanuele
+
+PS: I'm using git v1.7.9.5 (ubuntu 12.04) and the latest git-annex static binary
+downloaded a few minutes ago from the git-annex website.
+
