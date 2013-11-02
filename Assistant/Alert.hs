@@ -192,7 +192,7 @@ notFsckedNudge urlrenderer mr = do
 	button <- mkAlertButton True (T.pack "Configure") urlrenderer ConfigFsckR
 	void $ addAlert (notFsckedAlert mr button)
 #else
-notFsckedNudge _ = noop
+notFsckedNudge _ _ = noop
 #endif
 
 notFsckedAlert :: Maybe Remote -> AlertButton -> Alert
