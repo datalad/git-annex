@@ -1,3 +1,5 @@
+[[!meta title="GPG passphrase handling on OSX"]]
+
 Hello!
 I'm using OSX 10.9 and have installed gpg (and gpg2, if it matters) through
 homebrew and git-annex through cabal. I also installed
