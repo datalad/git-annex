@@ -43,20 +43,32 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 			(pip, verified) <- verificationCheck m
 				=<< (pairingInProgress <$> getDaemonStatus)
 			let wrongstage = maybe False (\p -> pairMsgStage m <= inProgressPairStage p) pip
-			case (wrongstage, sane, pairMsgStage m) of
-				-- ignore our own messages, and
-				-- out of order messages
-				(_, False, _) -> go reqs cache sock
-				(True, _, _) -> go reqs cache sock
-				(_, _, PairReq) -> if m `elem` reqs
+			let fromus = maybe False (\p -> remoteSshPubKey (pairMsgData m) == remoteSshPubKey (inProgressPairData p)) pip
+			case (wrongstage, fromus, sane, pairMsgStage m) of
+				(_, True, _, _) -> do
+					debug ["ignoring message that looped back"]
+					go reqs cache sock
+				(_, _, False, _) -> go reqs cache sock
+				-- PairReq starts a pairing process, so a
+				-- new one is always heeded, even if
+				-- some other pairing is in process.
+				(_, _, _, PairReq) -> if m `elem` reqs
 					then go reqs (invalidateCache m cache) sock
 					else do
 						pairReqReceived verified urlrenderer m
 						go (m:take 10 reqs) (invalidateCache m cache) sock
-				(_, _, PairAck) -> do
+				(True, _, _, _) -> do
+					debug
+						["ignoring out of order message"
+						, show (pairMsgStage m)
+						, "expected"
+						, show (succ . inProgressPairStage <$> pip)
+						]
+					go reqs cache sock
+				(_, _, _, PairAck) -> do
 					cache' <- pairAckReceived verified pip m cache
 					go reqs cache' sock
-				(_, _, PairDone) -> do
+				(_,_ , _, PairDone) -> do
 					pairDoneReceived verified pip m
 					go reqs cache sock
 

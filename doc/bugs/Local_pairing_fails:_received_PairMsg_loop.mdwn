@@ -23,3 +23,17 @@ I'm on Ubuntu Raring 13.04.  I installed git-annex 4.20131024 from the Precise P
 ...and so on and so on...
 # End of transcript or log.
 """]]
+
+> I was able to reproduce something very like this by starting
+> pairing separately on both computers under poor network conditions (ie,
+> weak wifi on my front porch).
+> 
+> So, I've made a new PairReq message that has not been seen before 
+> always make the alert pop up, even if the assistant thinks it is
+> in the middle of its own pairing process (or even another pairing process
+> with a different box on the LAN).
+>
+> (This shouldn't cause a rogue PairAck to disrupt a pairing process part
+> way through.)
+> 
+> [[done]] --[[Joey]]
