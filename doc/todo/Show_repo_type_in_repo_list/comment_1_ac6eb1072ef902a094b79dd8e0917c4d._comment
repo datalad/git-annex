@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-02T23:45:39Z"
+ content="""
+Currently if you go to the edit page for the repository, it shows some information about it, including its type and often its location, at the bottom of the page.
+
+I tend to feel that putting anything else in the repo list would result in it being too cluttered.
+"""]]
