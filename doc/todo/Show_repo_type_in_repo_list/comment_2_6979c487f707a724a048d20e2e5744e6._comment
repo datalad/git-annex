@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 2"
+ date="2013-11-02T23:59:16Z"
+ content="""
+I understand.  Well, here's what I'm looking at right now.  :)
+
+[[http://alphapapa.net/outbox/view.png]]
+
+I just think it would be very useful to say \"Client\" or \"Transfer\" or \"Full Backup\" next to each one, and there's often plenty of room, depending on the size of the window.  Especially when one's trying to wrap one's head around git-annex, being reminded what each repo is for would help a lot.  Otherwise you basically have to put it in the name or description yourself...so why not just go ahead and show it?  :)
+
+Another option might be to have an icon for each type.
+"""]]
