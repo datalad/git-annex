@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 1"
+ date="2013-11-01T23:10:12Z"
+ content="""
+Also, when I initiate the pairing process on one computer only, I can see the PairMsg being constantly received in the other computer's log, but the prompt to finish pairing never appears.
+"""]]
