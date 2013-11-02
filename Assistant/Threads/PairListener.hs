@@ -16,6 +16,7 @@ import Assistant.WebApp.Types
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.ThreadScheduler
+import Utility.Format
 import Git
 
 import Network.Multicast
@@ -45,8 +46,8 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 			case (wrongstage, sane, pairMsgStage m) of
 				-- ignore our own messages, and
 				-- out of order messages
-				(True, _, _) -> go reqs cache sock
 				(_, False, _) -> go reqs cache sock
+				(True, _, _) -> go reqs cache sock
 				(_, _, PairReq) -> if m `elem` reqs
 					then go reqs (invalidateCache m cache) sock
 					else do
@@ -75,11 +76,10 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 		verified = verifiedPairMsg m pip
 		sameuuid = pairUUID (inProgressPairData pip) == pairUUID (pairMsgData m)
 		
-	{- Various sanity checks on the content of the message. -}
-	checkSane msg 
+	checkSane msg
 		{- Control characters could be used in a
 		 - console poisoning attack. -}
-		| any isControl msg || any (`elem` "\r\n") msg = do
+		| any isControl (filter (/= '\n') (decode_c msg)) = do
 			liftAnnex $ warning
 				"illegal control characters in pairing message; ignoring"
 			return False
