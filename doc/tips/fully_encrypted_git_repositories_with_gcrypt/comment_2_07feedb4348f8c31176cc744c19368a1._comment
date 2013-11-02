@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkbpbjP5j8MqWt_K4NASwv0WvB8T4rQ-pM"
+ nickname="Fabrice"
+ subject="A possible solution"
+ date="2013-11-02T14:22:13Z"
+ content="""
+I'm answering to myself :-). A possible solution to the annoying pass phrase asking with current gnupg is to use a specialized secret keyring. One first exports the secret key used for this repository in a specific keyring as follows:
+
+`gpg --export-secret-keys keyid | gpg --import --no-default-keyring --secret-keyring mygitannexsecret.gpg`
+
+This will create a keyring in $HOME/.gnupg with only the specific key. 
+
+Then, in the git-remote-gcrypt shell script, gpg should be called as follows 
+
+`gpg --no-default-keyring --secret-keyring mygitannexsecret.gpg -q -d ...`
+
+when decrypting the manifest in order to try only the specific key. This behavior can be easily triggered via some git configuration variable.
+
+Any comment?
+
+"""]]
