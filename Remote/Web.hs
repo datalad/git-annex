@@ -44,7 +44,7 @@ list = do
 	return [r]
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r _ _ gc = 
+gen r _ c gc = 
 	return $ Just Remote {
 		uuid = webUUID,
 		cost = expensiveRemoteCost,
