@@ -2,6 +2,8 @@ git-annex (4.20131102) UNRELEASED; urgency=low
 
   * Improve local pairing behavior when two computers both try to start
     the pairing process separately.
+  * sync: Work even when the local git repository is new and empty,
+    with no master branch.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
 

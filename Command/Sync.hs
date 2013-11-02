@@ -45,13 +45,15 @@ seek rs = do
 	prepMerge
 
 	-- There may not be a branch checked out until after the commit,
-	-- so only look it up once needed, and only look it up once.
+	-- or perhaps after it gets merged from the remote.
+	-- So only look it up once it's needed, and if once there is a
+	-- branch, cache it.
 	mvar <- liftIO newEmptyMVar
 	let getbranch = ifM (liftIO $ isEmptyMVar mvar)
 		( do
-			branch <- fromMaybe (error "no branch is checked out")
-				<$> inRepo Git.Branch.current
-			liftIO $ putMVar mvar branch
+			branch <- inRepo Git.Branch.current
+			when (isJust branch) $
+				liftIO $ putMVar mvar branch
 			return branch
 		, liftIO $ readMVar mvar
 		)
@@ -116,8 +118,9 @@ commit = next $ next $ ifM isDirect
 		_ <- inRepo $ tryIO . Git.Command.runQuiet params
 		return True
 
-mergeLocal :: Git.Ref -> CommandStart
-mergeLocal branch = go =<< needmerge
+mergeLocal :: Maybe Git.Ref -> CommandStart
+mergeLocal Nothing = stop
+mergeLocal (Just branch) = go =<< needmerge
   where
 	syncbranch = syncBranch branch
 	needmerge = ifM isBareRepo
@@ -132,8 +135,9 @@ mergeLocal branch = go =<< needmerge
 		showStart "merge" $ Git.Ref.describe syncbranch
 		next $ next $ mergeFrom syncbranch
 
-pushLocal :: Git.Ref -> CommandStart
-pushLocal branch = do
+pushLocal :: Maybe Git.Ref -> CommandStart
+pushLocal Nothing = stop
+pushLocal (Just branch) = do
 	inRepo $ updateBranch $ syncBranch branch
 	stop
 
@@ -147,13 +151,13 @@ updateBranch syncbranch g =
 		, Param $ show $ Git.Ref.base syncbranch
 		] g
 
-pullRemote :: Remote -> Git.Ref -> CommandStart
+pullRemote :: Remote -> Maybe Git.Ref -> CommandStart
 pullRemote remote branch = do
 	showStart "pull" (Remote.name remote)
 	next $ do
 		showOutput
 		stopUnless fetch $
-			next $ mergeRemote remote (Just branch)
+			next $ mergeRemote remote branch
   where
 	fetch = inRepo $ Git.Command.runBool
 		[Param "fetch", Param $ Remote.name remote]
@@ -175,8 +179,9 @@ mergeRemote remote b = case b of
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]
 
-pushRemote :: Remote -> Git.Ref -> CommandStart
-pushRemote remote branch = go =<< needpush
+pushRemote :: Remote -> Maybe Git.Ref -> CommandStart
+pushRemote _remote Nothing = stop
+pushRemote remote (Just branch) = go =<< needpush
   where
 	needpush = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 	go False = stop
