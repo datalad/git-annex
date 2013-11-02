@@ -120,7 +120,7 @@ gen r u c gc
 			, repairRepo = if Git.repoIsUrl r
 				then Nothing
 				else Just $ repairRemote r
-			, config = M.empty
+			, config = c
 			, localpath = localpathCalc r
 			, repo = r
 			, gitconfig = gc
