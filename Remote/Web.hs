@@ -25,8 +25,6 @@ import Annex.Quvi
 import qualified Utility.Quvi as Quvi
 #endif
 
-import qualified Data.Map as M
-
 remote :: RemoteType
 remote = RemoteType {
 	typename = "web",
