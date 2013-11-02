@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 3"
+ date="2013-11-02T20:03:33Z"
+ content="""
+I don't understand why there are so many commits that need to be reverted. I'd have thought that it would have only made one bad commit due to the bug, and reverting that would do. Or even just adding back any symlinks removed by any of the bad commits, without an explicit revert would accomplish the same.
+
+You should be able to check with `git annex whereis --not --in .` what git-annex thinks about the 200 broken symlinks. Clearly their content is not in the local repisitory; it may be present elsewhere, or you might have to restore those files from backup.
+
+Once you have the git tree of the repository back in good shape, assuming you did it by committing changes, and possibly committing git reverts, you should be able to just use normal git annex syncing to sync those changes to the second repo. Ie, `git annex sync` in both, or running the assistant.
+"""]]
