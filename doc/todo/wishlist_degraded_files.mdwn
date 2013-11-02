@@ -1,0 +1,5 @@
+This is an idea to have a small placeholder file that is put into
+place when the file's actual content is not available in the local
+annex.
+
+Details being discussed here: <http://bugs.debian.org/728552>
