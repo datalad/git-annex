@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkbpbjP5j8MqWt_K4NASwv0WvB8T4rQ-pM"
+ nickname="Fabrice"
+ subject="comment 2"
+ date="2013-11-02T21:53:37Z"
+ content="""
+The git-annex version on the remote server is the same as the one on the client, the latest one available from the ppa (4.20131024). When I run git-annex-shell on both computers, I obtain:
+[[!format sh \"\"\"
+git-annex-shell: bad parameters
+
+Usage: git-annex-shell [-c] command [parameters ...] [option ...]
+
+Plumbing commands:
+
+commit       DIRECTORY          commits any staged changes to the git-annex branch
+configlist   DIRECTORY          outputs relevant git configuration
+dropkey      DIRECTORY KEY ...  drops annexed content for specified keys
+gcryptsetup  DIRECTORY VALUE    sets up gcrypt repository
+inannex      DIRECTORY KEY ...  checks if keys are present in the annex
+recvkey      DIRECTORY KEY      runs rsync in server mode to receive content
+sendkey      DIRECTORY KEY      runs rsync in server mode to send content
+transferinfo DIRECTORY KEY      updates sender on number of bytes of content received
+\"\"\"]]
+
+Both sides seem to understand the gcryptsetup action. Actually, the message gcryptsetup permission denied comes from git-annex-shell, as far as I understand (and from the haskell source linked in the report). 
+"""]]
