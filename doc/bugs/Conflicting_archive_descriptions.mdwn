@@ -5,3 +5,12 @@ This is confusing:
 "The small archive repositories are like other archive repositories, but smaller. While archive repositories normally accumulate every file they can, small archive repositories only accumulate files **once you put them in an "archive" directory.**"
 
 Based upon those descriptions, I don't know what the difference is.
+
+> Improved wording to not imply that files are only put into archive
+> repositories once the files are moved to archive directories.
+> (Which is how small archive repositories work.)
+> 
+> If you're still confused about it, see
+> <http://git-annex.branchable.com/assistant/archival_walkthrough/>
+> 
+> [[done]] --[[Joey]]
