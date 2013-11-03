@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 7"
+ date="2013-11-03T00:45:09Z"
+ content="""
+* The costs you show look fine.
+* Yes, deleting a repository in the webapp actually deletes it. It doesn't just remove the remote from .git/config. Most people using the webapp don't want to draw such a fine distinction, I think.
+* It's not a very usual configuration to have 2 repositories on the same machine with the git-annex assistant running in both. You might just want to configure the assistant to not run in the backup repository.
+
+Some of the things you've said suggest that the backup repository might not be immediately noticing when changes are pushed to it. Since its location is shown as /mnt/debian/home/me, I have to wonder if that's some NFS mount or other network filesystem causing problems.
+
+"""]]
