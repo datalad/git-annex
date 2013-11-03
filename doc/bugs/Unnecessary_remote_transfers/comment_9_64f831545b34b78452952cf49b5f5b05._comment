@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 9"
+ date="2013-11-03T01:52:56Z"
+ content="""
+Ok, since we don't have NFS craziness, I'm going to put theories about it not noticing incoming syncs on hold. (I think I probably misunderstood [this comment](http://git-annex.branchable.com/bugs/Unnecessary_remote_transfers/#comment-39490c318620c141e7557b7bcba0e5c8) and anyway the assistant has some throttling so won't always immediately load config changes that have been synced to it if some other config changes were loaded a minute before.)
+
+I think this behavior can probably be explained without resorting to any bugs, now that I have, I think, a full picture of the repository network:
+
+<pre>
+laptop <-> desktop <-> backup
+    |         |       |
+    v         v       v
+      transfer (cloud)
+</pre>
+
+Now when a file is added to desktop, it immediately copies it to backup, which is on the same machine, so that happens quite quickly. Then it starts sending it across the LAN to laptop.
+
+Meanwhile, the assistant daemon running on backup wakes up, notices it's just received an object, and sees that this object is currently located on only desktop and backup, but not yet on laptop or transfer. Which means that it should send the object to transfer, from which it will eventually reach laptop.
+
+The only ways I can think of to avoid such an unnecessary transfer would be a) for desktop could somehow tell backup that it's in the process of sending the file to laptop or b) for a map of current state of the network to be constructed and maintained and analyzed automatically, so it it could conclude backup does not need to send files to transfer if they're already present on desktop. There is some discussion about this in [[design/assistant/syncing]]. Hard problem in general I think, although slightly less hard in this specific case since desktop and backup know they're in the same machine.
+
+But it should be easy to configure it so this doesn't happen. Just make backup not have the transfer repository configured as a remote (or just pause it syncing to there in the webapp). Or, don't run the assistant at all on backup (see `~/.config/git-annex/autostart`).
+"""]]
