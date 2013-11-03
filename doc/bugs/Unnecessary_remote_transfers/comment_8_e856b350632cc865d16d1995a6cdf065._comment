@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 8"
+ date="2013-11-03T01:07:31Z"
+ content="""
+> It's not a very usual configuration to have 2 repositories on the same machine with the git-annex assistant running in both. You might just want to configure the assistant to not run in the backup repository.
+
+Maybe that's the crux of the problem.  But I'm not sure what I did wrong to make that happen.  I have a second internal hard disk in my desktop system, and I wanted to put a Full Backup repo on it.  I tried to add a \"Removable drive\" repo (since I sometimes unplug it to swap cables with a DVD drive), but since the assistant didn't detect any actual removable drives, that didn't work.  So I used \"Add another repository\" and set it to a Full Backup repo.  Is that the wrong way to do it?  :)
+
+> Some of the things you've said suggest that the backup repository might not be immediately noticing when changes are pushed to it. Since its location is shown as /mnt/debian/home/me, I have to wonder if that's some NFS mount or other network filesystem causing problems.
+
+/mnt/debian is /dev/mapper/lvm-root, another internal disk.  The disk is working fine.  :)
+"""]]
