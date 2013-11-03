@@ -9,6 +9,8 @@ git-annex (4.20131102) UNRELEASED; urgency=low
   * Fix enabling of gcrypt repository accessed over ssh;
     git-annex-shell gcryptsetup had a bug that caused it to fail
     with permission denied.
+  * Fix zombie process that occurred when switching between repository
+    views in the webapp.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
 

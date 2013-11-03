@@ -40,3 +40,5 @@ git-annex assistant is currently running.  Here is the output of **ps -A u | gre
 31812 pts/2    Z      0:00 [git-annex] <defunct>
 31835 ?        Ss     0:02 ssh: .git/annex/ssh/example.net [mux]
 """]]
+
+> [[fixed|done]] --[[Joey]]
