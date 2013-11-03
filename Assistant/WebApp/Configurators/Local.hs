@@ -24,8 +24,8 @@ import Config.Files
 import Utility.FreeDesktop
 #ifdef WITH_CLIBS
 import Utility.Mounts
-#endif
 import Utility.DiskFree
+#endif
 import Utility.DataUnits
 import Utility.Network
 import Remote (prettyUUID)
