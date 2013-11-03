@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkbpbjP5j8MqWt_K4NASwv0WvB8T4rQ-pM"
+ nickname="Fabrice"
+ subject="comment 5"
+ date="2013-11-03T11:24:28Z"
+ content="""
+There is something very strange that I did not notice in my first report. When I try `git annex get --from encryptedrepo` nothing happens in the sense that git annex is not even trying to connect to the remote (no ssh connection attempt) while git.encryptedrepo.annex-gcrypt is set to true. When I set it to shell, nothing happens either. 
+
+Another thing I did not report is that I tried the exact same manipulations with another server on which git annex is not installed. The `gcryptsetup permission denied` message was replaced by a `git-annex-shell not found` (or something similar), as expected. But the rest of the behavior was the same: no way to get the actual content with `git annex get --from`. Again, all of this is with 4.20131024, not with the ongoing version. 
+
+I'll try got do more test with the new version. 
+"""]]
