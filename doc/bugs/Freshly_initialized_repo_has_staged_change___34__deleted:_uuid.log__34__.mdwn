@@ -1,0 +1,42 @@
+### Please describe the problem.
+Using the webapp to generate a new (local) repository instantly takes it to the following state:
+[[!format sh """
+user@local:~/Annex$ git status
+# On branch master
+# Changes to be committed:
+#   (use "git reset HEAD <file>..." to unstage)
+#
+#	deleted:    uuid.log
+#
+user@local:~/Annex$ git branch
+  git-annex
+* master
+user@local:~/Annex$ git log
+commit 90bfcaf17b0576d8ecdc48ae44dda22d41464acc
+Author: local  <user>
+Date:   Sun Nov 3 15:30:17 2013 +0100
+
+    created repository
+user@local:~/Annex$ git show HEAD
+commit 90bfcaf17b0576d8ecdc48ae44dda22d41464acc
+Author: local  <user>
+Date:   Sun Nov 3 15:30:17 2013 +0100
+
+    created repository
+
+diff --git a/uuid.log b/uuid.log
+new file mode 100644
+index 0000000..9df3670
+--- /dev/null
++++ b/uuid.log
+@@ -0,0 +1 @@
++987e7b9a-aa9d-41db-ae92-23fcae7f6187 user@local:~/Annex timestamp=1383489017.181
+user@local:~/Annex$ 
+"""]]
+
+I'm new to git-annex, so I'm not quite sure, but looking at [[internals]] this file should only exist in the git-annex branch, not in master. Furthermore, from this state it seems impossible to get "sync with your other devices" to work, because of a merge conflict on this change.
+
+Perhaps some sort of a race-condition with the annex-assistant picking up the uuid.log file while the repository is being initialized?
+
+### What version of git-annex are you using? On what operating system?
+Ubuntu 13.10 with git-annex 4.20130815
