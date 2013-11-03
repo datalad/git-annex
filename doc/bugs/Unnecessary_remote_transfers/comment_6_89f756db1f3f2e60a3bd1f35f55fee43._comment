@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="config from backup repo"
+ date="2013-11-03T00:20:11Z"
+ content="""
+Sorry for posting over and over again, just trying to provide info when I discover it.
+
+Here's **/mnt/debian/home/me/annex-backup/.git/config**
+
+[[!format sh \"\"\"
+[core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        logallrefupdates = true
+[annex]
+        uuid = 86535965-6ca7-4bf3-89af-bca3a07f96f9
+        version = 3
+        direct = true
+        fscknudge = true
+        diskreserve = 100 megabyte
+        numcopies = 1
+        debug = false
+[gc]
+        auto = 0
+[remote \"desktop\"]
+        url = /home/me/annex
+        fetch = +refs/heads/*:refs/remotes/desktop/*
+        annex-uuid = 80709bc2-3cbe-434b-b7b9-306278b9a4e9
+[remote \"Remote\"]
+        annex-rsyncurl = username@example.net:annex/
+        annex-uuid = 33930bae-63d2-4a52-b330-58872aaeb1bf
+        annex-sync = false
+        fetch =\"\"\"]]
+
+1.  Should I remove the \"Remote\" Transfer repo from this config file to prevent it from using the Transfer repo?  I only want this repo to sync directly with the other internal hard disk.
+
+2.  Is it correct for git-annex to add this Transfer repo to this config file in the first place?
+"""]]
