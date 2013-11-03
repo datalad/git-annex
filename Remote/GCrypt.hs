@@ -109,7 +109,7 @@ gen' r u c gc = do
 		, whereisKey = Nothing
 		, remoteFsck = Nothing
 		, repairRepo = Nothing
-		, config = M.empty
+		, config = c
 		, localpath = localpathCalc r
 		, repo = r
 		, gitconfig = gc { remoteGitConfig = Just $ extractGitConfig r }
