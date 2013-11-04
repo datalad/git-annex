@@ -1,0 +1,21 @@
+### Please describe the problem.
+As described earlier in [[fully_encrypted_git_repositories_with_gcrypt]]
+
+### What steps will reproduce the problem?
+- A: use the webapp to create a new repository
+- A: add a remote server to the repository using the 'gcrypt' method
+- A: add a jabber account
+
+- B: use the webapp to create a new repository
+- B: add the jabber account
+- B: see the previously created 'cloud repository' with status 'not enabled'
+- B: click enable, see that the stored credentials are correct, and press "verify this server"
+- B: enter the ssh password twice
+- B: get redirected to a blank screen (on the url /config/repository/enable/gcrypt/UUID "x"?auth=y)
+
+The assistent logfiles show nothing after the "Your public key has been saved in", the server shows that no public key for B was added to the account.
+
+This is with git-annex installed on the remote server; without it the process gets stuck after clicking "encrypt repository" in step 2, it will just indefinitely keep prompting for the SSH password.
+
+### What version of git-annex are you using? On what operating system?
+Latest nightly build on ubuntu 13.10
