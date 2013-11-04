@@ -1,5 +1,5 @@
 ### Please describe the problem.
-As described earlier in [[fully_encrypted_git_repositories_with_gcrypt]]
+As described earlier in [[tips/fully_encrypted_git_repositories_with_gcrypt]]
 
 ### What steps will reproduce the problem?
 - A: use the webapp to create a new repository
