@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="tanen"
+ ip="83.128.159.25"
+ subject="comment 10"
+ date="2013-11-04T17:58:36Z"
+ content="""
+> \"We could symetrically encrypt the repository with a keyfile that's stored in the repository itself\"
+> Then you would need to decrypt the repository in order get the key you need to decrypt the repository. The impossibility of this design is why I didn't do that!
+
+Sorry, I ment that the file containing the symmetric encryption key should obviously not be used to encrypt itself, it would be stored in the repository \"unencrypted\" (but protected with a passphrase)
+
+> store a non-encrypted gpg key alongside the repsitory encrypted with it, but then you have to rely on a passphrase for all your security.
+
+Exactly. I think such a mode be a great addition. It might not be as secure as encryption based on a private key - depending on the passphrase strength -, but it would certainly be a lot more convenient and portable (and still much more secure than the shared encryption method).
+"""]]

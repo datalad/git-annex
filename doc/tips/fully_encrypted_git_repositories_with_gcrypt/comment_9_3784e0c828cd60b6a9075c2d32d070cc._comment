@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 9"
+ date="2013-11-04T17:07:55Z"
+ content="""
+\"We could symetrically encrypt the repository with a keyfile that's stored in the repository itself\"
+
+Then you would need to decrypt the repository in order get the key you need to decrypt the repository. The impossibility of this design is why I didn't do that!
+
+It would certianly be possible to store a non-encrypted gpg key alongside the repsitory encrypted with it, but then you have to rely on a passphrase for all your security.
+
+You should file a bug report for the bug you saw..
+"""]]
