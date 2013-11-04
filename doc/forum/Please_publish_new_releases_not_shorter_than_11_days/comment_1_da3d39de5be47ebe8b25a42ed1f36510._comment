@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-03T19:57:24Z"
+ content="""
+I do coordinate with testing. That version had no possibility of ever reaching testing, since it failed to build on several architectures.
+"""]]
