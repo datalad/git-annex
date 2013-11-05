@@ -1,3 +1,5 @@
 importfeed is a great feature, but it doesn't allow templating the filename with the publish date.
 
 I would suggest adding pubdate option, which would fix this problem.
+
+> duplicate of [[todo/importfeed: allow ${itemdate} with --template]] [[done]] --[[Joey]] 
