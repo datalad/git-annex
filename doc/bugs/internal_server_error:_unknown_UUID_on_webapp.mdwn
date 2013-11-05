@@ -1,0 +1,93 @@
+### Please describe the problem.
+
+I am having trouble using the webapp with a setup I did on the commandline that was working fine.
+
+I have two machines: one, a server called `marcos`, is available on the internetz and I cloned a repo from there into `markov`, a workstation that is hidden behind a NAT connexion (so I can't add it as a remote).
+
+It seems that because the remote is not locally available as a git remote, the webapp is freaking out because it doesn't recognize `markov` as a proper remote.
+
+### What steps will reproduce the problem?
+
+1. setup git annex locally (on `marcos`) in a repository (probably `git annex init; git annex direct; git annex add .` i somewhat followed [[tips/Git_annex_and_Calibre/]])
+2. `git clone` that repo on a remote, unaccessible (NAT'd) server (`markov`)
+3. start doing some git annex get, get tired, run the web app on `markov`
+4. let that run over there, go back to `marcos`
+5. be curious about what is going on on `markov`, run the webapp and enter the path to the repository created in step one when prompted (it's the first time i run the webapp)
+6. it starts up fine, but doesn't seem to detect `markov`, marking transfers as going to the remote named `unknown`
+7. click on the `unknown` link, crash
+8. go back to the dashboard, crash
+
+From there on, the webapp is pretty much crashed, starting it from scratch asks me if i want to create a git annex repo.
+
+### What version of git-annex are you using? On what operating system?
+
+4.20130921-gd4739c5 compiled and installed by hand on debian wheezy.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# Here's everything that has been logged by the git-annex assistant, as well as by programs it has run.
+
+[2013-11-04 22:42:50 EST] main: starting assistant version 4.20130921-gd4739c5
+(merging synced/git-annex into git-annex...)
+(Recording state in git...)
+
+  No known network monitor available through dbus; falling back to polling
+Already up-to-date.
+
+(scanning...) [2013-11-04 22:42:50 EST] Watcher: Performing startup scan
+04/Nov/2013:22:42:51 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:42:52 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:42:52 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+(Recording state in git...)
+(Recording state in git...)
+(started...) 
+
+  metadata.db still has writers, not adding
+[2013-11-04 22:42:59 EST] Committer: Adding cover.jpg Ars Techn..ibre.epub Cyberpres..ibre.epub cover.jpg cover.jpg Ars Techn..ibre.epub cover.jpg Democracy..ibre.epub cover.jpg and 11 other files
+add Calibre/Ars Technica [dim., 03 nov. 2013] (645)/cover.jpg (checksum...) ok
+add Calibre/Ars Technica [dim., 03 nov. 2013] (645)/Ars Technica [dim., 03 nov. 2013] - Calibre.epub (checksum...) ok
+add Calibre/Cyberpresse [lun., 04 nov. 2013] (647)/Cyberpresse [lun., 04 nov. 2013] - Calibre.epub (checksum...) ok
+add Calibre/Cyberpresse [lun., 04 nov. 2013] (647)/cover.jpg (checksum...) ok
+add Calibre/Ars Technica [sam., 02 nov. 2013] (642)/cover.jpg (checksum...) ok
+add Calibre/Ars Technica [sam., 02 nov. 2013] (642)/Ars Technica [sam., 02 nov. 2013] - Calibre.epub (checksum...) ok
+add Calibre/Democracy now! [lun., 04 nov. 2013] (649)/cover.jpg (checksum...) ok
+add Calibre/Democracy now! [lun., 04 nov. 2013] (649)/Democracy now! [lun., 04 nov. 2013] - Calibre.epub (checksum...) ok
+add Calibre/xkcd [lun., 04 nov. 2013] (646)/cover.jpg (checksum...) ok
+add Calibre/xkcd [lun., 04 nov. 2013] (646)/xkcd [lun., 04 nov. 2013] - Calibre.epub (checksum...) ok
+add Calibre/Cyberpresse [dim., 03 nov. 2013] (644)/cover.jpg (checksum...) ok
+add Calibre/Cyberpresse [dim., 03 nov. 2013] (644)/Cyberpresse [dim., 03 nov. 2013] - Calibre.epub (checksum...) ok
+add Calibre/Le Devoir [sam., 02 nov., 2013] (640)/cover.jpg (checksum...) ok
+add Calibre/Le Devoir [sam., 02 nov., 2013] (640)/Le Devoir [sam., 02 nov., 2013] - Calibre.epub (checksum...) ok
+add Calibre/Le Devoir [lun., 04 nov., 2013] (648)/cover.jpg (checksum...) ok
+add Calibre/Le Devoir [lun., 04 nov., 2013] (648)/Le Devoir [lun., 04 nov., 2013] - Calibre.epub (checksum...) ok
+add Calibre/Cyberpresse [sam., 02 nov. 2013] (641)/cover.jpg (checksum...) ok
+add Calibre/Cyberpresse [sam., 02 nov. 2013] (641)/Cyberpresse [sam., 02 nov. 2013] - Calibre.epub (checksum...) ok
+add Calibre/Le Devoir [dim., 03 nov., 2013] (643)/cover.jpg (checksum...) ok
+add Calibre/Le Devoir [dim., 03 nov., 2013] (643)/Le Devoir [dim., 03 nov., 2013] - Calibre.epub (checksum...) [2013-11-04 22:43:01 EST] Committer: Committing changes to git
+ok
+(Recording state in git...)
+(Recording state in git...)
+04/Nov/2013:22:43:51 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:47:24 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:47:24 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:47:24 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:52:29 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:52:30 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:52:30 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:56:47 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+[2013-11-04 22:57:08 EST] Committer: Adding metadata.db-journal
+add metadata.db-journal (checksum...) [2013-11-04 22:57:08 EST] Committer: Committing changes to git
+[2013-11-04 22:57:09 EST] Committer: Adding metadata.db-journal metadata.db
+ok
+(Recording state in git...)
+(Recording state in git...)
+add metadata.db (checksum...) [2013-11-04 22:57:09 EST] Committer: Committing changes to git
+ok
+(Recording state in git...)
+(Recording state in git...)
+04/Nov/2013:22:57:12 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:57:15 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:57:18 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+04/Nov/2013:22:57:20 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+"""]]
