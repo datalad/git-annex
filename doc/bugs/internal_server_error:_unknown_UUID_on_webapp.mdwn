@@ -91,3 +91,5 @@ ok
 04/Nov/2013:22:57:18 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
 04/Nov/2013:22:57:20 -0500 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.4.2:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
 """]]
+
+> I wonder if this couldn't be related to [[cannot determine uuid for origin]], although in this case the remote is just not added to `.git/config`. --[[anarcat]]
