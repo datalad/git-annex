@@ -93,3 +93,10 @@ ok
 """]]
 
 > I wonder if this couldn't be related to [[cannot determine uuid for origin]], although in this case the remote is just not added to `.git/config`. --[[anarcat]]
+
+> This was fixed in commit 44e1524be53373ddbf28d643bedf5455433c2b2e
+> on Sep 29th. You should update. [[done]]
+> 
+> (It also sounds like your repository on markov is for some reason not
+> able to push its git repository to marcos. You might need to fix
+> something in your setup to get syncing working) --[[Joey]]
