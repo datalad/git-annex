@@ -97,7 +97,7 @@ commit message branch parentrefs repo = do
 	sha <- getSha "commit-tree" $ pipeWriteRead
 		(map Param $ ["commit-tree", show tree] ++ ps)
 		(Just $ flip hPutStr message) repo
-	run [Param "update-ref", Param $ show branch, Param $ show sha] repo
+	update branch sha repo
 	return sha
   where
 	ps = concatMap (\r -> ["-p", show r]) parentrefs
@@ -105,3 +105,11 @@ commit message branch parentrefs repo = do
 {- A leading + makes git-push force pushing a branch. -}
 forcePush :: String -> String
 forcePush b = "+" ++ b
+
+{- Updates a branch (or other ref) to a new Sha. -}
+update :: Branch -> Sha -> Repo -> IO ()
+update branch sha = run 
+	[ Param "update-ref"
+	, Param $ show branch
+	, Param $ show sha
+	]
