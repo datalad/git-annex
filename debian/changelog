@@ -12,6 +12,8 @@ git-annex (4.20131102) UNRELEASED; urgency=low
   * Fix zombie process that occurred when switching between repository
     views in the webapp.
   * map: Work when there are gcrypt remotes.
+  * The -c option now not only modifies the git configuration seen by
+    git-annex, but it is passed along to every git command git-annex runs.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
 
