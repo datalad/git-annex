@@ -100,3 +100,28 @@ ok
 > (It also sounds like your repository on markov is for some reason not
 > able to push its git repository to marcos. You might need to fix
 > something in your setup to get syncing working) --[[Joey]]
+> 
+> > Humm.. Weird. Upgrading fixes the crash, but `marcos` still sees only
+> > one repository. It sees some syncs going on from `unknown`, and when
+> > I click on that `unknown` link, I get to edit that repository, and
+> > it sees it as `here`. So I am not sure I understand what is going 
+> > on here.
+> >
+> > (As for the repo on `markov`, it does sync properly:
+> > 
+> >     anarcat@desktop008:books$ git annex sync
+> >     commit
+> >     ok
+> >     pull origin
+> >     From anarc.at:/srv/books
+> >        3b4fa7b..c35b13e  git-annex  -> origin/git-annex
+> >     ok
+> > 
+> > Or rather - it doesn't fail. But it doesn't push!
+> > 
+> >     anarcat@desktop008:books$ git push
+> >     Everything up-to-date
+> > 
+> > Note that git on `marcos` is the 1.8.4 backport for some reason.
+> > I know that branch tracking changed with that release, maybe 
+> > that's the problem? --[[anarcat]])
