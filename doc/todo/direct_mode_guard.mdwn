@@ -77,6 +77,26 @@ This seems really promising. But of course, git-annex has its own set of
 behaviors in a bare repo, so will need to recognise that this repo is not
 really bare, and avoid them.
 
+> [[done]]!!  --[[Joey]]
+
 (Git may also have some bare repo behaviors that are unwanted. One example
 is that git allows pushes to the current branch in a bare repo, 
 even when `receive.denyCurrentBranch` is set.)
+
+> This is indeed a problem. Indeed, `git annex sync` successfully
+> pushes changes to the master branch of a fake bare direct mode repo.
+> 
+> And then, syncing in the repo that was pushed to causes the changes
+> that were pushed to the master branch to get reverted! This happens
+> because sync commits; commit sees that files are staged in index
+> differing from the (pushed) master, and commits the "changes"
+> which revert it.
+> 
+> Could fix this using an update hook, to reject the updated of the master
+> branch. However, won't work on crippled filesystems! (No +x bit)
+> 
+> Could make git annex sync detect this. It could reset the master
+> branch to the last one committed, before committing. Will work,
+> does have the minor oddity that eg `git log` will show commits
+> pushed to master before `git annex sync` has been run and so before
+> those commits are reflected in the tree.

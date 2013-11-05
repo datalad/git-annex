@@ -698,12 +698,21 @@ subdirectories).
 
 * `pre-commit [path ...]`
 
+  This is meant to be called from git's pre-commit hook. `git annex init`
+  automatically creates a pre-commit hook using this.
+
   Fixes up symlinks that are staged as part of a commit, to ensure they
   point to annexed content. Also handles injecting changes to unlocked
   files into the annex.
 
-  This is meant to be called from git's pre-commit hook. `git annex init`
-  automatically creates a pre-commit hook using this.
+* `update-hook refname olvrev newrev`
+
+  This is meant to be called from git's update hook. `git annex init`
+  automatically creates an update hook using this.
+
+  This denies updates being pushed for the currently checked out branch.
+  While receive.denyCurrentBranch normally prevents that, it does
+  not for fake bare repositories, as used by direct mode.
 
 * `fromkey key file`
 

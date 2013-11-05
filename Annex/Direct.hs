@@ -8,13 +8,17 @@
 module Annex.Direct where
 
 import Common.Annex
+import qualified Annex
 import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Merge
 import qualified Git.DiffTree as DiffTree
+import qualified Git.Config
+import qualified Git.Ref
 import Git.Sha
 import Git.FilePath
 import Git.Types
+import Config
 import Annex.CatFile
 import qualified Annex.Queue
 import Logs.Location
@@ -231,3 +235,29 @@ changedDirect oldk f = do
 	locs <- removeAssociatedFile oldk f
 	whenM (pure (null locs) <&&> not <$> inAnnex oldk) $
 		logStatus oldk InfoMissing
+
+{- Since direct mode repositories use core.bare=true, pushes are allowed
+ - that overwrite the master branch (or whatever branch is currently
+ - checked out) at any time. But committing when a change has been pushed
+ - to the current branch and not merged into the work tree will have the
+ - effect of reverting the pushed changes.
+ -
+ - To avoid this problem, when git annex commits in a direct mode
+ - repository, it does not commit to HEAD, but instead to annexhead.
+ - This ref always contains the last local commit.
+ -}
+annexheadRef :: Ref
+annexheadRef = Ref $ "refs" </> "annexhead"
+
+{- Enable/disable direct mode. -}
+setDirect :: Bool -> Annex ()
+setDirect wantdirect = do
+	when wantdirect $ do
+		f <- fromRepo $ Git.Ref.file annexheadRef
+		v <- inRepo $ Git.Ref.sha Git.Ref.headRef
+		liftIO $ maybe (nukeFile f) (writeFile f . show) v
+	setConfig (annexConfig "direct") val
+	setConfig (ConfigKey Git.Config.coreBare) val
+	Annex.changeGitConfig $ \c -> c { annexDirect = wantdirect }
+  where
+	val = Git.Config.boolConfig wantdirect

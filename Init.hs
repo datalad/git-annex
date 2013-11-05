@@ -35,6 +35,7 @@ import Utility.UserInfo
 import Utility.FileMode
 #endif
 import Annex.Hook
+import Upgrade
 
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
@@ -74,9 +75,12 @@ uninitialize = do
 {- Will automatically initialize if there is already a git-annex
  - branch from somewhere. Otherwise, require a manual init
  - to avoid git-annex accidentially being run in git
- - repos that did not intend to use it. -}
+ - repos that did not intend to use it.
+ -
+ - Checks repository version and handles upgrades too.
+ -}
 ensureInitialized :: Annex ()
-ensureInitialized = getVersion >>= maybe needsinit checkVersion
+ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
   where
 	needsinit = ifM Annex.Branch.hasSibling
 			( initialize Nothing

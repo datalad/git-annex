@@ -40,6 +40,11 @@ exists :: Ref -> Repo -> IO Bool
 exists ref = runBool
 	[Param "show-ref", Param "--verify", Param "-q", Param $ show ref]
 
+{- The file used to record a ref. (Git also stores some refs in a
+ - packed-refs file.) -}
+file :: Ref -> Repo -> FilePath
+file ref repo = localGitDir repo </> show ref
+
 {- Checks if HEAD exists. It generally will, except for in a repository
  - that was just created. -}
 headExists :: Repo -> IO Bool
