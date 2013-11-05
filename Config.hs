@@ -73,8 +73,11 @@ isDirect = annexDirect <$> Annex.getGitConfig
 
 setDirect :: Bool -> Annex ()
 setDirect b = do
-	setConfig (annexConfig "direct") (Git.Config.boolConfig b)
+	setConfig (annexConfig "direct") val
+	setConfig (ConfigKey Git.Config.coreBare) val
 	Annex.changeGitConfig $ \c -> c { annexDirect = b }
+  where
+	val = Git.Config.boolConfig b
 
 crippledFileSystem :: Annex Bool
 crippledFileSystem = annexCrippledFileSystem <$> Annex.getGitConfig

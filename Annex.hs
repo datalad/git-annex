@@ -45,6 +45,7 @@ import Git.CatFile
 import Git.CheckAttr
 import Git.CheckIgnore
 import Git.SharedRepository
+import Git.Config
 import qualified Git.Queue
 import Types.Backend
 import Types.GitConfig
@@ -254,8 +255,12 @@ withCurrentState a = do
  - Fix up the Repo to be a non-bare repo, and arrange for git commands
  - run by git-annex to be passed parameters that override this setting. -}
 fixupDirect :: Git.Repo -> Git.Repo
-fixupDirect r@(Repo { location = Local { gitdir = d, worktree = Nothing } }) = r
-	{ location = Local { gitdir = d </> ".git", worktree = Just d }
-	, gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param "core.bare=false"]
-	}
+fixupDirect r@(Repo { location = Local { gitdir = d, worktree = Nothing } }) =
+	r
+		{ location = Local { gitdir = d </> ".git", worktree = Just d }
+		, gitGlobalOpts = gitGlobalOpts r ++
+			[ Param "-c"
+			, Param $ coreBare ++ "=" ++ boolConfig False
+			]
+		}
 fixupDirect r = r

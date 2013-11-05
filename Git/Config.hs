@@ -153,7 +153,10 @@ boolConfig True = "true"
 boolConfig False = "false"
 
 isBare :: Repo -> Bool
-isBare r = fromMaybe False $ isTrue =<< getMaybe "core.bare" r
+isBare r = fromMaybe False $ isTrue =<< getMaybe coreBare r
+
+coreBare :: String
+coreBare = "core.bare"
 
 {- Runs a command to get the configuration of a repo,
  - and returns a repo populated with the configuration, as well as the raw

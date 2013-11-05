@@ -1,6 +1,6 @@
 git-annex (4.20131102) UNRELEASED; urgency=low
 
-  * Direct mode repositories can now have core.bare=true set, to prevent
+  * Direct mode repositories now have core.bare=true set, to prevent
     accidentally running git commands that try to operate on the work tree,
     and so do the wrong thing.
   * The -c option now not only modifies the git configuration seen by
