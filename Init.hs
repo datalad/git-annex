@@ -12,11 +12,10 @@ module Init (
 	isInitialized,
 	initialize,
 	uninitialize,
-	probeCrippledFileSystem
+	probeCrippledFileSystem,
 ) where
 
 import Common.Annex
-import Utility.Tmp
 import Utility.Network
 import qualified Annex
 import qualified Git
@@ -26,7 +25,6 @@ import qualified Annex.Branch
 import Logs.UUID
 import Annex.Version
 import Annex.UUID
-import Utility.Shell
 import Config
 import Annex.Direct
 import Annex.Content.Direct
@@ -36,6 +34,7 @@ import Backend
 import Utility.UserInfo
 import Utility.FileMode
 #endif
+import Annex.Hook
 
 genDescription :: Maybe String -> Annex String
 genDescription (Just d) = return d
@@ -56,7 +55,8 @@ initialize mdescription = do
 	setVersion defaultVersion
 	checkCrippledFileSystem
 	checkFifoSupport
-	gitPreCommitHookWrite
+	unlessBare $
+		hookWrite preCommitHook
 	createInodeSentinalFile
 	u <- getUUID
 	{- This will make the first commit to git, so ensure git is set up
@@ -67,7 +67,7 @@ initialize mdescription = do
 
 uninitialize :: Annex ()
 uninitialize = do
-	gitPreCommitHookUnWrite
+	hookUnWrite preCommitHook
 	removeRepoUUID
 	removeVersion
 
@@ -87,45 +87,8 @@ ensureInitialized = getVersion >>= maybe needsinit checkVersion
 isInitialized :: Annex Bool
 isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersion
 
-{- set up a git pre-commit hook, if one is not already present -}
-gitPreCommitHookWrite :: Annex ()
-gitPreCommitHookWrite = unlessBare $ do
-	hook <- preCommitHook
-	ifM (liftIO $ doesFileExist hook)
-		( do
-			content <- liftIO $ readFile hook
-			when (content /= preCommitScript) $
-				warning $ "pre-commit hook (" ++ hook ++ ") already exists, not configuring"
-		, unlessM crippledFileSystem $
-			liftIO $ do
-				viaTmp writeFile hook preCommitScript
-				p <- getPermissions hook
-				setPermissions hook $ p {executable = True}
-		)
-
-gitPreCommitHookUnWrite :: Annex ()
-gitPreCommitHookUnWrite = unlessBare $ do
-	hook <- preCommitHook
-	whenM (liftIO $ doesFileExist hook) $
-		ifM (liftIO $ (==) preCommitScript <$> readFile hook)
-			( liftIO $ removeFile hook
-			, warning $ "pre-commit hook (" ++ hook ++ 
-				") contents modified; not deleting." ++
-				" Edit it to remove call to git annex."
-			)
-
 unlessBare :: Annex () -> Annex ()
 unlessBare = unlessM $ fromRepo Git.repoIsLocalBare
-
-preCommitHook :: Annex FilePath
-preCommitHook = (</>) <$> fromRepo Git.localGitDir <*> pure "hooks/pre-commit"
-
-preCommitScript :: String
-preCommitScript = unlines
-	[ shebang_local
-	, "# automatically configured by git-annex"
-	, "git annex pre-commit ."
-	]
 
 {- A crippled filesystem is one that does not allow making symlinks,
  - or removing write access from files. -}
