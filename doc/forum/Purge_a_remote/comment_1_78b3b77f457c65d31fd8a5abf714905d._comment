@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-05T16:17:22Z"
+ content="""
+In the git-annex webapp, each repository has a settings menu with \"delete repository\".
+"""]]
