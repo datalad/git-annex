@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 5"
+ date="2013-11-06T16:27:49Z"
+ content="""
+Running the prebuilt tarball build of git-annex, the bug does not occur.
+
+However, if I remove the git shipped with the prebuilt tarball, so it uses the system git, I do see the bug. So, it's apparently git version dependent.
+
+Also, I was able to reproduce it in a amd64 chroot. My other chroot was i386. Somehow architecture specific bug?
+
+---
+
+Instrumenting all calls to git to be logged with the full environment and command, I found this:
+
+<pre>
+GIT_INDEX_FILE='/home/foo/annex/.git/annex/index'
+--git-dir=/home/foo/annex/.git --work-tree=/home/foo/annex commit --quiet --allow-empty -m created repository
+</pre>
+
+This certianly looks like the index file setting for the git-annex branch is somehow leaking out past the branch commit operations. It continued setting that while setting up `gc.auto`; the next call to git after that stopped setting the index file.
+
+The only way I can see offhand this could possibly happen is due to an exception. It may be that on ubuntu an exception is thrown by code that runs a git command with the index file set, for whatever reason, and this causes the code that normally resets it back to not run.
+
+----
+
+Ok, found it! 
+
+<pre>
+\"withIndex entered\"
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email \"you@example.com\"
+  git config --global user.name \"Your Name\"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: unable to auto-detect email address (got 'foo@darkstar.(none)')
+\"withIndex entered\"
+\"withIndex cleaned up\"
+</pre>
+
+Note lack of clean up after the first withIndex call. Thus leaving the environment passed to git polluted for further calls.
+
+This also explains why it's only happening on some systems, or with some versions of git. git's got all kinds of complexity around its username and email handling code.
+
+I have fixed this in git.
+"""]]
