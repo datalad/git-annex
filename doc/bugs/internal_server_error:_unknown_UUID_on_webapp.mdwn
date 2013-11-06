@@ -143,3 +143,5 @@ ok
 > > > http://127.0.0.1:56577/config/repository/edit/UUID%20%22aa500f29-42d9-4777-ae02-4a2c3d47db44%22?auth=...
 > > > 
 > > > -- [[anarcat]]
+> > > 
+> > > > I have filed this as a separate bug to close the discussion properly here, sorry for the noise. :) see [[bugs/remote_not_showing_up_in_webapp]] --[[anarcat]]
