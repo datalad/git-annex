@@ -1,0 +1,21 @@
+Alerts can now have buttons, that go to some url when clicked. Yay.
+
+Implementing that was a PITA, because Yesod really only wants its type-safe
+urls to be rendered from within its Handler monad. Which most things that
+create alerts are not. I managed to work around Yesod's insistence on this
+only by using a MVar to store the pure function that Yesod uses internally.
+That function can only be obtained once the webapp is running.
+
+----
+
+Fixed a nasty bug where using gpg would cause hangs. I introduced this back
+when I was reworking all the code in git-annex that runs processes, so it
+would work with threading. In the process a place that had forked a process
+to feed input to gpg was lost. Fixed it by spawning a thread to feed gpg.
+Luckily I have never released a version of git-annex with that bug, but
+the many users who are building from the master branch should update.
+
+----
+
+Made alerts be displayed while pairing is going on, with buttons to cancel
+pairing or respond to a pairing request.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://phil.0x539.de/"
+ nickname="Philipp Kern"
+ subject="comment 2"
+ date="2013-03-04T07:36:55Z"
+ content="""
+GPG also reduces the key material to the size of a SHA1 hash (because we're using the default option for s2k-digest-algo) to generate the symmetric key used with CAST5. So I wonder a bit why we bother with 512 bytes in the first place. Also they come from urandom (even on Linux), despite being generated once per remote. So maybe the strongness of the weakest link should be written down somewhere.
+"""]]

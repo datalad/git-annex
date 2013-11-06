@@ -1,0 +1,30 @@
+#What steps will reproduce the problem?
+
+1. Create a new repository in indirect mode.
+
+2. Add the same file twice under a different name. Now you have two symlinks pointing to the same file under .git/annex/objects/
+
+3. Switch to direct mode. The first symlink gets replaced by the actual file. The second stays unchanged, pointing to nowhere. But git annex whereis still reports it has a copy.
+
+4. Delete the first file. Git annex whereis still thinks it has a copy of file 2, which is not true -> data loss.
+
+#What is the expected output? What do you see instead?
+
+When switching to direct mode, both symlinks should be replaced by a copy (or at least a hardlink) of the actual file.
+
+> The typo that caused this bug is fixed. --[[Joey]] 
+
+#What version of git-annex are you using? On what operating system?
+
+3.20130107 on Arch Linux x64
+
+#Please provide any additional information below.
+
+The deduplication performed by git-annex is very dangerous in itself
+because files with identical content become replaced by references to the
+same file without the user necessarily being aware. Think of the user
+making a copy of a file, than modifying it. He would expect to end up with
+two files, the unchanged original and the modified copy. But what he really
+gets is two symlinks pointing to the same modified file.
+
+> I agree, it now copies rather than hard linking.  [[done]] --[[Joey]] 

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.210"
+ subject="Ever figure this out?"
+ date="2013-02-24T22:00:40Z"
+ content="""
+I find it's useful, when stuck on this kind of thing, to run `git annex find` at the command line passing it parts of the expression and making sure it works, and gradually building up to the complete expression.
+
+You have to do some conversion due to differences between command line and preferred content expression format. For example `git annex find -\( --in here --and --include \"music/*\" -\)`
+"""]]

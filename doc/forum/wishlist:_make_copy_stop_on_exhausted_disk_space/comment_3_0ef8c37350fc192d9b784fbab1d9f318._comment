@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 3"
+ date="2013-07-20T20:33:37Z"
+ content="""
+Indeed, that was a bug with encrypted directory special remotes. Fixed it.
+"""]]

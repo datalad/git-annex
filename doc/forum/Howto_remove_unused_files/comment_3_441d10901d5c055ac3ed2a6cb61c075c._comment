@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-02T21:21:21Z"
+ content="""
+git-annex adds large file capabilities to git, but it leaves all the regular git commands there for you to use. So the answer to \"how do I do &lt;something I'd normally do with a git command&gt;\" is always \"run the git command\". You only need to use git-annex to add large files to git, and to move their content around between repositories. Hope that helps clear that up.
+"""]]

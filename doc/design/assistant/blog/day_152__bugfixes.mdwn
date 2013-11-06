@@ -1,0 +1,18 @@
+Fixed a bug in the kqueue code that made the assistant not notice when a
+file was renamed into a subdirectory. This turned out to be because the
+symlink got broken, and it was using `stat` on the file. Switching to
+`lstat` fixed that.
+
+Improved installation of programs into standalone bundles. Now it uses
+the programs detected by configure, rather than a separate hardcoded list.
+Also improved handling of lsof, which is not always in PATH.
+
+Made a OSX 10.8.2 build of the app, which is nearly my last gasp attempt
+at finding a way around this crazy `git init` spinning problem with Jimmy's
+daily builds are used with newer OSX versions. Try it here:
+<http://downloads.kitenet.net/tmp/git-annex.dmg.bz2>
+
+----
+
+Mailed out the Kickstarter T-shirt rewards today, to people in the US.
+Have to fill out a bunch of forms before I can mail the non-US ones.

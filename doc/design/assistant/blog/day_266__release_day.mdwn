@@ -1,0 +1,6 @@
+Made a release.
+
+I am firming up some ideas for post-kickstarter. More on that later.
+
+In the process of setting up a Windows autobuilder, using the same
+jenkins installation that is used to autobuild msysgit.

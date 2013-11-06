@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmmLfBDEDFfEOba8Ra46nsnTmoNHFsLObo"
+ nickname="Brian"
+ subject="comment 9"
+ date="2013-03-01T03:55:46Z"
+ content="""
+@joey Both .so files were present and I was able to run the ln and busybox commands. And after that 'git annex' displayed the help screen. Thanks!
+
+Then I ran 'ps | grep ga.androidterm' to find the pid and then 'ls -l /proc/&lt;pid&gt;/exe' and it showed the symlink points at '/system/bin/app_process'.
+
+So the 'int n=readlink(\"/proc/self/exe\", buf, 1023);' in start.c isn't very useful in this case.
+"""]]

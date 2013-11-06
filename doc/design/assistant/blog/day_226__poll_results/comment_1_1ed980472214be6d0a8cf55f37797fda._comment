@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://dzsino.myopenid.com/"
+ nickname="dzsino"
+ subject="I've voted for git-remote-gcrypt because.."
+ date="2013-04-02T09:07:23Z"
+ content="""
+... as important a Windows port seems for git-annex to really take off (IMO), I would welcome encrypted repos for storing stuff on external drives: directory special remotes feel kinda cumbersome for me, I would rather use full blown repos. 
+"""]]

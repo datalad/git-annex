@@ -1,0 +1,22 @@
+Biding my time while [[desymlink]] gells in my head..
+
+Fixed a bug in the assistant's local pairing that rejected ssh keys with a
+period in the comment.
+
+Fixed a bug in the assistant that made it try to drop content from remotes
+that didn't have it, and avoided a drop failure crashing a whole assistant
+thread.
+
+Made --auto behave better when preferred content is set.
+
+Looked into making the transfer queue allow running multiple transfers at
+the same time, ie, one per remote. This seems to essentially mean splitting
+the queue into per remote queues. There are some complexities, and I
+decided not to dive into working through it right now, since it'd be
+a distraction from thinking about [[desymlink]]. Will revisit it later.
+
+Allow specifying a port when setting up a ssh remote.
+
+While doing that, noticed that the assistant fails to transfer files to
+sync to a ssh remote that was just added. That got broken while optimising
+reconnecting with a remote; fixed it.

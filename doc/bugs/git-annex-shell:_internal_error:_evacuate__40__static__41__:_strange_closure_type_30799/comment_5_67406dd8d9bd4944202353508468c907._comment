@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://fraggod.pip.verisignlabs.com.pip.verisignlabs.com/"
+ subject="Reported the issue to GHC"
+ date="2011-04-07T13:44:36Z"
+ content="""
+Finally got around to [report the issue to GHC tracker](http://hackage.haskell.org/trac/ghc/ticket/5085#comment:7).
+
+Looks quite alike (at least to the haskell-illiterate person like me) to a highest-priority issue that's hanging right at the top of the list.
+There are other similar reports, but they seem to be either related to PowerPC Macs, closed as invalid or due to needinfo inactivity.
+
+Guess any further discussion belongs there, unless ghc developers will bounce it back.
+Thanks a lot for your help, Joey, and for sharing a great thing that git-annex is.
+"""]]

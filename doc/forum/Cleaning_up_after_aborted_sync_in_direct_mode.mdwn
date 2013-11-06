@@ -1,0 +1,19 @@
+I recently began experimenting with direct mode on a repository where only a very limited number of commands (`git annex sync`, `git annex add .`, etc.) are being used (through desktop buttons).
+
+Things were working well, and then on another repository in indirect mode I moved a large folder and synced that data with a bare repo, and synced the repo in direct mode with the same bare repo (to get everything in sync).
+
+At that point, git annex seemed to hang, taking forever to complete, and from looking a processes and files it seemed like it was going nowhere, so I killed it. I wish I had done a bit more diagnostics before that, but unfortunately I didn't.
+
+At that point, I noticed that the old directory was still there and that there were still many files in it, but the new folder had also been created and there were files there, too. So I thought the transfer was done, and for whatever reason `git annex sync` had just not cleaned up properly.
+
+In fact, the sync was only half done and the remaining files in the old directory were the only (local) copies (on the direct mode repo). I removed them and then synced again, which actually told git to delete those symlinks.
+
+When I updated another (indirect mode) repository I noticed this, so I reverted the commit in question and got the symlinks back, no data lost. Then I went back to the direct mode repo, switched to indirect mode because I was worried about direct mode, `git annex sync`ed, then `git annex get` to get the files again from a usb and everything was back to normal.
+
+Except that when I tried to go back to direct mode in that original repo, I got an error saying that git could not stat a file which is in the old (deleted) folder. Searching around, I noticed that in the `.git/annex/objects` directory, there are many remaining `.map` files with lines referring to the old (deleted) directory.
+
+Is there any way to "reset" this somehow? I would like to switch back to direct mode, and I'd prefer not to recreate the repo.
+
+Oh and I'm using version: 4.20130501-g4a5bfb3.
+
+Thanks!

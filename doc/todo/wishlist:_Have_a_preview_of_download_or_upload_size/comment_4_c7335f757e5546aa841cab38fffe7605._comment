@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnHRhCe3qwVKQ8_NOGGSYJnAMW6FFyKbOc"
+ nickname="Holger"
+ subject="comment 4"
+ date="2013-07-02T21:09:03Z"
+ content="""
+That's so cool, thanks!
+
+Do you think it'd be a major change to the repository format if the size of any directory was stored there so that this kind of status lookup becomes a constant time operation? The two most important operations are probably:
+
+* The total size of a directory, counting only files present here
+* The total size of a directory, counting all files present at any location
+
+Of course, if the above two were constant time operations, you get --not here for free, too.
+
+To implement this, each node in the directory tree could have two additional 64 bit fields that hold the number of bytes in all files present anywhere (and this set of numbers is synchronized between all repositories), and the number of bytes in all files present here (only kept locally). This is only a small storage overhead (<16 MB if you have a million nodes) and suffices for repositories of size at most 2^64 bytes = 16 exabytes (probably more since most users will be ok with float accuracy). The numbers can be updated in logarithmic time every time a file changes. Instead of two numbers, it may not be that costly to store k numbers where k is the number of locations that a repository is connected to, since k is typically pretty small.
+
+The number of files can be stored in a similar way.
+"""]]

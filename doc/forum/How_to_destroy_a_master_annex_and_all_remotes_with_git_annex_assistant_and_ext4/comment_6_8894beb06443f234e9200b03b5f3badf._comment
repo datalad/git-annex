@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 6"
+ date="2013-07-23T17:54:00Z"
+ content="""
+If there's an easy way to detect when a directory is inside an ecryptfs volume, I'd be happy to make the assistant automatically enable fsync on it. ;)
+"""]]

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="arand"
+ ip="130.243.226.21"
+ subject="comment 4"
+ date="2013-09-01T18:06:51Z"
+ content="""
+Yet another solution, keeping it all in one script
+
+    #!/bin/sh
+    
+    while IFS= read line
+    do
+            test -n \"${line%%#*}\" && echo git annex importfeed --relaxed \"$line\"
+    done <<EOF
+    # FooCast - Alice & Bob
+    http://feeds.foo.com/foocast
+    # FrobCast
+    http://meep.moop.com/feed
+    EOF
+"""]]

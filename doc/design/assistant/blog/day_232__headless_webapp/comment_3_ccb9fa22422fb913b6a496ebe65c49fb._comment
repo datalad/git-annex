@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-09T18:58:40Z"
+ content="""
+@Richard besides the issues with where to store the private key part, that doesn't help with probably the most common use case for a headless webapp: Setting up a new repository on the remote system, which then might get joined into an existing repository network.
+"""]]

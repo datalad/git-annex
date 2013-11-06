@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="arand"
+ ip="130.243.226.21"
+ subject="comment 3"
+ date="2013-08-10T17:00:21Z"
+ content="""
+So, if I've understood it correctly (please correct me if that's not the case :) )
+
+Currently git-annex unused goes through this process
+
+* Look through all files in the index and find those which are git-annex keys (git ls-tree + git cat-file)
+* Look through all files the current ref and find those which are git-annex keys (git ls-tree + git cat-file)
+* For each ref in the repo
+  - Look through all files and find those which are git-annex keys (git ls-tree + git cat-file)
+* Then at the end
+  - Compare this list of keys with what is stored in .git/annex/objects
+  - Print out any objects which does not match a key.
+
+If that's the case, it means if that if you have multiple refs, even is they only differ by single empty commits, git-annex will end up doing a cat-file for the same file multiple times (one per ref), which is expensive.
+
+Would it be possible to change the algorithm for git-annex unused into instead something like:
+
+* For the index, HEAD, and all refs
+  - Create a list all files and remove those which are duplicates based on their sha1 hash (git ls-tree | uniq)
+* Then Look through this reduced list to find those which are git-annex keys (git cat-file)
+* Then check as before
+
+Unless this bypasses some safety or case I've overlooked, I think it should be possible to speed up git-annex unused quite a bit.
+
+"""]]

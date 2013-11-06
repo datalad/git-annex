@@ -1,0 +1,14 @@
+Finished the last EvilSplicer tweak and other fixes to make the 
+Android webapp build without any hand-holding.
+
+Currently setting up the Android autobuilder to include the webapp in its
+builds. To make this work I had to set up a new chroot with all the right
+stuff installed.
+
+Investigated how to make the Android webapp open a web browser when run.
+As far as I can tell (without access to an Android device right now), 
+`am start -a android.intent.action.VIEW -d http://localhost/etc` should do
+it.
+
+Seems that git 1.8.2 broke the assistant. I've put in a fix but have not
+yet tested it.

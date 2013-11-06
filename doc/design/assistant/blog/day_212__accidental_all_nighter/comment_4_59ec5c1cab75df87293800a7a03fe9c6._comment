@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmU_2tE75oyG0h2ZPN4lcroIKEMC8G-otE"
+ nickname="Michael"
+ subject="comment 4"
+ date="2013-03-13T16:34:46Z"
+ content="""
+Build from source is too hard for a non-haskell developer, I run into various errors I can not resolve. The daily build gives me \"git-annex: error while loading shared libraries: libyaml-0.so.2: cannot open shared object file: No such file or directory\". For Ubuntu a PPA with daily build would be handy.
+"""]]

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://pradermecker.myopenid.com/"
+ ip="81.244.215.244"
+ subject="comment 2"
+ date="2013-04-27T17:14:43Z"
+ content="""
+It works fine. After it is set up with the client as described, sync is automatic from the Assistant.
+
+What I find cumbersome is the fact that I need to manually call \"git annex sync\" on the remote (usb or local ssh) to view (generate) the link. Is there a way to avoid this extra step ?
+
+"""]]

@@ -1,0 +1,16 @@
+### Please describe the problem.
+Using "--numcopies=N" on the command line doesn't overrides (as advertised) the annex.numcopies variable when set via .gitattributes. 
+
+### What steps will reproduce the problem?
+
+$ echo '* annex.numcopies=2' > .gitattributes
+
+$ git annex drop --numcopies=1 somefile.txt
+
+Second line fails if only one other copy exists.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 4.20130627
+
+> I don't think this was ever handled correctly.
+> I've fixed it now. [[done]] --[[Joey]] 

@@ -1,0 +1,177 @@
+Hello,
+
+i am trying to run the walkthrough on Windows 7. When i try to get the contents of a file, i only get a some git annex text string and not the real file. Both repositories are on the same ntfs filesystem. 
+
+C:\tmp>git annex version  
+git-annex version: 4.20130827-g4f18612  
+build flags: Pairing Testsuite S3 WebDAV DNS  
+local repository version: 4  
+default repository version: 3  
+supported repository versions: 3 4  
+upgrade supported from repository versions: 2  
+  
+C:\tmp\server>git --version  
+git version 1.8.3.msysgit.0  
+   
+
+# walkthrough.bat
+    
+    doskey /history > commands.log
+    mkdir laptop
+    cd laptop
+    git init
+    git annex init laptop
+    cd ..
+    
+    git clone laptop server
+    cd server
+    git annex init server
+    git remote add laptop c:\tmp\laptop
+    
+    cd ..\laptop
+    git remote add server c:\tmp\server
+    copy ..\1.pdf .
+    git annex add 1.pdf
+    git commit -m add
+    dir 
+    
+    cd ..\server
+    dir
+    git fetch laptop
+    git merge laptop/master
+    git annex get 1.pdf
+    dir
+    type 1.pdf
+    
+
+# walkthrough.log
+
+    C:\tmp>walkthrough.bat
+    
+    C:\tmp>doskey /history  1>commands.log
+    
+    C:\tmp>mkdir laptop
+    
+    C:\tmp>cd laptop
+    
+    C:\tmp\laptop>git init
+    Initialized empty Git repository in C:/tmp/laptop/.git/
+    
+    C:\tmp\laptop>git annex init laptop
+    init laptop
+      Detected a crippled filesystem.
+    
+      Enabling direct mode.
+    
+      Detected a filesystem without fifo support.
+    
+      Disabling ssh connection caching.
+    ok
+    (Recording state in git...)
+    
+    C:\tmp\laptop>cd ..
+    
+    C:\tmp>git clone laptop server
+    Cloning into 'server'...
+    done.
+    warning: remote HEAD refers to nonexistent ref, unable to checkout.
+    
+    
+    C:\tmp>cd server
+    
+    C:\tmp\server>git annex init server
+    init server
+      Detected a crippled filesystem.
+    
+      Enabling direct mode.
+    
+      Detected a filesystem without fifo support.
+    
+      Disabling ssh connection caching.
+    ok
+    (Recording state in git...)
+    
+    C:\tmp\server>git remote add laptop c:\tmp\laptop
+    
+    C:\tmp\server>cd ..\laptop
+    
+    C:\tmp\laptop>git remote add server c:\tmp\server
+    
+    C:\tmp\laptop>copy ..\1.pdf .
+            1 file(s) copied.
+    
+    C:\tmp\laptop>git annex add 1.pdf
+    add 1.pdf (checksum...) ok
+    (Recording state in git...)
+    
+    C:\tmp\laptop>git commit -m add
+    [master (root-commit) 7ad1514] add
+     1 file changed, 1 insertion(+)
+     create mode 120000 1.pdf
+    
+    C:\tmp\laptop>dir
+     Volume in drive C has no label.
+     Volume Serial Number is x
+    
+     Directory of C:\tmp\laptop
+    
+    09/01/2013  11:03 AM    <DIR>          .
+    09/01/2013  11:03 AM    <DIR>          ..
+    08/30/2013  12:43 PM            37,500 1.pdf
+                   1 File(s)         37,500 bytes
+                   2 Dir(s)   7,698,817,024 bytes free
+    
+    C:\tmp\laptop>cd ..\server
+    
+    C:\tmp\server>dir
+     Volume in drive C has no label.
+     Volume Serial Number is x
+    
+     Directory of C:\tmp\server
+    
+    09/01/2013  11:03 AM    <DIR>          .
+    09/01/2013  11:03 AM    <DIR>          ..
+                   0 File(s)              0 bytes
+                   2 Dir(s)   7,698,817,024 bytes free
+    
+    C:\tmp\server>git fetch laptop
+    remote: Counting objects: 9, done.
+    remote: Compressing objects: 100% (6/6), done.
+    remote: Total 8 (delta 1), reused 0 (delta 0)
+    Unpacking objects: 100% (8/8), done.
+    From c:\tmp\laptop
+     * [new branch]      git-annex  -> laptop/git-annex
+     * [new branch]      master     -> laptop/master
+    
+    C:\tmp\server>git merge laptop/master
+    
+    C:\tmp\server>git annex get 1.pdf
+    get 1.pdf (merging laptop/git-annex origin/git-annex into git-annex...)
+    (Recording state in git...)
+    (from laptop...)
+    1.pdf
+           37500 100%    4.51MB/s    0:00:00 (xfer#1, to-check=0/1)
+    
+    sent 37573 bytes  received 31 bytes  75208.00 bytes/sec
+    total size is 37500  speedup is 1.00
+    ok
+    (Recording state in git...)
+    
+    C:\tmp\server>dir
+     Volume in drive C has no label.
+     Volume Serial Number is x
+    
+     Directory of C:\tmp\server
+    
+    09/01/2013  11:03 AM    <DIR>          .
+    09/01/2013  11:03 AM    <DIR>          ..
+    09/01/2013  11:03 AM               194 1.pdf
+                   1 File(s)            194 bytes
+                   2 Dir(s)   7,698,767,872 bytes free
+    
+    C:\tmp\server>type 1.pdf
+    .git/annex/objects/kM/0q/SHA256E-s37500--32d8190c7e189d45f48245a100e4cc981ea1bbc
+    02ac8bfa6188db73e41ce06f3.pdf/SHA256E-s37500--32d8190c7e189d45f48245a100e4cc981e
+    a1bbc02ac8bfa6188db73e41ce06f3.pdfC:\tmp\server>
+    C:\tmp\server>
+    

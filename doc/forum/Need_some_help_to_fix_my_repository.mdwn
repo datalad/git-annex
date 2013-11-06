@@ -1,0 +1,31 @@
+Hi, 
+first sorry for my poor english it's not my native language.
+
+I have one repository on my laptop and two repository on usb disk. Made with following  walkthrough (creating a repository and adding a remote).
+
+Yesterday I have a backup of my repository on usb disk before add some file with
+
+cd /media/usb/annex;git fetch laptop; git merge laptop/master&&git annex get .&&git annex sync
+
+Now the repository on my usb disk is a mess.
+Every file before the commit are lost. 
+For example : 
+ After the sync : file Z.7z 
+Z.7z: broken symbolic link to `../../../../.git/annex/objects/2K/49/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+
+The file ../../../../.git/annex/objects/2K/49/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 doesn't exist.
+
+On the repository before the sync (inside the Backup) :
+file Z.7z 
+Z.7z: symbolic link to `../../../../.git/annex/objects/J1/f4/SHA256-s696365035--d2dcc67bf2f05fcfc7f42723b2d415d4f057a2eeadc282b40f5bc3724534f2f4/SHA256-s696365035--d2dcc67bf2f05fcfc7f42723b2d415d4f057a2eeadc282b40f5bc3724534f2f4'
+
+The file ../../../../.git/annex/objects/J1/f4/SHA256-s696365035--d2dcc67bf2f05fcfc7f42723b2d415d4f057a2eeadc282b40f5bc3724534f2f4/SHA256-s696365035--d2dcc67bf2f05fcfc7f42723b2d415d4f057a2eeadc282b40f5bc3724534f2f4  still exist in the repository after the sync.
+
+3 questions, if somebody could help me :
+
+ - what I do wrong ?
+ - why the- symlink for every file had change after "cd /media/usb/annex;git fetch laptop; git merge laptop/master&&git annex get .&&git annex sync"
+ - how could I fix my repository ? recover file from the backup ? how ? Copy every file to start my repository from a new clean state ?
+ 
+
+

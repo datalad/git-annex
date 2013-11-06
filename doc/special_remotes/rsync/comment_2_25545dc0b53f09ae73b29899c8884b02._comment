@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-03-29T17:12:47Z"
+ content="""
+No, special remotes do not contain a copy of the git repository, and no, git-annex does not notice when files are added to remote rsync repositories. Suggest you read [[special_remotes]].
+"""]]

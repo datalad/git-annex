@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkGCmVc5qIJaQQgG82Hc5zzBdAVdhe2JEM"
+ nickname="Bruno"
+ subject="comment 5"
+ date="2013-05-30T19:38:59Z"
+ content="""
+I still have the problem :(
+
+    [2013-05-30 15:36:31 EDT] main: starting assistant version 4.20130530-g2e0f464
+    Already up-to-date.
+    WebApp crashed: <file descriptor: 14>: hPutStr: illegal operation (handle is closed)
+    [2013-05-30 15:36:32 EDT] WebApp: warning WebApp crashed: <file descriptor: 14>: hPutStr: illegal operation (handle is closed)
+
+    (scanning...) [2013-05-30 15:36:32 EDT] Watcher: Performing startup scan
+    Already up-to-date.
+    [2013-05-30 15:36:35 EDT] Committer: Committing changes to git
+
+    (Recording state in git...)
+    (started...) [2013-05-30 15:36:44 EDT] Committer: Committing changes to git
+"""]]

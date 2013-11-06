@@ -1,0 +1,7 @@
+Here's my current situation:
+
+I have a box which creates about a dozen files periodically. All files add up to about 1GB in size. The files are text and sorted. I then rsync the files to n servers. The rsync diff algorithm transfers way less than n * 1GB because the files are largely the same. However, this distribution technique is inefficient because I must run n rsync processes in parallel and the rsync diff algorithm takes a lot of CPU.
+
+How could I use git-annex instead of rsync?
+
+Because the box producing the new files also has the old files, then presumably git could calculate the diffs for each file once instead of n times as with the rsync solution? Then only the diffs need be distributed to the n servers... using git-annex? And finally the newly updated version of the dozen files needs to be available on each of the n servers. Ideally, the diffs would not mount up over time on either the publishing server or the n servers, thus causing out of disk problems etc. How to deploy git-annex to solve my problem?

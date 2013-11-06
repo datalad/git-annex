@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmVV_nBwlsyCv53BXoJt8YpCX_wZPfzpyo"
+ nickname="Peter"
+ subject="Progress"
+ date="2013-10-10T01:17:08Z"
+ content="""
+Is there any type of script / tool / patch which does the --fast but with a copy instead of only a hard link?  Can someone point me towards how I'm supposed to do this?  I'm a technical user, however I don't really fancy having try to go learn the source code of git-annex to fix this really bad flaw :-/ 
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlWskoNgUB7r70OXglR-4iKI4bOuPJb-xg"
+ nickname="Tim"
+ subject="comment 1"
+ date="2013-10-13T12:35:47Z"
+ content="""
+I've just tested a similar scenario with 2 conflicting files, a file-file conflict, and then it works fine. That makes sense, as there's a test written for that.
+
+So the specific bits are: directory-file conflict of repos in direct mode.
+"""]]

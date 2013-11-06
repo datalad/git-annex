@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="basak"
+ ip="2001:8b0:1c8::2"
+ subject="comment 11"
+ date="2013-05-24T09:38:40Z"
+ content="""
+Thanks Joey - initremote on my slightly older version appears to work. I'll use `enableremote` when I can.
+
+> (Just in case, I have verified that embedcreds does cause the cipher= to be stored in the remote.log. It does.)
+
+This doesn't do what I expect. The documentation suggests that my S3 _login_ credentials would be stored. I understand that the cipher would be stored; but isn't this a separate concept? Instead, I'm being asked to set `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY`; my understanding was that git-annex will keep them in the repository for me, so that I don't have to set them after running `initremote` before cloning. This works, apart from surviving the cloning. I'm using `encryption=shared`; does this affect anything? Or am I using a version of git-annex (3.20121112ubuntu3) that's too old?
+"""]]

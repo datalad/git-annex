@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 2"
+ date="2013-07-18T20:22:05Z"
+ content="""
+Actually with 4.20130709, I see the drive (ntfs-3g under Linux, gpg-encrypted special remote) being filled to 0 remaining space, even with reservespace of 300mb.  Guess it's another bug anyway.
+"""]]

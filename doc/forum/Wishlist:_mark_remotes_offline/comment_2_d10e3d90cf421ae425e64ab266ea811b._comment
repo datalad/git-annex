@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawncBlzaDI248OZGjKQMXrLVQIx4XrZrzFo"
+ nickname="Perttu"
+ subject="comment 2"
+ date="2012-07-07T17:45:43Z"
+ content="""
+Ah, I didn't read the man page carefully enough. My apologies.
+
+Setting the ignore status based on an exit status would be
+even better, since this avoids re-writing a new config file for
+each repository each time I enter or exit my LAN.
+"""]]

@@ -1,0 +1,135 @@
+From 28e6a6599ee91e15aa7b2f9d25433490f192f22e Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sat, 21 Sep 2013 23:17:29 +0000
+Subject: [PATCH] remove IPv6 stuff
+
+---
+ Network/Socks5/Command.hs  |    8 +-------
+ Network/Socks5/Conf.hs     |    1 -
+ Network/Socks5/Lowlevel.hs |    1 -
+ Network/Socks5/Types.hs    |   18 +-----------------
+ Network/Socks5/Wire.hs     |    2 --
+ 5 files changed, 2 insertions(+), 28 deletions(-)
+
+diff --git a/Network/Socks5/Command.hs b/Network/Socks5/Command.hs
+index 8ce06ec..222d954 100644
+--- a/Network/Socks5/Command.hs
++++ b/Network/Socks5/Command.hs
+@@ -12,7 +12,6 @@ module Network.Socks5.Command
+     , Connect(..)
+     , Command(..)
+     , connectIPV4
+-    , connectIPV6
+     , connectDomainName
+     -- * lowlevel interface
+     , rpc
+@@ -28,7 +27,7 @@ import qualified Data.ByteString as B
+ import qualified Data.ByteString.Char8 as BC
+ import Data.Serialize
+ 
+-import Network.Socket (Socket, PortNumber, HostAddress, HostAddress6)
++import Network.Socket (Socket, PortNumber, HostAddress)
+ import Network.Socket.ByteString
+ 
+ import Network.Socks5.Types
+@@ -64,11 +63,6 @@ connectIPV4 socket hostaddr port = onReply <$> rpc_ socket (Connect $ SocksAddre
+     where onReply (SocksAddrIPV4 h, p) = (h, p)
+           onReply _                    = error "ipv4 requested, got something different"
+ 
+-connectIPV6 :: Socket -> HostAddress6 -> PortNumber -> IO (HostAddress6, PortNumber)
+-connectIPV6 socket hostaddr6 port = onReply <$> rpc_ socket (Connect $ SocksAddress (SocksAddrIPV6 hostaddr6) port)
+-    where onReply (SocksAddrIPV6 h, p) = (h, p)
+-          onReply _                    = error "ipv6 requested, got something different"
+-
+ -- TODO: FQDN should only be ascii, maybe putting a "fqdn" data type
+ -- in front to make sure and make the BC.pack safe.
+ connectDomainName :: Socket -> String -> PortNumber -> IO (SocksHostAddress, PortNumber)
+diff --git a/Network/Socks5/Conf.hs b/Network/Socks5/Conf.hs
+index c29ff7b..007d382 100644
+--- a/Network/Socks5/Conf.hs
++++ b/Network/Socks5/Conf.hs
+@@ -47,5 +47,4 @@ defaultSocksConfFromSockAddr sockaddr = SocksConf server SocksVer5
+     where server       = SocksAddress haddr port
+           (haddr,port) = case sockaddr of
+                              SockAddrInet p h      -> (SocksAddrIPV4 h, p)
+-                             SockAddrInet6 p _ h _ -> (SocksAddrIPV6 h, p)
+                              _                     -> error "unsupported unix sockaddr type"
+diff --git a/Network/Socks5/Lowlevel.hs b/Network/Socks5/Lowlevel.hs
+index c10d9b9..2c3d59c 100644
+--- a/Network/Socks5/Lowlevel.hs
++++ b/Network/Socks5/Lowlevel.hs
+@@ -17,7 +17,6 @@ resolveToSockAddr :: SocksAddress -> IO SockAddr
+ resolveToSockAddr (SocksAddress sockHostAddr port) =
+     case sockHostAddr of
+         SocksAddrIPV4 ha       -> return $ SockAddrInet port ha
+-        SocksAddrIPV6 ha6      -> return $ SockAddrInet6 port 0 ha6 0
+         SocksAddrDomainName bs -> do he <- getHostByName (BC.unpack bs)
+                                      return $ SockAddrInet port (hostAddress he)
+ 
+diff --git a/Network/Socks5/Types.hs b/Network/Socks5/Types.hs
+index 7fbec25..17c7c83 100644
+--- a/Network/Socks5/Types.hs
++++ b/Network/Socks5/Types.hs
+@@ -19,7 +19,7 @@ module Network.Socks5.Types
+ import Data.ByteString (ByteString)
+ import Data.Word
+ import Data.Data
+-import Network.Socket (HostAddress, HostAddress6, PortNumber)
++import Network.Socket (HostAddress, PortNumber)
+ import Control.Exception
+ import qualified Data.ByteString.Char8 as BC
+ import Numeric (showHex)
+@@ -53,12 +53,10 @@ data SocksMethod =
+ data SocksHostAddress =
+       SocksAddrIPV4 !HostAddress
+     | SocksAddrDomainName !ByteString
+-    | SocksAddrIPV6 !HostAddress6
+     deriving (Eq,Ord)
+ 
+ instance Show SocksHostAddress where
+     show (SocksAddrIPV4 ha)       = "SocksAddrIPV4(" ++ showHostAddress ha ++ ")"
+-    show (SocksAddrIPV6 ha6)      = "SocksAddrIPV6(" ++ showHostAddress6 ha6 ++ ")"
+     show (SocksAddrDomainName dn) = "SocksAddrDomainName(" ++ BC.unpack dn ++ ")"
+ 
+ -- | Converts a HostAddress to a String in dot-decimal notation
+@@ -69,20 +67,6 @@ showHostAddress num = concat [show q1, ".", show q2, ".", show q3, ".", show q4]
+         (num''',q3) = num'' `quotRem` 256
+         (_,q4)      = num''' `quotRem` 256
+ 
+--- | Converts a IPv6 HostAddress6 to standard hex notation
+-showHostAddress6 :: HostAddress6 -> String
+-showHostAddress6 (a,b,c,d) =
+-    (concat . intersperse ":" . map (flip showHex ""))
+-        [p1,p2,p3,p4,p5,p6,p7,p8]
+-    where (a',p2) = a `quotRem` 65536
+-          (_,p1)  = a' `quotRem` 65536
+-          (b',p4) = b `quotRem` 65536
+-          (_,p3)  = b' `quotRem` 65536
+-          (c',p6) = c `quotRem` 65536
+-          (_,p5)  = c' `quotRem` 65536
+-          (d',p8) = d `quotRem` 65536
+-          (_,p7)  = d' `quotRem` 65536
+-
+ -- | Describe a Socket address on the SOCKS protocol
+ data SocksAddress = SocksAddress !SocksHostAddress !PortNumber
+     deriving (Show,Eq,Ord)
+diff --git a/Network/Socks5/Wire.hs b/Network/Socks5/Wire.hs
+index 3ab95a8..2881988 100644
+--- a/Network/Socks5/Wire.hs
++++ b/Network/Socks5/Wire.hs
+@@ -46,12 +46,10 @@ data SocksResponse = SocksResponse
+ 
+ getAddr 1 = SocksAddrIPV4 <$> getWord32be
+ getAddr 3 = SocksAddrDomainName <$> (getWord8 >>= getByteString . fromIntegral)
+-getAddr 4 = SocksAddrIPV6 <$> (liftM4 (,,,) getWord32le getWord32le getWord32le getWord32le)
+ getAddr n = error ("cannot get unknown socket address type: " ++ show n)
+ 
+ putAddr (SocksAddrIPV4 h)         = putWord8 1 >> putWord32host h
+ putAddr (SocksAddrDomainName b)   = putWord8 3 >> putWord8 (fromIntegral $ B.length b) >> putByteString b
+-putAddr (SocksAddrIPV6 (a,b,c,d)) = putWord8 4 >> mapM_ putWord32host [a,b,c,d]
+ 
+ getSocksRequest 5 = do
+     cmd <- toEnum . fromIntegral <$> getWord8
+-- 
+1.7.10.4
+

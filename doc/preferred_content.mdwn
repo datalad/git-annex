@@ -1,0 +1,207 @@
+git-annex tries to ensure that the configured number of [[copies]] of your
+data always exist, and leaves it up to you to use commands like `git annex
+get` and `git annex drop` to move the content to the repositories you want
+to contain it. But sometimes, it can be good to have more fine-grained
+control over which repositories prefer to have which content. Configuring
+this allows `git annex get --auto`, `git annex drop --auto`, etc to do
+smarter things.
+
+Preferred content settings can be edited using `git
+annex vicfg`, or viewed and set at the command line with `git annex wanted`.
+Each repository can have its own settings, and other repositories may also
+try to honor those settings. So there's no local `.git/config` setting it.
+
+The idea is that you write an expression that files are matched against.
+If a file matches, it's preferred to have its content stored in the
+repository. If it doesn't, it's preferred to drop its content from
+the repository (if there are enough copies elsewhere).
+
+The expressions are very similar to the file matching options documented
+on the [[git-annex]] man page. At the command line, you can use those
+options in commands like this:
+
+	git annex get --include='*.mp3' --and -'(' --not --largerthan=100mb -')'
+
+The equivilant preferred content expression looks like this:
+
+	include=*.mp3 and (not largerthan=100mb)
+
+So, just remove the dashes, basically. However, there are some differences
+from the command line options to keep in mind:
+
+### difference: file matching
+
+While --include and --exclude match files relative to the current
+directory, preferred content expressions always match files relative to the
+top of the git repository. Perhaps you put files into `archive` directories
+when you're done with them. Then you could configure your laptop to prefer
+to not retain those files, like this:
+
+	exclude=*/archive/*
+
+### difference: no "in="
+
+Preferred content expressions have no direct equivilant to `--in`.
+
+Often, it's best to add repositories to groups, and match against
+the groups in a preferred content expression. So rather than
+`--in=usbdrive`, put all the USB drives into a "transfer" group,
+and use "copies=transfer:1"
+
+### difference: dropping
+
+To decide if content should be dropped, git-annex evaluates the preferred
+content expression under the assumption that the content has *already* been
+dropped. If the content would not be preferred then, the drop can be done.
+So, for example, `copies=2` in a preferred content expression lets
+content be dropped only when there are currently 3 copies of it, including
+the repo it's being dropped from. This is different than running `git annex
+drop --copies=2`, which will drop files that currently have 2 copies.
+
+### difference: "present"
+
+There's a special "present" keyword you can use in a preferred content
+expression. This means that content is preferred if it's present,
+and not otherwise. This leaves it up to you to use git-annex manually
+to move content around. You can use this to avoid preferred content
+settings from affecting a subdirectory. For example:
+
+	auto/* or (include=ad-hoc/* and present)
+
+Note that `not present` is a very bad thing to put in a preferred content 
+expression. It'll make it prefer to get content that's not present, and
+drop content that is present! Don't go there..
+
+### difference: "inpreferreddir"
+
+There's a special "inpreferreddir" keyword you can use in a
+preferred content expression of a special remote. This means that the
+content is preferred if it's in a directory (located anywhere in the tree)
+with a special name.
+
+The name of the directory can be configured using 
+`git annex enableremote $remote preferreddir=$dirname`
+
+(If no directory name is configured, it uses "public" by default.)
+
+## testing preferred content settings
+
+To check at the command line which files are matched by preferred content
+settings, you can use the --want-get and --want-drop options.
+
+For example, "git annex find --want-get --not --in ." will find all the
+files that "git annex get --auto" will want to get, and "git annex find
+--want-drop --in ." will find all the files that "git annex drop --auto"
+will want to drop.
+
+## standard expressions
+
+git-annex comes with some standard preferred content expressions, that can
+be used with repositories that are in some pre-defined groups. To make a
+repository use one of these, just set its preferred content expression
+to "standard", and put it in one of these groups.
+
+(Note that most of these standard expressions also make the repository
+prefer any content that is only currently available on untrusted and
+dead repositories. So if an untrusted repository gets connected,
+any repository that can will back it up.)
+
+### client
+
+All content is preferred, unless it's for a file in a "archive" directory,
+which has reached an archive repository.
+
+`((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) or (not copies=semitrusted+:1)`
+
+### transfer
+
+Use for repositories that are used to transfer data between other
+repositories, but do not need to retain data themselves. For
+example, a repository on a server, or in the cloud, or a small
+USB drive used in a sneakernet.
+
+The preferred content expression for these causes them to get and retain
+data until all clients have a copy.
+
+`(not (inallgroup=client and copies=client:2) and ($client)`
+
+The "copies=client:2" part of the above handles the case where
+there is only one client repository. It makes a transfer repository
+speculatively  prefer content in this case, even though it as of yet
+has nowhere to transfer it to. Presumably, another client repository
+will be added later.
+
+### backup
+
+All content is preferred.
+
+`include=*`
+
+### incremental backup
+
+Only prefers content that's not already backed up to another backup
+or incremental backup repository.
+
+`(include=* and (not copies=backup:1) and (not copies=incrementalbackup:1)) or (not copies=semitrusted+:1)`
+
+### small archive
+
+Only prefers content that's located in an "archive" directory, and
+only if it's not already been archived somewhere else.
+
+`((include=*/archive/* or include=archive/*) and not (copies=archive:1 or copies=smallarchive:1)) or (not copies=semitrusted+:1)`
+
+### full archive
+
+All content is preferred, unless it's already been archived somewhere else.
+
+`(not (copies=archive:1 or copies=smallarchive:1)) or (not copies=semitrusted+:1)`
+
+Note that if you want to archive multiple copies (not a bad idea!),
+you should instead configure all your archive repositories with a
+version of the above preferred content expression with a larger
+number of copies.
+
+### source
+
+Use for repositories where files are often added, but that do not need to
+retain files for local use. For example, a repository on a camera, where
+it's desirable to remove photos as soon as they're transferred elsewhere.
+
+The preferred content expression for these causes them to only retain
+data until a copy has been sent to some other repository.
+
+`not (copies=1)`
+
+### manual
+
+This gives you nearly full manual control over what content is stored in the
+repository. This allows using the [[assistant]] without it trying to keep a
+local copy of every file. Instead, you can manually run `git annex get`,
+`git annex drop`, etc to manage content. Only content that is present
+is preferred.
+
+The exception to this manual control is that content that a client
+repository would not want is not preferred. So, files in archive
+directories are not preferred once their content has 
+reached an archive repository.
+
+`present and ($client)`
+
+### public
+
+This is used for publishing information to a repository that can be
+publically accessed. Only files in a directory with a particular name
+will be published. (The directory can be located anywhere in the
+repository.)
+
+The name of the directory can be configured using
+`git annex enableremote $remote preferreddir=$dirname`
+
+### unwanted
+
+Use for repositories that you don't want to exist. This will result
+in any content on them being moved away to other repositories. (Works
+best when the unwanted repository is also marked as untrusted or dead.)
+
+`exclude=*`

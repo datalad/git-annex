@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlhIMPGF1E0XEJKV6j6-PFzAxA1-nIlydo"
+ nickname="Bernhard"
+ subject="comment 5"
+ date="2012-09-11T09:34:42Z"
+ content="""
+`/usr/share/i18n/` does not exists on my Debian ARM system :/
+
+however, `strace ./arm` in the debian chroot reveals that some files from `/usr/lib/gconv/` are loaded:
+
+    [...]
+    open(\"/usr/lib/gconv/UTF-32.so\", O_RDONLY) = 3
+    read(3, \"\177ELF\1\1\1\0\0\0\0\0\0\0\0\0\3\0(\0\1\0\0\0\4\4\0\0004\0\0\0\"..., 512) = 512
+    [...]
+
+full log: <http://wien.tomnetworks.com/strace_arm>.  Unfortunately, I don't have `strace` in the android userland for comparison.
+
+Just copying the related `gconv` files didn't work. I don't have so much time at the moment, I'll investigate further in some days or so.
+
+At least, output using `error :: String -> a` does work :-)
+"""]]

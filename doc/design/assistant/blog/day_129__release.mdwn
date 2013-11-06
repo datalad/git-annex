@@ -1,0 +1,4 @@
+Cut a new release today. It's been nearly a month since the last one, and a
+large number of improvements.. Be sure to read the
+[[/assistant/release_notes]] if upgrading. All the standalone builds are
+updated already.

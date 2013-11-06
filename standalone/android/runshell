@@ -1,0 +1,132 @@
+#!/system/bin/sh
+# This is runs a shell in an environment configured for git-annex.
+# Nearly the only command that can be used in here is busybox!
+# lib.start.so will run us in the root of our app directory
+base=$(./busybox pwd)
+cmd=$base/busybox
+
+set -e
+
+prep () {
+	# Cannot rely on Android providing a sane HOME
+	HOME="/sdcard/git-annex.home"
+	export HOME
+}
+
+buildtree () {
+	$cmd echo "Installation starting to $base"
+	$cmd cat "lib/lib.version.so"
+
+	if $cmd test -e "$base/bin"; then
+		$cmd mv "$base/bin" "$base/bin.old"
+	fi
+	$cmd mkdir -p "$base/bin"
+
+	for prog in busybox git-annex git-shell git-upload-pack git gpg rsync ssh ssh-keygen; do
+		$cmd echo "installing $prog"
+		if $cmd test -e "$base/bin/$prog"; then
+			$cmd rm -f "$base/bin/$prog"
+		fi
+		$cmd ln -s "$base/lib/lib.$prog.so" "$base/bin/$prog"
+	done
+
+	$cmd --install $base/bin
+
+	$cmd rm -rf "$base/bin.old"
+
+	$cmd tar zxf $base/lib/lib.git.tar.gz.so
+	for prog in git git-shell git-upload-pack; do
+		for link in $($cmd cat "$base/links/$prog"); do
+			$cmd echo "linking $link to $prog"
+			if $cmd test -e "$base/$link"; then
+				$cmd rm -f "$base/$link"
+			fi
+			$cmd ln -s "$base/bin/$prog" "$base/$link"
+		done
+		$cmd rm -f "$base/links/$prog"
+	done
+
+	$cmd mkdir -p "$base/templates"
+	$cmd mkdir -p "$base/tmp"
+
+	$cmd echo "#!/system/bin/sh" > "$base/runshell"
+	$cmd echo "exec $base/lib/lib.start.so" >> "$base/runshell"
+	$cmd chmod 755 runshell
+
+	$cmd cat "$base/lib/lib.version.so" > "$base/installed-version"
+	$cmd echo "Installation complete"
+}
+
+install () {
+	if ! $cmd mkdir -p "$HOME"; then
+		$cmd echo "mkdir of $HOME failed!"
+	fi
+	if $cmd test ! -e "$base/bin/git-annex"; then
+		if ! buildtree > $HOME/git-annex-install.log 2>&1; then
+			$cmd echo "Installation failed! Please report a bug and attach $HOME/git-annex-install.log"
+			$cmd sh
+		fi
+	elif $cmd test ! -e "$base/installed-version" || ! $cmd cmp "$base/installed-version" "$base/lib/lib.version.so" >/dev/null; then
+		if ! buildtree > $HOME/git-annex-install.log 2>&1; then
+			$cmd echo "Upgrade failed! Please report a bug and attach $HOME/git-annex-install.log"
+		fi
+	fi
+}
+
+run () {
+	PATH="$base/bin:$PATH"
+	export PATH
+	
+	ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
+	export ORIG_GIT_EXEC_PATH
+	GIT_EXEC_PATH=$base/libexec/git-core
+	export GIT_EXEC_PATH
+	
+	ORIG_GIT_TEMPLATE_DIR="$GIT_TEMPLATE_DIR"
+	export ORIG_GIT_TEMPLATE_DIR
+	GIT_TEMPLATE_DIR="$base/templates"
+	export GIT_TEMPLATE_DIR
+
+	# Indicate which variables were exported above.
+	GIT_ANNEX_STANDLONE_ENV="GIT_EXEC_PATH GIT_TEMPLATE_DIR"
+	export GIT_ANNEX_STANDLONE_ENV
+	
+	# This is a temporary directory on a non-crippled filesystem.
+	# Needs to be as short a path as possible, for ssh sockets.
+	GIT_ANNEX_TMP_DIR=$base/tmp
+	export GIT_ANNEX_TMP_DIR
+	# /tmp probably doesn't exist, so also use it as TMPDIR
+	TMPDIR=$GIT_ANNEX_TMP_DIR
+	export TMPDIR
+
+	if $cmd test ! -e "$HOME/.gitconfig"; then
+		git config --global user.email "git-annex@android"
+		git config --global user.name "android"
+	fi
+
+	if $cmd test "$1"; then
+		cmd="$1"
+		shift 1
+		exec "$cmd" "$@"
+	else
+		# As good a start point as any.
+		cd "$HOME"
+
+		/system/bin/sh
+	fi
+}
+
+if $cmd test -n "$MKFIFO"; then
+	# because java is insane
+	$cmd mkfifo "$MKFIFO"
+else
+	if ! prep; then
+		$cmd echo "prep failed. Please report a bug."
+		read line
+	fi
+	if ! install; then
+		$cmd echo "install failed. Please report a bug."
+		read line
+	fi
+	run
+fi

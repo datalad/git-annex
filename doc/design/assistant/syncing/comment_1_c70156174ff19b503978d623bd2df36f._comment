@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk4YX0PWICfWGRLuncCPufMPDctT7KAYJA"
+ nickname="betabrain"
+ subject="selective data syncing"
+ date="2012-07-24T15:27:08Z"
+ content="""
+How will the assistant know which files' data to distribute between the repos?
+
+I'm using git-annex and it's numcopies attribute to maintain a redundant archive spread over different computers and usb drives. Not all drives should get a copy of everything, e.g. the usb drive I take to work should not automatically get a copy of family pictures.
+
+How about .gitattributes?
+
+* \* annex.auto-sync-data = false # don't automatically sync the data
+* archive/ annex.auto-push-repos = NAS # everything added to archive/ in any repo goes automatically to the NAS remote.
+* work/ annex.auto-synced-repos = LAPTOP WORKUSB # everything added to work/ in LAPTOP or WORKUSB gets synced to WORKUSB and LAPTOP
+* work/ annex.auto-push-repos = LAPTOP WORKUSB # stuff added to work/ anywhere gets synced to LAPTOP and WORKUSB
+* important/ annex.auto-sync-data = true # push data to all repos
+* webserver_logs/ annex.remote.WEBSERVER.auto-push-repos = S3 # only the assistant running in WEBSERVER pushes webserver_logs/ to S3 remote
+"""]]

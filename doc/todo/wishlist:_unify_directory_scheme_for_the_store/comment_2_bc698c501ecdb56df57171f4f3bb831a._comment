@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="comment 2"
+ date="2013-10-05T10:45:16Z"
+ content="""
+Thank you for prompt answer. I didn't know there were tarballs,
+and indeed I managed to install them easily (although I had to
+manually install glibc version 2.9, only 2.7 was installed).
+
+I found that bare git repos also use lower case hash directory
+names... I still would be happy with an optional migration to all
+lower case, with a new key-value backend, to avoid this little
+complication which happens sometimes (say when converting a repo
+from non-bare to bare).
+"""]]

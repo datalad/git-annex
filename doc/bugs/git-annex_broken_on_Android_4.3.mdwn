@@ -1,0 +1,3 @@
+As per [[install/Android/#comment-e218073735d67691a2c3f66cc53ca6ac]] and [[install/Android/#comment-29bd13ab9cb830ffcd7850b84fb111c8]] :
+
+git-annex is broken on Android 4.3; both on Nexus 4 and Nexus 7.

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 6"
+ date="2013-06-11T15:09:44Z"
+ content="""
+No. Direct mode makes this kind of problem less likely to occur.
+
+Are you only seeing this problem on OSX?
+
+My guess, which  is only a guess at this point is that while direct mode leaves files in-place etc, which should avoid this kind of problem, it does mess with their permissions berifly when ingesting them into the annex. The write bit is breifly turned off,
+while it checks that nothing currently has the file open to be written.
+"""]]

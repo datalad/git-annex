@@ -1,0 +1,28 @@
+### What steps will reproduce the problem?
+
+Run `git annex assistant`.
+
+
+### What is the expected output? What do you see instead?
+
+git-annex complains:
+
+     dbus failed; falling back to mtab polling (ClientError {clientErrorMessage =
+        "Call failed: The name org.gtk.Private.GduVolumeMonitor was not provided
+        by any .service files", clientErrorFatal = False})
+
+This is because the `gvfs-gdu-volume-monitor` daemon has been obsoleted and removed from GNOME 3.6 (maybe even earlier).
+
+git-annex should start using `gvfs-udisks2-volume-monitor` at bus name `org.gtk.Private.UDisks2VolumeMonitor`.
+
+Alternatively, git-annex should stop relying on any per-user services, and use kernel interfaces directly when available. (This way, monitoring could work even if the user wasn't logged in and/or didn't have a DBus session bus.)
+
+  * On all Linux kernels since 2.6.15, the `/proc/self/mounts` file is pollable – you can use **select(), poll() or epoll** to detect new mounted filesystems, without having to rely on periodic checks. (Run `findmnt -p` to see it in action.)
+
+  * On BSD systems, kqueue on `/etc/mtab`.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 3.20130102 on Linux 3.7.1, GNOME 3.7
+
+> [[done]] --[[Joey]] 

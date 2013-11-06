@@ -1,0 +1,22 @@
+The [[Web special remote|special remotes/web]] could possibly be improved by detecting when URLs reference a Youtube video page and using [youtube-dl](http://rg3.github.com/youtube-dl/) instead of wget to download the page. Youtube-dl can also handle several other video sites such as vimeo.com and blip.tv, so if this idea were to be implemented, it might make sense to borrow the regular expressions that youtube-dl uses to identify video URLs. A quick grep through the youtube-dl source for the identifier _VALID_URL should find those regexes (in Python's regex format).
+
+> This is something I've thought about doing for a while.. 
+> Two things I have not figured out:
+> 
+> * Seems that this should really be user-configurable or a plugin system,
+>   to handle more than just this one case.
+> * Youtube-dl breaks from time to time, I really trust these urls a lot
+>   less than regular urls. Perhaps per-url trust levels are called for by
+>   this.
+> 
+> --[[Joey]] 
+
+> > There's a library for this called [quvi](http://quvi.sourceforge.net/) which supports many
+> > different sites and also allows fetching the URL (as opposed to just
+> > downloading the file). It seems to me this would be the best tool
+> > for this task. One problem to consider here is that a single youtube
+> > URL may yield different file contents depending on the quality
+> > chosen. Also, it seems that the URLs guessed by quvi may be
+> > ephemeral. --[[anarcat]]
+
+> [[done]]!!! --[[Joey]]   

@@ -1,0 +1,104 @@
+drop's verification that a remote still has content can fail
+if the remote is also dropping the content at the same time. Each
+repository checks that the other still has the content, and then both
+drop it. Could also happen with larger cycles of repositories.
+
+> Confirmed fixed now. All cases tested. [[done]]
+
+---
+
+Fixing this requires locking. (Well, there are other ways, like moving the
+content to a holding area when checking if it's safe to drop, but they
+seem complicated, and would be hard to implement for move --from.)
+
+Add per-content lock files. An exclusive lock is held on content when
+it's in the process of being dropped, or moved. The lock is taken
+nonblocking; if it cannot be obtained, something else is acting on the
+content and git-annex should refuse to do anything.
+
+Then when checking inannex, try to take a shared lock. Note that to avoid
+deadlock, this must be a nonblocking lock. (Actually, with fcntl locking,
+can just check if there is a lock, without needing to take one.) 
+If it fails, the status of the content is unknown, so inannex should fail.
+Note that this failure needs to be distinguishable from "not in annex".
+
+> Thinking about these lock files, this would be a lot more files, 
+> and would possibly break some assumptions that everything in
+> `.git/annex/objects` is a key's content. (Or would need lots more
+> directories to put the lock files elsewhere.) There would be more
+> overhead to manage these and have them on disk.
+> 
+> What if it just locked the actual content file? The obvious limitation
+> is only content that was already inannex could be locked, but that
+> happens to be exactly what's needed here; if content is not present,
+> it's not going to get dropped or moved.
+>
+> Of course, if some consumer of a file locked it, then it could prevent it
+> from being dropped or moved. This could be considered a bug, or a feature. :)
+> 
+> However, this would mean that such a hypothetical consumer could also
+> make inannex checks fail.
+>
+> The other downside is that, for fcntl exclusive locking, the file has to
+> be opened for write. Normally the modes of content files are locked down
+> to prevent modifcation. Dealt with, but oh so nasty. Almost makes flock
+> locking seem worth using.
+
+---
+
+drop --from could also cycle. Locking should fix.
+
+> Confirmed fixed now. 
+
+---
+
+move --to can also be included in the cycle, since it can drop data. 
+
+Consider move to a remote that already has the content and 
+is at the same time doing a drop (or a move). The remote
+verifies the content is present on the movee, and removes its copy.
+The movee removes its copy.
+
+So move --to needs to take the content lock on start. Then the inannex
+will fail.
+
+This is why it's important for inannex to fail in a way that is
+distinguishable from "not in annex". Otherwise, move --to
+would see the cycle as the remote not having content, and try to
+redundantly send it, drop it locally, and still race.
+
+> Confirmed fixed now.
+
+-- 
+
+move --from is similar. Consider a case where both the local and the remote
+are doing a move --from. Both have the content, and confirm the other does,
+via inannex checks. Then both run git-annex-shell dropkey, removing both
+copies.
+
+So move --from needs to take the content lock on start, so the inannex will
+fail.  NB: If the content is not locally present, don't take the lock.
+
+> Confirmed fixed now.
+
+---
+
+Another cycle might be running move --to and move --from on the same file,
+locally. The exclusivity of the content lock solves this, as only one can
+run at a time.
+
+Would it work with a shared lock? The --to would run git-annex-shell
+inannex. The --from would also be running, and would run git-annex-shell
+dropkey. So inannex and dropkey would end up running on the remote
+at the same time. Dropkey takes the content lock, and inannex checks it,
+but what if inannex runs first? Then it returns true, and then the content
+is removed, so both the --to and --from see success and the --to proceeds
+to remove the local content that the --from already caused to be removed
+from the remote. So, no, the nasty exclusive lock is needed.
+
+> Confirmed fixed now.
+
+---
+
+Another cycle might involve move --from and drop, both run on the same
+file, locally. Again, the exclusive lock solves this.

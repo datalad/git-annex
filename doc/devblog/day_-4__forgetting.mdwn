@@ -1,0 +1,80 @@
+Yesterday I spent making a release, and shopping for a new laptop, since
+this one is dying. (Soon I'll be able to compile git-annex fast-ish! Yay!)
+And thinking about [[todo/wishlist:_dropping_git-annex_history]].
+
+Today, I added the `git annex forget` command. It's currently been lightly
+tested, seems to work, and is living in the `forget` branch until I gain
+confidence with it. It should be perfectly safe to use, even if it's buggy,
+because you can use `git reflog git-annex` to pull out and revert to an old
+version of your git-annex branch. So if you're been wanting this feature,
+please beta test!
+
+----
+
+I actually implemented something more generic than just forgetting git
+history. There's now a whole mechanism for git-annex doing distributed
+transitions of whatever sort is needed.
+
+There were several subtleties involved in distributed transitions:
+
+First is how to tell when a given transition has already been done on a
+branch. At first I was thinking that the transition log should include the
+sha of the first commit on the old branch that got rewritten. However, that
+would mean that after a single transition had been done, every git-annex
+branch merge would need to look up the first commit of the current branch,
+to see if it's done the transition yet. That's slow! Instead, transitions
+are logged with a timestamp, and as long as a branch contains a transition
+with the same timestamp, it's been done.
+
+A really tricky problem is what to do if the local repository has
+transitioned, but a remote has not, and changes keep being made to the
+remote. What it does so far is incorporate the changes from the remote into
+the index, and re-run the transition code over the whole thing to yeild a
+single new commit. This might not be very efficient (once I write the more
+full-featured transition code), but it lets the local repo keep up with
+what's going on in the remote, without directly merging with it (which
+would revert the transition). And once the remote repository has its
+git-annex upgraded to one that knows about transitions, it will finish up
+the transition on its side automatically, and the two branches will once
+again merge.
+
+Related to the previous problem, we don't want to keep trying to merge
+from a remote branch when it's not yet transitioned. So a blacklist is
+used, of untransitioned commits that have already been integrated.
+
+One really subtle thing is that when the user does a transition more
+complicated than `git annex forget`, like the `git annex forget --dead`
+that I need to implement to forget dead remotes, they're not just telling
+git-annex to forget whatever dead remotes it knows right now. They're
+actually telling git-annex to perform the transition one time on every
+existing clone of the repository, at some point in the future. Repositories
+with unfinished transitions could hang around for years, and at some future
+point when git-annex runs in the repository again, it would merge in the
+current state of the world, and re-do the transition. So you might tell it
+to forget dead remotes today, and then the very repository you ran that in
+later becomes dead, and a long-slumbering repo wakes up and forgets about
+the repo that started the whole process! I hope users don't find this
+massively confusing, but that's how the implementation works right now.
+
+----
+
+I think I have at least two more days of work to do to finish up this
+feature.
+
+* I still need to add some extra features like forgetting about dead remotes,
+  and forgetting about keys that are no longer present on any remote.
+
+* After `git annex forget`, `git annex sync`
+  will fail to push the synced/annex branch to remotes, since the branch
+  is no longer a fast-forward of the old one. I will probably fix this by
+  making `git annex sync` do a fallback push of a unique branch in this case,
+  like the assistant already does. Although I may need to adjust that code
+  to handle this case, too..
+
+* For some reason the automatic transitioning code triggers
+  a "(recovery from race)" commit. This is certianly a bug somewhere,
+  because you can't have a race with only 1 participant.
+
+----
+
+Today's work was sponsored by Richard Hartmann.

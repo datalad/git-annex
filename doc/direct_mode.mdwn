@@ -1,0 +1,85 @@
+Normally, git-annex repositories consist of symlinks that are checked into
+git, and in turn point at the content of large files that is stored in
+`.git/annex/objects/`. Direct mode gets rid of the symlinks.
+
+The advantage of direct mode is that you can access files directly,
+including modifying them. The disadvantage is that most regular git
+commands cannot safely be used, and only a subset of git-annex commands
+can be used.
+
+Normally, git-annex repositories start off in indirect mode. With some
+exceptions:
+
+* Repositories created by the [[assistant]] use direct mode by default.
+* Repositories on FAT and other less than stellar filesystems
+  that don't support things like symlinks will be automatically put
+  into direct mode.
+* Windows always uses direct mode.
+
+## enabling (and disabling) direct mode
+
+Any repository can be converted to use direct mode at any time, and if you
+decide not to use it, you can convert back to indirect mode just as easily.
+Also, you can have one clone of a repository using direct mode, and another
+using indirect mode; direct mode interoperates.
+
+To start using direct mode:
+
+	git annex direct
+
+To stop using direct mode:
+
+	git annex indirect
+
+## safety of using direct mode
+
+With direct mode, you're operating without large swathes of git-annex's
+carefully constructed safety net, which ensures that past versions of
+files are preserved and can be accessed. 
+With direct mode, any file can be edited directly, or deleted at any time,
+and there's no guarantee that the old version is backed up somewhere else.
+
+So if you care about preserving the history of files, you're strongly
+encouraged to tell git-annex that your direct mode repository cannot be
+trusted to retain the content of a file. To do so:
+
+	git annex untrust .
+
+On the other hand, if you only care about the current versions of files,
+and are using git-annex with direct mode to keep files synchronised between
+computers, and manage your files, this should not be a concern for you.
+
+## use a direct mode repository
+
+You can use most git-annex commands as usual in a direct mode repository.
+A very few commands don't work in direct mode, and will refuse to do anything.
+
+Direct mode also works well with the git-annex assistant.
+
+The most important command to use in a direct mode repository is `git annex
+sync`. This will commit any files you have run `git annex add` on, as well
+as files that were added earlier and have been modified. It will push 
+the changes to other repositories for `git annex sync` there to pick up,
+and will pull and merge any changes made on other repositories into the
+local repository.
+
+While you generally will just use `git annex sync`, if you want to,
+you can use `git commit --staged`, or plain `git commit`.
+But not `git commit -a`, or `git commit <file>` ..
+that'd commit whole large files into git!
+
+## what doesn't work in direct mode
+
+`git annex status` shows incomplete information. A few other commands,
+like `git annex unlock` don't make sense in direct mode and will refuse to
+run.
+
+As for git commands, you can probably use some git working tree
+manipulation commands, like `git checkout` and `git revert` in useful
+ways... But beware, these commands can replace files that are present in
+your repository with broken symlinks. If that file was the only copy you
+had of something, it'll be lost. 
+
+This is one more reason it's wise to make git-annex untrust your direct mode
+repositories. Still, you can lose data using these sort of git commands, so
+use extreme caution.

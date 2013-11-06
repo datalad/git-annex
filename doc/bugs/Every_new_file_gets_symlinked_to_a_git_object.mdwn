@@ -1,0 +1,78 @@
+### Please describe the problem.
+Every file I add to a watched repository (by git-annex assistant) becomes symlinked, and sub-subsequently write protected.
+
+Sorry if I'm missing something obvious.
+
+### What steps will reproduce the problem?
+1) Fresh install
+2) create directory, init repo and git-annex
+3) git annex assistant
+4) add a file
+5) ls -lsa to see the symlinked file
+6) trying to write to the file throws a write-protected error
+
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 4.20130725-g8140f7c  
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP  
+local repository version: 3  
+default repository version: 3  
+supported repository versions: 3 4  
+upgrade supported from repository versions: 0 1 2
+
+Using the generic linux distribution with ./runshell on Ubuntu 13.04 (I saw this same behaviour from the ubuntu package, i.e. apt-get install git-annex)
+
+
+### Please provide any additional information below.
+
+Here is the output from my ls -lsa
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+ 4 drwxrwxr-x  3 jetaggart jetaggart  4096 Jul 27 20:38 .
+16 drwx------ 60 jetaggart jetaggart 16384 Jul 27 20:44 ..
+ 4 drwxrwxr-x  7 jetaggart jetaggart  4096 Jul 27 20:38 .git
+ 4 lrwxrwxrwx  1 jetaggart jetaggart   188 Jul 27 20:38 another.org -> .git/annex/objects/Qm/j7/SHA256E-s11--9484d4be897ca66ad4c9bbf299d12adfe37e089bbca1daecbbb49c375a9cf1e9.org/SHA256E-s11--9484d4be897ca66ad4c9bbf299d12adfe37e089bbca1daecbbb49c375a9cf1e9.org
+ 4 lrwxrwxrwx  1 jetaggart jetaggart   186 Jul 27 20:33 blah.org -> .git/annex/objects/kj/q5/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.org/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.org
+12 -rw-rw-r--  1 jetaggart jetaggart   119 Jul 27 20:37 todo.org
+
+
+# End of transcript or log.
+"""]]
+
+Here is the daemon.log
+
+[[!format sh """
+
+[2013-07-27 20:32:55 BST] main: starting assistant version 4.20130725-g8140f7c
+(scanning...) [2013-07-27 20:32:55 BST] Watcher: Performing startup scan
+(started...) 
+[2013-07-27 20:33:52 BST] Committer: Adding blah.org
+add blah.org (checksum...) ok
+[2013-07-27 20:33:52 BST] Committer: Committing changes to git
+(Recording state in git...)
+(Recording state in git...)
+[2013-07-27 20:35:59 BST] Committer: Committing changes to git
+(Recording state in git...)
+[2013-07-27 20:36:01 BST] Committer: Committing changes to git
+(Recording state in git...)
+[2013-07-27 20:37:52 BST] Committer: Committing changes to git
+(Recording state in git...)
+[2013-07-27 20:37:55 BST] Committer: Committing changes to git
+(Recording state in git...)
+[2013-07-27 20:38:44 BST] Committer: Committing changes to git
+(Recording state in git...)
+[2013-07-27 20:38:46 BST] Committer: Adding another.org
+add another.org (checksum...) ok
+[2013-07-27 20:38:46 BST] Committer: Committing changes to git
+(Recording state in git...)
+(Recording state in git...)
+[2013-07-27 20:38:51 BST] Committer: Committing changes to git
+(Recording state in git...)
+[2013-07-27 20:38:56 BST] Committer: Committing changes to git
+(Recording state in git...)
+
+# End of transcript or log.
+"""]]
+
+> [[done]] --[[Joey]] 

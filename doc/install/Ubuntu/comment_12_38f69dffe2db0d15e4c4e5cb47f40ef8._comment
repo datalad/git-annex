@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="Raring?"
+ date="2013-11-01T20:28:04Z"
+ content="""
+I'm also on Raring and the latest version available is 3.20121112ubuntu4, nearly a year old.  The PPA is only for Precise.  The tarball is a daily snapshot, and I would much rather run a released version right now.  What can I do?  Can't the PPA be built automatically for Raring and Saucy?
+"""]]

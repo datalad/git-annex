@@ -1,0 +1,37 @@
+Currently the assistant sets up a shared encryption key, which is checked
+into git, so anyone who gets the repository can decrypt files that are
+stored encrypted on special remotes.
+
+To support using gpg keys in the assistant, we need some things:
+
+1. Help user set up a gpg key if they don't have one. This could be a
+   special-purpose key dedicated to being used by git-annex. It might be
+   nice to leave the user with a securely set up general purpose key,
+   but that would certianly preclude prompting for its password in the
+   webapp. Indeed, the password prompt is the main problem here.
+   Best solution would be to get gpg agent working on all supported 
+   platforms.
+
+   Update: For now, git-annex only assists in generating gpg keys that are
+   intended to only be used to encrypt a repo.
+
+2. After generating a gpg key, back it up. It might be the only way
+   some data is accessible.
+
+   One way I'm considering is generating a QR code
+   of the key, which could be printed to paper. Preliminary results
+   are good; a 4096 bit secret key fits in a QR code (a secret key
+   with many subkeys may not). Debian has command-line utilities that
+   can generate and read such a QR code.
+
+3. Help user learn the gpg keys of people they want to share their repo
+   with, and give them access. If the public key was recorded in the git-annex
+   branch, this could be easily determined when sharing repositories with
+   friends. Or, use MonkeySphere, or Monkeysign..
+
+-----
+
+Another gpg key security thing is that currently git-annex stores
+crypto creds in memory while it's running. Should use locked memory. See
+<https://github.com/vincenthz/hs-securemem> and
+<https://github.com/vincenthz/hs-securemem/issues/1>

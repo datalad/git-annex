@@ -1,0 +1,39 @@
+Started work on the interface displayed when the webapp is started 
+with no existing git-annex repository. All this needs to do is walk the user
+through setting up a repository, as simply as possible.
+
+A tricky part of this is that most of git-annex runs in the Annex monad,
+which requires a git-annex repository. Luckily, much of the webapp
+does not run in Annex, and it was pretty easy to work around the parts that
+do. Dodged a bullet there.
+
+There will, however, be a tricky transition from this first run webapp,
+to a normally fully running git-annex assistant and webapp. I think the
+first webapp will have to start up all the normal threads once it makes the
+repository, and then redirect the user's web browser to the full webapp.
+
+Anyway, the UI I've made is very simple: A single prompt, for the
+directory where the repository should go. With, eventually, tab completion,
+sanity checking (putting the repository in "/" is not good, and making it
+all of "$HOME" is probably unwise).
+
+[[!img screenshot/firstrun.png]]
+
+Ideally most users will accept the default, which will be something
+like `/home/username/Desktop/Annex`, and be through this step in seconds.
+
+Suggestions for a good default directory name appreciated.. Putting it on a
+folder that will appear on the desktop seems like a good idea, when there's
+a Desktop directory. I'm unsure if I should name it something specific like
+"GitAnnex", or something generic like "Synced".
+
+Time for the first of probably many polls!
+
+What should the default directory name used by the git-annex assistant be?
+
+[[!poll open=no 19 "Annex" 7 "GitAnnex" 1 "~/git-annex/" 10 "Synced" 0 "AutoSynced" 1 "Shared" 10 "something lowercase!" 1 "CowboyNeal" 1 "Annexbox"]]
+
+(Note: This is a wiki. You can edit this page to add your own
+[[ikiwiki/directive/poll]] options!)
+
+[[!tag polls]]

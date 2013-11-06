@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://kevwalke.myopenid.com/"
+ ip="77.86.30.139"
+ subject="getting new error now."
+ date="2012-08-30T11:55:49Z"
+ content="""
+Seems there is still an issue here on fresh install...
+
+cabal: Error: some packages failed to install:
+dbus-0.10 depends on libxml-sax-0.7.2 which failed to install.
+libxml-sax-0.7.2 failed during the configure step. The exception was:
+ExitFailure 
+"""]]

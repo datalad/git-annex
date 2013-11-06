@@ -1,0 +1,20 @@
+So I got a shiny new rsync.net account, but it's not (yet) big enough for my bloated, kitchen-sink annex.  How do I make the best use of it?   Well, on the whole small files are more valuable to me than large.  Large files are usually replaceable, like ripped DVDs.  Small files are more likely to be family photos and such.  So I shut down the assistant, and I've been doing a series of these:
+
+    git annex copy --to=rsyncnet --smallerthan 10M --not --in=rsyncnet # I called my remote "rsyncnet"
+    
+    git annex copy --to=rsyncnet --smallerthan 20M --not --in=rsyncnet
+    
+    git annex copy --to=rsyncnet --smallerthan 40M --not --in=rsyncnet
+
+until the repo fills up.  With a few of these thrown in to check on my progress and what's ahead.
+
+
+    git annex status . --in=rsyncnet  # how much have I already done?
+    git annex status . --smallerthan 40M --not --in=rsyncnet # how much will this next command copy?
+
+
+It'd be possible to write a script to do all this automagically but at least this time it's easier to do by hand.
+
+Just sharing in case anybody's in a similar situation.
+
+(You could let the assistant do this for you if you configured a preferred content expression designating small files for the rsyncnet remote, of course.)

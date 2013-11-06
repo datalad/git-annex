@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-06-12T16:57:52Z"
+ content="""
+I think you're making this more complicated than it needs to be. You don't need to mess around with .git/annex/objects at all. You can replace git-annex symlinks with new files and git annex add the new content.
+
+For example:
+
+[[!format sh \"\"\"
+joey@gnu:~/tmp/repo>git annex drop --force foo
+drop foo ok
+(Recording state in git...)
+joey@gnu:~/tmp/repo>ls
+foo@
+joey@gnu:~/tmp/repo>rm foo
+joey@gnu:~/tmp/repo>echo \"new good contents\" > foo
+joey@gnu:~/tmp/repo>git annex add foo
+add foo (checksum...) ok
+(Recording state in git...)
+joey@gnu:~/tmp/repo>git commit -m add
+[master ec3ed14] add
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+\"\"\"]]
+"""]]

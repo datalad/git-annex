@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://olivier.berger.myopenid.com/"
+ nickname="obergix"
+ subject="Mixing indirect mode and direct mode on different remotes"
+ date="2013-08-17T20:35:40Z"
+ content="""
+I'd like to have an indirect mode repo on my laptop cloned on a cifs mount point (mounted off an SMB NAS) thus in direct mode. But all I can see on the clone after merge/pull is text files of length 207 chars containg the symlink in plain text.
+
+I guess this is what git manages internally for the symlinks... so I'm afraid git annex doesn't work in such case.
+
+Can you confirm that indirect and direct modes can coexist on clones of the same repo ?
+"""]]

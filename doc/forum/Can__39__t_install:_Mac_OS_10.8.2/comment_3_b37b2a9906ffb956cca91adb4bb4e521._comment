@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.162"
+ subject="comment 3"
+ date="2012-12-06T21:20:19Z"
+ content="""
+I can't help with installing libraries on OSX, but you can disable XMPP support in git-annex like this: \"cabal install git-annex -f-XMPP\"
+"""]]

@@ -1,0 +1,10 @@
+I was mostly working on other things today, but I did do some bug fixing.
+The worst of these is a bug introduced in 3.20121009 that breaks
+`git-annex-shell configlist`. That's pretty bad for using git-annex
+on servers, although you mostly won't notice unless you're just getting
+started using a ssh remote, since that's when it calls configlist.
+I will be releasing a new version as soon as I have bandwidth (tomorrow).
+
+Also made the standalone Linux and OSX binaries build with ssh connection
+caching disabled, since they don't bundle their own ssh and need to work
+with whatever ssh is installed.

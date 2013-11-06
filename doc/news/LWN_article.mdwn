@@ -1,0 +1,2 @@
+[Linux Weekly News](http://lwn.net/) has a nice
+[article on git-annex](http://lwn.net/Articles/418337/) in it this week.

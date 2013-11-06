@@ -1,0 +1,38 @@
+<div .span9>
+  <div .row-fluid>
+    <div .span4>
+      <h3>
+        <a href="@{AddRepositoryR}">
+          Repositories
+      <p>
+        Configure the repositories that git-annex syncs with.
+    <div .span4>
+      <h3>
+        <a href="@{PreferencesR}">
+          Preferences
+      <p>
+        Tune the behavior of git-annex, including how many copies #
+        to retain of each file, and how much disk space it can use.
+  <div .row-fluid>
+    <div .span4>
+      $if xmppconfigured
+        <h3>
+          <a href="@{XMPPConfigR}">
+            Re-configure jabber account
+        <p>
+         Your jabber account is set up, and will be used to keep #
+         in touch with remote devices, and with your friends.
+      $else
+        <h3>
+          <a href="@{XMPPConfigR}">
+            Configure jabber account
+       <p>
+         Keep in touch with remote devices, and with your friends, #
+         by configuring a jabber account.
+    <div .span4>
+      <h3>
+        <a href="@{ConfigFsckR}">
+          Configure consistency checks
+      <p>
+        Set up periodic checks of your data to detect and recover from #
+        disk problems.

@@ -1,0 +1,10 @@
+I'm wanting to do essentially [[/tips/replacing_Sparkleshare_or_dvcs-autosync_with_the_assistant/]], that is prevent git-annex from annexing certain files (by extension), and rather manage them in git only.
+
+This seems to work fine, and the assistant auto-adds them to git, and commits when I make changes, when in indirect mode.
+
+However, in a direct mode repository, then the files are automatically annexed, and even if I create them in an indirect repo, and then change it, they are annexed.
+
+Is this expected behaviour? Does the annex.largefiles setting only make sense in indirect mode?
+
+
+--Walter

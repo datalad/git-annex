@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="jtang"
+ ip="79.97.135.214"
+ subject="comment 9"
+ date="2012-07-27T18:17:45Z"
+ content="""
+Ah, it's alive, I'm testing on my home machine right now and it's functioning as expected. I've tested on my work machine as well and the watch command works as expected! (short of the existing system limits which fails for my bigger annexes).
+
+Apologies for sending you on the wrong path with the kqueue path. I reckon if I give this a good testing over the weekend is a good idea before closing this bug, I will report back in a few days on this after giving a thrashing of files!
+"""]]

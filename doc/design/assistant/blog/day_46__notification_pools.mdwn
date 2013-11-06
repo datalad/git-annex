@@ -1,0 +1,68 @@
+Focus today was writing a notification broadcaster library. This is a way to
+send a notification to a set of clients, any of which can be blocked
+waiting for a new notification to arrive. A complication is that any number
+of clients may be be dead, and we don't want stale notifications for those
+clients to pile up and leak memory.
+
+It took me 3 tries to find the solution, which turns out to be head-smackingly
+simple: An array of SampleVars, one per client.
+
+Using SampleVars means that clients only see the most recent notification,
+but when the notification is just "the assistant's state changed somehow;
+display a refreshed rendering of it", that's sufficient.
+
+----
+
+First use of that was to make the thread that woke up every 10 minutes
+and checkpointed the daemon status to disk also wait for a notification
+that it changed. So that'll be more current, and use less IO.
+
+----
+
+Second use, of course, was to make the WebApp block long polling clients
+until there is really a change since the last time the client polled.
+
+To do that, I made one change to my Yesod routes:
+
+[[!format diff """
+	-/status StatusR GET
+	+/status/#NotificationId StatusR GET
+"""]]
+
+Now I find another reason to love Yesod, because after doing that,
+I hit "make".. and fixed the type error. And hit make.. and fixed
+the type error. And then it just freaking worked! Html was generated with
+all urls to /status including a `NotificationId`, and the handler for
+that route got it and was able to use it:
+
+[[!format haskell """
+	{- Block until there is an updated status to display. -}
+	b <- liftIO $ getNotificationBroadcaster webapp
+	liftIO $ waitNotification $ notificationHandleFromId b nid
+"""]]
+
+And now the WebApp is able to display transfers in realtime!
+When I have both the WebApp and `git annex get` running on the same screen,
+the WebApp displays files that git-annex is transferring about as fast
+as the terminal updates.
+
+The [[progressbars]] still need to be sorted out, but otherwise
+the WebApp is a nice live view of file transfers.
+
+---
+
+I also had some fun with Software Transactional Memory. Now when the
+assistant moves a transfer from its queue of transfers to do, to its map of
+transfers that are currently running, it does so in an atomic transaction.
+This will avoid the transfer seeming to go missing (or be listed twice) if
+the webapp refreshes at just the wrong point in time. I'm really starting
+to get into STM.
+
+----
+
+Next up, I will be making the WebApp maintain a list of notices, displayed
+on its sidebar, scrolling new notices into view, and removing ones the user
+closes, and ones that expire. This will be used for displaying errors, as
+well as other communication with the user (such as displaying a notice
+while a git sync is in progress with a remote, etc). Seems worth doing now,
+so the basic UI of the WebApp is complete with no placeholders.

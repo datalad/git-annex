@@ -1,0 +1,59 @@
+## Intro
+
+This tip is based on my (Matt Ford) experience of using `git annex` with my out-and-about netbook which hits many different wifi networks and has no fixed home or address.
+
+I'm not using a bare repository that allows pushing (an alternative solution) nor do I fancy allowing `git push` to run against my desktop checked out repository (perhaps I worry over nothing?)
+
+None of this is really `git annex` specific but I think it is useful to know...
+
+## Dealing with no fixed hostname
+
+Essentially set up two repos as per the [[walkthrough]].
+
+Desktop as follows:
+
+    cd ~/annex
+    git init
+    git annex init "desktop"
+
+And the laptop like this
+
+    git clone ssh://desktop/annex
+    git init
+    git annex init "laptop"
+
+Now we want to add the the repos as remotes of each other.  
+
+For the laptop it is easy:
+
+    git remote add desktop ssh://desktop/~/annex 
+
+However for the desktop to add an ever changing laptops hostname it's a little tricky.  We make use of remote SSH tunnels to do this.  Essentially we have the laptop (which always knows it's own name and address and knows the address of the desktop) create a tunnel starting on an arbitrary port at the desktop and heads back to the laptop on it's own SSH server port (22).
+
+To do this make part of your laptop's SSH config look like this:
+
+    Host desktop
+    User matt
+    HostName desktop.example.org
+    RemoteForward 2222 localhost:22
+
+Now on the desktop to connect over the tunnel to the laptop's SSH port you need this:
+
+    Host laptop
+    User matt
+    HostName localhost
+    port 2222
+
+So to add the desktop's remote:
+
+a) From the laptop ensure the tunnel is up
+
+    ssh desktop
+
+b) From the desktop add the remote
+
+    git remote add laptop ssh://laptop/~/annex
+
+So now you can work on the train, pop on the wifi at work upon arrival, and sync up with a `git pull && git annex get`.
+
+An alternative solution may be to use direct tunnels over Openvpn.

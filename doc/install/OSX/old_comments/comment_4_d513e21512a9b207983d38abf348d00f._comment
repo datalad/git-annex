@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm_-2XlXNyd6cCLI4n_jaBNqVUOWwJquko"
+ nickname="David"
+ subject="installing via homebrew"
+ date="2012-09-05T11:11:55Z"
+ content="""
+I had to:
+
+    cabal update
+
+before:
+
+    cabal install git-annex
+
+
+"""]]

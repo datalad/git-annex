@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="Re: Comment 3"
+ date="2013-05-30T15:48:44Z"
+ content="""
+@Joey Many thanks.
+I am new to Haskell (vaguely looked at it with DARCS) and git-annex.
+After installing with apt-get on Ubuntu 12.04 LTS I found webapp was missing, hence have come here.
+I am going through the correct steps now, it should be awesome when done.
+
+This seems to be a long build process (still going on my old laptop, much longer than apt-get).
+Ubuntu git-annex packages from 13.10 Saucy I think are updated to include webapp.
+"""]]

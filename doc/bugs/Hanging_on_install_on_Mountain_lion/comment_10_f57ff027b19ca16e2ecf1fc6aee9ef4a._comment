@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 10"
+ date="2013-06-26T22:10:39Z"
+ content="""
+Seems to be caused by an upgrade of the Mac the autobuilds run on. Particularly, downgrading yesod and warp to older versions seems to avoid the hang, so I've temporarily adjusted the deps so it will build with the old versions.
+
+I have updated the daily autobuild for OSX, as well as the dmg for the current release. Testing appreciated.
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="marvin"
+ ip="91.154.225.32"
+ subject="SSH keys"
+ date="2013-01-11T12:02:50Z"
+ content="""
+Really looking forward to seeing this project go forward and impressed by what you have accomplished.
+
+I have my own server which I want to use as a repository, so I'll choose \"Remote server\". I want to use direct mode.
+Now I can only create an encrypted remote which is fine for me, but I don't know how to sync that with another client using this remote.
+
+Also with the generated ssh keys I no longer can log into my server normally as it tries to use the generated keys.
+The generated keys should also be restricted to only be able to change the repository and nothing else.
+
+Maybe webdav could be used to create something with better access control and repositories for groups etc.
+Also with a simple web upload/download page, similar to dropbox.
+
+Sorry if my post is long and idiotic, just simple (hopefully constructive) feedback from a simple user :)
+"""]]

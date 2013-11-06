@@ -1,0 +1,103 @@
+Somehow git-annex has again lost a complete rsync remote with encryption enabled...
+
+git-annex version was 3.20111111
+
+> "once again" ? When did it do it before?
+
+>> It's the second time i uploaded all the files to an encrypted rsync remote and git-annex is not able to find it anymore. --[[gebi]]
+
+> "lost" ? How is the remote lost?
+
+>> git-annex is not able to find any files on the encrypted rsync remote anymore.
+>> Copy does not copy the content again but drop doesn't find it, thus it's somehow "lost" and in an strange state.
+>> I've also had the state where the content was already on the remote side but git-annex copy would copy it again,
+>> ignoring all the data on the remote side. --[[gebi]]
+
+Both *remoteserver* and *localserver* are rsync remotes with enabled encryption.
+All commands are executed on the git repository on my laptop.
+Target of origin is a gitolite repository without annex support (thus the two rsync remotes).
+
+Is there a way in git-annex to verify that all files fullfill the numcopies, in my case
+numcopies=2, and can be read from the remotes their are on?
+I thought that *copy* would verify that, but seems not.
+    
+    % g a copy --to remoteserver tools
+    copy tools/md5_sha1_utility.exe (gpg) (checking remoteserver...) ok
+    copy tools/win32diskimager-RELEASE-0.2-r23-win32.zip (checking remoteserver...) ok
+    
+    % g a copy --to localserver tools
+    copy tools/md5_sha1_utility.exe (gpg) (checking localserver...) ok
+    copy tools/win32diskimager-RELEASE-0.2-r23-win32.zip (checking localserver...) ok
+    
+    % g a drop tools
+    drop tools/md5_sha1_utility.exe (gpg) (checking localserver...) (checking remoteserver...) (unsafe)
+      Could only verify the existence of 1 out of 2 necessary copies
+      
+      Try making some of these repositories available:
+            718a9b5c-1b4a-11e1-8211-6f094f20e050 -- remoteserver (remote backupserver)
+      
+      (Use --force to override this check, or adjust annex.numcopies.)
+    failed
+    drop tools/win32diskimager-RELEASE-0.2-r23-win32.zip (checking localserver...) (checking remoteserver...) (unsafe)
+      Could only verify the existence of 1 out of 2 necessary copies
+      
+      Try making some of these repositories available:
+            718a9b5c-1b4a-11e1-8211-6f094f20e050 -- remoteserver (remote backupserver)
+      
+      (Use --force to override this check, or adjust annex.numcopies.)
+    failed
+    git-annex: drop: 2 failed
+    
+    % g a fsck tools
+    fsck tools/md5_sha1_utility.exe (checksum...) ok
+    fsck tools/win32diskimager-RELEASE-0.2-r23-win32.zip (checksum...) ok
+
+> Copy does do an explicit check that the content is present on remoteserver,
+> and based on the above, the content was found to be already there,
+> which is why it did not copy it again.
+> 
+> Drop does an indentical check that the content is present, and 
+> since it failed to find it, I am left thinking something must have
+> happened to the remove in between the copy and the drop to cause the
+> content to go away.
+> 
+> What happens if you copy the data to remoteserver again? --[[Joey]]
+
+The commands above are executed within a few seconds and completely repeatable. --[[gebi]]
+
+> In that case, why don't you run the commands with `-d` to see the actual
+> rsync command it's running to check if the content is present. 
+> Then you can try repeatedly running the command by hand and see why it
+> sometimes succeeds and sometimes fail.
+
+The commands fail and succeed consistently, not either or.
+git annex copy succeeds consistently with not copying the content to remote because it checks and it's already there.
+
+git annex drop fails consistently with error because content is missing on the exact same remote git annex copy checks
+and thinks the content is there. --[[gebi]]
+
+> The command will be something like this:
+> `rsync --quiet hostname:/dir/file 2>/dev/null`
+> 
+> The exit status is what's used to see if content is present -- and
+> currently any failure even a failure to connect is taken to mean it's not
+> present. --[[Joey]]
+
+hm... thats interesting, git annex drop and git annex copy check for different hashes on the same file at the same remote...
+
+git annex drop -d tools/md5_sha1_utility.exe
+> Running: sh ["-c","rsync --quiet 'REMOVED_HOST:annex/work/JF/z7/'\"'\"'GPGHMACSHA1--7ffb3840f0e37aee964352e98808403655e8473a/GPGHMACSHA1--7ffb3840f0e37aee964352e98808403655e8473a'\"'\"'' 2>/dev/null"]
+
+git annex copy --to remoteserver -d tools/md5_sha1_utility.exe
+> Running: sh ["-c","rsync --quiet 'REMOVED_HOST:annex/work/1F/PQ/'\"'\"'GPGHMACSHA1--ff075e57f649300c5698e346be74fb6e22d70e35/GPGHMACSHA1--ff075e57f649300c5698e346be74fb6e22d70e35'\"'\"'' 2>/dev/null"]
+
+And yes, only the hash *annex copy* is checking for exists on the remote side. --[[gebi]]
+
+> Ok, this is due to too aggressive caching of the decrypted cipher
+> for a remote. When dopping, it decrypts localserver's cipher, 
+> caches it, and then when checking remoteserver it says hey, 
+> here's an already decrypted cipher -- it must be the right one!
+> 
+> Problem reproduced here, and fixed. [[done]] --[[Joey]]
+
+THX Joey! -- [[gebi]]

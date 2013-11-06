@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2012-10-30T09:07:37Z"
+ content="""
+I think the automatic dropunused part is handled by the assistant already anyway, but in case it's not: The git repo still knows where the symlink pointed to so it should not be a problem to get that info from the last commit that was 'actively' locally and which contained said symlink.
+"""]]

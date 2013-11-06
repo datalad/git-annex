@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 1"
+ date="2013-10-06T06:45:14Z"
+ content="""
+\"git annex uninit\" is the command which will revert an entire git annex repository back to a bunch of ordinary files, untracked by git annex (or git).  I'm not sure whether there is a way to issue that command from the assistant though.
+
+
+"""]]

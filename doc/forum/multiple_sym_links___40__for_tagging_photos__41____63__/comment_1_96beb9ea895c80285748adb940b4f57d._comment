@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.236"
+ subject="comment 1"
+ date="2012-09-05T19:56:06Z"
+ content="""
+I'd recommend linking to the annexed file. Which is what `cp -a` does BTW. Then it'll just be a peice of content that is used by more than one filename, which git-annex handles well. However, if you then edited
+one file, git-annex would not update the other link to point to the new content.
+"""]]

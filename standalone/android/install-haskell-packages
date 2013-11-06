@@ -1,0 +1,117 @@
+#!/bin/bash
+# Bootstraps from an empty cabal to all the necessary haskell packages
+# being installed, with the necessary patches to work on Android.
+#
+# You should install ghc-android first.
+#
+# Note that the newest version of packages is installed. 
+# It attempts to reuse patches for older versions, but 
+# new versions of packages often break cross-compilation by adding TH, 
+# etc
+#
+# Future work: Convert to using the method used here:
+# https://github.com/kaoskorobase/ghc-ios-cabal-scripts/
+
+set -e
+
+if [ ! -d haskell-patches ]; then
+	cd standalone/android
+fi
+
+cabalopts="$@"
+
+cabalinstall () {
+	echo cabal install "$@" "$cabalopts"
+	eval cabal install "$@" "$cabalopts"
+}
+
+patched () {
+	pkg=$1
+	shift 1
+	cabal unpack $pkg
+	cd $pkg*
+	git init
+	git config user.name dummy
+	git config user.email dummy@example.com
+	git add .
+	git commit -m "pre-patched state of $pkg"
+	for patch in ../../haskell-patches/${pkg}_*; do
+		echo trying $patch
+		if ! patch -p1 < $patch; then
+			echo "failed to apply $patch"
+			echo "please resolve this, replace the patch with a new version, and exit the subshell to continue"
+			$SHELL
+		fi
+	done
+	cabalinstall "$@"
+	rm -rf $pkg*
+	cd ..
+}
+
+installgitannexdeps () {
+	pushd ../..
+	echo cabal install --only-dependencies
+	cabal install --only-dependencies "$@"
+	popd
+}
+
+install_pkgs () {
+	rm -rf tmp
+	mkdir tmp
+	cd tmp
+
+	patched network
+	patched unix-time
+	patched lifted-base
+	patched zlib
+	patched process
+	patched MissingH
+	patched bloomfilter
+	patched SafeSemaphore
+	patched distributive
+	patched comonad
+	patched HTTP
+	patched MonadCatchIO-transformers
+	patched iproute
+	patched primitive
+	patched socks
+	patched entropy
+	patched vector
+	patched stm-chans
+	patched persistent
+	patched profunctors
+	patched skein
+	patched lens
+	patched persistent-template
+	patched wai-app-static
+	patched shakespeare
+	patched shakespeare-css
+	patched yesod-routes
+	patched yesod-core
+	patched yesod-persistent
+	patched yesod-form
+	patched yesod-auth
+	patched yesod
+	patched async
+	patched gnuidn
+	patched DAV
+
+	cd ..
+
+	installgitannexdeps -fAndroid -f-Pairing
+}
+
+echo
+echo
+echo native build
+echo
+cabal update
+installgitannexdeps
+
+echo 
+echo
+echo cross build
+echo
+PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH
+cabal update
+install_pkgs

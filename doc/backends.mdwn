@@ -1,0 +1,42 @@
+When a file is annexed, a key is generated from its content and/or metadata.
+The file checked into git symlinks to the key. This key can later be used
+to retrieve the file's content (its value).
+
+Multiple pluggable key-value backends are supported, and a single repository
+can use different ones for different files.
+
+* `SHA256E` -- The default backend for new files, combines a SHA256 hash of
+  the file's content with the file's extension. This allows
+  verifying that the file content is right, and can avoid duplicates of
+  files with the same content. Its need to generate checksums
+  can make it slower for large files. 
+* `SHA256` -- Does not include the file extension in the key, which can
+  lead to better deduplication but can confuse some programs.
+* `WORM` ("Write Once, Read Many") This assumes that any file with
+  the same basename, size, and modification time has the same content.
+  This is the least expensive backend, recommended for really large
+  files or slow systems.
+* `SHA512`, `SHA512E` -- Best currently available hash, for the very paranoid.
+* `SHA1`, `SHA1E` -- Smaller hash than `SHA256` for those who want a checksum
+   but are not concerned about security.
+* `SHA384`, `SHA384E`, `SHA224`, `SHA224E` -- Hashes for people who like
+  unusual sizes.
+* `SKEIN512`, `SKEIN256` -- [Skein hash](http://en.wikipedia.org/wiki/Skein_hash),
+  a well-regarded SHA3 hash competition finalist.
+
+The `annex.backends` git-config setting can be used to list the backends
+git-annex should use. The first one listed will be used by default when
+new files are added.
+
+For finer control of what backend is used when adding different types of
+files, the `.gitattributes` file can be used. The `annex.backend`
+attribute can be set to the name of the backend to use for matching files.
+
+For example, to use the SHA256E backend for sound files, which tend to be
+smallish and might be modified or copied over time,
+while using the WORM backend for everything else, you could set
+in `.gitattributes`:
+
+	* annex.backend=WORM
+	*.mp3 annex.backend=SHA256E
+	*.ogg annex.backend=SHA256E

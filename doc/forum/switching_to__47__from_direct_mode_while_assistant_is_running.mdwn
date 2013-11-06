@@ -1,0 +1,2 @@
+Is that really unsafe?  Because I did that and the switch to direct mode seemed to leave a lot of files still as links, and when I panicked and switched back to indirect mode, a whole lot of stuff seemed to have become unannexed and I reannexed it.
+

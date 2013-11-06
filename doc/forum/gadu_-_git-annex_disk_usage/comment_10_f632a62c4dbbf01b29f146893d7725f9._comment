@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="Steve"
+ ip="92.104.175.136"
+ subject="comment 10"
+ date="2013-01-14T01:54:12Z"
+ content="""
+No problem, glad to see it is useful.  I'm not exactly a web guy, but I want to get some sort of comment/discussion system up there soon so we aren't filling up Joey's web site with semi-offtopic discussion.  (also a little beautification is in order)
+
+Yes, contributions are welcome.  GPG/PGP encrypted email is the preferred mode of communication.
+
+Currently I ask for copyright assignment in case I want to change licenses in the future.  I pledge not to go to a non-free license, but the GPL3 license choice was fairly arbitrary.  I might want to add the \"or any later version\" clause, for example.  There is also potential for a library to be split off which might benefit from something like LGPL licensing or similar.  I haven't really studied the licensing situation since GPL3 came around, so I need to take some time to look into it.
+
+I don't want to have a licensing discussion here though as it would be offtopic.  Feel free to email me and we can discuss.
+
+"""]]

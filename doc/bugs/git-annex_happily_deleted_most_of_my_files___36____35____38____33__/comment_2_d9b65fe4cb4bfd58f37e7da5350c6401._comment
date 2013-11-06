@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://cstork.org/"
+ nickname="Chris Stork"
+ subject="git annex get/sync don't delete files"
+ date="2013-10-10T11:43:29Z"
+ content="""
+AFAIU it's impossible for the 'get' subcommand to delete anything because it only copies files to .git/annex/objects.
+
+'sync' should also never delete files because it only adds files to the annex (i.e. checksums them and sets up the links and directories in .git/annex), commits things to git and pulls/pushes the git-annex specific branches to/from other repos.
+
+So I think some other 'nono' must have messed up your files.
+
+If you ever used (maybe unintentionally) used indirect mode there seem to be a rather high chance that some of your otherwise lost content is still in .git/annex/objects.  Did you check if there's are any files in .git/annex/objects ? 
+"""]]

@@ -1,0 +1,41 @@
+So as not to bury the lead, I've been hard at work on my first day in
+Nicaragua, and ** the git-annex assistant fully syncs files (including
+their contents) between remotes now !! **
+
+Details follow..
+
+Made the committer thread queue Upload Transfers when new files
+are added to the annex. Currently it tries to transfer the new content
+to *every* remote; this inefficiency needs to be addressed later.
+
+Made the watcher thread queue Download Transfers when new symlinks
+appear that point to content we don't have. Typically, that will happen
+after an automatic merge from a remote. This needs to be improved as it
+currently adds Transfers from every remote, not just those that have the
+content.
+
+This was the second place that needed an ordered list of remotes
+to talk to. So I cached such a list in the DaemonStatus state info.
+This will also be handy later on, when the webapp is used to add new
+remotes, so the assistant can know about them immediately.
+
+Added YAT (Yet Another Thread), number 15 or so, the transferrer thread
+that waits for transfers to be queued and runs them. Currently a naive
+implementation, it runs one transfer at a time, and does not do anything
+to recover when a transfer fails.
+
+Actually transferring content requires YAT, so that the transfer
+action can run in a copy of the Annex monad, without blocking
+all the assistant's other threads from entering that monad while a transfer
+is running. This is also necessary to allow multiple concurrent transfers
+to run in the future.
+
+This is a very tricky piece of code, because that thread will modify the
+git-annex branch, and its parent thread has to invalidate its cache in
+order to see any changes the child thread made. Hopefully that's the extent
+of the complication of doing this. The only reason this was possible at all
+is that git-annex already support multiple concurrent processes running
+and all making independent changes to the git-annex branch, etc.
+
+After all my groundwork this week, file content transferring is now
+fully working!

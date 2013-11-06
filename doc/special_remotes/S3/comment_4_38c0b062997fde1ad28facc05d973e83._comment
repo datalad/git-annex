@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmX5gPNK35Dub-HzR0Yb3KXllbqc0rYRYs"
+ nickname="Eduardo"
+ subject="bucket/folder s3 remotes"
+ date="2012-08-09T10:52:07Z"
+ content="""
+it'd be really nice being able to configure a S3 remote of the form `<bucket>/<folder>` (not really a folder, of course, just the usual prefix trick used to simulate folders at S3). The remote = bucket architecture is not scalable at all, in terms of number of repositories.
+
+how hard would it be to support this?
+
+thanks, this is the only thing that's holding us back from using git-annex, nice tool!
+"""]]

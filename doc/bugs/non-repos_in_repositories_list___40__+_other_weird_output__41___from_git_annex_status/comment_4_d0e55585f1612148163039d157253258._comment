@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 4"
+ date="2013-07-26T16:52:26Z"
+ content="""
+The 4201 dangling blobs is a little bit strange, although it could certianly happen in some normal scenarios.
+Overall, your repository seems to be ok except for this weird data in the one file. I do not anticipate the extra garbage causing any problems at all.
+
+To track this down, we need to find the commit that added the garbage. One way, assuming you're using indirect mode, is to `git checkout git-annex; git blame uuid.log` and `git show` the commit that added the garbage. If you're using direct mode, you should first `git clone` the repository and do that in the clone.
+"""]]

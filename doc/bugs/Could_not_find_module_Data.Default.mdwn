@@ -1,0 +1,33 @@
+**What steps will reproduce the problem?**
+
+Manually building git-annex from git.
+
+**What is the expected output? What do you see instead?**
+
+    $ cabal update
+    ...
+    $ cabal install --only-dependencies
+    ...
+    $ cabal configure
+    ...
+    $ cabal build
+    Building git-annex-3.20120826...
+    Preprocessing executable 'git-annex' for git-annex-3.20120826...
+    
+    Utility/Yesod.hs:15:8:
+        Could not find module `Data.Default'
+        It is a member of the hidden package `data-default-0.5.0'.
+        Perhaps you need to add `data-default' to the build-depends in your .cabal file.
+        Use -v to see a list of the files searched for.
+    $
+
+**What version of git-annex are you using? On what operating system?**
+
+commit e7d728672a5fc923be9ab1d6fe4b65f2058b49c7
+Arch Linux
+
+**Please provide any additional information below.**
+
+When I add data-default to git-annex.cabal's Build-Deps it works fine.
+
+> Thanks, [[done]]. --[[Joey]]

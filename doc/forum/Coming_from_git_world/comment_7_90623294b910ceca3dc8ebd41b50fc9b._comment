@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn5RcmefXjrl1vmbHIiOWQyXGXVKxlm3rg"
+ nickname="Kavin"
+ subject="comment 7"
+ date="2013-07-09T23:48:17Z"
+ content="""
+Thanks, So i made some progress, In the gerrit repo server,  (which has git-annex installed)
+
+I ran: 
+    git annex init origin,
+
+Did a clone of the repo, it had the branch git-annex, So i assumed all is working.
+
+I did a 
+    git annex add 
+and 
+    git push
+
+Then when i try to 
+    git annex copy --to origin
+
+I get error , But git-annex-shell is installed on the machine:
+
+    $ echo $PATH
+    /usr/lib64/qt-3.3/bin:/usr/local/bin:/bin:/usr/bin:/usr/local/sbin:/usr/sbin:/sbin:/home/gerrit2/bin
+    $ which git-annex-shell
+    /usr/bin/git-annex-shell
+
+
+
+    Gerrit Code Review: git-annex-shell: not found
+    rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+    rsync error: error in rsync protocol data stream (code 12) at io.c(600) [sender=3.0.6]
+    
+    rsync failed -- run git annex again to resume file transfer failed
+    
+Any idea what i  need to do to make it work ?
+"""]]

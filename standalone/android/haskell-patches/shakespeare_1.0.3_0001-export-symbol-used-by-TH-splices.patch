@@ -1,0 +1,26 @@
+From 4a75a2f0d77168aa3115b991284a5120484e18f0 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sun, 22 Sep 2013 04:59:21 +0000
+Subject: [PATCH] TH exports
+
+---
+ Text/Shakespeare.hs |    3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/Text/Shakespeare.hs b/Text/Shakespeare.hs
+index 9eb06a2..1290ab1 100644
+--- a/Text/Shakespeare.hs
++++ b/Text/Shakespeare.hs
+@@ -23,6 +23,9 @@ module Text.Shakespeare
+     , Deref
+     , Parser
+ 
++    -- used by TH
++    , pack'
++
+ #ifdef TEST_EXPORT
+     , preFilter
+ #endif
+-- 
+1.7.10.4
+

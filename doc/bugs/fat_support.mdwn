@@ -1,0 +1,13 @@
+Klaus pointed out that there are two problems that keep
+git-annex from being used on USB keys, that would typically
+be VFAT formatted:
+
+- Use of symlinks, which VFAT does not support. Very hard to fix.
+  Instead, just use [[/bare_repositories]] on the key,
+  they're supported now.
+- Use of ":" in filenames of object files, also not supported.
+  Could easily be fixed by reorganizing the object directory.
+
+[[Done]]; in annex.version 2 repos, colons are entirely avoided in
+filenames. So a bare git clone can be put on VFAT, and git-annex
+used to move stuff --to and --from it, for sneakernet.

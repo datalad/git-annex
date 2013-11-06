@@ -1,0 +1,68 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 7"
+ date="2011-03-31T19:08:01Z"
+ content="""
+git 1.7.4 does not make things better. With it, if I add first \"X/foo\" and then \"x/bar\", it commits \"X/bar\".
+
+That will *certianly* cause problems when interoperating with a repo clone on a case-sensative filesystem, since
+git-annex there will not see the location log that git committed to the wrong case directory.
+
+It's possible there is some interoperability problem when pulling from linux like you did, onto HFS+, too. I am not quite sure. Ah, I did find one.. if I clone the repo with \"X/foo\" in it to a case-sensative filesystem, and add a \"x/foo\" there,
+and pull that commit back to HFS+, git says:
+
+<pre>
+ * branch            master     -> FETCH_HEAD
+Updating 8754149..e3d4640
+Fast-forward
+ x/foo |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+ create mode 100644 x/foo
+joey@gnu:/mnt/r4>ls
+X/
+joey@gnu:/mnt/r4>git st
+# On branch master
+# Changes not staged for commit:
+#   (use \"git add <file>...\" to update what will be committed)
+#   (use \"git checkout -- <file>...\" to discard changes in working directory
+
+#	modified:   X/foo
+</pre>
+
+Aha -- that lets me reproduce your problem with the same file being staged twice with different capitalizations, too:
+
+<pre>
+joey@gnu:/mnt/r4>echo haaai >| x/foo
+joey@gnu:/mnt/r4>git st
+# On branch master
+# Changes not staged for commit:
+#   (use \"git add <file>...\" to update what will be committed)
+#   (use \"git checkout -- <file>...\" to discard changes in working directory)
+#
+#	modified:   X/bar
+#	modified:   X/foo
+#	modified:   x/foo
+#
+joey@gnu:/mnt/r4>git commit -a
+fatal: Will not add file alias 'X/Bar' ('x/Bar' already exists in index)
+</pre>
+
+And modified files that git refuses to commit, which entirely explains [[git-annex_has_issues_with_git_when_staging__47__commiting_logs]].
+
+<pre>
+joey@gnu:/mnt/r4>git add X/foo
+joey@gnu:/mnt/r4>git commit X/foo
+# On branch master
+# Changes not staged for commit:
+#   (use \"git add <file>...\" to update what will be committed)
+#   (use \"git checkout -- <file>...\" to discard changes in working directory)
+#
+#	modified:   X/bar
+#	modified:   X/foo
+#
+no changes added to commit (use \"git add\" and/or \"git commit -a\")
+</pre>
+
+I think git is frankly, buggy. It seems I will need to work around this by stopping using mixed case hashing for location logs.
+"""]]

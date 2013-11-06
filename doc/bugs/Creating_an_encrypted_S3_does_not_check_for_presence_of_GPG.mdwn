@@ -1,0 +1,18 @@
+What steps will reproduce the problem?
+
+Don't have gpg installed/on your $PATH, and attempt to create an encrypted S3 remote via the web interface.
+
+What is the expected output? What do you see instead?
+
+Expected to be told to install GPG. Actual output was a Yesod error:
+
+Internal Server Error
+user error (gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--gen-random","--armor","1","512"] exited 127)
+
+What version of git-annex are you using? On what operating system?
+
+3.20130107 on Fedora 17 (64-bit).
+
+Please provide any additional information below.
+
+[[!tag /design/assistant]]

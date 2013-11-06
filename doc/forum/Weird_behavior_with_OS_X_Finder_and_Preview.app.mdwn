@@ -1,0 +1,12 @@
+I am having some weird issues with git annex under OS X.  I am new to git annex, and am generally familiar with git.  I really like the concept of git-annex and am trying to lean how to fit it into my workflow, but Im running into problems.  
+
+I have a folder that I would like to keep in sync across multiple computers and thumb drives.  Right now this folder consists of other folders and PDF files.  After initializing git and git-annex, all of the files turn into symlinks, as expected.  
+
+Looking at this folder in OSX's finder, none of the symlinks have preview images unfortunately, as expected.  Also, when trying to open the file (or symlink, and in this case PDFs) in finder, it opens the console which outputs a bunch of crap and then nothing happens.  Right clicking on the symlink in finder and using Open with... the default application to open the symlink to the PDF is OSX's Preview.app, as expected, however for some reason this isn't being used when simple double clicking.  If you click on the Preview.app option under the right click menu, Preview.app launches, but never opens the file.  Selecting an alternative such as the Skim.app pdf viewer (if installed) successfully launches the application and opens the file.  
+
+My questions are:
+1. What is the cause of not being able to launch the file in the correct app by simply double clicking it?  Do I have something mis-configued?  Is it a bug with git-annex?  Is git-annex simply not set up to work with finder yet?
+2. How come preview can't open the file but skim can?  This might be directly related to the above question, but maybe not.
+3. Is it possible to get file previews for the symlinks in your annex folder?  Are there plans to enable this kind of thing in the future, if even possible? 
+
+Details about my setup.  I am running on a 32-bit Core Duo Macbook pro from 2006, so enviably I have to run 10.6.8 and its the highest OS version I can reach right now.  All my CLI packages are installed and up to date with Mac Homebrew.  I am running git version 1.7.12.  I freshly installed haskell-platform: stable 2012.2.0.0 via homebrew.  From there I installed git-annex-3.20120825.

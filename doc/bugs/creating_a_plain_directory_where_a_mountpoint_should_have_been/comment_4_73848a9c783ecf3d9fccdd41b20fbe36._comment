@@ -1,0 +1,56 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkfHTPsiAcHEEN7Xl7WxiZmYq-vX7azxFY"
+ nickname="Vincent"
+ subject="comment 4"
+ date="2013-07-24T14:19:01Z"
+ content="""
+I saw this too, today. The repo in my case was created via the webapp, using the 'usb key' option.
+I was messing about with deleting repos and had turned off synchronisation for the repo on the key as I didn't have it inserted.
+
+I only just stumbled on this bug report after removing the repository from the key entirely, so it's difficult to define the reproduction steps.
+
+* create a 'usb key' repo via webapp, transfer type
+* let it sync
+* disable sync
+* change a file in another repo, so there is something to sync
+* unmount key, unplug key
+* turn on sync again - should see 'failed ot sync with ...' in webapp dashboard
+* reinsert key
+* let it sync
+* unplug key without properly unmounting
+* change a file in another repo, so there is something to sync
+
+I just did this. The key was mounting at /Volumes/VERBATIM4. Just after unplugging without unmounting, that directory was gone.
+When I made the change that could be synced, I got a /Volumes/VERBATIM4 directory. The directory tree structure is similar to but different
+from the structure on the usb key, see below.
+
+Now when I try to plug it in again os/x will spot the potential conflict and mount the key at /Volumes/VERBATIM4\ 1.
+
+If I instead rm -rf /Volumes/VERBATIM4 and then replug the usb key, everything syncs as expected.
+
+Version: 4.20130723-ge023649 (os/x 10.8)
+
+Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
+
+Tree structure of the phantom directory:
+
+    /Volumes/VERBATIM4/annex/
+    └── annex
+        ├── journal.lck
+        ├── objects
+        │   └── df3
+        │       └── 043
+        │           └── SHA256E-s17363--4c5ef74b4fcb9ecd962c6ecac694f87277e580836335e57924654762668a5448
+        │               └── SHA256E-s17363--4c5ef74b4fcb9ecd962c6ecac694f87277e580836335e57924654762668a5448
+        ├── tmp
+        └── transfer
+            ├── download
+            │   └── adf30a67-777a-45a6-a658-e2266770f01b
+            └── failed
+                └── download
+                    └── adf30a67-777a-45a6-a658-e2266770f01b
+                        └── SHA256E-s17363--4c5ef74b4fcb9ecd962c6ecac694f87277e580836335e57924654762668a5448
+
+    12 directories, 3 files
+
+"""]]

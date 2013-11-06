@@ -1,0 +1,30 @@
+What steps will reproduce the problem?
+
+Using the Linux tarball (i386) with configured IPv6:
+
+* git-annex.linux/git-annex-webapp
+
+A browser is then started, pointing to file:///tmp/webapp313.html which in turn points to http://localhost:$port/$blah .
+
+On my box localhost resolves to ::1, but the webapp is only listening on 127.0.0.1 so . While I can work around this by specifying 127.0.0.1 as the hostname, the next page that is loaded goes back to localhost. 
+
+What is the expected output? What do you see instead?
+
+I would expect that the webapp would bind to ::1 if possible.
+
+What version of git-annex are you using? On what operating system?
+
+3.20130102 fromt the Linux tarball release on Debian Squeeze.
+
+Please provide any additional information below.
+
+I've tested this with:
+
+* epiphany
+* iceweasel
+* chromium
+
+Iceweasel is the only one which correctly fell back to IPv4 and worked.
+
+> Ok, I've made it use the IP address in the URL. Ugly, but avoids
+> whatever mess results in this behavior. [[done]] --[[Joey]]

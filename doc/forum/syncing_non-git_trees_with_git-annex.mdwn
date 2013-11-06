@@ -1,0 +1,46 @@
+I have a bunch of directory trees with large data files scattered over various computers and disk drives - they contain photos, videos, music, and so on.  In many cases I initially copied one of these trees from one machine to another just as a cheap and dirty backup, and then made small modifications to both trees in ways I no longer remember. For example, I returned from a trip with a bunch of new photos, and then might have rotated some of them 90 degrees on one machine, and edited or renamed them on another.
+
+What I want to do now is use git-annex as a way of initially synchronising the trees, and then fully managing them on an ongoing basis.  Note that the trees are *not* yet git repositories.  In order to be able to detect straight-forward file renames, I believe that [[the SHA1 backend|tips/using_the_SHA1_backend]] probably makes the most sense.
+
+I've been playing around and arrived at the following setup procedure.  For the sake of discussion, I assume that we have two trees `a` and `b` which live in the same directory referred to by `$td`, and that all large files end with the `.avi` suffix.
+
+     # Setup git in 'a'.
+     cd $td/a
+     git init
+
+     # Setup git-annex in 'a'.
+     echo '* annex.backend=SHA1' > .gitattributes
+     git add .gitattributes
+     git commit -m'use SHA1 backend'
+     git annex init
+
+     # Annex all large files.
+     find -name \*.avi | xargs git annex add
+     git add .
+     git commit -m'Initial import'
+
+     # Setup git in 'b'.
+     cd $td/b
+     git clone -n $td/a new
+     mv new/.git .
+     rmdir new
+     git reset # reset git index to b's wd - hangover from cloning from 'a'
+
+     # Setup git-annex in 'b'.
+     # This merges a's (origin's) git-annex branch into the local git-annex branch.
+     git annex init
+
+     # Annex all large files - because we're using SHA1 backend, some
+     # should hash to the same keys as in 'a'.
+     find -name \*.avi | xargs git annex add
+     git add .
+     git commit -m'Changes in b tree'
+
+     git remote add a $td/a
+
+     # Now pull changes in 'b' back to 'a'.
+     cd $td/a
+     git remote add b $td/b
+     git pull b master
+
+This seems to work, but have I missed anything?

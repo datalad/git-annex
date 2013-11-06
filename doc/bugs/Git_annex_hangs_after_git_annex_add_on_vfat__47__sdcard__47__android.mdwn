@@ -1,0 +1,280 @@
+### Please describe the problem.
+git add hangs.
+Maybe because of encrypted sdcard?
+
+
+
+
+
+### What steps will reproduce the problem?
+
+    app_30@android:/sdcard $ mkdir annex;cd annex
+    app_30@android:/sdcard/annex $ git init
+    Initialized empty Git repository in /mnt/sdcard/annex/.git/
+    app_30@android:/sdcard/annex $ git annex init
+    init
+      Detected a crippled filesystem.
+    
+      Enabling direct mode.
+    
+      Detected a filesystem without fifo support.
+    
+      Disabling ssh connection caching.
+    ok
+    (Recording state in git...)
+    app_30@android:/sdcard/annex $ touch lala
+    git annex add lala --debug                                   <
+    [2013-10-13 22:05:17 CEST] read: git ["--git-dir=/mnt/sdcard/annex/.git","--work-tree=/mnt/sdcard/annex","ls-files","--others","--exclude-standard","-z","--","lala"]
+    [2013-10-13 22:05:17 CEST] read: git ["--git-dir=/mnt/sdcard/annex/.git","--work-tree=/mnt/sdcard/annex","ls-files","--modified","-z","--","lala"]
+    [2013-10-13 22:05:17 CEST] chat: git ["--git-dir=/mnt/sdcard/annex/.git","--work-tree=/mnt/sdcard/annex","cat-file","--batch"]
+    add lala [2013-10-13 22:05:17 CEST] chat: git ["--git-dir=/mnt/sdcard/annex/.git","--work-tree=/mnt/sdcard/annex","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
+    ** HANGS **
+  
+
+
+The same will happen when just running and asking assistant to create annex for camera.
+
+ps aux | grep -i git:
+
+    app_30    9870  8950  2512   464   c009cd2c 400456a4 S git
+    app_30    9871  9870  64900  7552  ffffffff 40108a38 S git-annex
+    app_30    9876  9871  0      0     ffffffff 00000000 Z git
+    app_30    9877  9871  0      0     ffffffff 00000000 Z git
+    app_30    9878  9871  2512   608   c0114a4c 400b2878 S git
+    app_30    9879  9871  2512   556   c0114a4c 40074878 S git
+
+lsof | grep git:
+
+    1|app_30@android:/sdcard $ lsof | grep git                                     
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/pts/2
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/pts/2
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/pts/2
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/main
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/radio
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/events
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/system
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/__properties__ (deleted)
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/framework-res.apk
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/com.htc.resources.apk
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/framework-htc-res.apk
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/framework.jar
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/system/etc/system_fonts.xml
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/system/etc/fallback_fonts.xml
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/system/fonts/Roboto-Regular.ttf
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/core.jar
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/urandom
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/main
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/radio
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/events
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/system
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/cpuctl/tasks
+    9870	/data/data/ga.androidterm/lib/lib.git.so	socket:[1172354]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172355]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172355]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/cpuctl/bg_non_interactive/tasks
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172358]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172358]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	anon_inode:[eventpoll]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/ashmem
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/ashmem
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/data/app/ga.androidterm-1.apk
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/data/app/ga.androidterm-1.apk
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/system/app/Aluminum.apk
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172380]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172381]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/data/data/ga.androidterm/fifo
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172382]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/pts/2
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/system/fonts/DroidSansMono.ttf
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172407]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172407]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	anon_inode:[eventpoll]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	/dev/ashmem
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1177783]
+    9870	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1177784]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/pts/2
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/pts/2
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/pts/2
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/log/main
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/log/radio
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/log/events
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/log/system
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	anon_inode:[eventpoll]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1184035]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/__properties__ (deleted)
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1184035]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	anon_inode:[eventfd]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1184036]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1184036]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	anon_inode:[eventfd]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1184039]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1184043]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1184044]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1184046]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1184047]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/system/framework/framework-res.apk
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/system/framework/com.htc.resources.apk
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/system/framework/framework-htc-res.apk
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/system/framework/framework.jar
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/system/etc/system_fonts.xml
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/system/etc/fallback_fonts.xml
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/system/fonts/Roboto-Regular.ttf
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/system/framework/core.jar
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/urandom
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/log/main
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/log/radio
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/log/events
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/log/system
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/cpuctl/tasks
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	socket:[1172354]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1172355]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1172355]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/cpuctl/bg_non_interactive/tasks
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1172358]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1172358]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	anon_inode:[eventpoll]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/ashmem
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/ashmem
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/data/app/ga.androidterm-1.apk
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/data/app/ga.androidterm-1.apk
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/system/app/Aluminum.apk
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1172380]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1172381]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/data/data/ga.androidterm/fifo
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1172382]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/pts/2
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/system/fonts/DroidSansMono.ttf
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1172407]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1172407]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	anon_inode:[eventpoll]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	/dev/ashmem
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1177783]
+    9871	/data/data/ga.androidterm/lib/lib.git-annex.so	pipe:[1177784]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1184043]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1184044]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/pts/2
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/main
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/radio
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/events
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/system
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/__properties__ (deleted)
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/framework-res.apk
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/com.htc.resources.apk
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/framework-htc-res.apk
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/framework.jar
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/system/etc/system_fonts.xml
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/system/etc/fallback_fonts.xml
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/system/fonts/Roboto-Regular.ttf
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/core.jar
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/urandom
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/main
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/radio
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/events
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/system
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/cpuctl/tasks
+    9878	/data/data/ga.androidterm/lib/lib.git.so	socket:[1172354]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172355]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172355]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/cpuctl/bg_non_interactive/tasks
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172358]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172358]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	anon_inode:[eventpoll]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/ashmem
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/ashmem
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/data/app/ga.androidterm-1.apk
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/data/app/ga.androidterm-1.apk
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/system/app/Aluminum.apk
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172380]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172381]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/data/data/ga.androidterm/fifo
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172382]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/pts/2
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/system/fonts/DroidSansMono.ttf
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172407]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172407]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	anon_inode:[eventpoll]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	/dev/ashmem
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1177783]
+    9878	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1177784]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1184046]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1184047]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/pts/2
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/main
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/radio
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/events
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/system
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/__properties__ (deleted)
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/framework-res.apk
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/com.htc.resources.apk
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/framework-htc-res.apk
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/framework.jar
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/system/etc/system_fonts.xml
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/system/etc/fallback_fonts.xml
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/system/fonts/Roboto-Regular.ttf
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/system/framework/core.jar
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/urandom
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/main
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/radio
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/events
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/log/system
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/cpuctl/tasks
+    9879	/data/data/ga.androidterm/lib/lib.git.so	socket:[1172354]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172355]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172355]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/cpuctl/bg_non_interactive/tasks
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172358]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172358]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	anon_inode:[eventpoll]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/ashmem
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/ashmem
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/data/app/ga.androidterm-1.apk
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/data/app/ga.androidterm-1.apk
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/system/app/Aluminum.apk
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172380]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172381]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/data/data/ga.androidterm/fifo
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172382]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/pts/2
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/system/fonts/DroidSansMono.ttf
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172407]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1172407]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	anon_inode:[eventpoll]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	/dev/ashmem
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1177783]
+    9879	/data/data/ga.androidterm/lib/lib.git.so	pipe:[1177784]
+
+
+vfat/sdcard entry:
+    /dev/block/dm-2 /mnt/sdcard vfat     rw,dirsync,nosuid,nodev,noexec,relatime,uid=1000,gid=1015,fmask=0702,dmask=0702, \ 
+    allow_utime=0020,codepage=cp437,iocharset=iso8859-1,shortname=mixed,utf8,errors=remount-ro 0 0
+    tmpfs /mnt/sdcard/.android_secure tmpfs ro,relatime,size=0k,mode=000 0 0
+
+
+
+### What version of git-annex are you using? On what operating system?
+Version from git annex version:
+2a8136b6bd60a17d687eb800594ec7c37b872b3d
+
+I tried both daily build and most recent 'stable' with the same effect.
+
+Android 4.0.3 (Htc One V)
+
+The same happens on my another android device; Samsung tablet with... also 4.0.3.
+Tried to gather strace information on git, but couldn't. If anything more is necessary,
+please let me know.
+
+The same happens when I git annex add in /data/data/ga.androidterm/anntmp - so it's not sdcard nor vfat. 
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+> I have updated git-annex to work with the new git, which will be 1.8.5.
+> This fix should appear in the android autobuild within an hour if you
+> want to try it. [[done]] --[[Joey]]

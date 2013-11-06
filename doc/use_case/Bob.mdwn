@@ -1,0 +1,25 @@
+### use case: The Archivist
+
+Bob has many drives to archive his data, most of them 
+[[kept offline|tips/offline_archive_drives]], in a safe place.
+
+With git-annex, Bob has a single directory tree that includes all
+his files, even if their content is being stored offline. He can
+reorganize his files using that tree, committing new versions to git,
+without worry about accidentally deleting anything. 
+
+When Bob needs access to some files, git-annex can tell him which drive(s)
+they're on, and easily make them available. Indeed, every drive knows what
+is on every other drive.  
+<small>[[more about location tracking|location_tracking]]</small>
+
+Bob thinks long-term, and so he appreciates that git-annex uses a simple
+repository format. He knows his files will be accessible in the future
+even if the world has forgotten about git-annex and git.  
+<small>[[more about future-proofing|future_proofing]]</small>
+
+Run in a cron job, git-annex adds new files to archival drives at night. It
+also helps Bob keep track of intentional, and unintentional copies of
+files, and logs information he can use to decide when it's time to duplicate
+the content of old drives.  
+<small>[[more about backup copies|copies]]</small>

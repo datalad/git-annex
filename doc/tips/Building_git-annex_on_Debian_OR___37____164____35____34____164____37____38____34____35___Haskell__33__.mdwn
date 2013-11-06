@@ -1,0 +1,111 @@
+I've been wrestling with git-annex to try to make it build on Debian, or more specifically, wrestling with Haskell dependencies.
+
+After a fair amount of futzing around, and pestering a bunch of people in the process (thanks for the help! :) ) I finally managed to make it build.
+
+I figured I would post the steps here, since it's not completely trivial, and I expect that a few others might be interested in building newer versions as well.
+
+There appears to currently be two methods:
+
+* Debian packages on Wheezy plus Sid
+  * Starting out on Wheezy, and then picking the rest from Sid (it seems at least libghc-safesemaphore-dev from Sid is critical for newer git-annex)
+  * WebDAV suport will not be available with this method
+* Cabal packages
+
+
+#Debian packages on Wheezy plus Sid
+
+##Start off with a clean wheezy chroot
+
+    sudo debootstrap wheezy debian-wheezy
+    sudo chroot debian-wheezy
+
+##Install some build tools
+
+    apt-get update
+    apt-get install devscripts git
+
+##Get git-annex (either by cloning or simply moving the source into the chroot)
+
+    mkdir /src
+    cd /src
+    git clone git://git-annex.branchable.com/source.git git-annex
+    cd git-annex
+
+##Remove WebDAV dependency which can't be satisfied anywhere
+
+    sed '/libghc-dav-dev/d' -i debian/control
+
+##Create dummy build-depends package and install all available Wheezy dependencies using it
+
+    mk-build-deps
+    dpkg -i git-annex-build-deps*.deb
+    apt-get install -f
+
+(this will remove the build-depends package)
+
+##Add Sid sources and install all available Sid dependencies
+
+    echo "deb http://http.debian.net/debian sid main" >>/etc/apt/sources.list
+    apt-get update
+    dpkg -i git-annex-build-deps*.deb
+    apt-get install -f
+
+(the build-depends package should now be fully installed)
+
+##Disable the 'make test' that fails due to missing hothasktags
+
+    echo >>debian/rules
+    echo "override_dh_auto_test:" >>debian/rules
+
+##Build!
+
+    debuild -us -uc -Igit
+
+
+#Cabal packages
+
+##Start off with a clean Sid(/Wheezy) chroot
+
+    sudo debootstrap sid debian-sid
+    sudo chroot debian-sid
+
+##Install a smaller set of tools and build-depends from Debian (cabal needs these to compile the Haskell stuff)
+
+    apt-get update
+    apt-get install ghc cabal-install devscripts libz-dev pkg-config c2hs libgsasl7-dev libxml2-dev libgnutls-dev c2hs git debhelper ikiwiki perlmagick uuid rsync openssh-client fakeroot
+
+##Get git-annex (either by cloning or simply moving the source into the chroot)
+
+    mkdir /src
+    cd /src
+    git clone git://git-annex.branchable.com/source.git git-annex
+    cd git-annex
+
+##Install the Haskell build-dependencies from cabal
+
+    cabal update
+    cabal install --only-dependencies
+
+##Optional step which doesn't work (might in the future)
+If we want to run the 'make test' after build we need hothasktags, which is only available via cabal
+
+    apt-get install happy
+    cabal install hothasktags
+    export PATH=$PATH:~/.cabal/bin
+
+But this currently fails silently inside make test->fast->tags, and if you dig a bit (manually edit the makefile to be more verbose) you see
+
+    hothasktags: ./Command/AddUnused.hs: hGetContents: invalid argument (invalid byte sequence)
+
+##Disable the 'make test' that fails
+
+    echo >>debian/rules
+    echo "override_dh_auto_test:" >>debian/rules
+
+##Remove all Debian package haskell depends (taken care of by cabal instead)
+
+    sed '/\tlibghc/d' -i debian/control
+
+## Build!
+
+    debuild -us -uc -Igit

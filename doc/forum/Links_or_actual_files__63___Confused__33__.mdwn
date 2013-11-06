@@ -1,0 +1,21 @@
+I don't think it's a bug or a todo, just a request for clarification.
+
+So, I installed git-annex first on a Mac, and created the initial repository, and started dropping stuff into it. All fine.
+
+Created a second repository on an external (but never disconnected, also does Time Machine) drive. All fine. Everything's there.
+
+Went across the room to my Linux desktop, installed git-annex, and tried to pair it to my Mac's git-annex repo. Hit <a href="http://git-annex.branchable.com/bugs/bad_comment_in_ssh_public_key_ssh-rsa/#comment-0ee00f307909723fdf8c73695787f067">this bug</a>, installed latest git-annex from tarball and got past that and got the pairing done. Syncing happened, all looked well...
+
+But when I look in the annex dir on that Linux machine, I now just see symlinks to the actual files in the repo's .git/annex stuff. It kinda works, but it's a bit distracting, especially if you open such a file in any desktop app and you can see it's got the target of the link (some sha-value filename.ext) rather than the sensibly-named link. Including files created and coped into that annex on that machine. (In Nautilus they all show with symlink & lock emblems.)
+
+Look again at some documentation, and apparently it's <a href="http://git-annex.branchable.com/how_it_works/">supposed to do this</a>
+
+Which makes me wonder why it *isn't* doing it on the Mac I started the repository on?
+
+Went to another mac (laptop) and installed git-annex, and set up pairing to the first mac - as far as I can tell, doing the exact same procedure as I did under Linux. TBH through the webapp there's not much scope for doing it a different way. Files sync across...
+
+And there they are, the actual files, directly in the annex dir, not symlinks.
+
+(I am by the way confirming this at the commandline, it's not just what Finder/Nautilus may be displaying to me graphically.)
+
+Now, seeing the actual files in the annex directory is what I *prefer*; but I'm a: confused as to why the Macs are doing it that way but Linux isn't, and b: given the "how it works" link, why everything isn't using the links.

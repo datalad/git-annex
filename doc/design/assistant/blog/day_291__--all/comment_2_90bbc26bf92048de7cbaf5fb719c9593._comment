@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="sfs"
+ ip="65.204.1.102"
+ subject="See history of a file"
+ date="2013-07-07T00:49:35Z"
+ content="""
+It's great that you are addressing the management of older versions. I am new to git-annex but couldn't find much information about this topic. Is it also possible to make git-annex show you the history of files (with date, size, ...) and where (which repositories) they are stored? Or to retrieve a specific version from a remote repository?
+
+Thanks for this amazing peace of software!
+Stephan
+"""]]

@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 11"
+ date="2011-05-15T18:53:26Z"
+ content="""
+It seems the objects are in the remote after all, but the remote is unaware of this fact. No idea where/why the remote lost that info, but.. Anyway, with the SHA backends, wouldn't it make sense to simply return \"OK\" and update the annex logs accordingly, no?
+
+Local:
+
+    % ls -l foo
+    lrwxrwxrwx 1 richih richih 312 Apr  3 01:18 foo -> .git/annex/objects/gG/VW/SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491/SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491
+    % 
+
+Remote:
+
+    % git-annex-shell recvkey <remote> SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491
+    git-annex-shell: key is already present in annex
+    % strace git-annex-shell recvkey /base/git-annex/fun SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491 2>&1 | grep SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491
+    stat64(\"/base/git-annex/fun/annex/objects/gG/VW/SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491/SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491\", {st_mode=S_IFREG|0444, st_size=80781, ...}) = 0
+    % ls -l /base/git-annex/fun/annex/objects/gG/VW/SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491/SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491
+    -r--r--r-- 1 richih richih 80781 2011-04-01 12:44 /base/git-annex/fun/annex/objects/gG/VW/SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491/SHA512-s80781--cef3966a19c7435acceb8fbfbff1feebe6decab7c81a0c197f00932cf9ef0eac330784cc3f0d211bd4acf56a6d16daaebe9b598aa4dfd5bfec73f4e6df3f0491
+    % 
+"""]]

@@ -1,0 +1,21 @@
+I just noticed that if you move a git-annex symlink to a location ignored by git, it simply works.  Upon committing that change, however, part of git-annex's `fix` function apparently tries to `git-add` the symlink.  This fails because the new, ignored location requires a `git-add --force`.
+
+Considering that git proper doesn't fail or warn, I think git-annex shouldn't either.
+
+This is the error message:
+
+	$ git mv annexed-file ignored-dir/
+	$ git commit
+	fix ignored-dir/annexed-file ok
+	(Recording state in git...)
+	The following paths are ignored by one of your .gitignore files:
+	ignored-dir
+	Use -f if you really want to add them.
+	fatal: no files added
+	Command xargs ["-0","git","--git-dir=/home/[...]/repo/.git","--work-tree=/home/[...]/repo","add","--"] failed; exit code 123
+
+	git-annex: user error (Command xargs ["-0","git","--git-dir=/home/[...]/repo/.git","--work-tree=/home/[...]/repo","add","--"] failed; exit code 123)
+	failed
+	git-annex: 1 failed
+
+> Weird edge case.. ok, fixed. [[done]] --[[Joey]] 

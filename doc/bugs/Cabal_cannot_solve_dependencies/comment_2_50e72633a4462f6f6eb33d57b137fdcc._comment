@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmu416zAYgYzbXVZAe30MiXoOWO4z6nGX8"
+ nickname="Johannes"
+ subject="comment 2"
+ date="2013-05-24T14:59:54Z"
+ content="""
+Thanks for the quick comment. I was already trying to build this on a clean cabal system.
+
+However, as of 4.20130521.2, I now get this:
+
+[[!format  sh \"\"\"
+Resolving dependencies...
+cabal: Could not resolve dependencies:
+trying: git-annex-4.20130521.2
+trying: git-annex-4.20130521.2:+webapp
+rejecting: yesod-1.2.0.1, 1.2.0 (conflict: git-annex-4.20130521.2:webapp =>
+yesod(<1.2))
+trying: yesod-1.1.9.3
+trying: http-conduit-1.9.3
+trying: certificate-1.3.7
+rejecting: crypto-pubkey-types-0.4.0 (conflict: certificate =>
+crypto-pubkey-types>=0.3 && <0.4)
+trying: crypto-pubkey-types-0.3.2
+trying: tls-extra-0.6.3
+rejecting: crypto-pubkey-0.1.4 (conflict: crypto-pubkey-types==0.3.2,
+crypto-pubkey => crypto-pubkey-types>=0.4 && <0.5)
+rejecting: crypto-pubkey-0.1.3, 0.1.2, 0.1.1, 0.1.0 (conflict: tls-extra =>
+crypto-pubkey>=0.1.4)
+\"\"\"]]
+
+Also tried adding a --constraint='tls-extra<0.6.3' with the following result:
+[[!format  sh \"\"\"
+Resolving dependencies...
+cabal: Could not resolve dependencies:
+trying: git-annex-4.20130521.2
+trying: git-annex-4.20130521.2:+webapp
+trying: git-annex-4.20130521.2:+dns
+trying: dns-0.3.6
+trying: binary-0.7.1.0/installed-caa...
+rejecting: yesod-1.2.0.1, 1.2.0 (conflict: git-annex-4.20130521.2:webapp =>
+yesod(<1.2))
+trying: yesod-1.1.9.3
+trying: ghc-7.6.3/installed-875...
+rejecting: bin-package-db-0.0.0.0/installed-608... (conflict:
+binary==0.7.1.0/installed-caa..., bin-package-db =>
+binary==0.5.1.1/installed-72e...)
+\"\"\"]]
+"""]]

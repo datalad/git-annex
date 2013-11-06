@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 4"
+ date="2013-01-11T18:18:07Z"
+ content="""
+Yes, sync only syncs the git branches, not git-annex data. To sync the date, you can run a command such as `git annex copy --to bareremote`. You could run that in cron. Or, the [[assistant]] can be run as a daemon, and automatically syncs git-annex data.
+"""]]

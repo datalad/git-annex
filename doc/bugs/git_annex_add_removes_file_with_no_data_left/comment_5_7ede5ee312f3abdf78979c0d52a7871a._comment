@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="andy"
+ ip="108.202.17.204"
+ subject="comment 5"
+ date="2013-07-20T21:34:08Z"
+ content="""
+Yes, the symlink was still broken. Or rather, `tar -tf filename.tar` didn't like the file.
+
+The file's about 193 M bzipped. I'll be e-mailing you a link to an S3 copy with DojOsEf2 in the subject line of the email--once the upload finishes. :)
+
+I'm not sure if this is relevant, but the file is a tar of an annex and another git repo. Perhaps that is influencing something (although I presume it shouldn't)?
+"""]]

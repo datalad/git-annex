@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 1"
+ date="2013-06-25T19:49:25Z"
+ content="""
+What version of git-annex? Did more than one password prompt window somehow appear at the same time? What is doing the ssh password prompting, is it ssh-askpass, or something provided by your desktop environment?
+
+What happens if you manually ssh from your computer to the NAS, using the special hostname that git-annex has configured (you can find this hostname in the `.git/config`). `ssh -v` is generally a good way to track these problems down.
+"""]]

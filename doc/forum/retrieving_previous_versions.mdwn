@@ -1,0 +1,7 @@
+Hi,
+
+This might be a stupid question, but I did not find any information about it.
+Can I retrieve previous versions of a file?
+Let's say, I wanna do a "git annex get file", but considering a specific commit id. Is it possible? Are all the versions of the files kept inside .git/annex/objects?
+
+Thanks!

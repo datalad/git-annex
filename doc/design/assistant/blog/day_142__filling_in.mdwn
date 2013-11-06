@@ -1,0 +1,9 @@
+Just filling in a few remaining bits and pieces from this month's work.
+
+* Made the assistant periodically check glacier-cli for archives that are
+  ready, and queue downloads of them.
+* The box.com configurator defaults to embedding the account info, allowing
+  one-click enabling of the repository. There's a check box to control this.
+* Fix some bugs with how the standalone images run git-annex.
+* Included ssh in the standalone images.
+* Various other bug fies.

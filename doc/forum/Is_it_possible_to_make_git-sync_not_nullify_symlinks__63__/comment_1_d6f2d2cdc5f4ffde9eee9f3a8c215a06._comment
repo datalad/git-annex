@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 1"
+ date="2013-08-07T16:18:52Z"
+ content="""
+I'd recommend that you just copy your files to the repository to publish them before running git-annex sync.
+
+Alternatively, unless your web pages are very large, you can just check them into git directly, still use git-annex sync if you want (and still using git-annex for large files), and avoid the complication of being able to have files that are listed in the repository but whose content is not present.
+"""]]

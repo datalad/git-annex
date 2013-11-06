@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 30"
+ date="2013-10-19T15:31:45Z"
+ content="""
+@Alan you don't need to install dbus on OSX. The polling code will work. On the other hand if you'd like to experiment with installing dbus and report back, perhaps it's worth a try. It's nice when the git-annex assistant can instantly detect when drives are plugged in, and then the network connection changes and react to it. On Linux, dbus gives it that capability.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="Samba works"
+ date="2013-05-30T14:22:46Z"
+ content="""
+I use samba. Just need to set
+
+    unix extensions = no
+
+which causes samba to handle the symlinks internally.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 7"
+ date="2013-04-11T15:41:16Z"
+ content="""
+A less round-about method would be to have the webapp listen for links dropped into its page. You could then have the webapp open in a tab, and just drag urls there to add them to the annex.
+
+I'm not sure if it's possible to intercept drags into a tab. Default browser behavior is certianly to redirect the tab to the url dropped into it.
+
+If someone finds out how to do this, I will build it.
+"""]]

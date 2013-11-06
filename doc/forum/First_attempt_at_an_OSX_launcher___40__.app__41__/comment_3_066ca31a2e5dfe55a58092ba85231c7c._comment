@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 3"
+ date="2012-09-23T15:52:31Z"
+ content="""
+The .app file can be placed anywhere, typically you would want to bundle it in a .dmg file for the user and the user just \"drags\" it to the /Applications folder. It should be possible to bundle statically linked binaries inside the .app bundle, you might end up having to ship parts of coreutils and a few other applications to make it self contained.
+
+Anyhow, here is a quick screencast <http://screencast.com/t/pnk8bk3hyUJM> and a screengrab of the app <http://screencast.com/t/4jjeRFx4g>
+"""]]

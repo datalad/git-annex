@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 2"
+ date="2013-07-08T19:57:10Z"
+ content="""
+Based on <http://pthree.org/2009/06/08/gnupg-up-and-close/> and <http://www.faqs.org/rfcs/rfc4880.html>, symmetric encryption algorithm 3 is CAST5.
+
+When I run `gpg -v --version` on Android, I get a very short list of Cipher algorithms, just \"3DES (S2)\".
+
+Compare with on Linux, where it supports:
+
+<pre>
+Cipher: 3DES (S2), CAST5 (S3), BLOWFISH (S4), AES (S7), AES192 (S8), 
+        AES256 (S9), TWOFISH (S10), CAMELLIA128 (S11), CAMELLIA192 (S12), 
+        CAMELLIA256 (S13)
+</pre>
+
+I suspect that you guys have a gpg on your non-android side that either defaults to CAST5, or has been configured, via the default-preference-list setting in gpg.conf, to use it. It should be possible to adjust your gpg.conf to use 3DES by default, and then things will interoperate (anything already encrypted by git-annex still won't be visible on Android of course).
+
+The gpg shipped with git-annex on Android could be rebuilt to include these. However, it would probably need porting of more libraries to Android. I stopped once I got gpg to compile at all, and had to pass several configure flags to disable features, 
+
+This is something that anyone interested could work on.  (Ie, no Haskell!) See `standalone/android/Makefile` in the git-annex source tree, which uses the Android SDK and NDK to cross-compile gnupg for Android. 
+
+I think that getting it to build without `--enable-minimal` would probably get most of the way there.  Aha.. I just tried this, and the new binary seems to support nearly everything the linux one does, no extra libraries needed!
+"""]]

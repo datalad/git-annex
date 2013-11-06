@@ -1,0 +1,33 @@
+I released git-annex an unprecidented two times yesterday, because just
+after the first release, I learned of a another zombie problem. Turns out
+this zombie had existed for a while, but it was masked by zombie reaping
+code that I removed recently, after fixing most of the other zombie
+problems. This one, though, is not directly caused by git-annex. When rsync
+runs ssh, it seems to run two copies, and one is left unwaited on as a
+zombie. Oddly, this only happens when rsync's stdout is piped into
+git-annex, for progress bar handling. I have not source-dived rsync's code
+to get to the bottom of this, but I put in a workaround.
+
+I did get to the bottom of yesterday's runaway dbus library. Got lucky and
+found the cause of the memory leak in that library on the first try, which
+is nice since each try involved logging out of X. I've been corresponding
+with its author, and a fix will be available soon, and then git-annex will
+need some changes to handle dbus reconnection.
+
+-----
+
+For the first time, I'm starting to use the assistant on my own personal
+git-annex repo. The preferred content and group settings let me configure it
+use the complex system of partial syncing I need. For example, I have this
+configured for my sound files, keeping new podcasts on a server until they land
+somewhere near me. And keeping any sound files that I've manually put on my
+laptop, and syncing new podcasts, but not other stuff.
+
+	# (for my server)
+	preferred-content 87e06c7a-7388-11e0-ba07-03cdf300bd87 = include=podcasts/* and (not copies=nearjoey:1)
+	# (for my laptop)
+	preferred-content 0c443de8-e644-11df-acbf-f7cd7ca6210d = exclude=*/out/* and (in=here or (include=podcasts/*))
+
+Found and fixed a bug in the preferred content matching code, where
+if the assistant was run in a subdirectory of the repo, it failed to
+match files correctly.

@@ -1,0 +1,3 @@
+The "git annex add" command adds new file to the annex. However ".DS_Store" files are ignored by git-annex. Is there a list of files that are being ignored? 
+
+Maybe sometimes it's useful to add .DS_Store extended attribute data to the annex to ensure a complete sync of Mac files...

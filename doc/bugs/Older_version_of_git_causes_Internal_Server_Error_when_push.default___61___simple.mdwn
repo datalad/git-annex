@@ -1,0 +1,64 @@
+### Please describe the problem.
+Internal Server Error when setting up new annex and git push.default set to simple.
+
+### What steps will reproduce the problem?
+git v1.8.2.1 installed on mac os x 10.8.3 via brew
+
+Set push.default = simple (for 2.0-style push handling)
+Point git-annex-assistant at a directory.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version 4.20130422-gb9341fd (from annex-assistant's footer)
+git version 1.8.2.1
+Mac OS X 10.8.3
+
+### Please provide any additional information below.
+
+Changing the push.default to "matching" 
+
+The error message as shown was:
+
+Internal Server Error
+git init failed!
+Output:
+error: Malformed value for push.default: simple
+error: Must be one of nothing, matching, tracking or current.
+fatal: bad config file line 22 in /Users/nhyde/.gitconfig
+
+My .gitconfig is as follows:
+
+[user]
+    email = nhyde@example.com
+    #email = xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+    name = Nathan Hyde
+[alias]
+    st = status
+    ci = commit
+    br = branch
+    co = checkout
+    df = diff
+    lg = log -p
+    who = shortlog -s --
+    fs = flow feature start
+    ff = flow feature finish
+[color]
+    ui = true
+[core]
+    excludesfile = /Users/nhyde/.gitignore_global
+    ignorecase = false
+    editor = vim
+[push]
+    default = matching
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/debug.log
+
+
+# End of transcript or log.
+"""]]
+
+> Closing this because all autobuilders have been upgraded
+> to a more recent version of git. done --[[Joey]] 
+>> Reopened, because the Linux autobuilds have been downgraded to Debian
+>> stable and have this problem again. --[[Joey]]

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-10-26T19:35:46Z"
+ content="""
+You should **never, ever, ever** run `git pull`, or `git checkout` inside a direct repository. You need to read [[direct_mode]]. If you do not fully understand it, you should avoid running any git commands that are not `git annex foo` in a direct mode repository. If you forget and do run such git commands, you can generally recover by running `git annex fsck`, although it's possible that the git command you run overwrites your only copy of a file, and so you'd lose it.
+
+<pre>
+To ssh://michele@home/home/michele/casa
+   6c18669..8cc74a0  git-annex -> synced/git-annex
+ ! [rejected]        master -> synced/master (non-fast-forward)
+error: failed to push some refs to 'ssh://michele@home/home/michele/casa'
+</pre>
+
+I'll bet that if you look at the `git config` of this repository it failed to push to, you'll find that it has `receive.denyNonFastforwards` set to true. If you unset that, the push should work.
+"""]]

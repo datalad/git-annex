@@ -1,0 +1,14 @@
+glacier-cli currently relies on a local cache of
+inventory information, and so other git-annexes using the same glacier
+repository are not able to access stuff in it, unless and until
+`glacier vault sync` is run.
+
+An example of this causing trouble is with the assistant. When a file is
+moved into archive/, the assistant that sends it to glacier is able to
+trust that it's in glacier and remove the local copy. But other assistants
+that also have a copy cannot trust that, and so don't remove their copies.
+
+I've discussed with glacier-cli's author making git-annex store enough info
+in its branch to be able to bootstrap glacier-cli to know about a file.
+This seems doable and he had a design; waiting on movement 
+on the glacier-cli side.

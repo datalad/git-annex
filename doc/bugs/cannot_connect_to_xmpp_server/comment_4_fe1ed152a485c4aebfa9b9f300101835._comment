@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5WyknJirJJridJjiPNgrlYxGG9xrZBvA"
+ nickname="Daniel"
+ subject="comment 4"
+ date="2013-07-21T02:45:52Z"
+ content="""
+Comparing that to when I connect to gmail, I see that my server isn't sending any stream features; my server doesn't support TLS.
+"""]]

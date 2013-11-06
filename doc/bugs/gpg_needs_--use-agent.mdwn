@@ -1,0 +1,53 @@
+git-annex gpg encryption fails here when GPG_AGENT_INFO is set, it needs to be supplied --use-agent to work.
+
+Output from git-annex:
+
+    copy file (to origin...) (gpg) gpg: can't query passphrase in batch mode
+    gpg: decryption failed: secret key not available
+    Command gpg ["--batch","--no-tty","--quiet","--trust-model","always","--decrypt"] failed; exit code 2
+    
+    git-annex: user error (Command gpg ["--batch","--no-tty","--quiet","--trust-model","always","--decrypt"] failed; exit code 2)
+    failed
+
+Reproduced on command-line:
+
+    [0 zerodogg@browncoats ~]$ echo test > testfile
+    [0 zerodogg@browncoats ~]$ gpg -e testfile
+    [0 zerodogg@browncoats ~]$ gpg --batch --no-tty --quiet --trust-model always --decrypt testfile.gpg 
+    gpg: can't query passphrase in batch mode
+    gpg: decryption failed: secret key not available
+    [2 zerodogg@browncoats ~]$ gpg --use-agent --batch --no-tty --quiet --trust-model always --decrypt testfile.gpg
+    test
+    [0 zerodogg@browncoats ~]$ 
+
+A patch to fix this issue:
+
+
+    From 77cb02d15245e9ad6e127388adcda960000fb3b8 Mon Sep 17 00:00:00 2001
+    From: Eskild Hustvedt <code@zerodogg.org>
+    Date: Fri, 17 Aug 2012 09:21:44 +0200
+    Subject: [PATCH] Explicitly enable agent to ensure decryption works
+    
+    Otherwise gpg will fail when GPG_AGENT_INFO is set in certain cases.
+    ---
+     Utility/Gpg.hs |    2 +-
+     1 file changed, 1 insertion(+), 1 deletion(-)
+    
+    diff --git a/Utility/Gpg.hs b/Utility/Gpg.hs
+    index e13afe5..c28b209 100644
+    --- a/Utility/Gpg.hs
+    +++ b/Utility/Gpg.hs
+    @@ -29,7 +29,7 @@ stdParams params = do
+        b <- getEnv "GPG_BATCH"
+        let batch = if isNothing e && isNothing b
+            then []
+    -       else ["--batch", "--no-tty"]
+    +       else ["--batch", "--no-tty", "--use-agent"]
+        return $ batch ++ defaults ++ toCommand params
+        where
+            -- be quiet, even about checking the trustdb
+    -- 
+    1.7.10.4
+
+> Thanks, [[done]].. I never noticed this since I have use-agent set in
+> gpg.conf. --[[Joey]

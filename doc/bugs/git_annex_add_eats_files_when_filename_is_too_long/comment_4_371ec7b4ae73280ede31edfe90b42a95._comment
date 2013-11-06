@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-07-08T01:32:30Z"
+ content="""
+Indeed, I've made it even more robust now, handling the case where the file has weird permissions too, and undoing the failed add so the file is always back at the start state. Had to add a dependency on another haskell module to allow this, so it took some time to figure out how to do it..
+
+"""]]

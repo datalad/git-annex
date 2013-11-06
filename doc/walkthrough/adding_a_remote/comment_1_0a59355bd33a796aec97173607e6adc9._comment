@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-03-19T01:18:49Z"
+ content="""
+After doing the above with two required copy per file, `git annex fsck` complained that I had only one copy per file even though I had created my clone, already. Once I `git pull`ed from the second repo, not getting any changes for obvious reasons, `git annex fsck` was happy. So I am not sure how my addition was incorrect. -- RichiH
+"""]]

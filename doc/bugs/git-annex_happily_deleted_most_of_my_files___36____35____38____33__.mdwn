@@ -1,0 +1,58 @@
+### Please describe the problem.
+
+When cloning/syncing a repository (and probably doing some nono's in the process),
+git annex will happily delete files.
+This cost me several files, which just by coincidence were not totally important, still its *very* unsettling.
+
+### What steps will reproduce the problem?
+
+I did not try to exactly reproduce it yet (sorry, no time right now), but here is vaguley what I did (sorry its been a process spread over
+several hours and i was doing lots of other things in parallel so I'm fuzzy about details):
+
+ * have a repository in direct mode on your local harddrive, say ~/myannex
+ * git clone ~/myannex to /usbhd/myannex, git annex init.
+   The usbhd is a FAT, git annex recognizes it as "crippled filessytem".
+ * Git annex get all from ~/myannex. So far, so good.
+ * create several files on ~/myannex, git annex add them
+ * do a git annex add on them, abort it (realizing SHA256E takes forever, so changing to WORM), repeat add
+   (not sure wheter i did a git annex sync here)
+ * create several files on /usbhd/myannex, git annex add them
+   (not sure wheter i did a git annex sync here again)
+
+All repos are in direct mode.
+
+From here on i don't remember the exact order of events, one definite -- probably important -- nono i did,
+was:
+I executed a git annex sync/get on the usbhd in a sub-directory (i.e. not in the git base dir), say /usbhd/myannex/foo/bar/,
+so it went on creating /usbhd/myannex/foo/bar/foo, which of course was not intended.
+However /usbhd/myannex/foo/bar/foo contained FAT-crippled-symlinks to the new files in ~/myannex (good).
+
+In order to avoid a potential messy situation i just renamed /usbhd/myannex/foo to /usbhd/myannex/foo_bak
+(which I just realize while writing this, saved me the hash values of my files, yay :))
+
+However when I tried to repeat the procedure, it seems that the new files would not appear on the usbhd (for a reason i totally don't get, maybe I synced back before realizing my sub-foo mistake).
+When I synced usbhd -> ~/myannex again, git-annex happily deleted my new files there which obviously quite upset me.
+
+Again, sorry for this horribly chaotic description,
+I'll try and deliver a more reproducible description, but for the next 2 weeks at least I'm too busy for that.
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+Archlinux,
+3.9.2-1-ARCH #1 SMP PREEMPT Sat May 11 20:31:08 CEST 2013 x86_64 GNU/Linux
+
+aur/git-annex-bin 4.20131002-1
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+[[!tag moreinfo]]

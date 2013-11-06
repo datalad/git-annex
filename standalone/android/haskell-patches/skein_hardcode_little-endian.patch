@@ -1,0 +1,24 @@
+From 3a04b41ffce4e4e87b0fedd3a1e3434a3f06cc76 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sun, 22 Sep 2013 00:18:12 +0000
+Subject: [PATCH] hardcode little endian
+
+---
+ c_impl/optimized/skein_port.h |    1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/c_impl/optimized/skein_port.h b/c_impl/optimized/skein_port.h
+index a2d0fc2..6929bb0 100644
+--- a/c_impl/optimized/skein_port.h
++++ b/c_impl/optimized/skein_port.h
+@@ -45,6 +45,7 @@ typedef uint64_t        u64b_t;             /* 64-bit unsigned integer */
+  * platform-specific code instead (e.g., for big-endian CPUs).
+  *
+  */
++#define SKEIN_NEED_SWAP  (0)
+ #ifndef SKEIN_NEED_SWAP /* compile-time "override" for endianness? */
+ 
+ #include "brg_endian.h"                     /* get endianness selection */
+-- 
+1.7.10.4
+

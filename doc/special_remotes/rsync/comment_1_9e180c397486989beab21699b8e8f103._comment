@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="diepes"
+ ip="105.227.34.36"
+ subject="rsync description and example"
+ date="2013-03-29T15:57:20Z"
+ content="""
+Hi, I would like to see a example of setting up / using e.g. rsync.net as a repo.
+
+
+Please also provide a highlevel description of how the rsync repo fits in with git-annex.
+
+ 
+Q1. can you adds files to the remote rsync repo, and will they be detected and synced back ?
+Q2. is all the git history rsync'd to remote ?   how do i recover if i loose all data except the remote rsync repo ?
+  
+"""]]

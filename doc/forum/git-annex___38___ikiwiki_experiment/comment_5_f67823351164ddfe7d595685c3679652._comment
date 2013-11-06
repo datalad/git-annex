@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="comment 5"
+ date="2013-09-26T06:56:49Z"
+ content="""
+Turns out using the underlay was a piece of cake! Just mirror the folder structure of the repo in your underlaydir put your jpegs there and off you go. Images are picked up by the album plugin and it all just works. No need to coax git-annex into doing odd stuff.
+
+Thought I'd post this for other ikiwikers.
+"""]]

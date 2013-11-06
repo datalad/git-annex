@@ -1,0 +1,26 @@
+I've been doing a sort of experiment but I'm not sure if it's working or, really, how to even tell.
+
+I have two macbooks that are both configured as clients as well as a USB HDD, an rsync endpoint on a home NAS, and a glacier endpoint.
+
+For the purposes of this example, lets call the macbooks "chrissy" and "brodie". Chrissy's was initially configured with a remote for brodie with the url as
+
+    ssh://Brodie.88195848.members.btmm.icloud.com./Users/akraut/Desktop/annex
+
+This allows me to leverage the "Back To My Mac" free IPv6 roaming I get from Apple.  Now, occasionally, that dns resolution fails. Since I'm frequently on the same network, I can also use the mDNS address of brodie.local. which is much more reliable.
+
+So my brilliant/terrible idea was to put this in my git config:
+
+    [remote "brodie"]
+    	url = ssh://Brodie.88195848.members.btmm.icloud.com./Users/akraut/Desktop/annex
+    	fetch = +refs/heads/*:refs/remotes/brodie/*
+    	annex-uuid = BF4BCA6D-9252-4B5B-BE12-36DD755FAF4B
+    	annex-cost-command = /Users/akraut/Desktop/annex/tools/annex-cost6.sh Brodie.88195848.members.btmm.icloud.com.
+    [remote "brodie-local"]
+    	url = ssh://brodie.local./Users/akraut/Desktop/annex
+    	fetch = +refs/heads/*:refs/remotes/brodie/*
+    	annex-uuid = BF4BCA6D-9252-4B5B-BE12-36DD755FAF4B
+    	annex-cost-command = /Users/akraut/Desktop/annex/tools/annex-cost.sh brodie.local.
+
+Is there any reason why I shouldn't do this? Is annex smart enough to know that it can reach the same remote through both urls? Will the cost calculations be considered and the "local" url chosen if it's cost is less than the other?
+
+(I posted the annex-cost.sh stuff at [[forum/Calculating Annex Cost by Ping Times]].)

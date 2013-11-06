@@ -1,0 +1,42 @@
+News for git-annex 4.20131002:
+
+    The layout of gcrypt repositories has changed, and
+    if you created one you must manually upgrade it.
+    See /usr/share/doc/git-annex/html/upgrades/gcrypt.html
+
+git-annex 4.20131002 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Note that the layout of gcrypt repositories has changed, and
+     if you created one you must manually upgrade it.
+     See http://git-annex.branchable.com/upgrades/gcrypt/
+   * webapp: Support setting up and using encrypted git repositories on
+     any ssh server, as well as on rsync.net.
+   * git-annex-shell: Added support for operating inside gcrypt repositories.
+   * Disable receive.denyNonFastForwards when setting up a gcrypt special
+     remote, since gcrypt needs to be able to fast-forward the master branch.
+   * import: Preserve top-level directory structure.
+   * Use cryptohash rather than SHA for hashing when no external hash program
+     is available. This is a significant speedup for SHA256 on OSX, for
+     example.
+   * Added SKEIN256 and SKEIN512 backends.
+   * Android build redone from scratch, many dependencies updated,
+     and entire build can now be done using provided scripts.
+   * assistant: Clear the list of failed transfers when doing a full transfer
+     scan. This prevents repeated retries to download files that are not
+     available, or are not referenced by the current git tree.
+   * indirect, direct: Better behavior when a file is not owned by
+     the user running the conversion.
+   * add, import, assistant: Better preserve the mtime of symlinks,
+     when when adding content that gets deduplicated.
+   * Send a git-annex user-agent when downloading urls.
+     Overridable with --user-agent option.
+     (Not yet done for S3 or WebDAV due to limitations of libraries used.)
+   * webapp: Fixed a bug where when a new remote is added, one file
+     may fail to sync to or from it due to the transferrer process not
+     yet knowing about the new remote.
+   * OSX: Bundled gpg upgraded, now compatible with config files
+     written by MacGPG.
+   * assistant: More robust inotify handling; avoid crashing if a directory
+     cannot be read.
+   * Moved list of backends and remote types from status to version
+     command."""]]

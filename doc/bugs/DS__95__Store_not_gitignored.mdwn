@@ -1,0 +1,26 @@
+What steps will reproduce the problem?
+
+Create a new git repo on OS X.  create a .gitignore file containing the line ".DS_Store".  Check it into git.  do "git annex init" to make the directory into a git annex repo.  do "git annex direct" to put it in direct mode.  do "git annex assistant" to start the assistant and watch it with "git annex webapp".
+
+Open the directory in the finder.  Drag in some files and watch the assistant as it checks them in.  Play with your window's viewing preferences, maybe view things as "icons" so that the finder is forced to store metadata about where you dragged the icons in the window in the .DS_Store file.  As you do this, watch the webapp.  .DS_Store will start to be checked into git annex, and rechecked in frequently as it is updated.  Git annex assistant is not respecting the .gitignore file.  Is there some other way to tell git annex assistant that certain files should be ignored than .gitignore?
+
+
+What is the expected output? What do you see instead?
+
+.DS_Store files are ignored by the assistant.
+
+
+What version of git-annex are you using? On what operating system?
+
+git-annex version: 3.20130124
+
+OS X Lion
+
+Please provide any additional information below.
+
+> Assistant does not support .gitignore yet. Requires an efficient query
+> interface for ignores, which git does not provide.
+>
+> However, I've added a special case, OSX only ignore for .DS_Store files.
+> [[done]] --[[Joey]] 
+

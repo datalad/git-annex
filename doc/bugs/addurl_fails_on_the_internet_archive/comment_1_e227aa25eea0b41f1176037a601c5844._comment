@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.22"
+ subject="comment 1"
+ date="2013-10-11T18:49:25Z"
+ content="""
+Afaik this was fixed in 747f5b123cb3c6b3b87d4e79f8767e69d842b96b.
+
+Probably noone has bothered to add IA support to quvi, but it should be doable.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 6"
+ date="2013-05-25T17:57:43Z"
+ content="""
+Debian has it fixed in 2.1.10-5 but this has unfortunately not made it to the wheezy release.
+"""]]

@@ -1,0 +1,17 @@
+I am running centralized git-annex exclusively.
+
+Similar to
+
+    git annex get
+
+I'd like to have a
+
+    git annex put
+
+which would put all files on the default remote(s).
+
+My main reason for not wanting to use copy --to is that I need to specify the remote's name in this case which makes writing a wrapper unnecessarily hard. Also, this would allow
+
+    mr push
+
+to do the right thing all by itself.

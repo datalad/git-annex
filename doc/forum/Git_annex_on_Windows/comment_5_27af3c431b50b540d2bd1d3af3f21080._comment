@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 5"
+ date="2013-09-13T18:03:17Z"
+ content="""
+Turns out that there was a bug in the Windows port that could lead to the behavior described, and another bug that prevented `git annex fsck` from fixing it. I have fixed both bugs, so you should upgrade and then run `git annex fsck`.
+"""]]

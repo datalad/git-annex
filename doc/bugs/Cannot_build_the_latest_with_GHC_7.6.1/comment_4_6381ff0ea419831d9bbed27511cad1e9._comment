@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLB39PC89rfGaA8SwrsnB6tbumezj-aC0"
+ nickname="Tobias"
+ subject="comment 4"
+ date="2012-11-27T16:10:31Z"
+ content="""
+cabal install yesod --force-reinstalls
+
+Then \"cabal configure, cabal build\" worked on my secondary machine...
+
+Woohooo, i have the latest git-annex running on both my machines now. Though neither can compile using the Makefile.
+
+Sorry for the spam here, just hoping it will help someone else jump through less hoops.
+
+
+"""]]

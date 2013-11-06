@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 5"
+ date="2011-05-14T19:03:43Z"
+ content="""
+Version: 0.20110503
+
+My local non-bare repo is copying to a remote bare repo.
+
+I have been recovering in a non-bare repo.
+
+If there is anything I can send you to help... If I removed said files and went through http://git-annex.branchable.com/bugs/No_easy_way_to_re-inject_a_file_into_an_annex/ -- would that help?
+"""]]

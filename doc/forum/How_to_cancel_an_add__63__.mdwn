@@ -1,0 +1,5 @@
+What is the safest way to cancel a `git annex add` before the first commit?
+
+Say I first added a directory with a lot of small files to the annex and then (while watching the endless list of checksum operations) decide I should actually put them in a tar file and annex that instead.
+
+The problem seems to be that `git annex add` immediately replaces the files with symlinks instead of waiting for a commit, so I can't just `git reset largedir/; tar cvfz largedir.tgz largedir/; git annex add largedir.tgz`.

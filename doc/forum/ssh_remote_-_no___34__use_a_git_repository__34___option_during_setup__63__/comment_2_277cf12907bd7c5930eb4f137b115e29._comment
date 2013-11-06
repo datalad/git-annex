@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmR-xG9O2HWoybxYZPVbYVYxwitfcfDgtE"
+ nickname="Charles"
+ subject="comment 2"
+ date="2013-09-09T14:50:42Z"
+ content="""
+Never mind, I simply didn't have git-annex installed on the other computer. I'm going to make a thread in bugs about assistant always assuming port 22, you can delete this thread.
+"""]]

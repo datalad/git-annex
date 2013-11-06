@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+if [ "$(whoami)" != root ]; then
+	echo "Must run this as root!" >&2
+	exit 1
+fi
+
+debootstrap --arch=i386 stable debian-stable-android
+cp $0-inchroot debian-stable-android/tmp
+cp $0-inchroot-asuser debian-stable-android/tmp
+
+# Don't use these vars in the chroot.
+unset TMP
+unset TEMP
+unset TMPDIR
+unset TEMPDIR
+
+chroot debian-stable-android "tmp/$(basename $0)-inchroot"
+
+echo
+echo
+echo "debian-stable-android is set up, with a user androidbuilder"
+echo "your next step is probably to check out git-annex in this chroot"
+echo "and run standalone/android/install-haskell-packages"
+echo
+echo

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="guilhem"
+ ip="129.16.20.209"
+ subject="comment 4"
+ date="2013-08-16T07:14:12Z"
+ content="""
+The [[OpenPGP standard|https://tools.ietf.org/html/rfc4880]] specifies that revoked keys/subkeys \"are not to be used\". AFIK GnuPG, as any RFC-compliant implementation, will not let you encrypt to a revoked key no matter what. An extremely dirty workaround is to set up your system clock prior to the revocation date (but that might put your whole system at risk since other applications may rely synced clocks to work properly).
+
+That said, what you really wanted to do was to revoke access to K1 and add K2 instead. That seems to be a perfectly valid use-case, and it shouldn't be hard to add to git-annex; stay tunned ;-)
+
+
+Tobias: Not sure what you meant by \"revoke access to my annex\", but if you were thinking of the key owner, note that with the current [[encryption design|http://git-annex.branchable.com/design/encryption]], since that person may simply grab from the git repo and then at any time decrypt the passphrase for the symmetric cipher, it makes little sense to revoke access for that person unless you change that passphrase, and reencrypt all annexed files on the remote, which of course needs to be done locally for the encryption to make sense at all.
+"""]]

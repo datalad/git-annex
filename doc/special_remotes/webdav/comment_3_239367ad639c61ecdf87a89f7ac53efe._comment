@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 3"
+ date="2012-12-01T20:13:36Z"
+ content="""
+I've identified the problem keeping it working with livedrive. Once a patch I've written is applied to the Haskell DAV library, I'll be able to update git-annex to support it.
+
+I don't know about sd2dav.1und1.de. The error looks like it doesn't support WebDAV file locking.
+"""]]

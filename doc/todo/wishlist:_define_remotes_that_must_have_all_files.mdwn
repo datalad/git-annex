@@ -1,0 +1,18 @@
+I would like to be able to name a few remotes that must retain *all* annexed
+files.  `git-annex fsck` should warn me if any files are missing from those
+remotes, even if `annex.numcopies` has been satisfied by other remotes.
+
+I imagine this could also be useful for bup remotes, but I haven't actually
+looked at those yet.
+
+Based on existing output, this is what a warning message could look like:
+
+	fsck FILE
+		3 of 3 trustworthy copies of FILE exist.
+		FILE is, however, still missing from these required remotes:
+			UUID -- Backup Drive 1
+			UUID -- Backup Drive 2
+		Back it up with git-annex copy.
+	Warning
+
+What do you think?

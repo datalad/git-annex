@@ -1,0 +1,19 @@
+<div .span9>
+  ^{repolist}
+  <div .row-fluid>
+    <div .span6>
+      <h2>
+        Add more repositories
+
+      ^{makeMiscRepositories}
+
+    <div .span6>
+      <h2>
+        Store your data in the cloud
+
+      ^{makeCloudRepositories}
+
+      <h2>
+        Archive your data
+
+      ^{makeArchiveRepositories}

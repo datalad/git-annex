@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="203.45.2.230"
+ subject="comment 1"
+ date="2013-05-30T00:08:52Z"
+ content="""
+It sounds like you don't have the ssh-agent set up properly in your environment.
+
+Try starting the git annex agent from the command line and see if that helps.  If it works then it is a problem with environment variables.
+"""]]

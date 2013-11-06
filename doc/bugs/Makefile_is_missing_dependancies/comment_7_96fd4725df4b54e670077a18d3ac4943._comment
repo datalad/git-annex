@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 7"
+ date="2011-03-23T16:57:56Z"
+ content="""
+Try the changes I've pushed to use statfs64 on apple.
+
+There is actually a standardized statvfs that I'd rather use, but after the last time that I tried going with the POSIX option first only to find it was not broadly implemented, I was happy to find some already existing code that worked for some OSs.
+
+(While ikiwiki supports anonymous git push, it's a feature we have not rolled out on Branchable.com yet, and anyway, ikiwiki disallows editing existing comments that way. I would, however, be happy to git pull changes from somewhere.)
+"""]]

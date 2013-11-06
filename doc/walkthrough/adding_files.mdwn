@@ -1,0 +1,11 @@
+	# cd ~/annex
+	# cp /tmp/big_file .
+	# cp /tmp/debian.iso .
+	# git annex add .
+	add big_file (checksum...) ok
+	add debian.iso (checksum...) ok
+	# git commit -a -m added
+
+When you add a file to the annex and commit it, only a symlink to
+the annexed content is committed. The content itself is stored in
+git-annex's backend.

@@ -1,0 +1,7 @@
+Firefox is my default browser, but as we all know, it doesn't load quickly.  If I don't have Firefox running but I want to access the git-annex webapp, I'd rather launch the webapp in some small, quick browser like QupZilla than wait for Firefox to load.
+
+Could git-annex have a setting, maybe a "webapp --browser" option and/or a setting in the config file, to specify the browser to launch?
+
+> git-annex uses the standard `git config web.browser` if you set it.
+> [[done]]
+> --[[Joey]]

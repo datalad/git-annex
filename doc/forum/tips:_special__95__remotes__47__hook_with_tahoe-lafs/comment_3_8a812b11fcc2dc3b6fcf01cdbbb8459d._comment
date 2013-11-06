@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 3"
+ date="2011-04-29T15:33:24Z"
+ content="""
+@justin, I discovered that \"git annex describe\" did what I wanted
+
+@joey, yep that is the behaviour of \"tahoe ls\", thanks for the tip on removing the file from the remote.
+
+It seems to be working okay for now, the only concern is that on the remote everything is dumped into the same directory, but I can live with that, since I want to track biggish blobs and not lots of small little files.
+"""]]

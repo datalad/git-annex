@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="bla"
+ ip="91.121.95.205"
+ subject="Testing"
+ date="2013-10-15T21:24:35Z"
+ content="""
+Last autobuild (installed by replacing existing)
+annex 89345b7  with git 1.8.4.474.g128a96c  - also hangs on add in the same manner (in previously created tmp git in /data/data/ga.androidterm/anntmp). Not sure if I did something wrong.
+
+Current stable release - works just fine (deinstalled, installed again - replace failed somehow)
+
+
+
+"""]]

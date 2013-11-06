@@ -1,0 +1,4 @@
+Hi Joey,
+    I was wondering how you know when a file in your repo fails a fsck.  I'm having trouble finding out since I can't change any of the objects (which is great!).  I'd just like to know since I have thousands of files in one of my annexes, and scrolling through my term buffer is unwieldy.  I'd assume it would show up when the fsck was done, or in 'git annex status'...
+
+Thanks!

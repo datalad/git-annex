@@ -1,0 +1,100 @@
+We had some informal discussions on IRC about improving the output of the `whereis` command.
+
+[[!toc levels=2]]
+
+First version: columns
+======================
+
+[[mastensg]] started by implementing a [simple formatter](https://gist.github.com/mastensg/6500982) that would display things in columns [screenshot](http://www.ping.uio.no/~mastensg/whereis.png)
+
+Second version: Xs
+==================
+
+After some suggestions from [[joey]], [[mastensg]] changed the format slightly ([screenshot](http://www.ping.uio.no/~mastensg/whereis2.png)):
+
+[[!format txt """
+17:01:34 <joeyh> foo
+17:01:34 <joeyh> |bar
+17:01:34 <joeyh> ||baz (untrusted)
+17:01:34 <joeyh> |||
+17:01:34 <joeyh> XXx 3?  img.png
+17:01:36 <joeyh> _X_ 1!  bigfile
+17:01:37 <joeyh> XX_ 2   zort
+17:01:39 <joeyh> __x 1?! maybemissing
+17:02:09 * joeyh does a s/\?/+/ in the above
+17:02:24 <joeyh> and decrements the counters for untrusted
+17:03:37 <joeyh> __x 0+! maybemissing
+"""]]
+
+Third version: incremental
+==========================
+
+Finally, [[anarcat]] worked on making it run faster on large repositories, in a [fork](https://gist.github.com/anarcat/6502988) of that first gist. Then paging was added (so headers are repeated). 
+
+Fourth version: tuning and blocked
+==================================
+
+[[TobiasTheViking]] provided some bugfixes, and the next step was to implement the trusted/untrusted detection, and have a counter.
+
+This required more advanced parsing of the remotes, and instead of starting to do some JSON parsing, [[anarcat]] figured it was time to learn some Haskell instead.
+
+Current status: needs merge
+===========================
+
+So right now, the most recent version of the python script is in [anarcat's gist](https://gist.github.com/anarcat/6502988) and works reasonably well. However, it doesn't distinguish between trusted and untrusted repos and so on.
+
+Furthermore, we'd like to see this factored into the `whereis` command directly. A [raw.hs](http://codepad.org/miVJb5oK) file has been programmed by `mastensg`, and is now available in the above gist. It fits the desired output and prototypes, and has been `haskellized` thanks to [[guilhem]].
+
+Now we just need to merge those marvelous functions in `Whereis.hs` - but I can't quite figure out where to throw that code, so I'll leave it to someone more familiar with the internals of git-annex. The most recent version is still in [anarcat's gist](https://gist.github.com/anarcat/6502988). --[[anarcat]]
+
+Desired output
+--------------
+
+The output we're aiming for is:
+
+    foo
+    |bar
+    ||baz (untrusted)
+    |||
+    XXx 2+  img.png
+    _X_ 1!  bigfile
+    XX_ 2   zort
+    __x 0+! maybemissing
+
+Legend:
+
+ * `_` - file missing from repo
+ * `x` - file may be present in untrusted repo
+ * `X` - file is present in trusted repo
+ * `[0-9]` - number of copies present in trusted repos
+ * `+` - indicates there may be more copies present
+ * `!` - indicates only one copy is left
+
+Implementation notes
+--------------------
+
+[[!format txt """
+20:48:18 <joeyh> if someone writes me a headerWhereis ::  [(RemoteName, TrustLevel)] -> String  and a formatWhereis :: [(RemoteName, TrustLevel, UUID)] -> [UUD] -> FileName -> String   , I can do the rest ;)
+20:49:22 <joeyh> make that second one formatWhereis :: [(RemoteName, TrueLevel, Bool)] -> FileName -> String
+20:49:37 <joeyh> gah, typos
+20:49:45 <joeyh> suppose you don't need the RemoteName either
+"""]]
+
+> So, I incorporated this, in a new remotes command.
+> Showing all known repositories seemed a bit much
+> (I have 30-some known repositories in some cases),
+> so just showing configured remotes seems a good simplification.
+> [[done]]
+> --[[Joey]]
+
+> > I would have prefered this to be optional since I don't explicitely configure all remotes in git, especially if I can't reach them all the time (e.g. my laptop). It seems to me this should at least be an option, but I am confused as to why `Remote.List.remoteList` doesn't list all remotes the same way `Remote.remote_list` does... Also, it's unfortunate that the +/!/count flags have been dropped, it would have been useful... Thanks for the merge anyways! --[[done]]
+> > 
+> > The more I look at this, the more i think there are a few things wrong with the new `remotes` command.
+> > 
+> >  1. the name is confusing: being a git addict, I would expect the `git annex remote` command to behave like the `git remote` command: list remotes, add remotes, remove remotes and so on. it would actually be useful to have such a command (which would replace `initremote`, I guess). i recommend replacing the current `whereis` command, even if enabled through a special flag
+> > 
+> >  2. its behavior is inconsistent with other git annex commands: `git annex status`, for example, lists information about all remotes, regardless of whether they are configured in git. `remotes` (whatever it's called), should do the same, or at least provide an option to allow the user to list files on all remotes. The way things stand, there is no way to list files on non-git remotes, even if they are added explicitely as a remote, if the remote is not actually reachable: the files are just marked as absent (even thought `whereis` actually finds them). i recommend showing all remotes regardless, either opt-in or opt-out using a flag.
+> > 
+> >  3. having the `!` flag, at least, would be useful because it would allow users to intuitively grep for problematic files without having to learn extra syntax. same with + and having an explicit count.
+> > 
+> > thanks. --[[anarcat]]

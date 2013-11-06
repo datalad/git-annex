@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlkA6XinbeOdnEDxEGQUWyjqPGh0kdMXr4"
+ nickname="Blake"
+ subject="Updating git-annex via cabal"
+ date="2013-10-09T21:21:22Z"
+ content="""
+What is the best way to update git-annex and the dependencies via cabal? Just the `$ cabal install *` commands again?
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 8"
+ date="2011-05-15T00:09:34Z"
+ content="""
+What you're describing should be impossible; the error message shown can only occur if the object is present in the annex where `git-annex-shell recvkey` is run. So something strange is going on.
+
+Try reproducing it by running on the remote system, `git-annex-shell recvkey /remote/repo.git $key` .. if you can reproduce it, I guess the next thing to do will be to strace the command and see why it's thinking the object is there.
+"""]]

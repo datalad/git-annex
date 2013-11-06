@@ -1,0 +1,18 @@
+### Please describe the problem.
+
+The colored notices on the left of the screen are a little off. When they disappear, it also leaves a huge gap on the left side.
+
+### What steps will reproduce the problem?
+
+Click the `X` on all the messages on the left.
+
+### What version of git-annex are you using? On what operating system?
+
+4.20130815~bpo70+1 on Debian Wheezy, with Chromium Version 29.0.1547.57 Debian 7.1 (217859)
+
+### Please provide any additional information below.
+
+This is admittedly a very mild problem, but from a usability perspective, it would be less confusing to show those on the right. When they were gone, I thought git-annex was broken somewhat... -- [[anarcat]]
+
+> [[done]], although I'm not sure I'm sold on their being on the right
+> being better. --[[Joey]]

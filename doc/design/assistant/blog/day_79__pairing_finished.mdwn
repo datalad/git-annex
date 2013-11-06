@@ -1,0 +1,33 @@
+Tons of pairing work, which culminated today in pairing fully working for
+the very first time. And it works great! Type something like "my
+hovercraft is full of eels" into two git annex webapps on the same LAN
+and the two will find each other, automatically set up ssh keys, and sync
+up, like magic. Magic based on math.
+
+* Revert changes made to `authorized_keys` when the user cancels
+  a pairing response. Which could happen if the machine that sent the
+  pairing request originally is no longer on the network.
+* Some fixes to handle lossy UDP better. Particularly tricky at the end
+  of the conversation -- how do both sides reliably know when a
+  conversation is over when it's over a lossy wire? My solution is just
+  to remember some conversatons we think are over, and keep saying
+  "this conversation is over" if we see messages in that conversation.
+  Works.
+* Added a UUID that must be the same in related pairing messages.
+  This has a nice security feature: It allows detection of brute-force
+  attacks to guess the shared secret, after the first wrong guess! 
+  In which case the pairing is canceled and a warning printed.
+* That led to a thorough security overview, which I've added to
+  the [[pairing]] page. Added some guards against unusual attacks,
+  like console poisioning attacks. I feel happy with the security
+  of pairing now, with the caveats that only I have reviewed it (and
+  reviewing your own security designs is never ideal), and that the
+  out-of-band shared secret communication between users is only as good
+  as they make it.
+* Found [a bug](https://github.com/yesodweb/yesod/issues/421) 
+  in Yesod's type safe urls. At least, I think it's a bug. Worked around it.
+* Got very stuck trying to close the sockets that are opened to send
+  multicast pairing messages. Nothing works, down to and including calling
+  C `close()`. At the moment I have a socket leak. :(
+  I need to understand the details of multicast sockets better to fix this.
+  Emailed the author of the library I'm using for help.

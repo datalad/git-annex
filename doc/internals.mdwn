@@ -1,0 +1,132 @@
+In the world of git, we're not scared about internal implementation
+details, and sometimes we like to dive in and tweak things by hand. Here's
+some documentation to that end.
+
+## `.git/annex/objects/aa/bb/*/*`
+
+This is where locally available file contents are actually stored.
+Files added to the annex get a symlink checked into git that points
+to the file content.
+
+First there are two levels of directories used for hashing, to prevent
+too many things ending up in any one directory.
+See [[hashing]] for details.
+
+Each subdirectory has the [[name_of_a_key|key_format]] in one of the
+[[key-value_backends|backends]]. The file inside also has the name of the key.
+This two-level structure is used because it allows the write bit to be removed
+from the subdirectories as well as from the files. That prevents accidentially
+deleting or changing the file contents. See [[permissions]] for details.
+
+In [[direct_mode]], file contents are not stored in here, and instead
+are stored directly in the file. However, the same symlinks are still
+committed to git, internally.
+
+Also in [[direct_mode]], some additional data is stored in these directories.
+`.cache` files contain cached file stats used in detecting when a file has
+changed, and `.map` files contain a list of file(s) in the work directory
+that contain the key.
+
+## The git-annex branch
+
+This branch is managed by git-annex, with the contents listed below.
+
+The file `.git/annex/index` is a separate git index file it uses
+to accumulate changes for the git-annex branch.
+Also, `.git/annex/journal/` is used to record changes before they
+are added to git.
+
+This branch operates on objects exclusively. No file names will ever
+be stored in this branch.
+
+### `uuid.log`
+
+Records the UUIDs of known repositories, and associates them with a
+description of the repository. This allows git-annex to display something
+more useful than a UUID when it refers to a repository that does not have
+a configured git remote pointing at it.
+
+The file format is simply one line per repository, with the uuid followed by a
+space and then the description, followed by a timestamp. Example:
+
+	e605dca6-446a-11e0-8b2a-002170d25c55 laptop timestamp=1317929189.157237s
+	26339d22-446b-11e0-9101-002170d25c55 usb disk timestamp=1317929330.769997s
+
+If there are multiple lines for the same uuid, the one with the most recent
+timestamp wins. git-annex union merges this and other files.
+
+## `remote.log`
+
+Holds persistent configuration settings for [[special_remotes]] such as
+Amazon S3.
+
+The file format is one line per remote, starting with the uuid of the
+remote, followed by a space, and then a series of var=value pairs,
+each separated by whitespace, and finally a timestamp.
+
+Encrypted special remotes store their encryption key here,
+in the "cipher" value. It is base64 encoded, and unless shared [[encryption]]
+is used, is encrypted to one or more gpg keys. The first 256 bytes of
+the cipher is used as the HMAC SHA1 encryption key, to encrypt filenames
+stored on the special remote. The remainder of the cipher is used as a gpg
+symmetric encryption key, to encrypt the content of files stored on the special
+remote.
+
+## `trust.log`
+
+Records the [[trust]] information for repositories. Does not exist unless
+[[trust]] values are configured.
+
+The file format is one line per repository, with the uuid followed by a
+space, and then either `1` (trusted), `0` (untrusted), `?` (semi-trusted),
+`X` (dead) and finally a timestamp.
+
+Example:
+
+	e605dca6-446a-11e0-8b2a-002170d25c55 1 timestamp=1317929189.157237s
+	26339d22-446b-11e0-9101-002170d25c55 ? timestamp=1317929330.769997s
+
+Repositories not listed are semi-trusted.
+
+## `group.log`
+
+Used to group repositories together.
+
+The file format is one line per repository, with the uuid followed by a space,
+and then a space-separated list of groups this repository is part of,
+and finally a timestamp.
+
+## `preferred-content.log`
+
+Used to indicate which repositories prefer to contain which file contents.
+
+The file format is one line per repository, with the uuid followed by a space,
+then a boolean expression, and finally a timestamp.
+
+Files matching the expression are preferred to be retained in the
+repository, while files not matching it are preferred to be stored
+somewhere else.
+
+## `aaa/bbb/*.log`
+
+These log files record [[location_tracking]] information
+for file contents. Again these are placed in two levels of subdirectories
+for hashing. See [[hashing]] for details.
+
+The name of the key is the filename, and the content
+consists of a timestamp, either 1 (present) or 0 (not present), and
+the UUID of the repository that has or lacks the file content.
+
+Example:
+
+	1287290776.765152s 1 e605dca6-446a-11e0-8b2a-002170d25c55
+	1287290767.478634s 0 26339d22-446b-11e0-9101-002170d25c55
+
+These files are designed to be auto-merged using git's [[union merge driver|git-union-merge]].
+The timestamps allow the most recent information to be identified.
+
+## `aaa/bbb/*.log.web`
+
+These log files record urls used by the
+[[web_special_remote|special_remotes/web]]. Their format is similar
+to the location tracking files, but with urls rather than UUIDs.

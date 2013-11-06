@@ -1,0 +1,9 @@
+Today I had to change the implementation of the Annex monad. The old one
+turned out to be buggy around exception handling -- changes to state
+recorded by code that ran in an exception handler were discarded when it
+threw an exception. Changed from a StateT monad to a ReaderT with
+a MVar. Really deep-level change, but it went off without a
+hitch!
+
+Other than that it was a bug catch up day. Almost entirely caught up once
+more.

@@ -1,0 +1,26 @@
+Current:
+
+    % git annex status
+    git-annex: unknown command
+
+Better: 
+
+    % git annex status
+    git-annex: status: unknown command
+
+Current:
+
+    % git annex fsck
+    [...]
+    git-annex: 18 failed
+
+Better:
+
+    % git annex fsck
+    [...]
+    git-annex: fsck: 18 failed
+
+
+etc pp.
+
+> [[done]] --[[Joey]] 

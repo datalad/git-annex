@@ -1,0 +1,3 @@
+If a subcommand fails w/o throwing an error, no error is propigated to the
+git-annex exit code. With --quiet, this makes it look like the command
+succeeded. [[done]]

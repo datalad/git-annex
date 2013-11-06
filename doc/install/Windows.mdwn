@@ -1,0 +1,34 @@
+git-annex has recently been ported to Windows!
+
+* First, [install git](http://git-scm.com/downloads)
+* Then, [install git-annex](https://downloads.kitenet.net/git-annex/windows/current/)
+
+This port is in an early state. While it works well enough to use
+git-annex, many things will not work. See [[todo/windows_support]] for
+current status. Note especially that git-annex always uses [[direct_mode]]
+on Windows.
+
+The autobuilder is not currently able to run the test suite, so
+testing git-annex on Windows is up to you! To check that the build of
+git-annex works in your Windows system, you are encouraged to run the test
+suite before using git-annex on real data. After installation, run `git
+annex test`. There will be a lot of output; the important thing is that it
+should end with "All tests ok".
+
+## autobuilds
+
+A daily build is also available, thanks to Yury V. Zaytsev and
+[NEST](http://nest-initiative.org/).
+
+* [download](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/lastSuccessfulBuild/artifact/git-annex/git-annex-installer.exe) ([build logs](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/))
+
+## building it yourself
+
+To build git-annex from source on Windows, you need to install
+the Haskell Platform, Mingw, and Cygwin. Use Cygwin to install
+gcc, rsync, git, wget, ssh, and gnupg. To build the git-annex installer,
+you also need to install the NulSoft installer system.
+
+There is a shell script `standalone/windows/build.sh` that can be
+used to build git-annex. Note that this shell script cannot be run
+in Cygwin; run it with the Mingw sh.

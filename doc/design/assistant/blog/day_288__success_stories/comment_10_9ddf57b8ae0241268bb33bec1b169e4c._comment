@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmnG4EuvZWse5hvgrl0XAK-U61e-0iGaao"
+ nickname="David"
+ subject="Nothing fancy but..."
+ date="2013-06-27T16:52:12Z"
+ content="""
+Hi Joey,
+
+First, thanks very much for your effort put into git-annex.  I store my photos in git-annex and I like it because:
+
+* I want to store multiple copies of the pictures and I can see where they are,
+* I can have a global view of the collection on my laptop without carrying all the files.
+* the indirect mode makes it difficult to me to do stupid things.
+
+So there's nothing fancy, but it works for me very well.  From time to time I try the assistant's new features and I'm planning to replace Dropbox eventually.
+
+Secondly, thanks very much for the dev blog!  I was looking forward every morning to see what's coming next, what problems you are facing and how you're planning to solve them.  It is simply amazing what you've achieved in the last year and your posts gave me a lot of motivation too (in finishing my thesis  :-))!
+
+Thanks!
+"""]]

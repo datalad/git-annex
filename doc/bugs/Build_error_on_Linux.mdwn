@@ -1,0 +1,29 @@
+### Please describe the problem.
+Building on Linux, with a particular combination of flags, failed due to missing `async`.
+
+### What steps will reproduce the problem?
+1. Configure with the following flag combination
+
+        cryptohash -quvi -feed tdfa -testsuite -android production -dns -xmpp -pairing -webapp -assistant dbus inotify -webdav s3
+
+2. Attempt to build and you'll get an error on line 16 of `Utility/Batch.hs` because `Control.Concurrent.Async` isn't available.
+
+### What version of git-annex are you using? On what operating system?
+Version 4.20131024 on Linux
+
+### Please provide any additional information below.
+
+This is the patch I applied to `git-annex.cabal`:
+
+                 CPP-Options: -DWITH_KQUEUE
+                 C-Sources: Utility/libkqueue.c
+     
+    +  if os(linux)
+    +    Build-Depends: async
+    +
+       if os(linux) && flag(Dbus)
+         Build-Depends: dbus (>= 0.10.3)
+         CPP-Options: -DWITH_DBUS
+
+> Feel async is core enough it should depend on it unconditionally.
+> [[done]] --[[Joey]]

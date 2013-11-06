@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-12-19T18:24:59Z"
+ content="""
+I'd recommend using the SHA backend for this, the WORM backend would produce conflicts if the files' modification times changed. 
+
+[[syncing_non-git_trees_with_git-annex]] describes one way to do it.
+"""]]

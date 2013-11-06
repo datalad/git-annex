@@ -1,0 +1,36 @@
+git-annex 4.20130909 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * initremote: Syntax change when setting up an encrypted special remote.
+     Now use keyid=$KEYID rather than the old encryption=$KEYID
+   * forget: New command, causes git-annex branch history to be forgotten
+     in a way that will spread to other clones of the repository.
+     (As long as they're running this version or newer of git-annex.)
+   * forget --drop-dead: Completely removes mentions of repositories that
+     have been marked as dead from the git-annex branch.
+   * sync, assistant: Force push of the git-annex branch. Necessary
+     to ensure it gets pushed to remotes after being rewritten by forget.
+   * Added gcrypt support. This combines a fully encrypted git
+     repository (using git-remote-gcrypt) with an encrypted git-annex special
+     remote.
+   * sync: Support syncing with gcrypt remotes.
+   * importfeed: Also ignore transient problems with downloading content
+     from feeds.
+   * Honor core.sharedrepository when receiving and adding files in direct
+     mode.
+   * enableremote: gpg keys can be removed from those a remote encrypts
+     to by passing "keyid-=$KEYID". keyid+= is also provided.
+     (Thanks, guilhem for the patch.)
+   * Added encryption=pubkey scheme, which encrypts to public keys directly
+     rather than the hybrid approach. See documentation for advantages
+     and disadvantages, but encryption=hybrid is the recommended scheme still.
+     (Thanks, guilhem for the patch.)
+   * Fix Feeds display in build flags.
+   * Remind user when annex-ignore is set for some remotes, if unable to
+     get or drop a file, possibly because it's on an ignored remote.
+   * gpg: Force --no-textmode in case the user has it turned on in config.
+   * webapp: Improve javascript's handling of longpolling connection
+     failures, by reloading the current page in this case.
+     Works around chromium behavior where ajax connections to urls
+     that were already accessed are denied after navigating back to
+     a previous page.
+   * Allow building without quvi support."""]]

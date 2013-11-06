@@ -1,0 +1,10 @@
+I really like git-annex and am thankfull to its creator!
+
+I especially like the high level of abstraction it provides when handling backups or syncing.
+
+But git and my ext4 filesystem and HDD just hate the amount of files/folder/symlinks it throws at them and I am asking, what the alternatives are. I am especially looking for the numcopies and "--auto" functionallity. 
+
+
+Most alternatives I checked out (eps. distributed redundant filesystems) come up with other burdens or restrictions.
+
+Do you have any experience with different systems?

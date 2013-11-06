@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnyMzZZLS1xGW1raqc_9Md6Ksdkvx5rUJU"
+ nickname="Michael"
+ subject="confusion with bundled programs"
+ date="2013-10-02T21:39:11Z"
+ content="""
+I have fiddled with the fresh (as of Oct 2nd) build of assistant on OS X 10.8.5, and there has been a lot of problems with bundled software
+
+bundled git is an old 1.7.x version which keeps saying in the daemon logs it is too old to honor .gitignores etc
+at the same time I have git 1.8.4 installed through homebrew which works very nicely throughout my system
+
+I also have homebrew-installed gpg2:
+
+$ gpg2 --version
+gpg (GnuPG) 2.0.21
+libgcrypt 1.5.3
+
+(and have briefly experimented with using GPGSuite from gpgtools.org, which kept bailing with invalid autolocate directive in gpg.conf)
+
+however there is some unidentifiable gpg binary bundled with the assistant, which cannot connect to gpg-agent from gpg2, and doesn't work with GPGSuite (see above)
+
+is there a way to completely forgo usage of bundled software and have the webapp use whatever is already available on the system?
+
+"""]]

@@ -1,0 +1,15 @@
+I'm trying to add a ssh remote in the web app, but I receive the following error:
+
+    Internal Server Error
+
+    ssh-keygen ["-F","router.eisenacher81.org"] exited 1
+
+The console complains about the known_hosts file:
+
+   /home/michael/.ssh/known_hosts is not a valid known_hosts file.
+   line 44 missing key:  AAAAB3NzaC1yc2EAAAABIwAAAIEAtnX75Qa8YVR...
+   key_read: uudecode AAAAB3NzaC1|1|veTakKhYY3OSqCepiq7WAUK8cxQ=|suoi0YU/lgg781Vz9O7yTao5exY= ssh-rsa                            AAAAB3NzaC1yc2EAAAABIwAAAIEA4bTnEFFiKz4+i3S9DWHJVoV8CD1DsVRJRodWdTA86+x58S0l0rUyJgXbGwScMI+xFCrqzpd4Hgoc4ElRykj5SL+7IuB5ZAe+4ILQPeiL9ck/1Q7uoh7vWiURXr92Hz5tjuEe3QI9H   iKauXj5yj5mGq1VVXLN1CdfQ99G4zSxK7c= failed
+   line 73 invalid key: |1|k9vzo7Ftuxf235It5LbrX36p2f0=|rNHdygip...
+   line 93: invalid hashed name: |1||1|aptgcuUg4ITWhZQLxzRHH8gUIOQ=|Qe2JAlAw++SZosE9ZhQW+fA3twE=...   
+   line 120 missing key:  AAAAB3NzaC1yc2EAAAABIwAAAQEAsHa75NfjyB1...
+   /home/michael/.ssh/known_hosts is not a valid known_hosts file.

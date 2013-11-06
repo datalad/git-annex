@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2011-10-29T18:28:13Z"
+ content="""
+Possible solutions:
+
+This:
+
+    trusted repositories:
+            UUID -- foo
+    semi-trusted repositories:
+            UUID -- bar
+    untrusted repositories:
+            UUID -- baz
+
+or this:
+
+            UUID -- trusted      -- foo
+            UUID -- semi-trusted -- bar
+            UUID -- untrusted    -- baz
+
+or this:
+
+    known repositories (!/*/X):
+            UUID -- ! foo
+            UUID -- * bar
+            UUID -- X baz
+
+If you want to reformat this output, putting 'here', 'origin', etc into fixed formatting might make sense, as well. -- Richard
+"""]]

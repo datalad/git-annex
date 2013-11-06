@@ -1,0 +1,23 @@
+<div .span9 .hero-unit>
+  <h2>
+    Adding a remote server using ssh
+  <p>
+    You can use nearly any server that has ssh and rsync. For example, you #
+    could use a <a href="http://linode.com/">Linode</a> or #
+    <a href="http://www.vix.com/personalcolo/">another VPS</a>, or #
+    an account on a friend's server.
+  <p>
+    $case status
+      $of UnusableServer msg
+        <div .alert .alert-error>
+          <i .icon-warning-sign></i> #{msg}
+      $of _
+  <p>
+    <form method="post" .form-horizontal enctype=#{enctype}>
+      <fieldset>
+        ^{form}
+        ^{webAppFormAuthToken}
+        <div .form-actions>
+          <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
+            Check this server
+^{sshTestModal}

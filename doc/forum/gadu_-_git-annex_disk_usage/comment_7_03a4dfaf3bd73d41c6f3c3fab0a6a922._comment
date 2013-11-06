@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="sizes has git-annex support"
+ date="2012-12-30T22:47:42Z"
+ content="""
+Just to note that I already added git-annex support to my \"sizes\" utility on Hackage several months back.  With -A, it shows you storage totals with annex symlinks computed fully resolved.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://sunny256.sunbase.org/"
+ nickname="sunny256"
+ subject="git-annex is teh awesome"
+ date="2013-07-15T12:37:54Z"
+ content="""
+Just like Git, git-annex is teh awesome. I've used it for almost a year now, and I've never had more control of all my stuff. I store all my valuable (and also not so valuable) files in it, more than a terabyte, and it's rapidly growing. Movies, pictures, recordings, software, podcasts, DVDs and CDs, you name it. It's rock solid with a really good design. Joey says it isn't a backup solution, but I strongly disagree. My data have never been safer. git-annex ensures that I have several copies in different locations, I always know where all the copies are, and the disk space is used way more efficiently now that I don't have unnecessary duplicates everywhere anymore.﻿
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.236"
+ subject="comment 2"
+ date="2012-09-06T14:55:58Z"
+ content="""
+What's going on here is you have multiple files with the same content, so the symlinks point to the same annexed file. When unannex processes the first symlink, it moves the annexed file to replace it. This breaks the other symlink that pointed to it. Notice that if you then re-add the file to the annex, the broken symlink automatically gets fixed -- there's no actual data loss going on here.
+
+This problem can be avoided by using `git annex unannex --fast`, which makes hardlinks to the annexed file.
+But then you are also left with the hard links in `.git/annex/objects`.. `git annex unused` can find and remove them. 
+
+It may make sense to make the current \"--fast\" behavior the default for unannex..
+"""]]

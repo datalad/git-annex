@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 5"
+ date="2011-03-20T18:12:59Z"
+ content="""
+I'm leaving this bug open because this feature, however minor is not available on OSX and BSD. 
+
+I have added a partial implementation using lutimes(3), which should be available on the BSDs. However, it's ifdefed out due to a casting problem: The TimeSpec uses a CTime, while lutimes uses a CLong. These data types may be internally the same on some or all platforms, so if you want this feature you can try changing the \"ifdef 0\" in Touch.hsc to 1 and try it, see if \"git annex add\" mirrors file modification time in created symlinks, and let me know.
+"""]]

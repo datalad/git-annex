@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 7"
+ date="2013-03-18T23:05:26Z"
+ content="""
+The standalone linux tarball will work on 64 or 32 bit systems, as long as they are capable of linking 32 bit elf executables. I cannot test if Arch Linux is incapable of this.
+
+I'm getting a bit tired of wild tangents, can we you just find someplace, be it a Debian chroot or whatever, to run the standalone linux tarball and test if DAV works there?
+"""]]

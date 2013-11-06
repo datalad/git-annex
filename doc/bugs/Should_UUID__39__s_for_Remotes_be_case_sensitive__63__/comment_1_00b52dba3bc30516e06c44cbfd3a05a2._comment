@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2013-09-12T09:44:54Z"
+ content="""
+There does not seem to be an actual bug description in here. Can you provide more info?
+
+To answer the actual question: RFC 4122 clearly answers no:
+
+      Each field is treated as an integer and has its value printed as a
+      zero-filled hexadecimal digit string with the most significant
+      digit first.  The hexadecimal values \"a\" through \"f\" are output as
+      lower case characters and are case insensitive on input.
+
+Yes, that means that git-annex prints them wrongly as that's upper case.
+"""]]

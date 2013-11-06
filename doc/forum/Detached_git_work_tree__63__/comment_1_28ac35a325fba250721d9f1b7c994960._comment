@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 1"
+ date="2013-01-14T16:32:51Z"
+ content="""
+Recent versions of git-annex support these variables. I haven't tested it extensively, but AFAIK it works.
+"""]]

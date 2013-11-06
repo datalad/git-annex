@@ -1,0 +1,75 @@
+If you are starting from nothing (no existing `git` or `git-annex` repository) and want to use a server as a centralised repository, try the following steps.
+
+On the server where you'll hold the "master" repository:
+
+	server$ cd /one/git
+	server$ mkdir m
+	server$ cd m
+	server$ git init --bare
+	Initialized empty Git repository in /one/git/m/
+	server$ git annex init origin
+	init origin ok
+	server$ 
+
+Clone that to the laptop:
+
+	laptop$ cd /other
+	laptop$ git clone ssh://server//one/git/m
+	Cloning into 'm'...
+	Warning: No xauth data; using fake authentication data for X11 forwarding.
+	remote: Counting objects: 5, done.        
+	remote: Compressing objects: 100% (3/3), done.        
+	remote: Total 5 (delta 0), reused 0 (delta 0)        
+	Receiving objects: 100% (5/5), done.
+	warning: remote HEAD refers to nonexistent ref, unable to checkout.
+
+	laptop$ cd m
+	laptop$ git annex init laptop
+	init laptop ok
+        laptop$ 
+
+Merge the `git-annex` repository (this is the bit that is often
+overlooked!):
+
+	laptop$ git annex merge	
+	merge . (merging "origin/git-annex" into git-annex...)
+	ok
+	laptop$ 
+
+Add some content:
+
+	laptop$ git annex addurl http://kitenet.net/~joey/screencasts/git-annex_coding_in_haskell.ogg
+	"kitenet.net_~joey_screencasts_git-annex_coding_in_haskell.ogg"
+	addurl kitenet.net_~joey_screencasts_git-annex_coding_in_haskell.ogg (downloading http://kitenet.net/~joey/screencasts/git-annex_coding_in_haskell.ogg ...) --2011-12-15 08:13:10--  http://kitenet.net/~joey/screencasts/git-annex_coding_in_haskell.ogg
+	Resolving kitenet.net (kitenet.net)... 2001:41c8:125:49::10, 80.68.85.49
+	Connecting to kitenet.net (kitenet.net)|2001:41c8:125:49::10|:80... connected.
+	HTTP request sent, awaiting response... 200 OK
+	Length: 39362757 (38M) [audio/ogg]
+	Saving to: `/other/m/.git/annex/tmp/URL--http&c%%kitenet.net%~joey%screencasts%git-annex_coding_in_haskell.ogg'
+
+	100%[======================================>] 39,362,757  2.31M/s   in 17s     
+
+	2011-12-15 08:13:27 (2.21 MB/s) - `/other/m/.git/annex/tmp/URL--http&c%%kitenet.net%~joey%screencasts%git-annex_coding_in_haskell.ogg' saved [39362757/39362757]
+
+	(checksum...) ok
+	(Recording state in git...)
+	laptop$ git commit -m 'See Joey play.'
+	[master (root-commit) 106e923] See Joey play.
+	 1 files changed, 1 insertions(+), 0 deletions(-)
+	  create mode 120000 kitenet.net_~joey_screencasts_git-annex_coding_in_haskell.ogg
+	laptop$ 
+
+All fine, now push it back to the centralised master:
+
+	laptop$ git push
+	Counting objects: 20, done.
+	Delta compression using up to 4 threads.
+	Compressing objects: 100% (11/11), done.
+	Writing objects: 100% (18/18), 1.50 KiB, done.
+	Total 18 (delta 1), reused 1 (delta 0)
+	To ssh://server//one/git/m
+	   3ba1386..ad3bc9e  git-annex -> git-annex
+	laptop$ 
+
+You can add more "client" repositories by following the `laptop`
+sequence of operations.

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="comment 1"
+ date="2013-09-19T17:41:47Z"
+ content="""
+git-annex can only share the contents of files with a friend when you both have access to a transfer repository. Your friend's git-annex webapp should detect that it does not have such a repository, and should be displaying an alert like this:
+
+[[assistant/cloudnudge.png]]
+(But in this case it should say \"Unable to download files from YourName\")
+
+So, you need to give your friend access to the S3 repository that you're already using to keep your 2 computers in sync. Or, set up some other transfer repository that you both can access.
+
+There is a way in S3 to create another key that can read and write to a S3 bucket. You can then give that key to your friend.
+
+Or, you could set up a shared git repository on a ssh server you both have access to. Or, set up a box.com remote -- the webapp will offer to store the box.com credentials and share them with your friend.
+"""]]

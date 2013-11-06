@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 1"
+ date="2013-08-29T07:23:13Z"
+ content="""
+Maybe one way to solve this that would be general is to have some kind of `prune-history` command, which keeps only the HEAD and drops everything else.  Because there are some repositories that I want to manage with `git-annex` for many reasons, but I don't care about keep history around at all.
+"""]]

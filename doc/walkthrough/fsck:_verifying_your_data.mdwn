@@ -1,0 +1,16 @@
+You can use the fsck subcommand to check for problems in your data. What
+can be checked depends on the key-value [[backend|backends]] you've used
+for the data. For example, when you use the SHA1 backend, fsck will verify
+that the checksums of your files are good. Fsck also checks that the
+annex.numcopies setting is satisfied for all files.
+
+	# git annex fsck
+	fsck some_file (checksum...) ok
+	fsck my_cool_big_file (checksum...) ok
+	...
+
+You can also specify the files to check.  This is particularly useful if 
+you're using sha1 and don't want to spend a long time checksumming everything.
+
+	# git annex fsck my_cool_big_file
+	fsck my_cool_big_file (checksum...) ok

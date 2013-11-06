@@ -1,0 +1,12 @@
+As the title says, I would like to see an option where git-annex verifies
+that all checksums are OK but not that the required number of copies or
+other possible metrics are fulfilled.
+
+-- RichiH
+
+> --numcopies is provided for times when you want to temporarily override
+> annex.numcopies. So, `git annex fsck --numcopies=0`
+> 
+> I don't see any reason to want to disable the other checks and fixups
+> fsck does (of bad location log data, for example). So, [[done]]
+> --[[Joey]]

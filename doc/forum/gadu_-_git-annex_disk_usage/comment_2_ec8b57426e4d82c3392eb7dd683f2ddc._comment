@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://sunny256.sunbase.org/"
+ nickname="sunny256"
+ subject="comment 2"
+ date="2012-12-08T15:35:16Z"
+ content="""
+Have downloaded v0.02 and experimented a bit, and it seems to work nicely. A couple of things, though:
+
+- It displays the sizes in 512 byte blocks as default. I find that very confusing, and the standard `du`(1) from GNU coreutils uses 1024kB as default. AFAIK 512 byte blocks is an old way of measuring sizes from the really ancient UNIX days. Traditionally correct, maybe, but not very useful these days.
+- When not specifying a path, can it use \"`.`\" as default?
+- A human-readable format would've been nice, like 234M or 13G. The `du`(1) from GNU coreutils uses `-h` for this, but that option is already used for `--help`. And that's OK, I think `-h` should be reserved for that purpose. IMHO using `-h` as a synonym for `--human-readable` was a bad choice by coreutils, but it's too late to change that now.
+
+Is there any Git repository available for git-annex-utils somewhere? That's my preferred way of getting updates and follow the development.
+
+Anyway, thanks. :)
+
+"""]]

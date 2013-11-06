@@ -1,0 +1,2 @@
+How can I clone a git annex remote (bare repository) created with the webapp in command line ? My goal is to be able to access the files using an ssh connection.
+
