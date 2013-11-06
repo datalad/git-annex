@@ -13,6 +13,9 @@ git-annex (4.20131106) unstable; urgency=low
     views in the webapp.
   * map: Work when there are gcrypt remotes.
   * Fix build w/o webapp.
+  * Fix exception handling bug that could cause .git/annex/index to be used
+    for git commits outside the git-annex branch. Known to affect git-annex
+    when used with the git shipped with Ubuntu 13.10.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 11:17:47 -0400
 

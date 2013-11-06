@@ -29,6 +29,7 @@ module Annex.Branch (
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Control.Exception as E
 
 import Common.Annex
 import Annex.BranchState
@@ -53,6 +54,7 @@ import Logs.Trust.Pure
 import Annex.ReplaceFile
 import qualified Annex.Queue
 import Annex.Branch.Transitions
+import Annex.Exception
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -345,15 +347,15 @@ withIndex' bootstrapping a = do
 #endif
 	let g' = g { gitEnv = Just $ ("GIT_INDEX_FILE", f):e }
 
-	Annex.changeState $ \s -> s { Annex.repo = g' }
-	checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
-		unless bootstrapping create
-		liftIO $ createDirectoryIfMissing True $ takeDirectory f
-		unless bootstrapping $ inRepo genIndex
-	r <- a
+	r <- tryAnnex $ do
+		Annex.changeState $ \s -> s { Annex.repo = g' }
+		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
+			unless bootstrapping create
+			liftIO $ createDirectoryIfMissing True $ takeDirectory f
+			unless bootstrapping $ inRepo genIndex
+		a
 	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }
-
-	return r
+	either Ethrow return r
 
 {- Updates the branch's index to reflect the current contents of the branch.
  - Any changes staged in the index will be preserved.
