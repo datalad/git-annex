@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkkyBDsfOB7JZvPZ4a8F3rwv0wk6Nb9n48"
+ nickname="Abdó"
+ subject="comment 2"
+ date="2013-11-06T23:14:03Z"
+ content="""
+Ok, then I don't understand where annex spends its time. git annex takes 55
+seconds! vs less than a second for a batched query on all the keys in the
+location log. Checking that branches are in sync, or traversing the working dir
+shouldn't amount the extra 54 seconds! At least not on a recently synced repo
+with up to date index and clean working dir.
+
+> git-annex has to ensure that the git-annex branch is up-to-date and that any info synced into the repository is merged into it. This can require several calls to git log
+
+Ok, I understand that. Checking that should be typically fast though, isn't it? On a repo that has just been synced, it doesn't need to go very far on the log.
+
+> git-annex find also runs git ls-files --cached, which has to examine the state of the index and of files on disk, in order to only show files that are in the working tree
+
+I understand that too. For my particular use case, I know I do the `git copy` when the
+repo is in sync and the working dir has no uncommited changes. So I use HEAD to retrieve the keys for
+the files in the working tree. I do something like that:
+
+    time git ls-tree -r HEAD | grep -e '^120000' | cut -d ' ' -f 3 | cut -f 1 | git cat-file --batch > /dev/null
+
+    real	0m0.178s
+    user	0m0.277s
+    sys 	0m0.037s
+
+That plus some fast parsing of the output gets the list of keys for the files in HEAD in less than a second. Where do the 54 extra seconds hide, then?
+
+Mm... how does annex retrieve the keys for files in the working tree? Does it follow
+the actual symlinks on the filesystem? I can believe that following 30k symlinks may be slow (although not 55 second slow).
+
+Sorry for being so insistent on this... It is just that I do think the same can be done much faster, and such an improvement in performance would be very interesting, not only for me.
+"""]]
