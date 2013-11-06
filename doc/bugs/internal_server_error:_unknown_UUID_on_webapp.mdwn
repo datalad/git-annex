@@ -100,3 +100,46 @@ ok
 > (It also sounds like your repository on markov is for some reason not
 > able to push its git repository to marcos. You might need to fix
 > something in your setup to get syncing working) --[[Joey]]
+> 
+> > Humm.. Weird. Upgrading fixes the crash, but `marcos` still sees only
+> > one repository. It sees some syncs going on from `unknown`, and when
+> > I click on that `unknown` link, I get to edit that repository, and
+> > it sees it as `here`. So I am not sure I understand what is going 
+> > on here.
+> >
+> > (As for the repo on `markov`, it does sync properly:
+> > 
+> >     anarcat@desktop008:books$ git annex sync
+> >     commit
+> >     ok
+> >     pull origin
+> >     From anarc.at:/srv/books
+> >        3b4fa7b..c35b13e  git-annex  -> origin/git-annex
+> >     ok
+> > 
+> > Or rather - it doesn't fail. But it doesn't push!
+> > 
+> >     anarcat@desktop008:books$ git push
+> >     Everything up-to-date
+> > 
+> > Note that git on `marcos` is the 1.8.4 backport for some reason.
+> > I know that branch tracking changed with that release, maybe 
+> > that's the problem? --[[anarcat]])
+> > 
+> > > So yep, I confirm that even in 4.20131105-g8efdc1a, the webapp
+> > > doesn't find the `markov` remote properly, even though
+> > > `git annex status` can:
+> > > 
+> > >     $ git annex status
+> > >     repository mode: direct
+> > >     trusted repositories: 0
+> > >     semitrusted repositories: 3
+> > >             00000000-0000-0000-0000-000000000001 -- web
+> > >             a75cbbf7-e055-423e-b375-443e0552c9e2 -- here (anarcat@marcos:/srv/books)
+> > >             aa500f29-42d9-4777-ae02-4a2c3d47db44 -- anarcat@markov:~/books
+> > > 
+> > > I see transfers happening, but they go to "unknown". The link is:
+> > > 
+> > > http://127.0.0.1:56577/config/repository/edit/UUID%20%22aa500f29-42d9-4777-ae02-4a2c3d47db44%22?auth=...
+> > > 
+> > > -- [[anarcat]]
