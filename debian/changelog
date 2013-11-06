@@ -23,6 +23,27 @@ git-annex (5.20131102) UNRELEASED; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
 
+git-annex (4.20131106) unstable; urgency=low
+
+  * Improve local pairing behavior when two computers both try to start
+    the pairing process separately.
+  * sync: Work even when the local git repository is new and empty,
+    with no master branch.
+  * gcrypt, bup: Fix bug that prevented using these special remotes
+    with encryption=pubkey.
+  * Fix enabling of gcrypt repository accessed over ssh;
+    git-annex-shell gcryptsetup had a bug that caused it to fail
+    with permission denied.
+  * Fix zombie process that occurred when switching between repository
+    views in the webapp.
+  * map: Work when there are gcrypt remotes.
+  * Fix build w/o webapp.
+  * Fix exception handling bug that could cause .git/annex/index to be used
+    for git commits outside the git-annex branch. Known to affect git-annex
+    when used with the git shipped with Ubuntu 13.10.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 11:17:47 -0400
+
 git-annex (4.20131101) unstable; urgency=low
 
   * The "git annex content" command is renamed to "git annex wanted".

@@ -40,3 +40,5 @@ Perhaps some sort of a race-condition with the annex-assistant picking up the uu
 
 ### What version of git-annex are you using? On what operating system?
 Ubuntu 13.10 with git-annex 4.20130815
+
+> [[fixed|done]]; see comments. (This fix needs to be backported to Ubuntu.) --[[Joey]] 
