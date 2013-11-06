@@ -2,11 +2,11 @@
 
 This is a followup on [[bugs/internal_server_error:_unknown_UUID_on_webapp]]. In that issue, webapps previous to 20130929 would crash with `internal server error: unknown UUID`. This was fixed at that date, but some problems remain, namely that the remote that is recognized on the commandline doesn't show up in the webapp.
 
-`markov` is able to push to `marcos`, but not the reverse because `markov` is hidden behind a NAT. `git annex sync` seems to do the right thing accordingly on both ends.
+`markov` is able to push to `marcos`, but not the reverse because `markov` is hidden behind a NAT. `git annex sync` seems to do the right thing accordingly on both ends (which is: `marcos` doesn't try to push to `markov` but `markov` pushes to `marcos`).
 
 ### What steps will reproduce the problem?
 
-See [[bugs/internal_server_error:_unknown_UUID_on_webapp]]. I didn't do any further changes other than upgrade git-annex on both ends.
+See [[bugs/internal_server_error:_unknown_UUID_on_webapp]]. I didn't do any further changes other than upgrade `git-annex` on both ends.
 
 ### What version of git-annex are you using? On what operating system?
 
@@ -16,9 +16,11 @@ See [[bugs/internal_server_error:_unknown_UUID_on_webapp]]. I didn't do any furt
 
 ### Please provide any additional information below.
 
+#### On `marcos`
+
+Here's the output of `git annex status` on `marcos`:
+
 [[!format sh """
-# If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
 anarcat@marcos:books$ git annex status
 repository mode: direct
 trusted repositories: 0
@@ -39,8 +41,48 @@ backend usage:
 # End of transcript or log.
 """]]
 
-Here's a screenshot of the webapp:
+Here's a screenshot of the idle webapp on marcos:
 
 <img src="http://i.imgur.com/3HFgj3w.png" />
 
-You can clearly see that the webapp doesn't see the `markov` remote. When `markov` transfers stuff, `marcos` sees the transfers happening, but marks it as going to the `unknown` remote. Clicking on that link is what was previously triggering [[bugs/internal_server_error:_unknown_UUID_on_webapp]] but now yields a "Unknown remote" error (which I can't reproduce anymore because the repos are synced - I can reproduce by retransfering some files if necessary). --[[anarcat]]
+You can clearly see that the webapp doesn't see the `markov` remote.
+
+When `markov` transfers stuff, `marcos` sees the transfers happening, but marks it as going to the `unknown` remote:
+
+<img src="http://i.imgur.com/YOu9GbA.png" />
+
+Clicking on that link is what was previously triggering [[bugs/internal_server_error:_unknown_UUID_on_webapp]] but now yields a "Unknown remote" error.
+
+<img src="http://i.imgur.com/y7JxULi.png" />
+
+#### On `markov`:
+
+Here is a screenshot from `markov` that shows *it* knows about both repositories and seem to behave properly:
+
+<img src="http://i.imgur.com/fTMslVT.png" />
+
+And here's the output of `git annex status` on markov:
+
+[[!format sh """
+anarcat@desktop008:books$ git annex status
+repository mode: indirect
+trusted repositories: 0
+semitrusted repositories: 3
+        00000000-0000-0000-0000-000000000001 -- web
+        a75cbbf7-e055-423e-b375-443e0552c9e2 -- origin (anarcat@marcos:/srv/books)
+        aa500f29-42d9-4777-ae02-4a2c3d47db44 -- here (anarcat@markov:~/books)
+untrusted repositories: 0
+transfers in progress:
+        downloading Patrick K. O'Brien/Philip's Atlas of World History, Concise Edition (115)/Philip's Atlas of World History, Concise Edition - Patrick K. O'Brien.pdf from origin
+available local disk space: 93.25 gigabytes (+1 megabyte reserved)
+temporary directory size: 50.07 megabytes (clean up with git-annex unused)
+local annex keys: 708
+local annex size: 3.81 gigabytes
+known annex keys: 721
+known annex size: 3.92 gigabytes
+bloom filter size: 16 mebibytes (0.1% full)
+backend usage:
+        SHA256E: 1429
+"""]]
+
+Finally, note that you sometimes see `desktop008` above: it turns out I am running `git annex` from my workstation, which NFS-mounts the `/home` directory of `markov` into `/srv/musique`.  --[[anarcat]]
