@@ -28,3 +28,7 @@ assistant's startup scan of the repository.
 BTW, Kevin tells me that the machine used to build git-annex for OSX is
 going to be upgraded to 10.9 soon. So, hopefully I'll be making autobuilds
 of that. I may have to stop the 10.8.2 autobuilds though.
+
+----
+
+Today's work was sponsored by [Protonet](http://protonet.info/).
