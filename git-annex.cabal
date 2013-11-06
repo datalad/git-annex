@@ -74,6 +74,10 @@ Flag Quvi
 Flag CryptoHash
   Description: Enable use of cryptohash for checksumming
 
+Flag EKG
+  Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
+  Default: False
+
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
@@ -176,6 +180,11 @@ Executable git-annex
   if flag(Quvi)
     Build-Depends: aeson
     CPP-Options: -DWITH_QUVI
+
+  if flag(EKG)
+    Build-Depends: ekg
+    GHC-Options: -with-rtsopts=-T
+    CPP-Options: -DWITH_EKG
 
 source-repository head
   type: git

@@ -1,0 +1,14 @@
+You can `cabal configure -fEKG` to build a git-annex that includes
+the EKG remote monitoring interface.
+
+To access the EKG control panel, go to
+<http://localhost:4242/> while a git-annex command is running.
+
+This EKG build is mostly useful for debugging resource usage problems.
+
+[[!img ekg.png caption="git-annex webapp startup, and assistant startup scan"]]
+
+Note that since only one process can open port 4242 at a time, running
+more than one git-annex process with EKG support at the same time can
+result in some "resource busy (Address already in use)" messages -- but
+git-annex will continue to work.

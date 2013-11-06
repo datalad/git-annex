@@ -60,4 +60,7 @@ buildFlags = filter (not . null)
 #ifdef WITH_CRYPTOHASH
 	, "CryptoHash"
 #endif
+#ifdef WITH_EKG
+	, "EKG"
+#endif
 	]

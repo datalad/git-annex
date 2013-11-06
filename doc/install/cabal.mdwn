@@ -50,3 +50,9 @@ you want, and use cabal as follows inside its source tree:
 	cabal configure
 	cabal build
 	cabal install --bindir=$HOME/bin
+
+## EKG
+
+When building with cabal, you can optionally enable the 
+[[EKG monitoring interface|ekg]]. This is great for debugging resource
+usage problems.
