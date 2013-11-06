@@ -1,4 +1,4 @@
-git-annex (4.20131102) UNRELEASED; urgency=low
+git-annex (4.20131106) unstable; urgency=low
 
   * Improve local pairing behavior when two computers both try to start
     the pairing process separately.
@@ -12,8 +12,9 @@ git-annex (4.20131102) UNRELEASED; urgency=low
   * Fix zombie process that occurred when switching between repository
     views in the webapp.
   * map: Work when there are gcrypt remotes.
+  * Fix build w/o webapp.
 
- -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 11:17:47 -0400
 
 git-annex (4.20131101) unstable; urgency=low
 
