@@ -75,10 +75,10 @@ prepMerge :: Annex ()
 prepMerge = liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
 
 syncBranch :: Git.Ref -> Git.Ref
-syncBranch = Git.Ref.under "refs/heads/synced/"
+syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch
 
 remoteBranch :: Remote -> Git.Ref -> Git.Ref
-remoteBranch remote = Git.Ref.under $ "refs/remotes/" ++ Remote.name remote
+remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
 
 syncRemotes :: [String] -> Annex [Remote]
 syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
@@ -138,7 +138,13 @@ mergeLocal (Just branch) = go =<< needmerge
 pushLocal :: Maybe Git.Ref -> CommandStart
 pushLocal Nothing = stop
 pushLocal (Just branch) = do
+	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch $ syncBranch branch
+	-- In direct mode, we're operating on some special direct mode
+	-- branch, rather than the intended branch, so update the indended
+	-- branch.
+	whenM isDirect $
+		inRepo $ updateBranch $ fromDirectBranch branch
 	stop
 
 updateBranch :: Git.Ref -> Git.Repo -> IO ()
@@ -232,7 +238,7 @@ pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
 		, refspec branch
 		]
 	directpush = Git.Command.runQuiet $ pushparams
-		[show $ Git.Ref.base branch]
+		[show $ Git.Ref.base $ fromDirectBranch branch]
 	pushparams branches =
 		[ Param "push"
 		, Param $ Remote.name remote

@@ -96,7 +96,10 @@ even when `receive.denyCurrentBranch` is set.)
 > branch. However, won't work on crippled filesystems! (No +x bit)
 > 
 > Could make git annex sync detect this. It could reset the master
-> branch to the last one committed, before committing. Will work,
-> does have the minor oddity that eg `git log` will show commits
-> pushed to master before `git annex sync` has been run and so before
-> those commits are reflected in the tree.
+> branch to the last one committed, before committing. Seems very racy
+> and hard to get right!
+>
+> Could make direct mode operate on a different branch, like
+> `annex/direct/master` rather than `master`. Avoid pushing to that
+> branch (`git annex sync` can map back from it to `master` and push there
+> instead). A bit clumsy, but works.

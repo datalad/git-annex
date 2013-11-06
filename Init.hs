@@ -53,11 +53,19 @@ genDescription Nothing = do
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
 	prepUUID
-	setVersion defaultVersion
-	checkCrippledFileSystem
 	checkFifoSupport
-	unlessBare $
+	checkCrippledFileSystem
+	unlessM isBare $
 		hookWrite preCommitHook
+	ifM (crippledFileSystem <&&> not <$> isBare)
+		( do
+			enableDirectMode
+			setDirect True
+			setVersion directModeVersion
+		, do
+			setVersion defaultVersion
+			setDirect False
+		)
 	createInodeSentinalFile
 	u <- getUUID
 	{- This will make the first commit to git, so ensure git is set up
@@ -91,8 +99,8 @@ ensureInitialized = getVersion >>= maybe needsinit checkUpgrade
 isInitialized :: Annex Bool
 isInitialized = maybe Annex.Branch.hasSibling (const $ return True) =<< getVersion
 
-unlessBare :: Annex () -> Annex ()
-unlessBare = unlessM $ fromRepo Git.repoIsLocalBare
+isBare :: Annex Bool
+isBare = fromRepo Git.repoIsLocalBare
 
 {- A crippled filesystem is one that does not allow making symlinks,
  - or removing write access from files. -}
@@ -125,24 +133,14 @@ checkCrippledFileSystem = whenM probeCrippledFileSystem $ do
 	warning "Detected a crippled filesystem."
 	setCrippledFileSystem True
 
-	{- Normally git disables core.symlinks itself when the filesystem does
- 	 - not support them, but in Cygwin, git does support symlinks, while
- 	 - git-annex, not linking with Cygwin, does not. -}
+	{- Normally git disables core.symlinks itself when the
+	 - filesystem does not support them, but in Cygwin, git
+	 - does support symlinks, while git-annex, not linking
+	 - with Cygwin, does not. -}
 	whenM (coreSymlinks <$> Annex.getGitConfig) $ do
 		warning "Disabling core.symlinks."
 		setConfig (ConfigKey "core.symlinks")
 			(Git.Config.boolConfig False)
-
-	unlessBare $ do
-		unlessM isDirect $ do
-			warning "Enabling direct mode."
-			top <- fromRepo Git.repoPath
-			(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
-			forM_ l $ \f ->
-				maybe noop (`toDirect` f) =<< isAnnexLink f
-			void $ liftIO clean
-			setDirect True
-		setVersion directModeVersion
 
 probeFifoSupport :: Annex Bool
 probeFifoSupport = do
@@ -166,3 +164,12 @@ checkFifoSupport = unlessM probeFifoSupport $ do
 	warning "Detected a filesystem without fifo support."
 	warning "Disabling ssh connection caching."
 	setConfig (annexConfig "sshcaching") (Git.Config.boolConfig False)
+
+enableDirectMode :: Annex ()
+enableDirectMode = unlessM isDirect $ do
+	warning "Enabling direct mode."
+	top <- fromRepo Git.repoPath
+	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
+	forM_ l $ \f ->
+		maybe noop (`toDirect` f) =<< isAnnexLink f
+	void $ liftIO clean

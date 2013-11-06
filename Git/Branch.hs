@@ -13,7 +13,7 @@ import Common
 import Git
 import Git.Sha
 import Git.Command
-import Git.Ref (headRef)
+import qualified Git.Ref
 
 {- The currently checked out branch.
  -
@@ -36,7 +36,7 @@ current r = do
 {- The current branch, which may not really exist yet. -}
 currentUnsafe :: Repo -> IO (Maybe Git.Ref)
 currentUnsafe r = parse . firstLine
-	<$> pipeReadStrict [Param "symbolic-ref", Param $ show headRef] r
+	<$> pipeReadStrict [Param "symbolic-ref", Param $ show Git.Ref.headRef] r
   where
 	parse l
 		| null l = Nothing
@@ -112,4 +112,22 @@ update branch sha = run
 	[ Param "update-ref"
 	, Param $ show branch
 	, Param $ show sha
+	]
+
+{- Checks out a branch, creating it if necessary. -}
+checkout :: Branch -> Repo -> IO ()
+checkout branch = run
+	[ Param "checkout"
+	, Param "-q"
+	, Param "-B"
+	, Param $ show $ Git.Ref.base branch
+	]
+
+{- Removes a branch. -}
+delete :: Branch -> Repo -> IO ()
+delete branch = run
+	[ Param "branch"
+	, Param "-q"
+	, Param "-D"
+	, Param $ show $ Git.Ref.base branch
 	]
