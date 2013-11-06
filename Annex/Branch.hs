@@ -355,7 +355,7 @@ withIndex' bootstrapping a = do
 			unless bootstrapping $ inRepo genIndex
 		a
 	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }
-	either Ethrow return r
+	either E.throw return r
 
 {- Updates the branch's index to reflect the current contents of the branch.
  - Any changes staged in the index will be preserved.
