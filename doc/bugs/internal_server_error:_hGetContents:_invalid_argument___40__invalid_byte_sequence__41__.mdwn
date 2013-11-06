@@ -2,11 +2,14 @@
 
 Some logs fail to be displayed, and instead of displaying parts of the log, no logs at all are displayed in the webapp.
 
-The problem character is, I believe, a latin-1 encoded filename (as opposed to UTF-8).
+The problem character is, I believe, a latin-1 encoded filename (as opposed to UTF-8). --[[anarcat]]
 
 ### What steps will reproduce the problem?
 
-# downloads [this logfile](http://paste.anarc.at/daemon.log.1) and load the webapp.
+1. download [this logfile](http://paste.anarc.at/daemon.log.1)
+2. install it in .git/annex/daemon.log
+3. load the webapp
+4. visit the logs page
 
 ### What version of git-annex are you using? On what operating system?
 
