@@ -8,18 +8,6 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     git annex upgrade
   * The -c option now not only modifies the git configuration seen by
     git-annex, but it is passed along to every git command git-annex runs.
-  * Improve local pairing behavior when two computers both try to start
-    the pairing process separately.
-  * sync: Work even when the local git repository is new and empty,
-    with no master branch.
-  * gcrypt, bup: Fix bug that prevented using these special remotes
-    with encryption=pubkey.
-  * Fix enabling of gcrypt repository accessed over ssh;
-    git-annex-shell gcryptsetup had a bug that caused it to fail
-    with permission denied.
-  * Fix zombie process that occurred when switching between repository
-    views in the webapp.
-  * map: Work when there are gcrypt remotes.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
 
