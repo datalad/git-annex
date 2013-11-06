@@ -4,9 +4,9 @@ Creating a remote S3 repository using the git-annex assistant web interface fail
 
 ### What steps will reproduce the problem?
 
-Build git-annex and git-annex assistant using the instructions at https://gist.github.com/calmyournerves/7144127
-Create local repo
-Try to create S3 remote repo
+  * Build git-annex and git-annex assistant using the instructions at https://gist.github.com/calmyournerves/7144127
+  * Create local repo
+  * Try to create encrypted S3 remote repo
 
 ### What version of git-annex are you using? On what operating system?
 
