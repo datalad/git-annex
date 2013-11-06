@@ -5,12 +5,13 @@ Creating a USB repo fails with a GPG error.
 ### What steps will reproduce the problem?
 
   * Build git-annex and git-annex assistant using the instructions at https://gist.github.com/calmyournerves/7144127
-  * Create local repo
-  * Try to create USB repo
+  * Run git-annex app to launch web interface
+  * Create local repo using web interface
+  * Try to create USB repo using web interface
 
 ### What version of git-annex are you using? On what operating system?
 
-git-annex version 4.20131105-g136b030 on MacOS 10.9 Mavericks.
+git-annex version 4.20131105-g136b030 on Mac OS 10.9 Mavericks.
 
 ### Please provide any additional information below.
 
