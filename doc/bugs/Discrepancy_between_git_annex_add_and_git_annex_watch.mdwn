@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+`git annex add` does not add dotfiles (as per the man page) while `git annex watch` does (nothing on the man page). It's not a bug, but rather a surprise (at least to me).
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+git init dotfiles
+cd dotfiles
+git annex init "my dotfiles"
+echo test > test.txt
+echo dottest > .dotest.txt
+git annex add
+git commit -a -m "initial dots"
+git annex whereis .dotest.txt # no answer, as expected
+git annex watch
+git annex whereis .dotest.txt # answers that .dotest.txt is here
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 4.20131101, ubuntu 12.04 with all updates.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
