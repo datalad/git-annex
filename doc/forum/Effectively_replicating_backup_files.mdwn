@@ -1,0 +1,21 @@
+I currently use duply/duplicity to back up my networked computers to my home server. I have two external HDDs and, every week or so, I bring one of these home and copy the backup files to the hard drive (I leave them on the server to easily restore files and because I have a large hard drive in that). I use some hand-written scripts to keep a copy these backup files in the cloud (Ubuntu One) until they have been copied to both hard drives, ensuring that there are always two copies of the files somewhere offsite. Out of paranoia, I also have some "standalone backups" that are just huge encrypted archives of important folders (say, my entire Photos directory) as at a certain date - in case for some reason duplicity ever stops working or I need to roll something back to a version years earlier. I am less worried about these standalone backups and manually keep one copy of each somewhere.
+
+It sounds like Git-Annex could automate things quite nicely (and give me some neat extras, like knowing where they were). This is how I understand I should do it, but please let me know if it is the right approach or if you have any suggestions:
+1) Create a folder on my server called "annex" and make a Git-Annex "large backup" repository in there.
+2) Create a folder within that called "archive" and put a "backup" folder within that. I understand that having the backups within an archive folder will mean that they aren't automatically copied to my desktop machines etc. 
+3) Within that "backup" folder, create two folders, one called "duplicity" and one called "standalone". Put the backups in the respective folders.
+4) Set up gcrypt Git-Annex repositories on my two external HDDs as "small backups". This seems to just start copying files across. That surprised me, as the files are in the archive folder and I thought the default was numcopies=1. Is there some autosync option that I need to turn off?
+
+Ideally, I would like it to encrypt/decrypt primarily with my server GPG key (which I'm not worried about copying around my computers), but also encrypt to my personal GPG key (where I'd only put my public key on the server, but I know I will not lose the secret key for that). Am I right that to do that I would need to set the repos up manually with:
+git init --bare /mnt/externalHDD1
+git annex initremote externalHDD1 type=gcrypt gitrepo=/mnt/externalHDD1 keyid=$serverkey keyid=$personalkey
+git annex sync externalHDD1
+Or should the gitrepo be the location of my main Git-Annex repository? How do I make it sync up with my other repos?
+5) I understand that I would then need to set numcopies=3 in a .gitattributes file in the "archive/backup/duplicity" directory and, say, a numcopies=2 in the "archive/backup/standalone".
+6) I could then add a cloud repository as a "transfer" repository and Git-Annex should only keep files on that that are not already in the right number of places (similar to what my scripts are doing now).
+7) I have recently upgraded my hard drive, so I have my old 1TB internal hard drive that I will be putting in a cupboard somewhere. I was thinking that I could make this an archive drive for things like one copy of my duplicity/standalone backups. I wouldn't want it to be the only copy of anything. If I just set it as an archive drive, would this work?
+8) Are there more clever ways of doing this? I consider my external HDDs and the cloud repo as "offsite" repositories and ideally there would always be one copy of my backups offsite (in addition to at least three overall). There would also ideally be one of each of my files "live" (in most cases my server) that could instantly push files into a cloud repo and then to wherever I am. Is there any ability to put repositories in groups and write rules like that?
+
+Any thoughts greatly appreciated!
+
+Aaron
