@@ -41,6 +41,20 @@ under dir r = Ref $ dir ++ "/" ++
 underBase :: String -> Ref -> Ref
 underBase dir r = Ref $ dir ++ "/" ++ show (base r)
 
+{- A Ref that can be used to refer to a file in the repository, as staged
+ - in the index.
+ -
+ - Prefixing the file with ./ makes this work even if in a subdirectory
+ - of a repo.
+ -}
+fileRef :: FilePath -> Ref
+fileRef f = Ref $ ":./" ++ f
+
+{- A Ref that can be used to refer to a file in the repository as it
+ - appears in a given Ref. -}
+fileFromRef :: Ref -> FilePath -> Ref
+fileFromRef (Ref r) f = let (Ref fr) = fileRef f in Ref (r ++ fr)
+
 {- Checks if a ref exists. -}
 exists :: Ref -> Repo -> IO Bool
 exists ref = runBool

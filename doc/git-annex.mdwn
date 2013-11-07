@@ -103,6 +103,13 @@ subdirectories).
 
   To avoid contacting the remote to check if it has every file, specify `--fast`
 
+* `status` [path ...]`
+
+  Similar to `git status --short`, displays the status of the files in the
+  working tree. Shows files that are not checked into git, files that
+  have been deleted, and files that have been modified. 
+  Particulary useful in direct mode.
+
 * `unlock [path ...]`
 
   Normally, the content of annexed files is protected from being changed.
@@ -563,10 +570,6 @@ subdirectories).
 
 # QUERY COMMANDS
 
-* `version`
-
-  Shows the version of git-annex, as well as repository version information.
-
 * `find [path ...]`
 
   Outputs a list of annexed files in the specified path. With no path,
@@ -624,6 +627,9 @@ subdirectories).
   Then run:
 
         	git annex info --fast . --not --in here
+* `version`
+
+  Shows the version of git-annex, as well as repository version information.
 
 * `map`
 

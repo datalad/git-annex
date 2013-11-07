@@ -47,6 +47,7 @@ import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
 import qualified Command.Info
+import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
 import qualified Command.Trust
@@ -141,6 +142,7 @@ cmds = concat
 	, Command.Log.def
 	, Command.Merge.def
 	, Command.Info.def
+	, Command.Status.def
 	, Command.Migrate.def
 	, Command.Map.def
 	, Command.Direct.def
