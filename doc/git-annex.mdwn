@@ -260,6 +260,14 @@ subdirectories).
   background, you no longer need to manually run git commands when
   manipulating your files.
 
+  By default, all files in the directory will be added to the repository.
+  (Including dotfiles.) To block some files from being added, use
+  `.gitignore` files.
+  
+  By default, all files that are added are added to the annex, the same
+  as when you run `git annex add`. If you configure annex.largefiles,
+  files that it does not match will instead be added with `git add`.
+
   To not daemonize, run with `--foreground` ; to stop a running daemon,
   run with `--stop`
 

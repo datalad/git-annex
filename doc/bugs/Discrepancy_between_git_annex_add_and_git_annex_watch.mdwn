@@ -29,3 +29,5 @@ git-annex version: 4.20131101, ubuntu 12.04 with all updates.
 
 # End of transcript or log.
 """]]
+
+> Improved documentation. [[done]] --[[Joey]]
