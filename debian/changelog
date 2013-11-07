@@ -13,6 +13,8 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     git-annex, but it is passed along to every git command git-annex runs.
   * sync: When there are merge conflicts that get automatically resolved,
     exit nonzero at the end.
+  * watcher: Avoid loop when adding a file owned by someone else fails
+    in indirect mode because its permissions cannot be modified.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
 
