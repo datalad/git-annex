@@ -6,6 +6,9 @@ git-annex (5.20131102) UNRELEASED; urgency=low
   * annex.version is now set to 5 for direct mode repositories.
     This upgrade is handled fully automatically, no need to run
     git annex upgrade
+  * The "status" command has been renamed to "info", to allow
+    "git annex status" to be used in direct mode repositories, now that
+    "git status" won't work in them.
   * The -c option now not only modifies the git configuration seen by
     git-annex, but it is passed along to every git command git-annex runs.
 

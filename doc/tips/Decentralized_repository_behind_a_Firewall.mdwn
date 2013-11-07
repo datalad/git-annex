@@ -25,7 +25,7 @@ Now you can run normal annex operations, as long as the port forwarding shell is
 
     git annex sync
     git annex get on-the-go some/big/file
-    git annex status
+    git annex info
 
 You can add more computers by repeating with a different port, e.g. 2202 or 2203 (or any other).
 

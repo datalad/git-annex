@@ -607,23 +607,23 @@ subdirectories).
   To generate output suitable for the gource visualisation program,
   specify `--gource`.
 
-* `status [directory ...]`
+* `info [directory ...]`
 
   Displays some statistics and other information, including how much data
   is in the annex and a list of all known repositories.
 
   To only show the data that can be gathered quickly, use `--fast`.
 
-  When a directory is specified, shows a differently formatted status
+  When a directory is specified, shows a differently formatted info
   display for that directory. In this mode, all of the file matching
   options can be used to filter the files that will be included in
-  the status.
+  the information.
 
   For example, suppose you want to run "git annex get .", but
   would first like to see how much disk space that will use.
   Then run:
 
-        	git annex status --fast . --not --in here
+        	git annex info --fast . --not --in here
 
 * `map`
 
@@ -797,7 +797,7 @@ subdirectories).
   Rather than the normal output, generate JSON. This is intended to be
   parsed by programs that use git-annex. Each line of output is a JSON
   object. Note that json output is only usable with some git-annex commands,
-  like status and find.
+  like info and find.
 
 * `--debug`
 
@@ -1097,7 +1097,7 @@ Here are all the supported configuration settings.
   up to 500000 keys. If your repository is larger than that,
   you can adjust this to avoid `git annex unused` not noticing some unused
   data files. Increasing this will make `git-annex unused` consume more memory;
-  run `git annex status` for memory usage numbers.
+  run `git annex info` for memory usage numbers.
 
 * `annex.bloomaccuracy`
 
@@ -1105,7 +1105,7 @@ Here are all the supported configuration settings.
   `git annex unused`. The default accuracy is 1000 -- 
   1 unused file out of 1000 will be missed by `git annex unused`. Increasing
   the accuracy will make `git annex unused` consume more memory;
-  run `git annex status` for memory usage numbers.
+  run `git annex info` for memory usage numbers.
 
 * `annex.sshcaching`
 

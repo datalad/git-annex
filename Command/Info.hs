@@ -7,7 +7,7 @@
 
 {-# LANGUAGE BangPatterns #-}
 
-module Command.Status where
+module Command.Info where
 
 import "mtl" Control.Monad.State.Strict
 import qualified Data.Map as M
@@ -70,31 +70,31 @@ data StatInfo = StatInfo
 type StatState = StateT StatInfo Annex
 
 def :: [Command]
-def = [noCommit $ command "status" paramPaths seek
-	SectionQuery "shows status information about the annex"]
+def = [noCommit $ command "info" paramPaths seek
+	SectionQuery "shows general information about the annex"]
 
 seek :: [CommandSeek]
 seek = [withWords start]
 
 start :: [FilePath] -> CommandStart
 start [] = do
-	globalStatus
+	globalInfo
 	stop
 start ps = do
-	mapM_ localStatus =<< filterM isdir ps
+	mapM_ localInfo =<< filterM isdir ps
 	stop
   where
 	isdir = liftIO . catchBoolIO . (isDirectory <$$> getFileStatus)
 
-globalStatus :: Annex ()
-globalStatus = do
+globalInfo :: Annex ()
+globalInfo = do
 	stats <- selStats global_fast_stats global_slow_stats
-	showCustom "status" $ do
+	showCustom "info" $ do
 		evalStateT (mapM_ showStat stats) (StatInfo Nothing Nothing Nothing)
 		return True
 
-localStatus :: FilePath -> Annex ()
-localStatus dir = showCustom (unwords ["status", dir]) $ do
+localInfo :: FilePath -> Annex ()
+localInfo dir = showCustom (unwords ["info", dir]) $ do
 	stats <- selStats (tostats local_fast_stats) (tostats local_slow_stats)
 	evalStateT (mapM_ showStat stats) =<< getLocalStatInfo dir
 	return True
@@ -295,7 +295,7 @@ cachedReferencedData = do
 			put s { referencedData = Just v }
 			return v
 
--- currently only available for local status
+-- currently only available for local info
 cachedNumCopiesStats :: StatState (Maybe NumCopiesStats)
 cachedNumCopiesStats = numCopiesStats <$> get
 
