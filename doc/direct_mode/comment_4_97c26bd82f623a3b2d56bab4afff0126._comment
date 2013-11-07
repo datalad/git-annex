@@ -6,7 +6,6 @@
  content="""
 <pre>
 git annex add $file
-git commit -m changed
 git annex sync
 git annex copy $file --to otherrepo
 </pre>
