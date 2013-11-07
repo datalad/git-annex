@@ -1,3 +1,13 @@
 A conflict during sync or merge is something that requires user intervention, or at least notification. For that reason it would be nice if git annex returned a nonzero exit status when such a conflict happened during a sync or a merge. This is what git does after a conflicting pull, and would make it easier to spot a conflict in automated syncs without having to parse annex output or the logs.
 
+> Good idea, [[done]]. --[[Joey]] 
+
 Also, it would be nice if your new `git annex status` were able to inform about remaining conflicts in the repo, for instance by reporting files with variant-XXX suffix.
+
+> Hmm, that would need a separate pass through the whole tree, since
+> currently it can use `git ls-files` to find only modified/deleted/new
+> files. I would rather not make the new `git annex status` slower for
+> this.
+> 
+> It would be possible to add it to `git annex info` (old `status`)
+> which already has to look through the entire work tree.

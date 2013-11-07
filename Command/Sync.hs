@@ -276,7 +276,7 @@ mergeFrom branch = do
 		return r
 	runmerge a = ifM a
 		( return True
-		, resolveMerge
+		, void resolveMerge >> return False
 		)
 
 {- Resolves a conflicted merge. It's important that any conflicts be

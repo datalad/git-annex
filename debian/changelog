@@ -11,6 +11,8 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     "git status" won't work in them.
   * The -c option now not only modifies the git configuration seen by
     git-annex, but it is passed along to every git command git-annex runs.
+  * sync: When there are merge conflicts that get automatically resolved,
+    exit nonzero at the end.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
 
