@@ -15,6 +15,7 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     exit nonzero at the end.
   * watcher: Avoid loop when adding a file owned by someone else fails
     in indirect mode because its permissions cannot be modified.
+  * webapp: Avoid encoding problems when displaying the daemon log file.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
 

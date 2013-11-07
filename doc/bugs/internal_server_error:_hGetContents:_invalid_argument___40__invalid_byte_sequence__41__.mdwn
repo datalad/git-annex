@@ -25,3 +25,5 @@ Internal Server Error
 git-annex version 4.20131105-g8efdc1a
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]
