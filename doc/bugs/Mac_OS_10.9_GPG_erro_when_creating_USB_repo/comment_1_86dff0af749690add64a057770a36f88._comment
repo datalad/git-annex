@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmZgZuUhZlHpd_AbbcixY0QQiutb2I7GWY"
- nickname="Jimmy"
- subject="Update git-annex seems to work"
- date="2013-11-07T09:28:50Z"
- content="""
-I've just updated to 4.20131104-gf706c4a and adding a USB repo now works.  Is there any easy way to test that the USB repo is encrypted correctly?
-"""]]
