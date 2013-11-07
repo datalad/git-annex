@@ -29,16 +29,41 @@ base = Ref . remove "refs/heads/" . remove "refs/remotes/" . show
 		| prefix `isPrefixOf` s = drop (length prefix) s
 		| otherwise = s
 
+{- Given a directory and any ref, takes the basename of the ref and puts
+ - it under the directory. -}
+under :: String -> Ref -> Ref
+under dir r = Ref $ dir ++ "/" ++
+	(reverse $ takeWhile (/= '/') $ reverse $ show r)
+
 {- Given a directory such as "refs/remotes/origin", and a ref such as
  - refs/heads/master, yields a version of that ref under the directory,
  - such as refs/remotes/origin/master. -}
-under :: String -> Ref -> Ref
-under dir r = Ref $ dir </> show (base r)
+underBase :: String -> Ref -> Ref
+underBase dir r = Ref $ dir ++ "/" ++ show (base r)
+
+{- A Ref that can be used to refer to a file in the repository, as staged
+ - in the index.
+ -
+ - Prefixing the file with ./ makes this work even if in a subdirectory
+ - of a repo.
+ -}
+fileRef :: FilePath -> Ref
+fileRef f = Ref $ ":./" ++ f
+
+{- A Ref that can be used to refer to a file in the repository as it
+ - appears in a given Ref. -}
+fileFromRef :: Ref -> FilePath -> Ref
+fileFromRef (Ref r) f = let (Ref fr) = fileRef f in Ref (r ++ fr)
 
 {- Checks if a ref exists. -}
 exists :: Ref -> Repo -> IO Bool
 exists ref = runBool
 	[Param "show-ref", Param "--verify", Param "-q", Param $ show ref]
+
+{- The file used to record a ref. (Git also stores some refs in a
+ - packed-refs file.) -}
+file :: Ref -> Repo -> FilePath
+file ref repo = localGitDir repo </> show ref
 
 {- Checks if HEAD exists. It generally will, except for in a repository
  - that was just created. -}

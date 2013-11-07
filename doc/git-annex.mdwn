@@ -103,6 +103,13 @@ subdirectories).
 
   To avoid contacting the remote to check if it has every file, specify `--fast`
 
+* `status` [path ...]`
+
+  Similar to `git status --short`, displays the status of the files in the
+  working tree. Shows files that are not checked into git, files that
+  have been deleted, and files that have been modified. 
+  Particulary useful in direct mode.
+
 * `unlock [path ...]`
 
   Normally, the content of annexed files is protected from being changed.
@@ -563,10 +570,6 @@ subdirectories).
 
 # QUERY COMMANDS
 
-* `version`
-
-  Shows the version of git-annex, as well as repository version information.
-
 * `find [path ...]`
 
   Outputs a list of annexed files in the specified path. With no path,
@@ -607,23 +610,26 @@ subdirectories).
   To generate output suitable for the gource visualisation program,
   specify `--gource`.
 
-* `status [directory ...]`
+* `info [directory ...]`
 
   Displays some statistics and other information, including how much data
   is in the annex and a list of all known repositories.
 
   To only show the data that can be gathered quickly, use `--fast`.
 
-  When a directory is specified, shows a differently formatted status
+  When a directory is specified, shows a differently formatted info
   display for that directory. In this mode, all of the file matching
   options can be used to filter the files that will be included in
-  the status.
+  the information.
 
   For example, suppose you want to run "git annex get .", but
   would first like to see how much disk space that will use.
   Then run:
 
-        	git annex status --fast . --not --in here
+        	git annex info --fast . --not --in here
+* `version`
+
+  Shows the version of git-annex, as well as repository version information.
 
 * `map`
 
@@ -698,12 +704,21 @@ subdirectories).
 
 * `pre-commit [path ...]`
 
+  This is meant to be called from git's pre-commit hook. `git annex init`
+  automatically creates a pre-commit hook using this.
+
   Fixes up symlinks that are staged as part of a commit, to ensure they
   point to annexed content. Also handles injecting changes to unlocked
   files into the annex.
 
-  This is meant to be called from git's pre-commit hook. `git annex init`
-  automatically creates a pre-commit hook using this.
+* `update-hook refname olvrev newrev`
+
+  This is meant to be called from git's update hook. `git annex init`
+  automatically creates an update hook using this.
+
+  This denies updates being pushed for the currently checked out branch.
+  While receive.denyCurrentBranch normally prevents that, it does
+  not for fake bare repositories, as used by direct mode.
 
 * `fromkey key file`
 
@@ -788,7 +803,7 @@ subdirectories).
   Rather than the normal output, generate JSON. This is intended to be
   parsed by programs that use git-annex. Each line of output is a JSON
   object. Note that json output is only usable with some git-annex commands,
-  like status and find.
+  like info and find.
 
 * `--debug`
 
@@ -1088,7 +1103,7 @@ Here are all the supported configuration settings.
   up to 500000 keys. If your repository is larger than that,
   you can adjust this to avoid `git annex unused` not noticing some unused
   data files. Increasing this will make `git-annex unused` consume more memory;
-  run `git annex status` for memory usage numbers.
+  run `git annex info` for memory usage numbers.
 
 * `annex.bloomaccuracy`
 
@@ -1096,7 +1111,7 @@ Here are all the supported configuration settings.
   `git annex unused`. The default accuracy is 1000 -- 
   1 unused file out of 1000 will be missed by `git annex unused`. Increasing
   the accuracy will make `git annex unused` consume more memory;
-  run `git annex status` for memory usage numbers.
+  run `git annex info` for memory usage numbers.
 
 * `annex.sshcaching`
 

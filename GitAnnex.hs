@@ -46,6 +46,7 @@ import qualified Command.Whereis
 import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
+import qualified Command.Info
 import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
@@ -143,6 +144,7 @@ cmds = concat
 	, Command.List.def
 	, Command.Log.def
 	, Command.Merge.def
+	, Command.Info.def
 	, Command.Status.def
 	, Command.Migrate.def
 	, Command.Map.def

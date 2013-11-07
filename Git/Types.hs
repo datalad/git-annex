@@ -10,6 +10,7 @@ module Git.Types where
 import Network.URI
 import qualified Data.Map as M
 import System.Posix.Types
+import Utility.SafeCommand
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -
@@ -38,6 +39,8 @@ data Repo = Repo
 	, remoteName :: Maybe String
 	-- alternate environment to use when running git commands
 	, gitEnv :: Maybe [(String, String)]
+	-- global options to pass to git when running git commands
+	, gitGlobalOpts :: [CommandParam]
 	} deriving (Show, Eq)
 
 {- A git ref. Can be a sha1, or a branch or tag name. -}

@@ -12,7 +12,6 @@ module Annex (
 	AnnexState(..),
 	PreferredContentMap,
 	new,
-	newState,
 	run,
 	eval,
 	getState,
@@ -41,10 +40,12 @@ import Control.Concurrent
 import Common
 import qualified Git
 import qualified Git.Config
+import Git.Types hiding (remotes)
 import Git.CatFile
 import Git.CheckAttr
 import Git.CheckIgnore
 import Git.SharedRepository
+import Git.Config
 import qualified Git.Queue
 import Types.Backend
 import Types.GitConfig
@@ -112,9 +113,9 @@ data AnnexState = AnnexState
 	}
 
 newState :: Git.Repo -> AnnexState
-newState gitrepo = AnnexState
-	{ repo = gitrepo
-	, gitconfig = extractGitConfig gitrepo
+newState r = AnnexState
+	{ repo = if annexDirect c then fixupDirect r else r
+	, gitconfig = c
 	, backends = []
 	, remotes = []
 	, output = defaultMessageState
@@ -144,6 +145,8 @@ newState gitrepo = AnnexState
 	, inodeschanged = Nothing
 	, useragent = Nothing
 	}
+  where
+  	c = extractGitConfig r
 
 {- Makes an Annex state object for the specified git repo.
  - Ensures the config is read, if it was not already. -}
@@ -247,3 +250,17 @@ withCurrentState :: Annex a -> Annex (IO a)
 withCurrentState a = do
 	s <- getState id
 	return $ eval s a
+
+{- Direct mode repos have core.bare=true, but are not really bare.
+ - Fix up the Repo to be a non-bare repo, and arrange for git commands
+ - run by git-annex to be passed parameters that override this setting. -}
+fixupDirect :: Git.Repo -> Git.Repo
+fixupDirect r@(Repo { location = Local { gitdir = d, worktree = Nothing } }) =
+	r
+		{ location = Local { gitdir = d </> ".git", worktree = Just d }
+		, gitGlobalOpts = gitGlobalOpts r ++
+			[ Param "-c"
+			, Param $ coreBare ++ "=" ++ boolConfig False
+			]
+		}
+fixupDirect r = r

@@ -215,12 +215,21 @@ test_add env = "git-annex add" ~: TestList [basic, sha1dup, subdirs]
 		git_annex env "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
 		annexed_present wormannexedfile
 		checkbackend wormannexedfile backendWORM
-		boolSystem "git" [Params "rm --force -q", File wormannexedfile] @? "git rm failed"
-		writeFile ingitfile $ content ingitfile
-		boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
-		boolSystem "git" [Params "commit -q -m commit"] @? "git commit failed"
-		git_annex env "add" [ingitfile] @? "add ingitfile should be no-op"
-		unannexed ingitfile
+		ifM (annexeval Config.isDirect)
+			( do
+				boolSystem "rm" [Params "-f", File wormannexedfile] @? "rm failed"
+				writeFile ingitfile $ content ingitfile
+				not <$> boolSystem "git" [Param "add", File ingitfile] @? "git add failed to fail in direct mode"
+				boolSystem "rm" [Params "-f", File ingitfile] @? "rm failed"
+				git_annex env "sync" [] @? "sync failed"
+			, do
+				boolSystem "git" [Params "rm --force -q", File wormannexedfile] @? "git rm failed"
+				writeFile ingitfile $ content ingitfile
+				boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
+				boolSystem "git" [Params "commit -q -m commit"] @? "git commit failed"
+				git_annex env "add" [ingitfile] @? "add ingitfile should be no-op"
+				unannexed ingitfile
+			)
 	sha1dup = TestCase $ intmpclonerepo env $ do
 		writeFile sha1annexedfiledup $ content sha1annexedfiledup
 		git_annex env "add" [sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
@@ -265,8 +274,9 @@ test_unannex env = "git-annex unannex" ~: TestList [nocopy, withcopy]
 		unannexed annexedfile
 		git_annex env "unannex" [annexedfile] @? "unannex failed on non-annexed file"
 		unannexed annexedfile
-		git_annex env "unannex" [ingitfile] @? "unannex ingitfile should be no-op"
-		unannexed ingitfile
+		unlessM (annexeval Config.isDirect) $ do
+			git_annex env "unannex" [ingitfile] @? "unannex ingitfile should be no-op"
+			unannexed ingitfile
 
 test_drop :: TestEnv -> Test
 test_drop env = "git-annex drop" ~: TestList [noremote, withremote, untrustedremote]
@@ -280,8 +290,9 @@ test_drop env = "git-annex drop" ~: TestList [noremote, withremote, untrustedrem
 		git_annex env "drop" ["--force", annexedfile] @? "drop --force failed"
 		annexed_notpresent annexedfile
 		git_annex env "drop" [annexedfile] @? "drop of dropped file failed"
-		git_annex env "drop" [ingitfile] @? "drop ingitfile should be no-op"
-		unannexed ingitfile
+		unlessM (annexeval Config.isDirect) $ do
+			git_annex env "drop" [ingitfile] @? "drop ingitfile should be no-op"
+			unannexed ingitfile
 	withremote = "with remote" ~: TestCase $ intmpclonerepo env $ do
 		git_annex env "get" [annexedfile] @? "get failed"
 		annexed_present annexedfile
@@ -306,11 +317,12 @@ test_get env = "git-annex get" ~: TestCase $ intmpclonerepo env $ do
 	git_annex env "get" [annexedfile] @? "get of file already here failed"
 	inmainrepo env $ annexed_present annexedfile
 	annexed_present annexedfile
-	inmainrepo env $ unannexed ingitfile
-	unannexed ingitfile
-	git_annex env "get" [ingitfile] @? "get ingitfile should be no-op"
-	inmainrepo env $ unannexed ingitfile
-	unannexed ingitfile
+	unlessM (annexeval Config.isDirect) $ do
+		inmainrepo env $ unannexed ingitfile
+		unannexed ingitfile
+		git_annex env "get" [ingitfile] @? "get ingitfile should be no-op"
+		inmainrepo env $ unannexed ingitfile
+		unannexed ingitfile
 
 test_move :: TestEnv -> Test
 test_move env = "git-annex move" ~: TestCase $ intmpclonerepo env $ do
@@ -328,14 +340,15 @@ test_move env = "git-annex move" ~: TestCase $ intmpclonerepo env $ do
 	git_annex env "move" ["--to", "origin", annexedfile] @? "move --to of file already there failed"
 	inmainrepo env $ annexed_present annexedfile
 	annexed_notpresent annexedfile
-	unannexed ingitfile
-	inmainrepo env $ unannexed ingitfile
-	git_annex env "move" ["--to", "origin", ingitfile] @? "move of ingitfile should be no-op"
-	unannexed ingitfile
-	inmainrepo env $ unannexed ingitfile
-	git_annex env "move" ["--from", "origin", ingitfile] @? "move of ingitfile should be no-op"
-	unannexed ingitfile
-	inmainrepo env $ unannexed ingitfile
+	unlessM (annexeval Config.isDirect) $ do
+		unannexed ingitfile
+		inmainrepo env $ unannexed ingitfile
+		git_annex env "move" ["--to", "origin", ingitfile] @? "move of ingitfile should be no-op"
+		unannexed ingitfile
+		inmainrepo env $ unannexed ingitfile
+		git_annex env "move" ["--from", "origin", ingitfile] @? "move of ingitfile should be no-op"
+		unannexed ingitfile
+		inmainrepo env $ unannexed ingitfile
 
 test_copy :: TestEnv -> Test
 test_copy env = "git-annex copy" ~: TestCase $ intmpclonerepo env $ do
@@ -353,14 +366,15 @@ test_copy env = "git-annex copy" ~: TestCase $ intmpclonerepo env $ do
 	git_annex env "move" ["--to", "origin", annexedfile] @? "move --to of file already there failed"
 	annexed_notpresent annexedfile
 	inmainrepo env $ annexed_present annexedfile
-	unannexed ingitfile
-	inmainrepo env $ unannexed ingitfile
-	git_annex env "copy" ["--to", "origin", ingitfile] @? "copy of ingitfile should be no-op"
-	unannexed ingitfile
-	inmainrepo env $ unannexed ingitfile
-	git_annex env "copy" ["--from", "origin", ingitfile] @? "copy of ingitfile should be no-op"
-	checkregularfile ingitfile
-	checkcontent ingitfile
+	unlessM (annexeval Config.isDirect) $ do
+		unannexed ingitfile
+		inmainrepo env $ unannexed ingitfile
+		git_annex env "copy" ["--to", "origin", ingitfile] @? "copy of ingitfile should be no-op"
+		unannexed ingitfile
+		inmainrepo env $ unannexed ingitfile
+		git_annex env "copy" ["--from", "origin", ingitfile] @? "copy of ingitfile should be no-op"
+		checkregularfile ingitfile
+		checkcontent ingitfile
 
 test_preferred_content :: TestEnv -> Test
 test_preferred_content env = "git-annex preferred-content" ~: TestCase $ intmpclonerepo env $ do

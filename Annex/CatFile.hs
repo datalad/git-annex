@@ -27,6 +27,7 @@ import qualified Annex
 import Git.Types
 import Git.FilePath
 import Git.FileMode
+import qualified Git.Ref
 
 catFile :: Git.Branch -> FilePath -> Annex L.ByteString
 catFile branch file = do
@@ -109,9 +110,6 @@ catKeyChecked needhead ref@(Ref r) =
 
 {- From a file in the repository back to the key.
  -
- - Prefixing the file with ./ makes this work even if in a subdirectory
- - of a repo.
- -
  - Ideally, this should reflect the key that's staged in the index,
  - not the key that's committed to HEAD. Unfortunately, git cat-file
  - does not refresh the index file after it's started up, so things
@@ -134,8 +132,8 @@ catKeyChecked needhead ref@(Ref r) =
 catKeyFile :: FilePath -> Annex (Maybe Key)
 catKeyFile f = ifM (Annex.getState Annex.daemon)
 	( catKeyFileHEAD f
-	, catKeyChecked True (Ref $ ":./" ++ f)
+	, catKeyChecked True $ Git.Ref.fileRef f
 	)
 
 catKeyFileHEAD :: FilePath -> Annex (Maybe Key)
-catKeyFileHEAD f = catKeyChecked False (Ref $ "HEAD:./" ++ f)
+catKeyFileHEAD f = catKeyChecked False $ Git.Ref.fileFromRef Git.Ref.headRef f

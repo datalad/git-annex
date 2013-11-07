@@ -21,7 +21,8 @@ import Git.FilePath
 
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
-gitCommandLine params Repo { location = l@(Local _ _ ) } = setdir : settree ++ params
+gitCommandLine params r@(Repo { location = l@(Local _ _ ) }) =
+	setdir : settree ++ gitGlobalOpts r ++ params
   where
 	setdir = Param $ "--git-dir=" ++ gitpath (gitdir l)
 	settree = case worktree l of
