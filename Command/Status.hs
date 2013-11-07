@@ -17,7 +17,7 @@ import qualified Git.Ref
 import qualified Git
 
 def :: [Command]
-def = [noCommit $ noMessages $
+def = [notBareRepo $ noCommit $ noMessages $
 	command "status" paramPaths seek SectionCommon
 		"show the working tree status"]
 
