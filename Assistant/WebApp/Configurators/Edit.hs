@@ -38,6 +38,8 @@ import Remote.Helper.Encryptable (extractCipher)
 import Types.Crypto
 import Utility.Gpg
 import Annex.UUID
+import Assistant.Ssh
+import Config
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -158,26 +160,26 @@ editRepositoryAForm ishere def = RepoConfig
 		Nothing -> aopt hiddenField "" Nothing
 		Just d -> aopt textField "Associated directory" (Just $ Just d)
 
-getEditRepositoryR :: UUID -> Handler Html
+getEditRepositoryR :: RepoId -> Handler Html
 getEditRepositoryR = postEditRepositoryR
 
-postEditRepositoryR :: UUID -> Handler Html
+postEditRepositoryR :: RepoId -> Handler Html
 postEditRepositoryR = editForm False
 
 getEditNewRepositoryR :: UUID -> Handler Html
 getEditNewRepositoryR = postEditNewRepositoryR
 
 postEditNewRepositoryR :: UUID -> Handler Html
-postEditNewRepositoryR = editForm True
+postEditNewRepositoryR = editForm True . RepoUUID
 
 getEditNewCloudRepositoryR :: UUID -> Handler Html
 getEditNewCloudRepositoryR = postEditNewCloudRepositoryR
 
 postEditNewCloudRepositoryR :: UUID -> Handler Html
-postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
+postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True (RepoUUID uuid)
 
-editForm :: Bool -> UUID -> Handler Html
-editForm new uuid = page "Edit repository" (Just Configuration) $ do
+editForm :: Bool -> RepoId -> Handler Html
+editForm new (RepoUUID uuid) = page "Edit repository" (Just Configuration) $ do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
 	when (mremote == Nothing) $
 		whenM ((/=) uuid <$> liftAnnex getUUID) $
@@ -196,7 +198,13 @@ editForm new uuid = page "Edit repository" (Just Configuration) $ do
 			config <- liftAnnex $ M.lookup uuid <$> readRemoteLog
 			let repoInfo = getRepoInfo mremote config
 			let repoEncryption = getRepoEncryption mremote config
-			$(widgetFile "configurators/editrepository")
+			$(widgetFile "configurators/edit/repository")
+editForm new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
+	mr <- liftAnnex (repoIdRemote r)
+	let repoInfo = getRepoInfo mr Nothing
+	g <- liftAnnex gitRepo
+	let sshrepo = maybe False (remoteLocationIsSshUrl . flip parseRemoteLocation g . Git.repoLocation . Remote.repo) mr
+	$(widgetFile "configurators/edit/nonannexremote")
 
 {- Makes any directory associated with the repository. -}
 checkAssociatedDirectory :: RepoConfig -> Maybe Remote -> Annex ()
@@ -245,3 +253,17 @@ encrypted using gpg key:
       ^{gpgKeyDisplay k (M.lookup k knownkeys)}
 |]
 getRepoEncryption _ _ = return () -- local repo
+
+getUpgradeRepositoryR  :: RepoId -> Handler ()
+getUpgradeRepositoryR (RepoUUID _) = redirect DashboardR
+getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
+  where
+  	go Nothing = redirect DashboardR
+	go (Just rmt) = do
+		liftIO fixSshKeyPair
+		liftAnnex $ setConfig 
+			(remoteConfig (Remote.repo rmt) "ignore")
+			(Git.Config.boolConfig False)
+		liftAssistant $ syncRemote rmt
+		liftAnnex $ void Remote.remoteListRefresh
+		redirect DashboardR

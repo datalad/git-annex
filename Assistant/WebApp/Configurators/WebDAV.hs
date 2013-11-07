@@ -18,7 +18,7 @@ import qualified Remote
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.Remote
-import Git.Remote
+import Git.Types (RemoteName)
 
 import qualified Data.Map as M
 #endif

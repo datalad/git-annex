@@ -20,6 +20,7 @@ import qualified Command.InitRemote
 import Logs.UUID
 import Logs.Remote
 import Git.Remote
+import Git.Types (RemoteName)
 import Creds
 import Assistant.Gpg
 import Utility.Gpg (KeyId)

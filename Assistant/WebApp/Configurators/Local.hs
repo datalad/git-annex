@@ -200,7 +200,7 @@ getCombineRepositoryR :: FilePath -> UUID -> Handler Html
 getCombineRepositoryR newrepopath newrepouuid = do
 	r <- combineRepos newrepopath remotename
 	liftAssistant $ syncRemote r
-	redirect $ EditRepositoryR newrepouuid
+	redirect $ EditRepositoryR $ RepoUUID newrepouuid
   where
 	remotename = takeFileName newrepopath
 

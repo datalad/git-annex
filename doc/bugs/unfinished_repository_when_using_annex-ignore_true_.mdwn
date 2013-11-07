@@ -21,3 +21,5 @@ Start the webapp.
     upgrade supported from repository versions: 0 1 2
 
 Kubuntu 13.10 x86_64
+
+> [[fixed|done]] --[[Joey]]

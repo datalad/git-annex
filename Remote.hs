@@ -24,6 +24,7 @@ module Remote (
 	remoteMap,
 	uuidDescriptions,
 	byName,
+	byNameOnly,
 	byNameWithUUID,
 	byCost,
 	prettyPrintUUIDs,
@@ -58,7 +59,7 @@ import Logs.Trust
 import Logs.Location hiding (logStatus)
 import Remote.List
 import Config
-import Git.Remote
+import Git.Types (RemoteName)
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> a) -> Annex (M.Map UUID a)
@@ -103,6 +104,12 @@ byName' n = handle . filter matching <$> remoteList
 	handle [] = Left $ "there is no available git remote named \"" ++ n ++ "\""
 	handle (match:_) = Right match
 	matching r = n == name r || toUUID n == uuid r
+
+{- Only matches remote name, not UUID -}
+byNameOnly :: RemoteName -> Annex (Maybe Remote)
+byNameOnly n = headMaybe . filter matching <$> remoteList
+  where
+	matching r = n == name r
 
 {- Looks up a remote by name (or by UUID, or even by description),
  - and returns its UUID. Finds even remotes that are not configured in

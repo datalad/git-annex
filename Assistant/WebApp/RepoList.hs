@@ -12,7 +12,6 @@ module Assistant.WebApp.RepoList where
 import Assistant.WebApp.Common
 import Assistant.DaemonStatus
 import Assistant.WebApp.Notifications
-import Assistant.Ssh
 import qualified Annex
 import qualified Remote
 import qualified Types.Remote as Remote
@@ -22,20 +21,22 @@ import Logs.Remote
 import Logs.Trust
 import Logs.Group
 import Config
-import Git.Config
 import Git.Remote
 import Assistant.Sync
 import Config.Cost
 import Utility.NotificationBroadcaster
 import qualified Git
-#ifdef WITH_XMPP
-#endif
 
 import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Function
 
+type RepoList = [(RepoDesc, RepoId, Actions)]
+
+type RepoDesc = String
+
+{- Actions that can be performed on a repo in the list. -}
 data Actions
 	= DisabledRepoActions
 		{ setupRepoLink :: Route WebApp }
@@ -50,21 +51,21 @@ data Actions
 	| UnwantedRepoActions
 		{ setupRepoLink :: Route WebApp }
 
-mkSyncingRepoActions :: UUID -> Actions
-mkSyncingRepoActions u = SyncingRepoActions
-	{ setupRepoLink = EditRepositoryR u
-	, syncToggleLink = DisableSyncR u
+mkSyncingRepoActions :: RepoId -> Actions
+mkSyncingRepoActions repoid = SyncingRepoActions
+	{ setupRepoLink = EditRepositoryR repoid
+	, syncToggleLink = DisableSyncR repoid
 	}
 
-mkNotSyncingRepoActions :: UUID -> Actions
-mkNotSyncingRepoActions u = NotSyncingRepoActions
-	{ setupRepoLink = EditRepositoryR u
-	, syncToggleLink = EnableSyncR u
+mkNotSyncingRepoActions :: RepoId -> Actions
+mkNotSyncingRepoActions repoid = NotSyncingRepoActions
+	{ setupRepoLink = EditRepositoryR repoid
+	, syncToggleLink = EnableSyncR repoid
 	}
 
-mkUnwantedRepoActions :: UUID -> Actions
-mkUnwantedRepoActions u = UnwantedRepoActions
-	{ setupRepoLink = EditRepositoryR u
+mkUnwantedRepoActions :: RepoId -> Actions
+mkUnwantedRepoActions repoid = UnwantedRepoActions
+	{ setupRepoLink = EditRepositoryR repoid
 	}
 
 needsEnabled :: Actions -> Bool
@@ -122,9 +123,6 @@ repoListDisplay reposelector = do
 	$(widgetFile "repolist")
   where
 	ident = "repolist"
-	unfinished uuid = uuid == NoUUID
-
-type RepoList = [(String, UUID, Actions)]
 
 {- A list of known repositories, with actions that can be taken on them. -}
 repoList :: RepoSelector -> Handler RepoList
@@ -133,27 +131,27 @@ repoList reposelector
 	| otherwise = list =<< (++) <$> configured <*> unconfigured
   where
 	configured = do
-		syncing <- S.fromList . map Remote.uuid . syncRemotes
-			<$> liftAssistant getDaemonStatus
+		syncremotes <- syncRemotes <$> liftAssistant getDaemonStatus
+		let syncing = S.fromList $ map mkRepoId syncremotes
 		liftAnnex $ do
 			unwanted <- S.fromList
-				<$> filterM inUnwantedGroup (S.toList syncing)
+				<$> filterM inUnwantedGroup (map Remote.uuid syncremotes)
 			rs <- filter selectedrepo . concat . Remote.byCost
 				<$> Remote.remoteList
-			let us = map Remote.uuid rs
-			let maker u
-				| u `S.member` unwanted = mkUnwantedRepoActions u
-				| u `S.member` syncing = mkSyncingRepoActions u
-				| otherwise = mkNotSyncingRepoActions u
-			let l = zip us $ map (maker . Remote.uuid) rs
+			let l = flip map (map mkRepoId rs) $ \r -> case r of
+				(RepoUUID u)
+					| u `S.member` unwanted -> (r, mkUnwantedRepoActions r)
+				_
+					| r `S.member` syncing -> (r, mkSyncingRepoActions r)
+					| otherwise -> (r, mkNotSyncingRepoActions r)
 			if includeHere reposelector
 				then do
-					u <- getUUID
+					r <- RepoUUID <$> getUUID
 					autocommit <- annexAutoCommit <$> Annex.getGitConfig
 					let hereactions = if autocommit
-						then mkSyncingRepoActions u
-						else mkNotSyncingRepoActions u
-					let here = (u, hereactions)
+						then mkSyncingRepoActions r
+						else mkNotSyncingRepoActions r
+					let here = (r, hereactions)
 					return $ here : l
 				else return l
 	unconfigured = liftAnnex $ do
@@ -164,7 +162,9 @@ repoList reposelector
 			<$> trustExclude DeadTrusted (M.keys m)
 	selectedrepo r
 		| Remote.readonly r = False
-		| onlyCloud reposelector = Git.repoIsUrl (Remote.repo r) && not (isXMPPRemote r)
+		| onlyCloud reposelector = Git.repoIsUrl (Remote.repo r)
+			&& Remote.uuid r /= NoUUID 
+			&& not (isXMPPRemote r)
 		| otherwise = True
 	selectedremote Nothing = False
 	selectedremote (Just (iscloud, _))
@@ -190,23 +190,23 @@ repoList reposelector
 		_ -> Nothing
 	  where
 	  	getconfig k = M.lookup k =<< M.lookup u m
-		val iscloud r = Just (iscloud, (u, DisabledRepoActions $ r u))
-	list l = liftAnnex $ do
-		let l' = nubBy ((==) `on` fst) l
-		l'' <- zip
-			<$> Remote.prettyListUUIDs (map fst l')
-			<*> pure l'
-		return $ map (\(name, (uuid, actions)) -> (name, uuid, actions)) l''
+		val iscloud r = Just (iscloud, (RepoUUID u, DisabledRepoActions $ r u))
+	list l = liftAnnex $
+		forM (nubBy ((==) `on` fst) l) $ \(repoid, actions) ->
+			(,,)
+				<$> describeRepoId repoid
+				<*> pure repoid
+				<*> pure actions
 
-getEnableSyncR :: UUID -> Handler ()
+getEnableSyncR :: RepoId -> Handler ()
 getEnableSyncR = flipSync True
 
-getDisableSyncR :: UUID -> Handler ()
+getDisableSyncR :: RepoId -> Handler ()
 getDisableSyncR = flipSync False
 
-flipSync :: Bool -> UUID -> Handler ()
-flipSync enable uuid = do
-	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
+flipSync :: Bool -> RepoId -> Handler ()
+flipSync enable repoid = do
+	mremote <- liftAnnex $ repoIdRemote repoid
 	liftAssistant $ changeSyncable mremote enable
 	redirectBack
 
@@ -238,29 +238,3 @@ reorderCosts remote rs = zip rs'' (insertCostAfter costs i)
 	costs = map Remote.cost rs'
 	rs'' = (\(x, y) -> x ++ [remote] ++ y) $ splitAt (i + 1) rs'
 
-{- Checks to see if any repositories with NoUUID have annex-ignore set.
- - That could happen if there's a problem contacting a ssh remote
- - soon after it was added. -}
-getCheckUnfinishedRepositoriesR :: Handler Html
-getCheckUnfinishedRepositoriesR = page "Unfinished repositories" (Just Configuration) $ do
-	stalled <- liftAnnex findStalled
-	$(widgetFile "configurators/checkunfinished")
-
-findStalled :: Annex [Remote]
-findStalled = filter isstalled <$> remoteListRefresh
-  where
-  	isstalled r = Remote.uuid r == NoUUID
-		&& remoteAnnexIgnore (Remote.gitconfig r)
-
-getRetryUnfinishedRepositoriesR :: Handler ()
-getRetryUnfinishedRepositoriesR = do
-	liftAssistant $ mapM_ unstall =<< liftAnnex findStalled
-	redirect DashboardR
-  where
-	unstall r = do
-		liftIO fixSshKeyPair
-		liftAnnex $ setConfig 
-			(remoteConfig (Remote.repo r) "ignore")
-			(boolConfig False)
-		syncRemote r
-		liftAnnex $ void remoteListRefresh

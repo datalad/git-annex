@@ -16,6 +16,9 @@ git-annex (5.20131102) UNRELEASED; urgency=low
   * watcher: Avoid loop when adding a file owned by someone else fails
     in indirect mode because its permissions cannot be modified.
   * webapp: Avoid encoding problems when displaying the daemon log file.
+  * webapp: Improve UI around remote that have no annex.uuid set,
+    either because setup of them is incomplete, or because the remote
+    git repository is not a git-annex repository.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
 

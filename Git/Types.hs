@@ -36,12 +36,14 @@ data Repo = Repo
 	, fullconfig :: M.Map String [String]
 	, remotes :: [Repo]
 	-- remoteName holds the name used for this repo in remotes
-	, remoteName :: Maybe String
+	, remoteName :: Maybe RemoteName
 	-- alternate environment to use when running git commands
 	, gitEnv :: Maybe [(String, String)]
 	-- global options to pass to git when running git commands
 	, gitGlobalOpts :: [CommandParam]
 	} deriving (Show, Eq)
+
+type RemoteName = String
 
 {- A git ref. Can be a sha1, or a branch or tag name. -}
 newtype Ref = Ref String

@@ -22,7 +22,7 @@ import Logs.UUID
 import Annex.UUID
 import qualified Option
 import qualified Annex
-import Git.Remote
+import Git.Types (RemoteName)
 
 def :: [Command]
 def = [noCommit $ withOptions [allrepos] $ command "list" paramPaths seek
