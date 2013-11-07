@@ -69,8 +69,9 @@ direct mode.
 
 As for git commands, direct mode prevents using any git command that would
 modify or access the work tree. So you cannot `git commit` or `git pull`
-(use `git annex sync` for both instead), or run `git status`.
-These git commands will complain "fatal: This operation must be run in a work tree".
+(use `git annex sync` for both instead), or run `git status` (use `git
+annex status` instead). These git commands will complain "fatal: This
+operation must be run in a work tree".
 
 The reason for this is that git doesn't understand how git-annex uses the
 work tree in direct mode. Where git expects the symlinks that get checked
@@ -78,8 +79,8 @@ into git to be checked out in the work tree, direct mode instead replaces
 them with the actual content of files, as managed by git-annex.
 
 There are still lots of git commands you can use in direct mode. For
-example, you can run `git log` on files, run `git push`, `git config`,
-`git remote add` etc.
+example, you can run `git log` on files, run `git push`, `git fetch`,
+`git config`, `git remote add` etc.
 
 ## forcing git to use the work tree in direct mode
 
