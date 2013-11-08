@@ -30,6 +30,7 @@ bundledPrograms = catMaybes
 #endif
 	, Just "rsync"
 	, Just "ssh"
+	, Just "ssh-keygen"
 #ifndef mingw32_HOST_OS
 	, Just "sh"
 #endif

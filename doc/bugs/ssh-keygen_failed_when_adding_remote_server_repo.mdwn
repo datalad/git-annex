@@ -40,3 +40,5 @@ ssh-keygen: symbol lookup error: /lib64/libldap-2.4.so.2: undefined symbol: ber_
 
 # End of transcript or log.
 """]]
+
+> Added ssh-keygen to bundle. [[fixed|done]] --[[Joey]]
