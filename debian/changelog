@@ -20,11 +20,6 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     either because setup of them is incomplete, or because the remote
     git repository is not a git-annex repository.
   * Include ssh-keygen in standalone bundle.
-
- -- Joey Hess <joeyh@debian.org>  Sat, 02 Nov 2013 14:54:36 -0400
-
-git-annex (4.20131107) UNRELEASED; urgency=low
-
   * Allow optionally configuring git-annex with -fEKG to enable awesome
     remote monitoring interfaceat http://localhost:4242/
 
