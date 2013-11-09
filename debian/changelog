@@ -22,6 +22,8 @@ git-annex (5.20131102) UNRELEASED; urgency=low
   * Include ssh-keygen in standalone bundle.
   * Allow optionally configuring git-annex with -fEKG to enable awesome
     remote monitoring interfaceat http://localhost:4242/
+  * Fix bug that caused bad information to be written to the git-annex branch
+    when running describe or other commands with a remote that has no uuid.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 16:14:14 -0400
 
