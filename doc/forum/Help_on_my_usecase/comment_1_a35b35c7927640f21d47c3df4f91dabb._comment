@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 1"
+ date="2013-11-09T18:18:49Z"
+ content="""
+An incremental backup is supposed to drop content once it reaches a full backup. But, the assistant can only do that if it's able to verify that the full backup drive (or some other repository it can access) has a file, at the same time it's dropping it from the incremental backup drive. If you don't have both the incremental and full backup drives plugged in at the same time, you could consider making git-annex [[trust]] the full backup drive, which would avoid this explicit check.
+
+It sounds like you want a non-bare git repository on the 2.5\" drive. The assistant does not currently support setting that up, but you can do it by just using `git clone` as shown in the [[walkthrough]].
+
+I'm not clear on what doesn't work when you connect the 2.5\" drive to your desktop.
+"""]]
