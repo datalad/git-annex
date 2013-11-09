@@ -40,8 +40,7 @@ $ git cat-file blob git-annex:uuid.log
 """]]
 
 > Fixed the bug and made git breakage not crash git-annex. [[done]]
-> 
-> You will probably end up with `git annex info` (used to be `git annex
-> status`) showing a strange display for "b". Just running "git annex dead
-> b" will clean that up. (You'd not want to do this if b is an active git
-> remote.) --[[Joey]] 
+> --[[Joey]] 
+
+> > Update: Also made it automatically clean up the cruft this put in the
+> > log. --[[Joey]] 
