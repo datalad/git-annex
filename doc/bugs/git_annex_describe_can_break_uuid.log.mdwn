@@ -1,0 +1,40 @@
+### Please describe the problem.
+
+`uuid.log` can end up in a state where `git annex describe` (and probably other things) stops working.
+
+### What steps will reproduce the problem?
+
+Run `git annex describe` against a remote that is not a an initialized git-annex repo.
+
+### What version of git-annex are you using? On what operating system?
+
+debian-packaged git-annex 4.20131106 on Linux Mint 13/Maya (Ubuntu Precise/12.04)
+
+### Please provide any additional information below.
+
+I will follow comments, but can also be found at [[https://microca.st/clacke]].
+
+Full transcript to reproduce:
+
+[[!format sh """
+$ git init a
+Initialized empty Git repository in /tmp/annex/a/.git/
+$ git init b
+Initialized empty Git repository in /tmp/annex/b/.git/
+$ cd a/
+$ git annex init
+init  ok
+(Recording state in git...)
+$ git remote add -f b ../b
+Updating b
+$ git annex describe b b # this should not be ok
+describe b ok
+(Recording state in git...)
+$ git annex describe b b
+describe b git-annex: Prelude.last: empty list
+$ git cat-file blob git-annex:uuid.log
+ b timestamp=1383987654.900868s
+...
+
+# End of transcript.
+"""]]
