@@ -2,5 +2,5 @@
 # Removes all currently installed cross-compiled haskell packages
 # except those part of ghc.
 # Useful if the build failed.
-rm -f $(grep -l $HOME/.ghc/android-14/arm-linux-androideabi-4.7/.cabal/lib/ $HOME/.ghc/android-14/arm-linux-androideabi-4.7/lib/*-ghc-*/package.conf.d/*.conf)
-$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/ghc-pkg recache
+rm -f $(grep -l $HOME/.ghc/android-14/arm-linux-androideabi-4.8/.cabal/lib/ $HOME/.ghc/android-14/arm-linux-androideabi-4.8/lib/*-ghc-*/package.conf.d/*.conf)
+$HOME/.ghc/android-14/arm-linux-androideabi-4.8/arm-linux-androideabi/bin/ghc-pkg recache

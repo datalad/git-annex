@@ -50,7 +50,7 @@ patched () {
 
 installgitannexdeps () {
 	pushd ../..
-	echo cabal install --only-dependencies
+	echo cabal install --only-dependencies "$@"
 	cabal install --only-dependencies "$@"
 	popd
 }
@@ -90,11 +90,14 @@ install_pkgs () {
 	patched yesod-core
 	patched yesod-persistent
 	patched yesod-form
+	patched crypto-numbers
 	patched yesod-auth
 	patched yesod
 	patched async
 	patched gnuidn
 	patched DAV
+	patched language-javascript
+	patched uuid
 
 	cd ..
 
@@ -112,6 +115,6 @@ echo
 echo
 echo cross build
 echo
-PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH
+PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.8/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.8/arm-linux-androideabi/bin:$PATH
 cabal update
 install_pkgs

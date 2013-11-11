@@ -2,7 +2,7 @@
 # and builds the Android app.
 
 # Add Android cross-compiler to PATH (as installed by ghc-android)
-ANDROID_CROSS_COMPILER?=$(HOME)/.ghc/android-14/arm-linux-androideabi-4.7/bin
+ANDROID_CROSS_COMPILER?=$(HOME)/.ghc/android-14/arm-linux-androideabi-4.8/bin
 PATH:=$(ANDROID_CROSS_COMPILER):$(PATH)
 
 # Paths to the Android SDK and NDK.
