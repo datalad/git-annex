@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 1"
+ date="2013-11-11T16:01:59Z"
+ content="""
+Better, since version 4.20131024, `git annex repair` can be run to automatically do this, and more. (Including recovering data in corrupt git repositories that you forgot to push!)
+"""]]
