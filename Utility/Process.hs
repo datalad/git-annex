@@ -44,8 +44,10 @@ import qualified Control.Exception as E
 import Control.Monad
 #ifndef mingw32_HOST_OS
 import System.Posix.IO
-import Data.Maybe
+#else
+import Control.Applicative
 #endif
+import Data.Maybe
 
 import Utility.Misc
 import Utility.Exception
