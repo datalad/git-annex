@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant.TransferSlots where
 
 import Assistant.Common
@@ -32,8 +34,10 @@ import qualified Data.Map as M
 import qualified Control.Exception as E
 import Control.Concurrent
 import qualified Control.Concurrent.MSemN as MSemN
-import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
+#ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessGroupIDOf)
+import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
+#endif
 
 type TransferGenerator = Assistant (Maybe (Transfer, TransferInfo, Transferrer -> Assistant ()))
 
@@ -247,13 +251,18 @@ cancelTransfer pause t = do
 	signalthread tid
 		| pause = throwTo tid PauseTransfer
 		| otherwise = killThread tid
-	{- In order to stop helper processes like rsync,
-	 - kill the whole process group of the process running the transfer. -}
 	killproc pid = void $ tryIO $ do
+#ifndef mingw32_HOST_OS
+		{- In order to stop helper processes like rsync,
+		 - kill the whole process group of the process
+		 - running the transfer. -}
 		g <- getProcessGroupIDOf pid
 		void $ tryIO $ signalProcessGroup sigTERM g
 		threadDelay 50000 -- 0.05 second grace period
 		void $ tryIO $ signalProcessGroup sigKILL g
+#else
+		error "TODO: cancelTransfer not implemented on Windows"
+#endif
 
 {- Start or resume a transfer. -}
 startTransfer :: Transfer -> Assistant ()

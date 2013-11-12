@@ -124,13 +124,9 @@ Executable git-annex
     Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
     CPP-Options: -DWITH_WEBDAV
 
-  if flag(Assistant) && ! os(windows) && ! os(solaris)
+  if flag(Assistant) && ! os(solaris)
     Build-Depends: stm (>= 2.3)
     CPP-Options: -DWITH_ASSISTANT
-
-  if flag(Android)
-    Build-Depends: data-endian
-    CPP-Options: -D__ANDROID__
 
   if flag(Assistant)
     if os(linux) && flag(Inotify)
@@ -141,17 +137,25 @@ Executable git-annex
         Build-Depends: hfsevents
         CPP-Options: -DWITH_FSEVENTS
       else
-        if (! os(windows) && ! os(solaris) && ! os(linux))
-          if flag(Android)
-            Build-Depends: hinotify
-            CPP-Options: -DWITH_INOTIFY
-          else
-            CPP-Options: -DWITH_KQUEUE
-            C-Sources: Utility/libkqueue.c
+        if os(windows)
+          Build-Depends: Win32-notify
+          CPP-Options: -DWITH_WIN32NOTIFY
+        else
+          if (! os(solaris) && ! os(linux))
+            if flag(Android)
+              Build-Depends: hinotify
+              CPP-Options: -DWITH_INOTIFY
+            else
+              CPP-Options: -DWITH_KQUEUE
+              C-Sources: Utility/libkqueue.c
 
   if os(linux) && flag(Dbus)
     Build-Depends: dbus (>= 0.10.3)
     CPP-Options: -DWITH_DBUS
+  
+  if flag(Android)
+    Build-Depends: data-endian
+    CPP-Options: -D__ANDROID__
 
   if flag(Webapp) && (! os(windows))
     Build-Depends:

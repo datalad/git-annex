@@ -5,12 +5,17 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant.TransferrerPool where
 
 import Assistant.Common
 import Assistant.Types.TransferrerPool
 import Logs.Transfer
+
+#ifndef mingw32_HOST_OS
 import qualified Command.TransferKeys as T
+#endif
 
 import Control.Concurrent.STM
 import System.Process (create_group)
@@ -38,13 +43,18 @@ withTransferrer program pool a = do
  - finish. -}
 performTransfer :: Transferrer -> Transfer -> AssociatedFile -> IO Bool
 performTransfer transferrer t f = catchBoolIO $ do
+#ifndef mingw32_HOST_OS
 	T.sendRequest t f (transferrerWrite transferrer)
 	T.readResponse (transferrerRead transferrer)
+#else
+	error "TODO performTransfer not implemented on Windows"
+#endif
 
 {- Starts a new git-annex transferkeys process, setting up a pipe
  - that will be used to communicate with it. -}
 mkTransferrer :: FilePath -> IO Transferrer
 mkTransferrer program = do
+#ifndef mingw32_HOST_OS
 	(myread, twrite) <- createPipe
 	(tread, mywrite) <- createPipe
 	mapM_ (\fd -> setFdOption fd CloseOnExec True) [myread, mywrite]
@@ -68,6 +78,9 @@ mkTransferrer program = do
 		, transferrerWrite = mywriteh
 		, transferrerHandle = pid
 		}
+#else
+	error "TODO mkTransferrer not implemented on Windows"
+#endif
 
 {- Checks if a Transferrer is still running. If not, makes a new one. -}
 checkTransferrer :: FilePath -> Transferrer -> IO Transferrer

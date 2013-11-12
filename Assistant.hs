@@ -69,6 +69,7 @@ startDaemon assistant foreground startdelay listenhost startbrowser = do
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
 	logfd <- liftIO $ openLog logfile
+#ifndef mingw32_HOST_OS
 	if foreground
 		then do
 			origout <- liftIO $ catchMaybeIO $ 
@@ -86,6 +87,13 @@ startDaemon assistant foreground startdelay listenhost startbrowser = do
 					Just a -> Just $ a origout origerr
 		else
 			start (Utility.Daemon.daemonize logfd (Just pidfile) False) Nothing
+#else
+	-- Windows is always foreground, and has no log file.
+	start id $
+		case startbrowser of
+			Nothing -> Nothing
+			Just a -> Just $ a Nothing Nothing
+#endif
   where
   	desc
 		| assistant = "assistant"
@@ -98,7 +106,6 @@ startDaemon assistant foreground startdelay listenhost startbrowser = do
 		liftIO $ daemonize $
 			flip runAssistant (go webappwaiter) 
 				=<< newAssistantData st dstatus
-
 
 #ifdef WITH_WEBAPP
 	go webappwaiter = do

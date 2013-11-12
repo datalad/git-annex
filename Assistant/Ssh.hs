@@ -12,6 +12,7 @@ import Utility.Tmp
 import Utility.UserInfo
 import Utility.Shell
 import Utility.Rsync
+import Utility.FileMode
 import Git.Remote
 
 import Data.Text (Text)
@@ -233,12 +234,8 @@ setupSshKeyPair sshkeypair sshdata = do
 	sshdir <- sshDir
 	createDirectoryIfMissing True $ parentDir $ sshdir </> sshprivkeyfile
 
-	unlessM (doesFileExist $ sshdir </> sshprivkeyfile) $ do
-		h <- fdToHandle =<<
-			createFile (sshdir </> sshprivkeyfile)
-				(unionFileModes ownerWriteMode ownerReadMode)
-		hPutStr h (sshPrivKey sshkeypair)
-		hClose h
+	unlessM (doesFileExist $ sshdir </> sshprivkeyfile) $
+		writeFileProtected (sshdir </> sshprivkeyfile) (sshPrivKey sshkeypair)
 	unlessM (doesFileExist $ sshdir </> sshpubkeyfile) $
 		writeFile (sshdir </> sshpubkeyfile) (sshPubKey sshkeypair)
 
