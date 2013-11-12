@@ -177,10 +177,7 @@ processTranscript cmd opts input = do
 			}
 	hClose writeh
 
-	-- fork off a thread to start consuming the output
-	transcript <- hGetContents readh
-	outMVar <- newEmptyMVar
-	_ <- forkIO $ E.evaluate (length transcript) >> putMVar outMVar ()
+	get <- mkreader readh
 
 	-- now write and flush any input
 	case input of
@@ -192,9 +189,7 @@ processTranscript cmd opts input = do
 			hClose inh
 		Nothing -> return ()
 
-	-- wait on the output
-	takeMVar outMVar
-	hClose readh
+	transcript <- get
 
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
@@ -223,6 +218,7 @@ processTranscript cmd opts input = do
 	transcript <- (++) <$> getout <*> geterr
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
+#endif
   where
 	mkreader h = do
 		s <- hGetContents h
@@ -233,7 +229,6 @@ processTranscript cmd opts input = do
 		return $ do
 			takeMVar v
 			return s
-#endif
 
 {- Runs a CreateProcessRunner, on a CreateProcess structure, that
  - is adjusted to pipe only from/to a single StdHandle, and passes
