@@ -9,7 +9,10 @@ now! --[[Joey]]
 * rsync special remotes are known buggy.
 * Bad file locking, it's probably not safe to run more than one git-annex
   process at the same time on Windows.
-* No support for the assistant or webapp.
+* `git annex watch` builds, but it has not been tested at all.
+* `git annex assistant` builds, but has not been tested, and is known
+  to not download any files. (transferrer doesn't built yet)
+* Webapp doesn't build yet.
 * Ssh connection caching does not work on Windows, so `git annex get`
   has to connect twice to the remote system over ssh per file, which
   is much slower than on systems supporting connection caching.
