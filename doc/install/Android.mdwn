@@ -19,7 +19,7 @@ A daily build is also available, thanks to Mesar Hameed and the University
 of Bath CS department.
 
 * [Android 4.4 and 4.3 git-annex.apk](http://downloads.kitenet.net/git-annex/autobuild/android/4.3/git-annex.apk)
-* [Android 4.0 and 4.2 git-annex.apk](http://downloads.kitenet.net/git-annex/autobuild/android/4.0/git-annex.apk)
+* [Android 4.0 to 4.2 git-annex.apk](http://downloads.kitenet.net/git-annex/autobuild/android/4.0/git-annex.apk)
 * [build logs](http://downloads.kitenet.net/git-annex/autobuild/android/)
 
 ## building it yourself
