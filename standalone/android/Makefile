@@ -2,7 +2,7 @@
 # and builds the Android app.
 
 # Add Android cross-compiler to PATH (as installed by ghc-android)
-ANDROID_CROSS_COMPILER?=$(HOME)/.ghc/android-14/arm-linux-androideabi-4.8/bin
+ANDROID_CROSS_COMPILER?=$(HOME)/.ghc/$(shell cat abiversion)/bin
 PATH:=$(ANDROID_CROSS_COMPILER):$(PATH)
 
 # Paths to the Android SDK and NDK.
@@ -31,7 +31,6 @@ build: start
 	# Install executables as pseudo-libraries so they will be
 	# unpacked from the .apk.
 	mkdir -p $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi
-	cp ../../tmp/androidtree/dist/build/git-annex/git-annex $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/busybox $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.busybox.so
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/ssh $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.ssh.so
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/ssh-keygen $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.ssh-keygen.so
@@ -74,9 +73,15 @@ build: start
 
 	git rev-parse HEAD > $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.version.so
 
+	mkdir -p ../../tmp/4.0 ../../tmp/4.3
+	
+	cp ../../tmp/androidtree/dist/build/git-annex/4.3/git-annex $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && ant debug
-	mkdir -p ../../tmp
-	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/term/bin/Term-debug.apk ../../tmp/git-annex.apk
+	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/term/bin/Term-debug.apk ../../tmp/4.3/git-annex.apk
+	
+	cp ../../tmp/androidtree/dist/build/git-annex/4.0/git-annex $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git-annex.so
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/term && ant debug
+	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/term/bin/Term-debug.apk ../../tmp/4.0/git-annex.apk
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl/build-stamp:
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/openssl && CC=$$(which cc) ./Configure android

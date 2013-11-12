@@ -115,6 +115,6 @@ echo
 echo
 echo cross build
 echo
-PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.8/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.8/arm-linux-androideabi/bin:$PATH
+PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
 cabal update
 install_pkgs

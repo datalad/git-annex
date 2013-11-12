@@ -24,6 +24,8 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     remote monitoring interfaceat http://localhost:4242/
   * Fix bug that caused bad information to be written to the git-annex branch
     when running describe or other commands with a remote that has no uuid.
+  * Work around Android linker problem that had prevented git-annex from
+    running on Android 4.3 and 4.4.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 16:14:14 -0400
 

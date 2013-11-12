@@ -189,14 +189,16 @@ android: Build/EvilSplicer
 	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/androidtree/git-annex.cabal
 # Cabal cannot cross compile with custom build type, so workaround.
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
+# Build just once, but link twice, for 2 different versions of Android.
+	mkdir -p tmp/androidtree/dist/build/git-annex/4.0 tmp/androidtree/dist/build/git-annex/4.3
 	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
-		cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.8/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
+		cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
 	fi
-	cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.8/arm-linux-androideabi/bin/cabal build
-
-adb:
-	ANDROID_FLAGS="-Production" $(MAKE) android
-	adb push tmp/androidtree/dist/build/git-annex/git-annex /data/data/ga.androidterm/bin/git-annex
+	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
+		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.0/git-annex
+	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
+		--ghc-options=-optl-z --ghc-options=-optlnocopyreloc \
+		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.3/git-annex
 
 androidapp:
 	$(MAKE) android
