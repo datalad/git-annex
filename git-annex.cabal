@@ -131,6 +131,8 @@ Executable git-annex
   if flag(Android)
     Build-Depends: data-endian
     CPP-Options: -D__ANDROID__
+    -- Avoid R_ARM_COPY problem which breaks Android linker
+    GHC-Options: -optl-z -optlnocopyreloc
 
   if flag(Assistant)
     if os(linux) && flag(Inotify)
