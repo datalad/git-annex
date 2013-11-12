@@ -690,8 +690,8 @@ subdirectories).
   Use this to undo an accidental `git annex add` command. It puts the
   file back how it was before the add.
 
-  Note that for safety, the content of the file remains in the annex (as a
-  hard link), until you use `git annex unused` and `git annex dropunused`.
+  Note that for safety, the content of the file remains in the annex,
+  until you use `git annex unused` and `git annex dropunused`.
 
   This is not the command you should use if you intentionally annexed a
   file and don't want its contents any more. In that case you should use
