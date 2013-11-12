@@ -11,32 +11,33 @@ import Common hiding (isDirectory)
 import Utility.DirWatcher.Types
 
 import System.Win32.Notify
+import qualified System.PosixCompat.Files as Files
 
 watchDir :: FilePath -> (FilePath -> Bool) -> WatchHooks -> IO WatchManager
 watchDir dir ignored hooks = do
 	scan dir
 	wm <- initWatchManager
 	void $ watchDirectory wm dir True [Create, Delete, Modify, Move] handle
-	retufn wm
+	return wm
   where
 	handle evt
 		| ignoredPath ignored (filePath evt) = noop
-		| otherwise = case eventToVariety evt of
-			Delete
+		| otherwise = case evt of
+			(Deleted _ _)
 				| isDirectory evt -> runhook delDirHook Nothing
 				| otherwise -> runhook delHook Nothing
-			Create
+			(Created _ _)
 				| isDirectory evt -> noop
 				| otherwise -> runhook addHook Nothing
-			Modify
+			(Modified _ _)
 				| isDirectory evt -> noop
 				{- Add hooks are run when a file is modified for 
 				 - compatability with INotify, which calls the add
 				 - hook when a file is closed, and so tends to call
 				 - both add and modify for file modifications. -}
 				| otherwise -> do
-					runHook addHook Nothing
-					runHook modifyHook Nothing
+					runhook addHook Nothing
+					runhook modifyHook Nothing
 	  where
 		runhook h s = maybe noop (\a -> a (filePath evt) s) (h hooks)
 
