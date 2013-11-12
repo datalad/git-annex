@@ -1,11 +1,12 @@
 {- git-annex assistant sanity checker
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Assistant.Threads.SanityChecker (
+	sanityCheckerStartupThread,
 	sanityCheckerDailyThread,
 	sanityCheckerHourlyThread
 ) where
@@ -13,6 +14,7 @@ module Assistant.Threads.SanityChecker (
 import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.Alert
+import Assistant.Repair
 import qualified Git.LsFiles
 import qualified Git.Command
 import qualified Git.Config
@@ -20,9 +22,26 @@ import Utility.ThreadScheduler
 import qualified Assistant.Threads.Watcher as Watcher
 import Utility.LogFile
 import Utility.Batch
+import Utility.NotificationBroadcaster
 import Config
+import Utility.HumanTime
 
 import Data.Time.Clock.POSIX
+
+{- This thread runs once at startup, and most other threads wait for it
+ - to finish. (However, the webapp thread does not, to prevent the UI
+ - being nonresponsive.) -}
+sanityCheckerStartupThread :: Maybe Duration -> NamedThread
+sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerStartup" $ do
+	{- Stale git locks can prevent commits from happening, etc. -}
+	void $ repairStaleGitLocks =<< liftAnnex gitRepo
+
+	{- If there's a startup delay, it's done here. -}
+	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay
+
+	{- Notify other threads that the startup sanity check is done. -}
+	status <- getDaemonStatus
+	liftIO $ sendNotification $ startupSanityCheckNotifier status
 
 {- This thread wakes up hourly for inxepensive frequent sanity checks. -}
 sanityCheckerHourlyThread :: NamedThread
@@ -42,7 +61,7 @@ sanityCheckerDailyThread = namedThread "SanityCheckerDaily" $ forever $ do
 	go = do
 		modifyDaemonStatus_ $ \s -> s { sanityCheckRunning = True }
 
-		now <- liftIO $ getPOSIXTime -- before check started
+		now <- liftIO getPOSIXTime -- before check started
 		r <- either showerr return =<< (tryIO . batch) <~> dailyCheck
 
 		modifyDaemonStatus_ $ \s -> s
@@ -78,7 +97,7 @@ dailyCheck = do
 
 	-- Find old unstaged symlinks, and add them to git.
 	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo False ["."] g
-	now <- liftIO $ getPOSIXTime
+	now <- liftIO getPOSIXTime
 	forM_ unstaged $ \file -> do
 		ms <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 		case ms of
@@ -136,3 +155,4 @@ oneHour = 60 * 60
 
 oneDay :: Int
 oneDay = 24 * oneHour
+

@@ -83,7 +83,8 @@ start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 		page <- fromMaybe badquvi
 			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] s'
 		let link = fromMaybe badquvi $ headMaybe $ Quvi.pageLinks page
-		let file = choosefile $ sanitizeFilePath $
+		pathmax <- liftIO $ fileNameLengthLimit "."
+		let file = choosefile $ truncateFilePath pathmax $ sanitizeFilePath $
 			Quvi.pageTitle page ++ "." ++ Quvi.linkSuffix link
 		showStart "addurl" file
 		next $ performQuvi relaxed s' (Quvi.linkUrl link) file
@@ -123,14 +124,16 @@ perform relaxed url file = ifAnnexed file addurl geturl
 			next $ return True
 		| otherwise = do
 			headers <- getHttpHeaders
-			ifM (Url.withUserAgent $ Url.check url headers $ keySize key)
-				( do
+			(exists, samesize) <- Url.withUserAgent $ Url.check url headers $ keySize key
+			if exists && samesize
+				then do
 					setUrlPresent key url
 					next $ return True
-				, do
-					warning $ "failed to verify url exists: " ++ url
+				else do
+					warning $ if exists
+						then "url does not have expected file size (use --relaxed to bypass this check) " ++ url
+						else "failed to verify url exists: " ++ url
 					stop
-				)
 
 addUrlFile :: Bool -> URLString -> FilePath -> Annex Bool
 addUrlFile relaxed url file = do
@@ -214,7 +217,7 @@ nodownload relaxed url file = do
 
 url2file :: URI -> Maybe Int -> Int -> FilePath
 url2file url pathdepth pathmax = case pathdepth of
-	Nothing -> truncateFilePath pathmax $ escape fullurl
+	Nothing -> truncateFilePath pathmax $ sanitizeFilePath fullurl
 	Just depth
 		| depth >= length urlbits -> frombits id
 		| depth > 0 -> frombits $ drop depth
@@ -223,6 +226,6 @@ url2file url pathdepth pathmax = case pathdepth of
   where
 	fullurl = uriRegName auth ++ uriPath url ++ uriQuery url
 	frombits a = intercalate "/" $ a urlbits
-	urlbits = map (truncateFilePath pathmax . escape) $ filter (not . null) $ split "/" fullurl
+	urlbits = map (truncateFilePath pathmax . sanitizeFilePath) $
+		filter (not . null) $ split "/" fullurl
 	auth = fromMaybe (error $ "bad url " ++ show url) $ uriAuthority url
-	escape = replace "/" "_" . replace "?" "_"

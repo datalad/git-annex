@@ -34,6 +34,7 @@ import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
 import qualified Command.Fsck
+import qualified Command.Repair
 import qualified Command.Unused
 import qualified Command.DropUnused
 import qualified Command.AddUnused
@@ -53,7 +54,8 @@ import qualified Command.Untrust
 import qualified Command.Semitrust
 import qualified Command.Dead
 import qualified Command.Group
-import qualified Command.Content
+import qualified Command.Wanted
+import qualified Command.Schedule
 import qualified Command.Ungroup
 import qualified Command.Vicfg
 import qualified Command.Sync
@@ -116,7 +118,8 @@ cmds = concat
 	, Command.Semitrust.def
 	, Command.Dead.def
 	, Command.Group.def
-	, Command.Content.def
+	, Command.Wanted.def
+	, Command.Schedule.def
 	, Command.Ungroup.def
 	, Command.Vicfg.def
 	, Command.FromKey.def
@@ -128,6 +131,7 @@ cmds = concat
 	, Command.ReKey.def
 	, Command.Fix.def
 	, Command.Fsck.def
+	, Command.Repair.def
 	, Command.Unused.def
 	, Command.DropUnused.def
 	, Command.AddUnused.def

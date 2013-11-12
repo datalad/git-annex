@@ -23,6 +23,7 @@ import Utility.Yesod
 import Logs.Transfer
 import Utility.Gpg (KeyId)
 import Build.SysConfig (packageversion)
+import Types.ScheduledActivity
 
 import Yesod.Static
 import Text.Hamlet
@@ -209,5 +210,9 @@ instance PathPiece RepoSelector where
 	fromPathPiece = readish . unpack
 
 instance PathPiece ThreadName where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece ScheduledActivity where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack

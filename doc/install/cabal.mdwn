@@ -1,4 +1,14 @@
-As a haskell package, git-annex can be installed using cabal.
+As a haskell package, git-annex can be installed using cabal. 
+
+This involves building a lot of haskell packages from source, and so it has
+a lot of moving parts, and it's not uncommon for it to be broken from time
+to time.
+
+If you are not comfortable tracking down and dealing with library build
+problems, installing git-annex with cabal is probably not the right choice
+for you!
+
+## prerequisites
 
 Start by installing the [Haskell Platform][]. In Debian, this is as
 simple as:

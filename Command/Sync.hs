@@ -31,7 +31,9 @@ import Config
 import Annex.ReplaceFile
 import Git.FileMode
 
+import qualified Data.Set as S
 import Data.Hash.MD5
+import Control.Concurrent.MVar
 
 def :: [Command]
 def = [command "sync" (paramOptional (paramRepeating paramRemote))
@@ -41,18 +43,31 @@ def = [command "sync" (paramOptional (paramRepeating paramRemote))
 seek :: CommandSeek
 seek rs = do
 	prepMerge
-	branch <- fromMaybe nobranch <$> inRepo Git.Branch.current
+
+	-- There may not be a branch checked out until after the commit,
+	-- or perhaps after it gets merged from the remote.
+	-- So only look it up once it's needed, and if once there is a
+	-- branch, cache it.
+	mvar <- liftIO newEmptyMVar
+	let getbranch = ifM (liftIO $ isEmptyMVar mvar)
+		( do
+			branch <- inRepo Git.Branch.current
+			when (isJust branch) $
+				liftIO $ putMVar mvar branch
+			return branch
+		, liftIO $ readMVar mvar
+		)
+	let withbranch a = a =<< getbranch
+
 	remotes <- syncRemotes rs
 	return $ concat
 		[ [ commit ]
-		, [ mergeLocal branch ]
-		, [ pullRemote remote branch | remote <- remotes ]
+		, [ withbranch mergeLocal ]
+		, [ withbranch (pullRemote remote) | remote <- remotes ]
 		, [ mergeAnnex ]
-		, [ pushLocal branch ]
-		, [ pushRemote remote branch | remote <- remotes ]
+		, [ withbranch pushLocal ]
+		, [ withbranch (pushRemote remote) | remote <- remotes ]
 		]
-  where
-	nobranch = error "no branch is checked out"
 
 {- Merging may delete the current directory, so go to the top
  - of the repo. -}
@@ -103,8 +118,9 @@ commit = next $ next $ ifM isDirect
 		_ <- inRepo $ tryIO . Git.Command.runQuiet params
 		return True
 
-mergeLocal :: Git.Ref -> CommandStart
-mergeLocal branch = go =<< needmerge
+mergeLocal :: Maybe Git.Ref -> CommandStart
+mergeLocal Nothing = stop
+mergeLocal (Just branch) = go =<< needmerge
   where
 	syncbranch = syncBranch branch
 	needmerge = ifM isBareRepo
@@ -119,8 +135,9 @@ mergeLocal branch = go =<< needmerge
 		showStart "merge" $ Git.Ref.describe syncbranch
 		next $ next $ mergeFrom syncbranch
 
-pushLocal :: Git.Ref -> CommandStart
-pushLocal branch = do
+pushLocal :: Maybe Git.Ref -> CommandStart
+pushLocal Nothing = stop
+pushLocal (Just branch) = do
 	inRepo $ updateBranch $ syncBranch branch
 	stop
 
@@ -134,13 +151,13 @@ updateBranch syncbranch g =
 		, Param $ show $ Git.Ref.base syncbranch
 		] g
 
-pullRemote :: Remote -> Git.Ref -> CommandStart
+pullRemote :: Remote -> Maybe Git.Ref -> CommandStart
 pullRemote remote branch = do
 	showStart "pull" (Remote.name remote)
 	next $ do
 		showOutput
 		stopUnless fetch $
-			next $ mergeRemote remote (Just branch)
+			next $ mergeRemote remote branch
   where
 	fetch = inRepo $ Git.Command.runBool
 		[Param "fetch", Param $ Remote.name remote]
@@ -162,8 +179,9 @@ mergeRemote remote b = case b of
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]
 
-pushRemote :: Remote -> Git.Ref -> CommandStart
-pushRemote remote branch = go =<< needpush
+pushRemote :: Remote -> Maybe Git.Ref -> CommandStart
+pushRemote _remote Nothing = stop
+pushRemote remote (Just branch) = go =<< needpush
   where
 	needpush = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 	go False = stop
@@ -171,7 +189,11 @@ pushRemote remote branch = go =<< needpush
 		showStart "push" (Remote.name remote)
 		next $ next $ do
 			showOutput
-			inRepo $ pushBranch remote branch
+			ok <- inRepo $ pushBranch remote branch
+			unless ok $ do
+				warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
+				showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
+			return ok
 
 {- Pushes a regular branch like master to a remote. Also pushes the git-annex
  - branch.
@@ -198,6 +220,9 @@ pushRemote remote branch = go =<< needpush
  - But overwriting of data on synced/git-annex can happen, in a race.
  - The only difference caused by using a forced push in that case is that
  - the last repository to push wins the race, rather than the first to push.
+ -
+ - The sync push will fail to overwrite if receive.denyNonFastforwards is
+ - set on the remote.
  -}
 pushBranch :: Remote -> Git.Ref -> Git.Repo -> IO Bool
 pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
@@ -257,25 +282,33 @@ mergeFrom branch = do
  -
  - This uses the Keys pointed to by the files to construct new
  - filenames. So when both sides modified file foo, 
- - it will be deleted, and replaced with files foo.KEYA and foo.KEYB.
+ - it will be deleted, and replaced with files foo.variant-A and
+ - foo.variant-B.
  -
  - On the other hand, when one side deleted foo, and the other modified it,
  - it will be deleted, and the modified version stored as file
- - foo.KEYA (or KEYB).
+ - foo.variant-A (or B).
+ -
+ - It's also possible that one side has foo as an annexed file, and
+ - the other as a directory or non-annexed file. The annexed file
+ - is renamed to resolve the merge, and the other object is preserved as-is.
  -}
 resolveMerge :: Annex Bool
 resolveMerge = do
 	top <- fromRepo Git.repoPath
 	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
-	merged <- and <$> mapM resolveMerge' fs
+	mergedfs <- catMaybes <$> mapM resolveMerge' fs
+	let merged = not (null mergedfs)
 	void $ liftIO cleanup
 
 	(deleted, cleanup2) <- inRepo (LsFiles.deleted [top])
 	unless (null deleted) $
 		Annex.Queue.addCommand "rm" [Params "--quiet -f --"] deleted
 	void $ liftIO cleanup2
-	
+
 	when merged $ do
+		unlessM isDirect $
+			cleanConflictCruft mergedfs top
 		Annex.Queue.flush
 		void $ inRepo $ Git.Command.runBool
 			[ Param "commit"
@@ -284,44 +317,86 @@ resolveMerge = do
 			]
 	return merged
 
-resolveMerge' :: LsFiles.Unmerged -> Annex Bool
+resolveMerge' :: LsFiles.Unmerged -> Annex (Maybe FilePath)
 resolveMerge' u
-	| issymlink LsFiles.valUs && issymlink LsFiles.valThem =
-		withKey LsFiles.valUs $ \keyUs ->
-			withKey LsFiles.valThem $ \keyThem -> do
+	| issymlink LsFiles.valUs && issymlink LsFiles.valThem = do
+		kus <- getKey LsFiles.valUs
+		kthem <- getKey LsFiles.valThem
+		case (kus, kthem) of
+			-- Both sides of conflict are annexed files
+			(Just keyUs, Just keyThem) -> do
+				removeoldfile keyUs
+				if keyUs == keyThem
+					then makelink keyUs
+					else do
+						makelink keyUs
+						makelink keyThem
+				return $ Just file
+			-- Our side is annexed, other side is not.
+			(Just keyUs, Nothing) -> do
 				ifM isDirect
-					( maybe noop (`removeDirect` file) keyUs
-					, liftIO $ nukeFile file
+					-- Move newly added non-annexed object
+					-- out of direct mode merge directory.
+					( do
+						removeoldfile keyUs
+						makelink keyUs
+						d <- fromRepo gitAnnexMergeDir
+						liftIO $ rename (d </> file) file
+					-- cleaup tree after git merge
+					, do
+						unstageoldfile
+						makelink keyUs
 					)
-				Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
-				go keyUs keyThem
-	| otherwise = return False
+				return $ Just file
+			-- Our side is not annexed, other side is.
+			(Nothing, Just keyThem) -> do
+				makelink keyThem
+				unstageoldfile
+				return $ Just file
+			-- Neither side is annexed; cannot resolve.
+			(Nothing, Nothing) -> return Nothing
+	| otherwise = return Nothing
   where
-	go keyUs keyThem
-		| keyUs == keyThem = do
-			makelink keyUs
-			return True
-		| otherwise = do
-			makelink keyUs
-			makelink keyThem
-			return True
 	file = LsFiles.unmergedFile u
 	issymlink select = select (LsFiles.unmergedBlobType u) `elem` [Just SymlinkBlob, Nothing]
-	makelink (Just key) = do
+	makelink key = do
 		let dest = mergeFile file key
 		l <- inRepo $ gitAnnexLink dest key
 		replaceFile dest $ makeAnnexLink l
 		stageSymlink dest =<< hashSymlink l
 		whenM isDirect $
 			toDirect key dest
-	makelink _ = noop
-	withKey select a = do
-		let msha = select $ LsFiles.unmergedSha u
-		case msha of
-			Nothing -> a Nothing
-			Just sha -> do
-				key <- catKey sha symLinkMode
-				maybe (return False) (a . Just) key
+	removeoldfile keyUs = do
+		ifM isDirect
+			( removeDirect keyUs file
+			, liftIO $ nukeFile file
+			)
+		Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
+	unstageoldfile = Annex.Queue.addCommand "rm" [Params "--quiet -f --cached --"] [file]
+	getKey select = case select (LsFiles.unmergedSha u) of
+		Nothing -> return Nothing
+		Just sha -> catKey sha symLinkMode
+
+{- git-merge moves conflicting files away to files
+ - named something like f~HEAD or f~branch, but the
+ - exact name chosen can vary. Once the conflict is resolved,
+ - this cruft can be deleted. To avoid deleting legitimate
+ - files that look like this, only delete files that are
+ - A) not staged in git and B) look like git-annex symlinks.
+ -}
+cleanConflictCruft :: [FilePath] -> FilePath -> Annex ()
+cleanConflictCruft resolvedfs top = do
+	(fs, cleanup) <- inRepo $ LsFiles.notInRepo False [top]
+	mapM_ clean fs
+	void $ liftIO cleanup
+  where
+	clean f
+		| matchesresolved f = whenM (isJust <$> isAnnexLink f) $
+			liftIO $ nukeFile f
+		| otherwise = noop
+	s = S.fromList resolvedfs
+	matchesresolved f = S.member (base f) s
+	base f = reverse $ drop 1 $ dropWhile (/= '~') $ reverse f
 
 {- The filename to use when resolving a conflicted merge of a file,
  - that points to a key.

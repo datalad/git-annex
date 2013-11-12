@@ -12,13 +12,14 @@ import Assistant.BranchChange
 import Assistant.DaemonStatus
 import Assistant.Commits
 import Utility.ThreadScheduler
+import Logs
 import Logs.UUID
 import Logs.Trust
-import Logs.Remote
 import Logs.PreferredContent
 import Logs.Group
 import Remote.List (remoteListRefresh)
 import qualified Git.LsTree as LsTree
+import Git.FilePath
 import qualified Annex.Branch
 
 import qualified Data.Set as S
@@ -52,12 +53,13 @@ configMonitorThread = namedThread "ConfigMonitor" $ loop =<< getConfigs
 type Configs = S.Set (FilePath, String)
 
 {- All git-annex's config files, and actions to run when they change. -}
-configFilesActions :: [(FilePath, Annex ())]
+configFilesActions :: [(FilePath, Assistant ())]
 configFilesActions =
-	[ (uuidLog, void $ uuidMapLoad)
-	, (remoteLog, void remoteListRefresh)
-	, (trustLog, void trustMapLoad)
-	, (groupLog, void groupMapLoad)
+	[ (uuidLog, void $ liftAnnex uuidMapLoad)
+	, (remoteLog, void $ liftAnnex remoteListRefresh)
+	, (trustLog, void $ liftAnnex trustMapLoad)
+	, (groupLog, void $ liftAnnex groupMapLoad)
+	, (scheduleLog, void updateScheduleLog)
 	-- Preferred content settings depend on most of the other configs,
 	-- so will be reloaded whenever any configs change.
 	, (preferredContentLog, noop)
@@ -65,13 +67,12 @@ configFilesActions =
 
 reloadConfigs :: Configs -> Assistant ()
 reloadConfigs changedconfigs = do
-	liftAnnex $ do
-		sequence_ as
-		void preferredContentMapLoad
+	sequence_ as
+	void $ liftAnnex preferredContentMapLoad
 	{- Changes to the remote log, or the trust log, can affect the
 	 - syncRemotes list. Changes to the uuid log may affect its
 	 - display so are also included. -}
-	when (any (`elem` fs) [remoteLog, trustLog, uuidLog]) $
+	when (any (`elem` fs) [remoteLog, trustLog, uuidLog])
 		updateSyncRemotes
   where
 	(fs, as) = unzip $ filter (flip S.member changedfiles . fst)
@@ -83,4 +84,4 @@ getConfigs = S.fromList . map extract
 	<$> liftAnnex (inRepo $ LsTree.lsTreeFiles Annex.Branch.fullname files)
   where
 	files = map fst configFilesActions
-	extract treeitem = (LsTree.file treeitem, LsTree.sha treeitem)
+	extract treeitem = (getTopFilePath $ LsTree.file treeitem, LsTree.sha treeitem)

@@ -13,6 +13,7 @@ import qualified Git.LsFiles
 import qualified Git.Merge
 import qualified Git.DiffTree as DiffTree
 import Git.Sha
+import Git.FilePath
 import Git.Types
 import Annex.CatFile
 import qualified Annex.Queue
@@ -122,6 +123,8 @@ addDirect file cache = do
  -}
 mergeDirect :: FilePath -> Git.Ref -> Git.Repo -> IO Bool
 mergeDirect d branch g = do
+	whenM (doesDirectoryExist d) $
+		removeDirectoryRecursive d
 	createDirectoryIfMissing True d
 	let g' = g { location = Local { gitdir = Git.localGitDir g, worktree = Just d } }
 	Git.Merge.mergeNonInteractive branch g'
@@ -134,22 +137,22 @@ mergeDirect d branch g = do
 mergeDirectCleanup :: FilePath -> Git.Ref -> Git.Ref -> Annex ()
 mergeDirectCleanup d oldsha newsha = do
 	(items, cleanup) <- inRepo $ DiffTree.diffTreeRecursive oldsha newsha
-	forM_ items updated
+	makeabs <- flip fromTopFilePath <$> gitRepo
+	forM_ items (updated makeabs)
 	void $ liftIO cleanup
 	liftIO $ removeDirectoryRecursive d
   where
-	updated item = do
+	updated makeabs item = do
+		let f = makeabs (DiffTree.file item)
 		void $ tryAnnex $
-			go DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
+			go f DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
 		void $ tryAnnex $ 
-			go DiffTree.dstsha DiffTree.dstmode movein movein_raw
+			go f DiffTree.dstsha DiffTree.dstmode movein movein_raw
 	  where
-		go getsha getmode a araw
+		go f getsha getmode a araw
 			| getsha item == nullSha = noop
-			| otherwise =
-				maybe (araw f) (\k -> void $ a k f)
+			| otherwise = maybe (araw f) (\k -> void $ a k f)
 					=<< catKey (getsha item) (getmode item)
-		f = DiffTree.file item
 
 	moveout = removeDirect
 

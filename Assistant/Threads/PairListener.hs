@@ -16,6 +16,7 @@ import Assistant.WebApp.Types
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.ThreadScheduler
+import Utility.Format
 import Git
 
 import Network.Multicast
@@ -42,20 +43,32 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 			(pip, verified) <- verificationCheck m
 				=<< (pairingInProgress <$> getDaemonStatus)
 			let wrongstage = maybe False (\p -> pairMsgStage m <= inProgressPairStage p) pip
-			case (wrongstage, sane, pairMsgStage m) of
-				-- ignore our own messages, and
-				-- out of order messages
-				(True, _, _) -> go reqs cache sock
-				(_, False, _) -> go reqs cache sock
-				(_, _, PairReq) -> if m `elem` reqs
+			let fromus = maybe False (\p -> remoteSshPubKey (pairMsgData m) == remoteSshPubKey (inProgressPairData p)) pip
+			case (wrongstage, fromus, sane, pairMsgStage m) of
+				(_, True, _, _) -> do
+					debug ["ignoring message that looped back"]
+					go reqs cache sock
+				(_, _, False, _) -> go reqs cache sock
+				-- PairReq starts a pairing process, so a
+				-- new one is always heeded, even if
+				-- some other pairing is in process.
+				(_, _, _, PairReq) -> if m `elem` reqs
 					then go reqs (invalidateCache m cache) sock
 					else do
 						pairReqReceived verified urlrenderer m
 						go (m:take 10 reqs) (invalidateCache m cache) sock
-				(_, _, PairAck) -> do
+				(True, _, _, _) -> do
+					debug
+						["ignoring out of order message"
+						, show (pairMsgStage m)
+						, "expected"
+						, show (succ . inProgressPairStage <$> pip)
+						]
+					go reqs cache sock
+				(_, _, _, PairAck) -> do
 					cache' <- pairAckReceived verified pip m cache
 					go reqs cache' sock
-				(_, _, PairDone) -> do
+				(_,_ , _, PairDone) -> do
 					pairDoneReceived verified pip m
 					go reqs cache sock
 
@@ -75,11 +88,10 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 		verified = verifiedPairMsg m pip
 		sameuuid = pairUUID (inProgressPairData pip) == pairUUID (pairMsgData m)
 		
-	{- Various sanity checks on the content of the message. -}
-	checkSane msg 
+	checkSane msg
 		{- Control characters could be used in a
 		 - console poisoning attack. -}
-		| any isControl msg || any (`elem` "\r\n") msg = do
+		| any isControl (filter (/= '\n') (decode_c msg)) = do
 			liftAnnex $ warning
 				"illegal control characters in pairing message; ignoring"
 			return False
@@ -102,7 +114,7 @@ pairListenerThread urlrenderer = namedThread "PairListener" $ do
 pairReqReceived :: Bool -> UrlRenderer -> PairMsg -> Assistant ()
 pairReqReceived True _ _ = noop -- ignore our own PairReq
 pairReqReceived False urlrenderer msg = do
-	button <- mkAlertButton (T.pack "Respond") urlrenderer (FinishLocalPairR msg)
+	button <- mkAlertButton True (T.pack "Respond") urlrenderer (FinishLocalPairR msg)
 	void $ addAlert $ pairRequestReceivedAlert repo button
   where
 	repo = pairRepo msg

@@ -24,6 +24,7 @@ quite a lot.
   * [regex-tdfa](http://hackage.haskell.org/package/regex-tdfa)
   * [extensible-exceptions](http://hackage.haskell.org/package/extensible-exceptions)
   * [feed](http://hackage.haskell.org/package/feed)
+  * [async](http://hackage.haskell.org/package/async)
 * Optional haskell stuff, used by the [[assistant]] and its webapp
   * [stm](http://hackage.haskell.org/package/stm)
     (version 2.3 or newer)
@@ -48,7 +49,6 @@ quite a lot.
   * [network-protocol-xmpp](http://hackage.haskell.org/package/network-protocol-xmpp)
   * [dns](http://hackage.haskell.org/package/dns)
   * [xml-types](http://hackage.haskell.org/package/xml-types)
-  * [async](http://hackage.haskell.org/package/async)
   * [HTTP](http://hackage.haskell.org/package/HTTP)
   * [unix-compat](http://hackage.haskell.org/package/unix-compat)
   * [MonadCatchIO-transformers](http://hackage.haskell.org/package/MonadCatchIO-transformers)

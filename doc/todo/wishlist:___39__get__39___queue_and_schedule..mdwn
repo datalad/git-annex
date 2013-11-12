@@ -1,0 +1,30 @@
+During the campaign adding a chunking feature to obscure filesize for encrypted files was added to the roadmap.  But there is still one potentially valuable set* of data that git-annex can help obscure: when you access your remotes.
+
+This data can be used to determine when a user is actively using a remote, but if a remote is always accessed at the same time that data becomes less useful.  Somebody could still monitor total traffic over a long period and figure out that a remote was more active in a given week or month, but scheduling reduces the resolution of your access times and their data.  Maybe this isn't the most important feature to add, but it would be nice to have, and could possibly be built on top of the existing git-annex scheduler.  It could work by queuing inter-remote transactions ('get', 'copy', 'sync', etc.), so that jobs start at the same time every day, or even the same time and day every week.
+
+Possible syntax examples:
+###Setting up the schedule:
+git annex queue schedule Monday:1730 (starts every monday at 5:30PM)
+
+git annex queue schedule 1400 (starts every day at 2PM)
+
+###Queuing git-annex commands:
+git annex queue prepend sync (pretends 'sync' to the very front of the queue)
+
+git annex queue append get file.ISO (appends to queue file.ISO for retrieval from a repo)
+
+###Viewing/editing queue:
+git annex queue view (view the current queue, jobs displayed with corresponding numbers)
+
+git annex queue rm 20 (removes job 20 from queue)
+
+
+\*The four I can think of are:
+
+* File contents (solved by crypto)
+
+* File size (solved on the remote by chunking, but total traffic usage can't be helped)
+
+* User IP/Remote IP (solved by VPN - outside scope of git-annex, unless someone writes a plugin)
+
+* Access times (obscured by a queue and scheduling)

@@ -19,6 +19,7 @@ import Types.GitConfig
 import Config.Cost
 import Utility.Metered
 import Git.Remote
+import Utility.SafeCommand
 
 type RemoteConfigKey = String
 type RemoteConfig = M.Map RemoteConfigKey String
@@ -64,6 +65,12 @@ data RemoteA a = Remote {
 	hasKeyCheap :: Bool,
 	-- Some remotes can provide additional details for whereis.
 	whereisKey :: Maybe (Key -> a [String]),
+	-- Some remotes can run a fsck operation on the remote,
+	-- without transferring all the data to the local repo
+	-- The parameters are passed to the fsck command on the remote.
+	remoteFsck :: Maybe ([CommandParam] -> a (IO Bool)),
+	-- Runs an action to repair the remote's git repository.
+	repairRepo :: Maybe (a Bool -> a (IO Bool)),
 	-- a Remote has a persistent configuration store
 	config :: RemoteConfig,
 	-- git repo for the Remote

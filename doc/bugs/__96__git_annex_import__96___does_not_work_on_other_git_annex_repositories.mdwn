@@ -96,3 +96,18 @@ To add insult to injury, this does "work":
     drwxr-xr-x 4 richih richih  38 Sep 24 01:45 ..
     drwxr-xr-x 8 richih richih 152 Sep 24 01:45 .git
     richih@eudyptes (git)-[master] ~/killme/git-annex-import/bar % 
+
+> I have made git-annex import skip .git directories. Of course,
+> running it on *any* directory without the --duplicate option
+> will result in it moving data to git-annex, so is not advisable
+> to do that if you want to keep the data in the directory where it was.
+> 
+> I am doubtful about special-casing git-annex import to do something
+> else when told to import a git-annex repository. It seems a bit of a
+> slippery slope to it getting very complicated, which we seem to already be
+> further down than I would like. If people are this pissed off about
+> git-annex import's behavior,
+> I would be inclined to *remove* it. Then you can use `mv` and `git annex
+> add`. I originally wrote git-annex import just to avoid needing to run
+> those 2 commands myself, and I can make my own local shell script 
+> to do that... --[[Joey]]

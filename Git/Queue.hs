@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP, BangPatterns #-}
 
 module Git.Queue (
 	Queue,
@@ -26,7 +26,7 @@ import Common
 import Git
 import Git.Command
 import qualified Git.UpdateIndex
-	
+
 {- Queable actions that can be performed in a git repository.
  -}
 data Action
@@ -147,13 +147,21 @@ runAction :: Repo -> Action -> IO ()
 runAction repo (UpdateIndexAction streamers) =
 	-- list is stored in reverse order
 	Git.UpdateIndex.streamUpdateIndex repo $ reverse streamers
-runAction repo action@(CommandAction {}) =
+runAction repo action@(CommandAction {}) = 
+#ifndef mingw32_HOST_OS
 	withHandle StdinHandle createProcessSuccess p $ \h -> do
 		fileEncoding h
 		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
 		hClose h
+#else
+	-- Using xargs on Windows is problimatic, so just run the command
+	-- once per file (not as efficient.)
+	if null (getFiles action)
+		then void $ boolSystem "git" gitparams
+		else forM_ (getFiles action) $ \f ->
+			void $ boolSystem "git" (gitparams ++ [f])
+#endif
   where
-	p = (proc "xargs" params) { env = gitEnv repo }
-	params = "-0":"git":baseparams
-	baseparams = toCommand $ gitCommandLine
+	p = (proc "xargs" $ "-0":"git":toCommand gitparams) { env = gitEnv repo }
+	gitparams = gitCommandLine
 		(Param (getSubcommand action):getParams action) repo

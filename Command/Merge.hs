@@ -34,6 +34,5 @@ mergeBranch = do
 
 mergeSynced :: CommandStart
 mergeSynced = do
-	branch <- inRepo Git.Branch.current
 	prepMerge
-	maybe stop mergeLocal branch
+	mergeLocal =<< inRepo Git.Branch.current

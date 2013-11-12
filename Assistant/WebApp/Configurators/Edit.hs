@@ -10,12 +10,12 @@
 module Assistant.WebApp.Configurators.Edit where
 
 import Assistant.WebApp.Common
-import Assistant.WebApp.Utility
 import Assistant.WebApp.Gpg
 import Assistant.DaemonStatus
-import Assistant.MakeRemote (uniqueRemoteName)
+import Assistant.WebApp.MakeRemote (uniqueRemoteName)
 import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
 import Assistant.ScanRemotes
+import Assistant.Sync
 import qualified Assistant.WebApp.Configurators.AWS as AWS
 import qualified Assistant.WebApp.Configurators.IA as IA
 #ifdef WITH_S3
@@ -37,6 +37,7 @@ import Git.Remote
 import Remote.Helper.Encryptable (extractCipher)
 import Types.Crypto
 import Utility.Gpg
+import Annex.UUID
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -124,7 +125,7 @@ setRepoConfig uuid mremote oldc newc = do
 				Nothing -> addScanRemotes True
 					=<< syncDataRemotes <$> getDaemonStatus
 	when syncableChanged $
-		changeSyncable mremote (repoSyncable newc)
+		liftAssistant $ changeSyncable mremote (repoSyncable newc)
   where
   	syncableChanged = repoSyncable oldc /= repoSyncable newc
 	associatedDirectoryChanged = repoAssociatedDirectory oldc /= repoAssociatedDirectory newc
@@ -178,10 +179,13 @@ postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
 editForm :: Bool -> UUID -> Handler Html
 editForm new uuid = page "Edit repository" (Just Configuration) $ do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
+	when (mremote == Nothing) $
+		whenM ((/=) uuid <$> liftAnnex getUUID) $
+			error "unknown remote"
 	curr <- liftAnnex $ getRepoConfig uuid mremote
 	liftAnnex $ checkAssociatedDirectory curr mremote
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ editRepositoryAForm (isNothing mremote) curr
+		runFormPostNoToken $ renderBootstrap $ editRepositoryAForm (isNothing mremote) curr
 	case result of
 		FormSuccess input -> liftH $ do
 			setRepoConfig uuid mremote curr input

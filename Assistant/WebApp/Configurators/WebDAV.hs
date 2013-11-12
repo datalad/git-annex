@@ -13,12 +13,11 @@ import Assistant.WebApp.Common
 import Creds
 #ifdef WITH_WEBDAV
 import qualified Remote.WebDAV as WebDAV
-import Assistant.MakeRemote
+import Assistant.WebApp.MakeRemote
 import qualified Remote
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.Remote
-import Assistant.WebApp.Utility
 import Git.Remote
 
 import qualified Data.Map as M
@@ -67,7 +66,7 @@ postAddBoxComR :: Handler Html
 postAddBoxComR = boxConfigurator $ do
 	defcreds <- liftAnnex $ previouslyUsedWebDAVCreds "box.com"
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ boxComAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ boxComAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ 
 			makeWebDavRemote initSpecialRemote "box.com" (toCredPair input) $ M.fromList
@@ -110,7 +109,7 @@ postEnableWebDAVR uuid = do
 			maybe (pure Nothing) previouslyUsedWebDAVCreds $
 				urlHost url
 		((result, form), enctype) <- liftH $
-			runFormPost $ renderBootstrap $ webDAVCredsAForm defcreds
+			runFormPostNoToken $ renderBootstrap $ webDAVCredsAForm defcreds
 		case result of
 			FormSuccess input -> liftH $
 				makeWebDavRemote enableSpecialRemote name (toCredPair input) M.empty

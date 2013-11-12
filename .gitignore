@@ -1,3 +1,7 @@
+tags
+Setup
+*.hi
+*.o
 tmp
 test
 build-stamp
@@ -9,7 +13,10 @@ Build/OSXMkLibs
 git-annex
 git-annex.1
 git-annex-shell.1
+git-union-merge
 git-union-merge.1
+git-recover-repository
+git-recover-repository.1
 doc/.ikiwiki
 html
 *.tix
@@ -22,7 +29,3 @@ cabal-dev
 # OSX related
 .DS_Store
 .virthualenv
-tags
-Setup
-*.hi
-*.o

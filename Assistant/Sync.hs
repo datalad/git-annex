@@ -23,9 +23,18 @@ import qualified Git.Command
 import qualified Git.Ref
 import qualified Remote
 import qualified Types.Remote as Remote
+import qualified Remote.List as Remote
 import qualified Annex.Branch
 import Annex.UUID
 import Annex.TaggedPush
+import qualified Config
+import Git.Config
+import Assistant.NamedThread
+import Assistant.Threads.Watcher (watchThread, WatcherControl(..))
+import Assistant.TransferSlots
+import Assistant.TransferQueue
+import Assistant.RepoProblem
+import Logs.Transfer
 
 import Data.Time.Clock
 import qualified Data.Map as M
@@ -44,13 +53,22 @@ import Control.Concurrent
  - they push to us. Since XMPP pushes run ansynchronously, any scan of the
  - XMPP remotes has to be deferred until they're done pushing to us, so
  - all XMPP remotes are marked as possibly desynced.
+ -
+ - Also handles signaling any connectRemoteNotifiers, after the syncing is
+ - done.
  -}
 reconnectRemotes :: Bool -> [Remote] -> Assistant ()
 reconnectRemotes _ [] = noop
 reconnectRemotes notifypushes rs = void $ do
-	modifyDaemonStatus_ $ \s -> s
-		{ desynced = S.union (S.fromList $ map Remote.uuid xmppremotes) (desynced s) }
-	syncAction rs (const go)
+	rs' <- liftIO $ filterM (Remote.checkAvailable True) rs
+	unless (null rs') $ do
+		modifyDaemonStatus_ $ \s -> s
+			{ desynced = S.union (S.fromList $ map Remote.uuid xmppremotes) (desynced s) }
+		failedrs <- syncAction rs' (const go)
+		forM_ failedrs $ \r ->
+			whenM (liftIO $ Remote.checkAvailable False r) $
+				repoHasProblem (Remote.uuid r) (syncRemote r)
+		mapM_ signal $ filter (`notElem` failedrs) rs'
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
 	(xmppremotes, nonxmppremotes) = partition isXMPPRemote rs
@@ -73,6 +91,9 @@ reconnectRemotes notifypushes rs = void $ do
 			filter (not . remoteAnnexIgnore . Remote.gitconfig)
 				nonxmppremotes
 		return failed
+	signal r = liftIO . mapM_ (flip tryPutMVar ())
+		=<< fromMaybe [] . M.lookup (Remote.uuid r) . connectRemoteNotifiers
+			<$> getDaemonStatus
 
 {- Updates the local sync branch, then pushes it to all remotes, in
  - parallel, along with the git-annex branch. This is the same
@@ -220,3 +241,36 @@ syncRemote remote = do
 		reconnectRemotes False [remote]
 		addScanRemotes True [remote]
 	void $ liftIO $ forkIO $ thread
+
+{- Use Nothing to change autocommit setting; or a remote to change
+ - its sync setting. -}
+changeSyncable :: Maybe Remote -> Bool -> Assistant ()
+changeSyncable Nothing enable = do
+	liftAnnex $ Config.setConfig key (boolConfig enable)
+	liftIO . maybe noop (`throwTo` signal)
+		=<< namedThreadId watchThread
+  where
+	key = Config.annexConfig "autocommit"
+	signal
+		| enable = ResumeWatcher
+		| otherwise = PauseWatcher
+changeSyncable (Just r) True = do
+	liftAnnex $ changeSyncFlag r True
+	syncRemote r
+changeSyncable (Just r) False = do
+	liftAnnex $ changeSyncFlag r False
+	updateSyncRemotes
+	{- Stop all transfers to or from this remote.
+	 - XXX Can't stop any ongoing scan, or git syncs. -}
+	void $ dequeueTransfers tofrom
+	mapM_ (cancelTransfer False) =<<
+		filter tofrom . M.keys . currentTransfers <$> getDaemonStatus
+  where
+	tofrom t = transferUUID t == Remote.uuid r
+
+changeSyncFlag :: Remote -> Bool -> Annex ()
+changeSyncFlag r enabled = do
+	Config.setConfig key (boolConfig enabled)
+	void Remote.remoteListRefresh
+  where
+	key = Config.remoteConfig (Remote.repo r) "sync"

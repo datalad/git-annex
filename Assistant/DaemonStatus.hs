@@ -76,6 +76,10 @@ updateSyncRemotes = do
 			M.filter $ \alert ->
 				alertName alert /= Just CloudRepoNeededAlert
 
+updateScheduleLog :: Assistant ()
+updateScheduleLog =
+	liftIO . sendNotification =<< scheduleLogNotifier <$> getDaemonStatus
+
 {- Load any previous daemon status file, and store it in a MVar for this
  - process to use as its DaemonStatus. Also gets current transfer status. -}
 startDaemonStatus :: Annex DaemonStatusHandle

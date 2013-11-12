@@ -65,6 +65,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			hasKey = checkPresent this,
 			hasKeyCheap = False,
 			whereisKey = Nothing,
+			remoteFsck = Nothing,
+			repairRepo = Nothing,
 			config = c,
 			repo = r,
 			gitconfig = gc,
@@ -197,8 +199,14 @@ withStoredFiles
 withStoredFiles r k baseurl user pass onerr a
 	| isJust $ chunkSize $ config r = do
 		let chunkcount = keyurl ++ chunkCount
-		maybe (onerr chunkcount) (a . listChunks keyurl . L8.toString)
-			=<< davGetUrlContent chunkcount user pass
+		v <- davGetUrlContent chunkcount user pass
+		case v of
+			Just s -> a $ listChunks keyurl $ L8.toString s
+			Nothing -> do
+				chunks <- probeChunks keyurl $ \u -> (== Right True) <$> davUrlExists u user pass
+				if null chunks
+					then onerr chunkcount
+					else a chunks
 	| otherwise = a [keyurl]
   where
 	keyurl = davLocation baseurl k ++ keyFile k

@@ -24,4 +24,4 @@ Run the program once to set it up.
     git config annex.imap-hook '/usr/bin/python2 ~/imapannex/imapannex.py'
     git annex initremote imap type=hook hooktype=imap encryption=shared
     git annex describe imap "the imap library"
-    git annex content imap exclude=largerthan=30mb
+    git annex wanted imap exclude=largerthan=30mb

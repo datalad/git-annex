@@ -55,7 +55,7 @@ checkCloudRepos :: UrlRenderer -> Remote -> Assistant ()
 checkCloudRepos urlrenderer r =
 	unlessM (syncingToCloudRemote <$> getDaemonStatus) $ do
 		buddyname <- getBuddyName $ Remote.uuid r
-		button <- mkAlertButton "Add a cloud repository" urlrenderer $
+		button <- mkAlertButton True "Add a cloud repository" urlrenderer $
 			NeedCloudRepoR $ Remote.uuid r
 		void $ addAlert $ cloudRepoNeededAlert buddyname button
 #else
@@ -112,7 +112,7 @@ xmppform :: Route WebApp -> Handler Html
 xmppform next = xmppPage $ do
 	((result, form), enctype) <- liftH $ do
 		oldcreds <- liftAnnex getXMPPCreds
-		runFormPost $ renderBootstrap $ xmppAForm $
+		runFormPostNoToken $ renderBootstrap $ xmppAForm $
 			creds2Form <$> oldcreds
 	let showform problem = $(widgetFile "configurators/xmpp")
 	case result of

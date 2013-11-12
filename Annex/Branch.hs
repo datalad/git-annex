@@ -20,6 +20,7 @@ module Annex.Branch (
 	get,
 	change,
 	commit,
+	forceCommit,
 	files,
 	withIndex,
 	performTransitions,
@@ -28,6 +29,7 @@ module Annex.Branch (
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Set as S
 import qualified Data.Map as M
+import qualified Control.Exception as E
 
 import Common.Annex
 import Annex.BranchState
@@ -52,6 +54,7 @@ import Logs.Trust.Pure
 import Annex.ReplaceFile
 import qualified Annex.Queue
 import Annex.Branch.Transitions
+import Annex.Exception
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -136,39 +139,39 @@ updateTo pairs = do
 		{- Even when no refs need to be merged, the index
 		 - may still be updated if the branch has gotten ahead 
 		 - of the index. -}
-		then whenM (needUpdateIndex branchref) $ lockJournal $ do
-			forceUpdateIndex branchref
+		then whenM (needUpdateIndex branchref) $ lockJournal $ \jl -> do
+			forceUpdateIndex jl branchref
 			{- When there are journalled changes
 			 - as well as the branch being updated,
 			 - a commit needs to be done. -}
 			when dirty $
-				go branchref True [] []
+				go branchref True [] [] jl
 		else lockJournal $ go branchref dirty refs branches
 	return $ not $ null refs
   where
 	isnewer ignoredrefs (r, _)
 		| S.member r ignoredrefs = return False
 		| otherwise = inRepo $ Git.Branch.changed fullname r
-	go branchref dirty refs branches = withIndex $ do
-		cleanjournal <- if dirty then stageJournal else return noop
+	go branchref dirty refs branches jl = withIndex $ do
+		cleanjournal <- if dirty then stageJournal jl else return noop
 		let merge_desc = if null branches
 			then "update"
 			else "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
 				" into " ++ show name
 		localtransitions <- parseTransitionsStrictly "local"
-			<$> getStale transitionsLog
+			<$> getLocal transitionsLog
 		unless (null branches) $ do
 			showSideAction merge_desc
-			mergeIndex refs
+			mergeIndex jl refs
 		let commitrefs = nub $ fullname:refs
-		unlessM (handleTransitions localtransitions commitrefs) $ do
+		unlessM (handleTransitions jl localtransitions commitrefs) $ do
 			ff <- if dirty
 				then return False
 				else inRepo $ Git.Branch.fastForward fullname refs
 			if ff
-				then updateIndex branchref
-				else commitBranch branchref merge_desc commitrefs
+				then updateIndex jl branchref
+				else commitIndex jl branchref merge_desc commitrefs
 		liftIO cleanjournal
 
 {- Gets the content of a file, which may be in the journal, or in the index
@@ -181,21 +184,18 @@ updateTo pairs = do
 get :: FilePath -> Annex String
 get file = do
 	update
-	get' file
+	getLocal file
 
 {- Like get, but does not merge the branch, so the info returned may not
  - reflect changes in remotes.
  - (Changing the value this returns, and then merging is always the
  - same as using get, and then changing its value.) -}
-getStale :: FilePath -> Annex String
-getStale = get'
-
-get' :: FilePath -> Annex String
-get' file = go =<< getJournalFile file
+getLocal :: FilePath -> Annex String
+getLocal file = go =<< getJournalFileStale file
   where
 	go (Just journalcontent) = return journalcontent
 	go Nothing = getRaw file
-	
+
 getRaw :: FilePath -> Annex String
 getRaw file = withIndex $ L.unpack <$> catFile fullname file
 
@@ -205,18 +205,23 @@ getRaw file = withIndex $ L.unpack <$> catFile fullname file
  - modifes the current content of the file on the branch.
  -}
 change :: FilePath -> (String -> String) -> Annex ()
-change file a = lockJournal $ a <$> getStale file >>= set file
+change file a = lockJournal $ \jl -> a <$> getLocal file >>= set jl file
 
 {- Records new content of a file into the journal -}
-set :: FilePath -> String -> Annex ()
+set :: JournalLocked -> FilePath -> String -> Annex ()
 set = setJournalFile
 
 {- Stages the journal, and commits staged changes to the branch. -}
 commit :: String -> Annex ()
-commit message = whenM journalDirty $ lockJournal $ do
-	cleanjournal <- stageJournal
+commit = whenM journalDirty . forceCommit
+
+{- Commits the current index to the branch even without any journalleda
+ - changes. -}
+forceCommit :: String -> Annex ()
+forceCommit message = lockJournal $ \jl -> do
+	cleanjournal <- stageJournal jl
 	ref <- getBranch
-	withIndex $ commitBranch ref message [fullname]
+	withIndex $ commitIndex jl ref message [fullname]
 	liftIO cleanjournal
 
 {- Commits the staged changes in the index to the branch.
@@ -237,13 +242,13 @@ commit message = whenM journalDirty $ lockJournal $ do
  - previous point, though getting it a long time ago makes the race
  - more likely to occur.
  -}
-commitBranch :: Git.Ref -> String -> [Git.Ref] -> Annex ()
-commitBranch branchref message parents = do
+commitIndex :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
+commitIndex jl branchref message parents = do
 	showStoringStateAction
-	commitBranch' branchref message parents
-commitBranch' :: Git.Ref -> String -> [Git.Ref] -> Annex ()
-commitBranch' branchref message parents = do
-	updateIndex branchref
+	commitIndex' jl branchref message parents
+commitIndex' :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
+commitIndex' jl branchref message parents = do
+	updateIndex jl branchref
 	committedref <- inRepo $ Git.Branch.commit message fullname parents
 	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
@@ -267,8 +272,8 @@ commitBranch' branchref message parents = do
 	{- To recover from the race, union merge the lost refs
 	 - into the index, and recommit on top of the bad commit. -}
 	fixrace committedref lostrefs = do
-		mergeIndex lostrefs
-		commitBranch committedref racemessage [committedref]
+		mergeIndex jl lostrefs
+		commitIndex jl committedref racemessage [committedref]
 		
 	racemessage = message ++ " (recovery from race)"
 
@@ -278,7 +283,7 @@ files = do
 	update
 	(++)
 		<$> branchFiles
-		<*> getJournalledFiles
+		<*> getJournalledFilesStale
 
 {- Files in the branch, not including any from journalled changes,
  - and without updating the branch. -}
@@ -300,10 +305,26 @@ genIndex g = Git.UpdateIndex.streamUpdateIndex g
 
 {- Merges the specified refs into the index.
  - Any changes staged in the index will be preserved. -}
-mergeIndex :: [Git.Ref] -> Annex ()
-mergeIndex branches = do
+mergeIndex :: JournalLocked -> [Git.Ref] -> Annex ()
+mergeIndex jl branches = do
+	prepareModifyIndex jl
 	h <- catFileHandle
 	inRepo $ \g -> Git.UnionMerge.mergeIndex h g branches
+
+{- Removes any stale git lock file, to avoid git falling over when
+ - updating the index.
+ -
+ - Since all modifications of the index are performed inside this module,
+ - and only when the journal is locked, the fact that the journal has to be
+ - locked when this is called ensures that no other process is currently
+ - modifying the index. So any index.lock file must be stale, caused
+ - by git running when the system crashed, or the repository's disk was
+ - removed, etc.
+ -}
+prepareModifyIndex :: JournalLocked -> Annex ()
+prepareModifyIndex _jl = do
+	index <- fromRepo gitAnnexIndex
+	void $ liftIO $ tryIO $ removeFile $ index ++ ".lock"
 
 {- Runs an action using the branch's index file. -}
 withIndex :: Annex a -> Annex a
@@ -326,15 +347,15 @@ withIndex' bootstrapping a = do
 #endif
 	let g' = g { gitEnv = Just $ ("GIT_INDEX_FILE", f):e }
 
-	Annex.changeState $ \s -> s { Annex.repo = g' }
-	checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
-		unless bootstrapping create
-		liftIO $ createDirectoryIfMissing True $ takeDirectory f
-		unless bootstrapping $ inRepo genIndex
-	r <- a
+	r <- tryAnnex $ do
+		Annex.changeState $ \s -> s { Annex.repo = g' }
+		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
+			unless bootstrapping create
+			liftIO $ createDirectoryIfMissing True $ takeDirectory f
+			unless bootstrapping $ inRepo genIndex
+		a
 	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }
-
-	return r
+	either E.throw return r
 
 {- Updates the branch's index to reflect the current contents of the branch.
  - Any changes staged in the index will be preserved.
@@ -342,40 +363,48 @@ withIndex' bootstrapping a = do
  - Compares the ref stored in the lock file with the current
  - ref of the branch to see if an update is needed.
  -}
-updateIndex :: Git.Ref -> Annex ()
-updateIndex branchref = whenM (needUpdateIndex branchref) $
-	forceUpdateIndex branchref
+updateIndex :: JournalLocked -> Git.Ref -> Annex ()
+updateIndex jl branchref = whenM (needUpdateIndex branchref) $
+	forceUpdateIndex jl branchref
 
-forceUpdateIndex :: Git.Ref -> Annex ()
-forceUpdateIndex branchref = do
-	withIndex $ mergeIndex [fullname]
+forceUpdateIndex :: JournalLocked -> Git.Ref -> Annex ()
+forceUpdateIndex jl branchref = do
+	withIndex $ mergeIndex jl [fullname]
 	setIndexSha branchref
 
 {- Checks if the index needs to be updated. -}
 needUpdateIndex :: Git.Ref -> Annex Bool
 needUpdateIndex branchref = do
-	lock <- fromRepo gitAnnexIndexLock
-	lockref <- Git.Ref . firstLine <$>
-		liftIO (catchDefaultIO "" $ readFileStrict lock)
-	return (lockref /= branchref)
+	f <- fromRepo gitAnnexIndexStatus
+	committedref <- Git.Ref . firstLine <$>
+		liftIO (catchDefaultIO "" $ readFileStrict f)
+	return (committedref /= branchref)
 
 {- Record that the branch's index has been updated to correspond to a
  - given ref of the branch. -}
 setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
-	lock <- fromRepo gitAnnexIndexLock
-	liftIO $ writeFile lock $ show ref ++ "\n"
-	setAnnexPerm lock
+	f <- fromRepo gitAnnexIndexStatus
+	liftIO $ writeFile f $ show ref ++ "\n"
+	setAnnexPerm f
 
 {- Stages the journal into the index and returns an action that will
  - clean up the staged journal files, which should only be run once
- - the index has been committed to the branch. Should be run within
- - lockJournal, to prevent others from modifying the journal. -}
-stageJournal :: Annex (IO ())
-stageJournal = withIndex $ do
+ - the index has been committed to the branch.
+ -
+ - Before staging, this removes any existing git index file lock.
+ - This is safe to do because stageJournal is the only thing that
+ - modifies this index file, and only one can run at a time, because
+ - the journal is locked. So any existing git index file lock must be
+ - stale, and the journal must contain any data that was in the process
+ - of being written to the index file when it crashed.
+ -}
+stageJournal :: JournalLocked -> Annex (IO ())
+stageJournal jl = withIndex $ do
+	prepareModifyIndex jl
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
-	fs <- getJournalFiles
+	fs <- getJournalFiles jl
 	liftIO $ do
 		h <- hashObjectStart g
 		Git.UpdateIndex.streamUpdateIndex g
@@ -405,8 +434,8 @@ stageJournal = withIndex $ do
  - throw away history), so they are added to the list of refs to ignore,
  - to avoid re-merging content from them again.
  -}
-handleTransitions :: Transitions -> [Git.Ref] -> Annex Bool
-handleTransitions localts refs = do
+handleTransitions :: JournalLocked -> Transitions -> [Git.Ref] -> Annex Bool
+handleTransitions jl localts refs = do
 	m <- M.fromList <$> mapM getreftransition refs
 	let remotets = M.elems m
 	if all (localts ==) remotets
@@ -415,7 +444,7 @@ handleTransitions localts refs = do
 			let allts = combineTransitions (localts:remotets)
 			let (transitionedrefs, untransitionedrefs) =
 				partition (\r -> M.lookup r m == Just allts) refs
-			performTransitions allts (localts /= allts) transitionedrefs
+			performTransitionsLocked jl allts (localts /= allts) transitionedrefs
 			ignoreRefs untransitionedrefs
 			return True
   where
@@ -440,14 +469,19 @@ getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content
 		liftIO $ catchDefaultIO "" $ readFile f
 
 {- Performs the specified transitions on the contents of the index file,
- - commits it to the branch, or creates a new branch. -}
+ - commits it to the branch, or creates a new branch.
+ -}
 performTransitions :: Transitions -> Bool -> [Ref] -> Annex ()
-performTransitions ts neednewlocalbranch transitionedrefs = do
+performTransitions ts neednewlocalbranch transitionedrefs = lockJournal $ \jl ->
+	performTransitionsLocked jl ts neednewlocalbranch transitionedrefs
+performTransitionsLocked :: JournalLocked -> Transitions -> Bool -> [Ref] -> Annex ()
+performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 	-- For simplicity & speed, we're going to use the Annex.Queue to
 	-- update the git-annex branch, while it usually holds changes
 	-- for the head branch. Flush any such changes.
 	Annex.Queue.flush
 	withIndex $ do
+		prepareModifyIndex jl
 		run $ mapMaybe getTransitionCalculator $ transitionList ts
 		Annex.Queue.flush
 		if neednewlocalbranch
@@ -456,7 +490,7 @@ performTransitions ts neednewlocalbranch transitionedrefs = do
 				setIndexSha committedref
 			else do
 				ref <- getBranch
-				commitBranch ref message (nub $ fullname:transitionedrefs)
+				commitIndex jl ref message (nub $ fullname:transitionedrefs)
   where
   	message
 		| neednewlocalbranch && null transitionedrefs = "new branch for transition " ++ tdesc

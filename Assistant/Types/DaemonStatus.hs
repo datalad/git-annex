@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE RankNTypes, ImpredicativeTypes #-}
-
 module Assistant.Types.DaemonStatus where
 
 import Common.Annex
@@ -18,6 +16,7 @@ import Assistant.Types.NetMessager
 import Assistant.Types.Alert
 
 import Control.Concurrent.STM
+import Control.Concurrent.MVar
 import Control.Concurrent.Async
 import Data.Time.Clock.POSIX
 import qualified Data.Map as M
@@ -31,9 +30,9 @@ data DaemonStatus = DaemonStatus
 	, scanComplete :: Bool
 	-- Time when a previous process of the daemon was running ok
 	, lastRunning :: Maybe POSIXTime
-	-- True when the sanity checker is running
+	-- True when the daily sanity checker is running
 	, sanityCheckRunning :: Bool
-	-- Last time the sanity checker ran
+	-- Last time the daily sanity checker ran
 	, lastSanityCheck :: Maybe POSIXTime
 	-- True when a scan for file transfers is running
 	, transferScanRunning :: Bool
@@ -62,9 +61,15 @@ data DaemonStatus = DaemonStatus
 	, alertNotifier :: NotificationBroadcaster
 	-- Broadcasts notifications when the syncRemotes change
 	, syncRemotesNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when the scheduleLog changes
+	, scheduleLogNotifier :: NotificationBroadcaster
+	-- Broadcasts a notification once the startup sanity check has run.
+	, startupSanityCheckNotifier :: NotificationBroadcaster
 	-- When the XMPP client is connected, this will contain the XMPP
 	-- address.
 	, xmppClientID :: Maybe ClientID
+	-- MVars to signal when a remote gets connected.
+	, connectRemoteNotifiers :: M.Map UUID [MVar ()]
 	}
 
 type TransferMap = M.Map Transfer TransferInfo
@@ -93,4 +98,7 @@ newDaemonStatus = DaemonStatus
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
+	<*> newNotificationBroadcaster
+	<*> newNotificationBroadcaster
 	<*> pure Nothing
+	<*> pure M.empty

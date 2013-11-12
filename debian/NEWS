@@ -1,4 +1,4 @@
-git-annex (4.20130921) unstable; urgency=low
+git-annex (4.20131002) unstable; urgency=low
 
    The layout of gcrypt repositories has changed, and
    if you created one you must manually upgrade it.

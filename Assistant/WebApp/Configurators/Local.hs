@@ -12,7 +12,7 @@ module Assistant.WebApp.Configurators.Local where
 import Assistant.WebApp.Common
 import Assistant.WebApp.OtherRepos
 import Assistant.WebApp.Gpg
-import Assistant.MakeRemote
+import Assistant.WebApp.MakeRemote
 import Assistant.Sync
 import Init
 import qualified Git
@@ -24,8 +24,8 @@ import Config.Files
 import Utility.FreeDesktop
 #ifdef WITH_CLIBS
 import Utility.Mounts
-#endif
 import Utility.DiskFree
+#endif
 import Utility.DataUnits
 import Utility.Network
 import Remote (prettyUUID)
@@ -155,7 +155,7 @@ postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	let androidspecial = False
 	path <- liftIO . defaultRepositoryPath =<< liftH inFirstRun
 #endif
-	((res, form), enctype) <- liftH $ runFormPost $ newRepositoryForm path
+	((res, form), enctype) <- liftH $ runFormPostNoToken $ newRepositoryForm path
 	case res of
 		FormSuccess (RepositoryPath p) -> liftH $
 			startFullAssistant (T.unpack p) ClientGroup Nothing
@@ -178,7 +178,7 @@ getNewRepositoryR = postNewRepositoryR
 postNewRepositoryR :: Handler Html
 postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 	home <- liftIO myHomeDir
-	((res, form), enctype) <- liftH $ runFormPost $ newRepositoryForm home
+	((res, form), enctype) <- liftH $ runFormPostNoToken $ newRepositoryForm home
 	case res of
 		FormSuccess (RepositoryPath p) -> do
 			let path = T.unpack p
@@ -233,7 +233,7 @@ postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 	removabledrives <- liftIO driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
-	((res, form), enctype) <- liftH $ runFormPost $
+	((res, form), enctype) <- liftH $ runFormPostNoToken $
 		selectDriveForm (sort writabledrives)
 	case res of
 		FormSuccess drive -> liftH $ redirect $ ConfirmAddDriveR drive
@@ -294,11 +294,11 @@ getFinishAddDriveR drive = go
 		r <- liftAnnex $ addRemote $
 			makeGCryptRemote remotename dir keyid
 		return (Types.Remote.uuid r, r)
-	go NoRepoKey = checkGCryptRepoEncryption dir makeunencrypted $ do
-			mu <- liftAnnex $ probeGCryptRemoteUUID dir
-			case mu of
-				Just u -> enableexistinggcryptremote u
-				Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+	go NoRepoKey = checkGCryptRepoEncryption dir makeunencrypted makeunencrypted $ do
+		mu <- liftAnnex $ probeGCryptRemoteUUID dir
+		case mu of
+			Just u -> enableexistinggcryptremote u
+			Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
 	enableexistinggcryptremote u = do
 		remotename' <- liftAnnex $ getGCryptRemoteName u dir
 		makewith $ const $ do

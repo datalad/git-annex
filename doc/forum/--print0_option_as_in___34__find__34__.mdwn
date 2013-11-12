@@ -1,5 +1,0 @@
-It would be nice if git annex find supported a --print0 option as GNU
-find does.  That way, file names that are printed could be piped to
-xargs even if they have spaces. 
-
-> Done. --[[Joey]] 

@@ -42,10 +42,13 @@ import Utility.Metered
 #ifndef mingw32_HOST_OS
 import Utility.CopyFile
 #endif
+import Utility.Env
+import Utility.Batch
 import Remote.Helper.Git
 import Remote.Helper.Messages
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
+import Config.Files
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -111,7 +114,13 @@ gen r u c gc
 			, hasKey = inAnnex r
 			, hasKeyCheap = repoCheap r
 			, whereisKey = Nothing
-			, config = M.empty
+			, remoteFsck = if Git.repoIsUrl r
+				then Nothing
+				else Just $ fsckOnRemote r
+			, repairRepo = if Git.repoIsUrl r
+				then Nothing
+				else Just $ repairRemote r
+			, config = c
 			, localpath = localpathCalc r
 			, repo = r
 			, gitconfig = gc
@@ -241,7 +250,7 @@ inAnnex r key
   where
 	checkhttp headers = do
 		showChecking r
-		ifM (anyM (\u -> Url.withUserAgent $ Url.check u headers (keySize key)) (keyUrls r key))
+		ifM (anyM (\u -> Url.withUserAgent $ Url.checkBoth u headers (keySize key)) (keyUrls r key))
 			( return $ Right True
 			, return $ Left "not found"
 			)
@@ -395,6 +404,27 @@ copyToRemote r key file p
 						Annex.Content.getViaTmpChecked (liftIO checksuccessio) key
 							(\d -> rsyncOrCopyFile params object d p)
 			)
+
+fsckOnRemote :: Git.Repo -> [CommandParam] -> Annex (IO Bool)
+fsckOnRemote r params
+	| Git.repoIsUrl r = do
+		s <- Ssh.git_annex_shell r "fsck" params []
+		return $ case s of
+			Nothing -> return False
+			Just (c, ps) -> batchCommand c ps
+	| otherwise = return $ do
+		program <- readProgramFile
+		env <- getEnvironment
+		r' <- Git.Config.read r
+		let env' =
+			[ ("GIT_WORK_TREE", Git.repoPath r')
+			, ("GIT_DIR", Git.localGitDir r')
+			] ++ env
+		batchCommandEnv program (Param "fsck" : params) (Just env')
+
+{- The passed repair action is run in the Annex monad of the remote. -}
+repairRemote :: Git.Repo -> Annex Bool -> Annex (IO Bool)
+repairRemote r a = return $ Remote.Git.onLocal r a
 
 {- Runs an action on a local repository inexpensively, by making an annex
  - monad using that repository. -}

@@ -54,7 +54,9 @@ gen r u c gc = do
 			hasKey = checkPresent dir chunksize,
 			hasKeyCheap = True,
 			whereisKey = Nothing,
-			config = M.empty,
+			remoteFsck = Nothing,
+			repairRepo = Nothing,
+			config = c,
 			repo = r,
 			gitconfig = gc,
 			localpath = Just dir,
@@ -108,9 +110,13 @@ withCheckedFiles check (Just _) d k a = go $ locations d k
 		ifM (check chunkcount)
 			( do
 				chunks <- listChunks f <$> readFile chunkcount
-				ifM (and <$> mapM check chunks)
+				ifM (allM check chunks)
 					( a chunks , return False )
-			, go fs
+			, do
+				chunks <- probeChunks f check
+				if null chunks
+					then go fs
+					else a chunks
 			)
 
 withStoredFiles :: ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool

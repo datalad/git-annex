@@ -5,11 +5,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE DeriveDataTypeable, BangPatterns, CPP #-}
+{-# LANGUAGE DeriveDataTypeable, CPP #-}
 
 module Assistant.Threads.Watcher (
 	watchThread,
-	WatcherException(..),
+	WatcherControl(..),
 	checkCanWatch,
 	needLsof,
 	onAddSymlink,
@@ -23,7 +23,7 @@ import Assistant.Types.Changes
 import Assistant.Alert
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
-import Utility.Lsof
+import qualified Utility.Lsof as Lsof
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git
@@ -50,7 +50,7 @@ import Data.Time.Clock
 checkCanWatch :: Annex ()
 checkCanWatch
 	| canWatch = do
-		liftIO setupLsof
+		liftIO Lsof.setup
 		unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force)
 			needLsof
 	| otherwise = error "watch mode is not available on this system"
@@ -64,10 +64,10 @@ needLsof = error $ unlines
 	]
 
 {- A special exception that can be thrown to pause or resume the watcher. -}
-data WatcherException = PauseWatcher | ResumeWatcher
+data WatcherControl = PauseWatcher | ResumeWatcher
         deriving (Show, Eq, Typeable)
 
-instance E.Exception WatcherException
+instance E.Exception WatcherControl
 
 watchThread :: NamedThread
 watchThread = namedThread "Watcher" $
@@ -79,7 +79,7 @@ watchThread = namedThread "Watcher" $
 runWatcher :: Assistant ()
 runWatcher = do
 	startup <- asIO1 startupScan
-	matcher <- liftAnnex $ largeFilesMatcher
+	matcher <- liftAnnex largeFilesMatcher
 	direct <- liftAnnex isDirect
 	symlinkssupported <- liftAnnex $ coreSymlinks <$> Annex.getGitConfig
 	addhook <- hook $ if direct
@@ -107,9 +107,9 @@ runWatcher = do
   where
 	hook a = Just <$> asIO2 (runHandler a)
 
-waitFor :: WatcherException -> Assistant () -> Assistant ()
+waitFor :: WatcherControl -> Assistant () -> Assistant ()
 waitFor sig next = do
-	r <- liftIO $ (E.try pause :: IO (Either E.SomeException ()))
+	r <- liftIO (E.try pause :: IO (Either E.SomeException ()))
 	case r of
 		Left e -> case E.fromException e of
 			Just s
@@ -124,7 +124,7 @@ startupScan :: IO a -> Assistant a
 startupScan scanner = do
 	liftAnnex $ showAction "scanning"
 	alertWhile' startupScanAlert $ do
-		r <- liftIO $ scanner
+		r <- liftIO scanner
 
 		-- Notice any files that were deleted before
 		-- watching was started.
@@ -133,7 +133,7 @@ startupScan scanner = do
 		forM_ fs $ \f -> do
 			liftAnnex $ onDel' f
 			maybe noop recordChange =<< madeChange f RmChange
-		void $ liftIO $ cleanup
+		void $ liftIO cleanup
 		
 		liftAnnex $ showAction "started"
 		liftIO $ putStrLn ""
@@ -176,7 +176,7 @@ runHandler handler file filestatus = void $ do
 		Right (Just change) -> do
 			-- Just in case the commit thread is not
 			-- flushing the queue fast enough.
-			liftAnnex $ Annex.Queue.flushWhenFull
+			liftAnnex Annex.Queue.flushWhenFull
 			recordChange change
   where
   	normalize f
@@ -300,7 +300,7 @@ addLink file link mk = do
 	liftAnnex $ do
 		v <- catObjectDetails $ Ref $ ':':file
 		case v of
-			Just (currlink, sha)
+			Just (currlink, sha, _type)
 				| s2w8 link == L.unpack currlink ->
 					stageSymlink file sha
 			_ -> stageSymlink file =<< hashSymlink link
@@ -340,8 +340,8 @@ onDelDir dir _ = do
 	now <- liftIO getCurrentTime
 	recordChanges $ map (\f -> Change now f RmChange) fs
 
-	void $ liftIO $ clean
-	liftAnnex $ Annex.Queue.flushWhenFull
+	void $ liftIO clean
+	liftAnnex Annex.Queue.flushWhenFull
 	noChange
 
 {- Called when there's an error with inotify or kqueue. -}

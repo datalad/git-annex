@@ -28,6 +28,7 @@ uuidBasedLogs =
 	, trustLog
 	, groupLog 
 	, preferredContentLog
+	, scheduleLog
 	]
 
 {- All the ways to get a key from a presence log file -}
@@ -51,6 +52,9 @@ groupLog = "group.log"
 
 preferredContentLog :: FilePath
 preferredContentLog = "preferred-content.log"
+
+scheduleLog :: FilePath
+scheduleLog = "schedule.log"
 
 {- The pathname of the location log file for a given key. -}
 locationLogFile :: Key -> String

@@ -103,9 +103,8 @@ xmppClient urlrenderer d creds =
 		 - will also be killed. -}
 		liftIO $ pinger `concurrently` sender `concurrently` receiver
 
-	sendnotifications selfjid = forever $ do
-		a <- inAssistant $ relayNetMessage selfjid
-		a
+	sendnotifications selfjid = forever $
+		join $ inAssistant $ relayNetMessage selfjid
 	receivenotifications selfjid lasttraffic = forever $ do
 		l <- decodeStanza selfjid <$> getStanza
 		void $ liftIO $ atomically . swapTMVar lasttraffic =<< getCurrentTime
@@ -115,7 +114,7 @@ xmppClient urlrenderer d creds =
 	sendpings selfjid lasttraffic = forever $ do
 		putStanza pingstanza
 
-		startping <- liftIO $ getCurrentTime
+		startping <- liftIO getCurrentTime
 		liftIO $ threadDelaySeconds (Seconds 120)
 		t <- liftIO $ atomically $ readTMVar lasttraffic
 		when (t < startping) $ do
@@ -154,8 +153,7 @@ xmppClient urlrenderer d creds =
 				, logJid jid
 				, show $ logNetMessage msg'
 				]
-			a <- inAssistant $ convertNetMsg msg' selfjid
-			a
+			join $ inAssistant $ convertNetMsg msg' selfjid
 			inAssistant $ sentImportantNetMessage msg c
 	resendImportantMessages _ _ = noop
 
@@ -196,7 +194,7 @@ logClient (Client jid) = logJid jid
 decodeStanza :: JID -> ReceivedStanza -> [XMPPEvent]
 decodeStanza selfjid s@(ReceivedPresence p)
 	| presenceType p == PresenceError = [ProtocolError s]
-	| presenceFrom p == Nothing = [Ignorable s]
+	| isNothing (presenceFrom p) = [Ignorable s]
 	| presenceFrom p == Just selfjid = [Ignorable s]
 	| otherwise = maybe [PresenceMessage p] decode (gitAnnexTagInfo p)
   where
@@ -209,7 +207,7 @@ decodeStanza selfjid s@(ReceivedPresence p)
 	 - along with their real meaning. -}
 	impliedp v = [PresenceMessage p, v]
 decodeStanza selfjid s@(ReceivedMessage m)
-	| messageFrom m == Nothing = [Ignorable s]
+	| isNothing (messageFrom m) = [Ignorable s]
 	| messageFrom m == Just selfjid = [Ignorable s]
 	| messageType m == MessageError = [ProtocolError s]
 	| otherwise = [fromMaybe (Unknown s) (GotNetMessage <$> decodeMessage m)]
@@ -241,13 +239,13 @@ relayNetMessage selfjid = do
 					\c -> (baseJID <$> parseJID c) == Just tojid
 				return $ putStanza presenceQuery
 		_ -> return noop
-	convert (Pushing c pushstage) = withOtherClient selfjid c $ \tojid -> do
+	convert (Pushing c pushstage) = withOtherClient selfjid c $ \tojid ->
 		if tojid == baseJID tojid
 			then do
 				clients <- maybe [] (S.toList . buddyAssistants)
 					<$> getBuddy (genBuddyKey tojid) <<~ buddyList
 				debug ["exploded undirected message to clients", unwords $ map logClient clients]
-				return $ forM_ (clients) $ \(Client jid) ->
+				return $ forM_ clients $ \(Client jid) ->
 					putStanza $ pushMessage pushstage jid selfjid
 			else do
 				debug ["to client:", logJid tojid]
@@ -266,7 +264,7 @@ convertNetMsg msg selfjid = convert msg
 	convert (Pushing c pushstage) = withOtherClient selfjid c $ \tojid ->
 		return $ putStanza $  pushMessage pushstage tojid selfjid
 
-withOtherClient :: JID -> ClientID -> (JID -> Assistant (XMPP ())) -> (Assistant (XMPP ()))
+withOtherClient :: JID -> ClientID -> (JID -> Assistant (XMPP ())) -> Assistant (XMPP ())
 withOtherClient selfjid c a = case parseJID c of
 	Nothing -> return noop
 	Just tojid
@@ -323,10 +321,10 @@ pairMsgReceived :: UrlRenderer -> PairStage -> UUID -> JID -> JID -> Assistant (
 pairMsgReceived urlrenderer PairReq theiruuid selfjid theirjid
 	| baseJID selfjid == baseJID theirjid = autoaccept
 	| otherwise = do
-		knownjids <- catMaybes . map (parseJID . getXMPPClientID)
+		knownjids <- mapMaybe (parseJID . getXMPPClientID)
 			. filter isXMPPRemote . syncRemotes <$> getDaemonStatus
 		um <- liftAnnex uuidMap
-		if any (== baseJID theirjid) knownjids && M.member theiruuid um
+		if elem (baseJID theirjid) knownjids && M.member theiruuid um
 			then autoaccept
 			else showalert
 
@@ -338,7 +336,7 @@ pairMsgReceived urlrenderer PairReq theiruuid selfjid theirjid
 		finishXMPPPairing theirjid theiruuid
 	-- Show an alert to let the user decide if they want to pair.
 	showalert = do
-		button <- mkAlertButton (T.pack "Respond") urlrenderer $
+		button <- mkAlertButton True (T.pack "Respond") urlrenderer $
 			ConfirmXMPPPairFriendR $
 				PairKey theiruuid $ formatJID theirjid
 		void $ addAlert $ pairRequestReceivedAlert

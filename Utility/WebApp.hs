@@ -24,7 +24,7 @@ import System.Log.Logger
 import qualified Data.CaseInsensitive as CI
 import Network.Socket
 import Control.Exception
-import Crypto.Random
+import "crypto-api" Crypto.Random
 import qualified Web.ClientSession as CS
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.UTF8 as L8

@@ -72,17 +72,17 @@ readProcessEnv cmd args environ =
 		, env = environ
 		}
 
-{- Writes a string to a process on its stdin, 
+{- Runs an action to write to a process on its stdin, 
  - returns its output, and also allows specifying the environment.
  -}
 writeReadProcessEnv
 	:: FilePath
 	-> [String]
 	-> Maybe [(String, String)]
-	-> String
+	-> (Maybe (Handle -> IO ()))
 	-> (Maybe (Handle -> IO ()))
 	-> IO String
-writeReadProcessEnv cmd args environ input adjusthandle = do
+writeReadProcessEnv cmd args environ writestdin adjusthandle = do
 	(Just inh, Just outh, _, pid) <- createProcess p
 
 	maybe (return ()) (\a -> a inh) adjusthandle
@@ -94,7 +94,7 @@ writeReadProcessEnv cmd args environ input adjusthandle = do
 	_ <- forkIO $ E.evaluate (length output) >> putMVar outMVar ()
 
 	-- now write and flush any input
-	when (not (null input)) $ do hPutStr inh input; hFlush inh
+	maybe (return ()) (\a -> a inh >> hFlush inh) writestdin
 	hClose inh -- done with stdin
 
 	-- wait on the output

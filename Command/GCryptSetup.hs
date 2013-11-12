@@ -23,13 +23,17 @@ seek = [withStrings start]
 
 start :: String -> CommandStart
 start gcryptid = next $ next $ do
-	g <- gitRepo
 	u <- getUUID
+	when (u /= NoUUID) $
+		error "gcryptsetup refusing to run; this repository already has a git-annex uuid!"
+	
+	g <- gitRepo
 	gu <- Remote.GCrypt.getGCryptUUID True g
-	if u == NoUUID && gu == Nothing
+	let newgu = genUUIDInNameSpace gCryptNameSpace gcryptid
+	if gu == Nothing || gu == Just newgu
 		then if Git.repoIsLocalBare g
 			then do
 				void $ Remote.GCrypt.setupRepo gcryptid g
 				return True
 			else error "cannot use gcrypt in a non-bare repository"
-		else error "gcryptsetup permission denied"
+		else error "gcryptsetup uuid mismatch"

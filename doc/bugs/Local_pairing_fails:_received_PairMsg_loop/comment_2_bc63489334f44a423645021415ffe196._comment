@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 2"
+ date="2013-11-01T23:27:24Z"
+ content="""
+Well I installed the 1 Nov release from the tarball and then it picked up the pair request from the other system.  I don't know if it was a bug in the previous version or something to do with the PPA.  It's weird that the assistant just wasn't doing anything about the pair request it received.
+
+Thanks for your work on git-annex assistant.
+"""]]

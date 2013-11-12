@@ -19,6 +19,8 @@ import Utility.ThreadScheduler
 import Utility.Mounts
 import Remote.List
 import qualified Types.Remote as Remote
+import Assistant.Types.UrlRenderer
+import Assistant.Fsck
 
 import qualified Data.Set as S
 
@@ -33,18 +35,18 @@ import qualified Control.Exception as E
 #warning Building without dbus support; will use mtab polling
 #endif
 
-mountWatcherThread :: NamedThread
-mountWatcherThread = namedThread "MountWatcher" $
+mountWatcherThread :: UrlRenderer -> NamedThread
+mountWatcherThread urlrenderer = namedThread "MountWatcher" $
 #if WITH_DBUS
-	dbusThread
+	dbusThread urlrenderer
 #else
-	pollingThread
+	pollingThread urlrenderer
 #endif
 
 #if WITH_DBUS
 
-dbusThread :: Assistant ()
-dbusThread = do
+dbusThread :: UrlRenderer -> Assistant ()
+dbusThread urlrenderer = do
 	runclient <- asIO1 go
 	r <- liftIO $ E.try $ runClient getSessionAddress runclient
 	either onerr (const noop) r
@@ -59,13 +61,13 @@ dbusThread = do
 			handleevent <- asIO1 $ \_event -> do
 				nowmounted <- liftIO $ currentMountPoints
 				wasmounted <- liftIO $ swapMVar mvar nowmounted
-				handleMounts wasmounted nowmounted
+				handleMounts urlrenderer wasmounted nowmounted
 			liftIO $ forM_ mountChanged $ \matcher ->
 				listen client matcher handleevent
 		, do
 			liftAnnex $
 				warning "No known volume monitor available through dbus; falling back to mtab polling"
-			pollingThread
+			pollingThread urlrenderer
 		)
 	onerr :: E.SomeException -> Assistant ()
 	onerr e = do
@@ -76,7 +78,7 @@ dbusThread = do
 		 - done in this situation. -}
 		liftAnnex $
 			warning $ "dbus failed; falling back to mtab polling (" ++ show e ++ ")"
-		pollingThread
+		pollingThread urlrenderer
 
 {- Examine the list of services connected to dbus, to see if there
  - are any we can use to monitor mounts. If not, will attempt to start one. -}
@@ -139,24 +141,25 @@ mountChanged = [gvfs True, gvfs False, kde, kdefallback]
 
 #endif
 
-pollingThread :: Assistant ()
-pollingThread = go =<< liftIO currentMountPoints
+pollingThread :: UrlRenderer -> Assistant ()
+pollingThread urlrenderer = go =<< liftIO currentMountPoints
   where
 	go wasmounted = do
 		liftIO $ threadDelaySeconds (Seconds 10)
 		nowmounted <- liftIO currentMountPoints
-		handleMounts wasmounted nowmounted
+		handleMounts urlrenderer wasmounted nowmounted
 		go nowmounted
 
-handleMounts :: MountPoints -> MountPoints -> Assistant ()
-handleMounts wasmounted nowmounted =
-	mapM_ (handleMount . mnt_dir) $
+handleMounts :: UrlRenderer -> MountPoints -> MountPoints -> Assistant ()
+handleMounts urlrenderer wasmounted nowmounted =
+	mapM_ (handleMount urlrenderer . mnt_dir) $
 		S.toList $ newMountPoints wasmounted nowmounted
 
-handleMount :: FilePath -> Assistant ()
-handleMount dir = do
+handleMount :: UrlRenderer -> FilePath -> Assistant ()
+handleMount urlrenderer dir = do
 	debug ["detected mount of", dir]
 	rs <- filter (Git.repoIsLocal . Remote.repo) <$> remotesUnder dir
+	mapM_ (fsckNudge urlrenderer . Just) rs
 	reconnectRemotes True rs
 
 {- Finds remotes located underneath the mount point.
@@ -173,10 +176,10 @@ remotesUnder dir = do
 	rs <- liftAnnex remoteList
 	pairs <- liftAnnex $ mapM (checkremote repotop) rs
 	let (waschanged, rs') = unzip pairs
-	when (any id waschanged) $ do
+	when (or waschanged) $ do
 		liftAnnex $ Annex.changeState $ \s -> s { Annex.remotes = catMaybes rs' }
 		updateSyncRemotes
-	return $ catMaybes $ map snd $ filter fst pairs
+	return $ mapMaybe snd $ filter fst pairs
   where
 	checkremote repotop r = case Remote.localpath r of
 		Just p | dirContains dir (absPathFrom repotop p) ->

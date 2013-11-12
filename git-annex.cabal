@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 4.20131002
+Version: 4.20131106
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -80,9 +80,9 @@ Executable git-annex
    containers, utf8-string, network (>= 2.0), mtl (>= 2),
    bytestring, old-locale, time, HTTP,
    extensible-exceptions, dataenc, SHA, process, json,
-   base (>= 4.5 && < 4.8), monad-control, MonadCatchIO-transformers,
+   base (>= 4.5 && < 4.9), monad-control, MonadCatchIO-transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
-   SafeSemaphore, uuid, random, dlist, unix-compat
+   SafeSemaphore, uuid, random, dlist, unix-compat, async
   -- Need to list these because they're generated from .hsc files.
   Other-Modules: Utility.Touch Utility.Mounts
   Include-Dirs: Utility
@@ -97,9 +97,7 @@ Executable git-annex
   if flag(Production)
     GHC-Options: -O2
 
-  if os(windows)
-    CPP-Options: -D__WINDOWS__
-  else
+  if (! os(windows))
     Build-Depends: unix
 
   if flag(TestSuite)
@@ -124,7 +122,7 @@ Executable git-annex
   --  CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(windows) && ! os(solaris)
-    Build-Depends: async, stm (>= 2.3)
+    Build-Depends: stm (>= 2.3)
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Android)
@@ -152,7 +150,7 @@ Executable git-annex
     Build-Depends: dbus (>= 0.10.3)
     CPP-Options: -DWITH_DBUS
 
-  if flag(Webapp)
+  if flag(Webapp) && (! os(windows))
     Build-Depends:
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      case-insensitive, http-types, transformers, wai, wai-logger, warp,
@@ -164,8 +162,8 @@ Executable git-annex
     Build-Depends: network-multicast, network-info
     CPP-Options: -DWITH_PAIRING
 
-  if flag(XMPP)
-    Build-Depends: network-protocol-xmpp, gnutls, xml-types
+  if flag(XMPP) && (! os(windows))
+    Build-Depends: network-protocol-xmpp, gnutls (>= 0.1.4), xml-types
     CPP-Options: -DWITH_XMPP
 
   if flag(DNS)

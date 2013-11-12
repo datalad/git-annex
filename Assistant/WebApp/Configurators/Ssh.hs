@@ -13,7 +13,7 @@ module Assistant.WebApp.Configurators.Ssh where
 import Assistant.WebApp.Common
 import Assistant.WebApp.Gpg
 import Assistant.Ssh
-import Assistant.MakeRemote
+import Assistant.WebApp.MakeRemote
 import Logs.Remote
 import Remote
 import Types.StandardGroups
@@ -21,7 +21,6 @@ import Utility.UserInfo
 import Utility.Gpg
 import Types.Remote (RemoteConfig)
 import Git.Remote
-import Assistant.WebApp.Utility
 import qualified Remote.GCrypt as GCrypt
 import Annex.UUID
 import Logs.UUID
@@ -116,7 +115,7 @@ postAddSshR :: Handler Html
 postAddSshR = sshConfigurator $ do
 	username <- liftIO $ T.pack <$> myUserName
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ sshInputAForm textField $
+		runFormPostNoToken $ renderBootstrap $ sshInputAForm textField $
 			SshInput Nothing (Just username) Nothing 22
 	case result of
 		FormSuccess sshinput -> do
@@ -168,7 +167,7 @@ enableSpecialSshRemote getsshinput rsyncnetsetup genericsetup u = do
 	case (mkSshInput . unmangle <$> getsshinput m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- liftH $
-				runFormPost $ renderBootstrap $ sshInputAForm textField sshinput
+				runFormPostNoToken $ renderBootstrap $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (inputHostname sshinput') ->
@@ -342,15 +341,12 @@ getMakeSshGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $
 {- Detect if the user entered a location with an existing, known
  - gcrypt repository, and enable it. Otherwise, runs the action. -}
 checkExistingGCrypt :: SshData -> Widget -> Widget
-checkExistingGCrypt sshdata nope = ifM (liftIO isGcryptInstalled)
-	( checkGCryptRepoEncryption repourl nope $ do
-		mu <- liftAnnex $ probeGCryptRemoteUUID repourl
-		case mu of
-			Just u -> void $ liftH $
-				combineExistingGCrypt sshdata u
-			Nothing -> error "The location contains a gcrypt repository that is not a git-annex special remote. This is not supported."
-	, nope
-	)
+checkExistingGCrypt sshdata nope = checkGCryptRepoEncryption repourl nope nope $ do
+	mu <- liftAnnex $ probeGCryptRemoteUUID repourl
+	case mu of
+		Just u -> void $ liftH $
+			combineExistingGCrypt sshdata u
+		Nothing -> error "The location contains a gcrypt repository that is not a git-annex special remote. This is not supported."
   where
   	repourl = genSshUrl sshdata
 
@@ -393,7 +389,7 @@ prepSsh' newgcrypt origsshdata sshdata keypair a = sshSetup
 	remoteCommand = shellWrap $ intercalate "&&" $ catMaybes
 		[ Just $ "mkdir -p " ++ shellEscape remotedir
 		, Just $ "cd " ++ shellEscape remotedir
-		, if rsynconly then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared; fi"
+		, if rsynconly then Nothing else Just "if [ ! -d .git ]; then git init --bare --shared && git config receive.denyNonFastforwards false; fi"
 		, if rsynconly || newgcrypt then Nothing else Just "git annex init"
 		, if needsPubKey origsshdata
 			then addAuthorizedKeysCommand (hasCapability origsshdata GitAnnexShellCapable) remotedir . sshPubKey <$> keypair
@@ -413,7 +409,7 @@ getAddRsyncNetR :: Handler Html
 getAddRsyncNetR = postAddRsyncNetR
 postAddRsyncNetR :: Handler Html
 postAddRsyncNetR = do
-	((result, form), enctype) <- runFormPost $
+	((result, form), enctype) <- runFormPostNoToken $
 		renderBootstrap $ sshInputAForm hostnamefield $
 			SshInput Nothing Nothing Nothing 22
 	let showform status = inpage $
@@ -465,11 +461,12 @@ enableRsyncNet sshinput reponame =
 
 enableRsyncNetGCrypt :: SshInput -> RemoteName -> Handler Html
 enableRsyncNetGCrypt sshinput reponame = 
-	prepRsyncNet sshinput reponame $ \sshdata ->
-		checkGCryptRepoEncryption (genSshUrl sshdata) notencrypted $
+	prepRsyncNet sshinput reponame $ \sshdata -> whenGcryptInstalled $
+		checkGCryptRepoEncryption (genSshUrl sshdata) notencrypted notinstalled $
 			enableGCrypt sshdata reponame
   where
 	notencrypted = error "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."
+	notinstalled = error "internal"
 
 {- Prepares rsync.net ssh key, and if successful, runs an action with
  - its SshData. -}

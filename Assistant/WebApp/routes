@@ -19,6 +19,8 @@
 /config/xmpp/for/self XMPPConfigForPairSelfR GET POST
 /config/xmpp/for/frield XMPPConfigForPairFriendR GET POST
 /config/xmpp/needcloudrepo/#UUID NeedCloudRepoR GET
+/config/fsck ConfigFsckR GET POST
+/config/fsck/preferences ConfigFsckPreferencesR POST
 
 /config/addrepository AddRepositoryR GET
 /config/repository/new NewRepositoryR GET POST
@@ -83,6 +85,10 @@
 /config/repository/delete/finish/#UUID FinishDeleteRepositoryR GET
 /config/repository/delete/here DeleteCurrentRepositoryR GET POST
 
+/config/activity/add/#UUID AddActivityR GET POST
+/config/activity/change/#UUID/#ScheduledActivity ChangeActivityR GET POST
+/config/activity/remove/#UUID/#ScheduledActivity RemoveActivityR GET
+
 /transfers/#NotificationId TransfersR GET
 /notifier/transfers NotifierTransfersR GET
 
@@ -102,5 +108,8 @@
 /transfer/pause/#Transfer PauseTransferR GET POST
 /transfer/start/#Transfer StartTransferR GET POST
 /transfer/cancel/#Transfer CancelTransferR GET POST
+
+/repair/#UUID RepairRepositoryR GET POST
+/repair/run/#UUID RepairRepositoryRunR GET POST
 
 /static StaticR Static getStatic

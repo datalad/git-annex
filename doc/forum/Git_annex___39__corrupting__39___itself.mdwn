@@ -1,0 +1,34 @@
+Hi,
+
+Since the I updated to `2013-10-24` `git annex` has corrupted itself twice on my setup.  I'm not claiming causality here and thus I haven't filled it as a bug (probably the mistake is mine).
+
+I use three laptops and one remote ssh server.  The motherboard on laptop *T* seems to have broken and I haven't fixed it yet.  I have disabled sync to *T*  on the webapp dashboard.  
+
+First, one computer, called *W*, broke on Friday.  I got the dreaded [serious problem](http://git-annex.branchable.com/devblog/day_41__onward/) screen. `git fsck` reported lots of missing blobs and tree problem, though my data seemed OK.  I git cloned the repo from computer *X*.  Now, last night both X and W reported the same problem (log below).  *W*  recovered itself somehow, but *X*  is now in a cycle of re-adding all files in the repo and the posting the below error that has to do with computer *T* (IP ending with 107).  
+
+I would appreciate hints on why this suddenly started happen.  Computer T has been out of sync for almost 14 days (since the 24th of October I think).
+
+    error: refs/remotes/192.168.1.107_annex/git-annex does not point to a valid object!
+    error: refs/remotes/192.168.1.107_annex/master does not point to a valid object!
+    error: refs/remotes/192.168.1.107_annex/synced/git-annex does not point to a valid object!
+    error: refs/remotes/192.168.1.107_annex/synced/master does not point to a valid object!
+    error: refs/synced/2ed58ecf-8e8c-44b8-ad34-d42ddfb35315/cmFzbXVzQGNvZGVyb2xsZXJzLmNvbQ==/git-annex does not point to a valid object!
+    error: refs/synced/2ed58ecf-8e8c-44b8-ad34-d42ddfb35315/cmFzbXVzQGNvZGVyb2xsZXJzLmNvbQ==/master does not point to a valid object!
+    error: refs/synced/f54b8200-8ec1-43d2-8710-b73ec118addc/cmFzbXVzQGNvZGVyb2xsZXJzLmNvbQ==/git-annex does not point to a valid object!
+    error: refs/synced/f54b8200-8ec1-43d2-8710-b73ec118addc/cmFzbXVzQGNvZGVyb2xsZXJzLmNvbQ==/master does not point to a valid object!
+    error: refs/synced/f54b8200-8ec1-43d2-8710-b73ec118addc/git-annex does not point to a valid object!
+    error: refs/synced/f54b8200-8ec1-43d2-8710-b73ec118addc/master does not point to a valid object!
+    error: refs/remotes/192.168.1.107_annex/git-annex does not point to a valid object!
+    error: refs/remotes/192.168.1.107_annex/master does not point to a valid object!
+    error: refs/remotes/192.168.1.107_annex/synced/git-annex does not point to a valid object!
+    error: refs/remotes/192.168.1.107_annex/synced/master does not point to a valid object!
+    error: refs/synced/2ed58ecf-8e8c-44b8-ad34-d42ddfb35315/cmFzbXVzQGNvZGVyb2xsZXJzLmNvbQ==/git-annex does not point to a valid object!
+    error: refs/synced/2ed58ecf-8e8c-44b8-ad34-d42ddfb35315/cmFzbXVzQGNvZGVyb2xsZXJzLmNvbQ==/master does not point to a valid object!
+    error: refs/synced/f54b8200-8ec1-43d2-8710-b73ec118addc/cmFzbXVzQGNvZGVyb2xsZXJzLmNvbQ==/git-annex does not point to a valid object!
+    error: refs/synced/f54b8200-8ec1-43d2-8710-b73ec118addc/cmFzbXVzQGNvZGVyb2xsZXJzLmNvbQ==/master does not point to a valid object!
+    error: refs/synced/f54b8200-8ec1-43d2-8710-b73ec118addc/git-annex does not point to a valid object!
+    error: refs/synced/f54b8200-8ec1-43d2-8710-b73ec118addc/master does not point to a valid object!
+    error: invalid object 100644 1ca66de3cdd9c79cde26a7555cf3b8d26d0e371d for '000/147/SHA256E-s347--1ab8084bf9ae06407ce0a7260a83638ea6e9a028dc59b4815fd60aec61dbd747.txt.log.log'
+    fatal: git-write-tree: error building trees
+    TransferScanner crashed: failed to read sha from git write-tree
+    [2013-11-04 09:45:41 CET] TransferScanner: warning TransferScanner crashed: failed to read sha from git write-tree

@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-10-26T19:22:57Z"
+ content="""
+It seems to me that if a subdirectory of the repository is on a corrupted drive, and so it's not possible to list the files on it, this is basically the same as if you'd 'rm -rf' that subdirectory. So when it starts up, the assistant will see that these files are not present, and commit a removal to git.
+
+Then when another machine syncs with that, it would delete the files from its repository too. However, it actually keeps the contents of the files stashed away in `.git/annex`. So to recover from this, all you have to do is `git annex indirect` and `git revert` the commit that deleted the files. All your files would then be available again.
+
+However, what you describe is instead that the assistant chose to drop the content associated with the files, but kept the symlinks for them checked into git.
+I don't understand why it would do that. Can you show the output of running, on the desktop machine:
+
+    git annex whereis $somefile
+    git annex get $somefile
+
+Where $somefile is one of the files that has been reduced to a symlink.
+
+Looking at your logs, they appear to be the logs from the server. The strange thing that appears in one of them is \"git-annex: Not in a git repository.\"
+which was logged around 2013-10-24 20:07:25 CEST. I am not sure, but I think it might have been the rpi git-annex saying that, because there is also \"fatal: '~/store/annex/' does not appear to be a git repository\"
+"""]]

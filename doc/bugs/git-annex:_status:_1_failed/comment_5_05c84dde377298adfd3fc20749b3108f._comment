@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="213.61.149.100"
+ subject="comment 5"
+ date="2013-10-13T06:33:24Z"
+ content="""
+I use v4.20130909 and get the same error when running `git-annex status`. Does it matter that my filename in question is shown to have two dashes (--) at the end, just as in OP's case? Other files in .git/annex/tmp only have one dash at the end. 
+
+Joey, I straced the command and sent the output to your kitenet e-mail address. Hope it helps.
+"""]]

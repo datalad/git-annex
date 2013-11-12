@@ -23,3 +23,4 @@ The repository contains a lot of files:
     $ find . -type f | wc -l 
     1091548
 
+[[!tag moreinfo]]

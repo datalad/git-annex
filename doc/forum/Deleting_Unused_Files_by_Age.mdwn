@@ -1,1 +1,0 @@
-I periodically move unused files to one of my servers. What I would like to do is drop any unused file that has been unused for say more than 6 months? I would like to not drop all unused files.

@@ -60,7 +60,8 @@ withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
 withPathContents a params = map a . concat <$> liftIO (mapM get params)
   where
 	get p = ifM (isDirectory <$> getFileStatus p)
-		( map (\f -> (f, makeRelative (parentDir p) f)) <$> dirContentsRecursive p
+		( map (\f -> (f, makeRelative (parentDir p) f))
+			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) p
 		, return [(p, takeFileName p)]
 		)
 
@@ -95,7 +96,8 @@ withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
 withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> CommandSeek
 withFilesUnlocked' typechanged a params = prepFiltered a unlockedfiles
   where
-  	check f = liftIO (notSymlink f) <&&> isJust <$> catKeyFileHEAD f
+  	check f = liftIO (notSymlink f) <&&> 
+		(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
 	unlockedfiles = filterM check =<< seekHelper typechanged params
 
 {- Finds files that may be modified. -}

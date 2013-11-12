@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-06T16:38:47Z"
+ content="""
+marcov does not show up in the webapp because there is no configured git remote for it.
+
+This is a slightly confusing corner of the webapp. The webapp will show repositories that do not have a configured remote, but it only does it for special remotes. ssh repos, being regular git remotes, don't currently show up in the webapp unless that repository is actually set up as a remote.
+
+It should certianly not show it as \"unknown\"; it would be much better to use the full repo description here, since it does not have a remote name.
+(Unless the description is really long!)
+
+I think you'll also get the \"unknown uuid\" screen even for a special remote that is not configured in the local repository. So that needs to be fixed.
+
+Finally, it would probably be good for the webapp to show ssh repos that don't have remotes as existing, and let the user enter a ssh address to configure them. The problem with trying to do this is it actually has no idea that this is a ssh repo. It could just as easily be a local directory. The UI to configure  it would be pretty elaborate.
+"""]]

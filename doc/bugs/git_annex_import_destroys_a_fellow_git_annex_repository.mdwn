@@ -1,0 +1,130 @@
+### Please describe the problem.
+
+`git annex import` not only [[does not work with git annex repositories|bugs/`git annex import` does not work on other git annex repositories]], it even destroys the meta-data in that repository, because it moves the `.git/*` metadata out of the remote repository.
+
+### What steps will reproduce the problem?
+
+[[!format txt """
+git init foo
+cd foo
+git annex init
+dd if=/dev/urandom of=foo bs=1M count=1
+git annex add foo
+git commit -m'files'
+cd ../
+git init bar
+cd bar
+git annex init
+mkdir foo
+cd foo
+git annex import ../../foo
+cd ../../foo
+git status
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format txt """
+anarcat@angela:foo$ git annex version
+git-annex version: 4.20130921-g434dc22
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS Feeds Quvi
+"""]]
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+anarcat@angela:~$ cd /tmp
+anarcat@angela:/tmp$ mkdir test
+anarcat@angela:/tmp$ cd test
+anarcat@angela:test$ ls
+anarcat@angela:test$ git init foo
+Initialized empty Git repository in /tmp/test/foo/.git/
+anarcat@angela:test$ cd foo
+anarcat@angela:foo$ git annex init
+init  ok
+(Recording state in git...)
+anarcat@angela:foo$ dd if=/dev/urandom of=foo bs=1M count=1
+1+0 enregistrements lus
+1+0 enregistrements écrits
+1048576 octets (1,0 MB) copiés, 0,410384 s, 2,6 MB/s
+anarcat@angela:foo$ git annex add foo
+add foo (checksum...) ok
+(Recording state in git...)
+anarcat@angela:foo$ git commit -m'files'
+[master (root-commit) 83daa0b] files
+ 1 file changed, 1 insertion(+)
+ create mode 120000 foo
+anarcat@angela:foo$ cd ../
+anarcat@angela:test$ git init bar
+Initialized empty Git repository in /tmp/test/bar/.git/
+anarcat@angela:test$ cd bar
+anarcat@angela:bar$ git annex init
+init  ok
+(Recording state in git...)
+anarcat@angela:bar$ mkdir foo
+anarcat@angela:bar$ cd foo
+anarcat@angela:foo$ git annex import ../../foo
+import .git/COMMIT_EDITMSG (checksum...) ok
+import .git/description (checksum...) ok
+import .git/config (checksum...) ok
+import .git/index (checksum...) ok
+import .git/HEAD (checksum...) ok
+import .git/annex/journal.lck (checksum...) ok
+import .git/annex/index.lck (checksum...) ok
+import .git/annex/sentinal (checksum...) ok
+import .git/annex/sentinal.cache (checksum...) ok
+import .git/annex/index (checksum...) ok
+import .git/annex/objects/w2/Kz/SHA256E-s1048576--f957108785c8dc30cf792948b89d61af257c40e5ef0e1d20ff6cf6aadaf6f66b/SHA256E-s1048576--f957108785c8dc30cf792948b89d61af257c40e5ef0e1d20ff6cf6aadaf6f66b
+git-annex: ../../foo/.git/annex/objects/w2/Kz/SHA256E-s1048576--f957108785c8dc30cf792948b89d61af257c40e5ef0e1d20ff6cf6aadaf6f66b/SHA256E-s1048576--f957108785c8dc30cf792948b89d61af257c40e5ef0e1d20ff6cf6aadaf6f66b: rename: permission denied (Permission denied)
+failed
+import .git/objects/0e/6881452189b7fc34809f101f075da7cca9d9d8 (checksum...) ok
+import .git/objects/03/c0163611cd061af17b2dd58a93c95ffbb05040 (checksum...) ok
+import .git/objects/39/10912eab082d015bface04ed3a8ed658b94893 (checksum...) ok
+import .git/objects/21/05f6aaf523510f25516b04a0c07d5900df2b0b (checksum...) ok
+import .git/objects/83/daa0b1d8290191f53d1d3b5e39e03653a89ce2 (checksum...) ok
+import .git/objects/83/8fa78626a6cdc4399186172df9109d321ca0bf (checksum...) ok
+import .git/objects/dc/1e1b7b811079e1c5826d44958b736fc3a3a458 (checksum...) ok
+import .git/objects/7b/4d3d6a3ee2286b2da15c1aca39353d63c16fa2 (checksum...) ok
+import .git/objects/86/2b2a09ebc7a1eb298dccc57be75bad897a7c10 (checksum...) ok
+import .git/objects/e1/61ad2ad1843e39937caaf6add6f690fd361126 (checksum...) ok
+import .git/objects/4b/825dc642cb6eb9a060e54bf8d69288fbee4904 (checksum...) ok
+import .git/objects/9b/47feee99b5f24e0dc96cf4a20fcb88c0ec007d (checksum...) ok
+import .git/objects/b0/8c838cfb09bafae40a05312092c37360c880b0 (checksum...) ok
+import .git/refs/heads/master (checksum...) ok
+import .git/refs/heads/git-annex (checksum...) ok
+import .git/logs/HEAD (checksum...) ok
+import .git/logs/refs/heads/master (checksum...) ok
+import .git/logs/refs/heads/git-annex (checksum...) ok
+import .git/info/exclude (checksum...) ok
+import .git/hooks/pre-applypatch.sample (checksum...) ok
+import .git/hooks/applypatch-msg.sample (checksum...) ok
+import .git/hooks/pre-rebase.sample (checksum...) ok
+import .git/hooks/update.sample (checksum...) ok
+import .git/hooks/commit-msg.sample (checksum...) ok
+import .git/hooks/pre-commit (checksum...) ok
+import .git/hooks/prepare-commit-msg.sample (checksum...) ok
+import .git/hooks/post-update.sample (checksum...) ok
+import .git/hooks/pre-commit.sample (checksum...) ok
+(Recording state in git...)
+error: Invalid path 'foo/.git/COMMIT_EDITMSG'
+error: unable to add foo/.git/COMMIT_EDITMSG to index
+fatal: adding files failed
+
+git-annex: user error (xargs ["-0","git","--git-dir=/tmp/test/bar/.git","--work-tree=/tmp/test/bar","add","--"] exited 123)
+failed
+git-annex: import: 2 failed
+anarcat@angela:foo$ cd ../../foo
+anarcat@angela:foo$ git status
+fatal: Not a git repository (or any of the parent directories): .git
+anarcat@angela:foo$
+# End of transcript or log.
+"""]]
+
+Thanks! --[[anarcat]]
+
+> Would have thought this was obviously something you shouldn't do
+> (sorta like running git-annex import on your home directory),
+> but ok, it can skip .git directories. [[done]] --[[Joey]]

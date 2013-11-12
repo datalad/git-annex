@@ -104,7 +104,7 @@ withIncremental = withValue $ do
 				Nothing -> noop
 				Just started -> do
 					now <- liftIO getPOSIXTime
-					when (now - realToFrac started >= delta)
+					when (now - realToFrac started >= durationToPOSIXTime delta)
 						resetStartTime
 		return True
 

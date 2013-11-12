@@ -1,7 +1,7 @@
-From 3141355f14d6acb9382bebcf8723c411be5aa62f Mon Sep 17 00:00:00 2001
-From: foo <foo@bar>
-Date: Sun, 22 Sep 2013 00:31:39 +0000
-Subject: [PATCH] various hacking to cross build
+From 41706061810410cc38f602ccc9a4c9560502251f Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Sat, 19 Oct 2013 01:44:52 +0000
+Subject: [PATCH] hackity
 
 ---
  lens.cabal                             |   12 +-----------
@@ -24,7 +24,7 @@ Subject: [PATCH] various hacking to cross build
  17 files changed, 20 insertions(+), 74 deletions(-)
 
 diff --git a/lens.cabal b/lens.cabal
-index 2a94e1e..1f9a4b7 100644
+index b25adf4..3e5c30c 100644
 --- a/lens.cabal
 +++ b/lens.cabal
 @@ -10,7 +10,7 @@ stability:     provisional
@@ -33,10 +33,10 @@ index 2a94e1e..1f9a4b7 100644
  copyright:     Copyright (C) 2012-2013 Edward A. Kmett
 -build-type:    Custom
 +build-type:    Simple
- tested-with:   GHC == 7.0.4, GHC == 7.4.1, GHC == 7.4.2, GHC == 7.6.1, GHC == 7.7.20121213, GHC == 7.7.20130117
+ tested-with:   GHC == 7.6.3
  synopsis:      Lenses, Folds and Traversals
  description:
-@@ -238,14 +238,12 @@ library
+@@ -235,14 +235,12 @@ library
      Control.Lens.Review
      Control.Lens.Setter
      Control.Lens.Simple
@@ -51,7 +51,7 @@ index 2a94e1e..1f9a4b7 100644
      Control.Parallel.Strategies.Lens
      Control.Seq.Lens
      Data.Array.Lens
-@@ -269,12 +267,8 @@ library
+@@ -266,12 +264,8 @@ library
      Data.Typeable.Lens
      Data.Vector.Lens
      Data.Vector.Generic.Lens
@@ -64,7 +64,7 @@ index 2a94e1e..1f9a4b7 100644
      Numeric.Lens
  
    if flag(safe)
-@@ -373,7 +367,6 @@ test-suite doctests
+@@ -370,7 +364,6 @@ test-suite doctests
        deepseq,
        doctest        >= 0.9.1,
        filepath,
@@ -72,7 +72,7 @@ index 2a94e1e..1f9a4b7 100644
        mtl,
        nats,
        parallel,
-@@ -399,7 +392,6 @@ benchmark plated
+@@ -396,7 +389,6 @@ benchmark plated
      comonad,
      criterion,
      deepseq,
@@ -80,7 +80,7 @@ index 2a94e1e..1f9a4b7 100644
      lens,
      transformers
  
-@@ -434,7 +426,6 @@ benchmark unsafe
+@@ -431,7 +423,6 @@ benchmark unsafe
      comonads-fd,
      criterion,
      deepseq,
@@ -88,7 +88,7 @@ index 2a94e1e..1f9a4b7 100644
      lens,
      transformers
  
-@@ -451,6 +442,5 @@ benchmark zipper
+@@ -448,6 +439,5 @@ benchmark zipper
      comonads-fd,
      criterion,
      deepseq,
@@ -96,7 +96,7 @@ index 2a94e1e..1f9a4b7 100644
      lens,
      transformers
 diff --git a/src/Control/Exception/Lens.hs b/src/Control/Exception/Lens.hs
-index 4bc3926..28f55be 100644
+index 0619335..c97ad9b 100644
 --- a/src/Control/Exception/Lens.hs
 +++ b/src/Control/Exception/Lens.hs
 @@ -112,7 +112,7 @@ import Prelude

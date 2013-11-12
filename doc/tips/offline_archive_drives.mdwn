@@ -17,20 +17,21 @@ the repository in your computer you want to archive. In short:
 	git clone ~/annex
 	cd ~/annex
 	git remote add archivedrive /media/archive/annex
-	git annex sync archive
+	git annex sync archivedrive
 
 Don't forget to  tell git-annex this is an archive drive (or perhaps a backup
 drive). Also, give the drive a description that matches something you write on
 its label, so you can find it later:
 
 	git annex group archivedrive archive
+	git annex wanted archivedrive standard
 	git annex describe archivedrive "my first archive drive (SATA)"
 
 Or you can use the assistant to set up the drive for you.  
 (Nice video tutorial here: [[videos/git-annex_assistant_archiving]])
 
 (Keeping the archive drive in an offsite location? Consider encrypting
-it! See [[fully_encrypted_git_repositories_with_gcrypt].])
+it! See [[fully_encrypted_git_repositories_with_gcrypt]].)
 
 Then, when the archive drive is plugged in, you can easily copy files to
 it:

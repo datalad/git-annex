@@ -584,7 +584,7 @@ text_builder_hack = replace "Data.Text.Lazy.Builder.Internal.fromText" "Data.Tex
 parsecAndReplace :: Parser String -> String -> String
 parsecAndReplace p s = case parse find "" s of
 	Left e -> s
-	Right l -> concatMap (either (\c -> [c]) id) l
+	Right l -> concatMap (either return id) l
   where
   	find :: Parser [Either Char String]
 	find = many $ try (Right <$> p) <|> (Left <$> anyChar)

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 2"
+ date="2013-11-01T16:47:18Z"
+ content="""
+git-annex keeps track of the repository group on a per repository basis. That is, if the repository on Server-A is a full backup, both Client-A and Client-B will consider it to be one, and use it appropriately. You can't have just Client-A think it's a full backup; this setting will be automatically synced to Client-B.
+
+Your setup sounds ok, although you might need to set up a XMPP account in order for Client-A and Client-B to immediately message one-another when they have new changes to sync. Otherwise, they might only poll Server-A occasionally for changes.
+"""]]

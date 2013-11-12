@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-10-28T17:11:04Z"
+ content="""
+It would be nice, but it adds quite a lot of complexity to have a --dry-run, and if I add it to just drop, the next bug is going to ask for get to have it..
+
+I feel that the right approach is to add a --wanted, which could then be used with find to find files that are and are not wanted, according to the preferred content settings. To see what it would want to get: `git annex find --wanted --not --in .` To see what it would want to drop: `git annex find --not --wanted --in .`
+"""]]

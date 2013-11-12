@@ -1,0 +1,23 @@
+Hey, so I am trying to compile git-annex through cabal but it fails on building uuid. It gives me this strange error:
+
+    Resolving dependencies...
+    Configuring uuid-1.3.1...
+    Building uuid-1.3.1...
+    Preprocessing library uuid-1.3.1...
+    [ 1 of 10] Compiling Data.UUID.Builder ( Data/UUID/Builder.hs, dist/build/Data/UUID/Builder.o )
+    [ 2 of 10] Compiling Data.Word.Util   ( Data/Word/Util.hs, dist/build/Data/Word/Util.o )
+    [ 3 of 10] Compiling Data.UUID.Internal ( Data/UUID/Internal.hs, dist/build/Data/UUID/Internal.o )
+    Data/UUID/Internal.hs:394:20: Not in scope: `BL.fromStrict'
+    Data/UUID/Internal.hs:399:48: Not in scope: `BL.toStrict'
+    cabal: Error: some packages failed to install:
+    git-annex-4.20131002 depends on uuid-1.3.1 which failed to install.
+    uuid-1.3.1 failed during the building phase. The exception was:
+    ExitFailure 1
+
+Any advice on how to proceed?
+
+System is: Debian Wheezy (CrunchBang Waldorf) 64bit
+
+versions are:
+    uuid-dev: 2.20.1-5.3
+    cabal: 1.14.0

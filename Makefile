@@ -2,7 +2,6 @@ mans=git-annex.1 git-annex-shell.1
 all=git-annex $(mans) docs
 
 GHC?=ghc
-GHCMAKE=$(GHC) $(GHCFLAGS) --make
 PREFIX?=/usr
 CABAL?=cabal # set to "./Setup" if you lack a cabal program
 
@@ -28,8 +27,15 @@ git-annex.1: doc/git-annex.mdwn
 git-annex-shell.1: doc/git-annex-shell.mdwn
 	./Build/mdwn2man git-annex-shell 1 doc/git-annex-shell.mdwn > git-annex-shell.1
 
+# These are not built normally.
 git-union-merge.1: doc/git-union-merge.mdwn
 	./Build/mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
+git-recover-repository.1: doc/git-recover-repository.mdwn
+	./Build/mdwn2man git-recover-repository 1 doc/git-recover-repository.mdwn > git-recover-repository.1
+git-union-merge:
+	$(GHC) --make -threaded $@
+git-recover-repository:
+	$(GHC) --make -threaded $@
 
 install-mans: $(mans)
 	install -d $(DESTDIR)$(PREFIX)/share/man/man1
@@ -75,7 +81,8 @@ clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
-		Build/Standalone Build/OSXMkLibs
+		Build/Standalone Build/OSXMkLibs \
+		git-union-merge git-recover-repository
 	find -name \*.o -exec rm {} \;
 	find -name \*.hi -exec rm {} \;
 
@@ -214,4 +221,4 @@ hdevtools:
 	hdevtools --stop-server || true
 	hdevtools check git-annex.hs -g -cpp -g -i -g -idist/build/git-annex/git-annex-tmp -g -i. -g -idist/build/autogen -g -Idist/build/autogen -g -Idist/build/git-annex/git-annex-tmp -g -IUtility -g -DWITH_TESTSUITE -g -DWITH_S3 -g -DWITH_ASSISTANT -g -DWITH_INOTIFY -g -DWITH_DBUS -g -DWITH_PAIRING -g -DWITH_XMPP -g -optP-include -g -optPdist/build/autogen/cabal_macros.h -g -odir -g dist/build/git-annex/git-annex-tmp -g -hidir -g dist/build/git-annex/git-annex-tmp -g -stubdir -g dist/build/git-annex/git-annex-tmp -g -threaded -g -Wall -g -XHaskell98 -g -XPackageImports
 
-.PHONY: git-annex tags build-stamp
+.PHONY: git-annex git-union-merge git-recover-repository tags build-stamp

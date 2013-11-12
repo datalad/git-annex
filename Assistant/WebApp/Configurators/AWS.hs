@@ -10,7 +10,7 @@
 module Assistant.WebApp.Configurators.AWS where
 
 import Assistant.WebApp.Common
-import Assistant.MakeRemote
+import Assistant.WebApp.MakeRemote
 #ifdef WITH_S3
 import qualified Remote.S3 as S3
 #endif
@@ -24,7 +24,6 @@ import Types.StandardGroups
 import Creds
 import Assistant.Gpg
 import Git.Remote
-import Assistant.WebApp.Utility
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -121,7 +120,7 @@ postAddS3R :: Handler Html
 postAddS3R = awsConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ s3InputAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ s3InputAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = T.unpack $ repoName input
@@ -144,7 +143,7 @@ postAddGlacierR :: Handler Html
 postAddGlacierR = glacierConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ glacierInputAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ glacierInputAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = T.unpack $ repoName input
@@ -187,7 +186,7 @@ enableAWSRemote :: RemoteType -> UUID -> Widget
 enableAWSRemote remotetype uuid = do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ awsCredsAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ awsCredsAForm defcreds
 	case result of
 		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog

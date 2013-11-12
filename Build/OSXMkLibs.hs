@@ -144,7 +144,7 @@ getLibName lib libmap = case M.lookup lib libmap of
 	Just n -> (n, libmap)
 	Nothing -> (nextfreename, M.insert lib nextfreename libmap)
   where
-	names = map (\c -> [c]) ['A' .. 'Z'] ++
+	names = map pure ['A' .. 'Z'] ++
 		[[n, l] | n <- ['0' .. '9'], l <- ['A' .. 'Z']]
 	used = S.fromList $ M.elems libmap
 	nextfreename = fromMaybe (error "ran out of short library names!") $ 

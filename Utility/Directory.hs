@@ -38,15 +38,20 @@ dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
  - and lazily. If the directory does not exist, no exception is thrown,
  - instead, [] is returned. -}
 dirContentsRecursive :: FilePath -> IO [FilePath]
-dirContentsRecursive topdir = dirContentsRecursive' [topdir]
+dirContentsRecursive topdir = dirContentsRecursiveSkipping (const False) topdir
 
-dirContentsRecursive' :: [FilePath] -> IO [FilePath]
-dirContentsRecursive' [] = return []
-dirContentsRecursive' (dir:dirs) = unsafeInterleaveIO $ do
-	(files, dirs') <- collect [] [] =<< catchDefaultIO [] (dirContents dir)
-	files' <- dirContentsRecursive' (dirs' ++ dirs)
-	return (files ++ files')
+{- Skips directories whose basenames match the skipdir. -}
+dirContentsRecursiveSkipping :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
+dirContentsRecursiveSkipping skipdir topdir = go [topdir]
   where
+  	go [] = return []
+	go (dir:dirs)
+		| skipdir (takeFileName dir) = go dirs
+		| otherwise = unsafeInterleaveIO $ do
+			(files, dirs') <- collect [] []
+				=<< catchDefaultIO [] (dirContents dir)
+			files' <- go (dirs' ++ dirs)
+			return (files ++ files')
 	collect files dirs' [] = return (reverse files, reverse dirs')
 	collect files dirs' (entry:entries)
 		| dirCruft entry = collect files dirs' entries

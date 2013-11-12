@@ -1,6 +1,6 @@
 {- git-annex file locations
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@ module Locations (
 	fileKey,
 	keyPaths,
 	keyPath,
+	annexDir,
 	objectDir,
 	gitAnnexLocation,
 	gitAnnexLink,
@@ -27,6 +28,8 @@ module Locations (
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
 	gitAnnexFsckState,
+	gitAnnexFsckResultsLog,
+	gitAnnexScheduleState,
 	gitAnnexTransferDir,
 	gitAnnexCredsDir,
 	gitAnnexFeedStateDir,
@@ -35,7 +38,7 @@ module Locations (
 	gitAnnexJournalDir,
 	gitAnnexJournalLock,
 	gitAnnexIndex,
-	gitAnnexIndexLock,
+	gitAnnexIndexStatus,
 	gitAnnexIgnoredRefs,
 	gitAnnexPidFile,
 	gitAnnexDaemonStatusFile,
@@ -51,6 +54,7 @@ module Locations (
 	annexHashes,
 	hashDirMixed,
 	hashDirLower,
+	preSanitizeKeyName,
 
 	prop_idempotent_fileKey
 ) where
@@ -58,10 +62,12 @@ module Locations (
 import Data.Bits
 import Data.Word
 import Data.Hash.MD5
+import Data.Char
 
 import Common
 import Types
 import Types.Key
+import Types.UUID
 import qualified Git
 
 {- Conventions:
@@ -189,6 +195,15 @@ gitAnnexUnusedLog prefix r = gitAnnexDir r </> (prefix ++ "unused")
 gitAnnexFsckState :: Git.Repo -> FilePath
 gitAnnexFsckState r = gitAnnexDir r </> "fsckstate"
 
+{- .git/annex/fsckresults/uuid is used to store results of git fscks -}
+gitAnnexFsckResultsLog :: UUID -> Git.Repo -> FilePath
+gitAnnexFsckResultsLog u r = gitAnnexDir r </> "fsckresults" </> fromUUID u
+
+{- .git/annex/schedulestate is used to store information about when
+ - scheduled jobs were last run. -}
+gitAnnexScheduleState :: Git.Repo -> FilePath
+gitAnnexScheduleState r = gitAnnexDir r </> "schedulestate"
+
 {- .git/annex/creds/ is used to store credentials to access some special
  - remotes. -}
 gitAnnexCredsDir :: Git.Repo -> FilePath
@@ -223,9 +238,12 @@ gitAnnexJournalLock r = gitAnnexDir r </> "journal.lck"
 gitAnnexIndex :: Git.Repo -> FilePath
 gitAnnexIndex r = gitAnnexDir r </> "index"
 
-{- Lock file for .git/annex/index. -}
-gitAnnexIndexLock :: Git.Repo -> FilePath
-gitAnnexIndexLock r = gitAnnexDir r </> "index.lck"
+{- Holds the ref of the git-annex branch that the index was last updated to.
+ -
+ - The .lck in the name is a historical accident; this is not used as a
+ - lock. -}
+gitAnnexIndexStatus :: Git.Repo -> FilePath
+gitAnnexIndexStatus r = gitAnnexDir r </> "index.lck"
 
 {- List of refs that should not be merged into the git-annex branch. -}
 gitAnnexIgnoredRefs :: Git.Repo -> FilePath
@@ -281,6 +299,32 @@ gitAnnexAssistantDefaultDir = "annex"
 isLinkToAnnex :: FilePath -> Bool
 isLinkToAnnex s = (pathSeparator:objectDir) `isInfixOf` s
 
+{- Sanitizes a String that will be used as part of a Key's keyName,
+ - dealing with characters that cause problems on substandard filesystems.
+ -
+ - This is used when a new Key is initially being generated, eg by getKey.
+ - Unlike keyFile and fileKey, it does not need to be a reversable
+ - escaping. Also, it's ok to change this to add more problimatic
+ - characters later. Unlike changing keyFile, which could result in the
+ - filenames used for existing keys changing and contents getting lost.
+ -
+ - It is, however, important that the input and output of this function
+ - have a 1:1 mapping, to avoid two different inputs from mapping to the
+ - same key.
+ -}
+preSanitizeKeyName :: String -> String
+preSanitizeKeyName = concatMap escape
+  where
+  	escape c
+		| isAsciiUpper c || isAsciiLower c || isDigit c = [c]
+		| c `elem` ".-_ " = [c] -- common, assumed safe
+		| c `elem` "/%:" = [c] -- handled by keyFile
+		-- , is safe and uncommon, so will be used to escape
+		-- other characters. By itself, it is escaped to 
+		-- doubled form.
+		| c == ',' = ",,"
+		| otherwise = ',' : show(ord(c))
+
 {- Converts a key into a filename fragment without any directory.
  -
  - Escape "/" in the key name, to keep a flat tree of files and avoid
@@ -290,12 +334,29 @@ isLinkToAnnex s = (pathSeparator:objectDir) `isInfixOf` s
  -     a slash
  - "%" is escaped to "&s", and "&" to "&a"; this ensures that the mapping
  -     is one to one.
- - ":" is escaped to "&c", because despite it being 2011, people still care
- -     about FAT.
+ - ":" is escaped to "&c", because it seemed like a good idea at the time.
+ -
+ - Changing what this function escapes and how is not a good idea, as it
+ - can cause existing objects to get lost.
  -}
 keyFile :: Key -> FilePath
 keyFile key = replace "/" "%" $ replace ":" "&c" $
 	replace "%" "&s" $ replace "&" "&a"  $ key2file key
+
+{- Reverses keyFile, converting a filename fragment (ie, the basename of
+ - the symlink target) into a key. -}
+fileKey :: FilePath -> Maybe Key
+fileKey file = file2key $
+	replace "&a" "&" $ replace "&s" "%" $
+		replace "&c" ":" $ replace "%" "/" file
+
+{- for quickcheck -}
+prop_idempotent_fileKey :: String -> Bool
+prop_idempotent_fileKey s
+	| null s = True -- it's not legal for a key to have no keyName
+	| otherwise= Just k == fileKey (keyFile k)
+  where
+	k = stubKey { keyName = s, keyBackendName = "test" }
 
 {- A location to store a key on the filesystem. A directory hash is used,
  - to protect against filesystems that dislike having many items in a
@@ -312,19 +373,6 @@ keyPath key hasher = hasher key </> f </> f
 {- All possibile locations to store a key using different directory hashes. -}
 keyPaths :: Key -> [FilePath]
 keyPaths key = map (keyPath key) annexHashes
-
-{- Reverses keyFile, converting a filename fragment (ie, the basename of
- - the symlink target) into a key. -}
-fileKey :: FilePath -> Maybe Key
-fileKey file = file2key $
-	replace "&a" "&" $ replace "&s" "%" $
-		replace "&c" ":" $ replace "%" "/" file
-
-{- for quickcheck -}
-prop_idempotent_fileKey :: String -> Bool
-prop_idempotent_fileKey s = Just k == fileKey (keyFile k)
-  where
-	k = stubKey { keyName = s, keyBackendName = "test" }
 
 {- Two different directory hashes may be used. The mixed case hash
  - came first, and is fine, except for the problem of case-strict

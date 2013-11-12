@@ -36,6 +36,7 @@ import qualified Annex.Branch
 import qualified Option
 import Annex.CatFile
 import Types.Key
+import Git.FilePath
 
 def :: [Command]
 def = [withOptions [fromOption] $ command "unused" paramNothing seek
@@ -293,9 +294,9 @@ withKeysReferencedInGitRef a ref = do
 	forM_ ts $ tKey lookAtWorkingTree >=> maybe noop a
 	liftIO $ void clean
   where
-	tKey True = fmap fst <$$> Backend.lookupFile . DiffTree.file
+	tKey True = fmap fst <$$> Backend.lookupFile . getTopFilePath . DiffTree.file
 	tKey False = fileKey . takeFileName . encodeW8 . L.unpack <$$>
-		catFile ref . DiffTree.file
+		catFile ref . getTopFilePath . DiffTree.file
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable.
@@ -304,7 +305,7 @@ withKeysReferencedInGitRef a ref = do
  -}
 staleKeysPrune :: (Git.Repo -> FilePath) -> Bool -> Annex [Key]
 staleKeysPrune dirspec nottransferred = do
-	contents <- staleKeys dirspec
+	contents <- dirKeys dirspec
 	
 	dups <- filterM inAnnex contents
 	let stale = contents `exclude` dups
@@ -318,18 +319,6 @@ staleKeysPrune dirspec nottransferred = do
 				<$> getTransfers
 			return $ filter (`S.notMember` inprogress) stale
 		else return stale
-
-staleKeys :: (Git.Repo -> FilePath) -> Annex [Key]
-staleKeys dirspec = do
-	dir <- fromRepo dirspec
-	ifM (liftIO $ doesDirectoryExist dir)
-		( do
-			contents <- liftIO $ getDirectoryContents dir
-			files <- liftIO $ filterM doesFileExist $
-				map (dir </>) contents
-			return $ mapMaybe (fileKey . takeFileName) files
-		, return []
-		)
 
 data UnusedMaps = UnusedMaps
 	{ unusedMap :: UnusedMap

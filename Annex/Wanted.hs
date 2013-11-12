@@ -1,4 +1,4 @@
-{- git-annex control over whether content is wanted
+{- git-annex checking whether content is wanted
  -
  - Copyright 2012 Joey Hess <joey@kitenet.net>
  -

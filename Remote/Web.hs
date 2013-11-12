@@ -25,8 +25,6 @@ import Annex.Quvi
 import qualified Utility.Quvi as Quvi
 #endif
 
-import qualified Data.Map as M
-
 remote :: RemoteType
 remote = RemoteType {
 	typename = "web",
@@ -44,7 +42,7 @@ list = do
 	return [r]
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r _ _ gc = 
+gen r _ c gc = 
 	return $ Just Remote {
 		uuid = webUUID,
 		cost = expensiveRemoteCost,
@@ -56,7 +54,9 @@ gen r _ _ gc =
 		hasKey = checkKey,
 		hasKeyCheap = False,
 		whereisKey = Just getUrls,
-		config = M.empty,
+		remoteFsck = Nothing,
+		repairRepo = Nothing,
+		config = c,
 		gitconfig = gc,
 		localpath = Nothing,
 		repo = r,
@@ -118,7 +118,7 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 #endif
 		DefaultDownloader -> do
 			headers <- getHttpHeaders
-			Right <$> Url.withUserAgent (Url.check u' headers $ keySize key)
+			Right <$> Url.withUserAgent (Url.checkBoth u' headers $ keySize key)
   where
   	firsthit [] miss _ = return miss
 	firsthit (u:rest) _ a = do

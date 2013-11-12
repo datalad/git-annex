@@ -59,6 +59,8 @@ import qualified Utility.Env
 import qualified Utility.Matcher
 import qualified Utility.Exception
 import qualified Utility.Hash
+import qualified Utility.Scheduled
+import qualified Utility.HumanTime
 #ifndef mingw32_HOST_OS
 import qualified GitAnnex
 import qualified Remote.Helper.Encryptable
@@ -117,6 +119,7 @@ quickcheck =
 	, check "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
 	, check "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
 	, check "prop_idempotent_key_encode" Types.Key.prop_idempotent_key_encode
+	, check "prop_idempotent_key_decode" Types.Key.prop_idempotent_key_decode
 	, check "prop_idempotent_shellEscape" Utility.SafeCommand.prop_idempotent_shellEscape
 	, check "prop_idempotent_shellEscape_multiword" Utility.SafeCommand.prop_idempotent_shellEscape_multiword
 	, check "prop_logs_sane" Logs.prop_logs_sane
@@ -138,6 +141,8 @@ quickcheck =
 	, check "prop_read_show_TrustLevel" Types.TrustLevel.prop_read_show_TrustLevel
 	, check "prop_parse_show_TrustLog" Logs.Trust.prop_parse_show_TrustLog
 	, check "prop_hashes_stable" Utility.Hash.prop_hashes_stable
+	, check "prop_schedule_roundtrips" Utility.Scheduled.prop_schedule_roundtrips
+	, check "prop_duration_roundtrips" Utility.HumanTime.prop_duration_roundtrips
 	]
   where
 	check desc prop = do
@@ -365,13 +370,13 @@ test_preferred_content env = "git-annex preferred-content" ~: TestCase $ intmpcl
 	git_annex env "get" ["--auto", annexedfile] @? "get --auto of file failed with default preferred content"
 	annexed_notpresent annexedfile
 
-	git_annex env "content" [".", "standard"] @? "set expression to standard failed"
+	git_annex env "wanted" [".", "standard"] @? "set expression to standard failed"
 	git_annex env "group" [".", "client"] @? "set group to standard failed"
 	git_annex env "get" ["--auto", annexedfile] @? "get --auto of file failed for client"
 	annexed_present annexedfile
 	git_annex env "ungroup" [".", "client"] @? "ungroup failed"
 
-	git_annex env "content" [".", "standard"] @? "set expression to standard failed"
+	git_annex env "wanted" [".", "standard"] @? "set expression to standard failed"
 	git_annex env "group" [".", "manual"] @? "set group to manual failed"
 	-- drop --auto with manual leaves the file where it is
 	git_annex env "drop" ["--auto", annexedfile] @? "drop --auto of file failed with manual preferred content"
@@ -383,7 +388,7 @@ test_preferred_content env = "git-annex preferred-content" ~: TestCase $ intmpcl
 	annexed_notpresent annexedfile
 	git_annex env "ungroup" [".", "client"] @? "ungroup failed"
 	
-	git_annex env "content" [".", "exclude=*"] @? "set expression to exclude=* failed"
+	git_annex env "wanted" [".", "exclude=*"] @? "set expression to exclude=* failed"
 	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex env "drop" ["--auto", annexedfile] @? "drop --auto of file failed with exclude=*"
@@ -715,25 +720,20 @@ test_union_merge_regression env = "union merge regression" ~:
 					 - thought the file was still in r2 -}
 					git_annex_expectoutput env "find" ["--in", "r2"] []
 
-{- Regression test for the automatic conflict resolution bug fixed
- - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
 test_conflict_resolution :: TestEnv -> Test
 test_conflict_resolution env = "automatic conflict resolution" ~:
-	withtmpclonerepo env False $ \r1 -> do
+	TestList [movein_bug, check_mixed_conflict True, check_mixed_conflict False]
+  where
+	{- Regression test for the automatic conflict resolution bug fixed
+	 - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
+	movein_bug = TestCase $ withtmpclonerepo env False $ \r1 -> do
 		withtmpclonerepo env False $ \r2 -> do
 			let rname r = if r == r1 then "r1" else "r2"
 			forM_ [r1, r2] $ \r -> indir env r $ do
 				{- Get all files, see check below. -}
 				git_annex env "get" [] @? "get failed"
-				{- Set up repos as remotes of each other;
-				 - remove origin since we're going to sync
-				 - some changes to a file. -}
-				when (r /= r1) $
-					boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
-				when (r /= r2) $
-					boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
-				boolSystem "git" [Params "remote rm origin"] @? "remote rm"
-
+			pair r1 r2
+			forM_ [r1, r2] $ \r -> indir env r $ do
 				{- Set up a conflict. -}
 				let newcontent = content annexedfile ++ rname r
 				ifM (annexeval Config.isDirect)
@@ -756,6 +756,36 @@ test_conflict_resolution env = "automatic conflict resolution" ~:
 			forM_ [r1, r2] $ \r -> indir env r $ do
 			 	git_annex env "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
 
+	{- Check merge conflict resolution when one side is an annexed
+	 - file, and the other is a directory. -}
+	check_mixed_conflict inr1 = TestCase $ withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			indir env r1 $ do
+				writeFile conflictor "conflictor"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed"
+			indir env r2 $ do
+				createDirectory conflictor
+				writeFile (conflictor </> "subfile") "subfile"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed"
+			pair r1 r2
+			let r = if inr1 then r1 else r2
+			indir env r $ do
+				git_annex env "sync" [] @? "sync failed in mixed conflict"
+	  where
+		conflictor = "conflictor"
+
+	{- Set up repos as remotes of each other;
+	 - remove origin since we're going to sync
+	 - some changes to a file. -}
+	pair r1 r2 = forM_ [r1, r2] $ \r -> indir env r $ do
+		when (r /= r1) $
+			boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
+		when (r /= r2) $
+			boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
+		boolSystem "git" [Params "remote rm origin"] @? "remote rm"
+
 test_map :: TestEnv -> Test
 test_map env = "git-annex map" ~: intmpclonerepo env $ do
 	-- set descriptions, that will be looked for in the map
@@ -776,7 +806,6 @@ test_uninit env = "git-annex uninit" ~: TestList [inbranch, normal]
 		_ <- git_annex env "uninit" [] -- exit status not checked; does abnormal exit
 		checkregularfile annexedfile
 		doesDirectoryExist ".git" @? ".git vanished in uninit"
-		not <$> doesDirectoryExist ".git/annex" @? ".git/annex still present after uninit"
 
 test_upgrade :: TestEnv -> Test
 test_upgrade env = "git-annex upgrade" ~: intmpclonerepo env $ do

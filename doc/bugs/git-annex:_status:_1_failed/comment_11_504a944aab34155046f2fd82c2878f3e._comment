@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="96.44.189.101"
+ subject="comment 11"
+ date="2013-10-27T00:59:56Z"
+ content="""
+I've tried a few things and found a workaround for the problem. TL;DR: `git annex dropunused`
+
+First I created a new annex with the same data. This time I used `git annex add` instead of having the assistant add the files. Adding went fine (no status error). Only when I started the assistant I got the error right away, with exactly the same file as the last time. 
+
+When I removed the file from the annex, the error remained, but this time with a different problematic file in the same directory. 
+
+Then I stumbled upon [this forum post](http://git-annex.branchable.com/forum/dot_git_slash_annex_slash_tmp/). It relates to this bug in that the files git-annex is complaining about are located in .git/annex/tmp. `git annex unused` returned about 130 entries (of about 1,200 files total). The last entry was my problematic file. The second-to-last entry was the file that gave me the same error when I removed the original problematic file. This lets me assume that the bug causes `git annex status' to produce 130 errors, of which only the last one gets displayed.
+
+So I ran `git annex dropunused 1-130 --force`. (The command wouldn't run without `--force`, saying that it couldn't make sure if numcopies were being met. This may or may not be related to network problems I'm having lately.) Anyway, now the error was finally gone and the status output didn't complain anymore.
+
+Weird stuff.
+"""]]

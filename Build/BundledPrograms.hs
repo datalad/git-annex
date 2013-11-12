@@ -24,7 +24,10 @@ bundledPrograms = catMaybes
 	, Just "git"
 #endif
 	, Just "cp"
+#ifndef mingw32_HOST_OS
+	-- using xargs on windows led to problems, so it's not used there
 	, Just "xargs"
+#endif
 	, Just "rsync"
 	, Just "ssh"
 #ifndef mingw32_HOST_OS
@@ -41,8 +44,8 @@ bundledPrograms = catMaybes
 	, SysConfig.sha512
 	, SysConfig.sha224
 	, SysConfig.sha384
-	-- ionice is not included in the bundle; we rely on the system's
-	-- own version, which may better match its kernel
+	-- nice and ionice are not included in the bundle; we rely on the
+	-- system's own version, which may better match its kernel
 	]
   where
 	ifset True s = Just s

@@ -62,6 +62,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			hasKey = checkPresent this,
 			hasKeyCheap = False,
 			whereisKey = Nothing,
+			remoteFsck = Nothing,
+			repairRepo = Nothing,
 			config = c,
 			repo = r,
 			gitconfig = gc,
@@ -101,23 +103,24 @@ s3Setup' u c = if isIA c then archiveorg else defaulthost
 
 	archiveorg = do
 		showNote "Internet Archive mode"
-		maybe (error "specify bucket=") (const noop) $
-			getBucket archiveconfig
-		writeUUIDFile archiveconfig u
-		use archiveconfig
-	  where
-		archiveconfig =
+		-- Ensure user enters a valid bucket name, since
+		-- this determines the name of the archive.org item.
+		let bucket = replace " " "-" $ map toLower $
+			fromMaybe (error "specify bucket=") $
+				getBucket c
+		let archiveconfig = 
 			-- hS3 does not pass through x-archive-* headers
 			M.mapKeys (replace "x-archive-" "x-amz-") $
 			-- encryption does not make sense here
 			M.insert "encryption" "none" $
+			M.insert "bucket" bucket $
 			M.union c $
 			-- special constraints on key names
 			M.insert "mungekeys" "ia" $
 			-- bucket created only when files are uploaded
-			M.insert "x-amz-auto-make-bucket" "1" $
-			-- no default bucket name; should be human-readable
-			M.delete "bucket" defaults
+			M.insert "x-amz-auto-make-bucket" "1" defaults
+		writeUUIDFile archiveconfig u
+		use archiveconfig
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f p = s3Action r False $ \(conn, bucket) -> 

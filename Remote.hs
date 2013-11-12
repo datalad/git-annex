@@ -16,6 +16,7 @@ module Remote (
 	hasKey,
 	hasKeyCheap,
 	whereisKey,
+	remoteFsck,
 
 	remoteTypes,
 	remoteList,
@@ -38,7 +39,8 @@ module Remote (
 	showTriedRemotes,
 	showLocations,
 	forceTrust,
-	logStatus
+	logStatus,
+	checkAvailable
 ) where
 
 import qualified Data.Map as M
@@ -273,3 +275,7 @@ byCost = map snd . sortBy (comparing fst) . M.toList . costmap
   where
 	costmap = M.fromListWith (++) . map costpair
 	costpair r = (cost r, [r])
+
+checkAvailable :: Bool -> Remote -> IO Bool
+checkAvailable assumenetworkavailable = 
+	maybe (return assumenetworkavailable) doesDirectoryExist . localpath

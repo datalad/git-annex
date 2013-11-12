@@ -70,7 +70,7 @@ data StatInfo = StatInfo
 type StatState = StateT StatInfo Annex
 
 def :: [Command]
-def = [command "status" paramPaths seek
+def = [noCommit $ command "status" paramPaths seek
 	SectionQuery "shows status information about the annex"]
 
 seek :: [CommandSeek]
@@ -126,7 +126,7 @@ global_slow_stats =
 	, bad_data_size
 	, local_annex_keys
 	, local_annex_size
-	, known_annex_keys
+	, known_annex_files
 	, known_annex_size
 	, bloom_info
 	, backend_usage
@@ -136,7 +136,7 @@ local_fast_stats =
 	[ local_dir
 	, const local_annex_keys
 	, const local_annex_size
-	, const known_annex_keys
+	, const known_annex_files
 	, const known_annex_size
 	]
 local_slow_stats :: [FilePath -> Stat]
@@ -183,21 +183,21 @@ remote_list level = stat n $ nojson $ lift $ do
 local_dir :: FilePath -> Stat
 local_dir dir = stat "directory" $ json id $ return dir
 
-local_annex_size :: Stat
-local_annex_size = stat "local annex size" $ json id $
-	showSizeKeys <$> cachedPresentData
-
 local_annex_keys :: Stat
 local_annex_keys = stat "local annex keys" $ json show $
 	countKeys <$> cachedPresentData
 
-known_annex_size :: Stat
-known_annex_size = stat "known annex size" $ json id $
-	showSizeKeys <$> cachedReferencedData
+local_annex_size :: Stat
+local_annex_size = stat "local annex size" $ json id $
+	showSizeKeys <$> cachedPresentData
 
-known_annex_keys :: Stat
-known_annex_keys = stat "known annex keys" $ json show $
+known_annex_files :: Stat
+known_annex_files = stat "annexed files in working tree" $ json show $
 	countKeys <$> cachedReferencedData
+
+known_annex_size :: Stat
+known_annex_size = stat "size of annexed files in working tree" $ json id $
+	showSizeKeys <$> cachedReferencedData
 
 tmp_size :: Stat
 tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
@@ -311,15 +311,16 @@ getLocalStatInfo dir = do
 	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats)
 	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats) =
 		ifM (matcher $ FileInfo file file)
-			( (,,)
-				<$> ifM (inAnnex key)
+			( do
+				!presentdata' <- ifM (inAnnex key)
 					( return $ addKey key presentdata
 					, return presentdata
 					)
-				<*> pure (addKey key referenceddata)
-				<*> if fast
+				let !referenceddata' = addKey key referenceddata
+				!numcopiesstats' <- if fast
 					then return numcopiesstats
 					else updateNumCopiesStats key file numcopiesstats
+				return $! (presentdata', referenceddata', numcopiesstats')
 			, return vs
 			)
 
@@ -345,11 +346,11 @@ addKey key (KeyData count size unknownsize backends) =
 	ks = keySize key
 
 updateNumCopiesStats :: Key -> FilePath -> NumCopiesStats -> Annex NumCopiesStats
-updateNumCopiesStats key file stats = do
-	variance <- Variance <$> numCopiesCheck file key (-)
-	return $ stats { numCopiesVarianceMap = update (numCopiesVarianceMap stats) variance }
-  where
-  	update m variance = M.insertWith' (+) variance 1 m
+updateNumCopiesStats key file (NumCopiesStats m) = do
+	!variance <- Variance <$> numCopiesCheck file key (-)
+	let !m' = M.insertWith' (+) variance 1 m
+	let !ret = NumCopiesStats m'
+	return ret
 
 showSizeKeys :: KeyData -> String
 showSizeKeys d = total ++ missingnote
@@ -359,10 +360,10 @@ showSizeKeys d = total ++ missingnote
 		| unknownSizeKeys d == 0 = ""
 		| otherwise = aside $
 			"+ " ++ show (unknownSizeKeys d) ++
-			" keys of unknown size"
+			" unknown size"
 
 staleSize :: String -> (Git.Repo -> FilePath) -> Stat
-staleSize label dirspec = go =<< lift (Command.Unused.staleKeys dirspec)
+staleSize label dirspec = go =<< lift (dirKeys dirspec)
   where
 	go [] = nostat
 	go keys = onsize =<< sum <$> keysizes keys
@@ -370,10 +371,11 @@ staleSize label dirspec = go =<< lift (Command.Unused.staleKeys dirspec)
 	onsize size = stat label $
 		json (++ aside "clean up with git-annex unused") $
 			return $ roughSize storageUnits False size
-	keysizes keys = map (fromIntegral . fileSize) <$> stats keys
-	stats keys = do
+	keysizes keys = do
 		dir <- lift $ fromRepo dirspec
-		liftIO $ forM keys $ \k -> getFileStatus (dir </> keyFile k)
+		liftIO $ forM keys $ \k -> catchDefaultIO 0 $
+			fromIntegral . fileSize 
+				<$> getFileStatus (dir </> keyFile k)
 
 aside :: String -> String
 aside s = " (" ++ s ++ ")"

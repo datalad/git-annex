@@ -30,7 +30,7 @@ toRepo r sshcmd = do
 	g <- fromRepo id
 	let c = extractRemoteGitConfig g (Git.repoDescribe r)
 	let opts = map Param $ remoteAnnexSshOptions c
-	let host = Git.Url.hostuser r
+	let host = fromMaybe (error "bad ssh url") $ Git.Url.hostuser r
 	params <- sshCachingOptions (host, Git.Url.port r) opts
 	return $ params ++ Param host : sshcmd
 

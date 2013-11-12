@@ -9,9 +9,7 @@ module Assistant.Threads.TransferWatcher where
 
 import Assistant.Common
 import Assistant.DaemonStatus
-import Assistant.TransferQueue
-import Assistant.Drop
-import Annex.Content
+import Assistant.TransferSlots
 import Logs.Transfer
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
@@ -51,7 +49,7 @@ runHandler handler file _filestatus =
 
 {- Called when there's an error with inotify. -}
 onErr :: Handler
-onErr msg = error msg
+onErr = error
 
 {- Called when a new transfer information file is written. -}
 onAdd :: Handler
@@ -70,10 +68,9 @@ onAdd file = case parseTransferFile file of
  - The only thing that should change in the transfer info is the
  - bytesComplete, so that's the only thing updated in the DaemonStatus. -}
 onModify :: Handler
-onModify file = do
-	case parseTransferFile file of
-		Nothing -> noop
-		Just t -> go t =<< liftIO (readTransferInfoFile Nothing file)
+onModify file = case parseTransferFile file of
+	Nothing -> noop
+	Just t -> go t =<< liftIO (readTransferInfoFile Nothing file)
   where
 	go _ Nothing = noop
 	go t (Just newinfo) = alterTransferInfo t $
@@ -99,28 +96,3 @@ onDel file = case parseTransferFile file of
 			 - runs. -}
 			threadDelay 10000000 -- 10 seconds
 			finished t minfo
-
-{- Queue uploads of files downloaded to us, spreading them
- - out to other reachable remotes.
- -
- - Downloading a file may have caused a remote to not want it;
- - so check for drops from remotes.
- -
- - Uploading a file may cause the local repo, or some other remote to not
- - want it; handle that too.
- -}
-finishedTransfer :: Transfer -> Maybe TransferInfo -> Assistant ()
-finishedTransfer t (Just info)
-	| transferDirection t == Download =
-		whenM (liftAnnex $ inAnnex $ transferKey t) $ do
-			dodrops False
-			queueTransfersMatching (/= transferUUID t)
-				"newly received object"
-				Later (transferKey t) (associatedFile info) Upload
-	| otherwise = dodrops True
-  where
-	dodrops fromhere = handleDrops
-		("drop wanted after " ++ describeTransfer t info)
-		fromhere (transferKey t) (associatedFile info) Nothing
-finishedTransfer _ _ = noop
-

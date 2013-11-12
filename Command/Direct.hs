@@ -54,8 +54,8 @@ perform = do
 			Nothing -> noop
 			Just a -> do
 				showStart "direct" f
-				r <- tryAnnex a
-				case r of
+				r' <- tryAnnex a
+				case r' of
 					Left e -> warnlocked e
 					Right _ -> showEndOk
 		return Nothing

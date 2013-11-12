@@ -13,3 +13,6 @@ Click the `X` on all the messages on the left.
 ### Please provide any additional information below.
 
 This is admittedly a very mild problem, but from a usability perspective, it would be less confusing to show those on the right. When they were gone, I thought git-annex was broken somewhat... -- [[anarcat]]
+
+> [[done]], although I'm not sure I'm sold on their being on the right
+> being better. --[[Joey]]

@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmK0703vNSIQsP1mGf-4MAPnsBZiSc6yVo"
+ nickname="Emre"
+ subject="adding ssh server"
+ date="2013-10-16T16:37:10Z"
+ content="""
+Thanks Joey, I will try this direct mode tonight. I'm following git-annex development since your first days, but I just decided to give it a try so bear with me :)
+
+I also have a VPS and I did try yesterday night to add it as a cloud server to make android & linux sync. It also contained git-annex. When I add it from the PC, it appeared in Android but it was not possible to use it somehow. I had to add a new cloud server with exactly the same settings like th PC, which made things complicated to understand for me as to what happens on the server side when both computers try to setup a repository. (the sync didn't work neither)
+Maybe I hit a bug here so wanted to share with you.
+What I expected is that, 
+1) Add a VPS/ssh/git-annex cloud option from PC.
+2) It shall appear in the Android webapp using the XMPP control channel
+3) if the password or private key can't be synced over the XMPP due to security concern, then the Android webapp shall just ask for the password to enable it, nothing more.
+
+2nd thing, when I add this VPS/SSH/Git-annex from the PC, if I do not choose any encryption, it is marked as \"sync enabled\". IF I choose \"shared encryption\" instead, then sync gets disabled and there's nowhere any comment why the sync is disabled. So, by trial and error, I concluded that the sync is not supported in shared encryption remotes?
+
+3rd thing: The remote cloud can be configured for example as \"full backup\" or \"transfer host\". What is not clear is that if I configure it as a \"full backup\" host, then can Android and PC still use it as a \"transfer host\" to sync between themselves? What I would expect is that once I add this cloud vps as a \"full backup\" host, then everybody syncs with it and gets a copy from it if they can't communicate directly themselves. 
+Hope I did not confuse things much, thanks a lot even if you don't find time to write answers.
+"""]]

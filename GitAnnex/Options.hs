@@ -16,6 +16,7 @@ import Types.TrustLevel
 import qualified Annex
 import qualified Remote
 import qualified Limit
+import qualified Limit.Wanted
 import qualified Option
 
 options :: [Option]
@@ -33,19 +34,23 @@ options = Option.common ++
 	, Option ['x'] ["exclude"] (ReqArg Limit.addExclude paramGlob)
 		"skip files matching the glob pattern"
 	, Option ['I'] ["include"] (ReqArg Limit.addInclude paramGlob)
-		"don't skip files matching the glob pattern"
+		"limit to files matching the glob pattern"
 	, Option ['i'] ["in"] (ReqArg Limit.addIn paramRemote)
-		"skip files not present in a remote"
+		"match files present in a remote"
 	, Option ['C'] ["copies"] (ReqArg Limit.addCopies paramNumber)
 		"skip files with fewer copies"
 	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
-		"skip files not using a key-value backend"
+		"match files using a key-value backend"
 	, Option [] ["inallgroup"] (ReqArg Limit.addInAllGroup paramGroup)
-		"skip files not present in all remotes in a group"
+		"match files present in all remotes in a group"
 	, Option [] ["largerthan"] (ReqArg Limit.addLargerThan paramSize)
-		"skip files larger than a size"
+		"match files larger than a size"
 	, Option [] ["smallerthan"] (ReqArg Limit.addSmallerThan paramSize)
-		"skip files smaller than a size"
+		"match files smaller than a size"
+	, Option [] ["want-get"] (NoArg Limit.Wanted.addWantGet)
+		"match files the repository wants to get"
+	, Option [] ["want-drop"] (NoArg Limit.Wanted.addWantDrop)
+		"match files the repository wants to drop"
 	, Option ['T'] ["time-limit"] (ReqArg Limit.addTimeLimit paramTime)
 		"stop after the specified amount of time"
 	, Option [] ["user-agent"] (ReqArg setuseragent paramName)

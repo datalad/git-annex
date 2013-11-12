@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 2"
+ date="2013-10-16T18:04:27Z"
+ content="""
+I can confirm this bug, thanks for a good reproduction recipe.
+
+However, there is no actual data loss. If you switch to repo to indirect mode, you can use `git checkout` to check out the past versions from before the botched merge. When you do, you'll find that the files that the merge seemingly deleted in fact still have their contents present. It is preserved in `.git/annex/objects` by the automatic merge conflict resolution code, which does that whenever it deletes a file, whether for good reasons or for buggy reasons.
+
+So if you feel you lost data due to this, you can almost certainly get it back and I'm happy to help with that.
+
+
+"""]]

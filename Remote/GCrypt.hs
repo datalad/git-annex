@@ -107,7 +107,9 @@ gen' r u c gc = do
 		, hasKey = checkPresent this rsyncopts
 		, hasKeyCheap = repoCheap r
 		, whereisKey = Nothing
-		, config = M.empty
+		, remoteFsck = Nothing
+		, repairRepo = Nothing
+		, config = c
 		, localpath = localpathCalc r
 		, repo = r
 		, gitconfig = gc { remoteGitConfig = Just $ extractGitConfig r }

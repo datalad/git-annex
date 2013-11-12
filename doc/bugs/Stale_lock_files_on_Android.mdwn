@@ -35,3 +35,10 @@ fatal: Unable to create '/mnt/sdcard/reference/.git/index.lock': File exists.
 
 # End of transcript or log.
 """]]
+
+> The '/mnt/sdcard/reference/.git/index.lock' lock file will now be
+> automatically dealt with. Have not done anything about the refs/remotes
+> lock files yet. --[[Joey]]
+> 
+> Now the assistant deals with all stale git lock files on startup. 
+> [[done]] --[[Joey]]

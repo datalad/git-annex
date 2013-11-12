@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 4"
+ date="2013-11-03T00:15:30Z"
+ content="""
+While I've fixed this bug, in my testing the bug only caused git-annex to fall back to accessing the remote repository using rsync, rather than using git-annex-shell to talk to it, and so `git annex get --from encryptedrepo` was able to retrieve files that were stored in that remote despite the bug. That may have failed for you for some other reason.
+
+You can set git.encryptedrepo.annex-gcrypt to to \"true\" to make it use the degraded rsync mode, or to \"shell\" to make it use git-annex-shell. Setting it to shell should be all that you need to do to recover from (or indeed, work around this bug).
+"""]]
