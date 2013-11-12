@@ -228,7 +228,7 @@ processTranscript cmd opts input = do
 		s <- hGetContents h
 		v <- newEmptyMVar
 		void $ forkIO $ do
-			E.evaluate (length s)
+			void $ E.evaluate (length s)
 			putMVar v ()
 		return $ do
 			takeMVar v
