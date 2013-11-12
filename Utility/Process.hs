@@ -161,6 +161,8 @@ createBackgroundProcess p a = a =<< createProcess p
  - whether it succeeded or failed. -}
 processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
 #ifndef mingw32_HOST_OS
+{- This implementation interleves stdout and stderr in exactly the order
+ - the process writes them. -}
 processTranscript cmd opts input = do
 	(readf, writef) <- createPipe
 	readh <- fdToHandle readf
@@ -195,7 +197,40 @@ processTranscript cmd opts input = do
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
 #else
-processTranscript = error "processTranscript TODO"
+{- This implementation for Windows puts stderr after stdout. -}
+processTranscript cmd opts input = do
+	p@(_, _, _, pid) <- createProcess $
+		(proc cmd opts)
+			{ std_in = if isJust input then CreatePipe else Inherit
+			, std_out = CreatePipe
+			, std_err = CreatePipe
+			}
+
+	getout <- mkreader (stdoutHandle p)
+	geterr <- mkreader (stderrHandle p)
+
+	case input of
+		Just s -> do
+			let inh = stdinHandle p
+			unless (null s) $ do
+				hPutStr inh s
+				hFlush inh
+			hClose inh
+		Nothing -> return ()
+	
+	transcript <- (++) <$> getout <*> geterr
+	ok <- checkSuccessProcess pid
+	return (transcript, ok)
+  where
+	mkreader h = do
+		s <- hGetContents h
+		v <- newEmptyMVar
+		void $ forkIO $ do
+			E.evaluate (length s)
+			putMVar v ()
+		return $ do
+			takeMVar v
+			return s
 #endif
 
 {- Runs a CreateProcessRunner, on a CreateProcess structure, that
