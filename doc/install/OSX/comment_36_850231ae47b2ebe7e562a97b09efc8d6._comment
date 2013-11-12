@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkXtBdMgE1d9nCz2iBc4f85xh4izZ_auU"
+ nickname="Ulrich"
+ subject="cabal install gnuidn fails"
+ date="2013-11-12T16:27:48Z"
+ content="""
+Hi,
+
+I'm trying to build from source on Mavericks. brew works fine, but when trying to build gnuidn I get
+
+$ cabal install gnuidn
+Resolving dependencies...
+Configuring gnuidn-0.2...
+cabal: The pkg-config package libidn is required but it could not be found.
+Failed to install gnuidn-0.2
+cabal: Error: some packages failed to install:
+gnuidn-0.2 failed during the configure step. The exception was:
+ExitFailure 1
+
+Any idea why libidn cannot be found?
+
+
+"""]]
