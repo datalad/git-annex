@@ -1,5 +1,6 @@
 git-annex (4.20131106) unstable; urgency=low
 
+  * Backport is now built against git 1.8.4, also now available in backports.
   * Improve local pairing behavior when two computers both try to start
     the pairing process separately.
   * sync: Work even when the local git repository is new and empty,

@@ -52,7 +52,7 @@ Build-Depends:
 	libghc-feed-dev,
 	ikiwiki,
 	perlmagick,
-	git,
+	git (>= 1:1.8.4),
 	rsync,
 	wget,
 	curl,
@@ -67,7 +67,7 @@ Package: git-annex
 Architecture: any
 Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	git (>= 1:1.7.7.6),
+	git (>= 1:1.8.4),
 	rsync,
 	wget,
 	curl,
