@@ -1,5 +1,5 @@
 Pick the operating system which you use git-annex on the most.
 
-[[!poll expandable=yes open=yes 6 "Linux" 0 "OSX" 0 "Android" 0 "other Unix" 1 "Windows"]]
+[[!poll expandable=yes open=yes 6 "Linux" 1 "OSX" 0 "Android" 0 "other Unix" 1 "Windows"]]
 
 [[!sidebar content=""]]
