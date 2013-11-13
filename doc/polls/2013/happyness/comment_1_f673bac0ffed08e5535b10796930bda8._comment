@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="2001:1928:1:9::1"
+ subject="quite happy"
+ date="2013-11-13T23:59:30Z"
+ content="""
+i am generally quite happy with git-annex, especially since there's pretty much nothing out there that does the same.
+
+but there's a significant learning curve, and i frequently get into \"WTF moments\" where things move under my feet, particularly when the assistant is running. i have seen it add files that were still being downloaded (via transmission), for example. or it has started adding files i didn't ask it to.
+
+i also find it difficult to get rid of files: the symlinks make it *seem* like the file is gone, but it's still consuming disk space in .git/annex/objects. I understand the safety reasoning behind this, but I like to be able to shoot myself in the foot sometimes... maybe i should just be using more of the [[direct mode]].
+
+thanks for this great software, it makes a lot of things much easier regardless of all my \"wtf moments\". :)
+"""]]
