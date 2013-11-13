@@ -68,8 +68,8 @@ startDaemon assistant foreground startdelay listenhost startbrowser = do
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
-	logfd <- liftIO $ openLog logfile
 #ifndef mingw32_HOST_OS
+	logfd <- liftIO $ openLog logfile
 	if foreground
 		then do
 			origout <- liftIO $ catchMaybeIO $ 
