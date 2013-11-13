@@ -1,5 +1,5 @@
 What kind of data do you mostly use git-annex to store?
 
-[[!poll expandable=yes open=yes 10 "personal data" 0 "business data" 2 "scientific data" 0 "game development assets" 0 "rather not say" 1 "none yet, still working through the bugs"]]
+[[!poll expandable=yes open=yes 10 "personal data" 0 "business data" 2 "scientific data" 0 "game development assets" 0 "rather not say" 1 "none yet, still working through the bugs" 1 "videos"]]
 
 [[!sidebar content=""]]
