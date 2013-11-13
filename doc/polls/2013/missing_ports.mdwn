@@ -6,6 +6,6 @@ If there's a device on which you cannot use git-annex today, because the
 port to an OS is missing or incomplete, please pick it. Please don't vote
 for an OS where you already successfully use git-annex.
 
-[[!poll expandable=yes open=yes 3 "I'm good -- git-annex runs on my OS of choice!" 4 "Windows" 3 "Android" 3 "Apple iOS" 1 "Synology NAS"]]
+[[!poll expandable=yes open=yes 4 "I'm good -- git-annex runs on my OS of choice!" 4 "Windows" 3 "Android" 3 "Apple iOS" 1 "Synology NAS"]]
 
 [[!sidebar content=""]]
