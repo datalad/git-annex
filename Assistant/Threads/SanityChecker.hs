@@ -42,7 +42,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	 - all, so detect and repair. -}
 	ifM (not <$> liftAnnex (inRepo (checkIndex S.empty)))
 		( do
-			debug ["corrupt index file found at startup; removing and restaging"]
+			notice ["corrupt index file found at startup; removing and restaging"]
 			liftAnnex $ inRepo nukeIndex
 			{- Normally the startup scan avoids re-staging files,
 			 - but with the index deleted, everything needs to be
