@@ -1,6 +1,6 @@
 How would you characterize your general git knowledge?
 (Not your git-annex knowledge!)
 
-[[!poll expandable=yes open=yes 0 "novice" 5 "casual, needs advice" 1 "everyday use" 9 "can offer advice" 0 "know it very well" 2 "wrote some of it"]]
+[[!poll expandable=yes open=yes 0 "novice" 5 "casual, needs advice" 1 "everyday use" 9 "can offer advice" 1 "know it very well" 2 "wrote some of it"]]
 
 [[!sidebar content=""]]
