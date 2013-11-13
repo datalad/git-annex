@@ -1,0 +1,3 @@
+Pick the operating system which you use git-annex on the most.
+
+[[!poll expandable=yes open=yes 0 "Linux" 0 "OSX" 0 "Android" 0 "other Unix" 0 "Windows"]]
