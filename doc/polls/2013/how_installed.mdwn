@@ -1,6 +1,6 @@
 How do you get git-annex installed?
 
-[[!poll expandable=yes open=yes 4 "From a prebuilt version on this website" 1 "I build from source" 4 "I install the version provided by my OS distributor" 0 "I don't know; it was installed for me" 1 "homebrew -> cabal"]]
+[[!poll expandable=yes open=yes 5 "From a prebuilt version on this website" 1 "I build from source" 4 "I install the version provided by my OS distributor" 0 "I don't know; it was installed for me" 1 "homebrew -> cabal"]]
 
 If you install it using different methods at different times, pick the
 method you use most frequently.
