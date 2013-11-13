@@ -13,6 +13,7 @@ module Git.Repair (
 	resetLocalBranches,
 	removeTrackingBranches,
 	checkIndex,
+	missingIndex,
 	nukeIndex,
 	emptyGoodCommits,
 ) where
@@ -369,18 +370,19 @@ verifyTree missing treesha r
 			else cleanup
 
 {- Checks that the index file only refers to objects that are not missing,
- - and is not itself corrupt or missing. -}
+ - and is not itself corrupt. Note that a missing index file is not
+ - considered a problem (repo may be new). -}
 checkIndex :: MissingObjects -> Repo -> IO Bool
-checkIndex missing r = ifM (doesFileExist (localGitDir r </> "index"))
-	( do
-		(bad, _good, cleanup) <- partitionIndex missing r
-		if null bad
-			then cleanup
-			else do
-				void cleanup
-				return False
-	, return False
-	)
+checkIndex missing r = do
+	(bad, _good, cleanup) <- partitionIndex missing r
+	if null bad
+		then cleanup
+		else do
+			void cleanup
+			return False
+
+missingIndex :: Repo -> IO Bool
+missingIndex r = not <$> doesFileExist (localGitDir r </> "index")
 
 partitionIndex :: MissingObjects -> Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
 partitionIndex missing r = do

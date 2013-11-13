@@ -40,13 +40,18 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 
 	{- A corrupt index file can prevent the assistant from working at
 	 - all, so detect and repair. -}
-	unlessM (liftAnnex $ inRepo $ checkIndex S.empty) $ do
-		debug ["corrupt index found at startup; removing"]
-		liftAnnex $ inRepo nukeIndex
-		{- Normally the startup scan avoids re-staging files,
-		 - but with the index deleted, everything needs to be
-		 - restaged. -}
-		modifyDaemonStatus_ $ \s -> s { forceRestage = True }
+	ifM (liftAnnex $ inRepo $ checkIndex S.empty)
+		( do
+			debug ["corrupt index file found at startup; removing and restaging"]
+			liftAnnex $ inRepo nukeIndex
+			{- Normally the startup scan avoids re-staging files,
+			 - but with the index deleted, everything needs to be
+			 - restaged. -}
+			modifyDaemonStatus_ $ \s -> s { forceRestage = True }
+		, whenM (liftAnnex $ inRepo missingIndex) $ do
+			debug ["no index file; restaging"]
+			modifyDaemonStatus_ $ \s -> s { forceRestage = True }
+		)
 
 	{- If there's a startup delay, it's done here. -}
 	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay
