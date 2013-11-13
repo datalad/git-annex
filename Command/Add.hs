@@ -23,8 +23,10 @@ import Annex.Perms
 import Annex.Link
 import qualified Annex
 import qualified Annex.Queue
+#ifdef WITH_CLIBS
 #ifndef __ANDROID__
 import Utility.Touch
+#endif
 #endif
 import Config
 import Utility.InodeCache
@@ -211,12 +213,14 @@ link file key mcache = flip catchAnnex (undo file key) $ do
 	l <- inRepo $ gitAnnexLink file key
 	replaceFile file $ makeAnnexLink l
 
+#ifdef WITH_CLIBS
 #ifndef __ANDROID__
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
 	case mcache of
 		Just c -> liftIO $ touch file (TimeSpec $ inodeCacheToMtime c) False
 		Nothing -> noop
+#endif
 #endif
 
 	return l
