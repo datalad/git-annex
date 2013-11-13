@@ -3,3 +3,5 @@ type `git annex` commands at the command line, and how many use the
 [[/assistant]] (and its webapp).
 
 [[!poll open=yes 0 "I use mostly the git-annex assistant" 1 "I use mostly git-annex at the command line" 0 "I do not yet use git-annex"]]
+
+[[!sidebar content=""]]

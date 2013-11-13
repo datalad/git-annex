@@ -4,3 +4,5 @@ How do you get git-annex installed?
 
 If you install it using different methods at different times, pick the
 method you use most frequently.
+
+[[!sidebar content=""]]
