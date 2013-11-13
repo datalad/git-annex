@@ -40,7 +40,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 
 	{- A corrupt index file can prevent the assistant from working at
 	 - all, so detect and repair. -}
-	ifM (liftAnnex $ inRepo $ checkIndex S.empty)
+	ifM (not <$> liftAnnex (inRepo (checkIndex S.empty)))
 		( do
 			debug ["corrupt index file found at startup; removing and restaging"]
 			liftAnnex $ inRepo nukeIndex
