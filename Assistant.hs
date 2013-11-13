@@ -50,6 +50,7 @@ import qualified Utility.Daemon
 import Utility.LogFile
 import Utility.ThreadScheduler
 import Utility.HumanTime
+import Annex.Perms
 import qualified Build.SysConfig as SysConfig
 
 import System.Log.Logger
@@ -69,6 +70,7 @@ startDaemon assistant foreground startdelay listenhost startbrowser = do
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
 #ifndef mingw32_HOST_OS
+	createAnnexDirectory (parentDir logfile)
 	logfd <- liftIO $ openLog logfile
 	if foreground
 		then do
