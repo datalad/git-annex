@@ -1,5 +1,5 @@
 [[!meta title="2013 git-annex user survey"]]
 
-In progress! Check back for more polls, or follow RSS feed.
+In progress! Check back later for more polls, or follow RSS feed.
 
-[[!inline pages="page(polls/2013/*)" trail=yes]]
+[[!inline pages="page(polls/2013/*)" trail=yes archive=yes reverse=true]]
