@@ -200,6 +200,9 @@ onAdd matcher file filestatus
 			add matcher file
 	| otherwise = noChange
 
+shouldRestage :: DaemonStatus -> Bool
+shouldRestage ds = scanComplete ds || forceRestage ds
+
 {- In direct mode, add events are received for both new files, and
  - modified existing files.
  -}
@@ -214,7 +217,7 @@ onAddDirect symlinkssupported matcher file fs = do
 				 - really modified, but it might have
 				 - just been deleted and been put back,
 				 - so it symlink is restaged to make sure. -}
-				( ifM (scanComplete <$> getDaemonStatus)
+				( ifM (shouldRestage <$> getDaemonStatus)
 					( do
 						link <- liftAnnex $ inRepo $ gitAnnexLink file key
 						addLink file link (Just key)
@@ -286,7 +289,7 @@ onAddSymlink' linktarget mk isdirect file filestatus = go mk
 	 - links too.)
 	 -}
 	ensurestaged (Just link) daemonstatus
-		| scanComplete daemonstatus = addLink file link mk
+		| shouldRestage daemonstatus = addLink file link mk
 		| otherwise = case filestatus of
 			Just s
 				| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> noChange

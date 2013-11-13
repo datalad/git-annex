@@ -13,6 +13,7 @@ module Git.Repair (
 	resetLocalBranches,
 	removeTrackingBranches,
 	checkIndex,
+	nukeIndex,
 	emptyGoodCommits,
 ) where
 
@@ -368,15 +369,18 @@ verifyTree missing treesha r
 			else cleanup
 
 {- Checks that the index file only refers to objects that are not missing,
- - and is not itself corrupt. -}
+ - and is not itself corrupt or missing. -}
 checkIndex :: MissingObjects -> Repo -> IO Bool
-checkIndex missing r = do
-	(bad, _good, cleanup) <- partitionIndex missing r
-	if null bad
-		then cleanup
-		else do
-			void cleanup
-			return False
+checkIndex missing r = ifM (doesFileExist (localGitDir r </> "index"))
+	( do
+		(bad, _good, cleanup) <- partitionIndex missing r
+		if null bad
+			then cleanup
+			else do
+				void cleanup
+				return False
+	, return False
+	)
 
 partitionIndex :: MissingObjects -> Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
 partitionIndex missing r = do
@@ -396,7 +400,7 @@ rewriteIndex missing r
 	| otherwise = do
 		(bad, good, cleanup) <- partitionIndex missing r
 		unless (null bad) $ do
-			nukeFile (localGitDir r </> "index")
+			nukeIndex r
 			UpdateIndex.streamUpdateIndex r
 				=<< (catMaybes <$> mapM reinject good)
 		void cleanup
@@ -407,6 +411,9 @@ rewriteIndex missing r
 		Just blobtype -> Just <$>
 			UpdateIndex.stageFile sha blobtype file r
 	reinject _ = return Nothing
+
+nukeIndex :: Repo -> IO ()
+nukeIndex r = nukeFile (localGitDir r </> "index")
 
 newtype GoodCommits = GoodCommits (S.Set Sha)
 
@@ -502,7 +509,7 @@ runRepairOf fsckresult forced referencerepo g = do
 				return (True, stillmissing, modifiedbranches)
 	
 	corruptedindex = do
-		nukeFile (localGitDir g </> "index")
+		nukeIndex g
 		putStrLn "Removed the corrupted index file. You should look at what files are present in your working tree and git add them back to the index when appropriate."
 		return (True, S.empty, [])
 

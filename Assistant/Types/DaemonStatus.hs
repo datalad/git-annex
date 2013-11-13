@@ -28,6 +28,8 @@ data DaemonStatus = DaemonStatus
 	{ startedThreads :: M.Map ThreadName (Async (), IO ())
 	-- False when the daemon is performing its startup scan
 	, scanComplete :: Bool
+	-- True when all files should be restaged.
+	, forceRestage :: Bool
 	-- Time when a previous process of the daemon was running ok
 	, lastRunning :: Maybe POSIXTime
 	-- True when the daily sanity checker is running
@@ -80,6 +82,7 @@ type DaemonStatusHandle = TMVar DaemonStatus
 newDaemonStatus :: IO DaemonStatus
 newDaemonStatus = DaemonStatus
 	<$> pure M.empty
+	<*> pure False
 	<*> pure False
 	<*> pure Nothing
 	<*> pure False
