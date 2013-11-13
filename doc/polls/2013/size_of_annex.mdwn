@@ -7,6 +7,6 @@ that says "size of annexed files in working tree" or "known annex size".
 If you've got multiple repositories that each contain different files
 (not git clones), you can run it in each and add them up.
 
-[[!poll expandable=yes open=yes 1 "less than 1+ GB" 1 "1+ GB" 8 "10+ GB" 8 "100+ GB" 2 "1+ TB" 0 "2+ TB" 1 "4+ TB" 1 "8+ TB" 0 "16+ TB" 0 "32+ TB" 0 "64+ TB" 0 "128+ TB" 0 "rather not say"]]
+[[!poll expandable=yes open=yes 1 "less than 1+ GB" 1 "1+ GB" 8 "10+ GB" 9 "100+ GB" 2 "1+ TB" 0 "2+ TB" 1 "4+ TB" 1 "8+ TB" 0 "16+ TB" 0 "32+ TB" 0 "64+ TB" 0 "128+ TB" 0 "rather not say"]]
 
 [[!sidebar content=""]]
