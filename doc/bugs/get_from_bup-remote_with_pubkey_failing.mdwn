@@ -90,3 +90,4 @@ My keys/subkeys:
     sub  4096R/0xB44520A46B27144D  aangemaakt: 2013-11-10  vervaldatum: 2014-11-10  gebruik: S
     sub  4096R/0xFF8DE378DE223820  aangemaakt: 2013-11-10  vervaldatum: 2014-11-10  gebruik: E
 
+> This was already fixed in version 4.20131106. [[done]] --[[Joey]] 
