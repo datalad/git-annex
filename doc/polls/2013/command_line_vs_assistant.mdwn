@@ -2,6 +2,6 @@ To start off the 2013 git-annex user survey, let's see how many users
 type `git annex` commands at the command line, and how many use the
 [[/assistant]] (and its webapp).
 
-[[!poll open=yes 1 "I use mostly the git-annex assistant" 7 "I use mostly git-annex at the command line" 0 "I do not yet use git-annex"]]
+[[!poll open=yes 1 "I use mostly the git-annex assistant" 8 "I use mostly git-annex at the command line" 0 "I do not yet use git-annex"]]
 
 [[!sidebar content=""]]
