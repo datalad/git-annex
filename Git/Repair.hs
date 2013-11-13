@@ -12,7 +12,6 @@ module Git.Repair (
 	retrieveMissingObjects,
 	resetLocalBranches,
 	removeTrackingBranches,
-	rewriteIndex,
 	checkIndex,
 	emptyGoodCommits,
 ) where
@@ -368,7 +367,8 @@ verifyTree missing treesha r
 			-- as long as ls-tree succeeded, we're good
 			else cleanup
 
-{- Checks that the index file only refers to objects that are not missing. -}
+{- Checks that the index file only refers to objects that are not missing,
+ - and is not itself corrupt. -}
 checkIndex :: MissingObjects -> Repo -> IO Bool
 checkIndex missing r = do
 	(bad, _good, cleanup) <- partitionIndex missing r
@@ -448,7 +448,16 @@ runRepairOf fsckresult forced referencerepo g = do
 	missing <- cleanCorruptObjects fsckresult g
 	stillmissing <- retrieveMissingObjects missing referencerepo g
 	if S.null stillmissing
-		then successfulfinish stillmissing []
+		then if repoIsLocalBare g
+			then successfulfinish stillmissing []
+			else ifM (checkIndex stillmissing g)
+				( successfulfinish stillmissing []
+				, do
+					putStrLn "No missing objects found, but the index file is corrupt!"
+					if forced
+						then corruptedindex
+						else needforce stillmissing
+				)		
 		else do
 			putStrLn $ unwords
 				[ show (S.size stillmissing)
@@ -491,6 +500,12 @@ runRepairOf fsckresult forced referencerepo g = do
 				putStrLn "Successfully recovered repository!"
 				putStrLn "Please carefully check that the changes mentioned above are ok.."
 				return (True, stillmissing, modifiedbranches)
+	
+	corruptedindex = do
+		nukeFile (localGitDir g </> "index")
+		putStrLn "Removed the corrupted index file. You should look at what files are present in your working tree and git add them back to the index when appropriate."
+		return (True, S.empty, [])
+
 	successfulfinish stillmissing modifiedbranches = do
 		mapM_ putStrLn
 			[ "Successfully recovered repository!"
@@ -503,5 +518,8 @@ runRepairOf fsckresult forced referencerepo g = do
 			then do
 				putStrLn "If you have a clone of this bare repository, you should add it as a remote of this repository, and re-run git-recover-repository."
 				putStrLn "If there are no clones of this repository, you can instead run git-recover-repository with the --force parameter to force recovery to a possibly usable state."
-			else putStrLn "To force a recovery to a usable state, run this command again with the --force parameter."
+				return (False, stillmissing, [])
+			else needforce stillmissing
+	needforce stillmissing = do
+		putStrLn "To force a recovery to a usable state, run this command again with the --force parameter."
 		return (False, stillmissing, [])

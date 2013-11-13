@@ -26,6 +26,7 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     when running describe or other commands with a remote that has no uuid.
   * Work around Android linker problem that had prevented git-annex from
     running on Android 4.3 and 4.4.
+  * repair: Handle case where index file is corrupt, but all objects are ok.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 16:14:14 -0400
 
