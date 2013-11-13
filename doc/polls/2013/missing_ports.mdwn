@@ -1,0 +1,9 @@
+git-annex runs on many operating systems:
+Linux, OS X, BSDs, Android, and Windows.
+However, some ports are further along than others. 
+
+If there's a device on which you cannot use git-annex today, because the
+port to an OS is missing or incomplete, please pick it. Please don't vote
+for an OS where you already successfully use git-annex.
+
+[[!poll expandable=yes open=yes 1 "I'm good -- git-annex runs on my OS of choice!" 0 "Windows" 0 "Android" 0 "Apple iOS"]]
