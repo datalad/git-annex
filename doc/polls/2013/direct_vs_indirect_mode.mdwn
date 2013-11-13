@@ -1,5 +1,5 @@
 I'm curious to see how popular [[/direct_mode]] is versus indirect mode.
 
-[[!poll open=yes 1 "I use mostly indirect mode" 0 "I use mostly direct mode" 1 "I use direct and indirect mode equally" 3 "I use indirect mode when possible, but am forced to use direct mode on some platforms" 0 "I use whatever is the default" 0 "I don't know"]]
+[[!poll open=yes 1 "I use mostly indirect mode" 0 "I use mostly direct mode" 1 "I use direct and indirect mode equally" 4 "I use indirect mode when possible, but am forced to use direct mode on some platforms" 0 "I use whatever is the default" 0 "I don't know"]]
 
 [[!sidebar content=""]]
