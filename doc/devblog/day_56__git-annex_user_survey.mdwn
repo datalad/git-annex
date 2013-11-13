@@ -1,0 +1,20 @@
+One of my goals for this month is to get a better sense of how git-annex is
+being used, how it's working out for people, and what areas need to be
+concentrated on. To start on that, I am doing the 
+[[2013 git-annex user survey|/polls/2013]], similar to the git user
+surveys. I will be adding some less general polls later (suggestions for
+topics appreciated!), but you can go vote in any or all of 10 polls now.
+
+----
+
+Found a workaround for yesterday's Windows build problem. Seems that only
+cabal runs gcc in a way that fails, so `ghc --make` builds is successfully.
+However, the watcher doesn't quite work on Windows. It does get events when
+files are created, but it seems to then hang before it can add the file to
+git, or indeed finish printing out a debug log message about the event.
+This looks like it could be a problem with the threaded ghc runtime on
+Windows, or something like that.
+
+Main work today was improving the git repository repair to handle corrupt
+index files. The assistant can now start up, detect that the index file is
+corrupt, and regenerate it all automatically.
