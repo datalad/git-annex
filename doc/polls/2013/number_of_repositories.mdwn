@@ -2,6 +2,6 @@ How many git-annex repositories do you have? This can be different clones
 of the same repository on different machines and drives, and/or completely
 separate git repositories.
 
-[[!poll expandable=yes open=yes 1 "1" 2 "2-5" 2 "6-10" 0 "11-20" 1 "21-30" 1 "31-40" 0 "41-50" 0 "51-60" 0 "61-70" 1 "71-80" 0 "81-90" 0 "91-100"]]
+[[!poll expandable=yes open=yes 0 "1" 2 "2-5" 3 "6-10" 0 "11-20" 1 "21-30" 1 "31-40" 0 "41-50" 0 "51-60" 0 "61-70" 1 "71-80" 0 "81-90" 0 "91-100"]]
 
 [[!sidebar content=""]]
