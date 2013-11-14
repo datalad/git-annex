@@ -759,7 +759,7 @@ test_conflict_resolution env = "automatic conflict resolution" ~:
 			{- Sync twice in r1 so it gets the conflict resolution
 			 - update from r2 -}
 			forM_ [r1, r2, r1] $ \r -> indir env r $ do
-				git_annex env "sync" [] @? "sync failed in " ++ rname r
+				git_annex env "sync" ["--force"] @? "sync failed in " ++ rname r
 			{- After the sync, it should be possible to get all
 			 - files. This includes both sides of the conflict,
 			 - although the filenames are not easily predictable.

@@ -11,8 +11,6 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     "git status" won't work in them.
   * The -c option now not only modifies the git configuration seen by
     git-annex, but it is passed along to every git command git-annex runs.
-  * sync: When there are merge conflicts that get automatically resolved,
-    exit nonzero at the end.
   * watcher: Avoid loop when adding a file owned by someone else fails
     in indirect mode because its permissions cannot be modified.
   * webapp: Avoid encoding problems when displaying the daemon log file.
