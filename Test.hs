@@ -170,7 +170,7 @@ hunit =
 	, check "describe" test_describe
 	, check "find" test_find
 	, check "merge" test_merge
-	, check "status" test_status
+	, check "info" test_info
 	, check "version" test_version
 	, check "sync" test_sync
 	, check "union merge regression" test_union_merge_regression
@@ -686,9 +686,9 @@ test_merge :: TestEnv -> Test
 test_merge env = "git-annex merge" ~: intmpclonerepo env $ do
 	git_annex env "merge" [] @? "merge failed"
 
-test_status :: TestEnv -> Test
-test_status env = "git-annex status" ~: intmpclonerepo env $ do
-	json <- git_annex_output env "status" ["--json"]
+test_info :: TestEnv -> Test
+test_info env = "git-annex info" ~: intmpclonerepo env $ do
+	json <- git_annex_output env "info" ["--json"]
 	case Text.JSON.decodeStrict json :: Text.JSON.Result (Text.JSON.JSObject Text.JSON.JSValue) of
 		Text.JSON.Ok _ -> return ()
 		Text.JSON.Error e -> assertFailure e
