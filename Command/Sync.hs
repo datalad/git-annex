@@ -321,6 +321,7 @@ resolveMerge = do
 			, Param "-m"
 			, Param "git-annex automatic merge conflict fix"
 			]
+		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
 
 resolveMerge' :: LsFiles.Unmerged -> Annex (Maybe FilePath)
