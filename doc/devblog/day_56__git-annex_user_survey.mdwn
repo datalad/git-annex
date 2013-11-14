@@ -1,7 +1,7 @@
 One of my goals for this month is to get a better sense of how git-annex is
 being used, how it's working out for people, and what areas need to be
 concentrated on. To start on that, I am doing the 
-[[2013 git-annex user survey|/polls/2013]], similar to the git user
+[2013 git-annex user survey](http://git-annex-survey.branchable.com/polls/2013/), similar to the git user
 surveys. I will be adding some less general polls later (suggestions for
 topics appreciated!), but you can go vote in any or all of 10 polls now.
 

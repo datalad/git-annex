@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://edheil.wordpress.com/"
- ip="173.162.44.162"
- subject="comment 1"
- date="2013-11-13T21:15:56Z"
- content="""
-Is an iOS port even a possibility?  It would be outstanding if it were.  Lately I've moved from using mostly-android for mobile purposes to mostly-iOS, and it makes me sad not to be able to use git annex directly.  Though I might eventually get around to having git-annex assistant running on a server at home which I can sftp to, and use it secondhand that way.
-"""]]

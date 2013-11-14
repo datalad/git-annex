@@ -1,5 +1,0 @@
-Overall, how happy are you with git annex?
-
-[[!poll expandable=yes open=yes 1 "unhappy" 1 "not so happy" 8 "happy" 9 "very happy" 2 "completely ecstatic"]]
-
-[[!sidebar content=""]]
