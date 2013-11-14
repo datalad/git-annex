@@ -1,5 +1,5 @@
 ### Please describe the problem.
-Minor issue.
+(Minor issue.)
 
 Incorrect merge of direct repos in the special case where at repo A a symlink to a file whose contents aren't yet available, are overwritten, while at repo B the file is deleted.
 
