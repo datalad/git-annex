@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnSenxKyE_2Z6Wb-EBMO8FciyRywjx1ZiQ"
+ nickname="Walter"
+ subject="comment 9"
+ date="2013-09-23T21:58:42Z"
+ content="""
+Thinking about this further, I'm not entirely sure what I want. I think the confusion arises from git-annex sometimes (mostly) caring about file *contents* (ie dependent on the hash of the file), but sometimes (preferred content, not sure of anywhere else) caring about file *location*.
+
+What I think I actually want is a way of specifying locations that are not synced, such that if the file is changed somewhere (on another computer), the new version should not be downloaded. But, if the same content is in another location as well, the behaviour should be stable, I don't know how that should work though.
+
+So, perhaps the best strategy is to have an explicit list of locations that I don't want, in the preferred content expression, if it could cope with files being in and out of some location at the same time. I think this would be easiest if I could avoid manually editing the expression all the time, maybe make a file with a list of file locations, if it would be possible for git-annex to handle that? I think it isn't at the moment, and my haskell is non-existent. That way, I could write some helper to add and remove files from this list. For example `dont-want file1 file2 dir1` would add these locations to a file, and `want file1 file2 dir1` would remove them from this list. Actually, I suppose I could make it just create an appropriate preferred-content expression, and then it doesn't need to support some file of locations.
+
+So, after that ramble, I guess I'm envisaging a preferred content expression like `content=(exclude=path/to/file1 and exclude=path/to/file1 and exclude=path/to/dir1/*) or (some statement about numcopies)`, which I imagine updating whenever I decide I do/don't want some file. The only obstacle to this working is [[bugs/Handling of files inside and outside archive directory at the same time]] (as I understand that bug, could be wrong on the implications of it), meaning (of course) if there are two files with the same content, and I exclude one of them, and not the other, then it both wants and doesn't want the file, and it (and I) get really confused.
+
+I suppose a short-term (well, slow) solution is to find duplicates of files I don't want, and if that exists either add the duplicate to my content expression (to say I don't want it), or remove the one I don't want from the expression (to say I do). This doesn't work well for when the content of one of the files changes (and so they are no longer duplicates), but I think I would search for them each time I generate the expression, so at that time it would no longer find the duplicate.
+
+So, @joey, I guess my question is, what are the chances of that bug being resolved somehow? Or if that is not likely to happen soon, I might try to implement my solution outline from the previous two paragraphs.
+"""]]

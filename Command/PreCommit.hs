@@ -12,9 +12,11 @@ import Command
 import qualified Command.Add
 import qualified Command.Fix
 import qualified Git.DiffTree
+import qualified Git.Ref
 import Annex.CatFile
 import Annex.Content.Direct
 import Git.Sha
+import Git.FilePath
 
 def :: [Command]
 def = [command "pre-commit" paramPaths seek SectionPlumbing
@@ -23,7 +25,7 @@ def = [command "pre-commit" paramPaths seek SectionPlumbing
 seek :: [CommandSeek]
 seek =
 	-- fix symlinks to files being committed
-	[ whenNotDirect $ withFilesToBeCommitted $ whenAnnexed $ Command.Fix.start
+	[ whenNotDirect $ withFilesToBeCommitted $ whenAnnexed Command.Fix.start
 	-- inject unlocked files into the annex
 	, whenNotDirect $ withFilesUnlockedToBeCommitted startIndirect
 	-- update direct mode mappings for committed files
@@ -38,16 +40,18 @@ startIndirect file = next $ do
 
 startDirect :: [String] -> CommandStart
 startDirect _ = next $ do
-	(diffs, clean) <- inRepo $ Git.DiffTree.diffIndex
-	forM_ diffs go
+	(diffs, clean) <- inRepo $ Git.DiffTree.diffIndex Git.Ref.headRef
+	makeabs <- flip fromTopFilePath <$> gitRepo
+	forM_ diffs (go makeabs)
 	next $ liftIO clean
   where
-	go diff = do
-		withkey (Git.DiffTree.srcsha diff) removeAssociatedFile
-		withkey (Git.DiffTree.dstsha diff) addAssociatedFile
+	go makeabs diff = do
+		withkey (Git.DiffTree.srcsha diff) (Git.DiffTree.srcmode diff) removeAssociatedFile
+		withkey (Git.DiffTree.dstsha diff) (Git.DiffTree.dstmode diff) addAssociatedFile
 	  where
-		withkey sha a = when (sha /= nullSha) $ do
-			k <- catKey sha
+		withkey sha mode a = when (sha /= nullSha) $ do
+			k <- catKey sha mode
 			case k of
 				Nothing -> noop
-				Just key -> void $ a key (Git.DiffTree.file diff)
+				Just key -> void $ a key $
+					makeabs $ Git.DiffTree.file diff

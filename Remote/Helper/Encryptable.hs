@@ -23,30 +23,52 @@ import Utility.Metered
  - updated to be accessible to an additional encryption key. Or the user
  - could opt to use a shared cipher, which is stored unencrypted. -}
 encryptionSetup :: RemoteConfig -> Annex RemoteConfig
-encryptionSetup c = case (M.lookup "encryption" c, extractCipher c) of
-	(Nothing, Nothing) -> error "Specify encryption=key or encryption=none or encryption=shared"
-	(Just "none", Nothing) -> return c
-	(Nothing, Just _) -> return c
-	(Just "shared", Just (SharedCipher _)) -> return c
-	(Just "none", Just _) -> cannotchange
-	(Just "shared", Just (EncryptedCipher _ _)) -> cannotchange
-	(Just _, Just (SharedCipher _)) -> cannotchange
-	(Just "shared", Nothing) -> use "encryption setup" . genSharedCipher
-		=<< highRandomQuality
-	(Just keyid, Nothing) -> use "encryption setup" . genEncryptedCipher keyid
-		=<< highRandomQuality
-	(Just keyid, Just v) -> use "encryption update" $ updateEncryptedCipher keyid v
+encryptionSetup c = maybe genCipher updateCipher $ extractCipher c
   where
-	cannotchange = error "Cannot change encryption type of existing remote."
+	-- The type of encryption
+	encryption = M.lookup "encryption" c
+	-- Generate a new cipher, depending on the chosen encryption scheme
+	genCipher = case encryption of
+		_ | M.member "cipher" c || M.member "cipherkeys" c -> cannotchange
+		Just "none" -> return c
+		Just "shared" -> use "encryption setup" . genSharedCipher
+			=<< highRandomQuality
+		-- hybrid encryption is the default when a keyid is
+                -- specified but no encryption
+		_ | maybe (M.member "keyid" c) (== "hybrid") encryption ->
+			use "encryption setup" . genEncryptedCipher key Hybrid
+				=<< highRandomQuality
+		Just "pubkey" -> use "encryption setup" . genEncryptedCipher key PubKey
+				=<< highRandomQuality
+		_ -> error $ "Specify " ++ intercalate " or "
+			(map ("encryption=" ++)
+				["none","shared","hybrid","pubkey"])
+			++ "."
+	key = fromMaybe (error "Specifiy keyid=...") $ M.lookup "keyid" c
+	newkeys = maybe [] (\k -> [(True,k)]) (M.lookup "keyid+" c) ++
+		maybe [] (\k -> [(False,k)]) (M.lookup "keyid-" c)
+	cannotchange = error "Cannot set encryption type of existing remotes."
+	-- Update an existing cipher if possible.
+	updateCipher v = case v of
+		SharedCipher _ | maybe True (== "shared") encryption -> return c'
+		EncryptedCipher _ variant _
+			| maybe True (== if variant == Hybrid then "hybrid" else "pubkey") encryption ->
+				use "encryption update" $ updateEncryptedCipher newkeys v
+		_ -> cannotchange
 	use m a = do
 		showNote m
 		cipher <- liftIO a
 		showNote $ describeCipher cipher
-		return $ M.delete "encryption" $ M.delete "highRandomQuality" $
-				storeCipher c cipher
+		return $ storeCipher c' cipher
 	highRandomQuality = 
 		(&&) (maybe True ( /= "false") $ M.lookup "highRandomQuality" c)
 			<$> fmap not (Annex.getState Annex.fast)
+	c' = foldr M.delete c
+                -- git-annex used to remove 'encryption' as well, since
+                -- it was redundant; we now need to keep it for
+                -- public-key incryption, hence we leave it on newer
+                -- remotes (while being backward-compatible).
+		[ "keyid", "keyid+", "keyid-", "highRandomQuality" ]
 
 {- Modifies a Remote to support encryption.
  -
@@ -113,25 +135,30 @@ embedCreds c
 
 {- Gets encryption Cipher, and encrypted version of Key. -}
 cipherKey :: RemoteConfig -> Key -> Annex (Maybe (Cipher, Key))
-cipherKey c k = maybe Nothing make <$> remoteCipher c
+cipherKey c k = fmap make <$> remoteCipher c
   where
-	make ciphertext = Just (ciphertext, encryptKey mac ciphertext k)
+	make ciphertext = (ciphertext, encryptKey mac ciphertext k)
 	mac = fromMaybe defaultMac $ M.lookup "mac" c >>= readMac
 
 {- Stores an StorableCipher in a remote's configuration. -}
 storeCipher :: RemoteConfig -> StorableCipher -> RemoteConfig
 storeCipher c (SharedCipher t) = M.insert "cipher" (toB64 t) c
-storeCipher c (EncryptedCipher t ks) = 
+storeCipher c (EncryptedCipher t _ ks) =
 	M.insert "cipher" (toB64 t) $ M.insert "cipherkeys" (showkeys ks) c
   where
 	showkeys (KeyIds l) = intercalate "," l
 
 {- Extracts an StorableCipher from a remote's configuration. -}
 extractCipher :: RemoteConfig -> Maybe StorableCipher
-extractCipher c = 
-	case (M.lookup "cipher" c, M.lookup "cipherkeys" c) of
-		(Just t, Just ks) -> Just $ EncryptedCipher (fromB64 t) (readkeys ks)
-		(Just t, Nothing) -> Just $ SharedCipher (fromB64 t)
-		_ -> Nothing
+extractCipher c = case (M.lookup "cipher" c,
+			M.lookup "cipherkeys" c,
+			M.lookup "encryption" c) of
+	(Just t, Just ks, encryption) | maybe True (== "hybrid") encryption ->
+		Just $ EncryptedCipher (fromB64 t) Hybrid (readkeys ks)
+	(Just t, Just ks, Just "pubkey") ->
+		Just $ EncryptedCipher (fromB64 t) PubKey (readkeys ks)
+	(Just t, Nothing, encryption) | maybe True (== "shared") encryption ->
+		Just $ SharedCipher (fromB64 t)
+	_ -> Nothing
   where
 	readkeys = KeyIds . split ","

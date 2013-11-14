@@ -14,8 +14,10 @@ import System.PosixCompat.Files
 import Common.Annex
 import Command
 import qualified Annex.Queue
+#ifdef WITH_CLIBS
 #ifndef __ANDROID__
 import Utility.Touch
+#endif
 #endif
 
 def :: [Command]
@@ -36,16 +38,20 @@ start file (key, _) = do
 perform :: FilePath -> FilePath -> CommandPerform
 perform file link = do
 	liftIO $ do
+#ifdef WITH_CLIBS
 #ifndef __ANDROID__
 		-- preserve mtime of symlink
 		mtime <- catchMaybeIO $ TimeSpec . modificationTime
 			<$> getSymbolicLinkStatus file
 #endif
+#endif
 		createDirectoryIfMissing True (parentDir file)
 		removeFile file
 		createSymbolicLink link file
+#ifdef WITH_CLIBS
 #ifndef __ANDROID__
 		maybe noop (\t -> touch file t False) mtime
+#endif
 #endif
 	next $ cleanup file
 

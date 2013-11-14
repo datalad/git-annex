@@ -1,11 +1,11 @@
-This is the design site for the git-annex [[/assistant]].
+These are the design pages for the git-annex [[/assistant]].
 
 Parts of the design is still being fleshed out, still many ideas
 and use cases to add. Feel free to chip in with comments! --[[Joey]]
 
-## roadmap
+See [[roadmap]] for current plans.
 
-kickstarter year
+## initial development kickstarter year overview (2012-2013)
 
 * Month 1 "like dropbox": [[!traillink inotify]] [[!traillink syncing]]
 * Month 2 "shiny webapp": [[!traillink webapp]] [[!traillink progressbars]]
@@ -20,22 +20,6 @@ kickstarter year
 * Month 10: bugfixing, [[Android]] webapp
 * Month 11: [[!traillink Windows]] porting, finishing touches
 * Month 12: [presentation at SELF2013](http://www.southeastlinuxfest.org/), finishing touches
-
-[sustaining git-annex development](https://campaign.joeyh.name/) year
-(starts September 2013).
-
-* Month 1 [[!traillink encrypted_git_remotes]]
-* Month 2 [[!traillink disaster_recovery]]
-* Month 3 user-driven features and polishing
-* Month 4 improve special remote interface & git-annex enhancement contest
-* Month 5 [[!traillink xmpp_security]]
-* Month 6 Windows assistant and webapp
-* Month 7 user-driven features and polishing
-* Month 8 [[!traillink gpgkeys]] [[!traillink sshpassword]]
-* Month 9 get [[Android]] out of beta
-* Month 10 user-driven features and polishing
-* Month 11 [[!traillink chunks]] [[!traillink deltas]]
-* Month 12 user-driven features and polishing
 
 ## porting
 
@@ -57,5 +41,5 @@ I post [[polls]] occasionally to make decisions. You can vote!
 
 ## blog
 
-I'm blogging about my progress in the [[blog]] on a semi-daily basis.
+I'm blogging about my progress in the [[devblog]] on a semi-daily basis.
 Follow along!

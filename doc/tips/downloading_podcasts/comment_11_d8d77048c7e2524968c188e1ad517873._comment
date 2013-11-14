@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="220.244.41.108"
+ subject="comment 11"
+ date="2013-08-06T04:20:16Z"
+ content="""
+    $ cabal install feed
+    Resolving dependencies...
+    All the requested packages are already installed:
+    feed-0.3.9.1
+    Use --reinstall if you want to reinstall anyway.
+
+Then I reinstalled `git-annex` but it still doesn't find the feeds flag.
+
+    $ git annex version
+    git-annex version: 4.20130802
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
+
+Do I need to do something like:
+
+    cabal install git-annex --bindir=$HOME/bin -f\"-assistant -webapp -webdav -pairing -xmpp -dns -feed\"
+
+...but what are the default flags to include in addition to `-feed`
+"""]]

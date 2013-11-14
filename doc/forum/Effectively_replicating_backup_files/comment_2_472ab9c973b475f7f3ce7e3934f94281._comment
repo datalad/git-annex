@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnFjuvfPpi1kf6l54bxfFUm0Aw_Gf_IO0o"
+ nickname="Aaron"
+ subject="comment 2"
+ date="2013-11-07T19:46:32Z"
+ content="""
+Thanks Joey!
+
+> gitrepo= is the location of the repository you are setting up with gcrypt, not your existing git-annex repository.
+
+Great, thanks. If I set these up outside of the WebApp, what is the best way to link them up to my main repositories?
+
+> numcopies configures the lower bound of the number of copies, not the upper bound. There's no \"small backup\" type, 
+> you must mean either small archive, or incremental backup. Either type of repository is going to want to have files 
+> that have not previously been archived, or backed up.
+
+Yes, I meant incremental backup. Thanks, understood. The page on preferred content ( http://git-annex.branchable.com/preferred_content/ ) made things a bit clearer. I didn't realise that the incremental backups etc want a copy even if it isn't necessary to satisfy numcopies. Does that mean that once it is on one backup drive, it will not be sent to the other unless I increase numcopies?
+
+"""]]

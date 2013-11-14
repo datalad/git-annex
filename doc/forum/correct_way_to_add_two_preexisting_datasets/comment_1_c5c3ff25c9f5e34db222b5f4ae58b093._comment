@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 1"
+ date="2013-08-23T16:17:58Z"
+ content="""
+I did something similar for my videos, I've created the repo on one machine add the video files then cloned it on the other machine then reinjected the files in to the cloned repo.
+
+http://joeyh.name/blog/entry/moving_my_email_archives_and_packages_to_git-annex/
+"""]]

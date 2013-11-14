@@ -29,9 +29,11 @@ import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Configurators.Preferences
 import Assistant.WebApp.Configurators.Edit
 import Assistant.WebApp.Configurators.Delete
+import Assistant.WebApp.Configurators.Fsck
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.Control
 import Assistant.WebApp.OtherRepos
+import Assistant.WebApp.Repair
 import Assistant.Types.ThreadedMonad
 import Utility.WebApp
 import Utility.Tmp
@@ -83,7 +85,10 @@ webAppThread assistantdata urlrenderer noannex listenhost postfirstrun onstartup
 			urlfile <- runThreadState st $ fromRepo gitAnnexUrlFile
 			go addr webapp htmlshim (Just urlfile)
   where
-	thread = namedThread "WebApp"
+  	-- The webapp thread does not wait for the startupSanityCheckThread
+	-- to finish, so that the user interface remains responsive while
+	-- that's going on.
+	thread = namedThreadUnchecked "WebApp"
 	getreldir
 		| noannex = return Nothing
 		| otherwise = Just <$>

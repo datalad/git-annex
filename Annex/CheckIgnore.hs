@@ -25,7 +25,7 @@ checkIgnoreHandle :: Annex (Maybe Git.CheckIgnoreHandle)
 checkIgnoreHandle = maybe startup return =<< Annex.getState Annex.checkignorehandle
   where
 	startup = do
-		v <- inRepo $ Git.checkIgnoreStart
+		v <- inRepo Git.checkIgnoreStart
 		when (isNothing v) $
 			warning "The installed version of git is too old for .gitignores to be honored by git-annex."
 		Annex.changeState $ \s -> s { Annex.checkignorehandle = Just v }

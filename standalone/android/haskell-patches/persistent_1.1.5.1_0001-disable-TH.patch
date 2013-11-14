@@ -1,71 +1,32 @@
-From 8fddef803ee9191ca15363283b7e4d5af4c70f3a Mon Sep 17 00:00:00 2001
-From: Joey Hess <joey@kitenet.net>
-Date: Thu, 28 Feb 2013 23:34:10 -0400
+From 760fa2c5044ae38bee8114ff84c625ac59f35c6f Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sun, 22 Sep 2013 00:03:55 +0000
 Subject: [PATCH] disable TH
 
 ---
- Database/Persist/GenericSql/Internal.hs |    6 +-----
- Database/Persist/GenericSql/Raw.hs      |    5 ++---
- 2 files changed, 3 insertions(+), 8 deletions(-)
+ Database/Persist/Sql/Raw.hs |    2 --
+ 1 file changed, 2 deletions(-)
 
-diff --git a/Database/Persist/GenericSql/Internal.hs b/Database/Persist/GenericSql/Internal.hs
-index f109887..5273398 100644
---- a/Database/Persist/GenericSql/Internal.hs
-+++ b/Database/Persist/GenericSql/Internal.hs
-@@ -14,7 +14,6 @@ module Database.Persist.GenericSql.Internal
-     , createSqlPool
-     , mkColumns
-     , Column (..)
--    , logSQL
-     , InsertSqlResult (..)
-     ) where
- 
-@@ -33,7 +32,7 @@ import Data.Monoid (Monoid, mappend, mconcat)
- import Database.Persist.EntityDef
- import qualified Data.Conduit as C
- import Language.Haskell.TH.Syntax (Q, Exp)
--import Control.Monad.Logger (logDebugS)
-+
- import Data.Maybe (mapMaybe, listToMaybe)
- import Data.Int (Int64)
- 
-@@ -197,6 +196,3 @@ tableColumn t s = go $ entityColumns t
-         | x == s = ColumnDef x y z
-         | otherwise = go rest
- -}
--
--logSQL :: Q Exp
--logSQL = [|\sql_foo params_foo -> $logDebugS (T.pack "SQL") $ T.pack $ show (sql_foo :: Text) ++ " " ++ show (params_foo :: [PersistValue])|]
-diff --git a/Database/Persist/GenericSql/Raw.hs b/Database/Persist/GenericSql/Raw.hs
-index e4bf9f4..3da8fa0 100644
---- a/Database/Persist/GenericSql/Raw.hs
-+++ b/Database/Persist/GenericSql/Raw.hs
-@@ -26,7 +26,6 @@ import Database.Persist.GenericSql.Internal hiding (execute, withStmt)
- import Database.Persist.Store (PersistValue)
- import Data.IORef
- import Control.Monad.IO.Class
--import Control.Monad.Logger (logDebugS)
- import Control.Monad.Trans.Reader
- import qualified Data.Map as Map
- import Control.Applicative (Applicative)
-@@ -134,7 +133,7 @@ withStmt :: (MonadSqlPersist m, MonadResource m)
+diff --git a/Database/Persist/Sql/Raw.hs b/Database/Persist/Sql/Raw.hs
+index 73189dd..6efebea 100644
+--- a/Database/Persist/Sql/Raw.hs
++++ b/Database/Persist/Sql/Raw.hs
+@@ -22,7 +22,6 @@ rawQuery :: (MonadSqlPersist m, MonadResource m)
           -> [PersistValue]
           -> Source m [PersistValue]
- withStmt sql vals = do
+ rawQuery sql vals = do
 -    lift $ $logDebugS (pack "SQL") $ pack $ show sql ++ " " ++ show vals
-+    -- lift $  pack $ show sql ++ " " ++ show vals
      conn <- lift askSqlConn
      bracketP
-         (getStmt' conn sql)
-@@ -146,7 +145,7 @@ execute x y = liftM (const ()) $ executeCount x y
+         (getStmtConn conn sql)
+@@ -34,7 +33,6 @@ rawExecute x y = liftM (const ()) $ rawExecuteCount x y
  
- executeCount :: MonadSqlPersist m => Text -> [PersistValue] -> m Int64
- executeCount sql vals = do
+ rawExecuteCount :: MonadSqlPersist m => Text -> [PersistValue] -> m Int64
+ rawExecuteCount sql vals = do
 -    $logDebugS (pack "SQL") $ pack $ show sql ++ " " ++ show vals
-+    -- pack $ show sql ++ " " ++ show vals
      stmt <- getStmt sql
-     res <- liftIO $ I.execute stmt vals
-     liftIO $ reset stmt
+     res <- liftIO $ stmtExecute stmt vals
+     liftIO $ stmtReset stmt
 -- 
 1.7.10.4
 

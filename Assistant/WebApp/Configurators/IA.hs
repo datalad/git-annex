@@ -14,16 +14,16 @@ import qualified Assistant.WebApp.Configurators.AWS as AWS
 #ifdef WITH_S3
 import qualified Remote.S3 as S3
 import qualified Remote.Helper.AWS as AWS
-import Assistant.MakeRemote
+import Assistant.WebApp.MakeRemote
 #endif
 import qualified Remote
 import qualified Types.Remote as Remote
 import Types.StandardGroups
 import Types.Remote (RemoteConfig)
-import Logs.PreferredContent
 import Logs.Remote
-import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 import Creds
+import Assistant.Gpg
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -111,7 +111,7 @@ previouslyUsedIACreds = previouslyUsedCredPair AWS.creds S3.remote $
 #endif
 
 accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text
-accessKeyIDFieldWithHelp def = AWS.accessKeyIDField help def
+accessKeyIDFieldWithHelp = AWS.accessKeyIDField help
   where
 	help = [whamlet|
 <a href="http://archive.org/account/s3.php">
@@ -126,11 +126,11 @@ postAddIAR :: Handler Html
 postAddIAR = iaConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ iaInputAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ iaInputAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = escapeBucket $ T.unpack $ itemName input
-			AWS.makeAWSRemote initSpecialRemote S3.remote (extractCreds input) name setgroup $
+			AWS.makeAWSRemote initSpecialRemote S3.remote PublicGroup (extractCreds input) name $
 				M.fromList $ catMaybes
 					[ Just $ configureEncryption NoEncryption
 					, Just ("type", "S3")
@@ -146,9 +146,6 @@ postAddIAR = iaConfigurator $ do
 					, Just ("preferreddir", name)
 					]
 		_ -> $(widgetFile "configurators/addia")
-  where
-	setgroup r = liftAnnex $
-		setStandardGroup (Remote.uuid r) PublicGroup
 #else
 postAddIAR = error "S3 not supported by this build"
 #endif
@@ -168,13 +165,13 @@ enableIARemote :: UUID -> Widget
 enableIARemote uuid = do
 	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ iaCredsAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ iaCredsAForm defcreds
 	case result of
 		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m
-			AWS.makeAWSRemote enableSpecialRemote S3.remote creds name (const noop) M.empty
+			AWS.makeAWSRemote enableSpecialRemote S3.remote PublicGroup creds name M.empty
 		_ -> do
 			description <- liftAnnex $
 				T.pack <$> Remote.prettyUUID uuid
@@ -193,7 +190,8 @@ escapeHeader = escapeURIString (\c -> isUnescapedInURI c && c /= ' ')
 
 getRepoInfo :: RemoteConfig -> Widget
 getRepoInfo c = do
-	exists <- liftIO $ catchDefaultIO False $ fst <$> Url.exists url []
+	ua <- liftAnnex Url.getUserAgent
+	exists <- liftIO $ catchDefaultIO False $ fst <$> Url.exists url [] ua
 	[whamlet|
 <a href="#{url}">
   Internet Archive item

@@ -103,14 +103,17 @@ use the special remote.
 
 ## risks
 
-A risk of this scheme is that, once the symmetric cipher has been obtained, it
-allows full access to all the encrypted content. This scheme does not allow
-revoking a given gpg key access to the cipher, since anyone with such a key
-could have already decrypted the cipher and stored a copy. 
+A risk of this scheme is that, once the symmetric cipher has been
+obtained, it allows full access to all the encrypted content. Indeed
+anyone owning a key that used to be granted access could already have
+decrypted the cipher and stored a copy. While it is in possible to
+remove a key with `keyid-=`, it is designed for a
+[[completely_different_purpose|/encryption]] and does not actually revoke
+access.
 
 If git-annex stores the decrypted symmetric cipher in memory, then there
 is a risk that it could be intercepted from there by an attacker. Gpg
-amelorates these type of risks by using locked memory. For git-annex, note
+ameliorates these type of risks by using locked memory. For git-annex, note
 that an attacker with local machine access can tell at least all the
 filenames and metadata of files stored in the encrypted remote anyway,
 and can access whatever content is stored locally.

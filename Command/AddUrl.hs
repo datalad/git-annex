@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Command.AddUrl where
 
 import Network.URI
@@ -15,8 +17,8 @@ import Backend
 import qualified Command.Add
 import qualified Annex
 import qualified Annex.Queue
+import qualified Annex.Url as Url
 import qualified Backend.URL
-import qualified Utility.Url as Url
 import Annex.Content
 import Logs.Web
 import qualified Option
@@ -27,6 +29,10 @@ import Annex.Content.Direct
 import Logs.Location
 import qualified Logs.Transfer as Transfer
 import Utility.Daemon (checkDaemon)
+#ifdef WITH_QUVI
+import Annex.Quvi
+import qualified Utility.Quvi as Quvi
+#endif
 
 def :: [Command]
 def = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
@@ -51,15 +57,64 @@ seek = [withField fileOption return $ \f ->
 start :: Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
 start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
   where
-	bad = fromMaybe (error $ "bad url " ++ s) $
-		parseURI $ escapeURIString isUnescapedInURI s
-	go url = do
+  	(s', downloader) = getDownloader s
+	bad = fromMaybe (error $ "bad url " ++ s') $
+		parseURI $ escapeURIString isUnescapedInURI s'
+	choosefile = flip fromMaybe optfile
+	go url = case downloader of
+		QuviDownloader -> usequvi
+		DefaultDownloader -> 
+#ifdef WITH_QUVI
+			ifM (liftIO $ Quvi.supported s')
+				( usequvi
+				, regulardownload url
+				)
+#else
+			regulardownload url
+#endif
+	regulardownload url = do
 		pathmax <- liftIO $ fileNameLengthLimit "."
-		let file = fromMaybe (url2file url pathdepth pathmax) optfile
+		let file = choosefile $ url2file url pathdepth pathmax
 		showStart "addurl" file
-		next $ perform relaxed s file
+		next $ perform relaxed s' file
+#ifdef WITH_QUVI
+	badquvi = error $ "quvi does not know how to download url " ++ s'
+	usequvi = do
+		page <- fromMaybe badquvi
+			<$> withQuviOptions Quvi.forceQuery [Quvi.quiet, Quvi.httponly] s'
+		let link = fromMaybe badquvi $ headMaybe $ Quvi.pageLinks page
+		pathmax <- liftIO $ fileNameLengthLimit "."
+		let file = choosefile $ truncateFilePath pathmax $ sanitizeFilePath $
+			Quvi.pageTitle page ++ "." ++ Quvi.linkSuffix link
+		showStart "addurl" file
+		next $ performQuvi relaxed s' (Quvi.linkUrl link) file
+#else
+	usequvi = error "not built with quvi support"
+#endif
 
-perform :: Bool -> String -> FilePath -> CommandPerform
+#ifdef WITH_QUVI
+performQuvi :: Bool -> URLString -> URLString -> FilePath -> CommandPerform
+performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
+  where
+  	quviurl = setDownloader pageurl QuviDownloader
+  	addurl (key, _backend) = next $ cleanup quviurl file key Nothing
+	geturl = do
+		key <- Backend.URL.fromUrl quviurl Nothing
+		ifM (pure relaxed <||> Annex.getState Annex.fast)
+			( next $ cleanup quviurl file key Nothing
+			, do
+				tmp <- fromRepo $ gitAnnexTmpLocation key
+				showOutput
+				ok <- Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
+					liftIO $ createDirectoryIfMissing True (parentDir tmp)
+					downloadUrl [videourl] tmp
+				if ok
+					then next $ cleanup quviurl file key (Just tmp)
+					else stop
+			)
+#endif
+
+perform :: Bool -> URLString -> FilePath -> CommandPerform
 perform relaxed url file = ifAnnexed file addurl geturl
   where
 	geturl = next $ addUrlFile relaxed url file
@@ -69,16 +124,18 @@ perform relaxed url file = ifAnnexed file addurl geturl
 			next $ return True
 		| otherwise = do
 			headers <- getHttpHeaders
-			ifM (liftIO $ Url.check url headers $ keySize key)
-				( do
+			(exists, samesize) <- Url.withUserAgent $ Url.check url headers $ keySize key
+			if exists && samesize
+				then do
 					setUrlPresent key url
 					next $ return True
-				, do
-					warning $ "failed to verify url exists: " ++ url
+				else do
+					warning $ if exists
+						then "url does not have expected file size (use --relaxed to bypass this check) " ++ url
+						else "failed to verify url exists: " ++ url
 					stop
-				)
 
-addUrlFile :: Bool -> String -> FilePath -> Annex Bool
+addUrlFile :: Bool -> URLString -> FilePath -> Annex Bool
 addUrlFile relaxed url file = do
 	liftIO $ createDirectoryIfMissing True (parentDir file)
 	ifM (Annex.getState Annex.fast <||> pure relaxed)
@@ -88,7 +145,7 @@ addUrlFile relaxed url file = do
 			download url file
 		)
 
-download :: String -> FilePath -> Annex Bool
+download :: URLString -> FilePath -> Annex Bool
 download url file = do
 	dummykey <- genkey
 	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
@@ -120,7 +177,7 @@ download url file = do
 		size <- ifM (liftIO $ isJust <$> checkDaemon pidfile)
 			( do
 				headers <- getHttpHeaders
-				liftIO $ snd <$> Url.exists url headers
+				snd <$> Url.withUserAgent (Url.exists url headers)
 			, return Nothing
 			)
 		Backend.URL.fromUrl url size
@@ -130,12 +187,12 @@ download url file = do
 			downloadUrl [url] tmp
 		
 
-cleanup :: String -> FilePath -> Key -> Maybe FilePath -> Annex Bool
+cleanup :: URLString -> FilePath -> Key -> Maybe FilePath -> Annex Bool
 cleanup url file key mtmp = do
 	when (isJust mtmp) $
 		logStatus key InfoPresent
 	setUrlPresent key url
-	Command.Add.addLink file key False
+	Command.Add.addLink file key Nothing
 	whenM isDirect $ do
 		void $ addAssociatedFile key file
 		{- For moveAnnex to work in direct mode, the symlink
@@ -144,12 +201,12 @@ cleanup url file key mtmp = do
 	maybe noop (moveAnnex key) mtmp
 	return True
 
-nodownload :: Bool -> String -> FilePath -> Annex Bool
+nodownload :: Bool -> URLString -> FilePath -> Annex Bool
 nodownload relaxed url file = do
 	headers <- getHttpHeaders
 	(exists, size) <- if relaxed
 		then pure (True, Nothing)
-		else liftIO $ Url.exists url headers
+		else Url.withUserAgent $ Url.exists url headers
 	if exists
 		then do
 			key <- Backend.URL.fromUrl url size
@@ -160,7 +217,7 @@ nodownload relaxed url file = do
 
 url2file :: URI -> Maybe Int -> Int -> FilePath
 url2file url pathdepth pathmax = case pathdepth of
-	Nothing -> truncateFilePath pathmax $ escape fullurl
+	Nothing -> truncateFilePath pathmax $ sanitizeFilePath fullurl
 	Just depth
 		| depth >= length urlbits -> frombits id
 		| depth > 0 -> frombits $ drop depth
@@ -169,6 +226,6 @@ url2file url pathdepth pathmax = case pathdepth of
   where
 	fullurl = uriRegName auth ++ uriPath url ++ uriQuery url
 	frombits a = intercalate "/" $ a urlbits
-	urlbits = map (truncateFilePath pathmax . escape) $ filter (not . null) $ split "/" fullurl
+	urlbits = map (truncateFilePath pathmax . sanitizeFilePath) $
+		filter (not . null) $ split "/" fullurl
 	auth = fromMaybe (error $ "bad url " ++ show url) $ uriAuthority url
-	escape = replace "/" "_" . replace "?" "_"

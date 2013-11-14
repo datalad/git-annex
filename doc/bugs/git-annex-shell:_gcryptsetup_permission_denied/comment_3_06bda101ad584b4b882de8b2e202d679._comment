@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 3"
+ date="2013-11-02T23:51:13Z"
+ content="""
+I should have looked at that error message more closely. The gcryptsetup command will print a permission denied if the repository it's being run in already has a annex.uuid or already has a gcrypt id. Probably that latter needs to be relaxed for enableremote to work.
+"""]]

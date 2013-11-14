@@ -35,8 +35,8 @@ addHooks' r starthook stophook = r'
 		{ storeKey = \k f p -> wrapper $ storeKey r k f p
 		, retrieveKeyFile = \k f d p -> wrapper $ retrieveKeyFile r k f d p
 		, retrieveKeyFileCheap = \k f -> wrapper $ retrieveKeyFileCheap r k f
-		, removeKey = \k -> wrapper $ removeKey r k
-		, hasKey = \k -> wrapper $ hasKey r k
+		, removeKey = wrapper . removeKey r
+		, hasKey = wrapper . hasKey r
 		}
 	  where
 		wrapper = runHooks r' starthook stophook
@@ -45,7 +45,7 @@ runHooks :: Remote -> Maybe String -> Maybe String -> Annex a -> Annex a
 runHooks r starthook stophook a = do
 	dir <- fromRepo gitAnnexRemotesDir
 	let lck = dir </> remoteid ++ ".lck"
-	whenM (not . any (== lck) . M.keys <$> getPool) $ do
+	whenM (notElem lck . M.keys <$> getPool) $ do
 		liftIO $ createDirectoryIfMissing True dir
 		firstrun lck
 	a
@@ -73,7 +73,7 @@ runHooks r starthook stophook a = do
 		run starthook
 
 		Annex.addCleanup (remoteid ++ "-stop-command") $ runstop lck
-#ifndef __WINDOWS__
+#ifndef mingw32_HOST_OS
 	runstop lck = do
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock

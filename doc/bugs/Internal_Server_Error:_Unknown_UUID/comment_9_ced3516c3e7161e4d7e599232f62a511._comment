@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZEanlyzay_QlEAL0CWpyZcRTyN7vay8U"
+ nickname="Carlo"
+ subject="Tilde did it for me"
+ date="2013-10-06T21:59:43Z"
+ content="""
+I had exactly the same error message, \"Internal Server Error: Unknown UUID\", when I used a path starting with a tilde. Absolute path for home directory worked.
+"""]]

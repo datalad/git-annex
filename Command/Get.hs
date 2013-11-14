@@ -11,10 +11,10 @@ import Common.Annex
 import Command
 import qualified Remote
 import Annex.Content
-import qualified Command.Move
 import Logs.Transfer
 import Annex.Wanted
 import GitAnnex.Options
+import qualified Command.Move
 import Types.Key
 
 def :: [Command]
@@ -22,11 +22,11 @@ def = [withOptions getOptions $ command "get" paramPaths seek
 	SectionCommon "make content of annexed files available"]
 
 getOptions :: [Option]
-getOptions = [Command.Move.fromOption] ++ keyOptions
+getOptions = fromOption : keyOptions
 
 seek :: [CommandSeek]
 seek = 
-	[ withField Command.Move.fromOption Remote.byNameWithUUID $ \from ->
+	[ withField fromOption Remote.byNameWithUUID $ \from ->
 	  withKeyOptions (startKeys from) $
 	  withFilesInGit $ whenAnnexed $ start from
 	]
@@ -75,7 +75,7 @@ getKeyFile key afile dest = dispatch =<< Remote.keyPossibilities key
 			( docopy r (trycopy full rs)
 			, trycopy full rs
 			)
-	showlocs = Remote.showLocations key [] $
+	showlocs = Remote.showLocations key []
 		"No other repository is known to contain the file."
 	-- This check is to avoid an ugly message if a remote is a
 	-- drive that is not mounted.

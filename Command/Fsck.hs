@@ -33,7 +33,7 @@ import qualified Option
 import Types.Key
 import Utility.HumanTime
 import Git.FilePath
-import GitAnnex.Options
+import GitAnnex.Options hiding (fromOption)
 
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
@@ -104,7 +104,7 @@ withIncremental = withValue $ do
 				Nothing -> noop
 				Just started -> do
 					now <- liftIO getPOSIXTime
-					when (now - realToFrac started >= delta) $
+					when (now - realToFrac started >= durationToPOSIXTime delta)
 						resetStartTime
 		return True
 
@@ -187,7 +187,7 @@ performAll key backend = check
 	]
 
 check :: [Annex Bool] -> Annex Bool
-check cs = all id <$> sequence cs
+check cs = and <$> sequence cs
 
 {- Checks that the file's link points correctly to the content.
  -
@@ -225,7 +225,7 @@ verifyLocationLog key desc = do
 
 	{- In direct mode, modified files will show up as not present,
 	 - but that is expected and not something to do anything about. -}
-	if (direct && not present)
+	if direct && not present
 		then return True
 		else verifyLocationLog' key desc present u (logChange key u)
 
@@ -271,7 +271,7 @@ verifyDirectMapping key file = do
 {- Ensures that files whose content is available are in direct mode. -}
 verifyDirectMode :: Key -> FilePath -> Annex Bool
 verifyDirectMode key file = do
-	whenM (isDirect <&&> islink) $ do
+	whenM (isDirect <&&> isJust <$> isAnnexLink file) $ do
 		v <- toDirectGen key file
 		case v of
 			Nothing -> noop
@@ -279,8 +279,6 @@ verifyDirectMode key file = do
 				showNote "fixing direct mode"
 				a
 	return True
-  where
-	islink = liftIO $ isSymbolicLink <$> getSymbolicLinkStatus file
 
 {- The size of the data for a key is checked against the size encoded in
  - the key's metadata, if available.
@@ -347,7 +345,7 @@ checkBackend backend key mfile = go =<< isDirect
 checkBackendRemote :: Backend -> Key -> Remote -> Maybe FilePath -> Annex Bool
 checkBackendRemote backend key remote = maybe (return True) go
   where
-	go file = checkBackendOr (badContentRemote remote) backend key file
+	go = checkBackendOr (badContentRemote remote) backend key
 
 checkBackendOr :: (Key -> Annex String) -> Backend -> Key -> FilePath -> Annex Bool
 checkBackendOr bad backend key file =
@@ -408,7 +406,7 @@ badContentDirect :: FilePath -> Key -> Annex String
 badContentDirect file key = do
 	void $ liftIO $ catchMaybeIO $ touchFile file
 	logStatus key InfoMissing
-	return $ "left in place for you to examine"
+	return "left in place for you to examine"
 
 badContentRemote :: Remote -> Key -> Annex String
 badContentRemote remote key = do

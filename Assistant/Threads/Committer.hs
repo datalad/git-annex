@@ -112,7 +112,7 @@ waitChangeTime a = waitchanges 0
 	 - that make up a file rename? Or some of the pairs that make up 
 	 - a directory rename?
 	 -}
-	possiblyrename cs = all renamepart cs
+	possiblyrename = all renamepart
 
 	renamepart (PendingAddChange _ _) = True
 	renamepart c = isRmChange c
@@ -309,7 +309,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 			inRepo (Git.LsFiles.notInRepo False $ map changeFile pending)
 		-- note: timestamp info is lost here
 		let ts = changeTime exemplar
-		return (map (PendingAddChange ts) newfiles, void $ liftIO $ cleanup)
+		return (map (PendingAddChange ts) newfiles, void $ liftIO cleanup)
 
 	returnWhen c a
 		| c = return otherchanges
@@ -317,12 +317,13 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 
 	add :: Change -> Assistant (Maybe Change)
 	add change@(InProcessAddChange { keySource = ks }) = 
-		catchDefaultIO Nothing <~> do
-			sanitycheck ks $ do
-				key <- liftAnnex $ do
-					showStart "add" $ keyFilename ks
-					Command.Add.ingest $ Just ks
-				maybe (failedingest change) (done change $ keyFilename ks) key
+		catchDefaultIO Nothing <~> doadd
+	  where
+	  	doadd = sanitycheck ks $ do
+			(mkey, mcache) <- liftAnnex $ do
+				showStart "add" $ keyFilename ks
+				Command.Add.ingest $ Just ks
+			maybe (failedingest change) (done change mcache $ keyFilename ks) mkey
 	add _ = return Nothing
 
 	{- In direct mode, avoid overhead of re-injesting a renamed
@@ -349,7 +350,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 	fastadd change key = do
 		let source = keySource change
 		liftAnnex $ Command.Add.finishIngestDirect key source
-		done change (keyFilename source) key
+		done change Nothing (keyFilename source) key
 
 	removedKeysMap :: InodeComparisonType -> [Change] -> Annex (M.Map InodeCacheKey Key)
 	removedKeysMap ct l = do
@@ -365,13 +366,13 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		liftAnnex showEndFail
 		return Nothing
 
-	done change file key = liftAnnex $ do
+	done change mcache file key = liftAnnex $ do
 		logStatus key InfoPresent
 		link <- ifM isDirect
 			( inRepo $ gitAnnexLink file key
-			, Command.Add.link file key True
+			, Command.Add.link file key mcache
 			)
-		whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $ do
+		whenM (pure DirWatcher.eventsCoalesce <||> isDirect) $
 			stageSymlink file =<< hashSymlink link
 		showEndOk
 		return $ Just $ finishedChange change key
@@ -415,8 +416,8 @@ safeToAdd _ [] [] = return []
 safeToAdd delayadd pending inprocess = do
 	maybe noop (liftIO . threadDelaySeconds) delayadd
 	liftAnnex $ do
-		keysources <- mapM Command.Add.lockDown (map changeFile pending)
-		let inprocess' = inprocess ++ catMaybes (map mkinprocess $ zip pending keysources)
+		keysources <- forM pending $ Command.Add.lockDown . changeFile
+		let inprocess' = inprocess ++ mapMaybe mkinprocess (zip pending keysources)
 		openfiles <- S.fromList . map fst3 . filter openwrite <$>
 			findopenfiles (map keySource inprocess')
 		let checked = map (check openfiles) inprocess'
@@ -434,7 +435,7 @@ safeToAdd delayadd pending inprocess = do
 		| S.member (contentLocation ks) openfiles = Left change
 	check _ change = Right change
 
-	mkinprocess (c, Just ks) = Just $ InProcessAddChange
+	mkinprocess (c, Just ks) = Just InProcessAddChange
 		{ changeTime = changeTime c
 		, keySource = ks
 		}

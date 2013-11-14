@@ -15,7 +15,7 @@ module Utility.Format (
 ) where
 
 import Text.Printf (printf)
-import Data.Char (isAlphaNum, isOctDigit, isSpace, chr, ord)
+import Data.Char (isAlphaNum, isOctDigit, isHexDigit, isSpace, chr, ord)
 import Data.Maybe (fromMaybe)
 import Data.Word (Word8)
 import Data.List (isPrefixOf)
@@ -101,7 +101,7 @@ empty (Const "") = True
 empty _ = False
 
 {- Decodes a C-style encoding, where \n is a newline, \NNN is an octal
- - encoded character, etc.
+ - encoded character, and \xNN is a hex encoded character.
  -}
 decode_c :: FormatString -> FormatString
 decode_c [] = []
@@ -114,7 +114,12 @@ decode_c s = unescape ("", s)
 	  where
 		pair = span (/= e) v
 	isescape x = x == e
-	-- \NNN is an octal encoded character
+	handle (x:'x':n1:n2:rest)
+		| isescape x && allhex = (fromhex, rest)
+	  where
+	  	allhex = isHexDigit n1 && isHexDigit n2
+		fromhex = [chr $ readhex [n1, n2]]
+		readhex h = Prelude.read $ "0x" ++ h :: Int
 	handle (x:n1:n2:n3:rest)
 		| isescape x && alloctal = (fromoctal, rest)
 	  where

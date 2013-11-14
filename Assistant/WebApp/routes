@@ -19,6 +19,8 @@
 /config/xmpp/for/self XMPPConfigForPairSelfR GET POST
 /config/xmpp/for/frield XMPPConfigForPairFriendR GET POST
 /config/xmpp/needcloudrepo/#UUID NeedCloudRepoR GET
+/config/fsck ConfigFsckR GET POST
+/config/fsck/preferences ConfigFsckPreferencesR POST
 
 /config/addrepository AddRepositoryR GET
 /config/repository/new NewRepositoryR GET POST
@@ -26,24 +28,28 @@
 /config/repository/new/androidcamera AndroidCameraRepositoryR GET
 /config/repository/switcher RepositorySwitcherR GET
 /config/repository/switchto/#FilePath SwitchToRepositoryR GET
-/config/repository/combine/#FilePathAndUUID CombineRepositoryR GET
-/config/repository/edit/#UUID EditRepositoryR GET POST
+/config/repository/combine/#FilePath/#UUID CombineRepositoryR GET
+/config/repository/edit/#RepoId EditRepositoryR GET POST
 /config/repository/edit/new/#UUID EditNewRepositoryR GET POST
 /config/repository/edit/new/cloud/#UUID EditNewCloudRepositoryR GET POST
-/config/repository/sync/disable/#UUID DisableSyncR GET
-/config/repository/sync/enable/#UUID EnableSyncR GET
-/config/repository/unfinished/check CheckUnfinishedRepositoriesR GET
-/config/repository/unfinished/retry RetryUnfinishedRepositoriesR GET
+/config/repository/sync/disable/#RepoId DisableSyncR GET
+/config/repository/sync/enable/#RepoId EnableSyncR GET
+/config/repository/upgrade/#RepoId UpgradeRepositoryR GET
 
 /config/repository/add/drive AddDriveR GET POST
 /config/repository/add/drive/confirm/#RemovableDrive ConfirmAddDriveR GET
-/config/repository/add/drive/finish/#RemovableDrive FinishAddDriveR GET
+/config/repository/add/drive/genkey/#RemovableDrive GenKeyForDriveR GET
+/config/repository/add/drive/finish/#RemovableDrive/#RepoKey FinishAddDriveR GET
 /config/repository/add/ssh AddSshR GET POST
-/config/repository/add/ssh/confirm/#SshData ConfirmSshR GET
+/config/repository/add/ssh/confirm/#SshData/#UUID ConfirmSshR GET
 /config/repository/add/ssh/retry/#SshData RetrySshR GET
 /config/repository/add/ssh/make/git/#SshData MakeSshGitR GET
 /config/repository/add/ssh/make/rsync/#SshData MakeSshRsyncR GET
+/config/repository/add/ssh/make/gcrypt/#SshData/#RepoKey MakeSshGCryptR GET
+/config/repository/add/ssh/combine/#SshData CombineSshR GET
 /config/repository/add/cloud/rsync.net AddRsyncNetR GET POST
+/config/repository/add/cloud/rsync.net/shared/#SshData MakeRsyncNetSharedR GET
+/config/repository/add/cloud/rsync.net/gcrypt/#SshData/#RepoKey MakeRsyncNetGCryptR GET
 /config/repository/add/cloud/S3 AddS3R GET POST
 /config/repository/add/cloud/IA AddIAR GET POST
 /config/repository/add/cloud/glacier AddGlacierR GET POST
@@ -62,6 +68,7 @@
 /config/repository/pair/xmpp/friend/finish/#PairKey FinishXMPPPairFriendR GET
 
 /config/repository/enable/rsync/#UUID EnableRsyncR GET POST
+/config/repository/enable/gcrypt/#UUID EnableSshGCryptR GET POST
 /config/repository/enable/directory/#UUID EnableDirectoryR GET
 /config/repository/enable/S3/#UUID EnableS3R GET POST
 /config/repository/enable/IA/#UUID EnableIAR GET POST
@@ -77,6 +84,10 @@
 /config/repository/delete/finish/#UUID FinishDeleteRepositoryR GET
 /config/repository/delete/here DeleteCurrentRepositoryR GET POST
 
+/config/activity/add/#UUID AddActivityR GET POST
+/config/activity/change/#UUID/#ScheduledActivity ChangeActivityR GET POST
+/config/activity/remove/#UUID/#ScheduledActivity RemoveActivityR GET
+
 /transfers/#NotificationId TransfersR GET
 /notifier/transfers NotifierTransfersR GET
 
@@ -86,7 +97,7 @@
 /buddylist/#NotificationId BuddyListR GET
 /notifier/buddylist NotifierBuddyListR GET
 
-/repolist/#RepoListNotificationId RepoListR GET
+/repolist/#NotificationId/#RepoSelector RepoListR GET
 /notifier/repolist/#RepoSelector NotifierRepoListR GET
 
 /alert/close/#AlertId CloseAlert GET
@@ -96,5 +107,8 @@
 /transfer/pause/#Transfer PauseTransferR GET POST
 /transfer/start/#Transfer StartTransferR GET POST
 /transfer/cancel/#Transfer CancelTransferR GET POST
+
+/repair/#UUID RepairRepositoryR GET POST
+/repair/run/#UUID RepairRepositoryRunR GET POST
 
 /static StaticR Static getStatic

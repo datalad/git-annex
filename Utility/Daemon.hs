@@ -16,6 +16,7 @@ import Utility.LogFile
 
 #ifndef mingw32_HOST_OS
 import System.Posix
+import Control.Concurrent.Async
 #else
 import System.PosixCompat
 #endif
@@ -46,7 +47,9 @@ daemonize logfd pidfile changedirectory a = do
 		nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
 		redir nullfd stdInput
 		redirLog logfd
-		a
+		{- forkProcess masks async exceptions; unmask them inside
+		 - the action. -}
+		wait =<< asyncWithUnmask (\unmask -> unmask a)
 		out
 	out = exitImmediately ExitSuccess
 #else

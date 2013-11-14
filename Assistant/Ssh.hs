@@ -1,6 +1,6 @@
 {- git-annex assistant ssh utilities
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,6 +11,8 @@ import Common.Annex
 import Utility.Tmp
 import Utility.UserInfo
 import Utility.Shell
+import Utility.Rsync
+import Utility.FileMode
 import Git.Remote
 
 import Data.Text (Text)
@@ -25,9 +27,18 @@ data SshData = SshData
 	, sshRepoName :: String
 	, sshPort :: Int
 	, needsPubKey :: Bool
-	, rsyncOnly :: Bool
+	, sshCapabilities :: [SshServerCapability]
 	}
 	deriving (Read, Show, Eq)
+
+data SshServerCapability = GitAnnexShellCapable | GitCapable | RsyncCapable
+	deriving (Read, Show, Eq)
+
+hasCapability :: SshData -> SshServerCapability -> Bool
+hasCapability d c = c `elem` sshCapabilities d
+
+onlyCapability :: SshData -> SshServerCapability -> Bool
+onlyCapability d c = all (== c) (sshCapabilities d)
 
 data SshKeyPair = SshKeyPair
 	{ sshPubKey :: String
@@ -51,6 +62,48 @@ sshDir = do
 {- user@host or host -}
 genSshHost :: Text -> Maybe Text -> String
 genSshHost host user = maybe "" (\v -> T.unpack v ++ "@") user ++ T.unpack host
+
+{- Generates a ssh or rsync url from a SshData. -}
+genSshUrl :: SshData -> String
+genSshUrl sshdata = addtrailingslash $ T.unpack $ T.concat $
+	if (onlyCapability sshdata RsyncCapable)
+		then [u, h, T.pack ":", sshDirectory sshdata]
+		else [T.pack "ssh://", u, h, d]
+  where
+	u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
+	h = sshHostName sshdata
+	d
+		| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = sshDirectory sshdata
+		| T.pack "~/" `T.isPrefixOf` sshDirectory sshdata = T.concat [T.pack "/", sshDirectory sshdata]
+		| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
+	addtrailingslash s
+		| "/" `isSuffixOf` s = s
+		| otherwise = s ++ "/"
+
+{- Reverses genSshUrl -}
+parseSshUrl :: String -> Maybe SshData
+parseSshUrl u
+	| "ssh://" `isPrefixOf` u = fromssh (drop (length "ssh://") u)
+	| otherwise = fromrsync u
+  where
+	mkdata (userhost, dir) = Just $ SshData
+		{ sshHostName = T.pack host
+		, sshUserName = if null user then Nothing else Just $ T.pack user
+		, sshDirectory = T.pack dir
+		, sshRepoName = genSshRepoName host dir
+		-- dummy values, cannot determine from url
+		, sshPort = 22
+		, needsPubKey = True
+		, sshCapabilities = []
+		}
+	  where
+	  	(user, host) = if '@' `elem` userhost
+			then separate (== '@') userhost
+			else ("", userhost)
+	fromrsync s
+		| not (rsyncUrlIsShell u) = Nothing
+		| otherwise = mkdata $ separate (== ':') s
+	fromssh = mkdata . break (== '/')
 
 {- Generates a git remote name, like host_dir or host -}
 genSshRepoName :: String -> FilePath -> String
@@ -92,12 +145,12 @@ validateSshPubKey pubkey
 	safeincomment c = isAlphaNum c || c == '@' || c == '-' || c == '_' || c == '.'
 
 addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
-addAuthorizedKeys rsynconly dir pubkey = boolSystem "sh"
-	[ Param "-c" , Param $ addAuthorizedKeysCommand rsynconly dir pubkey ]
+addAuthorizedKeys gitannexshellonly dir pubkey = boolSystem "sh"
+	[ Param "-c" , Param $ addAuthorizedKeysCommand gitannexshellonly dir pubkey ]
 
 removeAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO ()
-removeAuthorizedKeys rsynconly dir pubkey = do
-	let keyline = authorizedKeysLine rsynconly dir pubkey
+removeAuthorizedKeys gitannexshellonly dir pubkey = do
+	let keyline = authorizedKeysLine gitannexshellonly dir pubkey
 	sshdir <- sshDir
 	let keyfile = sshdir </> "authorized_keys"
 	ls <- lines <$> readFileStrict keyfile
@@ -110,7 +163,7 @@ removeAuthorizedKeys rsynconly dir pubkey = do
  - present.
  -}
 addAuthorizedKeysCommand :: Bool -> FilePath -> SshPubKey -> String
-addAuthorizedKeysCommand rsynconly dir pubkey = intercalate "&&"
+addAuthorizedKeysCommand gitannexshellonly dir pubkey = intercalate "&&"
 	[ "mkdir -p ~/.ssh"
 	, intercalate "; "
 		[ "if [ ! -e " ++ wrapper ++ " ]"
@@ -122,7 +175,7 @@ addAuthorizedKeysCommand rsynconly dir pubkey = intercalate "&&"
 	, "chmod 600 ~/.ssh/authorized_keys"
 	, unwords
 		[ "echo"
-		, shellEscape $ authorizedKeysLine rsynconly dir pubkey
+		, shellEscape $ authorizedKeysLine gitannexshellonly dir pubkey
 		, ">>~/.ssh/authorized_keys"
 		]
 	]
@@ -141,11 +194,11 @@ addAuthorizedKeysCommand rsynconly dir pubkey = intercalate "&&"
 	runshell var = "exec git-annex-shell -c \"" ++ var ++ "\""
 
 authorizedKeysLine :: Bool -> FilePath -> SshPubKey -> String
-authorizedKeysLine rsynconly dir pubkey
+authorizedKeysLine gitannexshellonly dir pubkey
+	| gitannexshellonly = limitcommand ++ pubkey
 	{- TODO: Locking down rsync is difficult, requiring a rather
 	 - long perl script. -}
-	| rsynconly = pubkey
-	| otherwise = limitcommand ++ pubkey
+	| otherwise = pubkey
   where
 	limitcommand = "command=\"GIT_ANNEX_SHELL_DIRECTORY="++shellEscape dir++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
 
@@ -181,12 +234,8 @@ setupSshKeyPair sshkeypair sshdata = do
 	sshdir <- sshDir
 	createDirectoryIfMissing True $ parentDir $ sshdir </> sshprivkeyfile
 
-	unlessM (doesFileExist $ sshdir </> sshprivkeyfile) $ do
-		h <- fdToHandle =<<
-			createFile (sshdir </> sshprivkeyfile)
-				(unionFileModes ownerWriteMode ownerReadMode)
-		hPutStr h (sshPrivKey sshkeypair)
-		hClose h
+	unlessM (doesFileExist $ sshdir </> sshprivkeyfile) $
+		writeFileProtected (sshdir </> sshprivkeyfile) (sshPrivKey sshkeypair)
 	unlessM (doesFileExist $ sshdir </> sshpubkeyfile) $
 		writeFile (sshdir </> sshpubkeyfile) (sshPubKey sshkeypair)
 

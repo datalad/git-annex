@@ -11,6 +11,7 @@ import Common.Annex
 import Assistant
 import Command
 import Option
+import Utility.HumanTime
 
 def :: [Command]
 def = [notBareRepo $ withOptions [foregroundOption, stopOption] $ 
@@ -19,7 +20,7 @@ def = [notBareRepo $ withOptions [foregroundOption, stopOption] $
 seek :: [CommandSeek]
 seek = [withFlag stopOption $ \stopdaemon -> 
 	withFlag foregroundOption $ \foreground ->
-	withNothing $ start False foreground stopdaemon]
+	withNothing $ start False foreground stopdaemon Nothing]
 
 foregroundOption :: Option
 foregroundOption = Option.flag [] "foreground" "do not daemonize"
@@ -27,9 +28,9 @@ foregroundOption = Option.flag [] "foreground" "do not daemonize"
 stopOption :: Option
 stopOption = Option.flag [] "stop" "stop daemon"
 
-start :: Bool -> Bool -> Bool -> CommandStart
-start assistant foreground stopdaemon = do
+start :: Bool -> Bool -> Bool -> Maybe Duration -> CommandStart
+start assistant foreground stopdaemon startdelay = do
 	if stopdaemon
 		then stopDaemon
-		else startDaemon assistant foreground Nothing Nothing -- does not return
+		else startDaemon assistant foreground startdelay Nothing Nothing -- does not return
 	stop

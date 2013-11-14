@@ -48,4 +48,19 @@ buildFlags = filter (not . null)
 #ifdef WITH_DNS
 	, "DNS"
 #endif
+#ifdef WITH_FEED
+	, "Feeds"
+#endif
+#ifdef WITH_QUVI
+	, "Quvi"
+#endif
+#ifdef WITH_TDFA
+	, "TDFA"
+#endif
+#ifdef WITH_CRYPTOHASH
+	, "CryptoHash"
+#endif
+#ifdef WITH_EKG
+	, "EKG"
+#endif
 	]

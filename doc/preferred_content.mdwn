@@ -7,7 +7,7 @@ this allows `git annex get --auto`, `git annex drop --auto`, etc to do
 smarter things.
 
 Preferred content settings can be edited using `git
-annex vicfg`, or viewed and set at the command line with `git annex content`.
+annex vicfg`, or viewed and set at the command line with `git annex wanted`.
 Each repository can have its own settings, and other repositories may also
 try to honor those settings. So there's no local `.git/config` setting it.
 
@@ -83,6 +83,16 @@ The name of the directory can be configured using
 `git annex enableremote $remote preferreddir=$dirname`
 
 (If no directory name is configured, it uses "public" by default.)
+
+## testing preferred content settings
+
+To check at the command line which files are matched by preferred content
+settings, you can use the --want-get and --want-drop options.
+
+For example, "git annex find --want-get --not --in ." will find all the
+files that "git annex get --auto" will want to get, and "git annex find
+--want-drop --in ." will find all the files that "git annex drop --auto"
+will want to drop.
 
 ## standard expressions
 

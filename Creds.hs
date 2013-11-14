@@ -15,11 +15,8 @@ import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigKey)
 import Remote.Helper.Encryptable (remoteCipher, embedCreds)
-#ifndef mingw32_HOST_OS
-import Utility.Env (setEnv)
-#endif
+import Utility.Env (setEnv, getEnv)
 
-import System.Environment
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 import Utility.Base64
@@ -52,7 +49,7 @@ setRemoteCredPair c storage = go =<< getRemoteCredPair c storage
 		return c
 
 	storeconfig creds key (Just cipher) = do
-		s <- liftIO $ encrypt (GpgOpts []) cipher
+		s <- liftIO $ encrypt [] cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
 			(readBytes $ return . L.unpack)
 		return $ M.insert key (toB64 s) c
@@ -101,11 +98,10 @@ getRemoteCredPair c storage = maybe fromcache (return . Just) =<< fromenv
 {- Gets a CredPair from the environment. -}
 getEnvCredPair :: CredPairStorage -> IO (Maybe CredPair)
 getEnvCredPair storage = liftM2 (,)
-	<$> get uenv
-	<*> get penv
+	<$> getEnv uenv
+	<*> getEnv penv
   where
 	(uenv, penv) = credPairEnvironment storage
-	get = catchMaybeIO . getEnv
 
 {- Stores a CredPair in the environment. -}
 setEnvCredPair :: CredPair -> CredPairStorage -> IO ()

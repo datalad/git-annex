@@ -18,6 +18,8 @@ import Types.UUID
 import Types.GitConfig
 import Config.Cost
 import Utility.Metered
+import Git.Types
+import Utility.SafeCommand
 
 type RemoteConfigKey = String
 type RemoteConfig = M.Map RemoteConfigKey String
@@ -29,9 +31,9 @@ data RemoteTypeA a = RemoteType {
 	-- enumerates remotes of this type
 	enumerate :: a [Git.Repo],
 	-- generates a remote of this type
-	generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (RemoteA a),
+	generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (Maybe (RemoteA a)),
 	-- initializes or changes a remote
-	setup :: UUID -> RemoteConfig -> a RemoteConfig
+	setup :: Maybe UUID -> RemoteConfig -> a (RemoteConfig, UUID)
 }
 
 instance Eq (RemoteTypeA a) where
@@ -42,7 +44,7 @@ data RemoteA a = Remote {
 	-- each Remote has a unique uuid
 	uuid :: UUID,
 	-- each Remote has a human visible name
-	name :: String,
+	name :: RemoteName,
 	-- Remotes have a use cost; higher is more expensive
 	cost :: Cost,
 	-- Transfers a key to the remote.
@@ -63,6 +65,12 @@ data RemoteA a = Remote {
 	hasKeyCheap :: Bool,
 	-- Some remotes can provide additional details for whereis.
 	whereisKey :: Maybe (Key -> a [String]),
+	-- Some remotes can run a fsck operation on the remote,
+	-- without transferring all the data to the local repo
+	-- The parameters are passed to the fsck command on the remote.
+	remoteFsck :: Maybe ([CommandParam] -> a (IO Bool)),
+	-- Runs an action to repair the remote's git repository.
+	repairRepo :: Maybe (a Bool -> a (IO Bool)),
 	-- a Remote has a persistent configuration store
 	config :: RemoteConfig,
 	-- git repo for the Remote

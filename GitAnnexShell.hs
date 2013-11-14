@@ -19,6 +19,9 @@ import Annex (setField)
 import qualified Option
 import Fields
 import Utility.UserInfo
+import Remote.GCrypt (getGCryptUUID)
+import qualified Annex
+import Init
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex
@@ -27,20 +30,22 @@ import qualified Command.RecvKey
 import qualified Command.SendKey
 import qualified Command.TransferInfo
 import qualified Command.Commit
+import qualified Command.GCryptSetup
 
 cmds_readonly :: [Command]
 cmds_readonly = concat
-	[ Command.ConfigList.def
-	, Command.InAnnex.def
-	, Command.SendKey.def
-	, Command.TransferInfo.def
+	[ gitAnnexShellCheck Command.ConfigList.def
+	, gitAnnexShellCheck Command.InAnnex.def
+	, gitAnnexShellCheck Command.SendKey.def
+	, gitAnnexShellCheck Command.TransferInfo.def
 	]
 
 cmds_notreadonly :: [Command]
 cmds_notreadonly = concat
-	[ Command.RecvKey.def
-	, Command.DropKey.def
-	, Command.Commit.def
+	[ gitAnnexShellCheck Command.RecvKey.def
+	, gitAnnexShellCheck Command.DropKey.def
+	, gitAnnexShellCheck Command.Commit.def
+	, Command.GCryptSetup.def
 	]
 
 cmds :: [Command]
@@ -50,17 +55,22 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
 
 options :: [OptDescr (Annex ())]
 options = Option.common ++
-	[ Option [] ["uuid"] (ReqArg checkuuid paramUUID) "local repository uuid"
+	[ Option [] ["uuid"] (ReqArg checkUUID paramUUID) "local repository uuid"
 	]
   where
-	checkuuid expected = getUUID >>= check
+	checkUUID expected = getUUID >>= check
 	  where
 		check u | u == toUUID expected = noop
-		check NoUUID = unexpected "uninitialized repository"
-		check u = unexpected $ "UUID " ++ fromUUID u
-		unexpected s = error $
-			"expected repository UUID " ++
-			expected ++ " but found " ++ s
+		check NoUUID = checkGCryptUUID expected
+		check u = unexpectedUUID expected u
+	checkGCryptUUID expected = check =<< getGCryptUUID True =<< gitRepo
+	  where
+	  	check (Just u) | u == toUUID expected = noop
+		check Nothing = unexpected expected "uninitialized repository"
+		check (Just u) = unexpectedUUID expected u
+	unexpectedUUID expected u = unexpected expected $ "UUID " ++ fromUUID u
+	unexpected expected s = error $
+		"expected repository UUID " ++ expected ++ " but found " ++ s
 
 header :: String
 header = "git-annex-shell [-c] command [parameters ...] [option ...]"
@@ -180,3 +190,11 @@ checkEnv var = do
 		Nothing -> noop
 		Just "" -> noop
 		Just _ -> error $ "Action blocked by " ++ var
+
+{- Modifies a Command to check that it is run in either a git-annex
+ - repository, or a repository with a gcrypt-id set. -}
+gitAnnexShellCheck :: [Command] -> [Command]
+gitAnnexShellCheck = map $ addCheck okforshell . dontCheck repoExists
+  where
+	okforshell = unlessM (isInitialized <||> isJust . gcryptId <$> Annex.getGitConfig) $
+		error "Not a git-annex or gcrypt repository."

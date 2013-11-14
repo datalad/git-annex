@@ -32,7 +32,7 @@ import Utility.Env
 checkEnvironment :: Annex ()
 checkEnvironment = do
 	gitusername <- fromRepo $ Git.Config.getMaybe "user.name"
-	when (gitusername == Nothing || gitusername == Just "") $
+	when (isNothing gitusername || gitusername == Just "") $
 		liftIO checkEnvironmentIO
 
 checkEnvironmentIO :: IO ()

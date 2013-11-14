@@ -7,6 +7,8 @@
 
 module Command.Direct where
 
+import Control.Exception.Extensible
+
 import Common.Annex
 import Command
 import qualified Git
@@ -15,6 +17,7 @@ import qualified Git.LsFiles
 import Config
 import Annex.Direct
 import Annex.Version
+import Annex.Exception
 
 def :: [Command]
 def = [notBareRepo $ noDaemonRunning $
@@ -51,9 +54,16 @@ perform = do
 			Nothing -> noop
 			Just a -> do
 				showStart "direct" f
-				a
-				showEndOk
+				r' <- tryAnnex a
+				case r' of
+					Left e -> warnlocked e
+					Right _ -> showEndOk
 		return Nothing
+
+	warnlocked :: SomeException -> Annex ()
+	warnlocked e = do
+		warning $ show e
+		warning "leaving this file as-is; correct this problem and run git annex fsck on it"
 
 cleanup :: CommandCleanup
 cleanup = do

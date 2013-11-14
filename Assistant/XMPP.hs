@@ -21,7 +21,7 @@ import qualified Data.Map as M
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 import Data.XML.Types
-import qualified Codec.Binary.Base64 as B64
+import qualified "dataenc" Codec.Binary.Base64 as B64
 
 {- Name of the git-annex tag, in our own XML namespace.
  - (Not using a namespace URL to avoid unnecessary bloat.) -}

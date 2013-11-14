@@ -24,20 +24,17 @@ import Data.Time.Clock.POSIX
 import Common.Annex
 import qualified Annex.Branch
 import qualified Annex
+import Logs
 import Logs.UUIDBased
-import Limit
 import qualified Utility.Matcher
 import Annex.FileMatcher
 import Annex.UUID
+import Types.Limit
 import Types.Group
 import Types.Remote (RemoteConfig)
 import Logs.Group
 import Logs.Remote
 import Types.StandardGroups
-
-{- Filename of preferred-content.log. -}
-preferredContentLog :: FilePath
-preferredContentLog = "preferred-content.log"
 
 {- Changes the preferred content configuration of a remote. -}
 preferredContentSet :: UUID -> String -> Annex ()

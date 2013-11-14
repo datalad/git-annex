@@ -3,7 +3,7 @@ $(function() {
 		var f = function() {
 			longpoll(url, #{ident}
 				, function() { setTimeout(f, #{delay}); }
-				, function() { webapp_disconnected(); }
+				, function() { window.location.reload(true); }
 			);	
 		};
 		setTimeout(f, #{startdelay});

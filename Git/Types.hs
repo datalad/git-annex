@@ -9,6 +9,8 @@ module Git.Types where
 
 import Network.URI
 import qualified Data.Map as M
+import System.Posix.Types
+import Utility.SafeCommand
 
 {- Support repositories on local disk, and repositories accessed via an URL.
  -
@@ -34,10 +36,14 @@ data Repo = Repo
 	, fullconfig :: M.Map String [String]
 	, remotes :: [Repo]
 	-- remoteName holds the name used for this repo in remotes
-	, remoteName :: Maybe String
+	, remoteName :: Maybe RemoteName
 	-- alternate environment to use when running git commands
 	, gitEnv :: Maybe [(String, String)]
+	-- global options to pass to git when running git commands
+	, gitGlobalOpts :: [CommandParam]
 	} deriving (Show, Eq)
+
+type RemoteName = String
 
 {- A git ref. Can be a sha1, or a branch or tag name. -}
 newtype Ref = Ref String
@@ -81,3 +87,9 @@ readBlobType "100644" = Just FileBlob
 readBlobType "100755" = Just ExecutableBlob
 readBlobType "120000" = Just SymlinkBlob
 readBlobType _ = Nothing
+
+toBlobType :: FileMode -> Maybe BlobType
+toBlobType 0o100644 = Just FileBlob
+toBlobType 0o100755 = Just ExecutableBlob
+toBlobType 0o120000 = Just SymlinkBlob
+toBlobType _ = Nothing

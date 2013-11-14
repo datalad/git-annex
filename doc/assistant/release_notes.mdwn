@@ -1,3 +1,34 @@
+## version 4.20131024
+
+This version fixes several different bugs that could cause the webapp to
+refuse to create a repository. Several other bugs are also fixed, including
+a bug that caused it to not add files on Android.
+
+New in this release is the ability to use the webapp to set up scheduled
+consistency checks of your repositories. Many problems with repositories 
+are now automatically corrected, and it can even repair damaged git
+repositories.
+
+This is a recommended upgrade.
+
+## version 4.20131002
+
+Now you can use the webapp to set up an encrypted git repository on a
+remote ssh server, or on rsync.net, and use it as a live cloud backup. Or,
+use the webapp to make an encrypted git repository on a removable drive,
+and store it offsite as a secure backup.
+
+## version 4.20130920
+
+This release is the first to support fully encrypted git repositories
+stored on removable drives. This can be set up easily using the webapp.
+
+## version 4.20130909
+
+This release fixes a crash that could occur when using XMPP with the
+assitant. It has only been seen on OS X so far. The bug is not believed to
+be explitable, but upgrading is still recommended.
+
 ## version 4.20130802
 
 This release fixes several bugs, including a reversion introduced in the last

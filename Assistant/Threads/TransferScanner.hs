@@ -81,24 +81,23 @@ transferScannerThread urlrenderer = namedThread "TransferScanner" $ do
 {- This is a cheap scan for failed transfers involving a remote. -}
 failedTransferScan :: Remote -> Assistant ()
 failedTransferScan r = do
-	failed <- liftAnnex $ getFailedTransfers (Remote.uuid r)
-	liftAnnex $ mapM_ removeFailedTransfer $ map fst failed
+	failed <- liftAnnex $ clearFailedTransfers (Remote.uuid r)
 	mapM_ retry failed
   where
 	retry (t, info)
-		| transferDirection t == Download = do
+		| transferDirection t == Download =
 			{- Check if the remote still has the key.
 			 - If not, relies on the expensiveScan to
 			 - get it queued from some other remote. -}
 			whenM (liftAnnex $ remoteHas r $ transferKey t) $
 				requeue t info
-		| otherwise = do
+		| otherwise =
 			{- The Transferrer checks when uploading
 			 - that the remote doesn't already have the
 			 - key, so it's not redundantly checked here. -}
 			requeue t info
 	requeue t info = queueTransferWhenSmall "retrying failed transfer" (associatedFile info) t r
-
+	
 {- This is a expensive scan through the full git work tree, finding
  - files to transfer. The scan is blocked when the transfer queue gets
  - too large. 
@@ -118,8 +117,12 @@ expensiveScan :: UrlRenderer -> [Remote] -> Assistant ()
 expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 	debug ["starting scan of", show visiblers]
 
+	let us = map Remote.uuid rs
+
+	mapM_ (liftAnnex . clearFailedTransfers) us
+
 	unwantedrs <- liftAnnex $ S.fromList
-		<$> filterM inUnwantedGroup (map Remote.uuid rs)
+		<$> filterM inUnwantedGroup us
 
 	g <- liftAnnex gitRepo
 	(files, cleanup) <- liftIO $ LsFiles.inRepo [] g
@@ -158,7 +161,7 @@ expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 			present key (Just f) Nothing
 		liftAnnex $ do
 			let slocs = S.fromList locs
-			let use a = return $ catMaybes $ map (a key slocs) syncrs
+			let use a = return $ mapMaybe (a key slocs) syncrs
 			ts <- if present
 				then filterM (wantSend True (Just f) . Remote.uuid . fst)
 					=<< use (genTransfer Upload False)
@@ -170,7 +173,7 @@ expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 genTransfer :: Direction -> Bool -> Key -> S.Set UUID -> Remote -> Maybe (Remote, Transfer)
 genTransfer direction want key slocs r
 	| direction == Upload && Remote.readonly r = Nothing
-	| (S.member (Remote.uuid r) slocs) == want = Just
+	| S.member (Remote.uuid r) slocs == want = Just
 		(r, Transfer direction (Remote.uuid r) key)
 	| otherwise = Nothing
 

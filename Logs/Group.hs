@@ -21,15 +21,12 @@ import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
 import Common.Annex
+import Logs
 import qualified Annex.Branch
 import qualified Annex
 import Logs.UUIDBased
 import Types.Group
 import Types.StandardGroups
-
-{- Filename of group.log. -}
-groupLog :: FilePath
-groupLog = "group.log"
 
 {- Returns the groups of a given repo UUID. -}
 lookupGroups :: UUID -> Annex (S.Set Group)

@@ -28,7 +28,7 @@ data PairStage
 	| PairAck
 	{- "I saw your PairAck; you can stop sending them." -}
 	| PairDone
-	deriving (Eq, Read, Show, Ord)
+	deriving (Eq, Read, Show, Ord, Enum)
 
 newtype PairMsg = PairMsg (Verifiable (PairStage, PairData, SomeAddr))
 	deriving (Eq, Read, Show)

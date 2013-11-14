@@ -37,10 +37,13 @@ data GitConfig = GitConfig
 	, annexAutoCommit :: Bool
 	, annexDebug :: Bool
 	, annexWebOptions :: [String]
+	, annexQuviOptions :: [String]
 	, annexWebDownloadCommand :: Maybe String
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
+	, annexFsckNudge :: Bool
 	, coreSymlinks :: Bool
+	, gcryptId :: Maybe String
 	}
 
 extractGitConfig :: Git.Repo -> GitConfig
@@ -62,10 +65,13 @@ extractGitConfig r = GitConfig
 	, annexAutoCommit = getbool (annex "autocommit") True
 	, annexDebug = getbool (annex "debug") False
 	, annexWebOptions = getwords (annex "web-options")
+	, annexQuviOptions = getwords (annex "quvi-options")
 	, annexWebDownloadCommand = getmaybe (annex "web-download-command")
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
+	, annexFsckNudge = getbool (annex "fscknudge") True
 	, coreSymlinks = getbool "core.symlinks" True
+	, gcryptId = getmaybe "core.gcrypt-id"
 	}
   where
 	get k def = fromMaybe def $ getmayberead k
@@ -102,6 +108,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBupRepo :: Maybe String
 	, remoteAnnexBupSplitOptions :: [String]
 	, remoteAnnexDirectory :: Maybe FilePath
+	, remoteAnnexGCrypt :: Maybe String
 	, remoteAnnexHookType :: Maybe String
 	{- A regular git remote's git repository config. -}
 	, remoteGitConfig :: Maybe GitConfig
@@ -125,6 +132,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexBupRepo = getmaybe "buprepo"
 	, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
 	, remoteAnnexDirectory = notempty $ getmaybe "directory"
+	, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
 	, remoteAnnexHookType = notempty $ getmaybe "hooktype"
 	, remoteGitConfig = Nothing
 	}

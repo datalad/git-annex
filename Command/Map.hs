@@ -20,7 +20,7 @@ import qualified Annex
 import Annex.UUID
 import Logs.UUID
 import Logs.Trust
-import Remote.Helper.Ssh
+import qualified Remote.Helper.Ssh as Ssh
 import qualified Utility.Dot as Dot
 
 -- a link from the first repository to the second (its remote)
@@ -74,7 +74,7 @@ drawMap rs umap ts = Dot.graph $ repos ++ trusted ++ others
 
 hostname :: Git.Repo -> String
 hostname r
-	| Git.repoIsUrl r = Git.Url.host r
+	| Git.repoIsUrl r = fromMaybe (Git.repoLocation r) (Git.Url.host r)
 	| otherwise = "localhost"
 
 basehostname :: Git.Repo -> String
@@ -203,9 +203,9 @@ tryScan r
 	  where
 		p = proc cmd $ toCommand params
 
-	configlist = onRemote r (pipedconfig, Nothing) "configlist" [] []
+	configlist = Ssh.onRemote r (pipedconfig, Nothing) "configlist" [] []
 	manualconfiglist = do
-		sshparams <- sshToRepo r [Param sshcmd]
+		sshparams <- Ssh.toRepo r [Param sshcmd]
 		liftIO $ pipedconfig "ssh" sshparams
 	  where
 		sshcmd = cddir ++ " && " ++

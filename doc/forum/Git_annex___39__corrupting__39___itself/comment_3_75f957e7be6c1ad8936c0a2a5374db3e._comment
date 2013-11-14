@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlEXAlu8qKv_FHYOv-uEohdGgMY_Lw-Ges"
+ nickname="Jonas"
+ subject="comment 3"
+ date="2013-11-13T09:03:24Z"
+ content="""
+I did a change of one of the files and that totally broke all other repositories, git fsck reports a lot of missing trees (I'm not sure if it is normal), and git annex fsck started reporting invalid object for another file for some reason, also got a (git annex repair still reports everything is fine though.)
+
+    fatal: git-write-tree: error building trees
+    git-annex: failed to read sha from git write-tree
+
+
+
+I tried following those instructions but I don't think I had a good repository, git annex repair reported everything was ok but git fsck said a lot of trees where missing and it stopped updating.
+I noticed I was running different git version (git version 1.7.9.5 on the server and git version 1.8.4.2 on one of the clients), so maybe that was part of the reason.
+
+I couldn't find out what remote dbb70cea-4b83-416f-93af-e59082c4d633 was supposed to be either, it wasn't any of the active ones and it didn't show up with git annex status either (I've lost a few repositories when I reinstalled my computer).
+
+I ended up recreating the repository (by copying the raw files) from what I think is the most recent version from one of my computers and hope that it was a error that happened due to upgrades.
+"""]]

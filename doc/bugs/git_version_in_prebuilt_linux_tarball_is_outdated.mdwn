@@ -1,0 +1,11 @@
+### Please describe the problem.
+I created a .gitignore file and added it to git annex. In the assistant webapp log, the error "The installed version of git is too old for .gitignores to be honored by git-annex." shows up. According to [[bugs/assistant_ignore_.gitignore/]] this bug should be fixed in a later git version.
+
+### What steps will reproduce the problem?
+Download the current prebuilt linux tarball from [[/install]], extract it, run "./runshell", then "git --version" returns "git version 1.7.10.4"
+
+### What version of git-annex are you using? On what operating system?
+git-annex-standalone-amd64.tar.gz	2013-09-22 09:56 (Linux Ubuntu Precise)
+
+> Updated to wheezy backport 1.8.4. [[done]] for now, obviously it will go
+> out of date again eventually.. --[[Joey]]

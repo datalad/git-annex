@@ -2,6 +2,6 @@
 
 [[!inline pages="news/* and !*/Discussion" archive=yes show=2 feeds=no]]
 
-### [[Dev blog|design/assistant/blog]]
+### [[devblog|devblog]]
 
-[[!inline pages="design/assistant/blog/* and !*/Discussion" archive=yes show=5 feeds=no]]
+[[!inline pages="devblog/* and !*/Discussion" archive=yes show=5 feeds=no]]

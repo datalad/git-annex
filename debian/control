@@ -9,6 +9,7 @@ Build-Depends:
 	libghc-hslogger-dev,
 	libghc-pcre-light-dev,
 	libghc-sha-dev,
+	libghc-cryptohash-dev,
 	libghc-regex-tdfa-dev [!mips !mipsel !s390],
 	libghc-dataenc-dev,
 	libghc-utf8-string-dev,
@@ -21,6 +22,7 @@ Build-Depends:
 	libghc-dlist-dev,
 	libghc-uuid-dev,
 	libghc-json-dev,
+	libghc-aeson-dev,
 	libghc-ifelse-dev,
 	libghc-bloomfilter-dev,
 	libghc-edit-distance-dev,
@@ -51,7 +53,7 @@ Build-Depends:
 	libghc-feed-dev,
 	ikiwiki,
 	perlmagick,
-	git,
+	git (>= 1:1.8.4),
 	rsync,
 	wget,
 	curl,
@@ -60,17 +62,18 @@ Maintainer: Joey Hess <joeyh@debian.org>
 Standards-Version: 3.9.4
 Vcs-Git: git://git.kitenet.net/git-annex
 Homepage: http://git-annex.branchable.com/
+XS-Testsuite: autopkgtest
 
 Package: git-annex
 Architecture: any
 Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	git (>= 1:1.7.7.6),
+	git (>= 1:1.8.4),
 	rsync,
 	wget,
 	curl,
 	openssh-client (>= 1:5.6p1)
-Recommends: lsof, gnupg, bind9-host
+Recommends: lsof, gnupg, bind9-host, ssh-askpass, quvi, git-remote-gcrypt (>= 0.20130908-4)
 Suggests: graphviz, bup, libnss-mdns
 Description: manage files with git, without checking their contents into git
  git-annex allows managing files with git, without checking the file

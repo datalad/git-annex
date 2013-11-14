@@ -1,0 +1,17 @@
+When syncing with a huge git annex repository on usb disk, my small laptop partition runs out of inodes.
+
+Any workaround for this?
+
+- Use bare repository?
+
+    Some git annex command are not supported.
+    This makes managing (particularly adding) files difficult.
+
+- Use a loop file partition with tiny block size and large inode numbers?
+
+    Operations on a huge git repository are slow.
+    On a loop file partition will be slower.
+
+- Maybe shrink the partition and make room for a specific partition for git annex repository?
+
+Any opinions?   

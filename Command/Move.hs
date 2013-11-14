@@ -14,7 +14,6 @@ import qualified Annex
 import Annex.Content
 import qualified Remote
 import Annex.UUID
-import qualified Option
 import Logs.Presence
 import Logs.Transfer
 import GitAnnex.Options
@@ -24,14 +23,8 @@ def :: [Command]
 def = [withOptions moveOptions $ command "move" paramPaths seek
 	SectionCommon "move content of files to/from another repository"]
 
-fromOption :: Option
-fromOption = Option.field ['f'] "from" paramRemote "source remote"
-
-toOption :: Option
-toOption = Option.field ['t'] "to" paramRemote "destination remote"
-
 moveOptions :: [Option]
-moveOptions = [fromOption, toOption] ++ keyOptions
+moveOptions = fromToOptions ++ keyOptions
 
 seek :: [CommandSeek]
 seek = 
@@ -45,7 +38,7 @@ start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> C
 start to from move file (key, _) = start' to from move (Just file) key
 
 startKey :: Maybe Remote -> Maybe Remote -> Bool -> Key -> CommandStart
-startKey to from move key = start' to from move Nothing key
+startKey to from move = start' to from move Nothing
 
 start' :: Maybe Remote -> Maybe Remote -> Bool -> AssociatedFile -> Key -> CommandStart
 start' to from move afile key = do
@@ -54,7 +47,7 @@ start' to from move afile key = do
 		(Nothing, Nothing) -> error "specify either --from or --to"
 		(Nothing, Just dest) -> toStart dest move afile key
 		(Just src, Nothing) -> fromStart src move afile key
-		(_ ,  _) -> error "only one of --from or --to can be specified"
+		_ -> error "only one of --from or --to can be specified"
   where
 	noAuto = when move $ whenM (Annex.getState Annex.auto) $ error
 		"--auto is not supported for move"

@@ -1,9 +1,11 @@
 {- running git commands
  -
- - Copyright 2010-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Git.Command where
 
@@ -13,15 +15,27 @@ import Common
 import Git
 import Git.Types
 import qualified Utility.CoProcess as CoProcess
+#ifdef mingw32_HOST_OS
+import Git.FilePath
+#endif
 
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
-gitCommandLine params Repo { location = l@(Local _ _ ) } = setdir : settree ++ params
+gitCommandLine params r@(Repo { location = l@(Local _ _ ) }) =
+	setdir : settree ++ gitGlobalOpts r ++ params
   where
-	setdir = Param $ "--git-dir=" ++ gitdir l
+	setdir = Param $ "--git-dir=" ++ gitpath (gitdir l)
 	settree = case worktree l of
 		Nothing -> []
-		Just t -> [Param $ "--work-tree=" ++ t]
+		Just t -> [Param $ "--work-tree=" ++ gitpath t]
+#ifdef mingw32_HOST_OS
+	-- despite running on windows, msysgit wants a unix-formatted path
+	gitpath s
+		| isAbsolute s = "/" ++ dropDrive (toInternalGitPath s)
+		| otherwise = s
+#else
+	gitpath = id
+#endif
 gitCommandLine _ repo = assertLocal repo $ error "internal"
 
 {- Runs git in the specified repo. -}
@@ -72,13 +86,13 @@ pipeReadStrict params repo = assertLocal repo $
   where
 	p  = gitCreateProcess params repo
 
-{- Runs a git command, feeding it input, and returning its output,
+{- Runs a git command, feeding it an input, and returning its output,
  - which is expected to be fairly small, since it's all read into memory
  - strictly. -}
-pipeWriteRead :: [CommandParam] -> String -> Repo -> IO String
-pipeWriteRead params s repo = assertLocal repo $
+pipeWriteRead :: [CommandParam] -> Maybe (Handle -> IO ()) -> Repo -> IO String
+pipeWriteRead params writer repo = assertLocal repo $
 	writeReadProcessEnv "git" (toCommand $ gitCommandLine params repo) 
-		(gitEnv repo) s (Just adjusthandle)
+		(gitEnv repo) writer (Just adjusthandle)
   where
   	adjusthandle h = do
 		fileEncoding h

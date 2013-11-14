@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 2"
+ date="2013-09-12T21:13:36Z"
+ content="""
+Yes, the rsync repository is not a git repository and so does not hold metadata. If you can install git-annex on your server, you can add a regular git repository there, and then the clients can sync to it even when the other is offline.
+
+This is also why I an working on adding support for [[special_remotes/gcrypt]] repositories, so you can have a fully encrypted git repository on the server and sync through that.
+
+>   during the setup the assistant got an error about too many command line arguments
+
+I have never heard about such a problem. You should file a bug report with the details.
+"""]]

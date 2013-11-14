@@ -26,8 +26,8 @@ data ProcessInfo = ProcessInfo ProcessID CmdLine
 {- lsof is not in PATH on all systems, so SysConfig may have the absolute
  - path where the program was found. Make sure at runtime that lsof is
  - available, and if it's not in PATH, adjust PATH to contain it. -}
-setupLsof :: IO ()
-setupLsof = do
+setup :: IO ()
+setup = do
 	let cmd = fromMaybe "lsof" SysConfig.lsof
 	when (isAbsolute cmd) $ do
 		path <- getSearchPath

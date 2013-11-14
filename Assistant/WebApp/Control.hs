@@ -13,8 +13,8 @@ import Assistant.WebApp.Common
 import Config.Files
 import Utility.LogFile
 import Assistant.DaemonStatus
-import Assistant.WebApp.Utility
 import Assistant.Alert
+import Assistant.TransferSlots
 
 import Control.Concurrent
 import System.Posix (getProcessID, signalProcess, sigTERM)
@@ -26,16 +26,16 @@ getShutdownR = page "Shutdown" Nothing $
 
 getShutdownConfirmedR :: Handler Html
 getShutdownConfirmedR = do
-	{- Remove all alerts for currently running activities. -}
 	liftAssistant $ do
+		{- Remove all alerts for currently running activities. -}
 		updateAlertMap $ M.filter $ \a -> alertClass a /= Activity
 		void $ addAlert shutdownAlert
-	{- Stop transfers the assistant is running,
-	 - otherwise they would continue past shutdown.
-	 - Pausing transfers prevents more being started up (and stops
-	 - the transfer processes). -}
-	ts <- liftAssistant $ M.keys . currentTransfers <$> getDaemonStatus
-	mapM_ pauseTransfer ts
+		{- Stop transfers the assistant is running,
+		 - otherwise they would continue past shutdown.
+		 - Pausing transfers prevents more being started up (and stops
+		 - the transfer processes). -}
+		ts <- M.keys . currentTransfers <$> getDaemonStatus
+		mapM_ pauseTransfer ts
 	page "Shutdown" Nothing $ do
 		{- Wait 2 seconds before shutting down, to give the web
 		 - page time to load in the browser. -}
@@ -67,5 +67,9 @@ getLogR :: Handler Html
 getLogR = page "Logs" Nothing $ do
 	logfile <- liftAnnex $ fromRepo gitAnnexLogFile
 	logs <- liftIO $ listLogs logfile
-	logcontent <- liftIO $ concat <$> mapM readFile logs
+	logcontent <- liftIO $ concat <$> mapM readlog logs
 	$(widgetFile "control/log")
+  where
+	readlog f = withFile f ReadMode $ \h -> do
+		fileEncoding h -- log may contain invalid utf-8
+		hClose h `after` hGetContentsStrict h

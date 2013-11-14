@@ -1,0 +1,56 @@
+From 083c9d135ec68316db173235994c63603ad76444 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sat, 21 Sep 2013 23:01:35 +0000
+Subject: [PATCH] hack to get to build with new ghc
+
+Copied the old implemenations of block and unblock from old Control.Exception
+since these deprecated functions have now been removed.
+---
+ MonadCatchIO-transformers.cabal |    2 +-
+ src/Control/Monad/CatchIO.hs    |   13 +++++++++++--
+ 2 files changed, 12 insertions(+), 3 deletions(-)
+
+diff --git a/MonadCatchIO-transformers.cabal b/MonadCatchIO-transformers.cabal
+index fe6674d..b9f559f 100644
+--- a/MonadCatchIO-transformers.cabal
++++ b/MonadCatchIO-transformers.cabal
+@@ -26,4 +26,4 @@ Library
+   Exposed-Modules:
+     Control.Monad.CatchIO
+   Hs-Source-Dirs:  src
+-  Ghc-options:     -Wall
++  Ghc-options:     -Wall -fglasgow-exts
+diff --git a/src/Control/Monad/CatchIO.hs b/src/Control/Monad/CatchIO.hs
+index 62afb83..853996b 100644
+--- a/src/Control/Monad/CatchIO.hs
++++ b/src/Control/Monad/CatchIO.hs
+@@ -19,6 +19,9 @@ where
+ import           Prelude hiding ( catch )
+ import           Control.Applicative                          ((<$>))
+ import qualified Control.Exception.Extensible      as E
++import qualified Control.Exception.Base      as E
++import GHC.Base (maskAsyncExceptions#)
++import GHC.IO (unsafeUnmask, IO(..))
+ 
+ import           Control.Monad.IO.Class                       (MonadIO,liftIO)
+ 
+@@ -51,8 +54,14 @@ class MonadIO m => MonadCatchIO m where
+ 
+ instance MonadCatchIO IO where
+   catch   = E.catch
+-  block   = E.block
+-  unblock = E.unblock
++  block   = oldblock
++  unblock = oldunblock
++
++oldblock :: IO a -> IO a
++oldblock (IO io) = IO $ maskAsyncExceptions# io
++
++oldunblock :: IO a -> IO a
++oldunblock = unsafeUnmask
+ 
+ -- | Warning: this instance is somewhat contentious.
+ -- 
+-- 
+1.7.10.4
+

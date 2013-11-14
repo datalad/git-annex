@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 
 module GitAnnex where
 
@@ -34,6 +34,7 @@ import qualified Command.Describe
 import qualified Command.InitRemote
 import qualified Command.EnableRemote
 import qualified Command.Fsck
+import qualified Command.Repair
 import qualified Command.Unused
 import qualified Command.DropUnused
 import qualified Command.AddUnused
@@ -42,8 +43,10 @@ import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.Find
 import qualified Command.Whereis
+import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
+import qualified Command.Info
 import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
@@ -52,10 +55,12 @@ import qualified Command.Untrust
 import qualified Command.Semitrust
 import qualified Command.Dead
 import qualified Command.Group
-import qualified Command.Content
+import qualified Command.Wanted
+import qualified Command.Schedule
 import qualified Command.Ungroup
 import qualified Command.Vicfg
 import qualified Command.Sync
+import qualified Command.Mirror
 import qualified Command.AddUrl
 #ifdef WITH_FEED
 import qualified Command.ImportFeed
@@ -66,6 +71,7 @@ import qualified Command.Map
 import qualified Command.Direct
 import qualified Command.Indirect
 import qualified Command.Upgrade
+import qualified Command.Forget
 import qualified Command.Version
 import qualified Command.Help
 #ifdef WITH_ASSISTANT
@@ -82,6 +88,9 @@ import qualified Command.XMPPGit
 import qualified Command.Test
 import qualified Command.FuzzTest
 #endif
+#ifdef WITH_EKG
+import System.Remote.Monitoring
+#endif
 
 cmds :: [Command]
 cmds = concat
@@ -93,6 +102,7 @@ cmds = concat
 	, Command.Unlock.def
 	, Command.Lock.def
 	, Command.Sync.def
+	, Command.Mirror.def
 	, Command.AddUrl.def
 #ifdef WITH_FEED
 	, Command.ImportFeed.def
@@ -112,7 +122,8 @@ cmds = concat
 	, Command.Semitrust.def
 	, Command.Dead.def
 	, Command.Group.def
-	, Command.Content.def
+	, Command.Wanted.def
+	, Command.Schedule.def
 	, Command.Ungroup.def
 	, Command.Vicfg.def
 	, Command.FromKey.def
@@ -124,19 +135,23 @@ cmds = concat
 	, Command.ReKey.def
 	, Command.Fix.def
 	, Command.Fsck.def
+	, Command.Repair.def
 	, Command.Unused.def
 	, Command.DropUnused.def
 	, Command.AddUnused.def
 	, Command.Find.def
 	, Command.Whereis.def
+	, Command.List.def
 	, Command.Log.def
 	, Command.Merge.def
+	, Command.Info.def
 	, Command.Status.def
 	, Command.Migrate.def
 	, Command.Map.def
 	, Command.Direct.def
 	, Command.Indirect.def
 	, Command.Upgrade.def
+	, Command.Forget.def
 	, Command.Version.def
 	, Command.Help.def
 #ifdef WITH_ASSISTANT
@@ -159,4 +174,8 @@ header :: String
 header = "git-annex command [option ...]"
 
 run :: [String] -> IO ()
-run args = dispatch True args cmds options [] header Git.CurrentRepo.get
+run args = do
+#ifdef WITH_EKG
+	_ <- forkServer "localhost" 4242
+#endif
+	dispatch True args cmds options [] header Git.CurrentRepo.get

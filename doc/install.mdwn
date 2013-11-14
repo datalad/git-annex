@@ -25,3 +25,7 @@ As a haskell package, git-annex can be installed from source pretty easily
 ## Installation from scratch
 
 This is not recommended, but if you really want to, see [[fromscratch]].
+
+## See also
+
+[[autobuild overview|builds]]

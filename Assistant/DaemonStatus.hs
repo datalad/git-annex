@@ -57,8 +57,7 @@ calcSyncRemotes = do
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
-		, syncGitRemotes =
-			filter (not . Remote.specialRemote) syncable
+		, syncGitRemotes = filter Remote.syncableRemote syncable
 		, syncDataRemotes = syncdata
 		, syncingToCloudRemote = any iscloud syncdata
 		}
@@ -76,6 +75,10 @@ updateSyncRemotes = do
 		updateAlertMap $
 			M.filter $ \alert ->
 				alertName alert /= Just CloudRepoNeededAlert
+
+updateScheduleLog :: Assistant ()
+updateScheduleLog =
+	liftIO . sendNotification =<< scheduleLogNotifier <$> getDaemonStatus
 
 {- Load any previous daemon status file, and store it in a MVar for this
  - process to use as its DaemonStatus. Also gets current transfer status. -}

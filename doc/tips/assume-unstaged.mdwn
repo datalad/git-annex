@@ -11,7 +11,7 @@ annoyingly slow, you can turn it on:
 
 	git config core.ignoreStat true
 
-When git mv and git rm are used, those changes *do* get noticed, even
+When `git mv` and `git rm` are used, those changes *do* get noticed, even
 on assume-unchanged files. When new files are added, eg by `git annex add`,
 they are also noticed.
 

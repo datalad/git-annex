@@ -1,0 +1,63 @@
+### Please describe the problem.
+Git-annex will constantly sync most(if not all) my files to box.com
+
+### What steps will reproduce the problem?
+1 - Use git-annex instead of Dropbox at work
+2 - Boot computer.
+3 - Watch it sync everything to box.com (even files i believe it has transferred each and every day for the last few months)
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 4.20130827
+
+But i have never seen it work satisfactory in any version.
+
+Also, i have seen this is 10+ different clean git-annexes. So it isn't annex specific. 
+
+### Please provide any additional information below.
+
+I am going to add more debug to this bug constantly. (I intend to do a full 'git annex copy --to box.com --not --in box.com' daily, and see if the same files are transfered again and again)
+
+
+For now, i see a few different issues already:
+
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+tou@DSK1049:~/work-annex$ git annex copy --to box.com --not --in box.com 2>&1 | tee ../work-annex-copy-to-box.com-not-in-box.com-run1.log
+[2013-09-11 09:24:53 CEST] read: git ["--git-dir=/home/tou/work-annex/.git","--work-tree=/home/tou/work-annex","show-ref","git-annex"]
+[2013-09-11 09:24:53 CEST] read: git ["--git-dir=/home/tou/work-annex/.git","--work-tree=/home/tou/work-annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-09-11 09:24:53 CEST] read: git ["--git-dir=/home/tou/work-annex/.git","--work-tree=/home/tou/work-annex","log","refs/heads/git-annex..dbe8b1cfa5f84126c45a39fdc7c7f26e272c71cc","--oneline","-n1"]
+[2013-09-11 09:24:53 CEST] read: git ["--git-dir=/home/tou/work-annex/.git","--work-tree=/home/tou/work-annex","log","refs/heads/git-annex..45e279375897a2cd7f5b893402e0ec25c1b23436","--oneline","-n1"]
+[2013-09-11 09:24:54 CEST] read: git ["--git-dir=/home/tou/work-annex/.git","--work-tree=/home/tou/work-annex","log","refs/heads/git-annex..c4921be4434f751493fce1c932ac759214abacd4","--oneline","-n1"]
+[2013-09-11 09:24:54 CEST] read: git ["--git-dir=/home/tou/work-annex/.git","--work-tree=/home/tou/work-annex","log","refs/heads/git-annex..d591398dc1cac824a5fc5bdacdcb82301a9b15a3","--oneline","-n1"]
+[2013-09-11 09:24:54 CEST] chat: git ["--git-dir=/home/tou/work-annex/.git","--work-tree=/home/tou/work-annex","cat-file","--batch"]
+[2013-09-11 09:24:54 CEST] read: git ["config","--null","--list"]
+[2013-09-11 09:24:54 CEST] read: git ["--git-dir=/home/tou/work-annex/.git","--work-tree=/home/tou/work-annex","ls-files","--cached","-z","--"]
+[2013-09-11 09:24:54 CEST] chat: git ["--git-dir=/home/tou/work-annex/.git","--work-tree=/home/tou/work-annex","cat-file","--batch"]
+copy Documents/Gamle catillo overførsler/Rapport b-bm.odt (gpg) (checking box.com...) ok
+copy Documents/Gamle catillo overførsler/Rapport brandt skorstensfejeren.odt (checking box.com...) (failed to read https://www.box.com/dav/work-annex/4a5/18e/GPGHMACSHA1--5f8660edac93899cf9adc5fadcc480ddc2992bb1/GPGHMACSHA1--5f8660edac93899cf9adc5fadcc480ddc2992bb1.chunkcount) failed
+copy Documents/Gamle catillo overførsler/Rapport teamkoege.odt (checking box.com...) (failed to read https://www.box.com/dav/work-annex/98d/ae7/GPGHMACSHA1--5253241407527aa6c980f1174fdbc32713c54c44/GPGHMACSHA1--5253241407527aa6c980f1174fdbc32713c54c44.chunkcount) failed
+copy Documents/Gamle catillo overførsler/Rapport vikarborsen.odt (checking box.com...) ok
+copy Documents/Gamle catillo overførsler/Rapport-terrariemesteren.odt (checking box.com...) ok
+copy Documents/Gamle catillo overførsler/catillo-efhandel.odt (checking box.com...) (failed to read https://www.box.com/dav/work-annex/9d9/aea/GPGHMACSHA1--1516eac1ec7b4ceaa840faebabde1f50f5db0a52/GPGHMACSHA1--1516eac1ec7b4ceaa840faebabde1f50f5db0a52.chunkcount) failed
+copy Documents/Nøgeordsanalyse catillo104.xlsx (checking box.com...) (ResponseTimeout) failed
+copy Documents/Søgeordsliste.txt (checking box.com...) ok
+copy Documents/catillo guide.odt (checking box.com...) ok
+copy Documents/guide bruger oprettelse.odt (checking box.com...) (failed to read https://www.box.com/dav/work-annex/49e/175/GPGHMACSHA1--2b47737f8de7faac7704eaa322785edad63a921c/GPGHMACSHA1--2b47737f8de7faac7704eaa322785edad63a921c.chunkcount) failed
+copy Documents/guide skift backup bånd.odt (checking box.com...) ok
+copy Documents/lilletest.csv (checking box.com...) (failed to read https://www.box.com/dav/work-annex/915/373/GPGHMACSHA1--49ba3d5f63c012ae2cd2c0fc3e729178b1023c33/GPGHMACSHA1--49ba3d5f63c012ae2cd2c0fc3e729178b1023c33.chunkcount) failed
+copy Dropbox/adams-scraper/CommonFunctions.py (checking box.com...) (ResponseTimeout) failed
+copy Dropbox/adams-scraper/__pycache__/CommonFunctions.cpython-33.pyc (checking box.com...) (to box.com...) [2013-09-11 09:28:30 CEST] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--batch","--passphrase-fd","14","--symmetric","--force-mdc"]
+
+100%          0.0 B/s 0sResponseTimeout
+ResponseTimeout
+failed                  
+
+
+# End of transcript or log.
+"""]]
+
+More to come(full log)

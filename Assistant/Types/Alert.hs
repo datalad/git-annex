@@ -30,6 +30,7 @@ data AlertName
 	| RemoteRemovalAlert String
 	| CloudRepoNeededAlert
 	| SyncAlert
+	| NotFsckedAlert
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.

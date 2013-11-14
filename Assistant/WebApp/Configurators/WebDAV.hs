@@ -5,7 +5,7 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP, QuasiQuotes, TemplateHaskell, OverloadedStrings #-}
+{-# LANGUAGE CPP, TemplateHaskell, OverloadedStrings #-}
 
 module Assistant.WebApp.Configurators.WebDAV where
 
@@ -13,18 +13,18 @@ import Assistant.WebApp.Common
 import Creds
 #ifdef WITH_WEBDAV
 import qualified Remote.WebDAV as WebDAV
-import Assistant.MakeRemote
-import Assistant.Sync
+import Assistant.WebApp.MakeRemote
 import qualified Remote
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
-import Logs.PreferredContent
 import Logs.Remote
+import Git.Types (RemoteName)
 
 import qualified Data.Map as M
 #endif
 import qualified Data.Text as T
 import Network.URI
+import Assistant.Gpg
 
 webDAVConfigurator :: Widget -> Handler Html
 webDAVConfigurator = page "Add a WebDAV repository" (Just Configuration)
@@ -66,10 +66,10 @@ postAddBoxComR :: Handler Html
 postAddBoxComR = boxConfigurator $ do
 	defcreds <- liftAnnex $ previouslyUsedWebDAVCreds "box.com"
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ boxComAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ boxComAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ 
-			makeWebDavRemote initSpecialRemote "box.com" (toCredPair input) setgroup $ M.fromList
+			makeWebDavRemote initSpecialRemote "box.com" (toCredPair input) $ M.fromList
 				[ configureEncryption $ enableEncryption input
 				, ("embedcreds", if embedCreds input then "yes" else "no")
 				, ("type", "webdav")
@@ -80,9 +80,6 @@ postAddBoxComR = boxConfigurator $ do
 				, ("chunksize", "10mb")
 				]
 		_ -> $(widgetFile "configurators/addbox.com")
-  where
-	setgroup r = liftAnnex $
-		setStandardGroup (Remote.uuid r) TransferGroup
 #else
 postAddBoxComR = error "WebDAV not supported by this build"
 #endif
@@ -100,7 +97,7 @@ postEnableWebDAVR uuid = do
 		getRemoteCredPairFor "webdav" c (WebDAV.davCreds uuid)
 	case mcreds of
 		Just creds -> webDAVConfigurator $ liftH $
-			makeWebDavRemote enableSpecialRemote name creds (const noop) M.empty
+			makeWebDavRemote enableSpecialRemote name creds M.empty
 		Nothing
 			| "box.com/" `isInfixOf` url ->
 				boxConfigurator $ showform name url
@@ -112,10 +109,10 @@ postEnableWebDAVR uuid = do
 			maybe (pure Nothing) previouslyUsedWebDAVCreds $
 				urlHost url
 		((result, form), enctype) <- liftH $
-			runFormPost $ renderBootstrap $ webDAVCredsAForm defcreds
+			runFormPostNoToken $ renderBootstrap $ webDAVCredsAForm defcreds
 		case result of
 			FormSuccess input -> liftH $
-				makeWebDavRemote enableSpecialRemote name (toCredPair input) (const noop) M.empty
+				makeWebDavRemote enableSpecialRemote name (toCredPair input) M.empty
 			_ -> do
 				description <- liftAnnex $
 					T.pack <$> Remote.prettyUUID uuid
@@ -125,13 +122,11 @@ postEnableWebDAVR _ = error "WebDAV not supported by this build"
 #endif
 
 #ifdef WITH_WEBDAV
-makeWebDavRemote :: SpecialRemoteMaker -> String -> CredPair -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
-makeWebDavRemote maker name creds setup config = do
+makeWebDavRemote :: SpecialRemoteMaker -> RemoteName -> CredPair -> RemoteConfig -> Handler ()
+makeWebDavRemote maker name creds config = do
 	liftIO $ WebDAV.setCredsEnv creds
-	r <- liftAnnex $ addRemote $ maker name WebDAV.remote config
-	setup r
-	liftAssistant $ syncRemote r
-	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
+	setupCloudRemote TransferGroup Nothing $
+		maker name WebDAV.remote config
 
 {- Only returns creds previously used for the same hostname. -}
 previouslyUsedWebDAVCreds :: String -> Annex (Maybe CredPair)

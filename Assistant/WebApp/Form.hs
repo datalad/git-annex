@@ -12,8 +12,8 @@
 
 module Assistant.WebApp.Form where
 
-import Types.Remote (RemoteConfigKey)
 import Assistant.WebApp.Types
+import Assistant.Gpg
 
 import Yesod hiding (textField, passwordField)
 import Yesod.Form.Fields as F
@@ -67,16 +67,12 @@ withExpandableNote :: (Monad m, ToWidget (HandlerSite m) w) => Field m v -> (Str
 withExpandableNote :: Field sub master v -> (String, GWidget sub master ()) -> Field sub master v
 #endif
 withExpandableNote field (toggle, note) = withNote field $ [whamlet|
-<a .btn data-toggle="collapse" data-target="##{ident}">
-  #{toggle}
+<a .btn data-toggle="collapse" data-target="##{ident}">#{toggle}</a>
 <div ##{ident} .collapse>
   ^{note}
 |]
   where
   	ident = "toggle_" ++ toggle
-
-data EnableEncryption = SharedEncryption | NoEncryption
-	deriving (Eq)
 
 {- Adds a check box to an AForm to control encryption. -}
 #if MIN_VERSION_yesod(1,2,0)
@@ -91,8 +87,3 @@ enableEncryptionField = areq (selectFieldList choices) "Encryption" (Just Shared
 		[ ("Encrypt all data", SharedEncryption)
 		, ("Disable encryption", NoEncryption)
 		]
-
-{- Generates Remote configuration for encryption. -}
-configureEncryption :: EnableEncryption -> (RemoteConfigKey, String)
-configureEncryption SharedEncryption = ("encryption", "shared")
-configureEncryption NoEncryption = ("encryption", "none")

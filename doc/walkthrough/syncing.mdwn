@@ -1,11 +1,9 @@
-Notice that in the [[previous example|getting_file_content]], you had to
-git fetch and merge from laptop first. This lets git-annex know what has
-changed in laptop, and so it knows about the files present there and can
+Notice that in the [[previous example|getting_file_content]], `git annex
+sync` was used. This lets git-annex know what has changed in the other
+repositories like the laptop, and so it knows about the files present there and can
 get them.
 
-If you have a lot of repositories to keep in sync, manually fetching and 
-merging from them can become tedious. To automate it there is a handy
-sync command, which also even commits your changes for you.
+Let's look at what the sync command does in more detail:
 
 	# cd /media/usb/annex
 	# git annex sync

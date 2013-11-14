@@ -1,6 +1,7 @@
 {- Calculating a SHA checksum with an external command.
  -
- - This is often faster than using Haskell libraries.
+ - This is typically a bit faster than using Haskell libraries,
+ - by around 1% to 10%. Worth it for really big files.
  -
  - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -

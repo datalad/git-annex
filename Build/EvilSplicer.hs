@@ -294,6 +294,8 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
 mangleCode = flip_colon
+	. remove_unnecessary_type_signatures
+	. lambdaparenhack
 	. lambdaparens
 	. declaration_parens
 	. case_layout
@@ -331,6 +333,12 @@ mangleCode = flip_colon
 		preindent <- many1 $ oneOf " \n"
 		string "\\ "
 		lambdaparams <- restofline
+		continuedlambdaparams <- many $ try $ do
+			indent <- many1 $ char ' '
+			p <- satisfy isLetter
+			aram <- many $ satisfy isAlphaNum <|> oneOf "_"
+			newline
+			return $ indent ++ p:aram ++ "\n"
 		indent <- many1 $ char ' '
 		string "-> "
 		firstline <- restofline
@@ -342,9 +350,45 @@ mangleCode = flip_colon
 		return $ concat 
 			[ prefix:preindent
 			, "(\\ " ++ lambdaparams ++ "\n"
+			, concat continuedlambdaparams
 			, indent ++ "-> "
 			, lambdaparens $ intercalate "\n" (firstline:lambdalines)
 			, ")\n"
+			]
+	
+	{- Hack to add missing parens in a specific case in yesod
+	 - static route code.
+	 -
+	 -     StaticR
+	 -     yesod_dispatch_env_a4iDV
+	 -     (\ p_a4iE2 r_a4iE3
+	 -        -> r_a4iE3 {Network.Wai.pathInfo = p_a4iE2}
+	 -        xrest_a4iDT req_a4iDW)) }
+	 -
+	 - Need to add another paren around the lambda, and close it
+	 - before its parameters. lambdaparens misses this one because
+	 - there is already one paren present.
+	 -
+	 - FIXME: This is a hack. lambdaparens could just always add a
+	 - layer of parens even when a lambda seems to be in parent.
+	 -}
+	lambdaparenhack = parsecAndReplace $ do
+		indent <- many1 $ char ' '
+		staticr <- string "StaticR"
+		newline
+		string indent
+		yesod_dispatch_env <- restofline
+		string indent
+		lambdaprefix <- string "(\\ "
+		l1 <- restofline
+		string indent
+		lambdaarrow <- string "   ->"
+		l2 <- restofline
+		return $ unlines
+			[ indent ++ staticr
+			, indent ++ yesod_dispatch_env
+			, indent ++ "(" ++ lambdaprefix ++ l1
+			, indent ++ lambdaarrow ++ l2 ++ ")"
 			]
 
 	restofline = manyTill (noneOf "\n") newline
@@ -439,6 +483,19 @@ mangleCode = flip_colon
 	 - declarations. -}
 	declaration_parens = replace "StaticR Route Static" "StaticR (Route Static)"
 
+	{- A type signature is sometimes given for an entire lambda,
+	 - which is not properly parenthesized or laid out. This is a
+	 - hack to remove one specific case where this happens and the
+	 - signature is easily inferred, so is just removed.
+	 -}
+	remove_unnecessary_type_signatures = parsecAndReplace $ do
+		string " ::"
+		newline
+		many1 $ char ' '
+		string "Text.Css.Block Text.Css.Resolved"
+		newline
+		return ""
+
 	{- GHC may add full package and version qualifications for
 	 - symbols from unimported modules. We don't want these.
 	 -
@@ -527,7 +584,7 @@ text_builder_hack = replace "Data.Text.Lazy.Builder.Internal.fromText" "Data.Tex
 parsecAndReplace :: Parser String -> String -> String
 parsecAndReplace p s = case parse find "" s of
 	Left e -> s
-	Right l -> concatMap (either (\c -> [c]) id) l
+	Right l -> concatMap (either return id) l
   where
   	find :: Parser [Either Char String]
 	find = many $ try (Right <$> p) <|> (Left <$> anyChar)

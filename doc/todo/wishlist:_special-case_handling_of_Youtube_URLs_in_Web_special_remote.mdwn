@@ -10,3 +10,13 @@ The [[Web special remote|special remotes/web]] could possibly be improved by det
 >   this.
 > 
 > --[[Joey]] 
+
+> > There's a library for this called [quvi](http://quvi.sourceforge.net/) which supports many
+> > different sites and also allows fetching the URL (as opposed to just
+> > downloading the file). It seems to me this would be the best tool
+> > for this task. One problem to consider here is that a single youtube
+> > URL may yield different file contents depending on the quality
+> > chosen. Also, it seems that the URLs guessed by quvi may be
+> > ephemeral. --[[anarcat]]
+
+> [[done]]!!! --[[Joey]]   

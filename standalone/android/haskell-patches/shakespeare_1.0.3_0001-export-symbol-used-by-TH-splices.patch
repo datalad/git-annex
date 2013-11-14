@@ -1,139 +1,26 @@
-From 3cb1056782c29b0b68bdcff8fa49d3ea92126956 Mon Sep 17 00:00:00 2001
-From: Joey Hess <joey@kitenet.net>
-Date: Mon, 15 Apr 2013 16:46:15 -0400
-Subject: [PATCH] export symbol used by TH splices
+From 4a75a2f0d77168aa3115b991284a5120484e18f0 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sun, 22 Sep 2013 04:59:21 +0000
+Subject: [PATCH] TH exports
 
 ---
- Text/.Shakespeare.hs.swp | Bin 24576 -> 0 bytes
- Text/Shakespeare.hs      |   2 ++
- 2 files changed, 2 insertions(+)
- delete mode 100644 Text/.Shakespeare.hs.swp
-
-diff --git a/Text/.Shakespeare.hs.swp b/Text/.Shakespeare.hs.swp
-deleted file mode 100644
-index 4d6cd6a0295fdfb59f32a66b4af556c0630dd5b0..0000000000000000000000000000000000000000
-GIT binary patch
-literal 0
-HcmV?d00001
-
-literal 24576
-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
+ Text/Shakespeare.hs |    3 +++
+ 1 file changed, 3 insertions(+)
 
 diff --git a/Text/Shakespeare.hs b/Text/Shakespeare.hs
-index d300951..fabbf66 100644
+index 9eb06a2..1290ab1 100644
 --- a/Text/Shakespeare.hs
 +++ b/Text/Shakespeare.hs
-@@ -22,6 +22,8 @@ module Text.Shakespeare
+@@ -23,6 +23,9 @@ module Text.Shakespeare
+     , Deref
+     , Parser
+ 
++    -- used by TH
++    , pack'
++
  #ifdef TEST_EXPORT
      , preFilter
  #endif
-+    -- used by TH splices
-+    , pack'
-     ) where
- 
- import Data.List (intersperse)
 -- 
-1.8.2.rc3
+1.7.10.4
 

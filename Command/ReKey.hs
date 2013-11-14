@@ -66,6 +66,6 @@ cleanup file oldkey newkey = do
 
 	-- Update symlink to use the new key.
 	liftIO $ removeFile file
-	Command.Add.addLink file newkey True
+	Command.Add.addLink file newkey Nothing
 	logStatus newkey InfoPresent
 	return True

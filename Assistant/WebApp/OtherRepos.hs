@@ -56,13 +56,17 @@ getSwitchToRepositoryR repo = do
 				( return url
 				, delayed $ waiturl urlfile
 				)
-	listening url = catchBoolIO $ fst <$> Url.exists url []
+	listening url = catchBoolIO $ fst <$> Url.exists url [] Nothing
 	delayed a = do
 		threadDelay 100000 -- 1/10th of a second
 		a
 
+{- Returns once the assistant has daemonized, but possibly before it's
+ - listening for web connections. -}
 startAssistant :: FilePath -> IO ()
 startAssistant repo = do
 	program <- readProgramFile
-	void $ forkIO $ void $ createProcess $
-		(proc program ["assistant"]) { cwd = Just repo }
+	(_, _, _, pid) <- 
+		createProcess $
+			(proc program ["assistant"]) { cwd = Just repo }
+	void $ checkSuccessProcess pid

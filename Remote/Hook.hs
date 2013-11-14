@@ -18,6 +18,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Annex.Content
+import Annex.UUID
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
@@ -34,11 +35,11 @@ remote = RemoteType {
 	setup = hookSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
-	return $ encryptableRemote c
-		(storeEncrypted hooktype $ getGpgOpts gc)
+	return $ Just $ encryptableRemote c
+		(storeEncrypted hooktype $ getGpgEncParams (c,gc))
 		(retrieveEncrypted hooktype)
 		Remote {
 			uuid = u,
@@ -51,7 +52,9 @@ gen r u c gc = do
 			hasKey = checkPresent r hooktype,
 			hasKeyCheap = False,
 			whereisKey = Nothing,
-			config = M.empty,
+			remoteFsck = Nothing,
+			repairRepo = Nothing,
+			config = c,
 			localpath = Nothing,
 			repo = r,
 			gitconfig = gc,
@@ -62,13 +65,14 @@ gen r u c gc = do
   where
 	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc	
 
-hookSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-hookSetup u c = do
+hookSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+hookSetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
 	let hooktype = fromMaybe (error "Specify hooktype=") $
 		M.lookup "hooktype" c
 	c' <- encryptionSetup c
 	gitConfigSpecialRemote u c' "hooktype" hooktype
-	return c'
+	return (c', u)
 
 hookEnv :: Action -> Key -> Maybe FilePath -> IO (Maybe [(String, String)])
 hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)
@@ -91,7 +95,7 @@ lookupHook hookname action = do
 	command <- getConfig (annexConfig hook) ""
 	if null command
 		then do
-			fallback <- getConfig (annexConfig $ hookfallback) ""
+			fallback <- getConfig (annexConfig hookfallback) ""
 			if null fallback
 				then do
 					warning $ "missing configuration for " ++ hook ++ " or " ++ hookfallback
@@ -118,7 +122,7 @@ store :: HookName -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store h k _f _p = sendAnnex k (void $ remove h k) $ \src ->
 	runHook h "store" k (Just src) $ return True
 
-storeEncrypted :: HookName -> GpgOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted :: HookName -> [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted h gpgOpts (cipher, enck) k _p = withTmp enck $ \tmp ->
 	sendAnnex k (void $ remove h enck) $ \src -> do
 		liftIO $ encrypt gpgOpts cipher (feedFile src) $

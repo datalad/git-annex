@@ -10,6 +10,8 @@ module Command.ConfigList where
 import Common.Annex
 import Command
 import Annex.UUID
+import qualified Git.Config
+import Remote.GCrypt (coreGCryptId)
 
 def :: [Command]
 def = [noCommit $ command "configlist" paramNothing seek
@@ -21,5 +23,8 @@ seek = [withNothing start]
 start :: CommandStart
 start = do
 	u <- getUUID
-	liftIO $ putStrLn $ "annex.uuid=" ++ fromUUID u
+	showConfig "annex.uuid" $ fromUUID u
+	showConfig coreGCryptId =<< fromRepo (Git.Config.get coreGCryptId "")
 	stop
+  where
+  	showConfig k v = liftIO $ putStrLn $ k ++ "=" ++ v

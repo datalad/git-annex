@@ -13,6 +13,8 @@ import Git.Command
 import qualified Git.BuildVersion
 import qualified Utility.CoProcess as CoProcess
 
+import System.IO.Error
+
 type CheckAttrHandle = (CoProcess.CoProcessHandle, [Attr], String)
 
 type Attr = String
@@ -37,16 +39,41 @@ checkAttrStop (h, _, _) = CoProcess.stop h
 {- Gets an attribute of a file. -}
 checkAttr :: CheckAttrHandle -> Attr -> FilePath -> IO String
 checkAttr (h, attrs, cwd) want file = do
-	pairs <- CoProcess.query h send receive
+	pairs <- CoProcess.query h send (receive "")
 	let vals = map snd $ filter (\(attr, _) -> attr == want) pairs
 	case vals of
 		[v] -> return v
 		_ -> error $ "unable to determine " ++ want ++ " attribute of " ++ file
   where
 	send to = hPutStr to $ file' ++ "\0"
-	receive from = forM attrs $ \attr -> do
-		l <- hGetLine from
-		return (attr, attrvalue attr l)
+	receive c from = do
+		s <- hGetSomeString from 1024
+		if null s
+			then eofError
+			else do
+				let v = c ++ s
+				maybe (receive v from) return (parse v)
+	eofError = ioError $ mkIOError userErrorType "git check-attr EOF" Nothing Nothing
+	parse s
+		-- new null separated output
+		| '\0' `elem` s = if "\0" `isSuffixOf` s
+			then
+				let bits = segment (== '\0') s
+				in if length bits == (numattrs * 3) + 1
+					then Just $ getattrvalues bits []
+					else Nothing -- more attributes to come
+			else Nothing -- output incomplete
+		-- old one line per value output
+		| otherwise = if "\n" `isSuffixOf` s
+			then
+				let ls = lines s
+				in if length ls == numattrs
+					then Just $ map (\(attr, val) -> (attr, oldattrvalue attr val))
+						(zip attrs ls)
+					else Nothing -- more attributes to come
+			else Nothing -- line incomplete
+	numattrs = length attrs
+
 	{- Before git 1.7.7, git check-attr worked best with
 	 - absolute filenames; using them worked around some bugs
 	 - with relative filenames.
@@ -58,7 +85,9 @@ checkAttr (h, attrs, cwd) want file = do
 	file'
 		| oldgit = absPathFrom cwd file
 		| otherwise = relPathDirToFile cwd $ absPathFrom cwd file
-	attrvalue attr l = end bits !! 0
+	oldattrvalue attr l = end bits !! 0
 	  where
 		bits = split sep l
 		sep = ": " ++ attr ++ ": "
+	getattrvalues (_filename:attr:val:rest) c = getattrvalues rest ((attr,val):c)
+	getattrvalues _ c = c

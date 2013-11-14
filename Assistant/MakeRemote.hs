@@ -9,51 +9,32 @@ module Assistant.MakeRemote where
 
 import Assistant.Common
 import Assistant.Ssh
-import Assistant.Sync
 import qualified Types.Remote as R
 import qualified Remote
 import Remote.List
 import qualified Remote.Rsync as Rsync
+import qualified Remote.GCrypt as GCrypt
 import qualified Git
 import qualified Git.Command
 import qualified Command.InitRemote
 import Logs.UUID
 import Logs.Remote
 import Git.Remote
-import Config
-import Config.Cost
+import Git.Types (RemoteName)
 import Creds
+import Assistant.Gpg
+import Utility.Gpg (KeyId)
 
-import qualified Data.Text as T
 import qualified Data.Map as M
 
-type RemoteName = String
-
-{- Sets up and begins syncing with a new ssh or rsync remote. -}
-makeSshRemote :: Bool -> SshData -> Maybe Cost -> Assistant Remote
-makeSshRemote forcersync sshdata mcost = do
-	r <- liftAnnex $
-		addRemote $ maker (sshRepoName sshdata) sshurl
-	liftAnnex $ maybe noop (setRemoteCost r) mcost
-	syncRemote r
-	return r
+{- Sets up a new git or rsync remote, accessed over ssh. -}
+makeSshRemote :: SshData -> Annex RemoteName
+makeSshRemote sshdata = maker (sshRepoName sshdata) (genSshUrl sshdata)
   where
-	rsync = forcersync || rsyncOnly sshdata
 	maker
-		| rsync = makeRsyncRemote
+		| onlyCapability sshdata RsyncCapable = makeRsyncRemote
 		| otherwise = makeGitRemote
-	sshurl = T.unpack $ T.concat $
-		if rsync
-			then [u, h, T.pack ":", sshDirectory sshdata, T.pack "/"]
-			else [T.pack "ssh://", u, h, d, T.pack "/"]
-	  where
-		u = maybe (T.pack "") (\v -> T.concat [v, T.pack "@"]) $ sshUserName sshdata
-		h = sshHostName sshdata
-		d
-			| T.pack "/" `T.isPrefixOf` sshDirectory sshdata = sshDirectory sshdata
-			| T.pack "~/" `T.isPrefixOf` sshDirectory sshdata = T.concat [T.pack "/", sshDirectory sshdata]
-			| otherwise = T.concat [T.pack "/~/", sshDirectory sshdata]
-	
+
 {- Runs an action that returns a name of the remote, and finishes adding it. -}
 addRemote :: Annex RemoteName -> Annex Remote
 addRemote a = do
@@ -68,12 +49,22 @@ makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go =<< Command.InitRemote.findExisting name
   where
   	go Nothing = setupSpecialRemote name Rsync.remote config
-		=<< Command.InitRemote.generateNew name
-	go (Just v) = setupSpecialRemote name Rsync.remote config v
+		(Nothing, Command.InitRemote.newConfig name)
+	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config (Just u, c)
 	config = M.fromList
 		[ ("encryption", "shared")
 		, ("rsyncurl", location)
 		, ("type", "rsync")
+		]
+
+{- Inits a gcrypt special remote, and returns its name. -}
+makeGCryptRemote :: RemoteName -> String -> KeyId -> Annex RemoteName
+makeGCryptRemote remotename location keyid = 
+	initSpecialRemote remotename GCrypt.remote $ M.fromList
+		[ ("type", "gcrypt")
+		, ("gitrepo", location)
+		, configureEncryption HybridEncryption
+		, ("keyid", keyid)
 		]
 
 type SpecialRemoteMaker = RemoteName -> RemoteType -> R.RemoteConfig -> Annex RemoteName
@@ -89,7 +80,7 @@ initSpecialRemote name remotetype config = go 0
 		r <- Command.InitRemote.findExisting fullname
 		case r of
 			Nothing -> setupSpecialRemote fullname remotetype config
-				=<< Command.InitRemote.generateNew fullname
+				(Nothing, Command.InitRemote.newConfig fullname)
 			Just _ -> go (n + 1)
 
 {- Enables an existing special remote. -}
@@ -98,15 +89,15 @@ enableSpecialRemote name remotetype config = do
 	r <- Command.InitRemote.findExisting name
 	case r of
 		Nothing -> error $ "Cannot find a special remote named " ++ name
-		Just v -> setupSpecialRemote name remotetype config v
+		Just (u, c) -> setupSpecialRemote name remotetype config (Just u, c)
 
-setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> (UUID, R.RemoteConfig) -> Annex RemoteName
-setupSpecialRemote name remotetype config (u, c) = do
+setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> (Maybe UUID, R.RemoteConfig) -> Annex RemoteName
+setupSpecialRemote name remotetype config (mu, c) = do
 	{- Currently, only 'weak' ciphers can be generated from the
 	 - assistant, because otherwise GnuPG may block once the entropy
 	 - pool is drained, and as of now there's no way to tell the user
 	 - to perform IO actions to refill the pool. -}
-	c' <- R.setup remotetype u $
+	(c', u) <- R.setup remotetype mu $
 		M.insert "highRandomQuality" "false" $ M.union config c
 	describeUUID u name
 	configSet u c'
@@ -128,7 +119,6 @@ makeRemote basename location a = do
 	g <- gitRepo
 	if not (any samelocation $ Git.remotes g)
 		then do
-			
 			let name = uniqueRemoteName basename 0 g
 			a name
 			return name

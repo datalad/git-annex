@@ -14,7 +14,7 @@ like "2512E3C7"
 
 Next, create the S3 remote, and describe it. 
 
-	# git annex initremote cloud type=S3 encryption=2512E3C7
+	# git annex initremote cloud type=S3 keyid=2512E3C7
 	initremote cloud (encryption setup with gpg key C910D9222512E3C7) (checking bucket) (creating bucket in US) (gpg) ok
 	# git annex describe cloud "at Amazon's US datacenter"
 	describe cloud ok

@@ -54,11 +54,12 @@ watchDir i dir ignored hooks
 		-- scan come before real inotify events.
 		lock <- newLock
 		let handler event = withLock lock (void $ go event)
-		void (addWatch i watchevents dir handler)
-			`catchIO` failedaddwatch
-		withLock lock $
-			mapM_ scan =<< filter (not . dirCruft) <$>
-				getDirectoryContents dir
+		flip catchNonAsync failedwatch $ do
+			void (addWatch i watchevents dir handler)
+				`catchIO` failedaddwatch
+			withLock lock $
+				mapM_ scan =<< filter (not . dirCruft) <$>
+					getDirectoryContents dir
   where
 	recurse d = watchDir i d ignored hooks
 
@@ -149,11 +150,13 @@ watchDir i dir ignored hooks
 		-- disk full error.
 		| isFullError e =
 			case errHook hooks of
-				Nothing -> throw e
+				Nothing -> error $ "failed to add inotify watch on directory " ++ dir ++ " (" ++ show e ++ ")"
 				Just hook -> tooManyWatches hook dir
 		-- The directory could have been deleted.
 		| isDoesNotExistError e = return ()
 		| otherwise = throw e
+
+	failedwatch e = hPutStrLn stderr $ "failed to add watch on directory " ++ dir ++ " (" ++ show e ++ ")"
 
 tooManyWatches :: (String -> Maybe FileStatus -> IO ()) -> FilePath -> IO ()
 tooManyWatches hook dir = do

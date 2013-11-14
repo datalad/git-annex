@@ -49,6 +49,9 @@ instance Eq InodeCacheKey where
 inodeCacheToKey :: InodeComparisonType -> InodeCache -> InodeCacheKey 
 inodeCacheToKey ct (InodeCache prim) = InodeCacheKey ct prim
 
+inodeCacheToMtime :: InodeCache -> EpochTime
+inodeCacheToMtime (InodeCache (InodeCachePrim _ _ mtime)) = mtime
+
 showInodeCache :: InodeCache -> String
 showInodeCache (InodeCache (InodeCachePrim inode size mtime)) = unwords
 	[ show inode

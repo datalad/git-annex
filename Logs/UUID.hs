@@ -28,12 +28,9 @@ import Types.UUID
 import Common.Annex
 import qualified Annex
 import qualified Annex.Branch
+import Logs
 import Logs.UUIDBased
 import qualified Annex.UUID
-
-{- Filename of uuid.log. -}
-uuidLog :: FilePath
-uuidLog = "uuid.log"
 
 {- Records a description for a uuid in the log. -}
 describeUUID :: UUID -> String -> Annex ()
@@ -59,7 +56,7 @@ fixBadUUID = M.fromList . map fixup . M.toList
 		| otherwise = (k, v)
 	  where
 		kuuid = fromUUID k
-		isbad = not (isuuid kuuid) && isuuid lastword
+		isbad = not (isuuid kuuid) && not (null ws) && isuuid lastword
 		ws = words $ value v
 		lastword = Prelude.last ws
 		fixeduuid = toUUID lastword

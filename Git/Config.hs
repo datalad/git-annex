@@ -10,6 +10,7 @@ module Git.Config where
 import qualified Data.Map as M
 import Data.Char
 import System.Process (cwd, env)
+import Control.Exception.Extensible
 
 import Common
 import Git
@@ -152,4 +153,41 @@ boolConfig True = "true"
 boolConfig False = "false"
 
 isBare :: Repo -> Bool
-isBare r = fromMaybe False $ isTrue =<< getMaybe "core.bare" r
+isBare r = fromMaybe False $ isTrue =<< getMaybe coreBare r
+
+coreBare :: String
+coreBare = "core.bare"
+
+{- Runs a command to get the configuration of a repo,
+ - and returns a repo populated with the configuration, as well as the raw
+ - output of the command. -}
+fromPipe :: Repo -> String -> [CommandParam] -> IO (Either SomeException (Repo, String))
+fromPipe r cmd params = try $
+	withHandle StdoutHandle createProcessSuccess p $ \h -> do
+ 		fileEncoding h
+		val <- hGetContentsStrict h
+		r' <- store val r
+		return (r', val)
+  where
+	p = proc cmd $ toCommand params
+
+{- Reads git config from a specified file and returns the repo populated
+ - with the configuration. -}
+fromFile :: Repo -> FilePath -> IO (Either SomeException (Repo, String))
+fromFile r f = fromPipe r "git"
+	[ Param "config"
+	, Param "--file"
+	, File f
+	, Param "--list"
+	]
+
+{- Changes a git config setting in the specified config file.
+ - (Creates the file if it does not already exist.) -}
+changeFile :: FilePath -> String -> String -> IO Bool
+changeFile f k v = boolSystem "git"
+	[ Param "config"
+	, Param "--file"
+	, File f
+	, Param k
+	, Param v
+	]

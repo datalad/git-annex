@@ -10,8 +10,7 @@
 module Assistant.WebApp.Configurators.AWS where
 
 import Assistant.WebApp.Common
-import Assistant.MakeRemote
-import Assistant.Sync
+import Assistant.WebApp.MakeRemote
 #ifdef WITH_S3
 import qualified Remote.S3 as S3
 #endif
@@ -22,8 +21,9 @@ import qualified Remote
 import qualified Types.Remote as Remote
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
-import Logs.PreferredContent
 import Creds
+import Assistant.Gpg
+import Git.Types (RemoteName)
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -93,10 +93,10 @@ awsCredsAForm defcreds = AWSCreds
 	<*> secretAccessKeyField (T.pack . snd <$> defcreds)
 
 accessKeyIDField :: Widget -> Maybe Text -> MkAForm Text
-accessKeyIDField help def = areq (textField `withNote` help) "Access Key ID" def
+accessKeyIDField help = areq (textField `withNote` help) "Access Key ID"
 
 accessKeyIDFieldWithHelp :: Maybe Text -> MkAForm Text
-accessKeyIDFieldWithHelp def = accessKeyIDField help def
+accessKeyIDFieldWithHelp = accessKeyIDField help
   where
 	help = [whamlet|
 <a href="https://portal.aws.amazon.com/gp/aws/securityCredentials#id_block">
@@ -104,7 +104,7 @@ accessKeyIDFieldWithHelp def = accessKeyIDField help def
 |]
 
 secretAccessKeyField :: Maybe Text -> MkAForm Text
-secretAccessKeyField def = areq passwordField "Secret Access Key" def
+secretAccessKeyField = areq passwordField "Secret Access Key"
 
 datacenterField :: AWS.Service -> MkAForm Text
 datacenterField service = areq (selectFieldList list) "Datacenter" defregion
@@ -120,20 +120,17 @@ postAddS3R :: Handler Html
 postAddS3R = awsConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ s3InputAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ s3InputAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = T.unpack $ repoName input
-			makeAWSRemote initSpecialRemote S3.remote (extractCreds input) name setgroup $ M.fromList
+			makeAWSRemote initSpecialRemote S3.remote TransferGroup (extractCreds input) name $ M.fromList
 				[ configureEncryption $ enableEncryption input
 				, ("type", "S3")
 				, ("datacenter", T.unpack $ datacenter input)
 				, ("storageclass", show $ storageClass input)
 				]
 		_ -> $(widgetFile "configurators/adds3")
-  where
-	setgroup r = liftAnnex $
-		setStandardGroup (Remote.uuid r) TransferGroup
 #else
 postAddS3R = error "S3 not supported by this build"
 #endif
@@ -146,19 +143,16 @@ postAddGlacierR :: Handler Html
 postAddGlacierR = glacierConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ glacierInputAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ glacierInputAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = T.unpack $ repoName input
-			makeAWSRemote initSpecialRemote Glacier.remote (extractCreds input) name setgroup $ M.fromList
+			makeAWSRemote initSpecialRemote Glacier.remote SmallArchiveGroup (extractCreds input) name $ M.fromList
 				[ configureEncryption $ enableEncryption input
 				, ("type", "glacier")
 				, ("datacenter", T.unpack $ datacenter input)
 				]
 		_ -> $(widgetFile "configurators/addglacier")
-  where
-	setgroup r = liftAnnex $ 
-		setStandardGroup (Remote.uuid r) SmallArchiveGroup
 #else
 postAddGlacierR = error "S3 not supported by this build"
 #endif
@@ -192,13 +186,13 @@ enableAWSRemote :: RemoteType -> UUID -> Widget
 enableAWSRemote remotetype uuid = do
 	defcreds <- liftAnnex previouslyUsedAWSCreds
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ awsCredsAForm defcreds
+		runFormPostNoToken $ renderBootstrap $ awsCredsAForm defcreds
 	case result of
 		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog
 			let name = fromJust $ M.lookup "name" $
 				fromJust $ M.lookup uuid m
-			makeAWSRemote enableSpecialRemote remotetype creds name (const noop) M.empty
+			makeAWSRemote enableSpecialRemote remotetype SmallArchiveGroup creds name M.empty
 		_ -> do
 			description <- liftAnnex $
 				T.pack <$> Remote.prettyUUID uuid
@@ -207,14 +201,11 @@ enableAWSRemote remotetype uuid = do
 enableAWSRemote _ _ = error "S3 not supported by this build"
 #endif
 
-makeAWSRemote :: SpecialRemoteMaker -> RemoteType -> AWSCreds -> String -> (Remote -> Handler ()) -> RemoteConfig -> Handler ()
-makeAWSRemote maker remotetype (AWSCreds ak sk) name setup config = do
+makeAWSRemote :: SpecialRemoteMaker -> RemoteType -> StandardGroup -> AWSCreds -> RemoteName -> RemoteConfig -> Handler ()
+makeAWSRemote maker remotetype defaultgroup (AWSCreds ak sk) name config = do
 	liftIO $ AWS.setCredsEnv (T.unpack ak, T.unpack sk)
-	r <- liftAnnex $ addRemote $ do
+	setupCloudRemote defaultgroup Nothing $
 		maker hostname remotetype config
-	setup r
-	liftAssistant $ syncRemote r
-	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
   where
 	{- AWS services use the remote name as the basis for a host
 	 - name, so filter it to contain valid characters. -}

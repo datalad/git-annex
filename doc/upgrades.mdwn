@@ -18,10 +18,18 @@ conflicts first before upgrading git-annex.
 
 ## Upgrade events, so far
 
+### v4 -> v5 (git-annex version 5.x)
+
+v5 is only used for [[direct_mode]]. The upgrade from v4 to v5 is handled
+automatically.
+
+This upgrade involves changing direct mode repositories to operate with
+core.bare=true.
+
 ### v3 -> v4 (git-annex version 4.x)
 
-v4 is only used for [[direct_mode]], and no upgrade needs to be done from
-existing v3 repositories, they will continue to work.
+v4 was only used for [[direct_mode]], to ensure that a version of git-annex
+that understands direct mode was used with a direct mode repository. 
 
 ### v2 -> v3 (git-annex version 3.x)
 

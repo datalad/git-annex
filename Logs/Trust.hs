@@ -6,6 +6,7 @@
  -}
 
 module Logs.Trust (
+	module X,
 	trustLog,
 	TrustLevel(..),
 	trustGet,
@@ -16,8 +17,6 @@ module Logs.Trust (
 	lookupTrust,
 	trustMapLoad,
 	trustMapRaw,
-	
-	prop_parse_show_TrustLog,
 ) where
 
 import qualified Data.Map as M
@@ -27,13 +26,11 @@ import Common.Annex
 import Types.TrustLevel
 import qualified Annex.Branch
 import qualified Annex
+import Logs
 import Logs.UUIDBased
 import Remote.List
 import qualified Types.Remote
-
-{- Filename of trust.log. -}
-trustLog :: FilePath
-trustLog = "trust.log"
+import Logs.Trust.Pure as X
 
 {- Returns a list of UUIDs that the trustLog indicates have the
  - specified trust level.
@@ -97,26 +94,4 @@ trustMapLoad = do
 {- Does not include forcetrust or git config values, just those from the
  - log file. -}
 trustMapRaw :: Annex TrustMap
-trustMapRaw = simpleMap . parseLog (Just . parseTrustLog)
-	<$> Annex.Branch.get trustLog
-
-{- The trust.log used to only list trusted repos, without a field for the
- - trust status, which is why this defaults to Trusted. -}
-parseTrustLog :: String -> TrustLevel
-parseTrustLog s = maybe Trusted parse $ headMaybe $ words s
-  where
-	parse "1" = Trusted
-	parse "0" = UnTrusted
-	parse "X" = DeadTrusted
-	parse _ = SemiTrusted
-
-showTrustLog :: TrustLevel -> String
-showTrustLog Trusted = "1"
-showTrustLog UnTrusted = "0"
-showTrustLog DeadTrusted = "X"
-showTrustLog SemiTrusted = "?"
-
-prop_parse_show_TrustLog :: Bool
-prop_parse_show_TrustLog = all check [minBound .. maxBound]
-  where
-	check l = parseTrustLog (showTrustLog l) == l
+trustMapRaw = calcTrustMap <$> Annex.Branch.get trustLog

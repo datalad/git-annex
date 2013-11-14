@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlpKmTa1OPwy5Jk24pOoD8Vlo2jahzTPnw"
+ nickname="Stephen"
+ subject="rss authentication"
+ date="2013-08-13T13:32:52Z"
+ content="""
+If a podcast requires authentication, is there a way to pass credentials through? I tried `http://user:pass@site.com/rss.xml` but it didn't work.
+
+"""]]

@@ -11,7 +11,8 @@ module Assistant.WebApp.Configurators.Local where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.OtherRepos
-import Assistant.MakeRemote
+import Assistant.WebApp.Gpg
+import Assistant.WebApp.MakeRemote
 import Assistant.Sync
 import Init
 import qualified Git
@@ -23,21 +24,27 @@ import Config.Files
 import Utility.FreeDesktop
 #ifdef WITH_CLIBS
 import Utility.Mounts
-#endif
 import Utility.DiskFree
+#endif
 import Utility.DataUnits
 import Utility.Network
 import Remote (prettyUUID)
 import Annex.UUID
+import Annex.Direct
 import Types.StandardGroups
 import Logs.PreferredContent
 import Logs.UUID
 import Utility.UserInfo
 import Config
+import Utility.Gpg
+import qualified Annex.Branch
+import qualified Remote.GCrypt as GCrypt
+import qualified Types.Remote
 
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Data.Char
+import Data.Ord
 import qualified Text.Hamlet as Hamlet
 
 data RepositoryPath = RepositoryPath Text
@@ -94,7 +101,7 @@ checkRepositoryPath p = do
 			Nothing -> Right $ Just $ T.pack basepath
 			Just prob -> Left prob
   where
-	runcheck (chk, msg) = ifM (chk) ( return $ Just msg, return Nothing )
+	runcheck (chk, msg) = ifM chk ( return $ Just msg, return Nothing )
 	expandTilde home ('~':'/':path) = home </> path
 	expandTilde _ path = path
 
@@ -107,7 +114,7 @@ checkRepositoryPath p = do
  - browsed to a directory with git-annex and run it from there. -}
 defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
-	cwd <- liftIO $ getCurrentDirectory
+	cwd <- liftIO getCurrentDirectory
 	home <- myHomeDir
 	if home == cwd && firstrun
 		then inhome
@@ -130,7 +137,7 @@ newRepositoryForm defpath msg = do
 		(Just $ T.pack $ addTrailingPathSeparator defpath)
 	let (err, errmsg) = case pathRes of
 		FormMissing -> (False, "")
-		FormFailure l -> (True, concat $ map T.unpack l)
+		FormFailure l -> (True, concatMap T.unpack l)
 		FormSuccess _ -> (False, "")
 	let form = do
 		webAppFormAuthToken
@@ -149,7 +156,7 @@ postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
 	let androidspecial = False
 	path <- liftIO . defaultRepositoryPath =<< liftH inFirstRun
 #endif
-	((res, form), enctype) <- liftH $ runFormPost $ newRepositoryForm path
+	((res, form), enctype) <- liftH $ runFormPostNoToken $ newRepositoryForm path
 	case res of
 		FormSuccess (RepositoryPath p) -> liftH $
 			startFullAssistant (T.unpack p) ClientGroup Nothing
@@ -172,7 +179,7 @@ getNewRepositoryR = postNewRepositoryR
 postNewRepositoryR :: Handler Html
 postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 	home <- liftIO myHomeDir
-	((res, form), enctype) <- liftH $ runFormPost $ newRepositoryForm home
+	((res, form), enctype) <- liftH $ runFormPostNoToken $ newRepositoryForm home
 	case res of
 		FormSuccess (RepositoryPath p) -> do
 			let path = T.unpack p
@@ -189,11 +196,11 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 		mainrepo <- fromJust . relDir <$> liftH getYesod
 		$(widgetFile "configurators/newrepository/combine")
 
-getCombineRepositoryR :: FilePathAndUUID -> Handler Html
-getCombineRepositoryR (FilePathAndUUID newrepopath newrepouuid) = do
+getCombineRepositoryR :: FilePath -> UUID -> Handler Html
+getCombineRepositoryR newrepopath newrepouuid = do
 	r <- combineRepos newrepopath remotename
 	liftAssistant $ syncRemote r
-	redirect $ EditRepositoryR newrepouuid
+	redirect $ EditRepositoryR $ RepoUUID newrepouuid
   where
 	remotename = takeFileName newrepopath
 
@@ -224,10 +231,10 @@ getAddDriveR :: Handler Html
 getAddDriveR = postAddDriveR
 postAddDriveR :: Handler Html
 postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
-	removabledrives <- liftIO $ driveList
+	removabledrives <- liftIO driveList
 	writabledrives <- liftIO $
 		filterM (canWrite . T.unpack . mountPoint) removabledrives
-	((res, form), enctype) <- liftH $ runFormPost $
+	((res, form), enctype) <- liftH $ runFormPostNoToken $
 		selectDriveForm (sort writabledrives)
 	case res of
 		FormSuccess drive -> liftH $ redirect $ ConfirmAddDriveR drive
@@ -236,46 +243,85 @@ postAddDriveR = page "Add a removable drive" (Just Configuration) $ do
 {- The repo may already exist, when adding removable media
  - that has already been used elsewhere. If so, check
  - the UUID of the repo and see if it's one we know. If not,
- - the user must confirm the repository merge. -}
+ - the user must confirm the repository merge.
+ -
+ - If the repo does not already exist on the drive, prompt about
+ - encryption. -}
 getConfirmAddDriveR :: RemovableDrive -> Handler Html
-getConfirmAddDriveR drive = do
-	ifM (needconfirm)
-		( page "Combine repositories?" (Just Configuration) $
-			$(widgetFile "configurators/adddrive/confirm")
-		, do
-			getFinishAddDriveR drive
-		)
+getConfirmAddDriveR drive = ifM (liftIO $ probeRepoExists dir)
+	( do
+		mu <- liftIO $ probeUUID dir
+		case mu of
+			Nothing -> maybe askcombine isknownuuid
+				=<< liftAnnex (probeGCryptRemoteUUID dir)
+			Just driveuuid -> isknownuuid driveuuid
+	, newrepo
+	)
   where
   	dir = removableDriveRepository drive
-	needconfirm = ifM (liftIO $ doesDirectoryExist dir)
-		( liftAnnex $ do
-			mu <- liftIO $ catchMaybeIO $
-				inDir dir $ getUUID
-			case mu of
-				Nothing -> return False
-				Just driveuuid -> not .
-					M.member driveuuid <$> uuidMap
-		, return False
+  	newrepo = do
+		secretkeys <- sortBy (comparing snd) . M.toList
+			<$> liftIO secretKeys
+		page "Encrypt repository?" (Just Configuration) $
+			$(widgetFile "configurators/adddrive/encrypt")
+	knownrepo = getFinishAddDriveR drive NoRepoKey
+	askcombine = page "Combine repositories?" (Just Configuration) $
+		$(widgetFile "configurators/adddrive/combine")
+	isknownuuid driveuuid =
+		ifM (M.member driveuuid <$> liftAnnex uuidMap)
+			( knownrepo
+			, askcombine
+			)
+
+setupDriveModal :: Widget
+setupDriveModal = $(widgetFile "configurators/adddrive/setupmodal")
+
+getGenKeyForDriveR :: RemovableDrive -> Handler Html
+getGenKeyForDriveR drive = withNewSecretKey $ \keyid ->
+	{- Generating a key takes a long time, and 
+	 - the removable drive may have been disconnected
+	 - in the meantime. Check that it is still mounted
+	 - before finishing. -}
+	ifM (liftIO $ any (\d -> mountPoint d == mountPoint drive) <$> driveList)
+		( getFinishAddDriveR drive (RepoKey keyid)
+		, getAddDriveR
 		)
 
-cloneModal :: Widget
-cloneModal = $(widgetFile "configurators/adddrive/clonemodal")
-
-getFinishAddDriveR :: RemovableDrive -> Handler Html
-getFinishAddDriveR drive = make >>= redirect . EditNewRepositoryR
+getFinishAddDriveR :: RemovableDrive -> RepoKey -> Handler Html
+getFinishAddDriveR drive = go
   where
-  	make = do
+  	{- Set up new gcrypt special remote. -}
+	go (RepoKey keyid) = whenGcryptInstalled $ makewith $ const $ do
+		r <- liftAnnex $ addRemote $
+			makeGCryptRemote remotename dir keyid
+		return (Types.Remote.uuid r, r)
+	go NoRepoKey = checkGCryptRepoEncryption dir makeunencrypted makeunencrypted $ do
+		mu <- liftAnnex $ probeGCryptRemoteUUID dir
+		case mu of
+			Just u -> enableexistinggcryptremote u
+			Nothing -> error "The drive contains a gcrypt repository that is not a git-annex special remote. This is not supported."
+	enableexistinggcryptremote u = do
+		remotename' <- liftAnnex $ getGCryptRemoteName u dir
+		makewith $ const $ do
+			r <- liftAnnex $ addRemote $
+				enableSpecialRemote remotename' GCrypt.remote $ M.fromList
+					[("gitrepo", dir)]
+			return (u, r)
+	{- Making a new unencrypted repo, or combining with an existing one. -}
+	makeunencrypted = makewith $ \isnew -> (,)
+		<$> liftIO (initRepo isnew False dir $ Just remotename)
+		<*> combineRepos dir remotename
+	makewith a = do
 		liftIO $ createDirectoryIfMissing True dir
 		isnew <- liftIO $ makeRepo dir True
-		u <- liftIO $ initRepo isnew False dir $ Just remotename
 		{- Removable drives are not reliable media, so enable fsync. -}
 		liftIO $ inDir dir $
 			setConfig (ConfigKey "core.fsyncobjectfiles")
 				(Git.Config.boolConfig True)
-		r <- combineRepos dir remotename
+		(u, r) <- a isnew
 		liftAnnex $ setStandardGroup u TransferGroup
 		liftAssistant $ syncRemote r
-		return u
+		redirect $ EditNewRepositoryR u
   	mountpoint = T.unpack (mountPoint drive)
 	dir = removableDriveRepository drive
 	remotename = takeFileName mountpoint
@@ -284,7 +330,7 @@ getFinishAddDriveR drive = make >>= redirect . EditNewRepositoryR
  - Next call syncRemote to get them in sync. -}
 combineRepos :: FilePath -> String -> Handler Remote
 combineRepos dir name = liftAnnex $ do
-	hostname <- maybe "host" id <$> liftIO getHostname
+	hostname <- fromMaybe "host" <$> liftIO getHostname
 	hostlocation <- fromRepo Git.repoLocation
 	liftIO $ inDir dir $ void $ makeGitRemote hostname hostlocation
 	addRemote $ makeGitRemote name dir
@@ -335,7 +381,7 @@ startFullAssistant path repogroup setup = do
 		u <- initRepo isnew True path Nothing
 		inDir path $ do
 			setStandardGroup u repogroup
-			maybe noop id setup
+			fromMaybe noop setup
 		addAutoStartFile path
 		setCurrentDirectory path
 		fromJust $ postFirstRun webapp
@@ -344,7 +390,7 @@ startFullAssistant path repogroup setup = do
 {- Makes a new git repository. Or, if a git repository already
  - exists, returns False. -}
 makeRepo :: FilePath -> Bool -> IO Bool
-makeRepo path bare = ifM alreadyexists
+makeRepo path bare = ifM (probeRepoExists path)
 	( return False
 	, do
 		(transcript, ok) <-
@@ -354,14 +400,12 @@ makeRepo path bare = ifM alreadyexists
 		return True
 	)
   where
-  	alreadyexists = isJust <$> 
-		catchDefaultIO Nothing (Git.Construct.checkForRepo path)
 	baseparams = [Param "init", Param "--quiet"]
 	params
 		| bare = baseparams ++ [Param "--bare", File path]
 		| otherwise = baseparams ++ [File path]
 
-{- Runs an action in the git-annex repository in the specified directory. -}
+{- Runs an action in the git repository in the specified directory. -}
 inDir :: FilePath -> Annex a -> IO a
 inDir dir a = do
 	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir
@@ -397,9 +441,12 @@ initRepo False _ dir desc = inDir dir $ do
 	getUUID
 
 initRepo' :: Maybe String -> Annex ()
-initRepo' desc = do
-	unlessM isInitialized $
-		initialize desc
+initRepo' desc = unlessM isInitialized $ do
+	initialize desc
+	{- Ensure branch gets committed right away so it is
+	 - available for merging when a removable drive repo is being
+	 - added. -}
+	Annex.Branch.commit "update"
 
 {- Checks if the user can write to a directory.
  -
@@ -410,3 +457,15 @@ canWrite dir = do
 	tocheck <- ifM (doesDirectoryExist dir)
 		(return dir, return $ parentDir dir)
 	catchBoolIO $ fileAccess tocheck False True False
+
+{- Checks if a git repo exists at a location. -}
+probeRepoExists :: FilePath -> IO Bool
+probeRepoExists dir = isJust <$>
+	catchDefaultIO Nothing (Git.Construct.checkForRepo dir)
+
+{- Gets the UUID of the git repo at a location, which may not exist, or
+ - not be a git-annex repo. -}
+probeUUID :: FilePath -> IO (Maybe UUID)
+probeUUID dir = catchDefaultIO Nothing $ inDir dir $ do
+	u <- getUUID
+	return $ if u == NoUUID then Nothing else Just u

@@ -8,7 +8,7 @@
 module Utility.Monad where
 
 import Data.Maybe
-import Control.Monad (liftM)
+import Control.Monad
 
 {- Return the first value from a list, if any, satisfying the given
  - predicate -}

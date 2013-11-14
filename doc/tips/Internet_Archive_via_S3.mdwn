@@ -30,12 +30,6 @@ rather than having git-annex pick a random one; and you can optionally
 specify `x-archive-meta*` headers to add metadata as explained in their
 [documentation](http://www.archive.org/help/abouts3.txt).
 
-[[!template id=note text="""
-/!\ There seems to be a bug in either hS3 or the archive that breaks
-authentication when the bucket name contains spaces or upper-case letters..
-use all lowercase and no spaces when making the bucket with `initremote`.
-"""]]
-
 	# git annex initremote archive-panama type=S3 \
 		host=s3.us.archive.org bucket=panama-canal-lock-blueprints \
 		x-archive-meta-mediatype=texts x-archive-meta-language=eng \
@@ -51,8 +45,14 @@ Then you can annex files and copy them to the remote as usual:
 	# git annex copy photo1.jpeg --fast --to archive-panama
 	copy (to archive-panama...) ok
 
-Note the use of the SHA1E [[backend|backends]]. It makes most sense 
-to use the WORM or SHA1E backend for files that will be stored in
-the Internet Archive, since the key name will be exposed as the filename
-there, and since the Archive does special processing of files based on
-their extension.
+Once a file has been stored on archive.org, it cannot be (easily) removed
+from it. Also, git-annex whereis will tell you a public url for the file
+on archive.org. (It may take a while for archive.org to make the file
+publically visibile.)
+
+Note the use of the SHA1E [[backend|backends]] when adding files. That is
+the default backend used by git-annex, but even if you don't normally use
+it, it makes most sense to use the WORM or SHA1E backend for files that
+will be stored in the Internet Archive, since the key name will be exposed
+as the filename there, and since the Archive does special processing of
+files based on their extension.

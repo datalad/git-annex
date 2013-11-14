@@ -32,6 +32,7 @@ import Crypto
 import Creds
 import Utility.Metered
 import Annex.Content
+import Annex.UUID
 
 type DavUrl = String
 type DavUser = B8.ByteString
@@ -45,10 +46,10 @@ remote = RemoteType {
 	setup = webdavSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
   where
-	new cst = encryptableRemote c
+	new cst = Just $ encryptableRemote c
 		(storeEncrypted this)
 		(retrieveEncrypted this)
 		this
@@ -64,6 +65,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			hasKey = checkPresent this,
 			hasKeyCheap = False,
 			whereisKey = Nothing,
+			remoteFsck = Nothing,
+			repairRepo = Nothing,
 			config = c,
 			repo = r,
 			gitconfig = gc,
@@ -73,15 +76,17 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			remotetype = remote
 		}
 
-webdavSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-webdavSetup u c = do
+webdavSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+webdavSetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
 	let url = fromMaybe (error "Specify url=") $
 		M.lookup "url" c
 	c' <- encryptionSetup c
 	creds <- getCreds c' u
 	testDav url creds
 	gitConfigSpecialRemote u c' "webdav" "true"
-	setRemoteCredPair c' (davCreds u)
+	c'' <- setRemoteCredPair c' (davCreds u)
+	return (c'', u)
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f p = metered (Just p) k $ \meterupdate ->
@@ -94,7 +99,7 @@ storeEncrypted :: Remote -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) ->
 		sendAnnex k (void $ remove r enck) $ \src ->
-			liftIO $ encrypt (getGpgOpts r) cipher
+			liftIO $ encrypt (getGpgEncParams r) cipher
 				(streamMeteredFile src meterupdate) $
 				readBytes $ storeHelper r enck baseurl user pass
 
@@ -178,9 +183,9 @@ checkPresent r k = davAction r noconn go
 		 - or perhaps this was an intermittent error. -}
 		onerr url = do
 			v <- davUrlExists url user pass
-			if v == Right True
-				then return $ Left $ "failed to read " ++ url
-				else return v
+			return $ if v == Right True
+				then Left $ "failed to read " ++ url
+				else v
 
 withStoredFiles
 	:: Remote
@@ -194,8 +199,14 @@ withStoredFiles
 withStoredFiles r k baseurl user pass onerr a
 	| isJust $ chunkSize $ config r = do
 		let chunkcount = keyurl ++ chunkCount
-		maybe (onerr chunkcount) (a . listChunks keyurl . L8.toString)
-			=<< davGetUrlContent chunkcount user pass
+		v <- davGetUrlContent chunkcount user pass
+		case v of
+			Just s -> a $ listChunks keyurl $ L8.toString s
+			Nothing -> do
+				chunks <- probeChunks keyurl $ \u -> (== Right True) <$> davUrlExists u user pass
+				if null chunks
+					then onerr chunkcount
+					else a chunks
 	| otherwise = a [keyurl]
   where
 	keyurl = davLocation baseurl k ++ keyFile k

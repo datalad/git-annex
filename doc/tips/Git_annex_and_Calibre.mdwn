@@ -1,0 +1,120 @@
+The problem
+===========
+
+[Calibre](http://calibre-ebook.com/) is a ebook manager that is
+available in [debian](http://packages.debian.org/sid/calibre). I use
+it to maintain my library, but also to dowload every day an epub
+version of a French newspaper and then put it on my kobo.
+
+Configuring git annex for this
+==============================
+
+I wanted to use git-annex, so
+
+    $ git init
+    $ git annex init "some useful name"
+
+But I don't want every thing in annex, because Calibre use some text
+file to save some metadata, so I used:
+
+    $ git config annex.largefiles "include=* exclude=*.opf exclude=*.json"
+
+then lets add everything
+
+    $ git annex add *
+    $ git add *
+    $ git commit -m "first commit"
+
+Calibre need read and write access on the its database, so let unlock it:
+
+    $ git annex unlock metadata.db
+
+On my other computer I only need to do
+
+    $ git clone $user@$host:Calibre\ library
+    $ cd Calibre\ library
+    $ git annex init "another useful name"
+    $ git annex get .
+    $ git annex unlock metadata.db
+
+The problem is that every time you will `git annex sync`, git annex
+will lock again the metadata.db, so lets unlock it automatically. I
+use git hooks, in `.git/hooks/post-commit` I have
+
+    #!/bin/bash
+
+    git annex edit metadata.db
+
+don't forget to make this file executable
+
+    $ chmod a+x .git/hooks/post-commit
+
+Day to day operation
+====================
+
+    $ git annex add .
+
+Will put new file into the annex
+
+    $ git add .
+
+Will take care of the files that should no go into annex
+
+    $ git annex sync
+
+Will make the repositories exchange informations about all this, and
+make remote change local
+
+    $ git annex get .
+
+Will make remote book locally available
+
+Merge conflict
+--------------
+You should not run calibre on the two computer simultaneously, or
+without syncing before it. If you do, you will have a conflict that
+git-annex will automatically *solve* by rename both of the file.
+
+You can then either:
+
+ - Choose one. If no books have been changed or added on one of the
+   computer, to use the other `metadata.db` will not make you loose
+   any information
+ - rebuild it. `calibredb restore_database` won't do it, but will tell
+   you how to do it.
+
+Checking the library
+--------------------
+You can use `calibredb check_library` to check you library is
+correct. If you use git for it, it will always tell you that it is not
+correct: there is this author ".git" it doesn't know about. Just don't
+care about it.
+
+Maybe this can be solved by using `vcsh` but apparently
+`vcsh`+`git annex` it not well tested yet.
+
+Automatic stuff
+---------------
+I use `mr` to automatically run all this, but some config could be
+done (I believe) to have `git annex copy --auto` do what it should.
+
+There are also the git annex assistant for this kind of automatic
+synchronizations of contents, but I don't know if my automatic
+unlocking of one file will break this.
+
+It might be interesting to find someway to unlock and lock the library
+only when running calibre, a simple script to launch calibre will do
+that. Note that each time you will lock and unlock, you will have a
+new commit in git.
+
+Another solution
+===================
+You could also use direct mode in place of the auto unlock feature
+
+    git annex direct
+
+The remove the `post-commit` git hook (or do not add it). Its a
+simpler solution, but remember that interaction between git annex direct
+repositories and plain git are complex and sometimes downright dangerous. See [[direct mode]] for details.
+
+In particular, do *not* called `git add *` in the above steps, as that will commit all books into git.

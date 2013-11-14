@@ -7,7 +7,7 @@
 
 module Utility.Base64 (toB64, fromB64Maybe, fromB64) where
 
-import Codec.Binary.Base64
+import "dataenc" Codec.Binary.Base64
 import Data.Bits.Utils
 import Control.Applicative
 import Data.Maybe

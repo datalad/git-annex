@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://nullroute.eu.org/~grawity/"
+ nickname="Mantas"
+ subject="comment 1"
+ date="2013-09-13T22:05:37Z"
+ content="""
+Windows *does* have something very much like symlinks – they're called *symlinks* (\"symbolic links\") and they are meant to [\"function just like UNIX links\"][1] as the official docs say.
+
+But on the other hand, yes – `isSymlink` makes less sense on Windows, because symlinks are just a type of reparse points, and there may be several other types (e.g. directory junctions should also be treated like symlinks, but mount points shouldn't...)
+
+[1]: http://msdn.microsoft.com/en-us/library/windows/desktop/aa365680(v=vs.85).aspx
+"""]]

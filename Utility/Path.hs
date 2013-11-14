@@ -14,6 +14,7 @@ import System.FilePath
 import System.Directory
 import Data.List
 import Data.Maybe
+import Data.Char
 import Control.Applicative
 
 #ifdef mingw32_HOST_OS
@@ -236,3 +237,18 @@ fileNameLengthLimit dir = do
 		else return $ minimum [l, 255]
   where
 #endif
+
+{- Given a string that we'd like to use as the basis for FilePath, but that
+ - was provided by a third party and is not to be trusted, returns the closest
+ - sane FilePath.
+ -
+ - All spaces and punctuation are replaced with '_', except for '.'
+ - "../" will thus turn into ".._", which is safe.
+ -}
+sanitizeFilePath :: String -> FilePath
+sanitizeFilePath = map sanitize
+  where
+  	sanitize c
+		| c == '.' = c
+		| isSpace c || isPunctuation c || c == '/' = '_'
+		| otherwise = c

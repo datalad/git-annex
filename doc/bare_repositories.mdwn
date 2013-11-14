@@ -31,7 +31,7 @@ Here is a quick example of how to set this up, using `origin` as the remote name
 On the server:
 
     git init --bare bare-annex.git
-    git annex init origin
+    cd bare-annex.git && git annex init origin
 
 Now configure the remote and do the initial push:
 
@@ -39,7 +39,7 @@ Now configure the remote and do the initial push:
     git remote add origin example.com:bare-annex.git
     git push origin master git-annex
 
-Now `git annex status` should show the configured bare remote. If it does not, you may have to pull from the remote first (older versions of `git-annex`)
+Now `git annex info` should show the configured bare remote. If it does not, you may have to pull from the remote first (older versions of `git-annex`)
 
 If you wish to configure git such that you can push/pull without arguments, set the upstream branch:
 

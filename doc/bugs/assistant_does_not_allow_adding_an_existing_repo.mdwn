@@ -1,0 +1,8 @@
+The assistant does not allow adding an existing repo: I tried to add a "remote server", to enter the credits, and then I add to choose between "git-annex" or "rsync". Choosing "git-annex" tries to create a new repo and then fails. The repo on the server is a bare one, accessed via gitolite. Setting the remote manually ("git remote add origin git@example.org:my-annex.git" works (I can pull, push, ...))
+
+Mac OS 10.7 version 2013-09-10
+
+
+[[!meta title="assistant does not interoperate with gitolite when adding a repository"]]
+
+[2013-09-13 17:00:55 CEST] chat: ssh ["-p","22","git@example.org","sh -c 'mkdir -p '\"'\"'my-annex.git'\"'\"'&&cd '\"'\"'my-annex.git'\"'\"'&&if [ ! -d .git ]; then git init --bare --shared; fi&&git annex init'"]

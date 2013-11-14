@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="ringprince"
+ ip="134.76.140.110"
+ subject="comment 4"
+ date="2013-09-19T20:06:39Z"
+ content="""
+Let me ask a simple question:  All files are regular files (no symlinks).  If I can live with loosing the history, is it save to just remove the .git directory and start over?  Or do I risk anything?
+
+PS: .git is about 7GB
+"""]]

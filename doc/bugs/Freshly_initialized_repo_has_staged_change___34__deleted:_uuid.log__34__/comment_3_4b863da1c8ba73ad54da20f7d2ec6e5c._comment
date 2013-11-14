@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="tanen"
+ ip="83.128.159.25"
+ subject="comment 3"
+ date="2013-11-03T17:35:00Z"
+ content="""
+Very strange: this is on a machine that I wiped and reinstalled just a few hours ago, it's a completely fresh Ubuntu 13.10 install with barely anything installed but the defaults. Git version is 1.8.3.2-1
+
+I initially just pulled git-annex from the Ubuntu repo. After that I grabbed a more recent version from https://launchpad.net/ubuntu/+source/git-annex/4.20131101/+build/5189754 which is showing the same behavior.
+
+\"git show git-annex\" indeed shows the commit creating the uuid.log file on the git-annex branch. master has just one commit, with description \"created repository\" and creates a \"uuid.log\" file. The contents of the master uuid.log are identical to the one in the git-annex branch.
+
+I'm currently in the middle of trying out a git-annex setup so I can't switch versions again right now, but given the above I imagine a fresh 13.10 VM should show the same behavior.
+"""]]

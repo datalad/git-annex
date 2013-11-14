@@ -80,7 +80,7 @@ getNotifierBuddyListR = notifierUrl BuddyListR getBuddyListBroadcaster
 getNotifierRepoListR :: RepoSelector -> Handler RepPlain
 getNotifierRepoListR reposelector = notifierUrl route getRepoListBroadcaster
   where
-	route nid = RepoListR $ RepoListNotificationId nid reposelector
+	route nid = RepoListR nid reposelector
 
 getTransferBroadcaster :: Assistant NotificationBroadcaster
 getTransferBroadcaster = transferNotifier <$> getDaemonStatus

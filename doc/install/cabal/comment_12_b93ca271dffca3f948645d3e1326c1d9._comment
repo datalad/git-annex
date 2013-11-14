@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 12"
+ date="2013-08-07T16:31:30Z"
+ content="""
+The Linux standalone builds for i386 and amd64 will not work on Arm systems.
+
+There are builds of git-annex for arm in eg, Debian. You should be able to use one of those if this system is running Debian. You may need to upgrade to eg, Debian stable, which includes git-annex.
+
+It looks like you have an old and/or broken GHC compiler too. You could upgrade that to a newer version (eg from Debian stable) and build it that way, but it seems like the long way around if you have a Debian system there.
+"""]]

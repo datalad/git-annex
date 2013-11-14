@@ -8,12 +8,14 @@
 module Command.Indirect where
 
 import System.PosixCompat.Files
+import Control.Exception.Extensible
 
 import Common.Annex
 import Command
 import qualified Git
 import qualified Git.Command
 import qualified Git.LsFiles
+import Git.FileMode
 import Config
 import qualified Annex
 import Annex.Direct
@@ -21,7 +23,9 @@ import Annex.Content
 import Annex.CatFile
 import Annex.Version
 import Annex.Perms
+import Annex.Exception
 import Init
+import qualified Command.Add
 
 def :: [Command]
 def = [notBareRepo $ noDaemonRunning $
@@ -45,7 +49,7 @@ start = ifM isDirect
 perform :: CommandPerform
 perform = do
 	showStart "commit" ""
-	whenM (stageDirect) $ do
+	whenM stageDirect $ do
 		showOutput
 		void $ inRepo $ Git.Command.runBool
 			[ Param "commit"
@@ -67,8 +71,7 @@ perform = do
 	{- Walk tree from top and move all present direct mode files into
 	 - the annex, replacing with symlinks. Also delete direct mode
 	 - caches and mappings. -}
-	go (_, Nothing) = noop
-	go (f, Just sha) = do
+	go (f, Just sha, Just mode) | isSymLink mode = do
 		r <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus f
 		case r of
 			Just s
@@ -78,23 +81,33 @@ perform = do
 						return Nothing
 				| otherwise -> 
 					maybe noop (fromdirect f)
-						=<< catKey sha
+						=<< catKey sha mode
 			_ -> noop
+	go _ = noop
 
 	fromdirect f k = do
 		showStart "indirect" f
 		thawContentDir =<< calcRepo (gitAnnexLocation k)
 		cleandirect k -- clean before content directory gets frozen
 		whenM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f) $ do
-			moveAnnex k f
-			l <- inRepo $ gitAnnexLink f k
-			liftIO $ createSymbolicLink l f
+			v <-tryAnnexIO (moveAnnex k f)
+			case v of
+				Right _ -> do 
+					l <- inRepo $ gitAnnexLink f k
+					liftIO $ createSymbolicLink l f
+				Left e -> catchAnnex (Command.Add.undo f k e)
+					warnlocked
 		showEndOk
+
+ 	warnlocked :: SomeException -> Annex ()
+	warnlocked e = do
+		warning $ show e
+		warning "leaving this file as-is; correct this problem and run git annex add on it"
 
 	cleandirect k = do
 		liftIO . nukeFile =<< calcRepo (gitAnnexInodeCache k)
 		liftIO . nukeFile =<< calcRepo (gitAnnexMapping k)
-
+	
 cleanup :: CommandCleanup
 cleanup = do
 	setVersion defaultVersion

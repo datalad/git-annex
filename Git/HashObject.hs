@@ -36,8 +36,11 @@ hashFile h file = CoProcess.query h send receive
 
 {- Injects some content into git, returning its Sha. -}
 hashObject :: ObjectType -> String -> Repo -> IO Sha
-hashObject objtype content repo = getSha subcmd $
-	pipeWriteRead (map Param params) content repo
+hashObject objtype content = hashObject' objtype (flip hPutStr content)
+
+hashObject' :: ObjectType -> (Handle -> IO ()) -> Repo -> IO Sha
+hashObject' objtype writer repo = getSha subcmd $
+	pipeWriteRead (map Param params) (Just writer) repo
   where
 	subcmd = "hash-object"
 	params = [subcmd, "-t", show objtype, "-w", "--stdin", "--no-filters"]

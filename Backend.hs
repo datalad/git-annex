@@ -27,12 +27,12 @@ import qualified Types.Backend as B
 import Config
 
 -- When adding a new backend, import it here and add it to the list.
-import qualified Backend.SHA
+import qualified Backend.Hash
 import qualified Backend.WORM
 import qualified Backend.URL
 
 list :: [Backend]
-list = Backend.SHA.backends ++ Backend.WORM.backends ++ Backend.URL.backends
+list = Backend.Hash.backends ++ Backend.WORM.backends ++ Backend.URL.backends
 
 {- List of backends in the order to try them when storing a new key. -}
 orderedList :: Annex [Backend]

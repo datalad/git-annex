@@ -79,3 +79,9 @@ What version of git-annex are you using? On what operating system?
 	git-annex version: 3.20130216
 
 On current Debian sid/experimental
+
+> [[Done]], thanks to guilhem. We ended up using a different algorythm
+> which is faster yet, basically it now does a diff-index between the
+> index and each branch for its second stage bloom filter.
+> Speedup is 30x with 0 (or 1?) branch, and then massive for each
+> additional branch. --[[Joey]] 

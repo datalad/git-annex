@@ -11,7 +11,7 @@ import Common.Annex
 import Command
 import qualified Annex.Branch
 import qualified Git.Branch
-import Command.Sync (mergeLocal)
+import Command.Sync (prepMerge, mergeLocal)
 
 def :: [Command]
 def = [command "merge" paramNothing seek SectionMaintenance
@@ -34,5 +34,5 @@ mergeBranch = do
 
 mergeSynced :: CommandStart
 mergeSynced = do
-	branch <- inRepo Git.Branch.current
-	maybe stop mergeLocal branch
+	prepMerge
+	mergeLocal =<< inRepo Git.Branch.current

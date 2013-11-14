@@ -12,13 +12,12 @@ import Text.Feed.Query
 import Text.Feed.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
-import Data.Char
 import Data.Time.Clock
 
 import Common.Annex
 import qualified Annex
 import Command
-import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 import Logs.Web
 import qualified Option
 import qualified Utility.Format
@@ -51,9 +50,10 @@ perform relaxed cache url = do
 	v <- findEnclosures url
 	case v of
 		Just l | not (null l) -> do
-			ok <- all id
-				<$> mapM (downloadEnclosure relaxed cache) l
-			next $ cleanup url ok
+			ok <- and <$> mapM (downloadEnclosure relaxed cache) l
+			unless ok $
+				feedProblem url "problem downloading item"
+			next $ cleanup url True
 		_ -> do
 			feedProblem url "bad feed content"
 			next $ return True
@@ -102,9 +102,10 @@ findEnclosures url = extract <$> downloadFeed url
 downloadFeed :: URLString -> Annex (Maybe Feed)
 downloadFeed url = do
 	showOutput
+	ua <- Url.getUserAgent
 	liftIO $ withTmpFile "feed" $ \f h -> do
 		fileEncoding h
-		ifM (Url.download url [] [] f)
+		ifM (Url.download url [] [] f ua)
 			( liftIO $ parseFeedString <$> hGetContentsStrict h
 			, return Nothing
 			)
@@ -172,19 +173,14 @@ feedFile tmpl i = Utility.Format.format tmpl $ M.fromList
 	, fieldMaybe "itemdescription" $ getItemDescription $ item i
 	, fieldMaybe "itemrights" $ getItemRights $ item i
 	, fieldMaybe "itemid" $ snd <$> getItemId (item i)
-	, ("extension", map sanitize $ takeExtension $ location i)
+	, ("extension", sanitizeFilePath $ takeExtension $ location i)
 	]
   where
 	field k v = 
-		let s = map sanitize v in
+		let s = sanitizeFilePath v in
 		if null s then (k, "none") else (k, s)
 	fieldMaybe k Nothing = (k, "none")
 	fieldMaybe k (Just v) = field k v
-
-	sanitize c
-		| c == '.' = c
-		| isSpace c || isPunctuation c || c == '/' = '_'
-		| otherwise = c
 
 {- Called when there is a problem with a feed.
  - Throws an error if the feed is broken, otherwise shows a warning. -}

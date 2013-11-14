@@ -29,6 +29,10 @@ notifyNetMessagerRestart :: Assistant ()
 notifyNetMessagerRestart =
 	flip writeSV () <<~ (netMessagerRestart . netMessager)
 
+{- This can be used to get an early indication if the network has
+ - changed, to immediately restart a connection. However, that is not
+ - available on all systems, so clients also need to deal with
+ - restarting dropped connections in the usual way. -}
 waitNetMessagerRestart :: Assistant ()
 waitNetMessagerRestart = readSV <<~ (netMessagerRestart . netMessager)
 

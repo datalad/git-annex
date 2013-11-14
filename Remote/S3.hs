@@ -30,6 +30,7 @@ import Crypto
 import Creds
 import Utility.Metered
 import Annex.Content
+import Annex.UUID
 import Logs.Web
 
 type Bucket = String
@@ -42,10 +43,10 @@ remote = RemoteType {
 	setup = s3Setup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
   where
-	new cst = encryptableRemote c
+	new cst = Just $ encryptableRemote c
 		(storeEncrypted this)
 		(retrieveEncrypted this)
 		this
@@ -61,6 +62,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			hasKey = checkPresent this,
 			hasKeyCheap = False,
 			whereisKey = Nothing,
+			remoteFsck = Nothing,
+			repairRepo = Nothing,
 			config = c,
 			repo = r,
 			gitconfig = gc,
@@ -70,8 +73,12 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			remotetype = remote
 		}
 
-s3Setup :: UUID -> RemoteConfig -> Annex RemoteConfig
-s3Setup u c = if isIA c then archiveorg else defaulthost
+s3Setup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+s3Setup mu c = do
+	u <- maybe (liftIO genUUID) return mu
+	s3Setup' u c
+s3Setup' :: UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+s3Setup' u c = if isIA c then archiveorg else defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
@@ -85,7 +92,8 @@ s3Setup u c = if isIA c then archiveorg else defaulthost
 		
 	use fullconfig = do
 		gitConfigSpecialRemote u fullconfig "s3" "true"
-		setRemoteCredPair fullconfig (AWS.creds u)
+		c' <- setRemoteCredPair fullconfig (AWS.creds u)
+		return (c', u)
 
 	defaulthost = do
 		c' <- encryptionSetup c
@@ -95,23 +103,24 @@ s3Setup u c = if isIA c then archiveorg else defaulthost
 
 	archiveorg = do
 		showNote "Internet Archive mode"
-		maybe (error "specify bucket=") (const noop) $
-			getBucket archiveconfig
-		writeUUIDFile archiveconfig u
-		use archiveconfig
-	  where
-		archiveconfig =
+		-- Ensure user enters a valid bucket name, since
+		-- this determines the name of the archive.org item.
+		let bucket = replace " " "-" $ map toLower $
+			fromMaybe (error "specify bucket=") $
+				getBucket c
+		let archiveconfig = 
 			-- hS3 does not pass through x-archive-* headers
 			M.mapKeys (replace "x-archive-" "x-amz-") $
 			-- encryption does not make sense here
 			M.insert "encryption" "none" $
+			M.insert "bucket" bucket $
 			M.union c $
 			-- special constraints on key names
 			M.insert "mungekeys" "ia" $
 			-- bucket created only when files are uploaded
-			M.insert "x-amz-auto-make-bucket" "1" $
-			-- no default bucket name; should be human-readable
-			M.delete "bucket" defaults
+			M.insert "x-amz-auto-make-bucket" "1" defaults
+		writeUUIDFile archiveconfig u
+		use archiveconfig
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store r k _f p = s3Action r False $ \(conn, bucket) -> 
@@ -129,7 +138,7 @@ storeEncrypted r (cipher, enck) k p = s3Action r False $ \(conn, bucket) ->
 	-- To get file size of the encrypted content, have to use a temp file.
 	-- (An alternative would be chunking to to a constant size.)
 	withTmp enck $ \tmp -> sendAnnex k (void $ remove' r enck) $ \src -> do
-		liftIO $ encrypt (getGpgOpts r) cipher (feedFile src) $
+		liftIO $ encrypt (getGpgEncParams r) cipher (feedFile src) $
 			readBytes $ L.writeFile tmp
 		s3Bool =<< storeHelper (conn, bucket) r enck p tmp
 

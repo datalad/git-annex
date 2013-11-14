@@ -12,7 +12,6 @@ module Remote.Directory (remote) where
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString as S
 import qualified Data.Map as M
-import qualified Control.Exception as E
 import Data.Int
 
 import Common.Annex
@@ -26,6 +25,7 @@ import Remote.Helper.Encryptable
 import Remote.Helper.Chunked
 import Crypto
 import Annex.Content
+import Annex.UUID
 import Utility.Metered
 
 remote :: RemoteType
@@ -36,12 +36,12 @@ remote = RemoteType {
 	setup = directorySetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc cheapRemoteCost
 	let chunksize = chunkSize c
-	return $ encryptableRemote c
-		(storeEncrypted dir (getGpgOpts gc) chunksize)
+	return $ Just $ encryptableRemote c
+		(storeEncrypted dir (getGpgEncParams (c,gc)) chunksize)
 		(retrieveEncrypted dir chunksize)
 		Remote {
 			uuid = u,
@@ -54,7 +54,9 @@ gen r u c gc = do
 			hasKey = checkPresent dir chunksize,
 			hasKeyCheap = True,
 			whereisKey = Nothing,
-			config = M.empty,
+			remoteFsck = Nothing,
+			repairRepo = Nothing,
+			config = c,
 			repo = r,
 			gitconfig = gc,
 			localpath = Just dir,
@@ -65,8 +67,9 @@ gen r u c gc = do
   where
 	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc
 
-directorySetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-directorySetup u c = do
+directorySetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+directorySetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let dir = fromMaybe (error "Specify directory=") $
 		M.lookup "directory" c
@@ -78,7 +81,7 @@ directorySetup u c = do
 	-- The directory is stored in git config, not in this remote's
 	-- persistant state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' "directory" absdir
-	return $ M.delete "directory" c'
+	return (M.delete "directory" c', u)
 
 {- Locations to try to access a given Key in the Directory.
  - We try more than since we used to write to different hash directories. -}
@@ -107,9 +110,13 @@ withCheckedFiles check (Just _) d k a = go $ locations d k
 		ifM (check chunkcount)
 			( do
 				chunks <- listChunks f <$> readFile chunkcount
-				ifM (all id <$> mapM check chunks)
+				ifM (allM check chunks)
 					( a chunks , return False )
-			, go fs
+			, do
+				chunks <- probeChunks f check
+				if null chunks
+					then go fs
+					else a chunks
 			)
 
 withStoredFiles :: ChunkSize -> FilePath -> Key -> ([FilePath] -> IO Bool) -> IO Bool
@@ -129,7 +136,7 @@ store d chunksize k _f p = sendAnnex k (void $ remove d k) $ \src ->
 					storeSplit meterupdate chunksize dests
 						=<< L.readFile src
 
-storeEncrypted :: FilePath -> GpgOpts -> ChunkSize -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted :: FilePath -> [CommandParam] -> ChunkSize -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted d gpgOpts chunksize (cipher, enck) k p = sendAnnex k (void $ remove d enck) $ \src ->
 	metered (Just p) k $ \meterupdate ->
 		storeHelper d chunksize enck k $ \dests ->
@@ -157,7 +164,7 @@ storeSplit' :: MeterUpdate -> Int64 -> [FilePath] -> [S.ByteString] -> [FilePath
 storeSplit' _ _ [] _ _ = error "ran out of dests"
 storeSplit' _ _  _ [] c = return $ reverse c
 storeSplit' meterupdate chunksize (d:dests) bs c = do
-	bs' <- E.bracket (openFile d WriteMode) hClose $
+	bs' <- withFile d WriteMode $
 		feed zeroBytesProcessed chunksize bs
 	storeSplit' meterupdate chunksize dests bs' (d:c)
   where
@@ -204,7 +211,7 @@ retrieve :: FilePath -> ChunkSize -> Key -> AssociatedFile -> FilePath -> MeterU
 retrieve d chunksize k _ f p = metered (Just p) k $ \meterupdate ->
 	liftIO $ withStoredFiles chunksize d k $ \files ->
 		catchBoolIO $ do
-			meteredWriteFileChunks meterupdate f files $ L.readFile
+			meteredWriteFileChunks meterupdate f files L.readFile
 			return True
 
 retrieveEncrypted :: FilePath -> ChunkSize -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
@@ -215,7 +222,7 @@ retrieveEncrypted d chunksize (cipher, enck) k f p = metered (Just p) k $ \meter
 				readBytes $ meteredWriteFile meterupdate f
 			return True
   where
-	feeder files h = forM_ files $ \file -> L.hPut h =<< L.readFile file
+	feeder files h = forM_ files $ L.hPut h <=< L.readFile
 
 retrieveCheap :: FilePath -> ChunkSize -> Key -> FilePath -> Annex Bool
 retrieveCheap _ (Just _) _ _ = return False -- no cheap retrieval for chunks

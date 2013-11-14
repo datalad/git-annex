@@ -14,7 +14,8 @@ module Types.Key (
 	key2file,
 	file2key,
 
-	prop_idempotent_key_encode
+	prop_idempotent_key_encode,
+	prop_idempotent_key_decode
 ) where
 
 import System.Posix.Types
@@ -59,7 +60,9 @@ key2file Key { keyBackendName = b, keySize = s, keyMtime = m, keyName = n } =
 	_ ?: _ = ""
 
 file2key :: FilePath -> Maybe Key
-file2key s = if key == Just stubKey then Nothing else key
+file2key s
+	| key == Just stubKey || (keyName <$> key) == Just "" || (keyBackendName <$> key) == Just "" = Nothing
+	| otherwise = key
   where
 	key = startbackend stubKey s
 
@@ -81,10 +84,13 @@ file2key s = if key == Just stubKey then Nothing else key
 
 instance Arbitrary Key where
 	arbitrary = Key
-		<$> arbitrary
+		<$> (listOf1 $ elements $ ['A'..'Z'] ++ ['a'..'z'] ++ ['0'..'9'] ++ "-_\r\n \t")
 		<*> (listOf1 $ elements ['A'..'Z']) -- BACKEND
 		<*> ((abs <$>) <$> arbitrary) -- size cannot be negative
 		<*> arbitrary
 
 prop_idempotent_key_encode :: Key -> Bool
 prop_idempotent_key_encode k = Just k == (file2key . key2file) k
+
+prop_idempotent_key_decode :: FilePath -> Bool
+prop_idempotent_key_decode f = maybe True (\k -> key2file k == f) (file2key f)

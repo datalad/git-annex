@@ -1,0 +1,41 @@
+I use git-annex to manage huge files, mostly video and audio attached to other git repositories (such as presentations), but I also use git-annex to manage my music collection across multiple devices. I also use it to manage the `ISO` images I download, podcasts, and youtube videos.
+
+See <http://anarc.at/>.
+
+[[!toc]]
+
+My tips
+=======
+
+... or the ones I commented it, to be more precise.
+
+[[!inline pages="tips/* and and link(users/anarcat) and !bugs/*/*" sort=mtime feeds=no actions=yes archive=yes show=0]]
+
+
+My todos
+========
+
+... same.
+
+[[!inline pages="todo/* and !todo/done and !link(todo/done) and
+link(users/anarcat) and !todo/*/*" sort=mtime feeds=no actions=yes archive=yes show=0]]
+
+Done
+----
+
+[[!inline pages="todo/* and !todo/done and link(todo/done) and
+link(users/anarcat) and !todo/*/*" feeds=no actions=yes archive=yes show=0]]
+
+My bugs
+=======
+
+... same.
+
+[[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and
+link(users/anarcat) and !bugs/*/*" sort=mtime feeds=no actions=yes archive=yes show=0]]
+
+Fixed
+-----
+
+[[!inline pages="bugs/* and !bugs/done and link(bugs/done) and
+link(users/anarcat) and !bugs/*/*" feeds=no actions=yes archive=yes show=0]]

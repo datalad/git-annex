@@ -14,13 +14,15 @@ can use different ones for different files.
   lead to better deduplication but can confuse some programs.
 * `WORM` ("Write Once, Read Many") This assumes that any file with
   the same basename, size, and modification time has the same content.
-  This is the the least expensive backend, recommended for really large
+  This is the least expensive backend, recommended for really large
   files or slow systems.
 * `SHA512`, `SHA512E` -- Best currently available hash, for the very paranoid.
 * `SHA1`, `SHA1E` -- Smaller hash than `SHA256` for those who want a checksum
    but are not concerned about security.
 * `SHA384`, `SHA384E`, `SHA224`, `SHA224E` -- Hashes for people who like
   unusual sizes.
+* `SKEIN512`, `SKEIN256` -- [Skein hash](http://en.wikipedia.org/wiki/Skein_hash),
+  a well-regarded SHA3 hash competition finalist.
 
 The `annex.backends` git-config setting can be used to list the backends
 git-annex should use. The first one listed will be used by default when

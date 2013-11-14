@@ -22,6 +22,7 @@ import qualified Git
 import qualified Git.Config
 
 import qualified Remote.Git
+import qualified Remote.GCrypt
 #ifdef WITH_S3
 import qualified Remote.S3
 #endif
@@ -38,6 +39,7 @@ import qualified Remote.Hook
 remoteTypes :: [RemoteType]
 remoteTypes =
 	[ Remote.Git.remote
+	, Remote.GCrypt.remote
 #ifdef WITH_S3
 	, Remote.S3.remote
 #endif
@@ -65,7 +67,7 @@ remoteList = do
 			return rs'
 		else return rs
   where
-	process m t = enumerate t >>= mapM (remoteGen m t)
+	process m t = enumerate t >>= mapM (remoteGen m t) >>= return . catMaybes
 
 {- Forces the remoteList to be re-generated, re-reading the git config. -}
 remoteListRefresh :: Annex [Remote]
@@ -78,16 +80,17 @@ remoteListRefresh = do
 	remoteList
 
 {- Generates a Remote. -}
-remoteGen :: (M.Map UUID RemoteConfig) -> RemoteType -> Git.Repo -> Annex Remote
+remoteGen :: M.Map UUID RemoteConfig -> RemoteType -> Git.Repo -> Annex (Maybe Remote)
 remoteGen m t r = do
 	u <- getRepoUUID r
 	g <- fromRepo id
 	let gc = extractRemoteGitConfig g (Git.repoDescribe r)
 	let c = fromMaybe M.empty $ M.lookup u m
-	addHooks <$> generate t r u c gc
+	mrmt <- generate t r u c gc
+	return $ addHooks <$> mrmt
 
 {- Updates a local git Remote, re-reading its git config. -}
-updateRemote :: Remote -> Annex Remote
+updateRemote :: Remote -> Annex (Maybe Remote)
 updateRemote remote = do
 	m <- readRemoteLog
 	remote' <- updaterepo $ repo remote
@@ -98,6 +101,7 @@ updateRemote remote = do
 			Remote.Git.configRead r
 		| otherwise = return r
 
-{- Checks if a remote is a special remote -}
-specialRemote :: Remote -> Bool
-specialRemote r = remotetype r /= Remote.Git.remote
+{- Checks if a remote is syncable using git. -}
+syncableRemote :: Remote -> Bool
+syncableRemote r = remotetype r `elem`
+	[ Remote.Git.remote, Remote.GCrypt.remote ]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl-g0hYpGY11pBP_42lHh5GWTyFuB4UwH8"
+ nickname="Nicolas"
+ subject="comment 2"
+ date="2013-09-25T23:08:56Z"
+ content="""
+Well, of course it would not be as helpful as if the inotify exception would contain the name of the exact object on which it got a permission denied (would this be a valid wishlist request for inotify?), but I think that displaying the name of the directory would already be better than nothing.
+"""]]

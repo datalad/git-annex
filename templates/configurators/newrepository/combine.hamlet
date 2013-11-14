@@ -6,7 +6,7 @@
     <br>
     Do you want to combine it with your existing repository at #{mainrepo}?
   <p>
-    <a .btn href="@{CombineRepositoryR $ FilePathAndUUID newrepopath newrepouuid}">
+    <a .btn href="@{CombineRepositoryR newrepopath newrepouuid}">
       <i .icon-resize-small></i> Combine the repositories #
     The combined repositories will sync and share their files.
   <p>

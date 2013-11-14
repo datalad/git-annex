@@ -107,7 +107,7 @@ moveLocationLogs = do
 		dir <- fromRepo Upgrade.V2.gitStateDir
 		ifM (liftIO $ doesDirectoryExist dir)
 			( mapMaybe oldlog2key
-				<$> (liftIO $ getDirectoryContents dir)
+				<$> liftIO (getDirectoryContents dir)
 			, return []
 			)
 	move (l, k) = do

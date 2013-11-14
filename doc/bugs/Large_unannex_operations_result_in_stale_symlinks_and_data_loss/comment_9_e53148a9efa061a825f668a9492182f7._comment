@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 9"
+ date="2013-08-30T05:59:28Z"
+ content="""
+I'll chime in and say that the non-fast behavior being the default seems wrong, and making hard-link invisibly seems wrong.  What Joey proposed -- copying a file if there are multiple hard-links -- seems like the right solution.
+
+Just recently I tried to unannex a large repository and was bitten by now-dangling symlinks to files that I couldn't locate anymore.  The fact is that the current unannex operation is too dangerous to be useful.
+"""]]

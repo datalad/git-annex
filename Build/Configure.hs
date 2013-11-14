@@ -13,9 +13,9 @@ import Control.Monad.IfElse
 import Data.Char
 
 import Build.TestConfig
+import Build.Version
 import Utility.SafeCommand
 import Utility.Monad
-import Utility.Exception
 import Utility.ExternalSHA
 import qualified Git.Version
 
@@ -32,11 +32,14 @@ tests =
 	, TestCase "curl" $ testCmd "curl" "curl --version >/dev/null"
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
+	, TestCase "quvi" $ testCmd "quvi" "quvi --version >/dev/null"
+	, TestCase "nice" $ testCmd "nice" "nice true >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
 	, TestCase "gpg" $ maybeSelectCmd "gpg"
 		[ ("gpg", "--version >/dev/null")
 		, ("gpg2", "--version >/dev/null") ]
 	, TestCase "lsof" $ findCmdPath "lsof" "lsof"
+	, TestCase "git-remote-gcrypt" $ findCmdPath "gcrypt" "git-remote-gcrypt"
 	, TestCase "ssh connection caching" getSshConnectionCaching
 	] ++ shaTestCases
 	[ (1, "da39a3ee5e6b4b0d3255bfef95601890afd80709")
@@ -87,40 +90,6 @@ testCp k option = TestCase cmd $ testCmd k cmdline
 	cmd = "cp " ++ option
 	cmdline = cmd ++ " " ++ testFile ++ " " ++ testFile ++ ".new"
 
-isReleaseBuild :: IO Bool
-isReleaseBuild = isJust <$> catchMaybeIO (getEnv "RELEASE_BUILD")
-
-{- Version is usually based on the major version from the changelog, 
- - plus the date of the last commit, plus the git rev of that commit.
- - This works for autobuilds, ad-hoc builds, etc.
- -
- - If git or a git repo is not available, or something goes wrong,
- - or this is a release build, just use the version from the changelog. -}
-getVersion :: Test
-getVersion = do
-	changelogversion <- getChangelogVersion
-	version <- ifM (isReleaseBuild)
-		( return changelogversion
-		, catchDefaultIO changelogversion $ do
-			let major = takeWhile (/= '.') changelogversion
-			autoversion <- readProcess "sh"
-				[ "-c"
-				, "git log -n 1 --format=format:'%ci %h'| sed -e 's/-//g' -e 's/ .* /-g/'"
-				] ""
-			if null autoversion
-				then return changelogversion
-				else return $ concat [ major, ".", autoversion ]
-		)
-	return $ Config "packageversion" (StringConfig version)
-	
-getChangelogVersion :: IO String
-getChangelogVersion = do
-	changelog <- readFile "debian/changelog"
-	let verline = takeWhile (/= '\n') changelog
-	return $ middle (words verline !! 1)
-  where
-	middle = drop 1 . init
-
 getGitVersion :: Test
 getGitVersion = Config "gitversion" . StringConfig . show
 	<$> Git.Version.installed
@@ -128,25 +97,6 @@ getGitVersion = Config "gitversion" . StringConfig . show
 getSshConnectionCaching :: Test
 getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>
 	boolSystem "sh" [Param "-c", Param "ssh -o ControlPersist=yes -V >/dev/null 2>/dev/null"]
-
-{- Set up cabal file with version. -}
-cabalSetup :: IO ()
-cabalSetup = do
-	version <- takeWhile (\c -> isDigit c || c == '.')
-		<$> getChangelogVersion
-	cabal <- readFile cabalfile
-	writeFile tmpcabalfile $ unlines $ 
-		map (setfield "Version" version) $
-		lines cabal
-	renameFile tmpcabalfile cabalfile
-  where
-	cabalfile = "git-annex.cabal"
-	tmpcabalfile = cabalfile++".tmp"
-	setfield field value s
-		| fullfield `isPrefixOf` s = fullfield ++ value
-		| otherwise = s
-	  where
-		fullfield = field ++ ": "
 
 setup :: IO ()
 setup = do
@@ -165,8 +115,8 @@ run ts = do
 		then writeSysConfig $ androidConfig config
 		else writeSysConfig config
 	cleanup
-	whenM (isReleaseBuild) $
-		cabalSetup
+	whenM isReleaseBuild $
+		cabalSetup "git-annex.cabal"
 
 {- Hard codes some settings to cross-compile for Android. -}
 androidConfig :: [Config] -> [Config]

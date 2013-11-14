@@ -30,6 +30,7 @@ module Annex.Content (
 	freezeContent,
 	thawContent,
 	cleanObjectLoc,
+	dirKeys,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -43,7 +44,7 @@ import qualified Annex.Queue
 import qualified Annex.Branch
 import Utility.DiskFree
 import Utility.FileMode
-import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 import Types.Key
 import Utility.DataUnits
 import Utility.CopyFile
@@ -275,10 +276,11 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 		thawContentDir =<< calcRepo (gitAnnexLocation key)
 		thawContent src
 		v <- isAnnexLink f
-		if (Just key == v)
+		if Just key == v
 			then do
 				updateInodeCache key src
 				replaceFile f $ liftIO . moveFile src
+				chmodContent f
 				forM_ fs $
 					addContentWhenNotPresent key f
 			else ifM (goodContent key f)
@@ -457,7 +459,7 @@ downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   	go Nothing = do
 		opts <- map Param . annexWebOptions <$> Annex.getGitConfig
 		headers <- getHttpHeaders
-		liftIO $ anyM (\u -> Url.download u headers opts file) urls
+		anyM (\u -> Url.withUserAgent $ Url.download u headers opts file) urls
 	go (Just basecmd) = liftIO $ anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =
 		boolSystem "sh" [Param "-c", Param $ gencmd url basecmd]
@@ -500,6 +502,18 @@ freezeContent file = unlessM crippledFileSystem $
 		removeModes writeModes .
 		addModes [ownerReadMode]
 
+{- Adjusts read mode of annexed file per core.sharedRepository setting. -}
+chmodContent :: FilePath -> Annex ()
+chmodContent file = unlessM crippledFileSystem $
+	liftIO . go =<< fromRepo getSharedRepository
+  where
+	go GroupShared = modifyFileMode file $
+		addModes [ownerReadMode, groupReadMode]
+	go AllShared = modifyFileMode file $
+		addModes readModes
+	go _ = modifyFileMode file $
+		addModes [ownerReadMode]
+
 {- Allows writing to an annexed file that freezeContent was called on
  - before. -}
 thawContent :: FilePath -> Annex ()
@@ -509,3 +523,18 @@ thawContent file = unlessM crippledFileSystem $
 	go GroupShared = groupWriteRead file
 	go AllShared = groupWriteRead file
 	go _ = allowWrite file
+
+{- Finds files directly inside a directory like gitAnnexBadDir 
+ - (not in subdirectories) and returns the corresponding keys. -}
+dirKeys :: (Git.Repo -> FilePath) -> Annex [Key]
+dirKeys dirspec = do
+	dir <- fromRepo dirspec
+	ifM (liftIO $ doesDirectoryExist dir)
+		( do
+			contents <- liftIO $ getDirectoryContents dir
+			files <- liftIO $ filterM doesFileExist $
+				map (dir </>) contents
+			return $ mapMaybe (fileKey . takeFileName) files
+		, return []
+		)
+

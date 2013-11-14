@@ -16,13 +16,15 @@ module Remote (
 	hasKey,
 	hasKeyCheap,
 	whereisKey,
+	remoteFsck,
 
 	remoteTypes,
 	remoteList,
-	specialRemote,
+	syncableRemote,
 	remoteMap,
 	uuidDescriptions,
 	byName,
+	byNameOnly,
 	byNameWithUUID,
 	byCost,
 	prettyPrintUUIDs,
@@ -38,7 +40,8 @@ module Remote (
 	showTriedRemotes,
 	showLocations,
 	forceTrust,
-	logStatus
+	logStatus,
+	checkAvailable
 ) where
 
 import qualified Data.Map as M
@@ -55,6 +58,8 @@ import Logs.UUID
 import Logs.Trust
 import Logs.Location hiding (logStatus)
 import Remote.List
+import Config
+import Git.Types (RemoteName)
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> a) -> Annex (M.Map UUID a)
@@ -67,7 +72,7 @@ remoteMap c = M.fromList . map (\r -> (uuid r, c r)) .
 uuidDescriptions :: Annex (M.Map UUID String)
 uuidDescriptions = M.unionWith addName <$> uuidMap <*> remoteMap name
 
-addName :: String -> String -> String
+addName :: String -> RemoteName -> String
 addName desc n
 	| desc == n = desc
 	| null desc = n
@@ -75,21 +80,25 @@ addName desc n
 
 {- When a name is specified, looks up the remote matching that name.
  - (Or it can be a UUID.) -}
-byName :: Maybe String -> Annex (Maybe Remote)
+byName :: Maybe RemoteName -> Annex (Maybe Remote)
 byName Nothing = return Nothing
 byName (Just n) = either error Just <$> byName' n
 
 {- Like byName, but the remote must have a configured UUID. -}
-byNameWithUUID :: Maybe String -> Annex (Maybe Remote)
-byNameWithUUID n = do
-	v <- byName n
-	return $ checkuuid <$> v
+byNameWithUUID :: Maybe RemoteName -> Annex (Maybe Remote)
+byNameWithUUID = checkuuid <=< byName
   where
-	checkuuid r
-		| uuid r == NoUUID = error $ "cannot determine uuid for " ++ name r
-		| otherwise = r
+  	checkuuid Nothing = return Nothing
+	checkuuid (Just r)
+		| uuid r == NoUUID =
+			if remoteAnnexIgnore (gitconfig r)
+				then error $ noRemoteUUIDMsg r ++
+					" (" ++ show (remoteConfig (repo r) "ignore") ++
+					" is set)"
+				else error $ noRemoteUUIDMsg r
+		| otherwise = return $ Just r
 
-byName' :: String -> Annex (Either String Remote)
+byName' :: RemoteName -> Annex (Either String Remote)
 byName' "" = return $ Left "no remote specified"
 byName' n = handle . filter matching <$> remoteList
   where
@@ -97,16 +106,27 @@ byName' n = handle . filter matching <$> remoteList
 	handle (match:_) = Right match
 	matching r = n == name r || toUUID n == uuid r
 
+{- Only matches remote name, not UUID -}
+byNameOnly :: RemoteName -> Annex (Maybe Remote)
+byNameOnly n = headMaybe . filter matching <$> remoteList
+  where
+	matching r = n == name r
+
+noRemoteUUIDMsg :: Remote -> String
+noRemoteUUIDMsg r = "cannot determine uuid for " ++ name r
+
 {- Looks up a remote by name (or by UUID, or even by description),
- - and returns its UUID. Finds even remotes that are not configured in
- - .git/config. -}
-nameToUUID :: String -> Annex UUID
+ - and returns its UUID. Finds even repositories that are not
+ - configured in .git/config. -}
+nameToUUID :: RemoteName -> Annex UUID
 nameToUUID "." = getUUID -- special case for current repo
 nameToUUID "here" = getUUID
 nameToUUID "" = error "no remote specified"
 nameToUUID n = byName' n >>= go
   where
-	go (Right r) = return $ uuid r
+	go (Right r) = case uuid r of
+		NoUUID -> error $ noRemoteUUIDMsg r
+		u -> return u
 	go (Left e) = fromMaybe (error e) <$> bydescription
 	bydescription = do
 		m <- uuidMap
@@ -163,13 +183,19 @@ prettyListUUIDs uuids = do
 prettyUUID :: UUID -> Annex String
 prettyUUID u = concat <$> prettyListUUIDs [u]
 
-{- Gets the remote associated with a UUID.
- - There's no associated remote when this is the UUID of the local repo. -}
+{- Gets the remote associated with a UUID. -}
 remoteFromUUID :: UUID -> Annex (Maybe Remote)
 remoteFromUUID u = ifM ((==) u <$> getUUID)
 	( return Nothing
-	, Just . fromMaybe (error "Unknown UUID") . M.lookup u <$> remoteMap id
+	, do
+		maybe tryharder (return . Just) =<< findinmap
 	)
+  where
+	findinmap = M.lookup u <$> remoteMap id
+	{- Re-read remote list in case a new remote has popped up. -}
+	tryharder = do
+		void remoteListRefresh
+		findinmap
 
 {- Filters a list of remotes to ones that have the listed uuids. -}
 remotesWithUUID :: [Remote] -> [UUID] -> [Remote]
@@ -227,6 +253,9 @@ showLocations key exclude nolocmsg = do
 	ppuuidswanted <- Remote.prettyPrintUUIDs "wanted" uuidswanted
 	ppuuidsskipped <- Remote.prettyPrintUUIDs "skipped" uuidsskipped
 	showLongNote $ message ppuuidswanted ppuuidsskipped
+	ignored <- filter (remoteAnnexIgnore . gitconfig) <$> remoteList
+	unless (null ignored) $
+		showLongNote $ "(Note that these git remotes have annex-ignore set: " ++ unwords (map name ignored) ++ ")"
   where
 	filteruuids l x = filter (`notElem` x) l
 	message [] [] = nolocmsg
@@ -259,3 +288,7 @@ byCost = map snd . sortBy (comparing fst) . M.toList . costmap
   where
 	costmap = M.fromListWith (++) . map costpair
 	costpair r = (cost r, [r])
+
+checkAvailable :: Bool -> Remote -> IO Bool
+checkAvailable assumenetworkavailable = 
+	maybe (return assumenetworkavailable) doesDirectoryExist . localpath

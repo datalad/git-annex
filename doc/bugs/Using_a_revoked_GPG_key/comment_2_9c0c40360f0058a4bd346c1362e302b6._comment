@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://www.rfc1149.net/"
+ nickname="Sam"
+ subject="comment 2"
+ date="2013-08-13T07:28:30Z"
+ content="""
+Tobias: I don't understand what you mean. The issue here is that once an existing key is revoked, git-annex will refuse to add *another non-revoked* key.
+"""]]

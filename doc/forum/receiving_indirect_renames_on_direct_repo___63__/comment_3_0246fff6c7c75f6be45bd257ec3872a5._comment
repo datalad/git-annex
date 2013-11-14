@@ -1,0 +1,75 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkJafmCf-sg9_OM0pynFYM3AO4WCgJiaMI"
+ nickname="Michele"
+ subject="possible explanation"
+ date="2013-10-29T11:56:21Z"
+ content="""
+now, i tried to understand what happens. Instead of issuing the *git annex sync*, I relied on *git pull origin, git merge origin/master*, (I red [[http://git-annex.branchable.com/forum/Help_Windows_walkthrough/]] and I assume that pull origin / merge origin/master would work similarly to the \"download\" part of sync, *except for losing all my direct content*) just to understand what was going on, with a clarifying result:
+
+while git annex sync fails on push, git pull origin fails on pull:
+
+    M:\win>git pull origin
+    Updating 5408d6f..c566a69
+    error: Your local changes to the following files would be overwritten by merge:
+            myfile
+    Please, commit your changes or stash them before you can merge.
+    Aborting 
+
+note that the file has not been modified locally (just got it through git annex get).
+issuing a git diff, reveals:
+
+    M:\win>git diff myfile
+    diff --git a/myfile b/myfile
+    index beaf3e8..dc5b4ff 120000
+    --- a/myfile
+    +++ b/myfile
+    @@ -1 +1 @@
+    -.git/annex/objects/z5/v7/SHA256E-s8--6090923ed0931dcc6699f32fb66fa4ba32c10924088b12c66fb4ce35a91ba98c/SHA256E-s8\ No newline at end of file
+    +linux.1
+    (END)
+
+ok, i follow suggestion, and I perform a git stash. that still wouldn't suffice for git annex sync:
+
+    M:\win>git annex sync
+    commit
+    ok
+    pull origin
+    ok
+    push origin
+    To ssh://michele@home/home/michele/homebase
+     ! [rejected]        master -> synced/master (non-fast-forward)
+    error: failed to push some refs to 'ssh://michele@home/home/michele/homebase'
+    hint: Updates were rejected because a pushed branch tip is behind its remote
+    hint: counterpart. Check out this branch and merge the remote changes
+    hint: (e.g. 'git pull') before pushing again.
+    hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+    failed
+    git-annex: sync: 1 failed
+
+now, i can perform instead a *git pull origin*, since I am confident my content is stashed.
+
+    M:\win>git pull origin
+    Updating 5408d6f..c566a69
+    Fast-forward
+     myfile => myfile.renamed | 0
+     1 file changed, 0 insertions(+), 0 deletions(-)
+     rename myfile => myfile.renamed (100%)
+
+merge is not doing anything more: at this stage content has gone (file is a direct-mode symlink nad it cannot be fixed by fsck). 
+But i can recover it from stash (and I must do it unless I want to get the annex to think i still have content).
+
+    git stash apply 
+
+voilà: the content is there! and the repos seems in good order. 
+this only adds up that this is possibily a bug in the fact that git reports direct content as modified when indeed it hasn't been modified: but this affects git annex sync only when merging renaming files.
+git annex sync now works perfectly .
+
+to sum it up, I have two questions: 
+
+1) does using stash to circumvent the problem expose me to any risk ?
+2) would the behaviour on receiving renames in the abovementioned situation worth to be signaled as a bug ? 
+
+
+
+
+"""]]

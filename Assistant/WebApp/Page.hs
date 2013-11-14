@@ -38,15 +38,15 @@ firstRunNavBar :: [NavBarItem]
 firstRunNavBar = [Configuration, About]
 
 selectNavBar :: Handler [NavBarItem]
-selectNavBar = ifM (inFirstRun) (return firstRunNavBar, return defaultNavBar)
+selectNavBar = ifM inFirstRun (return firstRunNavBar, return defaultNavBar)
 
 {- A standard page of the webapp, with a title, a sidebar, and that may
  - be highlighted on the navbar. -}
 page :: Hamlet.Html -> Maybe NavBarItem -> Widget -> Handler Html
 page title navbaritem content = customPage navbaritem $ do
 	setTitle title
-	sideBarDisplay
 	content
+	sideBarDisplay
 
 {- A custom page, with no title or sidebar set. -}
 customPage :: Maybe NavBarItem -> Widget -> Handler Html

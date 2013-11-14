@@ -11,9 +11,9 @@ module Assistant.WebApp.Configurators.Delete where
 
 import Assistant.WebApp.Common
 import Assistant.DeleteRemote
-import Assistant.WebApp.Utility
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
+import Assistant.Sync
 import qualified Remote
 import qualified Git
 import Config.Files
@@ -22,6 +22,7 @@ import Logs.Trust
 import Logs.Remote
 import Logs.PreferredContent
 import Types.StandardGroups
+import Annex.UUID
 
 import System.IO.HVFS (SystemFS(..))
 import qualified Data.Text as T
@@ -29,9 +30,13 @@ import qualified Data.Map as M
 import System.Path
 
 notCurrentRepo :: UUID -> Handler Html -> Handler Html
-notCurrentRepo uuid a = go =<< liftAnnex (Remote.remoteFromUUID uuid)
+notCurrentRepo uuid a = do
+	u <- liftAnnex getUUID
+	if u == uuid
+		then redirect DeleteCurrentRepositoryR
+		else go =<< liftAnnex (Remote.remoteFromUUID uuid)
   where
-  	go Nothing = redirect DeleteCurrentRepositoryR
+  	go Nothing = error "Unknown UUID"
 	go (Just _) = a
 
 getDisableRepositoryR :: UUID -> Handler Html
@@ -76,7 +81,7 @@ deleteCurrentRepository = dangerPage $ do
 	havegitremotes <- haveremotes syncGitRemotes
 	havedataremotes <- haveremotes syncDataRemotes
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ sanityVerifierAForm $
+		runFormPostNoToken $ renderBootstrap $ sanityVerifierAForm $
 			SanityVerifier magicphrase
 	case result of
 		FormSuccess _ -> liftH $ do
@@ -86,9 +91,10 @@ deleteCurrentRepository = dangerPage $ do
 			{- Disable syncing to this repository, and all
 			 - remotes. This stops all transfers, and all
 			 - file watching. -}
-			changeSyncable Nothing False
-			rs <- liftAssistant $ syncRemotes <$> getDaemonStatus
-			mapM_ (\r -> changeSyncable (Just r) False) rs
+			liftAssistant $ do
+				changeSyncable Nothing False
+				rs <- syncRemotes <$> getDaemonStatus
+				mapM_ (\r -> changeSyncable (Just r) False) rs
 
 			{- Make all directories writable, so all annexed
 			 - content can be deleted. -}

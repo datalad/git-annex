@@ -152,7 +152,7 @@ postFinishLocalPairR msg = promptSecret (Just msg) $ \_ secret -> do
   where
 	alert = pairRequestAcknowledgedAlert (pairRepo msg) . Just
 	setup repodir = setupAuthorizedKeys msg repodir
-	cleanup repodir = removeAuthorizedKeys False repodir $
+	cleanup repodir = removeAuthorizedKeys True repodir $
 		remoteSshPubKey $ pairMsgData msg
 	uuid = Just $ pairUUID $ pairMsgData msg
 #else
@@ -265,7 +265,7 @@ data InputSecret = InputSecret { secretText :: Maybe Text }
 promptSecret :: Maybe PairMsg -> (Text -> Secret -> Widget) -> Handler Html
 promptSecret msg cont = pairPage $ do
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $
+		runFormPostNoToken $ renderBootstrap $
 			InputSecret <$> aopt textField "Secret phrase" Nothing
 	case result of
 		FormSuccess v -> do
@@ -300,7 +300,7 @@ secretProblem :: Secret -> Maybe Text
 secretProblem s
 	| B.null s = Just "The secret phrase cannot be left empty. (Remember that punctuation and white space is ignored.)"
 	| B.length s < 6 = Just "Enter a longer secret phrase, at least 6 characters, but really, a phrase is best! This is not a password you'll need to enter every day."
-	| s == toSecret sampleQuote = Just "Speaking of foolishness, don't paste in the example I gave. Enter a different phrase, please!"
+	| s == toSecret sampleQuote = Just "Speaking of foolishness, don't paste in the example I gave. Enter a different phrase, please!"
 	| otherwise = Nothing
 
 toSecret :: Text -> Secret

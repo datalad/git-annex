@@ -1,0 +1,15 @@
+#{msg}
+<p>
+  <div .input-prepend .input-append>
+    Check ^{fvInput reposView} for #
+    ^{fvInput durationView} minutes #
+    ^{fvInput recurranceView} #
+    starting at ^{fvInput timeView} #
+    $if new
+      <button type=submit .btn .btn-primary>
+        Add
+    $else
+      <button type=submit .btn>
+        Save
+      <a .btn href="@{RemoveActivityR u activity}">
+        Remove

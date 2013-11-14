@@ -67,8 +67,14 @@ lookupSRV (SRV srv) = initResolver [] $ \resolver -> do
 lookupSRV (SRV srv) = do
 	seed <- makeResolvSeed defaultResolvConf
 	r <- withResolver seed $ flip DNS.lookupSRV $ B8.fromString srv
-	return $ maybe [] (orderHosts . map tohosts) r
+	return $
+#if MIN_VERSION_dns(1,0,0)
+		either (const []) use r
+#else
+		maybe [] use r
+#endif
   where
+  	use = orderHosts . map tohosts
 	tohosts (priority, weight, port, hostname) =
 		( (priority, weight)
 		, (B8.toString hostname, PortNumber $ fromIntegral port)

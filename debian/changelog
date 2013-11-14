@@ -1,4 +1,274 @@
-git-annex (4.20130803) UNRELEASED; urgency=low
+git-annex (5.20131102) UNRELEASED; urgency=low
+
+  * Direct mode repositories now have core.bare=true set, to prevent
+    accidentally running git commands that try to operate on the work tree,
+    and so do the wrong thing in direct mode.
+  * annex.version is now set to 5 for direct mode repositories.
+    This upgrade is handled fully automatically, no need to run
+    git annex upgrade
+  * The "status" command has been renamed to "info", to allow
+    "git annex status" to be used in direct mode repositories, now that
+    "git status" won't work in them.
+  * The -c option now not only modifies the git configuration seen by
+    git-annex, but it is passed along to every git command git-annex runs.
+  * watcher: Avoid loop when adding a file owned by someone else fails
+    in indirect mode because its permissions cannot be modified.
+  * webapp: Avoid encoding problems when displaying the daemon log file.
+  * webapp: Improve UI around remote that have no annex.uuid set,
+    either because setup of them is incomplete, or because the remote
+    git repository is not a git-annex repository.
+  * Include ssh-keygen in standalone bundle.
+  * Allow optionally configuring git-annex with -fEKG to enable awesome
+    remote monitoring interfaceat http://localhost:4242/
+  * Fix bug that caused bad information to be written to the git-annex branch
+    when running describe or other commands with a remote that has no uuid.
+  * Work around Android linker problem that had prevented git-annex from
+    running on Android 4.3 and 4.4.
+  * repair: Handle case where index file is corrupt, but all objects are ok.
+  * assistant: Notice on startup when the index file is corrupt, and
+    auto-repair.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 16:14:14 -0400
+
+git-annex (4.20131106) unstable; urgency=low
+
+  * Improve local pairing behavior when two computers both try to start
+    the pairing process separately.
+  * sync: Work even when the local git repository is new and empty,
+    with no master branch.
+  * gcrypt, bup: Fix bug that prevented using these special remotes
+    with encryption=pubkey.
+  * Fix enabling of gcrypt repository accessed over ssh;
+    git-annex-shell gcryptsetup had a bug that caused it to fail
+    with permission denied.
+  * Fix zombie process that occurred when switching between repository
+    views in the webapp.
+  * map: Work when there are gcrypt remotes.
+  * Fix build w/o webapp.
+  * Fix exception handling bug that could cause .git/annex/index to be used
+    for git commits outside the git-annex branch. Known to affect git-annex
+    when used with the git shipped with Ubuntu 13.10.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 11:17:47 -0400
+
+git-annex (4.20131101) unstable; urgency=low
+
+  * The "git annex content" command is renamed to "git annex wanted".
+  * New --want-get and --want-drop options which can be used to
+    test preferred content settings.
+    For example, "git annex find --in . --want-drop"
+  * assistant: When autostarted, wait 5 seconds before running the startup
+    scan, to avoid contending with the user's desktop login process.
+  * webapp: When setting up a bare shared repository, enable non-fast-forward
+    pushes.
+  * sync: Show a hint about receive.denyNonFastForwards when a push fails.
+  * directory, webdav: Fix bug introduced in version 4.20131002 that
+    caused the chunkcount file to not be written. Work around repositories
+    without such a file, so files can still be retreived from them.
+  * assistant: Automatically repair damanged git repository, if it can
+    be done without losing data.
+  * assistant: Support repairing git remotes that are locally accessible
+    (eg, on removable drives).
+  * add: Fix reversion in 4.20130827 when adding unlocked files that have
+    not yet been committed.
+  * unannex: New, much slower, but more safe behavior: Copies files out of
+    the annex. This avoids an unannex of one file breaking other files that
+    link to the same content. Also, it means that the content
+    remains in the annex using up space until cleaned up with 
+    "git annex unused".
+    (The behavior of unannex --fast has not changed; it still hard links
+    to content in the annex. --fast was not made the default because it is
+    potentially unsafe; editing such a hard linked file can unexpectedly
+    change content stored in the annex.)
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 01 Nov 2013 11:34:27 -0400
+
+git-annex (4.20131024) unstable; urgency=low
+
+  * webapp: Fix bug when adding a remote and git-remote-gcrypt
+    is not installed.
+  * The assitant can now run scheduled incremental fsck jobs on the local
+    repository and remotes. These can be configured using vicfg or with the
+    webapp.
+  * repair: New command, which can repair damaged git repositories
+    (even ones not using git-annex).
+  * webapp: When git repository damange is detected, repairs can be
+    done using the webapp UI.
+  * Automatically and safely detect and recover from dangling
+    .git/annex/index.lock files, which would prevent git from
+    committing to the git-annex branch, eg after a crash.
+  * assistant: Detect stale git lock files at startup time, and remove them.
+  * addurl: Better sanitization of generated filenames.
+  * Better sanitization of problem characters when generating URL and WORM
+    keys.
+  * The control socket path passed to ssh needs to be 17 characters
+    shorter than the maximum unix domain socket length, because ssh
+    appends stuff to it to make a temporary filename. Closes: #725512
+  * status: Fix space leak in local mode, introduced in version 4.20130920.
+  * import: Skip .git directories.
+  * Remove bogus runshell loop check.
+  * addurl: Improve message when adding url with wrong size to existing file.
+  * Fixed handling of URL keys that have no recorded size.
+  * status: Fix a crash if a temp file went away while its size was
+    being checked for status.
+  * Deal with git check-attr -z output format change in git 1.8.5.
+  * Work around sed output difference that led to version containing a newline
+    on OSX.
+  * sync: Fix automatic resolution of merge conflicts where one side is an
+    annexed file, and the other side is a non-annexed file, or a directory.
+  * S3: Try to ensure bucket name is valid for archive.org.
+  * assistant: Bug fix: When run in a subdirectory, files from incoming merges
+    were wrongly added to that subdirectory, and removed from their original
+    locations.
+  * Windows: Deal with strange msysgit 1.8.4 behavior of not understanding
+    DOS formatted paths for --git-dir and --work-tree.
+  * Removed workaround for bug in git 1.8.4r0.
+  * Added git-recover-repository command to git-annex source
+    (not built by default; this needs to move to someplace else).
+  * webapp: Move sidebar to the right hand side of the screen.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 24 Oct 2013 12:59:55 -0400
+
+git-annex (4.20131002) unstable; urgency=low
+
+  * Note that the layout of gcrypt repositories has changed, and
+    if you created one you must manually upgrade it.
+    See http://git-annex.branchable.com/upgrades/gcrypt/
+  * webapp: Support setting up and using encrypted git repositories on
+    any ssh server, as well as on rsync.net.
+  * git-annex-shell: Added support for operating inside gcrypt repositories.
+  * Disable receive.denyNonFastForwards when setting up a gcrypt special
+    remote, since gcrypt needs to be able to fast-forward the master branch.
+  * import: Preserve top-level directory structure.
+  * Use cryptohash rather than SHA for hashing when no external hash program
+    is available. This is a significant speedup for SHA256 on OSX, for
+    example.
+  * Added SKEIN256 and SKEIN512 backends.
+  * Android build redone from scratch, many dependencies updated,
+    and entire build can now be done using provided scripts.
+  * assistant: Clear the list of failed transfers when doing a full transfer
+    scan. This prevents repeated retries to download files that are not
+    available, or are not referenced by the current git tree.
+  * indirect, direct: Better behavior when a file is not owned by
+    the user running the conversion.
+  * add, import, assistant: Better preserve the mtime of symlinks,
+    when when adding content that gets deduplicated.
+  * Send a git-annex user-agent when downloading urls.
+    Overridable with --user-agent option.
+    (Not yet done for S3 or WebDAV due to limitations of libraries used.)
+  * webapp: Fixed a bug where when a new remote is added, one file
+    may fail to sync to or from it due to the transferrer process not
+    yet knowing about the new remote.
+  * OSX: Bundled gpg upgraded, now compatible with config files
+    written by MacGPG.
+  * assistant: More robust inotify handling; avoid crashing if a directory
+    cannot be read.
+  * Moved list of backends and remote types from status to version
+    command.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 02 Oct 2013 16:00:39 -0400
+
+git-annex (4.20130920) unstable; urgency=low
+
+  * webapp: Initial support for setting up encrypted removable drives.
+  * Recommend using my patched gcrypt, which fixes some bugs:
+    https://github.com/joeyh/git-remote-gcrypt
+  * Support hot-swapping of removable drives containing gcrypt repositories.
+  * list: New command, displays a compact table of remotes that
+    contain files.
+    (Thanks, anarcat for display code and mastensg for inspiration.)
+  * fsck: Fix detection and fixing of present direct mode files that are
+    wrongly represented as standin symlinks on crippled filesystems.
+  * sync: Fix bug that caused direct mode mappings to not be updated
+    when merging files into the tree on Windows.
+  * sync: Don't fail if the directory it is run in gets removed by the
+    sync.
+  * addurl: Fix quvi audodetection, broken in last release.
+  * status: In local mode, displays information about variance from configured
+    numcopies levels. (--fast avoids calculating these)
+  * gcrypt: Ensure that signing key is set to one of the participants keys.
+  * webapp: Show encryption information when editing a remote.
+  * Avoid unnecessarily catting non-symlink files from git, which can be
+    so large it runs out of memory.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 20 Sep 2013 10:34:51 -0400
+
+git-annex (4.20130911) unstable; urgency=low
+
+  * Fix problem with test suite in non-unicode locale.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 11 Sep 2013 12:14:16 -0400
+
+git-annex (4.20130909) unstable; urgency=low
+
+  * initremote: Syntax change when setting up an encrypted special remote.
+    Now use keyid=$KEYID rather than the old encryption=$KEYID
+  * forget: New command, causes git-annex branch history to be forgotten
+    in a way that will spread to other clones of the repository.
+    (As long as they're running this version or newer of git-annex.)
+  * forget --drop-dead: Completely removes mentions of repositories that
+    have been marked as dead from the git-annex branch.
+  * sync, assistant: Force push of the git-annex branch. Necessary
+    to ensure it gets pushed to remotes after being rewritten by forget.
+  * Added gcrypt support. This combines a fully encrypted git
+    repository (using git-remote-gcrypt) with an encrypted git-annex special
+    remote.
+  * sync: Support syncing with gcrypt remotes.
+  * importfeed: Also ignore transient problems with downloading content
+    from feeds.
+  * Honor core.sharedrepository when receiving and adding files in direct
+    mode.
+  * enableremote: gpg keys can be removed from those a remote encrypts
+    to by passing "keyid-=$KEYID". keyid+= is also provided.
+    (Thanks, guilhem for the patch.)
+  * Added encryption=pubkey scheme, which encrypts to public keys directly
+    rather than the hybrid approach. See documentation for advantages
+    and disadvantages, but encryption=hybrid is the recommended scheme still.
+    (Thanks, guilhem for the patch.)
+  * Fix Feeds display in build flags.
+  * Remind user when annex-ignore is set for some remotes, if unable to
+    get or drop a file, possibly because it's on an ignored remote.
+  * gpg: Force --no-textmode in case the user has it turned on in config.
+  * webapp: Improve javascript's handling of longpolling connection
+    failures, by reloading the current page in this case.
+    Works around chromium behavior where ajax connections to urls
+    that were already accessed are denied after navigating back to
+    a previous page.
+  * Allow building without quvi support.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 09 Sep 2013 09:47:02 -0400
+
+git-annex (4.20130827) unstable; urgency=low
+
+  * Youtube support! (And 53 other video hosts). When quvi is installed,
+    git-annex addurl automatically uses it to detect when an page is
+    a video, and downloads the video file.
+  * web special remote: Also support using quvi, for getting files,
+    or checking if files exist in the web.
+  * unused: Is now a minimum of 30 times faster, and typically many
+    more times than that (when a repository has several branches).
+    (Thanks, guilhem for the patch.)
+  * unused: Fix bugs in two edge cases involving manually staged changes.
+    (Thanks, guilhem for the patch.)
+  * Android: Fix bug in terminal app that caused it to spin using much 
+    CPU and battery. This problem was introduced in version 4.20130601.
+  * sync, merge: Bug fix: Don't try to merge into master when in a bare repo.
+  * import: Add options to control handling of duplicate files:
+    --duplicate, --deduplicate, and --clean-duplicates
+  * mirror: New command, makes two repositories contain the same set of files.
+  * Set --clobber when running wget to ensure resuming works properly.
+  * Unescape characters in 'file://...' URIs. (Thanks, guilhem for the patch.)
+  * Better error message when trying to use a git remote that has annex.ignore
+    set.
+  * Fix bug that caused typechanged symlinks to be assumed to be unlocked
+    files, so they were added to the annex by the pre-commit hook.
+  * Debian: Run the builtin test suite as an autopkgtest.
+  * Debian: Recommend ssh-askpass, which ssh will use when the assistant
+    is run w/o a tty. Closes: #719832
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 27 Aug 2013 11:03:00 -0400
+
+git-annex (4.20130815) unstable; urgency=low
 
   * assistant, watcher: .gitignore files and other git ignores are now
     honored, when git 1.8.4 or newer is installed.
@@ -10,7 +280,7 @@ git-annex (4.20130803) UNRELEASED; urgency=low
   * Windows: Fixed permissions problem that prevented removing files
     from directory special remote. Directory special remotes now fully usable.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 02 Aug 2013 19:26:20 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 15 Aug 2013 10:14:33 +0200
 
 git-annex (4.20130802) unstable; urgency=low
 

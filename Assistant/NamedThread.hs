@@ -16,6 +16,7 @@ import Assistant.Types.DaemonStatus
 import Assistant.Types.UrlRenderer
 import Assistant.DaemonStatus
 import Assistant.Monad
+import Utility.NotificationBroadcaster
 
 import Control.Concurrent
 import Control.Concurrent.Async
@@ -34,7 +35,7 @@ import qualified Data.Text as T
  - Named threads are run by a management thread, so if they crash
  - an alert is displayed, allowing the thread to be restarted. -}
 startNamedThread :: UrlRenderer -> NamedThread -> Assistant ()
-startNamedThread urlrenderer namedthread@(NamedThread name a) = do
+startNamedThread urlrenderer (NamedThread afterstartupsanitycheck name a) = do
 	m <- startedThreads <$> getDaemonStatus
 	case M.lookup name m of
 		Nothing -> start
@@ -44,14 +45,24 @@ startNamedThread urlrenderer namedthread@(NamedThread name a) = do
 				Right Nothing -> noop
 				_ -> start
   where
-	start = do
+	start
+		| afterstartupsanitycheck = do
+			status <- getDaemonStatus
+			h <- liftIO $ newNotificationHandle False $
+				startupSanityCheckNotifier status
+			startwith $ runmanaged $
+				liftIO $ waitNotification h
+		| otherwise = startwith $ runmanaged noop
+	startwith runner = do
 		d <- getAssistant id
-		aid <- liftIO $ runmanaged $ d { threadName = name }
-		restart <- asIO $ startNamedThread urlrenderer namedthread
+		aid <- liftIO $ runner $ d { threadName = name }
+		restart <- asIO $ startNamedThread urlrenderer (NamedThread False name a)
 		modifyDaemonStatus_ $ \s -> s
 			{ startedThreads = M.insertWith' const name (aid, restart) (startedThreads s) }
-	runmanaged d = do
-		aid <- async $ runAssistant d a
+	runmanaged first d = do
+		aid <- async $ runAssistant d $ do
+			void first
+			a
 		void $ forkIO $ manager d aid
 		return aid
 	manager d aid = do
@@ -65,7 +76,7 @@ startNamedThread urlrenderer namedthread@(NamedThread name a) = do
 					]
 				hPutStrLn stderr msg
 #ifdef WITH_WEBAPP
-				button <- runAssistant d $ mkAlertButton
+				button <- runAssistant d $ mkAlertButton True
 					(T.pack "Restart Thread")
 					urlrenderer 
 					(RestartThreadR name)
@@ -75,7 +86,7 @@ startNamedThread urlrenderer namedthread@(NamedThread name a) = do
 #endif
 
 namedThreadId :: NamedThread -> Assistant (Maybe ThreadId)
-namedThreadId (NamedThread name _) = do
+namedThreadId (NamedThread _ name _) = do
 	m <- startedThreads <$> getDaemonStatus
 	return $ asyncThreadId . fst <$> M.lookup name m
 

@@ -16,6 +16,7 @@ module Annex.Ssh (
 
 import qualified Data.Map as M
 import Data.Hash.MD5
+import System.Process (cwd)
 
 import Common.Annex
 import Annex.LockPool
@@ -42,7 +43,7 @@ sshCachingOptions (host, port) opts = go =<< sshInfo (host, port)
 	-- If the lock pool is empty, this is the first ssh of this
 	-- run. There could be stale ssh connections hanging around
 	-- from a previous git-annex run that was interrupted.
-	cleanstale = whenM (not . any isLock . M.keys <$> getPool) $
+	cleanstale = whenM (not . any isLock . M.keys <$> getPool)
 		sshCleanup
 
 {- Returns a filename to use for a ssh connection caching socket, and
@@ -52,14 +53,30 @@ sshInfo (host, port) = go =<< sshCacheDir
   where
 	go Nothing = return (Nothing, [])
 	go (Just dir) = do
-		let socketfile = dir </> hostport2socket host port
-		if valid_unix_socket_path socketfile
-			then return (Just socketfile, sshConnectionCachingParams socketfile)
-			else do
-				socketfile' <- liftIO $ relPathCwdToFile socketfile
-				if valid_unix_socket_path socketfile'
-					then return (Just socketfile', sshConnectionCachingParams socketfile')
-					else return (Nothing, [])
+		r <- liftIO $ bestSocketPath $ dir </> hostport2socket host port
+		return $ case r of
+			Nothing -> (Nothing, [])
+			Just socketfile -> (Just socketfile, sshConnectionCachingParams socketfile)
+
+{- Given an absolute path to use for a socket file,
+ - returns whichever is shorter of that or the relative path to the same
+ - file.
+ -
+ - If no path can be constructed that is a valid socket, returns Nothing. -}
+bestSocketPath :: FilePath -> IO (Maybe FilePath)
+bestSocketPath abssocketfile = do
+	relsocketfile <- liftIO $ relPathCwdToFile abssocketfile
+	let socketfile = if length abssocketfile <= length relsocketfile
+		then abssocketfile
+		else relsocketfile
+	return $ if valid_unix_socket_path (socketfile ++ sshgarbage)
+			then Just socketfile
+			else Nothing
+  where
+  	-- ssh appends a 16 char extension to the socket when setting it
+	-- up, which needs to be taken into account when checking
+	-- that a valid socket was constructed.
+  	sshgarbage = take (1+16) $ repeat 'X'
 
 sshConnectionCachingParams :: FilePath -> [CommandParam]
 sshConnectionCachingParams socketfile = 
@@ -96,8 +113,8 @@ sshCleanup = go =<< sshCacheDir
   where
 	go Nothing = noop
 	go (Just dir) = do
-		sockets <- filter (not . isLock) <$>
-			liftIO (catchDefaultIO [] $ dirContents dir)
+		sockets <- liftIO $ filter (not . isLock)
+			<$> catchDefaultIO [] (dirContents dir)
 		forM_ sockets cleanup
 	cleanup socketfile = do
 #ifndef mingw32_HOST_OS
@@ -120,13 +137,15 @@ sshCleanup = go =<< sshCacheDir
 		stopssh socketfile
 #endif
 	stopssh socketfile = do
-		let params = sshConnectionCachingParams socketfile
+		let (dir, base) = splitFileName socketfile
+		let params = sshConnectionCachingParams base
 		-- "ssh -O stop" is noisy on stderr even with -q
 		void $ liftIO $ catchMaybeIO $
 			withQuietOutput createProcessSuccess $
-				proc "ssh" $ toCommand $
+				(proc "ssh" $ toCommand $
 					[ Params "-O stop"
-					] ++ params ++ [Param "any"]
+					] ++ params ++ [Param "any"])
+					{ cwd = Just dir }
 		-- Cannot remove the lock file; other processes may
 		-- be waiting on our exclusive lock to use it.
 
@@ -139,8 +158,10 @@ hostport2socket host Nothing = hostport2socket' host
 hostport2socket host (Just port) = hostport2socket' $ host ++ "!" ++ show port
 hostport2socket' :: String -> FilePath
 hostport2socket' s
-	| length s > 32 = md5s (Str s)
+	| length s > lengthofmd5s = md5s (Str s)
 	| otherwise = s
+  where
+	lengthofmd5s = 32
 
 socket2lock :: FilePath -> FilePath
 socket2lock socket = socket ++ lockExt

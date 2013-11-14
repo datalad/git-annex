@@ -18,26 +18,30 @@ import Logs.Transfer
 
 import Data.String
 import qualified Data.Text as T
+import qualified Control.Exception as E
 
 #ifdef WITH_WEBAPP
-import Assistant.Monad
 import Assistant.DaemonStatus
 import Assistant.WebApp.Types
-import Assistant.WebApp
+import Assistant.WebApp (renderUrl)
 import Yesod
 #endif
+import Assistant.Monad
+import Assistant.Types.UrlRenderer
 
-{- Makes a button for an alert that opens a Route. The button will
- - close the alert it's attached to when clicked. -}
+{- Makes a button for an alert that opens a Route. 
+ -
+ - If autoclose is set, the button will close the alert it's
+ - attached to when clicked. -}
 #ifdef WITH_WEBAPP
-mkAlertButton :: T.Text -> UrlRenderer -> Route WebApp -> Assistant AlertButton
-mkAlertButton label urlrenderer route = do
+mkAlertButton :: Bool -> T.Text -> UrlRenderer -> Route WebApp -> Assistant AlertButton
+mkAlertButton autoclose label urlrenderer route = do
 	close <- asIO1 removeAlert
 	url <- liftIO $ renderUrl urlrenderer route []
 	return $ AlertButton
 		{ buttonLabel = label
 		, buttonUrl = url
-		, buttonAction = Just close
+		, buttonAction = if autoclose then Just close else Nothing
 		}
 #endif
 
@@ -74,6 +78,22 @@ warningAlert name msg = Alert
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertName = Just $ WarningAlert name
 	, alertButton = Nothing
+	}
+
+errorAlert :: String -> AlertButton -> Alert
+errorAlert msg button = Alert
+	{ alertClass = Error
+	, alertHeader = Nothing
+	, alertMessageRender = renderData
+	, alertData = [UnTensed $ T.pack msg]
+	, alertCounter = 0
+	, alertBlockDisplay = True
+	, alertClosable = True
+	, alertPriority = Pinned
+	, alertIcon = Just ErrorIcon
+	, alertCombiner = Nothing
+	, alertName = Nothing
+	, alertButton = Just button
 	}
 
 activityAlert :: Maybe TenseText -> [TenseChunk] -> Alert
@@ -146,6 +166,63 @@ sanityCheckFixAlert msg = Alert
 	render alert = tenseWords $ alerthead : alertData alert ++ [alertfoot]
 	alerthead = "The daily sanity check found and fixed a problem:"
 	alertfoot = "If these problems persist, consider filing a bug report."
+
+fsckingAlert :: AlertButton -> Maybe Remote -> Alert
+fsckingAlert button mr = baseActivityAlert
+	{ alertData = case mr of
+		Nothing -> [ UnTensed $ T.pack $ "Consistency check in progress" ]
+		Just r -> [ UnTensed $ T.pack $ "Consistency check of " ++ Remote.name r ++ " in progress"]
+	, alertButton = Just button
+	}
+
+showFscking :: UrlRenderer -> Maybe Remote -> IO (Either E.SomeException a) -> Assistant a
+showFscking urlrenderer mr a = do
+#ifdef WITH_WEBAPP
+	button <- mkAlertButton False (T.pack "Configure") urlrenderer ConfigFsckR
+	r <- alertDuring (fsckingAlert button mr) $
+		liftIO a
+#else
+	r <- liftIO a
+#endif
+	either (liftIO . E.throwIO) return r
+
+notFsckedNudge :: UrlRenderer -> Maybe Remote -> Assistant ()
+#ifdef WITH_WEBAPP
+notFsckedNudge urlrenderer mr = do
+	button <- mkAlertButton True (T.pack "Configure") urlrenderer ConfigFsckR
+	void $ addAlert (notFsckedAlert mr button)
+#else
+notFsckedNudge _ _ = noop
+#endif
+
+notFsckedAlert :: Maybe Remote -> AlertButton -> Alert
+notFsckedAlert mr button = Alert
+	{ alertHeader = Just $ fromString $ concat
+		[ "You should enable consistency checking to protect your data"
+		, maybe "" (\r -> " in " ++ Remote.name r) mr
+		, "."
+		]
+	, alertIcon = Just InfoIcon
+	, alertPriority = High
+	, alertButton = Just button
+	, alertClosable = True
+	, alertClass = Message
+	, alertMessageRender = renderData
+	, alertCounter = 0
+	, alertBlockDisplay = True
+	, alertName = Just NotFsckedAlert
+	, alertCombiner = Just $ dataCombiner $ \_old new -> new
+	, alertData = []
+	}
+
+brokenRepositoryAlert :: AlertButton -> Alert
+brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"
+
+repairingAlert :: String -> Alert
+repairingAlert repodesc = activityAlert Nothing
+	[ Tensed "Attempting to repair" "Repaired"
+	, UnTensed $ T.pack repodesc
+	]
 
 pairingAlert :: AlertButton -> Alert
 pairingAlert button = baseActivityAlert

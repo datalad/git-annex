@@ -10,6 +10,7 @@ They cannot be used by other git commands though.
 * [[S3]] (Amazon S3, and other compatible services)
 * [[Amazon_Glacier|glacier]]
 * [[bup]]
+* [[gcrypt]] (encrypted git repositories!)
 * [[directory]]
 * [[rsync]]
 * [[webdav]]
@@ -18,8 +19,16 @@ They cannot be used by other git commands though.
 * [[hook]]
 
 The above special remotes can be used to tie git-annex 
-into many cloud services. Here are specific instructions
-for various cloud things:
+into many cloud services. 
+
+There are many use cases for a special remote. You could use it as a backup. You could use it to archive files offline in a drive with encryption enabled so if the drive is stolen your data is not. You could git annex move --to specialremote large files when your local drive is getting full, and then git annex move the files back when free space is again available. You could have one repository copy files to a special remote, and then git annex get them on another repository, to transfer the files between computers that do not communicate directly. 
+
+The git-annex assistant makes it easy to set up rsync remotes using this last scenario, which is referred to as a transfer repository, and arranges to drop files from the transfer repository once they have been transferred to all known clients.
+
+None of these use cases are particular to particular special remote types. Most special remotes can all be used in these and other ways. It largely doesn't matter for your use what underlying transport the special remote uses.
+
+Here are specific instructions
+for using git-annex with various services:
 
 * [[Amazon_S3|tips/using_Amazon_S3]]
 * [[Amazon_Glacier|tips/using_Amazon_Glacier]]
@@ -34,6 +43,7 @@ for various cloud things:
 * [[Flickr|tips/flickrannex]]
 * [[IMAP|forum/special_remote_for_IMAP]]
 * [[Usenet|forum/nntp__47__usenet special remote]]
+* [chef-vault](https://github.com/3ofcoins/knife-annex/)
 
 ## Unused content on special remotes
 

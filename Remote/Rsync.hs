@@ -7,7 +7,16 @@
 
 {-# LANGUAGE CPP #-}
 
-module Remote.Rsync (remote) where
+module Remote.Rsync (
+	remote,
+	storeEncrypted,
+	retrieveEncrypted,
+	remove,
+	checkPresent,
+	withRsyncScratchDir,
+	genRsyncOpts,
+	RsyncOpts
+) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
@@ -23,6 +32,7 @@ import qualified Git
 import Config
 import Config.Cost
 import Annex.Content
+import Annex.UUID
 import Annex.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
@@ -48,14 +58,15 @@ remote = RemoteType {
 	setup = rsyncSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
-	(transport, url) <- rsyncTransport
-	let o = RsyncOpts url (transport ++ opts) escape
-	    islocal = rsyncUrlIsPath $ rsyncUrl o
-	return $ encryptableRemote c
-		(storeEncrypted o $ getGpgOpts gc)
+	(transport, url) <- rsyncTransport gc $
+		fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
+	let o = genRsyncOpts c gc transport url
+	let islocal = rsyncUrlIsPath $ rsyncUrl o
+	return $ Just $ encryptableRemote c
+		(storeEncrypted o $ getGpgEncParams (c,gc))
 		(retrieveEncrypted o)
 		Remote
 			{ uuid = u
@@ -68,16 +79,21 @@ gen r u c gc = do
 			, hasKey = checkPresent r o
 			, hasKeyCheap = False
 			, whereisKey = Nothing
-			, config = M.empty
+			, remoteFsck = Nothing
+			, repairRepo = Nothing
+			, config = c
 			, repo = r
 			, gitconfig = gc
 			, localpath = if islocal
 				then Just $ rsyncUrl o
 				else Nothing
 			, readonly = False
-			, globallyAvailable = not $ islocal
+			, globallyAvailable = not islocal
 			, remotetype = remote
 			}
+
+genRsyncOpts :: RemoteConfig -> RemoteGitConfig -> [CommandParam] -> RsyncUrl -> RsyncOpts
+genRsyncOpts c gc transport url = RsyncOpts url (transport ++ opts) escape
   where
 	opts = map Param $ filter safe $ remoteAnnexRsyncOptions gc
 	escape = M.lookup "shellescape" c /= Just "no"
@@ -88,31 +104,34 @@ gen r u c gc = do
 		| opt == "--delete" = False
 		| opt == "--delete-excluded" = False
 		| otherwise = True
-	rawurl = fromMaybe (error "missing rsyncurl") $ remoteAnnexRsyncUrl gc
-	(login,resturl) = case separate (=='@') rawurl of
-			(h, "") -> (Nothing, h)
-			(l, h)  -> (Just l, h)
-	loginopt = maybe [] (\l -> ["-l",l]) login
-	fromNull as xs | null xs = as
-		       | otherwise = xs
-	rsyncTransport = if rsyncUrlIsShell rawurl
-		then (\rsh -> return (rsyncShell rsh, resturl)) =<<
-			case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
-				"ssh":sshopts -> do
-					let (port, sshopts') = sshReadPort sshopts
-					    host = takeWhile (/=':') resturl
-					-- Connection caching
-					(Param "ssh":) <$> sshCachingOptions
-						(host, port)
-						(map Param $ loginopt ++ sshopts')
-				"rsh":rshopts -> return $ map Param $ "rsh" :
-					loginopt ++ rshopts
-				rsh -> error $ "Unknown Rsync transport: "
-					++ unwords rsh
-		else return ([], rawurl)
 
-rsyncSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-rsyncSetup u c = do
+rsyncTransport :: RemoteGitConfig -> RsyncUrl -> Annex ([CommandParam], RsyncUrl)
+rsyncTransport gc rawurl
+	| rsyncUrlIsShell rawurl =
+		(\rsh -> return (rsyncShell rsh, resturl)) =<<
+		case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
+			"ssh":sshopts -> do
+				let (port, sshopts') = sshReadPort sshopts
+				    host = takeWhile (/=':') resturl
+				-- Connection caching
+				(Param "ssh":) <$> sshCachingOptions
+					(host, port)
+					(map Param $ loginopt ++ sshopts')
+			"rsh":rshopts -> return $ map Param $ "rsh" :
+				loginopt ++ rshopts
+			rsh -> error $ "Unknown Rsync transport: "
+				++ unwords rsh
+	| otherwise = return ([], rawurl)
+  where
+	(login,resturl) = case separate (=='@') rawurl of
+		(h, "") -> (Nothing, h)
+		(l, h)  -> (Just l, h)
+	loginopt = maybe [] (\l -> ["-l",l]) login
+	fromNull as xs = if null xs then as else xs
+
+rsyncSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+rsyncSetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let url = fromMaybe (error "Specify rsyncurl=") $
 		M.lookup "rsyncurl" c
@@ -121,7 +140,7 @@ rsyncSetup u c = do
 	-- The rsyncurl is stored in git config, not only in this remote's
 	-- persistant state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' "rsyncurl" url
-	return c'
+	return (c', u)
 
 rsyncEscape :: RsyncOpts -> String -> String
 rsyncEscape o s
@@ -137,7 +156,7 @@ rsyncUrls o k = map use annexHashes
 store :: RsyncOpts -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store o k _f p = sendAnnex k (void $ remove o k) $ rsyncSend o p k False
 
-storeEncrypted :: RsyncOpts -> GpgOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted :: RsyncOpts -> [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted o gpgOpts (cipher, enck) k p = withTmp enck $ \tmp ->
 	sendAnnex k (void $ remove o enck) $ \src -> do
 		liftIO $ encrypt gpgOpts cipher (feedFile src) $
@@ -219,7 +238,7 @@ sendParams = ifM crippledFileSystem
 
 {- Runs an action in an empty scratch directory that can be used to build
  - up trees for rsync. -}
-withRsyncScratchDir :: (FilePath -> Annex Bool) -> Annex Bool
+withRsyncScratchDir :: (FilePath -> Annex a) -> Annex a
 withRsyncScratchDir a = do
 #ifndef mingw32_HOST_OS
 	v <- liftIO getProcessID
@@ -245,7 +264,7 @@ rsyncRetrieve o k dest callback =
 		, File dest
 		]
 
-rsyncRemote :: RsyncOpts -> (Maybe MeterUpdate) -> [CommandParam] -> Annex Bool
+rsyncRemote :: RsyncOpts -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
 rsyncRemote o callback params = do
 	showOutput -- make way for progress bar
 	ifM (liftIO $ (maybe rsync rsyncProgress callback) ps)

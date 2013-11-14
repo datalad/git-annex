@@ -12,6 +12,7 @@ module Utility.WebApp where
 import Common
 import Utility.Tmp
 import Utility.FileMode
+import Utility.Hash
 
 import qualified Yesod
 import qualified Network.Wai as Wai
@@ -23,8 +24,7 @@ import System.Log.Logger
 import qualified Data.CaseInsensitive as CI
 import Network.Socket
 import Control.Exception
-import Crypto.Random
-import Data.Digest.Pure.SHA
+import "crypto-api" Crypto.Random
 import qualified Web.ClientSession as CS
 import qualified Data.ByteString.Lazy as L
 import qualified Data.ByteString.Lazy.UTF8 as L8
@@ -214,7 +214,7 @@ genRandomToken = do
 	return $
 		case genBytes 512 g of
 			Left e -> error $ "failed to generate secret token: " ++ show e
-			Right (s, _) -> showDigest $ sha512 $ L.fromChunks [s]
+			Right (s, _) -> show $ sha512 $ L.fromChunks [s]
 
 {- A Yesod isAuthorized method, which checks the auth cgi parameter
  - against a token extracted from the Yesod application.

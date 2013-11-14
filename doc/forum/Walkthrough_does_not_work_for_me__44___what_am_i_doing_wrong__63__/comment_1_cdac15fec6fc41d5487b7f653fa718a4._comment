@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="Default removable storage repo not readable without git annex"
+ date="2013-10-21T08:50:50Z"
+ content="""
+Hi,
+
+Sounds to me you are expecting the files to be readable by a filemanager? By default a removable drive repo is only readable by git-annex.
+
+The standard use case is to move files between computers with git-annex installed. I agree this is not what you´d expect.
+
+Read <http://git-annex.branchable.com/forum/USB_backup_with_files_visible/> and the last post of <http://git-annex.branchable.com/forum/Can__39__t_get_git-annex_merge_to_work_from_git_hook/> for more info.
+"""]]

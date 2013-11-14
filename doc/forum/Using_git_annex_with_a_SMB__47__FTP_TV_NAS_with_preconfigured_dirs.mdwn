@@ -1,0 +1,5 @@
+I've got a Freebox Revolution set-top box / TV NAS at home, with some preconfigured layou for videos, photos and music.
+
+I'd like to use it as a git-annex remote, but am afraid there's no support for FTP (authenticated) or SMB shares exported by the NAS (I don't think it supports other protocols even though runs Linux internally, AFAIK).
+
+Is there any option to store much on that NAS and sync it with git-annex ?

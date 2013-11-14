@@ -24,3 +24,6 @@ As per IRC
     01:04:31 < RichiH> thus i would rather see this upstream and not hacked locally
 
 The only failure mode I see in the above is "file has been dropped elsewhere, numcopies not fulfilled, but that info is not synched to the local repo, yet" -- This could be worked around by always importing the data.
+
+> [[done]] as `git annex import --deduplicate`.
+> --[[Joey]]

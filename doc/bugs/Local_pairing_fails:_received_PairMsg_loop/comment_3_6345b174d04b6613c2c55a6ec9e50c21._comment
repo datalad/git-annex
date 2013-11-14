@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 3"
+ date="2013-11-02T19:02:55Z"
+ content="""
+There is something a little strange in the logs. It shows both Onyx and kubbie are sending PairReqs. Probably one of those is the local computer, logging its own broadcast messages which loop back to it. But normally in pairing, one side starts the pairing process with a PairReq, and the other side pops up an alert and continues the process with a PairAck. It's not normal for both sides to request that pairing start.
+
+Is it possible that you started pairing on both computers separately?
+
+I tried doing that with gnu and darkstar. First I started pairing on gnu. darkstar saw the pair request, but I ignored the alert message about that, and went  and started a separate pairing process on darkstar. gnu never showed an alert message for that; it ignored darkstar's PairReqs since it was sending its own.
+
+It's unlikely you'd ignore the alert, but the same thing could happen if the two computers were not able to communicate over the network initially, and pairing were started on both separately. So neither gets a chance to see the other's PairReq and show the alert. Even when they came into communication, they'd each ignore the other's PairReq.
+
+So, that seems like a bug..
+"""]]

@@ -14,10 +14,6 @@ Copyright: 2011 Bas van Dijk & Roel van Dijk
            2012 Joey Hess <joey@kitenet.net>
 License: GPL-3+
 
-Files: Utility/Gpg/Types.hs
-Copyright: 2013 guilhem <guilhem@fripost.org>
-License: GPL-3+
-
 Files: doc/logo* */favicon.ico standalone/osx/git-annex.app/Contents/Resources/git-annex.icns standalone/android/icons/*
 Copyright: 2007 Henrik Nyh <http://henrik.nyh.se/>
            2010 Joey Hess <joey@kitenet.net>

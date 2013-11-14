@@ -10,11 +10,12 @@
 module Assistant.WebApp.Configurators.Edit where
 
 import Assistant.WebApp.Common
-import Assistant.WebApp.Utility
+import Assistant.WebApp.Gpg
 import Assistant.DaemonStatus
-import Assistant.MakeRemote (uniqueRemoteName)
+import Assistant.WebApp.MakeRemote (uniqueRemoteName)
 import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
 import Assistant.ScanRemotes
+import Assistant.Sync
 import qualified Assistant.WebApp.Configurators.AWS as AWS
 import qualified Assistant.WebApp.Configurators.IA as IA
 #ifdef WITH_S3
@@ -33,6 +34,12 @@ import qualified Git.Command
 import qualified Git.Config
 import qualified Annex
 import Git.Remote
+import Remote.Helper.Encryptable (extractCipher)
+import Types.Crypto
+import Utility.Gpg
+import Annex.UUID
+import Assistant.Ssh
+import Config
 
 import qualified Data.Text as T
 import qualified Data.Map as M
@@ -58,7 +65,7 @@ getRepoConfig uuid mremote = do
 		Nothing -> (RepoGroupCustom $ unwords $ S.toList groups, Nothing)
 		Just g -> (RepoGroupStandard g, associatedDirectory remoteconfig g)
 	
-	description <- maybe Nothing (Just . T.pack) . M.lookup uuid <$> uuidMap
+	description <- fmap T.pack . M.lookup uuid <$> uuidMap
 
 	syncable <- case mremote of
 		Just r -> return $ remoteAnnexSync $ Remote.gitconfig r
@@ -95,7 +102,7 @@ setRepoConfig uuid mremote oldc newc = do
 				, Param $ T.unpack $ repoName oldc
 				, Param name
 				]
-			void $ Remote.remoteListRefresh
+			void Remote.remoteListRefresh
 		liftAssistant updateSyncRemotes
 	when associatedDirectoryChanged $ case repoAssociatedDirectory newc of
 		Nothing -> noop
@@ -116,13 +123,11 @@ setRepoConfig uuid mremote oldc newc = do
 		 - so avoid queueing a duplicate scan. -}
 		when (repoSyncable newc && not syncableChanged) $ liftAssistant $
 			case mremote of
-				Just remote -> do
-					addScanRemotes True [remote]
-				Nothing -> do
-					addScanRemotes True
-						=<< syncDataRemotes <$> getDaemonStatus
+				Just remote -> addScanRemotes True [remote]
+				Nothing -> addScanRemotes True
+					=<< syncDataRemotes <$> getDaemonStatus
 	when syncableChanged $
-		changeSyncable mremote (repoSyncable newc)
+		liftAssistant $ changeSyncable mremote (repoSyncable newc)
   where
   	syncableChanged = repoSyncable oldc /= repoSyncable newc
 	associatedDirectoryChanged = repoAssociatedDirectory oldc /= repoAssociatedDirectory newc
@@ -155,31 +160,34 @@ editRepositoryAForm ishere def = RepoConfig
 		Nothing -> aopt hiddenField "" Nothing
 		Just d -> aopt textField "Associated directory" (Just $ Just d)
 
-getEditRepositoryR :: UUID -> Handler Html
+getEditRepositoryR :: RepoId -> Handler Html
 getEditRepositoryR = postEditRepositoryR
 
-postEditRepositoryR :: UUID -> Handler Html
+postEditRepositoryR :: RepoId -> Handler Html
 postEditRepositoryR = editForm False
 
 getEditNewRepositoryR :: UUID -> Handler Html
 getEditNewRepositoryR = postEditNewRepositoryR
 
 postEditNewRepositoryR :: UUID -> Handler Html
-postEditNewRepositoryR = editForm True
+postEditNewRepositoryR = editForm True . RepoUUID
 
 getEditNewCloudRepositoryR :: UUID -> Handler Html
 getEditNewCloudRepositoryR = postEditNewCloudRepositoryR
 
 postEditNewCloudRepositoryR :: UUID -> Handler Html
-postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True uuid
+postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True (RepoUUID uuid)
 
-editForm :: Bool -> UUID -> Handler Html
-editForm new uuid = page "Edit repository" (Just Configuration) $ do
+editForm :: Bool -> RepoId -> Handler Html
+editForm new (RepoUUID uuid) = page "Edit repository" (Just Configuration) $ do
 	mremote <- liftAnnex $ Remote.remoteFromUUID uuid
+	when (mremote == Nothing) $
+		whenM ((/=) uuid <$> liftAnnex getUUID) $
+			error "unknown remote"
 	curr <- liftAnnex $ getRepoConfig uuid mremote
 	liftAnnex $ checkAssociatedDirectory curr mremote
 	((result, form), enctype) <- liftH $
-		runFormPost $ renderBootstrap $ editRepositoryAForm (isNothing mremote) curr
+		runFormPostNoToken $ renderBootstrap $ editRepositoryAForm (isNothing mremote) curr
 	case result of
 		FormSuccess input -> liftH $ do
 			setRepoConfig uuid mremote curr input
@@ -187,9 +195,16 @@ editForm new uuid = page "Edit repository" (Just Configuration) $ do
 			redirect DashboardR
 		_ -> do
 			let istransfer = repoGroup curr == RepoGroupStandard TransferGroup
-			repoInfo <- getRepoInfo mremote . M.lookup uuid
-				<$> liftAnnex readRemoteLog
-			$(widgetFile "configurators/editrepository")
+			config <- liftAnnex $ M.lookup uuid <$> readRemoteLog
+			let repoInfo = getRepoInfo mremote config
+			let repoEncryption = getRepoEncryption mremote config
+			$(widgetFile "configurators/edit/repository")
+editForm new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
+	mr <- liftAnnex (repoIdRemote r)
+	let repoInfo = getRepoInfo mr Nothing
+	g <- liftAnnex gitRepo
+	let sshrepo = maybe False (remoteLocationIsSshUrl . flip parseRemoteLocation g . Git.repoLocation . Remote.repo) mr
+	$(widgetFile "configurators/edit/nonannexremote")
 
 {- Makes any directory associated with the repository. -}
 checkAssociatedDirectory :: RepoConfig -> Maybe Remote -> Annex ()
@@ -221,3 +236,34 @@ getGitRepoInfo :: Git.Repo -> Widget
 getGitRepoInfo r = do
 	let loc = Git.repoLocation r
 	[whamlet|git repository located at <tt>#{loc}</tt>|]
+
+getRepoEncryption :: Maybe Remote.Remote -> Maybe Remote.RemoteConfig -> Widget
+getRepoEncryption (Just _) (Just c) = case extractCipher c of
+  	Nothing ->
+		[whamlet|not encrypted|]
+	(Just (SharedCipher _)) ->
+		[whamlet|encrypted: encryption key stored in git repository|]
+	(Just (EncryptedCipher _ _ (KeyIds { keyIds = ks }))) -> do
+		knownkeys <- liftIO secretKeys
+		[whamlet|
+encrypted using gpg key:
+<ul style="list-style: none">
+  $forall k <- ks
+    <li>
+      ^{gpgKeyDisplay k (M.lookup k knownkeys)}
+|]
+getRepoEncryption _ _ = return () -- local repo
+
+getUpgradeRepositoryR  :: RepoId -> Handler ()
+getUpgradeRepositoryR (RepoUUID _) = redirect DashboardR
+getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
+  where
+  	go Nothing = redirect DashboardR
+	go (Just rmt) = do
+		liftIO fixSshKeyPair
+		liftAnnex $ setConfig 
+			(remoteConfig (Remote.repo rmt) "ignore")
+			(Git.Config.boolConfig False)
+		liftAssistant $ syncRemote rmt
+		liftAnnex $ void Remote.remoteListRefresh
+		redirect DashboardR

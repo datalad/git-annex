@@ -77,4 +77,8 @@ Any thoughts on how I can get git-annex (esp. fsck) to complete would be appreci
 Thanks
 Giovanni
 
-[[!tag moreinfo]]
+> [[fixed|done]]. However, if you saw this behavior,
+> you have large files checked directly into git. You may
+> want to examine your repository and use git filter-branch to clean
+> it up.
+> --[[Joey]] 

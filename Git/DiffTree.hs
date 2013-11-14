@@ -10,6 +10,7 @@ module Git.DiffTree (
 	diffTree,
 	diffTreeRecursive,
 	diffIndex,
+	diffWorkTree,
 ) where
 
 import Numeric
@@ -19,6 +20,7 @@ import Common
 import Git
 import Git.Sha
 import Git.Command
+import Git.FilePath
 import qualified Git.Filename
 import qualified Git.Ref
 
@@ -28,7 +30,7 @@ data DiffTreeItem = DiffTreeItem
 	, srcsha :: Sha -- nullSha if file was added
 	, dstsha :: Sha -- nullSha if file was deleted
 	, status :: String
-	, file :: FilePath
+	, file :: TopFilePath
 	} deriving Show
 
 {- Diffs two tree Refs. -}
@@ -41,15 +43,26 @@ diffTreeRecursive :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffTreeRecursive src dst = getdiff (Param "diff-tree")
 	[Param "-r", Param (show src), Param (show dst)]
 
-{- Diffs between the repository and index. Does nothing if there is not
- - yet a commit in the repository. -}
-diffIndex :: Repo -> IO ([DiffTreeItem], IO Bool)
-diffIndex repo = do
+{- Diffs between a tree and the index. Does nothing if there is not yet a
+ - commit in the repository. -}
+diffIndex :: Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffIndex ref = diffIndex' ref [Param "--cached"]
+
+{- Diffs between a tree and the working tree. Does nothing if there is not
+ - yet a commit in the repository, of if the repository is bare. -}
+diffWorkTree :: Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffWorkTree ref repo =
+	ifM (Git.Ref.headExists repo)
+                ( diffIndex' ref [] repo
+		, return ([], return True)
+		)
+
+diffIndex' :: Ref -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
+diffIndex' ref params repo =
 	ifM (Git.Ref.headExists repo)
 		( getdiff (Param "diff-index")
-			[ Param "--cached"
-			, Param $ show Git.Ref.headRef
-			] repo
+			( params ++ [Param $ show ref] )
+			repo
 		, return ([], return True)
 		)
 
@@ -74,7 +87,7 @@ parseDiffTree l = go l []
 		, srcsha = fromMaybe (error "bad srcsha") $ extractSha ssha
 		, dstsha = fromMaybe (error "bad dstsha") $ extractSha dsha
 		, status = s
-		, file = Git.Filename.decode f
+		, file = asTopFilePath $ Git.Filename.decode f
 		}
 	  where
 		readmode = fst . Prelude.head . readOct

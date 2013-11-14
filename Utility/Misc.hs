@@ -29,7 +29,7 @@ hGetContentsStrict = hGetContents >=> \s -> length s `seq` return s
 readFileStrict :: FilePath -> IO String
 readFileStrict = readFile >=> \s -> length s `seq` return s
 
-{- Like break, but the character matching the condition is not included
+{- Like break, but the item matching the condition is not included
  - in the second result list.
  -
  - separate (== ':') "foo:bar" = ("foo", "bar")

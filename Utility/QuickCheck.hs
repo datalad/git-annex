@@ -43,3 +43,6 @@ instance Arbitrary FileOffset where
 
 nonNegative :: (Num a, Ord a) => Gen a -> Gen a
 nonNegative g = g `suchThat` (>= 0)
+
+positive :: (Num a, Ord a) => Gen a -> Gen a
+positive g = g `suchThat` (> 0)

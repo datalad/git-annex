@@ -21,21 +21,22 @@ import Common.Annex
 import Command
 import Logs.Unused
 import Annex.Content
-import Utility.FileMode
 import Logs.Location
 import Logs.Transfer
 import qualified Annex
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
+import qualified Git.Branch
 import qualified Git.LsFiles as LsFiles
-import qualified Git.LsTree as LsTree
+import qualified Git.DiffTree as DiffTree
 import qualified Backend
 import qualified Remote
 import qualified Annex.Branch
 import qualified Option
 import Annex.CatFile
 import Types.Key
+import Git.FilePath
 
 def :: [Command]
 def = [withOptions [fromOption] $ command "unused" paramNothing seek
@@ -241,7 +242,7 @@ withKeysReferenced' mdir initial a = do
 			( return ([], return True)
 			, do
 				top <- fromRepo Git.repoPath
-				inRepo $ LsFiles.inRepo [top]
+				inRepo $ LsFiles.allFiles [top]
 			)
 		Just dir -> inRepo $ LsFiles.inRepo [dir]
 	go v [] = return v
@@ -255,35 +256,47 @@ withKeysReferenced' mdir initial a = do
 
 withKeysReferencedInGit :: (Key -> Annex ()) -> Annex ()
 withKeysReferencedInGit a = do
-	rs <- relevantrefs <$> showref
-	forM_ rs (withKeysReferencedInGitRef a)
+	current <- inRepo Git.Branch.currentUnsafe
+	shaHead <- maybe (return Nothing) (inRepo . Git.Ref.sha) current
+	showref >>= mapM_ (withKeysReferencedInGitRef a) .
+			relevantrefs (shaHead, current)
   where
 	showref = inRepo $ Git.Command.pipeReadStrict [Param "show-ref"]
-	relevantrefs = map (Git.Ref .  snd) .
-		nubBy uniqref .
+	relevantrefs headRef = addHead headRef .
 		filter ourbranches .
-		map (separate (== ' ')) . lines
-	uniqref (x, _) (y, _) = x == y
+		map (separate (== ' ')) .
+		lines
+	nubRefs = map (Git.Ref . snd) . nubBy (\(x, _) (y, _) -> x == y)
 	ourbranchend = '/' : show Annex.Branch.name
 	ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
 		&& not ("refs/synced/" `isPrefixOf` b)
+	addHead headRef refs = case headRef of
+		-- if HEAD diverges from all branches (except the branch it
+		-- points to), run the actions on staged keys (and keys
+		-- that are only present in the work tree if the repo is
+		-- non bare)
+		(Just (Git.Ref x), Just (Git.Ref b))
+			| all (\(x',b') -> x /= x' || b == b') refs ->
+				Git.Ref.headRef
+				: nubRefs (filter ((/= x) . fst) refs)
+		_ -> nubRefs refs
 
+{- Runs an action on keys referenced in the given Git reference which
+ - differ from those referenced in the index. -}
 withKeysReferencedInGitRef :: (Key -> Annex ()) -> Git.Ref -> Annex ()
 withKeysReferencedInGitRef a ref = do
 	showAction $ "checking " ++ Git.Ref.describe ref
-	go <=< inRepo $ LsTree.lsTree ref
+	bare <- isBareRepo
+	(ts,clean) <- inRepo $ if bare
+			then DiffTree.diffIndex ref
+			else DiffTree.diffWorkTree ref
+	let lookAtWorkingTree = not bare && ref == Git.Ref.headRef
+	forM_ ts $ tKey lookAtWorkingTree >=> maybe noop a
+	liftIO $ void clean
   where
-	go [] = noop
-	go (l:ls)
-		| isSymLink (LsTree.mode l) = do
-			content <- encodeW8 . L.unpack
-				<$> catFile ref (LsTree.file l)
-			case fileKey (takeFileName content) of
-				Nothing -> go ls
-				Just k -> do
-					a k
-					go ls
-		| otherwise = go ls
+	tKey True = fmap fst <$$> Backend.lookupFile . getTopFilePath . DiffTree.file
+	tKey False = fileKey . takeFileName . encodeW8 . L.unpack <$$>
+		catFile ref . getTopFilePath . DiffTree.file
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list
  - of those that might still have value, or might be stale and removable.
@@ -292,7 +305,7 @@ withKeysReferencedInGitRef a ref = do
  -}
 staleKeysPrune :: (Git.Repo -> FilePath) -> Bool -> Annex [Key]
 staleKeysPrune dirspec nottransferred = do
-	contents <- staleKeys dirspec
+	contents <- dirKeys dirspec
 	
 	dups <- filterM inAnnex contents
 	let stale = contents `exclude` dups
@@ -306,18 +319,6 @@ staleKeysPrune dirspec nottransferred = do
 				<$> getTransfers
 			return $ filter (`S.notMember` inprogress) stale
 		else return stale
-
-staleKeys :: (Git.Repo -> FilePath) -> Annex [Key]
-staleKeys dirspec = do
-	dir <- fromRepo dirspec
-	ifM (liftIO $ doesDirectoryExist dir)
-		( do
-			contents <- liftIO $ getDirectoryContents dir
-			files <- liftIO $ filterM doesFileExist $
-				map (dir </>) contents
-			return $ mapMaybe (fileKey . takeFileName) files
-		, return []
-		)
 
 data UnusedMaps = UnusedMaps
 	{ unusedMap :: UnusedMap

@@ -8,14 +8,19 @@
 module Annex.Direct where
 
 import Common.Annex
+import qualified Annex
 import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Merge
 import qualified Git.DiffTree as DiffTree
+import qualified Git.Config
+import qualified Git.Ref
+import qualified Git.Branch
 import Git.Sha
+import Git.FilePath
 import Git.Types
+import Config
 import Annex.CatFile
-import Utility.FileMode
 import qualified Annex.Queue
 import Logs.Location
 import Backend
@@ -45,8 +50,8 @@ stageDirect = do
 	{- Determine what kind of modified or deleted file this is, as
 	 - efficiently as we can, by getting any key that's associated
 	 - with it in git, as well as its stat info. -}
-	go (file, Just sha) = do
-		shakey <- catKey sha
+	go (file, Just sha, Just mode) = do
+		shakey <- catKey sha mode
 		mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 		filekey <- isAnnexLink file
 		case (shakey, filekey, mstat, toInodeCache =<< mstat) of
@@ -123,6 +128,8 @@ addDirect file cache = do
  -}
 mergeDirect :: FilePath -> Git.Ref -> Git.Repo -> IO Bool
 mergeDirect d branch g = do
+	whenM (doesDirectoryExist d) $
+		removeDirectoryRecursive d
 	createDirectoryIfMissing True d
 	let g' = g { location = Local { gitdir = Git.localGitDir g, worktree = Just d } }
 	Git.Merge.mergeNonInteractive branch g'
@@ -135,23 +142,22 @@ mergeDirect d branch g = do
 mergeDirectCleanup :: FilePath -> Git.Ref -> Git.Ref -> Annex ()
 mergeDirectCleanup d oldsha newsha = do
 	(items, cleanup) <- inRepo $ DiffTree.diffTreeRecursive oldsha newsha
-	forM_ items updated
+	makeabs <- flip fromTopFilePath <$> gitRepo
+	forM_ items (updated makeabs)
 	void $ liftIO cleanup
 	liftIO $ removeDirectoryRecursive d
   where
-	updated item = do
+	updated makeabs item = do
+		let f = makeabs (DiffTree.file item)
 		void $ tryAnnex $
-			go DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
+			go f DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
 		void $ tryAnnex $ 
-			go DiffTree.dstsha DiffTree.dstmode movein movein_raw
+			go f DiffTree.dstsha DiffTree.dstmode movein movein_raw
 	  where
-		go getsha getmode a araw
+		go f getsha getmode a araw
 			| getsha item == nullSha = noop
-			| isSymLink (getmode item) =
-				maybe (araw f) (\k -> void $ a k f)
-					=<< catKey (getsha item)
-			| otherwise = araw f
-		f = DiffTree.file item
+			| otherwise = maybe (araw f) (\k -> void $ a k f)
+					=<< catKey (getsha item) (getmode item)
 
 	moveout = removeDirect
 
@@ -230,3 +236,66 @@ changedDirect oldk f = do
 	locs <- removeAssociatedFile oldk f
 	whenM (pure (null locs) <&&> not <$> inAnnex oldk) $
 		logStatus oldk InfoMissing
+
+{- Enable/disable direct mode. -}
+setDirect :: Bool -> Annex ()
+setDirect wantdirect = do
+	if wantdirect
+		then do
+			switchHEAD
+			setbare
+		else do
+			setbare
+			switchHEADBack
+	setConfig (annexConfig "direct") val
+	Annex.changeGitConfig $ \c -> c { annexDirect = wantdirect }
+  where
+	val = Git.Config.boolConfig wantdirect
+	setbare = setConfig (ConfigKey Git.Config.coreBare) val
+
+{- Since direct mode sets core.bare=true, incoming pushes could change
+ - the currently checked out branch. To avoid this problem, HEAD
+ - is changed to a internal ref that nothing is going to push to.
+ -
+ - For refs/heads/master, use refs/heads/annex/direct/master;
+ - this way things that show HEAD (eg shell prompts) will
+ - hopefully show just "master". -}
+directBranch :: Ref -> Ref
+directBranch orighead = case split "/" $ show orighead of
+	("refs":"heads":"annex":"direct":_) -> orighead
+	("refs":"heads":rest) ->
+		Ref $ "refs/heads/annex/direct/" ++ intercalate "/" rest
+	_ -> Ref $ "refs/heads/" ++ show (Git.Ref.base orighead)
+
+{- Converts a directBranch back to the original branch.
+ -
+ - Any other ref is left unchanged.
+ -}
+fromDirectBranch :: Ref -> Ref
+fromDirectBranch directhead = case split "/" $ show directhead of
+	("refs":"heads":"annex":"direct":rest) -> 
+		Ref $ "refs/heads/" ++ intercalate "/" rest
+	_ -> directhead
+
+switchHEAD :: Annex ()
+switchHEAD = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
+  where
+	switch orighead = do
+		let newhead = directBranch orighead
+		maybe noop (inRepo . Git.Branch.update newhead)
+			=<< inRepo (Git.Ref.sha orighead)
+		inRepo $ Git.Branch.checkout newhead
+
+switchHEADBack :: Annex ()
+switchHEADBack = maybe noop switch =<< inRepo Git.Branch.currentUnsafe
+  where
+	switch currhead = do
+		let orighead = fromDirectBranch currhead
+		v <- inRepo $ Git.Ref.sha currhead
+		case v of
+			Just headsha
+				| orighead /= currhead -> do
+					inRepo $ Git.Branch.update orighead headsha
+					inRepo $ Git.Branch.checkout orighead
+					inRepo $ Git.Branch.delete currhead
+			_ -> inRepo $ Git.Branch.checkout orighead

@@ -10,6 +10,7 @@ module Remote.Bup (remote) where
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import System.Process
+import Data.ByteString.Lazy.UTF8 (fromString)
 
 import Common.Annex
 import Types.Remote
@@ -21,14 +22,15 @@ import qualified Git.Construct
 import qualified Git.Ref
 import Config
 import Config.Cost
-import Remote.Helper.Ssh
+import qualified Remote.Helper.Ssh as Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
+import Remote.Helper.Messages
 import Crypto
-import Data.ByteString.Lazy.UTF8 (fromString)
-import Data.Digest.Pure.SHA
+import Utility.Hash
 import Utility.UserInfo
 import Annex.Content
+import Annex.UUID
 import Utility.Metered
 
 type BupRepo = String
@@ -41,7 +43,7 @@ remote = RemoteType {
 	setup = bupSetup
 }
 
-gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex Remote
+gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	bupr <- liftIO $ bup2GitRemote buprepo
 	cst <- remoteCost gc $
@@ -61,6 +63,8 @@ gen r u c gc = do
 		, hasKey = checkPresent r bupr'
 		, hasKeyCheap = bupLocal buprepo
 		, whereisKey = Nothing
+		, remoteFsck = Nothing
+		, repairRepo = Nothing
 		, config = c
 		, repo = r
 		, gitconfig = gc
@@ -71,15 +75,17 @@ gen r u c gc = do
 		, globallyAvailable = not $ bupLocal buprepo
 		, readonly = False
 		}
-	return $ encryptableRemote c
+	return $ Just $ encryptableRemote c
 		(storeEncrypted new buprepo)
 		(retrieveEncrypted buprepo)
 		new
   where
 	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
 
-bupSetup :: UUID -> RemoteConfig -> Annex RemoteConfig
-bupSetup u c = do
+bupSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+bupSetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
+
 	-- verify configuration is sane
 	let buprepo = fromMaybe (error "Specify buprepo=") $
 		M.lookup "buprepo" c
@@ -96,7 +102,7 @@ bupSetup u c = do
 	-- persistant state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' "buprepo" buprepo
 
-	return c'
+	return (c', u)
 
 bupParams :: String -> BupRepo -> [CommandParam] -> [CommandParam]
 bupParams command buprepo params = 
@@ -133,7 +139,7 @@ storeEncrypted r buprepo (cipher, enck) k _p =
 	sendAnnex k (rollback enck buprepo) $ \src -> do
 		params <- bupSplitParams r buprepo enck []
 		liftIO $ catchBoolIO $
-			encrypt (getGpgOpts r) cipher (feedFile src) $ \h ->
+			encrypt (getGpgEncParams r) cipher (feedFile src) $ \h ->
 				pipeBup params (Just h) Nothing
 
 retrieve :: BupRepo -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
@@ -182,7 +188,7 @@ rollback k bupr = go =<< liftIO (bup2GitRemote bupr)
 checkPresent :: Git.Repo -> Git.Repo -> Key -> Annex (Either String Bool)
 checkPresent r bupr k
 	| Git.repoIsUrl bupr = do
-		showAction $ "checking " ++ Git.repoDescribe r
+		showChecking r
 		ok <- onBupRemote bupr boolSystem "git" params
 		return $ Right ok
 	| otherwise = liftIO $ catchMsgIO $
@@ -217,7 +223,7 @@ storeBupUUID u buprepo = do
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
 onBupRemote r a command params = do
-	sshparams <- sshToRepo r [Param $
+	sshparams <- Ssh.toRepo r [Param $
 			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
 	liftIO $ a "ssh" sshparams
   where
@@ -274,7 +280,7 @@ bup2GitRemote r
 bupRef :: Key -> String
 bupRef k
 	| Git.Ref.legal True shown = shown
-	| otherwise = "git-annex-" ++ showDigest (sha256 (fromString shown))
+	| otherwise = "git-annex-" ++ show (sha256 (fromString shown))
   where
 	shown = key2file k
 
