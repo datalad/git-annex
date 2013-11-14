@@ -8,7 +8,7 @@ Expected: B.f is gone, A.f is still present
 
 ### What steps will reproduce the problem?
 
-# setting up stuff
+// setting up stuff
 test/a$ git init
 test/a$ git annex init
 test/a$ git annex direct
@@ -18,7 +18,7 @@ $ git clone test/a
 $ mv a test/b
 test/b$ git annex direct
 
-# actual scenario
+// actual scenario
 test/b$ echo bbbb > f
 test/b$ git annex add f
 test/b$ git annex sync
@@ -29,7 +29,7 @@ test/a$ git annex sync
 test/b$ rm f
 test/b$ git annex sync
 test/a$ git annex sync
-# test/a/f is now gone, lost
+// test/a/f is now gone, lost
 
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 4.20131031-g7d99d14
