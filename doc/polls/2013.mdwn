@@ -1,5 +1,5 @@
-[[!meta title="2013 git-annex user survey"]]
+This has moved to a separate site due to load issues.
 
-In progress! Check back later for more polls, or follow RSS feed.
+<http://git-annex-survey.branchable.com/polls/2013/>
 
-[[!inline pages="page(polls/2013/*)" trail=yes archive=yes reverse=true]]
+Any votes you made here were carried over, so no need to vote twice!
