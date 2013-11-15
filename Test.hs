@@ -803,8 +803,16 @@ test_mixed_conflict_resolution env = do
 			let r = if inr1 then r1 else r2
 			indir env r $ do
 				git_annex env "sync" [] @? "sync failed in mixed conflict"
+			checkmerge r1
+			checkmerge r2
 	  where
 		conflictor = "conflictor"
+		variantprefix = conflictor ++ ".variant"
+		checkmerge d = do
+			doesDirectoryExist (d </> conflictor) @? (d ++ " conflictor directory missing")
+			(any (variantprefix `isPrefixOf`) 
+				<$> getDirectoryContents d)
+				@? (d ++ "conflictor file missing")
 
 {- Set up repos as remotes of each other;
  - remove origin since we're going to sync
