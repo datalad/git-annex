@@ -13,12 +13,14 @@ module Annex.Perms (
 	createContentDir,
 	freezeContentDir,
 	thawContentDir,
+	modifyContent,
 ) where
 
 import Common.Annex
 import Utility.FileMode
 import Git.SharedRepository
 import qualified Annex
+import Annex.Exception
 import Config
 
 import System.Posix.Types
@@ -103,3 +105,13 @@ createContentDir dest = do
 		liftIO $ allowWrite dir
   where
 	dir = parentDir dest
+
+{- Creates the content directory for a file if it doesn't already exist,
+ - or thaws it if it does, then runs an action to modify the file, and
+ - finally, freezes the content directory. -}
+modifyContent :: FilePath -> Annex a -> Annex a
+modifyContent f a = do
+	createContentDir f -- also thaws it
+	v <- tryAnnex a
+	freezeContentDir f
+	either throwAnnex return v

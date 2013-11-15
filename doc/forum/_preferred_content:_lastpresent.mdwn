@@ -1,0 +1,1 @@
+Is there any kind of "lastpresent" in the preferred-content expression? If set, git-annex would see if "git log --follow $path -n 1" (or some configurable -n) was present.
