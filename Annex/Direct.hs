@@ -138,28 +138,33 @@ mergeDirect d branch g = do
  - and the commit sha passed in, along with the old sha of the tree
  - before the merge. Uses git diff-tree to find files that changed between
  - the two shas, and applies those changes to the work tree.
+ -
+ - There are really only two types of changes: An old item can be deleted,
+ - or a new item added. Two passes are made, first deleting and then
+ - adding. This is to handle cases where eg, a file is deleted and a
+ - directory is added. The diff-tree output may list these in the opposite
+ - order, but we cannot really add the directory until the file with the
+ - same name is remvoed.
  -}
 mergeDirectCleanup :: FilePath -> Git.Ref -> Git.Ref -> Annex ()
 mergeDirectCleanup d oldsha newsha = do
 	(items, cleanup) <- inRepo $ DiffTree.diffTreeRecursive oldsha newsha
 	makeabs <- flip fromTopFilePath <$> gitRepo
-	forM_ items (updated makeabs)
+	let fsitems = zip (map (makeabs . DiffTree.file) items) items
+	forM_ fsitems $
+		go DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
+	forM_ fsitems $
+		go DiffTree.dstsha DiffTree.dstmode movein movein_raw
 	void $ liftIO cleanup
 	liftIO $ removeDirectoryRecursive d
   where
-	updated makeabs item = do
-		let f = makeabs (DiffTree.file item)
-		void $ tryAnnex $
-			go f DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
-		void $ tryAnnex $ 
-			go f DiffTree.dstsha DiffTree.dstmode movein movein_raw
-	  where
-		go f getsha getmode a araw
-			| getsha item == nullSha = noop
-			| otherwise = maybe (araw f) (\k -> void $ a k f)
-					=<< catKey (getsha item) (getmode item)
+	go getsha getmode a araw (f, item)
+		| getsha item == nullSha = noop
+		| otherwise = void $
+			tryAnnex . maybe (araw f) (\k -> void $ a k f)
+				=<< catKey (getsha item) (getmode item)
 
-	moveout = removeDirect
+	moveout k f = removeDirect k f
 
 	{- Files deleted by the merge are removed from the work tree.
 	 - Empty work tree directories are removed, per git behavior. -}

@@ -40,3 +40,5 @@ remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
 
 Linux ceilingcat 3.11.6-1-ARCH #1 SMP PREEMPT Fri Oct 18 23:22:36 CEST 2013 x86_64 GNU/Linux
 """]]
+
+> [[fixed|done]] --[[Joey]]
