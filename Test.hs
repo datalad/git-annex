@@ -78,7 +78,7 @@ main = do
 	indirectenv <- prepare False
 	directenv <- prepare True
 	let tests = testGroup "Tests"
-		[ properties
+		[ localOption (QuickCheckTests 1000) properties
 		, unitTests indirectenv "(indirect)"
 		, unitTests directenv "(direct)"
 		]
