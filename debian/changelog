@@ -30,10 +30,11 @@ git-annex (5.20131102) UNRELEASED; urgency=low
   * Fix direct mode merge bug when a direct mode file was deleted and replaced
     with a directory. An ordering problem caused the directory to not get
     created in this case.
-    Thanks to Tim for the test cases.
+    Thanks to Tim for the test case.
   * Direct mode .git/annex/objects directories are no longer left writable,
     because that allowed writing to symlinks of files that are not present,
     which followed the link and put bad content in an object location.
+    Thanks to Tim for the test case.
   * fsck: Fix up .git/annex/object directory permissions.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 16:14:14 -0400
