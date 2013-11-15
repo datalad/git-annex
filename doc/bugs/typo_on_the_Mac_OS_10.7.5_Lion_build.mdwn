@@ -7,3 +7,5 @@ As told in http://git-annex.branchable.com/bugs/OSX_app_issues/#comment-2a69d531
 Manually editing /Applications/git-annex.app/Contents/MacOS/runshell as told in http://git-annex.branchable.com/bugs/OSX_app_issues/#comment-5579c2150ad4d2ccc207a253fe57612a fixes the issue.
 
 Furthermore, this build is quite outdated...
+
+> [[fixed|done]] --[[Joey]] 
