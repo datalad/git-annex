@@ -13,7 +13,6 @@ import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
-import Test.HUnit
 
 import System.PosixCompat.Files
 import Control.Exception.Extensible
@@ -89,7 +88,14 @@ main = do
 	let tests = testGroup "Tests"
 		[properties, unitTests env ""]
 #endif
-	runUI mempty tests =<< launchTestTree mempty tests
+	let runner = tryIngredients [consoleTestReporter] mempty tests
+	ifM (maybe (error "tasty failed to return a runner!") id runner)
+		( exitSuccess
+		, do
+			putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
+			putStrLn "   with utilities, such as git, installed on this system.)"
+			exitFailure
+		)
 
 properties :: TestTree
 properties = testGroup "QuickCheck"
@@ -158,7 +164,7 @@ unitTests env note = testGroup ("Unit Tests " ++ note)
 	, check "version" test_version
 	, check "sync" test_sync
 	, check "union merge regression" test_union_merge_regression
-	, check "conflict resolution" test_conflict_resolution
+	, check "conflict resolution" test_conflict_resolution_movein_bug
 	, check "conflict_resolution (mixed directory and file)" test_mixed_conflict_resolution
 	, check "map" test_map
 	, check "uninit" test_uninit
@@ -177,7 +183,7 @@ unitTests env note = testGroup ("Unit Tests " ++ note)
 	check desc t = testCase desc (t env)
 
 test_global_cleanup :: TestEnv -> Assertion
-test_global_cleanup env = cleanup tmpdir
+test_global_cleanup _env = cleanup tmpdir
 
 test_init :: TestEnv -> Assertion
 test_init env = innewrepo env $ do
@@ -291,7 +297,7 @@ test_drop_withremote env = intmpclonerepo env $ do
 	inmainrepo env $ annexed_present annexedfile
 
 test_drop_untrustedremote :: TestEnv -> Assertion
-test_drop_untruestedremote env = intmpclonerepo env $ do
+test_drop_untrustedremote env = intmpclonerepo env $ do
 	git_annex env "untrust" ["origin"] @? "untrust of origin failed"
 	git_annex env "get" [annexedfile] @? "get failed"
 	annexed_present annexedfile
@@ -507,8 +513,8 @@ test_fsck_basic env = intmpclonerepo env $ do
 	boolSystem "git" [Params "config annex.numcopies 2"] @? "git config failed"
 	fsck_should_fail env "numcopies unsatisfied"
 	boolSystem "git" [Params "config annex.numcopies 1"] @? "git config failed"
-	corrupt env annexedfile
-	corrupt env sha1annexedfile
+	corrupt annexedfile
+	corrupt sha1annexedfile
   where
 	corrupt f = do
 		git_annex env "get" [f] @? "get of file failed"
@@ -744,7 +750,7 @@ test_union_merge_regression env =
 
 {- Regression test for the automatic conflict resolution bug fixed
  - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
-test_conflict_resolution :: TestEnv -> Assertion
+test_conflict_resolution_movein_bug :: TestEnv -> Assertion
 test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 -> do
 	withtmpclonerepo env False $ \r2 -> do
 		let rname r = if r == r1 then "r1" else "r2"
