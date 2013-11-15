@@ -210,11 +210,11 @@ toDirectGen k f = do
   where
   	fromindirect loc = do
 		{- Move content from annex to direct file. -}
-		thawContentDir loc
 		updateInodeCache k loc
 		void $ addAssociatedFile k f
-		thawContent loc
-		replaceFile f $ liftIO . moveFile loc
+		modifyContent loc $ do
+			thawContent loc
+			replaceFile f $ liftIO . moveFile loc
 	fromdirect loc = do
 		replaceFile f $
 			liftIO . void . copyFileExternal loc
