@@ -36,6 +36,7 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     which followed the link and put bad content in an object location.
     Thanks to Tim for the test case.
   * fsck: Fix up .git/annex/object directory permissions.
+  * Switched to the tasty test framework.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 16:14:14 -0400
 
