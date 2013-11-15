@@ -1,1 +1,0 @@
-In the same idea than https://git-annex.branchable.com/todo/Check_if_an_upgrade_is_available_in_the_webapp/, it would be great to be able to download and install git-annex upgrades directly from the webapp.
