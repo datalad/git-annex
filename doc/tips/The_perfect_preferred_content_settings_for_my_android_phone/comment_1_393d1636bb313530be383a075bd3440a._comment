@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 1"
+ date="2013-11-16T17:29:03Z"
+ content="""
+That's great, that's how I hoped people would be able to use preferred content settings.
+
+I'd suggest adding support for archive directories to this. So if you create a file on the phone and are done with it, you can move it to an archive directory, and it will then be dropped from the phone once it reaches an archive repository. 
+
+This should accomplish that. (Untested)
+
+((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and (include=Music/* or include=Books/* or present)
+"""]]
