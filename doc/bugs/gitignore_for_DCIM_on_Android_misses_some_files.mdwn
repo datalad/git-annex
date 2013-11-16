@@ -13,3 +13,5 @@ Create a repo
 Nightly build for Android from yesterday (2013-11-16)
 
 ### Please provide any additional information below.
+
+> [[fixed|done]] --[[Joey]]

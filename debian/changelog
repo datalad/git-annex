@@ -37,6 +37,8 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     Thanks to Tim for the test case.
   * fsck: Fix up .git/annex/object directory permissions.
   * Switched to the tasty test framework.
+  * Android: Adjust default .gitignore to ignore .thumbnails at any location
+    in the tree, not just at its top.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 16:14:14 -0400
 

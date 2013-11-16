@@ -168,7 +168,7 @@ getAndroidCameraRepositoryR =
   where
   	addignore = do
 		liftIO $ unlessM (doesFileExist ".gitignore") $
-			writeFile ".gitignore" ".thumbnails/*"
+			writeFile ".gitignore" ".thumbnails"
 		void $ inRepo $
 			Git.Command.runBool [Param "add", File ".gitignore"]
 
