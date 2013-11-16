@@ -10,5 +10,5 @@ I'd suggest adding support for archive directories to this. So if you create a f
 
 This should accomplish that. (Untested)
 
-((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and (include=Music/* or include=Books/* or present)
+`((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and (include=Music/* or include=Books/* or present)`
 """]]
