@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="David"
+ ip="178.21.48.117"
+ subject="comment 8"
+ date="2013-11-16T23:09:32Z"
+ content="""
+Okay. One last question. Could you please help me understand how this sync works now? 
+
+So for example if I save a file on server1, it gets pushed to server2's repository. But how is it translated back to a normal file from the repository?
+
+And in this case will this file be on server2's repository as well (so are there 2 copies on server2, one in the repository and one human-readabl)?
+
+Thanks!
+"""]]
