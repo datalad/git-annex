@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="David"
+ ip="178.21.48.117"
+ subject="still need some clarification"
+ date="2013-11-16T22:31:24Z"
+ content="""
+Hey,
+
+Yes, you were right. The ssh user did not have privileges to read/write the folder. Now I have corrected this issue and things started sync-ing.
+
+But I am afraid, this is not exactly the thing I wanted to achieve. My goal was to sync from folder to folder ... and not from folder to repository both ways.
+
+So, what I would like to do is that if I create a file at server1 (e.g. /media/mail/test01.txt) then it should appear at server2 at /media/mail/test01.txt.
+
+How can I achieve this?
+
+Thanks a lot.
+
+David
+"""]]
