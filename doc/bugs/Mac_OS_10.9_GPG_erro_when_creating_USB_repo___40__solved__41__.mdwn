@@ -18,3 +18,6 @@ git-annex version 4.20131105-g136b030 on Mac OS 10.9 Mavericks.
 [[!format sh """
 07/Nov/2013:06:51:07 +1100 [Error#yesod-core] user error (gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--with-colons","--list-secret-keys","--fixed-list-mode"] exited 5) @(yesod-core-1.2.4.5:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
 """]]
+
+> [[fixed|done]]; it seems that this was a local build issue ad does not
+> affect the autobuild. --[[Joey]]
