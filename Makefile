@@ -83,8 +83,8 @@ clean:
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs \
 		git-union-merge git-recover-repository
-	find -name \*.o -exec rm {} \;
-	find -name \*.hi -exec rm {} \;
+	find . -name \*.o -exec rm {} \;
+	find . -name \*.hi -exec rm {} \;
 
 Build/InstallDesktopFile: Build/InstallDesktopFile.hs
 	$(GHC) --make $@
