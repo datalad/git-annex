@@ -19,15 +19,21 @@ import qualified Upgrade.V2
 import qualified Upgrade.V4
 
 checkUpgrade :: Version -> Annex ()
-checkUpgrade v
-	| v `elem` supportedVersions = noop
-	| v `elem` autoUpgradeableVersions = unlessM (upgrade True) $
-		err "Automatic upgrade failed!"
+checkUpgrade = maybe noop error <=< needsUpgrade
+
+needsUpgrade :: Version -> Annex (Maybe String)
+needsUpgrade v
+	| v `elem` supportedVersions = ok
+	| v `elem` autoUpgradeableVersions = ifM (upgrade True)
+		( ok
+		, err "Automatic upgrade failed!"
+		)
 	| v `elem` upgradableVersions = err "Upgrade this repository: git-annex upgrade"
 	| otherwise = err "Upgrade git-annex."
   where
-	err msg = error $ "Repository version " ++ v ++
+	err msg = return $ Just $ "Repository version " ++ v ++
 		" is not supported. " ++ msg
+	ok = return Nothing
 
 upgrade :: Bool -> Annex Bool
 upgrade automatic = go =<< getVersion

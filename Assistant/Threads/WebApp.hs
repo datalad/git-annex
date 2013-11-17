@@ -52,11 +52,12 @@ webAppThread
 	:: AssistantData
 	-> UrlRenderer
 	-> Bool
+	-> Maybe String
 	-> Maybe HostName
 	-> Maybe (IO Url)
 	-> Maybe (Url -> FilePath -> IO ())
 	-> NamedThread
-webAppThread assistantdata urlrenderer noannex listenhost postfirstrun onstartup = thread $ liftIO $ do
+webAppThread assistantdata urlrenderer noannex cannotrun listenhost postfirstrun onstartup = thread $ liftIO $ do
 #ifdef __ANDROID__
 	when (isJust listenhost) $
 		-- See Utility.WebApp
@@ -68,6 +69,7 @@ webAppThread assistantdata urlrenderer noannex listenhost postfirstrun onstartup
 		<*> getreldir
 		<*> pure staticRoutes
 		<*> pure postfirstrun
+		<*> pure cannotrun
 		<*> pure noannex
 		<*> pure listenhost
 	setUrlRenderer urlrenderer $ yesodRender webapp (pack "")

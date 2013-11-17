@@ -44,6 +44,7 @@ data WebApp = WebApp
 	, relDir :: Maybe FilePath
 	, getStatic :: Static
 	, postFirstRun :: Maybe (IO String)
+	, cannotRun :: Maybe String
 	, noAnnex :: Bool
 	, listenHost ::Maybe HostName
 	}

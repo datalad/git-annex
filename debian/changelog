@@ -39,6 +39,7 @@ git-annex (5.20131102) UNRELEASED; urgency=low
   * Switched to the tasty test framework.
   * Android: Adjust default .gitignore to ignore .thumbnails at any location
     in the tree, not just at its top.
+  * webapp: Check annex.version.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 16:14:14 -0400
 
