@@ -162,10 +162,9 @@ osxapp: Build/Standalone Build/OSXMkLibs
 
 	./Build/OSXMkLibs $(OSXAPP_BASE)
 	rm -f tmp/git-annex.dmg
-	hdiutil create -size 640m -format UDRW -srcfolder tmp/build-dmg \
+	hdiutil create -format UDBZ -srcfolder tmp/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
 	rm -f tmp/git-annex.dmg.bz2
-	bzip2 --fast tmp/git-annex.dmg
 
 ANDROID_FLAGS?=-f-XMPP
 # Cross compile for Android.
