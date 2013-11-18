@@ -509,6 +509,7 @@ subdirectories).
   `git annex unused`
 
   You can also specify ranges of numbers, such as "1-1000".
+  Or, specify "all" to drop all unused data.
 
   To drop the data from a remote, specify `--from.`
 

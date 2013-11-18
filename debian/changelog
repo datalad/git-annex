@@ -1,3 +1,10 @@
+git-annex (5.20131119) UNRELEASED; urgency=low
+
+  * dropunused, addunused: Allow "all" instead of a range to
+    act on all unused data.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 18 Nov 2013 17:09:21 -0400
+
 git-annex (5.20131118) unstable; urgency=low
 
   * Direct mode repositories now have core.bare=true set, to prevent
