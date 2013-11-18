@@ -53,9 +53,7 @@ import Annex.Perms
 import Annex.Link
 import Annex.Content.Direct
 import Annex.ReplaceFile
-#ifndef mingw32_HOST_OS
 import Annex.Exception
-#endif
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
