@@ -29,6 +29,7 @@ import Config
 import Annex.Direct
 import Annex.Content.Direct
 import Annex.Environment
+import Annex.Perms
 import Backend
 #ifndef mingw32_HOST_OS
 import Utility.UserInfo
@@ -111,9 +112,8 @@ probeCrippledFileSystem = do
 #else
 	tmp <- fromRepo gitAnnexTmpDir
 	let f = tmp </> "gaprobe"
-	liftIO $ do
-		createDirectoryIfMissing True tmp
-		writeFile f ""
+	createAnnexDirectory tmp
+	liftIO $ writeFile f ""
 	uncrippled <- liftIO $ probe f
 	liftIO $ removeFile f
 	return $ not uncrippled
@@ -149,8 +149,8 @@ probeFifoSupport = do
 #else
 	tmp <- fromRepo gitAnnexTmpDir
 	let f = tmp </> "gaprobe"
+	createAnnexDirectory tmp
 	liftIO $ do
-		createDirectoryIfMissing True tmp
 		nukeFile f
 		ms <- tryIO $ do
 			createNamedPipe f ownerReadMode

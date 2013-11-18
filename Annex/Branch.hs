@@ -351,7 +351,7 @@ withIndex' bootstrapping a = do
 		Annex.changeState $ \s -> s { Annex.repo = g' }
 		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
-			liftIO $ createDirectoryIfMissing True $ takeDirectory f
+			createAnnexDirectory $ takeDirectory f
 			unless bootstrapping $ inRepo genIndex
 		a
 	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }
