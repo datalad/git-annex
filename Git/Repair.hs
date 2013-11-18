@@ -525,10 +525,10 @@ runRepairOf fsckresult forced referencerepo g = do
 	unsuccessfulfinish stillmissing = do
 		if repoIsLocalBare g
 			then do
-				putStrLn "If you have a clone of this bare repository, you should add it as a remote of this repository, and re-run git-recover-repository."
-				putStrLn "If there are no clones of this repository, you can instead run git-recover-repository with the --force parameter to force recovery to a possibly usable state."
+				putStrLn "If you have a clone of this bare repository, you should add it as a remote of this repository, and retry."
+				putStrLn "If there are no clones of this repository, you can instead retry with the --force parameter to force recovery to a possibly usable state."
 				return (False, stillmissing, [])
 			else needforce stillmissing
 	needforce stillmissing = do
-		putStrLn "To force a recovery to a usable state, run this command again with the --force parameter."
+		putStrLn "To force a recovery to a usable state, retry with the --force parameter."
 		return (False, stillmissing, [])

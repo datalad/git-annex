@@ -30,11 +30,7 @@ git-annex-shell.1: doc/git-annex-shell.mdwn
 # These are not built normally.
 git-union-merge.1: doc/git-union-merge.mdwn
 	./Build/mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
-git-recover-repository.1: doc/git-recover-repository.mdwn
-	./Build/mdwn2man git-recover-repository 1 doc/git-recover-repository.mdwn > git-recover-repository.1
 git-union-merge:
-	$(GHC) --make -threaded $@
-git-recover-repository:
 	$(GHC) --make -threaded $@
 
 install-mans: $(mans)
@@ -82,7 +78,7 @@ clean:
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs \
-		git-union-merge git-recover-repository
+		git-union-merge
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
 
