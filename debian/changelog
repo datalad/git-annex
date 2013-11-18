@@ -1,4 +1,4 @@
-git-annex (5.20131102) UNRELEASED; urgency=low
+git-annex (5.20131118) unstable; urgency=low
 
   * Direct mode repositories now have core.bare=true set, to prevent
     accidentally running git commands that try to operate on the work tree,
@@ -41,7 +41,7 @@ git-annex (5.20131102) UNRELEASED; urgency=low
     in the tree, not just at its top.
   * webapp: Check annex.version.
 
- -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 16:14:14 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 18 Nov 2013 10:45:43 -0400
 
 git-annex (4.20131106) unstable; urgency=low
 
