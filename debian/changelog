@@ -1,4 +1,4 @@
-git-annex (4.20131106) unstable; urgency=low
+git-annex (4.20131106~bpo70+1) wheezy-backports; urgency=low
 
   * Backport is now built against git 1.8.4, also now available in backports.
   * Improve local pairing behavior when two computers both try to start
@@ -98,7 +98,7 @@ git-annex (4.20131024) unstable; urgency=low
 
  -- Joey Hess <joeyh@debian.org>  Thu, 24 Oct 2013 12:59:55 -0400
 
-git-annex (4.20131002~bpo70+2) UNRELEASED; urgency=low
+git-annex (4.20131002~bpo70+2) wheezy-backports; urgency=low
 
   * Wheezy backport: Relax cabal version constraint on gnutls
     (allow the version in wheezy to be used, despite it being a bit buggy).
