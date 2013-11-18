@@ -28,7 +28,7 @@ the app for OSX Lion.
 
 [[Joey]] autobuilds the app for Mavericks.
 
-* [autobuild of git-annex.dmg.bz2](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/git-annex.dmg.bz2) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/))
+* [autobuild of git-annex.dmg](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/git-annex.dmg) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/))
 
 ## using Brew
 
