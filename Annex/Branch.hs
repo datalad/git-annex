@@ -386,7 +386,7 @@ setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
 	f <- fromRepo gitAnnexIndexStatus
 	liftIO $ writeFile f $ show ref ++ "\n"
-	setAnnexPerm f
+	setAnnexFilePerm f
 
 {- Stages the journal into the index and returns an action that will
  - clean up the staged journal files, which should only be run once

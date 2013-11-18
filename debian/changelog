@@ -2,6 +2,7 @@ git-annex (5.20131119) UNRELEASED; urgency=low
 
   * dropunused, addunused: Allow "all" instead of a range to
     act on all unused data.
+  * Ensure execute bit is set on directories when core.sharedrepsitory is set.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 18 Nov 2013 17:09:21 -0400
 
