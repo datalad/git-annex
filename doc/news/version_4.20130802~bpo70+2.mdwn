@@ -1,3 +1,0 @@
-git-annex 4.20130802~bpo70+2 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * Fix dependency on libghc-gnutls-dev."""]]
