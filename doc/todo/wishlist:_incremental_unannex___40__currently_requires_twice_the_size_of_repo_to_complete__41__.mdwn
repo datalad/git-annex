@@ -2,3 +2,9 @@ I recently tried to use unannex for a large repo and it failed because the repo 
 
 Proposed solution:
 copy a file, hash it, iff hash check is okay, delete from objects, continue to next file
+
+> That won't work, because multiple files can point to a key.
+> 
+> I am not happy with unannex's behavior, but I was less happy
+> when people were constantly filing bugs about it misbehaving in that
+> situttion. If you dislike the copying, use --fast. [[done]] --[[Joey]]
