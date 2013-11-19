@@ -5,6 +5,10 @@ git-annex (5.20131119) UNRELEASED; urgency=low
   * Ensure execute bit is set on directories when core.sharedrepository is set.
   * Ensure that core.sharedrepository is honored when creating the .git/annex
     directory.
+  * Improve repair code in the case where the index file is corrupt,
+    and this hides other problems.
+  * Fix Debian package to not try to run test suite, since haskell-tasty
+    is not out of new or in Build-Depends yet.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 18 Nov 2013 17:09:21 -0400
 
