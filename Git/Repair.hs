@@ -48,7 +48,7 @@ import Data.Tuple.Utils
  - Since git fsck may crash on corrupt objects, and so not
  - report the full set of corrupt or missing objects,
  - this removes corrupt objects, and re-runs fsck, until it
- - stabalizes.
+ - stabilizes.
  -
  - To remove corrupt objects, unpack all packs, and remove the packs
  - (to handle corrupt packs), and remove loose object files.
@@ -79,11 +79,13 @@ cleanCorruptObjects mmissing r = check mmissing
 		putStrLn "Re-running git fsck to see if it finds more problems."
 		v <- findBroken False r
 		case v of
-			Nothing -> error $ unwords
-				[ "git fsck found a problem, which was not corrected after removing"
-				, show (S.size oldbad)
-				, "corrupt objects."
-				]
+			Nothing -> do
+				hPutStrLn stderr $ unwords
+					[ "git fsck found a problem, which was not corrected after removing"
+					, show (S.size oldbad)
+					, "corrupt objects."
+					]
+				return S.empty
 			Just newbad -> do
 				removed <- removeLoose r newbad
 				let s = S.union oldbad newbad
@@ -516,8 +518,12 @@ runRepairOf fsckresult forced referencerepo g = do
 	
 	corruptedindex = do
 		nukeIndex g
+		-- The corrupted index can prevent fsck from finding other
+		-- problems, so re-run repair.
+		fsckresult' <- findBroken False g
+		result <- runRepairOf fsckresult' forced referencerepo g
 		putStrLn "Removed the corrupted index file. You should look at what files are present in your working tree and git add them back to the index when appropriate."
-		return (True, S.empty, [])
+		return result
 
 	successfulfinish stillmissing modifiedbranches = do
 		mapM_ putStrLn
