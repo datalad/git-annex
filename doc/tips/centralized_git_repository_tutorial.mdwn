@@ -25,12 +25,14 @@ This means you can't store annexed file *contents* on GitHub; it would
 really be better to host the bare repository on your own server, which
 would not have this limitation. (If you want to do that, check out
 [[using_gitolite_with_git-annex]].)
+[Sewa mobil jakarta](http://www.awanirentcar.com), [Sewa mobil jakarta pusat](http://www.awanirentcar.com/pricelist), [Aksesoris mobil](http://kiosauto.com)
 
 	# git config remote.origin.annex-ignore true
 
 ## add files to the repository
 
 Add some files, obtained however.
+[Gps tracker motor](http://vamostech.com/gps-tracking), [Gps tracking motor](http://vamostech.com/gps-tracking)
 
 	# youtube-dl -t 'http://www.youtube.com/watch?v=b9FagOVqxmI'
 	# git annex add *.mp4
