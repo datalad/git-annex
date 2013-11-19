@@ -1,0 +1,4 @@
+I recently tried to use unannex for a large repo and it failed because the repo size was more than half the disk size.  Unannex should work incrementally so this isn't a problem.
+
+Proposed solution:
+copy a file, hash it, iff hash check is okay, delete from objects, continue to next file

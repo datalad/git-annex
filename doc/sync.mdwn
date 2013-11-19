@@ -7,7 +7,7 @@ That works fine, if you don't mind having a central repository.
 
 But it can be harder to use git in a fully decentralized fashion, with no
 central repository and still keep repositories in sync with one another.
-You have to remember to pull from each remote, and merge the appopriate
+You have to remember to pull from each remote, and merge the appropriate
 branch after pulling. It's difficult to *push* to a remote, since git does
 not allow pushes into the currently checked out branch.
 
