@@ -15,6 +15,7 @@ import Foreign
 import Data.Char
 import Data.List
 import Control.Applicative
+import System.Exit
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getAnyProcessStatus)
 import Utility.Exception
@@ -136,3 +137,7 @@ reapZombies = do
 #else
 reapZombies = return ()
 #endif
+
+exitBool :: Bool -> IO a
+exitBool False = exitFailure
+exitBool True = exitSuccess

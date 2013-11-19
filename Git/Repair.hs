@@ -8,6 +8,7 @@
 module Git.Repair (
 	runRepair,
 	runRepairOf,
+	successfulRepair,
 	cleanCorruptObjects,
 	retrieveMissingObjects,
 	resetLocalBranches,
@@ -451,6 +452,9 @@ runRepair forced g = do
 		else do
 			putStrLn "No problems found."
 			return (True, S.empty, [])
+
+successfulRepair :: (Bool, MissingObjects, [Branch]) -> Bool
+successfulRepair = fst3
 
 runRepairOf :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, MissingObjects, [Branch])
 runRepairOf fsckresult forced referencerepo g = do

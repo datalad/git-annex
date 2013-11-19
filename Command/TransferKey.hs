@@ -56,4 +56,4 @@ fromPerform remote key file = go $
 		getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
 
 go :: Annex Bool -> CommandPerform
-go a = ifM a ( liftIO exitSuccess,  liftIO exitFailure)
+go a = a >>= liftIO . exitBool
