@@ -67,9 +67,5 @@ getLogR :: Handler Html
 getLogR = page "Logs" Nothing $ do
 	logfile <- liftAnnex $ fromRepo gitAnnexLogFile
 	logs <- liftIO $ listLogs logfile
-	logcontent <- liftIO $ concat <$> mapM readlog logs
+	logcontent <- liftIO $ concat <$> mapM readFileStrictAnyEncoding logs
 	$(widgetFile "control/log")
-  where
-	readlog f = withFile f ReadMode $ \h -> do
-		fileEncoding h -- log may contain invalid utf-8
-		hClose h `after` hGetContentsStrict h
