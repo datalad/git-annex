@@ -64,6 +64,10 @@ preventWrite f = modifyFileMode f $ removeModes writeModes
 allowWrite :: FilePath -> IO ()
 allowWrite f = modifyFileMode f $ addModes [ownerWriteMode]
 
+{- Turns a file's owner read bit back on. -}
+allowRead :: FilePath -> IO ()
+allowRead f = modifyFileMode f $ addModes [ownerReadMode]
+
 {- Allows owner and group to read and write to a file. -}
 groupSharedModes :: [FileMode]
 groupSharedModes =
