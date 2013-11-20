@@ -56,6 +56,7 @@ Feel free the rename the files, etc, using normal git commands:
 Now push your changes back to the central repository. This first time,
 remember to push the git-annex branch, which is used to track the file
 contents.
+[Aksesoris mobil](http://kiosauto.com), [Sewa mobil jakarta](http://www.awanirentcar.com), [Sewa mobil jakarta selatan](http://www.awanirentcar.com/about-us), [Toko bunga online bandung](http://www.tokobungasabana.com)
 
 	# git push origin master git-annex
 	To git@github.com:joeyh/techtalks.git
