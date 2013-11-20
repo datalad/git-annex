@@ -68,7 +68,7 @@ findMissing objs r = go objs [] =<< start
 		void $ tryIO $ catFileStop h
 		return $ S.fromList c
 	go (o:os) c h = do
-		v <- tryIO $ isNothing <$> catObjectDetails h o
+		v <- tryNonAsync $ isNothing <$> catObjectDetails h o
 		case v of
 			Left _ -> do
 				void $ tryIO $ catFileStop h
