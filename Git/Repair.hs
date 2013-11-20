@@ -523,11 +523,9 @@ runRepairOf fsckresult forced referencerepo g = do
 		Nothing
 			| forced -> ifM (pure (repoIsLocalBare g) <||> checkIndex S.empty g)
 				( do
-					fsckresult' <- findBroken False g
-					case fsckresult' of
-						Nothing -> do
-							putStrLn "Unable to fully recover; cannot find missing objects."
-							return (False, S.empty, [])
+					missing' <- cleanCorruptObjects Nothing g
+					case missing' of
+						Nothing -> return (False, S.empty, [])
 						Just stillmissing' -> continuerepairs stillmissing'
 				, corruptedindex
 				)
