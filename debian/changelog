@@ -1,16 +1,16 @@
-git-annex (5.20131119) UNRELEASED; urgency=low
+git-annex (5.20131120) unstable; urgency=low
 
+  * Fix Debian package to not try to run test suite, since haskell-tasty
+    is not out of new or in Build-Depends yet.
   * dropunused, addunused: Allow "all" instead of a range to
     act on all unused data.
   * Ensure execute bit is set on directories when core.sharedrepository is set.
   * Ensure that core.sharedrepository is honored when creating the .git/annex
     directory.
   * Improve repair code in the case where the index file is corrupt,
-    and this hides other problems.
-  * Fix Debian package to not try to run test suite, since haskell-tasty
-    is not out of new or in Build-Depends yet.
+    and this hides other problems from git fsck.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 18 Nov 2013 17:09:21 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 12:54:18 -0400
 
 git-annex (5.20131118) unstable; urgency=low
 
