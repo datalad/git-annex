@@ -1,3 +1,9 @@
+git-annex (5.20131121) UNRELEASED; urgency=low
+
+  * Futher improvements to git repair.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 18:30:47 -0400
+
 git-annex (5.20131120) unstable; urgency=low
 
   * Fix Debian package to not try to run test suite, since haskell-tasty

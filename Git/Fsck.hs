@@ -40,7 +40,7 @@ type FsckResults = Maybe MissingObjects
 findBroken :: Bool -> Repo -> IO FsckResults
 findBroken batchmode r = do
 	(output, fsckok) <- processTranscript command' (toCommand params') Nothing
-	let objs = parseFsckOutput output
+	let objs = findShas output
 	badobjs <- findMissing objs r
 	if S.null badobjs && not fsckok
 		then return Nothing
@@ -65,7 +65,7 @@ findMissing objs r = go objs [] =<< start
   where
 	start = catFileStart' False r
 	go [] c h = do
-		catFileStop h
+		void $ tryIO $ catFileStop h
 		return $ S.fromList c
 	go (o:os) c h = do
 		v <- tryIO $ isNothing <$> catObjectDetails h o
@@ -76,11 +76,11 @@ findMissing objs r = go objs [] =<< start
 			Right True -> go os (o:c) h
 			Right False -> go os c h
 
-parseFsckOutput :: String -> [Sha]
-parseFsckOutput = catMaybes . map extractSha . concat . map words . lines
+findShas :: String -> [Sha]
+findShas = catMaybes . map extractSha . concat . map words . lines
 
 fsckParams :: Repo -> [CommandParam]
-fsckParams = gitCommandLine
+fsckParams = gitCommandLine $
 	[ Param "fsck"
 	, Param "--no-dangling"
 	, Param "--no-reflogs"
