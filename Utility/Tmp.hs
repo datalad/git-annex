@@ -62,7 +62,7 @@ withTmpDirIn :: FilePath -> Template -> (FilePath -> IO a) -> IO a
 withTmpDirIn tmpdir template = bracket create remove
   where
 	remove d = whenM (doesDirectoryExist d) $
-		return () -- removeDirectoryRecursive d
+		removeDirectoryRecursive d
 	create = do
 		createDirectoryIfMissing True tmpdir
 		makenewdir (tmpdir </> template) (0 :: Int)
