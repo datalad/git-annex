@@ -513,7 +513,10 @@ runRepairOf fsckresult forced referencerepo g = do
 							else needforce S.empty
 					)
 			| otherwise -> if forced
-				then continuerepairs s
+				then ifM (checkIndex s g)
+					( continuerepairs s
+					, corruptedindex
+					)
 				else do
 					putStrLn $ unwords
 						[ show (S.size s)
