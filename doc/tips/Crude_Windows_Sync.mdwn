@@ -29,7 +29,7 @@ Here's a workaround to start syncing folders on Windows right now. It's a bit co
 
 (6) Copy the "Git Bash" shortcut from your windows menu to your desktop, and change the link target to:
 
-    "C:\Program Files\Git\bin\sh.exe" --login -i "annex/sync.sh"
+    C:\Program Files\Git\bin\sh.exe" --login -i "annex/sync.sh"
 
 Now ask your users to run this shortcut before and after they change files. You can also put it into the "autostart" folder to sync at boot.
 
