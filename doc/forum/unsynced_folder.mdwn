@@ -1,0 +1,3 @@
+If I have an archive with a lot of big files, is it possible to get one of them without using the command line, and without it popping up on other clients of that repository?
+Is it possible to have a folder that will not be synced with other clients but will still download the file when i copy it from archive?
+.gitignore probably wont work because that will not get the file from archive.
