@@ -17,7 +17,6 @@ import Common
 import Git
 import Git.Command
 import Git.Sha
-import Git.CatFile
 import Utility.Batch
 
 import qualified Data.Set as S
@@ -57,24 +56,18 @@ foundBroken (Just s) = not (S.null s)
 
 {- Finds objects that are missing from the git repsitory, or are corrupt.
  -
- - Note that catting a corrupt object will cause cat-file to crash;
- - this is detected and it's restarted.
+ - This does not use git cat-file --batch, because catting a corrupt
+ - object can cause it to crash, or to report incorrect size information.
  -}
 findMissing :: [Sha] -> Repo -> IO MissingObjects
-findMissing objs r = go objs [] =<< start
+findMissing objs r = S.fromList <$> filterM (not <$$> cancat) objs
   where
-	start = catFileStart' False r
-	go [] c h = do
-		void $ tryIO $ catFileStop h
-		return $ S.fromList c
-	go (o:os) c h = do
-		v <- tryNonAsync $ isNothing <$> catObjectDetails h o
-		case v of
-			Left _ -> do
-				void $ tryIO $ catFileStop h
-				go os (o:c) =<< start
-			Right True -> go os (o:c) h
-			Right False -> go os c h
+	cancat o = either (const False) (const True) <$> tryIO (cat o)
+	cat o = runQuiet
+		[ Param "cat-file"
+		, Param "-p"
+		, Param (show o)
+		] r
 
 findShas :: String -> [Sha]
 findShas = catMaybes . map extractSha . concat . map words . lines
