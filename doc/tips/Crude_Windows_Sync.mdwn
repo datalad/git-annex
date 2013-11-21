@@ -6,10 +6,10 @@ Here's a workaround to start syncing folders on Windows right now. It's a bit co
 
 (3) [Install git-annex for Windows](http://git-annex.branchable.com/install/Windows/) on the Windows machine. Don't forget to run the installer as administrator.
 
-(4) Run _Git Bash_ from the system menu, and run these commands clone your repository.
+(4) Run _Git Bash_ from the system menu, and run these commands to clone your repository.
 
     ssh-keygen
-    cat .ssh/id_rsa.pub | "ssh username@my-server.com cat >> ~/.ssh/authorized_keys"
+    cat .ssh/id_rsa.pub | ssh username@my-server.com "cat >> ~/.ssh/authorized_keys"
     git clone username@my-server.com:/path/to/annex
     cd annex
     git annex init
