@@ -30,6 +30,7 @@ import Assistant.WebApp.Configurators.Preferences
 import Assistant.WebApp.Configurators.Edit
 import Assistant.WebApp.Configurators.Delete
 import Assistant.WebApp.Configurators.Fsck
+import Assistant.WebApp.Configurators.Upgrade
 import Assistant.WebApp.Documentation
 import Assistant.WebApp.Control
 import Assistant.WebApp.OtherRepos

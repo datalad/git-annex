@@ -28,6 +28,7 @@ import Assistant.Threads.ProblemFixer
 import Assistant.Threads.MountWatcher
 #endif
 import Assistant.Threads.NetWatcher
+import Assistant.Threads.Upgrader
 import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
 import Assistant.Threads.ConfigMonitor
@@ -150,6 +151,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 				, assist $ mountWatcherThread urlrenderer
 #endif
 				, assist $ netWatcherThread
+				, assist $ upgraderThread urlrenderer
 				, assist $ netWatcherFallbackThread
 				, assist $ transferScannerThread urlrenderer
 				, assist $ cronnerThread urlrenderer

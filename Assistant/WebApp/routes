@@ -21,6 +21,7 @@
 /config/xmpp/needcloudrepo/#UUID NeedCloudRepoR GET
 /config/fsck ConfigFsckR GET POST
 /config/fsck/preferences ConfigFsckPreferencesR POST
+/config/upgrade/#GitAnnexDistribution ConfigUpgradeR GET
 
 /config/addrepository AddRepositoryR GET
 /config/repository/new NewRepositoryR GET POST

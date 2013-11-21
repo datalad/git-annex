@@ -25,6 +25,7 @@ import Utility.Gpg (KeyId)
 import Build.SysConfig (packageversion)
 import Types.ScheduledActivity
 import Assistant.WebApp.RepoId
+import Types.Distribution
 
 import Yesod.Static
 import Text.Hamlet
@@ -220,5 +221,9 @@ instance PathPiece ScheduledActivity where
 	fromPathPiece = readish . unpack
 
 instance PathPiece RepoId where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece GitAnnexDistribution where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack

@@ -1,0 +1,12 @@
+<div .span9 .hero-unit>
+  <h2>
+    Upgrade git-annex
+  <p>
+    Version #{distributionVersion d} was released #
+    #{fromDuration upgradeage} ago.
+  <p>
+    To upgrade to this version, you will need to manually download and #
+    install it. (Sorry, upgrades are not automated yet..)
+  <p>
+    <a .btn .btn-primary href="#{distributionUrl d}">
+      Download

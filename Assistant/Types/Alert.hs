@@ -31,6 +31,7 @@ data AlertName
 	| CloudRepoNeededAlert
 	| SyncAlert
 	| NotFsckedAlert
+	| UpgradeAlert
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.
@@ -52,7 +53,7 @@ data Alert = Alert
 	, alertButton :: Maybe AlertButton
 	}
 
-data AlertIcon = ActivityIcon | SyncIcon | SuccessIcon | ErrorIcon | InfoIcon | TheCloud
+data AlertIcon = ActivityIcon | SyncIcon | SuccessIcon | ErrorIcon | InfoIcon | UpgradeIcon | TheCloud
 
 type AlertMap = M.Map AlertId Alert
 

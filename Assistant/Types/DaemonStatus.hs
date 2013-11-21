@@ -67,6 +67,8 @@ data DaemonStatus = DaemonStatus
 	, scheduleLogNotifier :: NotificationBroadcaster
 	-- Broadcasts a notification once the startup sanity check has run.
 	, startupSanityCheckNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when the network is connected
+	, networkConnectedNotifier :: NotificationBroadcaster
 	-- When the XMPP client is connected, this will contain the XMPP
 	-- address.
 	, xmppClientID :: Maybe ClientID
@@ -97,6 +99,7 @@ newDaemonStatus = DaemonStatus
 	<*> pure False
 	<*> pure S.empty
 	<*> pure Nothing
+	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
