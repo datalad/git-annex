@@ -1,4 +1,4 @@
-{- git-annex assistant thread to detect when upgrade is needed
+{- git-annex assistant thread to detect when upgrade is available
  -
  - Copyright 2013 Joey Hess <joey@kitenet.net>
  -

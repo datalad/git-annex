@@ -5,6 +5,10 @@ git-annex (5.20131121) UNRELEASED; urgency=low
   * webapp: Detect when an upgrade to git-annex is available.
     (Only when git-annex is installed using the prebuilt binaries
     from git-annex upstream, not from eg Debian.)
+  * assistant: Detect when the git-annex binary is modified or replaced,
+    and either prompt the user to restart the program, or automatically
+    restart it.
+  * annex.autoupgrade configures both the above upgrade behaviors.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 18:30:47 -0400
 
