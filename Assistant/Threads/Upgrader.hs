@@ -17,6 +17,7 @@ import Assistant.DaemonStatus
 import Assistant.Alert
 import Utility.NotificationBroadcaster
 import Utility.Tmp
+import qualified Annex
 import qualified Build.SysConfig
 import qualified Utility.Url as Url
 import qualified Annex.Url as Url
@@ -31,6 +32,7 @@ import qualified Data.Text as T
 
 upgraderThread :: UrlRenderer -> NamedThread
 upgraderThread urlrenderer = namedThread "Upgrader" $ do
+	checkUpgrade urlrenderer
 	when (isJust Build.SysConfig.upgradelocation) $ do
 		h <- liftIO . newNotificationHandle False . networkConnectedNotifier =<< getDaemonStatus
 		go h Nothing
@@ -40,12 +42,16 @@ upgraderThread urlrenderer = namedThread "Upgrader" $ do
 	 - check. -}
 	go h lastchecked = do
 		liftIO $ waitNotification h
-		now <- liftIO getCurrentTime
-		if maybe True (\t -> diffUTCTime now t > halfday) lastchecked
-			then do
-				checkUpgrade urlrenderer
-				go h =<< Just <$> liftIO getCurrentTime
-			else go h lastchecked
+		autoupgrade <- liftAnnex $ annexAutoUpgrade <$> Annex.getGitConfig
+		if autoupgrade == NoAutoUpgrade
+			then go h lastchecked
+			else do
+				now <- liftIO getCurrentTime
+				if maybe True (\t -> diffUTCTime now t > halfday) lastchecked
+					then do
+						checkUpgrade urlrenderer
+						go h =<< Just <$> liftIO getCurrentTime
+					else go h lastchecked
 	halfday = 12 * 60 * 60
 
 checkUpgrade :: UrlRenderer -> Assistant ()

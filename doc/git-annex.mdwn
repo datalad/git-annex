@@ -544,7 +544,7 @@ subdirectories).
   to their local `git-annex` branches. So the forgetfulness will automatically
   propigate out from its starting point until all repositories running
   git-annex have forgotten their old history. (You may need to force
-  git to push the branch to any git repositories not running git-annex.
+  git to push the branch to any git repositories not running git-annex.)
 
 * `repair`
 
@@ -1146,6 +1146,21 @@ Here are all the supported configuration settings.
 
   When set to false, prevents the webapp from reminding you when using
   repositories that lack consistency checks.
+
+* `annex.autoupgrade`
+
+  When set to ask (the default), the webapp will check for new versions
+  and prompt if they should be upgraded to. When set to true, automatically
+  upgrades without prompting (on some supported platforms). When set to
+  false, disables any upgrade checking.
+
+  Note that upgrade checking is only done when git-annex is installed
+  from one of the prebuilt images from its website. This does not
+  bypass eg, a Linux distribution's own upgrade handling code.
+
+  This setting also controls whether to restart the git-annex assistant
+  when the git-annex binary is detected to have changed. That is useful
+  no matter how you installed git-annex.
 
 * `annex.autocommit`
 

@@ -9,6 +9,7 @@ module Types.Distribution where
 
 import Types.Key
 import Data.Time.Clock
+import Git.Config (isTrue, boolConfig)
 
 data GitAnnexDistribution = GitAnnexDistribution
 	{ distributionUrl :: String
@@ -20,3 +21,18 @@ data GitAnnexDistribution = GitAnnexDistribution
 	deriving (Read, Show, Eq)
 
 type GitAnnexVersion = String
+
+data AutoUpgrade = AskUpgrade | AutoUpgrade | NoAutoUpgrade
+	deriving (Eq)
+
+toAutoUpgrade :: (Maybe String) -> AutoUpgrade
+toAutoUpgrade Nothing = AskUpgrade
+toAutoUpgrade (Just s)
+	| s == "ask" = AskUpgrade
+	| isTrue s == Just True = AutoUpgrade
+	| otherwise = NoAutoUpgrade
+
+fromAutoUpgrade :: AutoUpgrade -> String
+fromAutoUpgrade AskUpgrade = "ask"
+fromAutoUpgrade AutoUpgrade = boolConfig True
+fromAutoUpgrade NoAutoUpgrade = boolConfig False

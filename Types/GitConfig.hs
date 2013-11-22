@@ -17,6 +17,7 @@ import qualified Git
 import qualified Git.Config
 import Utility.DataUnits
 import Config.Cost
+import Types.Distribution
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
@@ -42,6 +43,7 @@ data GitConfig = GitConfig
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
 	, annexFsckNudge :: Bool
+	, annexAutoUpgrade :: AutoUpgrade
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
 	}
@@ -70,6 +72,7 @@ extractGitConfig r = GitConfig
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
 	, annexFsckNudge = getbool (annex "fscknudge") True
+	, annexAutoUpgrade = toAutoUpgrade $ getmaybe (annex "autoupgrade")
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
 	}
