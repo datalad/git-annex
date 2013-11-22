@@ -16,7 +16,8 @@ and working now.
 And, I made the assistant detect when the git-annex program binary is
 replaced or modified. Used my existing DirWatcher code for that. The plan
 is to restart the assistant on upgrade, although I need to add some sanity
-checks (eg, reuse the lsof code) first.
+checks (eg, reuse the lsof code) first. And yes, this will work even for
+`apt-get upgrade`!
 
 ----
 
