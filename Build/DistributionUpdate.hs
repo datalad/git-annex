@@ -46,6 +46,14 @@ makeinfos = do
 		, Param "-m"
 		, Param "update distribution info files"
 		]
+	void $ inRepo $ runBool
+		[ Param "git-annex"
+		, Params "move --to website"
+		]
+	void $ inRepo $ runBool
+		[ Param "git-annex"
+		, Params "sync"
+		]
 
 getRepoDir :: IO FilePath
 getRepoDir = do
