@@ -68,10 +68,10 @@ check ps url = maybe False (not . null . pageLinks) <$> query ps url
 {- Checks if an url is supported by quvi, without hitting it, or outputting
  - anything. Also returns False if quvi is not installed. -}
 supported :: URLString -> IO Bool
-supported url = boolSystem "quvi" [Params "-v mute --support", Param url]
+supported url = boolSystem "quvi" [Params "--verbosity mute --support", Param url]
 
 quiet :: CommandParam
-quiet = Params "-v quiet"
+quiet = Params "--verbosity quiet"
 
 noredir :: CommandParam
 noredir = Params "-e -resolve"
