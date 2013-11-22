@@ -1,0 +1,5 @@
+quvi 0.9 has a completely different interface; git-annex needs to be made
+to detect and use it.
+
+I have already fixed the worst problem, which caused git-annex addurl to
+think that every url was a valid quvi url. --[[Joey]]
