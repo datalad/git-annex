@@ -1,3 +1,5 @@
+[[!meta title="Android is only autobuilt for arm, not x86 or mips"]]
+
 ### Please describe the problem.
 
 git-annex doesn't start on [Android-x86](http://www.android-x86.org) in VirtualBox (version 4.1.18-dfsg-2+deb7u1).
