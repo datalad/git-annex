@@ -42,74 +42,27 @@ import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
 import Data.Tuple.Utils
 
-{- Given a set of bad objects found by git fsck, removes all
- - corrupt objects, and returns a list of missing objects,
- - which need to be found elsewhere to finish recovery.
- -
- - Since git fsck may crash on corrupt objects, and so not
- - report the full set of corrupt or missing objects,
- - this removes corrupt objects, and re-runs fsck, until it
- - stabilizes.
- -
- - To remove corrupt objects, unpack all packs, and remove the packs
- - (to handle corrupt packs), and remove loose object files.
+{- Given a set of bad objects found by git fsck, which may not
+ - be complete, finds and removes all corrupt objects, and
+ - returns a list of missing objects, which need to be
+ - found elsewhere to finish recovery.
  -}
 cleanCorruptObjects :: FsckResults -> Repo -> IO (Maybe MissingObjects)
-cleanCorruptObjects mmissing r = check mmissing
-  where
-	check Nothing = do
-		putStrLn "git fsck found a problem but no specific broken objects. Perhaps a corrupt pack file?"
-		void $ explodePacks r
-		retry 0 S.empty
-	check (Just bad)
-		| S.null bad = return $ Just S.empty
-		| otherwise = do
-			putStrLn $ unwords 
-				[ "git fsck found"
-				, show (S.size bad)
-				, "broken objects."
-				]
-			exploded <- explodePacks r
-			removed <- removeLoose r bad
-			if exploded || removed
-				then retry (S.size bad) bad
-				else return $ Just bad
-	retry numremoved oldbad = do
-		putStrLn "Re-running git fsck to see if it finds more problems."
-		v <- findBroken False r
-		case v of
-			Nothing
-				| numremoved > 0 -> do
-					hPutStrLn stderr $ unwords
-						[ "git fsck found a problem, which was not corrected after removing"
-						, show numremoved
-						, "corrupt objects."
-						]
-					return Nothing
-				| otherwise -> do
-					hPutStrLn stderr "Repacking all objects, to try to flush out unknown corrupt ones."
-					void $ runBool
-						[ Param "repack"
-						, Param "-a"
-						] r
-					void $ runBool
-						[ Param "prune-packed"
-						] r
-					s <- S.fromList <$> listLooseObjectShas r
-					void $ removeLoose r s
-					retry (S.size s) S.empty
-			Just newbad -> do
-				removed <- removeLoose r newbad
-				let s = S.union oldbad newbad
-				if not removed || s == oldbad
-					then return $ Just s
-					else retry (S.size newbad) s
+cleanCorruptObjects fsckresults r = do
+	void $ explodePacks r
+	objs <- listLooseObjectShas r
+	bad <- findMissing objs r
+	void $ removeLoose r $ S.union bad (fromMaybe S.empty fsckresults)
+	-- Rather than returning the loose objects that were removed, re-run
+	-- fsck. Other missing objects may have been in the packs,
+	-- and this way fsck will find them.
+	findBroken False r
 
 removeLoose :: Repo -> MissingObjects -> IO Bool
 removeLoose r s = do
-	let fs = map (looseObjectFile r) (S.toList s)
-	count <- length <$> filterM doesFileExist fs
-	if (count > 0)
+	fs <- filterM doesFileExist (map (looseObjectFile r) (S.toList s))
+	let count = length fs
+	if count > 0
 		then do
 			putStrLn $ unwords
 				[ "Removing"
@@ -133,6 +86,7 @@ explodePacks r = do
 	go packfile = withTmpFileIn (localGitDir r) "pack" $ \tmp _ -> do
 		moveFile packfile tmp
 		nukeFile $ packIdxFile packfile
+		allowRead tmp
 		-- May fail, if pack file is corrupt.
 		void $ tryIO $
 			pipeWrite [Param "unpack-objects", Param "-r"] r $ \h ->
@@ -184,13 +138,7 @@ retrieveMissingObjects missing referencerepo r
 						Just s -> do
 							stillmissing <- findMissing (S.toList s) r
 							pullremotes tmpr rmts fetchrefs (Just stillmissing)
-				, do
-					putStrLn $ unwords
-						[ "failed to fetch from remote"
-						, repoDescribe rmt
-						, "(will continue without it, but making this remote available may improve recovery)"
-						]
-					pullremotes tmpr rmts fetchrefs ms
+				, pullremotes tmpr rmts fetchrefs ms
 				)
 	fetchfrom fetchurl ps = runBool $
 		[ Param "fetch"
@@ -263,52 +211,44 @@ removeTrackingBranches missing goodcommits r =
 {- Gets all refs, including ones that are corrupt.
  - git show-ref does not output refs to commits that are directly
  - corrupted, so it is not used.
+ -
+ - Relies on packed refs being exploded before it's called.
  -}
 getAllRefs :: Repo -> IO [Ref]
-getAllRefs r = do
-	packedrs <- mapMaybe parsePacked . lines
-		<$> catchDefaultIO "" 
-			(readFileStrictAnyEncoding $ packedRefsFile r)
-	loosers <- map toref <$> dirContentsRecursive refdir
-	return $ packedrs ++ loosers
+getAllRefs r = map toref <$> dirContentsRecursive refdir
   where
   	refdir = localGitDir r </> "refs"
 	toref = Ref . relPathDirToFile (localGitDir r)
 
+explodePackedRefsFile :: Repo -> IO ()
+explodePackedRefsFile r = do
+	let f = packedRefsFile r
+	whenM (doesFileExist f) $ do
+		rs <- mapMaybe parsePacked . lines
+			<$> catchDefaultIO "" (safeReadFile f)
+		forM_ rs makeref
+		nukeFile f
+  where
+	makeref (sha, ref) = do
+		let dest = localGitDir r ++ show ref
+		createDirectoryIfMissing True (parentDir dest)
+		unlessM (doesFileExist dest) $
+			writeFile dest (show sha)
+
 packedRefsFile :: Repo -> FilePath
 packedRefsFile r = localGitDir r </> "packed-refs"
 
-parsePacked :: String -> Maybe Ref
+parsePacked :: String -> Maybe (Sha, Ref)
 parsePacked l = case words l of
 	(sha:ref:[])
-		| isJust (extractSha sha) -> Just $ Ref ref
+		| isJust (extractSha sha) && Ref.legal True ref ->
+			Just (Ref sha, Ref ref)
 	_ -> Nothing
 
 {- git-branch -d cannot be used to remove a branch that is directly
- - pointing to a corrupt commit. However, it's tried first. -}
+ - pointing to a corrupt commit. -}
 nukeBranchRef :: Branch -> Repo -> IO ()
-nukeBranchRef b r = void $ usegit <||> byhand
-  where
-	usegit = runBool
-		[ Param "branch"
-		, Params "-r -d"
-		, Param $ show $ Ref.base b
-		] r
-	byhand = do
-		nukeFile $ localGitDir r </> show b
-		whenM (doesFileExist packedrefs) $
-			withTmpFile "packed-refs" $ \tmp h -> do
-				ls <- lines <$> readFileStrictAnyEncoding packedrefs
-				hPutStr h $ unlines $
-					filter (not . skiprefline) ls
-				hClose h
-				renameFile tmp packedrefs
-		return True
-	skiprefline l = case parsePacked l of
-		Just packedref
-			| packedref == b -> True
-		_ -> False
-	packedrefs = packedRefsFile r
+nukeBranchRef b r = nukeFile $ localGitDir r </> show b
 
 {- Finds the most recent commit to a branch that does not need any
  - of the missing objects. If the input branch is good as-is, returns it.
@@ -473,13 +413,16 @@ displayList items header
  - git repo. If there is a git repo in a parent directory, it may move up
  - the tree and use that one instead. So, cannot use `git show-ref HEAD` to
  - test it.
+ -
+ - Explode the packed refs file, to simplify dealing with refs, and because
+ - fsck can complain about bad refs in it.
  -}
 preRepair :: Repo -> IO ()
 preRepair g = do
-	void $ tryIO $ allowRead headfile
-	unlessM (validhead <$> catchDefaultIO "" (readFileStrictAnyEncoding headfile)) $ do
+	unlessM (validhead <$> catchDefaultIO "" (safeReadFile headfile)) $ do
 		nukeFile headfile
 		writeFile headfile "ref: refs/heads/master"
+	explodePackedRefsFile g
   where
 	headfile = localGitDir g </> "HEAD"
 	validhead s = "ref: refs/" `isPrefixOf` s || isJust (extractSha s)
@@ -538,9 +481,9 @@ runRepairOf fsckresult forced referencerepo g = do
 		(remotebranches, goodcommits) <- removeTrackingBranches stillmissing emptyGoodCommits g
 		unless (null remotebranches) $
 			putStrLn $ unwords
-				[ "removed"
+				[ "Removed"
 				, show (length remotebranches)
-				, "remote tracking branches that referred to missing objects"
+				, "remote tracking branches that referred to missing objects."
 				]
 		(resetbranches, deletedbranches, _) <- resetLocalBranches stillmissing goodcommits g
 		displayList (map show resetbranches)
@@ -596,3 +539,8 @@ runRepairOf fsckresult forced referencerepo g = do
 
 successfulRepair :: (Bool, MissingObjects, [Branch]) -> Bool
 successfulRepair = fst3
+
+safeReadFile :: FilePath -> IO String
+safeReadFile f = do
+	allowRead f
+	readFileStrictAnyEncoding f

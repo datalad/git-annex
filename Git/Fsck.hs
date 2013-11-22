@@ -57,15 +57,14 @@ foundBroken (Just s) = not (S.null s)
 {- Finds objects that are missing from the git repsitory, or are corrupt.
  -
  - This does not use git cat-file --batch, because catting a corrupt
- - object can cause it to crash, or to report incorrect size information.
+ - object can cause it to crash, or to report incorrect size information.a
  -}
 findMissing :: [Sha] -> Repo -> IO MissingObjects
-findMissing objs r = S.fromList <$> filterM (not <$$> cancat) objs
+findMissing objs r = S.fromList <$> filterM (not <$$> present) objs
   where
-	cancat o = either (const False) (const True) <$> tryIO (cat o)
-	cat o = runQuiet
-		[ Param "cat-file"
-		, Param "-p"
+	present o = either (const False) (const True) <$> tryIO (dump o)
+	dump o = runQuiet
+		[ Param "show"
 		, Param (show o)
 		] r
 
