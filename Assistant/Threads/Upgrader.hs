@@ -60,9 +60,10 @@ checkUpgrade urlrenderer = do
 		let avail = Git.Version.normalize $ distributionVersion d
 		let old = Git.Version.normalize <$> distributionUrgentUpgrade d
 		if Just installed <= old
-			then canUpgrade Low urlrenderer d
-			else when (installed < avail) $
-				canUpgrade High urlrenderer d
+			then canUpgrade High urlrenderer d
+			else if installed < avail
+				then canUpgrade Low urlrenderer d
+				else debug [ "No new version found." ]
 
 canUpgrade :: AlertPriority -> UrlRenderer -> GitAnnexDistribution -> Assistant ()
 canUpgrade urgency urlrenderer d = do
