@@ -7,11 +7,12 @@
 
 module Types.Distribution where
 
+import Types.Key
 import Data.Time.Clock
 
 data GitAnnexDistribution = GitAnnexDistribution
 	{ distributionUrl :: String
-	, distributionSha256 :: String
+	, distributionKey :: Key
 	, distributionVersion :: GitAnnexVersion
 	, distributionReleasedate :: UTCTime
 	, distributionUrgentUpgrade :: Maybe GitAnnexVersion
