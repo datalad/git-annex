@@ -31,7 +31,6 @@ import qualified Data.Text as T
 
 upgraderThread :: UrlRenderer -> NamedThread
 upgraderThread urlrenderer = namedThread "Upgrader" $ do
-	checkUpgrade urlrenderer -- TODO: remove
 	when (isJust Build.SysConfig.upgradelocation) $ do
 		h <- liftIO . newNotificationHandle False . networkConnectedNotifier =<< getDaemonStatus
 		go h Nothing
