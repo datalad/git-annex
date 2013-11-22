@@ -1,0 +1,23 @@
+The difference picking the right type can make! Last night, I realized that
+the where I had a `distributionSha256sum :: String`, I should instead use
+`distributionKey :: Key`. This means that when git-annex is eventually
+downloading an upgrade, it can treat it as just another Key being
+downloaded from the web. So the webapp will show that transfer along with
+all the rest, and I can leverage tons of code for a new purpose. For
+example, it can simply fsck the key once it's downloaded to verify its
+checksum.
+
+Also, built a DistriutionUpdate program, which I'll run to generate the
+info files for a new version. And since I keep git-annex releases in a
+git-annex repo, this too leverages a lot of git-annex modules, and ended up
+being just 60 easy lines of code. The upgrade notification code is tested
+and working now.
+
+And, I made the assistant detect when the git-annex program binary is
+replaced or modified. Used my existing DirWatcher code for that. The plan
+is to restart the assistant on upgrade, although I need to add some sanity
+checks (eg, reuse the lsof code) first.
+
+----
+
+Today's work was sponsored by Paul Tötterman
