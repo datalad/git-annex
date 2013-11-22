@@ -434,13 +434,18 @@ runRepair forced g = do
 	putStrLn "Running git fsck ..."
 	fsckresult <- findBroken False g
 	if foundBroken fsckresult
-		then runRepairOf fsckresult forced Nothing g
+		then runRepair' fsckresult forced Nothing g
 		else do
 			putStrLn "No problems found."
 			return (True, S.empty, [])
 
 runRepairOf :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, MissingObjects, [Branch])
 runRepairOf fsckresult forced referencerepo g = do
+	preRepair g
+	runRepair' fsckresult forced referencerepo g
+
+runRepair' :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, MissingObjects, [Branch])
+runRepair' fsckresult forced referencerepo g = do
 	missing <- cleanCorruptObjects fsckresult g
 	stillmissing <- retrieveMissingObjects missing referencerepo g
 	case stillmissing of
