@@ -137,4 +137,3 @@ androidConfig c = overrides ++ filter (not . overridden) c
 		]
 	overridden (Config k _) = k `elem` overridekeys
 	overridekeys = map (\(Config k _) -> k) overrides
-
