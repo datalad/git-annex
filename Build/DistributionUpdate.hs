@@ -44,7 +44,7 @@ makeinfos = do
 	void $ inRepo $ runBool 
 		[ Param "commit"
 		, Param "-m"
-		, Param "update distribution info files"
+		, Param $ "publishing git-annex " ++ version
 		]
 	void $ inRepo $ runBool
 		[ Param "git-annex"
