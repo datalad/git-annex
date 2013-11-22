@@ -84,4 +84,4 @@ getDistributionInfo = do
 			)
 
 distributionInfoUrl :: String
-distributionInfoUrl = fromJust Build.SysConfig.upgradelocation ++ "/info"
+distributionInfoUrl = fromJust Build.SysConfig.upgradelocation ++ ".info"

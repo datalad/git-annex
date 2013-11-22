@@ -32,11 +32,7 @@ makeinfos = do
 			Nothing -> noop
 			Just (k, _b) -> whenM (inAnnex k) $ do
 				liftIO $ putStrLn f
-				{- The info file is in the same directory
-				 - as the annex release bundle file. This
-				 - relies on each such file being in its
-				 - own directory. -}
-				let infofile = (dropFileName f </> "info")
+				let infofile = f ++ ".info"
 				liftIO $ writeFile infofile $ show $ GitAnnexDistribution
 					{ distributionUrl = mkUrl basedir f
 					, distributionKey = k
