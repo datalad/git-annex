@@ -43,6 +43,7 @@ xmppNeeded = whenM (isNothing <$> liftAnnex getXMPPCreds) $ do
 			{ buttonLabel = "Configure a Jabber account"
 			, buttonUrl = urlrender XMPPConfigR
 			, buttonAction = Just close
+			, buttonPrimary = True
 			}
 #else
 xmppNeeded = return ()

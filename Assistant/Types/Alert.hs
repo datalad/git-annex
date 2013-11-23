@@ -51,7 +51,7 @@ data Alert = Alert
 	, alertIcon :: Maybe AlertIcon
 	, alertCombiner :: Maybe AlertCombiner
 	, alertName :: Maybe AlertName
-	, alertButton :: Maybe AlertButton
+	, alertButtons :: [AlertButton]
 	}
 
 data AlertIcon = ActivityIcon | SyncIcon | SuccessIcon | ErrorIcon | InfoIcon | UpgradeIcon | TheCloud
@@ -75,4 +75,5 @@ data AlertButton = AlertButton
 	{ buttonLabel :: Text
 	, buttonUrl :: Text
 	, buttonAction :: Maybe (AlertId -> IO ())
+	, buttonPrimary :: Bool
 	}

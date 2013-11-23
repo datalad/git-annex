@@ -87,7 +87,7 @@ makeAlertFiller success alert
 		{ alertClass = if c == Activity then c' else c
 		, alertPriority = Filler
 		, alertClosable = True
-		, alertButton = Nothing
+		, alertButtons = []
 		, alertIcon = Just $ if success then SuccessIcon else ErrorIcon
 		}
   where

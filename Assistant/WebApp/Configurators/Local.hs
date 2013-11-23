@@ -10,10 +10,10 @@
 module Assistant.WebApp.Configurators.Local where
 
 import Assistant.WebApp.Common
-import Assistant.WebApp.OtherRepos
 import Assistant.WebApp.Gpg
 import Assistant.WebApp.MakeRemote
 import Assistant.Sync
+import Assistant.Upgrade
 import Init
 import qualified Git
 import qualified Git.Construct

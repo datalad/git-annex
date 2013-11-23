@@ -42,6 +42,7 @@ mkAlertButton autoclose label urlrenderer route = do
 		{ buttonLabel = label
 		, buttonUrl = url
 		, buttonAction = if autoclose then Just close else Nothing
+		, buttonPrimary = True
 		}
 #endif
 
@@ -61,7 +62,7 @@ baseActivityAlert = Alert
 	, alertIcon = Just ActivityIcon
 	, alertCombiner = Nothing
 	, alertName = Nothing
-	, alertButton = Nothing
+	, alertButtons = []
 	}
 
 warningAlert :: String -> String -> Alert
@@ -77,7 +78,7 @@ warningAlert name msg = Alert
 	, alertIcon = Just ErrorIcon
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertName = Just $ WarningAlert name
-	, alertButton = Nothing
+	, alertButtons = []
 	}
 
 errorAlert :: String -> AlertButton -> Alert
@@ -93,7 +94,7 @@ errorAlert msg button = Alert
 	, alertIcon = Just ErrorIcon
 	, alertCombiner = Nothing
 	, alertName = Nothing
-	, alertButton = Just button
+	, alertButtons = [button]
 	}
 
 activityAlert :: Maybe TenseText -> [TenseChunk] -> Alert
@@ -160,7 +161,7 @@ sanityCheckFixAlert msg = Alert
 	, alertIcon = Just ErrorIcon
 	, alertName = Just SanityCheckFixAlert
 	, alertCombiner = Just $ dataCombiner (++)
-	, alertButton = Nothing
+	, alertButtons = []
 	}
   where
 	render alert = tenseWords $ alerthead : alertData alert ++ [alertfoot]
@@ -172,7 +173,7 @@ fsckingAlert button mr = baseActivityAlert
 	{ alertData = case mr of
 		Nothing -> [ UnTensed $ T.pack $ "Consistency check in progress" ]
 		Just r -> [ UnTensed $ T.pack $ "Consistency check of " ++ Remote.name r ++ " in progress"]
-	, alertButton = Just button
+	, alertButtons = [button]
 	}
 
 showFscking :: UrlRenderer -> Maybe Remote -> IO (Either E.SomeException a) -> Assistant a
@@ -204,7 +205,7 @@ notFsckedAlert mr button = Alert
 		]
 	, alertIcon = Just InfoIcon
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = [button]
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
@@ -223,7 +224,7 @@ canUpgradeAlert priority button = Alert
 			else "An upgrade of git-annex is available."
 	, alertIcon = Just UpgradeIcon
 	, alertPriority = priority
-	, alertButton = Just button
+	, alertButtons = [button]
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
@@ -234,13 +235,13 @@ canUpgradeAlert priority button = Alert
 	, alertData = []
 	}
 
-upgradeReadyAlert :: AlertButton -> Alert
-upgradeReadyAlert button = Alert
+upgradeReadyAlert :: [AlertButton] -> Alert
+upgradeReadyAlert buttons = Alert
 	{ alertHeader = Just $ fromString
 		"A new version of git-annex has been installed."
 	, alertIcon = Just UpgradeIcon
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = buttons
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
@@ -267,7 +268,7 @@ pairingAlert :: AlertButton -> Alert
 pairingAlert button = baseActivityAlert
 	{ alertData = [ UnTensed "Pairing in progress" ]
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = [button]
 	}
 
 pairRequestReceivedAlert :: String -> AlertButton -> Alert
@@ -283,7 +284,7 @@ pairRequestReceivedAlert who button = Alert
 	, alertIcon = Just InfoIcon
 	, alertName = Just $ PairAlert who
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
-	, alertButton = Just button
+	, alertButtons = [button]
 	}
 
 pairRequestAcknowledgedAlert :: String -> Maybe AlertButton -> Alert
@@ -292,7 +293,7 @@ pairRequestAcknowledgedAlert who button = baseActivityAlert
 	, alertPriority = High
 	, alertName = Just $ PairAlert who
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
-	, alertButton = button
+	, alertButtons = maybe [] (:[]) button
 	}
 
 xmppNeededAlert :: AlertButton -> Alert
@@ -300,7 +301,7 @@ xmppNeededAlert button = Alert
 	{ alertHeader = Just "Share with friends, and keep your devices in sync across the cloud."
 	, alertIcon = Just TheCloud
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = [button]
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
@@ -319,7 +320,7 @@ cloudRepoNeededAlert friendname button = Alert
 		]
 	, alertIcon = Just ErrorIcon
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = [button]
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
@@ -337,7 +338,7 @@ remoteRemovalAlert desc button = Alert
 		"\" has been emptied, and can now be removed."
 	, alertIcon = Just InfoIcon
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = [button]
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData

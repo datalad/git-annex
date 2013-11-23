@@ -22,7 +22,7 @@
 /config/fsck ConfigFsckR GET POST
 /config/fsck/preferences ConfigFsckPreferencesR POST
 /config/upgrade/start/#GitAnnexDistribution ConfigStartUpgradeR GET
-/config/upgrade/finish ConfigFinishUpgradeR GET
+/config/upgrade/finish/#Bool ConfigFinishUpgradeR GET
 
 /config/addrepository AddRepositoryR GET
 /config/repository/new NewRepositoryR GET POST
@@ -103,7 +103,7 @@
 /notifier/repolist/#RepoSelector NotifierRepoListR GET
 
 /alert/close/#AlertId CloseAlert GET
-/alert/click/#AlertId ClickAlert GET
+/alert/click/#AlertId/#Int ClickAlert GET
 /filebrowser FileBrowserR GET POST
 
 /transfer/pause/#Transfer PauseTransferR GET POST

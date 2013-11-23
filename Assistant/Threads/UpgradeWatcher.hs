@@ -12,6 +12,7 @@ module Assistant.Threads.UpgradeWatcher (
 ) where
 
 import Assistant.Common
+import Assistant.Upgrade
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import Config.Files
@@ -23,6 +24,8 @@ import Assistant.DaemonStatus
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
 #endif
+import qualified Annex
+import Types.Distribution
 
 import Control.Concurrent.MVar
 import Data.Tuple.Utils
@@ -77,14 +80,14 @@ changedFile urlrenderer mvar program file _status
  -}
 sanityCheck :: FilePath -> Assistant Bool
 sanityCheck program = do
-	whileM (liftIO $ haswriter <||> missing) $ do
+	untilM (liftIO $ nowriter <&&> present) $ do
 		debug [program, "is still being written; waiting"]
 		liftIO $ threadDelaySeconds (Seconds 60)
 	debug [program, "has changed, and seems to be ready to run"]
 	liftIO $ boolSystem program [Param "version"]
   where
-  	missing = not <$> doesFileExist program
-	haswriter = not . null
+	present = doesFileExist program
+	nowriter = null
 		. filter (`elem` [Lsof.OpenReadWrite, Lsof.OpenWriteOnly])
 		. map snd3
 		<$> Lsof.query [program]
@@ -95,9 +98,17 @@ handleUpgrade urlrenderer = do
 	-- (For example, other associated files may be being put into
 	-- place.)
 	liftIO $ threadDelaySeconds (Seconds 120)
+	ifM (liftAnnex $ (==) AutoUpgrade . annexAutoUpgrade <$> Annex.getGitConfig)
+		( do
+			debug ["starting automatic upgrade"]
+			unattendedUpgrade
 #ifdef WITH_WEBAPP
-	button <- mkAlertButton True (T.pack "Finish Upgrade") urlrenderer ConfigFinishUpgradeR
-	void $ addAlert (upgradeReadyAlert button)
+		, do
+			finish <- mkAlertButton True (T.pack "Finish Upgrade") urlrenderer (ConfigFinishUpgradeR False)
+			noask <- mkAlertButton True (T.pack "Always Upgrade Automatically") urlrenderer (ConfigFinishUpgradeR True)
+			void $ addAlert $ upgradeReadyAlert
+				[finish, noask { buttonPrimary = False }]
 #else
-	noop
+		, noop
 #endif
+		)

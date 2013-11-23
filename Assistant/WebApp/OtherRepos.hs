@@ -17,9 +17,9 @@ import qualified Git.Config
 import Config.Files
 import qualified Utility.Url as Url
 import Utility.Yesod
+import Assistant.Upgrade
 
 import Control.Concurrent
-import System.Process (cwd)
 
 getRepositorySwitcherR :: Handler Html
 getRepositorySwitcherR = page "Switch repository" Nothing $ do
@@ -63,13 +63,3 @@ switchToAssistant repo = do
 	delayed a = do
 		threadDelay 100000 -- 1/10th of a second
 		a
-
-{- Returns once the assistant has daemonized, but possibly before it's
- - listening for web connections. -}
-startAssistant :: FilePath -> IO ()
-startAssistant repo = do
-	program <- readProgramFile
-	(_, _, _, pid) <- 
-		createProcess $
-			(proc program ["assistant"]) { cwd = Just repo }
-	void $ checkSuccessProcess pid

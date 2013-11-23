@@ -164,6 +164,10 @@ data RemovableDrive = RemovableDrive
 data RepoKey = RepoKey KeyId | NoRepoKey
 	deriving (Read, Show, Eq, Ord)
 
+instance PathPiece Bool where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
 instance PathPiece RemovableDrive where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
