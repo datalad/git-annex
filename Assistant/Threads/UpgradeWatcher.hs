@@ -40,6 +40,7 @@ upgradWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ go =<< liftIO p
 		changed <- Just <$> asIO2 (changedFile urlrenderer mvar program)
 		let hooks = mkWatchHooks
 			{ addHook = changed
+			, delHook = changed
 			, addSymlinkHook = changed
 			, modifyHook = changed
 			, delDirHook = changed
@@ -76,12 +77,13 @@ changedFile urlrenderer mvar program file _status
  -}
 sanityCheck :: FilePath -> Assistant Bool
 sanityCheck program = do
-	whileM (liftIO haswriter) $ do
+	whileM (liftIO $ haswriter <||> missing) $ do
 		debug [program, "is still being written; waiting"]
 		liftIO $ threadDelaySeconds (Seconds 60)
 	debug [program, "has changed, and seems to be ready to run"]
 	liftIO $ boolSystem program [Param "version"]
   where
+  	missing = not <$> doesFileExist program
 	haswriter = not . null
 		. filter (`elem` [Lsof.OpenReadWrite, Lsof.OpenWriteOnly])
 		. map snd3
@@ -89,6 +91,10 @@ sanityCheck program = do
 
 handleUpgrade :: UrlRenderer -> Assistant ()
 handleUpgrade urlrenderer = do
+	-- Wait 2 minutes for any final upgrade changes to settle.
+	-- (For example, other associated files may be being put into
+	-- place.)
+	liftIO $ threadDelaySeconds (Seconds 120)
 #ifdef WITH_WEBAPP
 	button <- mkAlertButton True (T.pack "Finish Upgrade") urlrenderer ConfigFinishUpgradeR
 	void $ addAlert (upgradeReadyAlert button)
