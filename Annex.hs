@@ -255,9 +255,9 @@ withCurrentState a = do
  - Fix up the Repo to be a non-bare repo, and arrange for git commands
  - run by git-annex to be passed parameters that override this setting. -}
 fixupDirect :: Git.Repo -> Git.Repo
-fixupDirect r@(Repo { location = Local { gitdir = d, worktree = Nothing } }) =
+fixupDirect r@(Repo { location = l@(Local { gitdir = d, worktree = Nothing }) }) =
 	r
-		{ location = Local { gitdir = d </> ".git", worktree = Just d }
+		{ location = l { worktree = Just (parentDir d) }
 		, gitGlobalOpts = gitGlobalOpts r ++
 			[ Param "-c"
 			, Param $ coreBare ++ "=" ++ boolConfig False

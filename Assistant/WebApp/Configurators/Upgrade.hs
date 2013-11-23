@@ -23,6 +23,7 @@ import Git
 
 import Data.Time.Clock
 import Control.Concurrent
+import System.Posix (getProcessID, signalProcess, sigTERM)
 
 getConfigStartUpgradeR :: GitAnnexDistribution -> Handler Html
 getConfigStartUpgradeR d = page "Upgrade git-annex" (Just Configuration) $ do
@@ -38,6 +39,11 @@ getConfigStartUpgradeR d = page "Upgrade git-annex" (Just Configuration) $ do
  - gitAnnexUrlFile and our gitAnnexPidFile. Pausing the watcher is also
  - a good idea, to avoid fighting when two assistants are running in the
  - same repo.
+ -
+ - Note that only the tag that requested this page gets redirected.
+ - If the user has multiple web browser tabs open to the webapp,
+ - the others will show the upgradingAlert, and keep running until
+ - this process is terminated.
  -}
 getConfigFinishUpgradeR :: Handler Html
 getConfigFinishUpgradeR = do
@@ -45,12 +51,12 @@ getConfigFinishUpgradeR = do
 	liftIO . maybe noop (`throwTo` PauseWatcher) =<< liftAssistant (namedThreadId watchThread)
 	liftIO . nukeFile =<< liftAnnex (fromRepo gitAnnexUrlFile)
 	liftIO . nukeFile =<< liftAnnex (fromRepo gitAnnexPidFile)
-	ret <- switchToAssistant =<< liftAnnex (repoLocation <$> Annex.gitRepo)
-	void . liftIO . forkIO =<< liftAssistant (asIO reaper)
-	return ret
+	reapself `after` startnewprocess
   where
 	-- Wait for the redirect to be served to the browser
 	-- before terminating this process.
-	reaper = do
-		liftIO $ threadDelaySeconds (Seconds 120)
-		liftIO $ exitSuccess
+	reapself = liftIO $ void $ forkIO $ do
+		threadDelaySeconds (Seconds 120)
+		signalProcess sigTERM =<< getProcessID
+	startnewprocess = switchToAssistant
+		=<< liftAnnex (repoLocation <$> Annex.gitRepo)
