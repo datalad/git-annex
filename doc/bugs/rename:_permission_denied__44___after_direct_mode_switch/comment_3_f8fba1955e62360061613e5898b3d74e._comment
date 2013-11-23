@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://nicolas-schodet.myopenid.com/"
+ ip="81.56.19.53"
+ subject="comment 3"
+ date="2013-11-23T15:42:26Z"
+ content="""
+The link seems to be special:
+
+[[!format sh \"\"\"
+Umba:2013-07-31$ ls -lO 2013-07-31_180411.jpg 
+lrwxr-xr-x  1 marie-eve  staff  uchg 191 Aug 12 21:45 2013-07-31_180411.jpg@ -> ../.git/annex/objects/wq/3j/SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c/SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c
+Umba:2013-07-31$
+\"\"\"]]
+
+I tried the chflags command with no success... I suppose I need a MAC specialist.
+"""]]
