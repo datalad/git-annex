@@ -1,11 +1,10 @@
-// Updates a div with a specified id, by polling an url,
-// which should return a new div, with the same id.
-
 connfails=0;
 
 longpollcallbacks = $.Callbacks();
 
-function longpoll(url, divid, cont, fail) {
+// Updates a div with a specified id, by polling an url,
+// which should return a new div, with the same id.
+function longpoll_div(url, divid, cont, fail) {
 	$.ajax({
 		'url': url,
 		'dataType': 'html',
@@ -23,6 +22,21 @@ function longpoll(url, divid, cont, fail) {
 			else {
 				cont();
 			}
+		}
+	});
+}
+
+function longpoll_data(url, cont) {
+	$.ajax({
+		'url': url,
+		'dataType': 'text',
+		'success': function(data, status, jqxhr) {
+			connfails=0;
+			cont(1, data);
+		},
+		'error': function(jqxhr, msg, e) {
+			connfails=connfails+1;
+			cont(0);
 		}
 	});
 }

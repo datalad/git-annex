@@ -103,6 +103,9 @@
 /repolist/#NotificationId/#RepoSelector RepoListR GET
 /notifier/repolist/#RepoSelector NotifierRepoListR GET
 
+/globalredir/#NotificationId GlobalRedirR GET
+/notifier/globalredir NotifierGlobalRedirR GET
+
 /alert/close/#AlertId CloseAlert GET
 /alert/click/#AlertId/#Int ClickAlert GET
 /filebrowser FileBrowserR GET POST

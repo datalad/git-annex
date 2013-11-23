@@ -12,7 +12,6 @@ module Assistant.WebApp.Configurators.Upgrade where
 import Assistant.WebApp.Common
 import qualified Annex
 import Types.Distribution
-import Assistant.WebApp.OtherRepos
 import Assistant.Upgrade
 import Utility.HumanTime
 import Git
@@ -28,20 +27,14 @@ getConfigStartUpgradeR d = page "Upgrade git-annex" (Just Configuration) $ do
 	$(widgetFile "configurators/upgrade/start")
 
 {- Finish upgrade by starting the new assistant in the same repository this
- - one is running in, and redirecting to it.
- -
- - Note that only the browser tab that requested this page gets redirected.
- - If the user has multiple web browser tabs open to the webapp,
- - the others will show the upgradingAlert, and keep running until
- - this process is terminated.
- -}
+ - one is running in, and redirecting to it. -}
 getConfigFinishUpgradeR :: Handler Html
 getConfigFinishUpgradeR = do
 	liftAssistant prepUpgrade
-	liftIO postUpgrade `after` startnewprocess
-  where
-	startnewprocess = switchToAssistant
+	url <- liftIO . newAssistantUrl
 		=<< liftAnnex (repoLocation <$> Annex.gitRepo)
+	liftAssistant $ postUpgrade url
+	redirect url
 
 getConfigEnableAutomaticUpgradeR :: Handler Html
 getConfigEnableAutomaticUpgradeR = do

@@ -217,12 +217,12 @@ notFsckedAlert mr button = Alert
 	, alertData = []
 	}
 
-baseUpgradeAlert :: AlertButton -> TenseText -> Alert
-baseUpgradeAlert button message = Alert
+baseUpgradeAlert :: [AlertButton] -> TenseText -> Alert
+baseUpgradeAlert buttons message = Alert
 	{ alertHeader = Just message
 	, alertIcon = Just UpgradeIcon
 	, alertPriority = High
-	, alertButtons = [button]
+	, alertButtons = buttons
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
@@ -235,7 +235,7 @@ baseUpgradeAlert button message = Alert
 
 canUpgradeAlert :: AlertPriority -> AlertButton -> Alert
 canUpgradeAlert priority button = 
-	(baseUpgradeAlert button $ fromString msg)
+	(baseUpgradeAlert [button] $ fromString msg)
 		{ alertPriority = priority }
   where
 	msg = if priority >= High
@@ -243,15 +243,15 @@ canUpgradeAlert priority button =
 		else "An upgrade of git-annex is available."
 
 upgradeReadyAlert :: AlertButton -> Alert
-upgradeReadyAlert button = baseUpgradeAlert button $
+upgradeReadyAlert button = baseUpgradeAlert [button] $
 	fromString "A new version of git-annex has been installed."
 
 upgradingAlert :: Alert
 upgradingAlert = activityAlert Nothing [ fromString "Upgrading git-annex" ]
 
-upgradeFinishedAlert :: AlertButton -> GitAnnexVersion -> Alert
+upgradeFinishedAlert :: Maybe AlertButton -> GitAnnexVersion -> Alert
 upgradeFinishedAlert button version =
-	baseUpgradeAlert button $ fromString $ 
+	baseUpgradeAlert (maybe [] (:[]) button) $ fromString $ 
 		"Finished upgrading git-annex to version " ++ version
 
 brokenRepositoryAlert :: AlertButton -> Alert

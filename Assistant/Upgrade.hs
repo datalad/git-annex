@@ -14,9 +14,14 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 import Assistant.NamedThread
 import Utility.ThreadScheduler
+import Utility.NotificationBroadcaster
+import Utility.Url
 import Utility.Env
 import Git
+import qualified Git.Construct
+import qualified Git.Config
 import Config.Files
+import Types.Distribution
 
 import Control.Concurrent
 import System.Posix (getProcessID, signalProcess, sigTERM)
@@ -35,22 +40,58 @@ prepUpgrade = do
 	liftIO . nukeFile =<< liftAnnex (fromRepo gitAnnexPidFile)
 	void $ liftIO $ setEnv upgradedEnv "1" True
 
-{- Wait for browser to update before terminating this process. -}
-postUpgrade :: IO ()
-postUpgrade = void $ forkIO $ do
-	threadDelaySeconds (Seconds 120)
-	signalProcess sigTERM =<< getProcessID
+{- To finish an upgrade, send a global redirect to the new url
+ - to any web browsers that are displaying the webapp.
+ -
+ - Wait for browser to update before terminating this process. -}
+postUpgrade :: URLString -> Assistant ()
+postUpgrade url = do
+	modifyDaemonStatus_ $ \status -> status { globalRedirUrl = Just url }
+	liftIO . sendNotification . globalRedirNotifier =<< getDaemonStatus
+	void $ liftIO $ forkIO $ do
+		threadDelaySeconds (Seconds 120)
+		signalProcess sigTERM =<< getProcessID
 
-{- Upgrade without interaction in the webapp.
- - 
- - XXX If the webapp is open, this will make it stop working
- - or close, with no more indication why than an alert.
- -}
+{- Upgrade without interaction in the webapp. -}
 unattendedUpgrade :: Assistant ()
 unattendedUpgrade = do
 	prepUpgrade
-	liftIO . startAssistant =<< liftAnnex (repoLocation <$> Annex.gitRepo)
-	liftIO postUpgrade
+	url <- liftIO . newAssistantUrl
+		=<< liftAnnex (repoLocation <$> Annex.gitRepo)
+	postUpgrade url
+
+autoUpgradeEnabled :: Assistant Bool
+autoUpgradeEnabled = liftAnnex $ (==) AutoUpgrade . annexAutoUpgrade <$> Annex.getGitConfig
+
+checkSuccessfulUpgrade :: IO Bool
+checkSuccessfulUpgrade = isJust <$> getEnv upgradedEnv
+
+upgradedEnv :: String
+upgradedEnv = "GIT_ANNEX_UPGRADED"
+
+{- Starts up the assistant in the repository, and waits for it to create
+ - a gitAnnexUrlFile. Waits for the assistant to be up and listening for
+ - connections by testing the url. -}
+newAssistantUrl :: FilePath -> IO URLString
+newAssistantUrl repo = do
+	startAssistant repo
+	geturl
+  where
+	geturl = do
+		r <- Git.Config.read =<< Git.Construct.fromPath repo
+		waiturl $ gitAnnexUrlFile r
+	waiturl urlfile = do
+		v <- tryIO $ readFile urlfile
+		case v of
+			Left _ -> delayed $ waiturl urlfile
+			Right url -> ifM (listening url)
+				( return url
+				, delayed $ waiturl urlfile
+				)
+	listening url = catchBoolIO $ fst <$> exists url [] Nothing
+	delayed a = do
+		threadDelay 100000 -- 1/10th of a second
+		a
 
 {- Returns once the assistant has daemonized, but possibly before it's
  - listening for web connections. -}
@@ -61,9 +102,3 @@ startAssistant repo = do
 		createProcess $
 			(proc program ["assistant"]) { cwd = Just repo }
 	void $ checkSuccessProcess pid
-
-checkSuccessfulUpgrade :: IO Bool
-checkSuccessfulUpgrade = isJust <$> getEnv upgradedEnv
-
-upgradedEnv :: String
-upgradedEnv = "GIT_ANNEX_UPGRADED"

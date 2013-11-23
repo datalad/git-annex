@@ -25,8 +25,6 @@ import Assistant.DaemonStatus
 import Assistant.WebApp.Types
 import qualified Build.SysConfig
 #endif
-import qualified Annex
-import Types.Distribution
 
 import Control.Concurrent.MVar
 import Data.Tuple.Utils
@@ -102,7 +100,7 @@ handleUpgrade urlrenderer = do
 	-- (For example, other associated files may be being put into
 	-- place.)
 	liftIO $ threadDelaySeconds (Seconds 120)
-	ifM (liftAnnex $ (==) AutoUpgrade . annexAutoUpgrade <$> Annex.getGitConfig)
+	ifM autoUpgradeEnabled
 		( do
 			debug ["starting automatic upgrade"]
 			unattendedUpgrade
@@ -118,9 +116,12 @@ handleUpgrade urlrenderer = do
 showSuccessfulUpgrade :: UrlRenderer -> Assistant ()
 showSuccessfulUpgrade urlrenderer = do
 #ifdef WITH_WEBAPP
-	button <- mkAlertButton True
-		(T.pack "Enable Automatic Upgrades")
-		urlrenderer ConfigEnableAutomaticUpgradeR
+	button <- ifM autoUpgradeEnabled 
+		( pure Nothing
+		, Just <$> mkAlertButton True
+			(T.pack "Enable Automatic Upgrades")
+			urlrenderer ConfigEnableAutomaticUpgradeR
+		)
 	void $ addAlert $ upgradeFinishedAlert button Build.SysConfig.packageversion
 #else
 	noop

@@ -14,6 +14,7 @@ import Logs.Transfer
 import Assistant.Types.ThreadName
 import Assistant.Types.NetMessager
 import Assistant.Types.Alert
+import Utility.Url
 
 import Control.Concurrent.STM
 import Control.Concurrent.MVar
@@ -55,20 +56,23 @@ data DaemonStatus = DaemonStatus
 	, desynced :: S.Set UUID
 	-- Pairing request that is in progress.
 	, pairingInProgress :: Maybe PairingInProgress
-	-- Broadcasts notifications about all changes to the DaemonStatus
+	-- Broadcasts notifications about all changes to the DaemonStatus.
 	, changeNotifier :: NotificationBroadcaster
 	-- Broadcasts notifications when queued or current transfers change.
 	, transferNotifier :: NotificationBroadcaster
-	-- Broadcasts notifications when there's a change to the alerts
+	-- Broadcasts notifications when there's a change to the alerts.
 	, alertNotifier :: NotificationBroadcaster
-	-- Broadcasts notifications when the syncRemotes change
+	-- Broadcasts notifications when the syncRemotes change.
 	, syncRemotesNotifier :: NotificationBroadcaster
-	-- Broadcasts notifications when the scheduleLog changes
+	-- Broadcasts notifications when the scheduleLog changes.
 	, scheduleLogNotifier :: NotificationBroadcaster
 	-- Broadcasts a notification once the startup sanity check has run.
 	, startupSanityCheckNotifier :: NotificationBroadcaster
-	-- Broadcasts notifications when the network is connected
+	-- Broadcasts notifications when the network is connected.
 	, networkConnectedNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when a global redirect is needed.
+	, globalRedirNotifier :: NotificationBroadcaster
+	, globalRedirUrl :: Maybe URLString
 	-- When the XMPP client is connected, this will contain the XMPP
 	-- address.
 	, xmppClientID :: Maybe ClientID
@@ -106,5 +110,7 @@ newDaemonStatus = DaemonStatus
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
+	<*> newNotificationBroadcaster
+	<*> pure Nothing
 	<*> pure Nothing
 	<*> pure M.empty
