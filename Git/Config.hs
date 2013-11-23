@@ -110,8 +110,13 @@ store s repo = do
  -}
 updateLocation :: Repo -> IO Repo
 updateLocation r@(Repo { location = LocalUnknown d })
-	| isBare r = updateLocation' r $ Local d Nothing
-	| otherwise = updateLocation' r $ Local (d </> ".git") (Just d)
+	| isBare r = ifM (doesDirectoryExist dotgit)
+			( updateLocation' r $ Local dotgit Nothing
+			, updateLocation' r $ Local d Nothing
+			)
+	| otherwise = updateLocation' r $ Local dotgit (Just d)
+  where
+	dotgit = (d </> ".git")
 updateLocation r@(Repo { location = l@(Local {}) }) = updateLocation' r l
 updateLocation r = return r
 
