@@ -35,13 +35,16 @@ getConfigStartUpgradeR d = page "Upgrade git-annex" (Just Configuration) $ do
  - the others will show the upgradingAlert, and keep running until
  - this process is terminated.
  -}
-getConfigFinishUpgradeR :: Bool -> Handler Html
-getConfigFinishUpgradeR enableautoupgrade = do
-	when enableautoupgrade $ liftAnnex $
-		setConfig (annexConfig "autoupgrade")
-			(fromAutoUpgrade AutoUpgrade)
+getConfigFinishUpgradeR :: Handler Html
+getConfigFinishUpgradeR = do
 	liftAssistant prepUpgrade
 	liftIO postUpgrade `after` startnewprocess
   where
 	startnewprocess = switchToAssistant
 		=<< liftAnnex (repoLocation <$> Annex.gitRepo)
+
+getConfigEnableAutomaticUpgradeR :: Handler Html
+getConfigEnableAutomaticUpgradeR = do
+	liftAnnex $ setConfig (annexConfig "autoupgrade")
+		(fromAutoUpgrade AutoUpgrade)
+	redirect DashboardR

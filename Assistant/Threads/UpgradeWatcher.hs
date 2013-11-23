@@ -23,6 +23,7 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
+import qualified Build.SysConfig
 #endif
 import qualified Annex
 import Types.Distribution
@@ -35,7 +36,10 @@ data WatcherState = InStartupScan | Started | Upgrading
 	deriving (Eq)
 
 upgradWatcherThread :: UrlRenderer -> NamedThread
-upgradWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ go =<< liftIO programPath
+upgradWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ do
+	whenM (liftIO $ checkSuccessfulUpgrade) $
+		showSuccessfulUpgrade urlrenderer
+	go =<< liftIO programPath
   where
 	go Nothing = debug [ "cannot determine program path" ]
 	go (Just program) = do
@@ -80,7 +84,7 @@ changedFile urlrenderer mvar program file _status
  -}
 sanityCheck :: FilePath -> Assistant Bool
 sanityCheck program = do
-	untilM (liftIO $ nowriter <&&> present) $ do
+	untilM (liftIO $ present <&&> nowriter) $ do
 		debug [program, "is still being written; waiting"]
 		liftIO $ threadDelaySeconds (Seconds 60)
 	debug [program, "has changed, and seems to be ready to run"]
@@ -104,11 +108,20 @@ handleUpgrade urlrenderer = do
 			unattendedUpgrade
 #ifdef WITH_WEBAPP
 		, do
-			finish <- mkAlertButton True (T.pack "Finish Upgrade") urlrenderer (ConfigFinishUpgradeR False)
-			noask <- mkAlertButton True (T.pack "Always Upgrade Automatically") urlrenderer (ConfigFinishUpgradeR True)
-			void $ addAlert $ upgradeReadyAlert
-				[finish, noask { buttonPrimary = False }]
+			button <- mkAlertButton True (T.pack "Finish Upgrade") urlrenderer ConfigFinishUpgradeR
+			void $ addAlert $ upgradeReadyAlert button
 #else
 		, noop
 #endif
 		)
+
+showSuccessfulUpgrade :: UrlRenderer -> Assistant ()
+showSuccessfulUpgrade urlrenderer = do
+#ifdef WITH_WEBAPP
+	button <- mkAlertButton True
+		(T.pack "Enable Automatic Upgrades")
+		urlrenderer ConfigEnableAutomaticUpgradeR
+	void $ addAlert $ upgradeFinishedAlert button Build.SysConfig.packageversion
+#else
+	noop
+#endif

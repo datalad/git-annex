@@ -14,6 +14,7 @@ import Assistant.Alert
 import Assistant.DaemonStatus
 import Assistant.NamedThread
 import Utility.ThreadScheduler
+import Utility.Env
 import Git
 import Config.Files
 
@@ -32,6 +33,7 @@ prepUpgrade = do
 	liftIO . maybe noop (`throwTo` PauseWatcher) =<< namedThreadId watchThread
 	liftIO . nukeFile =<< liftAnnex (fromRepo gitAnnexUrlFile)
 	liftIO . nukeFile =<< liftAnnex (fromRepo gitAnnexPidFile)
+	void $ liftIO $ setEnv upgradedEnv "1" True
 
 {- Wait for browser to update before terminating this process. -}
 postUpgrade :: IO ()
@@ -59,3 +61,9 @@ startAssistant repo = do
 		createProcess $
 			(proc program ["assistant"]) { cwd = Just repo }
 	void $ checkSuccessProcess pid
+
+checkSuccessfulUpgrade :: IO Bool
+checkSuccessfulUpgrade = isJust <$> getEnv upgradedEnv
+
+upgradedEnv :: String
+upgradedEnv = "GIT_ANNEX_UPGRADED"

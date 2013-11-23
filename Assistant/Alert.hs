@@ -15,6 +15,7 @@ import Assistant.Alert.Utility
 import qualified Remote
 import Utility.Tense
 import Logs.Transfer
+import Types.Distribution
 
 import Data.String
 import qualified Data.Text as T
@@ -216,44 +217,42 @@ notFsckedAlert mr button = Alert
 	, alertData = []
 	}
 
-canUpgradeAlert :: AlertPriority -> AlertButton -> Alert
-canUpgradeAlert priority button = Alert
-	{ alertHeader = Just $ fromString $
-		if priority >= High
-			then "An important upgrade of git-annex is available!"
-			else "An upgrade of git-annex is available."
+baseUpgradeAlert :: AlertButton -> TenseText -> Alert
+baseUpgradeAlert button message = Alert
+	{ alertHeader = Just message
 	, alertIcon = Just UpgradeIcon
-	, alertPriority = priority
+	, alertPriority = High
 	, alertButtons = [button]
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
 	, alertCounter = 0
 	, alertBlockDisplay = True
-	, alertName = Just CanUpgradeAlert
-	, alertCombiner = Just $ dataCombiner $ \_old new -> new
+	, alertName = Just UpgradeAlert
+	, alertCombiner = Just $ fullCombiner $ \new _old -> new
 	, alertData = []
 	}
 
-upgradeReadyAlert :: [AlertButton] -> Alert
-upgradeReadyAlert buttons = Alert
-	{ alertHeader = Just $ fromString
-		"A new version of git-annex has been installed."
-	, alertIcon = Just UpgradeIcon
-	, alertPriority = High
-	, alertButtons = buttons
-	, alertClosable = True
-	, alertClass = Message
-	, alertMessageRender = renderData
-	, alertCounter = 0
-	, alertBlockDisplay = True
-	, alertName = Just UpgradeReadyAlert
-	, alertCombiner = Just $ dataCombiner $ \_old new -> new
-	, alertData = []
-	}
+canUpgradeAlert :: AlertPriority -> AlertButton -> Alert
+canUpgradeAlert priority button = 
+	(baseUpgradeAlert button $ fromString msg)
+		{ alertPriority = priority }
+  where
+	msg = if priority >= High
+		then "An important upgrade of git-annex is available!"
+		else "An upgrade of git-annex is available."
+
+upgradeReadyAlert :: AlertButton -> Alert
+upgradeReadyAlert button = baseUpgradeAlert button $
+	fromString "A new version of git-annex has been installed."
 
 upgradingAlert :: Alert
-upgradingAlert = activityAlert Nothing [fromString "Upgrading git-annex"]
+upgradingAlert = activityAlert Nothing [ fromString "Upgrading git-annex" ]
+
+upgradeFinishedAlert :: AlertButton -> GitAnnexVersion -> Alert
+upgradeFinishedAlert button version =
+	baseUpgradeAlert button $ fromString $ 
+		"Finished upgrading git-annex to version " ++ version
 
 brokenRepositoryAlert :: AlertButton -> Alert
 brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"
