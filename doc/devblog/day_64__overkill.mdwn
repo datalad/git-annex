@@ -1,0 +1,31 @@
+Completely finished up with making the assistant detect when git-annex's
+binary has changed and handling the restart.
+
+It's a bit tricky because during an upgrade there can be two assistant
+daemons running at the same time, in the same repository. Although I
+disable the watcher of the old one first. Luckily, git-annex has long
+supported running multiple concurrent git-annex processes in the same
+repository.
+
+The surprisingly annoying part turned out to be how to make the webapp
+redirect the browser to the new url when it's upgraded. Particularly needed
+when automatic upgrades are enabled, since the user will not then be taking
+any action in the webapp that could result in a redirect. My solution to this
+feels like overkill; the webapp does ajax long polling until it gets an
+url, and then redirects to it. Had to write javascript code and ugh.
+
+But, that turned out to also be useful when manually restarting the webapp
+(removed some horrible old code that ran a shell script to do it before),
+and also when shutting the webapp down.
+
+[[!img assistant/downloadupgrade.png alt="assistant downloading an upgrade to itself"]]
+
+Getting back to upgrades, I have the assistant downloading the upgrade, and
+running a hook action once the key is transferred. Now all I need is some
+platform-specific code to install it. Will probably be hairy, especially on
+OSX where I need to somehow unmount the old git-annex dmg and mount the new
+one, from within a program running on the old dmg.
+
+----
+
+Today's work was sponsored by Evan Deaubl.
