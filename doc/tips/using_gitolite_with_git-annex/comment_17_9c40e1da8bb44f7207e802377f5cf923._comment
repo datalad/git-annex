@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm9tgeFE5v-arAYYftSv3yUTI5Q4qB2C9M"
+ nickname="Khaije"
+ subject="comment 17"
+ date="2013-11-23T02:14:12Z"
+ content="""
+my gitolite.rc is available at https://gist.github.com/khaije1/7609848
+
+For whatever reason I've found this to be very simple to get working so I'd guess there's a missing ingredient somewhere. The combination of gitolite and git-annex is valuable to me so I'll add documents to the url above in hopes it will assist some people with getting the same value.
+
+"""]]
