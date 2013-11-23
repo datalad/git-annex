@@ -153,7 +153,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 #endif
 				, assist $ netWatcherThread
 				, assist $ upgraderThread urlrenderer
-				, assist $ upgradWatcherThread
+				, assist $ upgradWatcherThread urlrenderer
 				, assist $ netWatcherFallbackThread
 				, assist $ transferScannerThread urlrenderer
 				, assist $ cronnerThread urlrenderer

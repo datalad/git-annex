@@ -73,7 +73,7 @@ checkUpgrade urlrenderer = do
 canUpgrade :: AlertPriority -> UrlRenderer -> GitAnnexDistribution -> Assistant ()
 canUpgrade urgency urlrenderer d = do
 #ifdef WITH_WEBAPP
-	button <- mkAlertButton False (T.pack "Upgrade") urlrenderer (ConfigUpgradeR d)
+	button <- mkAlertButton True (T.pack "Upgrade") urlrenderer (ConfigStartUpgradeR d)
 	void $ addAlert (canUpgradeAlert urgency button)
 #else
 	noop

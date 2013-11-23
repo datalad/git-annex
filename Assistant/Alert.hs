@@ -217,11 +217,10 @@ notFsckedAlert mr button = Alert
 
 canUpgradeAlert :: AlertPriority -> AlertButton -> Alert
 canUpgradeAlert priority button = Alert
-	{ alertHeader = Just $ fromString $ concat
-		[ if priority >= High
+	{ alertHeader = Just $ fromString $
+		if priority >= High
 			then "An important upgrade of git-annex is available!"
 			else "An upgrade of git-annex is available."
-		]
 	, alertIcon = Just UpgradeIcon
 	, alertPriority = priority
 	, alertButton = Just button
@@ -230,10 +229,30 @@ canUpgradeAlert priority button = Alert
 	, alertMessageRender = renderData
 	, alertCounter = 0
 	, alertBlockDisplay = True
-	, alertName = Just UpgradeAlert
+	, alertName = Just CanUpgradeAlert
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertData = []
 	}
+
+upgradeReadyAlert :: AlertButton -> Alert
+upgradeReadyAlert button = Alert
+	{ alertHeader = Just $ fromString
+		"A new version of git-annex has been installed."
+	, alertIcon = Just UpgradeIcon
+	, alertPriority = High
+	, alertButton = Just button
+	, alertClosable = True
+	, alertClass = Message
+	, alertMessageRender = renderData
+	, alertCounter = 0
+	, alertBlockDisplay = True
+	, alertName = Just UpgradeReadyAlert
+	, alertCombiner = Just $ dataCombiner $ \_old new -> new
+	, alertData = []
+	}
+
+upgradingAlert :: Alert
+upgradingAlert = activityAlert Nothing [fromString "Upgrading git-annex"]
 
 brokenRepositoryAlert :: AlertButton -> Alert
 brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"

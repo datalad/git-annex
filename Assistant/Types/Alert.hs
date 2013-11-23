@@ -31,7 +31,8 @@ data AlertName
 	| CloudRepoNeededAlert
 	| SyncAlert
 	| NotFsckedAlert
-	| UpgradeAlert
+	| CanUpgradeAlert
+	| UpgradeReadyAlert
 	deriving (Eq)
 
 {- The first alert is the new alert, the second is an old alert.

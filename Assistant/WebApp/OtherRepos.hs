@@ -35,14 +35,17 @@ listOtherRepos = do
 	names <- mapM relHome gooddirs
 	return $ sort $ zip names gooddirs
 
-{- Starts up the assistant in the repository, and waits for it to create
- - a gitAnnexUrlFile. Waits for the assistant to be up and listening for
- - connections by testing the url. Once it's running, redirect to it.
- -}
 getSwitchToRepositoryR :: FilePath -> Handler Html
 getSwitchToRepositoryR repo = do
-	liftIO $ startAssistant repo
 	liftIO $ addAutoStartFile repo -- make this the new default repo
+	switchToAssistant repo
+
+{- Starts up the assistant in the repository, and waits for it to create
+ - a gitAnnexUrlFile. Waits for the assistant to be up and listening for
+ - connections by testing the url. Once it's running, redirect to it. -}
+switchToAssistant :: FilePath -> Handler Html
+switchToAssistant repo = do
+	liftIO $ startAssistant repo
 	redirect =<< liftIO geturl
   where
 	geturl = do
