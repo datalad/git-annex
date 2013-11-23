@@ -10,11 +10,10 @@
 module Assistant.WebApp.Configurators.Upgrade where
 
 import Assistant.WebApp.Common
-import qualified Annex
 import Types.Distribution
 import Assistant.Upgrade
+import Assistant.Restart
 import Utility.HumanTime
-import Git
 import Config
 
 import Data.Time.Clock
@@ -31,8 +30,7 @@ getConfigStartUpgradeR d = page "Upgrade git-annex" (Just Configuration) $ do
 getConfigFinishUpgradeR :: Handler Html
 getConfigFinishUpgradeR = do
 	liftAssistant prepUpgrade
-	url <- liftIO . newAssistantUrl
-		=<< liftAnnex (repoLocation <$> Annex.gitRepo)
+	url <- liftAssistant runRestart
 	liftAssistant $ postUpgrade url
 	redirect url
 

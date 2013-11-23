@@ -14,7 +14,7 @@ import Assistant.WebApp.Types
 import Assistant.WebApp.Page
 import Config.Files
 import Utility.Yesod
-import Assistant.Upgrade
+import Assistant.Restart
 
 getRepositorySwitcherR :: Handler Html
 getRepositorySwitcherR = page "Switch repository" Nothing $ do
