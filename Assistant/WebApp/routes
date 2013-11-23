@@ -9,6 +9,7 @@
 
 /shutdown ShutdownR GET
 /shutdown/confirm ShutdownConfirmedR GET
+/shutdown/complete NotRunningR GET
 /restart RestartR GET
 /restart/thread/#ThreadName RestartThreadR GET
 /log LogR GET

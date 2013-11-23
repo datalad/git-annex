@@ -28,7 +28,6 @@ import qualified Data.Text as T
 #ifndef WITH_OLD_YESOD
 import qualified Data.Aeson.Types as Aeson
 #endif
-import Control.Concurrent
 
 {- Add to any widget to make it auto-update using long polling.
  -
@@ -51,7 +50,6 @@ autoUpdate tident geturl ms_delay ms_startdelay = do
 	let startdelay = Aeson.String (T.pack (show ms_startdelay))
 	let ident = Aeson.String tident
 #endif
-	addScript $ StaticR longpolling_js
 	$(widgetFile "notifications/longpolling")
 
 {- Notifier urls are requested by the javascript, to avoid allocation
@@ -103,14 +101,6 @@ getGlobalRedirBroadcaster =  globalRedirNotifier <$> getDaemonStatus
 
 getGlobalRedirR :: NotificationId -> Handler Text
 getGlobalRedirR nid = do
-	tid <- liftIO myThreadId
-	liftIO $ do
-		hPutStrLn stderr $ show ("getGlobalRedirR waiting", tid)
-		hFlush stderr
 	waitNotifier getGlobalRedirBroadcaster nid
-	v <- globalRedirUrl <$> liftAssistant getDaemonStatus
-	liftIO $ do
-		hPutStrLn stderr $ show ("getGlobalRedirR got a val", v, tid)
-		hFlush stderr
 	maybe (getGlobalRedirR nid) (return . T.pack)
 		=<< globalRedirUrl <$> liftAssistant getDaemonStatus

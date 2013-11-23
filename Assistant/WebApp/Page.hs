@@ -50,7 +50,10 @@ page title navbaritem content = customPage navbaritem $ do
 
 {- A custom page, with no title or sidebar set. -}
 customPage :: Maybe NavBarItem -> Widget -> Handler Html
-customPage navbaritem content = do
+customPage = customPage' True
+
+customPage' :: Bool -> Maybe NavBarItem -> Widget -> Handler Html
+customPage' with_longpolling navbaritem content = do
 	webapp <- getYesod
 	case cannotRun webapp of
 		Nothing -> do
@@ -62,6 +65,8 @@ customPage navbaritem content = do
 				addScript $ StaticR js_bootstrap_dropdown_js
 				addScript $ StaticR js_bootstrap_modal_js
 				addScript $ StaticR js_bootstrap_collapse_js
+				when with_longpolling $
+					addScript $ StaticR longpolling_js
 				$(widgetFile "page")
 			giveUrlRenderer $(Hamlet.hamletFile $ hamletTemplate "bootstrap")
 		Just msg -> error msg
