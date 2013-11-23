@@ -73,6 +73,8 @@ data DaemonStatus = DaemonStatus
 	-- Broadcasts notifications when a global redirect is needed.
 	, globalRedirNotifier :: NotificationBroadcaster
 	, globalRedirUrl :: Maybe URLString
+	-- Actions to run after a Key is transferred.
+	, transferHook :: M.Map Key (Transfer -> IO ())
 	-- When the XMPP client is connected, this will contain the XMPP
 	-- address.
 	, xmppClientID :: Maybe ClientID
@@ -112,5 +114,6 @@ newDaemonStatus = DaemonStatus
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> pure Nothing
+	<*> pure M.empty
 	<*> pure Nothing
 	<*> pure M.empty
