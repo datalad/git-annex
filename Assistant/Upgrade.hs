@@ -35,7 +35,6 @@ import qualified Utility.Lsof as Lsof
 
 import qualified Data.Map as M
 import Data.Tuple.Utils
-import Data.Ord
 
 {- Upgrade without interaction in the webapp. -}
 unattendedUpgrade :: Assistant ()
@@ -201,11 +200,15 @@ deleteFromManifest dir = do
 	fs <- map (dir </>) . lines <$> catchDefaultIO "" (readFile manifest)
 	mapM_ nukeFile fs
 	nukeFile manifest
-	mapM_ nukedir =<< sortBy (comparing length) <$> dirContentsRecursive dir
-	nukedir dir
+	removeEmptyRecursive dir
   where
 	manifest = dir </> "git-annex.MANIFEST"
-	nukedir = void . tryIO . removeDirectory
+
+removeEmptyRecursive :: FilePath -> IO ()
+removeEmptyRecursive dir = do
+	print ("remove", dir)
+	mapM_ removeEmptyRecursive =<< dirContents dir
+	void $ tryIO $ removeDirectory dir
 
 {- This is a file that the UpgradeWatcher can watch for modifications to
  - detect when git-annex has been upgraded.
