@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnWvnTWY6LrcPB4BzYEBn5mRTpNhg5EtEg"
+ nickname="Bence"
+ subject="Testing a special remote"
+ date="2013-11-24T08:24:36Z"
+ content="""
+Is there a unit test or integration test to check for the behavior of a special remote implementation and/or validity?
+
+I don't speak Haskell, so maybe there are some in the source but maybe I wouldn't recognize, so I haven't checked. If there are any tests how should I use it?
+
+Thank you,
+Bence
+"""]]
