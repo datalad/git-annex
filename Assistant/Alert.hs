@@ -233,10 +233,12 @@ baseUpgradeAlert buttons message = Alert
 	, alertData = []
 	}
 
-canUpgradeAlert :: AlertPriority -> AlertButton -> Alert
-canUpgradeAlert priority button = 
+canUpgradeAlert :: AlertPriority -> GitAnnexVersion -> AlertButton -> Alert
+canUpgradeAlert priority version button = 
 	(baseUpgradeAlert [button] $ fromString msg)
-		{ alertPriority = priority }
+		{ alertPriority = priority
+		, alertData = [fromString $ " (version " ++ version ++ ")"]
+		}
   where
 	msg = if priority >= High
 		then "An important upgrade of git-annex is available!"

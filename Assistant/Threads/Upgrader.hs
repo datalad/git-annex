@@ -81,7 +81,7 @@ canUpgrade urgency urlrenderer d = ifM autoUpgradeEnabled
 	, do
 #ifdef WITH_WEBAPP
 		button <- mkAlertButton True (T.pack "Upgrade") urlrenderer (ConfigStartUpgradeR d)
-		void $ addAlert (canUpgradeAlert urgency button)
+		void $ addAlert (canUpgradeAlert urgency (distributionVersion d) button)
 #else
 		noop
 #endif
