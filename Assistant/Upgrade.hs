@@ -30,6 +30,7 @@ import Remote (remoteFromUUID)
 import Config.Files
 import Utility.ThreadScheduler
 import Utility.Tmp
+import Utility.UserInfo
 import qualified Utility.Lsof as Lsof
 
 import qualified Data.Map as M
@@ -98,9 +99,7 @@ distributionDownloadComplete d cleanup t
 		debug ["finished downloading git-annex distribution"]
 		maybe cleanup (upgradeToDistribution d cleanup)
 			=<< liftAnnex (withObjectLoc k fsckit (getM fsckit))
-	| otherwise = do
-		debug ["finished downloading git-annex distribution 2"]
-		cleanup
+	| otherwise = cleanup
   where
 	k = distributionKey d
 	fsckit f = case Backend.maybeLookupBackendName (Types.Key.keyBackendName k) of
@@ -127,7 +126,7 @@ upgradeToDistribution d cleanup f = do
 	url <- runRestart
 	{- At this point, the new assistant is fully running, so
 	 - it's safe to delete the old version. -}
-	liftIO deleteold
+	liftIO $ void $ tryIO deleteold
 	postUpgrade url
   where
 	changeprogram program = liftIO $ do
@@ -146,11 +145,10 @@ upgradeToDistribution d cleanup f = do
 	 - into place. -}
 	unpack = liftIO $ do
 		olddir <- parentDir <$> readProgramFile
-		let topdir = parentDir olddir
-		let newdir = topdir </> "git-annex.linux." ++ distributionVersion d
+		newdir <- newVersionLocation d olddir "git-annex.linux."
 		whenM (doesDirectoryExist newdir) $
 			error $ "upgrade destination directory " ++ newdir ++ "already exists; not overwriting"
-		withTmpDirIn topdir "git-annex.upgrade" $ \tmpdir -> do
+		withTmpDirIn (parentDir newdir) "git-annex.upgrade" $ \tmpdir -> do
 			let tarball = tmpdir </> "tar"
 			-- Cannot rely on filename extension, and this also
 			-- avoids problems if tar doesn't support transparent
@@ -171,8 +169,32 @@ upgradeToDistribution d cleanup f = do
 			unlessM (doesDirectoryExist unpacked) $
 				error $ "did not find git-annex.linux in " ++ f
 			renameDirectory unpacked newdir
-		return (newdir </> "git-annex", deleteFromManifest olddir)
+		let deleteold = do
+			deleteFromManifest olddir
+			let origdir = parentDir olddir </> "git-annex.linux"
+			nukeFile origdir
+			createSymbolicLink newdir origdir
+		return (newdir </> "git-annex", deleteold)
 #endif
+
+{- Finds a place to install the new version.
+ - Generally, put it in the parent directory of where the old version was
+ - installed, and use a version number in the directory name.
+ - If unable to write to there, instead put it in the home directory.
+ -}
+newVersionLocation :: GitAnnexDistribution -> FilePath -> String -> IO FilePath
+newVersionLocation d olddir base = go =<< tryIO (writeFile testfile "")
+  where
+	s = base ++ distributionVersion d
+	topdir = parentDir olddir
+	newloc = topdir </> s
+	testfile = newloc ++ ".test"
+	go (Right _) = do
+		nukeFile testfile
+		return newloc
+	go (Left _) = do
+		home <- myHomeDir
+		return $ home </> s
 
 deleteFromManifest :: FilePath -> IO ()
 deleteFromManifest dir = do
