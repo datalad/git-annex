@@ -46,7 +46,7 @@ repairWhenNecessary urlrenderer u mrmt fsckresults
 		unless ok $ do
 			button <- mkAlertButton True (T.pack "Click Here") urlrenderer $
 				RepairRepositoryR u
-			void $ addAlert $ brokenRepositoryAlert button
+			void $ addAlert $ brokenRepositoryAlert [button]
 #endif
 		return ok
 	| otherwise = return False

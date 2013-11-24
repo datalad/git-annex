@@ -96,8 +96,7 @@ distributionDownloadComplete :: GitAnnexDistribution -> Assistant () -> Transfer
 distributionDownloadComplete d cleanup t 
 	| transferDirection t == Download = do
 		debug ["finished downloading git-annex distribution"]
-		maybe cleanup (upgradeToDistribution d cleanup)
-			=<< liftAnnex (withObjectLoc k fsckit (getM fsckit))
+		maybe cleanup go =<< liftAnnex (withObjectLoc k fsckit (getM fsckit))
 	| otherwise = cleanup
   where
 	k = distributionKey d
@@ -109,6 +108,13 @@ distributionDownloadComplete d cleanup t
 				( return $ Just f
 				, return Nothing
 				)
+	go f = do
+		ua <- asIO $ upgradeToDistribution d cleanup f
+		fa <- asIO1 failedupgrade
+		liftIO $ ua `catchNonAsync` fa
+	failedupgrade e = do
+		cleanup
+		void $ addAlert $ upgradeFailedAlert $ show e
 
 {- The upgrade method varies by OS.
  -
@@ -144,9 +150,11 @@ upgradeToDistribution d cleanup f = do
 	 - into place. -}
 	unpack = liftIO $ do
 		olddir <- parentDir <$> readProgramFile
+		when (null olddir) $
+			error $ "Cannot find old distribution bundle; not upgrading."
 		newdir <- newVersionLocation d olddir "git-annex.linux."
 		whenM (doesDirectoryExist newdir) $
-			error $ "upgrade destination directory " ++ newdir ++ "already exists; not overwriting"
+			error $ "Upgrade destination directory " ++ newdir ++ "already exists; not overwriting."
 		withTmpDirIn (parentDir newdir) "git-annex.upgrade" $ \tmpdir -> do
 			let tarball = tmpdir </> "tar"
 			-- Cannot rely on filename extension, and this also

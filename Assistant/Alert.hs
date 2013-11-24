@@ -82,8 +82,8 @@ warningAlert name msg = Alert
 	, alertButtons = []
 	}
 
-errorAlert :: String -> AlertButton -> Alert
-errorAlert msg button = Alert
+errorAlert :: String -> [AlertButton] -> Alert
+errorAlert msg buttons = Alert
 	{ alertClass = Error
 	, alertHeader = Nothing
 	, alertMessageRender = renderData
@@ -95,7 +95,7 @@ errorAlert msg button = Alert
 	, alertIcon = Just ErrorIcon
 	, alertCombiner = Nothing
 	, alertName = Nothing
-	, alertButtons = [button]
+	, alertButtons = buttons
 	}
 
 activityAlert :: Maybe TenseText -> [TenseChunk] -> Alert
@@ -256,7 +256,11 @@ upgradeFinishedAlert button version =
 	baseUpgradeAlert (maybe [] (:[]) button) $ fromString $ 
 		"Finished upgrading git-annex to version " ++ version
 
-brokenRepositoryAlert :: AlertButton -> Alert
+upgradeFailedAlert :: String -> Alert
+upgradeFailedAlert msg = (errorAlert msg [])
+	{ alertHeader = Just $ fromString "Upgrade failed." }
+
+brokenRepositoryAlert :: [AlertButton] -> Alert
 brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"
 
 repairingAlert :: String -> Alert
