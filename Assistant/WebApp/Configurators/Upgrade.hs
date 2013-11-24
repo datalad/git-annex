@@ -18,7 +18,8 @@ import Config
 {- On Android, just point the user at the apk file to download.
  - Installation will be handled by selecting the downloaded file.
  -
- - Otherwise, start the download.
+ - Otherwise, start the upgrade process, which will run fully
+ - noninteractively.
  - -}
 getConfigStartUpgradeR :: GitAnnexDistribution -> Handler Html
 getConfigStartUpgradeR d = do
