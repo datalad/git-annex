@@ -225,7 +225,7 @@ oldVersionLocation = do
 	let p = takeWhile (/= "git-annex.app") dirs
 	let olddir = if p == dirs
 		then pdir
-		else joinPath (p ++ ["git-annex.app"]
+		else joinPath (p ++ ["git-annex.app"])
 #else
 	olddir <- parentDir <$> readProgramFile
 #endif
