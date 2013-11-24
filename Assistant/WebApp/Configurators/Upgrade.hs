@@ -38,7 +38,7 @@ getConfigStartUpgradeR d = do
 		let k = distributionKey d
 		let u = distributionUrl d
 		liftAnnex $ setUrlPresent k u
-		hook <- asIO1 $ downloadComplete d
+		hook <- asIO1 $ distributionDownloadComplete d
 		modifyDaemonStatus_ $ \status -> status
 			{ transferHook = M.insert k hook (transferHook status) }
 		let t = Transfer
@@ -52,11 +52,6 @@ getConfigStartUpgradeR d = do
 		startTransfer t
 	redirect DashboardR
 #endif
-
-downloadComplete :: GitAnnexDistribution -> Transfer -> Assistant ()
-downloadComplete d t = do
-	error "TODO"
-	liftAnnex $ setUrlMissing (distributionKey d) (distributionUrl d)
 
 {- Finish upgrade by starting the new assistant in the same repository this
  - one is running in, and redirecting to it. -}

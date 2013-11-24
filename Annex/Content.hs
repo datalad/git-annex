@@ -30,6 +30,7 @@ module Annex.Content (
 	freezeContent,
 	thawContent,
 	dirKeys,
+	withObjectLoc,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
