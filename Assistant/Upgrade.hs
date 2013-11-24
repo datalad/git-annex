@@ -223,7 +223,7 @@ oldVersionLocation = do
 	let dirs = splitDirectories pdir
 	{- It will probably be deep inside a git-annex.app directory. -}
 	let p = takeWhile (/= "git-annex.app") dirs
-	olddir <- if p == dirs
+	let olddir = if p == dirs
 		then pdir
 		else joinPath (p ++ ["git-annex.app"]
 #else
