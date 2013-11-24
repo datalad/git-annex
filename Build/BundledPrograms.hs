@@ -45,6 +45,11 @@ bundledPrograms = catMaybes
 	, SysConfig.sha512
 	, SysConfig.sha224
 	, SysConfig.sha384
+#ifdef linux_HOST_OS
+	-- used to unpack the tarball when upgrading
+	, Just "gunzip"
+	, Just "tar"
+#endif
 	-- nice and ionice are not included in the bundle; we rely on the
 	-- system's own version, which may better match its kernel
 	]

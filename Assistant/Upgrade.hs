@@ -93,10 +93,13 @@ startDistributionDownload d = do
  -}
 distributionDownloadComplete :: GitAnnexDistribution -> Assistant () -> Transfer -> Assistant ()
 distributionDownloadComplete d cleanup t 
-	| transferDirection t == Download =
+	| transferDirection t == Download = do
+		debug ["finished downloading git-annex distribution"]
 		maybe cleanup (upgradeToDistribution d cleanup)
 			=<< liftAnnex (withObjectLoc k fsckit (getM fsckit))
-	| otherwise = cleanup
+	| otherwise = do
+		debug ["finished downloading git-annex distribution 2"]
+		cleanup
   where
 	k = distributionKey d
 	fsckit f = case Backend.maybeLookupBackendName (Types.Key.keyBackendName k) of
@@ -122,15 +125,24 @@ upgradeToDistribution d cleanup f = do
 #else
 	{- Linux uses a tarball, so untar it (into a temp directory)
 	 - and move the directory into place. -}
-	olddir <- parentDir <$> liftIO programFile
+	olddir <- parentDir <$> liftIO readProgramFile
 	let topdir = parentDir olddir
 	let newdir = topdir </> "git-annex.linux." ++ distributionVersion d
 	liftIO $ void $ tryIO $ removeDirectoryRecursive newdir
 	liftIO $ withTmpDirIn topdir "git-annex.upgrade" $ \tmpdir -> do
+		let tarball = tmpdir </> "tar"
+		-- Cannot rely on filename extension, and this also
+		-- avoids problems if tar doesn't support transparent
+		-- decompression.
+		void $ boolSystem "sh"
+			[ Param "-c"
+			, Param $ "zcat < " ++ shellEscape f ++
+				" > " ++ shellEscape tarball
+			]
 		tarok <- boolSystem "tar"
-			[ Param "--directory", File tmpdir
-			, Param "xf"
-			, Param f
+			[ Param "xf"
+			, Param tarball
+			, Param "--directory", File tmpdir
 			]
 		unless tarok $
 			error $ "failed to untar " ++ f
@@ -157,9 +169,6 @@ upgradeToDistribution d cleanup f = do
 			error "New git-annex program failed to run! Not using."
 		pf <- programFile
 		liftIO $ writeFile pf program
-
-usingDistribution :: IO Bool
-usingDistribution = isJust <$> getEnv "GIT_ANNEX_STANDLONE_ENV"
 
 {- This is a file that the UpgradeWatcher can watch for modifications to
  - detect when git-annex has been upgraded.
@@ -192,3 +201,6 @@ upgradeSanityCheck = ifM usingDistribution
 		. filter (`elem` [Lsof.OpenReadWrite, Lsof.OpenWriteOnly])
 		. map snd3
 		<$> Lsof.query [f]
+
+usingDistribution :: IO Bool
+usingDistribution = isJust <$> getEnv "GIT_ANNEX_STANDLONE_ENV"

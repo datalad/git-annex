@@ -91,9 +91,9 @@ onDel file = case parseTransferFile file of
 		minfo <- removeTransfer t
 
 		-- Run transfer hook.
-		void $ maybe noop (\hook -> void $ forkIO $ hook t)
-			. M.lookup (transferKey t)
-			. transferHook <$> getDaemonStatus
+		m <- transferHook <$> getDaemonStatus
+		maybe noop (\hook -> void $ liftIO $ forkIO $ hook t)
+			(M.lookup (transferKey t) m)
 
 		finished <- asIO2 finishedTransfer
 		void $ liftIO $ forkIO $ do
