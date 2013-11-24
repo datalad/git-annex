@@ -34,6 +34,7 @@ import qualified Utility.Lsof as Lsof
 
 import qualified Data.Map as M
 import Data.Tuple.Utils
+import Data.Ord
 
 {- Upgrade without interaction in the webapp. -}
 unattendedUpgrade :: Assistant ()
@@ -119,56 +120,70 @@ distributionDownloadComplete d cleanup t
  -}
 upgradeToDistribution :: GitAnnexDistribution -> Assistant () -> FilePath -> Assistant ()
 upgradeToDistribution d cleanup f = do
-#ifdef darwin_HOST_OS
-	{- OS X uses a dmg, so mount it, and copy the contents into place. -}
-	error "TODO"
-#else
-	{- Linux uses a tarball, so untar it (into a temp directory)
-	 - and move the directory into place. -}
-	olddir <- parentDir <$> liftIO readProgramFile
-	let topdir = parentDir olddir
-	let newdir = topdir </> "git-annex.linux." ++ distributionVersion d
-	liftIO $ void $ tryIO $ removeDirectoryRecursive newdir
-	liftIO $ withTmpDirIn topdir "git-annex.upgrade" $ \tmpdir -> do
-		let tarball = tmpdir </> "tar"
-		-- Cannot rely on filename extension, and this also
-		-- avoids problems if tar doesn't support transparent
-		-- decompression.
-		void $ boolSystem "sh"
-			[ Param "-c"
-			, Param $ "zcat < " ++ shellEscape f ++
-				" > " ++ shellEscape tarball
-			]
-		tarok <- boolSystem "tar"
-			[ Param "xf"
-			, Param tarball
-			, Param "--directory", File tmpdir
-			]
-		unless tarok $
-			error $ "failed to untar " ++ f
-		let unpacked = tmpdir </> "git-annex.linux"
-		unlessM (doesDirectoryExist unpacked) $
-			error $ "did not find git-annex.linux in " ++ f
-		renameDirectory unpacked newdir
-	changeprogram $ newdir </> "git-annex"
+	(program, deleteold) <- unpack
+	changeprogram program
 	cleanup
 	prepUpgrade
 	url <- runRestart
 	{- At this point, the new assistant is fully running, so
-	 - it's safe to delete the old version. To make sure we don't
-	 - delete something we shouldn't, only delete it if
-	 - "git-annex.linux" is in the name. 
-	 - This could fail, if the user cannot write to it (unlikely) -}
-	liftIO $ when ("git-annex.linux" `isPrefixOf` takeFileName olddir) $
-		void $ removeDirectoryRecursive olddir
+	 - it's safe to delete the old version. -}
+	liftIO deleteold
 	postUpgrade url
-#endif
   where
 	changeprogram program = liftIO $ do
 		unlessM (boolSystem program [Param "version"]) $
 			error "New git-annex program failed to run! Not using."
 		pf <- programFile
 		liftIO $ writeFile pf program
+	
+#ifdef darwin_HOST_OS
+	{- OS X uses a dmg, so mount it, and copy the contents into place. -}
+	unpack = do
+		error "TODO OSX upgrade code"
+#else
+	{- Linux uses a tarball (so could other POSIX systems), so
+	 - untar it (into a temp directory) and move the directory
+	 - into place. -}
+	unpack = liftIO $ do
+		olddir <- parentDir <$> readProgramFile
+		let topdir = parentDir olddir
+		let newdir = topdir </> "git-annex.linux." ++ distributionVersion d
+		whenM (doesDirectoryExist newdir) $
+			error $ "upgrade destination directory " ++ newdir ++ "already exists; not overwriting"
+		withTmpDirIn topdir "git-annex.upgrade" $ \tmpdir -> do
+			let tarball = tmpdir </> "tar"
+			-- Cannot rely on filename extension, and this also
+			-- avoids problems if tar doesn't support transparent
+			-- decompression.
+			void $ boolSystem "sh"
+				[ Param "-c"
+				, Param $ "zcat < " ++ shellEscape f ++
+					" > " ++ shellEscape tarball
+				]
+			tarok <- boolSystem "tar"
+				[ Param "xf"
+				, Param tarball
+				, Param "--directory", File tmpdir
+				]
+			unless tarok $
+				error $ "failed to untar " ++ f
+			let unpacked = tmpdir </> "git-annex.linux"
+			unlessM (doesDirectoryExist unpacked) $
+				error $ "did not find git-annex.linux in " ++ f
+			renameDirectory unpacked newdir
+		return (newdir </> "git-annex", deleteFromManifest olddir)
+#endif
+
+deleteFromManifest :: FilePath -> IO ()
+deleteFromManifest dir = do
+	fs <- map (dir </>) . lines <$> catchDefaultIO "" (readFile manifest)
+	mapM_ nukeFile fs
+	nukeFile manifest
+	mapM_ nukedir =<< sortBy (comparing length) <$> dirContentsRecursive dir
+	nukedir dir
+  where
+	manifest = dir </> "git-annex.MANIFEST"
+	nukedir = void . tryIO . removeDirectory
 
 {- This is a file that the UpgradeWatcher can watch for modifications to
  - detect when git-annex has been upgraded.
