@@ -133,6 +133,7 @@ linuxstandalone: Build/Standalone
 	sort "$(LINUXSTANDALONE_DEST)/libdirs.tmp" | uniq > "$(LINUXSTANDALONE_DEST)/libdirs"
 	rm -f "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
 
+	cd tmp/git-annex.linux && find . -type f > git-annex.MANIFEST
 	cd tmp && tar czf git-annex-standalone-$(shell dpkg --print-architecture).tar.gz git-annex.linux
 
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
@@ -157,6 +158,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	install -d "$(OSXAPP_BASE)/templates"
 
 	./Build/OSXMkLibs $(OSXAPP_BASE)
+	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/bundle/git-annex.MANIFEST
 	rm -f tmp/git-annex.dmg
 	hdiutil create -format UDBZ -srcfolder tmp/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
