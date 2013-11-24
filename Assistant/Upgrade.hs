@@ -27,6 +27,7 @@ import qualified Types.Key
 import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Remote (remoteFromUUID)
+import Annex.Path
 import Config.Files
 import Utility.ThreadScheduler
 import Utility.Tmp
