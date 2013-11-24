@@ -63,17 +63,24 @@ upgradedEnv = "GIT_ANNEX_UPGRADED"
 
 {- Start downloading the distribution key from the web.
  - Install a hook that will be run once the download is complete,
- - and finishes the upgrade. -}
+ - and finishes the upgrade.
+ -
+ - Creates the destination directory where the upgrade will be installed
+ - early, in order to check if another upgrade has happened (or is
+ - happending). On failure, the directory is removed.
+ -}
 startDistributionDownload :: GitAnnexDistribution -> Assistant ()
-startDistributionDownload d = do
-	liftAnnex $ setUrlPresent k u
-	hook <- asIO1 $ distributionDownloadComplete d cleanup
-	modifyDaemonStatus_ $ \s -> s
-		{ transferHook = M.insert k hook (transferHook s) }
-	maybe noop (queueTransfer "upgrade" Next (Just f) t)
-		=<< liftAnnex (remoteFromUUID webUUID)
-	startTransfer t
+startDistributionDownload d = go =<< liftIO . newVersionLocation d =<< liftIO oldVersionLocation
   where
+  	go Nothing = debug ["Skipping redundant upgrade"]
+	go (Just dest) = do
+		liftAnnex $ setUrlPresent k u
+		hook <- asIO1 $ distributionDownloadComplete d dest cleanup
+		modifyDaemonStatus_ $ \s -> s
+			{ transferHook = M.insert k hook (transferHook s) }
+		maybe noop (queueTransfer "upgrade" Next (Just f) t)
+			=<< liftAnnex (remoteFromUUID webUUID)
+		startTransfer t
 	k = distributionKey d
 	u = distributionUrl d
 	f = takeFileName u ++ " (for upgrade)"
@@ -92,11 +99,12 @@ startDistributionDownload d = do
  -
  - Fsck the key to verify the download.
  -}
-distributionDownloadComplete :: GitAnnexDistribution -> Assistant () -> Transfer -> Assistant ()
-distributionDownloadComplete d cleanup t 
+distributionDownloadComplete :: GitAnnexDistribution -> FilePath -> Assistant () -> Transfer -> Assistant ()
+distributionDownloadComplete d dest cleanup t 
 	| transferDirection t == Download = do
 		debug ["finished downloading git-annex distribution"]
-		maybe cleanup go =<< liftAnnex (withObjectLoc k fsckit (getM fsckit))
+		maybe (failedupgrade "bad download") go
+			=<< liftAnnex (withObjectLoc k fsckit (getM fsckit))
 	| otherwise = cleanup
   where
 	k = distributionKey d
@@ -109,12 +117,13 @@ distributionDownloadComplete d cleanup t
 				, return Nothing
 				)
 	go f = do
-		ua <- asIO $ upgradeToDistribution d cleanup f
+		ua <- asIO $ upgradeToDistribution dest cleanup f
 		fa <- asIO1 failedupgrade
-		liftIO $ ua `catchNonAsync` fa
-	failedupgrade e = do
+		liftIO $ ua `catchNonAsync` (fa . show)
+	failedupgrade msg = do
+		void $ addAlert $ upgradeFailedAlert msg
 		cleanup
-		void $ addAlert $ upgradeFailedAlert $ show e
+		liftIO $ void $ tryIO $ removeDirectoryRecursive dest
 
 {- The upgrade method varies by OS.
  -
@@ -122,8 +131,8 @@ distributionDownloadComplete d cleanup t
  - and unpack the new distribution next to it (in a versioned directory).
  - Then update the programFile to point to the new version.
  -}
-upgradeToDistribution :: GitAnnexDistribution -> Assistant () -> FilePath -> Assistant ()
-upgradeToDistribution d cleanup f = do
+upgradeToDistribution :: FilePath -> Assistant () -> FilePath -> Assistant ()
+upgradeToDistribution newdir cleanup distributionfile = do
 	(program, deleteold) <- unpack
 	changeprogram program
 	cleanup
@@ -149,12 +158,8 @@ upgradeToDistribution d cleanup f = do
 	 - untar it (into a temp directory) and move the directory
 	 - into place. -}
 	unpack = liftIO $ do
-		olddir <- parentDir <$> readProgramFile
-		when (null olddir) $
-			error $ "Cannot find old distribution bundle; not upgrading."
-		newdir <- newVersionLocation d olddir "git-annex.linux."
-		whenM (doesDirectoryExist newdir) $
-			error $ "Upgrade destination directory " ++ newdir ++ "already exists; not overwriting."
+		olddir <- oldVersionLocation
+		createDirectoryIfMissing True newdir
 		withTmpDirIn (parentDir newdir) "git-annex.upgrade" $ \tmpdir -> do
 			let tarball = tmpdir </> "tar"
 			-- Cannot rely on filename extension, and this also
@@ -162,7 +167,7 @@ upgradeToDistribution d cleanup f = do
 			-- decompression.
 			void $ boolSystem "sh"
 				[ Param "-c"
-				, Param $ "zcat < " ++ shellEscape f ++
+				, Param $ "zcat < " ++ shellEscape distributionfile ++
 					" > " ++ shellEscape tarball
 				]
 			tarok <- boolSystem "tar"
@@ -171,37 +176,66 @@ upgradeToDistribution d cleanup f = do
 				, Param "--directory", File tmpdir
 				]
 			unless tarok $
-				error $ "failed to untar " ++ f
-			let unpacked = tmpdir </> "git-annex.linux"
+				error $ "failed to untar " ++ distributionfile
+			let unpacked = tmpdir </> installBase
 			unlessM (doesDirectoryExist unpacked) $
-				error $ "did not find git-annex.linux in " ++ f
-			renameDirectory unpacked newdir
+				error $ "did not find " ++ installBase ++ " in " ++ distributionfile
+			moveinto newdir unpacked
 		let deleteold = do
 			deleteFromManifest olddir
-			let origdir = parentDir olddir </> "git-annex.linux"
+			let origdir = parentDir olddir </> installBase
 			nukeFile origdir
 			createSymbolicLink newdir origdir
 		return (newdir </> "git-annex", deleteold)
 #endif
+	moveinto dstdir srcdir =
+		mapM_ (\x -> rename x (dstdir </> takeFileName x))
+			=<< dirContents srcdir
+
+{- Finds where the old version was installed. -}
+oldVersionLocation :: IO FilePath
+oldVersionLocation = do
+#ifdef darwin_HOST_OS
+	error "TODO OSX oldVersionLocation"
+#else
+	olddir <- parentDir <$> readProgramFile
+#endif
+	when (null olddir) $
+		error $ "Cannot find old distribution bundle; not upgrading."
+	return olddir
 
 {- Finds a place to install the new version.
  - Generally, put it in the parent directory of where the old version was
  - installed, and use a version number in the directory name.
  - If unable to write to there, instead put it in the home directory.
+ -
+ - The directory is created. If it already exists, returns Nothing.
  -}
-newVersionLocation :: GitAnnexDistribution -> FilePath -> String -> IO FilePath
-newVersionLocation d olddir base = go =<< tryIO (writeFile testfile "")
+newVersionLocation :: GitAnnexDistribution -> FilePath -> IO (Maybe FilePath)
+newVersionLocation d olddir = 
+	trymkdir newloc $ do
+		home <- myHomeDir
+		trymkdir (home </> s) $
+			return Nothing
   where
-	s = base ++ distributionVersion d
+	s = installBase ++ "." ++ distributionVersion d
 	topdir = parentDir olddir
 	newloc = topdir </> s
-	testfile = newloc ++ ".test"
-	go (Right _) = do
-		nukeFile testfile
-		return newloc
-	go (Left _) = do
-		home <- myHomeDir
-		return $ home </> s
+	trymkdir dir fallback =
+		(createDirectory dir >> return (Just dir))
+			`catchIO` const fallback
+
+installBase :: String
+installBase = "git-annex." ++
+#ifdef linux_HOST_OS
+	"linux"
+#else
+#ifdef darwin_HOST_OS
+	"osx"
+#else
+	"dir"
+#endif
+#endif
 
 deleteFromManifest :: FilePath -> IO ()
 deleteFromManifest dir = do

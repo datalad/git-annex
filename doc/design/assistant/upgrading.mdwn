@@ -46,4 +46,7 @@ should notice the upgrade and restart.
 
 I don't want every daemon trying to download the file at once..
 
-TODO Add locking to prevent that.
+Approach: The first new version is installed into a stable directory, based
+on its version. So, start the upgrade by making this directory. If upgrade
+is already in progress, the directory will already exist. (Remove directory
+if upgrade fails.)
