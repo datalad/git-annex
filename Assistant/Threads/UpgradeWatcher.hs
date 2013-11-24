@@ -77,8 +77,10 @@ handleUpgrade :: UrlRenderer -> Assistant ()
 handleUpgrade urlrenderer = do
 	-- Wait 2 minutes for any final upgrade changes to settle.
 	-- (For example, other associated files may be being put into
-	-- place.)
-	liftIO $ threadDelaySeconds (Seconds 120)
+	-- place.) Not needed when using a distribution bundle, because
+	-- in that case git-annex handles the upgrade in a non-racy way.
+	liftIO $ unlessM usingDistribution $
+		threadDelaySeconds (Seconds 120)
 	ifM autoUpgradeEnabled
 		( do
 			debug ["starting automatic upgrade"]
