@@ -12,6 +12,8 @@ module Assistant.Threads.Upgrader (
 ) where
 
 import Assistant.Common
+import Assistant.Upgrade
+
 import Assistant.Types.UrlRenderer
 import Assistant.DaemonStatus
 import Assistant.Alert
@@ -31,11 +33,14 @@ import Data.Time.Clock
 import qualified Data.Text as T
 
 upgraderThread :: UrlRenderer -> NamedThread
-upgraderThread urlrenderer = namedThread "Upgrader" $ do
-	checkUpgrade urlrenderer
+upgraderThread urlrenderer = namedThread "Upgrader" $
 	when (isJust Build.SysConfig.upgradelocation) $ do
+		{- Check for upgrade on startup, unless it was just
+		 - upgraded. -}
+		unlessM (liftIO checkSuccessfulUpgrade) $
+			checkUpgrade urlrenderer
 		h <- liftIO . newNotificationHandle False . networkConnectedNotifier =<< getDaemonStatus
-		go h Nothing
+		go h =<< liftIO getCurrentTime
   where
   	{- Wait for a network connection event. Then see if it's been
 	 - half a day since the last upgrade check. If so, proceed with
@@ -47,10 +52,10 @@ upgraderThread urlrenderer = namedThread "Upgrader" $ do
 			then go h lastchecked
 			else do
 				now <- liftIO getCurrentTime
-				if maybe True (\t -> diffUTCTime now t > halfday) lastchecked
+				if diffUTCTime now lastchecked > halfday
 					then do
 						checkUpgrade urlrenderer
-						go h =<< Just <$> liftIO getCurrentTime
+						go h =<< liftIO getCurrentTime
 					else go h lastchecked
 	halfday = 12 * 60 * 60
 
@@ -71,13 +76,16 @@ checkUpgrade urlrenderer = do
 				else debug [ "No new version found." ]
 
 canUpgrade :: AlertPriority -> UrlRenderer -> GitAnnexDistribution -> Assistant ()
-canUpgrade urgency urlrenderer d = do
+canUpgrade urgency urlrenderer d = ifM autoUpgradeEnabled
+	( startDistributionDownload d
+	, do
 #ifdef WITH_WEBAPP
-	button <- mkAlertButton True (T.pack "Upgrade") urlrenderer (ConfigStartUpgradeR d)
-	void $ addAlert (canUpgradeAlert urgency button)
+		button <- mkAlertButton True (T.pack "Upgrade") urlrenderer (ConfigStartUpgradeR d)
+		void $ addAlert (canUpgradeAlert urgency button)
 #else
-	noop
+		noop
 #endif
+	)
 
 getDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
 getDistributionInfo = do

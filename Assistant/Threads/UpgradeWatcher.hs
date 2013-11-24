@@ -8,7 +8,7 @@
 {-# LANGUAGE CPP #-}
 
 module Assistant.Threads.UpgradeWatcher (
-	upgradWatcherThread
+	upgradeWatcherThread
 ) where
 
 import Assistant.Common
@@ -30,9 +30,9 @@ import qualified Data.Text as T
 data WatcherState = InStartupScan | Started | Upgrading
 	deriving (Eq)
 
-upgradWatcherThread :: UrlRenderer -> NamedThread
-upgradWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ do
-	whenM (liftIO $ checkSuccessfulUpgrade) $
+upgradeWatcherThread :: UrlRenderer -> NamedThread
+upgradeWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ do
+	whenM (liftIO checkSuccessfulUpgrade) $
 		showSuccessfulUpgrade urlrenderer
 	go =<< liftIO upgradeFlagFile
   where
