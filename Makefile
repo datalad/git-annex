@@ -159,8 +159,8 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	install -d "$(OSXAPP_BASE)/templates"
 
 	./Build/OSXMkLibs $(OSXAPP_BASE)
-	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/bundle/git-annex.MANIFEST
-	cd $(OSXAPP_DEST) && find . -type l >> Contents/MacOS/bundle/git-annex.MANIFEST
+	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/git-annex.MANIFEST
+	cd $(OSXAPP_DEST) && find . -type l >> Contents/MacOS/git-annex.MANIFEST
 	rm -f tmp/git-annex.dmg
 	hdiutil create -format UDBZ -srcfolder tmp/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg

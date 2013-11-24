@@ -32,6 +32,9 @@ import Utility.ThreadScheduler
 import Utility.Tmp
 import Utility.UserInfo
 import qualified Utility.Lsof as Lsof
+#ifdef darwin_HOST_OS
+import Utility.CopyFile
+#endif
 
 import qualified Data.Map as M
 import Data.Tuple.Utils
@@ -133,6 +136,7 @@ distributionDownloadComplete d dest cleanup t
  -}
 upgradeToDistribution :: FilePath -> Assistant () -> FilePath -> Assistant ()
 upgradeToDistribution newdir cleanup distributionfile = do
+	liftIO $ createDirectoryIfMissing True newdir
 	(program, deleteold) <- unpack
 	changeprogram program
 	cleanup
@@ -151,15 +155,30 @@ upgradeToDistribution newdir cleanup distributionfile = do
 	
 #ifdef darwin_HOST_OS
 	{- OS X uses a dmg, so mount it, and copy the contents into place. -}
-	unpack = do
-		error "TODO OSX upgrade code"
+	unpack = liftIO $ do
+		olddir <- oldVersionLocation
+		withTmpDirIn (parentDir newdir) "git-annex.upgrade" $ \tmpdir -> do
+			void $ boolSystem "hdiutil"
+				[ Param "attach"
+				, Param distributionfile
+				, Param tmpdir
+				]
+			sanitycheck tmpdir
+			installby createLinkOrCopy newdir (tmpdir </> installBase)
+			void $ boolSystem "hdiutil"
+				[ Param "eject"
+				, Param distributionfile
+				]
+		let deleteold = do
+			deleteFromManifest $ olddir </> "Contents" </> "MacOS"
+			makeorigsymlink olddir
+		return (newdir </> installBase </> "Contents" </> "MacOS" </> "git-annex", deleteold)
 #else
 	{- Linux uses a tarball (so could other POSIX systems), so
 	 - untar it (into a temp directory) and move the directory
 	 - into place. -}
 	unpack = liftIO $ do
 		olddir <- oldVersionLocation
-		createDirectoryIfMissing True newdir
 		withTmpDirIn (parentDir newdir) "git-annex.upgrade" $ \tmpdir -> do
 			let tarball = tmpdir </> "tar"
 			-- Cannot rely on filename extension, and this also
@@ -177,26 +196,35 @@ upgradeToDistribution newdir cleanup distributionfile = do
 				]
 			unless tarok $
 				error $ "failed to untar " ++ distributionfile
-			let unpacked = tmpdir </> installBase
-			unlessM (doesDirectoryExist unpacked) $
-				error $ "did not find " ++ installBase ++ " in " ++ distributionfile
-			moveinto newdir unpacked
+			sanitycheck tmpdir
+			installby rename newdir (tmpdir </> installBase)
 		let deleteold = do
 			deleteFromManifest olddir
-			let origdir = parentDir olddir </> installBase
-			nukeFile origdir
-			createSymbolicLink newdir origdir
+			makeorigsymlink olddir
 		return (newdir </> "git-annex", deleteold)
 #endif
-	moveinto dstdir srcdir =
-		mapM_ (\x -> rename x (dstdir </> takeFileName x))
+	sanitycheck dir = 
+		unlessM (doesDirectoryExist $ dir </> installBase) $
+			error $ "did not find " ++ installBase ++ " in " ++ distributionfile
+	installby a dstdir srcdir =
+		mapM_ (\x -> a x (dstdir </> takeFileName x))
 			=<< dirContents srcdir
+	makeorigsymlink olddir = do
+		let origdir = parentDir olddir </> installBase
+		nukeFile origdir
+		createSymbolicLink newdir origdir
 
 {- Finds where the old version was installed. -}
 oldVersionLocation :: IO FilePath
 oldVersionLocation = do
 #ifdef darwin_HOST_OS
-	error "TODO OSX oldVersionLocation"
+	pdir <- parentDir <$> readProgramFile
+	let dirs = splitDirectories pdir
+	{- It will probably be deep inside a git-annex.app directory. -}
+	let p = takeWhile (/= "git-annex.app") dirs
+	olddir <- if p == dirs
+		then pdir
+		else joinPath (p ++ ["git-annex.app"]
 #else
 	olddir <- parentDir <$> readProgramFile
 #endif
@@ -231,7 +259,7 @@ installBase = "git-annex." ++
 	"linux"
 #else
 #ifdef darwin_HOST_OS
-	"osx"
+	"app"
 #else
 	"dir"
 #endif
