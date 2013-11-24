@@ -13,43 +13,21 @@ import Assistant.WebApp.Common
 import Types.Distribution
 import Assistant.Upgrade
 import Assistant.Restart
-import Assistant.DaemonStatus
 import Config
-import Assistant.TransferQueue
-import Assistant.TransferSlots
-import Logs.Transfer
-import Logs.Web
-import Remote
 
-import qualified Data.Map as M
-
-{- On Android, just redirect the user's web browser to the apk file
- - to download it.
+{- On Android, just point the user at the apk file to download.
+ - Installation will be handled by selecting the downloaded file.
  -
- - Otherwise, register a hook action that will be called once the key
- - is downloaded, and start downloading the key.
+ - Otherwise, start the download.
  - -}
 getConfigStartUpgradeR :: GitAnnexDistribution -> Handler Html
 getConfigStartUpgradeR d = do
 #ifdef __ANDROID__
-	redirect (distributionUrl d)
+	let url = distributionUrl d
+	page "Upgrade" (Just Configuration) $
+		$(widgetFile "configurators/upgrade/android")
 #else
-	liftAssistant $ do
-		let k = distributionKey d
-		let u = distributionUrl d
-		liftAnnex $ setUrlPresent k u
-		hook <- asIO1 $ distributionDownloadComplete d
-		modifyDaemonStatus_ $ \status -> status
-			{ transferHook = M.insert k hook (transferHook status) }
-		let t = Transfer
-			{ transferDirection = Download
-			, transferUUID = webUUID
-			, transferKey = k
-			}
-		let f = takeFileName u ++ " (for upgrade)"
-		maybe noop (queueTransfer "upgrade" Next (Just f) t)
-			=<< liftAnnex (remoteFromUUID webUUID)
-		startTransfer t
+	liftAssistant $ startDistributionDownload d
 	redirect DashboardR
 #endif
 

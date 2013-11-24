@@ -20,6 +20,11 @@ import Annex.Content
 import qualified Backend
 import qualified Types.Backend
 import qualified Types.Key
+import Assistant.TransferQueue
+import Assistant.TransferSlots
+import Remote
+
+import qualified Data.Map as M
 
 {- Upgrade without interaction in the webapp. -}
 unattendedUpgrade :: Assistant ()
@@ -45,6 +50,27 @@ checkSuccessfulUpgrade = isJust <$> getEnv upgradedEnv
 
 upgradedEnv :: String
 upgradedEnv = "GIT_ANNEX_UPGRADED"
+
+{- Start downloading the distribution key from the web.
+ - Install a hook that will be run once the download is complete. -}
+startDistributionDownload :: GitAnnexDistribution -> Assistant ()
+startDistributionDownload d = do
+	liftAnnex $ setUrlPresent k u
+	hook <- asIO1 $ distributionDownloadComplete d
+	modifyDaemonStatus_ $ \status -> status
+		{ transferHook = M.insert k hook (transferHook status) }
+	maybe noop (queueTransfer "upgrade" Next (Just f) t)
+		=<< liftAnnex (remoteFromUUID webUUID)
+	startTransfer t
+  where
+	k = distributionKey d
+	u = distributionUrl d
+	f = takeFileName u ++ " (for upgrade)"
+	t = Transfer
+		{ transferDirection = Download
+		, transferUUID = webUUID
+		, transferKey = k
+		}
 
 {- Fsck the key to verify the download. -}
 distributionDownloadComplete :: GitAnnexDistribution -> Transfer -> Assistant ()
