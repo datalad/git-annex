@@ -162,9 +162,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 				]
 			void $ boolSystem "cp"
 				[ Param "-R"
-				-- Trailing slash to copy the directory
-				-- contents.
-				, File $ tmpdir </> installBase ++ "/"
+				, File $ tmpdir </> installBase </> "Contents"
 				, File $ newdir
 				]
 			sanitycheck newdir
