@@ -38,19 +38,18 @@ getShutdownConfirmedR = do
 		 - the transfer processes). -}
 		ts <- M.keys . currentTransfers <$> getDaemonStatus
 		mapM_ pauseTransfer ts
-	page "Shutdown" Nothing $ do
-		webapp <- liftH getYesod
-		let url = T.unpack $ yesodRender webapp (T.pack "") NotRunningR []
-		{- Signal any other web browsers. -}
-		liftAssistant $ do
-			modifyDaemonStatus_ $ \status -> status { globalRedirUrl = Just url }
-			liftIO . sendNotification . globalRedirNotifier =<< getDaemonStatus
-		{- Wait 2 seconds before shutting down, to give the web
-		 - page time to load in the browser. -}
-		void $ liftIO $ forkIO $ do
-			threadDelay 2000000
-			signalProcess sigTERM =<< getProcessID
-		redirect NotRunningR
+	webapp <- getYesod
+	let url = T.unpack $ yesodRender webapp (T.pack "") NotRunningR []
+	{- Signal any other web browsers. -}
+	liftAssistant $ do
+		modifyDaemonStatus_ $ \status -> status { globalRedirUrl = Just url }
+		liftIO . sendNotification . globalRedirNotifier =<< getDaemonStatus
+	{- Wait 2 seconds before shutting down, to give the web
+	 - page time to load in the browser. -}
+	void $ liftIO $ forkIO $ do
+		threadDelay 2000000
+		signalProcess sigTERM =<< getProcessID
+	redirect NotRunningR
 
 {- Use a custom page to avoid putting long polling elements on it that will 
  - fail and cause the web browser to show an error once the webapp is
