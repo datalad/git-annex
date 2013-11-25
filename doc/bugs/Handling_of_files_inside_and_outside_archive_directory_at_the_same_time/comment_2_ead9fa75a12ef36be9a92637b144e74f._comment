@@ -6,7 +6,7 @@
  content="""
 This turns out to be much worse in direct mode than in indirect mode.
 
-In indirect mode, it only does extra work during the full startup scan. Suppose there are 3 files with the same content, 1, archive/2, and 3. It will download 1, and then will drop archive/2, and then will download 3. This certianly is not ideal, especially when the file content is large.
+In indirect mode, it only does extra work during the full startup scan. Suppose there are 3 files with the same content, 1, archive/2, and 3. It will download 1, and then will drop archive/2, and then will download 3. This certainly is not ideal, especially when the file content is large.
 
 In indirect mode, it continally and repeatedly downloads the drops the files, as long as it's running. Which is beyond unacceptable.
 

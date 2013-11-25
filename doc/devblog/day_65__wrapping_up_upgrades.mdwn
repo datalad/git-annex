@@ -1,5 +1,5 @@
 [[!img assistant/upgradecomplete.png]]
 
 Upgrades are fully working on Linux. OSX code is written but intested and I
-thought of one bug it certianly has on my evening walk. Probably another
+thought of one bug it certainly has on my evening walk. Probably another
 hour's work left later this evening to finsh it off.

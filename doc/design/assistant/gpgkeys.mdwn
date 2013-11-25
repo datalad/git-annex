@@ -7,7 +7,7 @@ To support using gpg keys in the assistant, we need some things:
 1. Help user set up a gpg key if they don't have one. This could be a
    special-purpose key dedicated to being used by git-annex. It might be
    nice to leave the user with a securely set up general purpose key,
-   but that would certianly preclude prompting for its password in the
+   but that would certainly preclude prompting for its password in the
    webapp. Indeed, the password prompt is the main problem here.
    Best solution would be to get gpg agent working on all supported 
    platforms.

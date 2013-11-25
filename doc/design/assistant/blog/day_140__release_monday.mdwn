@@ -19,7 +19,7 @@ Still working on getting the standalone builds for this release done,
 should be done by the end of today.
 
 Also found a real stinker of a bug in `dirContentsRecursive`, which was
-just completely broken, apparently since day 1. Fixing that has certianly
+just completely broken, apparently since day 1. Fixing that has certainly
 fixed buggy behavior of `git annex import`. It seems that the other
 user of it, the transfer log code, luckily avoided the deep directory
 trees that triggered the bug.

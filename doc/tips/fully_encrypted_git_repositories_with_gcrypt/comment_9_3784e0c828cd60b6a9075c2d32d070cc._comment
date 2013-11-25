@@ -8,7 +8,7 @@
 
 Then you would need to decrypt the repository in order get the key you need to decrypt the repository. The impossibility of this design is why I didn't do that!
 
-It would certianly be possible to store a non-encrypted gpg key alongside the repsitory encrypted with it, but then you have to rely on a passphrase for all your security.
+It would certainly be possible to store a non-encrypted gpg key alongside the repsitory encrypted with it, but then you have to rely on a passphrase for all your security.
 
 You should file a bug report for the bug you saw..
 """]]

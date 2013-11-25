@@ -12,5 +12,5 @@ It would be possible to disable that scan, but at the expense of not being able 
 
 I don't quite understand what you mean with problem #2. If files were repeatedly being uploaded or downloaded, that have already been sent, that would be a bug. Please file a bug report with full debug logs if that is the case.
 
-Which topology is best? I think the best way is to start with the one you like, and if it doesn't work well, add more links between repositories. A star topology will certianly work ok. A mesh can work ok but can be hard to maintain.
+Which topology is best? I think the best way is to start with the one you like, and if it doesn't work well, add more links between repositories. A star topology will certainly work ok. A mesh can work ok but can be hard to maintain.
 """]]

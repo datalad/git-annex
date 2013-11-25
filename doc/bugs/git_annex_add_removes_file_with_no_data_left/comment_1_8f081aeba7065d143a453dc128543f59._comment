@@ -14,5 +14,5 @@ The link that you show:
 
 If I understand you correctly, it's only happening with one particular file content.
 
-I think you either need to rule out it being due to the way you've installed git-annex, perhaps by installing the linux standalone tarball, and seeing if you can get the same behavior with that. Or you could send me the repository by email (joey@kitenet.net) and I'll see if I can reproduce it, and if so, will certianly be able to debug and fix it.
+I think you either need to rule out it being due to the way you've installed git-annex, perhaps by installing the linux standalone tarball, and seeing if you can get the same behavior with that. Or you could send me the repository by email (joey@kitenet.net) and I'll see if I can reproduce it, and if so, will certainly be able to debug and fix it.
 """]]

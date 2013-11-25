@@ -19,7 +19,7 @@ GIT_INDEX_FILE='/home/foo/annex/.git/annex/index'
 --git-dir=/home/foo/annex/.git --work-tree=/home/foo/annex commit --quiet --allow-empty -m created repository
 </pre>
 
-This certianly looks like the index file setting for the git-annex branch is somehow leaking out past the branch commit operations. It continued setting that while setting up `gc.auto`; the next call to git after that stopped setting the index file.
+This certainly looks like the index file setting for the git-annex branch is somehow leaking out past the branch commit operations. It continued setting that while setting up `gc.auto`; the next call to git after that stopped setting the index file.
 
 The only way I can see offhand this could possibly happen is due to an exception. It may be that on ubuntu an exception is thrown by code that runs a git command with the index file set, for whatever reason, and this causes the code that normally resets it back to not run.
 

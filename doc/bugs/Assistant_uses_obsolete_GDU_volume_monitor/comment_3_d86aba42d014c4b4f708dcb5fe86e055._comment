@@ -6,5 +6,5 @@
  content="""
 I've just committed support for using the new name. I've not been able to test it yet, as I don't have a new enough gnome here. Any testing you can do much appreciated.
 
-Leaving this bug open until it gets tested, and also because it's certianly appealing to just use poll rather than this fragile dbus stuff. And in any case, should add OSX support.
+Leaving this bug open until it gets tested, and also because it's certainly appealing to just use poll rather than this fragile dbus stuff. And in any case, should add OSX support.
 """]]
