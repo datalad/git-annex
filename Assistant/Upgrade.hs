@@ -163,7 +163,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			sanitycheck tmpdir
 			void $ boolSystem "cp"
 				[ Param "-R"
-				, File $ tmpdir </> installbase
+				, File $ tmpdir </> installBase
 				, File $ newdir
 				]
 			void $ boolSystem "hdiutil"
