@@ -2,7 +2,8 @@ git-annex (5.20131121) UNRELEASED; urgency=low
 
   * Futher improvements to git repair.
   * Avoid misbehavior when addurl is used with quvi 0.9.
-  * webapp: Detect when an upgrade to git-annex is available.
+  * webapp: Detect when upgrades are available, and upgrade if the user
+    desires.
     (Only when git-annex is installed using the prebuilt binaries
     from git-annex upstream, not from eg Debian.)
   * assistant: Detect when the git-annex binary is modified or replaced,

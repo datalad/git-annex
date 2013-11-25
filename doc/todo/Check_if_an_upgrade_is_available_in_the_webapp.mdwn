@@ -1,3 +1,5 @@
 Especially on Mac OSX (and Windows, and maybe Android), it would be great to be able to check in the webapp if an upgrade is available. A deeper integration with these OS would be even better: for example on Mac OSX, an icon on the status bar list available upgrades for some programs, including LibreOffice and others which are not installed by default.
 
 Also, it would be great to be able to download and install git-annex upgrades directly from the webapp.
+
+> comprehensively [[done]]; [[design/assistant/upgrading]] --[[Joey]]
