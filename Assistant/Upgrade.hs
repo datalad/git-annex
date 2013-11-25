@@ -173,7 +173,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 		let deleteold = do
 			deleteFromManifest $ olddir </> "Contents" </> "MacOS"
 			makeorigsymlink olddir
-		return (newdir </> installBase </> "Contents" </> "MacOS" </> "git-annex", deleteold)
+		return (newdir </> "Contents" </> "MacOS" </> "git-annex", deleteold)
 #else
 	{- Linux uses a tarball (so could other POSIX systems), so
 	 - untar it (into a temp directory) and move the directory
