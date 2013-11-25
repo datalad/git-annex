@@ -208,7 +208,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			=<< dirContents srcdir
 #endif
 	sanitycheck dir = 
-		unlessM doesDirectoryExist $
+		unlessM (doesDirectoryExist dir) $
 			error $ "did not find " ++ dir ++ " in " ++ distributionfile
 	makeorigsymlink olddir = do
 		let origdir = parentDir olddir </> installBase
