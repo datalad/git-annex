@@ -46,11 +46,13 @@ instance FromJSON Link where
 parseEnum :: String -> Maybe Page
 parseEnum s = Page
 	<$> get "QUVI_MEDIA_PROPERTY_TITLE"
-	<*> ((:[]) <$> link)
+	<*> ((:[]) <$>
+		( Link
+			<$> get "QUVI_MEDIA_STREAM_PROPERTY_CONTAINER"
+			<*> get "QUVI_MEDIA_STREAM_PROPERTY_URL"
+		)
+	    )
   where
-	link = Link
-		<$> get "QUVI_MEDIA_STREAM_PROPERTY_CONTAINER"
-		<*> get "QUVI_MEDIA_STREAM_PROPERTY_URL"
 	get = flip M.lookup m
 	m = M.fromList $ map (separate (== '=')) $ lines s
 
