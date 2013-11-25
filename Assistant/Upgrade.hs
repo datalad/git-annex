@@ -162,7 +162,9 @@ upgradeToDistribution newdir cleanup distributionfile = do
 				]
 			void $ boolSystem "cp"
 				[ Param "-R"
-				, File $ tmpdir </> installBase
+				-- Trailing slash to copy the directory
+				-- contents.
+				, File $ tmpdir </> installBase ++ "/"
 				, File $ newdir
 				]
 			sanitycheck newdir
@@ -222,10 +224,9 @@ oldVersionLocation = do
 	pdir <- parentDir <$> readProgramFile
 	let dirs = splitDirectories pdir
 	{- It will probably be deep inside a git-annex.app directory. -}
-	let p = takeWhile (/= "git-annex.app") dirs
-	let olddir = if p == dirs
-		then pdir
-		else joinPath (p ++ ["git-annex.app"])
+	let olddir = case findIndex ("git-annex.app" `isPrefixOf`) dirs of
+		Nothing -> pdir
+		Just i -> joinPath (take (i + 1) dirs)
 #else
 	olddir <- parentDir <$> readProgramFile
 #endif
