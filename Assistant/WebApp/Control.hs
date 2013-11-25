@@ -39,7 +39,7 @@ getShutdownConfirmedR = do
 		ts <- M.keys . currentTransfers <$> getDaemonStatus
 		mapM_ pauseTransfer ts
 	page "Shutdown" Nothing $ do
-		webapp <- getYesod
+		webapp <- liftH getYesod
 		let url = T.unpack $ yesodRender webapp (T.pack "") NotRunningR []
 		{- Signal any other web browsers. -}
 		liftAssistant $ do
