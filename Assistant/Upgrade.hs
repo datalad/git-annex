@@ -168,7 +168,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			sanitycheck newdir
 			void $ boolSystem "hdiutil"
 				[ Param "eject"
-				, Param distributionfile
+				, File tmpdir
 				]
 		let deleteold = do
 			deleteFromManifest $ olddir </> "Contents" </> "MacOS"
