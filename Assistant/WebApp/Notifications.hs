@@ -99,8 +99,8 @@ getRepoListBroadcaster =  syncRemotesNotifier <$> getDaemonStatus
 getGlobalRedirBroadcaster :: Assistant NotificationBroadcaster
 getGlobalRedirBroadcaster =  globalRedirNotifier <$> getDaemonStatus
 
-getGlobalRedirR :: NotificationId -> Handler Text
+getGlobalRedirR :: NotificationId -> Handler RepPlain
 getGlobalRedirR nid = do
 	waitNotifier getGlobalRedirBroadcaster nid
-	maybe (getGlobalRedirR nid) (return . T.pack)
+	maybe (getGlobalRedirR nid) (return . RepPlain . toContent . T.pack)
 		=<< globalRedirUrl <$> liftAssistant getDaemonStatus
