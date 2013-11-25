@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+Git annex cannot add files that are marked read-only
+
+### What steps will reproduce the problem?
+
+    $ echo "This should not be modified" > read_only_file.txt
+    $ chmod 400 read_only_file.txt
+    $ git annex add .
+    add read_only_file.txt (checksum...) 
+    git-annex: read_only_file.txt: removeLink: permission denied (Permission denied)
+    failed
+
+### What version of git-annex are you using? On what operating system?
+
+    git-annex version: 4.20131106
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+
+    git version 1.8.4.3
+

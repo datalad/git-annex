@@ -1,0 +1,19 @@
+### Please describe the problem.
+
+Installing on Windows requires installing git followed by git-annex. Installing the former works without admin rights, but the latter cannot be installed afterwards.
+
+### What steps will reproduce the problem?
+
+1. Create a Windows account without admin rights
+2. Install git
+3. Install git-annex
+
+### What version of git-annex are you using? On what operating system?
+
+Latest release on MS Windows.
+
+### Please provide any additional information below.
+
+
+Installing git creates read-only directories that cannot be used by the git-annex install afterwards. Without admin rights, the read-only flag of the git dir cannot be altered.
+
