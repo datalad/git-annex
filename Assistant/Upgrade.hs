@@ -33,9 +33,6 @@ import Utility.ThreadScheduler
 import Utility.Tmp
 import Utility.UserInfo
 import qualified Utility.Lsof as Lsof
-#ifdef darwin_HOST_OS
-import Utility.CopyFile
-#endif
 
 import qualified Data.Map as M
 import Data.Tuple.Utils
@@ -166,9 +163,8 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			sanitycheck tmpdir
 			void $ boolSystem "cp"
 				[ Param "-R"
-				-- Trailing slash to copy directory contents.
-				, File $ tmpdir ++ "/"
-				, File newdir
+				, File $ tmpdir </> installbase
+				, File $ newdir
 				]
 			void $ boolSystem "hdiutil"
 				[ Param "eject"
@@ -207,13 +203,13 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			deleteFromManifest olddir
 			makeorigsymlink olddir
 		return (newdir </> "git-annex", deleteold)
+	installby a dstdir srcdir =
+		mapM_ (\x -> a x (dstdir </> takeFileName x))
+			=<< dirContents srcdir
 #endif
 	sanitycheck dir = 
 		unlessM (doesDirectoryExist $ dir </> installBase) $
 			error $ "did not find " ++ installBase ++ " in " ++ distributionfile
-	installby a dstdir srcdir =
-		mapM_ (\x -> a x (dstdir </> takeFileName x))
-			=<< dirContents srcdir
 	makeorigsymlink olddir = do
 		let origdir = parentDir olddir </> installBase
 		nukeFile origdir
