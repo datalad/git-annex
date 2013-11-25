@@ -160,12 +160,12 @@ upgradeToDistribution newdir cleanup distributionfile = do
 				[ Param "attach", File distributionfile
 				, Param "-mountroot", File tmpdir
 				]
-			sanitycheck tmpdir
 			void $ boolSystem "cp"
 				[ Param "-R"
 				, File $ tmpdir </> installBase
 				, File $ newdir
 				]
+			sanitycheck newdir
 			void $ boolSystem "hdiutil"
 				[ Param "eject"
 				, Param distributionfile
