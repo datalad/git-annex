@@ -158,7 +158,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 		withTmpDirIn (parentDir newdir) "git-annex.upgrade" $ \tmpdir -> do
 			void $ boolSystem "hdiutil"
 				[ Param "attach", File distributionfile
-				, Param "-mountroot", File tmpdir
+				, Param "-mountpoint", File tmpdir
 				]
 			void $ boolSystem "cp"
 				[ Param "-R"
