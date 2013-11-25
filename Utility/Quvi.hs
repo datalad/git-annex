@@ -120,7 +120,7 @@ quiet :: CommandParam
 quiet
 	-- Cannot use quiet as it now disables informational output.
 	-- No way to disable progress.
-	| newquvi = Param "--verbosity verbose"
+	| newquvi = Params "--verbosity verbose"
 	| otherwise = Params "--verbosity quiet"
 
 {- Only return http results, not streaming protocols. -}
