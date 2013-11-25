@@ -164,7 +164,12 @@ upgradeToDistribution newdir cleanup distributionfile = do
 				, Param "-mountroot", File tmpdir
 				]
 			sanitycheck tmpdir
-			installby createLinkOrCopy newdir (tmpdir </> installBase)
+			void $ boolSystem "cp"
+				[ Param "-R"
+				-- Trailing slash to copy directory contents.
+				, File $ tmpdir ++ "/"
+				, File newdir
+				]
 			void $ boolSystem "hdiutil"
 				[ Param "eject"
 				, Param distributionfile
