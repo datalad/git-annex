@@ -47,11 +47,11 @@ makeinfos = do
 		, Param $ "publishing git-annex " ++ version
 		]
 	void $ inRepo $ runBool
-		[ Param "git-annex"
+		[ Param "annex"
 		, Params "move --to website"
 		]
 	void $ inRepo $ runBool
-		[ Param "git-annex"
+		[ Param "annex"
 		, Params "sync"
 		]
 
