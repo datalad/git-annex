@@ -160,9 +160,8 @@ upgradeToDistribution newdir cleanup distributionfile = do
 		olddir <- oldVersionLocation
 		withTmpDirIn (parentDir newdir) "git-annex.upgrade" $ \tmpdir -> do
 			void $ boolSystem "hdiutil"
-				[ Param "attach"
-				, Param distributionfile
-				, Param tmpdir
+				[ Param "attach", File distributionfile
+				, Param "-mountroot", File tmpdir
 				]
 			sanitycheck tmpdir
 			installby createLinkOrCopy newdir (tmpdir </> installBase)
