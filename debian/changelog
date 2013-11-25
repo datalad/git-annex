@@ -11,6 +11,8 @@ git-annex (5.20131121) UNRELEASED; urgency=low
   * annex.autoupgrade configures both the above upgrade behaviors.
   * Fix bug that broke switching between local repositories
     in the webapp when they use the new guarded direct mode.
+  * Added support for quvi 0.9. Slightly suboptimal due to limitations in its
+    interface compared with the old version.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 18:30:47 -0400
 

@@ -35,6 +35,7 @@ tests =
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "quvi" $ testCmd "quvi" "quvi --version >/dev/null"
+	, TestCase "newquvi" $ testCmd "newquvi" "quvi info >/dev/null"
 	, TestCase "nice" $ testCmd "nice" "nice true >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
 	, TestCase "gpg" $ maybeSelectCmd "gpg"
