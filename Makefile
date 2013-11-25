@@ -173,7 +173,7 @@ ANDROID_FLAGS?=-f-XMPP
 # Uses https://github.com/neurocyte/ghc-android
 android: Build/EvilSplicer
 	echo "Running native build, to get TH splices.."
-	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f-Production -O0 $(ANDROID_FLAGS);  fi
+	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f-Production -O0 $(ANDROID_FLAGS) -fAndroidSplice;  fi
 	mkdir -p tmp
 	if ! $(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices; then tail tmp/dump-splices >&2; exit 1; fi
 	echo "Setting up Android build tree.."

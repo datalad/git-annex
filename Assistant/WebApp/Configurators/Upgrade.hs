@@ -23,7 +23,7 @@ import Config
  - -}
 getConfigStartUpgradeR :: GitAnnexDistribution -> Handler Html
 getConfigStartUpgradeR d = do
-#ifdef __ANDROID__
+#ifdef ANDROID_SPLICES
 	let url = distributionUrl d
 	page "Upgrade" (Just Configuration) $
 		$(widgetFile "configurators/upgrade/android")
