@@ -165,11 +165,11 @@ upgradeToDistribution newdir cleanup distributionfile = do
 				, File $ tmpdir </> installBase </> "Contents"
 				, File $ newdir
 				]
-			sanitycheck newdir
 			void $ boolSystem "hdiutil"
 				[ Param "eject"
 				, File tmpdir
 				]
+			sanitycheck newdir
 		let deleteold = do
 			deleteFromManifest $ olddir </> "Contents" </> "MacOS"
 			makeorigsymlink olddir
@@ -197,7 +197,7 @@ upgradeToDistribution newdir cleanup distributionfile = do
 				]
 			unless tarok $
 				error $ "failed to untar " ++ distributionfile
-			sanitycheck tmpdir
+			sanitycheck $ tmpdir </> installBase
 			installby rename newdir (tmpdir </> installBase)
 		let deleteold = do
 			deleteFromManifest olddir
@@ -208,8 +208,8 @@ upgradeToDistribution newdir cleanup distributionfile = do
 			=<< dirContents srcdir
 #endif
 	sanitycheck dir = 
-		unlessM (doesDirectoryExist $ dir </> installBase) $
-			error $ "did not find " ++ installBase ++ " in " ++ distributionfile
+		unlessM doesDirectoryExist $
+			error $ "did not find " ++ dir ++ " in " ++ distributionfile
 	makeorigsymlink olddir = do
 		let origdir = parentDir olddir </> installBase
 		nukeFile origdir
