@@ -168,7 +168,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	rm -f tmp/git-annex.dmg.bz2
 	bzip2 --fast < tmp/git-annex.dmg > tmp/git-annex.dmg.bz2
 
-ANDROID_FLAGS?=-f-XMPP
+ANDROID_FLAGS?=
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android: Build/EvilSplicer
