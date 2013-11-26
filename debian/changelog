@@ -1,7 +1,5 @@
 git-annex (5.20131121) UNRELEASED; urgency=low
 
-  * Futher improvements to git repair.
-  * Avoid misbehavior when addurl is used with quvi 0.9.
   * webapp: Detect when upgrades are available, and upgrade if the user
     desires.
     (Only when git-annex is installed using the prebuilt binaries
@@ -10,17 +8,19 @@ git-annex (5.20131121) UNRELEASED; urgency=low
     and either prompt the user to restart the program, or automatically
     restart it.
   * annex.autoupgrade configures both the above upgrade behaviors.
-  * Fix bug that broke switching between local repositories
-    in the webapp when they use the new guarded direct mode.
   * Added support for quvi 0.9. Slightly suboptimal due to limitations in its
     interface compared with the old version.
-  * Bug fix: annex.version did not get set on automatic 
-    upgrade to v5 direct mode repo, so the upgrade was performed
-    repeatedly, slowing commands down.
+  * Bug fix: annex.version did not get set on automatic upgrade to v5 direct
+    mode repo, so the upgrade was performed repeatedly, slowing commands down.
+  * webapp: Fix bug that broke switching between local repositories
+    that use the new guarded direct mode.
   * Android: Fix stripping of the git-annex binary.
   * Android: Make terminal app show git-annex version number.
   * Android: Re-enable XMPP support.
   * reinject: Allow to be used in direct mode.
+  * Futher improvements to git repo repair. Has now been tested in tens
+    of thousands of intentionally damaged repos, and successfully
+    repaired them all.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 18:30:47 -0400
 
