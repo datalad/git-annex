@@ -192,7 +192,7 @@ android: Build/EvilSplicer
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
 # Build just once, but link twice, for 2 different versions of Android.
 	mkdir -p tmp/androidtree/dist/build/git-annex/4.0 tmp/androidtree/dist/build/git-annex/4.3
-	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
+	if [ ! -e tmp/androidtree/dist/setup-config ]; then \
 		cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
 	fi
 	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
