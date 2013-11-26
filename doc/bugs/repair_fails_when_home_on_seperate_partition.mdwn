@@ -52,3 +52,9 @@ git-annex: repair: 1 failed
 
 # End of transcript or log.
 """]]
+
+> Thanks for reporting. As far as I can see, this was fixed
+> accidentially, when I rewrote the packed refs file handling code to not
+> re-write the file. It had been using a temp file, and renaming it, thus
+> the problem. I checked the repair code and can find no other probems
+> of this sort currently in it. [[done]] --[[Joey]]
