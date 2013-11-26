@@ -50,3 +50,6 @@ ok
 
 # End of transcript or log.
 """]]
+
+> I've had reports from others that gpg works when installing from the
+> bundle. [[done]] --[[Joey]] 
