@@ -21,7 +21,7 @@ index a20e7ed..d8f4a1f 100644
  library
    hs-source-dirs: lib
    ghc-options: -Wall -O2
-+  LD-Options: -L /home/joey/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/sysroot/usr/lib/   -lgcrypt -lgpg-error -lz
++  LD-Options: -L /home/androidbuilder/.ghc/android-14/arm-linux-androideabi-4.8/arm-linux-androideabi/sysroot/usr/lib/   -lgcrypt -lgpg-error -lz
  
    build-depends:
        base >= 4.0 && < 5.0
