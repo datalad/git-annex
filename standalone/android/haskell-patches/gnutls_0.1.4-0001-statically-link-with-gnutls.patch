@@ -1,27 +1,23 @@
-From c46af28d00a67d372bf59490d288c8cb77bae307 Mon Sep 17 00:00:00 2001
+From 67435289745b2f96fc9d1cd8e0263ef0565e4789 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Sun, 21 Apr 2013 17:14:03 -0400
-Subject: [PATCH] statically link with gnutls
+Date: Tue, 26 Nov 2013 19:18:28 +0000
+Subject: [PATCH] hack gnutls to statically link
 
-This requires libgnutls.a (and no .so) be installed in the ugly hardcoded
-lib dir. When built this way, the haskell gnutls library will link the
-library into executables with no further options.
-
-Also includes dependencies of libgnutls (needed since it's a static
-library).
+This uses a hardcoded path to the library, which includes the
+arm-linux-androideabi-4.8 part. Will need to be changed when that changes..
 ---
- gnutls.cabal |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ gnutls.cabal |    6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
 diff --git a/gnutls.cabal b/gnutls.cabal
-index a20e7ed..d8f4a1f 100644
+index 5bfe687..ff1d08c 100644
 --- a/gnutls.cabal
 +++ b/gnutls.cabal
-@@ -31,10 +31,11 @@ source-repository this
+@@ -31,16 +31,14 @@ source-repository this
  library
    hs-source-dirs: lib
    ghc-options: -Wall -O2
-+  LD-Options: -L /home/androidbuilder/.ghc/android-14/arm-linux-androideabi-4.8/arm-linux-androideabi/sysroot/usr/lib/   -lgcrypt -lgpg-error -lz
++  LD-Options: -L /home/androidbuilder/.ghc/android-14/arm-linux-androideabi-4.8/sysroot/usr/lib/ -l:libgnutls.a -l:libnettle.a -l:libhogweed.a -l:libgmp.a
  
    build-depends:
        base >= 4.0 && < 5.0
@@ -29,6 +25,12 @@ index a20e7ed..d8f4a1f 100644
 +    , bytestring >= 0.10.3.0
      , transformers >= 0.2
      , monads-tf >= 0.1 && < 0.2
+ 
+-  extra-libraries: gnutls
+-  pkgconfig-depends: gnutls
+-
+   exposed-modules:
+     Network.Protocol.TLS.GNU
  
 -- 
 1.7.10.4
