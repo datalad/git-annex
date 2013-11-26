@@ -1,6 +1,6 @@
 {- git-annex upgrade support
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,6 +11,7 @@ module Upgrade where
 
 import Common.Annex
 import Annex.Version
+import Config
 #ifndef mingw32_HOST_OS
 import qualified Upgrade.V0
 import qualified Upgrade.V1
@@ -36,7 +37,14 @@ needsUpgrade v
 	ok = return Nothing
 
 upgrade :: Bool -> Annex Bool
-upgrade automatic = go =<< getVersion
+upgrade automatic = do
+	upgraded <- go =<< getVersion
+	when upgraded $
+		ifM isDirect
+			( setVersion directModeVersion
+			, setVersion defaultVersion
+			)
+	return upgraded
   where
 #ifndef mingw32_HOST_OS
 	go (Just "0") = Upgrade.V0.upgrade

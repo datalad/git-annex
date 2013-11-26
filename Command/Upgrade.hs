@@ -25,8 +25,4 @@ start :: CommandStart
 start = do
 	showStart "upgrade" "."
 	r <- upgrade False
-	ifM isDirect
-		( setVersion directModeVersion
-		, setVersion defaultVersion
-		)
 	next $ next $ return r

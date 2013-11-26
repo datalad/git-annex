@@ -14,6 +14,9 @@ git-annex (5.20131121) UNRELEASED; urgency=low
     in the webapp when they use the new guarded direct mode.
   * Added support for quvi 0.9. Slightly suboptimal due to limitations in its
     interface compared with the old version.
+  * Bug fix: annex.version did not get set on automatic 
+    upgrade to v5 direct mode repo, so the upgrade was performed
+    repeatedly, slowing commands down.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 18:30:47 -0400
 
