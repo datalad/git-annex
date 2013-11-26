@@ -17,6 +17,8 @@ git-annex (5.20131121) UNRELEASED; urgency=low
   * Bug fix: annex.version did not get set on automatic 
     upgrade to v5 direct mode repo, so the upgrade was performed
     repeatedly, slowing commands down.
+  * Android: Fix stripping of the git-annex binary.
+  * Android: Make terminal app show git-annex version number.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 18:30:47 -0400
 

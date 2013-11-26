@@ -35,3 +35,7 @@ Last-Modified: Mon, 18 Nov 2013 11:57:25 GMT
 
 # End of transcript or log.
 """]]
+
+> Seems that I lost stripping of the git-annex binary when adding the build
+> for the newer android versions. [[fixed|done]] (There is not otherwise
+> much way to shrink the size.) --[[Joey]]
