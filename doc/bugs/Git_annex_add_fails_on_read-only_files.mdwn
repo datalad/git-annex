@@ -24,3 +24,10 @@ Git annex cannot add files that are marked read-only
 
     git version 1.8.4.3
 
+> Per my comment, I don't think the above reproduction steps are accurate.
+> I think the bug reporter must have actually had a directory that did not 
+> have the write bit set, or some other problem that prevented git-annex
+> from writing to the directory, and not to the file.
+> 
+> Closing as apparently not a bug. Please comment back if you have 
+> better infomation. [[done]] --[[Joey]]
