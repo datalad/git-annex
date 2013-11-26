@@ -79,8 +79,8 @@ main = do
 	directenv <- prepare True
 	let tests = testGroup "Tests"
 		[ localOption (QuickCheckTests 1000) properties
-		, unitTests indirectenv "(indirect)"
 		, unitTests directenv "(direct)"
+		, unitTests indirectenv "(indirect)"
 		]
 #else
 	-- Windows is only going to use direct mode, so don't test twice.
