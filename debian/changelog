@@ -19,6 +19,7 @@ git-annex (5.20131121) UNRELEASED; urgency=low
     repeatedly, slowing commands down.
   * Android: Fix stripping of the git-annex binary.
   * Android: Make terminal app show git-annex version number.
+  * Android: Re-enable XMPP support.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 18:30:47 -0400
 
