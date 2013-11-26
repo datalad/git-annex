@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 6"
+ date="2013-11-26T21:04:44Z"
+ content="""
+I think the most likely reason for git commit to be slow on your setup is that it probably rewrites .git/index. If you have a lot of files in your repository, the index file will be large and rewriting the index file will involve re-transferring it all over the network to the SMB share. 
+
+It's also possible that git commit scans the whole work tree, although I don't think it should -- it's not been told to with -a.
+
+You may be able to find what's taking a long time by
+
+    strace git --git-dir=/Volumes/Video/Videos/.git --work-tree=/Volumes/Video/Videos -c core.bare=false commit -m \"git-annex automatic sync\"
+
+(or ltrace)
+"""]]
