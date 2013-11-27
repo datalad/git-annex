@@ -1,7 +1,7 @@
-From 28e6a6599ee91e15aa7b2f9d25433490f192f22e Mon Sep 17 00:00:00 2001
-From: foo <foo@bar>
-Date: Sat, 21 Sep 2013 23:17:29 +0000
-Subject: [PATCH] remove IPv6 stuff
+From e1a2f80f6bec25921ab645a0aaf1c6422a8917ab Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Mon, 11 Nov 2013 01:06:58 +0000
+Subject: [PATCH] fix
 
 ---
  Network/Socks5/Command.hs  |    8 +-------
@@ -12,10 +12,10 @@ Subject: [PATCH] remove IPv6 stuff
  5 files changed, 2 insertions(+), 28 deletions(-)
 
 diff --git a/Network/Socks5/Command.hs b/Network/Socks5/Command.hs
-index 8ce06ec..222d954 100644
+index db95fbd..fdba5ec 100644
 --- a/Network/Socks5/Command.hs
 +++ b/Network/Socks5/Command.hs
-@@ -12,7 +12,6 @@ module Network.Socks5.Command
+@@ -13,7 +13,6 @@ module Network.Socks5.Command
      , Connect(..)
      , Command(..)
      , connectIPV4
@@ -23,7 +23,7 @@ index 8ce06ec..222d954 100644
      , connectDomainName
      -- * lowlevel interface
      , rpc
-@@ -28,7 +27,7 @@ import qualified Data.ByteString as B
+@@ -29,7 +28,7 @@ import qualified Data.ByteString as B
  import qualified Data.ByteString.Char8 as BC
  import Data.Serialize
  
@@ -32,7 +32,7 @@ index 8ce06ec..222d954 100644
  import Network.Socket.ByteString
  
  import Network.Socks5.Types
-@@ -64,11 +63,6 @@ connectIPV4 socket hostaddr port = onReply <$> rpc_ socket (Connect $ SocksAddre
+@@ -65,11 +64,6 @@ connectIPV4 socket hostaddr port = onReply <$> rpc_ socket (Connect $ SocksAddre
      where onReply (SocksAddrIPV4 h, p) = (h, p)
            onReply _                    = error "ipv4 requested, got something different"
  
@@ -114,14 +114,14 @@ index 7fbec25..17c7c83 100644
  data SocksAddress = SocksAddress !SocksHostAddress !PortNumber
      deriving (Show,Eq,Ord)
 diff --git a/Network/Socks5/Wire.hs b/Network/Socks5/Wire.hs
-index 3ab95a8..2881988 100644
+index 10bd262..a30f32e 100644
 --- a/Network/Socks5/Wire.hs
 +++ b/Network/Socks5/Wire.hs
 @@ -46,12 +46,10 @@ data SocksResponse = SocksResponse
  
- getAddr 1 = SocksAddrIPV4 <$> getWord32be
+ getAddr 1 = SocksAddrIPV4 <$> getWord32host
  getAddr 3 = SocksAddrDomainName <$> (getWord8 >>= getByteString . fromIntegral)
--getAddr 4 = SocksAddrIPV6 <$> (liftM4 (,,,) getWord32le getWord32le getWord32le getWord32le)
+-getAddr 4 = SocksAddrIPV6 <$> (liftM4 (,,,) getWord32host getWord32host getWord32host getWord32host)
  getAddr n = error ("cannot get unknown socket address type: " ++ show n)
  
  putAddr (SocksAddrIPV4 h)         = putWord8 1 >> putWord32host h

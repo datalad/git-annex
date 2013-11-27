@@ -1,11 +1,8 @@
-From c5b0db193fd6e9fd6be22891ae988babbfac3ff0 Mon Sep 17 00:00:00 2001
+From f645acc0efbfcba7715cd2b6734f0e9df98f7020 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Sat, 19 Oct 2013 02:14:38 +0000
-Subject: [PATCH] spliced TH
+Date: Mon, 11 Nov 2013 01:26:56 +0000
+Subject: [PATCH] update
 
-Used EvilSplicer. Needed a few syntax fixes, and a lot of added imports.
-
-Removed some things I don't need, rather than re-splicing to handle a new version.
 ---
  Yesod/Form/Fields.hs    |  771 +++++++++++++++++++++++++++++++++++------------
  Yesod/Form/Functions.hs |  237 ++++++++++++---
@@ -13,10 +10,10 @@ Removed some things I don't need, rather than re-splicing to handle a new versio
  Yesod/Form/MassInput.hs |  233 +++++++++++---
  Yesod/Form/Nic.hs       |   61 +++-
  yesod-form.cabal        |    1 +
- 6 files changed, 1123 insertions(+), 305 deletions(-)
+ 6 files changed, 1122 insertions(+), 306 deletions(-)
 
 diff --git a/Yesod/Form/Fields.hs b/Yesod/Form/Fields.hs
-index b8109df..9bde340 100644
+index 0689859..1e9d49b 100644
 --- a/Yesod/Form/Fields.hs
 +++ b/Yesod/Form/Fields.hs
 @@ -1,4 +1,3 @@
@@ -209,16 +206,16 @@ index b8109df..9bde340 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . renderHtml)
-@@ -168,7 +233,7 @@ $newline never
- -- | A newtype wrapper around a 'Text' that converts newlines to HTML
+@@ -169,8 +234,6 @@ $newline never
  -- br-tags.
  newtype Textarea = Textarea { unTextarea :: Text }
--    deriving (Show, Read, Eq, PersistField, PersistFieldSql, Ord)
-+    deriving (Show, Read, Eq, PersistField, Ord)
+     deriving (Show, Read, Eq, PersistField, Ord)
+-instance PersistFieldSql Textarea where
+-    sqlType _ = SqlString
  instance ToHtml Textarea where
      toHtml =
          unsafeByteString
-@@ -186,10 +251,18 @@ instance ToHtml Textarea where
+@@ -188,10 +251,18 @@ instance ToHtml Textarea where
  textareaField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Textarea
  textareaField = Field
      { fieldParse = parseHelper $ Right . Textarea
@@ -241,7 +238,7 @@ index b8109df..9bde340 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -197,10 +270,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
+@@ -199,10 +270,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
              => Field m p
  hiddenField = Field
      { fieldParse = parseHelper $ maybe (Left MsgValueRequired) Right . fromPathPiece
@@ -265,7 +262,7 @@ index b8109df..9bde340 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -208,20 +290,55 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
+@@ -210,20 +290,55 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
  textField = Field
      { fieldParse = parseHelper $ Right
      , fieldView = \theId name attrs val isReq ->
@@ -329,7 +326,7 @@ index b8109df..9bde340 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -293,10 +410,24 @@ emailField = Field
+@@ -295,10 +410,24 @@ emailField = Field
              case Email.canonicalizeEmail $ encodeUtf8 s of
                  Just e -> Right $ decodeUtf8With lenientDecode e
                  Nothing -> Left $ MsgInvalidEmail s
@@ -358,7 +355,7 @@ index b8109df..9bde340 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -305,20 +436,78 @@ searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus
+@@ -307,20 +436,78 @@ searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus
  searchField autoFocus = Field
      { fieldParse = parseHelper Right
      , fieldView = \theId name attrs val isReq -> do
@@ -449,7 +446,7 @@ index b8109df..9bde340 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -329,7 +518,30 @@ urlField = Field
+@@ -331,7 +518,30 @@ urlField = Field
              Nothing -> Left $ MsgInvalidUrl s
              Just _ -> Right s
      , fieldView = \theId name attrs val isReq ->
@@ -481,7 +478,7 @@ index b8109df..9bde340 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -342,18 +554,56 @@ selectField :: (Eq a, RenderMessage site FormMessage)
+@@ -344,18 +554,56 @@ selectField :: (Eq a, RenderMessage site FormMessage)
              => HandlerT site IO (OptionList a)
              -> Field (HandlerT site IO) a
  selectField = selectFieldHelper
@@ -550,7 +547,7 @@ index b8109df..9bde340 100644
  
  multiSelectFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
                       => [(msg, a)]
-@@ -376,11 +626,48 @@ multiSelectField ioptlist =
+@@ -378,11 +626,48 @@ multiSelectField ioptlist =
      view theId name attrs val isReq = do
          opts <- fmap olOptions $ handlerToWidget ioptlist
          let selOpts = map (id &&& (optselected val)) opts
@@ -604,7 +601,7 @@ index b8109df..9bde340 100644
          where
              optselected (Left _) _ = False
              optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
-@@ -390,67 +677,172 @@ radioFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
+@@ -392,67 +677,172 @@ radioFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
                 -> Field (HandlerT site IO) a
  radioFieldList = radioField . optionsPairs
  
@@ -828,7 +825,7 @@ index b8109df..9bde340 100644
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -476,10 +868,25 @@ $newline never
+@@ -478,10 +868,25 @@ $newline never
  checkBoxField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Bool
  checkBoxField = Field
      { fieldParse = \e _ -> return $ checkBoxParser e
@@ -858,7 +855,7 @@ index b8109df..9bde340 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -523,49 +930,7 @@ optionsPairs opts = do
+@@ -525,49 +930,7 @@ optionsPairs opts = do
  optionsEnum :: (MonadHandler m, Show a, Enum a, Bounded a) => m (OptionList a)
  optionsEnum = optionsPairs $ map (\x -> (pack $ show x, x)) [minBound..maxBound]
  
@@ -909,7 +906,7 @@ index b8109df..9bde340 100644
  
  selectFieldHelper
          :: (Eq a, RenderMessage site FormMessage)
-@@ -609,9 +974,21 @@ fileField = Field
+@@ -611,9 +974,21 @@ fileField = Field
          case files of
              [] -> Right Nothing
              file:_ -> Right $ Just file
@@ -934,7 +931,7 @@ index b8109df..9bde340 100644
      , fieldEnctype = Multipart
      }
  
-@@ -638,10 +1015,20 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
+@@ -640,10 +1015,20 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
              { fvLabel = toHtml $ renderMessage site langs $ fsLabel fs
              , fvTooltip = fmap (toHtml . renderMessage site langs) $ fsTooltip fs
              , fvId = id'
@@ -959,7 +956,7 @@ index b8109df..9bde340 100644
              , fvErrors = errs
              , fvRequired = True
              }
-@@ -670,10 +1057,20 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
+@@ -672,10 +1057,20 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
              { fvLabel = toHtml $ renderMessage master langs $ fsLabel fs
              , fvTooltip = fmap (toHtml . renderMessage master langs) $ fsTooltip fs
              , fvId = id'
@@ -1770,7 +1767,7 @@ index 2862678..7b49b1a 100644
      }
    where
 diff --git a/yesod-form.cabal b/yesod-form.cabal
-index afd2de5..49fd684 100644
+index 39fa680..88ed066 100644
 --- a/yesod-form.cabal
 +++ b/yesod-form.cabal
 @@ -19,6 +19,7 @@ library

@@ -29,8 +29,8 @@ module Annex.Content (
 	preseedTmp,
 	freezeContent,
 	thawContent,
-	cleanObjectLoc,
 	dirKeys,
+	withObjectLoc,
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
@@ -54,9 +54,7 @@ import Annex.Perms
 import Annex.Link
 import Annex.Content.Direct
 import Annex.ReplaceFile
-#ifndef mingw32_HOST_OS
 import Annex.Exception
-#endif
 
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
@@ -255,11 +253,9 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
   where
 	storeobject dest = ifM (liftIO $ doesFileExist dest)
 		( alreadyhave
-		, do
-			createContentDir dest
+		, modifyContent dest $ do
 			liftIO $ moveFile src dest
 			freezeContent dest
-			freezeContentDir dest
 		)
 	storeindirect = storeobject =<< calcRepo (gitAnnexLocation key)
 
@@ -273,7 +269,6 @@ moveAnnex key src = withObjectLoc key storeobject storedirect
 	storedirect = storedirect' storeindirect
 	storedirect' fallback [] = fallback
 	storedirect' fallback (f:fs) = do
-		thawContentDir =<< calcRepo (gitAnnexLocation key)
 		thawContent src
 		v <- isAnnexLink f
 		if Just key == v
@@ -349,11 +344,11 @@ withObjectLoc key indirect direct = ifM isDirect
   where
 	goindirect = indirect =<< calcRepo (gitAnnexLocation key)
 
-cleanObjectLoc :: Key -> Annex ()
-cleanObjectLoc key = do
+cleanObjectLoc :: Key -> Annex () -> Annex ()
+cleanObjectLoc key cleaner = do
 	file <- calcRepo $ gitAnnexLocation key
-	unlessM crippledFileSystem $
-		void $ liftIO $ catchMaybeIO $ allowWrite $ parentDir file
+	void $ tryAnnexIO $ thawContentDir file
+	cleaner
 	liftIO $ removeparents file (3 :: Int)
   where
 	removeparents _ 0 = noop
@@ -369,13 +364,10 @@ cleanObjectLoc key = do
 removeAnnex :: Key -> Annex ()
 removeAnnex key = withObjectLoc key remove removedirect
   where
-	remove file = do
-		thawContentDir file
+	remove file = cleanObjectLoc key $ do
 		liftIO $ nukeFile file
 		removeInodeCache key
-		cleanObjectLoc key
 	removedirect fs = do
-		thawContentDir =<< calcRepo (gitAnnexLocation key)
 		cache <- recordedInodeCache key
 		removeInodeCache key
 		mapM_ (resetfile cache) fs
@@ -389,12 +381,10 @@ removeAnnex key = withObjectLoc key remove removedirect
 
 {- Moves a key's file out of .git/annex/objects/ -}
 fromAnnex :: Key -> FilePath -> Annex ()
-fromAnnex key dest = do
+fromAnnex key dest = cleanObjectLoc key $ do
 	file <- calcRepo $ gitAnnexLocation key
-	thawContentDir file
 	thawContent file
 	liftIO $ moveFile file dest
-	cleanObjectLoc key
 
 {- Moves a key out of .git/annex/objects/ into .git/annex/bad, and
  - returns the file it was moved to. -}
@@ -404,9 +394,8 @@ moveBad key = do
 	bad <- fromRepo gitAnnexBadDir
 	let dest = bad </> takeFileName src
 	createAnnexDirectory (parentDir dest)
-	thawContentDir src
-	liftIO $ moveFile src dest
-	cleanObjectLoc key
+	cleanObjectLoc key $
+		liftIO $ moveFile src dest
 	logStatus key InfoMissing
 	return dest
 

@@ -9,6 +9,7 @@
 
 /shutdown ShutdownR GET
 /shutdown/confirm ShutdownConfirmedR GET
+/shutdown/complete NotRunningR GET
 /restart RestartR GET
 /restart/thread/#ThreadName RestartThreadR GET
 /log LogR GET
@@ -21,6 +22,9 @@
 /config/xmpp/needcloudrepo/#UUID NeedCloudRepoR GET
 /config/fsck ConfigFsckR GET POST
 /config/fsck/preferences ConfigFsckPreferencesR POST
+/config/upgrade/start/#GitAnnexDistribution ConfigStartUpgradeR GET
+/config/upgrade/finish ConfigFinishUpgradeR GET
+/config/upgrade/automatically ConfigEnableAutomaticUpgradeR GET
 
 /config/addrepository AddRepositoryR GET
 /config/repository/new NewRepositoryR GET POST
@@ -29,13 +33,12 @@
 /config/repository/switcher RepositorySwitcherR GET
 /config/repository/switchto/#FilePath SwitchToRepositoryR GET
 /config/repository/combine/#FilePath/#UUID CombineRepositoryR GET
-/config/repository/edit/#UUID EditRepositoryR GET POST
+/config/repository/edit/#RepoId EditRepositoryR GET POST
 /config/repository/edit/new/#UUID EditNewRepositoryR GET POST
 /config/repository/edit/new/cloud/#UUID EditNewCloudRepositoryR GET POST
-/config/repository/sync/disable/#UUID DisableSyncR GET
-/config/repository/sync/enable/#UUID EnableSyncR GET
-/config/repository/unfinished/check CheckUnfinishedRepositoriesR GET
-/config/repository/unfinished/retry RetryUnfinishedRepositoriesR GET
+/config/repository/sync/disable/#RepoId DisableSyncR GET
+/config/repository/sync/enable/#RepoId EnableSyncR GET
+/config/repository/upgrade/#RepoId UpgradeRepositoryR GET
 
 /config/repository/add/drive AddDriveR GET POST
 /config/repository/add/drive/confirm/#RemovableDrive ConfirmAddDriveR GET
@@ -101,8 +104,11 @@
 /repolist/#NotificationId/#RepoSelector RepoListR GET
 /notifier/repolist/#RepoSelector NotifierRepoListR GET
 
+/globalredir/#NotificationId GlobalRedirR GET
+/notifier/globalredir NotifierGlobalRedirR GET
+
 /alert/close/#AlertId CloseAlert GET
-/alert/click/#AlertId ClickAlert GET
+/alert/click/#AlertId/#Int ClickAlert GET
 /filebrowser FileBrowserR GET POST
 
 /transfer/pause/#Transfer PauseTransferR GET POST

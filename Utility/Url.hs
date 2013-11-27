@@ -14,7 +14,8 @@ module Utility.Url (
 	checkBoth,
 	exists,
 	download,
-	downloadQuiet
+	downloadQuiet,
+	parseURIRelaxed
 ) where
 
 import Common

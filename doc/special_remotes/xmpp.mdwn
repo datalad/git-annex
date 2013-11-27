@@ -24,7 +24,7 @@ command line.
 ## XMPP server support status
 [[!table  data="""
 Provider|Status|Type|Notes
-[[Gmail|http://gmail.com]]|Working|?|Google apps users will have to configure `.git/annex/creds/xmpp` manually
+[[Gmail|http://gmail.com]]|Working|?|Google Apps: [setup your SRV records](http://www.olark.com/gtalk/check_srv) or configure `.git/annex/creds/xmpp` manually
 [[Coderollers|http://www.coderollers.com/xmpp-server/]]|Working|[[Openfire|http://www.igniterealtime.org/projects/openfire/]]
 [[jabber.me|http://jabber.me/]]|Working|[[Tigase|http://www.tigase.org/]]
 [[xmpp.ru.net|https://www.xmpp.ru.net]]|Working|[[jabberd2|http://jabberd2.org/]]

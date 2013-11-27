@@ -6,7 +6,7 @@
  content="""
 git 1.7.4 does not make things better. With it, if I add first \"X/foo\" and then \"x/bar\", it commits \"X/bar\".
 
-That will *certianly* cause problems when interoperating with a repo clone on a case-sensative filesystem, since
+That will *certainly* cause problems when interoperating with a repo clone on a case-sensative filesystem, since
 git-annex there will not see the location log that git committed to the wrong case directory.
 
 It's possible there is some interoperability problem when pulling from linux like you did, onto HFS+, too. I am not quite sure. Ah, I did find one.. if I clone the repo with \"X/foo\" in it to a case-sensative filesystem, and add a \"x/foo\" there,

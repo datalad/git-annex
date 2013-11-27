@@ -10,10 +10,10 @@
 module Assistant.WebApp.Configurators.Local where
 
 import Assistant.WebApp.Common
-import Assistant.WebApp.OtherRepos
 import Assistant.WebApp.Gpg
 import Assistant.WebApp.MakeRemote
 import Assistant.Sync
+import Assistant.Restart
 import Init
 import qualified Git
 import qualified Git.Construct
@@ -24,12 +24,13 @@ import Config.Files
 import Utility.FreeDesktop
 #ifdef WITH_CLIBS
 import Utility.Mounts
-#endif
 import Utility.DiskFree
+#endif
 import Utility.DataUnits
 import Utility.Network
 import Remote (prettyUUID)
 import Annex.UUID
+import Annex.Direct
 import Types.StandardGroups
 import Logs.PreferredContent
 import Logs.UUID
@@ -167,7 +168,7 @@ getAndroidCameraRepositoryR =
   where
   	addignore = do
 		liftIO $ unlessM (doesFileExist ".gitignore") $
-			writeFile ".gitignore" ".thumbnails/*"
+			writeFile ".gitignore" ".thumbnails"
 		void $ inRepo $
 			Git.Command.runBool [Param "add", File ".gitignore"]
 
@@ -199,7 +200,7 @@ getCombineRepositoryR :: FilePath -> UUID -> Handler Html
 getCombineRepositoryR newrepopath newrepouuid = do
 	r <- combineRepos newrepopath remotename
 	liftAssistant $ syncRemote r
-	redirect $ EditRepositoryR newrepouuid
+	redirect $ EditRepositoryR $ RepoUUID newrepouuid
   where
 	remotename = takeFileName newrepopath
 

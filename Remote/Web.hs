@@ -25,8 +25,6 @@ import Annex.Quvi
 import qualified Utility.Quvi as Quvi
 #endif
 
-import qualified Data.Map as M
-
 remote :: RemoteType
 remote = RemoteType {
 	typename = "web",
@@ -44,7 +42,7 @@ list = do
 	return [r]
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
-gen r _ _ gc = 
+gen r _ c gc = 
 	return $ Just Remote {
 		uuid = webUUID,
 		cost = expensiveRemoteCost,
@@ -58,7 +56,7 @@ gen r _ _ gc =
 		whereisKey = Just getUrls,
 		remoteFsck = Nothing,
 		repairRepo = Nothing,
-		config = M.empty,
+		config = c,
 		gitconfig = gc,
 		localpath = Nothing,
 		repo = r,

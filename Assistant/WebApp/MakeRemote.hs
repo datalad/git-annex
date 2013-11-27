@@ -17,7 +17,7 @@ import qualified Remote
 import qualified Config
 import Config.Cost
 import Types.StandardGroups
-import Git.Remote
+import Git.Types (RemoteName)
 import Logs.PreferredContent
 import Assistant.MakeRemote
 

@@ -18,7 +18,7 @@ import Types.UUID
 import Types.GitConfig
 import Config.Cost
 import Utility.Metered
-import Git.Remote
+import Git.Types
 import Utility.SafeCommand
 
 type RemoteConfigKey = String

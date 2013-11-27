@@ -44,8 +44,10 @@ import qualified Control.Exception as E
 import Control.Monad
 #ifndef mingw32_HOST_OS
 import System.Posix.IO
-import Data.Maybe
+#else
+import Control.Applicative
 #endif
+import Data.Maybe
 
 import Utility.Misc
 import Utility.Exception
@@ -161,6 +163,8 @@ createBackgroundProcess p a = a =<< createProcess p
  - whether it succeeded or failed. -}
 processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
 #ifndef mingw32_HOST_OS
+{- This implementation interleves stdout and stderr in exactly the order
+ - the process writes them. -}
 processTranscript cmd opts input = do
 	(readf, writef) <- createPipe
 	readh <- fdToHandle readf
@@ -173,10 +177,7 @@ processTranscript cmd opts input = do
 			}
 	hClose writeh
 
-	-- fork off a thread to start consuming the output
-	transcript <- hGetContents readh
-	outMVar <- newEmptyMVar
-	_ <- forkIO $ E.evaluate (length transcript) >> putMVar outMVar ()
+	get <- mkreader readh
 
 	-- now write and flush any input
 	case input of
@@ -188,15 +189,46 @@ processTranscript cmd opts input = do
 			hClose inh
 		Nothing -> return ()
 
-	-- wait on the output
-	takeMVar outMVar
-	hClose readh
+	transcript <- get
 
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
 #else
-processTranscript = error "processTranscript TODO"
+{- This implementation for Windows puts stderr after stdout. -}
+processTranscript cmd opts input = do
+	p@(_, _, _, pid) <- createProcess $
+		(proc cmd opts)
+			{ std_in = if isJust input then CreatePipe else Inherit
+			, std_out = CreatePipe
+			, std_err = CreatePipe
+			}
+
+	getout <- mkreader (stdoutHandle p)
+	geterr <- mkreader (stderrHandle p)
+
+	case input of
+		Just s -> do
+			let inh = stdinHandle p
+			unless (null s) $ do
+				hPutStr inh s
+				hFlush inh
+			hClose inh
+		Nothing -> return ()
+	
+	transcript <- (++) <$> getout <*> geterr
+	ok <- checkSuccessProcess pid
+	return (transcript, ok)
 #endif
+  where
+	mkreader h = do
+		s <- hGetContents h
+		v <- newEmptyMVar
+		void $ forkIO $ do
+			void $ E.evaluate (length s)
+			putMVar v ()
+		return $ do
+			takeMVar v
+			return s
 
 {- Runs a CreateProcessRunner, on a CreateProcess structure, that
  - is adjusted to pipe only from/to a single StdHandle, and passes

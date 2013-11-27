@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 
 module GitAnnex where
 
@@ -46,6 +46,7 @@ import qualified Command.Whereis
 import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
+import qualified Command.Info
 import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
@@ -86,6 +87,9 @@ import qualified Command.XMPPGit
 #ifdef WITH_TESTSUITE
 import qualified Command.Test
 import qualified Command.FuzzTest
+#endif
+#ifdef WITH_EKG
+import System.Remote.Monitoring
 #endif
 
 cmds :: [Command]
@@ -140,6 +144,7 @@ cmds = concat
 	, Command.List.def
 	, Command.Log.def
 	, Command.Merge.def
+	, Command.Info.def
 	, Command.Status.def
 	, Command.Migrate.def
 	, Command.Map.def
@@ -169,4 +174,8 @@ header :: String
 header = "git-annex command [option ...]"
 
 run :: [String] -> IO ()
-run args = dispatch True args cmds options [] header Git.CurrentRepo.get
+run args = do
+#ifdef WITH_EKG
+	_ <- forkServer "localhost" 4242
+#endif
+	dispatch True args cmds options [] header Git.CurrentRepo.get

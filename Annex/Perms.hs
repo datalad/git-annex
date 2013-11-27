@@ -6,19 +6,22 @@
  -}
 
 module Annex.Perms (
-	setAnnexPerm,
+	setAnnexFilePerm,
+	setAnnexDirPerm,
 	annexFileMode,
 	createAnnexDirectory,
 	noUmask,
 	createContentDir,
 	freezeContentDir,
 	thawContentDir,
+	modifyContent,
 ) where
 
 import Common.Annex
 import Utility.FileMode
 import Git.SharedRepository
 import qualified Annex
+import Annex.Exception
 import Config
 
 import System.Posix.Types
@@ -31,17 +34,27 @@ withShared a = maybe startup a =<< Annex.getState Annex.shared
 		Annex.changeState $ \s -> s { Annex.shared = Just shared }
 		a shared
 
+setAnnexFilePerm :: FilePath -> Annex ()
+setAnnexFilePerm = setAnnexPerm False
+
+setAnnexDirPerm :: FilePath -> Annex ()
+setAnnexDirPerm = setAnnexPerm True
+
 {- Sets appropriate file mode for a file or directory in the annex,
  - other than the content files and content directory. Normally,
  - use the default mode, but with core.sharedRepository set,
  - allow the group to write, etc. -}
-setAnnexPerm :: FilePath -> Annex ()
-setAnnexPerm file = unlessM crippledFileSystem $
+setAnnexPerm :: Bool -> FilePath -> Annex ()
+setAnnexPerm isdir file = unlessM crippledFileSystem $
 	withShared $ liftIO . go
   where
-	go GroupShared = groupWriteRead file
+	go GroupShared = modifyFileMode file $ addModes $
+		groupSharedModes ++
+		if isdir then [ ownerExecuteMode, groupExecuteMode ] else []
 	go AllShared = modifyFileMode file $ addModes $
-		[ ownerWriteMode, groupWriteMode ] ++ readModes
+		readModes ++
+		[ ownerWriteMode, groupWriteMode ] ++
+		if isdir then executeModes else []
 	go _ = noop
 
 {- Gets the appropriate mode to use for creating a file in the annex
@@ -52,10 +65,7 @@ annexFileMode = withShared $ return . go
 	go GroupShared = sharedmode
 	go AllShared = combineModes (sharedmode:readModes)
 	go _ = stdFileMode
-	sharedmode = combineModes
-		[ ownerWriteMode, groupWriteMode
-		, ownerReadMode, groupReadMode
-		]
+	sharedmode = combineModes groupSharedModes
 
 {- Creates a directory inside the gitAnnexDir, including any parent
  - directories. Makes directories with appropriate permissions. -}
@@ -72,7 +82,7 @@ createAnnexDirectory dir = traverse dir [] =<< top
 	  where
 		done = forM_ below $ \p -> do
 			liftIO $ createDirectoryIfMissing True p
-			setAnnexPerm p
+			setAnnexDirPerm p
 
 {- Blocks writing to the directory an annexed file is in, to prevent the
  - file accidentially being deleted. However, if core.sharedRepository
@@ -103,3 +113,13 @@ createContentDir dest = do
 		liftIO $ allowWrite dir
   where
 	dir = parentDir dest
+
+{- Creates the content directory for a file if it doesn't already exist,
+ - or thaws it if it does, then runs an action to modify the file, and
+ - finally, freezes the content directory. -}
+modifyContent :: FilePath -> Annex a -> Annex a
+modifyContent f a = do
+	createContentDir f -- also thaws it
+	v <- tryAnnex a
+	freezeContentDir f
+	either throwAnnex return v

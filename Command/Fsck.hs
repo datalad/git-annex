@@ -218,9 +218,10 @@ verifyLocationLog key desc = do
 	
 	{- Since we're checking that a key's file is present, throw
 	 - in a permission fixup here too. -}
-	when (present && not direct) $ do
-		file <- calcRepo $ gitAnnexLocation key
+	file <- calcRepo $ gitAnnexLocation key
+	when (present && not direct) $
 		freezeContent file
+	whenM (liftIO $ doesDirectoryExist $ parentDir file) $
 		freezeContentDir file
 
 	{- In direct mode, modified files will show up as not present,

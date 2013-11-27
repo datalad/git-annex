@@ -8,12 +8,14 @@
 module Git.Repair (
 	runRepair,
 	runRepairOf,
+	successfulRepair,
 	cleanCorruptObjects,
 	retrieveMissingObjects,
 	resetLocalBranches,
 	removeTrackingBranches,
-	rewriteIndex,
 	checkIndex,
+	missingIndex,
+	nukeIndex,
 	emptyGoodCommits,
 ) where
 
@@ -34,71 +36,38 @@ import qualified Git.UpdateIndex as UpdateIndex
 import qualified Git.Branch as Branch
 import Utility.Tmp
 import Utility.Rsync
+import Utility.FileMode
 
 import qualified Data.Set as S
 import qualified Data.ByteString.Lazy as L
 import Data.Tuple.Utils
 
-{- Given a set of bad objects found by git fsck, removes all
- - corrupt objects, and returns a list of missing objects,
- - which need to be found elsewhere to finish recovery.
- -
- - Since git fsck may crash on corrupt objects, and so not
- - report the full set of corrupt or missing objects,
- - this removes corrupt objects, and re-runs fsck, until it
- - stabalizes.
- -
- - To remove corrupt objects, unpack all packs, and remove the packs
- - (to handle corrupt packs), and remove loose object files.
+{- Given a set of bad objects found by git fsck, which may not
+ - be complete, finds and removes all corrupt objects, and
+ - returns a list of missing objects, which need to be
+ - found elsewhere to finish recovery.
  -}
-cleanCorruptObjects :: FsckResults -> Repo -> IO MissingObjects
-cleanCorruptObjects mmissing r = check mmissing
-  where
-	check Nothing = do
-		putStrLn "git fsck found a problem but no specific broken objects. Perhaps a corrupt pack file?"
-		ifM (explodePacks r)
-			( retry S.empty
-			, return S.empty
-			)
-	check (Just bad)
-		| S.null bad = return S.empty
-		| otherwise = do
-			putStrLn $ unwords 
-				[ "git fsck found"
-				, show (S.size bad)
-				, "broken objects."
-				]
-			exploded <- explodePacks r
-			removed <- removeLoose r bad
-			if exploded || removed
-				then retry bad
-				else return bad
-	retry oldbad = do
-		putStrLn "Re-running git fsck to see if it finds more problems."
-		v <- findBroken False r
-		case v of
-			Nothing -> error $ unwords
-				[ "git fsck found a problem, which was not corrected after removing"
-				, show (S.size oldbad)
-				, "corrupt objects."
-				]
-			Just newbad -> do
-				removed <- removeLoose r newbad
-				let s = S.union oldbad newbad
-				if not removed || s == oldbad
-					then return s
-					else retry s
+cleanCorruptObjects :: FsckResults -> Repo -> IO (Maybe MissingObjects)
+cleanCorruptObjects fsckresults r = do
+	void $ explodePacks r
+	objs <- listLooseObjectShas r
+	bad <- findMissing objs r
+	void $ removeLoose r $ S.union bad (fromMaybe S.empty fsckresults)
+	-- Rather than returning the loose objects that were removed, re-run
+	-- fsck. Other missing objects may have been in the packs,
+	-- and this way fsck will find them.
+	findBroken False r
 
 removeLoose :: Repo -> MissingObjects -> IO Bool
 removeLoose r s = do
-	let fs = map (looseObjectFile r) (S.toList s)
-	count <- length <$> filterM doesFileExist fs
-	if (count > 0)
+	fs <- filterM doesFileExist (map (looseObjectFile r) (S.toList s))
+	let count = length fs
+	if count > 0
 		then do
 			putStrLn $ unwords
-				[ "removing"
+				[ "Removing"
 				, show count
-				, "corrupt loose objects"
+				, "corrupt loose objects."
 				]
 			mapM_ nukeFile fs
 			return True
@@ -114,57 +83,62 @@ explodePacks r = do
 			mapM_ go packs
 			return True
   where
-	go packfile = do
+	go packfile = withTmpFileIn (localGitDir r) "pack" $ \tmp _ -> do
+		moveFile packfile tmp
+		nukeFile $ packIdxFile packfile
+		allowRead tmp
 		-- May fail, if pack file is corrupt.
 		void $ tryIO $
-			pipeWrite [Param "unpack-objects"] r $ \h ->
-				L.hPut h =<< L.readFile packfile
-		nukeFile packfile
-		nukeFile $ packIdxFile packfile
+			pipeWrite [Param "unpack-objects", Param "-r"] r $ \h ->
+				L.hPut h =<< L.readFile tmp
 
 {- Try to retrieve a set of missing objects, from the remotes of a
  - repository. Returns any that could not be retreived.
- - 
+ -
  - If another clone of the repository exists locally, which might not be a
  - remote of the repo being repaired, its path can be passed as a reference
  - repository.
+ 
+ - Can also be run with Nothing, if it's not known which objects are
+ - missing, just that some are. (Ie, fsck failed badly.)
  -}
-retrieveMissingObjects :: MissingObjects -> Maybe FilePath -> Repo -> IO MissingObjects
+retrieveMissingObjects :: Maybe MissingObjects -> Maybe FilePath -> Repo -> IO (Maybe MissingObjects)
 retrieveMissingObjects missing referencerepo r
-	| S.null missing = return missing
+	| missing == Just S.empty = return $ Just S.empty
 	| otherwise = withTmpDir "tmprepo" $ \tmpdir -> do
 		unlessM (boolSystem "git" [Params "init", File tmpdir]) $
 			error $ "failed to create temp repository in " ++ tmpdir
 		tmpr <- Config.read =<< Construct.fromAbsPath tmpdir
 		stillmissing <- pullremotes tmpr (remotes r) fetchrefstags missing
-		if S.null stillmissing
-			then return stillmissing
+		if stillmissing == Just S.empty
+			then return $ Just S.empty
 			else pullremotes tmpr (remotes r) fetchallrefs stillmissing
   where
 	pullremotes tmpr [] fetchrefs stillmissing = case referencerepo of
 		Nothing -> return stillmissing
 		Just p -> ifM (fetchfrom p fetchrefs tmpr)
 			( do
+				void $ explodePacks tmpr
 				void $ copyObjects tmpr r
-				findMissing (S.toList stillmissing) r
+				case stillmissing of
+					Nothing -> return $ Just S.empty
+					Just s -> Just <$> findMissing (S.toList s) r
 			, return stillmissing
 			)
-	pullremotes tmpr (rmt:rmts) fetchrefs s
-		| S.null s = return s
+	pullremotes tmpr (rmt:rmts) fetchrefs ms
+		| ms == Just S.empty = return $ Just S.empty
 		| otherwise = do
-			putStrLn $ "Trying to recover missing objects from remote " ++ repoDescribe rmt
+			putStrLn $ "Trying to recover missing objects from remote " ++ repoDescribe rmt ++ "."
 			ifM (fetchfrom (repoLocation rmt) fetchrefs tmpr)
 				( do
+					void $ explodePacks tmpr
 					void $ copyObjects tmpr r
-					stillmissing <- findMissing (S.toList s) r
-					pullremotes tmpr rmts fetchrefs stillmissing
-				, do
-					putStrLn $ unwords
-						[ "failed to fetch from remote"
-						, repoDescribe rmt
-						, "(will continue without it, but making this remote available may improve recovery)"
-						]
-					pullremotes tmpr rmts fetchrefs s
+					case ms of
+						Nothing -> pullremotes tmpr rmts fetchrefs ms
+						Just s -> do
+							stillmissing <- findMissing (S.toList s) r
+							pullremotes tmpr rmts fetchrefs (Just stillmissing)
+				, pullremotes tmpr rmts fetchrefs ms
 				)
 	fetchfrom fetchurl ps = runBool $
 		[ Param "fetch"
@@ -178,7 +152,7 @@ retrieveMissingObjects missing referencerepo r
 	fetchallrefs = [ Param "+*:*" ]
 
 {- Copies all objects from the src repository to the dest repository.
- - This is done using rsync, so it copies all missing object, and all
+ - This is done using rsync, so it copies all missing objects, and all
  - objects they rely on. -}
 copyObjects :: Repo -> Repo -> IO Bool
 copyObjects srcr destr = rsync
@@ -237,51 +211,44 @@ removeTrackingBranches missing goodcommits r =
 {- Gets all refs, including ones that are corrupt.
  - git show-ref does not output refs to commits that are directly
  - corrupted, so it is not used.
+ -
+ - Relies on packed refs being exploded before it's called.
  -}
 getAllRefs :: Repo -> IO [Ref]
-getAllRefs r = do
-	packedrs <- mapMaybe parsePacked . lines
-		<$> catchDefaultIO "" (readFile $ packedRefsFile r)
-	loosers <- map toref <$> dirContentsRecursive refdir
-	return $ packedrs ++ loosers
+getAllRefs r = map toref <$> dirContentsRecursive refdir
   where
   	refdir = localGitDir r </> "refs"
 	toref = Ref . relPathDirToFile (localGitDir r)
 
+explodePackedRefsFile :: Repo -> IO ()
+explodePackedRefsFile r = do
+	let f = packedRefsFile r
+	whenM (doesFileExist f) $ do
+		rs <- mapMaybe parsePacked . lines
+			<$> catchDefaultIO "" (safeReadFile f)
+		forM_ rs makeref
+		nukeFile f
+  where
+	makeref (sha, ref) = do
+		let dest = localGitDir r ++ show ref
+		createDirectoryIfMissing True (parentDir dest)
+		unlessM (doesFileExist dest) $
+			writeFile dest (show sha)
+
 packedRefsFile :: Repo -> FilePath
 packedRefsFile r = localGitDir r </> "packed-refs"
 
-parsePacked :: String -> Maybe Ref
+parsePacked :: String -> Maybe (Sha, Ref)
 parsePacked l = case words l of
 	(sha:ref:[])
-		| isJust (extractSha sha) -> Just $ Ref ref
+		| isJust (extractSha sha) && Ref.legal True ref ->
+			Just (Ref sha, Ref ref)
 	_ -> Nothing
 
 {- git-branch -d cannot be used to remove a branch that is directly
- - pointing to a corrupt commit. However, it's tried first. -}
+ - pointing to a corrupt commit. -}
 nukeBranchRef :: Branch -> Repo -> IO ()
-nukeBranchRef b r = void $ usegit <||> byhand
-  where
-	usegit = runBool
-		[ Param "branch"
-		, Params "-r -d"
-		, Param $ show $ Ref.base b
-		] r
-	byhand = do
-		nukeFile $ localGitDir r </> show b
-		whenM (doesFileExist packedrefs) $
-			withTmpFile "packed-refs" $ \tmp h -> do
-				ls <- lines <$> readFile packedrefs
-				hPutStr h $ unlines $
-					filter (not . skiprefline) ls
-				hClose h
-				renameFile tmp packedrefs
-		return True
-	skiprefline l = case parsePacked l of
-		Just packedref
-			| packedref == b -> True
-		_ -> False
-	packedrefs = packedRefsFile r
+nukeBranchRef b r = nukeFile $ localGitDir r </> show b
 
 {- Finds the most recent commit to a branch that does not need any
  - of the missing objects. If the input branch is good as-is, returns it.
@@ -368,7 +335,9 @@ verifyTree missing treesha r
 			-- as long as ls-tree succeeded, we're good
 			else cleanup
 
-{- Checks that the index file only refers to objects that are not missing. -}
+{- Checks that the index file only refers to objects that are not missing,
+ - and is not itself corrupt. Note that a missing index file is not
+ - considered a problem (repo may be new). -}
 checkIndex :: MissingObjects -> Repo -> IO Bool
 checkIndex missing r = do
 	(bad, _good, cleanup) <- partitionIndex missing r
@@ -377,6 +346,9 @@ checkIndex missing r = do
 		else do
 			void cleanup
 			return False
+
+missingIndex :: Repo -> IO Bool
+missingIndex r = not <$> doesFileExist (localGitDir r </> "index")
 
 partitionIndex :: MissingObjects -> Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
 partitionIndex missing r = do
@@ -396,7 +368,7 @@ rewriteIndex missing r
 	| otherwise = do
 		(bad, good, cleanup) <- partitionIndex missing r
 		unless (null bad) $ do
-			nukeFile (localGitDir r </> "index")
+			nukeIndex r
 			UpdateIndex.streamUpdateIndex r
 				=<< (catMaybes <$> mapM reinject good)
 		void cleanup
@@ -407,6 +379,9 @@ rewriteIndex missing r
 		Just blobtype -> Just <$>
 			UpdateIndex.stageFile sha blobtype file r
 	reinject _ = return Nothing
+
+nukeIndex :: Repo -> IO ()
+nukeIndex r = nukeFile (localGitDir r </> "index")
 
 newtype GoodCommits = GoodCommits (S.Set Sha)
 
@@ -432,39 +407,88 @@ displayList items header
 		| numitems > 10 = take 10 items ++ ["(and " ++ show (numitems - 10) ++ " more)"]
 		| otherwise = items
 
+{- Fix problems that would prevent repair from working at all
+ -
+ - A missing or corrupt .git/HEAD makes git not treat the repository as a
+ - git repo. If there is a git repo in a parent directory, it may move up
+ - the tree and use that one instead. So, cannot use `git show-ref HEAD` to
+ - test it.
+ -
+ - Explode the packed refs file, to simplify dealing with refs, and because
+ - fsck can complain about bad refs in it.
+ -}
+preRepair :: Repo -> IO ()
+preRepair g = do
+	unlessM (validhead <$> catchDefaultIO "" (safeReadFile headfile)) $ do
+		nukeFile headfile
+		writeFile headfile "ref: refs/heads/master"
+	explodePackedRefsFile g
+  where
+	headfile = localGitDir g </> "HEAD"
+	validhead s = "ref: refs/" `isPrefixOf` s || isJust (extractSha s)
+
 {- Put it all together. -}
 runRepair :: Bool -> Repo -> IO (Bool, MissingObjects, [Branch])
 runRepair forced g = do
+	preRepair g
 	putStrLn "Running git fsck ..."
 	fsckresult <- findBroken False g
 	if foundBroken fsckresult
-		then runRepairOf fsckresult forced Nothing g
+		then runRepair' fsckresult forced Nothing g
 		else do
 			putStrLn "No problems found."
 			return (True, S.empty, [])
 
 runRepairOf :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, MissingObjects, [Branch])
 runRepairOf fsckresult forced referencerepo g = do
+	preRepair g
+	runRepair' fsckresult forced referencerepo g
+
+runRepair' :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, MissingObjects, [Branch])
+runRepair' fsckresult forced referencerepo g = do
 	missing <- cleanCorruptObjects fsckresult g
 	stillmissing <- retrieveMissingObjects missing referencerepo g
-	if S.null stillmissing
-		then successfulfinish stillmissing []
-		else do
-			putStrLn $ unwords
-				[ show (S.size stillmissing)
-				, "missing objects could not be recovered!"
-				]
-			if forced
-				then continuerepairs stillmissing
-				else unsuccessfulfinish stillmissing
+	case stillmissing of
+		Just s
+			| S.null s -> if repoIsLocalBare g
+				then successfulfinish S.empty []
+				else ifM (checkIndex S.empty g)
+					( successfulfinish s []
+					, do
+						putStrLn "No missing objects found, but the index file is corrupt!"
+						if forced
+							then corruptedindex
+							else needforce S.empty
+					)
+			| otherwise -> if forced
+				then ifM (checkIndex s g)
+					( continuerepairs s
+					, corruptedindex
+					)
+				else do
+					putStrLn $ unwords
+						[ show (S.size s)
+						, "missing objects could not be recovered!"
+						]
+					unsuccessfulfinish s
+		Nothing
+			| forced -> ifM (pure (repoIsLocalBare g) <||> checkIndex S.empty g)
+				( do
+					missing' <- cleanCorruptObjects Nothing g
+					case missing' of
+						Nothing -> return (False, S.empty, [])
+						Just stillmissing' -> continuerepairs stillmissing'
+				, corruptedindex
+				)
+			| otherwise -> unsuccessfulfinish S.empty
   where
 	continuerepairs stillmissing = do
 		(remotebranches, goodcommits) <- removeTrackingBranches stillmissing emptyGoodCommits g
 		unless (null remotebranches) $
 			putStrLn $ unwords
-				[ "removed"
+				[ "Removed"
 				, show (length remotebranches)
-				, "remote tracking branches that referred to missing objects"
+				, "remote tracking branches that referred to missing objects."
 				]
 		(resetbranches, deletedbranches, _) <- resetLocalBranches stillmissing goodcommits g
 		displayList (map show resetbranches)
@@ -491,17 +515,37 @@ runRepairOf fsckresult forced referencerepo g = do
 				putStrLn "Successfully recovered repository!"
 				putStrLn "Please carefully check that the changes mentioned above are ok.."
 				return (True, stillmissing, modifiedbranches)
+	
+	corruptedindex = do
+		nukeIndex g
+		-- The corrupted index can prevent fsck from finding other
+		-- problems, so re-run repair.
+		fsckresult' <- findBroken False g
+		result <- runRepairOf fsckresult' forced referencerepo g
+		putStrLn "Removed the corrupted index file. You should look at what files are present in your working tree and git add them back to the index when appropriate."
+		return result
+
 	successfulfinish stillmissing modifiedbranches = do
 		mapM_ putStrLn
 			[ "Successfully recovered repository!"
-			, "You should run \"git fsck\" to make sure, but it looks like"
-			, "everything was recovered ok."
+			, "You should run \"git fsck\" to make sure, but it looks like everything was recovered ok."
 			]
 		return (True, stillmissing, modifiedbranches)
 	unsuccessfulfinish stillmissing = do
 		if repoIsLocalBare g
 			then do
-				putStrLn "If you have a clone of this bare repository, you should add it as a remote of this repository, and re-run git-recover-repository."
-				putStrLn "If there are no clones of this repository, you can instead run git-recover-repository with the --force parameter to force recovery to a possibly usable state."
-			else putStrLn "To force a recovery to a usable state, run this command again with the --force parameter."
+				putStrLn "If you have a clone of this bare repository, you should add it as a remote of this repository, and retry."
+				putStrLn "If there are no clones of this repository, you can instead retry with the --force parameter to force recovery to a possibly usable state."
+				return (False, stillmissing, [])
+			else needforce stillmissing
+	needforce stillmissing = do
+		putStrLn "To force a recovery to a usable state, retry with the --force parameter."
 		return (False, stillmissing, [])
+
+successfulRepair :: (Bool, MissingObjects, [Branch]) -> Bool
+successfulRepair = fst3
+
+safeReadFile :: FilePath -> IO String
+safeReadFile f = do
+	allowRead f
+	readFileStrictAnyEncoding f

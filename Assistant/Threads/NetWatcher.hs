@@ -15,6 +15,7 @@ import Assistant.Sync
 import Utility.ThreadScheduler
 import qualified Types.Remote as Remote
 import Assistant.DaemonStatus
+import Utility.NotificationBroadcaster
 
 #if WITH_DBUS
 import Utility.DBus
@@ -127,7 +128,9 @@ listenWicdConnections client callback =
 #endif
 
 handleConnection :: Assistant ()
-handleConnection = reconnectRemotes True =<< networkRemotes
+handleConnection = do
+	liftIO . sendNotification . networkConnectedNotifier =<< getDaemonStatus
+	reconnectRemotes True =<< networkRemotes
 
 {- Network remotes to sync with. -}
 networkRemotes :: Assistant [Remote]

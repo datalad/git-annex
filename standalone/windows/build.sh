@@ -11,6 +11,8 @@ FLAGS="-Webapp -Assistant -XMPP"
 
 PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:$PATH"
 
+UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
+
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
 withcyg () {

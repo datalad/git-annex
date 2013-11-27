@@ -63,6 +63,11 @@ parseLogWithUUID :: (UUID -> String -> Maybe a) -> String -> Log a
 parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . lines
   where
 	parse line
+		-- This is a workaround for a bug that caused
+		-- NoUUID items to be stored in the log.
+		-- It can be removed at any time; is just here to clean
+		-- up logs where that happened temporarily.
+		| " " `isPrefixOf` line = Nothing
 		| null ws = Nothing
 		| otherwise = parser u (unwords info) >>= makepair
 	  where

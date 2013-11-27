@@ -4,7 +4,7 @@
  subject="comment 1"
  date="2013-08-26T18:46:06Z"
  content="""
-You could certianly do that. I don't think it's the easiest way.
+You could certainly do that. I don't think it's the easiest way.
 
 Note that this is essentially a git question. It really has nothing to do with git-annex, unless you want to use the git-annex assistant, which can sync a repository over XMPP without needing a central git repository at all.
 

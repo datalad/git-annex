@@ -70,7 +70,7 @@ index 7835988..ed8ea6c 100644
 
 Any update on this? Why is `-a` used here? -- [[anarcat]]
 
-> -a is not really the problem. You certianly do usually want
+> -a is not really the problem. You certainly do usually want
 > to commit your changes before converting to direct mode.
 > 
 > [[done]]; now when this happens it catches the exception and 

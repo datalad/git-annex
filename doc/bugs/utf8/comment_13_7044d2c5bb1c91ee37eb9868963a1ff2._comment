@@ -37,5 +37,5 @@ And still cannot replicate the bug; as expected it does not use the socket since
 
 copy foo (checking foo...) [2013-07-27 16:40:42 EDT] call: ssh [\"-T\",\"fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.IdWwlXHtSsjVUMcq\",\"git-annex-shell 'inannex' '' 'SHA256E-s29--093429efb0d1427753d1f038f5279ec4df66785a1b2429b3fa5e3a01bcb75bd8' --uuid 111\"]
 
-So, I don't understand how this could have happened. Although my recent changes mean it'll use a 62 byte path max on Android now, which certianly should avoid the problem, even if there's some actual bug here that I cannot reproduce.
+So, I don't understand how this could have happened. Although my recent changes mean it'll use a 62 byte path max on Android now, which certainly should avoid the problem, even if there's some actual bug here that I cannot reproduce.
 """]]

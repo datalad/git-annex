@@ -1,4 +1,4 @@
-[git-remote-gcrypt](https://github.com/blake2-ppc/git-remote-gcrypt/)
+[git-remote-gcrypt](https://github.com/joeyh/git-remote-gcrypt/)
 adds support for encrypted remotes to git. The git-annex 
 [[gcrypt special remote|special_remotes/gcrypt]] allows git-annex to
 also store its files in such repositories. Naturally, git-annex encrypts
@@ -28,12 +28,21 @@ only you can see it.
 First, you need to set up a gpg key. You might consider generating a
 special purpose key just for this use case, since you may end up wanting to
 put the key on multiple machines that you would not trust with your
-main gpg key. You need to tell git-annex the keyid of the key.
+main gpg key.
+
+You need to tell git-annex the keyid of the key when setting up the
+encrypted repository:
 
 	git init --bare /mnt/encryptedbackup
 	git annex initremote encryptedbackup type=gcrypt gitrepo=/mnt/encryptedbackup keyid=$mykey
 	git annex sync encryptedbackup
+
+Now you can copy (or even move) files to the repository. After
+sending files to it, you'll probably want to do a sync, which pushes
+the git repository changes to it as well.
+
 	git annex copy --to encryptedbackup ...
+	git annex sync encryptedbackup
 
 Note that if you lose your gpg key, it will be *impossible* to get the
 data out of your encrypted backup. You need to find a secure way to store a
@@ -66,16 +75,22 @@ First, on the server, run:
 While this will work without git-annex being installed on the server, it
 is recommended to have it installed.)
 
-Now, in your existing git-annex repository:
+Now, in your existing git-annex repository, set up the encrypted remote:
 
 	git annex initremote encryptedrepo type=gcrypt gitrepo=ssh://my.server/home/me/encryptedrepo keyid=$mykey
 	git annex sync encryptedrepo
-	git annex copy --to encryptedrepo ...
 
 If you're going to be sharing this repository with others, be sure to also
 include their keyids, by specifying keyid= repeatedly.
 
-Now that the repo is set up, anyone who has access to it and has one of the keys
+Now you can copy (or even move) files to the repository. After
+sending files to it, you'll probably want to do a sync, which pushes
+the git repository changes to it as well.
+
+	git annex copy --to encryptedrepo ...
+	git annex sync encryptedbackup
+
+Anyone who has access to the repo it and has one of the keys
 used to encrypt it can check it out:
 
 	git clone gcrypt::ssh://my.server/home/me/encryptedrepo myrepo
@@ -91,7 +106,7 @@ Using it this way, git-annex does not store large files on the hosting site; it'
 only used to store your git repository itself.
 
 	git remote add encrypted gcrypt::ssh://hostingsite/myrepo.git
-	git config git push encrypted master git-annex
+	git push encrypted master git-annex
 
 Now you can carry on using git-annex with your new repository. For example,
 `git annex sync` will sync with it.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 1"
+ date="2013-11-22T16:54:53Z"
+ content="""
+Please post the output of `git show git-annex:uuid.log` run in the repository.
+"""]]

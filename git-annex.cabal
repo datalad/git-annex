@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 4.20131101
+Version: 5.20131120
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -56,7 +56,11 @@ Flag Production
   Description: Enable production build (slower build; faster binary)
 
 Flag Android
-  Description: Building for Android
+  Description: Cross building for Android
+  Default: False
+
+Flag AndroidSplice
+  Description: Building to get TH splices for Android
   Default: False
 
 Flag TestSuite
@@ -73,6 +77,10 @@ Flag Quvi
 
 Flag CryptoHash
   Description: Enable use of cryptohash for checksumming
+
+Flag EKG
+  Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
+  Default: False
 
 Executable git-annex
   Main-Is: git-annex.hs
@@ -101,7 +109,7 @@ Executable git-annex
     Build-Depends: unix
 
   if flag(TestSuite)
-    Build-Depends: HUnit
+    Build-Depends: tasty, tasty-hunit, tasty-quickcheck
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(TDFA)
@@ -120,13 +128,9 @@ Executable git-annex
     Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
     CPP-Options: -DWITH_WEBDAV
 
-  if flag(Assistant) && ! os(windows) && ! os(solaris)
+  if flag(Assistant) && ! os(solaris)
     Build-Depends: stm (>= 2.3)
     CPP-Options: -DWITH_ASSISTANT
-
-  if flag(Android)
-    Build-Depends: data-endian
-    CPP-Options: -D__ANDROID__
 
   if flag(Assistant)
     if os(linux) && flag(Inotify)
@@ -137,17 +141,27 @@ Executable git-annex
         Build-Depends: hfsevents
         CPP-Options: -DWITH_FSEVENTS
       else
-        if (! os(windows) && ! os(solaris) && ! os(linux))
-          if flag(Android)
-            Build-Depends: hinotify
-            CPP-Options: -DWITH_INOTIFY
-          else
-            CPP-Options: -DWITH_KQUEUE
-            C-Sources: Utility/libkqueue.c
+        if os(windows)
+          Build-Depends: Win32-notify
+          CPP-Options: -DWITH_WIN32NOTIFY
+        else
+          if (! os(solaris) && ! os(linux))
+            if flag(Android)
+              Build-Depends: hinotify
+              CPP-Options: -DWITH_INOTIFY
+            else
+              CPP-Options: -DWITH_KQUEUE
+              C-Sources: Utility/libkqueue.c
 
   if os(linux) && flag(Dbus)
     Build-Depends: dbus (>= 0.10.3)
     CPP-Options: -DWITH_DBUS
+  
+  if flag(Android)
+    Build-Depends: data-endian
+    CPP-Options: -D__ANDROID__ -DANDROID_SPLICES
+  if flag(AndroidSplice)
+    CPP-Options: -DANDROID_SPLICES
 
   if flag(Webapp) && (! os(windows))
     Build-Depends:
@@ -176,6 +190,11 @@ Executable git-annex
   if flag(Quvi)
     Build-Depends: aeson
     CPP-Options: -DWITH_QUVI
+
+  if flag(EKG)
+    Build-Depends: ekg
+    GHC-Options: -with-rtsopts=-T
+    CPP-Options: -DWITH_EKG
 
 source-repository head
   type: git

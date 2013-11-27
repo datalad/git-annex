@@ -71,11 +71,6 @@ getNumCopies Nothing = annexNumCopies <$> Annex.getGitConfig
 isDirect :: Annex Bool
 isDirect = annexDirect <$> Annex.getGitConfig
 
-setDirect :: Bool -> Annex ()
-setDirect b = do
-	setConfig (annexConfig "direct") (Git.Config.boolConfig b)
-	Annex.changeGitConfig $ \c -> c { annexDirect = b }
-
 crippledFileSystem :: Annex Bool
 crippledFileSystem = annexCrippledFileSystem <$> Annex.getGitConfig
 

@@ -20,9 +20,9 @@ import Config
 import qualified Annex
 import Annex.Direct
 import Annex.Content
+import Annex.Content.Direct
 import Annex.CatFile
 import Annex.Version
-import Annex.Perms
 import Annex.Exception
 import Init
 import qualified Command.Add
@@ -77,7 +77,8 @@ perform = do
 			Just s
 				| isSymbolicLink s -> void $ flip whenAnnexed f $
 					\_ (k, _) -> do
-						cleandirect k
+						removeInodeCache k
+						removeAssociatedFiles k
 						return Nothing
 				| otherwise -> 
 					maybe noop (fromdirect f)
@@ -87,8 +88,8 @@ perform = do
 
 	fromdirect f k = do
 		showStart "indirect" f
-		thawContentDir =<< calcRepo (gitAnnexLocation k)
-		cleandirect k -- clean before content directory gets frozen
+		removeInodeCache k
+		removeAssociatedFiles k
 		whenM (liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f) $ do
 			v <-tryAnnexIO (moveAnnex k f)
 			case v of
@@ -103,10 +104,6 @@ perform = do
 	warnlocked e = do
 		warning $ show e
 		warning "leaving this file as-is; correct this problem and run git annex add on it"
-
-	cleandirect k = do
-		liftIO . nukeFile =<< calcRepo (gitAnnexInodeCache k)
-		liftIO . nukeFile =<< calcRepo (gitAnnexMapping k)
 	
 cleanup :: CommandCleanup
 cleanup = do

@@ -20,3 +20,86 @@ add`. The git wrapper could instead be another program, or it could be
 something like `git annex git add`
 
 --[[Joey]]
+
+----
+
+Or, no git wrapper could be provided. Limit the commands to only git-annex
+commands. This should be all that is needed to manage a direct mode
+repository simply, and if the user is doing something complicated that
+needs git access, they can set `GIT_DIR=.git-annex` and be careful not to
+shoot off their foot. (Or can just switch to indirect mode!)
+
+This wins on simplicity, and if it's the wrong choice a git wrapper
+can be added later. --[[Joey]]
+
+---
+
+Implementation: Pretty simple really. Already did the hard lifting to
+support `GIT_DIR`, so only need to override the default git directory
+in direct mode when that's not set to `.git-annex`.
+
+A few things hardcode ".git", including Assistant.Threads.Watcher.ignored
+and `Seek.withPathContents`, and parts of `Git.Construct`.
+
+---
+
+Transition: git-annex should detect when it's in a direct mode repository
+with a .git directory and no .git-annex directory, and transparently
+do the move to transition to the new scheme. (And remember that `git annex
+indirect` needs to move it back.)
+
+# alternative approach: move index
+
+Rather than moving .git, maybe move .git/index?
+
+This would cause git to think that all files in the tree were deleted.
+So git commit -a would make a commit that removes them from git history.
+But, the files in the work tree are not touched by this.
+
+Also, git checkout, git merge, and other things that manipulate the work
+tree refuse to do anything if they'd change a file that they think is
+untracked.
+
+Hmm, this does't solve the user accidentially running git add on an annexed
+file; the whole file still gets added.
+
+# alternative approach: fake bare repo
+
+Set core.bare to true.  This prevents all work tree operations, 
+so prevents any foot shooting. It still lets the user run commands like
+git log, even on files in the tree, and git fetch, and push, and git
+config, etc.
+
+Even better, it integrates with other tools, like `mr`, so they know
+it's a git repo.
+
+This seems really promising. But of course, git-annex has its own set of
+behaviors in a bare repo, so will need to recognise that this repo is not
+really bare, and avoid them.
+
+> [[done]]!!  --[[Joey]]
+
+(Git may also have some bare repo behaviors that are unwanted. One example
+is that git allows pushes to the current branch in a bare repo, 
+even when `receive.denyCurrentBranch` is set.)
+
+> This is indeed a problem. Indeed, `git annex sync` successfully
+> pushes changes to the master branch of a fake bare direct mode repo.
+> 
+> And then, syncing in the repo that was pushed to causes the changes
+> that were pushed to the master branch to get reverted! This happens
+> because sync commits; commit sees that files are staged in index
+> differing from the (pushed) master, and commits the "changes"
+> which revert it.
+> 
+> Could fix this using an update hook, to reject the updated of the master
+> branch. However, won't work on crippled filesystems! (No +x bit)
+> 
+> Could make git annex sync detect this. It could reset the master
+> branch to the last one committed, before committing. Seems very racy
+> and hard to get right!
+>
+> Could make direct mode operate on a different branch, like
+> `annex/direct/master` rather than `master`. Avoid pushing to that
+> branch (`git annex sync` can map back from it to `master` and push there
+> instead). A bit clumsy, but works.

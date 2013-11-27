@@ -17,7 +17,7 @@
                   $of Download
                     &larr;
                 <small>
-                  <a href="@{EditRepositoryR $ transferUUID transfer}">
+                  <a href="@{EditRepositoryR $ RepoUUID $ transferUUID transfer}">
                     #{maybe "unknown" Remote.name $ transferRemote info}
                   $with size <- maybe "unknown" (roughSize dataUnits True) $ keySize $ transferKey transfer
                     $if isJust $ startedTime info

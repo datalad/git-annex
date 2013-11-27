@@ -8,6 +8,7 @@ fi
 debootstrap --arch=i386 stable debian-stable-android
 cp $0-inchroot debian-stable-android/tmp
 cp $0-inchroot-asuser debian-stable-android/tmp
+cp $(dirname $0)/abiversion debian-stable-android/tmp
 
 # Don't use these vars in the chroot.
 unset TMP

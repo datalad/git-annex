@@ -19,7 +19,8 @@
       #{l}<br>
   $else
     #{message}
-  $maybe button <- alertButton alert
+  $if not (null buttons)
     <br>
-    <a .btn .btn-primary href="@{ClickAlert aid}">
-      #{buttonLabel button}
+    $forall (button, bnum) <- buttons
+      <a .btn :buttonPrimary button:.btn-primary :not (buttonPrimary button):.btn-success href="@{ClickAlert aid bnum}">
+        #{buttonLabel button}

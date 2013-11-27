@@ -46,6 +46,4 @@ fieldTransfer direction key a = do
 	ok <- maybe (a $ const noop)
 		(\u -> runTransfer (Transfer direction (toUUID u) key) afile noRetry a)
 		=<< Fields.getField Fields.remoteUUID
-	liftIO $ if ok
-		then exitSuccess
-		else exitFailure
+	liftIO $ exitBool ok

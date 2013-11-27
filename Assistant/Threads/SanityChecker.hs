@@ -25,8 +25,10 @@ import Utility.Batch
 import Utility.NotificationBroadcaster
 import Config
 import Utility.HumanTime
+import Git.Repair
 
 import Data.Time.Clock.POSIX
+import qualified Data.Set as S
 
 {- This thread runs once at startup, and most other threads wait for it
  - to finish. (However, the webapp thread does not, to prevent the UI
@@ -35,6 +37,21 @@ sanityCheckerStartupThread :: Maybe Duration -> NamedThread
 sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerStartup" $ do
 	{- Stale git locks can prevent commits from happening, etc. -}
 	void $ repairStaleGitLocks =<< liftAnnex gitRepo
+
+	{- A corrupt index file can prevent the assistant from working at
+	 - all, so detect and repair. -}
+	ifM (not <$> liftAnnex (inRepo (checkIndex S.empty)))
+		( do
+			notice ["corrupt index file found at startup; removing and restaging"]
+			liftAnnex $ inRepo nukeIndex
+			{- Normally the startup scan avoids re-staging files,
+			 - but with the index deleted, everything needs to be
+			 - restaged. -}
+			modifyDaemonStatus_ $ \s -> s { forceRestage = True }
+		, whenM (liftAnnex $ inRepo missingIndex) $ do
+			debug ["no index file; restaging"]
+			modifyDaemonStatus_ $ \s -> s { forceRestage = True }
+		)
 
 	{- If there's a startup delay, it's done here. -}
 	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay

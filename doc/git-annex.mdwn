@@ -103,6 +103,13 @@ subdirectories).
 
   To avoid contacting the remote to check if it has every file, specify `--fast`
 
+* `status` [path ...]`
+
+  Similar to `git status --short`, displays the status of the files in the
+  working tree. Shows files that are not checked into git, files that
+  have been deleted, and files that have been modified. 
+  Particulary useful in direct mode.
+
 * `unlock [path ...]`
 
   Normally, the content of annexed files is protected from being changed.
@@ -252,6 +259,14 @@ subdirectories).
   deleted, copied, and moved files. With this running as a daemon in the
   background, you no longer need to manually run git commands when
   manipulating your files.
+
+  By default, all files in the directory will be added to the repository.
+  (Including dotfiles.) To block some files from being added, use
+  `.gitignore` files.
+  
+  By default, all files that are added are added to the annex, the same
+  as when you run `git annex add`. If you configure annex.largefiles,
+  files that it does not match will instead be added with `git add`.
 
   To not daemonize, run with `--foreground` ; to stop a running daemon,
   run with `--stop`
@@ -494,6 +509,7 @@ subdirectories).
   `git annex unused`
 
   You can also specify ranges of numbers, such as "1-1000".
+  Or, specify "all" to drop all unused data.
 
   To drop the data from a remote, specify `--from.`
 
@@ -528,7 +544,7 @@ subdirectories).
   to their local `git-annex` branches. So the forgetfulness will automatically
   propigate out from its starting point until all repositories running
   git-annex have forgotten their old history. (You may need to force
-  git to push the branch to any git repositories not running git-annex.
+  git to push the branch to any git repositories not running git-annex.)
 
 * `repair`
 
@@ -562,10 +578,6 @@ subdirectories).
   to make sure that the git-annex branch reflects reality.
 
 # QUERY COMMANDS
-
-* `version`
-
-  Shows the version of git-annex, as well as repository version information.
 
 * `find [path ...]`
 
@@ -607,23 +619,26 @@ subdirectories).
   To generate output suitable for the gource visualisation program,
   specify `--gource`.
 
-* `status [directory ...]`
+* `info [directory ...]`
 
   Displays some statistics and other information, including how much data
   is in the annex and a list of all known repositories.
 
   To only show the data that can be gathered quickly, use `--fast`.
 
-  When a directory is specified, shows a differently formatted status
+  When a directory is specified, shows a differently formatted info
   display for that directory. In this mode, all of the file matching
   options can be used to filter the files that will be included in
-  the status.
+  the information.
 
   For example, suppose you want to run "git annex get .", but
   would first like to see how much disk space that will use.
   Then run:
 
-        	git annex status --fast . --not --in here
+        	git annex info --fast . --not --in here
+* `version`
+
+  Shows the version of git-annex, as well as repository version information.
 
 * `map`
 
@@ -676,8 +691,8 @@ subdirectories).
   Use this to undo an accidental `git annex add` command. It puts the
   file back how it was before the add.
 
-  Note that for safety, the content of the file remains in the annex (as a
-  hard link), until you use `git annex unused` and `git annex dropunused`.
+  Note that for safety, the content of the file remains in the annex,
+  until you use `git annex unused` and `git annex dropunused`.
 
   This is not the command you should use if you intentionally annexed a
   file and don't want its contents any more. In that case you should use
@@ -698,12 +713,21 @@ subdirectories).
 
 * `pre-commit [path ...]`
 
+  This is meant to be called from git's pre-commit hook. `git annex init`
+  automatically creates a pre-commit hook using this.
+
   Fixes up symlinks that are staged as part of a commit, to ensure they
   point to annexed content. Also handles injecting changes to unlocked
   files into the annex.
 
-  This is meant to be called from git's pre-commit hook. `git annex init`
-  automatically creates a pre-commit hook using this.
+* `update-hook refname olvrev newrev`
+
+  This is meant to be called from git's update hook. `git annex init`
+  automatically creates an update hook using this.
+
+  This denies updates being pushed for the currently checked out branch.
+  While receive.denyCurrentBranch normally prevents that, it does
+  not for fake bare repositories, as used by direct mode.
 
 * `fromkey key file`
 
@@ -788,7 +812,7 @@ subdirectories).
   Rather than the normal output, generate JSON. This is intended to be
   parsed by programs that use git-annex. Each line of output is a JSON
   object. Note that json output is only usable with some git-annex commands,
-  like status and find.
+  like info and find.
 
 * `--debug`
 
@@ -1088,7 +1112,7 @@ Here are all the supported configuration settings.
   up to 500000 keys. If your repository is larger than that,
   you can adjust this to avoid `git annex unused` not noticing some unused
   data files. Increasing this will make `git-annex unused` consume more memory;
-  run `git annex status` for memory usage numbers.
+  run `git annex info` for memory usage numbers.
 
 * `annex.bloomaccuracy`
 
@@ -1096,7 +1120,7 @@ Here are all the supported configuration settings.
   `git annex unused`. The default accuracy is 1000 -- 
   1 unused file out of 1000 will be missed by `git annex unused`. Increasing
   the accuracy will make `git annex unused` consume more memory;
-  run `git annex status` for memory usage numbers.
+  run `git annex info` for memory usage numbers.
 
 * `annex.sshcaching`
 
@@ -1122,6 +1146,21 @@ Here are all the supported configuration settings.
 
   When set to false, prevents the webapp from reminding you when using
   repositories that lack consistency checks.
+
+* `annex.autoupgrade`
+
+  When set to ask (the default), the webapp will check for new versions
+  and prompt if they should be upgraded to. When set to true, automatically
+  upgrades without prompting (on some supported platforms). When set to
+  false, disables any upgrade checking.
+
+  Note that upgrade checking is only done when git-annex is installed
+  from one of the prebuilt images from its website. This does not
+  bypass eg, a Linux distribution's own upgrade handling code.
+
+  This setting also controls whether to restart the git-annex assistant
+  when the git-annex binary is detected to have changed. That is useful
+  no matter how you installed git-annex.
 
 * `annex.autocommit`
 

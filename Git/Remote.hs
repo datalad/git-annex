@@ -11,6 +11,7 @@ module Git.Remote where
 
 import Common
 import Git
+import Git.Types
 import qualified Git.Command
 import qualified Git.BuildVersion
 
@@ -20,8 +21,6 @@ import Network.URI
 #ifdef mingw32_HOST_OS
 import Git.FilePath
 #endif
-
-type RemoteName = String
 
 {- Construct a legal git remote name out of an arbitrary input string.
  -
@@ -61,6 +60,10 @@ data RemoteLocation = RemoteUrl String | RemotePath FilePath
 remoteLocationIsUrl :: RemoteLocation -> Bool
 remoteLocationIsUrl (RemoteUrl _) = True
 remoteLocationIsUrl _ = False
+
+remoteLocationIsSshUrl :: RemoteLocation -> Bool
+remoteLocationIsSshUrl (RemoteUrl u) = "ssh://" `isPrefixOf` u
+remoteLocationIsSshUrl _ = False
 
 {- Determines if a given remote location is an url, or a local
  - path. Takes the repository's insteadOf configuration into account. -}

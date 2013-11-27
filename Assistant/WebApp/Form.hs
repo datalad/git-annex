@@ -67,8 +67,7 @@ withExpandableNote :: (Monad m, ToWidget (HandlerSite m) w) => Field m v -> (Str
 withExpandableNote :: Field sub master v -> (String, GWidget sub master ()) -> Field sub master v
 #endif
 withExpandableNote field (toggle, note) = withNote field $ [whamlet|
-<a .btn data-toggle="collapse" data-target="##{ident}">
-  #{toggle}
+<a .btn data-toggle="collapse" data-target="##{ident}">#{toggle}</a>
 <div ##{ident} .collapse>
   ^{note}
 |]

@@ -18,6 +18,7 @@ import qualified Git.Construct
 import qualified Annex.Branch
 import qualified Git.GCrypt
 import qualified Remote.GCrypt as GCrypt
+import Git.Types (RemoteName)
 import Assistant.WebApp.MakeRemote
 import Logs.Remote
 
@@ -63,7 +64,7 @@ withNewSecretKey use = do
  - branch from the gcrypt remote and merges it in, and then looks up
  - the name.
  -}
-getGCryptRemoteName :: UUID -> String -> Annex Git.Remote.RemoteName
+getGCryptRemoteName :: UUID -> String -> Annex RemoteName
 getGCryptRemoteName u repoloc = do
 	tmpremote <- uniqueRemoteName "tmpgcryptremote" 0 <$> gitRepo
 	void $ inRepo $ Git.Command.runBool

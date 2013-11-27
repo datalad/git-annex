@@ -10,7 +10,7 @@ But, I got distracted chasing down some bugs on Windows. These were
 quite ugly; more direct mode mapping breakage which resulted in 
 files not being accessible. Also fsck on Windows failed to detect and fix
 the problem. All fixed now. (If you use git-annex on Windows, you should
-certianly upgrade and run `git annex fsck`.)
+certainly upgrade and run `git annex fsck`.)
 
 As with most bugs in the Windows port, the underlying cause turned out to
 be stupid: `isSymlink` always returned False on Windows. Which makes sense

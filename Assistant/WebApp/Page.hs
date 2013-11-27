@@ -50,18 +50,26 @@ page title navbaritem content = customPage navbaritem $ do
 
 {- A custom page, with no title or sidebar set. -}
 customPage :: Maybe NavBarItem -> Widget -> Handler Html
-customPage navbaritem content = do
+customPage = customPage' True
+
+customPage' :: Bool -> Maybe NavBarItem -> Widget -> Handler Html
+customPage' with_longpolling navbaritem content = do
 	webapp <- getYesod
-	navbar <- map navdetails <$> selectNavBar
-	pageinfo <- widgetToPageContent $ do
-		addStylesheet $ StaticR css_bootstrap_css
-		addStylesheet $ StaticR css_bootstrap_responsive_css
-		addScript $ StaticR jquery_full_js
-		addScript $ StaticR js_bootstrap_dropdown_js
-		addScript $ StaticR js_bootstrap_modal_js
-		addScript $ StaticR js_bootstrap_collapse_js
-		$(widgetFile "page")
-	giveUrlRenderer $(Hamlet.hamletFile $ hamletTemplate "bootstrap")
+	case cannotRun webapp of
+		Nothing -> do
+			navbar <- map navdetails <$> selectNavBar
+			pageinfo <- widgetToPageContent $ do
+				addStylesheet $ StaticR css_bootstrap_css
+				addStylesheet $ StaticR css_bootstrap_responsive_css
+				addScript $ StaticR jquery_full_js
+				addScript $ StaticR js_bootstrap_dropdown_js
+				addScript $ StaticR js_bootstrap_modal_js
+				addScript $ StaticR js_bootstrap_collapse_js
+				when with_longpolling $
+					addScript $ StaticR longpolling_js
+				$(widgetFile "page")
+			giveUrlRenderer $(Hamlet.hamletFile $ hamletTemplate "bootstrap")
+		Just msg -> error msg
   where
 	navdetails i = (navBarName i, navBarRoute i, Just i == navbaritem)
 

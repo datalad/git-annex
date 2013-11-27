@@ -1,0 +1,45 @@
+Hi,
+
+Some time ago I asked [[here|git_annex_copy_--fast_--to_blah_much_slower_than_--from_blah]]
+about possible improvements in git `copy --fast --to`, since it was painfully slow
+on moderately large repos.
+
+Now I found a way to make it much faster for my particular use case, by
+accessing some annex internals. And I realized that maybe commands like `git
+annex find --in=repo` do not batch queries to the location log. This is based on
+the following timings, on a new repo (only a few commits) and about 30k files.
+
+    > time git annex find --in=skynet > /dev/null
+
+    real	0m55.838s
+    user	0m30.000s
+    sys	0m1.583s
+
+
+    > time git ls-tree -r git-annex | cut -d ' ' -f 3 | cut -f 1 | git cat-file --batch > /dev/null
+
+    real	0m0.334s
+    user	0m0.517s
+    sys	0m0.030s
+
+Those numbers are on linux (with an already warm file cache) and an ext4 filesystem on a SSD.
+
+The second command above is feeding a list of objects to a single `git cat-file`
+process that cats them all to stdout, preceeding every file dump by the object
+being cat-ed. It is a trivial matter to parse this output and use it for
+whatever annex needs.
+
+Above I wrote a `git ls-tree` on the git-annex branch for simplicity, but we could
+just as well do a `ls-tree | ... | git cat-file` on HEAD to get the keys for the
+annexed files matching some path and then feed those keys to a cat-file on
+the git-annex branch. And this still would be an order of magnitude faster than
+what currently annex seems to do.
+
+I'm assuming the bottleneck is in that annex does not batch the `cat-file`, as the rest of logic needed for a find will be fast. Is that right? 
+
+Now, if the queries to the location log for `copy --to` and `find` could be batched this way, the
+performance of several useful things to do, like checking how many annexed files
+we are missing, would be bastly improved. Hell, I could even put that number on
+the command line prompt!
+
+I'm not yet very fluent in Haskell, but I'm willing to help if this is something that makes sense and can be done.

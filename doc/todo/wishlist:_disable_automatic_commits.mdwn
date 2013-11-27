@@ -33,4 +33,4 @@ detecting manual commits wouldn't be a stretch.
 > You can do this now by pausing committing via the webapp,
 > or setting `annex.autocommit=false`.
 > 
-> The assustant probably doesn't push such commits yet.
+> The assistant probably doesn't push such commits yet.

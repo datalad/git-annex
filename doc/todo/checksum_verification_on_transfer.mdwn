@@ -1,6 +1,6 @@
 Since most file transfers, particularly to/from encrypted special remotes involve git-annex streaming through the contents of the file anyway, it should be possible to add a verification of the checksum nearly for free. The main thing needed is probably a faster haskell checksum library than Data.Digest.Pure.Sha, which is probably slow enough to be annoying.
 
-I have not verified if an upload could be aborted before sending the data to the remote if a checksum failure is detected. It may be dependent on the individual special remote implementations. Some probably stream the encrypted data directly out the wire, while others need to set up a temp file to run a command on. It would certianly be possible to at least make the upload abort and fail if a bad checksum was detected.
+I have not verified if an upload could be aborted before sending the data to the remote if a checksum failure is detected. It may be dependent on the individual special remote implementations. Some probably stream the encrypted data directly out the wire, while others need to set up a temp file to run a command on. It would certainly be possible to at least make the upload abort and fail if a bad checksum was detected.
 
 Doing the same for downloads is less useful, because the data is there locally to be fscked. The real advantage would be doing the check for uploads, to ensure that hard-to-detect corrupted files don't reach special remotes.
 

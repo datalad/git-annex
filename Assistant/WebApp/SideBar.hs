@@ -50,6 +50,7 @@ sideBarDisplay = do
 		let message = renderAlertMessage alert
 		let messagelines = T.lines message
 		let multiline = length messagelines > 1
+		let buttons = zip (alertButtons alert) [1..]
 		$(widgetFile "sidebar/alert")
 
 {- Called by client to get a sidebar display.
@@ -79,16 +80,20 @@ getCloseAlert :: AlertId -> Handler ()
 getCloseAlert = liftAssistant . removeAlert
 
 {- When an alert with a button is clicked on, the button takes us here. -}
-getClickAlert :: AlertId -> Handler ()
-getClickAlert i = do
+getClickAlert :: AlertId -> Int -> Handler ()
+getClickAlert i bnum = do
 	m <- alertMap <$> liftAssistant getDaemonStatus
 	case M.lookup i m of
-		Just (Alert { alertButton = Just b }) -> do
-			{- Spawn a thread to run the action while redirecting. -}
-			case buttonAction b of
-				Nothing -> noop
-				Just a -> liftIO $ void $ forkIO $ a i
-			redirect $ buttonUrl b
+		Just (Alert { alertButtons = bs })
+			| length bs >= bnum -> do
+				let b = bs !! (bnum - 1)
+				{- Spawn a thread to run the action
+				 - while redirecting. -}
+				case buttonAction b of
+					Nothing -> noop
+					Just a -> liftIO $ void $ forkIO $ a i
+				redirect $ buttonUrl b
+			| otherwise -> redirectBack
 		_ -> redirectBack
 
 htmlIcon :: AlertIcon -> Widget
@@ -97,6 +102,7 @@ htmlIcon SyncIcon = [whamlet|<img src="@{StaticR syncicon_gif}" alt="">|]
 htmlIcon InfoIcon = bootstrapIcon "info-sign"
 htmlIcon SuccessIcon = bootstrapIcon "ok"
 htmlIcon ErrorIcon = bootstrapIcon "exclamation-sign"
+htmlIcon UpgradeIcon = bootstrapIcon "arrow-up"
 -- utf-8 umbrella (utf-8 cloud looks too stormy)
 htmlIcon TheCloud = [whamlet|&#9730;|]
 

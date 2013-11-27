@@ -10,7 +10,9 @@
 module Utility.Batch where
 
 import Common
+#ifndef mingw32_HOST_OS
 import qualified Build.SysConfig
+#endif
 
 #if defined(linux_HOST_OS) || defined(__ANDROID__)
 import Control.Concurrent.Async

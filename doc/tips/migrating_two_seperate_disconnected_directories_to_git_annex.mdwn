@@ -31,7 +31,7 @@ On `angela`, we want to synchronise the git annex metadata with `marcos`. We nee
     git init
     git remote add marcos marcos.example.com:/srv/mp3
     git fetch marcos
-    git annex status # this should display the two repos
+    git annex info # this should display the two repos
     git annex add .
 
 This will, again, checksum all files and add them to git annex. Once that is done, you can verify that the files are really the same as marcos with `whereis`:

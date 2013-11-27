@@ -15,10 +15,14 @@ import Foreign
 import Data.Char
 import Data.List
 import Control.Applicative
+import System.Exit
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getAnyProcessStatus)
 import Utility.Exception
 #endif
+
+import Utility.FileSystemEncoding
+import Utility.Monad
 
 {- A version of hgetContents that is not lazy. Ensures file is 
  - all read before it gets closed. -}
@@ -28,6 +32,13 @@ hGetContentsStrict = hGetContents >=> \s -> length s `seq` return s
 {- A version of readFile that is not lazy. -}
 readFileStrict :: FilePath -> IO String
 readFileStrict = readFile >=> \s -> length s `seq` return s
+
+{-  Reads a file strictly, and using the FileSystemEncofing, so it will
+ -  never crash on a badly encoded file. -}
+readFileStrictAnyEncoding :: FilePath -> IO String
+readFileStrictAnyEncoding f = withFile f ReadMode $ \h -> do
+	fileEncoding h
+	hClose h `after` hGetContentsStrict h
 
 {- Like break, but the item matching the condition is not included
  - in the second result list.
@@ -136,3 +147,7 @@ reapZombies = do
 #else
 reapZombies = return ()
 #endif
+
+exitBool :: Bool -> IO a
+exitBool False = exitFailure
+exitBool True = exitSuccess

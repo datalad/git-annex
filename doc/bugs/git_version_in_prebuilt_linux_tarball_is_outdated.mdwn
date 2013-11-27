@@ -6,3 +6,6 @@ Download the current prebuilt linux tarball from [[/install]], extract it, run "
 
 ### What version of git-annex are you using? On what operating system?
 git-annex-standalone-amd64.tar.gz	2013-09-22 09:56 (Linux Ubuntu Precise)
+
+> Updated to wheezy backport 1.8.4. [[done]] for now, obviously it will go
+> out of date again eventually.. --[[Joey]]

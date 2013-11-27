@@ -3,7 +3,7 @@ long-term archival.
 
 The main difficulty is that glacier is organized into vaults, and accessing
 a file in a vault takes ~4 hours. A naive implementation would make `git
-annex get` wait for 4 hours, which is certianly not reasonable.
+annex get` wait for 4 hours, which is certainly not reasonable.
 
 One approach I am pondering is to make each glacier vault a separate
 special remote. You could then request git-annex to spin up a remote, and

@@ -6,5 +6,5 @@
  content="""
 Did you get a chance to run `git annex fsck` on the file? I'd hope it would detect this problem.
 
-It's certianly possible for data to get corrupted somehow in transit. git-annex does not check that it got the expected contents until a fsck happens.
+It's certainly possible for data to get corrupted somehow in transit. git-annex does not check that it got the expected contents until a fsck happens.
 """]]

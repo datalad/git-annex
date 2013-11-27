@@ -28,6 +28,8 @@ import Assistant.Threads.ProblemFixer
 import Assistant.Threads.MountWatcher
 #endif
 import Assistant.Threads.NetWatcher
+import Assistant.Threads.Upgrader
+import Assistant.Threads.UpgradeWatcher
 import Assistant.Threads.TransferScanner
 import Assistant.Threads.TransferPoller
 import Assistant.Threads.ConfigMonitor
@@ -50,6 +52,7 @@ import qualified Utility.Daemon
 import Utility.LogFile
 import Utility.ThreadScheduler
 import Utility.HumanTime
+import Annex.Perms
 import qualified Build.SysConfig as SysConfig
 
 import System.Log.Logger
@@ -63,11 +66,13 @@ stopDaemon = liftIO . Utility.Daemon.stopDaemon =<< fromRepo gitAnnexPidFile
  -
  - startbrowser is passed the url and html shim file, as well as the original
  - stdout and stderr descriptors. -}
-startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe HostName ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
-startDaemon assistant foreground startdelay listenhost startbrowser = do
+startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe String -> Maybe HostName ->  Maybe (Maybe Handle -> Maybe Handle -> String -> FilePath -> IO ()) -> Annex ()
+startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = do
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
+#ifndef mingw32_HOST_OS
+	createAnnexDirectory (parentDir logfile)
 	logfd <- liftIO $ openLog logfile
 	if foreground
 		then do
@@ -86,6 +91,13 @@ startDaemon assistant foreground startdelay listenhost startbrowser = do
 					Just a -> Just $ a origout origerr
 		else
 			start (Utility.Daemon.daemonize logfd (Just pidfile) False) Nothing
+#else
+	-- Windows is always foreground, and has no log file.
+	start id $
+		case startbrowser of
+			Nothing -> Nothing
+			Just a -> Just $ a Nothing Nothing
+#endif
   where
   	desc
 		| assistant = "assistant"
@@ -99,7 +111,6 @@ startDaemon assistant foreground startdelay listenhost startbrowser = do
 			flip runAssistant (go webappwaiter) 
 				=<< newAssistantData st dstatus
 
-
 #ifdef WITH_WEBAPP
 	go webappwaiter = do
 		d <- getAssistant id
@@ -108,44 +119,53 @@ startDaemon assistant foreground startdelay listenhost startbrowser = do
 #endif
 		notice ["starting", desc, "version", SysConfig.packageversion]
 		urlrenderer <- liftIO newUrlRenderer
-		mapM_ (startthread urlrenderer)
-			[ watch $ commitThread
 #ifdef WITH_WEBAPP
-			, assist $ webAppThread d urlrenderer False listenhost Nothing webappwaiter
+		let webappthread = [ assist $ webAppThread d urlrenderer False cannotrun listenhost Nothing webappwaiter ]
+#else
+		let webappthread = []
+#endif
+		let threads = if isJust cannotrun
+			then webappthread
+			else webappthread ++
+				[ watch $ commitThread
+#ifdef WITH_WEBAPP
 #ifdef WITH_PAIRING
-			, assist $ pairListenerThread urlrenderer
+				, assist $ pairListenerThread urlrenderer
 #endif
 #ifdef WITH_XMPP
-			, assist $ xmppClientThread urlrenderer
-			, assist $ xmppSendPackThread urlrenderer
-			, assist $ xmppReceivePackThread urlrenderer
+				, assist $ xmppClientThread urlrenderer
+				, assist $ xmppSendPackThread urlrenderer
+				, assist $ xmppReceivePackThread urlrenderer
 #endif
 #endif
-			, assist $ pushThread
-			, assist $ pushRetryThread
-			, assist $ mergeThread
-			, assist $ transferWatcherThread
-			, assist $ transferPollerThread
-			, assist $ transfererThread
-			, assist $ daemonStatusThread
-			, assist $ sanityCheckerDailyThread
-			, assist $ sanityCheckerHourlyThread
-			, assist $ problemFixerThread urlrenderer
+				, assist $ pushThread
+				, assist $ pushRetryThread
+				, assist $ mergeThread
+				, assist $ transferWatcherThread
+				, assist $ transferPollerThread
+				, assist $ transfererThread
+				, assist $ daemonStatusThread
+				, assist $ sanityCheckerDailyThread
+				, assist $ sanityCheckerHourlyThread
+				, assist $ problemFixerThread urlrenderer
 #ifdef WITH_CLIBS
-			, assist $ mountWatcherThread urlrenderer
+				, assist $ mountWatcherThread urlrenderer
 #endif
-			, assist $ netWatcherThread
-			, assist $ netWatcherFallbackThread
-			, assist $ transferScannerThread urlrenderer
-			, assist $ cronnerThread urlrenderer
-			, assist $ configMonitorThread
-			, assist $ glacierThread
-			, watch $ watchThread
-			-- must come last so that all threads that wait
-			-- on it have already started waiting
-			, watch $ sanityCheckerStartupThread startdelay
-			]
+				, assist $ netWatcherThread
+				, assist $ upgraderThread urlrenderer
+				, assist $ upgradeWatcherThread urlrenderer
+				, assist $ netWatcherFallbackThread
+				, assist $ transferScannerThread urlrenderer
+				, assist $ cronnerThread urlrenderer
+				, assist $ configMonitorThread
+				, assist $ glacierThread
+				, watch $ watchThread
+				-- must come last so that all threads that wait
+				-- on it have already started waiting
+				, watch $ sanityCheckerStartupThread startdelay
+				]
 	
+		mapM_ (startthread urlrenderer) threads
 		liftIO waitForTermination
 
 	watch a = (True, a)

@@ -24,6 +24,7 @@ module Remote (
 	remoteMap,
 	uuidDescriptions,
 	byName,
+	byNameOnly,
 	byNameWithUUID,
 	byCost,
 	prettyPrintUUIDs,
@@ -58,7 +59,7 @@ import Logs.Trust
 import Logs.Location hiding (logStatus)
 import Remote.List
 import Config
-import Git.Remote
+import Git.Types (RemoteName)
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> a) -> Annex (M.Map UUID a)
@@ -89,11 +90,12 @@ byNameWithUUID = checkuuid <=< byName
   where
   	checkuuid Nothing = return Nothing
 	checkuuid (Just r)
-		| uuid r == NoUUID = do
-			let e = "cannot determine uuid for " ++ name r
+		| uuid r == NoUUID =
 			if remoteAnnexIgnore (gitconfig r)
-				then error $ e ++ " (" ++ show (remoteConfig (repo r) "ignore") ++ " is set)"
-				else error e
+				then error $ noRemoteUUIDMsg r ++
+					" (" ++ show (remoteConfig (repo r) "ignore") ++
+					" is set)"
+				else error $ noRemoteUUIDMsg r
 		| otherwise = return $ Just r
 
 byName' :: RemoteName -> Annex (Either String Remote)
@@ -104,16 +106,27 @@ byName' n = handle . filter matching <$> remoteList
 	handle (match:_) = Right match
 	matching r = n == name r || toUUID n == uuid r
 
+{- Only matches remote name, not UUID -}
+byNameOnly :: RemoteName -> Annex (Maybe Remote)
+byNameOnly n = headMaybe . filter matching <$> remoteList
+  where
+	matching r = n == name r
+
+noRemoteUUIDMsg :: Remote -> String
+noRemoteUUIDMsg r = "cannot determine uuid for " ++ name r
+
 {- Looks up a remote by name (or by UUID, or even by description),
- - and returns its UUID. Finds even remotes that are not configured in
- - .git/config. -}
+ - and returns its UUID. Finds even repositories that are not
+ - configured in .git/config. -}
 nameToUUID :: RemoteName -> Annex UUID
 nameToUUID "." = getUUID -- special case for current repo
 nameToUUID "here" = getUUID
 nameToUUID "" = error "no remote specified"
 nameToUUID n = byName' n >>= go
   where
-	go (Right r) = return $ uuid r
+	go (Right r) = case uuid r of
+		NoUUID -> error $ noRemoteUUIDMsg r
+		u -> return u
 	go (Left e) = fromMaybe (error e) <$> bydescription
 	bydescription = do
 		m <- uuidMap

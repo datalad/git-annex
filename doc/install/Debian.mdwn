@@ -9,6 +9,10 @@
 Note: This version does not include support for the [[assistant]].
 A backport is available with the assistant and other new features.
 
+Follow the instructions to [enable backports](http://backports.debian.org/Instructions/).
+
+	sudo apt-get -t wheezy-backports install git-annex
+
 ## Debian 6.0 "squeeze"
 
 Follow the instructions to [enable backports](http://backports.debian.org/Instructions/).

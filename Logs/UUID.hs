@@ -56,7 +56,7 @@ fixBadUUID = M.fromList . map fixup . M.toList
 		| otherwise = (k, v)
 	  where
 		kuuid = fromUUID k
-		isbad = not (isuuid kuuid) && isuuid lastword
+		isbad = not (isuuid kuuid) && not (null ws) && isuuid lastword
 		ws = words $ value v
 		lastword = Prelude.last ws
 		fixeduuid = toUUID lastword

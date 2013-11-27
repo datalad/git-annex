@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 5"
+ date="2013-11-16T22:55:34Z"
+ content="""
+Well, that's what should happen. What behavior are you seeing? What version of git-annex are you using?
+"""]]

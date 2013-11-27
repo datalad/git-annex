@@ -20,7 +20,7 @@ import Types.StandardGroups
 import Utility.UserInfo
 import Utility.Gpg
 import Types.Remote (RemoteConfig)
-import Git.Remote
+import Git.Types (RemoteName)
 import qualified Remote.GCrypt as GCrypt
 import Annex.UUID
 import Logs.UUID

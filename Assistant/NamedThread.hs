@@ -82,7 +82,7 @@ startNamedThread urlrenderer (NamedThread afterstartupsanitycheck name a) = do
 					(RestartThreadR name)
 				runAssistant d $ void $ addAlert $
 					(warningAlert (fromThreadName name) msg)
-						{ alertButton = Just button }
+						{ alertButtons = [button] }
 #endif
 
 namedThreadId :: NamedThread -> Assistant (Maybe ThreadId)

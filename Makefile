@@ -30,11 +30,7 @@ git-annex-shell.1: doc/git-annex-shell.mdwn
 # These are not built normally.
 git-union-merge.1: doc/git-union-merge.mdwn
 	./Build/mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
-git-recover-repository.1: doc/git-recover-repository.mdwn
-	./Build/mdwn2man git-recover-repository 1 doc/git-recover-repository.mdwn > git-recover-repository.1
 git-union-merge:
-	$(GHC) --make -threaded $@
-git-recover-repository:
 	$(GHC) --make -threaded $@
 
 install-mans: $(mans)
@@ -81,10 +77,10 @@ clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
-		Build/Standalone Build/OSXMkLibs \
-		git-union-merge git-recover-repository
-	find -name \*.o -exec rm {} \;
-	find -name \*.hi -exec rm {} \;
+		Build/Standalone Build/OSXMkLibs Build/DistributionUpdate \
+		git-union-merge
+	find . -name \*.o -exec rm {} \;
+	find . -name \*.hi -exec rm {} \;
 
 Build/InstallDesktopFile: Build/InstallDesktopFile.hs
 	$(GHC) --make $@
@@ -137,6 +133,8 @@ linuxstandalone: Build/Standalone
 	sort "$(LINUXSTANDALONE_DEST)/libdirs.tmp" | uniq > "$(LINUXSTANDALONE_DEST)/libdirs"
 	rm -f "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
 
+	cd tmp/git-annex.linux && find . -type f > git-annex.MANIFEST
+	cd tmp/git-annex.linux && find . -type l >> git-annex.MANIFEST
 	cd tmp && tar czf git-annex-standalone-$(shell dpkg --print-architecture).tar.gz git-annex.linux
 
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
@@ -161,18 +159,18 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	install -d "$(OSXAPP_BASE)/templates"
 
 	./Build/OSXMkLibs $(OSXAPP_BASE)
+	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/git-annex.MANIFEST
+	cd $(OSXAPP_DEST) && find . -type l >> Contents/MacOS/git-annex.MANIFEST
 	rm -f tmp/git-annex.dmg
-	hdiutil create -size 640m -format UDRW -srcfolder tmp/build-dmg \
+	hdiutil create -format UDBZ -srcfolder tmp/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
-	rm -f tmp/git-annex.dmg.bz2
-	bzip2 --fast tmp/git-annex.dmg
 
-ANDROID_FLAGS?=-f-XMPP
+ANDROID_FLAGS?=
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android: Build/EvilSplicer
 	echo "Running native build, to get TH splices.."
-	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f-Production -O0 $(ANDROID_FLAGS);  fi
+	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f-Production -O0 $(ANDROID_FLAGS) -fAndroidSplice;  fi
 	mkdir -p tmp
 	if ! $(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices; then tail tmp/dump-splices >&2; exit 1; fi
 	echo "Setting up Android build tree.."
@@ -189,14 +187,16 @@ android: Build/EvilSplicer
 	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/androidtree/git-annex.cabal
 # Cabal cannot cross compile with custom build type, so workaround.
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
-	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
-		cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
+# Build just once, but link twice, for 2 different versions of Android.
+	mkdir -p tmp/androidtree/dist/build/git-annex/4.0 tmp/androidtree/dist/build/git-annex/4.3
+	if [ ! -e tmp/androidtree/dist/setup-config ]; then \
+		cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
 	fi
-	cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal build
-
-adb:
-	ANDROID_FLAGS="-Production" $(MAKE) android
-	adb push tmp/androidtree/dist/build/git-annex/git-annex /data/data/ga.androidterm/bin/git-annex
+	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
+		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.0/git-annex
+	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
+		--ghc-options=-optl-z --ghc-options=-optlnocopyreloc \
+		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.3/git-annex
 
 androidapp:
 	$(MAKE) android
@@ -220,5 +220,9 @@ dist/caballog: git-annex.cabal
 hdevtools:
 	hdevtools --stop-server || true
 	hdevtools check git-annex.hs -g -cpp -g -i -g -idist/build/git-annex/git-annex-tmp -g -i. -g -idist/build/autogen -g -Idist/build/autogen -g -Idist/build/git-annex/git-annex-tmp -g -IUtility -g -DWITH_TESTSUITE -g -DWITH_S3 -g -DWITH_ASSISTANT -g -DWITH_INOTIFY -g -DWITH_DBUS -g -DWITH_PAIRING -g -DWITH_XMPP -g -optP-include -g -optPdist/build/autogen/cabal_macros.h -g -odir -g dist/build/git-annex/git-annex-tmp -g -hidir -g dist/build/git-annex/git-annex-tmp -g -stubdir -g dist/build/git-annex/git-annex-tmp -g -threaded -g -Wall -g -XHaskell98 -g -XPackageImports
+
+distributionupdate:
+	ghc --make Build/DistributionUpdate
+	./Build/DistributionUpdate
 
 .PHONY: git-annex git-union-merge git-recover-repository tags build-stamp

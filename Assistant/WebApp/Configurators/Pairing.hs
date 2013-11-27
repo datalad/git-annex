@@ -249,6 +249,7 @@ startLocalPairing stage oncancel alert muuid displaysecret secret = do
 		tid <- liftIO myThreadId
 		let selfdestruct = AlertButton
 			{ buttonLabel = "Cancel"
+			, buttonPrimary = True
 			, buttonUrl = urlrender DashboardR
 			, buttonAction = Just $ const $ do
 				oncancel

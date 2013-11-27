@@ -1,6 +1,16 @@
-## Saucy, Raring
+## Saucy
 
 	sudo apt-get install git-annex
+
+Warning: The version of git-annex shipped in Ubuntu Saucy had
+[a bug that can cause problems when creating repositories using the webapp](http://git-annex.branchable.com/bugs/Freshly_initialized_repo_has_staged_change___34__deleted:_uuid.log__34__/).
+
+## Raring
+	
+	sudo apt-get install git-annex
+
+Note: This version is too old to include the [[assistant]] or its WebApp,
+but is otherwise usable.
 
 ## Precise
 

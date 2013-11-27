@@ -1,3 +1,110 @@
+git-annex (5.20131127) unstable; urgency=low
+
+  * webapp: Detect when upgrades are available, and upgrade if the user
+    desires.
+    (Only when git-annex is installed using the prebuilt binaries
+    from git-annex upstream, not from eg Debian.)
+  * assistant: Detect when the git-annex binary is modified or replaced,
+    and either prompt the user to restart the program, or automatically
+    restart it.
+  * annex.autoupgrade configures both the above upgrade behaviors.
+  * Added support for quvi 0.9. Slightly suboptimal due to limitations in its
+    interface compared with the old version.
+  * Bug fix: annex.version did not get set on automatic upgrade to v5 direct
+    mode repo, so the upgrade was performed repeatedly, slowing commands down.
+  * webapp: Fix bug that broke switching between local repositories
+    that use the new guarded direct mode.
+  * Android: Fix stripping of the git-annex binary.
+  * Android: Make terminal app show git-annex version number.
+  * Android: Re-enable XMPP support.
+  * reinject: Allow to be used in direct mode.
+  * Futher improvements to git repo repair. Has now been tested in tens
+    of thousands of intentionally damaged repos, and successfully
+    repaired them all.
+  * Allow use of --unused in bare repository.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 27 Nov 2013 18:41:44 -0400
+
+git-annex (5.20131120) unstable; urgency=low
+
+  * Fix Debian package to not try to run test suite, since haskell-tasty
+    is not out of new or in Build-Depends yet.
+  * dropunused, addunused: Allow "all" instead of a range to
+    act on all unused data.
+  * Ensure execute bit is set on directories when core.sharedrepository is set.
+  * Ensure that core.sharedrepository is honored when creating the .git/annex
+    directory.
+  * Improve repair code in the case where the index file is corrupt,
+    and this hides other problems from git fsck.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 12:54:18 -0400
+
+git-annex (5.20131118) unstable; urgency=low
+
+  * Direct mode repositories now have core.bare=true set, to prevent
+    accidentally running git commands that try to operate on the work tree,
+    and so do the wrong thing in direct mode.
+  * annex.version is now set to 5 for direct mode repositories.
+    This upgrade is handled fully automatically, no need to run
+    git annex upgrade
+  * The "status" command has been renamed to "info", to allow
+    "git annex status" to be used in direct mode repositories, now that
+    "git status" won't work in them.
+  * The -c option now not only modifies the git configuration seen by
+    git-annex, but it is passed along to every git command git-annex runs.
+  * watcher: Avoid loop when adding a file owned by someone else fails
+    in indirect mode because its permissions cannot be modified.
+  * webapp: Avoid encoding problems when displaying the daemon log file.
+  * webapp: Improve UI around remote that have no annex.uuid set,
+    either because setup of them is incomplete, or because the remote
+    git repository is not a git-annex repository.
+  * Include ssh-keygen in standalone bundle.
+  * Allow optionally configuring git-annex with -fEKG to enable awesome
+    remote monitoring interfaceat http://localhost:4242/
+  * Fix bug that caused bad information to be written to the git-annex branch
+    when running describe or other commands with a remote that has no uuid.
+  * Work around Android linker problem that had prevented git-annex from
+    running on Android 4.3 and 4.4.
+  * repair: Handle case where index file is corrupt, but all objects are ok.
+  * assistant: Notice on startup when the index file is corrupt, and
+    auto-repair.
+  * Fix direct mode merge bug when a direct mode file was deleted and replaced
+    with a directory. An ordering problem caused the directory to not get
+    created in this case.
+    Thanks to Tim for the test case.
+  * Direct mode .git/annex/objects directories are no longer left writable,
+    because that allowed writing to symlinks of files that are not present,
+    which followed the link and put bad content in an object location.
+    Thanks to Tim for the test case.
+  * fsck: Fix up .git/annex/object directory permissions.
+  * Switched to the tasty test framework.
+  * Android: Adjust default .gitignore to ignore .thumbnails at any location
+    in the tree, not just at its top.
+  * webapp: Check annex.version.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 18 Nov 2013 10:45:43 -0400
+
+git-annex (4.20131106) unstable; urgency=low
+
+  * Improve local pairing behavior when two computers both try to start
+    the pairing process separately.
+  * sync: Work even when the local git repository is new and empty,
+    with no master branch.
+  * gcrypt, bup: Fix bug that prevented using these special remotes
+    with encryption=pubkey.
+  * Fix enabling of gcrypt repository accessed over ssh;
+    git-annex-shell gcryptsetup had a bug that caused it to fail
+    with permission denied.
+  * Fix zombie process that occurred when switching between repository
+    views in the webapp.
+  * map: Work when there are gcrypt remotes.
+  * Fix build w/o webapp.
+  * Fix exception handling bug that could cause .git/annex/index to be used
+    for git commits outside the git-annex branch. Known to affect git-annex
+    when used with the git shipped with Ubuntu 13.10.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 06 Nov 2013 11:17:47 -0400
+
 git-annex (4.20131101) unstable; urgency=low
 
   * The "git annex content" command is renamed to "git annex wanted".

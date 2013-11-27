@@ -8,7 +8,7 @@ So there are a lot of uploads attempts being made (and apparently failing), and 
 
 The repeated \"(gpg)\" is an interesting clue, since normally git-annex only runs gpg once, to unlock an encrypted special remote's encryption key, and then should retain the key, cached in memory. I was able to reproduce this part of the bug (but not the zombie processes) when I purposfully broke the bup special remote by making it throw an error when it was supposed to run bup to send a file. That defeats the caching, since the state, including the cache, is thrown away when there's an exception. Working on a fix for that..
 
-That doesn't explain what's actually causing the problem for you, but it does certianly suggest the bup special remote code is failing in some unusual way. What happens if rather than starting the assistant, you use git-annex manually to send files to the remote? Run:
+That doesn't explain what's actually causing the problem for you, but it does certainly suggest the bup special remote code is failing in some unusual way. What happens if rather than starting the assistant, you use git-annex manually to send files to the remote? Run:
 
 <pre>
 git annex copy --to ffe41272-608e-43c4-8f35-e9cd63087892 --debug

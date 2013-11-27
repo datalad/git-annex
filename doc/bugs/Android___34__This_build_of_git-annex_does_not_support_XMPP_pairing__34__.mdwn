@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+Upon a new (re-)installation of Android ("proper" build as from http://downloads.kitenet.net/git-annex/android/current/4.0/git-annex.apk  Last-Modified: Mon, 18 Nov 2013 11:57:25 GMT), as well as whatever was day before a daily build, I am getting a message in web ui "not supported  This build of git-annex does not support XMPP pairing. Sorry!" whenever I am entering "Share with your other devices" among "Add more repositories".
+
+### What steps will reproduce the problem?
+
+I had some older and then freshier (yesterday daily build) installed.  Then uninstalled and current "proper" build installed.
+it picked up initialized repository I did yesterday but when I went into "Share ..." link  I saw the message without any option to add such another device
+
+### What version of git-annex are you using? On what operating system?
+
+Android
+
+About says   5.20131118-gc7e5cde.  
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]

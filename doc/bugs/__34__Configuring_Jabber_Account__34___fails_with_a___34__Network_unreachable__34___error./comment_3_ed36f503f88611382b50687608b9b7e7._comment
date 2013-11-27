@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2013-11-08T18:42:22Z"
+ content="""
+Seems like I should fix the standalone linux tarball to either include the host program, or better, build git-annex with the Haskell [DNS library](https://hackage.haskell.org/package/dns). (I think that the Mac app and other builds are built with DNS by default, since they have dependencies installed using cabal directly).
+
+I need to first get that library included in Debian, so I can install it reliably on my build systems.
+"""]]

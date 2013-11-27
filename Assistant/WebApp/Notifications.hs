@@ -50,7 +50,6 @@ autoUpdate tident geturl ms_delay ms_startdelay = do
 	let startdelay = Aeson.String (T.pack (show ms_startdelay))
 	let ident = Aeson.String tident
 #endif
-	addScript $ StaticR longpolling_js
 	$(widgetFile "notifications/longpolling")
 
 {- Notifier urls are requested by the javascript, to avoid allocation
@@ -82,6 +81,9 @@ getNotifierRepoListR reposelector = notifierUrl route getRepoListBroadcaster
   where
 	route nid = RepoListR nid reposelector
 
+getNotifierGlobalRedirR :: Handler RepPlain
+getNotifierGlobalRedirR = notifierUrl GlobalRedirR getGlobalRedirBroadcaster
+
 getTransferBroadcaster :: Assistant NotificationBroadcaster
 getTransferBroadcaster = transferNotifier <$> getDaemonStatus
 
@@ -93,3 +95,12 @@ getBuddyListBroadcaster =  getBuddyBroadcaster <$> getAssistant buddyList
 
 getRepoListBroadcaster :: Assistant NotificationBroadcaster
 getRepoListBroadcaster =  syncRemotesNotifier <$> getDaemonStatus
+
+getGlobalRedirBroadcaster :: Assistant NotificationBroadcaster
+getGlobalRedirBroadcaster =  globalRedirNotifier <$> getDaemonStatus
+
+getGlobalRedirR :: NotificationId -> Handler RepPlain
+getGlobalRedirR nid = do
+	waitNotifier getGlobalRedirBroadcaster nid
+	maybe (getGlobalRedirR nid) (return . RepPlain . toContent . T.pack)
+		=<< globalRedirUrl <$> liftAssistant getDaemonStatus

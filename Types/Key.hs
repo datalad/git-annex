@@ -60,7 +60,9 @@ key2file Key { keyBackendName = b, keySize = s, keyMtime = m, keyName = n } =
 	_ ?: _ = ""
 
 file2key :: FilePath -> Maybe Key
-file2key s = if key == Just stubKey || (keyName <$> key) == Just "" then Nothing else key
+file2key s
+	| key == Just stubKey || (keyName <$> key) == Just "" || (keyBackendName <$> key) == Just "" = Nothing
+	| otherwise = key
   where
 	key = startbackend stubKey s
 
@@ -91,6 +93,4 @@ prop_idempotent_key_encode :: Key -> Bool
 prop_idempotent_key_encode k = Just k == (file2key . key2file) k
 
 prop_idempotent_key_decode :: FilePath -> Bool
-prop_idempotent_key_decode f
-	| null f = True -- skip illegal empty filename
-	| otherwise = maybe True (\k -> key2file k == f) (file2key f)
+prop_idempotent_key_decode f = maybe True (\k -> key2file k == f) (file2key f)

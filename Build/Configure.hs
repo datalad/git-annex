@@ -7,7 +7,7 @@ import Data.List
 import System.Process
 import Control.Applicative
 import System.FilePath
-import System.Environment
+import System.Environment (getArgs)
 import Data.Maybe
 import Control.Monad.IfElse
 import Data.Char
@@ -17,11 +17,13 @@ import Build.Version
 import Utility.SafeCommand
 import Utility.Monad
 import Utility.ExternalSHA
+import Utility.Env
 import qualified Git.Version
 
 tests :: [TestCase]
 tests =
 	[ TestCase "version" getVersion
+	, TestCase "UPGRADE_LOCATION" getUpgradeLocation
 	, TestCase "git" $ requireCmd "git" "git --version >/dev/null"
 	, TestCase "git version" getGitVersion
 	, testCp "cp_a" "-a"
@@ -33,6 +35,7 @@ tests =
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "quvi" $ testCmd "quvi" "quvi --version >/dev/null"
+	, TestCase "newquvi" $ testCmd "newquvi" "quvi info >/dev/null"
 	, TestCase "nice" $ testCmd "nice" "nice true >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
 	, TestCase "gpg" $ maybeSelectCmd "gpg"
@@ -90,6 +93,11 @@ testCp k option = TestCase cmd $ testCmd k cmdline
 	cmd = "cp " ++ option
 	cmdline = cmd ++ " " ++ testFile ++ " " ++ testFile ++ ".new"
 
+getUpgradeLocation :: Test
+getUpgradeLocation = do
+	e <- getEnv "UPGRADE_LOCATION"
+	return $ Config "upgradelocation" $ MaybeStringConfig e
+
 getGitVersion :: Test
 getGitVersion = Config "gitversion" . StringConfig . show
 	<$> Git.Version.installed
@@ -130,4 +138,3 @@ androidConfig c = overrides ++ filter (not . overridden) c
 		]
 	overridden (Config k _) = k `elem` overridekeys
 	overridekeys = map (\(Config k _) -> k) overrides
-
