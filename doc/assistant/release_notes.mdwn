@@ -1,3 +1,15 @@
+## version 5.20131127
+
+Starting with this version, when git-annex is installed from a build on
+this website, it will detect when new versions are available, and allow
+easily upgrading. Automatic upgrades can also be configured if desired,
+or automatic upgrade checking can be disabled in the preferences page.
+
+git-annex builds from distributions, like Debian will not automatically
+upgrade; use the distribution's package manager for that. However, the
+git-annex webapp will also detect when a distribution has upgraded
+git-annex and offer to restart the assistant.
+
 ## version 4.20131024
 
 This version fixes several different bugs that could cause the webapp to
