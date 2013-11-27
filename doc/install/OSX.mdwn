@@ -23,7 +23,7 @@ several more. Handy if you don't otherwise have git installed.
 [Jimmy Tang](http://www.sgenomics.org/~jtang/) autobuilds
 the app for OSX Lion.
 
-* [autobuild of git-annex.dmg](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/ref/master/git-annex.dmg.bz2) ([build logs](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/))
+* [autobuild of git-annex.dmg](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/ref/master/git-annex.dmg) ([build logs](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/))
   * [past builds](http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0-binary/sha1/) -- directories are named from the commitid's
 
 [[Joey]] autobuilds the app for Mavericks.
