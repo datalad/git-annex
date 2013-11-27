@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-06T17:09:58Z"
+ content="""
+What version of gnupg do you have installed?
+
+<pre>
+gpg: block_filter 0x946320: read error (size=12864,a->size=12864)
+gpg: [don't know]: invalid packet (ctb=68)
+gpg: [don't know]: invalid packet (ctb=21)
+gpg: mdc_packet with invalid encoding
+gpg: decryption failed: invalid packet
+gpg: [don't know]: invalid packet (ctb=00)
+gpg: block_filter: pending bytes!
+</pre>
+
+I don't see how git-annex can possibly guard against gpg behaving this way when given bad data. So the best thing to do would be to get a test case file that causes gpg to behave this way, and then I could file a bug on gpg and get it fixed to immediately exit.
+
+I tried to reproduce this by encrypting a 1 mb file with gpg. This yeilded a 1.1 mb file. I then truncated it back to 1 mb, and tried to decrypt it.
+
+[[!format sh \"\"\"
+joey@gnu:~>gpg --decrypt me2.gpg > x
+gpg: encrypted with 1 passphrase
+gpg: block_filter 0x9d6fda0: read error (size=15680,a->size=15680)
+gpg: Problem reading source (8570 bytes remaining)
+gpg: handle plaintext failed: file read error
+gpg: mdc_packet with invalid encoding
+gpg: decryption failed: invalid packet
+gpg: block_filter: pending bytes!
+zsh: exit 2     gpg --decrypt 
+\"\"\"]]
+
+gpg exited immediately on error, which is what it should do. So it doesn't seem likely I can guess at a test case file that causes gpg to behave this way. You will need to provide one for me to help.
+"""]]

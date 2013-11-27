@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-12T11:23:47Z"
+ content="""
+This can happen if your repository gets annex.direct=true set in its .git/config, without `git annex direct` having been run to truely put it into direct mode.
+
+The proof that this was the case is that `git annex indirect` did anything at all. The first thing `git annex indirect` does is check if it's in a direct mode repository. If not, it steps without doing anything, and without outputting anything.
+
+I think this was user error.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 12"
+ date="2011-12-30T23:45:57Z"
+ content="""
+I have made a new `autosync` branch, where all that the user needs to do is run `git annex sync` and it automatically sets up the synced/master branch. I find this very easy to use, what do you think?
+
+Note that `autosync` is also pretty smart about not running commands like \"git merge\" and \"git push\" when they would not do anything. So you may find `git annex sync` not showing all the steps you'd expect. The only step a sync always performs now is pulling from the remotes.
+"""]]

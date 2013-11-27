@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 4"
+ date="2013-08-30T06:06:16Z"
+ content="""
+Just to confirm, this wasn't a git-annex problem at all, but just a misstep during migration as you suggested.
+
+I think what I'm going to do now is to just wipe the slate clean and start over again, by using `unannex -fast` on all the files, wiping `.git`, and then adding everything back in using my new default backend of SHA512E.  The bigger pain is doing the same thing on all the servers where I have this data (to avoid having to upload it again), but in such a way that I'm not replicating file history.  I think I should be able to just clone, `mv $OLDREPO/.git/annex/objects objects`, `git annex add objects`, `git rm -r --cached objects`, and then everything should be good without even needing a new commit on the remote machine, just a git-annex sync.
+"""]]

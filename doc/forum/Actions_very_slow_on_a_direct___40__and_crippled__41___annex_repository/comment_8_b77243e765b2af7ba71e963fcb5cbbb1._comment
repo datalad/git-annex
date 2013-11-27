@@ -1,0 +1,71 @@
+[[!comment format=mdwn
+ username="TroisSinges"
+ ip="82.227.207.5"
+ subject="comment 8"
+ date="2013-11-26T21:17:38Z"
+ content="""
+Thanks again for your answers.
+
+`.git/index` is only 30Ko big. It shouldn't be an issue, even through the network.
+
+However, I ran `lsof`, and strangely it lock the big file I added before (`/Volumes/Video/Videos/Films/MyFamily.mkv`)
+
+    COMMAND   PID    USER   FD   TYPE DEVICE    SIZE/OFF                 NODE NAME
+    git     68047 3singes  cwd    DIR   46,7       16384  5152641528667254045 /Volumes/Video/Videos
+    git     68047 3singes  txt    REG    1,4     3035984             77501447 /Applications/git-annex.app/Contents/MacOS/bundle/git
+    git     68047 3singes  txt    REG   46,7        8632  9219631544499731818 /Volumes/Video/Videos/.git/objects/pack/pack-99901c82bacfa26c04f505ceb27c4af9ccda414f.idx
+    git     68047 3singes  txt    REG    1,4      403392             77501680 /Applications/git-annex.app/Contents/MacOS/bundle/usr/lib/libpcre.0.dylib
+    git     68047 3singes  txt    REG   46,7        4012  8204150806531008435 /Volumes/Video/Videos/.git/objects/pack/pack-bb60a2315b13bda720682a4213507e5ee9ba029f.idx
+    git     68047 3singes  txt    REG   46,7       15969 12003107822997399035 /Volumes/Video/Videos/.git/objects/pack/pack-bb60a2315b13bda720682a4213507e5ee9ba029f.pack
+    git     68047 3singes  txt    REG    1,4      169392             77501683 /Applications/git-annex.app/Contents/MacOS/bundle/usr/lib/libz.1.dylib
+    git     68047 3singes  txt    REG    1,4     2088992             77501673 /Applications/git-annex.app/Contents/MacOS/bundle/usr/lib/libiconv.2.dylib
+    git     68047 3singes  txt    REG    1,4      600832             72809225 /usr/lib/dyld
+    git     68047 3singes  txt    REG    1,4   342937194             75930310 /private/var/db/dyld/dyld_shared_cache_x86_64
+    git     68047 3singes    0u   CHR  16,10    0t718314                 2413 /dev/ttys010
+    git     68047 3singes    1w   CHR    3,2         0t0                  308 /dev/null
+    git     68047 3singes    2w   CHR    3,2         0t0                  308 /dev/null
+    git     68047 3singes    3u   REG   46,7           0 17793593705208135594 /Volumes/Video/Videos/.git/index.lock
+    git     68047 3singes    4r   REG   46,7 15581987050 12221620371912261305 /Volumes/Video/Videos/Films/MyFamily.mkv
+    git     68047 3singes    8w   CHR    3,2         0t0                  308 /dev/null
+
+I'm using MacOSX, so I can only use `dtrace`, which I don't know so much.
+
+**The process is over, after 1H30:**
+
+    ok
+    [2013-11-26 22:13:48 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"symbolic-ref\",\"HEAD\"]
+    [2013-11-26 22:13:48 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"refs/heads/annex/direct/master\"]
+    [2013-11-26 22:13:48 CET] call: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"--verify\",\"-q\",\"refs/heads/synced/master\"]
+    [2013-11-26 22:13:49 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/annex/direct/master..refs/heads/synced/master\",\"--oneline\",\"-n1\"]
+    pull macbookpro
+    [2013-11-26 22:13:49 CET] call: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"fetch\",\"macbookpro\"]
+    From /Users/3singes/Movies/NE PAS SAUVEGARDER/Videos
+       b2146cf..c2cf748  git-annex  -> macbookpro/git-annex
+    [2013-11-26 22:13:50 CET] call: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"--verify\",\"-q\",\"refs/remotes/macbookpro/annex/direct/master\"]
+    [2013-11-26 22:13:50 CET] call: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"--verify\",\"-q\",\"refs/remotes/macbookpro/synced/master\"]
+    [2013-11-26 22:13:50 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/synced/master..refs/remotes/macbookpro/synced/master\",\"--oneline\",\"-n1\"]
+    ok
+    [2013-11-26 22:13:50 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"git-annex\"]
+    [2013-11-26 22:13:50 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-11-26 22:13:50 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..293332232ca4e7428090171b52dcc5b3b80d1df6\",\"--oneline\",\"-n1\"]
+    [2013-11-26 22:13:51 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..b2146cf0abc7d6a7e5c79d3b133181b56cd77461\",\"--oneline\",\"-n1\"]
+    [2013-11-26 22:13:51 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"log\",\"refs/heads/git-annex..c2cf7488b4745d4168491d8e62f5bdc354869133\",\"--oneline\",\"-n1\"]
+    [2013-11-26 22:13:51 CET] call: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"synced/master\"]
+    [2013-11-26 22:13:51 CET] call: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"branch\",\"-f\",\"master\"]
+    [2013-11-26 22:13:51 CET] call: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"--verify\",\"-q\",\"refs/remotes/macbookpro/synced/master\"]
+    [2013-11-26 22:13:51 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"log\",\"refs/remotes/macbookpro/synced/master..refs/heads/synced/master\",\"--oneline\",\"-n1\"]
+    [2013-11-26 22:13:51 CET] call: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"show-ref\",\"--verify\",\"-q\",\"refs/remotes/macbookpro/git-annex\"]
+    [2013-11-26 22:13:51 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"log\",\"refs/remotes/macbookpro/git-annex..git-annex\",\"--oneline\",\"-n1\"]
+    push macbookpro
+    [2013-11-26 22:13:52 CET] call: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"push\",\"macbookpro\",\"+git-annex:synced/git-annex\",\"annex/direct/master:synced/master\"]
+    Counting objects: 9, done.
+    Delta compression using up to 8 threads.
+    Compressing objects: 100% (4/4), done.
+    Writing objects: 100% (5/5), 440 bytes | 0 bytes/s, done.
+    Total 5 (delta 3), reused 0 (delta 0)
+    To /Users/3singes/Movies/NE PAS SAUVEGARDER/Videos
+       c2cf748..2933322  git-annex -> synced/git-annex
+    [2013-11-26 22:13:57 CET] read: git [\"--git-dir=/Volumes/Video/Videos/.git\",\"--work-tree=/Volumes/Video/Videos\",\"-c\",\"core.bare=false\",\"push\",\"macbookpro\",\"master\"]
+    ok
+
+"""]]

@@ -1,0 +1,3 @@
+I've started a another project to provide Emacs integration for git-annex: [[https://github.com/jwiegley/git-annex-el]]
+
+My problem with the existing mode is that it didn't feel at all Emacsy, while my mode just piggy backs on existing paradigms, like using `C-x C-q` in a locked file to make it editable, and allowing you to browse and lock/unlock annexed files from Dired.

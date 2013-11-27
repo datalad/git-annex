@@ -1,0 +1,13 @@
+`git annex import` would copy data over from external places into the annex. It would be run from within the annex and in the target location where the files need to end up.
+
+Two basic modes of operation:
+
+* If run on a normal directory, e.g. an SD card, it would simply copy over and `git annex add $newstuff`
+
+* If run on another indirect annex, it would copy over the symlinks, copy over the object data, verify that the checksums are OK and add to the annex
+
+An optional `git annex import --copy-only` would copy over and verify the data, but not yet add it. That would allow the user to import into a decent data structure. If run on non-annexed data, `git annex import --copy-only` would ideally calculate checksums and create symlinks already; thus ensuring data integrity as early as possible.
+
+-- RichiH
+
+> [[done]] --[[Joey]] in 2012

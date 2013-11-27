@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://ertai.myopenid.com/"
+ nickname="npouillard"
+ subject="git annex fsck --from remote"
+ date="2011-06-25T16:20:44Z"
+ content="""
+Currently fsck silently ignores --to/--from.
+It should at least complain if it is not supported.
+"""]]

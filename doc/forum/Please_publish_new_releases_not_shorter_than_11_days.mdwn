@@ -1,0 +1,6 @@
+Hi,
+i am following debian testing. The latest git-annex publication has manged to replace the former version on the last possible moment. Now another 10 days waiting.
+Would be nice if you can coordinate with testing.
+
+Thank you for git-annex. 
+Jürgen

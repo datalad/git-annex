@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnSenxKyE_2Z6Wb-EBMO8FciyRywjx1ZiQ"
+ nickname="Walter"
+ subject="Commands to accomplish same"
+ date="2013-04-13T04:43:41Z"
+ content="""
+I feel that the following commands should do essentially the same (ie they do what I intend to do).
+More, they even display the correct (expected) behaviour, it seems the strangeness is introduced by the webapp (which, by the way, is really cool).
+
+	cd ~
+	mkdir Direct Indirect
+	git init Direct/
+	git init Indirect/
+	cd Direct/
+	git annex init Direct
+	git annex direct
+	cd ../Indirect
+	git annex init Indirect
+	git annex indirect
+    touch Indirect
+    git annex add Indirect
+    git commit -m 'Initial commit'
+	git remote add Direct ..//Direct/
+	git annex assistant
+	cd ../Direct/
+    touch Direct
+    git annex add Direct
+    git commit -m 'Initial commit'
+	git remote add Indirect ../Indirect
+	git annex assistant
+    touch Test
+    echo Test > Test 
+"""]]

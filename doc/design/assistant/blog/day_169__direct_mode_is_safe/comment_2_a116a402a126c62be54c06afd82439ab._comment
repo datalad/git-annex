@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://csights.myopenid.com/"
+ ip="70.226.161.163"
+ subject="use debian repos instead of Ubuntu PPA?"
+ date="2013-01-12T13:43:44Z"
+ content="""
+Maybe Ubuntu users would be satisfied with tweaks to their sources.list and preferences?
+
+/etc/apt/sources.list.d/git-annex.sources.list
+deb http://ftp.us.debian.org/debian unstable main
+
+/etc/apt/preferences.d/git-annex.preferences
+Package: *
+Pin: release a=unstable,o=Debian
+Pin-Priority: 400
+
+
+Not sure how that will work out in Ubuntu package manager.  In aptitude you'll get warning about untrusted repos (maybe install Debian's gpg keys) and will probably have to manually select dependencies from Debian repos.
+"""]]

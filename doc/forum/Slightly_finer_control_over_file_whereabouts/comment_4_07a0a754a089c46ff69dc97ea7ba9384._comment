@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnSenxKyE_2Z6Wb-EBMO8FciyRywjx1ZiQ"
+ nickname="Walter"
+ subject="comment 4"
+ date="2013-09-20T02:41:22Z"
+ content="""
+I am testing on my laptop, and the content expression there is
+`(exclude=archive/kronos/* ) or (not copies=semitrusted+:1)`
+to simplify things; I interpret this to mean it wants everything not in archive/kronos, and it wants things there where that's the only copy.
+
+The problem is that `git annex drop --auto` does indeed drop things, but `git annex get --auto` gets them; surely it should not be possible for that to happen?
+
+I also tried the preferred content expression of `(exclude=archive/kronos/* )`, and the same thing happens.
+
+The version of git-annex that I am using is
+<pre>git-annex version: 4.20130919-g9be7762
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS Feeds Quvi
+local repository version: 4
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2</pre>
+"""]]

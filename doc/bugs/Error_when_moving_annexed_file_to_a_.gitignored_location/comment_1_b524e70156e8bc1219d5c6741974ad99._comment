@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlq4ClC5EMN1Vq1DpWXAqP5TiDnCK1mSfk"
+ nickname="Jonas"
+ subject="Happens with import, too"
+ date="2013-11-24T23:24:09Z"
+ content="""
+This happens to me when using git annex import, too (on version 4.20131106)
+
+    (Recording state in git...)
+    The following paths are ignored by one of your .gitignore files:
+    path/to/some/directory/.svn
+    Use -f if you really want to add them.
+    fatal: no files added
+
+    git-annex: user error (xargs [\"-0\",\"git\",\"--git-dir=/path/to/annex/.git\",\"--work-tree=/path/to/annex\",\"add\",\"--\"] exited 123)
+failed
+
+"""]]

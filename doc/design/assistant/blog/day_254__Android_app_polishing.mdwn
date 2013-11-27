@@ -1,0 +1,35 @@
+There's a new page [[/Android]] that documents using git-annex on Android
+in detail.
+
+The Android app now opens the webapp when a terminal window is opened.
+This is good enough for trying it out easily, but far from ideal.
+
+Fixed an EvilSplicer bug that corrupted newlines in 
+the static files served by the webapp. Now the icons in the webapp
+display properly, and the javascript works.
+
+Made the startup screen default to `/sdcard/annex` for the repository
+location, and also have a button to set up a camera repository. The camera
+repository is put in the "source" preferred content group, so it will only
+hang onto photos and videos until they're uploaded off the Android device.
+
+Quite a lot of other small fixes on Android. At this point I've tested the
+following works:
+
+* Starting webapp.
+* Making a repository, adding files.
+* All the basic webapp UI.
+
+However, I was not able to add any remote repository using only the webapp,
+due to some more problems with the network stack.
+
+* Jabber and Webdav don't quite work ("getProtocolByname: does not exist (no
+  such protocol name: tcp)").
+* SSH server fails.
+  ("Network/Socket/Types.hsc:(881,3)-(897,61): Non-exhaustive patterns in case")
+  I suspect it will work if I disable the DNS expansion code.
+
+So, that's the next thing that needs to be tackled.
+
+If you'd like to play with it in its current state, I've updated the
+Android builds to incorporate all my work so far.

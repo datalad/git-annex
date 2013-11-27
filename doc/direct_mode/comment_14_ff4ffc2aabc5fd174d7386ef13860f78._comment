@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://olivier.berger.myopenid.com/"
+ nickname="obergix"
+ subject="Git annex copy needed before git annex sync"
+ date="2013-08-23T19:59:35Z"
+ content="""
+Thanks for these details @joeyh. But AFAIU, one needs to proceed to the git annex copy before doing the git annex sync, otherwise, symlinks (or files containing the symlink path on SMB) will be created, instead of the plain \"direct\" files that are expected.
+
+I'm still not sure whether the git annex sync needs to be issued on either of the indirect or direct remotes first, or both, then in which sequence. I think a \"walkthrough\" script would help.
+"""]]

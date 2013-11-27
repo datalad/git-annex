@@ -1,0 +1,12 @@
+[[!if test="enabled(shortcut)"
+     then="This wiki has shortcuts **enabled**."
+     else="This wiki has shortcuts **disabled**."]]
+
+This page controls what shortcut links the wiki supports.
+
+* [[!shortcut name=debbug url="http://bugs.debian.org/%S" desc="Debian bug #%s"]]
+* [[!shortcut name=iki url="http://ikiwiki.info/%S/"]]
+* [[!shortcut name=rfc url="https://www.ietf.org/rfc/rfc%s.txt" desc="RFC %s"]]
+* [[!shortcut name=cve url="https://cve.mitre.org/cgi-bin/cvename.cgi?name=%s"]]
+* [[!shortcut name=hackage url="http://hackage.haskell.org/package/%s"]]
+* [[!shortcut name=commit url="http://source.git-annex.branchable.com/?p=source.git;a=commitdiff;h=%s"]]

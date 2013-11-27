@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmaygIuV4bIfp-U5IRH51FwKHq-i7_os0c"
+ nickname="Mike"
+ subject="comment 2"
+ date="2013-03-25T02:20:05Z"
+ content="""
+I copied and pasted your suggestion into a shell script, and this is what I got back:
+
+    #./test.sh
+
+    loggedin
+    /usr/local/bin/rsync
+    rsync
+"""]]

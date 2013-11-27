@@ -1,0 +1,1 @@
+Starting the assistant on a repository with a huge amount of files (f.e. `annexed files in working tree: 22087`) takes a very long time. Is there a way to speed it up? F.e. just checking the file stamps and comparing them with the last assistant run time? Checking if the files are modified could be done with the regular repository check. Thoughts?

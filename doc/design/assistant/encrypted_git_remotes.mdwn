@@ -1,0 +1,22 @@
+Encrypted git remotes are now possible 
+using [git-remote-gcrypt](https://github.com/joeyh/git-remote-gcrypt).
+
+There are at least two use cases for this in the assistant:
+
+* Storing an encrypted git repository on a local drive. **done**
+* Or on a remote server. This could even allow using github. But more
+  likely would be a shell server that has git-annex-shell on it so can
+  also store file contents, and which is not trusted with unencrypted data.
+  **done**
+
+git-remote-gcrypt is already usable with git-annex. What's needed is
+to make sure it's installed (ie, get it packaged into distros or embedded
+into git-annex), and make it easy to set up from the webapp. **done**
+
+Hmm, this will need gpg key creation, so would also be a good opportunity
+to make the webapp allow using that for special remotes too.
+
+One change is needed in git-annex core.. It currently does not support
+storing encrypted files on git remotes, only on special remotes. Perhaps
+the way to deal with this is to make it consider git-remote-grypt remotes
+to be a special remote type? **done**

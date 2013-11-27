@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="annexuser"
+ ip="24.16.193.140"
+ subject="comment 6"
+ date="2012-11-05T17:20:50Z"
+ content="""
+Right now I use Dropbox with encfs. I could do the same thing with git-annex, but it's kind of a hassle.
+"""]]

@@ -1,0 +1,3 @@
+When the test suite cannot be compiled, the build just fails silenty. This means that in automated builds there is no easy way to ensure that the generated binaries have passed the test suite, because it may not even have been run! IMHO, "make test" should fail (i.e. return a non-zero exit code) when it can't succeeed.
+
+> Ok, fixed. --[[Joey]] [[done]]

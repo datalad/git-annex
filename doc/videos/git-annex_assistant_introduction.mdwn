@@ -1,0 +1,5 @@
+<video controls width=400>
+<source src="https://downloads.kitenet.net/videos/git-annex/git-annex-assistant-intro.ogv">
+</video><br>
+A <a href="https://downloads.kitenet.net/videos/git-annex/git-annex-assistant-intro.ogv">8 minute screencast</a>
+introducing the [[git-annex assistant|/assistant]]</a>.

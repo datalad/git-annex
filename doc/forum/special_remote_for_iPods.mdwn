@@ -1,0 +1,5 @@
+I know versions of this question have been asked before, but I'm looking for a different answer.
+
+I would like a braindead special remote that can be used with devices such as portable music players. No symbolic links, no hashing, no rewriting of the filenames. The remote can be untrusted, file identity can be checked with just the filename and maybe the size. The "directory" special remote with the WORM backend seems to come closest, but does too much. 
+
+Should I just try to roll it using hooks?

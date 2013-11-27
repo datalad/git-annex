@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://caust1c.myopenid.com/"
+ nickname="asbraithwaite"
+ subject="comment 5"
+ date="2013-07-18T21:17:45Z"
+ content="""
+Wow.  This worked better than expected.  I'm still trying to understand the implementation (I'm not familiar with Haskell), but there is some magic going on.
+
+To explain:
+
+I didn't expect that when I added a file (Locally and to the annex remote) that when somebody else did a pull, git-annex would recognize this and update the working copy to download and include that file.
+
+I'm not sure if this is intended behavior or not (since I thought all commands had to go through git-annex) but I like it nonetheless.
+
+Thanks again for the tips!
+"""]]

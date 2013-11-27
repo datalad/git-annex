@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 4"
+ date="2013-04-24T15:05:33Z"
+ content="""
+You're confusing number of files (inotify doesn't care) with number of directories (inotify does care).
+
+Dropbox is on record about being limited in the number of directories it can watch without adjusting the inotify limit. 
+<https://www.dropbox.com/help/145>
+"""]]

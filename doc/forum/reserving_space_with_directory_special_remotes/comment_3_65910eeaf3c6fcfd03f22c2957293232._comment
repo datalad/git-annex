@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.235"
+ subject="comment 3"
+ date="2013-07-11T16:17:36Z"
+ content="""
+Shows what I know! It is supported. Repurposed the bug report to allow configuring a different diskreserve for the remote than the main annex.diskreserve..
+"""]]

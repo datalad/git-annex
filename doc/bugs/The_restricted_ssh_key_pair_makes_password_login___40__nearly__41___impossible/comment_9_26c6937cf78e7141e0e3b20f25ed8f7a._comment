@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 9"
+ date="2013-04-14T00:46:32Z"
+ content="""
+Can you please paste the output of `ssh -vvv host
+"""]]

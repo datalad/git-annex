@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmWg4VvDTer9f49Y3z-R0AH16P4d1ygotA"
+ nickname="Tobias"
+ subject="comment 3"
+ date="2013-05-22T09:53:47Z"
+ content="""
+I had to change the checkpresent hook to:
+
+	hogneygmail-checkpresent-hook = (imaputils.pl --subject $ANNEX_KEY --count | grep -q \\"1 messages\\" -) && echo $ANNEX_KEY || exit 0
+
+Also, i have 5 files more than 30MB in size, that refuse to transfer.
+
+ postdrop: warning: uid=1001: File too large
+ sendmail: fatal: tou(1001): message file too big
+ Error sending message, child exited 75 (Deferred.).
+ Could not send the message.
+
+  store hook exited nonzero!
+ failed
+
+This really needs some split operations to support large files.
+
+"""]]

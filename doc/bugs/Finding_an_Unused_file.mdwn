@@ -1,0 +1,152 @@
+### Please describe the problem.
+
+SHA256E makes it difficult or impossible to find the original filename
+
+### What steps will reproduce the problem?
+
+I have these unused files:
+
+    $ git annex unused
+    unused . (checking for unused data...) (checking master...) (checking backupbook/HEAD...) (checking b
+    aster...) (checking lang/a-...) (checking lang/master...) 
+      Some annexed data is no longer used by any files:
+        NUMBER  KEY
+        1       SHA256-s9107031--2611c08c9822179c443f001f0bd7ecadf29adcd28edfa4cd1d8938d289cd3950
+        2       SHA256E-s31131336--58c48adad8e5f091981549dfbb2d9ec1003c8c46d1a660673fabefe722358f9b.flac
+        3       SHA256-s9941549--db12950459ba039e6e6f6102a0811213c11a717d140d6e2f169049b958a5e047
+        4       SHA256-s11544438--174514684e03035cc741fa397a1b46f925899bd29189a98173f8f2a136d95ace
+        5       SHA256E-s23445007--4659fae3eda6db7c528af6439fafab1496c740d02bdb67892450a8a2208fb29b.flac
+        6       SHA256E-s47080709--7d331788ae7fee16bccce060c62cafa3cdafc9e0a2b387c0843cfe5871f51fa6.flac
+        7       SHA256E-s33262563--3280607d6d397f84a02542c5ab2e5a9c44d60256b330e3d075078694f0c7f709.flac
+        8       SHA256-s6522640--a1fa374afd62e8c85a115f18f78e679722f63980191c1e11ef84a49ae86f5b4f
+        9       SHA256E-s29266138--27e792d64b6d4a4d44bdafe6867ca25ba79480d1b650cf385e67ff28a1fc5c31.flac
+        10      SHA256-s14568326--023eb9fcefc063ee3ea495f4d382a8feac795d0e1a81c585781f5d369db2e00c
+        11      SHA256-s11907175--73b66220bdbf0ca92209605b93d95d5f9e8247745f9c4367ff20cb53e11c24ac
+        12      SHA256-s9193267--e159038b78c1b239d4cb8eeb892c7acf0e7b82feac7f5b5808dad477605e8478
+        13      SHA256E-s39329047--880ffab99c4b4c48224f409acb0cd797737e4ee70eacdba9bc7d7628ba3d05d7.flac
+        14      SHA256E-s31400468--17ad7b13757d4e4d6e5d193d8295a30f566e00eea82bc19f50dc14b2bbf79ef3.flac
+        15      SHA256E-s51514687--f83eb092ddcdf35e7f729bfa2cc0914b404de60f0b42f69f207cf01766061f16.flac
+        16      SHA256E-s36235648--54e3f893b498b205b0b96bd87d5f14c71712e891c518070a0e1c730d92b3b0ac.flac
+        17      SHA256-s10001177--35afb0b91c8b9f711b2d3b0fe7433ecc3bb13aece78c6170a47323c94233133d
+        18      SHA256-s11830142--3dabe97ccbb68045d9ea82036ddf7211a3925a1bf682e05a32bcdf9b07bec676
+        19      SHA256E-s23102994--f848ed216e6ba17e6b539f31caa5af36266c367ed55dcff243445848b01fbeef.flac
+        20      SHA256E-s38505547--967763ddd42daf782afa9299e67cb5c834153cb20242b50115dda566b24a68c4.flac
+        21      SHA256-s11874975--14774a404526c4b68ede146f527202c59a4bee88376707c93df7da3bdb5345f2
+        22      SHA256-s10188700--18fd4ee62c2b3b1d8944eae528b59de2a45d493a291440edc9b30881ba10ece3
+        23      SHA256E-s53024109--eba924a26f7c602b60a83f208b2204ef3b570fd92ff39fbc067eeaec7c443ab6.flac
+        24      SHA256-s11315225--0a8d2165166995e819e8c78302c45b1eeca9b79a5d77a3574885cbf8e18f265a
+        25      SHA256-s12249573--79b9e551051232079f24902078e1fe5b7daed684e8acaa7cf29c191404a7c3c7
+        26      SHA256E-s47991289--79cfd8db5b3cbe7f50c335bfe0d148c38ff36dbc97b17ea3aff23d642bd5d167.flac
+        27      SHA256E-s76961343--80e91f73e2f3ae6790d752d380118b3fadc223f9f1449354daa0095b5713986c.flac
+        28      SHA256E-s44706648--ce782096aa5c0d58a12f7cbd6dbfe032fa7b0b4810219e23f906bd7fa0d96336.flac
+        29      SHA256-s9393784--1e0e0190030352b3583ce515cd6dfb0db9f2ae39809a462099482947193bfd0f
+        30      SHA256E-s11534608--bfcc0fdcb1ed112b1737d4fe7d2aa88511187d4c1c132bf1b7ab2cda9a7d90ad.flac
+        31      SHA256E-s27916580--1f196e1b6312421f9d9bcd227a3885a5dec299fc47748cd34d5e59fe26374187.flac
+        32      SHA256-s12099941--0a33af0293acb7cffa1727cc04efa4d7abb29a39e8f2165bfd565e2b18879430
+        33      SHA256E-s35578262--01d6f6022161bcaa825cb353012f85bacf3dcb930337ba506fc94b663b0d8043.flac
+        34      SHA256E-s38880984--fa326bd0db5c9e400a4256e77acd488fede23ec714aeab7deb6952091a09e318.flac
+        35      SHA256E-s27784704--a426f885d79d88d8b42b8a23ce267fb1c1855e8f7ff6833ec9ea61860b3c6819.flac
+        36      SHA256-s11827390--17c1e84815805ea7e01555fdfa038a643a97621b84073679d5c649c020750652
+        37      SHA256E-s16632423--9735e37261624360f6a54fd1bc8a893cb5344afdc910e6b9e00c5791036759b0.flac
+        38      SHA256-s10809006--7dd7ff078bdf4571bee6ab06213df970f427a8a2af476d4511a9c08ed0fb814d
+        39      SHA256E-s33043364--3603942143fa4b1c0082ab7ba1db9b536621402eea3ac94e08ef0197062a2ef6.flac
+        40      SHA256E-s33278052--62e1038e26894c6c014af4e77d2d9f79074ff4fc1ca9ca8c16fcc98eee5277c7.flac
+        41      SHA256E-s47299134--0b604bff3ce12d077691d6e6428648da879c021537c094c72633209d5302fd97.flac
+        42      SHA256E-s14882445--16c6aa4aaf8e60da617701281dfdfa372cb049636ae0f10f5aefcd8ce6c472af.flac
+        43      SHA256E-s18168736--dfd7bfe9a433daef89f6f0015dfddaf7ac3611dd31813b0aed049171ac008323.flac
+        44      SHA256-s10060170--9e3b638c4f397d8dbaa2fa9fc2bfacf6f9e93f00c80ee1fdd26971d25aff86ce
+        45      SHA256E-s25630107--26fedc816dee58cb999cd2be8a58f3e8726ff056ba9c2abfbb9d149e7a92a230.flac
+        46      SHA256-s9148609--3f29a2ae1ebd2e4857bb5c92aefb2f50f39a5a984e14645f658d15795a7c72a5
+        47      SHA256-s10576861--7d95469441ef205616ed795012d8a4c59acc00be00aca66bcacd8b041c2499c5
+        48      SHA256E-s23806802--8725d04f04925f4cd456bdb2108a48682cf51a498d97af9f71c58a412b8db9ab.flac
+        49      SHA256E-s43187837--e83648296fa4553556596464efd4ab313529c0062071c9a40113fecede7a5de6.flac
+        50      SHA256-s10384945--055a01b7e06f3165dddd10beb3e98ba4ca47b35abf9d5b2f26187bf07b9aa401
+        51      SHA256E-s54253300--b011eea8ec7ea51f22e0fe09645ffe83183e9589a9784ebc2d6dd0c559f07322.flac
+        52      SHA256-s10335583--008c17c1a994884c6b9c52e10d17373b9160136ffab940992ef0f9d08eac45c1
+        53      SHA256-s9769970--b36fcb01d9df7627106e3a3c283944457f3e282ab62878c186162d465530cfbc
+        54      SHA256-s10329964--dc4d82e085af3ade48d33cf828f8e7eecc27d4c33c448965e1b8bb59832ec473
+        55      SHA256-s10625243--2494e2ef2c64fc77dcb063f7b58079ad668cf46862b7f11eb28943d45f21b8dd
+        56      SHA256E-s44585111--e35b0774729ccf547cd62e652425579781e3cbd76b33a17a0127bdbedb90606a.flac
+        57      SHA256E-s42060728--9e0a533e640086fadefad7167d37d5b3c5de899e1ac5890bfd7a88524701ff14.flac
+        58      SHA256E-s30013479--ae34a897e2f0e1124f04396e75dd41749511ce9930a2891ae3a066597ad518c5.flac
+        59      SHA256E-s38896704--ca6211442c33d9c44b997bef8f1079f07cdd2eb0e9e3c1de1eda9ae8a705f137.flac
+        60      SHA256-s13044938--8714a1db8781daa9f3993128dcda5a5ca904e075723cf38a11bc5e3695cf126f
+        61      SHA256-s8814622--ba374e92c53ddb83605e2b500647117a00e4c6c463653cb0dd0311b76627c2ec
+        62      SHA256E-s14900839--e94089b89629561ebf771543236f31439af1e6fcdce7ff56b9a183041e95e7ea.flac
+        63      SHA256E-s27370218--a4717cf0615cda099ea5740194da8b4e349f2f38f6ebbf5f6111ced7f56d1736.flac
+        64      SHA256E-s57686070--6d02689ccf91317bdfa4d8694ccbf7a9ccf00a7e00b92733769194908b4087d9.flac
+        65      SHA256-s8707306--7f05e3e3dc4336eb7012d5bbb6d3d65047552901858ee4967e4a70d100fd1deb
+        66      SHA256E-s42482194--bb7a968ec9bc0a8813974af9173c38cb39a43aa7d0c2aec203ddb358119e1f25.flac
+        67      SHA256E-s31951334--b19789a9bbb98cb25df7b8a1b6d8856256bc2851cd892c91dddba7cf736542c5.flac
+        68      SHA256E-s35901187--8eae2684aa3566b632a1797bd09d112dd5f438c98b649c000d71640983a549f2.flac
+        69      SHA256E-s40659631--f6ca3227b14c7c050877ce4cc1218fea7582426649cd68fc82a74cae5d6962b4.flac
+        70      SHA256E-s41415180--9c6f0000da119bd70422fe9529c41efb3103ca943697bdfb685f119f6b5ae6fd.flac
+        71      SHA256E-s52313976--e4a59c65e05bd9450ef595b3c08365810205731952e45a68ee0c89bc76fbd9fc.flac
+        72      SHA256E-s44925214--eabc5f7172d5c2e094ff84a5ecce784c172b175c8eeca861aa3996749668ea42.flac
+      (To see where data was previously used, try: git log --stat -S'KEY')
+      
+      To remove unwanted data: git-annex dropunused NUMBER
+      
+    ok
+
+And running:
+
+    $ git log --stat -S'SHA256-s13044938--8714a1db8781daa9f3993128dcda5a5ca904e075723cf38a11bc5e3695cf126f'
+    commit 767a63a54784139f13d69d12fcfbee8f6ca3df41
+    Author: Matthew Forrester <matt@keyboardwritescode.com>
+    Date:   Fri Aug 23 21:38:31 2013 +0100
+    
+        Remove Roger Shah - Openminded! as there is another copy in Unsorted with correct? filenames
+    
+     Amazon/Roger Shah/Openminded!/1114 - Shine (Album Mix).mp3 | 1 -
+     1 file changed, 1 deletion(-)
+    
+    commit 6b04002c03287fb8918bdcdeaae393e862bebd4e
+    Author: Matthew Forrester <matt@keyboardwritescode.com>
+    Date:   Thu Aug 8 21:30:14 2013 +0100
+    
+        Initial checkin
+    
+     Amazon/Roger Shah/Openminded!/1114 - Shine (Album Mix).mp3 | 1 +
+     1 file changed, 1 insertion(+)
+
+Works but I cannot find out how to get the `.flac` files working:
+
+
+`$ git log --stat -S'SHA256E-s38896704--ca6211442c33d9c44b997bef8f1079f07cdd2eb0e9e3c1de1eda9ae8a705f137.flac'`
+
+`$ git log --stat -S'SHA256E-s38896704--ca6211442c33d9c44b997bef8f1079f07cdd2eb0e9e3c1de1eda9ae8a705f137'`
+
+`$ git log --stat -S'SHA256-s38896704--ca6211442c33d9c44b997bef8f1079f07cdd2eb0e9e3c1de1eda9ae8a705f137'`
+
+
+None of which give answers. I don't know if I'm doing it wrong (though I __think__ I'm doing what the instructions say), but I can't make it work.
+
+
+### What version of git-annex are you using? On what operating system?
+
+$ uname -a
+Linux fozz-desktop 3.8.0-31-generic #46-Ubuntu SMP Tue Sep 10 19:56:49 UTC 2013 i686 i686 i686 GNU/Linux
+
+$ git annex version
+git-annex version: 3.20121112ubuntu2
+local repository version: 3
+default repository version: 3
+supported repository versions: 3
+upgrade supported from repository versions: 0 1 2
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+> If `git log -S` does not find the key, then it was not used for any
+> commit currently in the git repository. Which is certainly possible;
+> for example `git annex add file; git rm file`.
+> 
+> This is a dup of [[todo/wishlist: option to print more info with 'unused']]; [[done]] --[[Joey]] 

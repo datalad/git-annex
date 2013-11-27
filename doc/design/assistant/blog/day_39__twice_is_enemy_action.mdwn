@@ -1,0 +1,66 @@
+Beating my head against the threaded runtime some more. I can reproduce
+one of the hangs consistently by running 1000 git annex add commands
+in a loop. It hangs around 1% of the time, reading from `git cat-file`.
+
+Interestingly, `git cat-file` is not yet running at this point -- 
+git-annex has forked a child process, but the child has not yet exec'd it.
+Stracing the child git-annex, I see it stuck in a futex. Adding tracing,
+I see the child never manages to run any code at all.
+
+This really looks like the problem is once again in MissingH, which uses
+`forkProcess`. Which happens to come with a big warning about being very
+unsafe, in very subtle ways. Looking at the C code that the newer `process`
+library uses when sparning a pipe to a process, it messes around with lots of
+things; blocking signals, stopping a timer, etc. Hundreds of lines of C
+code to safely start a child process, all doing things that MissingH omits.
+
+That's the second time I've seemingly isolated a hang in the GHC threaded
+runtime to MissingH.
+
+And so I've started converting git-annex to use the new `process` library,
+for running all its external commands. John Goerzen had mentioned `process`
+to me once before when I found a nasty bug in MissingH, as the cool new
+thing that would probably eliminate the `System.Cmd.Utils` part of MissingH,
+but I'd not otherwise heard much about it. (It also seems to have the
+benefit of supporting Windows.)
+
+This is a big change and it's early days, but each time I see a hang, I'm
+converting the code to use `process`, and so far the hangs have just gone
+away when I do that.
+
+---
+
+Hours later... I've converted *all* of git-annex to use `process`.
+
+In the er, process, the `--debug` switch stopped printing all the commands
+it runs. I may try to restore that later.
+
+I've not tested everything, but the test suite passes, even when
+using the threaded runtime. **MILESTONE**
+
+Looking forward to getting out of these weeds and back to useful work..
+
+---
+
+Hours later yet.... The `assistant` branch in git now uses the threaded
+runtime. It works beautifully, using proper threads to run file transfers
+in.
+
+That should fix the problem I was seeing on OSX yesterday. Too tired to
+test it now.
+
+--
+
+Amazingly, all the assistant's own dozen or so threads and thread
+synch variables etc all work great under the threaded runtime. I had
+assumed I'd see yet more concurrency problems there when switching to it,
+but it all looks good. (Or whatever problems there are are subtle ones?)
+
+I'm very relieved. The threaded logjam is broken! I had been getting
+increasingly worried that not having the threaded runtime available would
+make it very difficult to make the assistant perform really well, and cause
+problems with the webapp, perhaps preventing me from using Yesod.
+
+Now it looks like smooth sailing ahead. Still some hard problems, but
+it feels like with inotify and kqueue and the threaded runtime all
+dealt with, the really hard infrastructure-level problems are behind me.

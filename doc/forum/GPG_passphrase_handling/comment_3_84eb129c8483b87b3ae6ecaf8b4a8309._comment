@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 3"
+ date="2013-11-02T20:39:36Z"
+ content="""
+There seem to be a lot of different ways to install gpg on OSX, with different results in what works and not. I don't know what's going on with that. Advice from those who understand Mac OS would be appreciated.
+
+As far as the \"gpg: no valid addressees\" bug goes, I can reproduce it on Linux, and have fixed it. Only affected using gcrypt with encryption=pubkey.
+
+(Please file bug reports in [[bugs]] in the future, not in the forum!)
+"""]]

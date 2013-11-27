@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 17"
+ date="2012-07-24T06:33:13Z"
+ content="""
+@a-or-b that issue is logged here [[bugs/subtle build issue on OSX 10.7 and Haskell Platform (if you have the 32bit version installed)]], you can use cabal to build and install git-annex and it will detect if its 32 or 64bit automatically.
+"""]]

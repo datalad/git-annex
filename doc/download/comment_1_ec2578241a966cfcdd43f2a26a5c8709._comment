@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm3uJkdiJJejvqix9dULvw_Ma7DCtB-6zA"
+ nickname="Ian"
+ subject="git clone git://git-annex.branchable.com/ gives an error"
+ date="2012-08-13T20:57:34Z"
+ content="""
+Thought you would want to know
+
+error: unable to create file doc/forum/__91__Installation__93___base-3.0.3.2_requires_syb___61____61__0.1.0.2_however_syb-0.1.0.2_was_excluded_because_json-0.5_requires_syb___62____61__0.3.3.mdwn (File name too long)
+fatal: cannot create directory at 'doc/forum/__91__Installation__93___base-3.0.3.2_requires_syb___61____61__0.1.0.2_however_syb-0.1.0.2_was_excluded_because_json-0.5_requires_syb___62____61__0.3.3': File name too long
+
+
+"""]]

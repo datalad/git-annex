@@ -1,0 +1,34 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnSenxKyE_2Z6Wb-EBMO8FciyRywjx1ZiQ"
+ nickname="Walter"
+ subject="comment 2"
+ date="2013-04-16T20:25:45Z"
+ content="""
+    walter@dionysus:~/presence$ echo 1 > Here.txt
+    walter@dionysus:~/presence$ git annex whereis
+    whereis Here.txt (2 copies) 
+        1c6ffc98-d12c-4844-920b-5e28bc8e8b60 -- here (walter@dionysus:~/presence)
+        8da299b6-006c-4410-9b3d-a542766d40a4 -- kronos.local_presence (walter@kronos:~/presence)
+    ok
+
+This is while kronos is turned off.
+
+The contents of .git/config:
+
+    [core]
+    	repositoryformatversion = 0
+    	filemode = true
+    	bare = false
+    	logallrefupdates = true
+    [annex]
+    	uuid = 1c6ffc98-d12c-4844-920b-5e28bc8e8b60
+    	version = 3
+    	direct = true
+    [gc]
+    	auto = 0
+    [remote \"kronos.local_presence\"]
+    	url = ssh://walter@git-annex-kronos.local-walter/~/presence/
+    	fetch = +refs/heads/*:refs/remotes/kronos.local_presence/*
+    	annex-uuid = 8da299b6-006c-4410-9b3d-a542766d40a4
+        	annex-cost = 175.0
+"""]]

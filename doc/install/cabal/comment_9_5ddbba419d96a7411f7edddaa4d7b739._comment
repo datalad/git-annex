@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl7dGdYtCHb7xleEOp6n8yaUQ4UtaiAEEs"
+ nickname="Henning"
+ subject="libxml-sax Error on OS X fresh install"
+ date="2013-07-27T13:11:23Z"
+ content="""
+I had - maybe the same problem as Nigel - with ExitFailure 1 libxml-sax-0.7.4 .
+
+I could fix this by forcing the link of libxml2 package with \"brew link libxml2 --force\". Maybe you should update your guide. I had this problem on 2 different machines running both the current versions of OS X.
+
+After this the build finished successfull. Maybe this helps.
+"""]]

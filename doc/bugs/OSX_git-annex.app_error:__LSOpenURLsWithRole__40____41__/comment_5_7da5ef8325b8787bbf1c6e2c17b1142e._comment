@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.49"
+ subject="comment 5"
+ date="2012-11-26T23:52:52Z"
+ content="""
+The OSX app has been updated for today's release, and includes a lot of missing libraries. I don't understand this error message, but on the off chance it was caused by some of the missing libraries, it could conceviably be fixed. Your testing of it would be appreciated.
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkEUhIcw37X2Kh-dznSMIb9Vgcq0frfdWs"
+ nickname="Ethan"
+ subject="GHC 7"
+ date="2012-03-28T19:06:51Z"
+ content="""
+The Haskell Platform installer for OSX uses GHC 7.0.4, which doesn't seem able to support the current version of git-annex.
+
+Cabal throws a very cryptic error about not being able to use the proper base package.
+
+I was able to install it by 
+
+1.  cloning the repo
+2.  merging the ghc7.0 branch
+3.  resolving merge conflicts in git-annex.cabal
+4.  cabal install git-annex.cabal
+
+(Note I also tried this with homebrew and had similar results)
+"""]]

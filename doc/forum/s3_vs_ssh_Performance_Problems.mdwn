@@ -1,0 +1,8 @@
+I backup/sync my music using annex. I used to have one repo with 3 clones, one full copy on my vps, one full copy and one partial copy on my laptops. I decided to move all data to s3. Declared my vps repo dead, purged history (I do not care about history for this particular repo) pushed the git repo to a different computer (bare repo no data) and data to s3 (gpg encrypted). I've just finished uploading all files (around 200gb) couple files failed during the initial upload so I did a `git annex copy --quiet --to mys3 --fast` this command used to take 15 20 secs on my laptop when sending data to vps using ssh but now it took 2 hours to complete (pushing mem usage to 90%).
+
+I have one other repo (1.5gb in size 42k files using indirect mode, data gpg encrypted on s3) using the same setup except this repos content has always been on s3  i had the same behavior on this repo too. adding a file and running a copy to push content to s3 took couple hours even if I add a single 1kb file. I used to blame my hard drive, damn thing is slow but now I think this is related to s3. is there any workaround for this?
+
+Both machines are using,
+
+    git-annex version: 4.20130913-gd20a4f2
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP Feeds Quvi

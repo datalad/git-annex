@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-03-07T18:42:37Z"
+ content="""
+I have not put it on the schedule (and don't think I'll get to it this month), but I have added it to the [[roadmap|design/assistant]].
+
+The main use cases it adds are encrypting git remotes on ssh servers, and on USB drives. Both are useful for sure..
+
+It also opens the possibility of using github for encrypted git remotes, but with xmpp git push that is not a pressing use case. With significantly more work, encrypted git remotes could be stored on S3 etc, but again xmpp git push covers the same use cases.
+"""]]

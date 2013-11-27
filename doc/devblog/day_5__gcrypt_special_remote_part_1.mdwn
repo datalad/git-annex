@@ -1,0 +1,7 @@
+About half way done with a gcrypt special remote. I can initremote it (the
+hard part to get working), and can send files to it. Can't yet get files
+back, or remove files, and only local repositories work so far, but this is
+enough to know it's going to be pretty nice!
+
+Did find one issue in gcrypt that I may need to develop a patch for:
+<https://github.com/blake2-ppc/git-remote-gcrypt/issues/3>

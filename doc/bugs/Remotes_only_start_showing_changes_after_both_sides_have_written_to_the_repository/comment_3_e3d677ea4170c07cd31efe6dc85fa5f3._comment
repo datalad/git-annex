@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-06-11T14:23:31Z"
+ content="""
+This then explains your problem. If you're going to set things up by hand you need to do the same setup that the assistant does of making an initial commit, which can be empty.
+"""]]

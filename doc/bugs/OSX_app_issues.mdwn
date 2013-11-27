@@ -1,0 +1,6 @@
+This is a collection of problem reports for the standalone OSX app.
+If you have a problem using it, post it here. --[[Joey]] 
+
+(Some things that should be fixed now have been moved to [[old]].)
+
+[[!tag /design/assistant/OSX]]

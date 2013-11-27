@@ -1,0 +1,32 @@
+I've felt for a while that git-annex needed better support for managing
+the contents of past versions of files that are stored in the annex. I know
+some people get confused about whether git-annex even supports old versions
+of files (it does, but you should use indirect mode; direct mode doesn't
+guarantee old versions of files will be preserved).
+
+So today I've worked on adding command-line power for managing past
+versions: a new `--all` option.
+
+So, if you want to copy every version of every file in your repository to
+an archive, you can run `git annex copy --all --to archive`.
+Or if you've got a repository on a drive that's dying, you can run
+`git annex copy --all --to newdrive`, and then on the new drive, run `git
+annex fsck --all` to check all the data.
+
+In a bare repository, `--all` is default, so you can run `git annex get`
+inside a bare repository and it will try to get every version of every file
+that it can from the remotes.
+
+The tricky thing about `--all` is that since it's operating on objects and
+not files, it can't check `.gitattributes` settings, which are tied to the
+file name. I worried for a long time that adding `--all` would make
+annex.numcopies settings in those files not be honored, and that this would
+be a Bad Thing. The solution turns out to be simple: I just didn't
+implement `git annex drop --all`! Dropping is the only action that needs to
+check numcopies (move can also reduce the number of copies, but explicitly
+bypasses numcopies settings).
+
+I also added an `--unused` option. So if you have a repository that has
+been accumulating history, and you'd like to move all file contents not
+currently in use to a central server, you can run `git annex unused; git
+annex move --unused --to origin`

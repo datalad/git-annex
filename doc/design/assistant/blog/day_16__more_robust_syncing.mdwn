@@ -1,0 +1,44 @@
+I released a version of git-annex over the weekend that includes the `git
+annex watch` command. There's a minor issue installing it from cabal on
+OSX, which I've fixed in my tree. Nice timing: At least the watch command
+should be shipped in the next Debian release, which freezes at the end of
+the month.
+
+Jimmy found out how kqueue [[blows
+up|bugs/Issue_on_OSX_with_some_system_limits]] when there are too many
+directories to keep all open. I'm not surprised this happens, but it's nice
+to see exactly how. Odd that it happened to him at just 512 directories;
+I'd have guessed more. I have plans to fork watcher programs that each
+watch 512 directories (or whatever the ulimit is), to deal with this. What
+a pitiful interface is kqueue.. I have not thought yet about how the watcher
+programs would communicate back to the main program.
+
+----
+
+Back on the assistant front, I've worked today on making git syncing more
+robust. Now when a push fails, it tries a pull, and a merge, and repushes.
+That ensures that the push is, almost always, a fast-forward. Unless
+something else gets in a push first, anyway!
+
+If a push still fails, there's Yet Another Thread, added today, that will
+wake up after 30 minutes and retry the push. It currently keeps retrying
+every 30 minutes until the push finally gets though. This will deal, to
+some degree, with those situations where a remote is only sometimes
+available.
+
+I need to refine the code a bit, to avoid it keeping an ever-growing queue
+of failed pushes, if a remote is just dead. And to clear old failed pushes
+from the queue when a later push succeeds.
+
+I also need to write a git merge driver that handles conflicts in the tree.
+If two conflicting versions of a file `foo` are saved, this would merge
+them, renaming them to `foo.X` and `foo.Y`. Probably X and Y are the
+git-annex keys for the content of the files; this way all clones will
+resolve the conflict in a way that leads to the same tree. It's also
+possible to get a conflict by one repo deleting a file, and another
+modifying it. In this case, renaming the deleted file to `foo.Y` may
+be the right approach, I am not sure.
+
+I glanced through some Haskell dbus bindings today. I belive there are dbus
+events available to detect when drives are mounted, and on Linux this would
+let git-annex notice and sync to usb drives, etc.

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://nico.kaiser.me/"
+ nickname="Nico Kaiser"
+ subject="git-annex crashing on OS X 10.8.2"
+ date="2012-11-27T08:01:29Z"
+ content="""
+    $ /Applications/git-annex.app/Contents/MacOS/git-annex-webapp
+    dyld: Symbol not found: _OBJC_CLASS_$_NSObject
+      Referenced from: /usr/bin/open
+      Expected in: /Applications/git-annex.app/Contents/MacOS/usr/lib/libobjc.A.dylib
+     in /usr/bin/open
+    WebApp crashed: failed to start web browser
+    
+    Launching web browser on file:///var/folders/8g/_fvs7jf572l4fj03q5mhrq9r0000gn/T/webapp1196.html
+
+"""]]

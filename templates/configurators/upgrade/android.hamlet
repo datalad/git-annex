@@ -1,0 +1,9 @@
+<div .span9 .hero-unit>
+  <h2>
+    Upgrading git-annex
+  <p>
+    To start the upgrade #
+    <a .btn .btn-primary href="#{url}">
+      Download #{takeFileName url}
+  <p>
+    Once the download is complete, open the file to upgrade git-annex.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="Ah"
+ date="2012-10-18T23:52:03Z"
+ content="""
+I get now why ~/.bup is being used: -r DIR specifies a local DIR as the bup directory, but ~/.bup is still used for the local temp files.  It would be nice, therefore, if BUP_DIR were set in the case that -r specifies a local directory, so that only that directory is used.  Unless, of course, that leads to space limitations in the bup directory.  Hmm... maybe this should just be left as is in that case.
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.149"
+ subject="comment 1"
+ date="2012-10-09T15:10:45Z"
+ content="""
+Yes, it seems glibc 2.11 is the oldest version you can get away with. At least until we get a build machine with some truely ancient libc, but modern versions of everything else. Statically linking libc, or including it in the tarball are unfortunatly not technically possible.
+
+You don't need to use runshell if you just want to use the assistant. Which is what this static build is really targeted for. If you want to use all of git-annex, you're probably better off installing it properly.
+It is possible to use \"runshell git annex\" to run a single command inside the shell. Or even make shell script wrappers that do that.. but it seems more difficult than installing git-annex normally.
+
+The static build can be used with ssh. The git-annex assistant should set things up properly. If you want to do it by hand, when it does is configure the ssh key to run ~/.ssh/git-annex-shell, and that file is then made a shell script that runs `runshell git-annex-shell -c \"$SSH_ORIGINAL_COMMAND\"`
+"""]]

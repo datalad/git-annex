@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="comment 2"
+ date="2013-04-19T06:48:39Z"
+ content="""
+You're right, this files was the problem. I recently removed my manually downloaded standalone tarball and switched to use gitannex-install. So the path was not correct anymore... Thanks a lot for the hint!
+"""]]

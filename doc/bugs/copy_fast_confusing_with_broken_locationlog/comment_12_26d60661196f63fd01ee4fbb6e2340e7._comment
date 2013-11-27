@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 12"
+ date="2011-05-15T19:40:47Z"
+ content="""
+So, it appears that you're using git annex copy --fast. As documented that assumes the location log is correct. So it avoids directly checking if the bare repo contains the file, and tries to upload it, and the bare repo is all like \"but I've already got this file!\". The only way to improve that behavior might be to let rsync go ahead and retransfer the file, which, with recovery, should require sending little data etc. But I can't say I like the idea much, as the repo already has the content, so unlocking it and letting rsync mess with it is an unnecessary risk. I think it's ok for --force to blow up
+if its assumptions turn out to be wrong.
+
+If you use git annex copy without --fast in this situation, it will do the right thing.
+"""]]

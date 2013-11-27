@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 4"
+ date="2013-01-17T18:22:26Z"
+ content="""
+The best way to remove a special remote is to first `git annex move --from $remote` to get all the content out of it, then `git annex dead $remote` and finally you can `git remote rm $remote`
+"""]]

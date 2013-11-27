@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-05-14T16:13:58Z"
+ content="""
+Hmm. Old versions may have forgotten to git add a .git-annex location log file when recovering content with fsck. That could be another reason things are out of sync.
+
+But I'm not clear on which repo is trying to copy files to which.
+
+(NB: If the files were recovered on a bare git repo, fsck cannot update the location log there, which could also explain this.)
+"""]]

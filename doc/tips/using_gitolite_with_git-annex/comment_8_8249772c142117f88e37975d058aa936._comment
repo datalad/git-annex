@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="bremner"
+ ip="156.34.79.193"
+ subject="afaict git annex normalizes urls on the client side."
+ date="2011-12-31T22:29:38Z"
+ content="""
+After some debugging printing, here is my current understanding.
+
+- urls of the form git@host:~repo or ssh://git@host
+
+  - git sends commands like  \"git-receive-pack '~/repo'
+  - gitolite converts these to $REPO_BASE/~/repo which fails.  ~/repo would also fail fwiw.
+  - git-annex sends seems /~/repo, which works
+
+- urls of the form git@host:/repo or ssh://git@host/repo
+
+  - git sends \"git-receive-pack '/db/cs3383'\"
+  - gitolite converts this to $REPO_BASE/repo which works
+  - git annex sends \"git-annex-shell 'inannex' '/repo' ...\" which works, but only with the patch above.
+
+- urls of the form git@host:repo
+
+  - git sends \"git-receive-pack 'repo'
+  - gitolite converts this to $REPO_BASE/repo, which works
+  - git-annex sends \"git-annex-shell 'inannex' '/~/db/cs3383'...\", which also works for git-annex-shell.
+
+So the weird case is the last one where git and git-annex are sending different things over the wire.
+I don't know if you have other motivations for doing the url normalization on the client side, but it isn't needed for gitolite, and in some sense complicates things a little.  On the other hand, now that I see what is going on, it isn't a big deal to just strip the leading /~ off in the adc. It does lead to the odd situation of some URLs working for git-annex but not git.
+"""]]

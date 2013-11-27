@@ -1,0 +1,6 @@
+Got the release out.
+
+I've been working on fleshing out 
+the [[timeline|/design/assistant]] for the next year.
+Including a fairly detailed set of things I want to do around
+[[/design/assistant/disaster_recovery]] in the assistant.

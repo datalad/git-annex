@@ -1,0 +1,39 @@
+[[!comment format=mdwn
+ username="http://sunny256.sunbase.org/"
+ nickname="sunny256"
+ subject="comment 3"
+ date="2013-08-30T11:43:44Z"
+ content="""
+Hm, commit 82de1ed1a3 doesn't exist here after git-annex sync. This is the output from another computer, running Linux Mint 15:
+
+    $ ga sync
+    commit
+    ok
+    pull linode
+    ok
+    pull kitenet
+    WARNING: gnome-keyring:: couldn't connect to: /run/user/sunny/keyring-WSsS6N/pkcs11: No such file or directory
+    ok
+    push linode
+    Everything up-to-date
+    ok
+    push kitenet
+    WARNING: gnome-keyring:: couldn't connect to: /run/user/sunny/keyring-WSsS6N/pkcs11: No such file or directory
+    WARNING: gnome-keyring:: couldn't connect to: /run/user/sunny/keyring-WSsS6N/pkcs11: No such file or directory
+    error: Cannot access URL http://downloads.kitenet.net/.git/, return code 22
+    fatal: git-http-push failed
+    failed
+    git-annex: sync: 1 failed
+    $ git log -1
+    commit e4d2f03d9b37b2fac9508bf755ff7619bf46590c (HEAD, linode/synced/master, linode/master, linode/HEAD, kitenet/synced/master, kitenet/master, synced/master, master)
+    Author: Joey Hess <joey@kitenet.net>
+    Date:   3 weeks ago
+
+        update
+    2013-08-30 13:36:37 sunny@passp:~/src/other/annex/downloads.kitenet.net/git-annex (master u=)
+    $ git log 82de1ed1a354e389bc71a15af1a3e67b5bd56f23
+    fatal: bad object 82de1ed1a354e389bc71a15af1a3e67b5bd56f23
+
+There's some warnings from gnome-keyring and a failed push (sorry about that, happens automatically), but the fetch from kitenet seems to succeed.
+
+"""]]

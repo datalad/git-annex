@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-06-11T14:30:08Z"
+ content="""
+I think the most useful thing for people in this thread to know about is [[tips/replacing_Sparkleshare_or_dvcs-autosync_with_the_assistant]].
+
+This doesn't solve it at the command line, where you still need to choose between git add and git annex add, but you can use git annex watch to automatically commit small files to git, and large files to the git annex.
+"""]]

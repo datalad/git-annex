@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 8"
+ date="2013-08-30T04:30:14Z"
+ content="""
+The only thing that worked was nuking `.git/annex/index` and letting `git-annex sync` rebuild it.
+"""]]

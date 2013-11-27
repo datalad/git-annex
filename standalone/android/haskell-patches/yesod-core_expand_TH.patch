@@ -1,0 +1,411 @@
+From 7583457fb410d07f480a2aa7d6c2f174324b3592 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Sat, 19 Oct 2013 02:03:18 +0000
+Subject: [PATCH] hackity
+
+---
+ Yesod/Core.hs              |    2 -
+ Yesod/Core/Class/Yesod.hs  |  247 ++++++++++++++++++++++++++++++--------------
+ Yesod/Core/Dispatch.hs     |    7 --
+ Yesod/Core/Handler.hs      |   24 ++---
+ Yesod/Core/Internal/Run.hs |    2 -
+ 5 files changed, 179 insertions(+), 103 deletions(-)
+
+diff --git a/Yesod/Core.hs b/Yesod/Core.hs
+index 12e59d5..f1ff21c 100644
+--- a/Yesod/Core.hs
++++ b/Yesod/Core.hs
+@@ -94,8 +94,6 @@ module Yesod.Core
+     , JavascriptUrl
+     , renderJavascriptUrl
+       -- ** Cassius/Lucius
+-    , cassius
+-    , lucius
+     , CssUrl
+     , renderCssUrl
+     ) where
+diff --git a/Yesod/Core/Class/Yesod.hs b/Yesod/Core/Class/Yesod.hs
+index cf02a1a..3f1e88e 100644
+--- a/Yesod/Core/Class/Yesod.hs
++++ b/Yesod/Core/Class/Yesod.hs
+@@ -9,6 +9,10 @@ import           Yesod.Core.Content
+ import           Yesod.Core.Handler
+ 
+ import           Yesod.Routes.Class
++import qualified Text.Blaze.Internal
++import qualified Control.Monad.Logger
++import qualified Text.Hamlet
++import qualified Data.Foldable
+ 
+ import           Blaze.ByteString.Builder           (Builder)
+ import           Blaze.ByteString.Builder.Char.Utf8 (fromText)
+@@ -87,18 +91,27 @@ class RenderRoute site => Yesod site where
+     defaultLayout w = do
+         p <- widgetToPageContent w
+         mmsg <- getMessage
+-        giveUrlRenderer [hamlet|
+-            $newline never
+-            $doctype 5
+-            <html>
+-                <head>
+-                    <title>#{pageTitle p}
+-                    ^{pageHead p}
+-                <body>
+-                    $maybe msg <- mmsg
+-                        <p .message>#{msg}
+-                    ^{pageBody p}
+-            |]
++        giveUrlRenderer  $         \ _render_aHra
++          -> do { id
++                    ((Text.Blaze.Internal.preEscapedText . T.pack)
++                       "<!DOCTYPE html>\n<html><head><title>");
++                  id (TBH.toHtml (pageTitle p));
++                  id ((Text.Blaze.Internal.preEscapedText . T.pack) "</title>");
++                  Text.Hamlet.asHtmlUrl (pageHead p) _render_aHra;
++                  id ((Text.Blaze.Internal.preEscapedText . T.pack) "</head><body>");
++                  Text.Hamlet.maybeH
++                    mmsg
++                    (\ msg_aHrb
++                       -> do { id
++                                 ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                    "<p class=\"message\">");
++                               id (TBH.toHtml msg_aHrb);
++                               id ((Text.Blaze.Internal.preEscapedText . T.pack) "</p>") })
++                    Nothing;
++                  Text.Hamlet.asHtmlUrl (pageBody p) _render_aHra;
++                  id
++                    ((Text.Blaze.Internal.preEscapedText . T.pack) "</body></html>") }
++
+ 
+     -- | Override the rendering function for a particular URL. One use case for
+     -- this is to offload static hosting to a different domain name to avoid
+@@ -356,45 +369,103 @@ widgetToPageContent w = do
+     -- modernizr should be at the end of the <head> http://www.modernizr.com/docs/#installing
+     -- the asynchronous loader means your page doesn't have to wait for all the js to load
+     let (mcomplete, asyncScripts) = asyncHelper render scripts jscript jsLoc
+-        regularScriptLoad = [hamlet|
+-            $newline never
+-            $forall s <- scripts
+-                ^{mkScriptTag s}
+-            $maybe j <- jscript
+-                $maybe s <- jsLoc
+-                    <script src="#{s}">
+-                $nothing
+-                    <script>^{jelper j}
+-        |]
+-
+-        headAll = [hamlet|
+-            $newline never
+-            \^{head'}
+-            $forall s <- stylesheets
+-                ^{mkLinkTag s}
+-            $forall s <- css
+-                $maybe t <- right $ snd s
+-                    $maybe media <- fst s
+-                        <link rel=stylesheet media=#{media} href=#{t}>
+-                    $nothing
+-                        <link rel=stylesheet href=#{t}>
+-                $maybe content <- left $ snd s
+-                    $maybe media <- fst s
+-                        <style media=#{media}>#{content}
+-                    $nothing
+-                        <style>#{content}
+-            $case jsLoader master
+-              $of BottomOfBody
+-              $of BottomOfHeadAsync asyncJsLoader
+-                  ^{asyncJsLoader asyncScripts mcomplete}
+-              $of BottomOfHeadBlocking
+-                  ^{regularScriptLoad}
+-        |]
+-    let bodyScript = [hamlet|
+-            $newline never
+-            ^{body}
+-            ^{regularScriptLoad}
+-        |]
++        regularScriptLoad =         \ _render_aHsO
++          -> do { Data.Foldable.mapM_
++                    (\ s_aHsP
++                       -> Text.Hamlet.asHtmlUrl (mkScriptTag s_aHsP) _render_aHsO)
++                    scripts;
++                  Text.Hamlet.maybeH
++                    jscript
++                    (\ j_aHsQ
++                       -> Text.Hamlet.maybeH
++                            jsLoc
++                            (\ s_aHsR
++                               -> do { id
++                                         ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                            "<script src=\"");
++                                       id (TBH.toHtml s_aHsR);
++                                       id
++                                         ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                            "\"></script>") })
++                            (Just
++                               (do { id
++                                       ((Text.Blaze.Internal.preEscapedText . T.pack) "<script>");
++                                     Text.Hamlet.asHtmlUrl (jelper j_aHsQ) _render_aHsO;
++                                     id ((Text.Blaze.Internal.preEscapedText . T.pack) "</script>") })))
++                    Nothing }
++
++
++        headAll =         \ _render_aHsW
++          -> do { Text.Hamlet.asHtmlUrl head' _render_aHsW;
++                  Data.Foldable.mapM_
++                    (\ s_aHsX -> Text.Hamlet.asHtmlUrl (mkLinkTag s_aHsX) _render_aHsW)
++                    stylesheets;
++                  Data.Foldable.mapM_
++                    (\ s_aHsY
++                       -> do { Text.Hamlet.maybeH
++                                 (right (snd s_aHsY))
++                                 (\ t_aHsZ
++                                    -> Text.Hamlet.maybeH
++                                         (fst s_aHsY)
++                                         (\ media_aHt0
++                                            -> do { id
++                                                      ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                                         "<link rel=\"stylesheet\" media=\"");
++                                                    id (TBH.toHtml media_aHt0);
++                                                    id
++                                                      ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                                         "\" href=\"");
++                                                    id (TBH.toHtml t_aHsZ);
++                                                    id
++                                                      ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                                         "\">") })
++                                         (Just
++                                            (do { id
++                                                    ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                                       "<link rel=\"stylesheet\" href=\"");
++                                                  id (TBH.toHtml t_aHsZ);
++                                                  id
++                                                    ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                                       "\">") })))
++                                 Nothing;
++                               Text.Hamlet.maybeH
++                                 (left (snd s_aHsY))
++                                 (\ content_aHt1
++                                    -> Text.Hamlet.maybeH
++                                         (fst s_aHsY)
++                                         (\ media_aHt2
++                                            -> do { id
++                                                      ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                                         "<style media=\"");
++                                                    id (TBH.toHtml media_aHt2);
++                                                    id
++                                                      ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                                         "\">");
++                                                    id (TBH.toHtml content_aHt1);
++                                                    id
++                                                      ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                                         "</style>") })
++                                         (Just
++                                            (do { id
++                                                    ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                                       "<style>");
++                                                  id (TBH.toHtml content_aHt1);
++                                                  id
++                                                    ((Text.Blaze.Internal.preEscapedText . T.pack)
++                                                       "</style>") })))
++                                 Nothing })
++                    css;
++                  case jsLoader master of {
++                    BottomOfBody -> return ()
++                    ; BottomOfHeadAsync asyncJsLoader_aHt3
++                      -> Text.Hamlet.asHtmlUrl
++                           (asyncJsLoader_aHt3 asyncScripts mcomplete) _render_aHsW
++                    ; BottomOfHeadBlocking
++                      -> Text.Hamlet.asHtmlUrl regularScriptLoad _render_aHsW } }
++
++    let bodyScript =     \ _render_aHt8 -> do { Text.Hamlet.asHtmlUrl body _render_aHt8;
++              Text.Hamlet.asHtmlUrl regularScriptLoad _render_aHt8 }
++
+ 
+     return $ PageContent title headAll $
+         case jsLoader master of
+@@ -424,10 +495,13 @@ defaultErrorHandler NotFound = selectRep $ do
+         r <- waiRequest
+         let path' = TE.decodeUtf8With TEE.lenientDecode $ W.rawPathInfo r
+         setTitle "Not Found"
+-        toWidget [hamlet|
+-            <h1>Not Found
+-            <p>#{path'}
+-        |]
++        toWidget  $         \ _render_aHte
++          -> do { id
++                    ((Text.Blaze.Internal.preEscapedText . T.pack)
++                       "<h1>Not Found</h1>\n<p>");
++                  id (TBH.toHtml path');
++                  id ((Text.Blaze.Internal.preEscapedText . T.pack) "</p>") }
++
+     provideRep $ return $ object ["message" .= ("Not Found" :: Text)]
+ 
+ -- For API requests.
+@@ -437,10 +511,11 @@ defaultErrorHandler NotFound = selectRep $ do
+ defaultErrorHandler NotAuthenticated = selectRep $ do
+     provideRep $ defaultLayout $ do
+         setTitle "Not logged in"
+-        toWidget [hamlet|
+-            <h1>Not logged in
+-            <p style="display:none;">Set the authRoute and the user will be redirected there.
+-        |]
++        toWidget  $         \ _render_aHti
++          -> id
++               ((Text.Blaze.Internal.preEscapedText . T.pack)
++                  "<h1>Not logged in</h1>\n<p style=\"none;\">Set the authRoute and the user will be redirected there.</p>")
++
+ 
+     provideRep $ do
+         -- 401 *MUST* include a WWW-Authenticate header
+@@ -462,10 +537,13 @@ defaultErrorHandler NotAuthenticated = selectRep $ do
+ defaultErrorHandler (PermissionDenied msg) = selectRep $ do
+     provideRep $ defaultLayout $ do
+         setTitle "Permission Denied"
+-        toWidget [hamlet|
+-            <h1>Permission denied
+-            <p>#{msg}
+-        |]
++        toWidget  $         \ _render_aHtq
++          -> do { id
++                    ((Text.Blaze.Internal.preEscapedText . T.pack)
++                       "<h1>Permission denied</h1>\n<p>");
++                  id (TBH.toHtml msg);
++                  id ((Text.Blaze.Internal.preEscapedText . T.pack) "</p>") }
++
+     provideRep $
+         return $ object $ [
+           "message" .= ("Permission Denied. " <> msg)
+@@ -474,30 +552,43 @@ defaultErrorHandler (PermissionDenied msg) = selectRep $ do
+ defaultErrorHandler (InvalidArgs ia) = selectRep $ do
+     provideRep $ defaultLayout $ do
+         setTitle "Invalid Arguments"
+-        toWidget [hamlet|
+-            <h1>Invalid Arguments
+-            <ul>
+-                $forall msg <- ia
+-                    <li>#{msg}
+-        |]
++        toWidget  $         \ _render_aHtv
++          -> do { id
++                    ((Text.Blaze.Internal.preEscapedText . T.pack)
++                       "<h1>Invalid Arguments</h1>\n<ul>");
++                  Data.Foldable.mapM_
++                    (\ msg_aHtw
++                       -> do { id ((Text.Blaze.Internal.preEscapedText . T.pack) "<li>");
++                               id (TBH.toHtml msg_aHtw);
++                               id ((Text.Blaze.Internal.preEscapedText . T.pack) "</li>") })
++                    ia;
++                  id ((Text.Blaze.Internal.preEscapedText . T.pack) "</ul>") }
++
+     provideRep $ return $ object ["message" .= ("Invalid Arguments" :: Text), "errors" .= ia]
+ defaultErrorHandler (InternalError e) = do
+-    $logErrorS "yesod-core" e
+     selectRep $ do
+         provideRep $ defaultLayout $ do
+             setTitle "Internal Server Error"
+-            toWidget [hamlet|
+-                <h1>Internal Server Error
+-                <pre>#{e}
+-            |]
++            toWidget  $             \ _render_aHtC
++              -> do { id
++                        ((Text.Blaze.Internal.preEscapedText . T.pack)
++                           "<h1>Internal Server Error</h1>\n<pre>");
++                      id (TBH.toHtml e);
++                      id ((Text.Blaze.Internal.preEscapedText . T.pack) "</pre>") }
++
+         provideRep $ return $ object ["message" .= ("Internal Server Error" :: Text), "error" .= e]
+ defaultErrorHandler (BadMethod m) = selectRep $ do
+     provideRep $ defaultLayout $ do
+         setTitle"Bad Method"
+-        toWidget [hamlet|
+-            <h1>Method Not Supported
+-            <p>Method <code>#{S8.unpack m}</code> not supported
+-        |]
++        toWidget  $         \ _render_aHtH
++          -> do { id
++                    ((Text.Blaze.Internal.preEscapedText . T.pack)
++                       "<h1>Method Not Supported</h1>\n<p>Method <code>");
++                  id (TBH.toHtml (S8.unpack m));
++                  id
++                    ((Text.Blaze.Internal.preEscapedText . T.pack)
++                       "</code> not supported</p>") }
++
+     provideRep $ return $ object ["message" .= ("Bad method" :: Text), "method" .= m]
+ 
+ asyncHelper :: (url -> [x] -> Text)
+diff --git a/Yesod/Core/Dispatch.hs b/Yesod/Core/Dispatch.hs
+index 335a15c..4ca05da 100644
+--- a/Yesod/Core/Dispatch.hs
++++ b/Yesod/Core/Dispatch.hs
+@@ -123,13 +123,6 @@ toWaiApp site = do
+                 , yreSite = site
+                 , yreSessionBackend = sb
+                 }
+-    messageLoggerSource
+-        site
+-        logger
+-        $(qLocation >>= liftLoc)
+-        "yesod-core"
+-        LevelInfo
+-        (toLogStr ("Application launched" :: S.ByteString))
+     middleware <- mkDefaultMiddlewares logger
+     return $ middleware $ toWaiAppYre yre
+ 
+diff --git a/Yesod/Core/Handler.hs b/Yesod/Core/Handler.hs
+index f3b1799..d819b04 100644
+--- a/Yesod/Core/Handler.hs
++++ b/Yesod/Core/Handler.hs
+@@ -152,7 +152,7 @@ import qualified Control.Monad.Trans.Writer    as Writer
+ 
+ import           Control.Monad.IO.Class        (MonadIO, liftIO)
+ import           Control.Monad.Trans.Resource  (MonadResource, liftResourceT)
+-
++import qualified Text.Blaze.Internal
+ import qualified Network.HTTP.Types            as H
+ import qualified Network.Wai                   as W
+ import Control.Monad.Trans.Class (lift)
+@@ -710,19 +710,15 @@ redirectToPost :: (MonadHandler m, RedirectUrl (HandlerSite m) url)
+                -> m a
+ redirectToPost url = do
+     urlText <- toTextUrl url
+-    giveUrlRenderer [hamlet|
+-$newline never
+-$doctype 5
+-
+-<html>
+-    <head>
+-        <title>Redirecting...
+-    <body onload="document.getElementById('form').submit()">
+-        <form id="form" method="post" action=#{urlText}>
+-            <noscript>
+-                <p>Javascript has been disabled; please click on the button below to be redirected.
+-            <input type="submit" value="Continue">
+-|] >>= sendResponse
++    giveUrlRenderer  $     \ _render_awps
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . T.pack)
++                   "<!DOCTYPE html>\n<html><head><title>Redirecting...</title></head><body onload=\"document.getElementById('form').submit()\"><form id=\"form\" method=\"post\" action=\"");
++              id (toHtml urlText);
++              id
++                ((Text.Blaze.Internal.preEscapedText . T.pack)
++                   "\"><noscript><p>Javascript has been disabled; please click on the button below to be redirected.</p></noscript><input type=\"submit\" value=\"Continue\"></form></body></html>") }
++ >>= sendResponse
+ 
+ -- | Wraps the 'Content' generated by 'hamletToContent' in a 'RepHtml'.
+ hamletToRepHtml :: MonadHandler m => HtmlUrl (Route (HandlerSite m)) -> m Html
+diff --git a/Yesod/Core/Internal/Run.hs b/Yesod/Core/Internal/Run.hs
+index 35f1d3f..8b92e99 100644
+--- a/Yesod/Core/Internal/Run.hs
++++ b/Yesod/Core/Internal/Run.hs
+@@ -122,8 +122,6 @@ safeEh :: (Loc -> LogSource -> LogLevel -> LogStr -> IO ())
+        -> ErrorResponse
+        -> YesodApp
+ safeEh log' er req = do
+-    liftIO $ log' $(qLocation >>= liftLoc) "yesod-core" LevelError
+-           $ toLogStr $ "Error handler errored out: " ++ show er
+     return $ YRPlain
+         H.status500
+         []
+-- 
+1.7.10.4
+

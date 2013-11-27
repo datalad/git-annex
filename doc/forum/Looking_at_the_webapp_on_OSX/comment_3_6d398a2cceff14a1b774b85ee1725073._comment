@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.2.189"
+ subject="comment 3"
+ date="2012-07-26T22:07:25Z"
+ content="""
+I've been improving this code path, so make sure you're current. I just made it wait for longer than the 10 seconds it was waiting before giving up. 
+
+If it still fails, try running `git-annex assistant --debug --foreground`
+in one terminal, wait for it to start up, and then run `git annex webapp` in another.
+If that still fails, check if `.git/annex/webapp.html` exists.
+"""]]

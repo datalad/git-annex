@@ -1,0 +1,68 @@
+**What steps will reproduce the problem?**
+
+I did a basic git annex setup with two repositories talking to each other.  They are on the same macine, but I identified them via the hostname, because I intend to set up my production systems on two machines.  Since I am new to annex, I'll reproduce the full sequence of commands to create the repos and sync them.  *I* noticed the trouble at the last step, when `git annex get` failed.
+
+Here is the full sequence of commands:
+
+    >>> cd /scr/wandschn/hackNtest/distributed/nyc/STU_files
+    >>> git init
+    >>> git annex init nyc
+    >>> cd /scr/wandschn/hackNtest/distributed/pdx
+
+    >>> git clone xerxes:/scr/wandschn/hackNtest/distributed/nyc/STU_files
+    >>> git annex init pdx
+    >>> git remote add nyc xerxes:/scr/wandschn/hackNtest/distributed/nyc/STU_files
+
+    >>> cd /scr/wandschn/hackNtest/distributed/nyc/STU_files
+    >>> git remote add pdx xerxes:/scr/wandschn/hackNtest/distributed/pdx/STU_files
+
+    >>> mkdir shared
+    >>> cp ../../../files/shared/* shared/.
+    >>> git annex add shared
+    >>> git commit -a -m "initial add of shared files"
+
+    >>> cd /scr/wandschn/hackNtest/distributed/pdx/STU_files
+    >>> git fetch nyc
+    >>> git merge nyc/master
+    >>> ls shared/135.mae
+    shared/135.mae
+    >>> git annex whereis shared/135.mae
+    whereis shared/135.mae (1 copy)
+            6f0368db-f1b1-4192-9200-3575c16c2ef1 -- origin (nyc)
+    ok
+    >>> git annex get shared/135.mae
+    fatal: Could not switch to '../.git/annex/objects/KV/5f/SHA256-s1499628--4a7e2ba13096ee2d1a6b3c3b314efae623516d200c09d35ff0f695395b6ad47a': No such file or directory
+
+    git-annex: <file descriptor: 4>: hGetLine: end of file
+    failed
+    git-annex: get: 1 failed
+
+**What is the expected output? What do you see instead?**
+
+I expected the file shared/135.mae to be copied from the remote repo to the local repo.  Instead, this command failed, and said that there was a missing file.  This file path is the one that the broken link points to, and it exists on the remote repo.
+
+**What version of git-annex are you using? On what operating system?**
+
+git version 1.7.9.6
+
+git-annex 3.20120523
+
+CentOS 6.3 (kernel 2.6.32)
+
+64bit Xeon processor
+
+
+**Please provide any additional information below.**
+
+> Thanks for the command sequence, which I have tested here is ok with
+> a current version of git-annex (except for one cd you left out..).
+> 
+> You version of git-annex is quite old, and this
+> particular bug was fixed in version 3.20120721.
+> 
+> The bug is that it fails to correctly determine the git version at
+> compile time, and I think it thinks you have an old version of git
+> from before 1.7.7, which changed some behavior of `git check-attr`.
+> 
+> Upgrading git-annex should fix this, please let me know if not. [[done]]
+> --[[Joey]] 

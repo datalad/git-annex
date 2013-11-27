@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.125"
+ subject="comment 1"
+ date="2013-02-05T19:27:35Z"
+ content="""
+Are you sure about that version number? 
+
+A lot of work was done to avoid excessive numbers of zombie processes back in version 3.20111011. There should be no zombies anymore.
+"""]]

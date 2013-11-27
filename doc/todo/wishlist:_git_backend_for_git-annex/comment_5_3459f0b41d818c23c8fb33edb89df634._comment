@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 5"
+ date="2011-04-08T20:59:37Z"
+ content="""
+My estimates were pretty close -- the new bup special remote type took 133 lines of code, and 2 hours to write. A testament to the flexibility of the special remote infrastructure. :)
+"""]]

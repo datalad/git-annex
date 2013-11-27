@@ -1,0 +1,13 @@
+It's unfortunate that git-annex sorta defeats git's rename detection.
+
+When an annexed file is moved to a different directory (specifically, a
+directory that is shallower or deeper than the old directory),
+the symlink often has to change. And so git log cannot --follow back
+through the rename history, since all it has to go on is that symlink,
+which it effectively sees as a one line file containing the symlink target.
+
+One way to fix this might be to do the `git annex fix` *after* the rename
+is committed. This would mean that a commit would result in new staged
+changes for another commit, which is perhaps startling behavior.
+
+The other way to fix it is to stop using symlinks, see [[todo/smudge]].

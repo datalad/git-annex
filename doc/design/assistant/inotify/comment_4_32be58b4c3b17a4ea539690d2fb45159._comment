@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.147"
+ subject="comment 4"
+ date="2012-06-17T16:39:43Z"
+ content="""
+hfsevents seems usable, git-annex does not need to watch for file changes on remotes on other media.
+
+But, trying kqueue first.
+
+You could perhaps run the autobuilder on a per-commit basis..
+"""]]

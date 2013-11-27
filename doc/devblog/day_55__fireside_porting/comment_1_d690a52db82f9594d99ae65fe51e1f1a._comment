@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://nullroute.eu.org/~grawity/"
+ nickname="Mantas"
+ subject="comment 1"
+ date="2013-11-13T06:22:49Z"
+ content="""
+[ProcExp](http://technet.microsoft.com/en-us/sysinternals/bb896645.aspx) may be useful -- it can show process-related syscalls and their return codes _(among other things like file or registry access)_ so it should tell exactly why the exec failed.
+"""]]

@@ -1,0 +1,23 @@
+Typically `git-annex merge` is fast, but it could still be sped up.
+
+`git-annex merge` runs `git-hash-object` once per file that needs to be
+merged. Elsewhere in git-annex, `git-hash-object` is used in a faster mode,
+reading files from disk via `--stdin-paths`. But here, the data is not
+in raw files on disk, and I doubt writing them is the best approach.
+Instead, I'd like a way to stream multiple objects into git using stdin.
+Sometime, should look at either extending git-hash-object to support that,
+or possibly look at using git-fast-import instead.
+
+--- 
+
+`git-annex merge` also runs `git show` once per file that needs to be
+merged. This could be reduced to a single call to `git-cat-file --batch`,
+There is already a Git.CatFile library that can do this easily. --[[Joey]]
+
+> This is now done, part above remains todo. --[[Joey]] 
+
+---
+
+Merging used to use memory proportional to the size of the diff. It now
+streams data, running in constant space. This probably sped it up a lot,
+as there's much less allocation and GC action. --[[Joey]] 

@@ -1,0 +1,33 @@
+So far in this walkthrough, git-annex has been used with a remote
+repository on a USB drive. But it can also be used with a git remote
+that is truly remote, a host accessed by ssh.
+
+Say you have a desktop on the same network as your laptop and want
+to clone the laptop's annex to it:
+
+	# git clone ssh://mylaptop/home/me/annex ~/annex
+	# cd ~/annex
+	# git annex init "my desktop"
+
+Now you can get files and they will be transferred (using `rsync` via `ssh`):
+
+	# git annex get my_cool_big_file
+	get my_cool_big_file (getting UUID for origin...) (from origin...)
+	SHA256-s86050597--6ae2688bc533437766a48aa19f2c06be14d1bab9c70b468af445d4f07b65f41e  100% 2159     2.1KB/s   00:00
+	ok
+
+When you drop files, git-annex will ssh over to the remote and make
+sure the file's content is still there before removing it locally:
+
+	# git annex drop my_cool_big_file
+	drop my_cool_big_file (checking origin..) ok
+
+Note that normally git-annex prefers to use non-ssh remotes, like
+a USB drive, before ssh remotes. They are assumed to be faster/cheaper to
+access, if available. There is a annex-cost setting you can configure in
+`.git/config` to adjust which repositories it prefers. See
+[[the_man_page|git-annex]] for details.
+
+Also, note that you need full shell access for this to work -- 
+git-annex needs to be able to ssh in and run commands. Or at least,
+your shell needs to be able to run the [[git-annex-shell]] command.

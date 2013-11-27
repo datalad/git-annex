@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 5"
+ date="2012-11-29T20:47:36Z"
+ content="""
+Oh, another stupid thing I might have done -- 
+
+* added files to the repo, and not realizing it might take assistant a while to recognize and add them all, gotten impatient
+* added them myself, but did it with \"import\" instead of \"add\" so I was git-annex importing files from *inside* git-annex, with an assistant process running at the same time.
+
+Might not be relevant, just trying to think of weird things I've done.
+"""]]

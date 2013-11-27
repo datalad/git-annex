@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkptNW1PzrVjYlJWP_9e499uH0mjnBV6GQ"
+ nickname="Christian"
+ subject="comment 3"
+ date="2013-07-19T06:57:39Z"
+ content="""
+Oh, I think i found a problem with the inotify_add_watch. I checked the strace and:
+
+    [pid 19346] inotify_add_watch(63, \"./Perry Rhodan - Atlan\", IN_CLOSE_WRITE|IN_MOVED_FROM|IN_MOVED_TO|IN_CREATE|IN_DELETE) = 137
+    [pid 19346] inotify_add_watch(63, \"./Perry Rhodan - Atlan/Atlan Blaue- Silberbnde\", IN_CLOSE_WRITE|IN_MOVED_FROM|IN_MOVED_TO|IN_CREATE|IN_DELETE) = -1 ENOENT (No such file or directory)
+
+The problem is that there seems to be an encoding problem. There should be a german Umlaut in Silberb[ae]nde. The directory name is not valid encoded.
+"""]]

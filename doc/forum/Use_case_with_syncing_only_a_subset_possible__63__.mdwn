@@ -1,0 +1,13 @@
+I'm trying to figure out if git-annex can be used for the following use case:
+
+- 2 repos in direct mode A and B
+- A is on a local filesystem, B could be a NFS mountpoint or ssh
+- B contains a number of toplevel directories, A contains a subset of those
+- For the subset in A all changes in those directories that happen on A or B should be synced automatically between both repos, including file removals.
+- A can decide to not carry a toplevel dir any more, but it must still exist in B.
+- A can copy new toplevel dirs from B and those should be synced from then on.
+
+I've been looking at the docs and played with two test repos, but I cannot seem to make the above work. To me it looks like I would need a possibility include/exclude paths from syncing via a regex.
+
+Thanks,
+Felix

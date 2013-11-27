@@ -1,0 +1,22 @@
+Git annex refuses to get/drop files until it's manually relaunched.
+
+I'm trying to setup a basic dropbox like system where a couple of computers sync with a local server I have constantly running ubuntu with ssh.
+
+I think I've setup git annex correctly: when I put files in the repo folder they get uploaded to the bare git repo on the server over ssh automatically and the other computer updates with a broken alias to the file. However the file does not then download from the server despite it being available without a manual restart of the daemon or a git-annex get command from the terminal.
+
+Additionally, files inside archive folders do not get dropped once uploaded to the server without a restart of the daemon.
+
+
+My computers are each setup with the ssh server as a 2nd repository (fullarchive), they are both OSX, and running Version: 4.20130521-g25dba9d according to the webapp. I have also entered my gmail/jabber account on each mac which I believe allows them to communicate indirectly when using the ssh repo.
+
+
+I don't know if this is a setup/misconfiguration error or a bug but I can't see how I've setup the assistant wrong, I did manually change the remote url in the config file, as the assistant was having issues connecting  (I'm sshing on 21 for various reasons, although I thought this was supported and I no longer receive errors in the webapp now I've specified my remote.
+
+Should I put the corresponding computers as a repositories of each other? I thought each syncing independently with a centralised git would be a more reliable/simple situation than a potential 3 way sync?
+
+
+I hope this is enough information, I'm usually good at working out issues myself, however this is just frustrating me and the git-annex solution is so nearly perfect if it would work reliably that I can't bring myself to give up on it!
+
+Thanks!
+
+> [[done]], release notes updated; see my comment --[[Joey]]

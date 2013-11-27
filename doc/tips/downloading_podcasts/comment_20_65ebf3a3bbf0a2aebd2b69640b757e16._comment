@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 20"
+ date="2013-08-22T15:29:11Z"
+ content="""
+The git-annex man page has a bit more to say about --relaxed and --fast. Their behavior when used with `importfeed` is the same as with `addurl`.
+
+If the podcast feed provides an `itemid`, you can use that in the filename template. I don't know how common that is. Due to the way `importfeed` works, it cannot keep track of eg, an incrementing item number itself.
+"""]]

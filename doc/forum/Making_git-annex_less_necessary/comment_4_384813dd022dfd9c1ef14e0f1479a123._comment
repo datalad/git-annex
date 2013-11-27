@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/"
+ nickname="chrysn"
+ subject="comment 2"
+ date="2012-05-11T17:40:20Z"
+ content="""
+from my layman's standpoint, i think it would be feasible. i've suggested this previously, but not pushed it too much. quoting from [[my user page|users/chrysn]]:
+
+* **would like git-annex to**: not be required any more as git itself learns to use cow filesystems to avoid abundant disk usage and gets better with sparser checkouts (git-annex might then still be a simpler tool that watches over what can be safely dropped for a sparser checkout)
+
+*concerning hash sizes or parameterized hashes*: the problems with hash sizes could be avoided if instead of putting the objects in the \"normal\" object dir, barefiles would be managed in a similar way as packs are. when a new files gets added, they'd be cow-copied to ``.git/objects/bare/${HA}/${SH}``, and ``.git/objects/bareprefix/${HA}/${SH}`` would contain the \"blob ${SIZE}\0\" prefix that gets concatenated to the object body to form the object itself.
+
+(maybe it'd even be sufficient to *just store the size* in the bareprefix, as all those objects would be blobs, but then again, some flexibility won't hurt.)
+
+if the *pack file format* is flexible enough, the bareprefix files can get packed too. for the adventerous user who modifies bigfiles, the pack file mechanisms should be made aware of their presence, and be able to store deltas between them. the operations for applying those deltas would be difficult to optimize, and could be added at a later stage. a typical example could be storing a pdf file -- the pdf file format is designed for appending, so chances are the new version is just the old version plus several k at the end.
+
+neither of that would affect git's *wire protocol*, so no compatibility problems. (it would be advisable to find a reasonable way to do sparse checkouts, though; something like \"server, pack and send your master, but make it sparse and don't include blobs >1mb\").
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 7"
+ date="2013-04-02T21:24:06Z"
+ content="""
+`bup-split` uses a git branch to name the objects stored in the bup repository. So it will be limited by any scalability issues affecting large numbers of git branches. I don't know what those are.
+
+Yes, it would be possible to make git-annex store this in the git-annex branch instead.
+"""]]

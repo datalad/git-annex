@@ -1,0 +1,31 @@
+<div .span9 .hero-unit>
+  <h2>
+    Adding a removable drive
+  <p>
+    Clone this repository to a USB drive, memory stick, or other #
+    removable media. Whenever the removable drive is plugged in, its #
+    content will be synced with the content of this repository.
+  <p>
+  $if (null writabledrives)
+    <div .span6 .alert .alert-error .alert-block>
+      $if (null removabledrives)
+        <h4 .alert-heading>
+          No removable drives found
+        Please make sure you have a removable drive plugged in and mounted.
+      $else
+        <h4 .alert-heading>
+          No usable removable drives found
+        Seems you cannot write to any of the removable drives that are #
+        currently mounted. Try plugging in a removable drive that you can #
+        write to, or correcting the write permissions.
+      <p>
+        <a .btn .btn-primary href="@{AddDriveR}">
+          Rescan for removable drives
+  $else
+    <form method="post" enctype=#{enctype}>
+      <fieldset>
+        ^{form}
+        ^{webAppFormAuthToken}
+        <button .btn .btn-primary type=submit>Use this drive</button> #
+        <a .btn href="@{AddDriveR}">
+          Rescan for removable drives

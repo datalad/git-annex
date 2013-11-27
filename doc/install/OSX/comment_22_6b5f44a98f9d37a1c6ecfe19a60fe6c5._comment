@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="comment 22"
+ date="2013-07-25T02:19:53Z"
+ content="""
+Rather than specifying --bindir on the command line for cabal, I edited my ~/.cabal/config to add this line:
+
+    symlink-bindir: /usr/local/bin
+
+This installs the binaries to ~/.cabal/bin but symlinks them into /usr/local/bin alongside the links that homebrew installs. Additionally, I symlinked /usr/local/bin/git-annex-shell to /usr/local/bin/git-annex which made things work great from remote hosts via ssh.
+"""]]

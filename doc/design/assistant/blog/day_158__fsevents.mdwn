@@ -1,0 +1,20 @@
+Investigated using the OSX fsevents API to detect when files are modified,
+so they can be committed when using direct mode. There's a
+[haskell library](http://hackage.haskell.org/package/hfsevents-0.1.3)
+and even a [sample directory watching program](http://hackage.haskell.org/package/hobbes).
+Initial tests look good...
+
+Using fsevents will avoid kqueue's problems with needing enough file
+descriptors to open every subdirectory. kqueue is a rather poor match for
+git-annex's needs, really. It does not seem to provide events for file
+modifications at all, unless every *file* is individually opened. While I
+dislike leaving the BSD's out, they need a better interface to be perfectly
+supported by git-annex, and kqueue will still work for indirect mode
+repositories.
+
+----
+
+Got the assistant to use fsevents. It seems to work well!
+
+The only problem I know of is that it doesn't yet handle whole directory
+renames. That should be easy to fix later.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 5"
+ date="2011-03-30T18:59:19Z"
+ content="""
+This is brain-storming only so the idea might be crap, but a branch could keep encrypted filenames while master keeps the real deal. This might fit into the whole scheme just nicely or break future stuff in a dozen places, I am not really sure yet. But at least I can't forget the idea, now.
+"""]]

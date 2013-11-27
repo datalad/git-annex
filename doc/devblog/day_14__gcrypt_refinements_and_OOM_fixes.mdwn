@@ -1,0 +1,26 @@
+Spent a few hours improving gcrypt in some minor ways, including adding a
+--check option that the assistant can use to find out if a given repo is
+encrypted with dgit, and also tell if the necessary gpg key is available to
+decrypt it. Also merged in a fix to support subkeys, developed by a
+git-annex user who is the first person I've heard from who is using gcrypt.
+I don't want to maintain gcrypt, so I am glad its author has shown up
+again today.
+
+Got mostly caught up on backlog. The main bug I was able to track down
+today is git-annex using a lot of memory in certian repositories. This
+turns out to have happened when a really large file was committed right
+intoo to the git repository (by mistake or on purpose). Some parts of
+git-annex buffer file contents in memory while trying to work out if
+they're git-annex keys. Fixed by making it first check if a file in git is
+marked as a symlink. Which was really hard to do!
+
+At least 4 people ran into this bug, which makes me suspect that lots of
+people are messing up when using direct mode (probably due to not reading
+the documentation, or having `git commit -a` hardwired into their fingers,
+and forcing git to commit large files into their repos, rather than having
+git-annex manage them. Implementing [[todo/direct_mode_guard]] seems more
+urgent now.
+
+----
+
+Today's work was sponsored by Amitai Schlair.

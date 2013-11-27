@@ -1,0 +1,67 @@
+### Please describe the problem.
+On Windows, with a remote repository configured for HTTP access, wget is never used, even if it's available in the system. curl is always used.
+
+### What steps will reproduce the problem?
+1. Set up an annex on a remote system, configure it for HTTP access, run an HTTP server.
+2. over HTTP, clone it to Windows
+3. "annex get -vd <file>"
+4. note that curl is used.
+
+
+### What version of git-annex are you using? On what operating system?
+Windows 7: 4.20140627-g8a36ec5 (from the git-annex download page)
+
+### Additional Info
+After some debugging, it appears the issue is that git-annex looks to see if the file 'wget' is available in any directory on the PATH. on windows, wget is installed as 'wget.exe', and the file 'wget' does not exist anywhere. creating a file named 'wget' works around the issue. (wget.exe appears to still be the file used)
+
+###Full Transcript
+1. remote annex is created on host 192.168.0.8, with file "file1.txt"
+[[!format sh """
+#Windows 7
+#download and install git from git-scm.com/download/win
+#Git-1.8.3-preview20130601.exe
+#on install, selecting "Run Git from the Windows Command Prompt"
+#on install, selecting "checkout as-is, commit as-is"
+#installs to C:\Program Files (x86)\Git
+#download and install git-annex from http://git-annex.branchable.com/install/
+#git-annex-installer.exe
+#need to right-click 'run as administrator', per reported bug (link here)
+#installs to C:\Program Files (x86)\Git\cmd
+#also installs some utilities, including wget.exe
+
+C:\Users\test-git-annex>git clone http://192.168.0.8:8000/test_annex/.git
+Cloning into 'test_annex'...
+
+C:\Users\test-git-annex>cd test_annex
+
+C:\Users\test-git-annex\test_annex>dir
+ Volume in drive C has no label.
+
+ Directory of C:\Users\test-git-annex\test_annex
+
+<DIR>          .
+<DIR>          ..
+              178 file1.txt
+               1 File(s)            178 bytes
+
+C:\Users\test-git-annex\test_annex>type file1.txt
+.git/annex/objects/J9/m6/SHA256-s21--6ed275e9e01c84a57fdd99d6af793c5d587d02e699cd2c28b32b7dc90f73e729/SHA256-s21--6ed275e9e01c84a57fdd99d6af793c5d587d02e699cd2c28b32b7dc90f73e729
+
+C:\Users\test-git-annex\test_annex>git annex init windows
+init windows
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+(Recording state in git...)
+
+C:\Users\test-git-annex\test_annex> git annex get file.txt
+#fails, with error dialog box, indicating libcurl-4.dll is missing, indicating git-annex is trying to use curl.
+
+"""]]
+
+> I fixed this immediately after it was mentioned on IRC. [[done]] --[[Joey]] 

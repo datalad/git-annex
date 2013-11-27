@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhfodZquCI_EEl-f3h7HkROTszlsQL6yA"
+ nickname="Joe"
+ subject="comment 9"
+ date="2013-06-18T09:58:41Z"
+ content="""
+The regression appears to behere: $ git diff d80a0f62a4aa5a2a3566f29dd6bda619b1a7eabd..64f8819ae47cc27b164eb69aa846dfb0f7cc6ef3 Process.hs
+
+I rewound each commit until I no longer had the regression. This commit was clean: d80a0f62a4aa5a2a3566f29dd6bda619b1a7eabd. Something with the changes to Process.hs is causing my error.
+
+I validated by building using git checkout d80a0f62a4aa5a2a3566f29dd6bda619b1a7eabd Process.hs and the error went away.
+"""]]

@@ -1,0 +1,86 @@
+[[!meta robots="noindex, follow"]]
+To select a set of pages, such as pages that are locked, pages
+whose commit emails you want subscribe to, or pages to combine into a
+blog, the wiki uses a PageSpec. This is an expression that matches
+a set of pages.
+
+The simplest PageSpec is a simple list of pages. For example, this matches
+any of the three listed pages:
+
+	foo or bar or baz
+
+More often you will want to match any pages that have a particular thing in
+their name. You can do this using a glob pattern. "`*`" stands for any part
+of a page name, and "`?`" for any single letter of a page name. So this
+matches all pages about music, and any [[SubPage]]s of the SandBox, but does
+not match the SandBox itself:
+
+	*music* or SandBox/*
+
+You can also prefix an item with "`!`" to skip pages that match it. So to
+match all pages except for Discussion pages and the SandBox:
+
+	* and !SandBox and !*/Discussion
+
+Some more elaborate limits can be added to what matches using these functions:
+
+* "`glob(someglob)`" - matches pages and other files that match the given glob.
+  Just writing the glob by itself is actually a shorthand for this function.
+* "`page(glob)`" - like `glob()`, but only matches pages, not other files
+* "`link(page)`" - matches only pages that link to a given page (or glob)
+* "`tagged(tag)`" - matches pages that are tagged or link to the given tag (or
+  tags matched by a glob)
+* "`backlink(page)`" - matches only pages that a given page links to
+* "`creation_month(month)`" - matches only files created on the given month
+  number
+* "`creation_day(mday)`" - or day of the month
+* "`creation_year(year)`" - or year
+* "`created_after(page)`" - matches only files created after the given page
+  was created
+* "`created_before(page)`" - matches only files created before the given page
+  was created
+* "`internal(glob)`" - like `glob()`, but matches even internal-use 
+  pages that globs do not usually match.
+* "`title(glob)`", "`author(glob)`", "`authorurl(glob)`",
+  "`license(glob)`", "`copyright(glob)`", "`guid(glob)`" 
+  - match pages that have the given metadata, matching the specified glob.
+* "`user(username)`" - tests whether a modification is being made by a
+  user with the specified username. If openid is enabled, an openid can also
+  be put here. Glob patterns can be used in the username. For example, 
+  to match all openid users, use `user(*://*)`
+* "`admin()`" - tests whether a modification is being made by one of the
+  wiki admins.
+* "`ip(address)`" - tests whether a modification is being made from the
+  specified IP address. Glob patterns can be used in the address. For
+  example, `ip(127.0.0.*)`
+* "`comment(glob)`" - matches comments to a page matching the glob.
+* "`comment_pending(glob)`" - matches unmoderated, pending comments.
+* "`postcomment(glob)`" - matches only when comments are being 
+  posted to a page matching the specified glob
+
+For example, to match all pages in a blog that link to the page about music
+and were written in 2005:
+
+	blog/* and link(music) and creation_year(2005)
+
+Note the use of "and" in the above example, that means that only pages that
+match each of the three expressions match the whole. Use "and" when you
+want to combine expression like that; "or" when it's enough for a page to
+match one expression. Note that it doesn't make sense to say "index and
+SandBox", since no page can match both expressions.
+
+More complex expressions can also be created, by using parentheses for
+grouping. For example, to match pages in a blog that are tagged with either
+of two tags, use:
+
+	blog/* and (tagged(foo) or tagged(bar))
+
+Note that page names in PageSpecs are matched against the absolute
+filenames of the pages in the wiki, so a pagespec "foo" used on page
+"a/b" will not match a page named "a/foo" or "a/b/foo". To match
+relative to the directory of the page containing the pagespec, you can
+use "./". For example, "./foo" on page "a/b" matches page "a/foo".
+
+To indicate the name of the page the PageSpec is used in, you can
+use a single dot. For example, `link(.)` matches all the pages
+linking to the page containing the PageSpec.

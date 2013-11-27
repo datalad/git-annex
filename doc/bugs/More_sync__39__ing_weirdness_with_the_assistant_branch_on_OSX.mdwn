@@ -1,0 +1,15 @@
+Running the 'assistant' branch, I occassionally get
+
+To myhost1:/Users/jtang/annex
+ ! [rejected]        master -> synced/master (non-fast-forward)
+error: failed to push some refs to 'myhost1:/Users/jtang/annex'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and merge the remote changes
+hint: (e.g. 'git pull') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+(Recording state in git...)
+
+manually running a 'git annex sync' usually fixes it, I guess once the sync command runs periodically this problem will go away, is this even OSX specific? I don't quite get the behaviour that is described in [[design/assistant/blog/day_15__its_aliiive]].
+
+> With my changes today, I've seen it successfully recover from this
+> situation. [[done]] --[[Joey]] 

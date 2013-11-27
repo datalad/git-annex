@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.243"
+ subject="thanks for your checking.."
+ date="2013-10-06T17:04:24Z"
+ content="""
+The example was missing a preferred content setting, without which --auto doesn't copy anything unless needed to satisfy numcopies:
+
+git annex wanted archivedrive standard
+"""]]

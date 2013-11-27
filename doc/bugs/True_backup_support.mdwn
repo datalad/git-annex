@@ -1,0 +1,7 @@
+I'd like to be able to restore my data from S3/Glacier following a catastrophic loss of information.
+
+As I understand it, git-annex doesn't solve this problem for me because it only stores file *contents* in S3/Glacier.  A restore-from-nothing requires both the file contents and also the file names and metadata, which git-annex doesn't store in S3.
+
+I'm still feeling my way around git-annex, but I think it will probably be sufficient for my purposes to set up a cron job to push my annex to github.  But I think it would be helpful if git-annex could take care of this automatically.
+
+> Based on the comments, this is [[done]] --[[Joey]]

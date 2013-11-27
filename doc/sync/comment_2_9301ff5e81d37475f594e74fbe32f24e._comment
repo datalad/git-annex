@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlDDW-g2WLLsLpcnCm4LykAquFY_nwbIrU"
+ nickname="Daniel"
+ subject="Its just grand"
+ date="2013-01-04T14:45:35Z"
+ content="""
+I cam upon git-annex a few months ago. I saw immidiately how it could help with some frustrations I've been having. One in particlar is keeping my vimrc in sync accross multiple locations and platforms. I finally took the time to give it a try after I finally hit my boiling point this morning. I went through the [walkthrough](http://git-annex.branchable.com/walkthrough/) and now I have an annax everywhere I need it. `git annex sync` and my vimrc is up-to-date, simply grand!
+
+Thanks so much for making git-annex, 
+[Daniel Wozniak](http://woz.io)
+"""]]

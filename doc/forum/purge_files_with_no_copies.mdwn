@@ -1,0 +1,3 @@
+Hi guys, as a result of some improper handling I am left with a couple of files with no copies scattered all around my repos. Now, while my data loss is unfortunate, it is not tragic. What I would like to do now is to purge all of these files without having to look for them one by one. Is there any easy way to do this? 
+
+Cheers

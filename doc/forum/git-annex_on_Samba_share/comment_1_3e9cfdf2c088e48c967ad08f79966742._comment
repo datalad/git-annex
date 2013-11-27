@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqz6wCn-Q1vzrsHGvEJHOt_T5ZESilxhc"
+ nickname="Sören"
+ subject="Update"
+ date="2013-06-26T17:26:05Z"
+ content="""
+After reading trough this again, I'd like to rephrase my question.
+
+Is it safe if two independent assistants access the same repository at the same time (assuming locking works)?
+
+But, much more important, a big thanks for creating git-annex! I'm using it successfully to keep my files in sync at home and at work and I think it is a really amazing tool. So thanks for the hard work!
+"""]]

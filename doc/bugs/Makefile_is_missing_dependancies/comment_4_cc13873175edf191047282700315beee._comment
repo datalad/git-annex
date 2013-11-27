@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 4"
+ date="2011-03-23T16:02:34Z"
+ content="""
+Ok, well it looks like it isn't doing anything useful at all.
+
+<pre>
+jtang@x00:~/develop/git-annex $ make StatFS.hs                                                                                                                                    
+hsc2hs StatFS.hsc
+perl -i -pe 's/^{-# INCLUDE.*//' StatFS.hs
+jtang@x00:~/develop/git-annex $ ghci StatFS.hs                                                                                                                                    
+GHCi, version 6.12.3: http://www.haskell.org/ghc/  :? for help
+Loading package ghc-prim ... linking ... done.
+Loading package integer-gmp ... linking ... done.
+Loading package base ... linking ... done.
+Loading package ffi-1.0 ... linking ... done.
+[1 of 1] Compiling StatFS           ( StatFS.hs, interpreted )
+Ok, modules loaded: StatFS.
+*StatFS> s <- getFileSystemStats \".\"
+Loading package bytestring-0.9.1.7 ... linking ... done.
+*StatFS> s
+Just (FileSystemStats {fsStatBlockSize = 0, fsStatBlockCount = 1048576, fsStatByteCount = 0, fsStatBytesFree = 0, fsStatBytesAvailable = 0, fsStatBytesUsed = 0})
+*StatFS> s <- getFileSystemStats \"/\"
+*StatFS> s
+Just (FileSystemStats {fsStatBlockSize = 0, fsStatBlockCount = 1048576, fsStatByteCount = 0, fsStatBytesFree = 0, fsStatBytesAvailable = 0, fsStatBytesUsed = 0})
+*StatFS> 
+</pre>
+"""]]

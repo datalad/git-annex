@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 3"
+ date="2012-08-11T14:41:51Z"
+ content="""
+That's the lines I was thinking along, and I even made a throwaway branch with some types. But the problem is reworking all the code to do that. Particularly since lots of the code uses generic utility functions that are reused in other, unrelated places and would have to be modified to pass back cancel actions.
+
+The first case the type checker landed me on when I changed the types was code that downloads an url from the web. Naturally that uses a Utility.Url.download. How to cancel `download`? Depends on its implementation -- it happens to currently shell out to curl, so you have to kill curl, but it could just as easily have used libcurl (other parts of my Utility.Url library do), and then it would need to fork its own thread. So it's an abstraction layer violation problem.
+
+If I had a month to devote to this one problem, I might manage to come up with some clean solution involving monads, or maybe convert all my code to use conduit or something that might allow managing these effects better. Just a guess..
+"""]]

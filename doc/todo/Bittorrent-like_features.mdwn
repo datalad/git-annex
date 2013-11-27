@@ -1,0 +1,45 @@
+There are two different possible ways git-annex could use bittorrent:
+
+Let's describe those one by one.
+
+[[!toc]]
+
+Downloading files from multiple git-annex sources simultaneously
+================================================================
+
+Having your remotes (optionally!) act like a swarm would be an awesome feature to have because you bring in a lot of new features that optimize storage, bandwidth, and overall traffic usage. This would be made a lot easier if parts of it were implemented in small steps that added a nifty feature. The best part is, each of these could be implemented by themselves, and they're all features that would be really useful.
+
+ 1. Concurrent downloads of a file from remotes.
+
+    This would make sense to have, it saves upload traffic on your remotes, and you also get faster DL speeds on the receiving end.
+
+ 2. Implementing part of the super-seeding capabilities.
+
+    You upload pieces of a file to different remotes from your laptop, and on your desktop you can download all those pieces and put them together again to get a complete file. If you really wanted to get fancy, you could build in redundancy (ala RAID) so if a remote or two gets lost, you don't lose the entire file. This would be a very efficient use of storage if you have a bunch of free cloud storage accounts (~1GB each) and some big files you want to back up.
+
+ 3. Setting it up so that those remotes could talk to one another and share those pieces.
+
+    This is where it gets more like bittorrent. Useful because you upload 1 copy and in a few hours, have say, 5 complete copies on 5 different remotes. You could add or remove remotes from a swarm locally, and push those changes to those remotes, which then adapt themselves to suit the new rules and share those with other remotes in the swarm (rules should be GPG-signed as a safety precaution). Also, if/when deltas get implemented, you could push that delta to the swarm and have all the remotes adopt it. This is cooler than regular bittorrent because the shared file can be updated. As a safety precaution, the delta could be GPG signed so a corrupt file doesn't contaminate the entire swarm. Each remote could have bandwidth/storage limits set in a dotfile.
+
+This is a high-level idea of how it might work, and it's also a HUGE set of features to add, but if implemented, you'd be saving a ton of resources, adding new use cases, and making git-annex more flexible.
+
+Obviously, Step 3 would only work on remotes that you have control of processes on, but if given login credentials to cloud storage remotes (potentially dangerous!) they could read/write to something like dropbox or rsync.
+
+Another thing, this would be completely trackerless. You just use remote groups (or create swarm definitions) and share those with your remotes. **It's completely decentralized!**
+
+This was originally posted [[as a forum post|forum/Wishlist:_Bittorrent-like_transfers]] by [[users/GLITTAH]].
+
+Using an external client (addurl torrent support)
+=================================================
+
+The alternative to this would be to add `addurl` support for bittorrent files. The same way we can now add Youtube videos to a git-annex repository thanks to [[quvi]], we could also simply do:
+
+    git annex addtorrent debian-live-7.0.0-amd64-standard.iso.torrent
+
+or even better:
+
+    git annex addurl http://cdimage.debian.org/debian-cd/current-live/amd64/bt-hybrid/debian-live-7.0.0-amd64-standard.iso.torrent
+
+This way, a torrent would just become another source for a specific file. When we `get` the file, it fires up `$YOUR_FAVORITE_TORRENT_CLIENT` to download the file.
+
+That way we avoid the implementation complexity of shoving a complete bittorrent client within the assistant. The `get` operation would block until the torrent is downloaded, i guess... --[[anarcat]]

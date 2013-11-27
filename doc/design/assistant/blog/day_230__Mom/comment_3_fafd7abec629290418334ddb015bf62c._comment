@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-06T16:26:57Z"
+ content="""
+Weird, I don't know where the tag went. I've pushed a new one.
+
+If a file is deleted, it's still there in git, and git-annex hangs onto its contents. You need a git history browser to get it back of course.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-19T19:12:59Z"
+ content="""
+git-annex can use any xmpp server.  The only thing that would need to be changed if google talk went away tomorrow is changing some text that suggests entering one's gmail address, to some other text that suggests some other xmpp server to use.
+
+However, I am skeptical about echo chamber conclusions (and/or tech press) about what google is, or is not doing, or is or is not planning to do.
+"""]]

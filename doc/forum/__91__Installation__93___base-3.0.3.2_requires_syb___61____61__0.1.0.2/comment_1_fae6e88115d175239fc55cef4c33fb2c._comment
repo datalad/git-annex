@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-01-15T19:53:35Z"
+ content="""
+This is now about different build failure than the bug you reported, which was already fixed. Conflating the two is just confusing.
+
+The error message about `syb` is because by using cabal-install on an Ubuntu system from 2010, you're mixing the very old versions of some haskell libraries in Ubuntu with the new versions cabal wants to install. The solution is to stop mixing two package management systems --
+
+* Either install git-annex without using cabal, and use apt-get to install all its dependencies from Ubuntu, assuming your distribution has all the necessary haskell libraries packaged.
+* Or `apt-get remove ghc`, and manually install a current version of [The Haskell Platform](http://hackage.haskell.org/platform/) and use cabal.
+"""]]

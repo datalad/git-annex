@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="bremner"
+ ip="156.34.89.108"
+ subject="finding data that isn't unused, but should be."
+ date="2012-10-17T20:32:11Z"
+ content="""
+Sometimes links to annexed data still exists on some branch, when it was supposed to be dropped. Here is how I found these; perhaps there is a simpler way.
+
+    % git annex find --format '${key}\n' | sort > /tmp/known-keys
+    % find .git/annex/objects -type f -exec basename {} \; | sort  > /tmp/local-keys
+    % comm -23 /tmp/local-keys /tmp/known-keys
+
+to look for what branch these are on, try 
+
+    % git log --stat --all -S$key
+
+for one of the keys output above. In my case it was the same remote branch keeping them all alive.
+
+
+*EDIT* sort key lists to make comm work properly
+
+"""]]

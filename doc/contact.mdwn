@@ -1,0 +1,11 @@
+Joey Hess <joey@kitenet.net> is the author of git-annex. If you need to
+talk about something privately, email me.
+
+The [[forum]] is the best place to discuss git-annex.
+
+For realtime chat, use the `#git-annex` channel on irc.oftc.net.
+You can also watch incoming commits there.
+
+The [VCS-home mailing list](http://lists.madduck.net/listinfo/vcs-home)
+is a good mailing list for users who want to use git-annex in the context
+of managing their large personal files.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 8"
+ date="2013-07-20T20:07:53Z"
+ content="""
+`dd bs=1024 count=100000 if=/dev/zero of=bigfile` obviously creates the same data each time, so if that same size empty file has previously been in a repository, and the content is still present there, the symlink will automatically point to it when it gets added. In other words, git-annex performs automatic deduplication of file contents, and so it was able to save you a download in this case.
+"""]]

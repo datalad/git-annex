@@ -1,0 +1,8 @@
+git-annex's high-level design is mostly inherent in the data that it
+stores in git, and alongside git. See [[internals]] for details.
+
+See [[encryption]] for design of encryption elements.
+
+See [[roadmap]] for planning and scheduling of new stuff.
+
+See [[assistant]] for the design site for the git-annex [[/assistant]].

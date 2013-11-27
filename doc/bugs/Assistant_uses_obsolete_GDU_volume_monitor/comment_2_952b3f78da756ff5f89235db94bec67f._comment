@@ -1,0 +1,53 @@
+[[!comment format=mdwn
+ username="http://nullroute.eu.org/~grawity/"
+ nickname="Mantas"
+ subject="comment 2"
+ date="2013-01-10T17:38:47Z"
+ content="""
+When mounted:
+
+<pre>
+signal path=/org/gtk/Private/RemoteVolumeMonitor; interface=org.gtk.Private.RemoteVolumeMonitor; member=MountAdded
+   string \"org.gtk.Private.UDisks2VolumeMonitor\"
+   string \"0x1971ab0\"
+   struct {
+      string \"0x1971ab0\"
+      string \"grawpqi\"
+      string \". GThemedIcon media-removable media\"
+      string \". GThemedIcon media-removable-symbolic media-removable media\"
+      string \"\"
+      string \"file:///run/media/grawity/grawpqi\"
+      boolean true
+      string \"0x18f4e50\"
+      array [
+      ]
+      string \"gvfs.time_detected_usec.1357838999510252\"
+      array [
+      ]
+   }
+</pre>
+
+When unmounted:
+
+<pre>
+signal path=/org/gtk/Private/RemoteVolumeMonitor; interface=org.gtk.Private.RemoteVolumeMonitor; member=MountRemoved
+   string \"org.gtk.Private.UDisks2VolumeMonitor\"
+   string \"0x1971910\"
+   struct {
+      string \"0x1971910\"
+      string \"grawpqi\"
+      string \". GThemedIcon media-removable media\"
+      string \". GThemedIcon media-removable-symbolic media-removable media\"
+      string \"\"
+      string \"file:///run/media/grawity/grawpqi\"
+      boolean true
+      string \"\"
+      array [
+      ]
+      string \"gvfs.time_detected_usec.1357839107487969\"
+      array [
+      ]
+   }
+</pre>
+
+"""]]

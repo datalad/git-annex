@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 11"
+ date="2013-03-03T18:36:31Z"
+ content="""
+The autobuild is linked to on [[install/Linux_standalone]]
+
+I don't understand how you're \"restarting\" and not deleting the old .git repository. The right way would be to stop the assistant, run \"git annex uninit\", and then remove \".git\"
+"""]]

@@ -1,0 +1,18 @@
+## roadmap
+
+Now in the 
+[sustaining git-annex development](https://campaign.joeyh.name/) year
+(starting September 2013).
+
+* Month 1 [[!traillink assistant/encrypted_git_remotes]]
+* Month 2 [[!traillink assistant/disaster_recovery]]
+* **Month 3 user-driven features and polishing** [[todo/direct_mode_guard]] [[assistant/upgrading]]
+* Month 4 improve special remote interface & git-annex enhancement contest
+* Month 5 [[!traillink assistant/xmpp_security]]
+* Month 6 Windows assistant and webapp
+* Month 7 user-driven features and polishing
+* Month 8 [[!traillink assistant/gpgkeys]] [[!traillink assistant/sshpassword]]
+* Month 9 get [[assistant/Android]] out of beta
+* Month 10 user-driven features and polishing
+* Month 11 [[!traillink assistant/chunks]] [[!traillink assistant/deltas]]
+* Month 12 user-driven features and polishing

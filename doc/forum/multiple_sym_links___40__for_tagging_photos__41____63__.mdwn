@@ -1,0 +1,11 @@
+I saw a cool page talking about "tagging" photos by using symlinks: http://www.trueelena.org/computers/articles/photo_management_with_git-annex_and_bash.html
+
+so say I have a photo in git annex, called DSC_3285.JPG, which of course is really a symlink to ../.git/annex/objects/Zk/kj/WORM-s5296770-m1338516288--DSC_3285.JPG/WORM-s5296770-m1338516288--DSC_3285.JPG.
+
+I want to make an additional link to that photo in a directory called tags/.
+
+should I link to the symlink (DSC_3285.JPG), or to the annexed file? (../.git/annex/objects/Zk/kj/WORM-s5296770-m1338516288--DSC_3285.JPG/WORM-s5296770-m1338516288--DSC_3285.JPG)
+
+I might occasionally rename DSC_3285.JPG or edit the photo itself. will the git annex commit hooks update both links, or should I prepare a script to update links in tags/ after I change DSC_3285 or the annexed data? 
+
+thank you.

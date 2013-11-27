@@ -1,0 +1,9 @@
+I'm testing out an idea of using filter-branch on a git repository to both retroactively annex and AND record a weburl for all relevant files.
+
+c.f. [http://git-annex.branchable.com/tips/How_to_retroactively_annex_a_file_already_in_a_git_repo/](http://git-annex.branchable.com/tips/How_to_retroactively_annex_a_file_already_in_a_git_repo/)
+
+The bottleneck I'm hitting here seems to be the fact that `git annex addurl` diligently checks each url to see that it is accessible, which adds up quickly if many files are to be processed.
+
+It would be great if addurl had an option to disable checking the url, in order to speed up large batch jobs like this.
+
+> --relaxed added [[done]] --[[Joey]]

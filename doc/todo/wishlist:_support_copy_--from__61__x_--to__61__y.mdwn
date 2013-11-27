@@ -1,0 +1,29 @@
+I'd like to be able to:
+
+    git annex copy --from=x --to=y .
+
+Use case (true story) follows:
+
+My desktop hard drive was filling up. I dropped some large files which are also stored (via git-annex) on my backup drive. While these aren't irreplaceable files, I'd prefer to have at least two copies of everything I've decided I care enough about to archive. Later, I get a 2nd external drive, and I:
+
+    git annex copy --to=new-external-drive .
+
+Fantastic! Now I've got everything that was important/useful enough to keep on my desktop backed up a 2nd time onto my new drive.
+
+But my new drive doesn't have a copy of any of the files I dropped from my desktop. I would like to be able to:
+
+    git annex copy --from=old-external-drive --to=new-external-drive .
+
+on my desktop, and then my new drive would have a copy of everything, and my desktop drive would still have plenty of space (ie the files I'd dropped to make space would still not be stored on the desktop).
+
+The git repos on these external drives are both bare (as in ``git init --bare``) because they are used only for backups. Thus I operate on them only as remotes from my main (desktop) repo.
+
+> I have now implemented the --all option, and it's the default when
+> running `git annex get` inside a bare repo.
+> 
+> So, the solution is to `cd` to the repository on old-external-drive,
+> and `git remote add newdrive /path/to/new/drive/repo`. Then run `git
+> annex copy --all --to newdrive` and it'll move everything.
+> 
+> Calling this [[done]] unless there are other use cases where the double
+> copy method is really needed? --[[Joey]] 

@@ -1,0 +1,45 @@
+These are the design pages for the git-annex [[/assistant]].
+
+Parts of the design is still being fleshed out, still many ideas
+and use cases to add. Feel free to chip in with comments! --[[Joey]]
+
+See [[roadmap]] for current plans.
+
+## initial development kickstarter year overview (2012-2013)
+
+* Month 1 "like dropbox": [[!traillink inotify]] [[!traillink syncing]]
+* Month 2 "shiny webapp": [[!traillink webapp]] [[!traillink progressbars]]
+* Month 3 "easy setup": [[!traillink configurators]] [[!traillink pairing]]
+* Month 4 "cloud": [[!traillink cloud]] [[!traillink transfer_control]]
+* Month 5 "cloud continued": [[!traillink xmpp]] [[!traillink more_cloud_providers]]
+* Month 6 "9k bonus round": [[!traillink desymlink]]
+* Month 7: user-driven features and polishing;
+  [presentation at LCA2013](http://mirror.linux.org.au/linux.conf.au/2013/mp4/gitannex.mp4)
+* Month 8: [[!traillink Android]]
+* Month 9: [[screencasts|videos]] and polishing
+* Month 10: bugfixing, [[Android]] webapp
+* Month 11: [[!traillink Windows]] porting, finishing touches
+* Month 12: [presentation at SELF2013](http://www.southeastlinuxfest.org/), finishing touches
+
+## porting
+
+* [[OSX]] port is in fairly good shape, but still has some room for improvement
+* [[android]] port is zooming along
+* [[Windows]] port is barely getting started
+
+## not yet on the map:
+
+* [[rate_limiting]]
+* [[partial_content]]
+* [[deltas]]
+* [[leftovers]]
+* [[other todo items|todo]]
+
+## polls
+
+I post [[polls]] occasionally to make decisions. You can vote!
+
+## blog
+
+I'm blogging about my progress in the [[devblog]] on a semi-daily basis.
+Follow along!

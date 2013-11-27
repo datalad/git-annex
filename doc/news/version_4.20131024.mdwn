@@ -1,0 +1,43 @@
+git-annex 4.20131024 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * webapp: Fix bug when adding a remote and git-remote-gcrypt
+     is not installed.
+   * The assitant can now run scheduled incremental fsck jobs on the local
+     repository and remotes. These can be configured using vicfg or with the
+     webapp.
+   * repair: New command, which can repair damaged git repositories
+     (even ones not using git-annex).
+   * webapp: When git repository damange is detected, repairs can be
+     done using the webapp UI.
+   * Automatically and safely detect and recover from dangling
+     .git/annex/index.lock files, which would prevent git from
+     committing to the git-annex branch, eg after a crash.
+   * assistant: Detect stale git lock files at startup time, and remove them.
+   * addurl: Better sanitization of generated filenames.
+   * Better sanitization of problem characters when generating URL and WORM
+     keys.
+   * The control socket path passed to ssh needs to be 17 characters
+     shorter than the maximum unix domain socket length, because ssh
+     appends stuff to it to make a temporary filename. Closes: #[725512](http://bugs.debian.org/725512)
+   * status: Fix space leak in local mode, introduced in version 4.20130920.
+   * import: Skip .git directories.
+   * Remove bogus runshell loop check.
+   * addurl: Improve message when adding url with wrong size to existing file.
+   * Fixed handling of URL keys that have no recorded size.
+   * status: Fix a crash if a temp file went away while its size was
+     being checked for status.
+   * Deal with git check-attr -z output format change in git 1.8.5.
+   * Work around sed output difference that led to version containing a newline
+     on OSX.
+   * sync: Fix automatic resolution of merge conflicts where one side is an
+     annexed file, and the other side is a non-annexed file, or a directory.
+   * S3: Try to ensure bucket name is valid for archive.org.
+   * assistant: Bug fix: When run in a subdirectory, files from incoming merges
+     were wrongly added to that subdirectory, and removed from their original
+     locations.
+   * Windows: Deal with strange msysgit 1.8.4 behavior of not understanding
+     DOS formatted paths for --git-dir and --work-tree.
+   * Removed workaround for bug in git 1.8.4r0.
+   * Added git-recover-repository command to git-annex source
+     (not built by default; this needs to move to someplace else).
+   * webapp: Move sidebar to the right hand side of the screen."""]]

@@ -1,0 +1,34 @@
+If your Linux distribution does not have git-annex packaged up for you,
+you can either build it [[fromscratch]], or you can use a handy
+prebuilt tarball of the most recent release.
+
+This tarball should work on most Linux systems. It does not depend
+on anything except for glibc.
+
+[download tarball](https://downloads.kitenet.net/git-annex/linux/current/)
+
+To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
+-- this sets up an environment where you can use `git annex`, as well
+as everything else included in the bundle.
+
+Alternatively, you can unpack the tarball, and add the directory to your
+`PATH`. This lets you use `git annex`, without overriding your system's
+own versions of git, etc.
+
+Warning: This is a last resort. Most Linux users should instead
+[[install]] git-annex from their distribution of choice.
+
+## autobuilds
+
+A daily build is also available, thanks to Mesar Hameed and the University
+of Bath CS department.
+
+* i386: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
+* amd64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
+
+## gitannex-install
+
+Eskild Hustvedt has contributed a
+[gitannex-install](https://github.com/zerodogg/scriptbucket/blob/master/gitannex-install)
+script to manage keeping up to date with new releases using the standalone
+build.

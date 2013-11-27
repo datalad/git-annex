@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://meep.pl/"
+ ip="193.23.174.18"
+ subject="git annex init --debug"
+ date="2013-02-27T06:39:19Z"
+ content="""
+The last thing before the signal 11 error that I can see with `--debug` is `read: uname [\"-n\"]` after reports of running 5 git commands.
+
+"""]]

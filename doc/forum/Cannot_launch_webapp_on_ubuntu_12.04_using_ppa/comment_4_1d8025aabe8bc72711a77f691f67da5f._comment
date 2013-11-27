@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="fmarier"
+ ip="121.98.93.240"
+ subject="My PPA (Ubuntu Precise) has git-annex 4.20130417"
+ date="2013-04-27T23:31:54Z"
+ content="""
+It has the 90+ Haskell packages that are required to build git annex with every backend: https://launchpad.net/~fmarier/+archive/ppa
+"""]]

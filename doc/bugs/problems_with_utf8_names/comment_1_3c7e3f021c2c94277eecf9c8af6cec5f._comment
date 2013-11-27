@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="Any update on this?"
+ date="2011-12-24T01:05:07Z"
+ content="""
+I just noticed this issue, and was wondering what the current status is.
+
+    % ls -l 04\ -\ Orixás.mp3
+    -rw-r--r-- 1 adam users 8377816 Jul 12  2007 04 - Orixás.mp3
+    % echo 04\ -\ Orixás.mp3 | od -c
+    0000000   0   4       -       O   r   i   x 303 241   s   .   m   p   3
+    0000020  \n
+    0000021
+    % git annex add 04\ -\ Orixás.mp3
+    git-annex: /home/adam/music/RotC/transcribe/04 - OrixÃ¡s.mp3: getSymbolicLinkStatus: does not exist (No such file or directory)
+"""]]

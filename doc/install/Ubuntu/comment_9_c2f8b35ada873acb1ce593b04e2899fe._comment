@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/2eeca722-8d1c-41fe-8fda-13af7eaff6ae"
+ nickname="Diggory"
+ subject="Outdated in 13.04"
+ date="2013-10-08T16:36:10Z"
+ content="""
+13.04 Raring also has fairly outdated packages: 3.20121112ubuntu4
+Is there a PPA or some such for this? I suppose since Saucy will be out soon this is less critical, but would still be useful.
+
+These don't have direct mode, which (I think; I haven't tested it yet) is the feature I've been waiting for.
+"""]]

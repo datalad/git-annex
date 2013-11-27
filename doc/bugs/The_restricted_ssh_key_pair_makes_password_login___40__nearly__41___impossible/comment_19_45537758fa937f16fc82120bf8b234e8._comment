@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="marvin"
+ ip="91.152.75.65"
+ subject="comment 19"
+ date="2013-04-14T20:47:37Z"
+ content="""
+nope, ssh-add -D doesn't seem to help. Killing gnome-keyring-daemon does.
+"""]]

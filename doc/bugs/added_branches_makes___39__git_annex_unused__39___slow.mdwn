@@ -1,0 +1,87 @@
+Creating additional branches in history seems to slow down the 'git annex unused' command quadratically, even if the location of the branches should be irrelevant as far as unused data goes.
+
+This was tested on:
+
+	$ git annex version
+	git-annex version: 3.20130216
+	local repository version: 3
+	default repository version: 3
+	supported repository versions: 3
+	upgrade supported from repository versions: 0 1 2
+
+What steps will reproduce the problem?
+
+	$ mkdir a
+	$ cd a
+	$ git init
+	$ git annex init
+	$ i=0 ; while test $i -lt 1000; do dd if=/dev/urandom of=$i.img bs=1M count=1; i=$(($i+1)); done
+	$ git annex add .
+	$ git commit -m"foo"
+	$ git rm 1*
+	$ git commit -m"bar"
+	$ git log --oneline --decorate
+	ffcca3a (HEAD, master) bar
+	3e7793d foo
+	$ time -p git annex unused
+	unused . (checking for unused data...) (checking master...)
+	(...)
+	real 0.76
+	user 0.40
+	sys 0.06
+	git commit --allow-empty -m"baz"
+	$ git log --oneline --decorate
+	4390c32 (HEAD, master) baz
+	ffcca3a bar
+	3e7793d foo
+	$ time -p git annex unused
+	unused . (checking for unused data...) (checking master...)
+	(...)
+	real 0.75
+	user 0.38
+	sys 0.07
+	$ git branch boo HEAD^
+	$ time -p git annex unused
+	unused . (checking for unused data...) (checking boo...) (checking master...)
+	(...)
+	real 1.29
+	user 0.62
+	sys 0.08
+	arand@mas:~/tmp/more/a(master)$ git branch beeboo HEAD^
+	4390c32 (HEAD, master) baz
+	ffcca3a (boo, beeboo) bar
+	3e7793d foo
+	arand@mas:~/tmp/more/a(master)$ time -p git annex unused
+	unused . (checking for unused data...) (checking beeboo...) (checking master...)
+	(...)
+	real 2.50
+	user 1.12
+	sys 0.14
+	$ git branch -d boo beeboo
+	$ git log --oneline --decorate
+	4390c32 (HEAD, master) baz
+	ffcca3a bar
+	3e7793d foo
+	$ time -p git annex unused
+	unused . (checking for unused data...) (checking master...)
+	(...)
+	real 0.77
+	user 0.42
+	sys 0.04
+
+What is the expected output? What do you see instead?
+
+I would expect the time to be the same in all the above cases.
+
+What version of git-annex are you using? On what operating system?
+
+	$ git annex version
+	git-annex version: 3.20130216
+
+On current Debian sid/experimental
+
+> [[Done]], thanks to guilhem. We ended up using a different algorythm
+> which is faster yet, basically it now does a diff-index between the
+> index and each branch for its second stage bloom filter.
+> Speedup is 30x with 0 (or 1?) branch, and then massive for each
+> additional branch. --[[Joey]] 

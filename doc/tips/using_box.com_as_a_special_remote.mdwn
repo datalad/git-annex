@@ -1,0 +1,71 @@
+[Box.com](http://box.com/) is a file storage service, currently notable 
+for providing 50 gb of free storage if you sign up with its Android client.
+(Or a few gb free otherwise.)
+
+git-annex can use Box as a [[special remote|special_remotes]].
+Recent versions of git-annex make this very easy to set up:
+
+	WEBDAV_USERNAME=you@example.com WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://www.box.com/dav/git-annex chunksize=75mb encryption=shared
+
+Note the use of chunksize; Box has a 100 mb maximum file size, and this
+breaks up large files into chunks before that limit is reached.
+
+# old davfs2 method
+
+This method is deprecated, but still documented here just in case.
+Note that the files stored using this method cannot reliably be retreived
+using the webdav special remote.
+
+## davfs2 setup
+
+* First, install
+  the [davfs2](http://savannah.nongnu.org/projects/davfs2) program,
+  which can mount Box using WebDAV. On Debian, just `sudo apt-get install davfs2`
+* Allow users to mount davfs filesystems, by ensuring that
+  `/sbin/mount.davfs` is setuid root. On Debian, just `sudo dpkg-reconfigure davfs2`
+* Add yourself to the davfs2 group.
+
+        sudo adduser $(whoami) davfs2
+
+* Edit `/etc/fstab`, and add a line to mount Box using davfs.
+
+        sudo mkdir -p /media/box.com
+        echo "https://www.box.com/dav/	/media/box.com	davfs	noauto,user	0 0" | sudo tee -a /etc/fstab
+
+* Create `~/.davfs2/davfs2.conf` with some important settings:
+
+        mkdir ~/.davfs2/
+        echo use_locks 0 > ~/.davfs2/davfs2.conf
+        echo cache_size 1 >> ~/.davfs2/davfs2.conf
+        echo delay_upload 0 >> ~/.davfs2/davfs2.conf
+
+* Create `~/.davfs2/secrets`. This file contains your Box.com login and password.
+  Your login is probably the email address you signed up with.
+
+        echo "/media/box.com joey@kitenet.net mypassword" > ~/.davfs2/secrets
+        chmod 600 ~/.davfs2/secrets
+
+* Now you should be able to mount Box, as a non-root user:
+
+        mount /media/box.com
+
+## git-annex setup
+
+You need git-annex version 3.20120303 or newer, which adds support for chunking
+files larger than Box's 100 mb limit.
+
+Create the special remote, in your git-annex repository.
+** This example is non-encrypted; fill in your gpg key ID for a securely
+encrypted special remote! **
+
+	git annex initremote box.com type=directory directory=/media/box.com chunksize=2mb encryption=none
+
+Now git-annex can copy files to box.com, get files from it, etc, just like
+with any other special remote.
+
+	% git annex copy bigfile --to box.com
+	bigfile (to box.com...) ok
+	% git annex drop bigfile
+	bigfile (checking box.com...) ok
+	% git annex get bigfile
+	bigfile (from box.com...) ok

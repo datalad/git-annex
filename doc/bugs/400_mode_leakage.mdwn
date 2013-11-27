@@ -1,0 +1,25 @@
+git-annex tends to preserve files that are added to an annex with
+a mode such as 400. (Happens to me sometimes with email attachments.) 
+As these files are rsynced around, and end up on eg, a
+publically visible repo with a webserver frontend, or a repo that is
+acessible to a whole group of users, they will not be readable. 
+
+I think it would make sense for git-annex to normalize file permissions
+when adding them. Of course, there's some tension here with generally
+storing file metadata when possible. Perhaps the normalization should only
+ensure that group and other have read access?
+
+(Security: We can assume that a repo that is not intended to be public is
+in a 700 directory. And since git-annex cannot preserve file modes when
+files transit through a special remote, using modes to limit access to
+individual files is not wise.)
+
+--[[Joey]]
+
+> Revisiting this, git-annex already honors core.sharedrepository settings,
+> so I just needed to set it to `world` to allow everyone to read.
+> 
+> There was a code path in direct mode where that didn't work; fixed that.
+> 
+> [[done]]
+> --[[Joey]] 

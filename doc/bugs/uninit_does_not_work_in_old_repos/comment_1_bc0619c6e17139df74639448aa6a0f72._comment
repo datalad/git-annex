@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-10-29T15:30:09Z"
+ content="""
+After upgrading the repo, I still have to commit the changes, else git-annex won't let me uninit. Arguably a Good Thing, but I wanted to document it here.
+"""]]

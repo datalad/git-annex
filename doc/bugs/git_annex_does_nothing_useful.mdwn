@@ -1,0 +1,67 @@
+As you can see, I'm running a pretty recent build of git-annex (ac799c3f363e0008b23e9c174e6fedc35e6fa92a),
+
+    $ git annex version
+    git-annex version: 3.20120630
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3
+    upgrade supported from repository versions: 0 1 2
+
+We have a file here which isn't currently available yet isn't
+currently available (the link is shown in red),
+
+    $ ls -l plot.py
+    lrwxrwxrwx 1 ben ben 77 Jul  6 14:01 plot.py -> ../.git/annex/objects/WORM:1301941019:720:plot.py/WORM:1301941019:720:plot.py
+    $ 
+
+Yet git-annex should be able to tell us where it is,
+
+    $ git-annex whereis plot.py
+    $ 
+
+Hmm, well that's strange. What's happening here,
+
+    $ git-annex whereis plot.py -d
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","show-ref","git-annex"]
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","show-ref","--hash","refs/heads/git-annex"]
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","log","refs/heads/git-annex..d5582e05f41011b571a17003934fe9e40859e4be","--oneline","-n1"]
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","cat-file","--batch"]
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","ls-files","--cached","-z","--","plot.py"]
+    $ 
+
+Alright, well maybe `git-annex get` will work,
+
+    $ git annex get plot.py -d
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","ls-files","--cached","-z","--","plot.py"]
+    $ ls -l plot.py
+    lrwxrwxrwx 1 ben ben 77 Jul  6 14:01 plot.py -> ../.git/annex/objects/WORM:1301941019:720:plot.py/WORM:1301941019:720:plot.py
+
+Nope, the link is still shown in red.
+
+Alright, what about `git-annex copy`?
+
+    $ git annex copy plot.py --from=goldnerlab --to=here -d 
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","show-ref","git-annex"]
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","show-ref","--hash","refs/heads/git-annex"]
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","log","refs/heads/git-annex..d5582e05f41011b571a17003934fe9e40859e4be","--oneline","-n1"]
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","cat-file","--batch"]
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","ls-files","--cached","-z","--","plot.py"]
+    $ ls -l plot.py
+    lrwxrwxrwx 1 ben ben 77 Jul  6 14:01 plot.py -> ../.git/annex/objects/WORM:1301941019:720:plot.py/WORM:1301941019:720:plot.py
+
+Still red.
+
+Alright, what if I just try to get a non-existent file?
+
+    $ git annex get adsflkah -d
+    git ["--git-dir=/home/ben/lori/analysis/data/.git","--work-tree=/home/ben/lori/analysis/data","ls-files","--cached","-z","--","adsflkah"]
+    $
+
+Alright, it didn't fail with an error, that's very strange. What is going on here?
+
+[[!meta title="v1 file is ignored"]]
+
+> I don't think I want to make git-annex deal with v1 files, and
+> I doubt there are many repos left using them. This seems to be a case
+> of an upgrade not being done, for whatever reason. Closing [[done]]
+> --[[Joey]]

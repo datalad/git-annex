@@ -1,0 +1,23 @@
+Open two webapp sessions (in two different *screen* windows or whatever)
+
+    name@name-Computermodel-1000:~/test/annex1$ git-annex webapp
+    name@name-Computermodel-1000:~/test/annex2$ git-annex webapp
+
+In annex1's web UI, choose *Configuration* -> *Manage repositories* -> *Local computer*.
+
+Fill in the secret phrase and press *Start pairing*.
+
+In annex2's web UI, a pairing request will show on the left notifications bar. Choose *Respond*, fill in the phrase field and press *Finish pairing*.
+
+I was expecting a pairing between the two running session. But I got this after pressing *Finish pairing* in annex2's web UI:
+
+**start of output**
+# Internal Server Error
+
+bad comment in ssh public key ssh-rsa [very long GPG key jibber jabber] name@name-Computermodel-1000
+
+**end of output**
+
+git-annex version: 3.20121017, Ubuntu 12.04
+
+> [[Done]], allowed dash and underscore in there now.

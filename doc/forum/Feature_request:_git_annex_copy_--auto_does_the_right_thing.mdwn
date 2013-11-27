@@ -1,0 +1,5 @@
+I'm not sure of the right place for feature requests; sorry if this is incorrect.
+
+It occurred to me that it would be neat if running git annex copy --auto copied enough copies of the file to connected remotes that don't have it to fulfil numcopies (if possible). Further coolness could come from choosing the remotes smartly (based, for example, on availability, access cost, remote disk space, trust level... you get the idea)
+
+Having an option like this would allow the user to use numcopies to backup files to wherever possible, if they don't really care about where those copies go.

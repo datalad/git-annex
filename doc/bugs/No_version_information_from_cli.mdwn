@@ -1,0 +1,18 @@
+git-annex does not listen to -v, --version or version.
+
+At the very least, it should return both the version of the binary and the version of the object store it supports.
+If it supports several annex versions, they should be listed in a comma-separated fashion.
+If git-annex is called from within an annex, it should print the version of the local object store.
+
+Sample:
+
+    % git annex version
+    git-annex version               : 0.24
+    default object store version    : 3
+    supported object store versions : 2,3
+    local object store version      : 2
+    % 
+
+The above might look like overkill, but it's in a form that will, most likely, never need to be extended.
+
+> Great idea, [[done]] --[[Joey]] 

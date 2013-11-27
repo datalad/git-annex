@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="RaspberryPie"
+ ip="37.130.227.133"
+ subject="comment 7"
+ date="2013-10-13T22:14:05Z"
+ content="""
+Yes, I run the assistant in the background. The error came up after I ran 
+
+    git init
+    git annex init
+    git annex direct
+    git annex assistant
+
+in a directory containing a lot of files (around 80G). Right away, `git annex status` gave me the error below. The file name in question never changed during the process of adding files and hasn't changed after all files have been added.
+
+Here's the complete command line output:
+
+    $ git annex status
+    supported backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+    supported remote types: git gcrypt S3 bup directory rsync web glacier hook
+    repository mode: direct
+    trusted repositories: 0
+    semitrusted repositories: 2
+       	00000000-0000-0000-0000-000000000001 -- web
+        c1bb8eb9-fb0c-4bac-b0df-37df25b2d1e7 -- here
+    untrusted repositories: 0
+    transfers in progress: none
+    available local disk space: 1.74 terabytes (+10 gigabytes reserved)
+
+    git-annex: /storage/media/.git/annex/tmp/problematic_file--: getFileStatus: does not exist (No such file or directory)
+    failed
+    git-annex: status: 1 failed
+
+
+"""]]

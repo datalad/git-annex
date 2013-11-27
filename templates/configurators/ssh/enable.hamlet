@@ -1,0 +1,29 @@
+<div .span9 .hero-unit>
+  <h2>
+    Enabling #{description}
+  <p>
+    To enable this repository, you first need to check that its ssh server #
+    is usable from here.
+  <p>
+  <p>
+    <form method="post" .form-horizontal enctype=#{enctype}>
+      <fieldset>
+        <div .form-actions>
+          <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
+            Check this server
+        $case status
+          $of UnusableServer msg
+            <div .alert .alert-error>
+              <i .icon-warning-sign></i> #{msg}
+          $of _
+        ^{form}
+        ^{webAppFormAuthToken}
+<div .modal .fade #testmodal>
+  <div .modal-header>
+    <h3>
+      Testing server ...
+  <div .modal-body>
+    <p>
+      Checking ssh connection to the server. This could take a minute.
+    <p>
+      You may be prompted for your password to log into the server.

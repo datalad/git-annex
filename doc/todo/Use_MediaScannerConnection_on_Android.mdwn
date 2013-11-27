@@ -1,0 +1,7 @@
+Currently if photos or videos are copied into the Camera/DCIM directory on an Android device, or deleted the Gallery doesn't notice the changes.
+
+It is necessary to call MediaScannerConnection - http://developer.android.com/reference/android/media/MediaScannerConnection.html - to notify the system of the change.
+
+More info, and some sample Java code: http://stackoverflow.com/questions/13270789/how-to-run-media-scanner-in-android
+
+It'd be awesome if the assistant did this on files it has changed.  Possibly just under Camera/DCIM, but perhaps it should be configurable. MediaScannerConnection is also used to notify and index new music files.

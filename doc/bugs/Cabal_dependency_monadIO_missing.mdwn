@@ -1,0 +1,17 @@
+Just issuing the command `cabal install` results in the following error message.
+
+    Command/Add.hs:54:3:
+        No instance for (Control.Monad.IO.Control.MonadControlIO
+                           (Control.Monad.State.Lazy.StateT Annex.AnnexState IO))
+          arising from a use of `handle' at Command/Add.hs:54:3-24
+
+Adding the dependency for `monadIO` to `git-annex.cabal` should fix this?  
+-- Thomas
+
+> No, it's already satisfied by `monad-control` being listed as a
+> dependency in the cabal file. Your system might be old/new/or broken,
+> perhaps it's time to provide some details about the version of haskell
+> and of `monad-control` you have installed? --[[Joey]] 
+
+>> Closing as apparently user error or a broken system.
+>> If you see this problem please do say. [[done]] --[[Joey]] 

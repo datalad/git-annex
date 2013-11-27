@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://alan.petitepomme.net/"
+ nickname="Alan Schmitt"
+ subject="comment 33"
+ date="2013-10-23T11:39:51Z"
+ content="""
+I installed the haskell DBus library, but it's still not picking it up. Is there some additional option to pass to cabal, or is it supposed to find it automatically?
+"""]]

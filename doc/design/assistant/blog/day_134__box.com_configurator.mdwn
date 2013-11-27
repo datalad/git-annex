@@ -1,0 +1,8 @@
+I needed an easy day, and I got one. Configurator in the webapp for Box.com
+came together really quickly and easily, and worked on the first try.
+
+Also filed a [bug](https://github.com/vincenthz/hs-cryptocipher/issues/21)
+on the Haskell library that is failing on portknox.com's SSL certificate.
+That site is the only OwnCloud provider currently offering free WebDAV
+storage. Will hold off on adding OwnCloud to the webapp's cloud provider lists
+until that's fixed.

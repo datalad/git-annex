@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 9"
+ date="2011-05-15T09:16:49Z"
+ content="""
+Just to make sure: How do I get $key? What I did was look at the path in the object store of the local repo and see if that exact same path & file existed in the remote.
+"""]]

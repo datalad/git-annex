@@ -1,0 +1,18 @@
+### Please describe the problem.
+Bad input data given to gpg will make it lock.
+
+### What steps will reproduce the problem?
+Trying to download gpg encrypted data from remote with bad/incorrect data
+
+### What version of git-annex are you using? On what operating system?
+4.20130501-gd9e288b, on ubuntu 13.04
+
+### Please provide any additional information below.
+Transcript
+http://paste.ubuntu.com/5626517/
+
+Note: The problem is most likely caused by bad data from either the nntp hooks program, or the nntp server itself.
+
+I also have one file with bad data that consistently is NOT a problem for gpg to handle(lines 24-25 of log).
+
+[[!tag moreinfo]]

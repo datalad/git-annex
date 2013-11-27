@@ -1,0 +1,125 @@
+4.20130601 xmpp sync error.
+
+setup: A debian machine, with indirect fresh annex, android galaxy s3 with a
+fresh direct annex, both running ga-20130601.
+
+steps:
+- Start assistant on both, add jabber account to both.
+- Add box.com account on desktop with no encryption, (now correctly shows up on android, wasn't the case with 20130521).
+- Add hello.txt on desktop repo, filename is now visible on android, but content is not.
+- Add greeting.txt on desktop, nothing shows up on android, content still missing for hello.txt
+- Webapp shows uploading messages, but no errors.
+- Manually checking box.com confirms that files have been uploaded.
+
+debian desktop daemon.log:
+
+    [2013-06-02 17:57:03 CEST] main: starting assistant version 4.20130601
+    (scanning...) [2013-06-02 17:57:03 CEST] Watcher: Performing startup scan
+    (started...) [2013-06-02 17:57:52 CEST] XMPPClient: Pairing with myJabberAccount in progress
+    [2013-06-02 17:57:53 CEST] XMPPReceivePack: Syncing with myJabberAccount 
+    [2013-06-02 17:58:03 CEST] XMPPClient: Pairing with myJabberAccount in progress
+    [2013-06-02 17:58:52 CEST] main: Syncing with box.com 
+    warning: Not updating non-default fetch respec
+	
+	Please update the configuration manually if necessary.
+    fatal: The remote end hung up unexpectedly
+    [2013-06-02 17:59:53 CEST] XMPPReceivePack: Syncing with myJabberAccount 
+    [2013-06-02 18:00:02 CEST] Committer: Adding hello.txt
+
+    (testing WebDAV server...)
+    add hello.txt (checksum...) [2013-06-02 18:00:02 CEST] Committer: Committing changes to git
+    [2013-06-02 18:00:02 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    Already up-to-date.
+    [2013-06-02 18:00:03 CEST] Committer: Committing changes to git
+    fatal: The remote end hung up unexpectedly
+    fatal: The remote end hung up unexpectedly
+    [2013-06-02 18:00:03 CEST] XMPPSendPack: Syncing with myJabberAccount 
+
+    
+100%          1.0 B/s 0s
+                        
+[2013-06-02 18:00:19 CEST] Transferrer: Uploaded hello.txt
+    fatal: The remote end hung up unexpectedly
+    [2013-06-02 18:01:53 CEST] XMPPReceivePack: Syncing with myJabberAccount 
+    fatal: The remote end hung up unexpectedly
+    [2013-06-02 18:02:04 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    fatal: The remote end hung up unexpectedly
+    [2013-06-02 18:03:53 CEST] XMPPReceivePack: Syncing with myJabberAccount 
+    fatal: The remote end hung up unexpectedly
+    [2013-06-02 18:05:10 CEST] Committer: Adding greeting.txt
+    ok
+    (Recording state in git...)
+    (Recording state in git...)
+
+    (Recording state in git...)
+    add greeting.txt (checksum...) [2013-06-02 18:05:10 CEST] Committer: Committing changes to git
+    [2013-06-02 18:05:10 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    Already up-to-date.
+    [2013-06-02 18:05:11 CEST] Committer: Committing changes to git
+
+    
+100%          9.0 B/s 0s
+                        
+[2013-06-02 18:05:24 CEST] Transferrer: Uploaded greeting.txt
+    fatal: The remote end hung up unexpectedly
+    [2013-06-02 18:06:13 CEST] XMPPReceivePack: Syncing with myJabberAccount 
+    ok
+    (Recording state in git...)
+    (Recording state in git...)
+
+    (Recording state in git...)
+    fatal: The remote end hung up unexpectedly
+
+Thanks as always.
+
+
+Android daemon.log:
+    [2013-06-02 17:53:07 CEST] main: starting assistant version 4.20130601-g7483ca4
+    (scanning...) [2013-06-02 17:53:07 CEST] Watcher: Performing startup scan
+    (started...) [2013-06-02 17:57:51 CEST] XMPPClient: Pairing with myJabberAccount in progress
+    [2013-06-02 17:57:52 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    Already up-to-date.
+    [2013-06-02 17:58:00 CEST] XMPPSendPack: Unable to download files from your other devices. 
+    [2013-06-02 17:58:00 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    [2013-06-02 17:58:02 CEST] XMPPClient: Pairing with myJabberAccount in progress
+    [2013-06-02 17:58:07 CEST] XMPPSendPack: Unable to download files from your other devices. 
+    [2013-06-02 17:58:07 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    [2013-06-02 17:58:15 CEST] XMPPSendPack: Unable to download files from your other devices. 
+    [2013-06-02 18:00:02 CEST] XMPPReceivePack: Syncing with myJabberAccount 
+    [2013-06-02 18:00:03 CEST] XMPPReceivePack: Unable to download files from your other devices. 
+    [2013-06-02 18:00:04 CEST] XMPPReceivePack: Syncing with myJabberAccount 
+    Merge made by the 'recursive' strategy.
+     hello.txt | 1 +
+     1 file changed, 1 insertion(+)
+     create mode 120000 hello.txt
+    [2013-06-02 18:00:05 CEST] Committer: Committing changes to git
+    [2013-06-02 18:00:06 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    Already up-to-date.
+    [2013-06-02 18:00:14 CEST] XMPPSendPack: Unable to download files from your other devices. 
+    [2013-06-02 18:00:14 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    [2013-06-02 18:00:25 CEST] XMPPSendPack: Unable to download files from your other devices. 
+    [2013-06-02 18:02:03 CEST] Committer: Committing changes to git
+    fatal: The remote end hung up unexpectedly
+    [2013-06-02 18:02:04 CEST] XMPPReceivePack: Unable to download files from your other devices. 
+    [2013-06-02 18:02:04 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    [2013-06-02 18:02:04 CEST] XMPPReceivePack: Syncing with myJabberAccount 
+    [2013-06-02 18:02:13 CEST] XMPPSendPack: Unable to download files from your other devices. 
+    [2013-06-02 18:02:15 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    [2013-06-02 18:02:24 CEST] XMPPSendPack: Unable to download files from your other devices. 
+    fatal: The remote end hung up unexpectedly
+    [2013-06-02 18:04:04 CEST] XMPPReceivePack: Unable to download files from your other devices. 
+    [2013-06-02 18:05:10 CEST] XMPPReceivePack: Syncing with myJabberAccount 
+    [2013-06-02 18:06:12 CEST] Committer: Committing changes to git
+    [2013-06-02 18:06:13 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    [2013-06-02 18:06:21 CEST] XMPPSendPack: Unable to download files from your other devices. 
+    [2013-06-02 18:06:21 CEST] XMPPSendPack: Syncing with myJabberAccount 
+    [2013-06-02 18:06:29 CEST] XMPPSendPack: Unable to download files from your other devices. 
+    fatal: The remote end hung up unexpectedly
+    [2013-06-02 18:07:10 CEST] XMPPReceivePack: Unable to download files from your other devices. 
+
+
+thanks
+
+> Since this seems clearly a lack of box.com being configured 
+> to be used on the Android, I'm closing the bug: [[done]]. 
+> If I'm wrong, write back, and I'll reopen ;) --[[Joey]]

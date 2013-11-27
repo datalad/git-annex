@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmCmNS-oUgYfNg85-LPuxzTZJUp0sIgprM"
+ nickname="Jonas"
+ subject="more homebrew"
+ date="2013-02-16T19:46:47Z"
+ content="""
+i had macports installed. then i installed brew, instaled haskell via brew. i needed to set 
+    PATH=$HOME/bin:/usr/local/bin:$PATH
+"""]]

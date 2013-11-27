@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://kevwalke.myopenid.com/"
+ ip="77.86.30.139"
+ subject="building and installing with cabal"
+ date="2012-08-29T18:15:07Z"
+ content="""
+So I got round to trying it out. I cloned the latest from the repository@ git://git-annex.branchable.com/ and then followed the instructions on the install page: http://git-annex.branchable.com/install/cabal/
+However I get a dependency problem:
+
+cabal install --only-dependencies
+Resolving dependencies...
+cabal: Could not resolve dependencies:
+trying: git-annex-3.20120825 (user goal)
+trying: git-annex-3.20120825:+oldyesod
+trying: git-annex-3.20120825:+currentyesod
+next goal: yesod-default (dependency of git-annex-3.20120825:+oldyesod)
+rejecting: yesod-default-1.1.0 (conflict: git-annex-3.20120825:oldyesod =>
+yesod-default(<=1.0.1.1))
+rejecting: yesod-default-1.0.1.1, 1.0.1, 1.0.0, 0.6.1, 0.5.0, 0.4.1, 0.4.0,
+0.3.1 (conflict: git-annex-3.20120825:currentyesod => yesod-default(>=1.1.0))
+
+I'm not sure how to proceed from here and would be grateful of any pointers to help get this built
+"""]]

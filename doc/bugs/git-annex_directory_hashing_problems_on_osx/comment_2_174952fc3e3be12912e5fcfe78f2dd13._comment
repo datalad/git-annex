@@ -1,0 +1,185 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2011-03-28T15:09:45Z"
+ content="""
+I think I know how I got myself into this mess... I was on my mac workstation and I had just pulled in a change set from another repo on a linux workstation after I had a made a bunch of moves. here's a bit of a log of what happened...
+
+
+<pre>
+jtang@x00:~/sources $ git pull cports-devel master
+Warning: untrusted X11 forwarding setup failed: xauth key data not generated
+Warning: No xauth data; using fake authentication data for X11 forwarding.
+remote: Counting objects: 4195, done.
+remote: Compressing objects: 100% (1135/1135), done.
+remote: Total 2582 (delta 866), reused 2576 (delta 860)
+Receiving objects: 100% (2582/2582), 229.42 KiB | 111 KiB/s, done.
+Resolving deltas: 100% (866/866), completed with 9 local objects.
+From cports-devel:/home/people/jtang/sources
+ * branch            master     -> FETCH_HEAD
+Updating 319df99..ab0a98c
+error: Your local changes to the following files would be overwritten by merge:
+	.git-annex/09/5X/WORM-s361516678-m1301310614--l_fcompxe_intel64_2011.2.137.tgz.log
+	.git-annex/43/2g/WORM-s19509673-m1301310496--l_fcompxe_2011.2.137_redist.tgz.log
+	.git-annex/4J/qF/WORM-s18891115-m1301310934--w_flm_p_1.0.011_ia64.zip.log
+	.git-annex/87/w1/WORM-s12212473-m1301310909--w_flm_p_1.0.011_ia32.zip.log
+	.git-annex/99/Jq/WORM-s194345957-m1301310926--l_mkl_10.3.2.137_ia32.log
+	.git-annex/99/kf/WORM-s9784531-m1301311680--l_ccompxe_2011.2.137_redist.log
+	.git-annex/FF/f3/WORM-s93033394-m1301311706--l_gen_ipp_7.0.2.137.log
+	.git-annex/MF/xZ/WORM-s515140733-m1301310936--l_cprof_p_11.1.075.log
+	.git-annex/XW/X8/WORM-s355559731-m1301310797--l_mkl_10.3.2.137.log
+	.git-annex/fJ/mZ/WORM-s1372886477-m1301313368--l_cproc_p_11.1.075.log
+	.git-annex/j7/Q9/WORM-s44423202-m1301310622--l_cprof_p_11.1.075_redist.log
+	.git-annex/k4/K7/WORM-s239539070-m1301310760--l_mkl_10.3.2.137_intel64.log
+	.git-annex/kz/01/WORM-s279573314-m1301310783--l_cprof_p_11.1.075_ia32.log
+	.git-annex/p6/Kq/WORM-s31199343-m1301311829--l_cproc_p_11.1.075_redist.log
+	.git-annex/pz/J5/WORM-s626995277-m1301312301--l_ccompxe_ia32_2011.2.137.log
+	.git-annex/v3/kX/WORM-s339693045-m1301310851--l_cprof_p_11.1.075_intel64.log
+Please, commit your changes or stash them before you can merge.
+error: Your local changes to the following files would be overwritten by merge:
+	.git-annex/12/3W/WORM-s3058814-m1276699694--Botan-1.8.9.tgz.log
+	.git-annex/1G/qV/WORM-s9122-m1251558854--Array-Compare-2.01.tar.gz.log
+	.git-annex/3W/W5/WORM-s231523-m1270740744--DBD-Pg-2.17.1.tar.gz.log
+	.git-annex/3x/PX/WORM-s380310-m1293025187--HTSeq-0.4.7.tar.gz.log
+	.git-annex/45/gk/WORM-s67337-m1248732018--ExtUtils-Install-1.54.tar.gz.log
+	.git-annex/4J/7Q/WORM-s8608-m1224694862--Algorithm-Munkres-0.08.tar.gz.log
+	.git-annex/4g/XQ/WORM-s89208-m1278682033--HTML-Parser-3.66.tar.gz.log
+	.git-annex/54/jw/WORM-s300163-m1226422051--AcePerl-1.92.tar.gz.log
+	.git-annex/63/kj/WORM-s1213460-m1262942058--DBD-SQLite-1.29.tar.gz.log
+	.git-annex/6Z/42/WORM-s4074-m943766010--File-Sync-0.09.tar.gz.log
+	.git-annex/8F/M5/WORM-s6989-m1263161127--Digest-HMAC-1.02.tar.gz.log
+	.git-annex/G2/FK/WORM-s3309-m1163872981--Bundle-BioPerl-2.1.8.tar.gz.log
+	.git-annex/Gk/XF/WORM-s23572243-m1279546902--EMBOSS-6.3.1.tar.gz.log
+	.git-annex/Jk/X6/WORM-s566429-m1279309002--DBI-1.612.tar.gz.log
+	.git-annex/K6/fV/WORM-s1561451-m1240055295--Convert-Binary-C-0.74.tar.gz.log
+	.git-annex/KM/4q/WORM-s146959-m1268515086--Graph-0.94.tar.gz.log
+	.git-annex/MF/m2/WORM-s425766-m1212514609--Data-Stag-0.11.tar.gz.log
+	.git-annex/QJ/P6/WORM-s1045868-m1282215033--9base-6.tar.gz.log
+	.git-annex/Qm/WG/WORM-s39078-m1278163547--Digest-SHA1-2.13.tar.gz.log
+	.git-annex/Wq/Fj/WORM-s45680640-m1297862101--BclConverter-1.7.1.tar.log
+	.git-annex/Wq/Wm/WORM-s263536640-m1295025537--CASAVA_v1.7.0.tar.log
+	.git-annex/XW/qm/WORM-s36609-m1276050470--Bio-ASN1-EntrezGene-1.10-withoutworldwriteables.tar.gz.log
+	.git-annex/f7/g0/WORM-s40872-m1278273227--ExtUtils-ParseXS-2.2206.tar.gz.log
+	.git-annex/j3/JF/WORM-s11753-m1232427595--Clone-0.31.tar.gz.log
+	.git-annex/kX/9g/WORM-s84690-m1229117599--GraphViz-2.04.tar.gz.log
+	.git-annex/km/z5/WORM-s44634-m1275505134--Authen-SASL-2.15.tar.gz.log
+	.git-annex/kw/J3/WORM-s132396-m1278780649--DBD-mysql-4.016.tar.gz.log
+	.git-annex/p5/1P/WORM-s53736-m1278673485--Archive-Tar-1.64.tar.gz.log
+	.git-annex/wv/zG/WORM-s30584-m1268774021--ExtUtils-CBuilder-0.2703.tar.gz.log
+	.git-annex/x5/7v/WORM-s10462526-m1254242591--BioPerl-1.6.1.tar.gz.log
+Please, commit your changes or stash them before you can merge.
+error: The following untracked working tree files would be overwritten by merge:
+	.git-annex/1g/X3/WORM-s309910751-m1301311322--l_fcompxe_ia32_2011.2.137.tgz.log
+	.git-annex/3w/Xf/WORM-s805764902-m1301312756--l_cproc_p_11.1.075_intel64.log
+	.git-annex/9Q/Wz/WORM-s1234430253-m1301311891--l_ccompxe_2011.2.137.log
+	.git-annex/FQ/4z/WORM-s318168323-m1301310848--l_cprof_p_11.1.075_ia64.log
+	.git-annex/FV/0P/WORM-s710135470-m1301311835--l_ccompxe_intel64_2011.2.137.log
+	.git-annex/Jx/qM/WORM-s599386592-m1301310731--l_fcompxe_2011.2.137.tgz.log
+	.git-annex/KX/w1/WORM-s35976002-m1301312193--l_tbb_3.0.6.174.log
+	.git-annex/Vw/jK/WORM-s15795178-m1301310913--w_flm_p_1.0.011_intel64.zip.log
+	.git-annex/jK/zK/WORM-s374617670-m1301312705--l_ipp_7.0.2.137_intel64.log
+	.git-annex/vK/kv/WORM-s584342291-m1301312669--l_cproc_p_11.1.075_ia64.log
+	.git-annex/vw/v1/WORM-s736986678-m1301312794--l_cproc_p_11.1.075_ia32.log
+	.git-annex/zq/7X/WORM-s343075585-m1301312233--l_ipp_7.0.2.137_ia32.log
+Please move or remove them before you can merge.
+Aborting
+1|jtang@x00:~/sources $ git status
+# On branch master
+# Your branch is ahead of 'origin/master' by 2 commits.
+#
+# Changes to be committed:
+#   (use \"git reset HEAD <file>...\" to unstage)
+#
+#	modified:   .git-annex/09/5X/WORM-s361516678-m1301310614--l_fcompxe_intel64_2011.2.137.tgz.log
+#	modified:   .git-annex/43/2g/WORM-s19509673-m1301310496--l_fcompxe_2011.2.137_redist.tgz.log
+#	modified:   .git-annex/4J/qF/WORM-s18891115-m1301310934--w_flm_p_1.0.011_ia64.zip.log
+#	modified:   .git-annex/87/w1/WORM-s12212473-m1301310909--w_flm_p_1.0.011_ia32.zip.log
+#	modified:   .git-annex/99/Jq/WORM-s194345957-m1301310926--l_mkl_10.3.2.137_ia32.log
+#	modified:   .git-annex/99/kf/WORM-s9784531-m1301311680--l_ccompxe_2011.2.137_redist.log
+#	modified:   .git-annex/FF/f3/WORM-s93033394-m1301311706--l_gen_ipp_7.0.2.137.log
+#	modified:   .git-annex/MF/xZ/WORM-s515140733-m1301310936--l_cprof_p_11.1.075.log
+#	modified:   .git-annex/XW/X8/WORM-s355559731-m1301310797--l_mkl_10.3.2.137.log
+#	modified:   .git-annex/fJ/mZ/WORM-s1372886477-m1301313368--l_cproc_p_11.1.075.log
+#	modified:   .git-annex/j7/Q9/WORM-s44423202-m1301310622--l_cprof_p_11.1.075_redist.log
+#	modified:   .git-annex/k4/K7/WORM-s239539070-m1301310760--l_mkl_10.3.2.137_intel64.log
+#	modified:   .git-annex/kz/01/WORM-s279573314-m1301310783--l_cprof_p_11.1.075_ia32.log
+#	modified:   .git-annex/p6/Kq/WORM-s31199343-m1301311829--l_cproc_p_11.1.075_redist.log
+#	modified:   .git-annex/pz/J5/WORM-s626995277-m1301312301--l_ccompxe_ia32_2011.2.137.log
+#	modified:   .git-annex/v3/kX/WORM-s339693045-m1301310851--l_cprof_p_11.1.075_intel64.log
+#
+# Changes not staged for commit:
+#   (use \"git add <file>...\" to update what will be committed)
+#   (use \"git checkout -- <file>...\" to discard changes in working directory)
+#
+#	modified:   .git-annex/12/3W/WORM-s3058814-m1276699694--Botan-1.8.9.tgz.log
+#	modified:   .git-annex/1G/qV/WORM-s9122-m1251558854--Array-Compare-2.01.tar.gz.log
+#	modified:   .git-annex/3W/W5/WORM-s231523-m1270740744--DBD-Pg-2.17.1.tar.gz.log
+#	modified:   .git-annex/3x/PX/WORM-s380310-m1293025187--HTSeq-0.4.7.tar.gz.log
+#	modified:   .git-annex/45/gk/WORM-s67337-m1248732018--ExtUtils-Install-1.54.tar.gz.log
+#	modified:   .git-annex/4J/7Q/WORM-s8608-m1224694862--Algorithm-Munkres-0.08.tar.gz.log
+#	modified:   .git-annex/4g/XQ/WORM-s89208-m1278682033--HTML-Parser-3.66.tar.gz.log
+#	modified:   .git-annex/54/jw/WORM-s300163-m1226422051--AcePerl-1.92.tar.gz.log
+#	modified:   .git-annex/63/kj/WORM-s1213460-m1262942058--DBD-SQLite-1.29.tar.gz.log
+#	modified:   .git-annex/6Z/42/WORM-s4074-m943766010--File-Sync-0.09.tar.gz.log
+#	modified:   .git-annex/8F/M5/WORM-s6989-m1263161127--Digest-HMAC-1.02.tar.gz.log
+#	modified:   .git-annex/G2/FK/WORM-s3309-m1163872981--Bundle-BioPerl-2.1.8.tar.gz.log
+#	modified:   .git-annex/Gk/XF/WORM-s23572243-m1279546902--EMBOSS-6.3.1.tar.gz.log
+#	modified:   .git-annex/Jk/X6/WORM-s566429-m1279309002--DBI-1.612.tar.gz.log
+#	modified:   .git-annex/K6/fV/WORM-s1561451-m1240055295--Convert-Binary-C-0.74.tar.gz.log
+#	modified:   .git-annex/KM/4q/WORM-s146959-m1268515086--Graph-0.94.tar.gz.log
+#	modified:   .git-annex/MF/m2/WORM-s425766-m1212514609--Data-Stag-0.11.tar.gz.log
+#	modified:   .git-annex/QJ/P6/WORM-s1045868-m1282215033--9base-6.tar.gz.log
+#	modified:   .git-annex/Qm/WG/WORM-s39078-m1278163547--Digest-SHA1-2.13.tar.gz.log
+#	modified:   .git-annex/Wq/Fj/WORM-s45680640-m1297862101--BclConverter-1.7.1.tar.log
+#	modified:   .git-annex/Wq/Wm/WORM-s263536640-m1295025537--CASAVA_v1.7.0.tar.log
+#	modified:   .git-annex/XW/qm/WORM-s36609-m1276050470--Bio-ASN1-EntrezGene-1.10-withoutworldwriteables.tar.gz.log
+#	modified:   .git-annex/Zq/7X/WORM-s343075585-m1301312233--l_ipp_7.0.2.137_ia32.log
+#	modified:   .git-annex/f7/g0/WORM-s40872-m1278273227--ExtUtils-ParseXS-2.2206.tar.gz.log
+#	modified:   .git-annex/j3/JF/WORM-s11753-m1232427595--Clone-0.31.tar.gz.log
+#	modified:   .git-annex/kX/9g/WORM-s84690-m1229117599--GraphViz-2.04.tar.gz.log
+#	modified:   .git-annex/km/z5/WORM-s44634-m1275505134--Authen-SASL-2.15.tar.gz.log
+#	modified:   .git-annex/kw/J3/WORM-s132396-m1278780649--DBD-mysql-4.016.tar.gz.log
+#	modified:   .git-annex/p5/1P/WORM-s53736-m1278673485--Archive-Tar-1.64.tar.gz.log
+#	modified:   .git-annex/wv/zG/WORM-s30584-m1268774021--ExtUtils-CBuilder-0.2703.tar.gz.log
+#	modified:   .git-annex/x5/7v/WORM-s10462526-m1254242591--BioPerl-1.6.1.tar.gz.log
+#
+# Untracked files:
+#   (use \"git add <file>...\" to include in what will be committed)
+#
+#	.git-annex/1G/X3/
+#	.git-annex/3W/Xf/
+#	.git-annex/9q/Wz/
+#	.git-annex/Fq/4z/
+#	.git-annex/Jk/zK/
+#	.git-annex/Kx/w1/
+#	.git-annex/VK/kv/
+#	.git-annex/fv/0P/
+#	.git-annex/jX/qM/
+#	.git-annex/vW/jK/
+#	.git-annex/vW/v1/
+jtang@x00:~/sources $ git commit -a -m \"snap\"
+[master 45f254a] snap
+ 47 files changed, 64 insertions(+), 30 deletions(-)
+jtang@x00:~/sources $ git status
+# On branch master
+# Your branch is ahead of 'origin/master' by 3 commits.
+#
+# Untracked files:
+#   (use \"git add <file>...\" to include in what will be committed)
+#
+#	.git-annex/1G/X3/
+#	.git-annex/3W/Xf/
+#	.git-annex/9q/Wz/
+#	.git-annex/Fq/4z/
+#	.git-annex/Jk/zK/
+#	.git-annex/Kx/w1/
+#	.git-annex/VK/kv/
+#	.git-annex/fv/0P/
+#	.git-annex/jX/qM/
+#	.git-annex/vW/jK/
+#	.git-annex/vW/v1/
+nothing added to commit but untracked files present (use \"git add\" to track)
+jtang@x00:~/sources $ git pull
+</pre>
+"""]]

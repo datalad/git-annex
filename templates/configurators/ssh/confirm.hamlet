@@ -1,0 +1,69 @@
+<div .span9 .hero-unit>
+  <h2>
+    Ready to add remote server
+  <div .row-fluid>
+    <div .span9>
+      $if not (hasCapability sshdata GitAnnexShellCapable)
+        <p>
+          <i .icon-warning-sign></i> #
+          The server #{sshHostName sshdata} can be used as is, but #
+          installing #
+          $if not (hasCapability sshdata GitCapable)
+            git and git-annex #
+          $else
+            git-annex #
+          on it would make it work better, and provide more options below. #
+        <p>
+          If you're able to install software on the server, do so and click
+          <a .btn href="@{RetrySshR sshdata}" onclick="$('#testmodal').modal('show');">
+            Retry
+      $else
+        <p>
+          The server #{sshHostName sshdata} has been verified to be usable. #
+          Depending on whether you trust this server, you can choose between #
+          storing your data on it encrypted, or unencrypted.
+        <h3>
+          Unencrypted repository
+        <p>
+          All your data will be uploaded to the server, including a clone of #
+          the git repository. This is a good choice if you want to set up #
+          other devices to use the same server, or share the repository with #
+          others.
+        <p>
+          <a .btn href="@{MakeSshGitR sshdata}" onclick="$('#setupmodal').modal('show');">
+            Make an unencrypted git repository on the server
+        <p style="text-align: center">
+          -or-
+      <h3>
+        Simple shared encryption
+      <p>
+        This allows everyone who has a clone of this repository to #
+        decrypt the files stored on #{sshHostName sshdata}. That makes #
+        it good for sharing. And it's easy to set up and use.
+      <p>
+        <a .btn href="@{MakeSshRsyncR sshdata}" onclick="$('#setupmodal').modal('show');">
+          <i .icon-lock></i> Use shared encryption
+      $if hasCapability sshdata GitCapable
+        <p style="text-align: center">
+          -or-
+        <h3>
+          Encrypt with GnuPG key
+        <p>
+          This stores an encrypted clone of your repository on #
+          #{sshHostName sshdata}, unlike shared encryption which only #
+          stores file contents there. So it's good for backups. But the #
+          encryption will prevent you from sharing the repository with #
+          friends, or easily accessing its contents on another computer.
+        <p>
+          $forall (keyid, name) <- secretkeys
+            <p>
+              <a .btn href="@{MakeSshGCryptR sshdata (RepoKey keyid)}" onclick="$('#setupmodal').modal('show');" >
+                <i .icon-lock></i> Encrypt repository #
+              to ^{gpgKeyDisplay keyid (Just name)}
+        <p>
+          <a .btn href="@{MakeSshGCryptR sshdata NoRepoKey}" onclick="$('#genkeymodal').modal('show');">
+            <i .icon-plus-sign></i> Encrypt repository #
+          with a new encryption key
+^{sshTestModal}
+^{sshSetupModal sshdata}
+^{genKeyModal}

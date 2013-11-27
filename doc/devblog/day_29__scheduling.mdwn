@@ -1,0 +1,10 @@
+Spent most of the day building some generic types for scheduling recurring
+events. Not sure if rolling my own was a good idea, but that's what I did.
+
+In the incrementalfsck branch, I have hooked this up in `git-annex vicfg`,
+which now accepts and parses scheduled events like 
+"fsck self every day at any time for 60 minutes" and 
+"fsck self on day 1 of weeks divisible by 2 at 3:45 for 120 minutes", and
+stores them in the git-annex branch. The exact syntax is of course subject
+to change, but also doesn't matter a whole lot since the webapp will have
+a better interface.

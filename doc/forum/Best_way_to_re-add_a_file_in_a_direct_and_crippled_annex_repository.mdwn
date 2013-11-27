@@ -1,0 +1,17 @@
+Hi!
+
+What is the best way to add again the content of file in an direct and crippled annex repository? I'm using such a repository on a SMB drive, with no symbolic links, that's why the repository is in direct mode.
+
+For example:
+
+`/disk/annex-rep/a.bin` contains the text `../.git/annex/objects/W3/M8/SHA256E-s4701522386--e486cce01b1870cee394a376a3acc64a608e84e38b85e6c21c29721cf14328e6.bin/SHA256E-s4701522386--e486cce01b1870cee394a376a3acc64a608e84e38b85e6c21c29721cf14328e6.bin`
+
+and I've got the real content in another directory, outside annex: /disk/a.bin (contains the binary data)
+
+I imagined this process:
+* replace `/disk/annex-rep/a.bin` with `/disk/a.bin``
+* update `git-annex:122/4b8/SHA256E-s4701522386--e486cce01b1870cee394a376a3acc64a608e84e38b85e6c21c29721cf14328e6.bin.log` by adding this repository uuid
+
+I tried `git annex reinject` but it didn't work.
+
+Is there another way?

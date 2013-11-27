@@ -1,0 +1,9 @@
+If possible a frequently updated daily build in separate package for those more adventurous of us.
+
+It would make installing and testing much easier and no need to change configuration settings to allow untrusted source.
+
+> While it's vaid to wish that someone might put the apk into Google Play,
+> I a) don't feel it's ready b) don't know if I want to go through
+> the rigamarole required to use that service and c) don't feel this
+> bug tracker is an appropriate place to track what is effectively a
+> nontechnical request. [[done]] --[[Joey]] 

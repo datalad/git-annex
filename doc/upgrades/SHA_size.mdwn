@@ -1,0 +1,20 @@
+Before version 2 of the git-annex repository, files added to the SHA
+[[backends]] did not have their file size tracked, while files added to the
+WORM backend did. The file size information is used for disk free space
+checking.
+
+Files added to the SHA backends after the conversion will have their file
+size tracked automatically. This disk free space checking is an optional
+feature and since you're more likely to be using more recently added files,
+you're unlikely to see any bad effect if you do nothing.
+
+That said, if you have old files added to SHA backends that lack file size
+tracking info, here's how you can add that info. After [[upgrading|upgrades]]
+to repository version 2, in each repository run:
+
+	git annex migrate
+	git commit -m 'migrated keys for v2'
+
+The usual caveats about [[tips/migrating_data_to_a_new_backend]]
+apply; you will end up with unused keys that you can later clean up with
+`git annex unused`.

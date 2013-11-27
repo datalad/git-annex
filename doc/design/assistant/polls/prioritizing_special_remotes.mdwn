@@ -1,0 +1,16 @@
+Background: git-annex supports storing data in various [[special remotes]].
+The git-annex assistant will make it easy to configure these, and easy
+configurators have already been built for a few: removable drives, rsync.net,
+locally paired systems, and remote servers with rsync.
+
+Help me prioritize my work: What special remote would you most like
+to use with the git-annex assistant?
+
+[[!poll open=yes 16 "Amazon S3 (done)" 12 "Amazon Glacier (done)" 9 "Box.com (done)" 71 "My phone (or MP3 player)" 23 "Tahoe-LAFS" 10 "OpenStack SWIFT" 31 "Google Drive"]]
+
+This poll is ordered with the options I consider easiest to build
+listed first. Mostly because git-annex already supports them and they
+only need an easy configurator. The ones at the bottom are likely to need
+significant work. See [[cloud]] for detailed discussion.
+
+Have another idea? Absolutely need two or more? Post comments..

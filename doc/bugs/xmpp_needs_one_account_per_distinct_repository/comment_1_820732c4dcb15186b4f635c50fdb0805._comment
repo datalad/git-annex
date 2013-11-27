@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="fmarier"
+ ip="121.98.93.240"
+ subject="My current XMPP setup"
+ date="2013-04-28T22:16:50Z"
+ content="""
+Here's the way I currently use XMPP (Google Talk) on my devices:
+
+* I have a separate XMPP/Google account on each device (device1@gmail.com, device2@gmail.com, etc.). I keep them separate to protect the credentials of the other devices in case I lose one of the devices.
+* I setup git-annex to sync with a \"friend\" and have device1@gmail.com and device2@gmail.com sync with each other.
+
+I have three different repositories I'd like to manage with git-annex assistant:
+
+ * R1: things I want everywhere
+ * R2: things I only want on personal laptop and desktop
+ * R3: things I only want on personal and work laptops
+
+So it would be great if there was a way to easily keep things separate.
+"""]]

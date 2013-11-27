@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-03-16T15:39:14Z"
+ content="""
+Thanks for the link, that perhaps explains the continuing oddities I've seen with google talk and presence information sometimes not being sent.
+
+It's not clear to me if git-annex could use this extension at all. It seems to say that if I use it, my regular presence messages won't be sent. Which is a problem, since git-annex uses extended content in presence messages to indicate that they're coming from a git-annex client, which is important to make xmpp pairing work. (It's also used to send push notifications, but that's not essential.)
+
+Also, of course, I'm reluctant to implement a non-standard extension that may change at any time, especially when it's attached to a service that currently has the FSF unhappy <http://www.fsf.org/blogs/sysadmin/google-backslides-on-federated-instant-messaging-on-purpose>.
+
+Perhaps the real solution is to make the assistant encourage use of some other XMPP server.
+"""]]

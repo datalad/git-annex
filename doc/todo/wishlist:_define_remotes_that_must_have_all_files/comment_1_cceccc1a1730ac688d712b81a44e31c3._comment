@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-04-23T16:27:13Z"
+ content="""
+Seems to have a scalability problem, what happens when such a repository becomes full?
+
+Another way to accomplish I think the same thing is to pick the repositories that you would include in such a set, and make all other repositories untrusted. And set numcopies as desired. Then git-annex will never remove files from the set of non-untrusted repositories, and fsck will warn if a file is present on only an untrusted repository.
+"""]]

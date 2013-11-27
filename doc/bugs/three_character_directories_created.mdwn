@@ -1,0 +1,56 @@
+What steps will reproduce the problem?
+
+I don't know how, but this happened already a second time, I don't know how to reproduce this yet.
+
+What is the expected output? What do you see instead?
+
+There are many three character name directories created that look like the parts of a hash - and each contains a logfile.
+
+    % ls
+    027
+    1d1
+    1e3
+    232
+    36e
+    583
+    5f6
+    69c
+    9ea
+    bd7
+    c46
+    d20
+    d48
+    f31
+    f88
+    uuid.log
+    [+the intended data directories]
+
+    % find 027/
+    027/
+    027//b73
+    027//b73/SHA256-s10108928--3c3766aed8b66de9d0ef37820e0ddfba25f9463b37f30e25ceb5ce3cdf12db36.log
+
+     % cat f88/7c3/SHA256-s4100608--903530747dfdc7bc9d487d7cbd8ab09ddc1ffad52c08849d049c8a5ff5cfb854.log
+    1351711677.187589s 1 2efd46d2-0e32-11e2-95fe-f73f09c6615e
+    1351971337.667243s 1 ab50cd8a-11c0-11e2-934c-87e45f64e5c6
+
+What version of git-annex are you using? On what operating system?
+
+% git-annex version
+git-annex version: 3.20121017
+local repository version: 3
+default repository version: 3
+supported repository versions: 3
+upgrade supported from repository versions: 0 1 2
+
+OS X 10.6.8
+
+Please provide any additional information below.
+
+I use a symlink to the repository to change into it.
+
+> Closing this bug as user error. If the `git-annex` branch
+> gets merged into master by the user, then that adds all its log files
+> to master, and so they're visible as regular files. Solution: Don't do
+> that, or if you do that, use `git log --stat` to find the commit that
+> adds all those files, and `git revery` the commit. [[done]] --[[Joey]]

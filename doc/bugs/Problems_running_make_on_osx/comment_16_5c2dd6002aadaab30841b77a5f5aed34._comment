@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 16"
+ date="2011-02-13T04:52:26Z"
+ content="""
+I've fixed the test suite to not accumulate all those zombie processes. Now only 2 or 3 processes should run max. Am curious to see if that clears up all the problems.
+"""]]

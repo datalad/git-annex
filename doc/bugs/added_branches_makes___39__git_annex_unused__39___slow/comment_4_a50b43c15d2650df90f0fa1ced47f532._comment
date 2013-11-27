@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 4"
+ date="2013-08-11T12:48:47Z"
+ content="""
+I think that could work. It would probably tend to use more memory than the current method, but only a small constant multiplier more. And unused is already the one command that necessarily needs to hold information about the whole repository in memory.
+
+Note that git cat-file is only needed when dealing with branches other than the current working tree. In that special case, it can, and AFAIK does have the optimisation of looking directly at the symlink target instead. Your method may turn out to be both slower and use more memory in that case. It may make sense to special case handling of that case and keep the current code paths there (most of the necessary code for it is used by other stuff anyway).
+"""]]

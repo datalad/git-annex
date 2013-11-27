@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-04-05T06:33:54Z"
+ content="""
+`git repack` took 18 minutes. However, it actually only packed the objects for the commit `git annex add` makes to the git-annex branch. Objects for the staged symlinks are left loose, presumably because no commit refers to them.
+
+Unsurprisingly, then, `git commit` still took as long as before.
+
+I then ran `git repack` again. It packed all the loose objects this time. After this, `git commit` only takes 11 seconds. If I remove the `pre-commit` hook, it drops to a respectable 5 seconds.
+
+
+"""]]

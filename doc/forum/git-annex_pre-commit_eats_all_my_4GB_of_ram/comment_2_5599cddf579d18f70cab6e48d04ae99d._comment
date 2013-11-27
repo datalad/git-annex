@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="ringprince"
+ ip="134.76.140.110"
+ subject="comment 2"
+ date="2013-09-18T12:27:38Z"
+ content="""
+Hi Hamza,
+
+thanks for that comment.  I thought `git annex sync` is just a wrapper around `git commit -a` (among others).
+
+Using `git annex sync` does not help, as it just means that now `git annex sync` eats all my memory until swapping starts.
+"""]]

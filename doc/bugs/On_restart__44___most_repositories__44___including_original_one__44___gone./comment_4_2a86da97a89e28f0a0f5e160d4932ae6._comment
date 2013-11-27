@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlEhzszkzOIy8-Rx8b2mcr75QcnIc6O_OA"
+ nickname="Rachel"
+ subject="Last night's comment"
+ date="2013-09-13T10:28:02Z"
+ content="""
+> It's BTW an unusual configuration to have the git-annex assistant directly running on a removable drive as you seem to have done. You must have previously went to the Repository menu and selected \"Add another local repository\", and then added the removable drive, and then connected that repository up to your ~/annex repository. Which would explain why the webapp was last showing the repository on the removable drive. The more usual way to add a removable drive is to use the \"Add another repository\" button and select \"Removable drive\".
+
+That is exactly how I'd added that repository, yes. I didn't notice the dedicated \"removable drive\" option until later. :-) I thought it possibly appropriate to leave it that way because, while Biblio is an external drive and remov*able*, in practice I never remove it; it's a permanent fixture.
+
+After all, this is a mac mini server, originally (no longer running Server) so it has a second *internal* drive. It would have been even more logical for me to have added a second repo on there in the same manner, as it's most definitely not removable without extreme effort; but it still mounts inside /Volumes, and presumably if I'd added it as a non-removable repo, I'd have had the same problem?
+
+> It's not unusual for the webapp to display it syncing some files that have been synced before. This repository may not be up-to-date on which files have been sent where, and it will quickly notice the file has already been transferred and skip doing anything for that file.
+
+Yes, that's probably what happened. It finished pretty quickly, about a minute after sending my previous comment.
+
+Going to bed now, but tomorrow I'll follow the remaining suggestions; basically I'll remove the repo on the external drive then, if I still want it there, I'll add it back in the other way, so it thinks of it as removable.
+
+"""]]

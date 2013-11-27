@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5WyknJirJJridJjiPNgrlYxGG9xrZBvA"
+ nickname="Daniel"
+ subject="comment 12"
+ date="2013-07-23T00:59:33Z"
+ content="""
+oh, I agree that upgrading is sensible, but I don't actually control the server. Also, I don't see anything in the changelog that indicates that this bug has been fixed. The bug database is out of action as well. A brief examination of the source didn't answer any questions either. Very annoying all around.
+
+Just think of it as adding robustness in the face of a misbehaving server.
+"""]]

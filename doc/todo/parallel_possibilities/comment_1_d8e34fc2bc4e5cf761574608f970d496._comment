@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkptNW1PzrVjYlJWP_9e499uH0mjnBV6GQ"
+ nickname="Christian"
+ subject="comment 1"
+ date="2011-04-08T12:41:43Z"
+ content="""
+I also think, that fetching keys via rsync can be done by one rsync process, when the keys are fetched from one host. This would avoid establishing a new TCP connection for every file.
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmU_2tE75oyG0h2ZPN4lcroIKEMC8G-otE"
+ nickname="Michael"
+ subject="comment 2"
+ date="2012-11-19T06:57:54Z"
+ content="""
+This is an Ubuntu 12.04 system (3.2.0-29-generic-pae #46-Ubuntu SMP Fri Jul 27 17:25:43 UTC 2012 i686 i686 i386 GNU/Linux)
+
+ghc is 7.4.1
+
+mtl info is:
+
+MonadCatchIO-mtl 0.3.0.5
+mtl 2.0.1.0
+
+"""]]

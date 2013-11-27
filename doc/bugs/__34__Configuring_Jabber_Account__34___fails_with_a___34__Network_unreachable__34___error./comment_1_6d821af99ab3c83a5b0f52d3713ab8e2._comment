@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.220"
+ subject="comment 1"
+ date="2013-09-25T18:27:24Z"
+ content="""
+Sounds like the SRV lookup is failing. Does `git-annex version` list either DNS or ADNS in the build flags?
+
+Does `host -t SRV _xmpp-client._tcp.gmail.com` work?
+"""]]

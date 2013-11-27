@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 15"
+ date="2013-04-14T18:46:54Z"
+ content="""
+I tried the following experiment:
+
+1. Manually ran `ssh-add .ssh/key.git-annex-kitenet.net-joey`
+2. `ssh -vvv kitenet.net` did run git-annex-shell
+
+Guys, please paste the output of `ssh-add -l`
+
+Also, if you run `ssh-add -D`, the problem should go away, and the server should not run git-annex-shell. If that's the case, we've confirmed this is somehow a ssh agent problem. However, I still don't know what could be scanning `~/.ssh` for random keys and loading them into the agent.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://openid.fmarier.org/"
+ nickname="fmarier"
+ subject="New location for my PPA"
+ date="2013-06-15T07:41:03Z"
+ content="""
+My Ubuntu Precise PPA has moved here: https://launchpad.net/~fmarier/+archive/git-annex
+
+It contains version 20130601 of git-annex.
+"""]]

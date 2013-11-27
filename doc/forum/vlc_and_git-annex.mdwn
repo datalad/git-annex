@@ -1,0 +1,11 @@
+I used to save movies with the srt subtitle files next to them. 
+
+Usually vlc finds it because it's on the same directory than the movie file, however with git annex the link is located on another folder.
+So after adding movies to git, the subtitles doesn't load anymore.
+
+couldn't find a quick fix. I'm thinking a bash script, but wanted to discuss it here with all annex users.
+
+I know It's out of annex scope, but I think a movie archive is a great scenario for git-annex.
+most of my HD is filled up with movies from the camcorder, screencast, etc... 
+And we usually don't modify those files
+

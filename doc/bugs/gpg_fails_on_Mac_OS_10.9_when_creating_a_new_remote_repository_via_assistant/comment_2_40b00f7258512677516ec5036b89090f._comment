@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 2"
+ date="2013-11-14T22:10:32Z"
+ content="""
+gpg is included in the bundle though:
+
+<pre>
+oberon:tmp joeyh$ /Volumes/git-annex/git-annex.app/Contents/MacOS/runshell
+bash-3.2$ which gpg
+/Volumes/git-annex/git-annex.app/Contents/MacOS/bundle/gpg
+</pre>
+"""]]

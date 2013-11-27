@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 10"
+ date="2013-08-27T01:46:36Z"
+ content="""
+This seems to be a reversion instroduced in commit a48d340abdaf3296a2ddacd73c18adc9a13a02ef. With that backed out, I get 0% cpu usage for the terminal app. Even if I run top in the terminal, its CPU sits under 1%.
+
+Clearly the infinite loop in that patch is running faster than expected!
+"""]]

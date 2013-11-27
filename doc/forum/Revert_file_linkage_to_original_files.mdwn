@@ -1,0 +1,9 @@
+I've recently found the following problem:
+
+I really really want to get back my original folder structure - which includes the real files, not the symlinks. I've searched for quite a while, but I simply could not find an acceptable solution...
+
+So I thought I would like to ask you guys here, if anybody experienced similar problems (or at least knows a solution for my problem)?
+
+Greetings
+
+Pethor

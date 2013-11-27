@@ -1,0 +1,57 @@
+in a setup where an rsync(+gnupg) remote is shared among different users of the same git-annex repository (ie, the people copying to there use different accounts on the rsync server), acls are not honored under some circumstances.
+
+the error message reads as follows:
+
+    copy …filename… (to prometheus...) Reading passphrase from file descriptor 11    
+    
+    sending incremental file list
+    rsync: recv_generator: mkdir "/home/shared/photos/encrypted_storage/9a6/0ff" failed: Permission denied (13)
+    *** Skipping any contents from this failed directory ***
+    9a6/0ff/
+    rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1070) [sender=3.0.8]
+    
+    sent 185 bytes  received 18 bytes  135.33 bytes/sec
+    total size is 2119419  speedup is 10440.49
+    
+      This could have failed because --fast is enabled.
+    failed
+
+the acl used in my particular case is:
+
+    # file: .
+    # owner: chrysn
+    # group: chrysn
+    user::rwx
+    group::rwx
+    group:family:rwx
+    mask::rwx
+    other::r-x
+    default:user::rwx
+    default:group::rwx
+    default:group:family:rwx
+    default:mask::rwx
+    default:other::r-x
+
+sub-directories are observed to have diverging permissions, though:
+
+    # file: 794
+    # owner: chrysn
+    # group: chrysn
+    user::rwx
+    group::rwx                      #effective:r-x
+    group:family:rwx                #effective:r-x
+    mask::r-x
+    other::r-x
+    default:user::rwx
+    default:group::rwx
+    default:group:family:rwx
+    default:mask::rwx
+    default:other::r-x
+
+something seems to apply the umask (default 022) and revoke group write access from the files, overruling the acl. this is not what a umask is normally used for, and smells of [coreutils slavishly observing posix specs that don't consider all features](http://savannah.gnu.org/bugs/?19546) -- the observed effect is exactly what's described there.
+
+the git annex version used is 3.20121017 as in debian, the receiving site uses rsync 3.0.7; the affected directories come from a time when these very versions are known to have been used.
+
+this is probably not a bug of git-annex alone, but affects its operation and might be solvable by invoking rsync differently.
+
+(this is kind of a follow-up on [[forum/__34__permission_denied__34___in_fsck_on_shared_repo]])

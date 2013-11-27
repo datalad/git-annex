@@ -1,0 +1,23 @@
+I am just asking myself, is it stupid to think that streaming in git annex would be a good idea and wouldnt it be totaly easy to implement?
+
+Ok just tried to link to files over ssh, it creates a link but you cant open with it its content ^^
+
+But at least the files you have access over some filesystem as example samba/sshfs or just a other directory or usb-drive you could stream instead of "get"
+
+you could add another mode like direct and indirect, like symbolic-links or something like that?
+
+Sadly linux is to stupid to allow direct ssh links ( thats maybe one of the biggest features hurd has over linux  ) but you could mount with sshfs readonly (checking first if sshfs is installed) to mount the files there and then map the links there.
+
+ok I am not so shure how hard it would be and how much bug potentials it creates, but it would be great I guess.
+
+git annex is a bit like a telephone book, where you get a list of where the targets are. So using it to call the persons so that they drive to you to talk with you is nice. But I think the better feature would be if you just talk with the guy over the telephone directly bevore he comes to you (streaming)
+
+I mean you did one great thing, you did make cloudy thing peer to peer, like git is targeted too but for smaller files, yes there are may use cases without this feature, but I would be really glad if it could do that too, if I give annex 5 locations on other pcs usb-sticks etc, I find it stupid to additionaly do setup all this sources again a second time for streaming, and then I have maybe even 2 different file names because you map stuff in git.
+
+So sorry its late here, I am a bit tired so I maybe dont know what I am talking right now, my english isnt the best, too, but I think it would be a great feature.
+
+I mean on your setup, with slow internet, you maybe always make a get command, but here, if I link to youtube, I have no problem to stream it, or even on internal network between my pcs I have gb-lan, I start directly movies streaming, I would only use get, in rare cases where I need them on a train, the normal thing is to stream stuff.
+
+So I have to go sleep now 
+
+bye

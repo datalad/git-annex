@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 12"
+ date="2013-05-24T03:26:33Z"
+ content="""
+You should be able to run /data/data/ga.androidterm/runshell even if you cannot ls /data. This adds /data/data/ga.androidterm/bin to PATH
+
+However, the shell that the app starts is started by runshell anyway, so I don't understand how this could happen.
+"""]]

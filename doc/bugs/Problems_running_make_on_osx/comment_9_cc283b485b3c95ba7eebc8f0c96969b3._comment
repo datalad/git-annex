@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 9"
+ date="2011-02-09T09:12:52Z"
+ content="""
+[a0826293][] fixed the last problem, there is coreutils available in macports, if they are installed you get the gnu equivalents but they are prefixed with a g (e.g. gchmod instead of chmod), I guess not everyone will have these install or prefer these on [[install/OSX]]
+
+Some more tests fail now...
+
+<pre>
+Testing 1:blackbox:3:git-annex unannex:1:with content
+### Failure in: 1:blackbox:3:git-annex unannex:1:with content
+foo is not a symlink
+Testing 1:blackbox:4:git-annex drop:0:no remotes
+### Failure in: 1:blackbox:4:git-annex drop:0:no remotes
+drop wrongly succeeded with no known copy of file
+Testing 1:blackbox:4:git-annex drop:1:with remote
+Testing 1:blackbox:4:git-annex drop:2:untrusted remote
+Testing 1:blackbox:5:git-annex get
+Testing 1:blackbox:6:git-annex move
+Testing 1:blackbox:7:git-annex copy
+### Failure in: 1:blackbox:7:git-annex copy
+move --to of file already there failed
+Testing 1:blackbox:8:git-annex unlock/lock
+### Error in:   1:blackbox:8:git-annex unlock/lock
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:9:git-annex edit/commit:0
+### Error in:   1:blackbox:9:git-annex edit/commit:0
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:9:git-annex edit/commit:1
+### Error in:   1:blackbox:9:git-annex edit/commit:1
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:10:git-annex fix
+### Error in:   1:blackbox:10:git-annex fix
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:11:git-annex trust/untrust/semitrust
+### Error in:   1:blackbox:11:git-annex trust/untrust/semitrust
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:12:git-annex fsck:0
+### Error in:   1:blackbox:12:git-annex fsck:0
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:12:git-annex fsck:1
+### Error in:   1:blackbox:12:git-annex fsck:1
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:12:git-annex fsck:2
+### Error in:   1:blackbox:12:git-annex fsck:2
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:13:git-annex migrate:0
+### Error in:   1:blackbox:13:git-annex migrate:0
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:13:git-annex migrate:1
+### Error in:   1:blackbox:13:git-annex migrate:1
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:14:git-annex unused/dropunused
+### Error in:   1:blackbox:14:git-annex unused/dropunused
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Cases: 30  Tried: 30  Errors: 11  Failures: 3
+test: failed
+make: *** [test] Error 1
+</pre>
+
+On a side note, I think I found another bug in the testing. I had tested in a virtual machine in archlinux (a very recent updated version) Please see the report here [[tests fail when there is no global .gitconfig for the user]]
+
+[a0826293]: http://git.kitenet.net/?p=git-annex;a=commit;h=7a0826293e0ac6c0000f49a1618c1c613b909aa1
+"""]]

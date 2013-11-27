@@ -1,0 +1,19 @@
+My last day before thanksgiving, getting caught up with some recent bug
+reports and, quite a rush to get a lot of fixes in. Adding to the fun,
+wintery weather means very limited power today.
+
+It was a very productive day, especially for Android, which hopefully has
+XMPP working again (at least it builds..), halved the size of the package,
+etc.
+
+Fixed a stupid bug in the automatic v5 upgrade code; annex.version was not
+being set to 5, and so every git annex command was
+actually re-running the upgrade.
+
+Fixed another bug I introduced last Friday, which the test suite luckily
+caught, that broke using some local remotes in direct mode.
+
+Tracked down a behavior that makes `git annex sync` quite slow on
+filesystems that don't support symlinks. I need to switch direct mode to 
+not using `git commit` at all, and use plumbing to make commits there.
+Will probably work on this over the holiday.

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 5"
+ date="2011-12-23T16:50:26Z"
+ content="""
+My goal for `git-annex merge` is that users should not need to know about it, so it should not be doing expensive pulls.
+
+I hope that `git annex sync` will grow some useful features to support fully distributed git usage, as being discussed in [[pure_git-annex_only_workflow]]. I still use centralized git to avoid these problems myself.
+"""]]

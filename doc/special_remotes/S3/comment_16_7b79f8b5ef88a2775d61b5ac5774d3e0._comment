@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 16"
+ date="2013-08-23T17:39:56Z"
+ content="""
+Yes, you can specify the host to use when setting up the remote. It's actually documented earlier on this very page, if ou search for \"host\". Any S3 compatabile host will probably work -- the Internet Archive's S3 does, for example.
+"""]]

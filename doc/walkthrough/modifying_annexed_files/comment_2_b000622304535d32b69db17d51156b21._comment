@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="feature request: unlock --drop"
+ date="2013-05-30T20:26:52Z"
+ content="""
+ATM unlock copies original file for modifications, so that original copy remains under annex and possibly to-be-edited copy created.
+But if I am \"unlock\"ing file I might simply not be interested in a previous copy and want to maintain only a single (possibly edited) new copy.
+What if there was a mode where the actual file is simply moved into \"unlocked\" location for editing, thus effectively dropping the actual content from git annex.  That would allow to not inquire lengthy copying/wasting local space.  If then I would need a previous copy I would just \"get\" it again.
+"""]]

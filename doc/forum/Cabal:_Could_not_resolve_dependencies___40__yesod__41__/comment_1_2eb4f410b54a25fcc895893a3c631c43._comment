@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.16"
+ subject="comment 1"
+ date="2012-08-29T16:01:00Z"
+ content="""
+Hmm, cabal is not as smart as I'd hoped it could be. I've removed the support for old version of yesod.
+"""]]

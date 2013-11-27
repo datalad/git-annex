@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-13T18:28:01Z"
+ content="""
+I actually didn't originally consider this, but it turns out I have wonderful users, and you're at least the second to consider this case.
+
+So the released git-annex version does already verify the checksum when doing a migration. However, as I was checking this, I noticed 
+I had left a window between the verification and the generation of the new key for the migration. It's pretty unlikely a file would get corrupted just as it was being migrated, but that's no excuse. I've committed a change that reverses the order; so it generates a new key and then verifies the old one.
+"""]]

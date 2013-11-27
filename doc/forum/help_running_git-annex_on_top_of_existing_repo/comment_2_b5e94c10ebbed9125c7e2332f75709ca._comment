@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9FMhhhM2sJ68Zjx_RmWd8cTdpI-mrkbE"
+ nickname="Hans"
+ subject="what about with git-svn?"
+ date="2013-06-04T08:00:15Z"
+ content="""
+I'm trying to wrap my head around a similar situation.
+I've tested this by git cloning my repo; the symlinks are copied, and end up broken because the annex directory under .git doesn't exist in the new repo.
+
+So to be specific: can I conclude that when I use git to copy my repo, as long as I don't explicitly use git-annex in the process, I end up with a 'bare' git repo and I don't have to worry about my annexed files coming along?
+
+Also: anyone know of anything that would be different about using git-svn? (i.e. git svn dcommit to push my changes to an svn repo)?
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.149"
+ subject="comment 3"
+ date="2012-10-06T21:05:45Z"
+ content="""
+@Douglas, I've fixed that in git. FWIW, the program is installed before that point. Actually, I am leaning toward not having cabal install that plist file at all.
+"""]]

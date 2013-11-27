@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 6"
+ date="2013-11-12T18:10:21Z"
+ content="""
+If you can reliably corrupt a git repository, it's highly likely your hardware (disk or memory) is broken.
+"""]]

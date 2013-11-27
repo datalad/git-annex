@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.27"
+ subject="comment 2"
+ date="2012-11-12T02:39:19Z"
+ content="""
+AFAIK, yenc can use xml characters like &lt; and &gt; in its encoding.
+"""]]

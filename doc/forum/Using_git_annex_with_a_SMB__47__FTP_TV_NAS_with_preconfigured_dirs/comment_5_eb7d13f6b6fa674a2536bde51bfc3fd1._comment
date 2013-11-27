@@ -1,0 +1,48 @@
+[[!comment format=mdwn
+ username="http://olivier.berger.myopenid.com/"
+ nickname="obergix"
+ subject="So it seems I have found a sequence that seems to be operating fine"
+ date="2013-08-23T20:28:45Z"
+ content="""
+Here's a script, which I think makes it work, using git clone, git annex copy and git annex sync :
+    # The \"master\" remote which is with default indirect mode, on a Linux FS
+    BASE1=~/tmp
+    REPO1=$BASE1/annex-test
+    
+    # The \"slave\" remote on the NAS (a Samba server), which has been mounted with cifs, and thus will be in direct mode
+    BASE2=/mnt/freebox-server/
+    REPO2=$BASE2/annex-test
+    
+    cd $BASE1
+    mkdir $REPO1
+    cd $REPO1
+    git init
+    git annex init \"my laptop\"
+    
+    cd $REPO1
+    cp -Lr ~/some_large_files ./
+    git annex add some_large_files
+    git commit -m \"added\"
+    
+    cd $BASE2    
+    git clone $REPO1 $REPO2
+    cd $REPO2
+    
+    git annex init \"freebox server\"
+    # This is not really needed, but if you want to replicate on a non cifs mount
+    git annex direct
+    
+    cd $REPO1
+    git remote add freebox-server $REPO2
+    
+    git annex copy --to freebox-server
+    git annex sync
+    
+    cd $REPO2
+    git remote add laptop $REPO1
+    #git annex sync
+
+After this, you should have your .git and plain \"direct\" files on the NAS, mirrored from what's on the laptop.
+
+Hope this helps.
+"""]]

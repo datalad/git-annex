@@ -1,0 +1,18 @@
+What steps will reproduce the problem?
+
+Attempting to pair between a local repository and a repository on a remote computer on my LAN. Pairing is initiated from my local machine and I'm interacting with the webapp on the remote machine via firefox running over an ssh -X connection. Pairing appears to work up to a point: I enter the secret at one end, the pairing request shows up at the other end. I then enter the secret at that end.
+
+What is the expected output? What do you see instead?
+
+Pairing should complete successfully. Instead I get the error message "PairListener crashed: bad comment in public key", followed by the public key. The pairing process then does not move beyond the 'awaiting pairing' pages.
+
+What version of git-annex are you using? On what operating system?
+
+Local Machine: 3.20121127, Debian Wheezy/Sid (the only package from unstable is git-annex).
+Remote Machine: 3.20121113, Arch Linux (I installed the version from: https://aur.archlinux.org/packages/git-annex-bin/, which is supposedly the same as above, but reports the version specified here).
+
+Please provide any additional information below.
+
+None as yet. Let me know if there are any log files, etc. that I can post.
+
+> So it was the period in the hostname! [[fixed|done]] --[[Joey]]

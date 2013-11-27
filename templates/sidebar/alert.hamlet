@@ -1,0 +1,26 @@
+<div .alert .fade .in .#{divclass} :block:.alert-block ##{alertid}>
+  $if closable
+    <a .close onclick="(function( $ ) { $.get('@{CloseAlert aid}') })( jQuery );">&times;</a>
+  $maybe h <- renderAlertHeader alert
+    $if block
+      <h4 .alert-heading>
+        $maybe i <- alertIcon alert
+          ^{htmlIcon i} #
+        #{h}
+    $else
+      $maybe i <- alertIcon alert
+        ^{htmlIcon i} #
+      <strong>#{h}</strong> #
+  $nothing
+    $maybe i <- alertIcon alert
+      ^{htmlIcon i} #
+  $if multiline
+    $forall l <- messagelines
+      #{l}<br>
+  $else
+    #{message}
+  $if not (null buttons)
+    <br>
+    $forall (button, bnum) <- buttons
+      <a .btn :buttonPrimary button:.btn-primary :not (buttonPrimary button):.btn-success href="@{ClickAlert aid bnum}">
+        #{buttonLabel button}

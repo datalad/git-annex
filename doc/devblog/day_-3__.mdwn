@@ -1,0 +1,29 @@
+John Millikin came through and fixed that haskell-gnutls segfault
+on OSX that I developed a reproducible test case for the other day.
+It's a bit hard to test, since the bug doesn't always happen, but the
+fix is already deployed for Mountain Lion autobuilder.
+
+However, I then found another way to make haskell-gnutls segfault, more
+reliably on OSX, and even sometimes on Linux. Just entering the wrong XMPP
+password in the assistant can trigger this crash. Hopefully John will work
+his magic again.
+
+---
+
+Meanwhile, I fixed the sync-after-forget problem. Now sync always forces
+its push of the git-annex branch (as does the assistant). I considered but
+rejected having sync do the kind of uuid-tagged branch push that the
+assistant sometimes falls back to if it's failing to do a normal sync. It's
+ugly, but worse, it wouldn't work in the workflow where multiple clients
+are syncing to a central bare repository, because they'd not pull down the
+hidden uuid-tagged branches, and without the assistant running on the
+repository, nothing would ever merge their data into the git-annex branch.
+Forcing the push of synced/git-annex was easy, once I satisfied myself
+that it was always ok to do so.
+
+Also factored out a module that knows about all the different log files
+stored on the git-annex branch, which is all the support infrastructure
+that will be needed to make `git annex forget --drop-dead` work. Since this
+is basically a routing module, perhaps I'll get around to making it use
+a nice bidirectional routing library like
+[Zwaluw](http://hackage.haskell.org/package/Zwaluw) one day.

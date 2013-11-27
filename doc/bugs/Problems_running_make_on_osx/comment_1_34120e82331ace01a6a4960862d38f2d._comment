@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmd3qri1pXEYktlxYGwj37wCnrM4FMEJCc"
+ nickname="Antoine"
+ subject="Got it going!"
+ date="2011-02-06T06:02:57Z"
+ content="""
+Thanks to your feedback, I got it going.  
+
+Maybe those two should be added to the 'OSX how-to' in the forum   
+
+[realizes pcre-light is needed but pcre not installed on my mac]  
+sudo port install pcre  
+sudo cabal install pcre-light  
+
+[tests are failing, need haskell's quickcheck]  
+sudo cabal install quickcheck  
+"""]]

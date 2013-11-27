@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-07T16:42:14Z"
+ content="""
+This all sounds reasonable to me.
+
+gitrepo= is the location of the repository you are setting up with gcrypt, not your existing git-annex repository.
+
+numcopies configures the lower bound of the number of copies, not the upper bound. There's no \"small backup\" type, you must mean either small archive, or incremental backup. Either type of repository is going to want to have files that have not previously been archived, or backed up.
+
+You might eventually want to write your own [[preferred_content]] expressions to handle offsite repositories. I'd recommend starting simple and building up.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlOc-EOD5ZyggsAp6lOnU7x5MxizwLtUXA"
+ nickname="Hendrik"
+ subject="comment 2"
+ date="2013-10-06T18:35:14Z"
+ content="""
+I had uninit'd my annex several time for testing git-annex. What I discovered was that is worked reliably but for all files that are duplicates. For duplicates only 1 of the files got restored properly.  All that was 1 year ago - so your results my differ. I had found a piece of script in the forum / tips sections that will show all duplicates.
+
+Hope this helps...
+"""]]

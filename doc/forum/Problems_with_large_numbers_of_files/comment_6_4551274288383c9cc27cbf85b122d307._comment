@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 6"
+ date="2011-04-07T18:09:13Z"
+ content="""
+I've committed the queue flush improvements, so it will buffer up to 10240 git actions, and then flush the queue.
+
+There may be other memory leaks at scale (besides the two I mentioned earlier), but this seems promising. I'm well into running `git annex add` on a half million files and it's using 18 mb ram and has flushed the queue several times. This run
+will fail due to running out of inodes for the log files, not due to memory. :)
+"""]]

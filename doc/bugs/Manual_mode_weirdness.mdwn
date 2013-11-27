@@ -1,0 +1,37 @@
+### Please describe the problem.
+
+I have an annex which contains all my photos. There are repositories on my laptop and my home server as well as an s3 backup (for which syncing is currently disabled). I switched the copy on my laptop to manual mode via 'git annex vicfg' (this correctly shows up in the webapp). I then proceeded to drop several folders (each containing a year's worth of photos). This works fine, however the assistant immediately starts downloading the dropped files from the server! Numcopies is set to 1 and the problem exists with the server in both the 'transfer' and 'backup' groups (haven't tried others).
+
+### What steps will reproduce the problem?
+
+1. Create a repo with some files.
+2. Create a bare-git remote on another machine.
+3. Make sure the assistant is running for the repo in question. 
+4. Switch your local copy to manual mode.
+5. Drop some files.
+6. Watch as the assistant re-downloads them!
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 4.20130501
+local repository version: unknown
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+
+Debian Testing/Sid.
+
+### Please provide any additional information below.
+
+If it's relevant I switched the local repository to indirect mode by manually shutting down the assistant and running 'git annex indirect' before restarting the assistant. This was done before any of the steps above.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+> [[done]] --[[Joey]] 

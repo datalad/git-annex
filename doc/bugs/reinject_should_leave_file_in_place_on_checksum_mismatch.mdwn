@@ -1,0 +1,15 @@
+What steps will reproduce the problem?
+
+Run git annex reinject source dest with a file that has the wrong content and thus a wrong checksum.
+
+What is the expected output? What do you see instead?
+
+The file should stay in it's original location. Currently it's moved to .git/annex/bad with a mangled filename.
+
+What version of git-annex are you using? On what operating system?
+
+git-annex version: 3.20120807
+Ubuntu 12.04 updated on Aug 20th
+annex was installed via cabal on Aug 20th, all other packages are from ubuntu.
+
+> [[done]] --[[Joey]] 

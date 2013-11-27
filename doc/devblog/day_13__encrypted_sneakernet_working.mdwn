@@ -1,0 +1,13 @@
+Spent basically all of today getting the assistant to be able to handle
+gcrypt special remotes that already exist when it's told to add a USB
+drive. This was quite tricky! And I did have to skip handling gcrypt repos
+that are not git-annex special remotes.
+
+Anyway, it's now almost easy to set up an encrypted sneakernet 
+using a USB drive and some computers running the webapp. The only part
+that the assistant doesn't help with is gpg key management.
+
+Plan is to make a release on Friday, and then try to also add support for
+encrypted git repositories on remote servers. Tomorrow I will try to get
+through some of the communications backlog that has been piling up while I
+was head down working on gcrypt.

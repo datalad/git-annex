@@ -1,0 +1,39 @@
+## Saucy
+
+	sudo apt-get install git-annex
+
+Warning: The version of git-annex shipped in Ubuntu Saucy had
+[a bug that can cause problems when creating repositories using the webapp](http://git-annex.branchable.com/bugs/Freshly_initialized_repo_has_staged_change___34__deleted:_uuid.log__34__/).
+
+## Raring
+	
+	sudo apt-get install git-annex
+
+Note: This version is too old to include the [[assistant]] or its WebApp,
+but is otherwise usable.
+
+## Precise
+
+	sudo apt-get install git-annex
+
+Note: This version is too old to include the [[assistant]] or its WebApp,
+but is otherwise usable.
+
+## Precise PPA
+
+<https://launchpad.net/~fmarier/+archive/git-annex>
+
+A newer version of git-annex, including the [[assistant]] and WebApp.
+(Maintained by François Marier)
+
+	sudo add-apt-repository ppa:fmarier/git-annex
+	sudo apt-get update
+	sudo apt-get install git-annex
+
+## Oneiric
+
+	sudo apt-get install git-annex
+
+Warning: The version of git-annex shipped in Ubuntu Oneiric
+had [a bug that prevents upgrades from v1 git-annex repositories](https://bugs.launchpad.net/ubuntu/+source/git-annex/+bug/875958).
+If you need to upgrade such a repository, get a newer version of git-annex.

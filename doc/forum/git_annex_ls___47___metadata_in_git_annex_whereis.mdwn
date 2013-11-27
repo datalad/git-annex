@@ -1,0 +1,1 @@
+I just started experimenting with git annex, and I found that I would like to have a way to figure out metadata (well, size. Maybe modification date) of a non-local file. I first checked if there is "git annex ls" (which could list known files in an ls-like way) and found "git annex whereis" as somewhat a replacement, but it does not give metadata information.
