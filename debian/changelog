@@ -1,4 +1,4 @@
-git-annex (5.20131121) UNRELEASED; urgency=low
+git-annex (5.20131127) unstable; urgency=low
 
   * webapp: Detect when upgrades are available, and upgrade if the user
     desires.
@@ -23,7 +23,7 @@ git-annex (5.20131121) UNRELEASED; urgency=low
     repaired them all.
   * Allow use of --unused in bare repository.
 
- -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 18:30:47 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 27 Nov 2013 18:41:44 -0400
 
 git-annex (5.20131120) unstable; urgency=low
 
