@@ -1,15 +1,27 @@
 ### Please describe the problem.
 
-Git annex cannot add files that are marked read-only
+Git annex cannot add/import files in folders without w or x permission
+
+Note that (as stated in the comments) this might not be a bug. The problem might somewhere within Git, because Git does not manage file permissions very well. I was just hoping that I could import large directory trees into git-annex with a simple call to "git annex import"; now it seems I have to fix their permissions first.
 
 ### What steps will reproduce the problem?
 
-    $ echo "This should not be modified" > read_only_file.txt
-    $ chmod 400 read_only_file.txt
-    $ git annex add .
-    add read_only_file.txt (checksum...) 
-    git-annex: read_only_file.txt: removeLink: permission denied (Permission denied)
-    failed
+    $ cd /tmp
+    $ mkdir -p folder/subfolder
+    $ echo "some text" > folder/subfolder/some_file.txt
+    $ chmod 500 folder/subfolder
+    $ mkdir annex
+    $ cd annex
+    $ git init
+    $ git annex init "Testing git annex"
+    $ git annex import ../folder
+    Fails
+    $ chmod 600 ../folder/subfolder
+    $ git annex import ../folder
+    Fails
+    $ chmod 700 ../folder/subfolder
+    $ git annex import ../folder
+    Works. Subfolder now has 755 permissions
 
 ### What version of git-annex are you using? On what operating system?
 
@@ -23,11 +35,3 @@ Git annex cannot add files that are marked read-only
     upgrade supported from repository versions: 0 1 2
 
     git version 1.8.4.3
-
-> Per my comment, I don't think the above reproduction steps are accurate.
-> I think the bug reporter must have actually had a directory that did not 
-> have the write bit set, or some other problem that prevented git-annex
-> from writing to the directory, and not to the file.
-> 
-> Closing as apparently not a bug. Please comment back if you have 
-> better infomation. [[done]] --[[Joey]]
