@@ -164,9 +164,6 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	rm -f tmp/git-annex.dmg
 	hdiutil create -format UDBZ -srcfolder tmp/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
-	# temporarily still create compressed image too
-	rm -f tmp/git-annex.dmg.bz2
-	bzip2 --fast < tmp/git-annex.dmg > tmp/git-annex.dmg.bz2
 
 ANDROID_FLAGS?=
 # Cross compile for Android.

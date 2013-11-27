@@ -1,0 +1,3 @@
+Per forum post linking to this bug, git commit can be very slow when run in a filesystem without symlink support, and seems to be reading the content of files just in order to show typechanged messages in the status.
+
+So, git annex sync should stop using git commit when in direct mode, and instead manually make its own commit. Git.Branch.commit and Git.Branch.update should be able to easily be used for this.
