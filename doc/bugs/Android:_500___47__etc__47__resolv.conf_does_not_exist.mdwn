@@ -1,0 +1,24 @@
+### Please describe the problem.
+
+When entering Jabber account data, the assistant responds with:
+
+    Internal Server Error: /etc/resolv.conf does not exist (No such file or directory).
+
+### What steps will reproduce the problem?
+
+Get a jabber account at http://jit.si. Enter your jabber name and password on Android assistant, and click "Use This Account". The dark overlay and progress message appears. After about 30 seconds the browser forwards to the "Internal Server Error: /etc/resolv.conf does not exist (No such file or directory)" page.
+
+### What version of git-annex are you using? On what operating system?
+
+Android 4.2 on Lenovo 780p. This model is only for sale in China and India and has been rooted, but the original ROM is still on. Often this makes no difference but you might want to confirm with another device.
+
+git-annex version 5.20131127-g736ce5e
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+# End of transcript or log.
+"""]]
