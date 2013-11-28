@@ -5,7 +5,7 @@ for providing 50 gb of free storage if you sign up with its Android client.
 git-annex can use Box as a [[special remote|special_remotes]].
 Recent versions of git-annex make this very easy to set up:
 
-	WEBDAV_USERNAME=you@example.com WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://www.box.com/dav/git-annex chunksize=75mb encryption=shared
+	WEBDAV_USERNAME=you@example.com WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://dav.box.com/dav/git-annex chunksize=75mb encryption=shared
 
 Note the use of chunksize; Box has a 100 mb maximum file size, and this
 breaks up large files into chunks before that limit is reached.
