@@ -9,7 +9,7 @@ First, check out the git repository again. Then, in the new checkout:
 	$ chmod -R u+w recovered-content
 	$ git annex add recovered-content
 	$ git reset HEAD recovered-content
-        $ rm -rf recovered-content
+	$ rm -rf recovered-content
 	$ git annex fsck
 
 The way that works is that when git-annex adds the same content that was in
