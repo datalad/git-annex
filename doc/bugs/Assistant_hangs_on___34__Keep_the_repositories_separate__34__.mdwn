@@ -1,0 +1,107 @@
+### Please describe the problem.
+
+Nothing happens when clicking "Keep the repositories separate" after adding another local repository on the dashboard in the webapp. The UI is still responsive, but stuck `Waiting for 127.0.0.1...` until another action is taken.
+
+The repository is created successfully on the filesystem and there does seem to be knowledge it exists; both are available under "Switch repository" but it does nothing again after selecting the other.
+
+### What steps will reproduce the problem?
+
+From a fresh install:
+
+1.  Start assistant/webapp via program menu
+2.  Add a repository `~/test/annex_a` in welcome screen
+3.  Select "Add another repository"
+4.  Select "Add another repository" under the "Add more repositories" option list 
+5.  Add a repository `~/test/annex_b` under "Add another local repository" (by the by: phrasing here could be disambiguated a little)
+6.  Select "Keep the repositories separate" under "Combine the repositories?"
+7.  Nothing happens, repository is however created
+
+### What version of git-annex are you using? On what operating system?
+
+I've tried this on both Ubuntu 12.04 Precise and Ubuntu 12.10 Quantal on two separate machines with separate installation methods and the problem exists on both.
+
+`git-annex` was installed via `apt-get` from the repository `ppa:fmarier/git-annex` for the Precise machine. It was compiled via `cabal` in the case of the Quantal machine, version information (for the `cabal` installation) is as follows:
+
+[[!format sh """
+git-annex version: 5.20131120
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+"""]]
+
+### Please provide any additional information below.
+
+Is the underlying issue perhaps one with changing context between repos? I've included a split log to clearly the log entries occurring when the webapp "hangs". 
+
+Log between steps 1-2:
+
+[[!format sh """
+[2013-11-28 12:14:10 GMT] main: starting assistant version 5.20131120
+[2013-11-28 12:14:10 GMT] Cronner: You should enable consistency checking to protect your data. 
+(Recording state in git...)
+(scanning...) [2013-11-28 12:14:10 GMT] Watcher: Performing startup scan
+(started...)
+"""]]
+
+Log entries for steps 3-5 (after enabling debug logging in preferences, username has been masked after the fact):
+
+[[!format sh """
+[2013-11-28 12:16:48 GMT] read: git ["init","--quiet","/home/<user>/test/annex_b"]
+[2013-11-28 12:16:48 GMT] read: git ["config","--null","--list"]
+[2013-11-28 12:16:48 GMT] read: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","show-ref","git-annex"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","config","annex.uuid","f491c4d0-df88-4d23-856d-eeed64a5581e"]
+[2013-11-28 12:16:48 GMT] read: git ["config","--null","--list"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","config","annex.version","3"]
+[2013-11-28 12:16:48 GMT] read: git ["config","--null","--list"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","config","core.bare","false"]
+[2013-11-28 12:16:48 GMT] read: git ["config","--null","--list"]
+[2013-11-28 12:16:48 GMT] read: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","symbolic-ref","HEAD"]
+[2013-11-28 12:16:48 GMT] read: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","show-ref","--hash","refs/heads/master"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","checkout","-q","-B","master"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","config","annex.direct","false"]
+[2013-11-28 12:16:48 GMT] read: git ["config","--null","--list"]
+[2013-11-28 12:16:48 GMT] read: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","show-ref","--hash","refs/heads/git-annex"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","show-ref","--verify","-q","origin/git-annex"]
+[2013-11-28 12:16:48 GMT] read: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","write-tree"]
+[2013-11-28 12:16:48 GMT] chat: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","commit-tree","4b825dc642cb6eb9a060e54bf8d69288fbee4904"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","update-ref","refs/heads/git-annex","10c08f73fc8ff956d304a2e0c463e5e56a4f8489"]
+[2013-11-28 12:16:48 GMT] read: uname ["-n"]
+[2013-11-28 12:16:48 GMT] chat: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","cat-file","--batch"]
+[2013-11-28 12:16:48 GMT] chat: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","hash-object","-w","--stdin-paths","--no-filters"]
+[2013-11-28 12:16:48 GMT] feed: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","update-index","-z","--index-info"]
+[2013-11-28 12:16:48 GMT] read: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","show-ref","--hash","refs/heads/git-annex"]
+[2013-11-28 12:16:48 GMT] read: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","write-tree"]
+[2013-11-28 12:16:48 GMT] chat: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","commit-tree","4840a6b9a27e4392accd7abef59e9f6154a2b6aa","-p","refs/heads/git-annex"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","update-ref","refs/heads/git-annex","2968c7a922d522268375879514ae2c1d2e50e0ca"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","commit","--quiet","--allow-empty","-m","created repository"]
+git: 'annex' is not a git command. See 'git --help'.
+[2013-11-28 12:16:48 GMT] read: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","symbolic-ref","HEAD"]
+[2013-11-28 12:16:48 GMT] read: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","show-ref","--hash","refs/heads/master"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","checkout","-q","-B","annex/direct/master"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","config","core.bare","true"]
+[2013-11-28 12:16:48 GMT] read: git ["config","--null","--list"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","config","annex.direct","true"]
+[2013-11-28 12:16:48 GMT] read: git ["config","--null","--list"]
+[2013-11-28 12:16:48 GMT] call: git ["--git-dir=/home/<user>/test/annex_b/.git","--work-tree=/home/<user>/test/annex_b","config","gc.auto","0"]
+[2013-11-28 12:16:48 GMT] call: /home/<user>/.cabal/bin/git-annex ["assistant"]
+"""]]
+
+Note the spurious `git: 'annex' is not a git command. See 'git --help'.` entry. It doesn't strike me as related, if so I can submit it as another bug report if necessary. 
+
+Log entries for step 6 (no response):
+
+[[!format sh """
+[2013-11-28 12:18:34 GMT] call: /home/<user>/.cabal/bin/git-annex ["assistant"]
+git-annex: Daemon is already running.
+[2013-11-28 12:18:35 GMT] read: git ["config","--null","--list"]
+"""]]
+
+Log entries for additional step (attempt to switch to repository `annex_b` via the drop down menu; again, no response):
+
+[[!format sh """
+[2013-11-28 12:19:18 GMT] call: /home/<user>/.cabal/bin/git-annex ["assistant"]
+git-annex: Daemon is already running.
+[2013-11-28 12:19:18 GMT] read: git ["config","--null","--list"]
+"""]]
+
+Hope that's helpful! Multiple repositories is a fairly important feature for me; Sod's law I find it implemented tidily without realising and it doesn't quite work as expected, ha. 
