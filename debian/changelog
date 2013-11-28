@@ -1,3 +1,9 @@
+git-annex (5.20131127.1) unstable; urgency=low
+
+  * Rebuild that does not try to use quvi 0.9 from experimental.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 28 Nov 2013 07:57:36 -0400
+
 git-annex (5.20131127) unstable; urgency=low
 
   * webapp: Detect when upgrades are available, and upgrade if the user
