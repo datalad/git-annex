@@ -6,12 +6,19 @@ Include a symlink in the repo.  Wait until another client syncs the repo.
 
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 5.20131117-gbd514dc
+
 build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+
 key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+
 remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+
 local repository version: unknown
+
 default repository version: 3
+
 supported repository versions: 3 5
+
 upgrade supported from repository versions: 0 1 2 4
 
 ### Please provide any additional information below.
