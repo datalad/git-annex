@@ -65,7 +65,10 @@ initialize mdescription = do
 			setVersion directModeVersion
 		, do
 			setVersion defaultVersion
-			setDirect False
+			-- Handle case where this repo was cloned from a
+			-- direct mode repo.
+			unlessM isBare
+				switchHEADBack
 		)
 	createInodeSentinalFile
 	u <- getUUID
