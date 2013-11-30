@@ -1,9 +1,9 @@
-git-annex (5.20131127.2) UNRELEASED; urgency=low
+git-annex (5.20131130) unstable; urgency=low
 
   * init: Fix a bug that caused git annex init, when run in a bare
     repository, to set core.bare=false.
 
- -- Joey Hess <joeyh@debian.org>  Sat, 30 Nov 2013 16:10:48 -0400
+ -- Joey Hess <joeyh@debian.org>  Sat, 30 Nov 2013 16:32:35 -0400
 
 git-annex (5.20131127.1) unstable; urgency=low
 
