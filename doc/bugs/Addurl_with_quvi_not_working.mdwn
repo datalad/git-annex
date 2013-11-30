@@ -69,3 +69,6 @@ OS: Archlinux, fully updated
       content length: 162.2Mi  content type: video/mp4  mode: resume
     copy: --=-  100%   488.9Ki/s  00:05:37
 
+> git annex 5.20131127 is the first to support quvi 0.9. 
+> (And only if built on a system with that version of quvi installed).
+> Upgrade. [[done]] --[[Joey]]
