@@ -7,7 +7,8 @@
 
 module Logs.FsckResults (
 	writeFsckResults,
-	readFsckResults
+	readFsckResults,
+	clearFsckResults,
 ) where
 
 import Common.Annex
@@ -22,8 +23,8 @@ writeFsckResults u fsckresults = do
 	logfile <- fromRepo $ gitAnnexFsckResultsLog u
 	liftIO $ 
 		case fsckresults of
-			Nothing -> store S.empty logfile
-			Just s
+			FsckFailed -> store S.empty logfile
+			FsckFoundMissing s
 				| S.null s -> nukeFile logfile
 				| otherwise -> store s logfile
   where
@@ -35,9 +36,13 @@ writeFsckResults u fsckresults = do
 readFsckResults :: UUID -> Annex FsckResults
 readFsckResults u = do
 	logfile <- fromRepo $ gitAnnexFsckResultsLog u
-	liftIO $ catchDefaultIO (Just S.empty) $
+	liftIO $ catchDefaultIO (FsckFoundMissing S.empty) $
 		deserialize <$> readFile logfile
   where
 	deserialize l = 
 		let s = S.fromList $ map Ref $ lines l
-		in if S.null s then Nothing else Just s
+		in if S.null s then FsckFailed else FsckFoundMissing s
+
+clearFsckResults :: UUID -> Annex ()
+clearFsckResults = liftIO . nukeFile <=< fromRepo . gitAnnexFsckResultsLog
+	

@@ -58,7 +58,7 @@ runRepair u mrmt destructiverepair = do
 	ok <- if u == myu
 		then localrepair fsckresults
 		else remoterepair fsckresults
-	liftAnnex $ writeFsckResults u Nothing
+	liftAnnex $ clearFsckResults u
 	debug [ "Repaired", show u, show ok ]
 
 	return ok

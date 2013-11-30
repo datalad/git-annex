@@ -6,11 +6,12 @@
  -}
 
 module Git.Fsck (
-	FsckResults,
+	FsckResults(..),
 	MissingObjects,
 	findBroken,
 	foundBroken,
 	findMissing,
+	knownMissing,
 ) where
 
 import Common
@@ -23,9 +24,7 @@ import qualified Data.Set as S
 
 type MissingObjects = S.Set Sha
 
-{- If fsck succeeded, Just a set of missing objects it found.
- - If it failed, Nothing. -}
-type FsckResults = Maybe MissingObjects
+data FsckResults = FsckFoundMissing MissingObjects | FsckFailed
 
 {- Runs fsck to find some of the broken objects in the repository.
  - May not find all broken objects, if fsck fails on bad data in some of
@@ -42,8 +41,8 @@ findBroken batchmode r = do
 	let objs = findShas output
 	badobjs <- findMissing objs r
 	if S.null badobjs && not fsckok
-		then return Nothing
-		else return $ Just badobjs
+		then return FsckFailed
+		else return $ FsckFoundMissing badobjs
   where
 	(command, params) = ("git", fsckParams r)
 	(command', params')
@@ -51,8 +50,12 @@ findBroken batchmode r = do
 		| otherwise = (command, params)
 
 foundBroken :: FsckResults -> Bool
-foundBroken Nothing = True
-foundBroken (Just s) = not (S.null s)
+foundBroken FsckFailed = True
+foundBroken (FsckFoundMissing s) = not (S.null s)
+
+knownMissing :: FsckResults -> MissingObjects
+knownMissing FsckFailed = S.empty
+knownMissing (FsckFoundMissing s) = s
 
 {- Finds objects that are missing from the git repsitory, or are corrupt.
  -

@@ -26,6 +26,7 @@ import Utility.NotificationBroadcaster
 import Config
 import Utility.HumanTime
 import Git.Repair
+import Git.Index
 
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
@@ -43,7 +44,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	ifM (not <$> liftAnnex (inRepo (checkIndex S.empty)))
 		( do
 			notice ["corrupt index file found at startup; removing and restaging"]
-			liftAnnex $ inRepo nukeIndex
+			liftAnnex $ inRepo $ nukeFile . indexFile
 			{- Normally the startup scan avoids re-staging files,
 			 - but with the index deleted, everything needs to be
 			 - restaged. -}
