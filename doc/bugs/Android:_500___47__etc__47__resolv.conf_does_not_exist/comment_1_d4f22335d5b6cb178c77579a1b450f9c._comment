@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkptNW1PzrVjYlJWP_9e499uH0mjnBV6GQ"
+ nickname="Christian"
+ subject="Same on CyaogenMod 10.2"
+ date="2013-11-29T11:00:58Z"
+ content="""
+CM10.2 Nightly Build for Sony Experia Mini Pro does show the same behaviour. Creating the resolv.conf does not solve the problem:
+
+    1|root@mango:/etc # touch resolv.conf; ls resolv.conf
+    touch resolv.conf; ls resolv.conf
+    resolv.conf: No such file or directory
+
+"""]]

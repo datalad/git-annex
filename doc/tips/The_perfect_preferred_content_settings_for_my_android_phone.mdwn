@@ -10,7 +10,7 @@ So I came up with this solution, and I'm very happy with it.
 
 This will sync my music and book collections to my phone whenever I add something new on my computers, and it will sync and keep anything I add to the annex on my phone. Best of all worlds! Impressed how flexible preferred content is. More full-sync folders can be added like this: 
 
-    include=Music/* or include=Books/* or Notes/* or present
+    include=Music/* or include=Books/* or include = Notes/* or present
 
 To add them, I first had to figure out the uuid of my phone repo. So I added a new tab on android, and did
 
@@ -28,5 +28,9 @@ And changed the line
 to
 
     content [phone-uuid] = include=Music/* or include=Books/* or Notes/* or present
+
+and commented out
+
+    #group [phone-uuid] = client
 
 And waited for it to sync.

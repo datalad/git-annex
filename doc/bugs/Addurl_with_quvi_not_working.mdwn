@@ -1,0 +1,71 @@
+### Please describe the problem.
+
+When adding a video with "addurl", git-annex claims that quvi does not know how to download the url. When using "quvi get" on the same url the video gets downloaded.
+
+This seems to be independent of the video hosting site and occured on all I tested.
+
+### What steps will reproduce the problem?
+
+Download a video with
+
+    git annex addurl "[URL]"
+
+and do the same with
+
+    quvi get "[URL]"
+
+.
+
+
+### What version of git-annex are you using? On what operating system?
+
+OS: Archlinux, fully updated
+
+    git-annex version: 5.20131118-gc7e5cde
+    build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus XMPP Feeds Quvi TDFA
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 5
+    upgrade supported from repository versions: 0 1 2 4
+
+
+### Please provide any additional information below.
+
+# Git-annex:
+
+    user@asus aaa [master] % git annex addurl "https://www.youtube.com/watch?v=TUrQsK5ouSg"
+    quvi v0.9.5
+      built on 2013-11-12 17:02:06 +0000 for x86_64-unknown-linux-gnu
+        with gcc, -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector --param=ssp-buffer-size=4
+      configuration: --prefix=/usr
+    libquvi v0.9.4
+      built on 2013-11-12 16:58:23 +0000 for x86_64-unknown-linux-gnu
+        with gcc, -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector --param=ssp-buffer-size=4
+      configuration: --prefix=/usr
+    libquvi-scripts v0.9.20131104
+      configuration: --prefix=/usr --with-nsfw --with-geoblocked
+    
+    Copyright (C) 2012,2013  Toni Gundogdu <legatvs@gmail.com>
+    quvi comes with ABSOLUTELY NO WARRANTY.  You may redistribute copies of
+    quvi under the terms of the GNU Affero General Public License version 3
+    or later. For more information, see <http://www.gnu.org/licenses/agpl.html>.
+    
+    To contact the developers, please mail to <quvi-devel@lists.sourceforge.net>
+    
+    Copyright (C) 2012,2013  Toni Gundogdu <legatvs@gmail.com>
+    quvi comes with ABSOLUTELY NO WARRANTY.  You may redistribute copies of
+    quvi under the terms of the GNU Affero General Public License version 3
+    or later. For more information, see <http://www.gnu.org/licenses/agpl.html>.
+    
+    To contact the developers, please mail to <quvi-devel@lists.sourceforge.net>
+    git-annex: quvi does not know how to download url https://www.youtube.com/watch?v=TUrQsK5ouSg
+
+# Quvi:
+
+    user@asus aaa [master] % quvi get "https://www.youtube.com/watch?v=TUrQsK5ouSg"
+    file: GitAnnex Assistant Hak5 14223.mp4  [media]                                                       
+      content length: 162.2Mi  content type: video/mp4  mode: resume
+    copy: --=-  100%   488.9Ki/s  00:05:37
+
