@@ -82,7 +82,7 @@ start' allowauto listenhost = do
 						else openBrowser browser htmlshim url origout origerr
 			)
 	auto
-		| allowauto = liftIO startNoRepo
+		| allowauto = liftIO $ startNoRepo []
 		| otherwise = do
 			d <- liftIO getCurrentDirectory
 			error $ "no git repository in " ++ d
@@ -93,8 +93,8 @@ start' allowauto listenhost = do
 
 {- When run without a repo, start the first available listed repository in
  - the autostart file. If not, it's our first time being run! -}
-startNoRepo :: IO ()
-startNoRepo = do
+startNoRepo :: CmdParams -> IO ()
+startNoRepo _ = do
 	-- FIXME should be able to reuse regular getopt, but 
 	-- it currently runs in the Annex monad.
 	args <- getArgs

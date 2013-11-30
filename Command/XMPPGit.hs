@@ -12,7 +12,7 @@ import Command
 import Assistant.XMPP.Git
 
 def :: [Command]
-def = [noCommit $ noRepo xmppGitRelay $ dontCheck repoExists $
+def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "xmppgit" paramNothing seek
 		SectionPlumbing "git to XMPP relay"]
 
@@ -24,6 +24,9 @@ start _ = do
 	liftIO gitRemoteHelper
 	liftIO xmppGitRelay
 	stop
+
+startNoRepo :: CmdParams -> IO ()
+startNoRepo _ = xmppGitRelay
 
 {- A basic implementation of the git-remote-helpers protocol. -}
 gitRemoteHelper :: IO ()

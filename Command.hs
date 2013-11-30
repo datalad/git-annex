@@ -55,7 +55,7 @@ noMessages c = c { cmdnomessages = True }
 
 {- Adds a fallback action to a command, that will be run if it's used
  - outside a git repository. -}
-noRepo :: IO () -> Command -> Command
+noRepo :: (CmdParams -> IO ()) -> Command -> Command
 noRepo a c = c { cmdnorepo = Just a }
 
 {- Adds options to a command. -}

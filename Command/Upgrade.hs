@@ -10,8 +10,6 @@ module Command.Upgrade where
 import Common.Annex
 import Command
 import Upgrade
-import Annex.Version
-import Config
 
 def :: [Command]
 def = [dontCheck repoExists $ -- because an old version may not seem to exist

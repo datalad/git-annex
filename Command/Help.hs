@@ -23,19 +23,23 @@ import GitAnnex.Options
 import System.Console.GetOpt
 
 def :: [Command]
-def = [noCommit $ noRepo showGeneralHelp $ dontCheck repoExists $
+def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "help" paramNothing seek SectionQuery "display help"]
 
 seek :: [CommandSeek]
 seek = [withWords start]
 
 start :: [String] -> CommandStart
-start ["options"] = do
-	liftIO showCommonOptions
+start params = do
+	liftIO $ start' params
 	stop
-start _ = do
-	liftIO showGeneralHelp
-	stop
+
+startNoRepo :: CmdParams -> IO ()
+startNoRepo = start'
+
+start' :: [String] -> IO ()
+start' ["options"] = showCommonOptions
+start' _ = showGeneralHelp
 
 showCommonOptions :: IO ()
 showCommonOptions = putStrLn $ usageInfo "Common options:" options
