@@ -236,7 +236,7 @@ verifyLocationLogRemote key desc remote present =
 		(Remote.logStatus remote key)
 
 verifyLocationLog' :: Key -> String -> Bool -> UUID -> (LogStatus -> Annex ()) -> Annex Bool
-verifyLocationLog' key desc present u bad = do
+verifyLocationLog' key desc present u updatestatus = do
 	uuids <- Remote.keyLocations key
 	case (present, u `elem` uuids) of
 		(True, False) -> do
@@ -254,7 +254,7 @@ verifyLocationLog' key desc present u bad = do
   where
 	fix s = do
 		showNote "fixing location log"
-		bad s
+		updatestatus s
 
 {- Ensures the direct mode mapping file is consistent. Each file
  - it lists for the key should exist, and the specified file should be
