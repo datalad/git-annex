@@ -4,6 +4,7 @@ git-annex (5.20131131) UNRELEASED; urgency=low
     it will read the full contents of files in the tree.
   * assistant: Batch jobs are now run with ionice and nocache, when
     those commands are available.
+  * assistant: Run transferkeys as batch jobs.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
 

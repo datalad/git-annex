@@ -12,6 +12,7 @@ module Assistant.TransferrerPool where
 import Assistant.Common
 import Assistant.Types.TransferrerPool
 import Logs.Transfer
+import Utility.Batch
 
 #ifndef mingw32_HOST_OS
 import qualified Command.TransferKeys as T
@@ -63,9 +64,11 @@ mkTransferrer program = do
 		, Param "--readfd", Param $ show tread
 		, Param "--writefd", Param $ show twrite
 		]
+	{- It runs as a batch job. -}
+	(program', params') <- toBatchCommand (program, params)
 	{- It's put into its own group so that the whole group can be
 	 - killed to stop a transfer. -}
-	(_, _, _, pid) <- createProcess (proc program $ toCommand params)
+	(_, _, _, pid) <- createProcess (proc program' $ toCommand params')
 		{ create_group = True }
 	closeFd twrite
 	closeFd tread
