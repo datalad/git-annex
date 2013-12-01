@@ -45,22 +45,28 @@ maxNice = 19
 
 {- Makes a command be run by whichever of nice, ionice, and nocache
  - are available in the path. -}
-toBatchCommand :: (String, [CommandParam]) -> IO (String, [CommandParam])
-toBatchCommand (command, params) = do
+type BatchCommandMaker = (String, [CommandParam]) -> (String, [CommandParam])
+
+getBatchCommandMaker :: IO BatchCommandMaker
+getBatchCommandMaker = do
 #ifndef mingw32_HOST_OS
 	nicers <- filterM (inPath . fst)
 		[ ("nice", [])
 		, ("ionice", ["-c3"])
 		, ("nocache", [])
 		]
-	let (command', params') = case nicers of
-		[] -> (command, params)
-		(first:rest) -> (fst first, map Param (snd first ++ concatMap (\p -> fst p : snd p) rest ++ [command]) ++ params)
+	return $ \(command, params) ->
+		case nicers of
+			[] -> (command, params)
+			(first:rest) -> (fst first, map Param (snd first ++ concatMap (\p -> fst p : snd p) rest ++ [command]) ++ params)
 #else
-	let command' = command
-	let params' = params
+	return id
 #endif
-	return (command', params')
+
+toBatchCommand :: (String, [CommandParam]) -> IO (String, [CommandParam])
+toBatchCommand v = do
+	batchmaker <- getBatchCommandMaker
+	return $ batchmaker v
 
 {- Runs a command in a way that's suitable for batch jobs that can be
  - interrupted.
@@ -73,7 +79,8 @@ batchCommand command params = batchCommandEnv command params Nothing
 
 batchCommandEnv :: String -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
 batchCommandEnv command params environ = do
-	(command', params') <- toBatchCommand (command, params)
+	batchmaker <- getBatchCommandMaker
+	let (command', params') = batchmaker (command, params)
 	let p = proc command' $ toCommand params'
 	(_, _, _, pid) <- createProcess $ p { env = environ }
 	r <- E.try (waitForProcess pid) :: IO (Either E.SomeException ExitCode)

@@ -24,9 +24,9 @@ import Control.Exception (throw)
 import Control.Concurrent
 
 {- Runs an action with a Transferrer from the pool. -}
-withTransferrer :: FilePath -> TransferrerPool -> (Transferrer -> IO a) -> IO a
-withTransferrer program pool a = do
-	t <- maybe (mkTransferrer program) (checkTransferrer program)
+withTransferrer :: FilePath -> BatchCommandMaker -> TransferrerPool -> (Transferrer -> IO a) -> IO a
+withTransferrer program batchmaker pool a = do
+	t <- maybe (mkTransferrer program batchmaker) (checkTransferrer program batchmaker)
 		=<< atomically (tryReadTChan pool)
 	v <- tryNonAsync $ a t
 	unlessM (putback t) $
@@ -53,8 +53,8 @@ performTransfer transferrer t f = catchBoolIO $ do
 
 {- Starts a new git-annex transferkeys process, setting up a pipe
  - that will be used to communicate with it. -}
-mkTransferrer :: FilePath -> IO Transferrer
-mkTransferrer program = do
+mkTransferrer :: FilePath -> BatchCommandMaker -> IO Transferrer
+mkTransferrer program batchmaker = do
 #ifndef mingw32_HOST_OS
 	(myread, twrite) <- createPipe
 	(tread, mywrite) <- createPipe
@@ -65,7 +65,7 @@ mkTransferrer program = do
 		, Param "--writefd", Param $ show twrite
 		]
 	{- It runs as a batch job. -}
-	(program', params') <- toBatchCommand (program, params)
+	let (program', params') = batchmaker (program, params)
 	{- It's put into its own group so that the whole group can be
 	 - killed to stop a transfer. -}
 	(_, _, _, pid) <- createProcess (proc program' $ toCommand params')
@@ -86,9 +86,10 @@ mkTransferrer program = do
 #endif
 
 {- Checks if a Transferrer is still running. If not, makes a new one. -}
-checkTransferrer :: FilePath -> Transferrer -> IO Transferrer
-checkTransferrer program t = maybe (return t) (const $ mkTransferrer program)
-	=<< getProcessExitCode (transferrerHandle t)
+checkTransferrer :: FilePath -> BatchCommandMaker -> Transferrer -> IO Transferrer
+checkTransferrer program batchmaker t =
+	maybe (return t) (const $ mkTransferrer program batchmaker)
+		=<< getProcessExitCode (transferrerHandle t)
 
 {- Closing the fds will stop the transferrer. -}
 stopTransferrer :: Transferrer -> IO ()

@@ -12,12 +12,14 @@ import Assistant.TransferQueue
 import Assistant.TransferSlots
 import Logs.Transfer
 import Config.Files
+import Utility.Batch
 
 {- Dispatches transfers from the queue. -}
 transfererThread :: NamedThread
 transfererThread = namedThread "Transferrer" $ do
 	program <- liftIO readProgramFile
-	forever $ inTransferSlot program $
+	batchmaker <- liftIO getBatchCommandMaker
+	forever $ inTransferSlot program batchmaker $
 		maybe (return Nothing) (uncurry genTransfer)
 			=<< getNextTransfer notrunning
   where
