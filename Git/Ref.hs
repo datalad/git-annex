@@ -10,6 +10,7 @@ module Git.Ref where
 import Common
 import Git
 import Git.Command
+import Git.Sha
 
 import Data.Char (chr)
 
@@ -104,6 +105,11 @@ matchingUniq :: [Ref] -> Repo -> IO [(Sha, Branch)]
 matchingUniq refs repo = nubBy uniqref <$> matching refs repo
   where
 	uniqref (a, _) (b, _) = a == b
+
+{- Gets the sha of the tree a ref uses. -}
+tree :: Ref -> Repo -> IO (Maybe Sha)
+tree ref = extractSha <$$> pipeReadStrict
+	[ Param "rev-parse", Param (show ref ++ ":") ]
 
 {- Checks if a String is a legal git ref name.
  -

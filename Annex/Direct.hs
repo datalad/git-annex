@@ -1,6 +1,6 @@
 {- git-annex direct mode
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -88,7 +88,27 @@ stageDirect = do
 
 	addgit file = Annex.Queue.addCommand "add" [Param "-f"] [file]
 
-	deletegit file = Annex.Queue.addCommand "rm" [Param "-f"] [file]
+	deletegit file = Annex.Queue.addCommand "rm" [Param "-qf"] [file]
+
+{- Run before a commit to update direct mode bookeeping to reflect the
+ - staged changes being committed. -}
+preCommitDirect :: Annex Bool
+preCommitDirect = do
+	(diffs, clean) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
+	makeabs <- flip fromTopFilePath <$> gitRepo
+	forM_ diffs (go makeabs)
+	liftIO clean
+  where
+	go makeabs diff = do
+		withkey (DiffTree.srcsha diff) (DiffTree.srcmode diff) removeAssociatedFile
+		withkey (DiffTree.dstsha diff) (DiffTree.dstmode diff) addAssociatedFile
+	  where
+		withkey sha mode a = when (sha /= nullSha) $ do
+			k <- catKey sha mode
+			case k of
+				Nothing -> noop
+				Just key -> void $ a key $
+					makeabs $ DiffTree.file diff
 
 {- Adds a file to the annex in direct mode. Can fail, if the file is
  - modified or deleted while it's being added. -}

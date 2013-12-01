@@ -95,7 +95,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 		fromMaybe (error $ "failed to create " ++ show name)
 			<$> branchsha
 	go False = withIndex' True $
-		inRepo $ Git.Branch.commit "branch created" fullname []
+		inRepo $ Git.Branch.commitAlways "branch created" fullname []
 	use sha = do
 		setIndexSha sha
 		return sha
@@ -249,7 +249,7 @@ commitIndex jl branchref message parents = do
 commitIndex' :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
 commitIndex' jl branchref message parents = do
 	updateIndex jl branchref
-	committedref <- inRepo $ Git.Branch.commit message fullname parents
+	committedref <- inRepo $ Git.Branch.commitAlways message fullname parents
 	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
 	when (racedetected branchref parentrefs) $ do
@@ -486,7 +486,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 		Annex.Queue.flush
 		if neednewlocalbranch
 			then do
-				committedref <- inRepo $ Git.Branch.commit message fullname transitionedrefs
+				committedref <- inRepo $ Git.Branch.commitAlways message fullname transitionedrefs
 				setIndexSha committedref
 			else do
 				ref <- getBranch

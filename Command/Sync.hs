@@ -103,19 +103,33 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 commit :: CommandStart
 commit = next $ next $ ifM isDirect
 	( do
-		void stageDirect
-		runcommit []
-	, runcommit [Param "-a"]
-	)
-  where
-	runcommit ps = do
 		showStart "commit" ""
-		showOutput
+		void stageDirect
+		void preCommitDirect
+		commitStaged commitmessage
+	, do
+		showStart "commit" ""
 		Annex.Branch.commit "update"
 		-- Commit will fail when the tree is clean, so ignore failure.
-		let params = Param "commit" : ps ++
-			[Param "-m", Param "git-annex automatic sync"]
-		_ <- inRepo $ tryIO . Git.Command.runQuiet params
+		_ <- inRepo $ tryIO . Git.Command.runQuiet
+			[ Param "commit"
+			, Param "-a"
+			, Param "-m"
+			, Param commitmessage
+			]
+		return True
+	)
+  where
+	commitmessage = "git-annex automatic sync"
+
+commitStaged :: String -> Annex Bool
+commitStaged commitmessage = go =<< inRepo Git.Branch.currentUnsafe
+  where
+	go Nothing = return False
+	go (Just branch) = do
+		parent <- inRepo $ Git.Ref.sha branch
+		void $ inRepo $ Git.Branch.commit False commitmessage branch
+			(maybe [] (:[]) parent)
 		return True
 
 mergeLocal :: Maybe Git.Ref -> CommandStart

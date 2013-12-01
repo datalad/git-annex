@@ -2,4 +2,4 @@ Per forum post linking to this bug, git commit can be very slow when run in a fi
 
 So, git annex sync should stop using git commit when in direct mode, and instead manually make its own commit. Git.Branch.commit and Git.Branch.update should be able to easily be used for this.
 
-PS: this page was created elsewhere, and therefore not listed in bugs page
+> [[done]] --[[Joey]]

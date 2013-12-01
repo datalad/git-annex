@@ -89,18 +89,38 @@ fastForward branch (first:rest) repo =
 			(False, False) -> findbest c rs -- same
 
 {- Commits the index into the specified branch (or other ref), 
- - with the specified parent refs, and returns the committed sha -}
-commit :: String -> Branch -> [Ref] -> Repo -> IO Sha
-commit message branch parentrefs repo = do
+ - with the specified parent refs, and returns the committed sha.
+ -
+ - Without allowempy set, avoids making a commit if there is exactly
+ - one parent, and it has the same tree that would be committed.
+ -
+ - Unlike git-commit, does not run any hooks, or examine the work tree
+ - in any way.
+ -}
+commit :: Bool -> String -> Branch -> [Ref] -> Repo -> IO (Maybe Sha)
+commit allowempty message branch parentrefs repo = do
 	tree <- getSha "write-tree" $
 		pipeReadStrict [Param "write-tree"] repo
-	sha <- getSha "commit-tree" $ pipeWriteRead
-		(map Param $ ["commit-tree", show tree] ++ ps)
-		(Just $ flip hPutStr message) repo
-	update branch sha repo
-	return sha
+	ifM (cancommit tree)
+		( do
+			sha <- getSha "commit-tree" $ pipeWriteRead
+				(map Param $ ["commit-tree", show tree] ++ ps)
+				(Just $ flip hPutStr message) repo
+			update branch sha repo
+			return $ Just sha
+		, return Nothing
+		)
   where
 	ps = concatMap (\r -> ["-p", show r]) parentrefs
+	cancommit tree
+		| allowempty = return True
+		| otherwise = case parentrefs of
+			[p] -> maybe False (tree /=) <$> Git.Ref.tree p repo
+			_ -> return True
+
+commitAlways :: String -> Branch -> [Ref] -> Repo -> IO Sha
+commitAlways message branch parentrefs repo = fromJust
+	<$> commit True message branch parentrefs repo
 
 {- A leading + makes git-push force pushing a branch. -}
 forcePush :: String -> String

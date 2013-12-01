@@ -1,3 +1,10 @@
+git-annex (5.20131131) UNRELEASED; urgency=low
+
+  * Avoid using git commit in direct mode, since in some situations
+    it will read the full contents of files in the tree.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
+
 git-annex (5.20131130) unstable; urgency=low
 
   * init: Fix a bug that caused git annex init, when run in a bare

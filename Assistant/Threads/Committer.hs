@@ -20,9 +20,7 @@ import Assistant.Drop
 import Logs.Transfer
 import Logs.Location
 import qualified Annex.Queue
-import qualified Git.Command
 import qualified Git.LsFiles
-import qualified Git.BuildVersion
 import qualified Command.Add
 import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
@@ -36,6 +34,7 @@ import Annex.CatFile
 import qualified Annex
 import Utility.InodeCache
 import Annex.Content.Direct
+import qualified Command.Sync
 
 import Data.Time.Clock
 import Data.Tuple.Utils
@@ -217,31 +216,7 @@ commitStaged = do
 	v <- tryAnnex Annex.Queue.flush
 	case v of
 		Left _ -> return False
-		Right _ -> do
-			{- Empty commits may be made if tree changes cancel
-			 - each other out, etc. Git returns nonzero on those,
-			 - so don't propigate out commit failures. -}
-			void $ inRepo $ catchMaybeIO . 
-				Git.Command.runQuiet
-					(Param "commit" : nomessage params)
-			return True
-  where
-	params =
-		[ Param "--quiet"
-		{- Avoid running the usual pre-commit hook;
-		 - the Watcher does the same symlink fixing,
-		 - and direct mode bookkeeping updating. -}
-		, Param "--no-verify"
-		]
-	nomessage ps
-		| Git.BuildVersion.older "1.7.2" =
-			Param "-m" : Param "autocommit" : ps
-		| Git.BuildVersion.older "1.7.8" =
-			Param "--allow-empty-message" :
-			Param "-m" : Param "" : ps
-		| otherwise =
-			Param "--allow-empty-message" :
-			Param "--no-edit" : Param "-m" : Param "" : ps
+		Right _ -> Command.Sync.commitStaged ""
 
 {- OSX needs a short delay after a file is added before locking it down,
  - when using a non-direct mode repository, as pasting a file seems to
