@@ -1,0 +1,1 @@
+On one my repos (git repo on github data on S3) I've started getting, `fatal: Cannot force update the current branch` `git-annex: failed to update refs/heads/master` other clones of this repository can sync fine but this one started failing after adding a couple of files.
