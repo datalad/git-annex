@@ -38,6 +38,7 @@ tests =
 	, TestCase "newquvi" $ testCmd "newquvi" "quvi info >/dev/null"
 	, TestCase "nice" $ testCmd "nice" "nice true >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
+	, TestCase "nocache" $ testCmd "nocache" "nocache true >/dev/null"
 	, TestCase "gpg" $ maybeSelectCmd "gpg"
 		[ ("gpg", "--version >/dev/null")
 		, ("gpg2", "--version >/dev/null") ]
