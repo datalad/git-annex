@@ -53,14 +53,9 @@ toBatchCommand (command, params) = do
 		, ("ionice", ["-c3"])
 		, ("nocache", [])
 		]
-	let command' = "sh"
-	let params' =
-		[ Param "-c"
-		, Param $ unwords $
-			"exec"
-			: concatMap (\p -> fst p : snd p) nicers
-			++ map shellEscape (command : toCommand params)
-		]
+	let (command', params') = case nicers of
+		[] -> (command, params)
+		(first:rest) -> (fst first, map Param (snd first ++ concatMap (\p -> fst p : snd p) rest ++ [command]) ++ params)
 #else
 	let command' = command
 	let params' = params
