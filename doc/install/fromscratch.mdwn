@@ -65,6 +65,8 @@ quite a lot.
     (optional; recommended for watch mode)
   * [gcrypt](https://github.com/joeyh/git-remote-gcrypt)
     (optional)
+  * [nocache](https://github.com/Feh/nocache)
+    (optional)
   * multicast DNS support, provided on linux by [nss-mdns](http://www.0pointer.de/lennart/projects/nss-mdns/)
     (optional; recommended for the assistant to support pairing well)
   * [ikiwiki](http://ikiwiki.info) (optional; used to build the docs)

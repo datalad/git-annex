@@ -10,9 +10,6 @@
 module Utility.Batch where
 
 import Common
-#ifndef mingw32_HOST_OS
-import qualified Build.SysConfig
-#endif
 
 #if defined(linux_HOST_OS) || defined(__ANDROID__)
 import Control.Concurrent.Async
@@ -46,36 +43,43 @@ batch a = a
 maxNice :: Int
 maxNice = 19
 
-{- Converts a command to run niced. -}
-toBatchCommand :: (String, [CommandParam]) -> (String, [CommandParam])
-toBatchCommand (command, params) = (command', params')
-  where
+{- Makes a command be run by whichever of nice, ionice, and nocache
+ - are available in the path. -}
+toBatchCommand :: (String, [CommandParam]) -> IO (String, [CommandParam])
+toBatchCommand (command, params) = do
 #ifndef mingw32_HOST_OS
-	commandline = unwords $ map shellEscape $ command : toCommand params
-	nicedcommand
-		| Build.SysConfig.nice = "nice " ++ commandline
-		| otherwise = commandline
-	command' = "sh"
-	params' =
+	nicers <- filterM (inPath . fst)
+		[ ("nice", [])
+		, ("ionice", ["-c3"])
+		, ("nocache", [])
+		]
+	let command' = "sh"
+	let params' =
 		[ Param "-c"
-		, Param $ "exec " ++ nicedcommand
+		, Param $ unwords $
+			"exec"
+			: concatMap (\p -> fst p : snd p) nicers
+			++ map shellEscape (command : toCommand params)
 		]
 #else
-	command' = command
-	params' = params
+	let command' = command
+	let params' = params
 #endif
+	return (command', params')
 
 {- Runs a command in a way that's suitable for batch jobs that can be
  - interrupted.
  -
- - The command is run niced. If the calling thread receives an async
- - exception, it sends the command a SIGTERM, and after the command
- - finishes shuttting down, it re-raises the async exception. -}
+ - If the calling thread receives an async exception, it sends the
+ - command a SIGTERM, and after the command finishes shuttting down,
+ - it re-raises the async exception. -}
 batchCommand :: String -> [CommandParam] -> IO Bool
 batchCommand command params = batchCommandEnv command params Nothing
 
 batchCommandEnv :: String -> [CommandParam] -> Maybe [(String, String)] -> IO Bool
 batchCommandEnv command params environ = do
+	(command', params') <- toBatchCommand (command, params)
+	let p = proc command' $ toCommand params'
 	(_, _, _, pid) <- createProcess $ p { env = environ }
 	r <- E.try (waitForProcess pid) :: IO (Either E.SomeException ExitCode)
 	case r of
@@ -85,7 +89,3 @@ batchCommandEnv command params environ = do
 			terminateProcess pid
 			void $ waitForProcess pid
 			E.throwIO asyncexception
-  where
-  	(command', params') = toBatchCommand (command, params)
-  	p = proc command' $ toCommand params'
-

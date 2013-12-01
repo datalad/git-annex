@@ -73,7 +73,14 @@ Depends: ${misc:Depends}, ${shlibs:Depends},
 	wget,
 	curl,
 	openssh-client (>= 1:5.6p1)
-Recommends: lsof, gnupg, bind9-host, ssh-askpass, quvi, git-remote-gcrypt (>= 0.20130908-4)
+Recommends: 
+	lsof,
+	gnupg,
+	bind9-host,
+	ssh-askpass,
+	quvi,
+	git-remote-gcrypt (>= 0.20130908-4),
+	nocache
 Suggests: graphviz, bup, libnss-mdns
 Description: manage files with git, without checking their contents into git
  git-annex allows managing files with git, without checking the file

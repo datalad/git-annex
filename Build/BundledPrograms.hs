@@ -50,8 +50,9 @@ bundledPrograms = catMaybes
 	, Just "gunzip"
 	, Just "tar"
 #endif
-	-- nice and ionice are not included in the bundle; we rely on the
-	-- system's own version, which may better match its kernel
+	-- nice, ionice, and nocache are not included in the bundle;
+	-- we rely on the system's own version, which may better match
+	-- its kernel, and avoid using them if not available.
 	]
   where
 	ifset True s = Just s
