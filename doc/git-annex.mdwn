@@ -101,7 +101,11 @@ subdirectories).
   When used with the `--to` option, copies the content of annexed files from
   the current repository to the specified one.
 
-  To avoid contacting the remote to check if it has every file, specify `--fast`
+  To avoid contacting the remote to check if it has every file
+  when copying --to the repository, specify `--fast`
+
+  To force checking the remote for every file when copying --from the
+  repository, specify `--force`.
 
 * `status` [path ...]`
 

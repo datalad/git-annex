@@ -133,11 +133,14 @@ fromStart src move afile key
 		next $ fromPerform src move key afile
 
 fromOk :: Remote -> Key -> Annex Bool
-fromOk src key
-	| Remote.hasKeyCheap src =
-		either (const expensive) return =<< Remote.hasKey src key
-	| otherwise = expensive
+fromOk src key = go =<< Annex.getState Annex.force
   where
+	go True = either (const $ return True) return =<< haskey
+	go False
+		| Remote.hasKeyCheap src =
+			either (const expensive) return =<< haskey
+		| otherwise = expensive
+	haskey = Remote.hasKey src key
 	expensive = do
 		u <- getUUID
 		remotes <- Remote.keyPossibilities key
