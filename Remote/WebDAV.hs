@@ -220,7 +220,10 @@ davAction r unconfigured action = do
 		_ -> return unconfigured
 
 configUrl :: Remote -> Maybe DavUrl
-configUrl r = M.lookup "url" $ config r
+configUrl r = fixup <$> M.lookup "url" (config r)
+  where
+	-- box.com DAV url changed
+	fixup = replace "https://www.box.com/dav/" "https://dav.box.com/dav/"
 
 toDavUser :: String -> DavUser
 toDavUser = B8.fromString

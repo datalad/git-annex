@@ -11,6 +11,7 @@ git-annex (5.20131131) UNRELEASED; urgency=low
     use hashDirMixed. Closes: #731142
   * copy --from, get --from: When --force is used, ignore the
     location log and always try to get the file from the remote.
+  * Deal with box.com changing the url of their webdav endpoint.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
 
