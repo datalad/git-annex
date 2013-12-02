@@ -5,6 +5,8 @@ git-annex (5.20131131) UNRELEASED; urgency=low
   * assistant: Batch jobs are now run with ionice and nocache, when
     those commands are available.
   * assistant: Run transferkeys as batch jobs.
+  * Automatically fix up bad bare repositories created by
+    versions 5.20131118 through 5.20131127.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
 
