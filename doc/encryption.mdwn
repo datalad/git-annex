@@ -28,7 +28,7 @@ run `git-annex initremote` in one of these ways:
 
 The [[hybrid_key_design|design/encryption]] allows additional
 encryption keys to be added on to a special remote later. Due to this
-flexability, it is the default and recommended encryption scheme.
+flexibility, it is the default and recommended encryption scheme.
  
 	git annex initremote newremote type=... [encryption=hybrid] keyid=KEYID ...
 
