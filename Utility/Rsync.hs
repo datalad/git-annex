@@ -67,7 +67,8 @@ rsyncParamsFixup = map fixup
  -}
 rsyncProgress :: MeterUpdate -> [CommandParam] -> IO Bool
 rsyncProgress meterupdate params = do
-	r <- withHandle StdoutHandle createProcessSuccess p (feedprogress 0 [])
+	r <- catchBoolIO $ 
+		withHandle StdoutHandle createProcessSuccess p (feedprogress 0 [])
 	{- For an unknown reason, piping rsync's output like this does
 	 - causes it to run a second ssh process, which it neglects to wait
 	 - on. Reap the resulting zombie. -}

@@ -257,22 +257,25 @@ withRsyncScratchDir a = do
 
 rsyncRetrieve :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex Bool
 rsyncRetrieve o k dest callback =
-	untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o callback
+	showResumable $ untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o callback
 		-- use inplace when retrieving to support resuming
 		[ Param "--inplace"
 		, Param u
 		, File dest
 		]
 
+showResumable :: Annex Bool -> Annex Bool
+showResumable a = ifM a
+	( return True
+	, do
+		showLongNote "rsync failed -- run git annex again to resume file transfer"
+		return False
+	)
+
 rsyncRemote :: RsyncOpts -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
 rsyncRemote o callback params = do
 	showOutput -- make way for progress bar
-	ifM (liftIO $ (maybe rsync rsyncProgress callback) ps)
-		( return True
-		, do
-			showLongNote "rsync failed -- run git annex again to resume file transfer"
-			return False
-		)
+	liftIO $ (maybe rsync rsyncProgress callback) ps
   where
 	defaultParams = [Params "--progress"]
 	ps = rsyncOptions o ++ defaultParams ++ params
@@ -298,7 +301,7 @@ rsyncSend o callback k canrename src = withRsyncScratchDir $ \tmp -> do
 		else createLinkOrCopy src dest
 	ps <- sendParams
 	if ok
-		then rsyncRemote o (Just callback) $ ps ++
+		then showResumable $ rsyncRemote o (Just callback) $ ps ++
 			[ Param "--recursive"
 			, partialParams
 			-- tmp/ to send contents of tmp dir
