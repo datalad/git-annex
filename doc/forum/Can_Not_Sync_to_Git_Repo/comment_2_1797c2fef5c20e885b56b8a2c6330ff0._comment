@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 2"
+ date="2013-12-02T19:52:04Z"
+ content="""
+Post the version of git-annex you're using, and `git annex sync --debug` output.
+"""]]
