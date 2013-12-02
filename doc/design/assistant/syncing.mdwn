@@ -1,28 +1,7 @@
 Once files are added (or removed or moved), need to send those changes to
 all the other git clones, at both the git level and the key/value level.
 
-## efficiency
-
-Currently after each file transfer (upload or download), a git sync is done
-to all remotes. This is rather a lot of work, also it prevents collecting
-presence changes to the git-annex branch into larger commits, which would
-save disk space over time.
-
-In many cases, this sync is necessary. For example, when a file is uploaded
-to a transfer remote, the location change needs to be synced out so that
-other clients know to grab it.
-
-Or, when downloading a file from a drive, the sync lets other locally
-paired repositories know we got it, so they can download it from us. 
-OTOH, this is also a case where a sync is sometimes unnecessary, since
-if we're going to upload the file to them after getting it, the sync
-only perhaps lets them start downloading it before our transfer queue
-reaches a point where we'd upload it.
-
-Do we need all the mapping stuff discussed below to know when we can avoid
-syncs?
-
-## TODO
+## misc TODO
 
 * Test MountWatcher on LXDE.
 * Add a hook, so when there's a change to sync, a program can be run
@@ -51,30 +30,11 @@ syncs?
   and fall back to some other method -- either storing deferred downloads
   on disk, or perhaps scheduling a TransferScanner run to get back into sync.
 
-## data syncing
+## More efficient syncing
 
-There are two parts to data syncing. First, map the network and second,
-decide what to sync when.
+See [[syncing/efficiency]]
 
-Mapping the network can reuse code in `git annex map`. Once the map is
-built, we want to find paths through the network that reach all nodes
-eventually, with the least cost. This is a minimum spanning tree problem,
-except with a directed graph, so really a Arborescence problem.
-
-With the map, we can determine which nodes to push new content to. Then we
-need to control those data transfers, sending to the cheapest nodes first,
-and with appropriate rate limiting and control facilities.
-
-This probably will need lots of refinements to get working well.
-
-### first pass: flood syncing
-
-Before mapping the network, the best we can do is flood all files out to every
-reachable remote. This is worth doing first, since it's the simplest way to
-get the basic functionality of the assistant to work. And we'll need this
-anyway.
-
-## TransferScanner
+## TransferScanner efficiency
 
 The TransferScanner thread needs to find keys that need to be Uploaded
 to a remote, or Downloaded from it.
