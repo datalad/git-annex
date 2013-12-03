@@ -98,6 +98,7 @@ install_pkgs () {
 	patched DAV
 	patched language-javascript
 	patched uuid
+	patched dns
 
 	cd ..
 
