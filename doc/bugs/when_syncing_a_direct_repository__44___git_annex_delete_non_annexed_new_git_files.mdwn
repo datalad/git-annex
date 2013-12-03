@@ -27,7 +27,7 @@ bare repository, I don't know of an easy fix.
 
 ### What version of git-annex are you using? On what operating system?
 
-
+On Debian, since at least git annex 5.20131120 I believe.
 
 ### Please provide any additional information below.
 
