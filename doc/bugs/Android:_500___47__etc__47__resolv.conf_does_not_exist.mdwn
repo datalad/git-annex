@@ -22,3 +22,5 @@ git-annex version 5.20131127-g736ce5e
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]] 
