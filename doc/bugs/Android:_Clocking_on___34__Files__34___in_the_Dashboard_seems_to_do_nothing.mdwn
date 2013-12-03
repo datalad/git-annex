@@ -19,3 +19,6 @@ last Android build from Nov 18 2013
 
 # End of transcript or log.
 """]]
+
+> Removed the UI element unless and until a file browser is available on
+> Android. [[done]] --[[Joey]]
