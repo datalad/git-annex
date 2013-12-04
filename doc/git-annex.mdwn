@@ -236,6 +236,9 @@ subdirectories).
   use the `--deduplicate` option. Duplicate files will be deleted from the
   import location.
 
+  To only import files whose content has not been seen before by git-annex,
+  but avoid deleting duplicate files, use the `--skip-duplicates` option.
+
   The `--clean-duplicates` option does not import any new files, but any files
   found in the import location that are duplicates of content in the annex
   are deleted.

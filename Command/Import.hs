@@ -28,18 +28,22 @@ opts =
 	[ duplicateOption
 	, deduplicateOption
 	, cleanDuplicatesOption
+	, skipDuplicatesOption
 	]
 
 duplicateOption :: Option
-duplicateOption = Option.flag [] "duplicate" "do not delete outside files"
+duplicateOption = Option.flag [] "duplicate" "do not delete source files"
 
 deduplicateOption :: Option
-deduplicateOption = Option.flag [] "deduplicate" "do not add files whose content has been seen"
+deduplicateOption = Option.flag [] "deduplicate" "delete source files whose content was imported before"
 
 cleanDuplicatesOption :: Option
-cleanDuplicatesOption = Option.flag [] "clean-duplicates" "delete outside duplicate files (import nothing)"
+cleanDuplicatesOption = Option.flag [] "clean-duplicates" "delete duplicate source files (import nothing)"
 
-data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates
+skipDuplicatesOption :: Option
+skipDuplicatesOption = Option.flag [] "skip-duplicates" "import only new files"
+
+data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates
 	deriving (Eq)
 
 getDuplicateMode :: Annex DuplicateMode
@@ -47,13 +51,15 @@ getDuplicateMode = gen
 	<$> getflag duplicateOption
 	<*> getflag deduplicateOption
 	<*> getflag cleanDuplicatesOption
+	<*> getflag skipDuplicatesOption
   where
   	getflag = Annex.getFlag . Option.name
-  	gen False False False = Default
-	gen True False False = Duplicate
-	gen False True False = DeDuplicate
-	gen False False True = CleanDuplicates
-	gen _ _ _ = error "bad combination of --duplicate, --deduplicate, --clean-duplicates"
+  	gen False False False False = Default
+	gen True False False False = Duplicate
+	gen False True False False = DeDuplicate
+	gen False False True False = CleanDuplicates
+	gen False False False True = SkipDuplicates
+	gen _ _ _ _ = error "bad combination of --duplicate, --deduplicate, --clean-duplicates, --skip-duplicates"
 
 seek :: [CommandSeek]
 seek = [withValue getDuplicateMode $ \mode -> withPathContents $ start mode]
@@ -62,43 +68,45 @@ start :: DuplicateMode -> (FilePath, FilePath) -> CommandStart
 start mode (srcfile, destfile) =
 	ifM (liftIO $ isRegularFile <$> getSymbolicLinkStatus srcfile)
 		( do
-			showStart "import" destfile
-			next $ perform mode srcfile destfile
+			isdup <- do
+				backend <- chooseBackend destfile
+				let ks = KeySource srcfile srcfile Nothing
+				v <- genKey ks backend
+				case v of
+					Just (k, _) -> not . null <$> keyLocations k
+					_ -> return False
+			case pickaction isdup of
+				Nothing -> stop
+				Just a -> do
+					showStart "import" destfile
+					next a
 		, stop
 		)
-
-perform :: DuplicateMode -> FilePath -> FilePath -> CommandPerform
-perform mode srcfile destfile =
-	case mode of
-		DeDuplicate -> ifM isdup
-			( deletedup
-			, go
-			)
-		CleanDuplicates -> ifM isdup
-			( deletedup
-			, next $ return True
-			)
-		_ -> go
   where
-	isdup = do
-		backend <- chooseBackend destfile
-		let ks = KeySource srcfile srcfile Nothing
-		v <- genKey ks backend
-		case v of
-			Just (k, _) -> not . null <$> keyLocations k
-			_ -> return False
 	deletedup = do
 		showNote "duplicate"
 		liftIO $ removeFile srcfile
 		next $ return True
-	go = do
+	importfile = do
 		whenM (liftIO $ doesFileExist destfile) $
 			unlessM (Annex.getState Annex.force) $
 				error $ "not overwriting existing " ++ destfile ++
 					" (use --force to override)"
 	
 		liftIO $ createDirectoryIfMissing True (parentDir destfile)
-		liftIO $ if mode == Duplicate
+		liftIO $ if mode == Duplicate || mode == SkipDuplicates
 			then void $ copyFileExternal srcfile destfile
 			else moveFile srcfile destfile
 		Command.Add.perform destfile
+	pickaction isdup = case mode of
+		DeDuplicate
+			| isdup -> Just deletedup
+			| otherwise -> Just importfile
+		CleanDuplicates
+			| isdup -> Just deletedup
+			| otherwise -> Nothing
+		SkipDuplicates
+			| isdup -> Nothing
+			| otherwise -> Just importfile
+		_ -> Just importfile
+

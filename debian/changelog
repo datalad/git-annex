@@ -14,6 +14,7 @@ git-annex (5.20131131) UNRELEASED; urgency=low
   * Deal with box.com changing the url of their webdav endpoint.
   * Android: Fix SRV record lookups for XMPP to use android getprop
     command to find DNS server, since there is no resolv.conf.
+  * import: Add --skip-duplicates option.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
 
