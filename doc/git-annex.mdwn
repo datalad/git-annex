@@ -135,7 +135,7 @@ subdirectories).
 * `sync [remote ...]`
 
   Use this command when you want to synchronize the local repository with
-  one or more of its remotes. You can specifiy the remotes to sync with;
+  one or more of its remotes. You can specify the remotes to sync with;
   the default is to sync with all remotes. Or specify `--fast` to sync with
   the remotes with the lowest annex-cost value.
 
@@ -169,7 +169,7 @@ subdirectories).
   copy automatically.
 
 * `mirror [path ...]`
-  
+
   This causes a destination repository to mirror a source repository.
 
   To use the local repository as the source repository,
@@ -181,7 +181,7 @@ subdirectories).
   repository. If a file's content is present in the source repository, it is
   copied to the destination repository. If a file's content is not present in
   the source repository, it will be dropped from the destination repository
-  when possible. 
+  when possible.
 
   Note that mirror does not sync the git repository, but only the file
   contents.
@@ -235,11 +235,11 @@ subdirectories).
   To only import files whose content has not been seen before by git-annex,
   use the `--deduplicate` option. Duplicate files will be deleted from the
   import location.
-  
+
   The `--clean-duplicates` option does not import any new files, but any files
   found in the import location that are duplicates of content in the annex
   are deleted.
-  
+
   (Note that using `--deduplicate` or `--clean-duplicates` with the WORM
   backend does not look at file content, but filename and mtime.)
 
@@ -267,7 +267,7 @@ subdirectories).
   By default, all files in the directory will be added to the repository.
   (Including dotfiles.) To block some files from being added, use
   `.gitignore` files.
-  
+
   By default, all files that are added are added to the annex, the same
   as when you run `git annex add`. If you configure annex.largefiles,
   files that it does not match will instead be added with `git add`.
@@ -302,7 +302,7 @@ subdirectories).
 * `init [description]`
 
   Until a repository (or one of its remotes) has been initialized,
-  git-annex will refuse to operate on it, to avoid accidentially
+  git-annex will refuse to operate on it, to avoid accidentally
   using it in a repository that was not intended to have an annex.
 
   It's useful, but not mandatory, to initialize each new clone
@@ -326,23 +326,23 @@ subdirectories).
   command will prompt for parameters as needed.
 
   All special remotes support encryption. You can either specify
-  `encryption=none` to disable encryption, or specify 
-  `encryption=hybrid keyid=$keyid ...` to specify a gpg key id (or an email
+  `encryption=none` to disable encryption, or specify
+  `encryption=hybrid keyid=$keyid ...` to specify a GPG key id (or an email
   address associated with a key.)
 
   There are actually three schemes that can be used for management of the
   encryption keys. When using the encryption=hybrid scheme, additional
-  gpg keys can be given access to the encrypted special remote easily
+  GPG keys can be given access to the encrypted special remote easily
   (without re-encrypting everything). When using encryption=shared,
   a shared key is generated and stored in the git repository, allowing
   anyone who can clone the git repository to access it. Finally, when using
   encryption=pubkey, content in the special remote is directly encrypted
-  to the specified gpg keys, and additional ones cannot easily be given
+  to the specified GPG keys, and additional ones cannot easily be given
   access.
 
   Note that with encryption enabled, a cryptographic key is created.
   This requires sufficient entropy. If initremote seems to hang or take
-  a long time while generating the key, you may want to ctrl-c it and
+  a long time while generating the key, you may want to Ctrl-c it and
   re-run with `--fast`, which causes it to use a lower-quality source of
   randomness.
 
@@ -354,7 +354,7 @@ subdirectories).
 
   Enables use of an existing special remote in the current repository,
   which may be a different repository than the one in which it was
-  originally created with the initremote command. 
+  originally created with the initremote command.
 
   The name of the remote is the same name used when origianlly 
   creating that remote with "initremote". Run "git annex enableremote"
@@ -369,7 +369,7 @@ subdirectories).
   the as the encryption scheme cannot be changed once a special remote
   has been created.)
 
-  The gpg keys that an encrypted special remote is encrypted to can be
+  The GPG keys that an encrypted special remote is encrypted to can be
   changed using the keyid+= and keyid-= parameters. These respectively
   add and remove keys from the list. However, note that removing a key
   does NOT necessarily prevent the key's owner from accessing data
@@ -539,30 +539,30 @@ subdirectories).
   data about past locations of files. The resulting branch will use less
   space, but `git annex log` will not be able to show where
   files used to be located.
-  
+
   To also prune references to repositories that have been marked as dead,
   specify `--drop-dead`.
 
   When this rewritten branch is merged into other clones of
   the repository, `git-annex` will automatically perform the same rewriting
   to their local `git-annex` branches. So the forgetfulness will automatically
-  propigate out from its starting point until all repositories running
+  propagate out from its starting point until all repositories running
   git-annex have forgotten their old history. (You may need to force
   git to push the branch to any git repositories not running git-annex.)
 
 * `repair`
 
-  This can repair many of the problems with git repositories that `git fsck` 
+  This can repair many of the problems with git repositories that `git fsck`
   detects, but does not itself fix. It's useful if a repository has become
-  badly damaged. One way this can happen is if a repisitory used by git-annex
+  badly damaged. One way this can happen is if a repository used by git-annex
   is on a removable drive that gets unplugged at the wrong time.
-  
+
   This command can actually be used inside git repositories that do not
   use git-annex at all; when used in a repository using git-annex, it
   does additional repairs of the git-annex branch.
 
   It works by deleting any corrupt objects from the git repository, and
-  retriving all missing objects it can from the remotes of the repository.
+  retrieving all missing objects it can from the remotes of the repository.
 
   If that is not sufficient to fully recover the repository, it can also
   reset branches back to commits before the corruption happened, delete
@@ -616,7 +616,7 @@ subdirectories).
   Displays the location log for the specified file or files,
   showing each repository they were added to ("+") and removed from ("-").
 
-  To limit how far back to seach for location log changes, the options
+  To limit how far back to search for location log changes, the options
   `--since`, `--after`, `--until`, `--before`, and `--max-count` can be specified.
   They are passed through to git log. For example, `--since "1 month ago"`
 
@@ -1032,7 +1032,7 @@ no equivilant to `--in`.
 
 When a repository is in one of the standard predefined groups, like "backup"
 and "client", setting its preferred content to "standard" will use a
-built-in preferred content expression ddeveloped for that group.
+built-in preferred content expression developed for that group.
 
 # SCHEDULED JOBS
 
@@ -1070,13 +1070,13 @@ Here are all the supported configuration settings.
 * `annex.numcopies`
 
   Number of copies of files to keep across all repositories. (default: 1)
-  
+
   Note that setting numcopies to 0 is very unsafe.
 
 * `annex.backends`
 
-  Space-separated list of names of the key-value backends to use. 
-  The first listed is used to store new files by default. 
+  Space-separated list of names of the key-value backends to use.
+  The first listed is used to store new files by default.
 
 * `annex.diskreserve`
 
@@ -1160,7 +1160,7 @@ Here are all the supported configuration settings.
 
   Note that upgrade checking is only done when git-annex is installed
   from one of the prebuilt images from its website. This does not
-  bypass eg, a Linux distribution's own upgrade handling code.
+  bypass e.g., a Linux distribution's own upgrade handling code.
 
   This setting also controls whether to restart the git-annex assistant
   when the git-annex binary is detected to have changed. That is useful
