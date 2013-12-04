@@ -124,7 +124,7 @@ Executable git-annex
     Build-Depends: hS3
     CPP-Options: -DWITH_S3
 
-  if flag(WebDAV)
+  if flag(WebDAV) && (! os(windows))
     Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
     CPP-Options: -DWITH_WEBDAV
 

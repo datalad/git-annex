@@ -7,7 +7,9 @@ set -x
 set -e
 
 HP="/c/Program Files (x86)/Haskell Platform/2012.4.0.0"
-FLAGS="-Webapp -Assistant -XMPP"
+
+# Any cabal build flags go here.
+FLAGS=""
 
 PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:$PATH"
 
@@ -52,5 +54,6 @@ withcyg Build/NullSoftInstaller.exe
 rm -f last-incremental-failed
 
 # Test git-annex
+# (doesn't currently work well on autobuilder, reason unknown)
 rm -rf .t
 withcyg dist/build/git-annex/git-annex.exe test || true
