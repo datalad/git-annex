@@ -1,0 +1,29 @@
+Hey !
+I am trying to find ways to use git annex as a tool to share big binary files for our development projects (such as PSD files).
+Our team has artists that will not use command line tools so I have been testing git-annex assistant with a lot of hope.
+However all the tests I am doing are just failing. °.° '
+
+in this thread I would like to focus on what would seem to me as an easy first approach : local pairing.
+
+So my team and I are on mac. I am just trying to sync 2 computers on the same network. But the process is stuck on the "local pairing in process" step, just after I enter the secret phrase.
+
+I have enabled sshd (preferences -> remote login) on both computers, checked the firewall to authorize git-annex, so I am probably missing something here. 
+the logs on my computer does not say anything usefull ([2013-12-04 22:04:34 CET] main: Pairing in progress) but on the other computer I have this :
+
+git-annex: ssh-keygen failed
+[2013-12-04 22:04:33 CET] PairListener: utku@MacBook-Air-de-utku.local:~/Documents/git-test is sending a pair request.
+dyld: lazy symbol binding failed: Symbol not found: ___strlcpy_chk
+ Referenced from: /Applications/git-annex.app/Contents/MacOS/bundle/ssh-keygen
+ Expected in: /usr/lib/libSystem.B.dylib
+
+dyld: Symbol not found: ___strlcpy_chk
+ Referenced from: /Applications/git-annex.app/Contents/MacOS/bundle/ssh-keygen
+ Expected in: /usr/lib/libSystem.B.dylib
+
+git-annex: ssh-keygen failed
+
+Don't know if that helps. I don't know which info I need to provide.
+
+cheers
+
+
