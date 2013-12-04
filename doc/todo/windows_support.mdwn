@@ -13,11 +13,10 @@ now! --[[Joey]]
   has to connect twice to the remote system over ssh per file, which
   is much slower than on systems supporting connection caching.
 * Webapp doesn't build yet.
-* `git annex watch` builds, but does not quite work.
-* `git annex assistant` builds, but has not been tested, and is known
-  to not download any files. (transferrer doesn't built yet)
-* watch and assistant cannot be built with cabal. Possibly due to too many
-  files overflowing command line length limit at link stage.
-  To build a binary with them: 
-  `ghc --make git-annex.hs -threaded -XPackageImports -DWITH_ASSISTANT=1 -DWITH_WIN32NOTIFY=1`
-  (should add all the other flags cabal uses)
+* `git annex watch` works, but does not detect when files are still open
+  for write as they're being added (no lsof)
+* Startup scan neglects to send add events for all files in the repo,
+  so pre-existing files are not added by watch/assistant. (Should be easily
+  fixed.)
+* `git annex assistant` has not been tested, is probably quite incomplete.
+  Is known to not download any files. (transferrer doesn't built yet)
