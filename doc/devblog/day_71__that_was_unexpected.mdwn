@@ -10,7 +10,7 @@ Building w/o WebDAV avoids crashing the compiler anyhow.
 Thought I'd try the resulting binary and see if perhaps I had forgotten to
 use the threaded RTS when I was running ghc by hand to link it last time,
 and perhaps that was why threads
-[[seemed to have hung|day 56 git-annex user survey]] back then.
+[[seemed to have hung|day_56__git-annex_user_survey]] back then.
 
 It was. This became clear when I saw a "deadlocked indefinitely in MVar"
 error message, which tells me that it's at least using the threaded RTS.
