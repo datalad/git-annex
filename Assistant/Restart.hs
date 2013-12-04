@@ -5,6 +5,8 @@
  - Licensed under the GNU AGPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant.Restart where
 
 import Assistant.Common
@@ -21,8 +23,10 @@ import qualified Annex
 import qualified Git
 
 import Control.Concurrent
-import System.Posix (getProcessID, signalProcess, sigTERM)
 import System.Process (cwd)
+#ifndef mingw32_HOST_OS
+import System.Posix (getProcessID, signalProcess, sigTERM)
+#endif
 
 {- Before the assistant can be restarted, have to remove our 
  - gitAnnexUrlFile and our gitAnnexPidFile. Pausing the watcher is also
@@ -41,11 +45,15 @@ prepRestart = do
  - Wait for browser to update before terminating this process. -}
 postRestart :: URLString -> Assistant ()
 postRestart url = do
+#ifndef mingw32_HOST_OS
 	modifyDaemonStatus_ $ \status -> status { globalRedirUrl = Just url }
 	liftIO . sendNotification . globalRedirNotifier =<< getDaemonStatus
 	void $ liftIO $ forkIO $ do
 		threadDelaySeconds (Seconds 120)
 		signalProcess sigTERM =<< getProcessID
+#else
+	error "TODO windows postRestart"
+#endif
 
 runRestart :: Assistant URLString
 runRestart = liftIO . newAssistantUrl
