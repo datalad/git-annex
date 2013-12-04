@@ -1,0 +1,30 @@
+Had planned to spend all day not working on git-annex and instead getting
+caught up on conference videos. However, got a little bit multitasky while
+watching those, and started investigating why, last time I worked on
+Windows port, git-annex was failing to link. 
+
+A good thing to do while watching conference videos since it involved lots of 
+test builds with different flags. Eventially solved it. 
+Building w/o WebDAV avoids crashing the compiler anyhow.
+
+Thought I'd try the resulting binary and see if perhaps I had forgotten to
+use the threaded RTS when I was running ghc by hand to link it last time,
+and perhaps that was why threads
+[[seemed to have hung|day 56 git-annex user survey]] back then.
+
+It was. This became clear when I saw a "deadlocked indefinitely in MVar"
+error message, which tells me that it's at least using the threaded RTS.
+So, I fixed that, and a few other minor things, and ran this command
+in a DOS prompt box:
+
+	git annex watch --force --foreground --debug
+
+And I've been making changes to files in that repository, and amazingly,
+the watcher is noticing them, and committing them!
+
+So, I was almost entirely there to a windows port of the watcher a month
+ago, and didn't know. It has some rough edges, including not doing anything
+to check if a newly created file is open for write when adding it, and
+getting the full assistant ported will be more work, and the full webapp
+may be a whole other set of problems, but this is a quite nice milestone
+for the Windows port.
