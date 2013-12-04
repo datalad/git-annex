@@ -46,11 +46,12 @@ import Control.Concurrent
 {- This thread makes git commits at appropriate times. -}
 commitThread :: NamedThread
 commitThread = namedThread "Committer" $ do
+	havelsof <- liftIO $ inPath "lsof"
 	delayadd <- liftAnnex $
 		maybe delayaddDefault (return . Just . Seconds)
 			=<< annexDelayAdd <$> Annex.getGitConfig
 	waitChangeTime $ \(changes, time) -> do
-		readychanges <- handleAdds delayadd changes
+		readychanges <- handleAdds havelsof delayadd changes
 		if shouldCommit time (length readychanges) readychanges
 			then do
 				debug
@@ -252,14 +253,14 @@ delayaddDefault = return Nothing
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: Maybe Seconds -> [Change] -> Assistant [Change]
-handleAdds delayadd cs = returnWhen (null incomplete) $ do
+handleAdds :: Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
+handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	direct <- liftAnnex isDirect
 	(pending', cleanup) <- if direct
 		then return (pending, noop)
 		else findnew pending
-	(postponed, toadd) <- partitionEithers <$> safeToAdd delayadd pending' inprocess
+	(postponed, toadd) <- partitionEithers <$> safeToAdd havelsof delayadd pending' inprocess
 	cleanup
 
 	unless (null postponed) $
@@ -273,7 +274,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		if DirWatcher.eventsCoalesce || null added || direct
 			then return $ added ++ otherchanges
 			else do
-				r <- handleAdds delayadd =<< getChanges
+				r <- handleAdds havelsof delayadd =<< getChanges
 				return $ r ++ added ++ otherchanges
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
@@ -386,15 +387,17 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
  -
  - Check by running lsof on the repository.
  -}
-safeToAdd :: Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
-safeToAdd _ [] [] = return []
-safeToAdd delayadd pending inprocess = do
+safeToAdd :: Bool -> Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
+safeToAdd _ _ [] [] = return []
+safeToAdd havelsof delayadd pending inprocess = do
 	maybe noop (liftIO . threadDelaySeconds) delayadd
 	liftAnnex $ do
 		keysources <- forM pending $ Command.Add.lockDown . changeFile
 		let inprocess' = inprocess ++ mapMaybe mkinprocess (zip pending keysources)
-		openfiles <- S.fromList . map fst3 . filter openwrite <$>
-			findopenfiles (map keySource inprocess')
+		openfiles <- if havelsof
+			then S.fromList . map fst3 . filter openwrite <$>
+				findopenfiles (map keySource inprocess')
+			else pure S.empty
 		let checked = map (check openfiles) inprocess'
 
 		{- If new events are received when files are closed,
