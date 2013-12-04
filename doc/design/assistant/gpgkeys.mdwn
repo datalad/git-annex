@@ -24,6 +24,9 @@ To support using gpg keys in the assistant, we need some things:
    with many subkeys may not). Debian has command-line utilities that
    can generate and read such a QR code.
 
+   Another way would be to use shamir secret sharing to split the key into
+   N peices and send each one to one of the user's repos.
+
 3. Help user learn the gpg keys of people they want to share their repo
    with, and give them access. If the public key was recorded in the git-annex
    branch, this could be easily determined when sharing repositories with
