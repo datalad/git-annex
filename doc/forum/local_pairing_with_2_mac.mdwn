@@ -25,5 +25,3 @@ git-annex: ssh-keygen failed
 Don't know if that helps. I don't know which info I need to provide.
 
 cheers
-
-
