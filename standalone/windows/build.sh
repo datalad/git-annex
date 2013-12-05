@@ -30,7 +30,7 @@ withcyg () {
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-cabal install --only-dependencies -v3
+cabal install --only-dependencies
 
 # Detect when the last build was an incremental build and failed, 
 # and try a full build. Done this way because this shell seems a bit
