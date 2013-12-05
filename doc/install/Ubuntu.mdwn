@@ -30,6 +30,11 @@ A newer version of git-annex, including the [[assistant]] and WebApp.
 	sudo apt-get update
 	sudo apt-get install git-annex
 
+If you don't have add-apt-repository installed run this command first:
+
+	sudo apt-get install software-properties-common python-software-properties
+
+
 ## Oneiric
 
 	sudo apt-get install git-annex
