@@ -15,8 +15,5 @@ now! --[[Joey]]
 * Webapp doesn't build yet.
 * `git annex watch` works, but does not detect when files are still open
   for write as they're being added (no lsof)
-* Startup scan neglects to send add events for all files in the repo,
-  so pre-existing files are not added by watch/assistant. (Should be easily
-  fixed.)
 * `git annex assistant` has not been tested, is probably quite incomplete.
   Is known to not download any files. (transferrer doesn't built yet)
