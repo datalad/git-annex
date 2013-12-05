@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Utility.INotify where
+module Utility.DirWatcher.INotify where
 
 import Common hiding (isDirectory)
 import Utility.ThreadLock

@@ -7,7 +7,7 @@
 
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module Utility.Kqueue (
+module Utility.DirWatcher.Kqueue (
 	Kqueue,
 	initKqueue,
 	stopKqueue,

@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Utility.Win32Notify where
+module Utility.DirWatcher.Win32Notify where
 
 import Common hiding (isDirectory)
 import Utility.DirWatcher.Types

@@ -16,19 +16,19 @@ module Utility.DirWatcher where
 import Utility.DirWatcher.Types
 
 #if WITH_INOTIFY
-import qualified Utility.INotify as INotify
+import qualified Utility.DirWatcher.INotify as INotify
 import qualified System.INotify as INotify
 #endif
 #if WITH_KQUEUE
-import qualified Utility.Kqueue as Kqueue
+import qualified Utility.DirWatcher.Kqueue as Kqueue
 import Control.Concurrent
 #endif
 #if WITH_FSEVENTS
-import qualified Utility.FSEvents as FSEvents
+import qualified Utility.DirWatcher.FSEvents as FSEvents
 import qualified System.OSX.FSEvents as FSEvents
 #endif
 #if WITH_WIN32NOTIFY
-import qualified Utility.Win32Notify as Win32Notify
+import qualified Utility.DirWatcher.Win32Notify as Win32Notify
 import qualified System.Win32.Notify as Win32Notify
 #endif
 

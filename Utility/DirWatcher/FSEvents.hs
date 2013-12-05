@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Utility.FSEvents where
+module Utility.DirWatcher.FSEvents where
 
 import Common hiding (isDirectory)
 import Utility.DirWatcher.Types
