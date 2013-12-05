@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 1"
+ date="2013-12-05T20:46:30Z"
+ content="""
+Right -- you can't use the assistant at the same time as git-annex commands that get/drop/unlock files, unless you set the assistant to run in manual mode (which prevents it undoing a get/drop) and/or disable syncing in the assistant entirely (which prevents it adding back unlocked files).
+"""]]
