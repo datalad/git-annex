@@ -18,7 +18,9 @@ import Utility.LogFile
 import Utility.NotificationBroadcaster
 
 import Control.Concurrent
+#ifndef mingw32_HOST_OS
 import System.Posix (getProcessID, signalProcess, sigTERM)
+#endif
 import qualified Data.Map as M
 import qualified Data.Text as T
 
@@ -44,11 +46,15 @@ getShutdownConfirmedR = do
 	liftAssistant $ do
 		modifyDaemonStatus_ $ \status -> status { globalRedirUrl = Just url }
 		liftIO . sendNotification . globalRedirNotifier =<< getDaemonStatus
+#ifndef mingw32_HOST_OS
 	{- Wait 2 seconds before shutting down, to give the web
 	 - page time to load in the browser. -}
 	void $ liftIO $ forkIO $ do
 		threadDelay 2000000
 		signalProcess sigTERM =<< getProcessID
+#else
+	liftIO exitSuccess
+#endif
 	redirect NotRunningR
 
 {- Use a custom page to avoid putting long polling elements on it that will 
