@@ -53,7 +53,7 @@ getShutdownConfirmedR = do
 		threadDelay 2000000
 		signalProcess sigTERM =<< getProcessID
 #else
-	liftIO exitSuccess
+	void $ liftIO exitSuccess
 #endif
 	redirect NotRunningR
 
