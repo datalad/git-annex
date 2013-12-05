@@ -6,6 +6,8 @@
 set -x
 set -e
 
+mv /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/cabal.old
+
 HP="/c/Program Files (x86)/Haskell Platform/2012.4.0.0"
 
 PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:$PATH"
