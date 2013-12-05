@@ -6,10 +6,12 @@
 set -x
 set -e
 
+# Path to the Haskell Platform.
 HP="/c/Program Files (x86)/Haskell Platform/2012.4.0.0"
 
 PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:$PATH"
 
+# This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
 
 # Run a command with the cygwin environment available.
