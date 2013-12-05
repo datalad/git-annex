@@ -48,7 +48,7 @@ withcyg cabal build || true
 rm -f build.log gcc.opt
 withcyg cabal build --ghc-options='-v -keep-tmp-files' > build.log 2>&1
 grep '"dist\\build\\git-annex\\git-annex.exe"' build.log | sed -e 's/^"[^"]*" //' -e 's/\\/\//g' > gcc.opt
-withcyg gcc @gcc.opt
+"$HP/mingw/bin/gcc.exe" @gcc.opt
 
 # Build the installer
 cabal install nsis
