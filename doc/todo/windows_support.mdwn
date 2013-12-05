@@ -12,7 +12,20 @@ now! --[[Joey]]
 * Ssh connection caching does not work on Windows, so `git annex get`
   has to connect twice to the remote system over ssh per file, which
   is much slower than on systems supporting connection caching.
-* Webapp doesn't build yet.
+* Webapp doesn't build yet. Well, it all builds, but link fails:
+  "Unable to start C:\Program Files\Haskell
+  Platform\2013.2.0.0\mingw\bin/realgcc.exe (error code: 87)"
+  This is the same problem that occurs when trying to link it
+  with WebDAV or XMPP enabled. 
+  
+  Filed a ghc bug: <https://ghc.haskell.org/trac/ghc/ticket/8596>
+
+  Tried to do a minimal build with only the assistant and webapp, but that
+  also failed to link (was around 40k gcc command line).
+
+  May need to separate out Common and Git into standalone libraries to
+  work around this? Ugh.
+
 * `git annex watch` works, but does not detect when files are still open
   for write as they're being added (no lsof)
 * `git annex assistant` has not been tested, is probably quite incomplete.
