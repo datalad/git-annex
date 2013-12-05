@@ -41,8 +41,15 @@ touch last-incremental-failed
 
 # Build git-annex
 withcyg cabal configure
-withcyg cabal build
-	
+withcyg cabal build || true 
+
+# Works around link failure https://ghc.haskell.org/trac/ghc/ticket/8596
+# using a response file.
+rm -f build.log gcc.opt
+withcyg cabal build --ghc-options='-v -keep-tmp-files' > build.log 2>&1
+grep '"dist\\build\\git-annex\\git-annex.exe"' build.log | sed -e 's/^"[^"]*" //' -e 's/\\/\//g' > gcc.opt
+gcc @gcc.opt
+
 # Build the installer
 cabal install nsis
 ghc --make Build/NullSoftInstaller.hs
