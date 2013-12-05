@@ -6,8 +6,6 @@
 set -x
 set -e
 
-rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
-
 HP="/c/Program Files (x86)/Haskell Platform/2012.4.0.0"
 
 PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:$PATH"
@@ -20,9 +18,12 @@ withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
 }
 
+# Uncomment to get rid of cabal installed libraries.
+#rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
+
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
-rm -f git-annex-installer.exe
+#rm -f git-annex-installer.exe
 
 # Install haskell dependencies.
 # cabal install is not run in cygwin, because we don't want configure scripts
