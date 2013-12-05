@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+When the assistant is running, using "git annex unlock" on the commandline may lead to unexpected results.
+
+### What steps will reproduce the problem?
+
+Make sure the assitant is running on a repository.
+
+`git annex unlock somefiles`, try to edit them, wait a while, try to edit.
+
+If you're not lucky, the assistant will notice the unlocked files as new and will add them back, locking them in the process, and you won't be able to save them.
+
+### What version of git-annex are you using? On what operating system?
+
+debian wheezy.
+
+[[!format sh """
+git-annex version: 5.20131109-gf2cb5b9
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+local repository version: 3
+default repository version: 3
+supported repository versions: 3 5
+upgrade supported from repository versions: 0 1 2 4
+"""]]
+
+### Please provide any additional information below.
