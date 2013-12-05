@@ -8,9 +8,6 @@ set -e
 
 HP="/c/Program Files (x86)/Haskell Platform/2012.4.0.0"
 
-# Any cabal build flags go here.
-FLAGS=""
-
 PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:$PATH"
 
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
@@ -30,7 +27,7 @@ rm -f git-annex-installer.exe
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-cabal install --only-dependencies -f"$FLAGS"
+cabal install --only-dependencies
 
 # Detect when the last build was an incremental build and failed, 
 # and try a full build. Done this way because this shell seems a bit
@@ -43,7 +40,7 @@ fi
 touch last-incremental-failed
 
 # Build git-annex
-withcyg cabal configure -f"$FLAGS"
+withcyg cabal configure
 withcyg cabal build
 	
 # Build the installer
