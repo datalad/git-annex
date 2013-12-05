@@ -6,7 +6,7 @@
 set -x
 set -e
 
-rm -f /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
+rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
 
 HP="/c/Program Files (x86)/Haskell Platform/2012.4.0.0"
 
