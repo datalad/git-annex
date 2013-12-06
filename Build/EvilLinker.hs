@@ -43,17 +43,30 @@ parseGhcLink = do
 		restOfLine
 	manglepaths = replace "\\" "/"
 
-{- Find where gcc calls collect1. -}
+{- Find where gcc calls collect2. -}
 parseGccLink :: Parser CmdParams
 parseGccLink = do
-	many prelinkline
-	error "TODO"
+	many precollectenvline
+	env <- collectenvline
+	try $ char ' '
+	path <- manyTill anyChar (try $ string collectcmd)
+	char ' '
+	collect2params <- restOfLine
+	return $ CmdParams (path ++ collectcmd) collect2params
   where
- 	prelinkline = error "TODO"
+  	collectcmd = "collect2.exe"
+  	collectenv = "COLLECT_GCC_OPTIONS"
+  	collectenvline = do
+		string collectenv
+		char '='
+		restOfLine
+ 	precollectenvline = do
+		notFollowedBy collectenvline
+		restOfLine
 	
-{- Find where collect1 calls ld. -}
-parseCollect1 :: Parser CmdParams
-parseCollect1 = error "TODO"
+{- Find where collect2 calls ld. -}
+parseCollect2 :: Parser CmdParams
+parseCollect2 = error "TODO"
 
 restOfLine :: Parser String
 restOfLine = newline `after` many (noneOf "\n")
@@ -86,6 +99,6 @@ main = do
 		["build", "--ghc-options=-v -keep-tmp-files"]
 	gccout <- runAtFile parseGhcLink ghcout "gcc.opt" ["-v"]
 	writeFile "gcc.out" gccout
-	collect1out <- runAtFile parseGccLink gccout "collect1.opt" ["-v"]
-	writeFile "collect1.out" collect1out
-	void $ runAtFile parseCollect1 collect1out "ld.opt" []
+	collect2out <- runAtFile parseGccLink gccout "collect2.opt" ["-v"]
+	writeFile "collect2.out" collect2out
+	void $ runAtFile parseCollect2 collect2out "ld.opt" []
