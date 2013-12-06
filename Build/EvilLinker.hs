@@ -21,8 +21,11 @@ import Utility.Monad
 import Utility.Process
 import System.Directory
 
-data CmdParams = CmdParams { cmd :: String, opts :: String }
-	deriving (Show)
+data CmdParams = CmdParams
+	{ cmd :: String
+	, opts :: String
+	, env :: Maybe [(String, String)]
+	} deriving (Show)
 
 {- Find where ghc calls gcc to link the executable. -}
 parseGhcLink :: Parser CmdParams
@@ -33,7 +36,7 @@ parseGhcLink = do
 	gcccmd <- many1 (noneOf "\"")
 	string "\" "
 	gccparams <- restOfLine
-	return $ CmdParams gcccmd (manglepaths gccparams)
+	return $ CmdParams gcccmd (manglepaths gccparams) Nothing
   where
 	linkheaderline = do
 		string "*** Linker"
@@ -53,6 +56,7 @@ parseGccLink = do
 	char ' '
 	collect2params <- restOfLine
 	return $ CmdParams (path ++ collectcmd) (escapeDosPaths collect2params)
+		(Just [(collectenv, env)])
   where
   	collectcmd = "collect2.exe"
   	collectenv = "COLLECT_GCC_OPTIONS"
@@ -85,10 +89,10 @@ restOfLine = newline `after` many (noneOf "\n")
 
 {- Intentionally ignores command failure; the whole point is to work around
  - that. -}
-getOutput :: String -> [String] -> IO String
-getOutput cmd params = do
+getOutput :: String -> [String] -> Maybe [(String, String)] -> IO String
+getOutput cmd params env = do
 	putStrLn $ unwords [cmd, show params]
-	(log, _ok) <- processTranscript cmd params Nothing
+	(log, _ok) <- processTranscript' cmd params env Nothing
 	return log
 
 runParser' :: Parser a -> String -> a
@@ -100,7 +104,7 @@ atFile f = '@':f
 runAtFile :: Parser CmdParams -> String -> FilePath -> [String] -> IO String
 runAtFile p s f extraparams = do
 	writeFile f (opts c)
-	out <- getOutput (cmd c) (atFile f:extraparams)
+	out <- getOutput (cmd c) (atFile f:extraparams) (env c)
 	removeFile f
 	return out
   where
@@ -108,7 +112,7 @@ runAtFile p s f extraparams = do
 
 main = do
 	ghcout <- getOutput "cabal"
-		["build", "--ghc-options=-v -keep-tmp-files"]
+		["build", "--ghc-options=-v -keep-tmp-files"] Nothing
 	gccout <- runAtFile parseGhcLink ghcout "gcc.opt" ["-v"]
 	writeFile "gcc.out" gccout
 	collect2out <- runAtFile parseGccLink gccout "collect2.opt" ["-v"]

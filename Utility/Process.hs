@@ -22,6 +22,7 @@ module Utility.Process (
 	createProcessChecked,
 	createBackgroundProcess,
 	processTranscript,
+	processTranscript',
 	withHandle,
 	withBothHandles,
 	withQuietOutput,
@@ -162,10 +163,13 @@ createBackgroundProcess p a = a =<< createProcess p
  - returns a transcript combining its stdout and stderr, and
  - whether it succeeded or failed. -}
 processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
+processTranscript cmd opts input = processTranscript' cmd opts Nothing input
+
+processTranscript' :: String -> [String] -> Maybe [(String, String)] -> (Maybe String) -> IO (String, Bool)
 #ifndef mingw32_HOST_OS
 {- This implementation interleves stdout and stderr in exactly the order
  - the process writes them. -}
-processTranscript cmd opts input = do
+processTranscript' cmd opts environ input = do
 	(readf, writef) <- createPipe
 	readh <- fdToHandle readf
 	writeh <- fdToHandle writef
@@ -174,6 +178,7 @@ processTranscript cmd opts input = do
 			{ std_in = if isJust input then CreatePipe else Inherit
 			, std_out = UseHandle writeh
 			, std_err = UseHandle writeh
+			, env = environ
 			}
 	hClose writeh
 
@@ -195,12 +200,13 @@ processTranscript cmd opts input = do
 	return (transcript, ok)
 #else
 {- This implementation for Windows puts stderr after stdout. -}
-processTranscript cmd opts input = do
+processTranscript cmd opts input environ = do
 	p@(_, _, _, pid) <- createProcess $
 		(proc cmd opts)
 			{ std_in = if isJust input then CreatePipe else Inherit
 			, std_out = CreatePipe
 			, std_err = CreatePipe
+			, env = environ
 			}
 
 	getout <- mkreader (stdoutHandle p)
