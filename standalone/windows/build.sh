@@ -14,7 +14,7 @@ PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
 withcyg () {
-	PATH="$PATH:c:/cygwin/bin" "$@"
+	PATH="$PATH:/c/cygwin/bin" "$@"
 }
 
 # This tells git-annex where to upgrade itself from.
