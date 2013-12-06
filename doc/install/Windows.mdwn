@@ -29,6 +29,7 @@ the Haskell Platform, Mingw, and Cygwin. Use Cygwin to install
 gcc, rsync, git, wget, ssh, and gnupg. To build the git-annex installer,
 you also need to install the NulSoft installer system.
 
-There is a shell script `standalone/windows/build.sh` that can be
-used to build git-annex. Note that this shell script cannot be run
-in Cygwin; run it with the Mingw sh.
+	cabal update
+	cabal unpack git-annex -d gitannex
+	cd gitannex
+	build
