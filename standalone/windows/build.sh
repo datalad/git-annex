@@ -19,6 +19,7 @@ withcyg () {
 
 git --version || echo "git failed to run!"
 withcyg git --version || echo "cygwin git failed to run!"
+c:/cygwin/bin/git --version || echo "explicit cygwin git failed to run!"
 
 # This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
