@@ -33,7 +33,7 @@ parseGhcLink = do
 	gcccmd <- many1 (noneOf "\"")
 	string "\" "
 	gccparams <- restOfLine
-	return $ CmdParams gcccmd gccparams
+	return $ CmdParams gcccmd (manglepaths gccparams)
   where
 	linkheaderline = do
 		string "*** Linker"
@@ -41,6 +41,7 @@ parseGhcLink = do
 	prelinklines = do
 		notFollowedBy linkheaderline
 		restOfLine
+	manglepaths = replace "\\" "/"
 
 {- Find where gcc calls collect1. -}
 parseGccLink :: Parser CmdParams
