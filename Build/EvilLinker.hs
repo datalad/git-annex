@@ -81,17 +81,16 @@ parseGccLink = do
 {- Find where collect2 calls ld. -}
 parseCollect2 :: Parser CmdParams
 parseCollect2 = do
-	try $ do
-		string "GNU ld"
-		restOfLine
-	string "collect2 version"
-	restOfLine
+	manyTill restOfLine (try versionline)
 	path <- manyTill anyChar (try $ string ldcmd)
 	char ' '
 	params <- restOfLine
 	return $ CmdParams (path ++ ldcmd) (escapeDosPaths params) Nothing
   where
 	ldcmd = "ld.exe"
+	versionline = do
+		string "collect2 version"
+		restOfLine
 	
 {- Input contains something like 
  - c:/program files/haskell platform/foo -LC:/Program Files/Haskell Platform/ -L...
