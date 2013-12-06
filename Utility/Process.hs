@@ -200,7 +200,7 @@ processTranscript' cmd opts environ input = do
 	return (transcript, ok)
 #else
 {- This implementation for Windows puts stderr after stdout. -}
-processTranscript cmd opts input environ = do
+processTranscript' cmd opts input environ = do
 	p@(_, _, _, pid) <- createProcess $
 		(proc cmd opts)
 			{ std_in = if isJust input then CreatePipe else Inherit
