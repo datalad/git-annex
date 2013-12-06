@@ -80,5 +80,7 @@ main = do
 	ghcout <- getOutput "cabal"
 		["build", "--ghc-options=-v -keep-tmp-files"]
 	gccout <- runAtFile parseGhcLink ghcout "gcc.opt" ["-v"]
+	writeFile "gcc.out" gccout
 	collect1out <- runAtFile parseCollect1 gccout "collect1.opt" ["-v"]
+	writeFile "collect1.out" collect1out
 	void $ runAtFile parseLd collect1out "ld.opt" []
