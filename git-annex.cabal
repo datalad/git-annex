@@ -163,7 +163,7 @@ Executable git-annex
   if flag(AndroidSplice)
     CPP-Options: -DANDROID_SPLICES
 
-  if flag(Webapp) (! os(windows))
+  if flag(Webapp) && (! os(windows))
     Build-Depends:
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      case-insensitive, http-types, transformers, wai, wai-logger, warp,
