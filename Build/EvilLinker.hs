@@ -115,10 +115,13 @@ getOutput cmd params env = do
 	putStrLn $ unwords [cmd, show params]
 	processTranscript' cmd params env Nothing
 
-runParser' :: Parser a -> String -> a
-runParser' p s = either failedparse id (parse p "" s)
+runParser' :: Parser a -> String -> String -> a
+runParser' p s paramfile = either failedparse id (parse p "" s)
   where
-	failedparse e = error $ (show e) ++ "\n<<<\n" ++ s ++ "\n>>>"
+	failedparse e = error $
+		(show e) ++ 
+		"\n<<<\n" ++ s ++ "\n>>>" ++
+		"\nparam file contained: <<<\n" ++ paramfile ++ "\n>>>"
 
 atFile :: FilePath -> String
 atFile f = '@':f
@@ -130,7 +133,7 @@ runAtFile p s f extraparams = do
 	removeFile f
 	return out
   where
- 	c = runParser' p s
+ 	c = runParser' p s (opts c)
 
 main = do
 	ghcout <- fst <$> getOutput "cabal"
