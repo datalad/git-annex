@@ -1,7 +1,6 @@
 {- Allows linking haskell programs too big for all the files to fit in a
  - command line.
  -
- -
  - Copyright 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
@@ -12,6 +11,7 @@ module Main where
 import Data.Maybe
 import Data.Either
 import Data.List
+import Data.List.Utils
 import Text.Parsec
 import Text.Parsec.String
 import Control.Applicative ((<$>))
@@ -27,7 +27,7 @@ data CmdParams = CmdParams { cmd :: String, opts :: String }
 {- Find where ghc calls gcc to link the executable. -}
 parseGhcLink :: Parser CmdParams
 parseGhcLink = do
-	many prelinklines
+	many prelinkline
 	linkheaderline
 	char '"'
 	gcccmd <- many1 (noneOf "\"")
@@ -38,14 +38,18 @@ parseGhcLink = do
 	linkheaderline = do
 		string "*** Linker"
 		restOfLine
-	prelinklines = do
+	prelinkline = do
 		notFollowedBy linkheaderline
 		restOfLine
 	manglepaths = replace "\\" "/"
 
 {- Find where gcc calls collect1. -}
 parseGccLink :: Parser CmdParams
-parseGccLink = error "TODO"
+parseGccLink = do
+	many prelinkline
+	error "TODO"
+  where
+ 	prelinkline = error "TODO"
 	
 {- Find where collect1 calls ld. -}
 parseCollect1 :: Parser CmdParams
