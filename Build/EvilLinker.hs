@@ -52,7 +52,7 @@ parseGccLink = do
 	path <- manyTill anyChar (try $ string collectcmd)
 	char ' '
 	collect2params <- restOfLine
-	return $ CmdParams (path ++ collectcmd) collect2params
+	return $ CmdParams (path ++ collectcmd) (escapeDosPaths collect2params)
   where
   	collectcmd = "collect2.exe"
   	collectenv = "COLLECT_GCC_OPTIONS"
@@ -64,6 +64,18 @@ parseGccLink = do
 		notFollowedBy collectenvline
 		restOfLine
 	
+{- Input contains something like 
+ - c:/program files/haskell platform/foo -LC:/Program Files/Haskell Platform/ -L...
+ - and the *right* spaces must be escaped with \
+ -
+ - Argh.
+ -}
+escapeDosPaths :: String -> String
+escapeDosPaths = replace "Program Files" "Program\\ Files"
+	. replace "program files" "program\\ files"
+	. replace "Haskell Platform" "Haskell\\ Platform"
+	. replace "haskell platform" "haskell\\ platform"
+
 {- Find where collect2 calls ld. -}
 parseCollect2 :: Parser CmdParams
 parseCollect2 = error "TODO"
