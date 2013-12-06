@@ -29,6 +29,6 @@ withcyg cabal build || true
 # Works around link failure https://ghc.haskell.org/trac/ghc/ticket/8596
 # using a response file.
 withcyg rm -f build.log gcc.opt
-withcyg cabal build --ghc-options='-v -keep-tmp-files' > build.log 2>&1
+withcyg cabal build --ghc-options='-v -keep-tmp-files' > build.log 2>&1 || true
 withcyg grep '"dist\\build\\git-annex\\git-annex.exe"' build.log | sed -e 's/^"[^"]*" //' -e 's/\\/\//g' > gcc.opt
 "$HP/mingw/bin/gcc.exe" @gcc.opt
