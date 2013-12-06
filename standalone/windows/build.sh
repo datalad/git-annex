@@ -48,7 +48,6 @@ touch last-incremental-failed
 withcyg cabal configure
 withcyg cabal build || true 
 ghc --make Build/EvilLinker
-ls '/c/Program Files (x86)/Haskell Platform/2013.2.0.0/bin' || true
 Build/EvilLinker
 
 # Build the installer
