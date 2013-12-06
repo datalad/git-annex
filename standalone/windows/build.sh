@@ -32,7 +32,7 @@ rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/g
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
-cabal install --only-dependencies
+cabal install --only-dependencies || true
 
 # Detect when the last build was an incremental build and failed, 
 # and try a full build. Done this way because this shell seems a bit
