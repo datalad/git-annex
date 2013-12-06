@@ -163,16 +163,13 @@ Executable git-annex
   if flag(AndroidSplice)
     CPP-Options: -DANDROID_SPLICES
 
-  if flag(Webapp) && (! os(windows))
+  if flag(Webapp)
     Build-Depends:
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      case-insensitive, http-types, transformers, wai, wai-logger, warp,
      blaze-builder, crypto-api, hamlet, clientsession,
      template-haskell, data-default, aeson
     CPP-Options: -DWITH_WEBAPP
-    -- Work around dependency versioning problem, can be removed later.
-    if os(windows)
-      Build-Depends: fast-logger (>= 2.0.0)
 
   if flag(Pairing)
     Build-Depends: network-multicast, network-info
