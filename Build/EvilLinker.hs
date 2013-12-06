@@ -104,6 +104,8 @@ escapeDosPaths = replace "Program Files" "Program\\ Files"
 	. replace "Haskell Platform" "Haskell\\ Platform"
 	. replace "haskell platform" "haskell\\ platform"
 	. replace "Application Data" "Application\\ Data"
+	. replace "Files (x86)" "Files\\ (x86)"
+	. replace "files (x86)" "files\\ (x86)"
 
 restOfLine :: Parser String
 restOfLine = newline `after` many (noneOf "\n")
