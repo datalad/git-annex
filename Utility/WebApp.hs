@@ -93,11 +93,11 @@ webAppSettings = defaultSettings
  -}
 getSocket :: Maybe HostName -> IO Socket
 getSocket h = do
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined (mingw32_HOST_OS)
 	-- getAddrInfo currently segfaults on Android.
 	-- The HostName is ignored by this code.
 	when (isJust h) $
-		error "getSocket with HostName not supported on Android"
+		error "getSocket with HostName not supported on this OS"
 	addr <- inet_addr "127.0.0.1"
  	sock <- socket AF_INET Stream defaultProtocol
 	preparesocket sock
