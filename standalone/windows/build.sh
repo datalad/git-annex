@@ -10,17 +10,18 @@ set -e
 HP="/c/Program Files (x86)/Haskell Platform/2013.2.0.0"
 
 PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/c/msysgit/bin:$PATH"
-git --version || echo "git failed to run!"
-withcyg git --version || echo "cygwin git failed to run!"
-
-# This tells git-annex where to upgrade itself from.
-UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
 
 # Run a command with the cygwin environment available.
 # However, programs not from cygwin are preferred.
 withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
 }
+
+git --version || echo "git failed to run!"
+withcyg git --version || echo "cygwin git failed to run!"
+
+# This tells git-annex where to upgrade itself from.
+UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
 
 # Uncomment to get rid of cabal installed libraries.
 #rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
