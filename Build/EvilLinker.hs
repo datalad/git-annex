@@ -86,7 +86,7 @@ parseCollect2 = do
 	path <- manyTill anyChar (try $ string ldcmd)
 	char ' '
 	params <- restOfLine
-	return $ CmdParams (path ++ ldcmd) params Nothing
+	return $ CmdParams (path ++ ldcmd) (escapeDosPaths params) Nothing
   where
 	ldcmd = "ld.exe"
 	
