@@ -91,13 +91,8 @@ Executable git-annex
    base (>= 4.5 && < 4.9), monad-control, MonadCatchIO-transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
    SafeSemaphore, uuid, random, dlist, unix-compat, async
-  -- Need to list these because they're generated from .hsc files.
-  Other-Modules: Utility.Touch Utility.Mounts
-  Include-Dirs: Utility
-  C-Sources: Utility/libdiskfree.c Utility/libmounts.c
   CC-Options: -Wall
   GHC-Options: -Wall
-  CPP-Options: -DWITH_CLIBS
   Extensions: PackageImports
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
@@ -107,6 +102,11 @@ Executable git-annex
 
   if (! os(windows))
     Build-Depends: unix
+    -- Need to list these because they're generated from .hsc files.
+    Other-Modules: Utility.Touch Utility.Mounts
+    Include-Dirs: Utility
+    C-Sources: Utility/libdiskfree.c Utility/libmounts.c
+    CPP-Options: -DWITH_CLIBS
 
   if flag(TestSuite)
     Build-Depends: tasty, tasty-hunit, tasty-quickcheck
