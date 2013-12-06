@@ -30,5 +30,5 @@ withcyg cabal build || true
 # using a response file.
 withcyg rm -f build.log gcc.opt
 withcyg cabal build --ghc-options='-v -keep-tmp-files' > build.log 2>&1 || true
-withcyg grep '"dist\\build\\git-annex\\git-annex.exe"' build.log | sed -e 's/^"[^"]*" //' -e 's/\\/\//g' > gcc.opt
+withcyg grep '"dist\\build\\git-annex\\git-annex.exe"' build.log | withcyg sed -e 's/^"[^"]*" //' -e 's/\\/\//g' > gcc.opt
 "$HP/mingw/bin/gcc.exe" @gcc.opt
