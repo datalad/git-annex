@@ -168,9 +168,11 @@ Executable git-annex
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      case-insensitive, http-types, transformers, wai, wai-logger, warp,
      blaze-builder, crypto-api, hamlet, clientsession,
-     template-haskell, data-default, aeson,
-     fast-logger (>= 2.0.0)
+     template-haskell, data-default, aeson
     CPP-Options: -DWITH_WEBAPP
+    -- Work around dependency versioning problem, can be removed later.
+    if os(windows)
+      Build-Depends: fast-logger (>= 2.0.0)
 
   if flag(Pairing)
     Build-Depends: network-multicast, network-info
