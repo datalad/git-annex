@@ -1,6 +1,8 @@
 {- Allows linking haskell programs too big for all the files to fit in a
  - command line.
  -
+ - See https://ghc.haskell.org/trac/ghc/ticket/8596
+ -
  - Copyright 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.

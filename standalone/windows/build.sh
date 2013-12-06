@@ -47,13 +47,8 @@ touch last-incremental-failed
 # Build git-annex
 withcyg cabal configure
 withcyg cabal build || true 
-
-# Works around link failure https://ghc.haskell.org/trac/ghc/ticket/8596
-# using a response file.
-rm -f build.log gcc.opt
-withcyg cabal build --ghc-options='-v -keep-tmp-files' > build.log 2>&1 || true
-grep '"dist\\build\\git-annex\\git-annex.exe"' build.log | sed -e 's/^"[^"]*" //' -e 's/\\/\//g' > gcc.opt
-"$HP/mingw/bin/gcc.exe" @gcc.opt
+ghc --make Build/EvilLinker
+Build/EvilLinker
 
 # Build the installer
 cabal install nsis
