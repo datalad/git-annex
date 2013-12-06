@@ -26,4 +26,4 @@ cabal install --only-dependencies || true
 withcyg cabal configure
 withcyg cabal build || true
 ghc --make Build/EvilLinker
-Build/EvilLinker
+withcyg Build/EvilLinker
