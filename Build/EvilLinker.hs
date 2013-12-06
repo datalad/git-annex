@@ -116,7 +116,7 @@ getOutput cmd params env = do
 runParser' :: Parser a -> String -> a
 runParser' p s = either failedparse id (parse p "" s)
   where
-	failedparse e = error $ (show e) ++ "\nInput:\n" ++ s
+	failedparse e = error $ (show e) ++ "\n<<<\n" ++ s ++ "\n>>>"
 
 atFile :: FilePath -> String
 atFile f = '@':f
@@ -135,7 +135,6 @@ main = do
 		["build", "--ghc-options=-v -keep-tmp-files"] Nothing
 	gccout <- fst <$> runAtFile parseGhcLink ghcout "gcc.opt" ["-v"]
 	collect2out <- fst <$> runAtFile parseGccLink gccout "collect2.opt" ["-v"]
-	writeFile "collect2.out" collect2out
 	(out, ok) <- runAtFile parseCollect2 collect2out "ld.opt" []
 	unless ok $
 		error $ "ld failed:\n" ++ out
