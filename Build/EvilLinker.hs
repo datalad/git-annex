@@ -105,13 +105,10 @@ escapeDosPaths = replace "Program Files" "Program\\ Files"
 restOfLine :: Parser String
 restOfLine = newline `after` many (noneOf "\n")
 
-{- Intentionally ignores command failure; the whole point is to work around
- - that. -}
-getOutput :: String -> [String] -> Maybe [(String, String)] -> IO String
+getOutput :: String -> [String] -> Maybe [(String, String)] -> IO (String, Bool)
 getOutput cmd params env = do
 	putStrLn $ unwords [cmd, show params]
-	(log, _ok) <- processTranscript' cmd params env Nothing
-	return log
+	processTranscript' cmd params env Nothing
 
 runParser' :: Parser a -> String -> a
 runParser' p s = either (error . show) id (parse p "" s)
@@ -119,7 +116,7 @@ runParser' p s = either (error . show) id (parse p "" s)
 atFile :: FilePath -> String
 atFile f = '@':f
 
-runAtFile :: Parser CmdParams -> String -> FilePath -> [String] -> IO String
+runAtFile :: Parser CmdParams -> String -> FilePath -> [String] -> IO (String, Bool)
 runAtFile p s f extraparams = do
 	writeFile f (opts c)
 	out <- getOutput (cmd c) (atFile f:extraparams) (env c)
@@ -129,10 +126,11 @@ runAtFile p s f extraparams = do
  	c = runParser' p s
 
 main = do
-	ghcout <- getOutput "cabal"
+	ghcout <- fst <$> getOutput "cabal"
 		["build", "--ghc-options=-v -keep-tmp-files"] Nothing
-	gccout <- runAtFile parseGhcLink ghcout "gcc.opt" ["-v"]
-	writeFile "gcc.out" gccout
-	collect2out <- runAtFile parseGccLink gccout "collect2.opt" ["-v"]
+	gccout <- fst <$> runAtFile parseGhcLink ghcout "gcc.opt" ["-v"]
+	collect2out <- fst <$> runAtFile parseGccLink gccout "collect2.opt" ["-v"]
 	writeFile "collect2.out" collect2out
-	void $ runAtFile parseCollect2 collect2out "ld.opt" []
+	(out, ok) <- runAtFile parseCollect2 collect2out "ld.opt" []
+	unless ok $
+		error $ "ld failed:\n" ++ out
