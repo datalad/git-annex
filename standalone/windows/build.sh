@@ -7,7 +7,7 @@ set -x
 set -e
 
 # Path to the Haskell Platform.
-HP="/c/Program Files (x86)/Haskell Platform/2012.4.0.0"
+HP="/c/Program Files (x86)/Haskell Platform/2013.2.0.0"
 
 PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:$PATH"
 
@@ -21,7 +21,7 @@ withcyg () {
 }
 
 # Uncomment to get rid of cabal installed libraries.
-#rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
+rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
 
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
