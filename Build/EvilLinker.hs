@@ -49,24 +49,46 @@ parseGhcLink = do
 {- Find where gcc calls collect2. -}
 parseGccLink :: Parser CmdParams
 parseGccLink = do
-	many precollectenvline
-	env <- collectenvline
+	many preenv
+	env <- collectenv
 	try $ char ' '
 	path <- manyTill anyChar (try $ string collectcmd)
 	char ' '
 	collect2params <- restOfLine
-	return $ CmdParams (path ++ collectcmd) (escapeDosPaths collect2params)
-		(Just [(collectenv, env)])
+	return $ CmdParams (path ++ collectcmd) (escapeDosPaths collect2params) env
   where
   	collectcmd = "collect2.exe"
-  	collectenv = "COLLECT_GCC_OPTIONS"
-  	collectenvline = do
-		string collectenv
+	pathenv = "COMPILER_PATH"
+	libpathenv = "LIBRARY_PATH"
+  	optenv = "COLLECT_GCC_OPTIONS"
+  	collectenv = do
+		string pathenv
 		char '='
+		p <- restOfLine
+		string libpathenv
+		char '='
+		lp <- restOfLine
+		string optenv
+		char '='
+		o <- restOfLine
+		return $ Just [(pathenv, p), (libpathenv, lp), (optenv, o)]
+ 	preenv = do
+		notFollowedBy collectenv
 		restOfLine
- 	precollectenvline = do
-		notFollowedBy collectenvline
-		restOfLine
+
+{- Find where collect2 calls ld. -}
+parseCollect2 :: Parser CmdParams
+parseCollect2 = do
+	string "GNU ld"
+	restOfLine
+	string "collect2 version"
+	restOfLine
+	path <- manyTill anyChar (try $ string ldcmd)
+	char ' '
+	params <- restOfLine
+	return $ CmdParams (path ++ ldcmd) params Nothing
+  where
+	ldcmd = "ld.exe"
 	
 {- Input contains something like 
  - c:/program files/haskell platform/foo -LC:/Program Files/Haskell Platform/ -L...
@@ -79,10 +101,6 @@ escapeDosPaths = replace "Program Files" "Program\\ Files"
 	. replace "program files" "program\\ files"
 	. replace "Haskell Platform" "Haskell\\ Platform"
 	. replace "haskell platform" "haskell\\ platform"
-
-{- Find where collect2 calls ld. -}
-parseCollect2 :: Parser CmdParams
-parseCollect2 = error "TODO"
 
 restOfLine :: Parser String
 restOfLine = newline `after` many (noneOf "\n")
