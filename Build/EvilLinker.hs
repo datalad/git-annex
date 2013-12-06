@@ -114,7 +114,9 @@ getOutput cmd params env = do
 	processTranscript' cmd params env Nothing
 
 runParser' :: Parser a -> String -> a
-runParser' p s = either (error . show) id (parse p "" s)
+runParser' p s = either failedparse id (parse p "" s)
+  where
+	failedparse e = error $ (show e) ++ "\nInput:\n" ++ s
 
 atFile :: FilePath -> String
 atFile f = '@':f
