@@ -43,22 +43,22 @@ parseGhcLink = do
 		restOfLine
 
 {- Find where gcc calls collect1. -}
-parseCollect1 :: Parser CmdParams
-parseCollect1 = error "TODO"
+parseGccLink :: Parser CmdParams
+parseGccLink = error "TODO"
 	
 {- Find where collect1 calls ld. -}
-parseLd :: Parser CmdParams
-parseLd = error "TODO"
+parseCollect1 :: Parser CmdParams
+parseCollect1 = error "TODO"
 
 restOfLine :: Parser String
 restOfLine = newline `after` many (noneOf "\n")
 
+{- Intentionally ignores command failure; the whole point is to work around
+ - that. -}
 getOutput :: String -> [String] -> IO String
 getOutput cmd params = do
 	putStrLn $ unwords [cmd, show params]
-	(log, ok) <- processTranscript cmd params Nothing
-	unless ok $
-		error $ cmd ++ " failed:\n\n" ++ log
+	(log, _ok) <- processTranscript cmd params Nothing
 	return log
 
 runParser' :: Parser a -> String -> a
@@ -81,6 +81,6 @@ main = do
 		["build", "--ghc-options=-v -keep-tmp-files"]
 	gccout <- runAtFile parseGhcLink ghcout "gcc.opt" ["-v"]
 	writeFile "gcc.out" gccout
-	collect1out <- runAtFile parseCollect1 gccout "collect1.opt" ["-v"]
+	collect1out <- runAtFile parseGccLink gccout "collect1.opt" ["-v"]
 	writeFile "collect1.out" collect1out
-	void $ runAtFile parseLd collect1out "ld.opt" []
+	void $ runAtFile parseCollect1 collect1out "ld.opt" []
