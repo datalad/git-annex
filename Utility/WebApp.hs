@@ -39,6 +39,7 @@ import Control.Concurrent
 #ifdef __ANDROID__
 import Data.Endian
 #endif
+import Network.Socket (withSocketsDo)
 
 localhost :: HostName
 localhost = "localhost"
@@ -68,7 +69,7 @@ browserProc url = proc "xdg-open" [url]
  - such as start a web browser to view the webapp.
  -}
 runWebApp :: Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
-runWebApp h app observer = do
+runWebApp h app observer = withSocketsDo $ do
 	sock <- getSocket h
 	void $ forkIO $ runSettingsSocket webAppSettings sock app
 	sockaddr <- fixSockAddr <$> getSocketName sock
