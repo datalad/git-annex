@@ -39,6 +39,9 @@ import Control.Concurrent
 #ifdef __ANDROID__
 import Data.Endian
 #endif
+#ifdef mingw32_HOST_OS
+import Data.Conduit.Network (bindPort)
+#endif
 import Network.Socket (withSocketsDo)
 
 localhost :: HostName
@@ -70,7 +73,12 @@ browserProc url = proc "xdg-open" [url]
  -}
 runWebApp :: Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
 runWebApp h app observer = withSocketsDo $ do
+#ifndef mingw32_HOST_OS
 	sock <- getSocket h
+#else
+	let set = defaultSettings
+	sock <- bindPort (settingsPort set) (settingsHost set)
+#endif
 	void $ forkIO $ runSettingsSocket webAppSettings sock app
 	sockaddr <- fixSockAddr <$> getSocketName sock
 	observer sockaddr
