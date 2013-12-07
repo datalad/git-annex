@@ -113,7 +113,9 @@ restOfLine = newline `after` many (noneOf "\n")
 getOutput :: String -> [String] -> Maybe [(String, String)] -> IO (String, Bool)
 getOutput cmd params env = do
 	putStrLn $ unwords [cmd, show params]
-	processTranscript' cmd params env Nothing
+	out@(s, ok) <- processTranscript' cmd params env Nothing
+	putStrLn $ unwords [cmd, "finished", show ok, "output size:", length s]
+	return out
 
 runParser' :: Parser a -> String -> String -> a
 runParser' p s paramfile = either failedparse id (parse p "" s)
