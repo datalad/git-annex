@@ -45,7 +45,7 @@ fi
 touch last-incremental-failed
 
 # Build git-annex
-withcyg cabal configure
+withcyg cabal configure -f-WebApp
 withcyg cabal build || true 
 ghc --make Build/EvilLinker
 Build/EvilLinker
