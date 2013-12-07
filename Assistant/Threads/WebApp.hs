@@ -80,7 +80,8 @@ webAppThread assistantdata urlrenderer noannex cannotrun listenhost postfirstrun
 		, return app
 		)
 	runWebApp listenhost app' $ \addr -> if noannex
-		then withTmpFile "webapp.html" $ \tmpfile _ ->
+		then withTmpFile "webapp.html" $ \tmpfile h -> do
+			hClose h
 			go addr webapp tmpfile Nothing
 		else do
 			let st = threadState assistantdata
