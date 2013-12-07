@@ -133,7 +133,6 @@ setSticky f = modifyFileMode f $ addModes [stickyMode]
  - as writeFile.
  -}
 writeFileProtected :: FilePath -> String -> IO ()
-#ifndef mingw32_HOST_OS
 writeFileProtected file content = do
 	h <- openFile file WriteMode
 	void $ tryIO $
@@ -141,6 +140,3 @@ writeFileProtected file content = do
 			removeModes [groupReadMode, otherReadMode]
 	hPutStr h content
 	hClose h
-#else
-writeFileProtected = writeFile
-#endif
