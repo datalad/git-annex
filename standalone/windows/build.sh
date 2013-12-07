@@ -46,7 +46,8 @@ touch last-incremental-failed
 
 # Build git-annex
 withcyg cabal configure -f-WebApp
-withcyg cabal build || true 
+withcyg cabal build || true
+rm -f Build/EvilLinker.exe
 ghc --make Build/EvilLinker
 Build/EvilLinker
 
