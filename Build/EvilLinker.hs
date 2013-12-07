@@ -137,7 +137,7 @@ runAtFile p s f extraparams = do
 
 main = do
 	ghcout <- fst <$> getOutput "cabal"
-		["build", "-v2", "--ghc-options=-v -keep-tmp-files"] Nothing
+		["build", "--ghc-options=-v -keep-tmp-files"] Nothing
 	gccout <- fst <$> runAtFile parseGhcLink ghcout "gcc.opt" ["-v"]
 	collect2out <- fst <$> runAtFile parseGccLink gccout "collect2.opt" ["-v"]
 	(out, ok) <- runAtFile parseCollect2 collect2out "ld.opt" []
