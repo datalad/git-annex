@@ -23,7 +23,9 @@ withcyg () {
 cabal install --only-dependencies || true
 
 # Build git-annex
-withcyg cabal configure
+if [ ! -e "dist/setup-config" ]; then
+	withcyg cabal configure
+fi
 withcyg cabal build || true
 ghc --make Build/EvilLinker
 withcyg Build/EvilLinker
