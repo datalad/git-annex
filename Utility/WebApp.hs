@@ -70,7 +70,7 @@ browserProc url = proc "xdg-open" [url]
  -}
 runWebApp :: Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
 runWebApp h app observer = withSocketsDo $ do
-	sock <- bindPort (settingsPort webAppSettings) (settingsHost webAppSettings)
+	sock <- getSocket h
 	void $ forkIO $ runSettingsSocket webAppSettings sock app
 	sockaddr <- fixSockAddr <$> getSocketName sock
 	observer sockaddr
