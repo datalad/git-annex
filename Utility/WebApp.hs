@@ -54,7 +54,7 @@ browserProc url = proc "am"
 	["start", "-a", "android.intent.action.VIEW", "-d", url]
 #else
 #ifdef mingw32_HOST_OS
-browserProc url = proc "cmd" ["/c", "start", url]
+browserProc url = proc "cmd" ["/c start " ++ url]
 #else
 browserProc url = proc "xdg-open" [url]
 #endif
