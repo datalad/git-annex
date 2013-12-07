@@ -76,8 +76,7 @@ runWebApp h app observer = withSocketsDo $ do
 #ifndef mingw32_HOST_OS
 	sock <- getSocket h
 #else
-	let set = defaultSettings
-	sock <- bindPort (settingsPort set) (settingsHost set)
+	sock <- bindPort (settingsPort webAppSettings) (settingsHost webAppSettings)
 #endif
 	void $ forkIO $ runSettingsSocket webAppSettings sock app
 	sockaddr <- fixSockAddr <$> getSocketName sock
