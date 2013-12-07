@@ -30,6 +30,6 @@ gcc, rsync, git, wget, ssh, and gnupg. To build the git-annex installer,
 you also need to install the NulSoft installer system.
 
 	cabal update
-	cabal unpack git-annex -d gitannex
+	git clone git://git-annex.branchable.com/ gitannex
 	cd gitannex
 	build
