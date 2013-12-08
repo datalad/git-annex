@@ -104,6 +104,7 @@ escapeDosPaths = replace "Program Files" "Program\\ Files"
 	. replace "Haskell Platform" "Haskell\\ Platform"
 	. replace "haskell platform" "haskell\\ platform"
 	. replace "Application Data" "Application\\ Data"
+	. replace "Documents and Settings" "Documents\\ and\\ Settings"
 	. replace "Files (x86)" "Files\\ (x86)"
 	. replace "files (x86)" "files\\ (x86)"
 
