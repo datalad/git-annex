@@ -351,7 +351,7 @@ driveList :: IO [RemovableDrive]
 #ifdef mingw32_HOST_OS
 -- Just enumerate all likely drive letters for Windows.
 -- Could use wmic, but it only works for administrators.
-driveList = return $ map (\l -> gen $ l:":") ['A'..'Z']
+driveList = return $ map (\l -> gen $ l:":\\") ['A'..'Z']
   where
 	gen dir = RemovableDrive
 		Nothing
