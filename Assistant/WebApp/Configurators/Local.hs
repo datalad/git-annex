@@ -348,6 +348,9 @@ getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
 
 {- List of removable drives. -}
 driveList :: IO [RemovableDrive]
+#ifdef mingw32_HOST_OS
+driveList = return $ map (:":") ['A'..'Z']
+#else
 #ifdef WITH_CLIBS
 driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
   where
@@ -374,6 +377,7 @@ driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
 		| otherwise = True
 #else
 driveList = return []
+#endif
 #endif
 
 {- Bootstraps from first run mode to a fully running assistant in a
