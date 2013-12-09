@@ -353,10 +353,18 @@ driveList :: IO [RemovableDrive]
 -- Could use wmic, but it only works for administrators.
 driveList = return $ map (\l -> gen $ l:":") ['A'..'Z']
   where
+	gen dir = RemovableDrive
+		Nothing
+		(T.pack dir)
+		(T.pack gitAnnexAssistantDefaultDir)
 #else
 #ifdef WITH_CLIBS
 driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
   where
+	gen dir = RemovableDrive
+		<$> getDiskFree dir
+		<*> pure (T.pack dir)
+		<*> pure (T.pack gitAnnexAssistantDefaultDir)
 	-- filter out some things that are surely not removable drives
 	sane Mntent { mnt_dir = dir, mnt_fsname = dev }
 		{- We want real disks like /dev/foo, not
@@ -376,13 +384,8 @@ driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
 		| otherwise = True
 #else
 driveList = return []
-  where
 #endif
 #endif
-	gen dir = RemovableDrive
-		<$> getDiskFree dir
-		<*> pure (T.pack dir)
-		<*> pure (T.pack gitAnnexAssistantDefaultDir)
 
 {- Bootstraps from first run mode to a fully running assistant in a
  - repository, by running the postFirstRun callback, which returns the
