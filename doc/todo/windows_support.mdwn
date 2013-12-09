@@ -5,7 +5,7 @@ now! --[[Joey]]
 
 * Does not work with Cygwin's build of git (that git does not consistently
   support use of DOS style paths, which git-annex uses on Windows). 
-  Must use the upstream build of git for Windows.
+  Must use Msysgit.
 * rsync special remotes are known buggy.
 * Bad file locking, it's probably not safe to run more than one git-annex
   process at the same time on Windows.
@@ -23,3 +23,5 @@ now! --[[Joey]]
   Network console shows web browser is requesting page "/"
   despite a link to another page being clicked on. Workaround: Use Chrome
   instead; no such problem there.
+* No XMPP support (needs a lot of C libraries which are available in
+  cygwin, but pkg-config does not list them once installed).
