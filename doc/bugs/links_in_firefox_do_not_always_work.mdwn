@@ -18,3 +18,9 @@ Ubuntu 13.04, firefox 25.0.1
 
 
 --Walter
+
+> [[fixed|done]]; increased number of longpolling failures allowed before
+> it enters the chromium back button bugfix workaround to 12.
+> Should be more than enough for 3 or 4 long polling elements on a page.
+> (Considered only running the chromium bugfix on chromium, but I don't
+> want to get into browser detection hacks.) --[[Joey]]

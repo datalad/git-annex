@@ -16,7 +16,11 @@ function longpoll_div(url, divid, cont, fail) {
 		},
 		'error': function(jqxhr, msg, e) {
 			connfails=connfails+1;
-			if (connfails > 3) {
+			// It's normal to get 1 failure per longpolling
+			// element when navigating away from a page.
+			// So 12 allows up to 4 longpolling elements per
+			// page.
+			if (connfails > 12) {
 				fail();
 			}
 			else {

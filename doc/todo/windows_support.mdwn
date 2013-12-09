@@ -18,10 +18,5 @@ now! --[[Joey]]
   repo creation, autostart, restarting, etc, as --force is not propigated.)
 * `git annex assistant` has not been tested, is probably quite incomplete.
   Is known to not download any files. (transferrer doesn't built yet)
-* webapp: Odd problem when using Firefox: Some links don't seem to load.
-  Clicking on such a link repeatedly will eventually load the right page.
-  Network console shows web browser is requesting page "/"
-  despite a link to another page being clicked on. Workaround: Use Chrome
-  instead; no such problem there.
 * No XMPP support (needs a lot of C libraries which are available in
   cygwin, but pkg-config does not list them once installed).

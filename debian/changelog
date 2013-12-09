@@ -19,6 +19,8 @@ git-annex (5.20131131) UNRELEASED; urgency=low
   * import: better handling of overwriting an existing file/directory/broken
     link when importing
   * Windows: assistant and webapp work! (very experimental)
+  * Fix bad behavior in Firefox, which was caused by an earlier fix to
+    bad behavior in Chromium.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
 
