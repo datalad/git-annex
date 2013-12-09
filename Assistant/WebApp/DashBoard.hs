@@ -83,9 +83,12 @@ getDashboardR = ifM inFirstRun
 	, page "" (Just DashBoard) $ dashboard True
 	)
 
+getMainR :: Handler Html
+getMainR = redirect DashboardR
+
 {- Used to test if the webapp is running. -}
-headDashboardR :: Handler ()
-headDashboardR = noop
+headMainR :: Handler ()
+headMainR = noop
 
 {- Same as DashboardR, except no autorefresh at all (and no noscript warning). -}
 getNoScriptR :: Handler Html
