@@ -116,12 +116,18 @@ defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
 	cwd <- liftIO getCurrentDirectory
 	home <- myHomeDir
+#ifndef mingw32_HOST_OS
 	if home == cwd && firstrun
 		then inhome
 		else ifM (legit cwd <&&> canWrite cwd)
 			( return cwd
 			, inhome
 			)
+#else
+	-- Windows user can probably write anywhere, so always default
+	-- to ~/Desktop/annex.
+	inhome
+#endif
   where
 	inhome = do
 		desktop <- userDesktopDir
