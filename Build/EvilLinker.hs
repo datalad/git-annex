@@ -116,6 +116,7 @@ getOutput cmd params env = do
 	putStrLn $ unwords [cmd, show params]
 	out@(s, ok) <- processTranscript' cmd params env Nothing
 	putStrLn $ unwords [cmd, "finished", show ok, "output size:", show (length s)]
+	writeFile (cmd ++ ".out") s
 	return out
 
 runParser' :: Parser a -> String -> String -> a
