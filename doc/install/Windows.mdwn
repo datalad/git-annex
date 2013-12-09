@@ -5,8 +5,7 @@ git-annex has recently been ported to Windows!
 
 This port is in an early state. While it works well enough to use
 git-annex, many things will not work. See [[todo/windows_support]] for
-current status. Note especially that git-annex always uses [[direct_mode]]
-on Windows.
+current status.
 
 The autobuilder is not currently able to run the test suite, so
 testing git-annex on Windows is up to you! To check that the build of
