@@ -1,4 +1,5 @@
 / DashboardR GET HEAD
+/dashboard DashboardR GET HEAD
 
 /noscript NoScriptR GET
 /noscript/auto NoScriptAutoR GET
