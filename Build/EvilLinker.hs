@@ -124,13 +124,15 @@ runParser' p s paramfile = either failedparse id (parse p "" s)
 	failedparse e = error $
 		(show e) ++ 
 		"\n<<<\n" ++ s ++ "\n>>>" ++
-		"\nparam file contained: <<<\n" ++ paramfile ++ "\n>>>"
+		"\nparam file contained: >>>\n" ++ paramfile ++ "\n<<<"
 
 atFile :: FilePath -> String
 atFile f = '@':f
 
 runAtFile :: Parser CmdParams -> String -> FilePath -> [String] -> IO (String, Bool)
 runAtFile p s f extraparams = do
+	when (null $ opts c) $
+		error $ "failed to find any options for " ++ f ++ " in >>>" ++ s ++ "<<<"
 	writeFile f (opts c)
 	out <- getOutput (cmd c) (atFile f:extraparams) (env c)
 	removeFile f
