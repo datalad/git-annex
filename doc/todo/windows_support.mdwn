@@ -13,10 +13,13 @@ now! --[[Joey]]
   has to connect twice to the remote system over ssh per file, which
   is much slower than on systems supporting connection caching.
 * `git annex watch` works, but does not detect when files are still open
-  for write as they're being added (no lsof)
+  for write as they're being added (no lsof). So watch/webapp/assistant
+  have to be started with --force, and may be unsafe. (Also breaks initial
+  repo creation, autostart, restarting, etc, as --force is not propigated.)
 * `git annex assistant` has not been tested, is probably quite incomplete.
   Is known to not download any files. (transferrer doesn't built yet)
-* Webapp builds (but not yet on the autobuilder), but 
-  at least in my tests, connections to it fail and it crashes.
-  Seems to be a general warp bug; <https://github.com/yesodweb/wai/issues/202>
-  TODO: test on other windows systems
+* webapp: Odd problem when using Firefox: Some links don't seem to load.
+  Clicking on such a link repeatedly will eventually load the right page.
+  Network console shows web browser is requesting page "/"
+  despite a link to another page being clicked on. Workaround: Use Chrome
+  instead; no such problem there.
