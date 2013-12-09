@@ -50,9 +50,13 @@ import Data.Time.Clock
 checkCanWatch :: Annex ()
 checkCanWatch
 	| canWatch = do
+#ifndef mingw32_HOST_OS
 		liftIO Lsof.setup
 		unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force)
 			needLsof
+#else
+		noop
+#endif
 	| otherwise = error "watch mode is not available on this system"
 
 needLsof :: Annex ()
