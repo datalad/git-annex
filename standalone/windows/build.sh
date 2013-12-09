@@ -46,10 +46,11 @@ touch last-incremental-failed
 
 # Build git-annex
 withcyg cabal configure
-withcyg cabal build || true
-rm -f Build/EvilLinker.exe
-ghc --make Build/EvilLinker
-Build/EvilLinker
+if ! withcyg cabal build; then
+	rm -f Build/EvilLinker.exe
+	ghc --make Build/EvilLinker
+	Build/EvilLinker
+fi
 
 # Build the installer
 cabal install nsis

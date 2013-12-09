@@ -26,6 +26,7 @@ cabal install --only-dependencies || true
 if [ ! -e "dist/setup-config" ]; then
 	withcyg cabal configure
 fi
-withcyg cabal build || true
-ghc --make Build/EvilLinker
-withcyg Build/EvilLinker
+if ! withcyg cabal build; then
+	ghc --make Build/EvilLinker
+	withcyg Build/EvilLinker
+fi
