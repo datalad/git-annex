@@ -15,10 +15,10 @@ git-annex (5.20131131) UNRELEASED; urgency=low
   * Android: Fix SRV record lookups for XMPP to use android getprop
     command to find DNS server, since there is no resolv.conf.
   * import: Add --skip-duplicates option.
-  * Windows: watch and assistant work! (very experimental)
   * lock: Require --force. Closes: #731606
   * import: better handling of overwriting an existing file/directory/broken
     link when importing
+  * Windows: assistant and webapp work! (very experimental)
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
 
