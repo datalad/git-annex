@@ -10,9 +10,6 @@
 
 module Main where
 
-import Data.Maybe
-import Data.Either
-import Data.List
 import Data.List.Utils
 import Text.Parsec
 import Text.Parsec.String
@@ -32,64 +29,64 @@ data CmdParams = CmdParams
 {- Find where ghc calls gcc to link the executable. -}
 parseGhcLink :: Parser CmdParams
 parseGhcLink = do
-	many prelinkline
-	linkheaderline
-	char '"'
+	void $ many prelinkline
+	void linkheaderline
+	void $ char '"'
 	gcccmd <- many1 (noneOf "\"")
-	string "\" "
+	void $ string "\" "
 	gccparams <- restOfLine
 	return $ CmdParams gcccmd (manglepaths gccparams) Nothing
   where
 	linkheaderline = do
-		string "*** Linker"
+		void $ string "*** Linker"
 		restOfLine
 	prelinkline = do
-		notFollowedBy linkheaderline
+		void $ notFollowedBy linkheaderline
 		restOfLine
 	manglepaths = replace "\\" "/"
 
 {- Find where gcc calls collect2. -}
 parseGccLink :: Parser CmdParams
 parseGccLink = do
-	many preenv
-	env <- collectenv
-	try $ char ' '
+	void $ many preenv
+	cenv <- collectenv
+	void $ try $ char ' '
 	path <- manyTill anyChar (try $ string collectcmd)
-	char ' '
+	void $ char ' '
 	collect2params <- restOfLine
-	return $ CmdParams (path ++ collectcmd) (escapeDosPaths collect2params) env
+	return $ CmdParams (path ++ collectcmd) (escapeDosPaths collect2params) cenv
   where
   	collectcmd = "collect2.exe"
 	pathenv = "COMPILER_PATH"
 	libpathenv = "LIBRARY_PATH"
   	optenv = "COLLECT_GCC_OPTIONS"
   	collectenv = do
-		string pathenv
-		char '='
+		void $ string pathenv
+		void $ char '='
 		p <- restOfLine
-		string libpathenv
-		char '='
+		void $ string libpathenv
+		void $ char '='
 		lp <- restOfLine
-		string optenv
-		char '='
+		void $ string optenv
+		void $ char '='
 		o <- restOfLine
 		return $ Just [(pathenv, p), (libpathenv, lp), (optenv, o)]
  	preenv = do
-		notFollowedBy collectenv
+		void $ notFollowedBy collectenv
 		restOfLine
 
 {- Find where collect2 calls ld. -}
 parseCollect2 :: Parser CmdParams
 parseCollect2 = do
-	manyTill restOfLine (try versionline)
+	void $ manyTill restOfLine (try versionline)
 	path <- manyTill anyChar (try $ string ldcmd)
-	char ' '
+	void $ char ' '
 	params <- restOfLine
 	return $ CmdParams (path ++ ldcmd) (escapeDosPaths params) Nothing
   where
 	ldcmd = "ld.exe"
 	versionline = do
-		string "collect2 version"
+		void $ string "collect2 version"
 		restOfLine
 	
 {- Input contains something like 
@@ -112,11 +109,11 @@ restOfLine :: Parser String
 restOfLine = newline `after` many (noneOf "\n")
 
 getOutput :: String -> [String] -> Maybe [(String, String)] -> IO (String, Bool)
-getOutput cmd params env = do
-	putStrLn $ unwords [cmd, show params]
-	out@(s, ok) <- processTranscript' cmd params env Nothing
-	putStrLn $ unwords [cmd, "finished", show ok, "output size:", show (length s)]
-	writeFile (cmd ++ ".out") s
+getOutput c ps environ = do
+	putStrLn $ unwords [c, show ps]
+	out@(s, ok) <- processTranscript' c ps environ Nothing
+	putStrLn $ unwords [c, "finished", show ok, "output size:", show (length s)]
+	writeFile (c ++ ".out") s
 	return out
 
 runParser' :: Parser a -> String -> String -> a
@@ -141,6 +138,7 @@ runAtFile p s f extraparams = do
   where
  	c = runParser' p s (opts c)
 
+main :: IO ()
 main = do
 	ghcout <- fst <$> getOutput "cabal"
 		["build", "--ghc-options=-v -keep-tmp-files"] Nothing
