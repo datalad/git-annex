@@ -88,16 +88,20 @@ start mode (srcfile, destfile) =
 		liftIO $ removeFile srcfile
 		next $ return True
 	importfile = do
-		whenM (liftIO $ doesFileExist destfile) $
-			unlessM (Annex.getState Annex.force) $
-				error $ "not overwriting existing " ++ destfile ++
-					" (use --force to override)"
-	
+		handleexisting =<< liftIO (catchMaybeIO $ getSymbolicLinkStatus destfile)
 		liftIO $ createDirectoryIfMissing True (parentDir destfile)
 		liftIO $ if mode == Duplicate || mode == SkipDuplicates
 			then void $ copyFileExternal srcfile destfile
 			else moveFile srcfile destfile
 		Command.Add.perform destfile
+	handleexisting Nothing = noop
+	handleexisting (Just s)
+		| isDirectory s = notoverwriting "(is a directory)"
+		| otherwise = ifM (Annex.getState Annex.force) $
+			( liftIO $ nukeFile destfile
+			, notoverwriting "(use --force to override)"
+			)
+	notoverwriting why = error $ "not overwriting existing " ++ destfile ++ " " ++ why
 	pickaction isdup = case mode of
 		DeDuplicate
 			| isdup -> Just deletedup

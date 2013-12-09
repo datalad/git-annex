@@ -17,6 +17,8 @@ git-annex (5.20131131) UNRELEASED; urgency=low
   * import: Add --skip-duplicates option.
   * Windows: watch and assistant work! (very experimental)
   * lock: Require --force. Closes: #731606
+  * import: better handling of overwriting an existing file/directory/broken
+    link when importing
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
 
