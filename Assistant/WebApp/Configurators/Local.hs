@@ -349,6 +349,8 @@ getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
 {- List of removable drives. -}
 driveList :: IO [RemovableDrive]
 #ifdef mingw32_HOST_OS
+-- Just enumerate all likely drive letters for Windows.
+-- Could use wmic, but it only works for administrators.
 driveList = return $ map (:":") ['A'..'Z']
 #else
 #ifdef WITH_CLIBS
