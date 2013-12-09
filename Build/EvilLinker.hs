@@ -116,14 +116,6 @@ getOutput c ps environ = do
 	writeFile (c ++ ".out") s
 	return out
 
-runParser' :: Parser a -> String -> String -> a
-runParser' p s paramfile = either failedparse id (parse p "" s)
-  where
-	failedparse e = error $
-		(show e) ++ 
-		"\n<<<\n" ++ s ++ "\n>>>" ++
-		"\nparam file contained: >>>\n" ++ paramfile ++ "\n<<<"
-
 atFile :: FilePath -> String
 atFile f = '@':f
 
@@ -136,7 +128,11 @@ runAtFile p s f extraparams = do
 	removeFile f
 	return out
   where
- 	c = runParser' p s (opts c)
+ 	c = case parse p "" s of
+		Left e -> error $
+			(show e) ++ 
+			"\n<<<\n" ++ s ++ "\n>>>"
+		Right r -> r
 
 main :: IO ()
 main = do
