@@ -39,7 +39,6 @@ import Control.Concurrent
 #ifdef __ANDROID__
 import Data.Endian
 #endif
-import Network.Socket (withSocketsDo)
 
 localhost :: HostName
 localhost = "localhost"
