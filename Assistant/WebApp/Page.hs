@@ -59,12 +59,12 @@ customPage' with_longpolling navbaritem content = do
 		Nothing -> do
 			navbar <- map navdetails <$> selectNavBar
 			pageinfo <- widgetToPageContent $ do
-				addStylesheet $ StaticR css_bootstrap_css
-				addStylesheet $ StaticR css_bootstrap_responsive_css
+				addStylesheet $ StaticR bootstrap_css
+				addStylesheet $ StaticR bootstrap_responsive_css
 				addScript $ StaticR jquery_full_js
-				addScript $ StaticR js_bootstrap_dropdown_js
-				addScript $ StaticR js_bootstrap_modal_js
-				addScript $ StaticR js_bootstrap_collapse_js
+				addScript $ StaticR bootstrap_dropdown_js
+				addScript $ StaticR bootstrap_modal_js
+				addScript $ StaticR bootstrap_collapse_js
 				when with_longpolling $
 					addScript $ StaticR longpolling_js
 				$(widgetFile "page")
