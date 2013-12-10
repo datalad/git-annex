@@ -30,3 +30,9 @@ if ! withcyg cabal build; then
 	ghc --make Build/EvilLinker
 	withcyg Build/EvilLinker
 fi
+
+# Build the installer
+cabal install nsis
+ghc --make Build/NullSoftInstaller.hs
+PATH="$PATH:/cygdrive/c/Program Files/NSIS"
+withcyg Build/NullSoftInstaller.exe
