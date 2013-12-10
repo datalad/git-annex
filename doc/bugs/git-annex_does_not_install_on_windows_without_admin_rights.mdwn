@@ -20,6 +20,3 @@ Latest release on MS Windows.
 Installing git creates read-only directories that cannot be used by the
 git-annex install afterwards. Without admin rights, the read-only flag of
 the git dir cannot be altered.
-
-> I've made the installer now request admin rights if run by a non-admin
-> Hopefully good enough. [[done]] --[[Joey]]
