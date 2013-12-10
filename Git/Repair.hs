@@ -15,6 +15,7 @@ module Git.Repair (
 	resetLocalBranches,
 	removeTrackingBranches,
 	checkIndex,
+	checkIndexFast,
 	missingIndex,
 	emptyGoodCommits,
 ) where
@@ -338,12 +339,19 @@ verifyTree missing treesha r
  - considered a problem (repo may be new). -}
 checkIndex :: Repo -> IO Bool
 checkIndex r = do
-	(bad, _good, cleanup) <- partitionIndex missing r
+	(bad, _good, cleanup) <- partitionIndex r
 	if null bad
 		then cleanup
 		else do
 			void cleanup
 			return False
+
+{- Does not check every object the index refers to, but only that the index
+ - itself is not corrupt. -}
+checkIndexFast :: Repo -> IO Bool
+checkIndexFast r = do
+	(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
+	length indexcontents `seq` cleanup
 
 missingIndex :: Repo -> IO Bool
 missingIndex r = not <$> doesFileExist (localGitDir r </> "index")
@@ -352,9 +360,10 @@ missingIndex r = not <$> doesFileExist (localGitDir r </> "index")
 partitionIndex :: Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
 partitionIndex r = do
 	(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
-	l <- forM_ indexcontents $ \i -> case i of
+	l <- forM indexcontents $ \i -> case i of
 		(_file, Just sha, Just _mode) -> (,) <$> isMissing sha r <*> pure i
-		_ _> pure (False, i)
+		_ -> pure (False, i)
+	let (bad, good) = partition fst l
 	return (map snd bad, map snd good, cleanup)
 
 {- Rewrites the index file, removing from it any files whose blobs are
@@ -455,7 +464,7 @@ runRepair' fsckresult forced referencerepo g = do
 						putStrLn "No missing objects found, but the index file is corrupt!"
 						if forced
 							then corruptedindex
-							else needforce S.empty
+							else needforce
 					)
 			| otherwise -> if forced
 				then ifM (checkIndex g)
@@ -473,7 +482,7 @@ runRepair' fsckresult forced referencerepo g = do
 				( do
 					missing' <- cleanCorruptObjects FsckFailed g
 					case missing' of
-						FsckFailed -> return (False, S.empty, [])
+						FsckFailed -> return (False, [])
 						FsckFoundMissing stillmissing' ->
 							continuerepairs stillmissing'
 				, corruptedindex
@@ -535,7 +544,7 @@ runRepair' fsckresult forced referencerepo g = do
 				putStrLn "If you have a clone of this bare repository, you should add it as a remote of this repository, and retry."
 				putStrLn "If there are no clones of this repository, you can instead retry with the --force parameter to force recovery to a possibly usable state."
 				return (False, [])
-			else needforce stillmissing
+			else needforce
 	needforce = do
 		putStrLn "To force a recovery to a usable state, retry with the --force parameter."
 		return (False, [])
