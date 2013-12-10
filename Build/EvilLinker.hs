@@ -15,10 +15,12 @@ import Text.Parsec
 import Text.Parsec.String
 import Control.Applicative ((<$>))
 import Control.Monad
+import System.Directory
+import Data.Maybe
 
 import Utility.Monad
 import Utility.Process
-import System.Directory
+import Utility.Env
 
 data CmdParams = CmdParams
 	{ cmd :: String
@@ -121,7 +123,9 @@ restOfLine = newline `after` many (noneOf "\n")
 getOutput :: String -> [String] -> Maybe [(String, String)] -> IO (String, Bool)
 getOutput c ps environ = do
 	putStrLn $ unwords [c, show ps]
-	out@(s, ok) <- processTranscript' c ps environ Nothing
+	systemenviron <- getEnvironment
+	let environ' = fromMaybe [] environ ++ systemenviron
+	out@(s, ok) <- processTranscript' c ps (Just environ') Nothing
 	putStrLn $ unwords [c, "finished", show ok, "output size:", show (length s)]
 	return out
 
