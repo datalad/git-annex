@@ -117,7 +117,7 @@ makeInstaller gitannex license extrafiles = nsis $ do
 		mapM_ addfile extrafiles
 		writeUninstaller $ str uninstaller
 	uninstall $ do
-		delete [RebootOk] $ startMenuItem
+		delete [RebootOK] $ startMenuItem
 		mapM_ (\f -> delete [RebootOK] $ fromString $ "$INSTDIR/" ++ f) $
 			[ gitannexprogram
 			, licensefile
