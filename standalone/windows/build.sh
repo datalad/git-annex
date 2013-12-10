@@ -51,6 +51,8 @@ withcyg cabal configure
 if ! withcyg cabal build; then
 	rm -f Build/EvilLinker.exe
 	ghc --make Build/EvilLinker
+	WINDIR='C:\Windows\Temp'
+	export WINDIR
 	Build/EvilLinker
 fi
 
