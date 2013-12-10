@@ -95,6 +95,17 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	page Directory                   -- Pick where to install
 	page (License license)
 	page InstFiles                   -- Give a progress bar while installing
+	-- Start menu shortcut
+	createDirectory "$SMPROGRAMS"
+	createShortcut "$SMPROGRAMS/git-annex.lnk"
+		[ Target "$INSTDIR/git-annex.exe"
+		, Parameter "webapp"
+		, IconFile "$INSTDIR/git-annex.exe"
+		, IconIndex 2
+		, StartOptions "SW_SHOWNORMAL"
+		, KeyboardShortcut "ALT|CONTROL|a"
+		, Description "git-annex"
+		]
 	-- Groups of files to install
 	section "main" [] $ do
 		setOutPath "$INSTDIR"
