@@ -85,7 +85,7 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	{- Installing into the same directory as git avoids needing to modify
  	 - path myself, since the git installer already does it. -}
 	installDir gitInstallDir
-	requestExecutionLevel User
+	requestExecutionLevel Admin
 
 	iff (fileExists gitInstallDir)
 		(return ())
