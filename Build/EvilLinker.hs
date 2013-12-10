@@ -113,7 +113,6 @@ getOutput c ps environ = do
 	putStrLn $ unwords [c, show ps]
 	out@(s, ok) <- processTranscript' c ps environ Nothing
 	putStrLn $ unwords [c, "finished", show ok, "output size:", show (length s)]
-	writeFile (c ++ ".out") s
 	return out
 
 atFile :: FilePath -> String
