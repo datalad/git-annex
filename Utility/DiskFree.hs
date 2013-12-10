@@ -43,6 +43,8 @@ getDiskFree path = catchMaybeIO $ do
 	return $ toInteger sectors * toInteger bytes * toInteger nfree
 #else
 
+#warning Building without disk free space checking support
+
 getDiskFree :: FilePath -> IO (Maybe Integer)
 getDiskFree _ = return Nothing
 
