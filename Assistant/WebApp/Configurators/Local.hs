@@ -22,9 +22,9 @@ import qualified Git.Command
 import qualified Annex
 import Config.Files
 import Utility.FreeDesktop
+import Utility.DiskFree
 #ifdef WITH_CLIBS
 import Utility.Mounts
-import Utility.DiskFree
 #endif
 import Utility.DataUnits
 import Utility.Network
