@@ -6,6 +6,8 @@
 set -x
 set -e
 
+set
+
 # Path to the Haskell Platform.
 HP="/c/Program Files (x86)/Haskell Platform/2013.2.0.0"
 
