@@ -96,10 +96,10 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	page (License license)
 	page InstFiles                   -- Give a progress bar while installing
 	-- Start menu shortcut
-	createDirectory "$SMPROGRAMS"
+	Development.NSIS.createDirectory "$SMPROGRAMS"
 	createShortcut "$SMPROGRAMS/git-annex.lnk"
 		[ Target "$INSTDIR/git-annex.exe"
-		, Parameter "webapp"
+		, Parameters "webapp"
 		, IconFile "$INSTDIR/git-annex.exe"
 		, IconIndex 2
 		, StartOptions "SW_SHOWNORMAL"
