@@ -102,9 +102,9 @@ makeInstaller gitannex license extrafiles = nsis $ do
 		, Parameters "webapp"
 		, IconFile "$INSTDIR/git-annex.exe"
 		, IconIndex 2
-		, StartOptions "SW_SHOWNORMAL"
+		, StartOptions "SW_SHOWMINIMIZED"
 		, KeyboardShortcut "ALT|CONTROL|a"
-		, Description "git-annex"
+		, Description "git-annex webapp"
 		]
 	-- Groups of files to install
 	section "main" [] $ do
