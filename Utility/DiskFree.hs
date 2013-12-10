@@ -33,6 +33,8 @@ getDiskFree path = withFilePath path $ \c_path -> do
 #else
 #ifdef mingw32_HOST_OS
 
+import Common
+
 import System.Win32.File
 
 getDiskFree :: FilePath -> IO (Maybe Integer)
