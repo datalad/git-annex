@@ -549,8 +549,8 @@ runRepair' fsckresult forced referencerepo g = do
 		putStrLn "To force a recovery to a usable state, retry with the --force parameter."
 		return (False, [])
 
-successfulRepair :: (Bool, MissingObjects, [Branch]) -> Bool
-successfulRepair = fst3
+successfulRepair :: (Bool, [Branch]) -> Bool
+successfulRepair = fst
 
 safeReadFile :: FilePath -> IO String
 safeReadFile f = do
