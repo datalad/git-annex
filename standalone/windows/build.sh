@@ -34,9 +34,6 @@ cabal update || true
 
 cabal install --only-dependencies || true
 
-# new version
-cabal install warp
-
 # Detect when the last build was an incremental build and failed, 
 # and try a full build. Done this way because this shell seems a bit
 # broken.
