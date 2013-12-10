@@ -9,5 +9,7 @@ When I add files on my laptop's annex they upload, and the mac "downloads" them 
 
 I looked in the log and nothing out of the ordinary is happening... is this a bug with the osx version or what?
 
+* the symlink on the osx annex is symlinking to a file in .git/annex/objects
+
 
 Thanks!
