@@ -10,7 +10,7 @@
 module Assistant.Repair where
 
 import Assistant.Common
-import Command.Repair (repairAnnexBranch)
+import Command.Repair (repairAnnexBranch, trackingOrSyncBranch)
 import Git.Fsck (FsckResults, foundBroken)
 import Git.Repair (runRepairOf)
 import qualified Git
@@ -99,7 +99,7 @@ runRepair u mrmt destructiverepair = do
 
 	repair fsckresults referencerepo = do
 		(ok, modifiedbranches) <- inRepo $
-			runRepairOf fsckresults destructiverepair referencerepo
+			runRepairOf fsckresults trackingOrSyncBranch destructiverepair referencerepo
 		when destructiverepair $
 			repairAnnexBranch modifiedbranches
 		return ok

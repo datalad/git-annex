@@ -22,7 +22,8 @@ git-annex (5.20131131) UNRELEASED; urgency=low
   * Windows: Support annex.diskreserve.
   * Fix bad behavior in Firefox, which was caused by an earlier fix to
     bad behavior in Chromium.
-  * Improve repair of git-annex index file.
+  * repair: Improve repair of git-annex index file.
+  * repair: Remove damaged git-annex sync branches.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
 

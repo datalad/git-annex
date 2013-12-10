@@ -28,7 +28,7 @@ start = next $ next $ runRepair =<< Annex.getState Annex.force
 runRepair :: Bool -> Annex Bool
 runRepair forced = do
 	(ok, modifiedbranches) <- inRepo $
-		Git.Repair.runRepair forced
+		Git.Repair.runRepair isAnnexSyncBranch forced
 	-- This command can be run in git repos not using git-annex,
 	-- so avoid git annex branch stuff in that case.
 	whenM (isJust <$> getVersion) $
@@ -67,3 +67,9 @@ repairAnnexBranch modifiedbranches
 		Annex.Branch.forceCommit "committing index after git repository repair"
 		liftIO $ putStrLn "Successfully recovered the git-annex branch using .git/annex/index"
 	nukeindex = inRepo $ nukeFile . gitAnnexIndex
+
+trackingOrSyncBranch :: Ref -> Bool
+trackingOrSyncBranch b = Git.Repair.isTrackingBranch b || isAnnexSyncBranch b
+
+isAnnexSyncBranch :: Ref -> Bool
+isAnnexSyncBranch b = "refs/synced/" `isPrefixOf` show b

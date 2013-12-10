@@ -13,11 +13,11 @@ module Git.Repair (
 	cleanCorruptObjects,
 	retrieveMissingObjects,
 	resetLocalBranches,
-	removeTrackingBranches,
 	checkIndex,
 	checkIndexFast,
 	missingIndex,
 	emptyGoodCommits,
+	isTrackingBranch,
 ) where
 
 import Common
@@ -189,15 +189,17 @@ resetLocalBranches missing goodcommits r =
 			, Param (show c)
 			] r
 
+isTrackingBranch :: Ref -> Bool
+isTrackingBranch b = "refs/remotes/" `isPrefixOf` show b
+
 {- To deal with missing objects that cannot be recovered, removes
- - any remote tracking branches that reference them. Returns a list of
- - all removed branches.
+ - any branches (filtered by a predicate) that reference them
+ - Returns a list of all removed branches.
  -}
-removeTrackingBranches :: MissingObjects -> GoodCommits -> Repo -> IO ([Branch], GoodCommits)
-removeTrackingBranches missing goodcommits r =
-	go [] goodcommits =<< filter istrackingbranch <$> getAllRefs r
+removeBadBranches :: (Ref -> Bool) -> MissingObjects -> GoodCommits -> Repo -> IO ([Branch], GoodCommits)
+removeBadBranches removablebranch missing goodcommits r =
+	go [] goodcommits =<< filter removablebranch <$> getAllRefs r
   where
-  	istrackingbranch b = "refs/remotes/" `isPrefixOf` show b
 	go removed gcs [] = return (removed, gcs)
 	go removed gcs (b:bs) = do
 		(ok, gcs') <- verifyCommit missing gcs b r
@@ -434,24 +436,24 @@ preRepair g = do
 	validhead s = "ref: refs/" `isPrefixOf` s || isJust (extractSha s)
 
 {- Put it all together. -}
-runRepair :: Bool -> Repo -> IO (Bool, [Branch])
-runRepair forced g = do
+runRepair :: (Ref -> Bool) -> Bool -> Repo -> IO (Bool, [Branch])
+runRepair removablebranch forced g = do
 	preRepair g
 	putStrLn "Running git fsck ..."
 	fsckresult <- findBroken False g
 	if foundBroken fsckresult
-		then runRepair' fsckresult forced Nothing g
+		then runRepair' removablebranch fsckresult forced Nothing g
 		else do
 			putStrLn "No problems found."
 			return (True, [])
 
-runRepairOf :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, [Branch])
-runRepairOf fsckresult forced referencerepo g = do
+runRepairOf :: FsckResults -> (Ref -> Bool) -> Bool -> Maybe FilePath -> Repo -> IO (Bool, [Branch])
+runRepairOf fsckresult removablebranch forced referencerepo g = do
 	preRepair g
-	runRepair' fsckresult forced referencerepo g
+	runRepair' removablebranch fsckresult forced referencerepo g
 
-runRepair' :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, [Branch])
-runRepair' fsckresult forced referencerepo g = do
+runRepair' :: (Ref -> Bool) -> FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, [Branch])
+runRepair' removablebranch fsckresult forced referencerepo g = do
 	missing <- cleanCorruptObjects fsckresult g
 	stillmissing <- retrieveMissingObjects missing referencerepo g
 	case stillmissing of
@@ -490,7 +492,8 @@ runRepair' fsckresult forced referencerepo g = do
 			| otherwise -> unsuccessfulfinish
   where
 	continuerepairs stillmissing = do
-		(remotebranches, goodcommits) <- removeTrackingBranches stillmissing emptyGoodCommits g
+		(removedbranches, goodcommits) <- removeBadBranches removablebranch stillmissing emptyGoodCommits g
+		let remotebranches = filter isTrackingBranch removedbranches
 		unless (null remotebranches) $
 			putStrLn $ unwords
 				[ "Removed"
@@ -528,7 +531,7 @@ runRepair' fsckresult forced referencerepo g = do
 		-- The corrupted index can prevent fsck from finding other
 		-- problems, so re-run repair.
 		fsckresult' <- findBroken False g
-		result <- runRepairOf fsckresult' forced referencerepo g
+		result <- runRepairOf fsckresult' removablebranch forced referencerepo g
 		putStrLn "Removed the corrupted index file. You should look at what files are present in your working tree and git add them back to the index when appropriate."
 		return result
 
