@@ -53,6 +53,11 @@ if ! withcyg cabal build; then
 	ghc --make Build/EvilLinker
 	WINDIR='C:\Windows\Temp'
 	export WINDIR
+	mkdir tmp
+	TMP=tmp
+	TEMP=tmp
+	export TMP
+	export TEMP
 	Build/EvilLinker
 fi
 
