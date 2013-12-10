@@ -48,7 +48,6 @@ parseGhcLink = do
 {- Find where gcc calls collect2. -}
 parseGccLink :: Parser CmdParams
 parseGccLink = do
-	void $ many preenv
 	cenv <- collectenv
 	void $ try $ char ' '
 	path <- manyTill anyChar (try $ string collectcmd)
@@ -57,10 +56,24 @@ parseGccLink = do
 	return $ CmdParams (path ++ collectcmd) (escapeDosPaths collect2params) cenv
   where
   	collectcmd = "collect2.exe"
+  	collectgccenv = "COLLECT_GCC"
+	collectltoenv = "COLLECT_LTO_WRAPPER"
 	pathenv = "COMPILER_PATH"
 	libpathenv = "LIBRARY_PATH"
   	optenv = "COLLECT_GCC_OPTIONS"
   	collectenv = do
+		void $ many1 $ do
+			notFollowedBy $ string collectgccenv
+			restOfLine
+		void $ string collectgccenv
+		void $ char '='
+		g <- restOfLine
+		void $ string collectltoenv
+		void $ char '='
+		lt <- restOfLine
+		void $ many1 $ do
+			notFollowedBy $ string pathenv
+			restOfLine
 		void $ string pathenv
 		void $ char '='
 		p <- restOfLine
@@ -70,10 +83,7 @@ parseGccLink = do
 		void $ string optenv
 		void $ char '='
 		o <- restOfLine
-		return $ Just [(pathenv, p), (libpathenv, lp), (optenv, o)]
- 	preenv = do
-		void $ notFollowedBy collectenv
-		restOfLine
+		return $ Just [(collectgccenv, g), (collectltoenv, lt), (pathenv, p), (libpathenv, lp), (optenv, o)]
 
 {- Find where collect2 calls ld. -}
 parseCollect2 :: Parser CmdParams
