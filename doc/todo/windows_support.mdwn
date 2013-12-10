@@ -14,10 +14,12 @@ now! --[[Joey]]
   is much slower than on systems supporting connection caching.
 * `git annex watch` works, but does not detect when files are still open
   for write as they're being added (no lsof). So watch/webapp/assistant
-  have to be started with --force, and may be unsafe. (Also breaks initial
-  repo creation, autostart, restarting, etc, as --force is not propigated.)
+  may be unsafe.
 * `git annex assistant` has not been tested, is probably quite incomplete.
-  Is known to not download any files. (transferrer doesn't built yet)
+* Assistant is known to not transfer any files.  
+  (transferrer doesn't built yet)  
+  Need a createPipe for windows. See the mkAnonPipe in
+  System.Process source. (cbits/runProcess.c)
 * No XMPP support (needs a lot of C libraries which are available in
   cygwin, but pkg-config does not list them once installed).
 * Doesn't daemonize. Maybe use
