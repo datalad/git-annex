@@ -20,3 +20,7 @@ now! --[[Joey]]
   Is known to not download any files. (transferrer doesn't built yet)
 * No XMPP support (needs a lot of C libraries which are available in
   cygwin, but pkg-config does not list them once installed).
+* Doesn't daemonize. Maybe use
+  <http://hackage.haskell.org/package/Win32-services>
+  or perhaps easier,
+  <http://hackage.haskell.org/package/Win32-services-wrapper>
