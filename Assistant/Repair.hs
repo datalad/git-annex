@@ -98,10 +98,10 @@ runRepair u mrmt destructiverepair = do
 			liftIO $ catchBoolIO a
 
 	repair fsckresults referencerepo = do
-		(ok, stillmissing, modifiedbranches) <- inRepo $
+		(ok, modifiedbranches) <- inRepo $
 			runRepairOf fsckresults destructiverepair referencerepo
 		when destructiverepair $
-			repairAnnexBranch stillmissing modifiedbranches
+			repairAnnexBranch modifiedbranches
 		return ok
 	
 	backgroundfsck params = liftIO $ void $ async $ do

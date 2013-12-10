@@ -11,6 +11,7 @@ module Git.Fsck (
 	findBroken,
 	foundBroken,
 	findMissing,
+	isMissing,
 	knownMissing,
 ) where
 
@@ -25,6 +26,7 @@ import qualified Data.Set as S
 type MissingObjects = S.Set Sha
 
 data FsckResults = FsckFoundMissing MissingObjects | FsckFailed
+	deriving (Show)
 
 {- Runs fsck to find some of the broken objects in the repository.
  - May not find all broken objects, if fsck fails on bad data in some of
@@ -59,15 +61,17 @@ knownMissing (FsckFoundMissing s) = s
 {- Finds objects that are missing from the git repsitory, or are corrupt.
  -
  - This does not use git cat-file --batch, because catting a corrupt
- - object can cause it to crash, or to report incorrect size information.a
+ - object can cause it to crash, or to report incorrect size information.
  -}
 findMissing :: [Sha] -> Repo -> IO MissingObjects
-findMissing objs r = S.fromList <$> filterM (not <$$> present) objs
+findMissing objs r = S.fromList <$> filterM (`isMissing` r) objs
+
+isMissing :: Sha -> Repo -> IO Bool
+isMissing s r = either (const True) (const False) <$> tryIO dump
   where
-	present o = either (const False) (const True) <$> tryIO (dump o)
-	dump o = runQuiet
+	dump = runQuiet
 		[ Param "show"
-		, Param (show o)
+		, Param (show s)
 		] r
 
 findShas :: String -> [Sha]

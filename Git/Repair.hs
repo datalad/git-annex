@@ -1,4 +1,5 @@
 {- git repository recovery
+import qualified Data.Set as S
  -
  - Copyright 2013 Joey Hess <joey@kitenet.net>
  -
@@ -335,8 +336,8 @@ verifyTree missing treesha r
 {- Checks that the index file only refers to objects that are not missing,
  - and is not itself corrupt. Note that a missing index file is not
  - considered a problem (repo may be new). -}
-checkIndex :: MissingObjects -> Repo -> IO Bool
-checkIndex missing r = do
+checkIndex :: Repo -> IO Bool
+checkIndex r = do
 	(bad, _good, cleanup) <- partitionIndex missing r
 	if null bad
 		then cleanup
@@ -347,23 +348,22 @@ checkIndex missing r = do
 missingIndex :: Repo -> IO Bool
 missingIndex r = not <$> doesFileExist (localGitDir r </> "index")
 
-partitionIndex :: MissingObjects -> Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
-partitionIndex missing r = do
+{- Finds missing and ok files staged in the index. -}
+partitionIndex :: Repo -> IO ([LsFiles.StagedDetails], [LsFiles.StagedDetails], IO Bool)
+partitionIndex r = do
 	(indexcontents, cleanup) <- LsFiles.stagedDetails [repoPath r] r
-	let (bad, good) = partition ismissing indexcontents
-	return (bad, good, cleanup)
-  where
-	getblob (_file, Just sha, Just _mode) = Just sha
-	getblob _ = Nothing
-	ismissing = maybe False (`S.member` missing) . getblob
+	l <- forM_ indexcontents $ \i -> case i of
+		(_file, Just sha, Just _mode) -> (,) <$> isMissing sha r <*> pure i
+		_ _> pure (False, i)
+	return (map snd bad, map snd good, cleanup)
 
 {- Rewrites the index file, removing from it any files whose blobs are
  - missing. Returns the list of affected files. -}
-rewriteIndex :: MissingObjects -> Repo -> IO [FilePath]
-rewriteIndex missing r
+rewriteIndex :: Repo -> IO [FilePath]
+rewriteIndex r
 	| repoIsLocalBare r = return []
 	| otherwise = do
-		(bad, good, cleanup) <- partitionIndex missing r
+		(bad, good, cleanup) <- partitionIndex r
 		unless (null bad) $ do
 			nukeFile (indexFile r)
 			UpdateIndex.streamUpdateIndex r
@@ -425,7 +425,7 @@ preRepair g = do
 	validhead s = "ref: refs/" `isPrefixOf` s || isJust (extractSha s)
 
 {- Put it all together. -}
-runRepair :: Bool -> Repo -> IO (Bool, MissingObjects, [Branch])
+runRepair :: Bool -> Repo -> IO (Bool, [Branch])
 runRepair forced g = do
 	preRepair g
 	putStrLn "Running git fsck ..."
@@ -434,23 +434,23 @@ runRepair forced g = do
 		then runRepair' fsckresult forced Nothing g
 		else do
 			putStrLn "No problems found."
-			return (True, S.empty, [])
+			return (True, [])
 
-runRepairOf :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, MissingObjects, [Branch])
+runRepairOf :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, [Branch])
 runRepairOf fsckresult forced referencerepo g = do
 	preRepair g
 	runRepair' fsckresult forced referencerepo g
 
-runRepair' :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, MissingObjects, [Branch])
+runRepair' :: FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, [Branch])
 runRepair' fsckresult forced referencerepo g = do
 	missing <- cleanCorruptObjects fsckresult g
 	stillmissing <- retrieveMissingObjects missing referencerepo g
 	case stillmissing of
 		FsckFoundMissing s
 			| S.null s -> if repoIsLocalBare g
-				then successfulfinish S.empty []
-				else ifM (checkIndex S.empty g)
-					( successfulfinish s []
+				then successfulfinish []
+				else ifM (checkIndex g)
+					( successfulfinish []
 					, do
 						putStrLn "No missing objects found, but the index file is corrupt!"
 						if forced
@@ -458,7 +458,7 @@ runRepair' fsckresult forced referencerepo g = do
 							else needforce S.empty
 					)
 			| otherwise -> if forced
-				then ifM (checkIndex s g)
+				then ifM (checkIndex g)
 					( continuerepairs s
 					, corruptedindex
 					)
@@ -467,17 +467,18 @@ runRepair' fsckresult forced referencerepo g = do
 						[ show (S.size s)
 						, "missing objects could not be recovered!"
 						]
-					unsuccessfulfinish s
+					unsuccessfulfinish
 		FsckFailed
-			| forced -> ifM (pure (repoIsLocalBare g) <||> checkIndex S.empty g)
+			| forced -> ifM (pure (repoIsLocalBare g) <||> checkIndex g)
 				( do
 					missing' <- cleanCorruptObjects FsckFailed g
 					case missing' of
 						FsckFailed -> return (False, S.empty, [])
-						FsckFoundMissing stillmissing' -> continuerepairs stillmissing'
+						FsckFoundMissing stillmissing' ->
+							continuerepairs stillmissing'
 				, corruptedindex
 				)
-			| otherwise -> unsuccessfulfinish S.empty
+			| otherwise -> unsuccessfulfinish
   where
 	continuerepairs stillmissing = do
 		(remotebranches, goodcommits) <- removeTrackingBranches stillmissing emptyGoodCommits g
@@ -492,12 +493,12 @@ runRepair' fsckresult forced referencerepo g = do
 			"Reset these local branches to old versions before the missing objects were committed:"
 		displayList (map show deletedbranches)
 			"Deleted these local branches, which could not be recovered due to missing objects:"
-		deindexedfiles <- rewriteIndex stillmissing g
+		deindexedfiles <- rewriteIndex g
 		displayList deindexedfiles
 			"Removed these missing files from the index. You should look at what files are present in your working tree and git add them back to the index when appropriate."
 		let modifiedbranches = resetbranches ++ deletedbranches
 		if null resetbranches && null deletedbranches
-			then successfulfinish stillmissing modifiedbranches
+			then successfulfinish modifiedbranches
 			else do
 				unless (repoIsLocalBare g) $ do
 					mcurr <- Branch.currentUnsafe g
@@ -511,7 +512,7 @@ runRepair' fsckresult forced referencerepo g = do
 								]
 				putStrLn "Successfully recovered repository!"
 				putStrLn "Please carefully check that the changes mentioned above are ok.."
-				return (True, stillmissing, modifiedbranches)
+				return (True, modifiedbranches)
 	
 	corruptedindex = do
 		nukeFile (indexFile g)
@@ -522,22 +523,22 @@ runRepair' fsckresult forced referencerepo g = do
 		putStrLn "Removed the corrupted index file. You should look at what files are present in your working tree and git add them back to the index when appropriate."
 		return result
 
-	successfulfinish stillmissing modifiedbranches = do
+	successfulfinish modifiedbranches = do
 		mapM_ putStrLn
 			[ "Successfully recovered repository!"
 			, "You should run \"git fsck\" to make sure, but it looks like everything was recovered ok."
 			]
-		return (True, stillmissing, modifiedbranches)
-	unsuccessfulfinish stillmissing = do
+		return (True, modifiedbranches)
+	unsuccessfulfinish = do
 		if repoIsLocalBare g
 			then do
 				putStrLn "If you have a clone of this bare repository, you should add it as a remote of this repository, and retry."
 				putStrLn "If there are no clones of this repository, you can instead retry with the --force parameter to force recovery to a possibly usable state."
-				return (False, stillmissing, [])
+				return (False, [])
 			else needforce stillmissing
-	needforce stillmissing = do
+	needforce = do
 		putStrLn "To force a recovery to a usable state, retry with the --force parameter."
-		return (False, stillmissing, [])
+		return (False, [])
 
 successfulRepair :: (Bool, MissingObjects, [Branch]) -> Bool
 successfulRepair = fst3

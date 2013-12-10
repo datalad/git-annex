@@ -12,7 +12,6 @@ import Command
 import qualified Annex
 import qualified Git.Repair
 import qualified Annex.Branch
-import Git.Fsck (MissingObjects)
 import Git.Types
 import Annex.Version
 
@@ -28,12 +27,12 @@ start = next $ next $ runRepair =<< Annex.getState Annex.force
 
 runRepair :: Bool -> Annex Bool
 runRepair forced = do
-	(ok, stillmissing, modifiedbranches) <- inRepo $
+	(ok, modifiedbranches) <- inRepo $
 		Git.Repair.runRepair forced
 	-- This command can be run in git repos not using git-annex,
 	-- so avoid git annex branch stuff in that case.
 	whenM (isJust <$> getVersion) $
-		repairAnnexBranch stillmissing modifiedbranches
+		repairAnnexBranch modifiedbranches
 	return ok
 
 {- After git repository repair, the .git/annex/index file could
@@ -50,8 +49,8 @@ runRepair forced = do
  - yet reflected in the index, this does properly merge those into the
  - index before committing.
  -}
-repairAnnexBranch :: MissingObjects -> [Branch] -> Annex ()
-repairAnnexBranch missing modifiedbranches
+repairAnnexBranch :: [Branch] -> Annex ()
+repairAnnexBranch modifiedbranches
 	| Annex.Branch.fullname `elem` modifiedbranches = ifM okindex
 		( commitindex
 		, do
@@ -63,8 +62,7 @@ repairAnnexBranch missing modifiedbranches
 		, nukeindex
 		)
   where
-	okindex = Annex.Branch.withIndex $
-		inRepo $ Git.Repair.checkIndex missing
+	okindex = Annex.Branch.withIndex $ inRepo $ Git.Repair.checkIndex
 	commitindex = do
 		Annex.Branch.forceCommit "committing index after git repository repair"
 		liftIO $ putStrLn "Successfully recovered the git-annex branch using .git/annex/index"

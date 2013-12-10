@@ -29,7 +29,6 @@ import Git.Repair
 import Git.Index
 
 import Data.Time.Clock.POSIX
-import qualified Data.Set as S
 
 {- This thread runs once at startup, and most other threads wait for it
  - to finish. (However, the webapp thread does not, to prevent the UI
@@ -41,7 +40,7 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 
 	{- A corrupt index file can prevent the assistant from working at
 	 - all, so detect and repair. -}
-	ifM (not <$> liftAnnex (inRepo (checkIndex S.empty)))
+	ifM (not <$> liftAnnex (inRepo checkIndexFast))
 		( do
 			notice ["corrupt index file found at startup; removing and restaging"]
 			liftAnnex $ inRepo $ nukeFile . indexFile
