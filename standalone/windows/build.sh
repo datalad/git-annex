@@ -20,10 +20,6 @@ withcyg () {
 # This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
 
-mkdir tmp || true
-TMPDIR=tmp
-export TMPDIR
-
 # Uncomment to get rid of cabal installed libraries.
 #rm -rf /c/Users/jenkins/AppData/Roaming/cabal /c/Users/jenkins/AppData/Roaming/ghc
 
