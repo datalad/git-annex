@@ -69,6 +69,9 @@ uninstaller = "git-annex-uninstall.exe"
 gitInstallDir :: Exp FilePath
 gitInstallDir = fromString "$PROGRAMFILES\\Git\\cmd"
 
+startMenuItem :: Exp FilePath
+startMenuItem = "$SMPROGRAMS/git-annex.lnk"
+
 needGit :: Exp String
 needGit = strConcat
 	[ fromString "You need git installed to use git-annex. Looking at "
@@ -97,7 +100,7 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	page InstFiles                   -- Give a progress bar while installing
 	-- Start menu shortcut
 	Development.NSIS.createDirectory "$SMPROGRAMS"
-	createShortcut "$SMPROGRAMS/git-annex.lnk"
+	createShortcut startMenuItem
 		[ Target "$INSTDIR/git-annex.exe"
 		, Parameters "webapp"
 		, IconFile "$INSTDIR/git-annex.exe"
@@ -113,7 +116,8 @@ makeInstaller gitannex license extrafiles = nsis $ do
 		addfile license
 		mapM_ addfile extrafiles
 		writeUninstaller $ str uninstaller
-	uninstall $
+	uninstall $ do
+		delete [RebootOk] $ startMenuItem
 		mapM_ (\f -> delete [RebootOK] $ fromString $ "$INSTDIR/" ++ f) $
 			[ gitannexprogram
 			, licensefile
