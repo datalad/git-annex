@@ -123,6 +123,7 @@ runAtFile p s f extraparams = do
 	when (null $ opts c) $
 		error $ "failed to find any options for " ++ f ++ " in >>>" ++ s ++ "<<<"
 	writeFile f (opts c)
+	print "in file: >>>" ++ (opts c) ++ "<<<"
 	out <- getOutput (cmd c) (atFile f:extraparams) (env c)
 	removeFile f
 	return out
