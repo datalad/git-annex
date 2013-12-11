@@ -157,4 +157,5 @@ cygwinDlls =
 	, "libcrypto.dll"
 	, "libssl.dll"
 	, "cyggcrypt-11.dll"
+	, "cyggpg-error-0.dll"
 	]
