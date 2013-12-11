@@ -74,7 +74,8 @@ git-annex.
 
 * `VERSION Int`  
   Supported protocol version. Current version is 0. Must be sent first
-  thing at starup.
+  thing at startup, as until it sees this git-annex does not know how to
+  talk with the special remote program!
 * `ERROR ErrorMsg`  
   Generic error. Can be sent at any time if things get messed up.
   It would be a good idea to send this if git-annex sends a command
