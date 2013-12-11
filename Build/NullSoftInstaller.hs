@@ -151,4 +151,6 @@ cygwinDlls =
 	, "cyggssapi-3.dll"
 	, "cygkrb5-26.dll"
 	, "cygz.dll"
+	, "cygidn-11.dll"
+	, "libcurl-4.dll"
 	]
