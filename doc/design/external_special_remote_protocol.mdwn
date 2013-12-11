@@ -29,16 +29,16 @@ the content to send):
 
 	TRANSFER STORE Key File
 
-Once the file has been sent, the program can reply with the result:
-
-	TRANSFER-SUCCESS STORE Key
-
-Any number of other messages can be sent back and forth while that upload
+Any number of messages can be sent back and forth while that upload
 is going on. A common message the program would send is to tell the
 progress of the upload (in bytes):
 
 	PROGRESS STORE Key 10240
 	PROGRESS STORE Key 20480
+
+Once the file has been sent, the program can reply with the result:
+
+	TRANSFER-SUCCESS STORE Key
 
 ## git-annex messages
 
