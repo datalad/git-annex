@@ -13,12 +13,6 @@ Follow the instructions to [enable backports](http://backports.debian.org/Instru
 
 	sudo apt-get -t wheezy-backports install git-annex
 
-For the latest version [download the prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/current/), extract it and add it to your path.
-Please note that you might need to run this first:
-
-	sudo apt-get install libgsasl7
-
-
 ## Debian 6.0 "squeeze"
 
 Follow the instructions to [enable backports](http://backports.debian.org/Instructions/).
