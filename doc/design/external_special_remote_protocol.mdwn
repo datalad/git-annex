@@ -183,3 +183,5 @@ done
   used to retrieve a given key.
 * Support for splitting files into chunks.
 * git-annex hash directory lookup for a key?
+* Use same verbs as used in special remote interface (instead of different
+  verbs used in Types.Remote).
