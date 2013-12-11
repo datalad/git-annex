@@ -3,9 +3,9 @@ See [[todo/support_for_writing_external_special_remotes]] for motivation.
 This is a design for a protocol to be used to communicate between git-annex
 and a program implementing an external special remote.
 
-The program has a name like `git-annex-remote-$bar`. When
-`git annex initremote foo type=$bar` is run, git-annex finds the
-appropriate program in PATH.
+The external special remote program has a name like
+`git-annex-remote-$bar`. When `git annex initremote foo type=$bar` is run,
+git-annex finds the appropriate program in PATH.
 
 The program is started by git-annex when it needs to access the special
 remote, and may be left running for a long period of time. This allows
@@ -13,44 +13,79 @@ it to perform expensive setup tasks, etc. Note that git-annex may choose to
 start multiple instances of the program (eg, when multiple git-annex
 commands are run concurrently in a repository).
 
-Communication is via the programs stdin and stdout. Therefore, the program
-must avoid doing any prompting, or outputting anything like eg, progress to
-stdout. (Such stuff can be sent to stderr instead.)
+## protocol overview
+
+Communication is via stdin and stdout. Therefore, the external special
+remote must avoid doing any prompting, or outputting anything like eg,
+progress to stdout. (Such stuff can be sent to stderr instead.)
 
 The protocol is line based. Messages are sent in either direction, from
-git-annex to the program, and from the program to git-annex. No immediate
-reply is made to any message, instead a later message can be sent to reply.
+git-annex to the special remote, and from the special remote to git-annex.
 
-## example
+## example session
 
-For example, git-annex might request that a key be sent to the
-remote (Key will be replaced with the key, and File with a file that has
-the content to send):
+The special remote is responsible for sending the first message, indicating
+the version of the protocol it is using.
 
-	TRANSFER STORE Key File
+	VERSION 0
 
-Any number of messages can be sent back and forth while that upload
-is going on. A common message the program would send is to tell the
-progress of the upload (in bytes):
+Once it knows the version, git-annex will send a message telling the
+special remote to start up.
 
-	PROGRESS STORE Key 10240
-	PROGRESS STORE Key 20480
+	PREPARE
 
-Once the file has been sent, the program can reply with the result:
+The special remote can now ask git-annex for its configuration, as needed,
+and check that it's valid. git-annex responds with the configuration values
 
-	TRANSFER-SUCCESS STORE Key
+	GETCONFIG directory
+	/media/usbdrive/repo
+	GETCONFIG automount
+	true
 
-## git-annex messages
+Once the special remote is satisfied with its configuration and is
+ready to go, it tells git-annex.
 
-These are the messages git-annex may send to the special remote program.
+	PREPARE-SUCCESS
 
-* `CONFIGURE KEY=VALUE ...`  
-  Tells the remote its configuration. Any arbitrary KEY(s) can be passed.
-  Only run once, at startup.
+Now git-annex will tell the special remote what to do. Let's suppose
+it wants to store a key. 
+
+	TRANSFER STORE somekey tmpfile
+
+The special remote can continue sending messages to git-annex during this
+transfer. It will typically send progress messages, indicating how many
+bytes have been sent:
+
+	PROGRESS STORE somekey 10240
+	PROGRESS STORE somekey 20480
+
+Once the key has been stored, the special remote tells git-annex the result:
+
+	TRANSFER-SUCCESS STORE somekey
+
+Once git-annex is done with the special remote, it will close its stdin.
+The special remote program can then exit.
+
+## git-annex request messages
+
+These are the request messages git-annex may send to the special remote
+program. None of these messages require an immediate reply. The special
+remote can send any messages it likes while handling the requests.
+
+Once the special remote has finished performing the request, it should
+send one of the corresponding replies listed in the next section.
+
+* `PREPARE`  
+  Tells the special remote it's time to prepare itself to be used.
+  Only run once, at startup, always immediately after the special remote
+  sends VERSION.
 * `INITREMOTE`  
-  Request that the remote be initialized. CONFIGURE will be passed first.
-  Note that this may be run repeatedly, as a remote is initialized in
+  Request that the remote initialized itself. This is where any one-time
+  setup tasks can be done, for example creating an Amazon S3 bucket.  
+  (PREPARE is still sent before this.)  
+  Note: This may be run repeatedly, as a remote is initialized in
   different repositories, or as the configuration of a remote is changed.
+  So any one-time setup tasks should be done idempotently.
 * `GETCOST`  
   Requests the remote return a use cost. Higher costs are more expensive.
   (See Config/Cost.hs for some standard costs.)
@@ -65,30 +100,21 @@ These are the messages git-annex may send to the special remote program.
   Requests the remote check if a key is present in it.
 * `REMOVE Key`  
   Requests the remote remove a key's contents.
-  
 
-## special remote messages
+## special remote replies
 
-These are the messages the special remote program can send back to
-git-annex.
+These should be sent only in response to the git-annex request messages.
+(Any sent unexpectedly will be ignored.)
+They do not have to be sent immediately after the request; the special
+remote can send other messages and queries (listed in sections below)
+as it's performing the request.
 
-* `VERSION Int`  
-  Supported protocol version. Current version is 0. Must be sent first
-  thing at startup, as until it sees this git-annex does not know how to
-  talk with the special remote program!
-* `ERROR ErrorMsg`  
-  Generic error. Can be sent at any time if things get messed up.
-  It would be a good idea to send this if git-annex sends a command
-  you do not support. The program should exit after sending this, as
-  git-annex will not talk to it any further.
+* `PREPARE-SUCCESS`  
+  Sent as a response to PREPARE once the special remote is ready for use.
 * `TRANSFER-SUCCESS STORE|RETRIEVE Key`  
   Indicates the transfer completed successfully.
 * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
   Indicates the transfer failed.
-* `PROGRESS STORE|RETRIEVE Key Int`  
-  Indicates the current progress of the transfer. May be repeated any
-  number of times during the transfer process. This is highly recommended
-  for STORE. (It is not necessary for RETRIEVE.)
 * `HAS-SUCCESS Key`  
   Indicates that a key has been positively verified to be present in the
   remote.
@@ -107,17 +133,60 @@ git-annex.
   Indicates the cost of the remote.
 * `COST-UNKNOWN`  
   Indicates the remote has no opinion of its cost.
-* `CONFIGURE-SUCCESS`  
-  Indicates the CONFIGURE provided an acceptable configuration.
-* `CONFIGURE-FAILURE ErrorMsg`  
-  Indicates that CONFIGURE provided a bad configuration.
-* `INITREMOTE-SUCCESS KEY=VALUE ...`  
+* `INITREMOTE-SUCCESS Setting=Value ...`  
   Indicates the INITREMOTE succeeded and the remote is ready to use.
-  The keys and values can optionally be returned. They will be added
+  The settings and values can optionally be returned. They will be added
   to the existing configuration of the remote (and may change existing
-  values in it), and sent back the next time it calls CONFIGURE.
+  values in it).
 * `INITREMOTE-FAILURE ErrorMsg`  
   Indicates that INITREMOTE failed.
+
+## special remote messages
+
+These are messages the special remote program can send to
+git-annex at any time. It should not expect any response from git-annex.
+
+* `VERSION Int`  
+  Supported protocol version. Current version is 0. Must be sent first
+  thing at startup, as until it sees this git-annex does not know how to
+  talk with the special remote program!
+* `ERROR ErrorMsg`  
+  Generic error. Can be sent at any time if things get messed up.
+  When possible, use a more specific reply from the list above.  
+  It would be a good idea to send this if git-annex sends a command
+  you do not support. The program should exit after sending this, as
+  git-annex will not talk to it any further.
+* `PROGRESS STORE|RETRIEVE Key Int`  
+  Indicates the current progress of the transfer. May be repeated any
+  number of times during the transfer process. This is highly recommended
+  for STORE. (It is optional but good for RETRIEVE.)
+
+## special remote queries
+
+After git-annex has sent the special remote a request, and before the
+special remote sends back a reply, git-annex enters quiet mode. It will
+avoid sending additional messages. While git-annex is in quiet mode,
+the special remote can send queries to it. Queries can not be sent at any
+other time.
+
+When it sees a query, git-annex will respond a line containing
+*only* the requested data.
+
+* `DIRHASH Key`  
+  Gets a two level hash associated with a Key. Something like "abc/def".
+  This is always the same for any given Key, so can be used for eg,
+  creating hash directory structures to store Keys in.
+* `GETCONFIG Setting`
+  Gets one of the special remote's configuration settings.
+* `SETSTATE Key Value`  
+  git-annex can store state in the git-annex branch on a
+  per-special-remote, per-key basis. This sets that state.
+* `GETSTATE Key`  
+  Gets any state previously stored for the key from the git-annex branch.  
+  Note that some special remotes may be accessed from multiple
+  repositories, and the state is only eventually consistently synced
+  between them. If two repositories set different values in the state
+  for a key, the one that sets it last wins.
 
 ## Simple shell example
 
@@ -125,23 +194,26 @@ git-annex.
 #!/bin/sh
 set -e
 
-send () {
-	echo "$@"
-}
-
-send VERSION 0
+echo VERSION 0
 
 while read line; do
 	set -- $line
 	case "$1" in
-		CONFIGURE)
-			send CONFIGURE-SCCESS
-		;;
 		INITREMOTE)
-			send INITREMOTE-SUCCESS
+			# XXX do anything necessary to create resources
+			# used by the remote. Try to be idempotent.
+			# Use GETCONFIG to get any needed configuration
+			# settings.
+			echo INITREMOTE-SUCCESS
 		;;
 		GETCOST)
-			send COST-UNKNOWN
+			echo COST-UNKNOWN
+		;;
+		PREPARE)
+			# XXX Use GETCONFIG to get configuration settings,
+			# and do anything needed to start using the
+			# special remote here.
+			echo PREPARE-SUCCESS
 		;;
 		TRANSFER)
 			key="$3"
@@ -150,40 +222,39 @@ while read line; do
 				STORE)
 					# XXX upload file here
 					# XXX when possible, send PROGRESS
-					send TRANSFER-SUCCESS STORE "$key"
+					echo TRANSFER-SUCCESS STORE "$key"
 				;;
 				RETRIEVE)
 					# XXX download file here
-					send TRANSFER-SUCCESS RETRIEVE "$key"
+					echo TRANSFER-SUCCESS RETRIEVE "$key"
 				;;
 				
 			esac
 		;;
 		HAS)
 			key="$2"
-			send HAS-UNKNOWN "$key" "not implemented"
+			echo HAS-UNKNOWN "$key" "not implemented"
 		;;
 		REMOVE)
 			key="$2"
 			# XXX remove key here
-			send REMOVE-SUCCESS "$key"
+			echo REMOVE-SUCCESS "$key"
 		;;
 		*)
-			send ERROR "unknown command received: $line"
+			echo ERROR "unknown command received: $line"
 			exit 1
 		;;
 	esac	
 done
+
+# XXX anything that needs to be done at shutdown can be done here
 """]]
 
 ## TODO
 
 * Communicate when the network connection may have changed, so long-running
   remotes can reconnect.
-* Provide a way for remotes to set/get the content of a per-key
-  file in the git-annex branch. Needed for eg, storing urls, or access keys
-  used to retrieve a given key.
+* uuid discovery during initremote.
 * Support for splitting files into chunks.
-* git-annex hash directory lookup for a key?
 * Use same verbs as used in special remote interface (instead of different
   verbs used in Types.Remote).
