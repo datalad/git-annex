@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="same here"
+ date="2013-12-11T19:57:09Z"
+ content="""
+I'm facing the same situation as the other commenters.
+
+    git-annex version: 5.20131130-gc25be33
+    [...]
+    (merging gitlab/synced/git-annex into git-annex...)
+    (Recording state in git...)
+    fatal: Cannot force update the current branch.
+    git-annex: failed to update refs/heads/master
+
+Seems to be a problem with the command `git branch -f master`
+"""]]
