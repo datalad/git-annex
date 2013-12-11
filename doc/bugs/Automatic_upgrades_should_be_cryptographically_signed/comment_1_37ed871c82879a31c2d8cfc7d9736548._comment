@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-11T06:20:57Z"
+ content="""
+The links to the builds use https. The automatic upgrades use https (and wget or curl, which will reject an invalid SSL certificate).
+
+So, it is cryptographically signed. Of course SSL certificates are only as secure as the CAs. But using a gpg key that most users have no particular reason to trust would not add a lot of security.
+"""]]
