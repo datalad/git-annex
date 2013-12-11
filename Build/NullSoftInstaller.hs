@@ -162,4 +162,5 @@ cygwinDlls =
 	, "cyggpg-error-0.dll"
 	, "cygp11-kit-0.dll"
 	, "cygtasn1-3.dll"
+	, "cygffi-6.dll"
 	]
