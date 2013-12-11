@@ -17,6 +17,10 @@ withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
 }
 
+
+withcyg which ssh || true
+withcyg ls /usr/bin/
+
 # This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
 
