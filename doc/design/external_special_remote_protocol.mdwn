@@ -21,6 +21,8 @@ The protocol is line based. Messages are sent in either direction, from
 git-annex to the program, and from the program to git-annex. No immediate
 reply is made to any message, instead a later message can be sent to reply.
 
+## example
+
 For example, git-annex might request that a key be sent to the
 remote (Key will be replaced with the key, and File with a file that has
 the content to send):
@@ -36,6 +38,7 @@ is going on. A common message the program would send is to tell the
 progress of the upload (in bytes):
 
 	PROGRESS STORE Key 10240
+	PROGRESS STORE Key 20480
 
 ## git-annex messages
 
@@ -55,7 +58,9 @@ These are the messages git-annex may send to the special remote program.
   Requests the transfer of a key. For Send, the File is the file to upload;
   for Receive the File is where to store the download. Note that the File
   should not influence the filename used on the remote. The filename used
-  should be derived from the Key.
+  should be derived from the Key.  
+  Multiple transfers might be requested by git-annex, but it's fine for the 
+  program to serialize them and only do one at a time.
 * `HAS Key`  
   Requests the remote check if a key is present in it.
 * `REMOVE Key`  
@@ -64,7 +69,8 @@ These are the messages git-annex may send to the special remote program.
 
 ## special remote messages
 
-These are the messages the special remote program can send.
+These are the messages the special remote program can send back to
+git-annex.
 
 * `VERSION Int`  
   Supported protocol version. Current version is 0. Must be sent first
