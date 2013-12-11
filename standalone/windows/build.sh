@@ -16,10 +16,9 @@ PATH="$HP/bin:$HP/lib/extralibs/bin:/c/Program Files (x86)/NSIS:/c/msysgit/cmd:/
 withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
 }
-
-
-withcyg which ssh || true
-withcyg ls /usr/bin/
+withcygpreferred () {
+	PATH="/c/cygwin/bin:$PATH" "$@"
+}
 
 # This tells git-annex where to upgrade itself from.
 UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-annex-installer.exe
@@ -59,7 +58,9 @@ fi
 # Build the installer
 cabal install nsis
 ghc --make Build/NullSoftInstaller.hs
-withcyg Build/NullSoftInstaller.exe
+# Want to include cygwin programs in bundle, not others, since
+# it includes the cygwin libs that go with them.
+withcygpreferred Build/NullSoftInstaller.exe
 
 rm -f last-incremental-failed
 
