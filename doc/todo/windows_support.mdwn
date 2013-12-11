@@ -17,9 +17,22 @@ now! --[[Joey]]
   may be unsafe.
 * `git annex assistant` has not been tested, is probably quite incomplete
   and/or buggy.
-* No XMPP support (needs a lot of C libraries which are available in
-  cygwin, but pkg-config does not list them once installed).
 * Doesn't daemonize. Maybe use
   <http://hackage.haskell.org/package/Win32-services>
   or perhaps easier,
   <http://hackage.haskell.org/package/Win32-services-wrapper>
+* XMPP library not yet built.
+  
+  This should work to install the deps, using libs from cygwin
+
+	cabal install libxml-sax --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\libxml2
+	cabal install gnuidn --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\
+	cabal install gnutls --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\
+
+  While the 1st line works, the rest fail oddly. Looks like lack of
+  quoting when cabal runs c2hs and gcc, as "Haskell Platform" is
+  taken as 2 filenames. Needs investigation why this happens here
+  and not other times..
+
+  Also needs gsasl, which is not in cygwin. 
+  See <http://josefsson.org/gsasl4win/README.html>
