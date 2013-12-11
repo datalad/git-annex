@@ -1,0 +1,170 @@
+See [[todo/support_for_writing_external_special_remotes]] for motivation.
+
+This is a design for a protocol to be used to communicate between git-annex
+and a program implementing an external special remote.
+
+The program has a name like `git-annex-remote-$bar`. When
+`git annex initremote foo type=$bar` is run, git-annex finds the
+appropriate program in PATH.
+
+The program is started by git-annex when it needs to access the special
+remote, and may be left running for a long period of time. This allows
+it to perform expensive setup tasks, etc. Note that git-annex may choose to
+start multiple instances of the program (eg, when multiple git-annex
+commands are run concurrently in a repository).
+
+Communication is via the programs stdin and stdout. Therefore, the program
+must avoid doing any prompting, or outputting anything like eg, progress to
+stdout. (Such stuff can be sent to stderr instead.)
+
+The protocol is line based. Messages are sent in either direction, from
+git-annex to the program, and from the program to git-annex. No immediate
+reply is made to any message, instead a later message can be sent to reply.
+
+For example, git-annex might request that a key be sent to the
+remote (Key will be replaced with the key, and File with a file that has
+the content to send):
+
+	TRANSFER STORE Key File
+
+Once the file has been sent, the program can reply with the result:
+
+	TRANSFER-SUCCESS STORE Key
+
+Any number of other messages can be sent back and forth while that upload
+is going on. A common message the program would send is to tell the
+progress of the upload (in bytes):
+
+	PROGRESS STORE Key 10240
+
+## git-annex messages
+
+These are the messages git-annex may send to the special remote program.
+
+* `CONFIGURE KEY=VALUE ...`  
+  Tells the remote its configuration. Any arbitrary KEY(s) can be passed.
+  Only run once, at startup.
+* `INITREMOTE`  
+  Request that the remote be initialized. CONFIGURE will be passed first.
+  Note that this may be run repeatedly, as a remote is initialized in
+  different repositories, or as the configuration of a remote is changed.
+* `GETCOST`  
+  Requests the remote return a use cost. Higher costs are more expensive.
+  (See Config/Cost.hs for some standard costs.)
+* `TRANSFER STORE RETRIEVE Key File`  
+  Requests the transfer of a key. For Send, the File is the file to upload;
+  for Receive the File is where to store the download. Note that the File
+  should not influence the filename used on the remote. The filename used
+  should be derived from the Key.
+* `HAS Key`  
+  Requests the remote check if a key is present in it.
+* `REMOVE Key`  
+  Requests the remote remove a key's contents.
+  
+
+## special remote messages
+
+These are the messages the special remote program can send.
+
+* `VERSION Int`  
+  Supported protocol version. Current version is 0. Must be sent first
+  thing at starup.
+* `TRANSFER-SUCCESS STORE|RETRIEVE Key`  
+  Indicates the transfer completed successfully.
+* `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
+  Indicates the transfer failed.
+* `PROGRESS STORE|RETRIEVE Key Int`  
+  Indicates the current progress of the transfer. May be repeated any
+  number of times during the transfer process. This is highly recommended
+  for STORE. (It is not necessary for RETRIEVE.)
+* `HAS-SUCCESS Key`  
+  Indicates that a key has been positively verified to be present in the
+  remote.
+* `HAS-FAILURE Key`  
+  Indicates that a key has been positively verified to not be present in the
+  remote.
+* `HAS-UNKNOWN Key ErrorMsg`  
+  Indicates that it is not currently possible to verify if the key is
+  present in the remote. (Perhaps the remote cannot be contacted.)
+* `REMOVE-SUCCESS Key`  
+  Indicates the key has been removed from the remote. May be returned if
+  the remote didn't have the key at the point removal was requested.
+* `REMOVE-FAILURE Key`  
+  Indicates that the key was unable to be removed from the remote.
+* `COST Int`  
+  Indicates the cost of the remote.
+* `COST-UNKNOWN`  
+  Indicates the remote has no opinion of its cost.
+* `CONFIGURE-SUCCESS`  
+  Indicates the CONFIGURE provided an acceptable configuration.
+* `CONFIGURE-FAILURE ErrorMsg`  
+  Indicates that CONFIGURE provided a bad configuration.
+* `INITREMOTE-SUCCESS KEY=VALUE ...`  
+  Indicates the INITREMOTE succeeded and the remote is ready to use.
+  The keys and values can optionally be returned. They will be stored
+  by git-annex, and sent back the next time it calls CONFIGURE.
+* `INITREMOTE-FAILURE ErrorMsg`  
+  Indicates that INITREMOTE failed.
+
+## Simple shell example
+
+[[!format sh """
+#!/bin/sh
+set -e
+
+send () {
+	echo "$@"
+}
+
+send VERSION 0
+
+while read line; do
+	set -- $line
+	case "$1" in
+		CONFIGURE)
+			send CONFIGURE-SCCESS
+		;;
+		INITREMOTE)
+			send INITREMOTE-SUCCESS
+		;;
+		GETCOST)
+			send COST-UNKNOWN
+		;;
+		TRANSFER)
+			key="$3"
+			file="$4"
+			case "$2" in
+				STORE)
+					# XXX upload file here
+					# XXX when possible, send PROGRESS
+					send TRANSFER-SUCCESS STORE "$key"
+				;;
+				RETRIEVE)
+					# XXX download file here
+					send TRANSFER-SUCCESS RETRIEVE "$key"
+				;;
+				
+			esac
+		;;
+		HAS)
+			key="$2"
+			send HAS-UNKNOWN "$key" "not implemented"
+		;;
+		REMOVE)
+			key="$2"
+			# XXX remove key here
+			send REMOVE-SUCCESS "$key"
+		;;
+	esac	
+done
+"""]]
+
+## TODO
+
+* Communicate when the network connection may have changed, so long-running
+  remotes can reconnect.
+* Provide a way for remotes to set/get the content of a per-key
+  file in the git-annex branch. Needed for eg, storing urls, or access keys
+  used to retrieve a given key.
+* Support for splitting files into chunks.
+* git-annex hash directory lookup for a key?
