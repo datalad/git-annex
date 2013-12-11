@@ -16,6 +16,9 @@ PATH="$HP/bin:$HP/lib/extralibs/bin:$PATH"
 withcyg () {
 	PATH="$PATH:/c/cygwin/bin" "$@"
 }
+withcygpreferred () {
+	PATH="/c/cygwin/bin:$PATH" "$@"
+}
 
 # Install haskell dependencies.
 # cabal install is not run in cygwin, because we don't want configure scripts
@@ -35,4 +38,6 @@ fi
 cabal install nsis
 ghc --make Build/NullSoftInstaller.hs
 PATH="$PATH:/cygdrive/c/Program Files/NSIS"
-withcyg Build/NullSoftInstaller.exe
+# Want to include cygwin programs in bundle, not others, since
+# it includes the cygwin libs that go with them.
+withcygpreferred Build/NullSoftInstaller.exe
