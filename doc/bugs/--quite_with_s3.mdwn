@@ -21,3 +21,5 @@ No information whatsoever is printed during upload when ran without `--quite` it
 
 # End of transcript or log.
 """]]
+
+[[!meta title="copy --fast --to remote should be quiet when nothing to do"]]
