@@ -130,6 +130,8 @@ cygwinPrograms :: [FilePath]
 cygwinPrograms = map (\p -> p ++ ".exe") bundledPrograms
 
 -- These are the dlls needed by Cygwin's rsync, ssh, etc.
+-- TODO: Use ldd (available in cygwin) to automatically find all
+-- needed libs.
 cygwinDlls :: [FilePath]
 cygwinDlls =
 	[ "cygwin1.dll"
@@ -158,4 +160,6 @@ cygwinDlls =
 	, "libssl.dll"
 	, "cyggcrypt-11.dll"
 	, "cyggpg-error-0.dll"
+	, "cygp11-kit-0.dll"
+	, "cygtasn1-3.dll"
 	]
