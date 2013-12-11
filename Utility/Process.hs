@@ -26,12 +26,12 @@ module Utility.Process (
 	withHandle,
 	withBothHandles,
 	withQuietOutput,
-	withNullHandle,
 	createProcess,
 	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
 	stderrHandle,
+	devNull,
 ) where
 
 import qualified System.Process
@@ -280,20 +280,18 @@ withQuietOutput
 	:: CreateProcessRunner
 	-> CreateProcess
 	-> IO ()
-withQuietOutput creator p = withNullHandle $ \nullh -> do
+withQuietOutput creator p = withFile devNull WriteMode $ \nullh -> do
 	let p' = p
 		{ std_out = UseHandle nullh
 		, std_err = UseHandle nullh
 		}
 	creator p' $ const $ return ()
 
-withNullHandle :: (Handle -> IO a) -> IO a
-withNullHandle = withFile devnull WriteMode
-  where
+devNull :: FilePath
 #ifndef mingw32_HOST_OS
-	devnull = "/dev/null"
+devNull = "/dev/null"
 #else
-	devnull = "NUL"
+devNull = "NUL"
 #endif
 
 {- Extract a desired handle from createProcess's tuple.

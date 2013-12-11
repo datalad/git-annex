@@ -17,10 +17,6 @@ now! --[[Joey]]
   may be unsafe.
 * `git annex assistant` has not been tested, is probably quite incomplete
   and/or buggy.
-* Assistant is known to not transfer any files.  
-  (transferrer doesn't built yet)  
-  Need a createPipe for windows. See the mkAnonPipe in
-  System.Process source. (cbits/runProcess.c)
 * No XMPP support (needs a lot of C libraries which are available in
   cygwin, but pkg-config does not list them once installed).
 * Doesn't daemonize. Maybe use

@@ -38,6 +38,8 @@ import qualified Control.Concurrent.MSemN as MSemN
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessGroupIDOf)
 import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
+#else
+import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT, cTRL_BREAK_EVENT)
 #endif
 
 type TransferGenerator = Assistant (Maybe (Transfer, TransferInfo, Transferrer -> Assistant ()))
@@ -252,18 +254,21 @@ cancelTransfer pause t = do
 	signalthread tid
 		| pause = throwTo tid PauseTransfer
 		| otherwise = killThread tid
+	{- In order to stop helper processes like rsync,
+	 - kill the whole process group of the process
+	 - running the transfer. -}
 	killproc pid = void $ tryIO $ do
 #ifndef mingw32_HOST_OS
-		{- In order to stop helper processes like rsync,
-		 - kill the whole process group of the process
-		 - running the transfer. -}
 		g <- getProcessGroupIDOf pid
 		void $ tryIO $ signalProcessGroup sigTERM g
-		threadDelay 50000 -- 0.05 second grace period
+		graceperiod
 		void $ tryIO $ signalProcessGroup sigKILL g
 #else
-		error "TODO: cancelTransfer not implemented on Windows"
+		void $ tryIO $ generateConsoleCtrlEvent cTRL_C_EVENT pid
+		graceperiod
+		void $ tryIO $ generateConsoleCtrlEvent cTRL_BREAK_EVENT pid
 #endif
+	graceperiod = threadDelay 50000 -- 0.05 second
 
 {- Start or resume a transfer. -}
 startTransfer :: Transfer -> Assistant ()

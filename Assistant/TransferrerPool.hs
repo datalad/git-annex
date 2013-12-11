@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Assistant.TransferrerPool where
 
 import Assistant.Common
@@ -14,12 +12,10 @@ import Assistant.Types.TransferrerPool
 import Logs.Transfer
 import Utility.Batch
 
-#ifndef mingw32_HOST_OS
 import qualified Command.TransferKeys as T
-#endif
 
 import Control.Concurrent.STM
-import System.Process (create_group)
+import System.Process (create_group, std_in, std_out)
 import Control.Exception (throw)
 import Control.Concurrent
 
@@ -44,46 +40,30 @@ withTransferrer program batchmaker pool a = do
  - finish. -}
 performTransfer :: Transferrer -> Transfer -> AssociatedFile -> IO Bool
 performTransfer transferrer t f = catchBoolIO $ do
-#ifndef mingw32_HOST_OS
 	T.sendRequest t f (transferrerWrite transferrer)
 	T.readResponse (transferrerRead transferrer)
-#else
-	error "TODO performTransfer not implemented on Windows"
-#endif
 
-{- Starts a new git-annex transferkeys process, setting up a pipe
+{- Starts a new git-annex transferkeys process, setting up handles
  - that will be used to communicate with it. -}
 mkTransferrer :: FilePath -> BatchCommandMaker -> IO Transferrer
 mkTransferrer program batchmaker = do
-#ifndef mingw32_HOST_OS
-	(myread, twrite) <- createPipe
-	(tread, mywrite) <- createPipe
-	mapM_ (\fd -> setFdOption fd CloseOnExec True) [myread, mywrite]
-	let params =
-		[ Param "transferkeys"
-		, Param "--readfd", Param $ show tread
-		, Param "--writefd", Param $ show twrite
-		]
 	{- It runs as a batch job. -}
-	let (program', params') = batchmaker (program, params)
+	let (program', params') = batchmaker (program, [Param "transferkeys"])
 	{- It's put into its own group so that the whole group can be
 	 - killed to stop a transfer. -}
-	(_, _, _, pid) <- createProcess (proc program' $ toCommand params')
-		{ create_group = True }
-	closeFd twrite
-	closeFd tread
-	myreadh <- fdToHandle myread
-	mywriteh <- fdToHandle mywrite
-	fileEncoding myreadh
-	fileEncoding mywriteh
+	(Just writeh, Just readh, _, pid) <- createProcess
+		(proc program' $ toCommand params')
+		{ create_group = True
+		, std_in = CreatePipe
+		, std_out = CreatePipe
+		}
+	fileEncoding readh
+	fileEncoding writeh
 	return $ Transferrer
-		{ transferrerRead = myreadh
-		, transferrerWrite = mywriteh
+		{ transferrerRead = readh
+		, transferrerWrite = writeh
 		, transferrerHandle = pid
 		}
-#else
-	error "TODO mkTransferrer not implemented on Windows"
-#endif
 
 {- Checks if a Transferrer is still running. If not, makes a new one. -}
 checkTransferrer :: FilePath -> BatchCommandMaker -> Transferrer -> IO Transferrer

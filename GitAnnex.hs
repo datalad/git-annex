@@ -1,6 +1,6 @@
 {- git-annex main program
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,9 +23,7 @@ import qualified Command.Get
 import qualified Command.FromKey
 import qualified Command.DropKey
 import qualified Command.TransferKey
-#ifndef mingw32_HOST_OS
 import qualified Command.TransferKeys
-#endif
 import qualified Command.ReKey
 import qualified Command.Reinject
 import qualified Command.Fix
@@ -129,9 +127,7 @@ cmds = concat
 	, Command.FromKey.def
 	, Command.DropKey.def
 	, Command.TransferKey.def
-#ifndef mingw32_HOST_OS
 	, Command.TransferKeys.def
-#endif
 	, Command.ReKey.def
 	, Command.Fix.def
 	, Command.Fsck.def
