@@ -112,8 +112,9 @@ git-annex.
   Indicates that CONFIGURE provided a bad configuration.
 * `INITREMOTE-SUCCESS KEY=VALUE ...`  
   Indicates the INITREMOTE succeeded and the remote is ready to use.
-  The keys and values can optionally be returned. They will be stored
-  by git-annex, and sent back the next time it calls CONFIGURE.
+  The keys and values can optionally be returned. They will be added
+  to the existing configuration of the remote (and may change existing
+  values in it), and sent back the next time it calls CONFIGURE.
 * `INITREMOTE-FAILURE ErrorMsg`  
   Indicates that INITREMOTE failed.
 
