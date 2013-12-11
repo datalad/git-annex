@@ -265,7 +265,7 @@ cancelTransfer pause t = do
 		graceperiod
 		signal sigKILL
 #else
-		let singnal sig = void $ tryIO $ generateConsoleCtrlEvent sig pid
+		let signal sig = void $ tryIO $ generateConsoleCtrlEvent sig pid
 		signal cTRL_C_EVENT
 		graceperiod
 		signal cTRL_BREAK_EVENT
