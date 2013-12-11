@@ -69,11 +69,11 @@ These are the messages the special remote program can send.
 * `VERSION Int`  
   Supported protocol version. Current version is 0. Must be sent first
   thing at starup.
-* `TRANSFER-SUCCESS STORE|RETRIEVE Key`  
+* `TRANSFER-SUCCESS STORE\|RETRIEVE Key`  
   Indicates the transfer completed successfully.
-* `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
+* `TRANSFER-FAILURE STORE\|RETRIEVE Key ErrorMsg`  
   Indicates the transfer failed.
-* `PROGRESS STORE|RETRIEVE Key Int`  
+* `PROGRESS STORE\|RETRIEVE Key Int`  
   Indicates the current progress of the transfer. May be repeated any
   number of times during the transfer process. This is highly recommended
   for STORE. (It is not necessary for RETRIEVE.)
