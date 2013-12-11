@@ -359,7 +359,7 @@ readTransferInfo :: Maybe PID -> String -> Maybe TransferInfo
 readTransferInfo mpid s = TransferInfo
 	<$> time
 #ifdef mingw32_HOST_OS
-	<*> pure $ if isJust mpid then mpid else mpid'
+	<*> pure (if isJust mpid then mpid else mpid')
 #else
 	<*> pure mpid
 #endif
