@@ -75,6 +75,11 @@ git-annex.
 * `VERSION Int`  
   Supported protocol version. Current version is 0. Must be sent first
   thing at starup.
+* `ERROR ErrorMsg`
+  Generic error. Can be sent at any time if things get messed up.
+  It would be a good idea to send this if git-annex sends a command
+  you do not support. The program should exit after sending this, as
+  git-annex will not talk to it any further.
 * `TRANSFER-SUCCESS STORE|RETRIEVE Key`  
   Indicates the transfer completed successfully.
 * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
@@ -160,6 +165,10 @@ while read line; do
 			key="$2"
 			# XXX remove key here
 			send REMOVE-SUCCESS "$key"
+		;;
+		*)
+			send ERROR "unknown command received: $line"
+			exit 1
 		;;
 	esac	
 done
