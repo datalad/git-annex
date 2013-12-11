@@ -260,13 +260,15 @@ cancelTransfer pause t = do
 	killproc pid = void $ tryIO $ do
 #ifndef mingw32_HOST_OS
 		g <- getProcessGroupIDOf pid
-		void $ tryIO $ signalProcessGroup sigTERM g
+		let signal sig = void $ tryIO $ signalProcessGroup sig g
+		signal sigTERM
 		graceperiod
-		void $ tryIO $ signalProcessGroup sigKILL g
+		signal sigKILL
 #else
-		void $ tryIO $ generateConsoleCtrlEvent cTRL_C_EVENT pid
+		let singnal sig = void $ tryIO $ generateConsoleCtrlEvent sig pid
+		signal cTRL_C_EVENT
 		graceperiod
-		void $ tryIO $ generateConsoleCtrlEvent cTRL_BREAK_EVENT pid
+		signal cTRL_BREAK_EVENT
 #endif
 	graceperiod = threadDelay 50000 -- 0.05 second
 

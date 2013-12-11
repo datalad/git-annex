@@ -18,12 +18,22 @@ import Utility.Metered
 import Utility.Percentage
 import Utility.QuickCheck
 
-import System.Posix.Types
+#ifndef mingw32_HOST_OS
+import System.Posix.Types (ProcessID)
+#else
+import System.Win32.Process (ProcessId)
+#endif
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import Control.Concurrent
+
+#ifndef mingw32_HOST_OS
+type PID = ProcessID
+#else
+type PID = ProcessId
+#endif
 
 {- Enough information to uniquely identify a transfer, used as the filename
  - of the transfer information file. -}
@@ -42,7 +52,7 @@ data Transfer = Transfer
  -}
 data TransferInfo = TransferInfo
 	{ startedTime :: Maybe POSIXTime
-	, transferPid :: Maybe ProcessID
+	, transferPid :: Maybe PID
 	, transferTid :: Maybe ThreadId
 	, transferRemote :: Maybe Remote
 	, bytesComplete :: Maybe Integer
@@ -328,13 +338,13 @@ writeTransferInfo info = unlines
 	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
 	]
 
-readTransferInfoFile :: Maybe ProcessID -> FilePath -> IO (Maybe TransferInfo)
+readTransferInfoFile :: Maybe PID -> FilePath -> IO (Maybe TransferInfo)
 readTransferInfoFile mpid tfile = catchDefaultIO Nothing $ do
 	h <- openFile tfile ReadMode
 	fileEncoding h
 	hClose h `after` (readTransferInfo mpid <$> hGetContentsStrict h)
 
-readTransferInfo :: Maybe ProcessID -> String -> Maybe TransferInfo
+readTransferInfo :: Maybe PID -> String -> Maybe TransferInfo
 readTransferInfo mpid s = TransferInfo
 	<$> time
 	<*> pure mpid
