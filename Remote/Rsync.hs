@@ -23,7 +23,7 @@ import qualified Data.Map as M
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
 #else
-import System.Random (getStdRandom, random)
+import System.Win32.Process.Current (getCurrentProcessId)
 #endif
 
 import Common.Annex
@@ -243,7 +243,7 @@ withRsyncScratchDir a = do
 #ifndef mingw32_HOST_OS
 	v <- liftIO getProcessID
 #else
-	v <- liftIO (getStdRandom random :: IO Int)
+	v <- liftIO getCurrentProcessId
 #endif
 	t <- fromRepo gitAnnexTmpDir
 	createAnnexDirectory t

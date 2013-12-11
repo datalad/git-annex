@@ -26,6 +26,9 @@ import Control.Concurrent
 import System.Process (cwd)
 #ifndef mingw32_HOST_OS
 import System.Posix (getProcessID, signalProcess, sigTERM)
+#else
+import System.Win32.Process.Current (getCurrentProcessId)
+import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT)
 #endif
 
 {- Before the assistant can be restarted, have to remove our 
@@ -45,14 +48,14 @@ prepRestart = do
  - Wait for browser to update before terminating this process. -}
 postRestart :: URLString -> Assistant ()
 postRestart url = do
-#ifndef mingw32_HOST_OS
 	modifyDaemonStatus_ $ \status -> status { globalRedirUrl = Just url }
 	liftIO . sendNotification . globalRedirNotifier =<< getDaemonStatus
 	void $ liftIO $ forkIO $ do
 		threadDelaySeconds (Seconds 120)
+#ifndef mingw32_HOST_OS
 		signalProcess sigTERM =<< getProcessID
 #else
-	error "TODO windows postRestart"
+		generateConsoleCtrlEvent cTRL_C_EVENT =<< getCurrentProcessId
 #endif
 
 runRestart :: Assistant URLString

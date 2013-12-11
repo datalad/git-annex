@@ -38,7 +38,7 @@ import GitAnnex.Options hiding (fromOption)
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
 #else
-import System.Random (getStdRandom, random)
+import System.Win32.Process.Current (getCurrentProcessId)
 #endif
 import Data.Time.Clock.POSIX
 import Data.Time
@@ -154,7 +154,7 @@ performRemote key file backend numcopies remote =
 #ifndef mingw32_HOST_OS
 		v <- liftIO getProcessID
 #else
-		v <- liftIO (getStdRandom random :: IO Int)
+		v <- liftIO getCurrentProcessId
 #endif
 		t <- fromRepo gitAnnexTmpDir
 		createAnnexDirectory t

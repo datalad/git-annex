@@ -18,11 +18,14 @@ import Utility.LogFile
 import Utility.NotificationBroadcaster
 
 import Control.Concurrent
-#ifndef mingw32_HOST_OS
-import System.Posix (getProcessID, signalProcess, sigTERM)
-#endif
 import qualified Data.Map as M
 import qualified Data.Text as T
+#ifndef mingw32_HOST_OS
+import System.Posix (getProcessID, signalProcess, sigTERM)
+#else
+import System.Win32.Process.Current (getCurrentProcessId)
+import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT)
+#endif
 
 getShutdownR :: Handler Html
 getShutdownR = page "Shutdown" Nothing $
@@ -46,14 +49,14 @@ getShutdownConfirmedR = do
 	liftAssistant $ do
 		modifyDaemonStatus_ $ \status -> status { globalRedirUrl = Just url }
 		liftIO . sendNotification . globalRedirNotifier =<< getDaemonStatus
-#ifndef mingw32_HOST_OS
 	{- Wait 2 seconds before shutting down, to give the web
 	 - page time to load in the browser. -}
 	void $ liftIO $ forkIO $ do
 		threadDelay 2000000
+#ifndef mingw32_HOST_OS
 		signalProcess sigTERM =<< getProcessID
 #else
-	void $ liftIO exitSuccess
+		generateConsoleCtrlEvent cTRL_C_EVENT =<< getCurrentProcessId
 #endif
 	redirect NotRunningR
 
