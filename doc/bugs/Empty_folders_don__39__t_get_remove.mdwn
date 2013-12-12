@@ -1,2 +1,4 @@
 ### Please describe the problem.
 When you rename, move or delete a folder (with files in it) the old folder doesn't get deleted in the other clients
+
+[[!tag moreinfo]]
