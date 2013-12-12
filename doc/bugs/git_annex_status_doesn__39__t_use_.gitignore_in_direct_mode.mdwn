@@ -14,3 +14,5 @@ So I have this .gitignore file:
 and when I do *git annex add .* it works as expected: It adds only ~/web and ~/Desktop/Work... but when I do *git annex status* it shows me the entire /home... it seems that *git annex status* doesn't use .gitignore... is this a bug or an intended behavior?
 
 Thanks for your time :)
+
+> [[fixed|done]] --[[Joey]] 

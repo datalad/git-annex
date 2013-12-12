@@ -24,6 +24,7 @@ git-annex (5.20131131) UNRELEASED; urgency=low
     bad behavior in Chromium.
   * repair: Improve repair of git-annex index file.
   * repair: Remove damaged git-annex sync branches.
+  * status: Ignore new files that are gitignored.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
 
