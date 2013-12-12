@@ -162,9 +162,9 @@ mergeDirect d branch g = do
  - There are really only two types of changes: An old item can be deleted,
  - or a new item added. Two passes are made, first deleting and then
  - adding. This is to handle cases where eg, a file is deleted and a
- - directory is added. The diff-tree output may list these in the opposite
- - order, but we cannot really add the directory until the file with the
- - same name is remvoed.
+ - directory is added. (The diff-tree output may list these in the opposite
+ - order, but we cannot add the directory until the file with the
+ - same name is removed.)
  -}
 mergeDirectCleanup :: FilePath -> Git.Ref -> Git.Ref -> Annex ()
 mergeDirectCleanup d oldsha newsha = do
