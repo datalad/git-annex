@@ -1,0 +1,31 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnfC02DTOZygFDDvvg0maRciYYMhEIFgkw"
+ nickname="Utku"
+ subject="comment 4"
+ date="2013-12-12T20:58:05Z"
+ content="""
+so as I don't really know which mac has a problem, here is what I get on both computers (looks they are quite the same): 
+
+/Applications/git-annex.app/Contents/MacOS/bundle/ssh-keygen:
+	/System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 855.0.0)
+	/System/Library/Frameworks/Kerberos.framework/Versions/A/Kerberos (compatibility version 5.0.0, current version 6.0.0)
+	/System/Library/Frameworks/OpenDirectory.framework/Versions/A/OpenDirectory (compatibility version 1.0.0, current version 1.0.0)
+	/System/Library/Frameworks/Security.framework/Versions/A/Security (compatibility version 1.0.0, current version 55456.0.0)
+	@executable_path/O (compatibility version 1.0.0, current version 1.0.0)
+	@executable_path/P (compatibility version 3.0.0, current version 3.0.0)
+	@executable_path/B (compatibility version 1.0.0, current version 1.2.5)
+	@executable_path/L (compatibility version 1.0.0, current version 1.0.0)
+	/usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+
+
+/Applications/git-annex.app/Contents/MacOS/bundle/ssh-keygen:
+       /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation (compatibility version 150.0.0, current version 855.0.0)
+       /System/Library/Frameworks/Kerberos.framework/Versions/A/Kerberos (compatibility version 5.0.0, current version 6.0.0)
+       /System/Library/Frameworks/OpenDirectory.framework/Versions/A/OpenDirectory (compatibility version 1.0.0, current version 1.0.0)
+       /System/Library/Frameworks/Security.framework/Versions/A/Security (compatibility version 1.0.0, current version 55456.0.0)
+       @executable_path/O (compatibility version 1.0.0, current version 1.0.0)
+       @executable_path/P (compatibility version 3.0.0, current version 3.0.0)
+       @executable_path/B (compatibility version 1.0.0, current version 1.2.5)
+       @executable_path/L (compatibility version 1.0.0, current version 1.0.0)
+       /usr/lib/libSystem.B.dylib (compatibility version 1.0.0, current version 1197.1.1)
+"""]]
