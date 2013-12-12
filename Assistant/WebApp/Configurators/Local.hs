@@ -213,7 +213,7 @@ getCombineRepositoryR newrepopath newrepouuid = do
 selectDriveForm :: [RemovableDrive] -> Hamlet.Html -> MkMForm RemovableDrive
 selectDriveForm drives = renderBootstrap $ RemovableDrive
 	<$> pure Nothing
-	<*> areq (selectFieldList pairs) "Select drive:" Nothing
+	<*> areq (selectFieldList pairs `withNote` onlywritable) "Select drive:" Nothing
 	<*> areq textField "Use this directory on the drive:"
 		(Just $ T.pack gitAnnexAssistantDefaultDir)
   where
@@ -227,6 +227,7 @@ selectDriveForm drives = renderBootstrap $ RemovableDrive
 				, T.concat ["(", T.pack sz]
 				, "free)"
 				]
+	onlywritable = [whamlet|This list only includes drives you can write to.|]
 
 removableDriveRepository :: RemovableDrive -> FilePath
 removableDriveRepository drive =
