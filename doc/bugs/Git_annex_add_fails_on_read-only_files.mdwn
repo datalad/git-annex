@@ -35,3 +35,15 @@ Note that (as stated in the comments) this might not be a bug. The problem might
     upgrade supported from repository versions: 0 1 2
 
     git version 1.8.4.3
+
+> Based on the new example, I don't consider this to be a bug.
+> I don't think that `git annex import` should disregard directory
+> permissions when importing files from them.
+> 
+> One very good reason not to
+> eg, chmod the directory itself is that if it did, running `git annex
+> import` on a git-annex repository would defeat git-annex's own use of
+> directory permissions to prevent deletion of the files in that
+> repository!
+> 
+> So, [[done]] --[[Joey]]
