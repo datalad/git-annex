@@ -25,6 +25,9 @@ git-annex (5.20131131) UNRELEASED; urgency=low
   * repair: Improve repair of git-annex index file.
   * repair: Remove damaged git-annex sync branches.
   * status: Ignore new files that are gitignored.
+  * Fix direct mode's handling when modifications to non-annexed files
+    are pulled from a remote. A bug prevented the files from being updated
+    in the work tree, and this caused the modification to be reverted.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
 

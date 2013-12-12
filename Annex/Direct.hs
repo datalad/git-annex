@@ -181,14 +181,14 @@ mergeDirectCleanup d oldsha newsha = do
 	go getsha getmode a araw (f, item)
 		| getsha item == nullSha = noop
 		| otherwise = void $
-			tryAnnex . maybe (araw f) (\k -> void $ a k f)
+			tryAnnex . maybe (araw f item) (\k -> void $ a k f)
 				=<< catKey (getsha item) (getmode item)
 
 	moveout k f = removeDirect k f
 
 	{- Files deleted by the merge are removed from the work tree.
 	 - Empty work tree directories are removed, per git behavior. -}
-	moveout_raw f = liftIO $ do
+	moveout_raw f _item = liftIO $ do
 		nukeFile f
 		void $ tryIO $ removeDirectory $ parentDir f
 	
@@ -202,9 +202,9 @@ mergeDirectCleanup d oldsha newsha = do
 	
 	{- Any new, modified, or renamed files were written to the temp
 	 - directory by the merge, and are moved to the real work tree. -}
-	movein_raw f = liftIO $ do
+	movein_raw f item = liftIO $ do
 		createDirectoryIfMissing True $ parentDir f
-		void $ tryIO $ rename (d </> f) f
+		void $ tryIO $ rename (d </> getTopFilePath (DiffTree.file item)) f
 
 {- If possible, converts a symlink in the working tree into a direct
  - mode file. If the content is not available, leaves the symlink

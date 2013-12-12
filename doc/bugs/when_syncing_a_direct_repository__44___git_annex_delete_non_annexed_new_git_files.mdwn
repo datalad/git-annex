@@ -51,3 +51,5 @@ git annex sync
 ls
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]
