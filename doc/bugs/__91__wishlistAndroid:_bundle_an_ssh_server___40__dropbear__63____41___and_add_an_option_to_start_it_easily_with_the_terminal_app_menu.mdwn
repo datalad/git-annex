@@ -19,3 +19,5 @@ Android from Nov 18
 
 # End of transcript or log.
 """]]
+
+> Not a direction I want to go in with the Android app. [[done]] --[[Joey]] 
