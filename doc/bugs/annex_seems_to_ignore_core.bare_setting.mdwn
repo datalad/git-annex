@@ -39,3 +39,7 @@ $> git annex status -d
 ...
 git-annex: git [Param "checkout",Param "-q",Param "-B",Param "annex/direct/master"] failed
 """]]
+
+> If I understand the followup comment corretcly, it confirms my hypothesis
+> that this is about the bug that has since been fixed. So, [[done]].
+> --[[Joey]] 
