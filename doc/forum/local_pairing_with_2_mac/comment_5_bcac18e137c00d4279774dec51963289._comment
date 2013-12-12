@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 5"
+ date="2013-12-12T21:40:16Z"
+ content="""
+Well, I was wrong, we don't know only one of the 2 has the problem. The other one will probably not have run ssh-keygen yet.
+
+Can you run `/Applications/git-annex.app/Contents/MacOS/bundle/ssh-keygen --help` on both of them and see if it manages to print its help, or fails with an error?
+"""]]
