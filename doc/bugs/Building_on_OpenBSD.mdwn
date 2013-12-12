@@ -36,3 +36,5 @@ Assistant/Pairing/Network.hs:108:32:
 Assistant/Pairing/Network.hs:109:47:
     Not in scope: data constructor `IPv6'
 """]]
+
+> [[done]]; see comment --[[Joey]]
