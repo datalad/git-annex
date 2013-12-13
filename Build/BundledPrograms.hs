@@ -29,8 +29,12 @@ bundledPrograms = catMaybes
 	, Just "xargs"
 #endif
 	, Just "rsync"
+#ifndef darwin_HOST_OS
+	-- OS X has ssh installed by default.
+	-- (Linux probably, but not guaranteed.)
 	, Just "ssh"
 	, Just "ssh-keygen"
+#endif
 #ifndef mingw32_HOST_OS
 	, Just "sh"
 #endif

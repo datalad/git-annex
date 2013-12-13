@@ -1,4 +1,4 @@
-git-annex (5.20131131) UNRELEASED; urgency=low
+git-annex (5.20131213) unstable; urgency=low
 
   * Avoid using git commit in direct mode, since in some situations
     it will read the full contents of files in the tree.
@@ -28,8 +28,10 @@ git-annex (5.20131131) UNRELEASED; urgency=low
   * Fix direct mode's handling when modifications to non-annexed files
     are pulled from a remote. A bug prevented the files from being updated
     in the work tree, and this caused the modification to be reverted.
+  * OSX: Remove ssh and ssh-keygen from dmg as they're included in OSX by
+    default.
 
- -- Joey Hess <joeyh@debian.org>  Sun, 01 Dec 2013 13:57:58 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 13 Dec 2013 14:20:32 -0400
 
 git-annex (5.20131130) unstable; urgency=low
 
