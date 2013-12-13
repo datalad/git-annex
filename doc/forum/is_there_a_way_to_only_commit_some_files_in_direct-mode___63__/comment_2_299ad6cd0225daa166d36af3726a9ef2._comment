@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="Renaud"
+ ip="182.171.224.143"
+ subject="comment 2"
+ date="2013-12-13T06:16:12Z"
+ content="""
+Thanks for the reply!
+
+I tried to commit manually but I got confused by the (recently introduced?) annex/direct/master branch and I am not sure which branch I need to commit/merge/pull/push my changes to.
+I also got blocked when pulling from origin fail due to file changes needed to be overwritten.
+I see git-annex cleverly merges those in .git/annex/merge folder so I could try doing the same but I am not too confortable doing a large part of git-annex's job...
+
+Is there a simpler way to sync with a remote repository?
+"""]]
