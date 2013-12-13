@@ -96,7 +96,7 @@ send one of the corresponding replies listed in the next section.
   should be derived from the Key.  
   Multiple transfers might be requested by git-annex, but it's fine for the 
   program to serialize them and only do one at a time.
-* `HAS Key`  
+* `CHECKPRESENT Key`  
   Requests the remote check if a key is present in it.
 * `REMOVE Key`  
   Requests the remote remove a key's contents.
@@ -115,13 +115,13 @@ as it's performing the request.
   Indicates the transfer completed successfully.
 * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
   Indicates the transfer failed.
-* `HAS-SUCCESS Key`  
+* `CHECKPRESENT-SUCCESS Key`  
   Indicates that a key has been positively verified to be present in the
   remote.
-* `HAS-FAILURE Key`  
+* `CHECKPRESENT-FAILURE Key`  
   Indicates that a key has been positively verified to not be present in the
   remote.
-* `HAS-UNKNOWN Key ErrorMsg`  
+* `CHECKPRESENT-UNKNOWN Key ErrorMsg`  
   Indicates that it is not currently possible to verify if the key is
   present in the remote. (Perhaps the remote cannot be contacted.)
 * `REMOVE-SUCCESS Key`  
@@ -231,9 +231,9 @@ while read line; do
 				
 			esac
 		;;
-		HAS)
+		CHECKPRESENT)
 			key="$2"
-			echo HAS-UNKNOWN "$key" "not implemented"
+			echo CHECKPRESENT-UNKNOWN "$key" "not implemented"
 		;;
 		REMOVE)
 			key="$2"
@@ -256,5 +256,3 @@ done
   remotes can reconnect.
 * uuid discovery during initremote.
 * Support for splitting files into chunks.
-* Use same verbs as used in special remote interface (instead of different
-  verbs used in Types.Remote).
