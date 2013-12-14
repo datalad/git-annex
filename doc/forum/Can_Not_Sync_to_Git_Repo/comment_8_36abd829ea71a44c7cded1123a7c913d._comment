@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="comment 8"
+ date="2013-12-14T13:15:13Z"
+ content="""
+The master branch was checkout out (I don't know why). Checking out the mentioned branch fixed the syncing issue: `git checkout annex/direct/master`
+"""]]
