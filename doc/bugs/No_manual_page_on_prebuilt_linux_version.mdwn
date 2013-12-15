@@ -14,3 +14,5 @@
 Fedora 20
 
 `git-annex --version` doesn't work and the webapp tells me Version: 5.20131130-gc25be33
+
+> [[fixed|done]] (OSX too) --[[Joey]]
