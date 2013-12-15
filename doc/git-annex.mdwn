@@ -727,6 +727,13 @@ subdirectories).
   point to annexed content. Also handles injecting changes to unlocked
   files into the annex.
 
+* `lookupkey [file ...]`
+
+  This plumbing-level command looks up the key used for a file in the
+  index. The key is output to stdout. If there is no key (because
+  the file is not added to git, or is not a git-annex managed file),
+  nothing is output, and it exits nonzero.
+
 * `fromkey key file`
 
   This plumbing-level command can be used to manually set up a file

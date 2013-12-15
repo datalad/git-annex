@@ -1,6 +1,7 @@
 git-annex (5.20131214) UNRELEASED; urgency=low
 
   * Fix test suite to cover lock --force change.
+  * Add plumbing-level lookupkey command.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 15 Dec 2013 13:32:49 -0400
 

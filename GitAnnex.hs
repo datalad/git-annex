@@ -20,6 +20,7 @@ import qualified Command.Drop
 import qualified Command.Move
 import qualified Command.Copy
 import qualified Command.Get
+import qualified Command.LookupKey
 import qualified Command.FromKey
 import qualified Command.DropKey
 import qualified Command.TransferKey
@@ -124,6 +125,7 @@ cmds = concat
 	, Command.Schedule.def
 	, Command.Ungroup.def
 	, Command.Vicfg.def
+	, Command.LookupKey.def
 	, Command.FromKey.def
 	, Command.DropKey.def
 	, Command.TransferKey.def

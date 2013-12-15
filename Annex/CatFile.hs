@@ -119,7 +119,7 @@ catKeyChecked needhead ref@(Ref r) =
  - For command-line git-annex use, that doesn't matter. It's perfectly
  - reasonable for things staged in the index after the currently running
  - git-annex process to not be noticed by it. However, we do want to see
- - what's in the index, since it may have uncommitted changes not in HEAD>
+ - what's in the index, since it may have uncommitted changes not in HEAD
  -
  - For the assistant, this is much more of a problem, since it commits
  - files and then needs to be able to immediately look up their keys.
