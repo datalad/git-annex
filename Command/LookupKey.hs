@@ -13,7 +13,7 @@ import Annex.CatFile
 import Types.Key
 
 def :: [Command]
-def = [notBareRepo $
+def = [notBareRepo $ noCommit $ noMessages $
 	command "lookupkey" (paramRepeating paramFile) seek
 		SectionPlumbing "looks up key used for file"]
 

@@ -601,7 +601,7 @@ subdirectories).
   `--format`. The default output format is the same as `--format='${file}\\n'`
 
   These variables are available for use in formats: file, key, backend,
-  bytesize, humansize
+  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime.
 
 * `whereis [path ...]`
 
@@ -733,6 +733,23 @@ subdirectories).
   index. The key is output to stdout. If there is no key (because
   the file is not added to git, or is not a git-annex managed file),
   nothing is output, and it exits nonzero.
+
+* `examinekey [key ...]`
+
+  This plumbing-level command is given a key, and prints information
+  that can be determined purely by looking at the key.
+
+  To specify what information to print, use `--format`. Or use `--json`
+  to get all available information in JSON format.
+
+  The same variables can be used in the format string as can be used in
+  the format string of git annex find (except there is no file option
+  here).
+
+  For example, the location a key's value is stored (in indirect mode)
+  can be looked up by running:
+  
+        	git annex examinekey --format='.git/annex/objects/${hashdirmixed}${key}/${key}'
 
 * `fromkey key file`
 
