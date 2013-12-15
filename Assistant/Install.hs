@@ -11,7 +11,6 @@ module Assistant.Install where
 
 import Assistant.Common
 import Assistant.Install.AutoStart
-import Assistant.Install.Menu
 import Assistant.Ssh
 import Config.Files
 import Utility.FileMode
@@ -23,6 +22,7 @@ import Utility.Env
 import Utility.OSX
 #else
 import Utility.FreeDesktop
+import Assistant.Install.Menu
 #endif
 
 standaloneAppBase :: IO (Maybe FilePath)
