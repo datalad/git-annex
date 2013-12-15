@@ -1,0 +1,132 @@
+### Please describe the problem.
+
+Since I last tested git-annex (version 4.20130516.1) my setup seems to no longer work in current versions (5.20131130)
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+$ mkdir 1 2
+$ cd 1; git init; git-annex init; git annex direct; echo "file added to 1" > file_from_1; cd ..
+Initialized empty Git repository in /home/pedrocr/testannexbug/1/.git/
+init  ok
+(Recording state in git...)
+commit  
+# On branch master
+#
+# Initial commit
+#
+nothing to commit (create/copy files and use "git add" to track)
+ok
+direct  ok
+$ cd 2; git init; git-annex init; git annex direct; echo "file added to 2" > file_from_2; cd ..
+Initialized empty Git repository in /home/pedrocr/testannexbug/2/.git/
+init  ok
+(Recording state in git...)
+commit  
+# On branch master
+#
+# Initial commit
+#
+nothing to commit (create/copy files and use "git add" to track)
+ok
+direct  ok
+$ cd 1; git remote add 2 ssh://localhost/~pedrocr/Hacks/test-git-annex/2; git annex assistant; cd ..
+$ cd 2; git remote add 1 ssh://localhost/~pedrocr/Hacks/test-git-annex/1; git annex assistant; cd ..
+$ ls -la 1
+total 20
+drwxrwxr-x 3 pedrocr pedrocr 4096 Dec 15 11:33 .
+drwxrwxr-x 4 pedrocr pedrocr 4096 Dec 15 11:33 ..
+-rw-rw-r-- 1 pedrocr pedrocr   16 Dec 15 11:33 file_from_1
+-rw-r--r-- 1 pedrocr pedrocr   16 Dec 15 11:33 file_from_2
+drwxrwxr-x 9 pedrocr pedrocr 4096 Dec 15 11:33 .git
+$ ls -la 2
+total 20
+drwxrwxr-x 3 pedrocr pedrocr 4096 Dec 15 11:33 .
+drwxrwxr-x 4 pedrocr pedrocr 4096 Dec 15 11:33 ..
+-rw-r--r-- 1 pedrocr pedrocr   16 Dec 15 11:33 file_from_1
+-rw-rw-r-- 1 pedrocr pedrocr   16 Dec 15 11:33 file_from_2
+drwxrwxr-x 9 pedrocr pedrocr 4096 Dec 15 11:33 .git
+"""]]
+
+so far so good
+
+[[!format sh """
+$ date | tee 1/file_from_1
+Sun Dec 15 11:53:18 WET 2013
+$ date | tee 2/file_from_2
+Sun Dec 15 11:53:22 WET 2013
+$ cat 1/*
+Sun Dec 15 11:53:18 WET 2013
+file added to 2
+$ cat 2/*
+file added to 1
+Sun Dec 15 11:53:22 WET 2013
+$
+"""]]
+
+But then syncing doesn't work. There doesn't seem to be anything special in the logs
+
+[[!format sh """
+$ tail -n 20 1/.git/annex/daemon.log 
+(Recording state in git...)
+add file_from_1 (checksum...) [2013-12-15 11:53:18 WET] Committer: Committing changes to git
+[2013-12-15 11:53:18 WET] Pusher: Syncing with 2 
+
+file_from_1
+          29 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 104 bytes  received 31 bytes  270.00 bytes/sec
+total size is 29  speedup is 0.21
+[2013-12-15 11:53:18 WET] Transferrer: Uploaded file_from_1
+Already up-to-date.
+To ssh://localhost/~pedrocr/Hacks/test-git-annex/2
+   f025062..431ac37  git-annex -> synced/git-annex
+   d393bb3..fef60ca  annex/direct/master -> synced/master
+Already up-to-date.
+[2013-12-15 11:53:21 WET] Pusher: Syncing with 2 
+To ssh://localhost/~pedrocr/Hacks/test-git-annex/2
+   431ac37..3cc7045  git-annex -> synced/git-annex
+
+
+$ tail -n 20 2/.git/annex/daemon.log 
+(Recording state in git...)
+add file_from_2 (checksum...) [2013-12-15 11:53:22 WET] Committer: Committing changes to git
+[2013-12-15 11:53:22 WET] Pusher: Syncing with 1 
+
+file_from_2
+          29 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+Already up-to-date.
+
+sent 104 bytes  received 31 bytes  270.00 bytes/sec
+total size is 29  speedup is 0.21
+[2013-12-15 11:53:22 WET] Transferrer: Uploaded file_from_2
+To ssh://localhost/~pedrocr/Hacks/test-git-annex/1
+   ebbcd4c..dae7a77  git-annex -> synced/git-annex
+   ffd5a90..67ad7c1  annex/direct/master -> synced/master
+Already up-to-date.
+[2013-12-15 11:53:25 WET] Pusher: Syncing with 1 
+To ssh://localhost/~pedrocr/Hacks/test-git-annex/1
+   dae7a77..976c899  git-annex -> synced/git-annex
+"""]]
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+I'm running git-annex from the Ubuntu PPA on Ubuntu 12.04 LTS.
+
+[[!format sh """
+$ lsb_release -v
+No LSB modules are available.
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 12.04.3 LTS
+Release:	12.04
+Codename:	precise
+$ git annex version
+git-annex version: 5.20131130
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus XMPP Feeds Quvi TDFA
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+"""]]
