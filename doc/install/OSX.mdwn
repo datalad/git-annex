@@ -34,7 +34,7 @@ the app for OSX Lion.
 
 <pre>
 brew update
-brew install haskell-platform git ossp-uuid md5sha1sum coreutils libgsasl gnutls libidn libgsasl pkg-config libxml2
+brew install haskell-platform git ossp-uuid md5sha1sum coreutils gnutls libidn gsasl pkg-config libxml2
 brew link libxml2 --force
 cabal update
 mkdir $HOME/bin
