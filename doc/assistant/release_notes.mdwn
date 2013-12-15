@@ -1,3 +1,9 @@
+## version 5.20131213
+
+The assistant can now be used on Windows! However, it has known problems,
+described in [[todo/windows_support]], and should be considered an
+alpha-level preview.
+
 ## version 5.20131127
 
 Starting with this version, when git-annex is installed from a build on
