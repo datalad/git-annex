@@ -423,7 +423,8 @@ test_lock env = intmpclonerepoInDirect env $ do
 	-- throws it away
 	changecontent annexedfile
 	writeFile annexedfile $ content annexedfile ++ "foo"
-	git_annex env "lock" [annexedfile] @? "lock failed"
+	not <$> git_annex env "lock" [annexedfile] @? "lock failed to fail without --force"
+	git_annex env "lock" ["---force", annexedfile] @? "lock --force failed"
 	annexed_present annexedfile
 	git_annex env "unlock" [annexedfile] @? "unlock failed"		
 	unannexed annexedfile

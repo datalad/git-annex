@@ -1,3 +1,9 @@
+git-annex (5.20131214) UNRELEASED; urgency=low
+
+  * Fix test suite to cover lock --force change.
+
+ -- Joey Hess <joeyh@debian.org>  Sun, 15 Dec 2013 13:32:49 -0400
+
 git-annex (5.20131213) unstable; urgency=low
 
   * Avoid using git commit in direct mode, since in some situations
