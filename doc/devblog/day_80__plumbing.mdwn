@@ -1,0 +1,9 @@
+Made some improvements to git-annex's plumbing level commands today. Added
+new lookupkey and examinekey commands. Also expanded the things that 
+`git annex find` can report about files. Amoung other things, the elusive
+hash directory locations can now be looked up, which IIRC a few people have
+asked for a way to do.
+
+Also did some work on the linux standalone tarball and OSX app. Both now
+include man pages, and it's also now possible to just unpack it and symlink
+git-annex into ~/bin or similar to add it to PATH.
