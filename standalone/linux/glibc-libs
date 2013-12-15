@@ -41,3 +41,5 @@ libnss_files.so
 libdl.so
 libnss_hesiod.so
 libcrypt.so
+linux-vdso.so
+linux-gate.so
