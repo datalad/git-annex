@@ -1,9 +1,11 @@
 mans=git-annex.1 git-annex-shell.1
 all=git-annex $(mans) docs
 
-GHC?=ghc
-PREFIX?=/usr
 CABAL?=cabal # set to "./Setup" if you lack a cabal program
+GHC?=ghc
+
+PREFIX?=/usr
+SHAREDIR?=share
 
 # Am I typing :make in vim? Do a fast build.
 ifdef VIM
@@ -32,8 +34,6 @@ git-union-merge.1: doc/git-union-merge.mdwn
 	./Build/mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
 git-union-merge:
 	$(GHC) --make -threaded $@
-
-SHAREDIR?=share
 
 install-mans: $(mans)
 	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
@@ -163,7 +163,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	install -d "$(OSXAPP_BASE)/templates"
 
 	# OSX looks in man dir nearby the bin
-	$(MAKE) install-mans DESTDIR="$(OSXAPP_BASE)" SHAREDIR=""
+	$(MAKE) install-mans DESTDIR="$(OSXAPP_BASE)/.." SHAREDIR="" PREFIX=""
 
 	./Build/OSXMkLibs $(OSXAPP_BASE)
 	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/git-annex.MANIFEST
