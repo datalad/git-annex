@@ -12,7 +12,8 @@ To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
 as everything else included in the bundle.
 
 Alternatively, you can unpack the tarball, and add the directory to your
-`PATH`. This lets you use `git annex`, without overriding your system's
+`PATH`, or symlink the programs in the directory to a directory in your
+PATH. This lets you use `git annex`, without overriding your system's
 own versions of git, etc.
 
 Warning: This is a last resort. Most Linux users should instead

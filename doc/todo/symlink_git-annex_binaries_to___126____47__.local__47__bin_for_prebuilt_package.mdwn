@@ -17,3 +17,6 @@ Symlink this script to `~/.local/bin/git-annex`, `~/.local/bin/git-annex-shell` 
 The script will detect the installation directory using `readlink`. Both absolute and relative links works. Then it starts the correct script depending on the basename of the link.
 
 It should be possible to link the `git-annex`, `git-annex-webapp` and `git-annex-shell` scripts instead if they used `readlink` to find out the location of the prebuilt package.
+
+> I've made the scripts look at readlink, so [[done]]. 
+> --[[Joey]] 
