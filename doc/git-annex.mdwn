@@ -727,15 +727,6 @@ subdirectories).
   point to annexed content. Also handles injecting changes to unlocked
   files into the annex.
 
-* `update-hook refname olvrev newrev`
-
-  This is meant to be called from git's update hook. `git annex init`
-  automatically creates an update hook using this.
-
-  This denies updates being pushed for the currently checked out branch.
-  While receive.denyCurrentBranch normally prevents that, it does
-  not for fake bare repositories, as used by direct mode.
-
 * `fromkey key file`
 
   This plumbing-level command can be used to manually set up a file
@@ -756,6 +747,15 @@ subdirectories).
 * `transferkeys`
 
   This plumbing-level command is used by the assistant to transfer data.
+  It is fed instructions about the keys to transfer using an internal
+  stdio protocol.
+
+* `transferkey`
+
+  This plumbing-level command is used to request a single key be
+  transferred. Either the --from or the --to option can be used to specify
+  the remote to use. A --file option can be used to hint at the file
+  associated with the key.
 
 * `rekey [file key ...]`
 
