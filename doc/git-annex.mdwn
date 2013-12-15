@@ -731,7 +731,7 @@ subdirectories).
 
   This plumbing-level command looks up the key used for a file in the
   index. The key is output to stdout. If there is no key (because
-  the file is not added to git, or is not a git-annex managed file),
+  the file is not present in the index, or is not a git-annex managed file),
   nothing is output, and it exits nonzero.
 
 * `examinekey [key ...]`
