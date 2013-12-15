@@ -33,14 +33,16 @@ git-union-merge.1: doc/git-union-merge.mdwn
 git-union-merge:
 	$(GHC) --make -threaded $@
 
+SHAREDIR=share
+
 install-mans: $(mans)
-	install -d $(DESTDIR)$(PREFIX)/share/man/man1
-	install -m 0644 $(mans) $(DESTDIR)$(PREFIX)/share/man/man1
+	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
+	install -m 0644 $(mans) $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
 
 install-docs: docs install-mans
-	install -d $(DESTDIR)$(PREFIX)/share/doc/git-annex
+	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/doc/git-annex
 	if [ -d html ]; then \
-		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/share/doc/git-annex/html/; \
+		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/$(SHAREDIR)/doc/git-annex/html/; \
 	fi
 
 install: build install-docs Build/InstallDesktopFile
@@ -105,7 +107,7 @@ linuxstandalone: Build/Standalone
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
 	cp -R standalone/linux "$(LINUXSTANDALONE_DEST)"
-
+	
 	install -d "$(LINUXSTANDALONE_DEST)/bin"
 	cp git-annex "$(LINUXSTANDALONE_DEST)/bin/"
 	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
@@ -132,6 +134,8 @@ linuxstandalone: Build/Standalone
 	done
 	sort "$(LINUXSTANDALONE_DEST)/libdirs.tmp" | uniq > "$(LINUXSTANDALONE_DEST)/libdirs"
 	rm -f "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
+	
+	$(MAKE) install-mans DESTDIR="$(LINUXSTANDALONE_DEST)"
 
 	cd tmp/git-annex.linux && find . -type f > git-annex.MANIFEST
 	cd tmp/git-annex.linux && find . -type l >> git-annex.MANIFEST
@@ -157,6 +161,9 @@ osxapp: Build/Standalone Build/OSXMkLibs
 
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
 	install -d "$(OSXAPP_BASE)/templates"
+
+	# OSX looks in man dir nearby the bin
+	$(MAKE) install-mans DESTDIR="$(OSXAPP_BASE)" SHAREDIR=""
 
 	./Build/OSXMkLibs $(OSXAPP_BASE)
 	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/git-annex.MANIFEST

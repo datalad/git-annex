@@ -7,6 +7,7 @@ git-annex (5.20131214) UNRELEASED; urgency=low
   * Programs from Linux and OSX standalone builds can now be symlinked
     into a directory in PATH as an alternative installation method, and will
     use readlink to find where the build was unpacked.
+  * Include man pages in Linux and OSX standalone builds.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 15 Dec 2013 13:32:49 -0400
 
