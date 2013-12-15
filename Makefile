@@ -164,6 +164,8 @@ osxapp: Build/Standalone Build/OSXMkLibs
 
 	# OSX looks in man dir nearby the bin
 	$(MAKE) install-mans DESTDIR="$(OSXAPP_BASE)/.." SHAREDIR="" PREFIX=""
+	# This file breaks hditul create
+	rm -f "$(OSXAPP_BASE)/../man/man1/git-annex-shell.1"
 
 	./Build/OSXMkLibs $(OSXAPP_BASE)
 	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/git-annex.MANIFEST
