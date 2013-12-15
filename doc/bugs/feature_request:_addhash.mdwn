@@ -25,3 +25,5 @@ Symmetrical to `addurl`, which in one form can take an existing hashed (or URL-s
 
  - Any file added to the annex after `addhash` will use the symlink name of the original hash if their hash matches the `addhash`ed one.
  - An `fsck` run will use one of the available hashes to verify the integrity of the file, maybe according to some internal order of preference, or possibly a configurable one.
+
+> [[done]] --[[Joey]]
