@@ -1,19 +1,12 @@
 I've added an arm build to the autobuilds in [[install/Linux_standalone]].
 
-It's somewhat experimental:
+I'm curious to see how this works out. I tried to make it as self-contained
+as possible. It should work even on systems that do not use glibc, as long
+as the kernel is new enough for the glibc included in it, and supports the
+arm EABI.
 
-* There are several arm architectures. This build is done on Debian armel,
-  which uses EABI. It will not work on older arm systems whose kernels
-  do not support EABI. (It's also little endian.)
-* It relies on the system having a compatable version of glibc installed.
-  This could be improved by finding a way to build a static binary
-  (but glibc does not make that easy), or trick the linker into linking
-  against a glibc shipped in the bundle. The problem with the latter
-  is that glibc loads some support libraries at runtime.
-
-I'll be interested to hear if this is useful. If it seems sufficiently
-useful, I might try to add the webapp to the build, which would be somewhat
-complicated, but doable (since I'm building using qemu, it can run a build
-on amd64 first to get the TH splices).
+If it seems sufficiently useful, I might try to add the webapp to the
+build, which would be somewhat complicated, but doable (since I'm building
+using qemu, it can run a build on amd64 first to get the TH splices).
 
 --[[Joey]]
