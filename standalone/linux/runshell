@@ -46,12 +46,20 @@ export ORIG_PATH
 PATH=$base/bin:$PATH
 export PATH
 
-ORIG_LD_LIBRARY_PATH="$LD_LIBRARY_PATH"
-export ORIG_LD_LIBRARY_PATH
+# This is used by the shim wrapper around each binary.
 for lib in $(cat $base/libdirs); do
-	LD_LIBRARY_PATH="$base/$lib:$LD_LIBRARY_PATH"
+	GIT_ANNEX_LD_LIBRARY_PATH="$base/$lib:$GIT_ANNEX_LD_LIBRARY_PATH"
 done
-export LD_LIBRARY_PATH
+export GIT_ANNEX_LD_LIBRARY_PATH
+GIT_ANNEX_LINKER=$(cat $base/linker)
+export GIT_ANNEX_LINKER
+GIT_ANNEX_SHIMMED="$base/shimmed"
+export GIT_ANNEX_SHIMMED
+
+ORIG_GCONV_PATH="$GCONV_PATH"
+export ORIG_GCONV_PATH
+GCONV_PATH=$base/$(cat $base/gconvdir)
+export GCONV_PATH
 
 ORIG_GIT_EXEC_PATH="$GIT_EXEC_PATH"
 export ORIG_GIT_EXEC_PATH
@@ -68,8 +76,9 @@ export ORIG_MANPATH
 MANPATH="$base/usr/share/man:$MANPATH"
 export MANPATH
 
-# Indicate which variables were exported above.
-GIT_ANNEX_STANDLONE_ENV="PATH LD_LIBRARY_PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR MANPATH"
+# Indicate which variables were exported above and should be cleaned
+# when running non-bundled programs.
+GIT_ANNEX_STANDLONE_ENV="PATH GCONV_PATH GIT_EXEC_PATH GIT_TEMPLATE_DIR MANPATH"
 export GIT_ANNEX_STANDLONE_ENV
 
 if [ "$1" ]; then

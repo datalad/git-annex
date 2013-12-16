@@ -2,8 +2,8 @@ If your Linux distribution does not have git-annex packaged up for you,
 you can either build it [[fromscratch]], or you can use a handy
 prebuilt tarball of the most recent release.
 
-This tarball should work on most Linux systems. It does not depend
-on anything except for glibc.
+This tarball should work on most Linux systems. It has basically no
+dependencies and is self-contained.
 
 [download tarball](https://downloads.kitenet.net/git-annex/linux/current/)
 

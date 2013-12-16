@@ -122,7 +122,7 @@ linuxstandalone: Build/Standalone
 	install -d "$(LINUXSTANDALONE_DEST)/templates"
 	
 	touch "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
-	for lib in $$(ldd "$(LINUXSTANDALONE_DEST)"/bin/* $$(find "$(LINUXSTANDALONE_DEST)"/git-core/ -type f) | grep -v -f standalone/linux/glibc-libs | grep -v "not a dynamic executable" | egrep '^	' | sed 's/^\t//' | sed 's/.*=> //' | cut -d ' ' -f 1 | sort | uniq); do \
+	for lib in $$(ldd "$(LINUXSTANDALONE_DEST)"/bin/* $$(find "$(LINUXSTANDALONE_DEST)"/git-core/ -type f) | grep -v "not a dynamic executable" | egrep '^	' | sed 's/^\t//' | sed 's/.*=> //' | cut -d ' ' -f 1 | sort | uniq); do \
 		dir=$$(dirname "$$lib"); \
 		install -d "$(LINUXSTANDALONE_DEST)/$$dir"; \
 		echo "$$dir" >> "$(LINUXSTANDALONE_DEST)/libdirs.tmp"; \
@@ -134,7 +134,26 @@ linuxstandalone: Build/Standalone
 	done
 	sort "$(LINUXSTANDALONE_DEST)/libdirs.tmp" | uniq > "$(LINUXSTANDALONE_DEST)/libdirs"
 	rm -f "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
+
+	# Ensure bundle includes all glibc libs, and other support
+	# files it loads.
+	# XXX Debian specific.
+	cd $(LINUXSTANDALONE_DEST) && dpkg -L libc6 | grep \.so|tar c --files-from=- | tar x
+
+	find $(LINUXSTANDALONE_DEST) -type d -name gconv | head -n 1 > $(LINUXSTANDALONE_DEST)/gconvdir
+	find $(LINUXSTANDALONE_DEST) | grep ld-linux | head -n 1 | sed 's!$(LINUXSTANDALONE_DEST)/*!!' > $(LINUXSTANDALONE_DEST)/linker
 	
+	# Install linker shim for each binary.
+	for file in $$(find "$(LINUXSTANDALONE_DEST)" -type f); do \
+		if file "$$file" | grep ELF | grep -q executable; then \
+			mkdir -p "$(LINUXSTANDALONE_DEST)/shimmed"; \
+			mv "$$file" "$(LINUXSTANDALONE_DEST)/shimmed"; \
+			echo "#!/bin/sh" > "$$file"; \
+			echo "exec \"\$$GIT_ANNEX_LINKER\" --library-path \"\$$GIT_ANNEX_LD_LIBRARY_PATH\" \"\$$GIT_ANNEX_SHIMMED/$$(basename "$$file")\"" >> "$$file"; \
+			chmod +x "$$file"; \
+		fi; \
+	done
+
 	$(MAKE) install-mans DESTDIR="$(LINUXSTANDALONE_DEST)"
 
 	cd tmp/git-annex.linux && find . -type f > git-annex.MANIFEST
