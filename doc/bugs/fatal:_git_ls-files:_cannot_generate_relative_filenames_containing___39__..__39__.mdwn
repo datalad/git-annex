@@ -47,3 +47,6 @@ upgrade supported from repository versions: 0 1 2
 
 # End of transcript or log.
 """]]
+
+> Added note about git version to from scratch installation instructions.
+> Debian package already depends on a newer version. [[done]] --[[Joey]]

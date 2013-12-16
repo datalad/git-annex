@@ -53,7 +53,7 @@ quite a lot.
   * [unix-compat](http://hackage.haskell.org/package/unix-compat)
   * [MonadCatchIO-transformers](http://hackage.haskell.org/package/MonadCatchIO-transformers)
 * Shell commands
-  * [git](http://git-scm.com/)
+  * [git](http://git-scm.com/) (1.7.2 or newer; 1.8.5 recommended)
   * [xargs](http://savannah.gnu.org/projects/findutils/)
   * [rsync](http://rsync.samba.org/)
   * [curl](http://http://curl.haxx.se/) (optional, but recommended)
