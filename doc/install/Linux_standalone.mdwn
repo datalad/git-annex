@@ -27,10 +27,3 @@ of Bath CS department.
 * i386: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
 * amd64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
 * armel: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/armel/)) (experimental; see [[forum thread|forum/new_linux_arm_tarball_build]])
-
-## gitannex-install
-
-Eskild Hustvedt has contributed a
-[gitannex-install](https://github.com/zerodogg/scriptbucket/blob/master/gitannex-install)
-script to manage keeping up to date with new releases using the standalone
-build.
