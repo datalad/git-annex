@@ -98,13 +98,13 @@ waitChangeTime a = waitchanges 0
 		case (lastcommitsize >= maxCommitSize, shouldCommit scanning now len changes, possiblyrename changes) of
 			(True, True, _)
 				| len > maxCommitSize -> 
-					waitchanges =<< a (changes, now)
+					a (changes, now) >>= waitchanges
 				| otherwise -> aftermaxcommit changes
 			(_, True, False) ->
-				waitchanges =<< a (changes, now)
+				a (changes, now) >>= waitchanges
 			(_, True, True) -> do
 				morechanges <- getrelatedchanges changes
-				waitchanges =<< a (changes ++ morechanges, now)
+				a (changes ++ morechanges, now) >>= waitchanges
 			_ -> do
 				refill changes
 				waitchanges lastcommitsize
