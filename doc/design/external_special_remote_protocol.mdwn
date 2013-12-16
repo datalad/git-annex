@@ -38,9 +38,9 @@ The special remote can now ask git-annex for its configuration, as needed,
 and check that it's valid. git-annex responds with the configuration values
 
 	GETCONFIG directory
-	/media/usbdrive/repo
+	VALUE /media/usbdrive/repo
 	GETCONFIG automount
-	true
+	VALUE true
 
 Once the special remote is satisfied with its configuration and is
 ready to go, it tells git-annex.
@@ -169,9 +169,6 @@ avoid sending additional messages. While git-annex is in quiet mode,
 the special remote can send queries to it. Queries can not be sent at any
 other time.
 
-When it sees a query, git-annex will respond a line containing
-*only* the requested data.
-
 * `DIRHASH Key`  
   Gets a two level hash associated with a Key. Something like "abc/def".
   This is always the same for any given Key, so can be used for eg,
@@ -187,6 +184,12 @@ When it sees a query, git-annex will respond a line containing
   repositories, and the state is only eventually consistently synced
   between them. If two repositories set different values in the state
   for a key, the one that sets it last wins.
+
+When it sees a query, git-annex will respond a VALUE message.
+The rest of the line contains the requested data.
+git-annex may also respond with an ERROR message if it did not
+understand the query. In this case, it will continue processing
+further messages.
 
 ## Simple shell example
 
