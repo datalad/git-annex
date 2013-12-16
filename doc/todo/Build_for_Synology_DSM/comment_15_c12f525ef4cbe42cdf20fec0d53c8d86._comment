@@ -6,5 +6,5 @@
  content="""
 Following the example of @lorenzo, I have made all the git-annex Linux standalone builds include glibc and shims to make the linker use it.
 
-Now that there's a [[doc/forum/new_linux_arm_tarball_build]], it may *just work* on Synology.
+Now that there's a [[forum/new_linux_arm_tarball_build]], it may *just work* on Synology.
 """]]
