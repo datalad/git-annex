@@ -51,7 +51,7 @@ for lib in $(cat $base/libdirs); do
 	GIT_ANNEX_LD_LIBRARY_PATH="$base/$lib:$GIT_ANNEX_LD_LIBRARY_PATH"
 done
 export GIT_ANNEX_LD_LIBRARY_PATH
-GIT_ANNEX_LINKER=$(cat $base/linker)
+GIT_ANNEX_LINKER="$base/$(cat $base/linker)"
 export GIT_ANNEX_LINKER
 GIT_ANNEX_SHIMMED="$base/shimmed"
 export GIT_ANNEX_SHIMMED
