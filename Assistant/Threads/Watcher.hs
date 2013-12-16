@@ -144,6 +144,11 @@ startupScan scanner = do
 		
 		modifyDaemonStatus_ $ \s -> s { scanComplete = True }
 
+		-- Ensure that the Committer sees any changes
+		-- that it did not process, and acts on them now that
+		-- the scan is complete.
+		refillChanges =<< getAnyChanges
+
 		return (True, r)
 
 {- Hardcoded ignores, passed to the DirWatcher so it can avoid looking

@@ -52,7 +52,7 @@ commitThread = namedThread "Committer" $ do
 			=<< annexDelayAdd <$> Annex.getGitConfig
 	waitChangeTime $ \(changes, time) -> do
 		readychanges <- handleAdds havelsof delayadd changes
-		if shouldCommit time (length readychanges) readychanges
+		if shouldCommit False time (length readychanges) readychanges
 			then do
 				debug
 					[ "committing"
@@ -94,7 +94,8 @@ waitChangeTime a = waitchanges 0
 		let len = length changes
 		-- See if now's a good time to commit.
 		now <- liftIO getCurrentTime
-		case (lastcommitsize >= maxCommitSize, shouldCommit now len changes, possiblyrename changes) of
+		scanning <- not . scanComplete <$> getDaemonStatus
+		case (lastcommitsize >= maxCommitSize, shouldCommit scanning now len changes, possiblyrename changes) of
 			(True, True, _)
 				| len > maxCommitSize -> 
 					waitchanges =<< a (changes, now)
@@ -199,8 +200,9 @@ maxCommitSize = 5000
  - Current strategy: If there have been 10 changes within the past second,
  - a batch activity is taking place, so wait for later.
  -}
-shouldCommit :: UTCTime -> Int -> [Change] -> Bool
-shouldCommit now len changes
+shouldCommit :: Bool -> UTCTime -> Int -> [Change] -> Bool
+shouldCommit scanning now len changes
+	| scanning = len >= maxCommitSize
 	| len == 0 = False
 	| len >= maxCommitSize = True
 	| length recentchanges < 10 = True

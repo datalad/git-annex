@@ -10,6 +10,7 @@ git-annex (5.20131214) UNRELEASED; urgency=low
   * Include man pages in Linux and OSX standalone builds.
   * Linux standalone build now includes its own glibc and forces the linker to
     use it, to remove dependence on the host glibc.
+  * assistant: Always batch changes found in startup scan.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 15 Dec 2013 13:32:49 -0400
 
