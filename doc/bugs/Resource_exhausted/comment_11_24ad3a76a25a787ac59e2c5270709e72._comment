@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 11"
+ date="2013-12-16T17:20:34Z"
+ content="""
+I now understand the problem described in comment 6, where once it started failing, it would leak one file descriptor per failure.
+
+I think that failure mode was fixed by accident in the changes in [[!commit 2fd63f3cfac705f0a18f4bcbe0489ce8ea1800d7]].
+
+This doesn't explain what would open so many files to get it into that failure mode, however.
+"""]]
