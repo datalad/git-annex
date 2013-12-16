@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-16T16:05:38Z"
+ content="""
+Do you get the same error message if you run:
+
+git -c core.bare=false ls-files --cached --others
+
+What version of git? I cannot find that error message anywhere in the current version.
+
+"""]]
