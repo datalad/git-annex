@@ -149,7 +149,7 @@ linuxstandalone: Build/Standalone
 			mkdir -p "$(LINUXSTANDALONE_DEST)/shimmed"; \
 			mv "$$file" "$(LINUXSTANDALONE_DEST)/shimmed"; \
 			echo "#!/bin/sh" > "$$file"; \
-			echo "exec \"\$$GIT_ANNEX_LINKER\" --library-path \"\$$GIT_ANNEX_LD_LIBRARY_PATH\" \"\$$GIT_ANNEX_SHIMMED/$$(basename "$$file")\"" >> "$$file"; \
+			echo "exec \"\$$GIT_ANNEX_LINKER\" --library-path \"\$$GIT_ANNEX_LD_LIBRARY_PATH\" \"\$$GIT_ANNEX_SHIMMED/$$(basename "$$file")\" \"\$$@\"" >> "$$file"; \
 			chmod +x "$$file"; \
 		fi; \
 	done
