@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 3"
+ date="2013-12-16T16:27:28Z"
+ content="""
+You can leave off the -c core.bare=false, if your git does not support it.
+
+That is an exceptionally old version of git. I'm sure it's the problem, so you should upgrade.
+"""]]
