@@ -53,3 +53,7 @@ git-annex: runInteractiveProcess: pipe: Too many open files
 
 # End of transcript or log.
 """]]
+
+> This appears to be the same problem as [[Resource_exhausted]],
+> so closing as duplicate; please follow up to the other bug report if
+> possible. [[done]] --[[Joey]] 
