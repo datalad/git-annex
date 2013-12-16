@@ -22,6 +22,10 @@ progress to stdout. (Such stuff can be sent to stderr instead.)
 The protocol is line based. Messages are sent in either direction, from
 git-annex to the special remote, and from the special remote to git-annex.
 
+In order to avoid confusing interactions, one or the other has control
+at any given time, and is responsible for sending requests, while the other
+only sends replies to the requests.
+
 ## example session
 
 The special remote is responsible for sending the first message, indicating
@@ -104,10 +108,9 @@ send one of the corresponding replies listed in the next section.
 ## special remote replies
 
 These should be sent only in response to the git-annex request messages.
-(Any sent unexpectedly will be ignored.)
 They do not have to be sent immediately after the request; the special
-remote can send other messages and queries (listed in sections below)
-as it's performing the request.
+remote can send its own requests (listed in the next section below)
+while it's handling a request.
 
 * `PREPARE-SUCCESS`  
   Sent as a response to PREPARE once the special remote is ready for use.
@@ -143,53 +146,50 @@ as it's performing the request.
 
 ## special remote messages
 
-These are messages the special remote program can send to
-git-annex at any time. It should not expect any response from git-annex.
+These messages may be sent by the special remote at any time that it's
+in control.
 
 * `VERSION Int`  
   Supported protocol version. Current version is 0. Must be sent first
   thing at startup, as until it sees this git-annex does not know how to
   talk with the special remote program!
-* `ERROR ErrorMsg`  
-  Generic error. Can be sent at any time if things get messed up.
-  When possible, use a more specific reply from the list above.  
-  It would be a good idea to send this if git-annex sends a command
-  you do not support. The program should exit after sending this, as
-  git-annex will not talk to it any further.
 * `PROGRESS STORE|RETRIEVE Key Int`  
   Indicates the current progress of the transfer. May be repeated any
   number of times during the transfer process. This is highly recommended
-  for STORE. (It is optional but good for RETRIEVE.)
-
-## special remote queries
-
-After git-annex has sent the special remote a request, and before the
-special remote sends back a reply, git-annex enters quiet mode. It will
-avoid sending additional messages. While git-annex is in quiet mode,
-the special remote can send queries to it. Queries can not be sent at any
-other time.
-
+  for STORE. (It is optional but good for RETRIEVE.)  
+  (git-annex does not send a reply to this message.)
 * `DIRHASH Key`  
   Gets a two level hash associated with a Key. Something like "abc/def".
   This is always the same for any given Key, so can be used for eg,
-  creating hash directory structures to store Keys in.
+  creating hash directory structures to store Keys in.  
+  (git-annex replies with VALUE followed by the value.)
 * `GETCONFIG Setting`
-  Gets one of the special remote's configuration settings.
+  Gets one of the special remote's configuration settings.  
+  (git-annex replies with VALUE followed by the value.)
 * `SETSTATE Key Value`  
   git-annex can store state in the git-annex branch on a
-  per-special-remote, per-key basis. This sets that state.
+  per-special-remote, per-key basis. This sets that state.  
+  (git-annex replies with VALUE followed by the value stored.)
 * `GETSTATE Key`  
   Gets any state previously stored for the key from the git-annex branch.  
   Note that some special remotes may be accessed from multiple
   repositories, and the state is only eventually consistently synced
   between them. If two repositories set different values in the state
-  for a key, the one that sets it last wins.
+  for a key, the one that sets it last wins.  
+  (git-annex replies with VALUE followed by the value.)
 
-When it sees a query, git-annex will respond a VALUE message.
-The rest of the line contains the requested data.
-git-annex may also respond with an ERROR message if it did not
-understand the query. In this case, it will continue processing
-further messages.
+## general messages
+
+These messages can be sent at any time by either git-annex or the special
+remote.
+
+* `ERROR ErrorMsg`  
+  Generic error. Can be sent at any time if things get messed up.
+  When possible, use a more specific reply from the list above.  
+  It would be a good idea to send this if git-annex sends a command
+  you do not support. The program should exit after sending this, as
+  git-annex will not talk to it any further. If the program receives
+  an ERROR, it can try to recover, or exit with its own ERROR.
 
 ## Simple shell example
 
