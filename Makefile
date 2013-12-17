@@ -143,13 +143,16 @@ linuxstandalone: Build/Standalone
 	find $(LINUXSTANDALONE_DEST) -type d -name gconv | head -n 1 | sed 's!$(LINUXSTANDALONE_DEST)/*!!' > $(LINUXSTANDALONE_DEST)/gconvdir
 	find $(LINUXSTANDALONE_DEST) | grep ld-linux | head -n 1 | sed 's!$(LINUXSTANDALONE_DEST)/*!!' > $(LINUXSTANDALONE_DEST)/linker
 	
-	# Install linker shim for each binary.
+	# Install linker shim for each binary. Note that each binary is put
+	# in its own separate directory, to avoid eg git looking for
+	# binaries in its directory rather than in PATH.
 	for file in $$(find "$(LINUXSTANDALONE_DEST)" -type f); do \
 		if file "$$file" | grep ELF | grep -q executable; then \
-			mkdir -p "$(LINUXSTANDALONE_DEST)/shimmed"; \
-			mv "$$file" "$(LINUXSTANDALONE_DEST)/shimmed"; \
+			base=$$(basename "$$file"); \
+			mkdir -p "$(LINUXSTANDALONE_DEST)/shimmed/$$base"; \
+			mv "$$file" "$(LINUXSTANDALONE_DEST)/shimmed/$$base/"; \
 			echo "#!/bin/sh" > "$$file"; \
-			echo "exec \"\$$GIT_ANNEX_LINKER\" --library-path \"\$$GIT_ANNEX_LD_LIBRARY_PATH\" \"\$$GIT_ANNEX_SHIMMED/$$(basename "$$file")\" \"\$$@\"" >> "$$file"; \
+			echo "exec \"\$$GIT_ANNEX_LINKER\" --library-path \"\$$GIT_ANNEX_LD_LIBRARY_PATH\" \"\$$GIT_ANNEX_SHIMMED/$$base/$$base\" \"\$$@\"" >> "$$file"; \
 			chmod +x "$$file"; \
 		fi; \
 	done
