@@ -12,13 +12,6 @@ available!
   See [[bug|bugs/Issue_on_OSX_with_some_system_limits]]. (Does not affect
   OSX any longer, only other BSDs).
 
-## todo
-
-* There needs to be a way for a new version of git-annex, when installed,
-  to restart any running watch or assistant daemons. Or for the daemons
-  to somehow detect it's been upgraded and restart themselves. Needed
-  to allow for incompatable changes and, I suppose, for security upgrades..
-
 ## beyond Linux
 
 I'd also like to support OSX and if possible the BSDs.
