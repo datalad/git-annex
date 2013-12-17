@@ -1,0 +1,82 @@
+### Please describe the problem.
+
+Seems to not upload files from Android client (set to "Manual mode: only stores files you...") to servers configured to get the files despite "syncing enabled"
+
+Even when I chose "File source:" mode -- it just dropped all locally stored ones and didn't transfer those I have added.
+
+### What steps will reproduce the problem?
+
+Add file to the sdcard (vfat), and see it added to git (annex) but not uploaded
+
+### What version of git-annex are you using? On what operating system?
+
+Android build as now of Dec 13 I believe
+
+### Please provide any additional information below.
+
+First it just said that nothing to be transfered, I have switched  that remote to "Full backup", web dashboard had "Scanning for files to transfer" for a while, then refreshed with "Synced with" and no file transfers running.  Below is an excerpt from the log
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+add pics/20131217_125740.jpg ok
+add pics/20131217_125740.jpg [2013-12-17 16:19:25 EST] Committer: Committing changes to git
+[2013-12-17 16:19:25 EST] Pusher: Syncing with vagus.cns.dartmouth.edu_annex
+Invalid pid specified
+Invalid pid specified
+warning: no threads support, ignoring --threads
+Already up-to-date.
+To ssh://annex@git-annex-vagus.cns.dartmouth.edu-annex_annex/~/annex/
+   bcb7ed7..3672b38  git-annex -> synced/git-annex
+   e8cc37f..052b758  annex/direct/master -> synced/master
+Already up-to-date.
+[2013-12-17 16:19:29 EST] Committer: Adding 20131217_125726.jpg
+ok
+(Recording state in git...)
+(Recording state in git...)
+
+
+add pics/20131217_125726.jpg ok
+add pics/20131217_125726.jpg [2013-12-17 16:19:30 EST] Committer: Committing changes to git
+Invalid pid specified
+[2013-12-17 16:19:32 EST] Pusher: Syncing with vagus.cns.dartmouth.edu_annex
+Already up-to-date.
+warning: no threads support, ignoring --threads
+To ssh://annex@git-annex-vagus.cns.dartmouth.edu-annex_annex/~/annex/
+   3672b38..f914fed  git-annex -> synced/git-annex
+   052b758..859d3c6  annex/direct/master -> synced/master
+Already up-to-date.
+Invalid pid specified
+Invalid pid specified
+Invalid pid specified
+
+
+# End of transcript or log.
+"""]]
+
+previous runs experienced different problems, so may be those could lead to unreported problem here?
+e.g. from previous run:
+
+[[!format sh """
+[2013-12-17 16:04:44 EST] Pusher: Syncing with vagus.cns.dartmouth.edu_annex
+Already up-to-date.
+warning: no threads support, ignoring --threads
+warning: no threads support, ignoring --threads
+To ssh://annex@git-annex-vagus.cns.dartmouth.edu-annex_annex/~/annex/
+   a889d7b..c9a7466  git-annex -> synced/git-annex
+error: Ref refs/heads/synced/git-annex is at c9a74663dc863eb95d316deac4657173c92653df but expected a889d7b335738ef1c4f85da18d1bea337cd36522
+remote: error: failed to lock refs/heads/synced/git-annex^[[K
+To ssh://annex@git-annex-vagus.cns.dartmouth.edu-annex_annex/~/annex/
+ ! [remote rejected] git-annex -> synced/git-annex (failed to lock)
+error: failed to push some refs to 'ssh://annex@git-annex-vagus.cns.dartmouth.edu-annex_annex/~/annex/'
+Everything up-to-date
+Invalid pid specified
+[2013-12-17 16:08:34 EST] main: Syncing with vagus.cns.dartmouth.edu_annex
+Everything up-to-date
+Invalid pid specified
+~                                 
+]]
