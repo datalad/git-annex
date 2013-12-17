@@ -35,12 +35,14 @@ patched () {
 	git config user.email dummy@example.com
 	git add .
 	git commit -m "pre-patched state of $pkg"
-	for patch in ../../haskell-patches/${pkg}_*; do
-		echo trying $patch
-		if ! patch -p1 < $patch; then
-			echo "failed to apply $patch"
-			echo "please resolve this, replace the patch with a new version, and exit the subshell to continue"
-			$SHELL
+	for patch in ../../haskell-patches/${pkg}_* ../../../haskell-patches/no-th/${pkg}_*; do
+		if [ -e "$patch" ]; then
+			echo trying $patch
+			if ! patch -p1 < $patch; then
+				echo "failed to apply $patch"
+				echo "please resolve this, replace the patch with a new version, and exit the subshell to continue"
+				$SHELL
+			fi
 		fi
 	done
 	cabalinstall "$@"
