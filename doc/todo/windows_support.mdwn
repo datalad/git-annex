@@ -12,9 +12,6 @@ now! --[[Joey]]
 * Ssh connection caching does not work on Windows, so `git annex get`
   has to connect twice to the remote system over ssh per file, which
   is much slower than on systems supporting connection caching.
-* `git annex watch` works, but does not detect when files are still open
-  for write as they're being added (no lsof). So watch/webapp/assistant
-  may be unsafe.
 * `git annex assistant` has not been tested, is probably quite incomplete
   and/or buggy.
 * Doesn't daemonize. Maybe use
