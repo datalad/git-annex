@@ -140,7 +140,7 @@ linuxstandalone: Build/Standalone
 	# XXX Debian specific.
 	cd $(LINUXSTANDALONE_DEST) && dpkg -L libc6 | grep \.so|tar c --files-from=- | tar x
 
-	find $(LINUXSTANDALONE_DEST) -type d -name gconv | head -n 1 > $(LINUXSTANDALONE_DEST)/gconvdir
+	find $(LINUXSTANDALONE_DEST) -type d -name gconv | head -n 1 | sed 's!$(LINUXSTANDALONE_DEST)/*!!' > $(LINUXSTANDALONE_DEST)/gconvdir
 	find $(LINUXSTANDALONE_DEST) | grep ld-linux | head -n 1 | sed 's!$(LINUXSTANDALONE_DEST)/*!!' > $(LINUXSTANDALONE_DEST)/linker
 	
 	# Install linker shim for each binary.
