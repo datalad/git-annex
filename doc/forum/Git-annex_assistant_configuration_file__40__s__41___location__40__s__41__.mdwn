@@ -1,0 +1,6 @@
+Hi,
+
+I accidentally removed the .git/ folder inside a git annex assistant-monitored folder. When I open the assistant web app it still shows the repository but when I try to select it the page request never returns. What can I do at this point? I was thinking I can remove the repository from the git annex assitant configuration file if it is a plain-text file, but I don't know of its location. Please advise.
+
+Regards,
+Blake

@@ -13,9 +13,9 @@ I have a big repo of files I have added using `addurl --fast`. I download the fi
 
 ### Workaround
 
-In both these cases, what I can do is unlock (maybe?) or unannex (definitely) all of the files, and then re-add them using the new hash. In both cases this means I now risk having duplicates in various clones of the repo, and would have to clean them up with `drop-unused` -- after first having re-copied them from a repo that has them under the new hash. I also lose the continuity of the history of that object.
+In both these cases, what I can do is <del>unlock (maybe?) or unannex (definitely) all of the files, and then re-add them using the new hash</del> <em>use `migrate` to relink the files using the new scheme</em>. In both use cases this means I now risk having duplicates in various clones of the repo, and would have to clean them up with `drop-unused` -- after first having re-copied them from a repo that has them under the new hash <em>or `migrate`d them in each clone using the pre-migration commit; Either way is problematic for special remotes, in particular glacier</em>. I also lose the continuity of the history of that object.
 
-In use case 2 I also lose the URLs of the files and would have to re-add them using `addurl`.
+<del>In use case 2 I also lose the URLs of the files and would have to re-add them using `addurl`.</del> <em>This is probably not true when using `migrate`.</em>
 
 ... which brings me to the proposed feature.
 
