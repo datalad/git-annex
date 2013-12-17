@@ -5,6 +5,9 @@ prebuilt tarball of the most recent release.
 This tarball should work on most Linux systems. It has basically no
 dependencies and is self-contained.
 
+The armel version can be installed on NAS devices and other embedded ARM
+linux systems.
+
 [download tarball](https://downloads.kitenet.net/git-annex/linux/current/)
 
 To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
@@ -16,7 +19,7 @@ Alternatively, you can unpack the tarball, and add the directory to your
 PATH. This lets you use `git annex`, without overriding your system's
 own versions of git, etc.
 
-Warning: This is a last resort. Most Linux users should instead
+Note: This is a last resort. Most Linux users should instead
 [[install]] git-annex from their distribution of choice.
 
 ## autobuilds
