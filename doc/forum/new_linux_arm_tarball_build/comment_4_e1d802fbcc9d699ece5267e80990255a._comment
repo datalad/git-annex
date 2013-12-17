@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="RLIMIT_NOFILE"
+ date="2013-12-17T16:05:12Z"
+ content="""
+This is clearly failing when it runs git. Looking at the git source code, it does have a `RLIMIT_NOFILE` ifdef, so I could disable this, but would have to maintain my own build of git.
+
+What kernel version is this? Upgrading is likely to fix it.
+"""]]
