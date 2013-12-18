@@ -24,3 +24,4 @@ upgrade supported from repository versions: 0 1 2 4
 ### Please provide any additional information below.
 I have a file `/Users/lhunath/annex/Library/Application Support/CrossOver/Bottles/Fallout 3/drive_c/users/crossover/My Documents` which is a symlink to `~/Documents` on the originating client. On the destination client, This turns into a directory, causing the whole content of `~/Documents` to get included in each bottle, which includes a bunch of VM images etc.....
 
+> [[fixed|done]] --[[Joey]]

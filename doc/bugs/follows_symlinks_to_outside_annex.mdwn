@@ -1,1 +1,3 @@
 I've had a bug report that the assistant follows directory symlinks to elsewhere. I thought it didn't. This needs to be avoided.
+
+[[fixed|done]]
