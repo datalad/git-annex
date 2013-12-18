@@ -1,5 +1,5 @@
 Made some improvements to git-annex's plumbing level commands today. Added
-new lookupkey and examinekey commands. Also expanded the things that 
+new lookupkey and examinekey commands. Also expanded the things that
 `git annex find` can report about files. Among other things, the elusive
 hash directory locations can now be looked up, which IIRC a few people have
 asked for a way to do.
