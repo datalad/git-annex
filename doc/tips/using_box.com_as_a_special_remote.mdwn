@@ -30,7 +30,7 @@ using the webdav special remote.
 * Edit `/etc/fstab`, and add a line to mount Box using davfs.
 
         sudo mkdir -p /media/box.com
-        echo "https://www.box.com/dav/	/media/box.com	davfs	noauto,user	0 0" | sudo tee -a /etc/fstab
+        echo "https://dav.box.com/dav/	/media/box.com	davfs	noauto,user	0 0" | sudo tee -a /etc/fstab
 
 * Create `~/.davfs2/davfs2.conf` with some important settings:
 

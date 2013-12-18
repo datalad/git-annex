@@ -4,7 +4,7 @@
  subject="comment 3"
  date="2013-07-17T19:59:50Z"
  content="""
-Note that git-annex now uses locks to communicate amoung multiple processes, so it's now possible to eg run two `git annex get` processes, and one will skip over the file the other is downloading and go on to the next file, and so on. 
+Note that git-annex now uses locks to communicate among multiple processes, so it's now possible to eg run two `git annex get` processes, and one will skip over the file the other is downloading and go on to the next file, and so on. 
 
 This is an especially nice speedup when downloading encrypted data, since the decryption of one file will tend to happen while the other process is downloading the next file (assuming files of approximately the same size, and that decryption takes approxiately as long as downloading).
 
