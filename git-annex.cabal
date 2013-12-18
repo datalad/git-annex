@@ -161,7 +161,7 @@ Executable git-annex
   
   if flag(Android)
     Build-Depends: data-endian
-    CPP-Options: -D__ANDROID__ -DANDROID_SPLICES
+    CPP-Options: -D__ANDROID__ -DANDROID_SPLICES -D__NO_TH__
   if flag(AndroidSplice)
     CPP-Options: -DANDROID_SPLICES
 
