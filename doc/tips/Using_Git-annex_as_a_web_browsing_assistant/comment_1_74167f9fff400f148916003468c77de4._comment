@@ -4,5 +4,5 @@
  subject="comment 1"
  date="2013-04-11T20:16:02Z"
  content="""
-As of my last commit, you don't really need a separate download manager. The webapp will now display urls that `git annex addurl` is downloading in amoung the other transfers.
+As of my last commit, you don't really need a separate download manager. The webapp will now display urls that `git annex addurl` is downloading in among the other transfers.
 """]]

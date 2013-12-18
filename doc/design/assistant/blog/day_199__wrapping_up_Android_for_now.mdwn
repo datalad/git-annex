@@ -6,7 +6,7 @@ So I'm moving on to other things.
 Today:
 
 * Fixed a nasty regression that made `*` not match files in subdirectories.
-  That broke the preferred content handling, amoung other things. I will
+  That broke the preferred content handling, among other things. I will
   be pushing out a new release soon.
 * As a last Android thing (for now), made the Android app automatically
   run `git annex assistant --autostart` , so you can manually set up
