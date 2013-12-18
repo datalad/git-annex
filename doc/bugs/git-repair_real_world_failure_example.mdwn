@@ -1,0 +1,7 @@
+I was given these 2 repos, git-repair fails on the first, and the
+second is a backup copy from before the problem:
+
+* <http://www.clacke.se/annex/podcasts.git.tar.xz>
+* <http://www.clacke.se/annex/podcasts-bak.git.tar.xz>
+
+--[[Joey]]
