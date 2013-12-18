@@ -1,0 +1,28 @@
+### Please describe the problem.
+missing libselinux.so.1 ?
+
+### What steps will reproduce the problem?
+[[!format sh """
+./runshell
+cd ~
+$ git clone ssh://greg@host/path/to/annex/of/Photos Photos
+Cloning into 'Photos'...
+ssh: error while loading shared libraries: libselinux.so.1: cannot open shared object file: No such file or directory
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+"""]]
+
+same command (copy/paste) works on my laptop running 4.20131106
+
+### What version of git-annex are you using? On what operating system?
+[[!format sh """
+$ git annex version
+git-annex version: 5.20131216-g604e6b8
+build flags: Assistant Pairing S3 Inotify DBus XMPP Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web glacier hook
+"""]]
+
+arm build (downloaded from [[install/Linux_standalone]])
