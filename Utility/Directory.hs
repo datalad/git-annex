@@ -60,12 +60,18 @@ dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir = go [topdir]
 	collect files dirs' (entry:entries)
 		| dirCruft entry = collect files dirs' entries
 		| otherwise = do
-			ms <- catchMaybeIO $ getFileStatus entry
+			let skip = collect (entry:files) dirs' entries
+			let recurse = collect files (entry:dirs') entries
+			ms <- catchMaybeIO $ getSymbolicLinkStatus entry
 			case ms of
-				(Just s) | isDirectory s || (isSymbolicLink s && followsubdirsymlinks) ->
-					collect files (entry:dirs') entries
-				_ ->
-					collect (entry:files) dirs' entries
+				(Just s) 
+					| isDirectory s -> recurse
+					| isSymbolicLink s && followsubdirsymlinks ->
+						ifM (doesDirectoryExist entry)
+							( recurse
+							, skip
+							)
+				_ -> skip
 
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}
