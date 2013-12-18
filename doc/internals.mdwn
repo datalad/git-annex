@@ -130,3 +130,30 @@ The timestamps allow the most recent information to be identified.
 These log files record urls used by the
 [[web_special_remote|special_remotes/web]]. Their format is similar
 to the location tracking files, but with urls rather than UUIDs.
+
+## `schedule.log`
+
+Used to record scheduled events, such as periodic fscks.
+
+The file format is simply one line per repository, with the uuid followed by a
+space and then its schedule, followed by a timestamp.
+
+There can be multiple events in the schedule, separated by "; "
+
+The format of the scheduled events is the same described in
+the SCHEDULED JOBS section of the man page.
+
+Example:
+
+	42bf2035-0636-461d-a367-49e9dfd361dd fsck self 30m every day at any time; fsck 4b3ebc86-0faf-4892-83c5-ce00cbe30f0a 1h every year at any time timestamp=1385646997.053162s
+
+## `transitions.log`
+
+Used to record transitions, eg by `git annex forget`
+
+Each line of the file is a transition, followed by a timestamp.
+
+Example:
+
+	ForgetGitHistory 1387325539.685136s
+	ForgetDeadRemotes 1387325539.685136s
