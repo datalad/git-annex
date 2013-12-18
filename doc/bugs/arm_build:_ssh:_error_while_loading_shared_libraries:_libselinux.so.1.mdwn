@@ -26,3 +26,6 @@ remote types: git gcrypt S3 bup directory rsync web glacier hook
 """]]
 
 arm build (downloaded from [[install/Linux_standalone]])
+
+> ssh was not shimmed. [[fixed|done]]; build will update in a few hours
+> --[[Joey]]
