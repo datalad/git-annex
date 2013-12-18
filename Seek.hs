@@ -61,7 +61,7 @@ withPathContents a params = map a . concat <$> liftIO (mapM get params)
   where
 	get p = ifM (isDirectory <$> getFileStatus p)
 		( map (\f -> (f, makeRelative (parentDir p) f))
-			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) p
+			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) True p
 		, return [(p, takeFileName p)]
 		)
 

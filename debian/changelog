@@ -11,6 +11,8 @@ git-annex (5.20131214) UNRELEASED; urgency=low
   * Linux standalone build now includes its own glibc and forces the linker to
     use it, to remove dependence on the host glibc.
   * assistant: Always batch changes found in startup scan.
+  * assistant: Fix OSX-specific bug that caused the startup scan to try to
+    follow symlinks to other directories, and add their contents to the annex.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 15 Dec 2013 13:32:49 -0400
 

@@ -27,7 +27,7 @@ listPackFiles r = filter (".pack" `isSuffixOf`)
 listLooseObjectShas :: Repo -> IO [Sha]
 listLooseObjectShas r = catchDefaultIO [] $
 	mapMaybe (extractSha . concat . reverse . take 2 . reverse . splitDirectories)
-		<$> dirContentsRecursiveSkipping (== "pack") (objectsDir r)
+		<$> dirContentsRecursiveSkipping (== "pack") True (objectsDir r)
 
 looseObjectFile :: Repo -> Sha -> FilePath
 looseObjectFile r sha = objectsDir r </> prefix </> rest
