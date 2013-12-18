@@ -1,9 +1,9 @@
 ### Please describe the problem.
 When I try to create the repository with the suggested location `C:\Users\bbigras\Desktop\annex\` I get "Cannot write a repository there". I didn't see the program output any errors on the console.
 
-It works if I change the path to `C:\Users\bbigras\annex\`.
+screen capture: http://imgur.com/7ZUqqVQ
 
-See attached screen capture.
+It works if I change the path to `C:\Users\bbigras\annex\`.
 
 ### What steps will reproduce the problem?
 * run `git annex webapp`
