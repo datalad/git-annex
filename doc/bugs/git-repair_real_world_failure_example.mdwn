@@ -5,3 +5,7 @@ second is a backup copy from before the problem:
 * <http://www.clacke.se/annex/podcasts-bak.git.tar.xz>
 
 --[[Joey]]
+
+> Tested with current version, and it successfully repairs. 
+> Bug reporter was using an older version (based on some old messages).
+> [[done]] --[[Joey]]
