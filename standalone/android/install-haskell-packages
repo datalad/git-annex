@@ -35,7 +35,7 @@ patched () {
 	git config user.email dummy@example.com
 	git add .
 	git commit -m "pre-patched state of $pkg"
-	for patch in ../../haskell-patches/${pkg}_* ../../../haskell-patches/no-th/${pkg}_*; do
+	for patch in ../../haskell-patches/${pkg}_* ../../../no-th/haskell-patches/${pkg}_*; do
 		if [ -e "$patch" ]; then
 			echo trying $patch
 			if ! patch -p1 < $patch; then

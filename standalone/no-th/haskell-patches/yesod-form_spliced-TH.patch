@@ -1,19 +1,19 @@
-From f645acc0efbfcba7715cd2b6734f0e9df98f7020 Mon Sep 17 00:00:00 2001
+From fbd8f048c239e34625e438a24213534f6f68c3e8 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Mon, 11 Nov 2013 01:26:56 +0000
-Subject: [PATCH] update
+Date: Tue, 17 Dec 2013 18:34:25 +0000
+Subject: [PATCH] spliced TH
 
 ---
- Yesod/Form/Fields.hs    |  771 +++++++++++++++++++++++++++++++++++------------
- Yesod/Form/Functions.hs |  237 ++++++++++++---
- Yesod/Form/Jquery.hs    |  125 ++++++--
- Yesod/Form/MassInput.hs |  233 +++++++++++---
- Yesod/Form/Nic.hs       |   61 +++-
- yesod-form.cabal        |    1 +
- 6 files changed, 1122 insertions(+), 306 deletions(-)
+ Yesod/Form/Fields.hs    | 771 ++++++++++++++++++++++++++++++++++++------------
+ Yesod/Form/Functions.hs | 239 ++++++++++++---
+ Yesod/Form/Jquery.hs    | 129 ++++++--
+ Yesod/Form/MassInput.hs | 233 ++++++++++++---
+ Yesod/Form/Nic.hs       |  65 +++-
+ yesod-form.cabal        |   1 +
+ 6 files changed, 1127 insertions(+), 311 deletions(-)
 
 diff --git a/Yesod/Form/Fields.hs b/Yesod/Form/Fields.hs
-index 0689859..1e9d49b 100644
+index b2a47c6..016c98b 100644
 --- a/Yesod/Form/Fields.hs
 +++ b/Yesod/Form/Fields.hs
 @@ -1,4 +1,3 @@
@@ -982,10 +982,17 @@ index 0689859..1e9d49b 100644
              , fvRequired = False
              }
 diff --git a/Yesod/Form/Functions.hs b/Yesod/Form/Functions.hs
-index 8a36710..c375ae0 100644
+index 8a36710..8675a10 100644
 --- a/Yesod/Form/Functions.hs
 +++ b/Yesod/Form/Functions.hs
-@@ -59,6 +59,10 @@ import Data.Maybe (listToMaybe, fromMaybe)
+@@ -53,12 +53,16 @@ import Text.Blaze (Markup, toMarkup)
+ #define toHtml toMarkup
+ import Yesod.Core
+ import Network.Wai (requestMethod)
+-import Text.Hamlet (shamlet)
++--`import Text.Hamlet (shamlet)
+ import Data.Monoid (mempty)
+ import Data.Maybe (listToMaybe, fromMaybe)
  import qualified Data.Map as Map
  import qualified Data.Text.Encoding as TE
  import Control.Arrow (first)
@@ -1265,10 +1272,10 @@ index 8a36710..c375ae0 100644
  
  check :: (Monad m, RenderMessage (HandlerSite m) msg)
 diff --git a/Yesod/Form/Jquery.hs b/Yesod/Form/Jquery.hs
-index 2c4ae25..4362188 100644
+index 2c4ae25..ed9b366 100644
 --- a/Yesod/Form/Jquery.hs
 +++ b/Yesod/Form/Jquery.hs
-@@ -12,6 +12,18 @@ module Yesod.Form.Jquery
+@@ -12,12 +12,24 @@ module Yesod.Form.Jquery
      , Default (..)
      ) where
  
@@ -1287,6 +1294,14 @@ index 2c4ae25..4362188 100644
  import Yesod.Core
  import Yesod.Form
  import Data.Time (Day)
+ import Data.Default
+-import Text.Hamlet (shamlet)
+-import Text.Julius (julius, rawJS)
++--import Text.Hamlet (shamlet)
++import Text.Julius (rawJS)
+ import Data.Text (Text, pack, unpack)
+ import Data.Monoid (mconcat)
+ 
 @@ -60,27 +72,59 @@ jqueryDayField jds = Field
                . readMay
                . unpack
@@ -1684,10 +1699,10 @@ index 332eb66..5015e7b 100644
 -                        <td .errors>#{err}
 -|]
 diff --git a/Yesod/Form/Nic.hs b/Yesod/Form/Nic.hs
-index 2862678..7b49b1a 100644
+index 2862678..04ddaba 100644
 --- a/Yesod/Form/Nic.hs
 +++ b/Yesod/Form/Nic.hs
-@@ -9,6 +9,19 @@ module Yesod.Form.Nic
+@@ -9,11 +9,24 @@ module Yesod.Form.Nic
      , nicHtmlField
      ) where
  
@@ -1707,6 +1722,13 @@ index 2862678..7b49b1a 100644
  import Yesod.Core
  import Yesod.Form
  import Text.HTML.SanitizeXSS (sanitizeBalance)
+-import Text.Hamlet (shamlet)
+-import Text.Julius (julius, rawJS)
++--import Text.Hamlet (shamlet)
++import Text.Julius ( rawJS)
+ import Text.Blaze.Html.Renderer.String (renderHtml)
+ import Data.Text (Text, pack)
+ import Data.Maybe (listToMaybe)
 @@ -27,20 +40,48 @@ nicHtmlField :: YesodNic site => Field (HandlerT site IO) Html
  nicHtmlField = Field
      { fieldParse = \e _ -> return . Right . fmap (preEscapedToMarkup . sanitizeBalance) . listToMaybe $ e
@@ -1767,7 +1789,7 @@ index 2862678..7b49b1a 100644
      }
    where
 diff --git a/yesod-form.cabal b/yesod-form.cabal
-index 39fa680..88ed066 100644
+index 9e0c710..a39f71f 100644
 --- a/yesod-form.cabal
 +++ b/yesod-form.cabal
 @@ -19,6 +19,7 @@ library
@@ -1779,5 +1801,5 @@ index 39fa680..88ed066 100644
                     , persistent            >= 1.2      && < 1.3
                     , template-haskell
 -- 
-1.7.10.4
+1.8.5.1
 

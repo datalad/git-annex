@@ -7,6 +7,7 @@
  -}
 import qualified Data.Monoid
 import qualified Data.Set
+import qualified Data.Set as Data.Set.Base
 import qualified Data.Map
 import qualified Data.Map as Data.Map.Base
 import qualified Data.Foldable
@@ -26,6 +27,7 @@ import qualified Data.FileEmbed
 import qualified Data.ByteString.Internal
 import qualified Data.Text.Encoding
 import qualified Network.Wai
+import qualified Network.Wai as Network.Wai.Internal
 import qualified Yesod.Core.Types
 {- End EvilSplicer headers. -}
 

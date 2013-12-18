@@ -196,6 +196,34 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	hdiutil create -format UDBZ -srcfolder tmp/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
 
+# Must be run on a system with TH supported, and the same
+# versions of TH splice generating packages as the arm system installed.
+no-th-webapp-stage1: Build/EvilSplicer
+	echo "Running throwaway build, to get TH splices.."
+	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f-Production -O0;  fi
+	mkdir -p tmp
+	if ! $(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices; then tail tmp/dump-splices >&2; exit 1; fi
+	echo "Setting up no-th build tree.."
+	./Build/EvilSplicer tmp/splices tmp/dump-splices standalone/no-th/evilsplicer-headers.hs
+	rsync -az --exclude tmp --exclude dist . tmp/no-th-tree
+# Copy the files with expanded splices to the source tree, but
+# only if the existing source file is not newer. (So, if a file
+# used to have TH splices but they were removed, it will be newer,
+# and not overwritten.)
+	cp -uR tmp/splices/* tmp/no-th-tree || true
+# Some additional dependencies needed by the expanded splices.
+	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, /' tmp/no-th-tree/git-annex.cabal
+# Avoid warnings due to sometimes unused imports added for the splices.
+	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/no-th-tree/git-annex.cabal
+
+# Run on the arm system, after stage1
+no-th-webapp-stage2: 
+	if [ ! -e tmp/no-th-tree/dist/setup-config ]; then \
+		cd tmp/no-th-tree && cabal configure; \
+	fi
+	cd tmp/no-th-tree && cabal build --ghc-option=-D__NO_TH__
+	cd tmp/no-th-tree && $(MAKE) linuxstandalone
+
 ANDROID_FLAGS?=
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
