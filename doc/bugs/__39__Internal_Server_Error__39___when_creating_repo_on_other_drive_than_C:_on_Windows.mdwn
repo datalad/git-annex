@@ -14,7 +14,16 @@ git [Param "config",Param "annex.uuid",Param "d2277948-4689-41d8-bd55-15c634f38c
 * create annex on `d:\annex`
 
 ### What version of git-annex are you using? On what operating system?
+[[!format sh """
+git-annex version: 5.20131213-g2893b22
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
 
+git version 1.8.4.msysgit.0
+"""]]
+
+Windows 7 64-bit
 
 ### Please provide any additional information below.
 [[!format sh """
