@@ -1,21 +1,63 @@
-From 7583457fb410d07f480a2aa7d6c2f174324b3592 Mon Sep 17 00:00:00 2001
+From 08cc43788c16fb91f63bc0bd520eeccdcdab477a Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Sat, 19 Oct 2013 02:03:18 +0000
-Subject: [PATCH] hackity
+Date: Tue, 17 Dec 2013 17:15:33 +0000
+Subject: [PATCH] remove and expand TH
 
 ---
- Yesod/Core.hs              |    2 -
- Yesod/Core/Class/Yesod.hs  |  247 ++++++++++++++++++++++++++++++--------------
- Yesod/Core/Dispatch.hs     |    7 --
- Yesod/Core/Handler.hs      |   24 ++---
- Yesod/Core/Internal/Run.hs |    2 -
- 5 files changed, 179 insertions(+), 103 deletions(-)
+ Yesod/Core.hs              |  30 +++---
+ Yesod/Core/Class/Yesod.hs  | 249 +++++++++++++++++++++++++++++++--------------
+ Yesod/Core/Dispatch.hs     |  27 ++---
+ Yesod/Core/Handler.hs      |  25 ++---
+ Yesod/Core/Internal/Run.hs |   4 +-
+ Yesod/Core/Internal/TH.hs  | 111 --------------------
+ Yesod/Core/Widget.hs       |  32 +-----
+ 7 files changed, 209 insertions(+), 269 deletions(-)
 
 diff --git a/Yesod/Core.hs b/Yesod/Core.hs
-index 12e59d5..f1ff21c 100644
+index 12e59d5..2817a69 100644
 --- a/Yesod/Core.hs
 +++ b/Yesod/Core.hs
-@@ -94,8 +94,6 @@ module Yesod.Core
+@@ -29,16 +29,16 @@ module Yesod.Core
+     , unauthorizedI
+       -- * Logging
+     , LogLevel (..)
+-    , logDebug
+-    , logInfo
+-    , logWarn
+-    , logError
+-    , logOther
+-    , logDebugS
+-    , logInfoS
+-    , logWarnS
+-    , logErrorS
+-    , logOtherS
++    --, logDebug
++    --, logInfo
++    --, logWarn
++    --, logError
++    --, logOther
++    --, logDebugS
++    --, logInfoS
++    --, logWarnS
++    --, logErrorS
++    --, logOtherS
+       -- * Sessions
+     , SessionBackend (..)
+     , customizeSessionCookies
+@@ -85,17 +85,15 @@ module Yesod.Core
+     , readIntegral
+       -- * Shakespeare
+       -- ** Hamlet
+-    , hamlet
+-    , shamlet
+-    , xhamlet
++    --, hamlet
++    -- , shamlet
++    --, xhamlet
+     , HtmlUrl
+       -- ** Julius
+-    , julius
++    --, julius
      , JavascriptUrl
      , renderJavascriptUrl
        -- ** Cassius/Lucius
@@ -25,10 +67,16 @@ index 12e59d5..f1ff21c 100644
      , renderCssUrl
      ) where
 diff --git a/Yesod/Core/Class/Yesod.hs b/Yesod/Core/Class/Yesod.hs
-index cf02a1a..3f1e88e 100644
+index a64d6eb..5dffbfa 100644
 --- a/Yesod/Core/Class/Yesod.hs
 +++ b/Yesod/Core/Class/Yesod.hs
-@@ -9,6 +9,10 @@ import           Yesod.Core.Content
+@@ -5,11 +5,15 @@
+ {-# LANGUAGE CPP               #-}
+ module Yesod.Core.Class.Yesod where
+ 
+-import           Control.Monad.Logger               (logErrorS)
++--import           Control.Monad.Logger               (logErrorS)
+ import           Yesod.Core.Content
  import           Yesod.Core.Handler
  
  import           Yesod.Routes.Class
@@ -39,7 +87,7 @@ index cf02a1a..3f1e88e 100644
  
  import           Blaze.ByteString.Builder           (Builder)
  import           Blaze.ByteString.Builder.Char.Utf8 (fromText)
-@@ -87,18 +91,27 @@ class RenderRoute site => Yesod site where
+@@ -94,18 +98,27 @@ class RenderRoute site => Yesod site where
      defaultLayout w = do
          p <- widgetToPageContent w
          mmsg <- getMessage
@@ -79,7 +127,7 @@ index cf02a1a..3f1e88e 100644
  
      -- | Override the rendering function for a particular URL. One use case for
      -- this is to offload static hosting to a different domain name to avoid
-@@ -356,45 +369,103 @@ widgetToPageContent w = do
+@@ -370,45 +383,103 @@ widgetToPageContent w = do
      -- modernizr should be at the end of the <head> http://www.modernizr.com/docs/#installing
      -- the asynchronous loader means your page doesn't have to wait for all the js to load
      let (mcomplete, asyncScripts) = asyncHelper render scripts jscript jsLoc
@@ -222,7 +270,7 @@ index cf02a1a..3f1e88e 100644
  
      return $ PageContent title headAll $
          case jsLoader master of
-@@ -424,10 +495,13 @@ defaultErrorHandler NotFound = selectRep $ do
+@@ -438,10 +509,13 @@ defaultErrorHandler NotFound = selectRep $ do
          r <- waiRequest
          let path' = TE.decodeUtf8With TEE.lenientDecode $ W.rawPathInfo r
          setTitle "Not Found"
@@ -240,7 +288,7 @@ index cf02a1a..3f1e88e 100644
      provideRep $ return $ object ["message" .= ("Not Found" :: Text)]
  
  -- For API requests.
-@@ -437,10 +511,11 @@ defaultErrorHandler NotFound = selectRep $ do
+@@ -451,10 +525,11 @@ defaultErrorHandler NotFound = selectRep $ do
  defaultErrorHandler NotAuthenticated = selectRep $ do
      provideRep $ defaultLayout $ do
          setTitle "Not logged in"
@@ -256,7 +304,7 @@ index cf02a1a..3f1e88e 100644
  
      provideRep $ do
          -- 401 *MUST* include a WWW-Authenticate header
-@@ -462,10 +537,13 @@ defaultErrorHandler NotAuthenticated = selectRep $ do
+@@ -476,10 +551,13 @@ defaultErrorHandler NotAuthenticated = selectRep $ do
  defaultErrorHandler (PermissionDenied msg) = selectRep $ do
      provideRep $ defaultLayout $ do
          setTitle "Permission Denied"
@@ -274,7 +322,7 @@ index cf02a1a..3f1e88e 100644
      provideRep $
          return $ object $ [
            "message" .= ("Permission Denied. " <> msg)
-@@ -474,30 +552,43 @@ defaultErrorHandler (PermissionDenied msg) = selectRep $ do
+@@ -488,30 +566,43 @@ defaultErrorHandler (PermissionDenied msg) = selectRep $ do
  defaultErrorHandler (InvalidArgs ia) = selectRep $ do
      provideRep $ defaultLayout $ do
          setTitle "Invalid Arguments"
@@ -334,10 +382,39 @@ index cf02a1a..3f1e88e 100644
  
  asyncHelper :: (url -> [x] -> Text)
 diff --git a/Yesod/Core/Dispatch.hs b/Yesod/Core/Dispatch.hs
-index 335a15c..4ca05da 100644
+index df822e2..5583495 100644
 --- a/Yesod/Core/Dispatch.hs
 +++ b/Yesod/Core/Dispatch.hs
-@@ -123,13 +123,6 @@ toWaiApp site = do
+@@ -6,18 +6,18 @@
+ {-# LANGUAGE CPP #-}
+ module Yesod.Core.Dispatch
+     ( -- * Quasi-quoted routing
+-      parseRoutes
+-    , parseRoutesNoCheck
+-    , parseRoutesFile
+-    , parseRoutesFileNoCheck
+-    , mkYesod
++    --  parseRoutes
++    --, parseRoutesNoCheck
++    --, parseRoutesFile
++    --, parseRoutesFileNoCheck
++    --, mkYesod
+       -- ** More fine-grained
+-    , mkYesodData
+-    , mkYesodSubData
+-    , mkYesodDispatch
+-    , mkYesodSubDispatch
++    --, mkYesodData
++    --, mkYesodSubData
++    --, mkYesodDispatch
++    --, mkYesodSubDispatch
+       -- ** Path pieces
+-    , PathPiece (..)
++      PathPiece (..)
+     , PathMultiPiece (..)
+     , Texts
+       -- * Convert to WAI
+@@ -124,13 +124,6 @@ toWaiApp site = do
                  , yreSite = site
                  , yreSessionBackend = sb
                  }
@@ -352,19 +429,27 @@ index 335a15c..4ca05da 100644
      return $ middleware $ toWaiAppYre yre
  
 diff --git a/Yesod/Core/Handler.hs b/Yesod/Core/Handler.hs
-index f3b1799..d819b04 100644
+index 3581dbc..908256e 100644
 --- a/Yesod/Core/Handler.hs
 +++ b/Yesod/Core/Handler.hs
-@@ -152,7 +152,7 @@ import qualified Control.Monad.Trans.Writer    as Writer
+@@ -164,7 +164,7 @@ import           Data.Text.Encoding            (decodeUtf8With, encodeUtf8)
+ import           Data.Text.Encoding.Error      (lenientDecode)
+ import qualified Data.Text.Lazy                as TL
+ import qualified Text.Blaze.Html.Renderer.Text as RenderText
+-import           Text.Hamlet                   (Html, HtmlUrl, hamlet)
++import           Text.Hamlet                   (Html, HtmlUrl)
  
- import           Control.Monad.IO.Class        (MonadIO, liftIO)
- import           Control.Monad.Trans.Resource  (MonadResource, liftResourceT)
--
+ import qualified Data.ByteString               as S
+ import qualified Data.ByteString.Lazy          as L
+@@ -198,6 +198,7 @@ import Data.CaseInsensitive (CI)
+ #if MIN_VERSION_wai(2, 0, 0)
+ import qualified System.PosixCompat.Files as PC
+ #endif
 +import qualified Text.Blaze.Internal
- import qualified Network.HTTP.Types            as H
- import qualified Network.Wai                   as W
- import Control.Monad.Trans.Class (lift)
-@@ -710,19 +710,15 @@ redirectToPost :: (MonadHandler m, RedirectUrl (HandlerSite m) url)
+ 
+ get :: MonadHandler m => m GHState
+ get = liftHandlerT $ HandlerT $ I.readIORef . handlerState
+@@ -743,19 +744,15 @@ redirectToPost :: (MonadHandler m, RedirectUrl (HandlerSite m) url)
                 -> m a
  redirectToPost url = do
      urlText <- toTextUrl url
@@ -394,10 +479,19 @@ index f3b1799..d819b04 100644
  -- | Wraps the 'Content' generated by 'hamletToContent' in a 'RepHtml'.
  hamletToRepHtml :: MonadHandler m => HtmlUrl (Route (HandlerSite m)) -> m Html
 diff --git a/Yesod/Core/Internal/Run.hs b/Yesod/Core/Internal/Run.hs
-index 35f1d3f..8b92e99 100644
+index 25f51f1..d04d2cd 100644
 --- a/Yesod/Core/Internal/Run.hs
 +++ b/Yesod/Core/Internal/Run.hs
-@@ -122,8 +122,6 @@ safeEh :: (Loc -> LogSource -> LogLevel -> LogStr -> IO ())
+@@ -15,7 +15,7 @@ import           Control.Exception.Lifted     (catch)
+ import           Control.Monad.IO.Class       (MonadIO)
+ import           Control.Monad.IO.Class       (liftIO)
+ import           Control.Monad.Logger         (LogLevel (LevelError), LogSource,
+-                                               liftLoc)
++                                               )
+ import           Control.Monad.Trans.Resource (runResourceT, withInternalState, runInternalState, createInternalState, closeInternalState)
+ import qualified Data.ByteString              as S
+ import qualified Data.ByteString.Char8        as S8
+@@ -128,8 +128,6 @@ safeEh :: (Loc -> LogSource -> LogLevel -> LogStr -> IO ())
         -> ErrorResponse
         -> YesodApp
  safeEh log' er req = do
@@ -406,6 +500,185 @@ index 35f1d3f..8b92e99 100644
      return $ YRPlain
          H.status500
          []
+diff --git a/Yesod/Core/Internal/TH.hs b/Yesod/Core/Internal/TH.hs
+index 7e84c1c..a273c29 100644
+--- a/Yesod/Core/Internal/TH.hs
++++ b/Yesod/Core/Internal/TH.hs
+@@ -23,114 +23,3 @@ import Yesod.Core.Content
+ import Yesod.Core.Class.Dispatch
+ import Yesod.Core.Internal.Run
+ 
+--- | Generates URL datatype and site function for the given 'Resource's. This
+--- is used for creating sites, /not/ subsites. See 'mkYesodSub' for the latter.
+--- Use 'parseRoutes' to create the 'Resource's.
+-mkYesod :: String -- ^ name of the argument datatype
+-        -> [ResourceTree String]
+-        -> Q [Dec]
+-mkYesod name = fmap (uncurry (++)) . mkYesodGeneral name [] False
+-
+--- | Sometimes, you will want to declare your routes in one file and define
+--- your handlers elsewhere. For example, this is the only way to break up a
+--- monolithic file into smaller parts. Use this function, paired with
+--- 'mkYesodDispatch', to do just that.
+-mkYesodData :: String -> [ResourceTree String] -> Q [Dec]
+-mkYesodData name res = mkYesodDataGeneral name False res
+-
+-mkYesodSubData :: String -> [ResourceTree String] -> Q [Dec]
+-mkYesodSubData name res = mkYesodDataGeneral name True res
+-
+-mkYesodDataGeneral :: String -> Bool -> [ResourceTree String] -> Q [Dec]
+-mkYesodDataGeneral name isSub res = do
+-    let (name':rest) = words name
+-    fmap fst $ mkYesodGeneral name' rest isSub res
+-
+--- | See 'mkYesodData'.
+-mkYesodDispatch :: String -> [ResourceTree String] -> Q [Dec]
+-mkYesodDispatch name = fmap snd . mkYesodGeneral name [] False
+-
+--- | Get the Handler and Widget type synonyms for the given site.
+-masterTypeSyns :: Type -> [Dec]
+-masterTypeSyns site =
+-    [ TySynD (mkName "Handler") []
+-      $ ConT ''HandlerT `AppT` site `AppT` ConT ''IO
+-    , TySynD (mkName "Widget")  []
+-      $ ConT ''WidgetT `AppT` site `AppT` ConT ''IO `AppT` ConT ''()
+-    ]
+-
+-mkYesodGeneral :: String                   -- ^ foundation type
+-               -> [String]                 -- ^ arguments for the type
+-               -> Bool                     -- ^ it this a subsite
+-               -> [ResourceTree String]
+-               -> Q([Dec],[Dec])
+-mkYesodGeneral name args isSub resS = do
+-    renderRouteDec <- mkRenderRouteInstance site res
+-    routeAttrsDec  <- mkRouteAttrsInstance site res
+-    dispatchDec    <- mkDispatchInstance site res
+-    parse <- mkParseRouteInstance site res
+-    let rname = mkName $ "resources" ++ name
+-    eres <- lift resS
+-    let resourcesDec =
+-            [ SigD rname $ ListT `AppT` (ConT ''ResourceTree `AppT` ConT ''String)
+-            , FunD rname [Clause [] (NormalB eres) []]
+-            ]
+-    let dataDec = concat
+-            [ [parse]
+-            , renderRouteDec
+-            , [routeAttrsDec]
+-            , resourcesDec
+-            , if isSub then [] else masterTypeSyns site
+-            ]
+-    return (dataDec, dispatchDec)
+-  where site    = foldl' AppT (ConT $ mkName name) (map (VarT . mkName) args)
+-        res     = map (fmap parseType) resS
+-
+-mkMDS :: Q Exp -> MkDispatchSettings
+-mkMDS rh = MkDispatchSettings
+-    { mdsRunHandler = rh
+-    , mdsSubDispatcher =
+-        [|\parentRunner getSub toParent env -> yesodSubDispatch
+-                                 YesodSubRunnerEnv
+-                                    { ysreParentRunner = parentRunner
+-                                    , ysreGetSub = getSub
+-                                    , ysreToParentRoute = toParent
+-                                    , ysreParentEnv = env
+-                                    }
+-                              |]
+-    , mdsGetPathInfo = [|W.pathInfo|]
+-    , mdsSetPathInfo = [|\p r -> r { W.pathInfo = p }|]
+-    , mdsMethod = [|W.requestMethod|]
+-    , mds404 = [|notFound >> return ()|]
+-    , mds405 = [|badMethod >> return ()|]
+-    , mdsGetHandler = defaultGetHandler
+-    }
+-
+--- | If the generation of @'YesodDispatch'@ instance require finer
+--- control of the types, contexts etc. using this combinator. You will
+--- hardly need this generality. However, in certain situations, like
+--- when writing library/plugin for yesod, this combinator becomes
+--- handy.
+-mkDispatchInstance :: Type                -- ^ The master site type
+-                   -> [ResourceTree a]    -- ^ The resource
+-                   -> DecsQ
+-mkDispatchInstance master res = do
+-    clause' <- mkDispatchClause (mkMDS [|yesodRunner|]) res
+-    let thisDispatch = FunD 'yesodDispatch [clause']
+-    return [InstanceD [] yDispatch [thisDispatch]]
+-  where
+-    yDispatch = ConT ''YesodDispatch `AppT` master
+-
+-mkYesodSubDispatch :: [ResourceTree a] -> Q Exp
+-mkYesodSubDispatch res = do
+-    clause' <- mkDispatchClause (mkMDS [|subHelper . fmap toTypedContent|]) res
+-    inner <- newName "inner"
+-    let innerFun = FunD inner [clause']
+-    helper <- newName "helper"
+-    let fun = FunD helper
+-                [ Clause
+-                    []
+-                    (NormalB $ VarE inner)
+-                    [innerFun]
+-                ]
+-    return $ LetE [fun] (VarE helper)
+diff --git a/Yesod/Core/Widget.hs b/Yesod/Core/Widget.hs
+index a972efa..156cd45 100644
+--- a/Yesod/Core/Widget.hs
++++ b/Yesod/Core/Widget.hs
+@@ -16,8 +16,8 @@ module Yesod.Core.Widget
+       WidgetT
+     , PageContent (..)
+       -- * Special Hamlet quasiquoter/TH for Widgets
+-    , whamlet
+-    , whamletFile
++    --, whamlet
++    --, whamletFile
+     , ihamletToRepHtml
+     , ihamletToHtml
+       -- * Convert to Widget
+@@ -46,7 +46,7 @@ module Yesod.Core.Widget
+     , widgetToParentWidget
+     , handlerToWidget
+       -- * Internal
+-    , whamletFileWithSettings
++    --, whamletFileWithSettings
+     , asWidgetT
+     ) where
+ 
+@@ -189,35 +189,9 @@ addScriptRemote = flip addScriptRemoteAttrs []
+ addScriptRemoteAttrs :: MonadWidget m => Text -> [(Text, Text)] -> m ()
+ addScriptRemoteAttrs x y = tell $ GWData mempty mempty (toUnique $ Script (Remote x) y) mempty mempty mempty mempty
+ 
+-whamlet :: QuasiQuoter
+-whamlet = NP.hamletWithSettings rules NP.defaultHamletSettings
+-
+-whamletFile :: FilePath -> Q Exp
+-whamletFile = NP.hamletFileWithSettings rules NP.defaultHamletSettings
+-
+-whamletFileWithSettings :: NP.HamletSettings -> FilePath -> Q Exp
+-whamletFileWithSettings = NP.hamletFileWithSettings rules
+-
+ asWidgetT :: WidgetT site m () -> WidgetT site m ()
+ asWidgetT = id
+ 
+-rules :: Q NP.HamletRules
+-rules = do
+-    ah <- [|asWidgetT . toWidget|]
+-    let helper qg f = do
+-            x <- newName "urender"
+-            e <- f $ VarE x
+-            let e' = LamE [VarP x] e
+-            g <- qg
+-            bind <- [|(>>=)|]
+-            return $ InfixE (Just g) bind (Just e')
+-    let ur f = do
+-            let env = NP.Env
+-                    (Just $ helper [|getUrlRenderParams|])
+-                    (Just $ helper [|liftM (toHtml .) getMessageRender|])
+-            f env
+-    return $ NP.HamletRules ah ur $ \_ b -> return $ ah `AppE` b
+-
+ -- | Wraps the 'Content' generated by 'hamletToContent' in a 'RepHtml'.
+ ihamletToRepHtml :: (MonadHandler m, RenderMessage (HandlerSite m) message)
+                  => HtmlUrlI18n message (Route (HandlerSite m))
 -- 
-1.7.10.4
+1.8.5.1
 

@@ -362,12 +362,15 @@ mangleCode = flip_colon
 	 -     StaticR
 	 -     yesod_dispatch_env_a4iDV
 	 -     (\ p_a4iE2 r_a4iE3
-	 -        -> r_a4iE3 {Network.Wai.pathInfo = p_a4iE2}
+	 -        -> r_a4iE3
+	 -          {Network.Wai.pathInfo = p_a4iE2}
 	 -        xrest_a4iDT req_a4iDW)) }
 	 -
 	 - Need to add another paren around the lambda, and close it
 	 - before its parameters. lambdaparens misses this one because
 	 - there is already one paren present.
+	 -
+	 - Note that the { } may be on the same line, or wrapped to next.
 	 -
 	 - FIXME: This is a hack. lambdaparens could just always add a
 	 - layer of parens even when a lambda seems to be in parent.
@@ -384,11 +387,16 @@ mangleCode = flip_colon
 		string indent
 		lambdaarrow <- string "   ->"
 		l2 <- restofline
+		l3 <- if '{' `elem` l2 && '}' `elem` l2
+			then return ""
+			else do
+				string indent
+				restofline
 		return $ unlines
 			[ indent ++ staticr
 			, indent ++ yesod_dispatch_env
 			, indent ++ "(" ++ lambdaprefix ++ l1
-			, indent ++ lambdaarrow ++ l2 ++ ")"
+			, indent ++ lambdaarrow ++ l2 ++ l3 ++ ")"
 			]
 
 	restofline = manyTill (noneOf "\n") newline
