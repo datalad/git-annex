@@ -1,0 +1,24 @@
+### Please describe the problem.
+When I try to create an annex on my `D:\` drive I get the following error:
+
+[[!format sh """
+Internal Server Error
+git [Param "config",Param "annex.uuid",Param "d2277948-4689-41d8-bd55-15c634f38cee"] failed
+"""]]
+
+[screen capture](http://imgur.com/w7uPLDp)
+
+
+### What steps will reproduce the problem?
+* run `git annex webapp`
+* create annex on `d:\annex`
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+[[!format sh """
+Launching web browser on file://C:\Users\bbigras\AppData\Local\Temp\webapp9400.html
+fatal: Not a git repository: '/annex/.git'
+error: could not lock config file /annex/.git/config: No such file or directory
+"""]]
