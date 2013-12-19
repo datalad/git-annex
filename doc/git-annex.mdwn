@@ -768,18 +768,19 @@ subdirectories).
 
         	git annex dropkey SHA1-s10-7da006579dd64330eb2456001fd01948430572f2
 
-* `transferkeys`
-
-  This plumbing-level command is used by the assistant to transfer data.
-  It is fed instructions about the keys to transfer using an internal
-  stdio protocol.
-
 * `transferkey`
 
   This plumbing-level command is used to request a single key be
   transferred. Either the --from or the --to option can be used to specify
   the remote to use. A --file option can be used to hint at the file
   associated with the key.
+
+* `transferkeys`
+
+  This plumbing-level command is used by the assistant to transfer data.
+  It is fed instructions about the keys to transfer using an internal
+  stdio protocol, which is intentionally not documented (as it may change
+  at any time).
 
 * `rekey [file key ...]`
 
