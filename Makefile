@@ -101,9 +101,9 @@ hackage: sdist
 	@cabal upload dist/*.tar.gz
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
-linuxstandalone: Build/Standalone
+linuxstandalone:
 	$(MAKE) git-annex linuxstandalone-nobuild
-linuxstandalone-nobuild: 
+linuxstandalone-nobuild: Build/Standalone
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
 	cp -R standalone/linux "$(LINUXSTANDALONE_DEST)"
