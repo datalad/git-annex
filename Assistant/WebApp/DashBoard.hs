@@ -28,9 +28,8 @@ import qualified Data.Map as M
 import Control.Concurrent
 
 {- A display of currently running and queued transfers. -}
-transfersDisplay :: Bool -> Widget
-transfersDisplay warnNoScript = do
-	webapp <- liftH getYesod
+transfersDisplay :: Widget
+transfersDisplay = do
 	current <- liftAssistant $ M.toList <$> getCurrentTransfers
 	queued <- take 10 <$> liftAssistant getTransferQueue
 	autoUpdate ident NotifierTransfersR (10 :: Int) (10 :: Int)
@@ -66,7 +65,7 @@ getTransfersR :: NotificationId -> Handler Html
 getTransfersR nid = do
 	waitNotifier getTransferBroadcaster nid
 
-	p <- widgetToPageContent $ transfersDisplay False
+	p <- widgetToPageContent transfersDisplay
 	giveUrlRenderer $ [hamlet|^{pageBody p}|]
 
 {- The main dashboard. -}
@@ -74,7 +73,7 @@ dashboard :: Bool -> Widget
 dashboard warnNoScript = do
 	let repolist = repoListDisplay $
 		mainRepoSelector { nudgeAddMore = True }
-	let transferlist = transfersDisplay warnNoScript
+	let transferlist = transfersDisplay
 	$(widgetFile "dashboard/main")
 
 getDashboardR :: Handler Html
@@ -94,7 +93,6 @@ getNoScriptR = page "" (Just DashBoard) $ dashboard False
 {- Same as DashboardR, except with autorefreshing via meta refresh. -}
 getNoScriptAutoR :: Handler Html
 getNoScriptAutoR = page "" (Just DashBoard) $ do
-	let ident = NoScriptR
 	let delayseconds = 3 :: Int
 	let this = NoScriptAutoR
 	toWidgetHead $(Hamlet.hamletFile $ hamletTemplate "dashboard/metarefresh")

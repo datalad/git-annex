@@ -199,7 +199,7 @@ editForm new (RepoUUID uuid) = page "Edit repository" (Just Configuration) $ do
 			let repoInfo = getRepoInfo mremote config
 			let repoEncryption = getRepoEncryption mremote config
 			$(widgetFile "configurators/edit/repository")
-editForm new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
+editForm _new r@(RepoName _) = page "Edit repository" (Just Configuration) $ do
 	mr <- liftAnnex (repoIdRemote r)
 	let repoInfo = getRepoInfo mr Nothing
 	g <- liftAnnex gitRepo
