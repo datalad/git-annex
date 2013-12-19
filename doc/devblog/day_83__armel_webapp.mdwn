@@ -7,7 +7,7 @@ second.
 Fixed a nasty bug in the assistant on OSX, where at startup it would follow
 symlinks in the repository that pointed to directories outside the
 repository, and add the files found there. Didn't cause data loss itself
-(in direct mode the assistant doesn't touch the files), but certianly
+(in direct mode the assistant doesn't touch the files), but certainly
 confusingly breaks things and makes it easy to shoot your foot off. I will
 be moving up the next scheduled release because of this bug, probably to
 Saturday.
