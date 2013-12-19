@@ -99,7 +99,7 @@ class LiftAnnex m where
 	liftAnnex :: Annex a -> m a
 
 {- Runs an action in the git-annex monad. Note that the same monad state
- - is shared amoung all assistant threads, so only one of these can run at
+ - is shared among all assistant threads, so only one of these can run at
  - a time. Therefore, long-duration actions should be avoided. -}
 instance LiftAnnex Assistant where
 	liftAnnex a = do

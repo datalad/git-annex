@@ -76,7 +76,7 @@ preferredContentMapRaw = simpleMap . parseLog Just
 	<$> Annex.Branch.get preferredContentLog
 
 {- This intentionally never fails, even on unparsable expressions,
- - because the configuration is shared amoung repositories and newer
+ - because the configuration is shared among repositories and newer
  - versions of git-annex may add new features. Instead, parse errors
  - result in a Matcher that will always succeed. -}
 makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> String -> FileMatcher
