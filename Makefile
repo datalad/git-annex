@@ -102,8 +102,8 @@ hackage: sdist
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
 linuxstandalone: Build/Standalone
-	$(MAKE) git-annex
-
+	$(MAKE) git-annex linuxstandalone-nobuild
+linuxstandalone-nobuild: 
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
 	cp -R standalone/linux "$(LINUXSTANDALONE_DEST)"
@@ -222,7 +222,7 @@ no-th-webapp-stage2:
 		cd tmp/no-th-tree && cabal configure; \
 	fi
 	cd tmp/no-th-tree && cabal build --ghc-option=-D__NO_TH__
-	cd tmp/no-th-tree && $(MAKE) linuxstandalone
+	cd tmp/no-th-tree && $(MAKE) linuxstandalone-nobuild
 
 ANDROID_FLAGS?=
 # Cross compile for Android.
