@@ -109,7 +109,7 @@ linuxstandalone-nobuild:
 	cp -R standalone/linux "$(LINUXSTANDALONE_DEST)"
 	
 	install -d "$(LINUXSTANDALONE_DEST)/bin"
-	cp git-annex "$(LINUXSTANDALONE_DEST)/bin/"
+	cp dist/build/git-annex/git-annex "$(LINUXSTANDALONE_DEST)/bin/"
 	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
