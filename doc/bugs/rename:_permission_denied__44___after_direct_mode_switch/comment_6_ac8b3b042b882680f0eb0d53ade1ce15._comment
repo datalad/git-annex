@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://nicolas-schodet.myopenid.com/"
+ ip="2a01:e35:1381:3350:1e4b:d6ff:fe78:1ddb"
+ subject="comment 6"
+ date="2013-12-20T20:28:10Z"
+ content="""
+I finally managed to fix my repository by using this command:
+
+    SetFile -P -a l 2013-07-31_180411.jpg
+
+This removes the \"locked\" attribute.  After this command, the uchg flag is no longer set and I manage to use the repository normally.
+
+Still no idea on why it was set and whether this need a git-annex fix or not.
+"""]]
