@@ -233,7 +233,7 @@ android: Build/EvilSplicer
 	mkdir -p tmp
 	if ! $(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices; then tail tmp/dump-splices >&2; exit 1; fi
 	echo "Setting up Android build tree.."
-	./Build/EvilSplicer tmp/splices tmp/dump-splices standalone/android/evilsplicer-headers.hs
+	./Build/EvilSplicer tmp/splices tmp/dump-splices standalone/no-th/evilsplicer-headers.hs
 	rsync -az --exclude tmp --exclude dist . tmp/androidtree
 # Copy the files with expanded splices to the source tree, but
 # only if the existing source file is not newer. (So, if a file
