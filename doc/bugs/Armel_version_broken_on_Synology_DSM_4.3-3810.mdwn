@@ -21,3 +21,8 @@ chmod: /root/.ssh/git-annex-shell: Permission denied"
 ### What version of git-annex are you using? On what operating system?
 
 Synology DSM 4.3-3810 and latest nightly build of git-annex.
+
+> The shimming was broken, causing the hang. [[fixed|done]]
+> 
+> (It looks like you somehow forgot to set HOME when becoming the non-root
+> user.) --[[Joey]]
