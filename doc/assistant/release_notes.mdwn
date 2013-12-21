@@ -1,3 +1,11 @@
+## version 5.20131221
+
+There is now a arm [[install/linux_standalone]] build of git-annex,
+including the assistant and webapp,
+which can be installed on a variety of systems including Raspberry Pi,
+Synology NAS, and Google Chromebooks. Details in
+[[this forum thread|forum/new_linux_arm_tarball_build]].
+
 ## version 5.20131213
 
 The assistant can now be used on Windows! However, it has known problems,
