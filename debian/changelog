@@ -4,12 +4,6 @@ git-annex (5.20131214) UNRELEASED; urgency=low
   * Add plumbing-level lookupkey and examinekey commands.
   * find --format: Added hashdirlower, hashdirmixed, keyname, and mtime
     format variables.
-  * Programs from Linux and OSX standalone builds can now be symlinked
-    into a directory in PATH as an alternative installation method, and will
-    use readlink to find where the build was unpacked.
-  * Include man pages in Linux and OSX standalone builds.
-  * Linux standalone build now includes its own glibc and forces the linker to
-    use it, to remove dependence on the host glibc.
   * assistant: Always batch changes found in startup scan.
   * assistant: Fix OSX-specific bug that caused the startup scan to try to
     follow symlinks to other directories, and add their contents to the annex.
@@ -17,6 +11,14 @@ git-annex (5.20131214) UNRELEASED; urgency=low
     and add it to the configuration for any ssh remotes previously created
     by the assistant. This avoids repeated prompts by ssh if the host key
     changes, instead syncing with such a remote will fail. Closes: #732602
+  * An armel Linux standalone build is now available, which includes the
+    webapp.
+  * Programs from Linux and OSX standalone builds can now be symlinked
+    into a directory in PATH as an alternative installation method, and will
+    use readlink to find where the build was unpacked.
+  * Include man pages in Linux and OSX standalone builds.
+  * Linux standalone build now includes its own glibc and forces the linker to
+    use it, to remove dependence on the host glibc.
 
  -- Joey Hess <joeyh@debian.org>  Sun, 15 Dec 2013 13:32:49 -0400
 
