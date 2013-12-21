@@ -25,7 +25,7 @@ makeinfos = do
 	version <- liftIO getChangelogVersion
 	now <- liftIO getCurrentTime
 	liftIO $ putStrLn $ "building info files for version " ++ version ++ " in " ++ basedir
-	fs <- liftIO $ dirContentsRecursiveSkipping (== "info") (basedir </> "git-annex")
+	fs <- liftIO $ dirContentsRecursiveSkipping (== "info") True (basedir </> "git-annex")
 	forM_ fs $ \f -> do
 		v <- lookupFile f
 		case v of
