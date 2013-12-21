@@ -9,10 +9,10 @@ module Assistant.Ssh where
 
 import Common.Annex
 import Utility.Tmp
-import Utility.UserInfo
 import Utility.Shell
 import Utility.Rsync
 import Utility.FileMode
+import Utility.SshConfig
 import Git.Remote
 
 import Data.Text (Text)
@@ -53,11 +53,6 @@ type SshPubKey = String
 {- ssh -ofoo=bar command-line option -}
 sshOpt :: String -> String -> String
 sshOpt k v = concat ["-o", k, "=", v]
-
-sshDir :: IO FilePath
-sshDir = do
-	home <- myHomeDir
-	return $ home </> ".ssh"
 
 {- user@host or host -}
 genSshHost :: Text -> Maybe Text -> String
@@ -228,6 +223,10 @@ genSshKeyPair = withTmpDir "git-annex-keygen" $ \dir -> do
  -
  - Similarly, IdentitiesOnly is set in the ssh config to prevent the
  - ssh-agent from forcing use of a different key.
+ -
+ - Force strict host key checking to avoid repeated prompts
+ - when git-annex and git try to access the remote, if its
+ - host key has changed.
  -}
 setupSshKeyPair :: SshKeyPair -> SshData -> IO SshData
 setupSshKeyPair sshkeypair sshdata = do
@@ -242,29 +241,22 @@ setupSshKeyPair sshkeypair sshdata = do
 	setSshConfig sshdata
 		[ ("IdentityFile", "~/.ssh/" ++ sshprivkeyfile)
 		, ("IdentitiesOnly", "yes")
+		, ("StrictHostKeyChecking", "yes")
 		]
   where
 	sshprivkeyfile = "git-annex" </> "key." ++ mangleSshHostName sshdata
 	sshpubkeyfile = sshprivkeyfile ++ ".pub"
 
 {- Fixes git-annex ssh key pairs configured in .ssh/config 
- - by old versions to set IdentitiesOnly. -}
-fixSshKeyPair :: IO ()
-fixSshKeyPair = do
-	sshdir <- sshDir
-	let configfile = sshdir </> "config"
-	whenM (doesFileExist configfile) $ do
-		ls <- lines <$> readFileStrict configfile
-		let ls' = fixSshKeyPair' ls
-		when (ls /= ls') $
-			viaTmp writeFile configfile $ unlines ls'
-
-{- Strategy: Search for IdentityFile lines in for files with key.git-annex
+ - by old versions to set IdentitiesOnly.
+ -
+ - Strategy: Search for IdentityFile lines with key.git-annex
  - in their names. These are for git-annex ssh key pairs.
  - Add the IdentitiesOnly line immediately after them, if not already
- - present. -}
-fixSshKeyPair' :: [String] -> [String]
-fixSshKeyPair' = go []
+ - present.
+ -}
+fixSshKeyPairIdentitiesOnly :: IO ()
+fixSshKeyPairIdentitiesOnly = changeUserSshConfig $ unlines . go [] . lines
   where
   	go c [] = reverse c
 	go c (l:[])
@@ -276,6 +268,20 @@ fixSshKeyPair' = go []
 		| otherwise = go (l:c) (next:rest)
   	indicators = ["IdentityFile", "key.git-annex"]
 	fixedline tmpl = takeWhile isSpace tmpl ++ "IdentitiesOnly yes"
+
+{- Add StrictHostKeyChecking to any ssh config stanzas that were written
+ - by git-annex. -}
+fixUpSshRemotes :: IO ()
+fixUpSshRemotes = modifyUserSshConfig (map go)
+  where
+	go c@(HostConfig h _)
+		| "git-annex-" `isPrefixOf` h = fixupconfig c
+		| otherwise = c
+	go other = other
+
+	fixupconfig c = case findHostConfigKey c "StrictHostKeyChecking" of
+		Nothing -> addToHostConfig c "StrictHostKeyChecking" "yes"
+		Just _ -> c
 
 {- Setups up a ssh config with a mangled hostname.
  - Returns a modified SshData containing the mangled hostname. -}

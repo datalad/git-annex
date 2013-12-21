@@ -15,6 +15,7 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.Alert
 import Assistant.Repair
+import Assistant.Ssh
 import qualified Git.LsFiles
 import qualified Git.Command
 import qualified Git.Config
@@ -52,6 +53,9 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 			debug ["no index file; restaging"]
 			modifyDaemonStatus_ $ \s -> s { forceRestage = True }
 		)
+
+	{- Fix up ssh remotes set up by past versions of the assistant. -}
+	liftIO $ fixUpSshRemotes
 
 	{- If there's a startup delay, it's done here. -}
 	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay

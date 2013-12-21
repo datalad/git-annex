@@ -260,7 +260,7 @@ getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
   where
   	go Nothing = redirect DashboardR
 	go (Just rmt) = do
-		liftIO fixSshKeyPair
+		liftIO fixSshKeyPairIdentitiesOnly
 		liftAnnex $ setConfig 
 			(remoteConfig (Remote.repo rmt) "ignore")
 			(Git.Config.boolConfig False)

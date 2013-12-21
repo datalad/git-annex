@@ -13,6 +13,10 @@ git-annex (5.20131214) UNRELEASED; urgency=low
   * assistant: Always batch changes found in startup scan.
   * assistant: Fix OSX-specific bug that caused the startup scan to try to
     follow symlinks to other directories, and add their contents to the annex.
+  * assistant: Set StrictHostKeyChecking yes when creating ssh remotes,
+    and add it to the configuration for any ssh remotes previously created
+    by the assistant. This avoids repeated prompts by ssh if the host key
+    changes, instead syncing with such a remote will fail. Closes: #732602
 
  -- Joey Hess <joeyh@debian.org>  Sun, 15 Dec 2013 13:32:49 -0400
 
