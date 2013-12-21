@@ -8,7 +8,9 @@ dependencies and is self-contained.
 The armel version can be installed on NAS devices and other embedded ARM
 linux systems.
 
-[download tarball](https://downloads.kitenet.net/git-annex/linux/current/)
+* i386: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz)
+* amd64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz)
+* armel: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz)
 
 To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
 -- this sets up an environment where you can use `git annex`, as well
