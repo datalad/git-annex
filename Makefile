@@ -146,7 +146,7 @@ linuxstandalone-nobuild: Build/Standalone
 	# Install linker shim for each binary. Note that each binary is put
 	# in its own separate directory, to avoid eg git looking for
 	# binaries in its directory rather than in PATH.
-	for file in $$(find "$(LINUXSTANDALONE_DEST)" -type f); do \
+	for file in $$(find "$(LINUXSTANDALONE_DEST)" -type f | grep -v \.so); do \
 		if file "$$file" | grep ELF | egrep -q 'executable|shared object' && test -x "$$file"; then \
 			base=$$(basename "$$file"); \
 			mkdir -p "$(LINUXSTANDALONE_DEST)/shimmed/$$base"; \
