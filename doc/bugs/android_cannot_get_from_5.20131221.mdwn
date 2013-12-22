@@ -20,6 +20,7 @@ Run 5.20131213 on `mylinuxbox`, which does not have this problem.
 linux standalone 5.20131213 and 5.20131221 are both able to `get` from linux standalone 5.20131221 -- this only affects the Android version.
 
 *Edit:* On second thought, Android is not the only distinguishing factor. Apart from being Android, the box and repo having trouble have the following distinguishing factors from the ones I tried that worked:
+
  - Android
  - Direct mode
  - Remote was set up by the Assistant
