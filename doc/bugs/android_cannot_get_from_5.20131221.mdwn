@@ -1,0 +1,22 @@
+## Reproduce
+
+ - run `git annex get --from mylinuxbox` on git-annex Android 5.20131213 or 5.20131221
+ - `mylinuxbox` is running 5.20131221 standalone
+
+## Expected result
+
+The Android box gets the missing file.
+
+## Actual result
+
+    git-annex: unknown command sendkey
+
+## Workaround
+
+Run 5.20131213 on `mylinuxbox`, which does not have this problem.
+
+## Additional
+
+linux standalone 5.20131213 and 5.20131221 are both able to `get` from linux standalone 5.20131221 -- this only affects the Android version.
+
+> [[clacke]]
