@@ -359,7 +359,7 @@ subdirectories).
   which may be a different repository than the one in which it was
   originally created with the initremote command.
 
-  The name of the remote is the same name used when origianlly 
+  The name of the remote is the same name used when originally 
   creating that remote with "initremote". Run "git annex enableremote"
   with no parameters to get a list of special remote names.
 
