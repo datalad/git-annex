@@ -1112,7 +1112,7 @@ Here are all the supported configuration settings.
   content to avoid running out, and additional free space can be reserved
   via this option, to make space for more important content (such as git
   commit logs). Can be specified with any commonly used units, for example,
-  "0.5 gb" or "100 KiloBytes"
+  "0.5 gb", "500M" or "100 KiloBytes"
 
   The default reserve is 1 megabyte.
 
