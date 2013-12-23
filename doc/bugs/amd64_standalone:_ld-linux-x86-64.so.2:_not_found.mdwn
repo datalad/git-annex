@@ -15,3 +15,7 @@ Debian amd64 (yes... I know, blame asheesh)
 greg@rose:~/bin/git-annex.linux$ ./runshell 
 exec: 2: /home/greg/bin/git-annex.linux/lib64/ld-linux-x86-64.so.2: not found
 """]]
+
+
+### Indeed a dupe ###
+Thanks clacke, [[done]] - Greg
