@@ -49,7 +49,7 @@ mklibs top = do
 	writeFile (top </> "linker")
 		(Prelude.head $ filter ("ld-linux" `isInfixOf`) libs')
 	writeFile (top </> "gconvdir")
-		(Prelude.head $ filter ("/gconv/" `isInfixOf`) glibclibs)
+		(parentDir $ Prelude.head $ filter ("/gconv/" `isInfixOf`) glibclibs)
 	
 	mapM_ (installLinkerShim top) exes
 
