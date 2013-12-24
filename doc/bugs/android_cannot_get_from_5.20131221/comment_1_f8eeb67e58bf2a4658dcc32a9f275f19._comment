@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZEanlyzay_QlEAL0CWpyZcRTyN7vay8U"
+ nickname="Carlo"
+ subject="comment 1"
+ date="2013-12-22T17:57:24Z"
+ content="""
+Same problem on copy --to, but says \"unknown command recvkey\". sender is linux x64, receiver is raspberry pi.
+"""]]
