@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-24T20:20:07Z"
+ content="""
+This has nothing to do with shimming at all AFACS.
+
+runshell does nothing to make git-upload-pack or git-receive-pack be in your PATH. They do not need to be, for `git upload-pack` and `git receive-pack` to work. At least `git-annex-shell`, and probably also `git-shell` both use the latter, rather than the former.
+
+But in the case that a git remote's ssh key is not set up to use git-annex-shell (ie, a git remote not configured using the assistant, or configured using the asistant but with a pre-existing passwordless ssh key), and git-annex was installed on the remote using the git-annex standalone bundle, and there is no other git installation, then yes, git will try to ssh to there and run `git-upload-pack` etc.
+"""]]
