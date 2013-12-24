@@ -22,6 +22,10 @@ bundledPrograms = catMaybes
 #ifndef mingw32_HOST_OS
 	-- git is not included in the windows bundle
 	, Just "git"
+	-- Not strictly needed in PATH by git-annex, but called
+	-- by git when it sshes to a remote.
+	, Just "git-upload-pack"
+	, Just "git-receive-pack"
 #endif
 	, Just "cp"
 #ifndef mingw32_HOST_OS

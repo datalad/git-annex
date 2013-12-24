@@ -108,7 +108,7 @@ linuxstandalone:
 linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
-	cp -R standalone/linux "$(LINUXSTANDALONE_DEST)"
+	cp -R standalone/linux/skel "$(LINUXSTANDALONE_DEST)"
 	
 	install -d "$(LINUXSTANDALONE_DEST)/bin"
 	cp dist/build/git-annex/git-annex "$(LINUXSTANDALONE_DEST)/bin/"

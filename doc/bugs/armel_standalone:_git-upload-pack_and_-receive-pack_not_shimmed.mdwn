@@ -18,3 +18,6 @@ $ git-upload-pack
 $ git-receive-pack
 /volume1/downloads/git-annex.linux/shimmed/sh/sh: 20: git-receive-pack: not found
 """]]
+
+> [[fixed|done]]; added git, git-upload-pack, and git-receive-pack wrappers
+> to git-annex.linux/. Also to equivilant place in OSX app. --[[Joey]]
