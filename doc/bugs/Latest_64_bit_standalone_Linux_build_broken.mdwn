@@ -11,3 +11,8 @@
     ls: cannot access /lib/x86_64-linux-gnu/ld-2.13.so: No such file or directory
 
 This is on Fedora 20, 64bit, installed from http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz as of Sun Dec 22 00:44:53 CET 2013.
+
+> [[fixed|done]]; converted ugly shell code to much nicer haskell code,
+> which let me reuse relative symlink generation code from git-annex
+> to fix this. Updated the amd64 build for the last release only.
+> --[[Joey]] 
