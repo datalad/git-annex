@@ -10,6 +10,7 @@ Build/InstallDesktopFile
 Build/EvilSplicer
 Build/Standalone
 Build/OSXMkLibs
+Build/LinuxMkLibs
 git-annex
 git-annex.1
 git-annex-shell.1
