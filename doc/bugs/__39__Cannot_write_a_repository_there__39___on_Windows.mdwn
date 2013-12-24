@@ -24,3 +24,9 @@ Windows 7 64-bit
 [[!format sh """
 Launching web browser on file://C:\Users\bbigras\AppData\Local\Temp\webapp9924.html
 """]]
+
+> It checks if the directory can be written to, and it seems that for some
+> reason Windows is preventing you from writing to your Desktop. That seems
+> really weird to me (and I have not seen that behavior). But, I can easily
+> make it check if that's the case, and fall back to the other path, so
+> have done so. [[done]] --[[Joey]]

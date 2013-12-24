@@ -124,17 +124,20 @@ defaultRepositoryPath firstrun = do
 			, inhome
 			)
 #else
-	-- Windows user can probably write anywhere, so always default
-	-- to ~/Desktop/annex.
+	-- On Windows, always default to ~/Desktop/annex or ~/annex,
+	-- no cwd handling because the user might be able to write
+	-- to the entire drive.
 	inhome
 #endif
   where
 	inhome = do
 		desktop <- userDesktopDir
-		ifM (doesDirectoryExist desktop)
+		ifM (doesDirectoryExist desktop <&&> canWrite desktop)
 			( relHome $ desktop </> gitAnnexAssistantDefaultDir
 			, return $ "~" </> gitAnnexAssistantDefaultDir
 			)
+	-- Avoid using eg, standalone build's git-annex.linux/ directory
+	-- when run from there.
 	legit d = not <$> doesFileExist (d </> "git-annex")
 
 newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
