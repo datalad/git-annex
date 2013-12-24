@@ -79,19 +79,21 @@ clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
-		Build/Standalone Build/OSXMkLibs Build/DistributionUpdate \
+		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs Build/DistributionUpdate \
 		git-union-merge
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
 
 Build/InstallDesktopFile: Build/InstallDesktopFile.hs
-	$(GHC) --make $@
+	$(GHC) --make $@ -Wall
 Build/EvilSplicer: Build/EvilSplicer.hs
-	$(GHC) --make $@
+	$(GHC) --make $@ -Wall
 Build/Standalone: Build/Standalone.hs Build/SysConfig.hs
-	$(GHC) --make $@
+	$(GHC) --make $@ -Wall
 Build/OSXMkLibs: Build/OSXMkLibs.hs
-	$(GHC) --make $@
+	$(GHC) --make $@ -Wall
+Build/LinuxMkLibs: Build/LinuxMkLibs.hs
+	$(GHC) --make $@ -Wall
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh
@@ -103,7 +105,7 @@ hackage: sdist
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
 linuxstandalone:
 	$(MAKE) git-annex linuxstandalone-nobuild
-linuxstandalone-nobuild: Build/Standalone
+linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
 	cp -R standalone/linux "$(LINUXSTANDALONE_DEST)"
@@ -121,42 +123,8 @@ linuxstandalone-nobuild: Build/Standalone
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/git-core && tar x)
 	install -d "$(LINUXSTANDALONE_DEST)/templates"
 	
-	touch "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
-	for lib in $$(ldd "$(LINUXSTANDALONE_DEST)"/bin/* $$(find "$(LINUXSTANDALONE_DEST)"/git-core/ -type f) | grep -v "not a dynamic executable" | egrep '^	' | sed 's/^\t//' | sed 's/.*=> //' | cut -d ' ' -f 1 | sort | uniq); do \
-		dir=$$(dirname "$$lib"); \
-		install -d "$(LINUXSTANDALONE_DEST)/$$dir"; \
-		echo "$$dir" >> "$(LINUXSTANDALONE_DEST)/libdirs.tmp"; \
-		cp "$$lib" "$(LINUXSTANDALONE_DEST)/$$dir"; \
-		if [ -L "$lib" ]; then \
-			link=$$(readlink -f "$$lib"); \
-			cp "$$link" "$(LINUXSTANDALONE_DEST)/$$(dirname "$$link")"; \
-		fi; \
-	done
-	sort "$(LINUXSTANDALONE_DEST)/libdirs.tmp" | uniq > "$(LINUXSTANDALONE_DEST)/libdirs"
-	rm -f "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
-
-	# Ensure bundle includes all glibc libs, and other support
-	# files it loads.
-	# XXX Debian specific.
-	cd $(LINUXSTANDALONE_DEST) && dpkg -L libc6 | egrep '\.so|gconv'|tar c --files-from=- | tar x
-
-	find $(LINUXSTANDALONE_DEST) -type d -name gconv | head -n 1 | sed 's!$(LINUXSTANDALONE_DEST)/*!!' > $(LINUXSTANDALONE_DEST)/gconvdir
-	find $(LINUXSTANDALONE_DEST) | grep ld-linux | head -n 1 | sed 's!$(LINUXSTANDALONE_DEST)/*!!' > $(LINUXSTANDALONE_DEST)/linker
+	./Build/LinuxMkLibs "$(LINUXSTANDALONE_DEST)"
 	
-	# Install linker shim for each binary. Note that each binary is put
-	# in its own separate directory, to avoid eg git looking for
-	# binaries in its directory rather than in PATH.
-	for file in $$(find "$(LINUXSTANDALONE_DEST)" -type f | grep -v \.so); do \
-		if file "$$file" | grep ELF | egrep -q 'executable|shared object' && test -x "$$file"; then \
-			base=$$(basename "$$file"); \
-			mkdir -p "$(LINUXSTANDALONE_DEST)/shimmed/$$base"; \
-			mv "$$file" "$(LINUXSTANDALONE_DEST)/shimmed/$$base/"; \
-			echo "#!/bin/sh" > "$$file"; \
-			echo "exec \"\$$GIT_ANNEX_LINKER\" --library-path \"\$$GIT_ANNEX_LD_LIBRARY_PATH\" \"\$$GIT_ANNEX_SHIMMED/$$base/$$base\" \"\$$@\"" >> "$$file"; \
-			chmod +x "$$file"; \
-		fi; \
-	done
-
 	$(MAKE) install-mans DESTDIR="$(LINUXSTANDALONE_DEST)"
 
 	cd tmp/git-annex.linux && find . -type f > git-annex.MANIFEST

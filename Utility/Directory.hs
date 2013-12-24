@@ -37,7 +37,7 @@ dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
 {- Gets files in a directory, and then its subdirectories, recursively,
  - and lazily.
  -
- - Follows symlinks to other subdirectories.
+ - Does not follow symlinks to other subdirectories.
  -
  - When the directory does not exist, no exception is thrown,
  - instead, [] is returned. -}
