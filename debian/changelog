@@ -3,6 +3,7 @@ git-annex (5.20131222) UNRELEASED; urgency=medium
   * Add tasty to build-depends, so that test suite builds again.
     (tasty was stuck in incoming.)
   * Fix typo in test suite.
+  * Fix bug in Linux standalone build's shimming that broke git-annex-shell.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Dec 2013 13:54:32 -0400
 

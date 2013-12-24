@@ -26,3 +26,7 @@ linux standalone 5.20131213 and 5.20131221 are both able to `get` from linux sta
  - Remote was set up by the Assistant
 
 > [[clacke]]
+
+> Bug is in the shimming used for the linux standalone builds
+> (not android), which causes git-annex-shell to run git-annex.
+> [[fixed|done]] --[[Joey]]

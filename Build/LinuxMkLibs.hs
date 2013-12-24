@@ -36,6 +36,7 @@ main = getArgs >>= go
 mklibs :: FilePath -> IO ()
 mklibs top = do
 	fs <- dirContentsRecursive top
+	mapM_ symToHardLink fs
 	exes <- filterM checkExe fs
 	libs <- parseLdd <$> readProcess "ldd" exes
 	glibclibs <- glibcLibs
@@ -90,6 +91,15 @@ installLinkerShim top exe = do
 	base = takeFileName exe
 	shimdir = top </> "shimmed" </> base
 	exedest = shimdir </> base
+
+{- Converting symlinks to hard links simplifies the binary shimming
+ - process. -}
+symToHardLink :: FilePath -> IO ()
+symToHardLink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus f) $ do
+	l <- readSymbolicLink f
+	let absl = absPathFrom (parentDir f) l
+	nukeFile f
+	createLink absl f
 
 installFile :: FilePath -> FilePath -> IO ()
 installFile top f = do
