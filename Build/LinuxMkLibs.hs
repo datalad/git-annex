@@ -17,6 +17,7 @@ import Data.List
 import Data.List.Utils
 import System.Posix.Files
 import Data.Char
+import Control.Monad.IfElse
 
 import Utility.PartialPrelude
 import Utility.Directory
@@ -40,6 +41,9 @@ mklibs top = do
 	glibclibs <- glibcLibs
 	let libs' = nub $ libs ++ glibclibs
 	libdirs <- nub . catMaybes <$> mapM (installLib top) libs'
+
+	-- Various files used by runshell to set up env vars used by the
+	-- linker shims.
 	writeFile (top </> "libdirs") (unlines libdirs)
 	writeFile (top </> "linker")
 		(Prelude.head $ filter ("ld-linux" `isInfixOf`) libs')
@@ -48,21 +52,25 @@ mklibs top = do
 	
 	mapM_ (installLinkerShim top) exes
 
+{- Installs a library. If the library is a symlink to another file,
+ - install the file it links to, and update the symlink to be relative. -}
 installLib :: FilePath -> FilePath -> IO (Maybe FilePath)
 installLib top lib = ifM (doesFileExist lib)
 	( do
 		installFile top lib
-		s <- getSymbolicLinkStatus lib
-		when (isSymbolicLink s) $ do
-			l <- readSymbolicLink (inTop top lib)
-			let absl = absPathFrom (parentDir lib) l
-			let target = relPathDirToFile (parentDir lib) absl
-			installFile top absl
-			nukeFile (top ++ lib)
-			createSymbolicLink target (inTop top lib)
+		checksymlink lib
 		return $ Just $ parentDir lib
 	, return Nothing
 	)
+  where
+	checksymlink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus (inTop top f)) $ do
+		l <- readSymbolicLink (inTop top f)
+		let absl = absPathFrom (parentDir f) l
+		let target = relPathDirToFile (parentDir f) absl
+		installFile top absl
+		nukeFile (top ++ f)
+		createSymbolicLink target (inTop top f)
+		checksymlink absl
 
 {- Installs a linker shim script around a binary.
  -
