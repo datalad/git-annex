@@ -106,9 +106,7 @@ installFile top f = do
 	createDirectoryIfMissing True destdir
 	void $ copyFileExternal f destdir
   where
-  	-- Note: This is an absolute, not a relative, directory.
-	dir = parentDir f
-	destdir = inTop top dir
+	destdir = inTop top $ parentDir f
 
 -- Note that f is not relative, so cannot use </>
 inTop :: FilePath -> FilePath -> FilePath
