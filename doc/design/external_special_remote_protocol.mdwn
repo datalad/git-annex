@@ -95,9 +95,10 @@ send one of the corresponding replies listed in the next section.
   (See Config/Cost.hs for some standard costs.)
 * `TRANSFER STORE|RETRIEVE Key File`  
   Requests the transfer of a key. For Send, the File is the file to upload;
-  for Receive the File is where to store the download. Note that the File
-  should not influence the filename used on the remote. The filename used
-  should be derived from the Key.  
+  for Receive the File is where to store the download.  
+  Note that the File should not influence the filename used on the remote.
+  The filename used should be derived from the Key, and will not contain
+  any whitespace.  
   Multiple transfers might be requested by git-annex, but it's fine for the 
   program to serialize them and only do one at a time.
 * `CHECKPRESENT Key`  
@@ -130,17 +131,14 @@ while it's handling a request.
 * `REMOVE-SUCCESS Key`  
   Indicates the key has been removed from the remote. May be returned if
   the remote didn't have the key at the point removal was requested.
-* `REMOVE-FAILURE Key`  
+* `REMOVE-FAILURE Key ErrorMsg`  
   Indicates that the key was unable to be removed from the remote.
 * `COST Int`  
   Indicates the cost of the remote.
 * `COST-UNKNOWN`  
   Indicates the remote has no opinion of its cost.
-* `INITREMOTE-SUCCESS Setting=Value ...`  
+* `INITREMOTE-SUCCESS`  
   Indicates the INITREMOTE succeeded and the remote is ready to use.
-  The settings and values can optionally be returned. They will be added
-  to the existing configuration of the remote (and may change existing
-  values in it).
 * `INITREMOTE-FAILURE ErrorMsg`  
   Indicates that INITREMOTE failed.
 
@@ -154,8 +152,8 @@ in control.
   thing at startup, as until it sees this git-annex does not know how to
   talk with the special remote program!
 * `PROGRESS STORE|RETRIEVE Key Int`  
-  Indicates the current progress of the transfer. May be repeated any
-  number of times during the transfer process. This is highly recommended
+  Indicates the current progress of the transfer (in bytes). May be repeated
+  any number of times during the transfer process. This is highly recommended
   for STORE. (It is optional but good for RETRIEVE.)  
   (git-annex does not send a reply to this message.)
 * `DIRHASH Key`  
@@ -163,7 +161,13 @@ in control.
   This is always the same for any given Key, so can be used for eg,
   creating hash directory structures to store Keys in.  
   (git-annex replies with VALUE followed by the value.)
-* `GETCONFIG Setting`
+* `SETCONFIG Setting`  
+  Sets one of the special remote's configuration settings. These settings
+  are stored in the git-annex branch, so will be available if the same
+  special remote is used elsewhere.  
+  (Typically only done during INITREMOTE, although it is accepted at other
+  times.)
+* `GETCONFIG Setting`  
   Gets one of the special remote's configuration settings.  
   (git-annex replies with VALUE followed by the value.)
 * `SETSTATE Key Value`  
@@ -206,7 +210,8 @@ while read line; do
 			# XXX do anything necessary to create resources
 			# used by the remote. Try to be idempotent.
 			# Use GETCONFIG to get any needed configuration
-			# settings.
+			# settings, and SETCONFIG to set any persistent
+			# configuration settings.
 			echo INITREMOTE-SUCCESS
 		;;
 		GETCOST)
