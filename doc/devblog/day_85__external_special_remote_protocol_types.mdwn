@@ -11,7 +11,7 @@ instance Receivable Response where
        parseCommand "PREPARE-SUCCESS" = parse0 PREPARE_SUCCESS
        parseCommand "TRANSFER-SUCCESS" = parse2 TRANSFER_SUCCESS
        parseCommand "TRANSFER-FAILURE" = parse3 TRANSFER_FAILURE
-"""]]]
+"""]]
 
 An especially nice part of this implementation is that it knows exactly how
 many parameters each message should have (and their types of course), and so
