@@ -18,6 +18,6 @@ It's not hard!
   of [[special_remotes]].
 
 Here's a simple shell script example, which can easily be adapted
-to run whatever commands you need. ([[download|example.sh]])
+to run whatever commands you need.
 
-[[!inline raw=yes pages="special_remotes/external/example.sh"]]
+[[!inline pages="special_remotes/external/example.sh"]]
