@@ -1,0 +1,5 @@
+Built most of the external special remote today. While I've written 600
+lines of code for this, and think it's probably working, and complete
+(except for a couple of features), all I know is that it compiles.
+I've also written an [[example external special remote program in shell script|special_remotes/external/example.sh]],
+so the next step is to put the two together and see how it works.
