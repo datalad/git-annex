@@ -66,14 +66,11 @@ install_pkgs () {
 	patched unix-time
 	patched lifted-base
 	patched zlib
-	patched process
 	patched MissingH
 	patched bloomfilter
 	patched SafeSemaphore
 	patched distributive
 	patched comonad
-	patched HTTP
-	patched MonadCatchIO-transformers
 	patched iproute
 	patched primitive
 	patched socks
