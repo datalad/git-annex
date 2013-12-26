@@ -1,14 +1,16 @@
 I'm running version 5.20131224-g692aa01 standalone tarball on linux x86_64 (Linux Mint 15). When I run `git-annex status` in the terminal I get no output. 
 
 I've tried:
-- system linked (`ln -s`) the `git-annex`, `git-annex-shell`, and `git-annex-webapp` to `~/bin/` which is on my PATH
-- run the `runshell` program from the terminal 
+
+* system linked (`ln -s`) the `git-annex`, `git-annex-shell`, and `git-annex-webapp` to `~/bin/` which is on my PATH
+* run the `runshell` program from the terminal 
 
 Other things to consider:
-- I've just upgraded the repo from version 3 to version 5
-- Repo was created using git-annex version 3 
-- I don't use assistant or the webapp
-- Only used from my terminal
-- Repo is in indirect mode
+
+* I've just upgraded the repo from version 3 to version 5
+* Repo was created using git-annex version 3 
+* I don't use assistant or the webapp
+* Only used from my terminal
+* Repo is in indirect mode
 
 What do I need to do to see the results of `git-annex status`? in my terminal?
