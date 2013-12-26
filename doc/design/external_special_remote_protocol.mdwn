@@ -60,8 +60,8 @@ The special remote can continue sending messages to git-annex during this
 transfer. It will typically send progress messages, indicating how many
 bytes have been sent:
 
-	PROGRESS STORE somekey 10240
-	PROGRESS STORE somekey 20480
+	PROGRESS 10240
+	PROGRESS 20480
 
 Once the key has been stored, the special remote tells git-annex the result:
 
@@ -157,7 +157,7 @@ in control.
   Supported protocol version. Current version is 0. Must be sent first
   thing at startup, as until it sees this git-annex does not know how to
   talk with the special remote program!
-* `PROGRESS STORE|RETRIEVE Key Int`  
+* `PROGRESS Int`  
   Indicates the current progress of the transfer (in bytes). May be repeated
   any number of times during the transfer process. This is highly recommended
   for STORE. (It is optional but good for RETRIEVE.)  
