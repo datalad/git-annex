@@ -79,6 +79,10 @@ remote can send any messages it likes while handling the requests.
 Once the special remote has finished performing the request, it should
 send one of the corresponding replies listed in the next section.
 
+More requests may be added over time, so if the special remote sees a
+request it does not understand, it should respond with UNKNOWN-REQUEST
+and continue running.
+
 * `PREPARE`  
   Tells the special remote it's time to prepare itself to be used.
   Only run once, at startup, always immediately after the special remote
@@ -141,6 +145,8 @@ while it's handling a request.
   Indicates the INITREMOTE succeeded and the remote is ready to use.
 * `INITREMOTE-FAILURE ErrorMsg`  
   Indicates that INITREMOTE failed.
+* `UNKNOWN-REQUEST`  
+  Indicates that the special remote does not know how to handle a request.
 
 ## special remote messages
 
@@ -188,12 +194,11 @@ These messages can be sent at any time by either git-annex or the special
 remote.
 
 * `ERROR ErrorMsg`  
-  Generic error. Can be sent at any time if things get messed up.
-  When possible, use a more specific reply from the list above.  
-  It would be a good idea to send this if git-annex sends a command
-  you do not support. The program should exit after sending this, as
+  Generic error. Can be sent at any time if things get too messed up
+  to continue. When possible, use a more specific reply from the list above.  
+  The special remote program should exit after sending this, as
   git-annex will not talk to it any further. If the program receives
-  an ERROR, it can try to recover, or exit with its own ERROR.
+  an ERROR from git-annex, it can exit with its own ERROR.
 
 ## Simple shell example
 
@@ -249,8 +254,7 @@ while read line; do
 			echo REMOVE-SUCCESS "$key"
 		;;
 		*)
-			echo ERROR "unknown command received: $line"
-			exit 1
+			echo UNKNOWN-REQUEST
 		;;
 	esac	
 done

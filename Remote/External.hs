@@ -129,6 +129,7 @@ data Response
 	| COST_UNKNOWN
 	| INITREMOTE_SUCCESS
 	| INITREMOTE_FAILURE ErrorMsg
+	| UNKNOWN_REQUEST
 	deriving (Show)
 
 instance Receivable Response where
@@ -144,6 +145,7 @@ instance Receivable Response where
 	parseCommand "COST_UNKNOWN" = parse0 COST_UNKNOWN
 	parseCommand "INITREMOTE-SUCCESS" = parse0 INITREMOTE_SUCCESS
 	parseCommand "INITREMOTE-FAILURE" = parse1 INITREMOTE_FAILURE
+	parseCommand "UNKNOWN-REQUEST" = parse0 UNKNOWN_REQUEST
 	parseCommand _ = parseFail
 
 -- Requests that the external remote can send at any time it's in control.
