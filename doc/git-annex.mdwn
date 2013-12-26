@@ -107,7 +107,7 @@ subdirectories).
   To force checking the remote for every file when copying --from the
   repository, specify `--force`.
 
-* `status` [path ...]`
+* `status [path ...]`
 
   Similar to `git status --short`, displays the status of the files in the
   working tree. Shows files that are not checked into git, files that
