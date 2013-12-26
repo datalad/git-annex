@@ -1,0 +1,20 @@
+There are three ways to implement a new special remote:
+
+1. Using the [[hook]] special remote to tell git-annex what commands
+   to run to store and retrieve data. This is the easiest way, and
+   is great for prototyping.
+2. Writing it in Haskell and adding it to git-annex.
+3. Writing a program in any language you like that speaks the
+   [[external_special_remote_protocol]].
+
+This page is all about writing new external special remotes. It's not hard!
+
+* All you need is to make a program with a name like `git-annex-remote-$bar`.
+* Install it in PATH.
+* When the user runs `git annex initremote foo type=external externaltype=$bar`,
+  it will use your program.
+
+Here's a simple shell script example, which can easily be adapted
+to run whatever commands you need. ([[download|example.sh]])
+
+[[!inline raw=yes pages="special_remotes/external/example.sh"]]

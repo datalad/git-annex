@@ -1,10 +1,13 @@
-See [[todo/support_for_writing_external_special_remotes]] for motivation.
+Communication between git-annex and a program implementing an external
+special remote uses this protocol.
 
-This is a design for a protocol to be used to communicate between git-annex
-and a program implementing an external special remote.
+[[!toc]]
+
+## starting the program
 
 The external special remote program has a name like
-`git-annex-remote-$bar`. When `git annex initremote foo type=$bar` is run,
+`git-annex-remote-$bar`. When 
+`git annex initremote foo type=external externaltype=$bar` is run,
 git-annex finds the appropriate program in PATH.
 
 The program is started by git-annex when it needs to access the special
@@ -31,7 +34,7 @@ only sends replies to the requests.
 The special remote is responsible for sending the first message, indicating
 the version of the protocol it is using.
 
-	VERSION 0
+	VERSION 1
 
 Once it knows the version, git-annex will send a message telling the
 special remote to start up.
@@ -154,7 +157,7 @@ These messages may be sent by the special remote at any time that it's
 in control.
 
 * `VERSION Int`  
-  Supported protocol version. Current version is 0. Must be sent first
+  Supported protocol version. Current version is 1. Must be sent first
   thing at startup, as until it sees this git-annex does not know how to
   talk with the special remote program!
 * `PROGRESS Int`  
@@ -199,68 +202,6 @@ remote.
   The special remote program should exit after sending this, as
   git-annex will not talk to it any further. If the program receives
   an ERROR from git-annex, it can exit with its own ERROR.
-
-## Simple shell example
-
-[[!format sh """
-#!/bin/sh
-set -e
-
-echo VERSION 0
-
-while read line; do
-	set -- $line
-	case "$1" in
-		INITREMOTE)
-			# XXX do anything necessary to create resources
-			# used by the remote. Try to be idempotent.
-			# Use GETCONFIG to get any needed configuration
-			# settings, and SETCONFIG to set any persistent
-			# configuration settings.
-			echo INITREMOTE-SUCCESS
-		;;
-		GETCOST)
-			echo COST-UNKNOWN
-		;;
-		PREPARE)
-			# XXX Use GETCONFIG to get configuration settings,
-			# and do anything needed to start using the
-			# special remote here.
-			echo PREPARE-SUCCESS
-		;;
-		TRANSFER)
-			key="$3"
-			file="$4"
-			case "$2" in
-				STORE)
-					# XXX upload file here
-					# XXX when possible, send PROGRESS
-					echo TRANSFER-SUCCESS STORE "$key"
-				;;
-				RETRIEVE)
-					# XXX download file here
-					echo TRANSFER-SUCCESS RETRIEVE "$key"
-				;;
-				
-			esac
-		;;
-		CHECKPRESENT)
-			key="$2"
-			echo CHECKPRESENT-UNKNOWN "$key" "not implemented"
-		;;
-		REMOVE)
-			key="$2"
-			# XXX remove key here
-			echo REMOVE-SUCCESS "$key"
-		;;
-		*)
-			echo UNKNOWN-REQUEST
-		;;
-	esac	
-done
-
-# XXX anything that needs to be done at shutdown can be done here
-"""]]
 
 ## TODO
 
