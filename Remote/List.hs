@@ -35,6 +35,7 @@ import qualified Remote.WebDAV
 #endif
 import qualified Remote.Glacier
 import qualified Remote.Hook
+import qualified Remote.External
 
 remoteTypes :: [RemoteType]
 remoteTypes =
@@ -52,6 +53,7 @@ remoteTypes =
 #endif
 	, Remote.Glacier.remote
 	, Remote.Hook.remote
+	, Remote.External.remote
 	]
 
 {- Builds a list of all available Remotes.

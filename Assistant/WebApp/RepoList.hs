@@ -223,7 +223,7 @@ getRepositoriesReorderR = do
 		rs <- catMaybes <$> mapM Remote.remoteFromUUID list
 		forM_ (reorderCosts remote rs) $ \(r, newcost) ->
 			when (Remote.cost r /= newcost) $
-				setRemoteCost r newcost
+				setRemoteCost (Remote.repo r) newcost
 		void remoteListRefresh
   	fromjs = toUUID . T.unpack
 

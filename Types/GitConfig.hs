@@ -113,6 +113,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexDirectory :: Maybe FilePath
 	, remoteAnnexGCrypt :: Maybe String
 	, remoteAnnexHookType :: Maybe String
+	, remoteAnnexExternalType :: Maybe String
 	{- A regular git remote's git repository config. -}
 	, remoteGitConfig :: Maybe GitConfig
 	}
@@ -137,6 +138,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexDirectory = notempty $ getmaybe "directory"
 	, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
 	, remoteAnnexHookType = notempty $ getmaybe "hooktype"
+	, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
 	, remoteGitConfig = Nothing
 	}
   where

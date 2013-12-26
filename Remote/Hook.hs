@@ -63,7 +63,7 @@ gen r u c gc = do
 			remotetype = remote
 		}
   where
-	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc	
+	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc
 
 hookSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
 hookSetup mu c = do

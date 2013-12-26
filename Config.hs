@@ -12,7 +12,6 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
-import qualified Types.Remote as Remote
 import Config.Cost
 
 type UnqualifiedConfigKey = String
@@ -55,14 +54,16 @@ annexConfig key = ConfigKey $ "annex." ++ key
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
  - is set and prints a number, that is used. -}
 remoteCost :: RemoteGitConfig -> Cost -> Annex Cost
-remoteCost c def = case remoteAnnexCostCommand c of
-	Just cmd | not (null cmd) -> liftIO $
-		(fromMaybe def . readish) <$>
-			readProcess "sh" ["-c", cmd]
-	_ -> return $ fromMaybe def $ remoteAnnexCost c
+remoteCost c def = fromMaybe def <$> remoteCost' c
 
-setRemoteCost :: Remote -> Cost -> Annex ()
-setRemoteCost r c = setConfig (remoteConfig (Remote.repo r) "cost") (show c)
+remoteCost' :: RemoteGitConfig -> Annex (Maybe Cost)
+remoteCost' c = case remoteAnnexCostCommand c of
+	Just cmd | not (null cmd) -> liftIO $
+		readish <$> readProcess "sh" ["-c", cmd]
+	_ -> return $ remoteAnnexCost c
+
+setRemoteCost :: Git.Repo -> Cost -> Annex ()
+setRemoteCost r c = setConfig (remoteConfig r "cost") (show c)
 
 getNumCopies :: Maybe Int -> Annex Int
 getNumCopies (Just v) = return v

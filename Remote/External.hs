@@ -5,15 +5,12 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE FlexibleInstances, TypeSynonymInstances #-}
-
 module Remote.External (remote) where
 
-import Data.Char
-
+import Remote.External.Types
+import qualified Annex
 import Common.Annex
 import Types.Remote
-import Types.Key
 import qualified Git
 import Config
 import Remote.Helper.Special
@@ -22,30 +19,39 @@ import Crypto
 import Utility.Metered
 import Logs.Transfer
 import Config.Cost
+import Annex.Content
+import Annex.UUID
+import Annex.Exception
+
+import Control.Concurrent.STM
+import System.Process (std_in, std_out, std_err)
+import qualified Data.Map as M
 
 remote :: RemoteType
 remote = RemoteType {
-	typename = "hook",
-	enumerate = findSpecialRemotes "hooktype",
+	typename = "external",
+	enumerate = findSpecialRemotes "externaltype",
 	generate = gen,
-	setup = undefined
+	setup = externalSetup
 }
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
-	cst <- remoteCost gc expensiveRemoteCost
+	external <- newExternal externaltype
+	Annex.addCleanup (fromUUID u) $ stopExternal external
+	cst <- getCost external r gc
 	return $ Just $ encryptableRemote c
-		(storeEncrypted $ getGpgEncParams (c,gc))
-		retrieveEncrypted
+		(storeEncrypted external $ getGpgEncParams (c,gc))
+		(retrieveEncrypted external)
 		Remote {
 			uuid = u,
 			cost = cst,
 			name = Git.repoDescribe r,
-			storeKey = store,
-			retrieveKeyFile = retrieve,
+			storeKey = store external,
+			retrieveKeyFile = retrieve external,
 			retrieveKeyFileCheap = retrieveCheap,
-			removeKey = remove,
-			hasKey = checkPresent r,
+			removeKey = remove external,
+			hasKey = checkPresent external,
 			hasKeyCheap = False,
 			whereisKey = Nothing,
 			remoteFsck = Nothing,
@@ -58,197 +64,234 @@ gen r u c gc = do
 			globallyAvailable = False,
 			remotetype = remote
 		}
+  where
+	externaltype = fromMaybe (error "missing externaltype") $ remoteAnnexExternalType gc
 
-store :: Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store k _f _p = undefined
+externalSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+externalSetup mu c = do
+	u <- maybe (liftIO genUUID) return mu
+	let externaltype = fromMaybe (error "Specify externaltype=") $
+		M.lookup "externaltype" c
+	c' <- encryptionSetup c
 
-storeEncrypted :: [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted gpgOpts (cipher, enck) k _p = undefined
+	external <- newExternal externaltype
+	handleRequest external INITREMOTE Nothing $ \resp -> case resp of
+		INITREMOTE_SUCCESS -> Just noop
+		INITREMOTE_FAILURE errmsg -> Just $ error errmsg
+		_ -> Nothing
 
-retrieve :: Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve k _f d _p = undefined
+	gitConfigSpecialRemote u c' "externaltype" externaltype
+	return (c', u)
+
+store :: External -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+store external k _f p = safely $ sendAnnex k rollback $ \f ->
+	handleRequest external (TRANSFER Upload k f) (Just p) $ \resp ->
+		case resp of
+			TRANSFER_SUCCESS Upload k'
+				| k == k' -> Just $ return True
+			TRANSFER_FAILURE Upload k' errmsg
+				| k == k' -> Just $ do
+					warning errmsg
+					return False
+			_ -> Nothing
+  where
+	rollback = void $ remove external k
+
+storeEncrypted :: External -> [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted external gpgOpts (cipher, enck) k _p = safely $ undefined
+
+retrieve :: External -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retrieve external k _f d p = safely $
+	handleRequest external (TRANSFER Download k d) (Just p) $ \resp ->
+		case resp of
+			TRANSFER_SUCCESS Download k'
+				| k == k' -> Just $ return True
+			TRANSFER_FAILURE Download k' errmsg
+				| k == k' -> Just $ do
+					warning errmsg
+					return False
+			_ -> Nothing
 
 retrieveCheap :: Key -> FilePath -> Annex Bool
-retrieveCheap _ _ = undefined
+retrieveCheap _ _ = return False
 
-retrieveEncrypted :: (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted (cipher, enck) _ f _p = undefined
+retrieveEncrypted :: External -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveEncrypted external (cipher, enck) _ f _p = safely $ undefined
 
-remove :: Key -> Annex Bool
-remove k = undefined
+remove :: External -> Key -> Annex Bool
+remove external k = safely $ 
+	handleRequest external (REMOVE k) Nothing $ \resp ->
+		case resp of
+			REMOVE_SUCCESS k'
+				| k == k' -> Just $ return True
+			REMOVE_FAILURE k' errmsg
+				| k == k' -> Just $ do
+					warning errmsg
+					return False
+			_ -> Nothing
 
-checkPresent :: Git.Repo -> Key -> Annex (Either String Bool)
-checkPresent r k = undefined
-
--- Messages that git-annex can send.
-class Sendable m where
-	formatMessage :: m -> [String]
-
--- Messages that git-annex can receive.
-class Receivable m where
-	-- Passed the first word of the message, returns
-	-- a Parser that can be be fed the rest of the message to generate
-	-- the value.
-	parseCommand :: String -> Parser m
-
-parseMessage :: (Receivable m) => String -> Maybe m
-parseMessage s = parseCommand command rest
+checkPresent :: External -> Key -> Annex (Either String Bool)
+checkPresent external k = either (Left . show) id <$> tryAnnex go
   where
-	(command, rest) = splitWord s
+	go = handleRequest external (CHECKPRESENT k) Nothing $ \resp ->
+		case resp of
+			CHECKPRESENT_SUCCESS k'
+				| k' == k -> Just $ return $ Right True
+			CHECKPRESENT_FAILURE k'
+				| k' == k -> Just $ return $ Right False
+			CHECKPRESENT_UNKNOWN k' errmsg
+				| k' == k -> Just $ return $ Left errmsg
+			_ -> Nothing
 
--- Messages that can be sent to the external remote to request it do something.
-data Request 
-	= PREPARE 
-	| INITREMOTE
-	| GETCOST
-	| TRANSFER Direction Key FilePath
-	| CHECKPRESENT Key
-	| REMOVE Key
-	deriving (Show)
+safely :: Annex Bool -> Annex Bool
+safely a = go =<< tryAnnex a
+  where
+	go (Right r) = return r
+	go (Left e) = do
+		warning $ show e
+		return False
 
-instance Sendable Request where
-	formatMessage PREPARE = ["PREPARE"]
-	formatMessage INITREMOTE = ["INITREMOTE"]
-	formatMessage GETCOST = ["GETCOST"]
-	formatMessage (TRANSFER direction key file) =
-		[ "TRANSFER", serialize direction, serialize key, serialize file ]
-	formatMessage (CHECKPRESENT key) = [ "CHECKPRESENT", serialize key ]
-	formatMessage (REMOVE key) = [ "REMOVE", serialize key ]
-
--- Responses the external remote can make to requests.
-data Response
-	= PREPARE_SUCCESS
-	| TRANSFER_SUCCESS Direction Key
-	| TRANSFER_FAILURE Direction Key ErrorMsg
-	| CHECKPRESENT_SUCCESS Key
-	| CHECKPRESENT_FAILURE Key
-	| CHECKPRESENT_UNKNOWN Key ErrorMsg
-	| REMOVE_SUCCESS Key
-	| REMOVE_FAILURE Key ErrorMsg
-	| COST Cost
-	| COST_UNKNOWN
-	| INITREMOTE_SUCCESS
-	| INITREMOTE_FAILURE ErrorMsg
-	| UNKNOWN_REQUEST
-	deriving (Show)
-
-instance Receivable Response where
-	parseCommand "PREPARE-SUCCESS" = parse0 PREPARE_SUCCESS
-	parseCommand "TRANSFER-SUCCESS" = parse2 TRANSFER_SUCCESS
-	parseCommand "TRANSFER-FAILURE" = parse3 TRANSFER_FAILURE
-	parseCommand "CHECKPRESENT-SUCCESS" = parse1 CHECKPRESENT_SUCCESS
-	parseCommand "CHECKPRESENT-FAILURE" = parse1 CHECKPRESENT_FAILURE
-	parseCommand "CHECKPRESENT-UNKNOWN" = parse2 CHECKPRESENT_UNKNOWN
-	parseCommand "REMOVE-SUCCESS" = parse1 REMOVE_SUCCESS
-	parseCommand "REMOVE-FAILURE" = parse2 REMOVE_FAILURE
-	parseCommand "COST" = parse1 COST
-	parseCommand "COST_UNKNOWN" = parse0 COST_UNKNOWN
-	parseCommand "INITREMOTE-SUCCESS" = parse0 INITREMOTE_SUCCESS
-	parseCommand "INITREMOTE-FAILURE" = parse1 INITREMOTE_FAILURE
-	parseCommand "UNKNOWN-REQUEST" = parse0 UNKNOWN_REQUEST
-	parseCommand _ = parseFail
-
--- Requests that the external remote can send at any time it's in control.
-data RemoteRequest
-	= VERSION Int
-	| PROGRESS Direction Key Int
-	| DIRHASH Key
-	| SETCONFIG Setting String
-	| GETCONFIG Setting
-	| SETSTATE Key String
-	| GETSTATE Key
-	deriving (Show)
-
-instance Receivable RemoteRequest where
-	parseCommand "VERSION" = parse1 VERSION
-	parseCommand "PROGRESS" = parse3 PROGRESS
-	parseCommand "DIRHASH" = parse1 DIRHASH
-	parseCommand "SETCONFIG" = parse2 SETCONFIG
-	parseCommand "GETCONFIG" = parse1 GETCONFIG
-	parseCommand "SETSTATE" = parse2 SETSTATE
-	parseCommand "GETSTATE" = parse1 GETSTATE
-	parseCommand _ = parseFail
-
--- Responses to RemoteRequest.
-data RemoteResponse
-	= VALUE String
-	deriving (Show)
-
-instance Sendable RemoteResponse where
-	formatMessage (VALUE s) = [ "VALUE", serialize s ]
-
--- Messages that can be sent at any time by either git-annex or the remote.
-data AsyncMessages 
-	= ERROR ErrorMsg
-	deriving (Show)
-
-instance Sendable AsyncMessages where
-	formatMessage (ERROR err) = [ "ERROR", serialize err ]
-
-instance Receivable AsyncMessages where
-	parseCommand "ERROR" = parse1 ERROR
-	parseCommand _ = parseFail
-
--- Data types used for parameters when communicating with the remote.
--- All are serializable.
-type ErrorMsg = String
-type Setting = String
-
-class Serializable a where
-	serialize :: a -> String
-	deserialize :: String -> Maybe a
-
-instance Serializable Direction where
-	serialize Upload = "STORE"
-	serialize Download = "RETRIEVE"
-
-	deserialize "STORE" = Just Upload
-	deserialize "RETRIEVE" = Just Download
-	deserialize _ = Nothing
-
-instance Serializable Key where
-	serialize = key2file
-	deserialize = file2key
-
-instance Serializable [Char] where
-	serialize = id
-	deserialize = Just
-
-instance Serializable Cost where
-	serialize = show
-	deserialize = readish
-
-instance Serializable Int where
-	serialize = show
-	deserialize = readish
-
-{- Parsing the parameters of messages. Using the right parseN ensures
- - that the string is split into exactly the requested number of words,
- - which allows the last parameter of a message to contain arbitrary
- - whitespace, etc, without needing any special quoting.
+{- Sends a Request to the external remote, and waits for it to generate
+ - a Response that the responsehandler accepts.
+ -
+ - While the external remote is processing the Request, it may send
+ - any number of RemoteRequests, that are handled here.
+ -
+ - Only one request can be made at a time, so locking is used.
+ -
+ - May throw exceptions, for example on protocol errors.
  -}
-type Parser a = String -> Maybe a
+handleRequest :: External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
+handleRequest external req mp responsehandler = 
+	withExternalLock external $ \lck ->
+		handleRequest' lck external req mp responsehandler
 
-parseFail :: Parser a
-parseFail _ = Nothing
-
-parse0 :: a -> Parser a
-parse0 mk "" = Just mk
-parse0 _ _ = Nothing
-
-parse1 :: Serializable p1 => (p1 -> a) -> Parser a
-parse1 mk p1 = mk <$> deserialize p1
-
-parse2 :: (Serializable p1, Serializable p2) => (p1 -> p2 -> a) -> Parser a
-parse2 mk s = mk <$> deserialize p1 <*> deserialize p2
+handleRequest' :: ExternalLock -> External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
+handleRequest' lck external req mp responsehandler = do
+	sendMessage lck external req
+	loop
   where
-	(p1, p2) = splitWord s
+	loop = receiveMessage lck external responsehandler
+		(\rreq -> Just $ handleRemoteRequest rreq >> loop)
+		(\msg -> Just $ handleAsyncMessage msg >> loop)
 
-parse3 :: (Serializable p1, Serializable p2, Serializable p3) => (p1 -> p2 -> p3 -> a) -> Parser a
-parse3 mk s = mk <$> deserialize p1 <*> deserialize p2 <*> deserialize p3
+	handleRemoteRequest (PROGRESS bytesprocessed) =
+		maybe noop (\a -> liftIO $ a bytesprocessed) mp
+	handleRemoteRequest (DIRHASH k) = 
+		sendMessage lck external (VALUE $ hashDirMixed k)
+	handleRemoteRequest (SETCONFIG setting value) = error "TODO"
+	handleRemoteRequest (GETCONFIG setting) = error "TODO"
+	handleRemoteRequest (SETSTATE k value) = error "TODO"
+	handleRemoteRequest (GETSTATE k) = error "TODO"
+	handleRemoteRequest (VERSION _) =
+		sendMessage lck external (ERROR "too late to send VERSION")
+
+	handleAsyncMessage (ERROR err) = error $ "external special remote error: " ++ err
+
+sendMessage :: Sendable m => ExternalLock -> External -> m -> Annex ()
+sendMessage lck external m = 
+	fromExternal lck external externalSend $ \h ->
+		liftIO $ hPutStrLn h $ unwords $ formatMessage m
+
+{- Waits for a message from the external remote, and passes it to the
+ - apppropriate handler. 
+ -
+ - If the handler returns Nothing, this is a protocol error.-}
+receiveMessage
+	:: ExternalLock
+	-> External 
+	-> (Response -> Maybe (Annex a))
+	-> (RemoteRequest -> Maybe (Annex a))
+	-> (AsyncMessage -> Maybe (Annex a))
+	-> Annex a
+receiveMessage lck external handleresponse handlerequest handleasync = do
+	s <- fromExternal lck external externalReceive $ liftIO . hGetLine
+	case parseMessage s :: Maybe Response of
+		Just resp -> maybe (protocolError s) id (handleresponse resp)
+		Nothing -> case parseMessage s :: Maybe RemoteRequest of
+			Just req -> maybe (protocolError s) id (handlerequest req)
+			Nothing -> case parseMessage s :: Maybe AsyncMessage of
+				Just msg -> maybe (protocolError s) id (handleasync msg)
+				Nothing -> protocolError s
   where
-	(p1, rest) = splitWord s
-	(p2, p3) = splitWord rest
+	protocolError s = error $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\""
 
-splitWord :: String -> (String, String)
-splitWord = separate isSpace
+{- Starts up the external remote if it's not yet running,
+ - and passes a value extracted from its state to an action.
+ -}
+fromExternal :: ExternalLock -> External -> (ExternalState -> v) -> (v -> Annex a) -> Annex a
+fromExternal lck external extractor a =
+	go =<< liftIO (atomically (tryReadTMVar v))
+  where
+	go (Just st) = run st
+	go Nothing = do
+		st <- startExternal $ externalType external
+		void $ liftIO $ atomically $ swapTMVar v st
+
+		{- Handle initial protocol startup; check the VERSION
+		 - the remote sends, and send it the PREPARE request. -}
+		receiveMessage lck external
+			(const Nothing)
+			(checkVersion lck external)
+			(const Nothing)
+		handleRequest' lck external PREPARE Nothing $ \resp -> 
+			case resp of
+				PREPARE_SUCCESS -> Just $ run st
+				_ -> Nothing
+
+	run st = a $ extractor st
+	v = externalState external
+
+{- Starts an external remote process running, but does not handle checking
+ - VERSION, etc. -}
+startExternal :: ExternalType -> Annex ExternalState
+startExternal externaltype = liftIO $ do
+	(Just hin, Just hout, _, pid) <- createProcess $
+		(proc (externalRemoteProgram externaltype) [])
+			{ std_in = CreatePipe
+			, std_out = CreatePipe
+			, std_err = Inherit
+			}
+	fileEncoding hin
+	fileEncoding hout
+	return $ ExternalState
+		{ externalSend = hin
+		, externalReceive = hout
+		, externalPid = pid
+		}
+
+stopExternal :: External -> Annex ()
+stopExternal external = liftIO $ stop =<< atomically (tryReadTMVar v)
+  where
+	stop Nothing = noop
+	stop (Just st) = do
+		void $ atomically $ tryTakeTMVar v
+		hClose $ externalSend st
+		hClose $ externalReceive st
+		void $ waitForProcess $ externalPid st
+	v = externalState external
+
+externalRemoteProgram :: ExternalType -> String
+externalRemoteProgram externaltype = "git-annex-remote-" ++ externaltype
+
+checkVersion :: ExternalLock -> External -> RemoteRequest -> Maybe (Annex ())
+checkVersion lck external (VERSION v) = Just $
+	if v `elem` supportedProtocolVersions
+		then noop
+		else sendMessage lck external (ERROR "unsupported VERSION")
+checkVersion _ _ _ = Nothing
+
+{- Caches the cost in the git config to avoid needing to start up an
+ - external special remote every time time just to ask it what its
+ - cost is. -}
+getCost :: External -> Git.Repo -> RemoteGitConfig -> Annex Cost
+getCost external r gc = go =<< remoteCost' gc
+  where
+	go (Just c) = return c
+	go Nothing = do
+		c <- handleRequest external GETCOST Nothing $ \req -> case req of
+			COST c -> Just $ return c
+			COST_UNKNOWN -> Just $ return expensiveRemoteCost
+			_ -> Nothing
+		setRemoteCost r c
+		return c
