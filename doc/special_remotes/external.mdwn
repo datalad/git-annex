@@ -7,12 +7,15 @@ There are three ways to implement a new special remote:
 3. Writing a program in any language you like that speaks the
    [[external_special_remote_protocol]].
 
-This page is all about writing new external special remotes. It's not hard!
+The rest of this page concentrates on writing new external special remotes.
+It's not hard!
 
 * All you need is to make a program with a name like `git-annex-remote-$bar`.
 * Install it in PATH.
 * When the user runs `git annex initremote foo type=external externaltype=$bar`,
   it will use your program.
+* If you build a new special remote, please add it to the list
+  of [[special_remotes]].
 
 Here's a simple shell script example, which can easily be adapted
 to run whatever commands you need. ([[download|example.sh]])
