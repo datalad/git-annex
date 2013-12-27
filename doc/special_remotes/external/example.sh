@@ -21,6 +21,11 @@ getconfig () {
 	ask GETCONFIG "$1"
 }
 
+# Stores a value in the remote's configuration.
+setconfig () {
+	echo SETCONFIG "$1" "$2"
+}
+
 # Sets LOC to the location to use to store a key.
 calclocation () {
 	ask DIRHASH "$1"
@@ -60,13 +65,20 @@ while read line; do
 			# (Note that this is not run every time, only when
 			# git annex initremote or git annex enableremote is
 			# run.)
+
 			getconfig directory
-			mydirectory="$RET"
+			# Input directory could be relative; make it
+			# absolute, and store that.
+			mydirectory="$(readlink -f "$RET")"
+			setconfig directory "$mydirectory"
 			if [ -z "$mydirectory" ]; then
 				echo INITREMOTE-FAILURE "You need to set directory="
 			else
-				mkdir -p "$mydirectory"
-				echo INITREMOTE-SUCCESS
+				if mkdir -p "$mydirectory"; then
+					echo INITREMOTE-SUCCESS
+				else
+					echo INITREMOTE-FAILURE "Failed to write to $mydirectory"
+				fi
 			fi
 		;;
 		PREPARE)
