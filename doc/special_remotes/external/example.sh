@@ -24,7 +24,7 @@ getconfig () {
 # Sets LOC to the location to use to store a key.
 calclocation () {
 	ask DIRHASH "$1"
-	LOC="$mydirectory/$RET"
+	LOC="$mydirectory/$RET/$1"
 }
 
 # Asks for some value, and stores it in RET
