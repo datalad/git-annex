@@ -188,17 +188,6 @@ in control.
   can have been set by a previous SETCONFIG. Can be run at any time.  
   (git-annex replies with VALUE followed by the value. If the setting is
   not set, the value will be empty.)
-* `SETSTATE Key Value`  
-  git-annex can store state in the git-annex branch on a
-  per-special-remote, per-key basis. This sets that state.  
-  (git-annex replies with VALUE followed by the value stored.)
-* `GETSTATE Key`  
-  Gets any state previously stored for the key from the git-annex branch.  
-  Note that some special remotes may be accessed from multiple
-  repositories, and the state is only eventually consistently synced
-  between them. If two repositories set different values in the state
-  for a key, the one that sets it last wins.  
-  (git-annex replies with VALUE followed by the value.)
 
 ## general messages
 

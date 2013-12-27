@@ -157,8 +157,6 @@ data RemoteRequest
 	| DIRHASH Key
 	| SETCONFIG Setting String
 	| GETCONFIG Setting
-	| SETSTATE Key String
-	| GETSTATE Key
 	deriving (Show)
 
 instance Receivable RemoteRequest where
@@ -167,8 +165,6 @@ instance Receivable RemoteRequest where
 	parseCommand "DIRHASH" = parse1 DIRHASH
 	parseCommand "SETCONFIG" = parse2 SETCONFIG
 	parseCommand "GETCONFIG" = parse1 GETCONFIG
-	parseCommand "SETSTATE" = parse2 SETSTATE
-	parseCommand "GETSTATE" = parse1 GETSTATE
 	parseCommand _ = parseFail
 
 -- Responses to RemoteRequest.

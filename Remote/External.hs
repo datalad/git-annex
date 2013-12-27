@@ -211,8 +211,6 @@ handleRequest' lck external req mp responsehandler = do
 		value <- fromMaybe "" . M.lookup setting
 			<$> liftIO (atomically $ readTMVar $ externalConfig external)
 		sendMessage lck external (VALUE value)
-	handleRemoteRequest (SETSTATE k value) = error "TODO"
-	handleRemoteRequest (GETSTATE k) = error "TODO"
 	handleRemoteRequest (VERSION _) =
 		sendMessage lck external (ERROR "too late to send VERSION")
 
