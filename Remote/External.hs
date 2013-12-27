@@ -27,6 +27,7 @@ import Control.Concurrent.STM
 import System.Process (std_in, std_out, std_err)
 import System.Log.Logger (debugM)
 import qualified Data.Map as M
+import qualified Data.ByteString.Lazy as L
 
 remote :: RemoteType
 remote = RemoteType {
@@ -50,7 +51,7 @@ gen r u c gc = do
 			name = Git.repoDescribe r,
 			storeKey = store external,
 			retrieveKeyFile = retrieve external,
-			retrieveKeyFileCheap = retrieveCheap,
+			retrieveKeyFileCheap = \_ _ -> return False,
 			removeKey = remove external,
 			hasKey = checkPresent external,
 			hasKeyCheap = False,
@@ -85,24 +86,47 @@ externalSetup mu c = do
 	return (c', u)
 
 store :: External -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store external k _f p = safely $ sendAnnex k rollback $ \f ->
-	handleRequest external (TRANSFER Upload k f) (Just p) $ \resp ->
-		case resp of
-			TRANSFER_SUCCESS Upload k'
-				| k == k' -> Just $ return True
-			TRANSFER_FAILURE Upload k' errmsg
-				| k == k' -> Just $ do
-					warning errmsg
-					return False
-			_ -> Nothing
+store external k _f p = sendAnnex k rollback $ \f ->
+	storeHelper external k f p
   where
 	rollback = void $ remove external k
 
 storeEncrypted :: External -> [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
-storeEncrypted external gpgOpts (cipher, enck) k _p = safely $ undefined
+storeEncrypted external gpgOpts (cipher, enck) k p = withTmp enck $ \tmp ->
+	sendAnnex k rollback $ \src -> do
+		liftIO $ encrypt gpgOpts cipher (feedFile src) $
+			readBytes $ L.writeFile tmp
+		storeHelper external enck tmp p
+  where
+	rollback = void $ remove external enck
+
+storeHelper :: External -> Key -> FilePath -> MeterUpdate -> Annex Bool
+storeHelper external k f p = safely $
+	handleRequest external (TRANSFER Upload k f) (Just p) $ \resp ->
+		case resp of
+			TRANSFER_SUCCESS Upload k' | k == k' ->
+				Just $ return True
+			TRANSFER_FAILURE Upload k' errmsg | k == k' ->
+				Just $ do
+					warning errmsg
+					return False
+			_ -> Nothing
 
 retrieve :: External -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve external k _f d p = safely $
+retrieve external k _f d p = retrieveHelper external k d p
+
+retrieveEncrypted :: External -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveEncrypted external (cipher, enck) _ f p = withTmp enck $ \tmp ->
+	ifM (retrieveHelper external enck tmp p)
+		( liftIO $ catchBoolIO $ do
+			decrypt cipher (feedFile tmp) $
+				readBytes $ L.writeFile f
+			return True
+		, return False
+		)
+
+retrieveHelper :: External -> Key -> FilePath -> MeterUpdate -> Annex Bool
+retrieveHelper external k d p = safely $
 	handleRequest external (TRANSFER Download k d) (Just p) $ \resp ->
 		case resp of
 			TRANSFER_SUCCESS Download k'
@@ -112,12 +136,6 @@ retrieve external k _f d p = safely $
 					warning errmsg
 					return False
 			_ -> Nothing
-
-retrieveCheap :: Key -> FilePath -> Annex Bool
-retrieveCheap _ _ = return False
-
-retrieveEncrypted :: External -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted external (cipher, enck) _ f _p = safely $ undefined
 
 remove :: External -> Key -> Annex Bool
 remove external k = safely $ 
