@@ -3,7 +3,7 @@
 # 
 # This is basically the same as git-annex's built-in directory special remote.
 # 
-# Install in PATH as git-annex-remote-directorya
+# Install in PATH as git-annex-remote-directory
 #
 # Copyright 2013 Joey Hess; licenced under the GNU GPL version 3 or higher.
 
@@ -18,12 +18,24 @@ runcmd () {
 
 # Gets a value from the remote's configuration, and stores it in RET
 getconfig () {
-	echo GETCONFIG "$1"
+	ask GETCONFIG "$1"
+}
+
+# Sets LOC to the location to use to store a key.
+calclocation () {
+	ask HASHDIR "$1"
+	LOC="$mydirectory/$hashdir/$RET"
+}
+
+# Asks for some value, and stores it in RET
+ask () {
+	echo "$1" "$2"
 	read resp
-	set -- $resp
-	case "$1" in
+	# Tricky POSIX shell code to split first word of the resp,
+	# preserving all other whitespace
+	case "${resp%% *}" in
 		VALUE)
-			RET="$2"
+			RET="${resp#[! ]*[ ]}"
 		;;
 		*)
 			RET=""
@@ -31,28 +43,14 @@ getconfig () {
 	esac
 }
 
-# Sets LOC to the location to use to store a key.
-mylocation () {
-	echo HASHDIR "$1"
-	read resp
-	set -- $resp
-	case "$1" in
-		VALUE)
-			LOC="$hashdir/$1"
-		;;
-		*)
-			LOC=
-		;;
-	esac
-}
-
+# This has to come first, to get the protocol started.
 echo VERSION 1
 
 while read line; do
 	set -- $line
 	case "$1" in
 		INITREMOTE)
-			# XXX do anything necessary to create resources
+			# Do anything necessary to create resources
 			# used by the remote. Try to be idempotent.
 			# Use GETCONFIG to get any needed configuration
 			# settings, and SETCONFIG to set any persistent
@@ -67,7 +65,7 @@ while read line; do
 			fi
 		;;
 		PREPARE)
-			# XXX Use GETCONFIG to get configuration settings,
+			# Use GETCONFIG to get configuration settings,
 			# and do anything needed to get ready for using the
 			# special remote here.
 			getconfig directory
@@ -79,18 +77,27 @@ while read line; do
 			file="$4"
 			case "$2" in
 				STORE)
-					# XXX upload file here
+					# Store the file to a location
+					# based on the key.
 					# XXX when possible, send PROGRESS
 					calclocation "$key"
 					mkdir -p "$(dirname "$LOC")"
-					runcmd cp -v "$file" "$LOC"
-					echo TRANSFER-SUCCESS STORE "$key"
+					if runcmd cp -v "$file" "$LOC"; then
+						echo TRANSFER-SUCCESS STORE "$key"
+					else
+						echo TRANSFER-FAILURE STORE "$key"
+					fi
 				;;
 				RETRIEVE)
-					# XXX download file here
+					# Retrieve from a location based on
+					# the key, outputting to the file.
+					# XXX when easy, send PROGRESS
 					calclocation "$key"
-					runcmd cp -v "$LOC" "$file"
-					echo TRANSFER-SUCCESS RETRIEVE "$key"
+					if runcmd cp -v "$LOC" "$file"; then
+						echo TRANSFER-SUCCESS RETRIEVE "$key"
+					else
+						echo TRANSFER-FAILURE RETRIEVE "$key"
+					fi
 				;;
 			esac
 		;;
@@ -116,9 +123,16 @@ while read line; do
 			key="$2"
 			calclocation "$key"
 			# Note that it's not a failure to remove a
-			# key that is not present, so -f is used.
-			runcmd rm -f "$LOC"
-			echo REMOVE-SUCCESS "$key"
+			# key that is not present.
+			if [ -e "$LOC" ]; then
+				if runcmd rm -f "$LOC"; then
+					echo REMOVE-SUCCESS "$key"
+				else
+					echo REMOVE-FAILURE "$key"
+				fi
+			else
+				echo REMOVE-SUCCESS "$key"
+			fi
 		;;
 		*)
 			# The requests listed above are all the ones
