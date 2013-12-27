@@ -39,7 +39,7 @@ remote = RemoteType {
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
-	external <- newExternal externaltype
+	external <- newExternal externaltype c
 	Annex.addCleanup (fromUUID u) $ stopExternal external
 	cst <- getCost external r gc
 	return $ Just $ encryptableRemote c
@@ -76,14 +76,15 @@ externalSetup mu c = do
 		M.lookup "externaltype" c
 	c' <- encryptionSetup c
 
-	external <- newExternal externaltype
+	external <- newExternal externaltype c'
 	handleRequest external INITREMOTE Nothing $ \resp -> case resp of
 		INITREMOTE_SUCCESS -> Just noop
 		INITREMOTE_FAILURE errmsg -> Just $ error errmsg
 		_ -> Nothing
+	c'' <- liftIO $ atomically $ readTMVar $ externalConfig external
 
-	gitConfigSpecialRemote u c' "externaltype" externaltype
-	return (c', u)
+	gitConfigSpecialRemote u c'' "externaltype" externaltype
+	return (c'', u)
 
 store :: External -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store external k _f p = sendAnnex k rollback $ \f ->
@@ -201,8 +202,15 @@ handleRequest' lck external req mp responsehandler = do
 		maybe noop (\a -> liftIO $ a bytesprocessed) mp
 	handleRemoteRequest (DIRHASH k) = 
 		sendMessage lck external (VALUE $ hashDirMixed k)
-	handleRemoteRequest (SETCONFIG setting value) = error "TODO"
-	handleRemoteRequest (GETCONFIG setting) = error "TODO"
+	handleRemoteRequest (SETCONFIG setting value) =
+		liftIO $ atomically $ do
+			let v = externalConfig external
+			m <- takeTMVar v
+			putTMVar v $ M.insert setting value m
+	handleRemoteRequest (GETCONFIG setting) = do
+		value <- fromMaybe "" . M.lookup setting
+			<$> liftIO (atomically $ readTMVar $ externalConfig external)
+		sendMessage lck external (VALUE value)
 	handleRemoteRequest (SETSTATE k value) = error "TODO"
 	handleRemoteRequest (GETSTATE k) = error "TODO"
 	handleRemoteRequest (VERSION _) =

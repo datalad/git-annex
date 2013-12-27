@@ -30,11 +30,12 @@ module Remote.External.Types (
 ) where
 
 import Common.Annex
-import Types.Key
-import Utility.Metered
-import Logs.Transfer
-import Config.Cost
 import Annex.Exception
+import Types.Key (file2key, key2file)
+import Utility.Metered (BytesProcessed(..))
+import Logs.Transfer (Direction(..))
+import Config.Cost (Cost)
+import Types.Remote (RemoteConfig)
 
 import Data.Char
 import Control.Concurrent.STM
@@ -47,13 +48,16 @@ data External = External
 	, externalState :: TMVar ExternalState
 	-- Empty when a remote is in use.
 	, externalLock :: TMVar ExternalLock
+	-- Never left empty.
+	, externalConfig :: TMVar RemoteConfig
 	}
 
-newExternal :: ExternalType -> Annex External
-newExternal externaltype = liftIO $ External
+newExternal :: ExternalType -> RemoteConfig -> Annex External
+newExternal externaltype c = liftIO $ External
 	<$> pure externaltype
 	<*> atomically newEmptyTMVar
 	<*> atomically (newTMVar ExternalLock)
+	<*> atomically (newTMVar c)
 
 type ExternalType = String
 

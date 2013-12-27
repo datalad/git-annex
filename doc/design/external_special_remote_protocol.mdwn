@@ -177,14 +177,17 @@ in control.
   creating hash directory structures to store Keys in.  
   (git-annex replies with VALUE followed by the value.)
 * `SETCONFIG Setting`  
-  Sets one of the special remote's configuration settings. These settings
-  are stored in the git-annex branch, so will be available if the same
-  special remote is used elsewhere.  
-  (Typically only done during INITREMOTE, although it is accepted at other
-  times.)
+  Sets one of the special remote's configuration settings.  
+  Normally this is sent during INITREMOTE, which allows these settings
+  to be stored in the git-annex branch, so will be available if the same
+  special remote is used elsewhere. (If sent after INITREMOTE, the changed
+  configuration will only be available while the remote is running.)
 * `GETCONFIG Setting`  
-  Gets one of the special remote's configuration settings.  
-  (git-annex replies with VALUE followed by the value.)
+  Gets one of the special remote's configuration settings, which can have
+  been passed by the user when running `git annex initremote`, or
+  can have been set by a previous SETCONFIG. Can be run at any time.  
+  (git-annex replies with VALUE followed by the value. If the setting is
+  not set, the value will be empty.)
 * `SETSTATE Key Value`  
   git-annex can store state in the git-annex branch on a
   per-special-remote, per-key basis. This sets that state.  
