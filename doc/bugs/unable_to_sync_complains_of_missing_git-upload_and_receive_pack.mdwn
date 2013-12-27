@@ -200,3 +200,9 @@ fatal: Could not read from remote repository.
 Please make sure you have the correct access rights
 and the repository exists.
 """]]
+
+> [[done]]; `git push` and `git pull` don't use annex-ssh-options,
+> and so that's not a good way to configure the dedicated key. 
+> Instead, set it up like the assistant does, with a dummy hostname in the
+> url that is configured in .ssh/config to use the real domain and the
+> dedicated key. --[[Joey]]
