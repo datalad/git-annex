@@ -1,0 +1,15 @@
+git remotes that have git-annex and git "installed" using the linux
+standalone tarball (or the OSX dmg) may not have git-receive-pack in PATH.
+
+To make `git annex sync` and `git push` etc work on such a remote,
+it needs to have a dedicated ssh key that runs git-annex-shell and uses it
+to run the command.
+
+The assistant sets that up when it sets up a dedicated ssh key. However, if
+the server can be sshed into without a password using an existing ssh key,
+the assistant re-uses that key.
+
+The assistant should either always set up a dedicated ssh key, even when
+not otherwise needed, or it should probe to see if git-receive-pack and
+git-send-pack can be run as part of its probing, and set up a dedicated
+ssh key when they cannot be.
