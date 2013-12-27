@@ -75,16 +75,14 @@ The special remote program can then exit.
 
 ## git-annex request messages
 
-These are the request messages git-annex may send to the special remote
-program. None of these messages require an immediate reply. The special
+These are messages git-annex sends to the special remote program.
+None of these messages require an immediate reply. The special
 remote can send any messages it likes while handling the requests.
 
 Once the special remote has finished performing the request, it should
 send one of the corresponding replies listed in the next section.
 
-More requests may be added over time, so if the special remote sees a
-request it does not understand, it should respond with UNKNOWN-REQUEST
-and continue running.
+The following requests *must* all be supported by the special remote.
 
 * `PREPARE`  
   Tells the special remote it's time to prepare itself to be used.
@@ -97,9 +95,6 @@ and continue running.
   Note: This may be run repeatedly, as a remote is initialized in
   different repositories, or as the configuration of a remote is changed.
   So any one-time setup tasks should be done idempotently.
-* `GETCOST`  
-  Requests the remote return a use cost. Higher costs are more expensive.
-  (See Config/Cost.hs for some standard costs.)
 * `TRANSFER STORE|RETRIEVE Key File`  
   Requests the transfer of a key. For Send, the File is the file to upload;
   for Receive the File is where to store the download.  
@@ -112,6 +107,16 @@ and continue running.
   Requests the remote check if a key is present in it.
 * `REMOVE Key`  
   Requests the remote remove a key's contents.
+
+The following requests can optionally be supported. If not handled,
+replying with `UNSUPPORTED-REQUEST` is acceptable.
+
+* `GETCOST`  
+  Requests the remote return a use cost. Higher costs are more expensive.
+  (See Config/Cost.hs for some standard costs.)
+
+More optional requests may be added, without changing the protocol version,
+so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
 
 ## special remote replies
 
@@ -142,13 +147,11 @@ while it's handling a request.
   Indicates that the key was unable to be removed from the remote.
 * `COST Int`  
   Indicates the cost of the remote.
-* `COST-UNKNOWN`  
-  Indicates the remote has no opinion of its cost.
 * `INITREMOTE-SUCCESS`  
   Indicates the INITREMOTE succeeded and the remote is ready to use.
 * `INITREMOTE-FAILURE ErrorMsg`  
   Indicates that INITREMOTE failed.
-* `UNKNOWN-REQUEST`  
+* `UNSUPPORTED-REQUEST`  
   Indicates that the special remote does not know how to handle a request.
 
 ## special remote messages

@@ -118,10 +118,9 @@ data Response
 	| REMOVE_SUCCESS Key
 	| REMOVE_FAILURE Key ErrorMsg
 	| COST Cost
-	| COST_UNKNOWN
 	| INITREMOTE_SUCCESS
 	| INITREMOTE_FAILURE ErrorMsg
-	| UNKNOWN_REQUEST
+	| UNSUPPORTED_REQUEST
 	deriving (Show)
 
 instance Receivable Response where
@@ -134,10 +133,9 @@ instance Receivable Response where
 	parseCommand "REMOVE-SUCCESS" = parse1 REMOVE_SUCCESS
 	parseCommand "REMOVE-FAILURE" = parse2 REMOVE_FAILURE
 	parseCommand "COST" = parse1 COST
-	parseCommand "COST_UNKNOWN" = parse0 COST_UNKNOWN
 	parseCommand "INITREMOTE-SUCCESS" = parse0 INITREMOTE_SUCCESS
 	parseCommand "INITREMOTE-FAILURE" = parse1 INITREMOTE_FAILURE
-	parseCommand "UNKNOWN-REQUEST" = parse0 UNKNOWN_REQUEST
+	parseCommand "UNSUPPORTED-REQUEST" = parse0 UNSUPPORTED_REQUEST
 	parseCommand _ = parseFail
 
 -- Requests that the external remote can send at any time it's in control.

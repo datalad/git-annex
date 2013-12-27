@@ -66,9 +66,6 @@ while read line; do
 				echo INITREMOTE-SUCCESS
 			fi
 		;;
-		GETCOST)
-			echo COST-UNKNOWN
-		;;
 		PREPARE)
 			# XXX Use GETCONFIG to get configuration settings,
 			# and do anything needed to get ready for using the
@@ -123,7 +120,10 @@ while read line; do
 			echo REMOVE-SUCCESS "$key"
 		;;
 		*)
-			echo UNKNOWN-REQUEST
+			# The requests listed above are all the ones
+			# that are required to be supported, so it's fine
+			# to say that any other request is unsupported.
+			echo UNSUPPORTED-REQUEST
 		;;
 	esac	
 done

@@ -152,7 +152,8 @@ safely a = go =<< tryAnnex a
 		return False
 
 {- Sends a Request to the external remote, and waits for it to generate
- - a Response that the responsehandler accepts.
+ - a Response. That is fed into the responsehandler, which should return
+ - the action to run for it (or Nothing if there's a protocol error).
  -
  - While the external remote is processing the Request, it may send
  - any number of RemoteRequests, that are handled here.
@@ -291,7 +292,7 @@ getCost external r gc = go =<< remoteCost' gc
 	go Nothing = do
 		c <- handleRequest external GETCOST Nothing $ \req -> case req of
 			COST c -> Just $ return c
-			COST_UNKNOWN -> Just $ return expensiveRemoteCost
+			UNSUPPORTED_REQUEST -> Just $ return expensiveRemoteCost
 			_ -> Nothing
 		setRemoteCost r c
 		return c
