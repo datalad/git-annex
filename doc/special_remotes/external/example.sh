@@ -48,6 +48,32 @@ ask () {
 	esac
 }
 
+# This remote doesn't need credentials to access it,
+# but many of them will. Here's how to handle requiring the user
+# set MYPASSWORD and MYLOGIN when running initremote. The creds
+# will be stored securely for later use, so the user only needs
+# to provide them once.
+setupcreds () {
+	if [ -z "$MYPASSWORD" ] || [ -z "$MYLOGIN" ]; then
+		echo INITREMOTE-FAILURE "You need to set MYPASSWORD and MYLOGIN environment variables when running initremote."
+	else
+		echo SETCREDS mycreds "$MYLOGIN" "$MYPASSWORD"	
+		echo INITREMOTE-SUCCESS
+	fi
+}
+
+getcreds () {
+	echo GETCREDS mycreds
+	read resp
+	case "${resp%% *}" in
+		CREDS)
+			MYLOGIN="$(echo "$resp" | sed 's/^CREDS \([^ ]*\) .*/\1/')"
+			MYPASSWORD="$(echo "$resp" | sed 's/^CREDS [^ ]* //')"
+		;;
+	esac
+
+}
+
 # This has to come first, to get the protocol started.
 echo VERSION 1
 
@@ -66,16 +92,17 @@ while read line; do
 			# git annex initremote or git annex enableremote is
 			# run.)
 
+			# The directory provided by the user
+			# could be relative; make it absolute,
+			# and store that.
 			getconfig directory
-			# Input directory could be relative; make it
-			# absolute, and store that.
-			mydirectory="$(readlink -f "$RET")"
+			mydirectory="$(readlink -f "$RET")" || true
 			setconfig directory "$mydirectory"
 			if [ -z "$mydirectory" ]; then
 				echo INITREMOTE-FAILURE "You need to set directory="
 			else
 				if mkdir -p "$mydirectory"; then
-					echo INITREMOTE-SUCCESS
+					setupcreds
 				else
 					echo INITREMOTE-FAILURE "Failed to write to $mydirectory"
 				fi
@@ -87,6 +114,7 @@ while read line; do
 			# special remote here.
 			getconfig directory
 			mydirectory="$RET"
+			getcreds
 			echo PREPARE-SUCCESS
 		;;
 		TRANSFER)

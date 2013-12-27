@@ -44,6 +44,7 @@ import Control.Concurrent.STM
 -- The 
 data External = External
 	{ externalType :: ExternalType
+	, externalUUID :: UUID
 	-- Empty until the remote is running.
 	, externalState :: TMVar ExternalState
 	-- Empty when a remote is in use.
@@ -52,9 +53,10 @@ data External = External
 	, externalConfig :: TMVar RemoteConfig
 	}
 
-newExternal :: ExternalType -> RemoteConfig -> Annex External
-newExternal externaltype c = liftIO $ External
+newExternal :: ExternalType -> UUID -> RemoteConfig -> Annex External
+newExternal externaltype u c = liftIO $ External
 	<$> pure externaltype
+	<*> pure u
 	<*> atomically newEmptyTMVar
 	<*> atomically (newTMVar ExternalLock)
 	<*> atomically (newTMVar c)
@@ -157,6 +159,8 @@ data RemoteRequest
 	| DIRHASH Key
 	| SETCONFIG Setting String
 	| GETCONFIG Setting
+	| SETCREDS Setting String String
+	| GETCREDS Setting
 	deriving (Show)
 
 instance Receivable RemoteRequest where
@@ -165,15 +169,19 @@ instance Receivable RemoteRequest where
 	parseCommand "DIRHASH" = parse1 DIRHASH
 	parseCommand "SETCONFIG" = parse2 SETCONFIG
 	parseCommand "GETCONFIG" = parse1 GETCONFIG
+	parseCommand "SETCREDS" = parse3 SETCREDS
+	parseCommand "GETCREDS" = parse1 GETCREDS
 	parseCommand _ = parseFail
 
 -- Responses to RemoteRequest.
 data RemoteResponse
 	= VALUE String
+	| CREDS String String
 	deriving (Show)
 
 instance Sendable RemoteResponse where
 	formatMessage (VALUE s) = [ "VALUE", serialize s ]
+	formatMessage (CREDS login password) = [ "CREDS", serialize login, serialize password ]
 
 -- Messages that can be sent at any time by either git-annex or the remote.
 data AsyncMessage

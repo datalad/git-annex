@@ -22,6 +22,7 @@ import Config.Cost
 import Annex.Content
 import Annex.UUID
 import Annex.Exception
+import Creds
 
 import Control.Concurrent.STM
 import System.Process (std_in, std_out, std_err)
@@ -39,7 +40,7 @@ remote = RemoteType {
 
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
-	external <- newExternal externaltype c
+	external <- newExternal externaltype u c
 	Annex.addCleanup (fromUUID u) $ stopExternal external
 	cst <- getCost external r gc
 	return $ Just $ encryptableRemote c
@@ -76,7 +77,7 @@ externalSetup mu c = do
 		M.lookup "externaltype" c
 	c' <- encryptionSetup c
 
-	external <- newExternal externaltype c'
+	external <- newExternal externaltype u c'
 	handleRequest external INITREMOTE Nothing $ \resp -> case resp of
 		INITREMOTE_SUCCESS -> Just noop
 		INITREMOTE_FAILURE errmsg -> Just $ error errmsg
@@ -201,7 +202,7 @@ handleRequest' lck external req mp responsehandler = do
 	handleRemoteRequest (PROGRESS bytesprocessed) =
 		maybe noop (\a -> liftIO $ a bytesprocessed) mp
 	handleRemoteRequest (DIRHASH k) = 
-		sendMessage lck external (VALUE $ hashDirMixed k)
+		sendMessage lck external $ VALUE $ hashDirMixed k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ do
 			let v = externalConfig external
@@ -210,11 +211,29 @@ handleRequest' lck external req mp responsehandler = do
 	handleRemoteRequest (GETCONFIG setting) = do
 		value <- fromMaybe "" . M.lookup setting
 			<$> liftIO (atomically $ readTMVar $ externalConfig external)
-		sendMessage lck external (VALUE value)
+		sendMessage lck external $ VALUE value
+	handleRemoteRequest (SETCREDS setting login password) = do
+		c <- liftIO $ atomically $ readTMVar $ externalConfig external
+		c' <- setRemoteCredPair' c (credstorage setting)
+			(login, password)
+		void $ liftIO $ atomically $ swapTMVar (externalConfig external) c'
+	handleRemoteRequest (GETCREDS setting) = do
+		c <- liftIO $ atomically $ readTMVar $ externalConfig external
+		creds <- fromMaybe ("", "") <$> 
+			getRemoteCredPair c (credstorage setting)
+		sendMessage lck external $ CREDS (fst creds) (snd creds)
 	handleRemoteRequest (VERSION _) =
-		sendMessage lck external (ERROR "too late to send VERSION")
+		sendMessage lck external $ ERROR "too late to send VERSION"
 
 	handleAsyncMessage (ERROR err) = error $ "external special remote error: " ++ err
+
+	credstorage setting = CredPairStorage
+		{ credPairFile = base
+		, credPairEnvironment = (base ++ "login", base ++ "password")
+		, credPairRemoteKey = Just setting
+		}
+	  where
+		base = replace "/" "_" $ fromUUID (externalUUID external) ++ "-" ++ setting
 
 sendMessage :: Sendable m => ExternalLock -> External -> m -> Annex ()
 sendMessage lck external m = 

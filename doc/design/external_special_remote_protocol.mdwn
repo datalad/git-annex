@@ -189,6 +189,23 @@ in control.
   can have been set by a previous SETCONFIG. Can be run at any time.  
   (git-annex replies with VALUE followed by the value. If the setting is
   not set, the value will be empty.)
+* `SETCREDS Setting User Password`  
+  When some form of user and password is needed to access a special remote,
+  this can be used to securely store them for later use.
+  (Like SETCONFIG, this is normally sent only during INITREMOTE.)  
+  The Setting indicates which value in a remote's configuration can be
+  used to store the creds.  
+  Note that creds are normally only stored in the remote's configuration
+  when it's surely safe to do so; when gpg encryption is used, in which
+  case the creds will be encrypted using it. If creds are not stored in
+  the configuration, they'll only be stored in a local file.  
+  (embedcreds can be set to yes by the user or by SETCONFIG to force
+   the creds to be stored in the remote's configuration).
+* `GETCREDS Setting`  
+  Gets any creds that were previously stored in the remote's configuration
+  or a file.
+  (git-annex replies with "CREDS User Password". If no creds are found,
+  User and Password are both empty.)
 
 ## general messages
 
