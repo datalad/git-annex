@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 2"
+ date="2013-12-27T22:40:06Z"
+ content="""
+I don't have a desktop env. just plain xmonad, so the correct sequence to start the webapp is,
+
+    git annex assistant --autostart && git annex webapp
+
+right?
+"""]]
