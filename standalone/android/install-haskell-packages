@@ -85,6 +85,7 @@ install_pkgs () {
 	patched wai-app-static
 	patched shakespeare
 	patched shakespeare-css
+	patched shakespeare-js
 	patched yesod-routes
 	patched yesod-core
 	patched yesod-persistent
@@ -92,12 +93,14 @@ install_pkgs () {
 	patched crypto-numbers
 	patched yesod-auth
 	patched yesod
-	patched async
+	patched process-conduit
 	patched gnuidn
 	patched DAV
-	patched language-javascript
+	patched shakespeare-text
+	patched yesod-static
 	patched uuid
 	patched dns
+	patched gnutls
 
 	cd ..
 
