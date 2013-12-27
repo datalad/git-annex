@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-When git annex is used on a encfs mount, .fuse_hiddenXXXX files are left behind in .git/annex/objects/*/*/ when I ``git annex move`` files off the encfs
+When git annex is used on a encfs mount, ``.fuse_hiddenXXXX`` files are left behind in ``.git/annex/objects/*/*/`` when I ``git annex move`` files off the encfs
 
 ### What steps will reproduce the problem?
 
