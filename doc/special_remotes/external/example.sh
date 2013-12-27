@@ -87,7 +87,7 @@ while read line; do
 					# XXX when possible, send PROGRESS
 					calclocation "$key"
 					mkdir -p "$(dirname "$LOC")"
-					if runcmd cp -v "$file" "$LOC"; then
+					if runcmd cp "$file" "$LOC"; then
 						echo TRANSFER-SUCCESS STORE "$key"
 					else
 						echo TRANSFER-FAILURE STORE "$key"
@@ -98,7 +98,7 @@ while read line; do
 					# the key, outputting to the file.
 					# XXX when easy to do, send PROGRESS
 					calclocation "$key"
-					if runcmd cp -v "$LOC" "$file"; then
+					if runcmd cp "$LOC" "$file"; then
 						echo TRANSFER-SUCCESS RETRIEVE "$key"
 					else
 						echo TRANSFER-FAILURE RETRIEVE "$key"
