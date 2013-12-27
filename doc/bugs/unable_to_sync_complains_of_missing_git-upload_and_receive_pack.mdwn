@@ -45,7 +45,7 @@ and the repository exists.
 
   Pushing to synology failed.
 
-  (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+  (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote\'s git config)
 failed
 git-annex: sync: 2 failed
 $ cat .git/config
@@ -81,6 +81,7 @@ favicon.png  git-annex  git-annex-webapp    git-upload-pack   libdirs  logo.svg 
 #### on "synology" (armel)
 
 [[!format sh """
+/volume1/downloads/git-annex.linux $ ./runshell
 $ git-annex version
 git-annex version: 5.20131224-g6ca5271
 build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS Feeds Quvi TDFA CryptoHash
@@ -90,6 +91,12 @@ local repository version: 5
 default repository version: 3
 supported repository versions: 3 5
 upgrade supported from repository versions: 0 1 2 4
+
+$ which git-receive-pack
+/volume1/downloads/git-annex.linux/bin/git-receive-pack
+
+$ which git-upload-pack
+/volume1/downloads/git-annex.linux/bin/git-upload-pack
 
 $ git-annex sync
 commit  (Recording state in git...)
