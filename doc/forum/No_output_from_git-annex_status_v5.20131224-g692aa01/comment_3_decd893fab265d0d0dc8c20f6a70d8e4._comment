@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/e65e6d0e-58ba-41de-84cc-1f2ba54cf574"
+ nickname="Mica Semrick"
+ subject="Now I'm getting..."
+ date="2013-12-27T08:01:44Z"
+ content="""
+~~~
+$ git-annex info
+repository mode: indirect
+trusted repositories: fatal: Not a git repository: '/home/micas/Music/.git'
+fatal: Not a git repository: '/home/micas/Music/.git'
+0
+semitrusted repositories: 3
+	00000000-0000-0000-0000-000000000001 -- web
+ 	85f8a5ea-6278-11e2-9978-ebb59e8f37a2 -- here (Music annex backup)
+ 	9aff38f2-6447-11e2-8c89-ef50e6c0ea6c -- backupone (Music annex backupone)
+untrusted repositories: 0
+transfers in progress: none
+available local disk space: 174.28 gigabytes (+1 megabyte reserved)
+local annex keys: 5348
+local annex size: 25.62 gigabytes
+annexed files in working tree: 5374
+size of annexed files in working tree: 25.68 gigabytes
+bloom filter size: 16 mebibytes (1.1% full)
+backend usage: 
+	SHA256: 10692
+	SHA256E: 30
+~~~
+"""]]
