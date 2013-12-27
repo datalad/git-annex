@@ -28,4 +28,4 @@ if [ -e "$base/git-annex" ]; then
 	export GIT_ANNEX_APP_BASE
 fi
 
-exec "$base/runshell" git shell "$@"
+exec "$base/runshell" git-shell "$@"
