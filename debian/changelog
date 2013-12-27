@@ -7,6 +7,7 @@ git-annex (5.20131222) UNRELEASED; urgency=medium
   * Include git-receive-pack, git-upload-pack, and git wrappers in the Linux
     standalone build, and OSX app, so they will be available when it's
     added to PATH.
+  * Added new external special remote interface.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Dec 2013 13:54:32 -0400
 
