@@ -234,3 +234,5 @@ remote.
 * Support for splitting files into chunks.
 * Support for getting and setting the list of urls that can be associated
   with a key.
+* Hook into webapp. Needs a way to provide some kind of prompt to the user
+  in the webapp, etc.
