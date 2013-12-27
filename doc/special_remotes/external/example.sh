@@ -23,8 +23,8 @@ getconfig () {
 
 # Sets LOC to the location to use to store a key.
 calclocation () {
-	ask HASHDIR "$1"
-	LOC="$mydirectory/$hashdir/$RET"
+	ask DIRHASH "$1"
+	LOC="$mydirectory/$RET"
 }
 
 # Asks for some value, and stores it in RET
@@ -35,7 +35,7 @@ ask () {
 	# preserving all other whitespace
 	case "${resp%% *}" in
 		VALUE)
-			RET="${resp#[! ]*[ ]}"
+			RET="$(echo "$resp" | sed 's/^VALUE \?//')"
 		;;
 		*)
 			RET=""
