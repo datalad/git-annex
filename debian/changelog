@@ -8,6 +8,8 @@ git-annex (5.20131222) UNRELEASED; urgency=medium
     in the Linux standalone build, and OSX app, so they will be available
     when it's added to PATH.
   * Added new external special remote interface.
+  * addurl, importfeed: Sanitize | and some other symbols and special
+    characters.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Dec 2013 13:54:32 -0400
 

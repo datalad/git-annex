@@ -22,3 +22,6 @@ git annex addurl will keep the »|« symbol in the filename generated from the v
     Ubuntu 13.10
 
 ### Please provide any additional information below.
+
+> Ah, I see, pipe is not considered to be punctuation, but a math symbol.
+> [[fixed|done]] --[[Joey]] 
