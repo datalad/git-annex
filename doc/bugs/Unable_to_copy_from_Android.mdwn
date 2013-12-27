@@ -136,3 +136,5 @@ git-annex: copy: 1 failed
 
 # End of transcript or log.
 """]]
+
+[[dup|done]]
