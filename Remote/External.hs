@@ -241,14 +241,15 @@ receiveMessage lck external handleresponse handlerequest handleasync = do
 	s <- fromExternal lck external externalReceive $ liftIO . hGetLine
 	liftIO $ protocolDebug external False s
 	case parseMessage s :: Maybe Response of
-		Just resp -> maybe (protocolError s) id (handleresponse resp)
+		Just resp -> maybe (protocolError True s) id (handleresponse resp)
 		Nothing -> case parseMessage s :: Maybe RemoteRequest of
-			Just req -> maybe (protocolError s) id (handlerequest req)
+			Just req -> maybe (protocolError True s) id (handlerequest req)
 			Nothing -> case parseMessage s :: Maybe AsyncMessage of
-				Just msg -> maybe (protocolError s) id (handleasync msg)
-				Nothing -> protocolError s
+				Just msg -> maybe (protocolError True s) id (handleasync msg)
+				Nothing -> protocolError False s
   where
-	protocolError s = error $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\""
+	protocolError parsed s = error $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
+		if parsed then "(command not allowed at this time)" else "(unable to parse command)"
 
 protocolDebug :: External -> Bool -> String -> IO ()
 protocolDebug external sendto line = debugM "external" $ unwords
