@@ -34,13 +34,14 @@ import Text.Parsec
 import Text.Parsec.String
 import Control.Applicative ((<$>))
 import Data.Either
-import Data.List
+import Data.List hiding (find)
 import Data.String.Utils
 import Data.Char
 import System.Environment
 import System.FilePath
 import System.Directory
 import Control.Monad
+import Prelude hiding (log)
 
 import Utility.Monad
 import Utility.Misc
@@ -85,27 +86,27 @@ coordsParser = (try singleline <|> try weird <|> multiline) <?> "Coords"
   where
   	singleline = do
 		line <- number
-		char ':'
+		void $ char ':'
 		startcol <- number
-		char '-'
+		void $ char '-'
 		endcol <- number
 		return $ (Coord line startcol, Coord line endcol)
 
 	weird = do
 		line <- number
-		char ':'
+		void $ char ':'
 		col <- number
 		return $ (Coord line col, Coord line col)
 
 	multiline = do
 		start <- fromparens
-		char '-'
+		void $ char '-'
 		end <- fromparens
 		return $ (start, end)
 
 	fromparens = between (char '(') (char ')') $ do
 		line <- number
-		char ','
+		void $ char ','
 		col <- number
 		return $ Coord line col
 
@@ -121,19 +122,19 @@ indentedLine = indent >> restOfLine
 spliceParser :: Parser Splice
 spliceParser = do
 	file <- many1 (noneOf ":\n")
-	char ':'
+	void $ char ':'
 	(start, end) <- coordsParser
-	string ": Splicing "
+	void $ string ": Splicing "
 	splicetype <- tosplicetype
 		<$> (string "expression" <|> string "declarations")
-	newline
+	void newline
 
 	getthline <- expressionextractor
 	expression <- unlines <$> many1 getthline
 
-	indent
-	string "======>"	
-	newline
+	void indent
+	void $ string "======>"	
+	void newline
 
 	getcodeline <- expressionextractor
 	realcoords <- try (Right <$> getrealcoords file) <|> (Left <$> getcodeline)
@@ -157,7 +158,7 @@ spliceParser = do
 	expressionextractor = do
 		i <- lookAhead indent
 		return $ try $ do
-			string i
+			void $ string i
 			restOfLine
 	
 	{- When splicing declarations, GHC will output a splice
@@ -165,9 +166,9 @@ spliceParser = do
 	 - the first line will give the actual coordinates of the
 	 - line that was spliced. -}
 	getrealcoords file = do
-		indent
-		string file
-		char ':'
+		void indent
+		void $ string file
+		void $ char ':'
 		char '\n' `after` coordsParser
 
 {- Extracts the splices, ignoring the rest of the compiler output. -}
@@ -196,6 +197,7 @@ splicesExtractor = rights <$> many extract
  - starts with "import "
  -}
 applySplices :: FilePath -> Maybe String -> [Splice] -> IO ()
+applySplices _ _ [] = noop
 applySplices destdir imports splices@(first:_) = do
 	let f = splicedFile first
 	let dest = (destdir </> f)
@@ -237,10 +239,10 @@ expandDeclarationSplice s lls = concat [before, [splice], end]
 
 {- Expression splices are expanded within their line. -}
 expandExpressionSplice :: Splice -> [String] -> [String]
-expandExpressionSplice s lls = concat [before, spliced:padding, end]
+expandExpressionSplice sp lls = concat [before, spliced:padding, end]
   where
-	cs = spliceStart s
-	ce = spliceEnd s
+	cs = spliceStart sp
+	ce = spliceEnd sp
 
 	(before, rest) = splitAt (coordLine cs - 1) lls
 	(oldlines, end) = splitAt (1 + coordLine (offsetCoord ce cs)) rest
@@ -251,7 +253,7 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 		_ -> ([], [], [])
 	spliced = concat
 		[ joinsplice $ deqqstart $ take (coordColumn cs - 1) splicestart
-		, addindent (findindent splicestart) (mangleCode $ splicedCode s)
+		, addindent (findindent splicestart) (mangleCode $ splicedCode sp)
 		, deqqend $ drop (coordColumn ce) spliceend
 		]
 
@@ -260,7 +262,7 @@ expandExpressionSplice s lls = concat [before, spliced:padding, end]
 
 	{- splicing leaves $() quasiquote behind; remove it -}
 	deqqstart s = case reverse s of
-		('(':'$':rest) -> reverse rest
+		('(':'$':restq) -> reverse restq
 		_ -> s
 	deqqend (')':s) = s
 	deqqend s = s
@@ -331,27 +333,27 @@ mangleCode = flip_colon
 		-- skip lambdas inside tuples or parens
 		prefix <- noneOf "(, \n"
 		preindent <- many1 $ oneOf " \n"
-		string "\\ "
+		void $ string "\\ "
 		lambdaparams <- restofline
 		continuedlambdaparams <- many $ try $ do
-			indent <- many1 $ char ' '
+			indent1 <- many1 $ char ' '
 			p <- satisfy isLetter
 			aram <- many $ satisfy isAlphaNum <|> oneOf "_"
-			newline
-			return $ indent ++ p:aram ++ "\n"
-		indent <- many1 $ char ' '
-		string "-> "
+			void newline
+			return $ indent1 ++ p:aram ++ "\n"
+		indent1 <- many1 $ char ' '
+		void $ string "-> "
 		firstline <- restofline
 		lambdalines <- many $ try $ do
-			string indent
-			char ' '
+			void $ string indent1
+			void $ char ' '
 			l <- restofline
-			return $ indent ++ " " ++ l
+			return $ indent1 ++ " " ++ l
 		return $ concat 
 			[ prefix:preindent
 			, "(\\ " ++ lambdaparams ++ "\n"
 			, concat continuedlambdaparams
-			, indent ++ "-> "
+			, indent1 ++ "-> "
 			, lambdaparens $ intercalate "\n" (firstline:lambdalines)
 			, ")\n"
 			]
@@ -376,27 +378,27 @@ mangleCode = flip_colon
 	 - layer of parens even when a lambda seems to be in parent.
 	 -}
 	lambdaparenhack = parsecAndReplace $ do
-		indent <- many1 $ char ' '
+		indent1 <- many1 $ char ' '
 		staticr <- string "StaticR"
-		newline
-		string indent
+		void newline
+		void $ string indent1
 		yesod_dispatch_env <- restofline
-		string indent
+		void $ string indent1
 		lambdaprefix <- string "(\\ "
 		l1 <- restofline
-		string indent
+		void $ string indent1
 		lambdaarrow <- string "   ->"
 		l2 <- restofline
 		l3 <- if '{' `elem` l2 && '}' `elem` l2
 			then return ""
 			else do
-				string indent
+				void $ string indent1
 				restofline
 		return $ unlines
-			[ indent ++ staticr
-			, indent ++ yesod_dispatch_env
-			, indent ++ "(" ++ lambdaprefix ++ l1
-			, indent ++ lambdaarrow ++ l2 ++ l3 ++ ")"
+			[ indent1 ++ staticr
+			, indent1 ++ yesod_dispatch_env
+			, indent1 ++ "(" ++ lambdaprefix ++ l1
+			, indent1 ++ lambdaarrow ++ l2 ++ l3 ++ ")"
 			]
 
 	restofline = manyTill (noneOf "\n") newline
@@ -408,9 +410,9 @@ mangleCode = flip_colon
 	 - To work around what is likely a GHC bug, just collapse
 	 - multiline strings. -}
 	collapse_multiline_strings = parsecAndReplace $ do
-		string "\\\n"
-		many1 $ oneOf " \t"
-		string "\\"
+		void $ string "\\\n"
+		void $ many1 $ oneOf " \t"
+		void $ string "\\"
 		return "\\n"
 
 	{- GHC outputs splices using explicit braces rather than layout.
@@ -439,8 +441,8 @@ mangleCode = flip_colon
 	 - all whitespace up until it.
 	 -}
 	case_layout = parsecAndReplace $ do
-		newline
-		indent <- many1 $ char ' '
+		void newline
+		indent1 <- many1 $ char ' '
 		prefix <- manyTill (noneOf "\n") (try (string "-> "))
 		if length prefix > 10
 			then unexpected "too long a prefix"
@@ -448,24 +450,24 @@ mangleCode = flip_colon
 				then unexpected "lambda expression"
 				else if null prefix
 					then unexpected "second line of lambda"
-					else return $ "\n" ++ indent ++ "; " ++ prefix ++ " -> "
+					else return $ "\n" ++ indent1 ++ "; " ++ prefix ++ " -> "
 	{- Sometimes cases themselves span multiple lines:
 	 -
 	 - Nothing
 	 -   -> foo
 	 -}
 	case_layout_multiline = parsecAndReplace $ do
-		newline
-		indent <- many1 $ char ' '
+		void newline
+		indent1 <- many1 $ char ' '
 		firstline <- restofline
 
-		string indent
+		void $ string indent1
 		indent2 <- many1 $ char ' '
-		string "-> "
+		void $ string "-> "
 		if "\\ " `isInfixOf` firstline
 			then unexpected "lambda expression"
-			else return $ "\n" ++ indent ++ "; " ++ firstline ++ "\n"
-				++ indent ++ indent2 ++ "-> "
+			else return $ "\n" ++ indent1 ++ "; " ++ firstline ++ "\n"
+				++ indent1 ++ indent2 ++ "-> "
 
 	{- (foo, \ -> bar) is not valid haskell, GHC.
 	 - Change to (foo, bar)
@@ -497,11 +499,11 @@ mangleCode = flip_colon
 	 - signature is easily inferred, so is just removed.
 	 -}
 	remove_unnecessary_type_signatures = parsecAndReplace $ do
-		string " ::"
-		newline
-		many1 $ char ' '
-		string "Text.Css.Block Text.Css.Resolved"
-		newline
+		void $ string " ::"
+		void newline
+		void $ many1 $ char ' '
+		void $ string "Text.Css.Block Text.Css.Resolved"
+		void newline
 		return ""
 
 	{- GHC may add full package and version qualifications for
@@ -520,15 +522,14 @@ mangleCode = flip_colon
 
 	qualifiedSymbol :: Parser String
 	qualifiedSymbol = do
-		s <- token
-		char ':'
+		s <- hstoken
+		void $ char ':'
 		if length s < 5
 			then unexpected "too short to be a namespace"
-			else do
-				token
+			else hstoken
 
-	token :: Parser String
-	token = do
+	hstoken :: Parser String
+	hstoken = do
 		t <- satisfy isLetter
 		oken <- many $ satisfy isAlphaNum <|> oneOf "-.'"
 		return $ t:oken
@@ -561,25 +562,25 @@ mangleCode = flip_colon
  -}
 yesod_url_render_hack :: String -> String
 yesod_url_render_hack = parsecAndReplace $ do
-	string "(toHtml"
-	whitespace
-	string "(\\"
-	whitespace
-	wtf <- token
-	whitespace
-	string "->"
-	whitespace
-	renderer <- token
-	whitespace
-	string wtf
-	whitespace
+	void $ string "(toHtml"
+	void whitespace
+	void $ string "(\\"
+	void whitespace
+	wtf <- hstoken
+	void whitespace
+	void $ string "->"
+	void whitespace
+	renderer <- hstoken
+	void whitespace
+	void $ string wtf
+	void whitespace
 	return $ "(toHtml (flip " ++ renderer ++ " "
   where
 	whitespace :: Parser String
 	whitespace = many $ oneOf " \t\r\n"
 
-	token :: Parser String
-	token = many1 $ satisfy isAlphaNum <|> oneOf "_"
+	hstoken :: Parser String
+	hstoken = many1 $ satisfy isAlphaNum <|> oneOf "_"
 
 {- Use exported symbol. -}
 text_builder_hack :: String -> String
@@ -591,7 +592,7 @@ text_builder_hack = replace "Data.Text.Lazy.Builder.Internal.fromText" "Data.Tex
  - Rather slow, but crazy powerful. -}
 parsecAndReplace :: Parser String -> String -> String
 parsecAndReplace p s = case parse find "" s of
-	Left e -> s
+	Left _e -> s
 	Right l -> concatMap (either return id) l
   where
   	find :: Parser [Either Char String]
