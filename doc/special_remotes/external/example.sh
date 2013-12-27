@@ -52,9 +52,14 @@ while read line; do
 		INITREMOTE)
 			# Do anything necessary to create resources
 			# used by the remote. Try to be idempotent.
+			# 
 			# Use GETCONFIG to get any needed configuration
 			# settings, and SETCONFIG to set any persistent
 			# configuration settings.
+			# 
+			# (Note that this is not run every time, only when
+			# git annex initremote or git annex enableremote is
+			# run.)
 			getconfig directory
 			mydirectory="$RET"
 			if [ -z "$mydirectory" ]; then
@@ -91,7 +96,7 @@ while read line; do
 				RETRIEVE)
 					# Retrieve from a location based on
 					# the key, outputting to the file.
-					# XXX when easy, send PROGRESS
+					# XXX when easy to do, send PROGRESS
 					calclocation "$key"
 					if runcmd cp -v "$LOC" "$file"; then
 						echo TRANSFER-SUCCESS RETRIEVE "$key"
@@ -110,7 +115,7 @@ while read line; do
 				if [ -d "$mydirectory" ]; then
 					echo CHECKPRESENT-FAILURE "$key"
 				else
-					# If the directory does not exist,
+					# When the directory does not exist,
 					# the remote is not available.
 					# (A network remote would similarly
 					# fail with CHECKPRESENT-UNKNOWN

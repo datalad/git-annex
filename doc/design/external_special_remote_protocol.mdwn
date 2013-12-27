@@ -98,8 +98,7 @@ The following requests *must* all be supported by the special remote.
   Requests the transfer of a key. For Send, the File is the file to upload;
   for Receive the File is where to store the download.  
   Note that the File should not influence the filename used on the remote.
-  The filename used should be derived from the Key, and will not contain
-  any whitespace.  
+  The filename will not contain any whitespace.  
   Multiple transfers might be requested by git-annex, but it's fine for the 
   program to serialize them and only do one at a time.
 * `CHECKPRESENT Key`  
