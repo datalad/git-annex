@@ -14,6 +14,8 @@ It's not hard!
 * Install it in PATH.
 * When the user runs `git annex initremote foo type=external externaltype=$bar`,
   it will use your program.
+* If things don't seem to work, pass `--debug` and you'll see, amoung other
+  things, a transcript of git-annex's communication with your program.
 * If you build a new special remote, please add it to the list
   of [[special_remotes]].
 

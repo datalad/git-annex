@@ -25,6 +25,7 @@ import Annex.Exception
 
 import Control.Concurrent.STM
 import System.Process (std_in, std_out, std_err)
+import System.Log.Logger (debugM)
 import qualified Data.Map as M
 
 remote :: RemoteType
@@ -194,7 +195,11 @@ handleRequest' lck external req mp responsehandler = do
 sendMessage :: Sendable m => ExternalLock -> External -> m -> Annex ()
 sendMessage lck external m = 
 	fromExternal lck external externalSend $ \h ->
-		liftIO $ hPutStrLn h $ unwords $ formatMessage m
+		liftIO $ do
+			protocolDebug external True line
+			hPutStrLn h line
+  where
+	line = unwords $ formatMessage m
 
 {- Waits for a message from the external remote, and passes it to the
  - apppropriate handler. 
@@ -209,6 +214,7 @@ receiveMessage
 	-> Annex a
 receiveMessage lck external handleresponse handlerequest handleasync = do
 	s <- fromExternal lck external externalReceive $ liftIO . hGetLine
+	liftIO $ protocolDebug external False s
 	case parseMessage s :: Maybe Response of
 		Just resp -> maybe (protocolError s) id (handleresponse resp)
 		Nothing -> case parseMessage s :: Maybe RemoteRequest of
@@ -218,6 +224,13 @@ receiveMessage lck external handleresponse handlerequest handleasync = do
 				Nothing -> protocolError s
   where
 	protocolError s = error $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\""
+
+protocolDebug :: External -> Bool -> String -> IO ()
+protocolDebug external sendto line = debugM "external" $ unwords
+	[ externalRemoteProgram (externalType external)
+	, if sendto then "<--" else "-->"
+	, line
+	]
 
 {- Starts up the external remote if it's not yet running,
  - and passes a value extracted from its state to an action.
