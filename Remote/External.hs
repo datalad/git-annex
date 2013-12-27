@@ -266,7 +266,9 @@ fromExternal lck external extractor a =
 	go (Just st) = run st
 	go Nothing = do
 		st <- startExternal $ externalType external
-		void $ liftIO $ atomically $ swapTMVar v st
+		void $ liftIO $ atomically $ do
+			void $ tryReadTMVar v
+			putTMVar v st
 
 		{- Handle initial protocol startup; check the VERSION
 		 - the remote sends. -}
