@@ -26,6 +26,7 @@ bundledPrograms = catMaybes
 	-- by git when it sshes to a remote.
 	, Just "git-upload-pack"
 	, Just "git-receive-pack"
+	, Just "git-shell"
 #endif
 	, Just "cp"
 #ifndef mingw32_HOST_OS
