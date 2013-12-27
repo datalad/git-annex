@@ -21,6 +21,7 @@ It's not hard!
 
 Here's a simple shell script example, which can easily be adapted
 to run whatever commands you need. Or better, re-written in some better
-language of your choice.
+language of your choice. See [[design/external_special_remote_protocol]]
+for the details.
 
 [[!inline pages="special_remotes/external/example.sh" feeds=no]]
