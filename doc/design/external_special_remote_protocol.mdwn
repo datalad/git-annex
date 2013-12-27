@@ -214,3 +214,5 @@ remote.
 * uuid verification during PREPARE (so, for example, it can check if a
   removable drive repo has the expected uuid)
 * Support for splitting files into chunks.
+* Support for getting and setting the list of urls that can be associated
+  with a key.
