@@ -163,3 +163,40 @@ git                 lib
 git-annex           libdirs
 """]]
 
+
+
+
+
+### After some debugging with Joey...
+12:24 <     joeyh> git does not use annex-ssh-options
+12:24 <     joeyh> the way the assistant sets this up is it makes up a new hostname, and in .ssh/config, makes that hostname use the real domain name, and the key
+12:25 <     joeyh> there's clearly a bug here.. the assistant only does that when there is no passwordless ssh key already set up. But in this wacky way of installing git and git-annex on a server, it needs to always do it
+12:26 <     joeyh> probably the assistant should probe if ssh server git-receive-pack works, and if not, always set up its special config
+12:26 <     joeyh> alternatively, the standalone tarball could have an actual installation step, rather than just being unpacked
+
+Based on that I added (on the amd64/rose machine):
+[[!format sh """
+greg@rose:~/.ssh$ cat config
+Host synology
+    HostName yep.org #obviously redacted
+    IdentityFile /home/greg/.ssh/annex.rose_rsa
+
+$ git remote show -n synology
+* remote synology
+  Fetch URL: greg@synology:/volume1/photo/
+  Push  URL: greg@synology:/volume1/photo/
+  HEAD branch: (not queried)
+  Local ref configured for 'git push' (status not queried):
+    (matching) pushes to (matching)
+"""]]
+
+Now, to do a simple test with git:
+
+[[!format sh """
+$ git remote show synology
+git-annex-shell: git-shell failed
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+"""]]
