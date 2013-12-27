@@ -222,6 +222,7 @@ sendMessage lck external m =
 		liftIO $ do
 			protocolDebug external True line
 			hPutStrLn h line
+			hFlush h
   where
 	line = unwords $ formatMessage m
 
