@@ -72,6 +72,7 @@ while read line; do
 			# special remote here.
 			getconfig directory
 			mydirectory="$RET"
+			echo PREPARE-SUCCESS
 		;;
 		TRANSFER)
 			key="$3"
