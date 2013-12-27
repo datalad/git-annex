@@ -36,8 +36,9 @@ the version of the protocol it is using.
 
 	VERSION 1
 
-Once it knows the version, git-annex will send a message telling the
-special remote to start up.
+Once it knows the version, git-annex will generally 
+send a message telling the special remote to start up.
+(Or it might send a INITREMOTE, so don't hardcode this order.)
 
 	PREPARE
 
@@ -84,17 +85,15 @@ send one of the corresponding replies listed in the next section.
 
 The following requests *must* all be supported by the special remote.
 
-* `PREPARE`  
-  Tells the special remote it's time to prepare itself to be used.
-  Only run once, at startup, always immediately after the special remote
-  sends VERSION.
 * `INITREMOTE`  
-  Request that the remote initialized itself. This is where any one-time
+  Request that the remote initialize itself. This is where any one-time
   setup tasks can be done, for example creating an Amazon S3 bucket.  
-  (PREPARE is still sent before this.)  
-  Note: This may be run repeatedly, as a remote is initialized in
+  Note: This may be run repeatedly over time, as a remote is initialized in
   different repositories, or as the configuration of a remote is changed.
   So any one-time setup tasks should be done idempotently.
+* `PREPARE`  
+  Tells the special remote it's time to prepare itself to be used.  
+  Only INITREMOTE can come before this.
 * `TRANSFER STORE|RETRIEVE Key File`  
   Requests the transfer of a key. For Send, the File is the file to upload;
   for Receive the File is where to store the download.  

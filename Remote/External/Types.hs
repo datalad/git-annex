@@ -18,6 +18,7 @@ module Remote.External.Types (
 	Sendable(..),
 	Receivable(..),
 	Request(..),
+	needsPREPARE,
 	Response(..),
 	RemoteRequest(..),
 	RemoteResponse(..),
@@ -60,6 +61,7 @@ data ExternalState = ExternalState
 	{ externalSend :: Handle
 	, externalReceive :: Handle
 	, externalPid :: ProcessHandle
+	, externalPrepared :: Bool
 	}
 
 -- Constructor is not exported, and only created by newExternal.
@@ -97,6 +99,12 @@ data Request
 	| CHECKPRESENT Key
 	| REMOVE Key
 	deriving (Show)
+
+-- Does PREPARE need to have been sent before this request?
+needsPREPARE :: Request -> Bool
+needsPREPARE PREPARE = False
+needsPREPARE INITREMOTE = False
+needsPREPARE _ = True
 
 instance Sendable Request where
 	formatMessage PREPARE = ["PREPARE"]

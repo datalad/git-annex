@@ -169,6 +169,8 @@ handleRequest external req mp responsehandler =
 
 handleRequest' :: ExternalLock -> External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
 handleRequest' lck external req mp responsehandler = do
+	when (needsPREPARE req) $
+		checkPrepared lck external
 	sendMessage lck external req
 	loop
   where
@@ -230,15 +232,13 @@ fromExternal lck external extractor a =
 		void $ liftIO $ atomically $ swapTMVar v st
 
 		{- Handle initial protocol startup; check the VERSION
-		 - the remote sends, and send it the PREPARE request. -}
+		 - the remote sends. -}
 		receiveMessage lck external
 			(const Nothing)
 			(checkVersion lck external)
 			(const Nothing)
-		handleRequest' lck external PREPARE Nothing $ \resp -> 
-			case resp of
-				PREPARE_SUCCESS -> Just $ run st
-				_ -> Nothing
+
+		run st
 
 	run st = a $ extractor st
 	v = externalState external
@@ -259,6 +259,7 @@ startExternal externaltype = liftIO $ do
 		{ externalSend = hin
 		, externalReceive = hout
 		, externalPid = pid
+		, externalPrepared = False
 		}
 
 stopExternal :: External -> Annex ()
@@ -281,6 +282,15 @@ checkVersion lck external (VERSION v) = Just $
 		then noop
 		else sendMessage lck external (ERROR "unsupported VERSION")
 checkVersion _ _ _ = Nothing
+
+checkPrepared :: ExternalLock -> External -> Annex ()
+checkPrepared lck external = 
+	fromExternal lck external externalPrepared $ \prepared ->
+		unless prepared $
+			handleRequest' lck external PREPARE Nothing $ \resp ->
+				case resp of
+					PREPARE_SUCCESS -> Just noop
+					_ -> Nothing
 
 {- Caches the cost in the git config to avoid needing to start up an
  - external special remote every time time just to ask it what its
