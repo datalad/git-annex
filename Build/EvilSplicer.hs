@@ -40,6 +40,7 @@ import Data.Char
 import System.Environment
 import System.FilePath
 import System.Directory
+import System.IO
 import Control.Monad
 import Prelude hiding (log)
 
@@ -47,6 +48,7 @@ import Utility.Monad
 import Utility.Misc
 import Utility.Exception
 import Utility.Path
+import Utility.FileSystemEncoding
 
 data Coord = Coord
 	{ coordLine :: Int
@@ -207,7 +209,10 @@ applySplices destdir imports splices@(first:_) = do
 	oldcontent <- catchMaybeIO $ readFileStrictAnyEncoding dest
 	when (oldcontent /= Just newcontent) $ do
 		putStrLn $ "splicing " ++ f
-		writeFile dest newcontent
+		withFile dest WriteMode $ \h -> do
+		        fileEncoding h
+			hPutStr h newcontent
+		        hClose h
   where
   	expand lls [] = lls
   	expand lls (s:rest)
