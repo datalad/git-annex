@@ -29,6 +29,11 @@ In order to avoid confusing interactions, one or the other has control
 at any given time, and is responsible for sending requests, while the other
 only sends replies to the requests.
 
+Each protocol line starts with a command, which is followed by the
+command's parameters (a fixed number per command), each separated by a
+single space. The last parameter may contain spaces. Parameters may be
+empty, but the separating spaces are still required in that case.
+
 ## example session
 
 The special remote is responsible for sending the first message, indicating
@@ -206,7 +211,14 @@ remote.
 
 ## TODO
 
-* Communicate when the network connection may have changed, so long-running
-  remotes can reconnect.
-* uuid discovery during initremote.
+* When storing encrypted files stream the file up/down the pipe, rather
+  than using a temp file. Will probably involve less space and disk IO, 
+  and makes the progress display better, since the encryption can happen
+  concurrently with the transfer. Also, no need to use PROGRESS in this
+  scenario, since git-annex can see how much data it has sent/received from
+  the remote. However, \n and probably \0 need to be escaped somehow in the
+  file data, which adds complication.
+* uuid discovery during INITREMOTE.
+* uuid verification during PREPARE (so, for example, it can check if a
+  removable drive repo has the expected uuid)
 * Support for splitting files into chunks.
