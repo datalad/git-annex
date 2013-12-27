@@ -256,17 +256,20 @@ receiveMessage
 	-> (RemoteRequest -> Maybe (Annex a))
 	-> (AsyncMessage -> Maybe (Annex a))
 	-> Annex a
-receiveMessage lck external handleresponse handlerequest handleasync = do
-	s <- fromExternal lck external externalReceive $ liftIO . hGetLine
-	liftIO $ protocolDebug external False s
-	case parseMessage s :: Maybe Response of
-		Just resp -> maybe (protocolError True s) id (handleresponse resp)
-		Nothing -> case parseMessage s :: Maybe RemoteRequest of
-			Just req -> maybe (protocolError True s) id (handlerequest req)
-			Nothing -> case parseMessage s :: Maybe AsyncMessage of
-				Just msg -> maybe (protocolError True s) id (handleasync msg)
-				Nothing -> protocolError False s
+receiveMessage lck external handleresponse handlerequest handleasync =
+	go =<< fromExternal lck external externalReceive
+		(liftIO . catchMaybeIO . hGetLine)
   where
+	go Nothing = protocolError False ""
+	go (Just s) = do
+		liftIO $ protocolDebug external False s
+		case parseMessage s :: Maybe Response of
+			Just resp -> maybe (protocolError True s) id (handleresponse resp)
+			Nothing -> case parseMessage s :: Maybe RemoteRequest of
+				Just req -> maybe (protocolError True s) id (handlerequest req)
+				Nothing -> case parseMessage s :: Maybe AsyncMessage of
+					Just msg -> maybe (protocolError True s) id (handleasync msg)
+					Nothing -> protocolError False s
 	protocolError parsed s = error $ "external special remote protocol error, unexpectedly received \"" ++ s ++ "\" " ++
 		if parsed then "(command not allowed at this time)" else "(unable to parse command)"
 
@@ -307,20 +310,28 @@ fromExternal lck external extractor a =
  - VERSION, etc. -}
 startExternal :: ExternalType -> Annex ExternalState
 startExternal externaltype = liftIO $ do
-	(Just hin, Just hout, _, pid) <- createProcess $
-		(proc (externalRemoteProgram externaltype) [])
-			{ std_in = CreatePipe
-			, std_out = CreatePipe
-			, std_err = Inherit
-			}
+	(Just hin, Just hout, _, pid) <- createProcess $ (proc cmd [])
+		{ std_in = CreatePipe
+		, std_out = CreatePipe
+		, std_err = Inherit
+		}
 	fileEncoding hin
 	fileEncoding hout
+	checkearlytermination =<< getProcessExitCode pid
 	return $ ExternalState
 		{ externalSend = hin
 		, externalReceive = hout
 		, externalPid = pid
 		, externalPrepared = False
 		}
+  where
+	cmd = externalRemoteProgram externaltype
+
+	checkearlytermination Nothing = noop
+	checkearlytermination (Just exitcode) = ifM (inPath cmd)
+		( error $ unwords [ "failed to run", cmd, "(" ++ show exitcode ++ ")" ]
+		, error $ cmd ++ " is not installed in PATH"
+		)
 
 stopExternal :: External -> Annex ()
 stopExternal external = liftIO $ stop =<< atomically (tryReadTMVar v)
