@@ -26,3 +26,7 @@ The troubling part (I think) is `trusted repositories: fatal: Not a git reposito
 Is there a command I can use to show all the uuid of known remotes? I thought I had marked all remotes pointing to /home/micas/Music/.git as `dead`
 
 Is there another reason for the output? How can I get trusted repos back to 0?
+
+**EDIT:**
+
+I removed the folder (was not a git repo at the time of the error) `/home/micas/Music` and the error went away.
