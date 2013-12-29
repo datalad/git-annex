@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+The Box.com/WebDAV special remote fails with this error on my Android tablet:
+
+    WebDAV failed to write file: InternalIOException user error (Network.Socket.setSocketOption: socket option NoDelay unsupported on this system): user error
+
+### What steps will reproduce the problem?
+
+ 1. Install the Android beta from the download page.
+ 2. Create a repository (using the assistant)
+ 3. (At this point I configured XMPP, if that's relevant.)
+ 4. Configure a Box.com repository using the assistant
+
+The repository will fail to add with the above error message.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 5.20131221-gf8c928d
+
+Android 4.0.4<br>
+Kernel 2.6.35-palm-tenderloin<br>
+CyanogenMod 9-20121202-NIGHTLY-tenderloin (HP Touchpad)
+
+### Please provide any additional information below.
+
+I have successfully set up the same Box.com account via the assistant on another machine.
+
+I don't see any mention of WebDAV in daemon.log and friends.  
+
+It seems like NODELAY should be optional, as it's just a performance optimization (and disabling packet coalescing may be battery-hostile on a mobile device, too).
