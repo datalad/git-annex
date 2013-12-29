@@ -95,6 +95,7 @@ The following requests *must* all be supported by the special remote.
   setup tasks can be done, for example creating an Amazon S3 bucket.  
   Note: This may be run repeatedly over time, as a remote is initialized in
   different repositories, or as the configuration of a remote is changed.
+  (Both `git annex initremote` and `git-annex enableremote` run this.)
   So any one-time setup tasks should be done idempotently.
 * `PREPARE`  
   Tells the special remote it's time to prepare itself to be used.  
