@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-29T18:21:32Z"
+ content="""
+Ok, so importfeed looks for items in a feed with enclosures, but this feed is not a podcast feed. So it needs to look for some of the `<links>`
+to find pages that quvi supports. (There might be other links that are not video pages, for all I know. Looks like `getItemLink` finds the right links and then I just need to filter through quvi.
+"""]]
