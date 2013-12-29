@@ -15,24 +15,18 @@ import qualified Annex
 
 type Version = String
 
-defaultVersion :: Version
-defaultVersion = "3"
-
-directModeVersion :: Version
-directModeVersion = "5"
-
-supportedVersions :: [Version]
-supportedVersions = [defaultVersion, directModeVersion]
+supportedVersion :: Version
+supportedVersion = "5"
 
 upgradableVersions :: [Version]
 #ifndef mingw32_HOST_OS
 upgradableVersions = ["0", "1", "2", "4"]
 #else
-upgradableVersions = ["2", "4"]
+upgradableVersions = ["2", "3", "4"]
 #endif
 
 autoUpgradeableVersions :: [Version]
-autoUpgradeableVersions = ["4"]
+autoUpgradeableVersions = ["3", "4"]
 
 versionField :: ConfigKey
 versionField = annexConfig "version"

@@ -65,13 +65,12 @@ initialize mdescription = do
 	checkCrippledFileSystem
 	unlessM isBare $
 		hookWrite preCommitHook
+	setVersion supportedVersion
 	ifM (crippledFileSystem <&&> not <$> isBare)
 		( do
 			enableDirectMode
 			setDirect True
-			setVersion directModeVersion
 		, do
-			setVersion defaultVersion
 			-- Handle case where this repo was cloned from a
 			-- direct mode repo.
 			unlessM isBare

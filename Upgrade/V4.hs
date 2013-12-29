@@ -11,7 +11,7 @@ import Common.Annex
 import Config
 import Annex.Direct
 
-{- Direct mode only upgrade. -}
+{- Direct mode only upgrade. v4 to v5 indirect update is a no-op -}
 upgrade :: Bool -> Annex Bool
 upgrade automatic = ifM isDirect
 	( do
@@ -19,5 +19,5 @@ upgrade automatic = ifM isDirect
 			showAction "v4 to v5"
 		setDirect True
 		return True
-	, return False
+	, return True
 	)

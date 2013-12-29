@@ -30,9 +30,7 @@ start = do
 	liftIO $ do
 		showPackageVersion
 		info "local repository version" $ fromMaybe "unknown" v
-		info "default repository version" defaultVersion
-		info "supported repository versions" $
-			unwords supportedVersions
+		info "supported repository version" supportedVersion
 		info "upgrade supported from repository versions" $
 			unwords upgradableVersions
 	stop

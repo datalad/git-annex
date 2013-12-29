@@ -16,7 +16,6 @@ import qualified Git.Command
 import qualified Git.LsFiles
 import Config
 import Annex.Direct
-import Annex.Version
 import Annex.Exception
 
 def :: [Command]
@@ -69,5 +68,4 @@ cleanup :: CommandCleanup
 cleanup = do
 	showStart "direct" ""
 	setDirect True
-	setVersion directModeVersion
 	return True

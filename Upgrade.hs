@@ -11,12 +11,12 @@ module Upgrade where
 
 import Common.Annex
 import Annex.Version
-import Config
 #ifndef mingw32_HOST_OS
 import qualified Upgrade.V0
 import qualified Upgrade.V1
 #endif
 import qualified Upgrade.V2
+import qualified Upgrade.V3
 import qualified Upgrade.V4
 
 checkUpgrade :: Version -> Annex ()
@@ -24,7 +24,7 @@ checkUpgrade = maybe noop error <=< needsUpgrade
 
 needsUpgrade :: Version -> Annex (Maybe String)
 needsUpgrade v
-	| v `elem` supportedVersions = ok
+	| v == supportedVersion = ok
 	| v `elem` autoUpgradeableVersions = ifM (upgrade True)
 		( ok
 		, err "Automatic upgrade failed!"
@@ -40,10 +40,7 @@ upgrade :: Bool -> Annex Bool
 upgrade automatic = do
 	upgraded <- go =<< getVersion
 	when upgraded $
-		ifM isDirect
-			( setVersion directModeVersion
-			, setVersion defaultVersion
-			)
+		setVersion supportedVersion
 	return upgraded
   where
 #ifndef mingw32_HOST_OS
@@ -54,5 +51,6 @@ upgrade automatic = do
 	go (Just "1") = error "upgrade from v1 on Windows not supported"
 #endif
 	go (Just "2") = Upgrade.V2.upgrade
+	go (Just "3") = Upgrade.V3.upgrade automatic
 	go (Just "4") = Upgrade.V4.upgrade automatic
 	go _ = return True
