@@ -20,8 +20,8 @@ conflicts first before upgrading git-annex.
 
 ### v4 -> v5 (git-annex version 5.x)
 
-v5 is only used for [[direct_mode]]. The upgrade from v4 to v5 is handled
-automatically.
+The upgrade from v4 to v5 is handled
+automatically, and only affects [[direct mode]] repositories.
 
 This upgrade involves changing direct mode repositories to operate with
 core.bare=true.
