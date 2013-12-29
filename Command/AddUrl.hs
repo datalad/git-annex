@@ -98,20 +98,25 @@ performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
   where
   	quviurl = setDownloader pageurl QuviDownloader
   	addurl (key, _backend) = next $ cleanup quviurl file key Nothing
-	geturl = do
-		key <- Backend.URL.fromUrl quviurl Nothing
-		ifM (pure relaxed <||> Annex.getState Annex.fast)
-			( next $ cleanup quviurl file key Nothing
-			, do
-				tmp <- fromRepo $ gitAnnexTmpLocation key
-				showOutput
-				ok <- Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
-					liftIO $ createDirectoryIfMissing True (parentDir tmp)
-					downloadUrl [videourl] tmp
-				if ok
-					then next $ cleanup quviurl file key (Just tmp)
-					else stop
-			)
+	geturl = next $ addUrlFileQuvi relaxed quviurl videourl file
+#endif
+
+#ifdef WITH_QUVI
+addUrlFileQuvi :: Bool -> URLString -> URLString -> FilePath -> Annex Bool
+addUrlFileQuvi relaxed quviurl videourl file = do
+	key <- Backend.URL.fromUrl quviurl Nothing
+	ifM (pure relaxed <||> Annex.getState Annex.fast)
+		( cleanup quviurl file key Nothing
+		, do
+			tmp <- fromRepo $ gitAnnexTmpLocation key
+			showOutput
+			ok <- Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
+				liftIO $ createDirectoryIfMissing True (parentDir tmp)
+				downloadUrl [videourl] tmp
+			if ok
+				then cleanup quviurl file key (Just tmp)
+				else return False
+		)
 #endif
 
 perform :: Bool -> URLString -> FilePath -> CommandPerform

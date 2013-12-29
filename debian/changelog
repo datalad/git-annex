@@ -14,6 +14,7 @@ git-annex (5.20131222) UNRELEASED; urgency=medium
     This also fixes a problem when a direct mode repo was somehow set to v3
     rather than v4, and so the automatic direct mode upgrade to v5 was not
     done.
+  * importfeed: Support youtube playlists.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Dec 2013 13:54:32 -0400
 

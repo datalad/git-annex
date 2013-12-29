@@ -258,6 +258,10 @@ subdirectories).
   (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid)
 
   The `--relaxed` and `--fast` options behave the same as they do in addurl.
+  
+  When quvi is installed, links in the feed are tested to see if they
+  are on a video hosting site, and the video is downloaded. This allows
+  importing eg, youtube playlists.
 
 * `watch`
 

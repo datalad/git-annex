@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Command.ImportFeed where
 
 import Text.Feed.Import
@@ -25,6 +27,11 @@ import Utility.Tmp
 import Command.AddUrl (addUrlFile, relaxedOption)
 import Annex.Perms
 import Backend.URL (fromUrl)
+#ifdef WITH_QUVI
+import Annex.Quvi
+import qualified Utility.Quvi as Quvi
+import Command.AddUrl (addUrlFileQuvi)
+#endif
 
 def :: [Command]
 def = [notBareRepo $ withOptions [templateOption, relaxedOption] $
@@ -47,16 +54,16 @@ start relaxed cache url = do
 
 perform :: Bool -> Cache -> URLString -> CommandPerform
 perform relaxed cache url = do
-	v <- findEnclosures url
+	v <- findDownloads url
 	case v of
-		Just l | not (null l) -> do
-			ok <- and <$> mapM (downloadEnclosure relaxed cache) l
+		[] -> do
+			feedProblem url "bad feed content"
+			next $ return True
+		l -> do
+			ok <- and <$> mapM (performDownload relaxed cache) l
 			unless ok $
 				feedProblem url "problem downloading item"
 			next $ cleanup url True
-		_ -> do
-			feedProblem url "bad feed content"
-			next $ return True
 
 cleanup :: URLString -> Bool -> CommandCleanup
 cleanup url ok = do
@@ -68,13 +75,10 @@ data ToDownload = ToDownload
 	{ feed :: Feed
 	, feedurl :: URLString
 	, item :: Item
-	, location :: URLString
+	, location :: DownloadLocation
 	}
 
-mkToDownload :: Feed -> URLString -> Item -> Maybe ToDownload
-mkToDownload f u i = case getItemEnclosure i of
-	Nothing -> Nothing
-	Just (enclosureurl, _, _) -> Just $ ToDownload f u i enclosureurl
+data DownloadLocation = Enclosure URLString | QuviLink URLString
 
 data Cache = Cache
 	{ knownurls :: S.Set URLString
@@ -92,11 +96,26 @@ getCache opttemplate = ifM (Annex.getState Annex.force)
 	tmpl = Utility.Format.gen $ fromMaybe defaultTemplate opttemplate
 	ret s = return $ Cache s tmpl
 
-findEnclosures :: URLString -> Annex (Maybe [ToDownload])
-findEnclosures url = extract <$> downloadFeed url
+findDownloads :: URLString -> Annex [ToDownload]
+findDownloads u = go =<< downloadFeed u
   where
-	extract Nothing = Nothing
-	extract (Just f) = Just $ mapMaybe (mkToDownload f url) (feedItems f)
+	go Nothing = pure []
+	go (Just f) = catMaybes <$> mapM (mk f) (feedItems f)
+
+	mk f i = case getItemEnclosure i of
+		Just (enclosureurl, _, _) -> return $ 
+			Just $ ToDownload f u i $ Enclosure enclosureurl
+		Nothing -> mkquvi f i
+#ifdef WITH_QUVI
+	mkquvi f i = case getItemLink i of
+		Just link -> ifM (liftIO $ Quvi.supported link)
+			( return $ Just $ ToDownload f u i $ QuviLink link
+			, return Nothing
+			)
+		Nothing -> return Nothing
+#else
+	mkquvi = return Nothing
+#endif
 
 {- Feeds change, so a feed download cannot be resumed. -}
 downloadFeed :: URLString -> Annex (Maybe Feed)
@@ -110,35 +129,54 @@ downloadFeed url = do
 			, return Nothing
 			)
 
-{- Avoids downloading any urls that are already known to be associated
- - with a file in the annex, unless forced. -}
-downloadEnclosure :: Bool -> Cache -> ToDownload -> Annex Bool
-downloadEnclosure relaxed cache enclosure
-	| S.member url (knownurls cache) = ifM forced (go, return True)
-	| otherwise = go
+performDownload :: Bool -> Cache -> ToDownload -> Annex Bool
+performDownload relaxed cache todownload = case location todownload of
+	Enclosure url -> checkknown url $
+		rundownload url (takeExtension url) $ 
+			addUrlFile relaxed url
+	QuviLink pageurl -> do
+		mp <- withQuviOptions Quvi.query [Quvi.quiet, Quvi.httponly] pageurl
+		case mp of
+			Nothing -> return False
+			Just page -> case headMaybe $ Quvi.pageLinks page of
+				Nothing -> return False
+				Just link -> do
+					let quviurl = setDownloader pageurl QuviDownloader
+					let videourl = Quvi.linkUrl link
+					checkknown videourl $
+						rundownload videourl ("." ++ Quvi.linkSuffix link) $
+							addUrlFileQuvi relaxed quviurl videourl
   where
   	forced = Annex.getState Annex.force
-  	url = location enclosure
-	go = do
-		dest <- makeunique (1 :: Integer) $ feedFile (template cache) enclosure
+
+	{- Avoids downloading any urls that are already known to be
+	 - associated with a file in the annex, unless forced. -}
+	checkknown url a
+		| S.member url (knownurls cache) = ifM forced (a, return True)
+		| otherwise = a
+
+	rundownload url extension getter = do
+		dest <- makeunique url (1 :: Integer) $
+			feedFile (template cache) todownload extension
 		case dest of
 			Nothing -> return True
 			Just f -> do
 				showStart "addurl" f
-				ok <- addUrlFile relaxed url f
+				ok <- getter f
 				if ok
 					then do
 						showEndOk
 						return True
 					else do
 						showEndFail
-						checkFeedBroken (feedurl enclosure)
+						checkFeedBroken (feedurl todownload)
+
 	{- Find a unique filename to save the url to.
 	 - If the file exists, prefixes it with a number.
 	 - When forced, the file may already exist and have the same
 	 - url, in which case Nothing is returned as it does not need
 	 - to be re-downloaded. -}
-	makeunique n file = ifM alreadyexists
+	makeunique url n file = ifM alreadyexists
 		( ifM forced
 			( ifAnnexed f checksameurl tryanother
 			, tryanother
@@ -151,7 +189,7 @@ downloadEnclosure relaxed cache enclosure
 			else
 				let (d, base) = splitFileName file
 				in d </> show n ++ "_" ++ base
-		tryanother = makeunique (n + 1) file
+		tryanother = makeunique url (n + 1) file
 		alreadyexists = liftIO $ isJust <$> catchMaybeIO (getSymbolicLinkStatus f)
 		checksameurl (k, _) = ifM (elem url <$> getUrls k)
 			( return Nothing
@@ -163,8 +201,8 @@ defaultTemplate = "${feedtitle}/${itemtitle}${extension}"
 
 {- Generates a filename to use for a feed item by filling out the template.
  - The filename may not be unique. -}
-feedFile :: Utility.Format.Format -> ToDownload -> FilePath
-feedFile tmpl i = Utility.Format.format tmpl $ M.fromList
+feedFile :: Utility.Format.Format -> ToDownload -> String -> FilePath
+feedFile tmpl i extension = Utility.Format.format tmpl $ M.fromList
 	[ field "feedtitle" $ getFeedTitle $ feed i
 	, fieldMaybe "itemtitle" $ getItemTitle $ item i
 	, fieldMaybe "feedauthor" $ getFeedAuthor $ feed i
@@ -173,7 +211,7 @@ feedFile tmpl i = Utility.Format.format tmpl $ M.fromList
 	, fieldMaybe "itemdescription" $ getItemDescription $ item i
 	, fieldMaybe "itemrights" $ getItemRights $ item i
 	, fieldMaybe "itemid" $ snd <$> getItemId (item i)
-	, ("extension", sanitizeFilePath $ takeExtension $ location i)
+	, ("extension", sanitizeFilePath extension)
 	]
   where
 	field k v = 

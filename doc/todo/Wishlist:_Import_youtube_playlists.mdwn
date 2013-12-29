@@ -26,3 +26,5 @@ It would be great if this functionality could be integrated directly into git an
 
 Best
 Karsten
+
+> [[done]] --[[Joey]] 
