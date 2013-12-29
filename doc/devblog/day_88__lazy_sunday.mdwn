@@ -1,0 +1,15 @@
+Fixed a bug that could leave a direct mode repository stuck at
+annex.version 3. As part of that, v3 indirect mode repositories will be
+automatically updated to v5. There's no actual change in that upgrade, it
+just simplifies things to have only one supported annex.version.
+
+Added youtube playlist support to git-annex. Seems I had almost all the
+peices needed, and didn't know it. Only about a dozen lines of code!
+
+Added PREPARE-FAILURE support to the external special remote interface.
+
+After I found the cable my kitten stole (her apport level is high), fixed
+file transfers to/from Android. This broke because git-annex assistant
+tries to use ionice, if it's in PATH, and Android's ionice is not suitable.
+It could probably include ionice in the busybox build and use that one, but
+I wanted a quick fix for this before the upcoming release.
