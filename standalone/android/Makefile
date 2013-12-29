@@ -108,6 +108,7 @@ $(GIT_ANNEX_ANDROID_SOURCETREE)/openssh/build-stamp: openssh.patch openssh.confi
 
 $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/build-stamp: busybox_config
 	cp busybox_config $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox/.config
+	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox && git reset --hard a758e3e1e04e7705f5d37b2f27be654cd0e7282c
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox && yes '' | $(MAKE) oldconfig
 	cd $(GIT_ANNEX_ANDROID_SOURCETREE)/busybox && $(MAKE)
 	touch $@
