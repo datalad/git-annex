@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.Tmp where
 
 import Control.Exception (bracket)
@@ -62,7 +64,15 @@ withTmpDirIn :: FilePath -> Template -> (FilePath -> IO a) -> IO a
 withTmpDirIn tmpdir template = bracket create remove
   where
 	remove d = whenM (doesDirectoryExist d) $
+#if mingw32_HOST_OS
+		-- Windows will often refuse to delete a file
+		-- after a process has just written to it and exited.
+		-- Because it's crap, presumably. So, ignore failure
+		-- to delete the temp directory.
+		catchIO $ removeDirectoryRecursive d
+#else
 		removeDirectoryRecursive d
+#endif
 	create = do
 		createDirectoryIfMissing True tmpdir
 		makenewdir (tmpdir </> template) (0 :: Int)
