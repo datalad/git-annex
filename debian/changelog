@@ -15,6 +15,9 @@ git-annex (5.20131222) UNRELEASED; urgency=medium
     rather than v4, and so the automatic direct mode upgrade to v5 was not
     done.
   * importfeed: Support youtube playlists.
+  * Android: Avoid trying to use Android's own ionice, which does not
+    allow specifying a command to run. Fixes transferring files to/from
+    android and probably a few other things.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 24 Dec 2013 13:54:32 -0400
 

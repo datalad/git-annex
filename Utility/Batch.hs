@@ -52,7 +52,11 @@ getBatchCommandMaker = do
 #ifndef mingw32_HOST_OS
 	nicers <- filterM (inPath . fst)
 		[ ("nice", [])
+#ifndef __ANDROID__
+		-- Android's ionice does not allow specifying a command,
+		-- so don't use it.
 		, ("ionice", ["-c3"])
+#else
 		, ("nocache", [])
 		]
 	return $ \(command, params) ->
