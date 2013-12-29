@@ -1,0 +1,30 @@
+First off, to get that off my chest: I am not using Gnome, KDE, XFCE or any "desktop manager" (well, not quite true, I use some bits of XFCE, but it's easier to assume I'm not).
+
+So automounting is always a little tricky for me, and I often use `pmount` to mount external drives and flash cards.
+
+Now, I have tried to add an external drive as a backup to one of my git-annex repositories. I zero'd the drive, added a GPT partition (I wanted labels), formatted it as `ext4` and then gave it to my user:
+
+    cfdisk /dev/sdd
+    mkfs -t ext4 /dev/sdd1
+    mount /dev/sdd1 /mnt
+    chown anarcat /mnt
+    umount /mnt
+
+Now, at this step I would have assumed the drive would be seen by the webapp, but that wasn't the case. Maybe I wasn't patient enough? In any case, at some point I got tired and went to the commandline to add the drive as a remote. I did the following:
+
+    mkdir -p /media/ata-WDC_WD15EADS-00P8B0_WD-WMAVU0748851-part1
+    mount /dev/disk/by-id/ata-WDC_WD15EADS-00P8B0_WD-WMAVU0748851-part1 /media/ata-WDC_WD15EADS-00P8B0_WD-WMAVU0748851-part1
+    cd /srv/mp3
+    git annex remote add backup /media/ata-WDC_WD15EADS-00P8B0_WD-WMAVU0748851-part1/mp3
+    git init /media/ata-WDC_WD15EADS-00P8B0_WD-WMAVU0748851-part1/mp3
+    git annex sync
+    git annex copy --to backup
+
+So that worked, and the webapp was now seeing `backup` as yet another repository, but not quite removeable. So failed. Scratching that, I stopped the assistant, and trashed the repository:
+
+    rm -rf /media/ata-WDC_WD15EADS-00P8B0_WD-WMAVU0748851-part1/mp3
+    git remote rm backup
+
+But now, oddly enough, the webapp would see the external drive after being restarted, and I was able to add that drive.
+
+What am I doing wrong? how is the assistant finding those drives? --[[anarcat]]
