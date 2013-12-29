@@ -112,10 +112,14 @@ while read line; do
 			# Use GETCONFIG to get configuration settings,
 			# and do anything needed to get ready for using the
 			# special remote here.
+			getcreds
 			getconfig directory
 			mydirectory="$RET"
-			getcreds
-			echo PREPARE-SUCCESS
+			if [ -d "$mydirectory" ]; then
+				echo PREPARE-SUCCESS
+			else
+				echo PREPARE-FAILURE "$mydirectory not found"
+			fi
 		;;
 		TRANSFER)
 			key="$3"

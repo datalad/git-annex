@@ -14,6 +14,7 @@ module Remote.External.Types (
 	ExternalLock,
 	withExternalLock,
 	ExternalState(..),
+	PrepareStatus(..),
 	parseMessage,
 	Sendable(..),
 	Receivable(..),
@@ -67,8 +68,10 @@ data ExternalState = ExternalState
 	{ externalSend :: Handle
 	, externalReceive :: Handle
 	, externalPid :: ProcessHandle
-	, externalPrepared :: Bool
+	, externalPrepared :: PrepareStatus
 	}
+
+data PrepareStatus = Unprepared | Prepared | FailedPrepare ErrorMsg
 
 -- Constructor is not exported, and only created by newExternal.
 data ExternalLock = ExternalLock
@@ -124,6 +127,7 @@ instance Sendable Request where
 -- Responses the external remote can make to requests.
 data Response
 	= PREPARE_SUCCESS
+	| PREPARE_FAILURE ErrorMsg
 	| TRANSFER_SUCCESS Direction Key
 	| TRANSFER_FAILURE Direction Key ErrorMsg
 	| CHECKPRESENT_SUCCESS Key
@@ -139,6 +143,7 @@ data Response
 
 instance Receivable Response where
 	parseCommand "PREPARE-SUCCESS" = parse0 PREPARE_SUCCESS
+	parseCommand "PREPARE-FAILURE" = parse1 PREPARE_FAILURE
 	parseCommand "TRANSFER-SUCCESS" = parse2 TRANSFER_SUCCESS
 	parseCommand "TRANSFER-FAILURE" = parse3 TRANSFER_FAILURE
 	parseCommand "CHECKPRESENT-SUCCESS" = parse1 CHECKPRESENT_SUCCESS

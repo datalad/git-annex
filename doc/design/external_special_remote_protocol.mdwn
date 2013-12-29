@@ -130,6 +130,8 @@ while it's handling a request.
 
 * `PREPARE-SUCCESS`  
   Sent as a response to PREPARE once the special remote is ready for use.
+* `PREPARE-FAILURE ErrorMsg`
+  Sent as a response to PREPARE if the special remote cannot be used.
 * `TRANSFER-SUCCESS STORE|RETRIEVE Key`  
   Indicates the transfer completed successfully.
 * `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  

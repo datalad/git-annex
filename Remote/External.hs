@@ -181,7 +181,8 @@ safely a = go =<< tryAnnex a
  -
  - Only one request can be made at a time, so locking is used.
  -
- - May throw exceptions, for example on protocol errors.
+ - May throw exceptions, for example on protocol errors, or
+ - when the repository cannot be used.
  -}
 handleRequest :: External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
 handleRequest external req mp responsehandler = 
@@ -189,12 +190,15 @@ handleRequest external req mp responsehandler =
 		handleRequest' lck external req mp responsehandler
 
 handleRequest' :: ExternalLock -> External -> Request -> Maybe MeterUpdate -> (Response -> Maybe (Annex a)) -> Annex a
-handleRequest' lck external req mp responsehandler = do
-	when (needsPREPARE req) $
+handleRequest' lck external req mp responsehandler
+	| needsPREPARE req = do
 		checkPrepared lck external
-	sendMessage lck external req
-	loop
+		go
+	| otherwise = go
   where
+  	go = do
+		sendMessage lck external req
+		loop
 	loop = receiveMessage lck external responsehandler
 		(\rreq -> Just $ handleRemoteRequest rreq >> loop)
 		(\msg -> Just $ handleAsyncMessage msg >> loop)
@@ -322,7 +326,7 @@ startExternal externaltype = liftIO $ do
 		{ externalSend = hin
 		, externalReceive = hout
 		, externalPid = pid
-		, externalPrepared = False
+		, externalPrepared = Unprepared
 		}
   where
 	cmd = externalRemoteProgram externaltype
@@ -354,14 +358,30 @@ checkVersion lck external (VERSION v) = Just $
 		else sendMessage lck external (ERROR "unsupported VERSION")
 checkVersion _ _ _ = Nothing
 
+{- If repo has not been prepared, sends PREPARE.
+ -
+ - If the repo fails to prepare, or failed before, throws an exception with
+ - the error message. -}
 checkPrepared :: ExternalLock -> External -> Annex ()
 checkPrepared lck external = 
 	fromExternal lck external externalPrepared $ \prepared ->
-		unless prepared $
-			handleRequest' lck external PREPARE Nothing $ \resp ->
-				case resp of
-					PREPARE_SUCCESS -> Just noop
-					_ -> Nothing
+		case prepared of
+			Prepared -> noop
+			FailedPrepare errmsg -> error errmsg
+			Unprepared -> 
+				handleRequest' lck external PREPARE Nothing $ \resp ->
+					case resp of
+						PREPARE_SUCCESS -> Just $
+							setprepared Prepared
+						PREPARE_FAILURE errmsg -> Just $ do
+							setprepared $ FailedPrepare errmsg
+							error errmsg
+						_ -> Nothing
+  where
+	setprepared status = liftIO . atomically $ do
+		let v = externalState external
+		st <- takeTMVar v
+		void $ putTMVar v $ st { externalPrepared = status }
 
 {- Caches the cost in the git config to avoid needing to start up an
  - external special remote every time time just to ask it what its
