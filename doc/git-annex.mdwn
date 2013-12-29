@@ -1400,6 +1400,11 @@ Here are all the supported configuration settings.
   If the gcrypt remote is accessible over ssh and has git-annex-shell
   available to manage it, it's set to "shell"
 
+* `remote.<name>.hooktype`, `remote.<name>.externaltype`
+
+  Used by hook special remotes and external special remotes to record
+  the type of the remote.
+
 # CONFIGURATION VIA .gitattributes
 
 The key-value backend used when adding a new file to the annex can be
