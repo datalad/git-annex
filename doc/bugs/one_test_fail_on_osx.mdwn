@@ -25,3 +25,6 @@ git-annex test reports: 1 out of 120 tests failed
     git version 1.8.4
 
     System Version: OS X 10.9 (13A603)
+
+> This was a type in the test suite. It's already fixed in git. [[done]]
+> --[[Joey]]
