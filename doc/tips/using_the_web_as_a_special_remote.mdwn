@@ -94,7 +94,8 @@ either load the short url in a browser to get the full url, or you
 can force use of quvi with redirect detection, by prepending "quvi:" to the
 url.
 
-Downloading whole YouTube playlists is not currently supported by quvi.
+To download a youtube playlist, find the feed associated with that
+playlist, and pass it to `git annex importfeed`.
 
 ## podcasts
 
