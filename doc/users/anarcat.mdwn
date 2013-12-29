@@ -39,3 +39,10 @@ Fixed
 
 [[!inline pages="bugs/* and !bugs/done and link(bugs/done) and
 link(users/anarcat) and !bugs/*/*" feeds=no actions=yes archive=yes show=0]]
+
+Forum posts
+===========
+
+Forums where I posted.
+
+[[!inline pages="forum/* and link(users/anarcat)" sort=mtime feeds=no actions=yes archive=yes show=0]]
