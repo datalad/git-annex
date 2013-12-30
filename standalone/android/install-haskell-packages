@@ -93,10 +93,10 @@ install_pkgs () {
 	patched crypto-numbers
 	patched yesod-auth
 	patched yesod
+	patched shakespeare-text
 	patched process-conduit
 	patched gnuidn
 	patched DAV
-	patched shakespeare-text
 	patched yesod-static
 	patched uuid
 	patched dns
