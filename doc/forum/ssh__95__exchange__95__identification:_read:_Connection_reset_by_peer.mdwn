@@ -9,6 +9,8 @@ But pairing failed somehow, because I get this error while transfer seems to go 
     Please make sure you have the correct access rights
     and the repository exists.
 
+The webapp shows the remote repo as "unfinished repository".
+
 I can access the other computer via ssh and an other git-annex repo pairing between the two computers work fine.
 
 juh
