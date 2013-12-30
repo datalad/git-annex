@@ -69,7 +69,7 @@ withTmpDirIn tmpdir template = bracket create remove
 		-- after a process has just written to it and exited.
 		-- Because it's crap, presumably. So, ignore failure
 		-- to delete the temp directory.
-		catchIO $ removeDirectoryRecursive d
+		void $ catchIO $ removeDirectoryRecursive d
 #else
 		removeDirectoryRecursive d
 #endif
