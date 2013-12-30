@@ -101,6 +101,9 @@ manually. For a playlist like
 "https://www.youtube.com/playlist?list=PL4F80C7D2DC8D9B6C", the
 feed is "http://gdata.youtube.com/feeds/api/playlists/PL4F80C7D2DC8D9B6C"
 
+More details about youtube feeds at <http://googlesystem.blogspot.com/2008/01/youtube-feeds.html>
+-- `git-annex importfeed` should handle all of them.
+
 ## podcasts
 
 This is done using `git annex importfeed`. See [[downloading podcasts]].
