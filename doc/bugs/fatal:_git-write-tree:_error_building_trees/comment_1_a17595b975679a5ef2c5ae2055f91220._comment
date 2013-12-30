@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-30T18:18:36Z"
+ content="""
+previously reported: <http://git-annex.branchable.com/forum/Git_annex___39__corrupting__39___itself/> (seems to predate direct mode guard)
+"""]]
