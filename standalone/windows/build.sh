@@ -43,7 +43,7 @@ cabal install --only-dependencies || true
 if [ -e last-incremental-failed ]; then
 	cabal clean || true
 	# windows breakage..
-	rm -rf dist
+	rm -rf dist dist.old || mv -v dist dist.old
 fi
 touch last-incremental-failed
 
