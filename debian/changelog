@@ -1,5 +1,7 @@
-git-annex (5.20131222) UNRELEASED; urgency=medium
+git-annex (5.20131230) unstable; urgency=medium
 
+  * Added new external special remote interface.
+  * importfeed: Support youtube playlists.
   * Add tasty to build-depends, so that test suite builds again.
     (tasty was stuck in incoming.)
   * Fix typo in test suite.
@@ -7,19 +9,17 @@ git-annex (5.20131222) UNRELEASED; urgency=medium
   * Include git-receive-pack, git-upload-pack, git, and git-shell wrappers
     in the Linux standalone build, and OSX app, so they will be available
     when it's added to PATH.
-  * Added new external special remote interface.
   * addurl, importfeed: Sanitize | and some other symbols and special
     characters.
   * Auto-upgrade v3 indirect repos to v5 with no changes.
     This also fixes a problem when a direct mode repo was somehow set to v3
     rather than v4, and so the automatic direct mode upgrade to v5 was not
     done.
-  * importfeed: Support youtube playlists.
   * Android: Avoid trying to use Android's own ionice, which does not
     allow specifying a command to run. Fixes transferring files to/from
     android and probably a few other things.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 24 Dec 2013 13:54:32 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 30 Dec 2013 14:13:40 -0400
 
 git-annex (5.20131221) unstable; urgency=low
 
