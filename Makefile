@@ -154,14 +154,12 @@ osxapp: Build/Standalone Build/OSXMkLibs
 
 	# OSX looks in man dir nearby the bin
 	$(MAKE) install-mans DESTDIR="$(OSXAPP_BASE)/.." SHAREDIR="" PREFIX=""
-	# This file breaks hditul create
-	rm -f "$(OSXAPP_BASE)/../man/man1/git-annex-shell.1"
 
 	./Build/OSXMkLibs $(OSXAPP_BASE)
 	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/git-annex.MANIFEST
 	cd $(OSXAPP_DEST) && find . -type l >> Contents/MacOS/git-annex.MANIFEST
 	rm -f tmp/git-annex.dmg
-	hdiutil create -format UDBZ -srcfolder tmp/build-dmg \
+	hdiutil create -format UDBZ -size 640m -srcfolder tmp/build-dmg \
 		-volname git-annex -o tmp/git-annex.dmg
 
 # Must be run on a system with TH supported, and the same
