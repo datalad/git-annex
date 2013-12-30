@@ -1,0 +1,14 @@
+I setup a local git annex repo and tried to pair it with an empty repo on my notebook. All done via the webapp.
+
+But pairing failed somehow, because I get this error while transfer seems to go on forever.
+
+    ssh_exchange_identification: read: Connection reset by peer
+    ssh_exchange_identification: read: Connection reset by peer
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+
+I can access the other computer via ssh. 
+
+juh
