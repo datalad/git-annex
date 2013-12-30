@@ -56,7 +56,7 @@ getBatchCommandMaker = do
 		-- Android's ionice does not allow specifying a command,
 		-- so don't use it.
 		, ("ionice", ["-c3"])
-#else
+#endif
 		, ("nocache", [])
 		]
 	return $ \(command, params) ->
