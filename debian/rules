@@ -9,9 +9,6 @@ export RELEASE_BUILD=1
 %:
 	dh $@
 
-override_dh_auto_test:
-	echo test suite currently disabled until haskell-tasty is out of NEW
-
 # Not intended for use by anyone except the author.
 announcedir:
 	@echo ${HOME}/src/git-annex/doc/news
