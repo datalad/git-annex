@@ -63,7 +63,7 @@ withTmpDir template a = do
 withTmpDirIn :: FilePath -> Template -> (FilePath -> IO a) -> IO a
 withTmpDirIn tmpdir template = bracket create remove
   where
-	remove d = whenM (doesDirectoryExist d) $
+	remove d = whenM (doesDirectoryExist d) $ do
 #if mingw32_HOST_OS
 		-- Windows will often refuse to delete a file
 		-- after a process has just written to it and exited.
