@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="sameerds"
+ ip="106.51.197.116"
+ subject="a shell script that handles spaces in file names"
+ date="2013-12-31T10:24:06Z"
+ content="""
+I used the following shell pipeline to remove duplicate files in one go:
+
+    (1) git annex find --format='${key}:${file}\n' \
+    (2)    | cut -d '-' -f 4- \
+    (3)    | sort \
+    (4)    | uniq --all-repeated=separate -w 40 \
+    (5)    | awk -vRS= -vFS='\n' '{for (i = 2; i <= NF; i++) print $i}' \
+    (6)    | cut -d ':' -f 2- \
+    (7)    | xargs -d '\n' git rm
+
+1. Generate a list of keys and file names separated by a colon (':').
+2. Cut out the initial part of the key so that the hash is at the beginning of the line. The `-f 4-` ensures that dashes in the filename do not result in truncation.
+3. Sort the entire list.
+4. Uniquify and print duplicates in groups separated by blank lines. Use the first 40 characters, which matches the length of a SHA1 hash. Other hashes will require a different length.
+5. Use awk to print all but the first line in each group. The empty `-vRS` sets blank line as the record separator, and the `-vFS` sets newline as the field separator. The for-loop prints each field except the first.
+6. Cut out the key and keep only the file name by relying on the colon introduced in the first step.
+7. Use xargs to separate file names by newline, which takes care of spaces in the file names. Send this list of arguments to `git rm`.
+"""]]

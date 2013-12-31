@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="TobiasTheViking"
+ subject="Feature requests"
+ date="2013-12-31T14:05:07Z"
+ content="""
+Hook should be able to set default configuration for itself.
+
+For instance, clean flickr hook will only upload some files(notably pictures). The user shouldn't have to manage that.
+
+Other hooks have a maximum filesize(though i guess that doesn't matter once splitting works).
+
+"""]]
