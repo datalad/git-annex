@@ -13,4 +13,9 @@ The webapp shows the remote repo as "unfinished repository".
 
 I can access the other computer via ssh and an other git-annex repo pairing between the two computers work fine.
 
+UPDATE: In the meantime I setup another paired repo on these two computers. Everything works fine. 
+
+I added the repos from scratch again and the same errors occurs again. The repositories which do not pair are the Documents folder on my desktop and on my macbook. Is there something special with macs documents folder?
+
+
 juh
