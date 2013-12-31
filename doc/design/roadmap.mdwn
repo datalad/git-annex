@@ -7,12 +7,12 @@ Now in the
 * Month 1 [[!traillink assistant/encrypted_git_remotes]]
 * Month 2 [[!traillink assistant/disaster_recovery]]
 * Month 3 user-driven features and polishing [[todo/direct_mode_guard]] [[assistant/upgrading]]
-* Month 4 Windows porting, [[todo/support_for_writing_external_special_remotes]] & encourage others to contribute to git-annex
+* Month 4 [[Windows_webapp|assistant/Windows]], [[todo/support_for_writing_external_special_remotes]] & encourage others to contribute to git-annex
 * **Month 5 user-driven features and polishing**
 * Month 6 [[!traillink assistant/xmpp_security]]
 * Month 7 user-driven features and polishing
 * Month 8 [[!traillink assistant/gpgkeys]] [[!traillink assistant/sshpassword]]
-* Month 9 get [[assistant/Android]] out of beta
+* Month 9 get [[assistant/Android]] and Windows out of beta
 * Month 10 user-driven features and polishing
 * Month 11 [[!traillink assistant/chunks]] [[!traillink assistant/deltas]]
 * Month 12 user-driven features and polishing
