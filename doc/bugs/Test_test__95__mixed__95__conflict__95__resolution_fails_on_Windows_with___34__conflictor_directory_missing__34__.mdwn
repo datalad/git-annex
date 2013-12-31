@@ -1164,3 +1164,12 @@ git annex sync
 cd ..
 dir repo r1 r2
 """]]
+
+> Yet another wonderful case of \\ vs / confusion. [[fixed|done]].
+> 
+> That sucked, but I am rather stunned that the rest of the test
+> suite passes for you. That's a lot better that it's ever done on windows
+> before. Sadly I don't have as much luck on XP, still 9 failing tests
+> there.
+> 
+> --[[Joey]]
