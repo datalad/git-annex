@@ -141,4 +141,4 @@ parseLdd = catMaybes . map (getlib . dropWhile isSpace) . lines
  - XXX Debian specific. -}
 glibcLibs :: IO [FilePath]
 glibcLibs = lines <$> readProcess "sh"
-	["-c", "dpkg -L libc6 libgcc1 | egrep '\\.so|gconv'"]
+	["-c", "dpkg -L libc6 | egrep '\\.so|gconv'"]

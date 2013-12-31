@@ -27,5 +27,3 @@ The assistant from the standalone 64bit build crashes upon startup.
      [134 zerodogg@firefly annexed]$ ls -l /usr/lib64/libgcc_s.so.1
      lrwxrwxrwx. 1 root root 28 2013-12-18 10:54 /usr/lib64/libgcc_s.so.1 -> libgcc_s-4.8.2-20131212.so.1
      [0 zerodogg@firefly annexed]$ 
-
-> I guess I need to include libgcc in the bundle. [[done]] --[[Joey]]
