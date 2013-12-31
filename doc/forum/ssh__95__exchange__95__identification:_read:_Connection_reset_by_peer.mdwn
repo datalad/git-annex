@@ -17,5 +17,12 @@ UPDATE: In the meantime I setup another paired repo on these two computers. Ever
 
 I added the repos from scratch again and the same errors occurs again. The repositories which do not pair are the Documents folder on my desktop and on my macbook. Is there something special with macs documents folder?
 
+    [2013-12-31 10:53:23 CET] PushRetrier: Syncing with macbook.local_Documents 
+    fatal: 'macbook.local_Documents' does not appear to be a git repository
+    fatal: Could not read from remote repository.
+
+    Please make sure you have the correct access rights
+    and the repository exists.
+
 
 juh
