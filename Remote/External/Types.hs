@@ -166,6 +166,7 @@ data RemoteRequest
 	| GETCONFIG Setting
 	| SETCREDS Setting String String
 	| GETCREDS Setting
+	| GETUUID
 	deriving (Show)
 
 instance Receivable RemoteRequest where
@@ -176,6 +177,7 @@ instance Receivable RemoteRequest where
 	parseCommand "GETCONFIG" = parse1 GETCONFIG
 	parseCommand "SETCREDS" = parse3 SETCREDS
 	parseCommand "GETCREDS" = parse1 GETCREDS
+	parseCommand "GETUUID" = parse0 GETUUID
 	parseCommand _ = parseFail
 
 -- Responses to RemoteRequest.

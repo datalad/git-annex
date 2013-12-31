@@ -226,6 +226,8 @@ handleRequest' lck external req mp responsehandler
 		creds <- fromMaybe ("", "") <$> 
 			getRemoteCredPair c (credstorage setting)
 		sendMessage lck external $ CREDS (fst creds) (snd creds)
+	handleRemoteRequest GETUUID = sendMessage lck external $
+		VALUE $ fromUUID $ externalUUID external
 	handleRemoteRequest (VERSION _) =
 		sendMessage lck external $ ERROR "too late to send VERSION"
 

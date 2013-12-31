@@ -209,6 +209,9 @@ in control.
   or a file.
   (git-annex replies with "CREDS User Password". If no creds are found,
   User and Password are both empty.)
+* `GETUUID`  
+  Queries for the UUID of the special remote being used.  
+  (git-annex replies with VALUE followed by the UUID.)
 
 ## general messages
 
@@ -232,8 +235,6 @@ remote.
   the remote. However, \n and probably \0 need to be escaped somehow in the
   file data, which adds complication.
 * uuid discovery during INITREMOTE.
-* uuid verification during PREPARE (so, for example, it can check if a
-  removable drive repo has the expected uuid)
 * Support for splitting files into chunks.
 * Support for getting and setting the list of urls that can be associated
   with a key.

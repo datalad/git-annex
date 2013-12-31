@@ -1,3 +1,9 @@
+git-annex (5.20131231) UNRELEASED; urgency=medium
+
+  * external special remote protocol: Added GETUUID.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 31 Dec 2013 13:41:18 -0400
+
 git-annex (5.20131230) unstable; urgency=medium
 
   * Added new external special remote interface.
