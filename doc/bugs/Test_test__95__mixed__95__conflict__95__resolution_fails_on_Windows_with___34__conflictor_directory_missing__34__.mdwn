@@ -15,13 +15,11 @@ git-annex-5.20131222 on Windows 7 Professional
 ### Please provide any additional information below.
 
 The failed test is "test_mixed_conflict_resolution" with "conflictor directory missing". The problem can also be reproduced with the attached batch script.
+(EDIT: I couldn't attach a file, so I pasted its contents below the log.)
 
 You can find the complete output of "git annex test" below.
 
-[[!format sh """
-# If you can, paste a complete transcript of the problem occurring here.
-# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
-
+[[!format text """
 Tests
   QuickCheck
     prop_idempotent_deencode_git:                   OK
@@ -1130,6 +1128,39 @@ OK
 1 out of 74 tests failed
   (This could be due to a bug in git-annex, or an incompatability
    with utilities, such as git, installed on this system.)
+"""]]
 
-# End of transcript or log.
+batch script to reproduce the problem in the cmd shell:
+[[!format bat """
+mkdir repo
+cd repo
+git init
+git annex init "main repo"
+echo x > f1
+git annex add f1
+git annex sync
+cd ..
+git clone repo r1
+git clone repo r2
+cd r1
+echo xyz > conflictor
+git annex add conflictor
+git annex sync
+cd ..\r2
+mkdir conflictor
+echo abc > conflictor\subfile
+git annex add conflictor\subfile
+git annex sync
+cd ..\r1
+git remote add r2 ..\r2
+git remote remove origin
+cd ..\r2
+git remote add r1 ..\r1
+git remote remove origin
+cd ..\r1
+git annex sync
+cd ..\r2
+git annex sync
+cd ..
+dir repo r1 r2
 """]]
