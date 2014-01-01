@@ -18,6 +18,7 @@ import Annex.Content
 import Config
 import qualified Option
 import Annex.Wanted
+import Types.Key
 
 def :: [Command]
 def = [withOptions [fromOption] $ command "drop" paramPaths seek
@@ -34,21 +35,21 @@ start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = checkDropAuto from file key $ \numcopies ->
 	stopUnless (checkAuto $ wantDrop False (Remote.uuid <$> from) (Just file)) $
 		case from of
-			Nothing -> startLocal file numcopies key Nothing
+			Nothing -> startLocal (Just file) numcopies key Nothing
 			Just remote -> do
 				u <- getUUID
 				if Remote.uuid remote == u
-					then startLocal file numcopies key Nothing
-					else startRemote file numcopies key remote
+					then startLocal (Just file) numcopies key Nothing
+					else startRemote (Just file) numcopies key remote
 
-startLocal :: FilePath -> Maybe Int -> Key -> Maybe Remote -> CommandStart
-startLocal file numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
-	showStart "drop" file
+startLocal :: AssociatedFile -> Maybe Int -> Key -> Maybe Remote -> CommandStart
+startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
+	showStart "drop" (fromMaybe (key2file key) afile)
 	next $ performLocal key numcopies knownpresentremote
 
-startRemote :: FilePath -> Maybe Int -> Key -> Remote -> CommandStart
-startRemote file numcopies key remote = do
-	showStart ("drop " ++ Remote.name remote) file
+startRemote :: AssociatedFile -> Maybe Int -> Key -> Remote -> CommandStart
+startRemote afile numcopies key remote = do
+	showStart ("drop " ++ Remote.name remote) (fromMaybe (key2file key) afile)
 	next $ performRemote key numcopies remote
 
 performLocal :: Key -> Maybe Int -> Maybe Remote -> CommandPerform
