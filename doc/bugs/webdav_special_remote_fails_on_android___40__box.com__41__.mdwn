@@ -28,3 +28,5 @@ I have successfully set up the same Box.com account via the assistant on another
 I don't see any mention of WebDAV in daemon.log and friends.  
 
 It seems like NODELAY should be optional, as it's just a performance optimization (and disabling packet coalescing may be battery-hostile on a mobile device, too).
+
+> Should be fixed in the last release, [[done]] --[[Joey]]
