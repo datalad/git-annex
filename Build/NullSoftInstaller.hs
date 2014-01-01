@@ -163,4 +163,8 @@ cygwinDlls =
 	, "cygp11-kit-0.dll"
 	, "cygtasn1-3.dll"
 	, "cygffi-6.dll"
+	, "cygbz2-1.dll"
+	, "cygreadline7.dll"
+	, "cygncursesw-10.dll"
+	, "cygusb0.dll"
 	]
