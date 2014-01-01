@@ -1,3 +1,5 @@
+[[!meta title="windows assistant fails to set up rsync.net authorized keys"]]
+
 ### Please describe the problem.
 Having set up a key pair, the assistant is unable to use it to log in. The console only shows a single attempt to log in, when it's adding the key to the remote machine's authorized_keys file. This is evidently failing, as the key is not actually added to authorized_keys, possibly because the shell script it tries to execute is malformed (crazy quoting, I can't untangle it), or possibly because it failed to ask for a password (I expected it to, but it didn't prompt for one). Also, once I do add the key to authorized_keys, I can ssh in using it but asking the assistant to retry still fails.
 
