@@ -1,0 +1,80 @@
+### Please describe the problem.
+
+gsha256sum crashes continiously, so that excessive logs must be removed and the notebook is not responsive.
+
+Mac OS Mavericks
+
+### What steps will reproduce the problem?
+
+I cannot reproduce it. My guess is that it has problems with special characters in filenames of my music repository.
+
+### What version of git-annex are you using? On what operating system?
+
+Version: 5.20131221-g00d1673
+Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash 
+
+### Please provide any additional information below.
+
+
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[2014-01-01 11:50:02 CET] main: starting assistant version 5.20131221-g00d1673
+[2014-01-01 11:53:43 CET] TransferScanner: Syncing with sokrates.local_Musik 
+Already up-to-date.
+
+(scanning...) [2014-01-01 11:53:45 CET] Watcher: Performing startup scan
+Already up-to-date.
+
+
+  The installed version of git is too old for .gitignores to be honored by git-annex.
+To ssh://juh@git-annex-sokrates.local-juh_Musik/~/Musik/
+   0ec1344..c7bc58c  git-annex -> synced/git-annex
+
+.DS_Store
+           0   0%    0.00kB/s    0:00:00
+       21508 100%  238.68kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 42 bytes  received 21602 bytes  14429.33 bytes/sec
+total size is 21508  speedup is 0.99
+[2014-01-01 12:10:03 CET] Transferrer: Downloaded .DS_Store
+[2014-01-01 12:10:03 CET] Pusher: Syncing with sokrates.local_Musik 
+To ssh://juh@git-annex-sokrates.local-juh_Musik/~/Musik/
+   c7bc58c..c3ad19a  git-annex -> synced/git-annex
+(Recording state in git...)
+(started...) [2014-01-01 12:33:25 CET] Committer: Adding 15 - 23 s.. drøm.ogg 04 Cuatro..ielo.flac 05 Compadrón.flac 07 Buscan..dón.flac 10 Adiós..lita.flac 12 Bésam..Boca.flac 14 Nunca ..idar.flac 03 Adiós..ngo).flac 06 Selecc..ngo).flac and 2745 other files
+
+add Edvard Grieg/Grieg Edition/Complete Piano Music/Complete Piano Music, Volume X (feat. piano_ Geir Henning Braaten)/15 - 23 småstykker for klaver, EG 104 No. 7- En drøm.ogg Committer crashed: gsha256sum parse error
+[2014-01-01 12:33:27 CET] Committer: warning Committer crashed: gsha256sum parse error
+
+.DS_Store
+           0   0%    0.00kB/s    0:00:00
+        6148 100%    5.86MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 42 bytes  received 6242 bytes  4189.33 bytes/sec
+total size is 6148  speedup is 0.98
+[2014-01-01 12:49:45 CET] Transferrer: Downloaded .DS_Store
+[2014-01-01 12:49:45 CET] Pusher: Syncing with sokrates.local_Musik 
+[2014-01-01 12:53:42 CET] NetWatcherFallback: Syncing with sokrates.local_Musik 
+From ssh://git-annex-sokrates.local-juh_Musik/~/Musik
+   0ec1344..c3ad19a  git-annex  -> sokrates.local_Musik/git-annex
+fatal: Unable to create '/home/juh/Musik/.git/refs/heads/synced/git-annex.lock': Die Datei existiert bereits.
+
+If no other git process is currently running, this probably means a
+git process crashed in this repository earlier. Make sure no other git
+process is running and remove the file manually to continue.
+git-annex-shell: git-shell failed
+fatal: The remote end hung up unexpectedly
+fatal: The remote end hung up unexpectedly
+To ssh://juh@git-annex-sokrates.local-juh_Musik/~/Musik/
+   c3ad19a..e6da014  git-annex -> synced/git-annex
+From ssh://git-annex-sokrates.local-juh_Musik/~/Musik
+   c3ad19a..e6da014  git-annex  -> sokrates.local_Musik/git-annex
+Everything up-to-date
+[2014-01-01 13:11:59 CET] UpgradeWatcher: A new version of git-annex has been installed. 
+
+"""]]
+
+I can send you the crash report of hsha256sum if you need it.

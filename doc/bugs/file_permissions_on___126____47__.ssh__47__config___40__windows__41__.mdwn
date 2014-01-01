@@ -1,0 +1,11 @@
+### Please describe the problem.
+The log doesn't say what the webapp is running (probably ssh or similar), but it complains that ~/.ssh/config has the wrong permissions. This being cygwin, I'm not sure I can even change them; I'll poke around and see. Currently they're 0644.
+
+### What steps will reproduce the problem?
+Create a remote repository
+
+### What version of git-annex are you using? On what operating system?
+Windows 7, git-annex version 5.20131230-g192d991
+
+### Please provide any additional information below.
+I have no daemon.log, and the console log isn't particularly detailed today; it had just created an ssh key and shown it's fingerprint.
