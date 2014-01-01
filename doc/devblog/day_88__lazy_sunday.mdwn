@@ -4,7 +4,7 @@ automatically updated to v5. There's no actual change in that upgrade, it
 just simplifies things to have only one supported annex.version.
 
 Added youtube playlist support to git-annex. Seems I had almost all the
-peices needed, and didn't know it. Only about a dozen lines of code!
+pieces needed, and didn't know it. Only about a dozen lines of code!
 
 Added PREPARE-FAILURE support to the external special remote interface.
 
