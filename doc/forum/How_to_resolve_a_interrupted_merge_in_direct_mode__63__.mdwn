@@ -51,3 +51,15 @@ But now I cannot sync with the remote anymore because the merge is still in proc
 
     $ git merge --abort
     fatal: This operation must be run in a work tree
+
+Update: this is running on OSX with:
+
+    git-annex version: 5.20131221-g00d1673
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 5
+    upgrade supported from repository versions: 0 1 2 4
+
