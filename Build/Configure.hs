@@ -1,5 +1,7 @@
 {- Checks system configuration and generates SysConfig.hs. -}
 
+{-# LANGUAGE CPP #-}
+
 module Build.Configure where
 
 import System.Directory
@@ -53,8 +55,8 @@ tests =
 	, (384, "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b")
 	]
 
-{- shaNsum are the program names used by coreutils. Some systems like OSX
- - sometimes install these with 'g' prefixes.
+{- shaNsum are the program names used by coreutils. Some systems
+ - install these with 'g' prefixes.
  -
  - On some systems, shaN is used instead, but on other
  - systems, it might be "hashalot", which does not produce
@@ -74,13 +76,13 @@ shaTestCases l = map make l
 				then return $ Just c
 				else search cmds
 	
-	shacmds n = concatMap (\x -> [x, 'g':x, osxpath </> x]) $
+#ifndef darwin_HOST_OS
+	shacmds n = concatMap (\x -> [x, 'g':x]) $
 		map (\x -> "sha" ++ show n ++ x) ["sum", ""]
-
-	{- Max OSX sometimes puts GNU tools outside PATH, so look in
-	 - the location it uses, and remember where to run them
-	 - from. -}
-	osxpath = "/opt/local/libexec/gnubin"
+#else
+	-- OSX has had problems with gsha*sum crashing, so do not use.
+	shacmds _ = []
+#endif
 
 tmpDir :: String
 tmpDir = "tmp"

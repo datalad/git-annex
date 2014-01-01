@@ -78,3 +78,6 @@ Everything up-to-date
 """]]
 
 I can send you the crash report of hsha256sum if you need it.
+
+> Fine, we'll stop using this on OSX, since git-annex has its own builtin
+> and not even much slower hashers. [[done]] --[[Joey]]
