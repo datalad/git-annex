@@ -62,6 +62,110 @@ just started the assistant again now, and while the CPU usage is
 already high, I will forgive it for now because it's doing its 
 initial scans... Let's see what happens in the afternoon! --[[anarcat]]
 
+Update: I seem to be able to reproduce. I just started the webapp and
+the scans were performed. They are now finished, yet the CPU usage is 
+still high:
+
+[[!format txt """
+top - 14:10:20 up 1 day,  1:16,  7 users,  load average: 5,51, 3,61, 2,53
+Tasks: 292 total,   2 running, 288 sleeping,   0 stopped,   2 zombie
+%Cpu(s): 60,9 us,  7,8 sy,  0,6 ni, 29,5 id,  0,8 wa,  0,0 hi,  0,5 si,  0,0 st
+KiB Mem:   8162960 total,  6943100 used,  1219860 free,  1065464 buffers
+KiB Swap:  4022268 total,    15452 used,  4006816 free,  1983252 cached
+
+  PID USER      PR  NI  VIRT  RES  SHR S  %CPU %MEM    TIME+  COMMAND
+18364 anarcat   20   0  152m  27m  18m S  53,7  0,3   0:35.61 git-annex
+ 8388 anarcat   20   0  192m  54m  21m S  47,8  0,7  12:55.19 git-annex
+18671 anarcat   20   0  157m  33m  18m S  29,9  0,4   0:22.65 git-annex
+"""]]
+
+An strace on 18364 yields:
+
+[[!format txt """
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 537245076}) = 0
+[pid 18364] <... futex resumed> )       = ? ERESTARTSYS (To be restarted)
+[pid 18364] --- SIGVTALRM (Virtual timer expired) @ 0 (0) ---
+[pid 18364] rt_sigreturn(0x1a)          = 202
+[pid 18364] futex(0x3de703c, FUTEX_WAIT_PRIVATE, 51, NULL <unfinished ...>
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 256339453}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 537670797}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 256748972}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 538079838}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 257202502}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 538533443}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 257611085}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 538941839}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 258018398}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 539349100}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 258433069}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 539763939}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 258863864}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 540195885}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 259295204}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 540626505}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 259729523}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 541060751}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 260131616}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 541463041}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 260539761}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 541871201}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 260970889}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 542302047}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 261378036}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 542709166}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 261780507}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 543111819}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 262194032}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 543525143}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 262610040}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 543941528}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 263042272}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 544374016}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18366] rt_sigprocmask(SIG_BLOCK, [TERM], [], 8) = 0
+[pid 18366] clock_gettime(0x2 /* CLOCK_??? */, {82, 263532359}) = 0
+[pid 18366] clock_gettime(0x3 /* CLOCK_??? */, {79, 544864814}) = 0
+[pid 18366] rt_sigprocmask(SIG_SETMASK, [], NULL, 8) = 0
+[pid 18364] <... futex resumed> )       = ? ERESTARTSYS (To be restarted)
+[pid 18364] --- SIGVTALRM (Virtual timer expired) @ 0 (0) ---
+[pid 18364] rt_sigreturn(0x1a)          = 202
+[pid 18364] futex(0x3de703c, FUTEX_WAIT_PRIVATE, 51, NULL <unfinished ...>
+"""]]
+
  [cpu-day.png]: http://paste.anarc.at/cpu-day.png
  [uptime-day.png]: http://paste.anarc.at/uptime-day.png
  [cpuspeed-day.png]: http://paste.anarc.at/cpuspeed-day.png
