@@ -37,7 +37,7 @@ import Logs.Remote
 import Types.StandardGroups
 
 {- Changes the preferred content configuration of a remote. -}
-preferredContentSet :: UUID -> String -> Annex ()
+preferredContentSet :: UUID -> PreferredContentExpression -> Annex ()
 preferredContentSet uuid@(UUID _) val = do
 	ts <- liftIO getPOSIXTime
 	Annex.Branch.change preferredContentLog $
@@ -71,7 +71,7 @@ preferredContentMapLoad = do
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Just m }
 	return m
 
-preferredContentMapRaw :: Annex (M.Map UUID String)
+preferredContentMapRaw :: Annex (M.Map UUID PreferredContentExpression)
 preferredContentMapRaw = simpleMap . parseLog Just
 	<$> Annex.Branch.get preferredContentLog
 
@@ -79,7 +79,7 @@ preferredContentMapRaw = simpleMap . parseLog Just
  - because the configuration is shared among repositories and newer
  - versions of git-annex may add new features. Instead, parse errors
  - result in a Matcher that will always succeed. -}
-makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> String -> FileMatcher
+makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> PreferredContentExpression -> FileMatcher
 makeMatcher groupmap configmap u expr
 	| expr == "standard" = standardMatcher groupmap configmap u
 	| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
@@ -95,7 +95,7 @@ standardMatcher groupmap configmap u =
 		getStandardGroup =<< u `M.lookup` groupsByUUID groupmap
 
 {- Checks if an expression can be parsed, if not returns Just error -}
-checkPreferredContentExpression :: String -> Maybe String
+checkPreferredContentExpression :: PreferredContentExpression -> Maybe String
 checkPreferredContentExpression expr
 	| expr == "standard" = Nothing
 	| otherwise = case parsedToMatcher tokens of

@@ -12,6 +12,8 @@ import Types.Remote (RemoteConfig)
 import qualified Data.Map as M
 import Data.Maybe
 
+type PreferredContentExpression = String
+
 data StandardGroup
 	= ClientGroup
 	| TransferGroup
@@ -71,7 +73,7 @@ associatedDirectory Nothing PublicGroup = Just "public"
 associatedDirectory _ _ = Nothing
 
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
-preferredContent :: StandardGroup -> String
+preferredContent :: StandardGroup -> PreferredContentExpression
 preferredContent ClientGroup = lastResort $
 	"(exclude=*/archive/* and exclude=archive/*) or (" ++ notArchived ++ ")"
 preferredContent TransferGroup = lastResort $
@@ -92,5 +94,5 @@ notArchived = "not (copies=archive:1 or copies=smallarchive:1)"
   	
 {- Most repositories want any content that is only on untrusted
  - or dead repositories. -}
-lastResort :: String -> String
+lastResort :: String -> PreferredContentExpression
 lastResort s = "(" ++ s ++ ") or (not copies=semitrusted+:1)"
