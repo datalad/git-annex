@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 6"
+ date="2014-01-01T20:59:32Z"
+ content="""
+The ` T ` in your `git show --raw` indicates that what was a symlink has been replaced with a regular file, and this has been committed to git. 
+
+It's certainly possible to do that when using git-annex, but you have to go a bit out of your way to so shoot yourself in the foot, because normally the pre-commit hook will detect that, and fix up your commit to not change the type of the file. Something like this:
+
+[[!format sh \"\"\"
+joey@darkstar:~/tmp/r>git annex unlock foo
+unlock foo (copying...) ok
+joey@darkstar:~/tmp/r>git commit -a --no-verify -m oops
+[master 9b63e4e] oops
+ 1 file changed, 1 deletion(-)
+ rewrite foo (100%)
+ mode change 120000 => 100644
+joey@darkstar:~/tmp/r>git show --raw
+commit 9b63e4efad1f229ae7713749e9ac2d0f9c286008
+Author: Joey Hess <joey@kitenet.net>
+Date:   Wed Jan 1 16:55:19 2014 -0400
+
+    oops
+
+:120000 100644 ea46194... e69de29... T	foo
+\"\"\"]]
+
+The fact that you seem to have made 2 commits that did this, on the 21st and 30th, makes me wonder if your .git/hooks/pre-commit does not exist, or perhaps you are making some other mistake repeatedly.
+
+The synced/* branches never have any data that is not stored somewhere else (another branch, possibly in the remote repository), so it should always be ok to delete them.
+"""]]
