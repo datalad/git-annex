@@ -181,10 +181,15 @@ subdirectories).
   repository. If a file's content is present in the source repository, it is
   copied to the destination repository. If a file's content is not present in
   the source repository, it will be dropped from the destination repository
-  when possible.
+  when the numcopies setting allows.
 
   Note that mirror does not sync the git repository, but only the file
   contents.
+
+  Also, --all may be specified to mirror all objects stored in the git
+  annex, not only objects used by currently existing files. However, this
+  bypasses checking the .gitattributes annex.numcopies setting when
+  dropping files.
 
 * `addurl [url ...]`
 

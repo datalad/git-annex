@@ -18,18 +18,25 @@ import Annex.Content
 import qualified Annex
 
 def :: [Command]
-def = [withOptions fromToOptions $ command "mirror" paramPaths seek
-	SectionCommon "mirror content of files to/from another repository"]
+def = [withOptions (fromToOptions ++ keyOptions) $
+	command "mirror" paramPaths seek
+		SectionCommon "mirror content of files to/from another repository"]
 
 seek :: [CommandSeek]
 seek =
 	[ withField toOption Remote.byNameWithUUID $ \to ->
 	  withField fromOption Remote.byNameWithUUID $ \from ->
+	  withKeyOptions (startKey Nothing to from Nothing) $
 	  withFilesInGit $ whenAnnexed $ start to from
 	]
 
 start :: Maybe Remote -> Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start to from file (key, _backend) = do
+	numcopies <- numCopies file
+	startKey numcopies to from (Just file) key
+
+startKey :: Maybe Int -> Maybe Remote -> Maybe Remote -> Maybe FilePath -> Key -> CommandStart
+startKey numcopies to from afile key = do
 	noAuto
 	case (from, to) of
 		(Nothing, Nothing) -> error "specify either --from or --to"
@@ -40,19 +47,15 @@ start to from file (key, _backend) = do
 	noAuto = whenM (Annex.getState Annex.auto) $
 		error "--auto is not supported for mirror"
 	mirrorto r = ifM (inAnnex key)
-		( Command.Move.toStart r False (Just file) key
-		, do
-			numcopies <- numCopies file
-			Command.Drop.startRemote file numcopies key r
+		( Command.Move.toStart r False afile key
+		, Command.Drop.startRemote afile numcopies key r
 		)
 	mirrorfrom r = do
 		haskey <- Remote.hasKey r key
 		case haskey of
 			Left _ -> stop
-			Right True -> Command.Get.start' (return True) Nothing key (Just file)
+			Right True -> Command.Get.start' (return True) Nothing key afile
 			Right False -> ifM (inAnnex key)
-				( do
-					numcopies <- numCopies file
-					Command.Drop.startLocal file numcopies key Nothing
+				( Command.Drop.startLocal afile numcopies key Nothing
 				, stop
 				)

@@ -102,10 +102,10 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote = do
 			)
 
 	dropl fs n = checkdrop fs n Nothing $ \numcopies ->
-		Command.Drop.startLocal afile numcopies key knownpresentremote
+		Command.Drop.startLocal (Just afile) numcopies key knownpresentremote
 
 	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies ->
-		Command.Drop.startRemote afile numcopies key r
+		Command.Drop.startRemote (Just afile) numcopies key r
 
 	safely a = either (const False) id <$> tryAnnex a
 
