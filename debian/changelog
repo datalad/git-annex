@@ -6,6 +6,8 @@ git-annex (5.20131231) UNRELEASED; urgency=medium
     in subdirectories to go missing.
   * Windows: Avoid eating stdin when running ssh to add a authorized key,
     since this is used for password prompting.
+  * Avoid looping if long-running git cat-file or git hash-object crashes
+    and keeps crashing when restarted.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 31 Dec 2013 13:41:18 -0400
 

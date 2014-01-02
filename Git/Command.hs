@@ -128,9 +128,14 @@ leaveZombie = fst
 
 {- Runs a git command as a coprocess. -}
 gitCoProcessStart :: Bool -> [CommandParam] -> Repo -> IO CoProcess.CoProcessHandle
-gitCoProcessStart restartable params repo = CoProcess.start restartable "git"
+gitCoProcessStart restartable params repo = CoProcess.start numrestarts "git"
 	(toCommand $ gitCommandLine params repo)
 	(gitEnv repo)
+  where
+  	{- If a long-running git command like cat-file --batch
+	 - crashes, it will likely start up again ok. If it keeps crashing
+	 - 10 times, something is badly wrong. -}
+	numrestarts = if restartable then 10 else 0
 
 gitCreateProcess :: [CommandParam] -> Repo -> CreateProcess
 gitCreateProcess params repo =

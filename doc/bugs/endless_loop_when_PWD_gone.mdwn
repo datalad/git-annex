@@ -12,3 +12,5 @@ This results in git-annex entering an endless loop:
     fatal: Unable to read current working directory: No such file or directory
     fatal: Unable to read current working directory: No such file or directory
     fatal: Unable to read current working directory: No such file or directory
+
+> [[fixed|done]] --[[Joey]]
