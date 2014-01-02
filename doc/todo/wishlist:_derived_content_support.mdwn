@@ -4,3 +4,5 @@ Example:
 I have music in flac on my htpc, but i think flac is way overkill to have on my Android device, so i transcode them to ogg/mp3 on my htpc and then sync them to my Android device.
 
 Transcoding is a good example for this type of feature, but there might be other uses too.
+
+The basic thing is to know a file is a "copy" of another file, but its a generated result, so the actual file is not important, but the source is.
