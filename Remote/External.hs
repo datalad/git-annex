@@ -18,6 +18,7 @@ import Remote.Helper.Encryptable
 import Crypto
 import Utility.Metered
 import Logs.Transfer
+import Logs.PreferredContent.Raw
 import Config.Cost
 import Annex.Content
 import Annex.UUID
@@ -206,7 +207,7 @@ handleRequest' lck external req mp responsehandler
 	handleRemoteRequest (PROGRESS bytesprocessed) =
 		maybe noop (\a -> liftIO $ a bytesprocessed) mp
 	handleRemoteRequest (DIRHASH k) = 
-		sendMessage lck external $ VALUE $ hashDirMixed k
+		send $ VALUE $ hashDirMixed k
 	handleRemoteRequest (SETCONFIG setting value) =
 		liftIO $ atomically $ do
 			let v = externalConfig external
@@ -215,7 +216,7 @@ handleRequest' lck external req mp responsehandler
 	handleRemoteRequest (GETCONFIG setting) = do
 		value <- fromMaybe "" . M.lookup setting
 			<$> liftIO (atomically $ readTMVar $ externalConfig external)
-		sendMessage lck external $ VALUE value
+		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = do
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external
 		c' <- setRemoteCredPair' c (credstorage setting)
@@ -225,13 +226,21 @@ handleRequest' lck external req mp responsehandler
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external
 		creds <- fromMaybe ("", "") <$> 
 			getRemoteCredPair c (credstorage setting)
-		sendMessage lck external $ CREDS (fst creds) (snd creds)
-	handleRemoteRequest GETUUID = sendMessage lck external $
+		send $ CREDS (fst creds) (snd creds)
+	handleRemoteRequest GETUUID = send $
 		VALUE $ fromUUID $ externalUUID external
+	handleRemoteRequest (SETWANTED expr) =
+		preferredContentSet (externalUUID external) expr
+	handleRemoteRequest GETWANTED = do
+		expr <- fromMaybe "" . M.lookup (externalUUID external)
+			<$> preferredContentMapRaw
+		send $ VALUE expr
 	handleRemoteRequest (VERSION _) =
 		sendMessage lck external $ ERROR "too late to send VERSION"
 
 	handleAsyncMessage (ERROR err) = error $ "external special remote error: " ++ err
+
+	send = sendMessage lck external
 
 	credstorage setting = CredPairStorage
 		{ credPairFile = base

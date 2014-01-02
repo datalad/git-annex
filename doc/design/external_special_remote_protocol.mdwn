@@ -212,6 +212,16 @@ in control.
 * `GETUUID`  
   Queries for the UUID of the special remote being used.  
   (git-annex replies with VALUE followed by the UUID.)
+* `SETWANTED PreferredContentExpression`  
+  Can be used to set the preferred content of a repository. Normally
+  this is not configured by a special remote, but it may make sense
+  in some situations to hint at the kind of content that should be stored
+  in the special remote. Note that if a unparsable expression is set,
+  git-annex will ignore it.
+* `GETWANTED`  
+  Gets the current preferred content setting of the repository.
+  (git-annex replies with VALUE followed by the preferred content
+  expression.)
 
 ## general messages
 
