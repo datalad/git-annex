@@ -1,0 +1,48 @@
+# How to use git-annex on a Synology NAS
+
+This is known to work with DSM 4.3-3810 Update 1 and git-annex standalone version 5.20131224-g6ca5271.
+
+## Installation Steps
+
+1. In the DSM Package Center, install Git, which is available from Synology (no third-party repository needed).
+2. Download the latest [[standalone|Linux_standalone]] git-annex build for Linux on armel.
+3. Extract it somewhere sensible (eg: a bin/ directory your users home directory)
+4. Go into the git-annex.linux directory and ./runshell. You can now run git-annex as you normally would.
+
+## How to sync with the Synology NAS
+
+### On the Synology
+1. Setup port forwarding and associated dynamic dns, if applicable. Many good guides online for this.
+2. Setup ssh key based authentication with the Synology for each computer you want to sync with it. You want a specific key that is used only by git-annex, for each computer. Again, many good guides online.
+3. In the Synology .ssh/authorized_keys file for your account, add (substituing your username)
+[[!format sh """
+command="/home/$yourusername/.ssh/git-annex-shell"
+"""]]
+to the beginning of the line. Eg, it would look like this:
+[[!format sh """
+command="/home/greg/.ssh/git-annex-shell" ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDT1yE96E/JQNPt0ziiNYJRvndCvLK4uG5h/SNYoAIBF1uH6L7VYAt3HWVqSyi3BcV70WDZ/yWgtNzbrcir46JpvEHMcvYaXLbANwoDGNjG/gsz7kP/8VUxZ6hG3P3ICuwnqVum5+rYXm6oj3xzWPfTRhhRoDZLOQdevSNpdGNaa/lSg8Vuq2suHwjQlQb8AIUuCZmS5cm6XwoUq/jJtN4LTuTPqMjzA6NkdhWM2Kigi9jPQBFborkYBPMphmZwBZiVnhsH1XpaOff+mP03D2gF/huC+b1vbWQstjuehUbY59rvJ4ijb3810Uq2ep7dwLagmILtX5GbL+GS64pAn9sIP annex-othercomputer
+"""]]
+4. the git-annex-shell script in your .ssh should be created for you aftering your initial ./runshell
+5. Double check that the script points to the correct directory of where your extracted git-annex.linux lives.
+
+### On the other computers - the manual way
+1. See step 2 above about creating the specific git-annex ssh keys.
+2. In your .ssh/config, create an alias for your Synology that includes specifying the right sshkey. For example, mine looks like:
+[[!format sh """
+Host synologyhost
+    HostName mydynamicdomain.no-ip.org
+    IdentityFile /home/greg/.ssh/annex_rsa
+"""]]
+3. Now when you clone the git repo from the Synology, or add it as a remote, do the following:
+[[!format sh """
+git clone greg@synologyhost:/absolute/path/to/annexname annexname
+"""]]
+or
+
+[[!format sh """
+git remote add synology greg@synologyhost:/absolute/path/to/annexname
+"""]]
+4. Run git-annex sync
+
+### On the other computers - Using the assistant
+1. Use the webapp to add the remote. I'm not sure if there are any gotchas here as I have not done it this way yet.
