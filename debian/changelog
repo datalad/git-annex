@@ -8,6 +8,7 @@ git-annex (5.20131231) UNRELEASED; urgency=medium
     since this is used for password prompting.
   * Avoid looping if long-running git cat-file or git hash-object crashes
     and keeps crashing when restarted.
+  * Assistant: Remove stale MERGE_HEAD files in lockfile cleanup.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 31 Dec 2013 13:41:18 -0400
 

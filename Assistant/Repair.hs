@@ -113,23 +113,30 @@ runRepair u mrmt destructiverepair = do
  -
  - However, this could be on a network filesystem. Which is not very safe
  - anyway (the assistant relies on being able to check when files have
- - no writers to know when to commit them). Just in case, when the lock
- - file appears stale, we delay for one minute, and check its size. If
- - the size changed, delay for another minute, and so on. This will at
- - least work to detect is another machine is writing out a new index
- - file, since git does so by writing the new content to index.lock.
+ - no writers to know when to commit them). Also, a few lock-file-ish
+ - things used by git are not kept open, particularly MERGE_HEAD.
+ -
+ - So, just in case, when the lock file appears stale, we delay for one
+ - minute, and check its size. If the size changed, delay for another
+ - minute, and so on. This will at work to detect when another machine
+ - is writing out a new index file, since git does so by writing the
+ - new content to index.lock.
  -
  - Returns true if locks were cleaned up.
  -}
 repairStaleGitLocks :: Git.Repo -> Assistant Bool
 repairStaleGitLocks r = do
-	lockfiles <- filter (not . isInfixOf "gc.pid") 
-		. filter (".lock" `isSuffixOf`)
-		<$> liftIO (findgitfiles r)
+	lockfiles <- liftIO $ filter islock <$> findgitfiles r
 	repairStaleLocks lockfiles
 	return $ not $ null lockfiles
   where
 	findgitfiles = dirContentsRecursiveSkipping (== dropTrailingPathSeparator annexDir) True . Git.localGitDir
+	islock f
+		| "gc.pid" `isInfixOf` f = False
+		| ".lock" `isSuffixOf` f = True
+		| takeFileName f == "MERGE_HEAD" = True
+		| otherwise = False
+
 repairStaleLocks :: [FilePath] -> Assistant ()
 repairStaleLocks lockfiles = go =<< getsizes
   where
