@@ -5,7 +5,7 @@ This is known to work with DSM 4.3-3810 Update 1 and git-annex standalone versio
 ## Installation Steps
 
 (1) In the DSM Package Center, install Git, which is available from Synology (no third-party repository needed).
-(2) Download the latest [[standalone|Linux_standalone]] git-annex build for Linux on armel.
+(2) Download the latest [[standalone|install/Linux_standalone]] git-annex build for Linux on armel.
 (3) Extract it somewhere sensible (eg: a bin/ directory your users home directory)
 (4) Go into the git-annex.linux directory and ./runshell. You can now run git-annex as you normally would.
 
