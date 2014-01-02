@@ -123,7 +123,8 @@ reconnectRemotes notifypushes rs = void $ do
 pushToRemotes :: Bool -> [Remote] -> Assistant [Remote]
 pushToRemotes notifypushes remotes = do
 	now <- liftIO getCurrentTime
-	syncAction remotes (pushToRemotes' now notifypushes)
+	let remotes' = filter (not . remoteAnnexReadOnly . Remote.gitconfig) remotes
+	syncAction remotes' (pushToRemotes' now notifypushes)
 pushToRemotes' :: UTCTime -> Bool -> [Remote] -> Assistant [Remote]
 pushToRemotes' now notifypushes remotes = do
 	(g, branch, u) <- liftAnnex $ do

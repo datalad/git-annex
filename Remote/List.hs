@@ -18,6 +18,7 @@ import Types.Remote
 import Types.GitConfig
 import Annex.UUID
 import Remote.Helper.Hooks
+import Remote.Helper.ReadOnly
 import qualified Git
 import qualified Git.Config
 
@@ -89,7 +90,7 @@ remoteGen m t r = do
 	let gc = extractRemoteGitConfig g (Git.repoDescribe r)
 	let c = fromMaybe M.empty $ M.lookup u m
 	mrmt <- generate t r u c gc
-	return $ addHooks <$> mrmt
+	return $ adjustReadOnly . addHooks <$> mrmt
 
 {- Updates a local git Remote, re-reading its git config. -}
 updateRemote :: Remote -> Annex (Maybe Remote)

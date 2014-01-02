@@ -1275,6 +1275,12 @@ Here are all the supported configuration settings.
   If set to `false`, prevents git-annex sync (and the git-annex assistant)
   from syncing with this remote.
 
+* `remote.<name>.annex-readonly`
+
+  If set to `true`, prevents git-annex from making changes to a remote.
+  This both prevents git-annex sync from pushing changes, and prevents
+  storing or removing files from read-only remote.
+
 * `remote.<name>.annexUrl`
 
   Can be used to specify a different url than the regular `remote.<name>.url`

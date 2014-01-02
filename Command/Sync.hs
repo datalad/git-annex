@@ -203,7 +203,9 @@ pushRemote :: Remote -> Maybe Git.Ref -> CommandStart
 pushRemote _remote Nothing = stop
 pushRemote remote (Just branch) = go =<< needpush
   where
-	needpush = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
+	needpush
+		| remoteAnnexReadOnly (Types.Remote.gitconfig remote) = return False
+		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 	go False = stop
 	go True = do
 		showStart "push" (Remote.name remote)
