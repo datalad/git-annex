@@ -6,7 +6,7 @@
  content="""
 I rebuilt using the current git head, i was expecting 20131230 but I got 5.20140102-gd93f946. The problem is still there:
 
-[[!format shell \"\"\"
+[[!format txt \"\"\"
 anarcat@marcos:mp3$ top -b -n 1 | head
 top - 17:18:23 up 2 days,  4:24,  9 users,  load average: 4,01, 3,91, 3,80
 Tasks: 295 total,   1 running, 294 sleeping,   0 stopped,   0 zombie
