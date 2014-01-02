@@ -5,9 +5,6 @@ prebuilt tarball of the most recent release.
 This tarball should work on most Linux systems. It has basically no
 dependencies and is self-contained.
 
-The armel version can be installed on NAS devices and other embedded ARM
-linux systems.
-
 * i386: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz)
 * amd64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz)
 * armel: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz)
@@ -21,8 +18,11 @@ Alternatively, you can unpack the tarball, and add the directory to your
 PATH. This lets you use `git annex`, without overriding your system's
 own versions of git, etc.
 
-Note: This is a last resort. Most Linux users should instead
-[[install]] git-annex from their distribution of choice.
+The armel version can be installed on NAS devices and other embedded ARM
+linux systems.
+
+* [[tips/Synology_NAS_and_git_annex]]
+* [[forum_thread|forum/new_linux_arm_tarball_build]]
 
 ## autobuilds
 
