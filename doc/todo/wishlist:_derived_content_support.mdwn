@@ -1,0 +1,6 @@
+I handle some video and music files with git annex and it would be awesome if git annex supported tracking of relations between files.
+
+Example:
+I have music in flac on my htpc, but i think flac is way overkill to have on my Android device, so i transcode them to ogg/mp3 on my htpc and then sync them to my Android device.
+
+Transcoding is a good example for this type of feature, but there might be other uses too.
