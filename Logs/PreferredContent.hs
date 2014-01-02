@@ -19,9 +19,9 @@ module Logs.PreferredContent (
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Either
-import Data.Time.Clock.POSIX
 
 import Common.Annex
+import Logs.PreferredContent.Raw
 import qualified Annex.Branch
 import qualified Annex
 import Logs
@@ -35,15 +35,6 @@ import Types.Remote (RemoteConfig)
 import Logs.Group
 import Logs.Remote
 import Types.StandardGroups
-
-{- Changes the preferred content configuration of a remote. -}
-preferredContentSet :: UUID -> PreferredContentExpression -> Annex ()
-preferredContentSet uuid@(UUID _) val = do
-	ts <- liftIO getPOSIXTime
-	Annex.Branch.change preferredContentLog $
-		showLog id . changeLog ts uuid val . parseLog Just
-	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Nothing }
-preferredContentSet NoUUID _ = error "unknown UUID; cannot modify"
 
 {- Checks if a file is preferred content for the specified repository
  - (or the current repository if none is specified). -}
@@ -70,10 +61,6 @@ preferredContentMapLoad = do
 		<$> Annex.Branch.get preferredContentLog
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Just m }
 	return m
-
-preferredContentMapRaw :: Annex (M.Map UUID PreferredContentExpression)
-preferredContentMapRaw = simpleMap . parseLog Just
-	<$> Annex.Branch.get preferredContentLog
 
 {- This intentionally never fails, even on unparsable expressions,
  - because the configuration is shared among repositories and newer

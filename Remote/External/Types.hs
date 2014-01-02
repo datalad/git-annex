@@ -33,6 +33,7 @@ module Remote.External.Types (
 import Common.Annex
 import Annex.Exception
 import Types.Key (file2key, key2file)
+import Types.StandardGroups (PreferredContentExpression)
 import Utility.Metered (BytesProcessed(..))
 import Logs.Transfer (Direction(..))
 import Config.Cost (Cost)
@@ -167,6 +168,8 @@ data RemoteRequest
 	| SETCREDS Setting String String
 	| GETCREDS Setting
 	| GETUUID
+	| SETWANTED PreferredContentExpression
+	| GETWANTED
 	deriving (Show)
 
 instance Receivable RemoteRequest where
@@ -178,6 +181,8 @@ instance Receivable RemoteRequest where
 	parseCommand "SETCREDS" = parse3 SETCREDS
 	parseCommand "GETCREDS" = parse1 GETCREDS
 	parseCommand "GETUUID" = parse0 GETUUID
+	parseCommand "SETWANTED" = parse1 SETWANTED
+	parseCommand "GETWANTED" = parse0 GETWANTED
 	parseCommand _ = parseFail
 
 -- Responses to RemoteRequest.

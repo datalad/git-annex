@@ -1,7 +1,7 @@
 git-annex (5.20131231) UNRELEASED; urgency=medium
 
   * mirror: Support --all (and --unused).
-  * external special remote protocol: Added GETUUID.
+  * external special remote protocol: Added GETUUID, GETWANTED, SETWANTED.
   * Windows: Fix bug in direct mode merge code that could cause files
     in subdirectories to go missing.
   * Windows: Avoid eating stdin when running ssh to add a authorized key,
