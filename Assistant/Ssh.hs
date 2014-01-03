@@ -149,7 +149,7 @@ removeAuthorizedKeys gitannexshellonly dir pubkey = do
 	sshdir <- sshDir
 	let keyfile = sshdir </> "authorized_keys"
 	ls <- lines <$> readFileStrict keyfile
-	writeFile keyfile $ unlines $ filter (/= keyline) ls
+	viaTmp writeSshConfig keyfile $ unlines $ filter (/= keyline) ls
 
 {- Implemented as a shell command, so it can be run on remote servers over
  - ssh.
@@ -290,13 +290,15 @@ setSshConfig sshdata config = do
 	sshdir <- sshDir
 	createDirectoryIfMissing True sshdir
 	let configfile = sshdir </> "config"
-	unlessM (catchBoolIO $ isInfixOf mangledhost <$> readFile configfile) $
+	unlessM (catchBoolIO $ isInfixOf mangledhost <$> readFile configfile) $ do
 		appendFile configfile $ unlines $
 			[ ""
 			, "# Added automatically by git-annex"
 			, "Host " ++ mangledhost
 			] ++ map (\(k, v) -> "\t" ++ k ++ " " ++ v)
 				(settings ++ config)
+		setSshConfigMode configfile
+
 	return $ sshdata { sshHostName = T.pack mangledhost }
   where
 	mangledhost = mangleSshHostName sshdata

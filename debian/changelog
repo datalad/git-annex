@@ -12,6 +12,9 @@ git-annex (5.20131231) UNRELEASED; urgency=medium
   * Assistant: Remove stale MERGE_HEAD files in lockfile cleanup.
   * Remotes can now be made read-only, by setting remote.<name>.annex-readonly
   * wanted, schedule: Avoid printing "ok" after requested value.
+  * assistant: Ensure that .ssh/config and .ssh/authorized_keys are not
+    group or world writable when writing to those files, as that can make
+    ssh refuse to use them, if it allows another user to write to them.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 31 Dec 2013 13:41:18 -0400
 

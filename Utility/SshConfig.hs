@@ -10,6 +10,7 @@ module Utility.SshConfig where
 import Common
 import Utility.UserInfo
 import Utility.Tmp
+import Utility.FileMode
 
 import Data.Char
 import Data.Ord
@@ -117,7 +118,19 @@ changeUserSshConfig modifier = do
 		c <- readFileStrict configfile
 		let c' = modifier c
 		when (c /= c') $
-			viaTmp writeFile configfile c'
+			viaTmp writeSshConfig configfile c'
+
+writeSshConfig :: FilePath -> String -> IO ()
+writeSshConfig f s = do
+	writeFile f s
+	setSshConfigMode f
+
+{- Ensure that the ssh config file lacks any group or other write bits, 
+ - since ssh is paranoid about not working if other users can write
+ - to one of its config files (.ssh/config and .ssh/authorized_keys) -}
+setSshConfigMode :: FilePath -> IO ()
+setSshConfigMode f = modifyFileMode f $
+	removeModes [groupWriteMode, otherWriteMode]
 
 sshDir :: IO FilePath
 sshDir = do
