@@ -17,3 +17,4 @@ The script producing the .info file along with the binary tarball seems to gener
 This may look anecdotical, but at least the `git-annex-bin` package of Arch Linux uses the .info data to retrieve the version information.
 
 
+> [[fixed|done]] --[[Joey]]
