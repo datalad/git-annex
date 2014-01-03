@@ -1,3 +1,5 @@
+[[!meta title="SIGILL on Mavericks"]]
+
 ### Please describe the problem.
 
 gsha256sum crashes continiously, so that excessive logs must be removed and the notebook is not responsive.
@@ -80,4 +82,8 @@ Everything up-to-date
 I can send you the crash report of hsha256sum if you need it.
 
 > Fine, we'll stop using this on OSX, since git-annex has its own builtin
-> and not even much slower hashers. [[done]] --[[Joey]]
+> and not even much slower hashers. done--[[Joey]]
+
+>> I'm told that other programs, such as wget, also crash with SIGILL.
+>> Are there multiple OSX architectures with different instructions sets or
+>> what? --[[Joey]]
