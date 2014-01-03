@@ -170,6 +170,8 @@ data RemoteRequest
 	| GETUUID
 	| SETWANTED PreferredContentExpression
 	| GETWANTED
+	| SETSTATE Key String
+	| GETSTATE Key
 	deriving (Show)
 
 instance Receivable RemoteRequest where
@@ -183,6 +185,8 @@ instance Receivable RemoteRequest where
 	parseCommand "GETUUID" = parse0 GETUUID
 	parseCommand "SETWANTED" = parse1 SETWANTED
 	parseCommand "GETWANTED" = parse0 GETWANTED
+	parseCommand "SETSTATE" = parse2 SETSTATE
+	parseCommand "GETSTATE" = parse1 GETSTATE
 	parseCommand _ = parseFail
 
 -- Responses to RemoteRequest.

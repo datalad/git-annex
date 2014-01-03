@@ -6,8 +6,10 @@
  - A line of the log will look like: "UUID[ INFO[ timestamp=foo]]"
  - The timestamp is last for backwards compatability reasons,
  - and may not be present on old log lines.
+ -
+ - New uuid based logs instead use the form: "timestamp UUID INFO"
  - 
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,8 +19,10 @@ module Logs.UUIDBased (
 	LogEntry(..),
 	TimeStamp(..),
 	parseLog,
+	parseLogNew,
 	parseLogWithUUID,
 	showLog,
+	showLogNew,
 	changeLog,
 	addLog,
 	simpleMap,
@@ -56,6 +60,14 @@ showLog shower = unlines . map showpair . M.toList
 	showpair (k, LogEntry Unknown v) =
 		unwords [fromUUID k, shower v]
 
+showLogNew :: (a -> String) -> Log a -> String
+showLogNew shower = unlines . map showpair . M.toList
+  where
+	showpair (k, LogEntry (Date p) v) =
+		unwords [show p, fromUUID k, shower v]
+	showpair (k, LogEntry Unknown v) =
+		unwords ["0", fromUUID k, shower v]
+
 parseLog :: (String -> Maybe a) -> String -> Log a
 parseLog = parseLogWithUUID . const
 
@@ -85,6 +97,17 @@ parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . lines
 		pdate s = case parseTime defaultTimeLocale "%s%Qs" s of
 			Nothing -> Unknown
 			Just d -> Date $ utcTimeToPOSIXSeconds d
+
+parseLogNew :: (String -> Maybe a) -> String -> Log a
+parseLogNew parser = M.fromListWith best . mapMaybe parse . lines
+  where
+	parse line = do
+		let (ts, rest) = splitword line
+		    (u, v) = splitword rest
+		date <- Date . utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" ts
+		val <- parser v
+		Just (toUUID u, LogEntry date val)
+	splitword = separate (== ' ')
 
 changeLog :: POSIXTime -> UUID -> a -> Log a -> Log a
 changeLog t u v = M.insert u $ LogEntry (Date t) v

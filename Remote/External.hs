@@ -19,6 +19,7 @@ import Crypto
 import Utility.Metered
 import Logs.Transfer
 import Logs.PreferredContent.Raw
+import Logs.RemoteState
 import Config.Cost
 import Annex.Content
 import Annex.UUID
@@ -235,6 +236,12 @@ handleRequest' lck external req mp responsehandler
 		expr <- fromMaybe "" . M.lookup (externalUUID external)
 			<$> preferredContentMapRaw
 		send $ VALUE expr
+	handleRemoteRequest (SETSTATE key state) =
+		setRemoteState (externalUUID external) key state
+	handleRemoteRequest (GETSTATE key) = do
+		state <- fromMaybe ""
+			<$> getRemoteState (externalUUID external) key
+		send $ VALUE state
 	handleRemoteRequest (VERSION _) =
 		sendMessage lck external $ ERROR "too late to send VERSION"
 

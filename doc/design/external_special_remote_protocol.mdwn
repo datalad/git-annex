@@ -222,6 +222,17 @@ in control.
   Gets the current preferred content setting of the repository.
   (git-annex replies with VALUE followed by the preferred content
   expression.)
+* `SETSTATE Key Value`  
+  Can be used to store some form of state for a Key. The state stored
+  can be anything this remote needs to store, in any format.
+  It is stored in the git-annex branch. Note that this means that if
+  multiple repositories are using the same special remote, and store
+  different state, whichever one stored the state last will win. Also,
+  it's best to avoid storing much state, since this will bloat the
+  git-annex branch. Most remotes will not need to store any state.
+* `GETSTATE Key`  
+  Gets any state that has been stored for the key.  
+  (git-annex replies with VALUE followed by the state.)
 
 ## general messages
 

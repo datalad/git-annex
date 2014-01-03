@@ -34,6 +34,8 @@ dropDead :: FilePath -> String -> TrustMap -> FileTransition
 dropDead f content trustmap = case getLogVariety f of
 	Just UUIDBasedLog -> ChangeFile $
 		UUIDBased.showLog id $ dropDeadFromUUIDBasedLog trustmap $ UUIDBased.parseLog Just content
+	Just NewUUIDBasedLog -> ChangeFile $
+		UUIDBased.showLogNew id $ dropDeadFromUUIDBasedLog trustmap $ UUIDBased.parseLogNew Just content
 	Just (PresenceLog _) ->
 		let newlog = Presence.compactLog $ dropDeadFromPresenceLog trustmap $ Presence.parseLog content
 		in if null newlog

@@ -39,6 +39,10 @@ are added to git.
 This branch operates on objects exclusively. No file names will ever
 be stored in this branch.
 
+The files stored in this branch are all designed to be auto-merged
+using git's [[union merge driver|git-union-merge]]. So each line
+has a timestamp, to allow the most recent information to be identified.
+
 ### `uuid.log`
 
 Records the UUIDs of known repositories, and associates them with a
@@ -110,7 +114,7 @@ somewhere else.
 ## `aaa/bbb/*.log`
 
 These log files record [[location_tracking]] information
-for file contents. Again these are placed in two levels of subdirectories
+for file contents. These are placed in two levels of subdirectories
 for hashing. See [[hashing]] for details.
 
 The name of the key is the filename, and the content
@@ -122,14 +126,22 @@ Example:
 	1287290776.765152s 1 e605dca6-446a-11e0-8b2a-002170d25c55
 	1287290767.478634s 0 26339d22-446b-11e0-9101-002170d25c55
 
-These files are designed to be auto-merged using git's [[union merge driver|git-union-merge]].
-The timestamps allow the most recent information to be identified.
-
 ## `aaa/bbb/*.log.web`
 
 These log files record urls used by the
 [[web_special_remote|special_remotes/web]]. Their format is similar
 to the location tracking files, but with urls rather than UUIDs.
+
+## `aaa/bbb/*.log.rmt`
+
+These log files are used by remotes that need to record their own state
+about keys. Each remote can store one line of data about a key, in
+its own format.
+
+Example:
+
+	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55 blah blah
+	1287290767.478634s 26339d22-446b-11e0-9101-002170d25c55 foo=bar
 
 ## `schedule.log`
 
