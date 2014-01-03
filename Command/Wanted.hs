@@ -8,9 +8,11 @@
 module Command.Wanted where
 
 import Common.Annex
+import qualified Annex
 import Command
 import qualified Remote
 import Logs.PreferredContent
+import Types.Messages
 
 import qualified Data.Map as M
 
@@ -36,6 +38,7 @@ start = parse
 
 performGet :: UUID -> CommandPerform
 performGet uuid = do
+	Annex.setOutput QuietOutput
 	m <- preferredContentMapRaw
 	liftIO $ putStrLn $ fromMaybe "" $ M.lookup uuid m
 	next $ return True

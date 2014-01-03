@@ -10,6 +10,7 @@ git-annex (5.20131231) UNRELEASED; urgency=medium
     and keeps crashing when restarted.
   * Assistant: Remove stale MERGE_HEAD files in lockfile cleanup.
   * Remotes can now be made read-only, by setting remote.<name>.annex-readonly
+  * wanted, schedule: Avoid printing "ok" after requested value.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 31 Dec 2013 13:41:18 -0400
 
