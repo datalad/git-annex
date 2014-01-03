@@ -1,1 +1,0 @@
-I encounter crashing commits on files with special characters in their names, such as äöüáí etc. Is it not possible to sync such files?
