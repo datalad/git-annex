@@ -1,0 +1,10 @@
+I am having some issues trying to make git-annex work with the latest version of Gitolite, 
+When running git annex sync, or git annex copy --to I get.
+"""
+Failed to get annex.uuid configuration of repository origin
+
+Instead, got: "annex.uuid=\ncore.gcrypt-id=\n"
+"""
+
+Has anyone found any solution to this? Also, I am using the latest version of Gitolite, because I wanted to see whether it would work.
+Thanks, Zack.
