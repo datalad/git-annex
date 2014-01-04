@@ -15,6 +15,7 @@ module Annex.Content (
 	getViaTmp,
 	getViaTmpChecked,
 	getViaTmpUnchecked,
+	prepGetViaTmpChecked,
 	withTmp,
 	checkDiskSpace,
 	moveAnnex,
@@ -158,20 +159,31 @@ getViaTmpUnchecked :: Key -> (FilePath -> Annex Bool) -> Annex Bool
 getViaTmpUnchecked = finishGetViaTmp (return True)
 
 getViaTmpChecked :: Annex Bool -> Key -> (FilePath -> Annex Bool) -> Annex Bool
-getViaTmpChecked check key action = do
+getViaTmpChecked check key action = 
+	prepGetViaTmpChecked key $
+		finishGetViaTmp check key action
+
+{- Prepares to download a key via a tmp file, and checks that there is
+ - enough free disk space.
+ -
+ - When the temp file already exists, count the space it is using as
+ - free, since the download will overwrite it or resume.
+ -
+ - Wen there's enough free space, runs the download action.
+ -}
+prepGetViaTmpChecked :: Key -> Annex Bool -> Annex Bool
+prepGetViaTmpChecked key getkey = do
 	tmp <- fromRepo $ gitAnnexTmpLocation key
 
-	-- Check that there is enough free disk space.
-	-- When the temp file already exists, count the space
-	-- it is using as free.
 	e <- liftIO $ doesFileExist tmp
 	alreadythere <- if e
 		then fromIntegral . fileSize <$> liftIO (getFileStatus tmp)
 		else return 0
 	ifM (checkDiskSpace Nothing key alreadythere)
 		( do
+			-- The tmp file may not have been left writable
 			when e $ thawContent tmp
-			finishGetViaTmp check key action
+			getkey
 		, return False
 		)
 
@@ -210,6 +222,7 @@ checkDiskSpace destination key alreadythere = do
 	reserve <- annexDiskReserve <$> Annex.getGitConfig
 	free <- liftIO . getDiskFree =<< dir
 	force <- Annex.getState Annex.force
+	liftIO $ print (free, keySize key)
 	case (free, keySize key) of
 		(Just have, Just need) -> do
 			let ok = (need + reserve <= have + alreadythere) || force

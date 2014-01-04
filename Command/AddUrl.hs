@@ -28,7 +28,6 @@ import Config
 import Annex.Content.Direct
 import Logs.Location
 import qualified Logs.Transfer as Transfer
-import Utility.Daemon (checkDaemon)
 #ifdef WITH_QUVI
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi
@@ -153,44 +152,40 @@ addUrlFile relaxed url file = do
 download :: URLString -> FilePath -> Annex Bool
 download url file = do
 	dummykey <- genkey
-	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
-	showOutput
-	ifM (runtransfer dummykey tmp)
-		( do
-			backend <- chooseBackend file
-			let source = KeySource
-				{ keyFilename = file
-				, contentLocation = tmp
-				, inodeCache = Nothing
-				}
-			k <- genKey source backend
-			case k of
-				Nothing -> return False
-				Just (key, _) -> cleanup url file key (Just tmp)
-		, return False
-		)
+	prepGetViaTmpChecked dummykey $ do
+		tmp <- fromRepo $ gitAnnexTmpLocation dummykey
+		showOutput
+		ifM (runtransfer dummykey tmp)
+			( do
+				backend <- chooseBackend file
+				let source = KeySource
+					{ keyFilename = file
+					, contentLocation = tmp
+					, inodeCache = Nothing
+					}
+				k <- genKey source backend
+				case k of
+					Nothing -> return False
+					Just (key, _) -> cleanup url file key (Just tmp)
+			, return False
+			)
   where
 	{- Generate a dummy key to use for this download, before we can
 	 - examine the file and find its real key. This allows resuming
 	 - downloads, as the dummy key for a given url is stable.
 	 -
-	 - If the assistant is running, actually hits the url here,
-	 - to get the size, so it can display a pretty progress bar.
+	 - Actually hits the url here, to get the size. This is needed to
+	 - avoid exceeding the diskreserve, and so the assistant can 
+	 - display a pretty progress bar.
 	 -}
 	genkey = do
-		pidfile <- fromRepo gitAnnexPidFile
-		size <- ifM (liftIO $ isJust <$> checkDaemon pidfile)
-			( do
-				headers <- getHttpHeaders
-				snd <$> Url.withUserAgent (Url.exists url headers)
-			, return Nothing
-			)
+		headers <- getHttpHeaders
+		size <- snd <$> Url.withUserAgent (Url.exists url headers)
 		Backend.URL.fromUrl url size
   	runtransfer dummykey tmp = 
 		Transfer.download webUUID dummykey (Just file) Transfer.forwardRetry $ const $ do
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloadUrl [url] tmp
-		
 
 cleanup :: URLString -> FilePath -> Key -> Maybe FilePath -> Annex Bool
 cleanup url file key mtmp = do
