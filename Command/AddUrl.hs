@@ -107,14 +107,21 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 	ifM (pure relaxed <||> Annex.getState Annex.fast)
 		( cleanup quviurl file key Nothing
 		, do
-			tmp <- fromRepo $ gitAnnexTmpLocation key
-			showOutput
-			ok <- Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
-				liftIO $ createDirectoryIfMissing True (parentDir tmp)
-				downloadUrl [videourl] tmp
-			if ok
-				then cleanup quviurl file key (Just tmp)
-				else return False
+			{- Get the size, and use that to check
+			 - disk space. However, the size info is not
+			 - retained, because the size of a video stream
+			 - might change and we want to be able to download
+			 - it later. -}
+			sizedkey <- addSizeUrlKey videourl key
+			prepGetViaTmpChecked sizedkey $ do
+				tmp <- fromRepo $ gitAnnexTmpLocation key
+				showOutput
+				ok <- Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
+					liftIO $ createDirectoryIfMissing True (parentDir tmp)
+					downloadUrl [videourl] tmp
+				if ok
+					then cleanup quviurl file key (Just tmp)
+					else return False
 		)
 #endif
 
@@ -151,7 +158,10 @@ addUrlFile relaxed url file = do
 
 download :: URLString -> FilePath -> Annex Bool
 download url file = do
-	dummykey <- genkey
+	{- Generate a dummy key to use for this download, before we can
+	 - examine the file and find its real key. This allows resuming
+	 - downloads, as the dummy key for a given url is stable. -}
+	dummykey <- addSizeUrlKey url =<< Backend.URL.fromUrl url Nothing
 	prepGetViaTmpChecked dummykey $ do
 		tmp <- fromRepo $ gitAnnexTmpLocation dummykey
 		showOutput
@@ -170,22 +180,21 @@ download url file = do
 			, return False
 			)
   where
-	{- Generate a dummy key to use for this download, before we can
-	 - examine the file and find its real key. This allows resuming
-	 - downloads, as the dummy key for a given url is stable.
-	 -
-	 - Actually hits the url here, to get the size. This is needed to
-	 - avoid exceeding the diskreserve, and so the assistant can 
-	 - display a pretty progress bar.
-	 -}
-	genkey = do
-		headers <- getHttpHeaders
-		size <- snd <$> Url.withUserAgent (Url.exists url headers)
-		Backend.URL.fromUrl url size
   	runtransfer dummykey tmp = 
 		Transfer.download webUUID dummykey (Just file) Transfer.forwardRetry $ const $ do
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloadUrl [url] tmp
+
+{- Hits the url to get the size, if available.
+ -
+ - This is needed to avoid exceeding the diskreserve when downloading,
+ - and so the assistant can display a pretty progress bar.
+ -}
+addSizeUrlKey :: URLString -> Key -> Annex Key
+addSizeUrlKey url key = do
+	headers <- getHttpHeaders
+	size <- snd <$> Url.withUserAgent (Url.exists url headers)
+	return $ key { keySize = size }
 
 cleanup :: URLString -> FilePath -> Key -> Maybe FilePath -> Annex Bool
 cleanup url file key mtmp = do

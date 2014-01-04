@@ -222,7 +222,6 @@ checkDiskSpace destination key alreadythere = do
 	reserve <- annexDiskReserve <$> Annex.getGitConfig
 	free <- liftIO . getDiskFree =<< dir
 	force <- Annex.getState Annex.force
-	liftIO $ print (free, keySize key)
 	case (free, keySize key) of
 		(Just have, Just need) -> do
 			let ok = (need + reserve <= have + alreadythere) || force
