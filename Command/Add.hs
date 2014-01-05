@@ -250,12 +250,12 @@ addLink file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 
 cleanup :: FilePath -> Key -> Maybe InodeCache -> Bool -> CommandCleanup
 cleanup file key mcache hascontent = do
-	when hascontent $
-		logStatus key InfoPresent
 	ifM (isDirect <&&> pure hascontent)
 		( do
 			l <- inRepo $ gitAnnexLink file key
 			stageSymlink file =<< hashSymlink l
 		, addLink file key mcache
 		)
+	when hascontent $
+		logStatus key InfoPresent
 	return True
