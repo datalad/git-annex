@@ -1,0 +1,78 @@
+## what
+After starting the assistant, daemon.log is being spammed with "accept: unsupported operation (Function not implemented)" due to dbus failing.
+
+## version
+[[!format sh """
+$ git-annex version
+git-annex version: 5.20131224-g6ca5271
+"""]]
+(The armel standalone)
+
+## question
+Is this detrimental to the assistant?
+
+## partial daemon.log
+[[!format sh """
+[2014-01-04 23:03:34 PST] main: starting assistant version 5.20131224-g6ca5271
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+[                                                                                                       
+2f0a 1i 4ld-eb0du1 s-t 0of4 a ai2dl3de: d0w;3a :tf3ca5hl  lPoiSnnT g]d  ibTrarecacknt sotfroey r mS/tcva
+olnifeingt/Egrirto-raMnensesxa g(e/ v=a r"/rsuenrCvliiceenst/:h oumneasb/lger etgo/ .dceotnefrimgi/ngei 
+
+xi s tl o(sNto  dsbuucsh  cfoinlnee cotri odni;r efcatlolriyn)g)
+back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)"
+                                                                                                        
+Already up-to-date.                                                                                     
+accept: unsupported operation (Function not implemented)
+(scanning...) [2014-01-04 23:03:36 PST] Watcher: Performing startup scan                                
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+Everything up-to-date                                                                                   
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+accept: unsupported operation (Function not implemented)
+                                                                                                        
+  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not ex
+"""]]
