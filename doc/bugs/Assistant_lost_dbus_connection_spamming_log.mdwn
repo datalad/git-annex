@@ -74,5 +74,5 @@ accept: unsupported operation (Function not implemented)
 accept: unsupported operation (Function not implemented)
 accept: unsupported operation (Function not implemented)
                                                                                                         
-  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not ex
+  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)", socketErrorFatal = True, socketErrorAddress = Just (Address "unix:path=/var/run/dbus/system_bus_socket")})
 """]]
