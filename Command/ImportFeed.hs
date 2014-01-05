@@ -134,7 +134,7 @@ performDownload relaxed cache todownload = case location todownload of
 	Enclosure url -> checkknown url $
 		rundownload url (takeExtension url) $ 
 			addUrlFile relaxed url
-	QuviLink pageurl -> do
+	QuviLink pageurl -> checkknown pageurl $ do
 		mp <- withQuviOptions Quvi.query [Quvi.quiet, Quvi.httponly] pageurl
 		case mp of
 			Nothing -> return False
