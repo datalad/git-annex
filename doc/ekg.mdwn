@@ -12,3 +12,20 @@ Note that since only one process can open port 4242 at a time, running
 more than one git-annex process with EKG support at the same time can
 result in some "resource busy (Address already in use)" messages -- but
 git-annex will continue to work.
+
+----
+
+## full profiling
+
+For the really tricky memory leaks, here's how to make a profiling build of
+git-annex.
+
+1. `cabal configure` with only the flags you really need
+2. `cabal build --ghc-options="-prof -auto-all -caf-all"`
+  This will probably fail due to some missing profiling libraries.
+  You have to get the profiling versions of all needed haskell libraries
+  installed somehow.
+3. Run git-annex with the special flags `+RTS -hc -p`
+4. Reproduce the memory leak problem.
+5. If the assistant was run, stop it.
+6. `hp2ps -e8in -c git-annex.hp` to generate a .ps graph of memory usage.
