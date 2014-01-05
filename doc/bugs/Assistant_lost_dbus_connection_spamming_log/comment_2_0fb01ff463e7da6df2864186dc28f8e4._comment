@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://grossmeier.net/"
+ nickname="greg"
+ subject="comment 2"
+ date="2014-01-05T22:50:32Z"
+ content="""
+The accept lines just keep coming and coming and coming and coming. About 58 of them between \"lost dbus connection...\" logs. There's interspersed \"Everything up-to-date\" and such.
+
+grep'ing for \"unable\" across all daemon log files gives me nothing.
+
+I haven't futzed with opening the webapp on the NAS yet. Correction: I just did try futzing and I fear there's something in the NAS software I need to figure out before I can do it successfully.
+"""]]
