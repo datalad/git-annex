@@ -134,18 +134,19 @@ performDownload relaxed cache todownload = case location todownload of
 	Enclosure url -> checkknown url $
 		rundownload url (takeExtension url) $ 
 			addUrlFile relaxed url
-	QuviLink pageurl -> checkknown pageurl $ do
-		mp <- withQuviOptions Quvi.query [Quvi.quiet, Quvi.httponly] pageurl
-		case mp of
-			Nothing -> return False
-			Just page -> case headMaybe $ Quvi.pageLinks page of
+	QuviLink pageurl -> do
+		let quviurl = setDownloader pageurl QuviDownloader
+		checkknown quviurl $ do
+			mp <- withQuviOptions Quvi.query [Quvi.quiet, Quvi.httponly] pageurl
+			case mp of
 				Nothing -> return False
-				Just link -> do
-					let quviurl = setDownloader pageurl QuviDownloader
-					let videourl = Quvi.linkUrl link
-					checkknown videourl $
-						rundownload videourl ("." ++ Quvi.linkSuffix link) $
-							addUrlFileQuvi relaxed quviurl videourl
+				Just page -> case headMaybe $ Quvi.pageLinks page of
+					Nothing -> return False
+					Just link -> do
+						let videourl = Quvi.linkUrl link
+						checkknown videourl $
+							rundownload videourl ("." ++ Quvi.linkSuffix link) $
+								addUrlFileQuvi relaxed quviurl videourl
   where
   	forced = Annex.getState Annex.force
 
