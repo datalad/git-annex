@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 1"
+ date="2014-01-05T18:52:08Z"
+ content="""
+You seem to have already had a regular bare git repository on the drive at `/media/A-DATA UFD/annex`, and then used the webapp or command line to make an encrypted gcrypt repository in the same location. This is the only way I can explain you being able to run \"git annex get in `/media/A-DATA UFD/annex` and it do anything at all, and it also explains the \"warning: no common commits\" and the failure to sync.
+
+So, you have some unholy mix of two different types of repositories in one location. The best way to untangle this is probably to go into the webapp and 
+in the settings menu next to that repository, choose Delete. This will get back the files that were stored in the gcrypt repository. (Or stop the assistant, and in `~/annex/` run `git annex get` to hopefully retrieve the files that it stored in the gcrypt repository, and then remove the gcrypt repository from .git/config).
+
+You may then need to edit `/media/A-DATA UFD/annex/config` to remove the gcrypt-id setting. At that point, it should be possible to use the webapp to add the removable drive, which will see the git repository on there and use it.
+
+I have re-tested that the webapp does not allow creating a gcrypt repository when a regular bare git repository already exists on a removable drive. IIRC there were some bugs in this area initially, but they've all been fixed for a while. It *is* possible to manually use `git annex initremote` at the command line to turn a regular bare git repository into a gcrypt repository. 
+"""]]
