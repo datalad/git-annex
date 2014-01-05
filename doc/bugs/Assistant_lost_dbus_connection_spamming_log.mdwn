@@ -18,7 +18,7 @@ accept: unsupported operation (Function not implemented)
 accept: unsupported operation (Function not implemented)
 [                                                                                                       
 2f0a 1i 4ld-eb0du1 s-t 0of4 a ai2dl3de: d0w;3a :tf3ca5hl  lPoiSnnT g]d  ibTrarecacknt sotfroey r mS/tcva
-olnifeingt/Egrirto-raMnensesxa g(e/ v=a r"/rsuenrCvliiceenst/:h oumneasb/lger etgo/ .dceotnefrimgi/ngei 
+olnifeingt/Egrirto-raMnensesxa g(e/ v=a r\"/rsuenrCvliiceenst/:h oumneasb/lger etgo/ .dceotnefrimgi/ngei 
 
 xi s tl o(sNto  dsbuucsh  cfoinlnee cotri odni;r efcatlolriyn)g)
 back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)"
