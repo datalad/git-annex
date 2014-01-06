@@ -9,3 +9,5 @@ Download git-annex from http://downloads.kitenet.net/git-annex/OSX/current/10.7.
 ### What version of git-annex are you using? On what operating system?
 
 The current version as downloaded from http://downloads.kitenet.net/git-annex/OSX/current/10.7.5_Lion/git-annex.dmg on OSX 10.7.5
+
+> OS Lion builds are no longer being made. [[done]] --[[Joey]]
