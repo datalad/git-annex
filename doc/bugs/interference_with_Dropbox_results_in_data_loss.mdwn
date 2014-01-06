@@ -8,6 +8,8 @@ This is not a git-annex bug, but the problem is severe and it would be helpful w
 * issue a warning when running in a Dropbox managed folder
 * avoid using filenames that differs in case only (this would make git-annex also more robust against corruption i.e. when a repository is copied over filesystems/protocols without filename case support)
 
+Dropbox file name limitations: [[https://www.dropbox.com/help/145/en]]
+
 ### What steps will reproduce the problem?
     cd ~/Dropbox
     mkdir test_annex
