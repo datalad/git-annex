@@ -78,7 +78,7 @@ newAssistantData st dstatus = AssistantData
 	<*> newScanRemoteMap
 	<*> newTransferQueue
 	<*> newTransferSlots
-	<*> newTransferrerPool
+	<*> newTransferrerPool (checkNetworkConnections dstatus)
 	<*> newFailedPushMap
 	<*> newCommitChan
 	<*> newChangePool

@@ -21,15 +21,17 @@ module Utility.NotificationBroadcaster (
 	notificationHandleFromId,
 	sendNotification,
 	waitNotification,
+	checkNotification,
 ) where
 
 import Common
 
 import Control.Concurrent.STM
-import Control.Concurrent.MSampleVar
 
-{- One MSampleVar per client. The TMVar is never empty, so never blocks. -}
-type NotificationBroadcaster = TMVar [MSampleVar ()]
+{- One TMVar per client, which are empty when no notification is pending,
+ - and full when a notification has been sent but not yet seen by the
+ - client. The list TMVar is never empty, so never blocks. -}
+type NotificationBroadcaster = TMVar [TMVar ()]
 
 newtype NotificationId = NotificationId Int
 	deriving (Read, Show, Eq, Ord)
@@ -53,14 +55,13 @@ newNotificationHandle force b = NotificationHandle
 	<$> pure b
 	<*> addclient
   where
-	addclient = do
+	addclient = atomically $ do
 		s <- if force
-			then newSV ()
-			else newEmptySV
-		atomically $ do
-			l <- takeTMVar b
-			putTMVar b $ l ++ [s]
-			return $ NotificationId $ length l
+			then newTMVar ()
+			else newEmptyTMVar
+		l <- takeTMVar b
+		putTMVar b $ l ++ [s]
+		return $ NotificationId $ length l
 
 {- Extracts the identifier from a notification handle.
  - This can be used to eg, pass the identifier through to a WebApp. -}
@@ -76,11 +77,20 @@ sendNotification b = do
 	l <- atomically $ readTMVar b
 	mapM_ notify l
   where
-	notify s = writeSV s ()
+	notify s = atomically $
+		whenM (isEmptyTMVar s) $
+			putTMVar s ()
 
 {- Used by a client to block until a new notification is available since
  - the last time it tried. -}
 waitNotification :: NotificationHandle -> IO ()
 waitNotification (NotificationHandle b (NotificationId i)) = do
 	l <- atomically $ readTMVar b
-	readSV (l !! i)
+	atomically $ takeTMVar (l !! i)
+
+{- Used by a client to check if there has been a new notification since the
+ - last time it checked, without blocking. -}
+checkNotification :: NotificationHandle -> IO Bool
+checkNotification (NotificationHandle b (NotificationId i)) = do
+	l <- atomically $ readTMVar b
+	maybe False (const True) <$> atomically (tryTakeTMVar (l !! i))

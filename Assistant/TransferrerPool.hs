@@ -14,27 +14,43 @@ import Utility.Batch
 
 import qualified Command.TransferKeys as T
 
-import Control.Concurrent.STM
+import Control.Concurrent.STM hiding (check)
 import System.Process (create_group, std_in, std_out)
 import Control.Exception (throw)
 import Control.Concurrent
 
-{- Runs an action with a Transferrer from the pool. -}
+{- Runs an action with a Transferrer from the pool.
+ -
+ - Only one Transferrer is left running in the pool at a time.
+ - So if this needed to start a new Transferrer, it's stopped when done.
+ -}
 withTransferrer :: FilePath -> BatchCommandMaker -> TransferrerPool -> (Transferrer -> IO a) -> IO a
 withTransferrer program batchmaker pool a = do
-	t <- maybe (mkTransferrer program batchmaker) (checkTransferrer program batchmaker)
-		=<< atomically (tryReadTChan pool)
+	i@(TransferrerPoolItem (Just t) _) <- maybe
+		(mkTransferrerPoolItem pool =<< mkTransferrer program batchmaker)
+		(checkTransferrerPoolItem program batchmaker)
+			=<< atomically (popTransferrerPool pool)
 	v <- tryNonAsync $ a t
-	unlessM (putback t) $
+	sz <- atomically $ pushTransferrerPool pool i
+	when (sz > 1) $
 		void $ forkIO $ stopTransferrer t
 	either throw return v
-  where
-  	putback t = atomically $ ifM (isEmptyTChan pool)
-		( do
-			writeTChan pool t
-			return True
-		, return False
+
+{- Check if a Transferrer from the pool is still ok to be used.
+ - If not, stop it and start a new one. -}
+checkTransferrerPoolItem :: FilePath -> BatchCommandMaker -> TransferrerPoolItem -> IO TransferrerPoolItem
+checkTransferrerPoolItem program batchmaker i = case i of
+	TransferrerPoolItem (Just t) check -> ifM check
+		( return i
+		, do
+			stopTransferrer t
+			new check
 		)
+	TransferrerPoolItem Nothing check -> new check
+  where
+	new check = do
+		t <- mkTransferrer program batchmaker
+		return $ TransferrerPoolItem (Just t) check
 
 {- Requests that a Transferrer perform a Transfer, and waits for it to
  - finish. -}

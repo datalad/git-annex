@@ -20,6 +20,9 @@ git-annex (5.20131231) UNRELEASED; urgency=medium
   * add: Fix rollback when disk is completely full.
   * assistant: Fixed several minor memory leaks that manifested when
     adding a large number of files.
+  * assistant: Start a new git-annex transferkeys process
+    after a network connection change, so that remotes that use a persistent
+    network connection are restarted.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 31 Dec 2013 13:41:18 -0400
 
