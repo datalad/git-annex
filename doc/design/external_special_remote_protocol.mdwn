@@ -246,6 +246,22 @@ remote.
   git-annex will not talk to it any further. If the program receives
   an ERROR from git-annex, it can exit with its own ERROR.
 
+## long running network connections
+
+Since an external special remote is started only when git-annex needs to
+access the remote, and then left running, it's ok to open a network
+connection in the PREPARE stage, and continue to use that network
+connection as requests are made.
+
+If you're unable to open a network connection, or the connection closes,
+perhaps because the network is down, it's ok to fail to perform any
+requests. Or you can try to reconnect when a new request is made.
+
+Note that the external special remote program may be left running for
+quite a long time, especially when the git-annex assistant is using it.
+The assistant will detect when the system connects to a network, and will
+start a new process the next time it needs to use a remote.
+
 ## TODO
 
 * When storing encrypted files stream the file up/down the pipe, rather
