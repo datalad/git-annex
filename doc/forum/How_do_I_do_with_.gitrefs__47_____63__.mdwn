@@ -1,0 +1,1 @@
+There is .gitrefs directory in my annexed repo while I am unaware. Should I do `git add .gitrefs/` or `git annex add .gitrefs/` or just ignore?
