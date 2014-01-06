@@ -99,3 +99,5 @@ I restarted the assistant and the daemon.log looks good.
 After sync'ing on the server, it appears that this has been the case for quite some time (based off of what symlinks were created).
 
 Lastly: Joey, this is probably what caused that weird behavior in the webapp where it showed the bad transfer each day after the fsck at noon. I never diagnosed that more but I bet I won't see it tomorrow.
+
+[[!tag moreinfo]]
