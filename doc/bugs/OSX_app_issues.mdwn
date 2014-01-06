@@ -1,6 +1,5 @@
-This is a collection of problem reports for the standalone OSX app.
-If you have a problem using it, post it here. --[[Joey]] 
+This was a collection of problem reports for the standalone OSX app.
+Please post separate bug reports going forward; this bug report is
+[[closed|done]] --[[Joey]]
 
 (Some things that should be fixed now have been moved to [[old]].)
-
-[[!tag /design/assistant/OSX]]
