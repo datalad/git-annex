@@ -1,0 +1,12 @@
+Spent ages tracking down a memory leak in the assistant that showed up when
+a lot of files were added. Turned out to be a standard haskell laziness
+induced problem, fixed by adding strictness annotations. Actually there
+were several of them, that leaked at different rates. Eventually, I seem to
+have gotten them all fixed:
+
+Before: [[bugs/import_memleak_from_the_assistant/leakbefore.png]]
+After: [[bugs/import_memleak_from_the_assistant/leakafter.png]]
+
+Also fixed a bug in `git annex add` when the disk was completely full. It
+could sometimes in that situation move the file from the work tree to
+.git/annex/objects and fail to put the symlink in place.
