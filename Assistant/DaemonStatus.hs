@@ -230,7 +230,7 @@ updateAlertMap a = notifyAlert `after` modifyDaemonStatus_ update
   where
 	update s = 
 		let !m = a (alertMap s)
-		in s { alertMap = a (alertMap s) }
+		in s { alertMap = m }
 
 {- Displays an alert while performing an activity that returns True on
  - success.
