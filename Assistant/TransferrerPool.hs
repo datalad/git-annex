@@ -26,14 +26,16 @@ import Control.Concurrent
  -}
 withTransferrer :: FilePath -> BatchCommandMaker -> TransferrerPool -> (Transferrer -> IO a) -> IO a
 withTransferrer program batchmaker pool a = do
-	i@(TransferrerPoolItem (Just t) _) <- maybe
-		(mkTransferrerPoolItem pool =<< mkTransferrer program batchmaker)
-		(checkTransferrerPoolItem program batchmaker)
-			=<< atomically (popTransferrerPool pool)
+	(mi, leftinpool) <- atomically (popTransferrerPool pool)
+	i@(TransferrerPoolItem (Just t) check) <- case mi of
+		Nothing -> mkTransferrerPoolItem pool =<< mkTransferrer program batchmaker
+		Just i -> checkTransferrerPoolItem program batchmaker i
 	v <- tryNonAsync $ a t
-	sz <- atomically $ pushTransferrerPool pool i
-	when (sz > 1) $
-		void $ forkIO $ stopTransferrer t
+	if leftinpool == 0
+		then atomically $ pushTransferrerPool pool i
+		else do
+			void $ forkIO $ stopTransferrer t
+			atomically $ pushTransferrerPool pool $ TransferrerPoolItem Nothing check
 	either throw return v
 
 {- Check if a Transferrer from the pool is still ok to be used.
