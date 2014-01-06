@@ -87,3 +87,6 @@ I can send you the crash report of hsha256sum if you need it.
 >> I'm told that other programs, such as wget, also crash with SIGILL.
 >> Are there multiple OSX architectures with different instructions sets or
 >> what? --[[Joey]]
+
+>>> Fixed and confirmed fixed now. gsha256sum etc added back to
+>>> OSX app. [[done]] --[[Joey]]

@@ -1,7 +1,5 @@
 {- Checks system configuration and generates SysConfig.hs. -}
 
-{-# LANGUAGE CPP #-}
-
 module Build.Configure where
 
 import System.Directory
@@ -76,13 +74,8 @@ shaTestCases l = map make l
 				then return $ Just c
 				else search cmds
 	
-#ifndef darwin_HOST_OS
 	shacmds n = concatMap (\x -> [x, 'g':x]) $
 		map (\x -> "sha" ++ show n ++ x) ["sum", ""]
-#else
-	-- OSX has had problems with gsha*sum crashing, so do not use.
-	shacmds _ = []
-#endif
 
 tmpDir :: String
 tmpDir = "tmp"
