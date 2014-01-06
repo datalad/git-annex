@@ -12,10 +12,12 @@ It was mentioned in another thread ( http://git-annex.branchable.com/forum/git_a
 
 I tried looking at the log for it and it shows this:
 
+<pre>
 timmattison$ /Applications/git-annex.app/Contents/MacOS/git-annex log XXXXXXX/.idea/workspace.xml 
 - 2014-01-03 19:49:58 XXXXXXX/.idea/workspace.xml | d6747880-b355-4d41-b4e5-d1ad3afcb4a5 -- timmattison@MacBook-Pro.local:~/Desktop/annex
 + 2014-01-03 17:08:32 XXXXXXX/.idea/workspace.xml | d6747880-b355-4d41-b4e5-d1ad3afcb4a5 -- timmattison@MacBook-Pro.local:~/Desktop/annex
 (Recording state in git...)
+</pre>
 
 So I can see that the git-annex thinks the file was deleted but what really happened is that IntelliJ just modified it.  workspace.xml files are modified very often when working in IntelliJ.
 
