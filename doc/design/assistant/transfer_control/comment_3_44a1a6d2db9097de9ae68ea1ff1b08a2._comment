@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 3"
+ date="2014-01-06T15:04:33Z"
+ content="""
+Just put the box.com remote in the transfer group. There is no need for special subdirectories, the transfer group makes the remote only want files that have not yet reached all the known clients.
+"""]]

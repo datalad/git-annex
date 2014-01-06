@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 4"
+ date="2014-01-06T16:16:08Z"
+ content="""
+This appears to be some form of corruption of git's index file. Someone will need to publish a git repository that has this problem in order for it to be investigated.
+"""]]
