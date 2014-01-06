@@ -1596,3 +1596,13 @@ rsync error: error in rsync protocol data stream (code 12) at io.c(605) [sender=
 
 # End of transcript or log.
 """]]
+
+> [[Fixed|done]]. This was several garden-variety haskell laziness leaks,
+> all fixed by adding strictness annotations.
+>
+> Before: [[leakbefore.png]]
+> After: [[leakafter.png]]
+> 
+> Looks like I got them all, and it returns to running in constant space
+> after adding and uploading the files (which can take memory porportional
+> to the number of files that were added/changed at once). --[[Joey]]

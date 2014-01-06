@@ -13,7 +13,7 @@ import qualified Types.Remote as Remote
 
 import Data.Function
 import Control.Concurrent.STM
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 
 {- Blocks until there is a remote or remotes that need to be scanned.
  -

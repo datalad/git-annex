@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Assistant.TransferQueue (
 	TransferQueue,
 	Schedule(..),
@@ -32,7 +34,7 @@ import Annex.Wanted
 import Utility.TList
 
 import Control.Concurrent.STM
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import qualified Data.Set as S
 
 type Reason = String
@@ -189,7 +191,7 @@ getNextTransfer acceptable = do
 				if acceptable info
 					then do
 						adjustTransfersSTM dstatus $
-							M.insertWith' const t info
+							M.insert t info
 						return $ Just r
 					else return Nothing
 
@@ -217,7 +219,8 @@ dequeueTransfers c = do
 
 dequeueTransfersSTM :: TransferQueue -> (Transfer -> Bool) -> STM [(Transfer, TransferInfo)]
 dequeueTransfersSTM q c = do
-	(removed, ts) <- partition (c . fst) <$> readTList (queuelist q)
-	void $ writeTVar (queuesize q) (length ts)
+	!(removed, ts) <- partition (c . fst) <$> readTList (queuelist q)
+	let !len = length ts
+	void $ writeTVar (queuesize q) len
 	setTList (queuelist q) ts
 	return removed

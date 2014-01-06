@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings, CPP #-}
+{-# LANGUAGE OverloadedStrings, CPP, BangPatterns #-}
 
 module Assistant.Alert where
 
@@ -367,8 +367,8 @@ fileAlert msg files = (activityAlert Nothing shortfiles)
   where
 	maxfilesshown = 10
 
-	(somefiles, counter) = splitcounter (dedupadjacent files)
-	shortfiles = map (fromString . shortFile . takeFileName) somefiles
+	(!somefiles, !counter) = splitcounter (dedupadjacent files)
+	!shortfiles = map (fromString . shortFile . takeFileName) somefiles
 
 	renderer alert = tenseWords $ msg : alertData alert ++ showcounter
 	  where
@@ -391,9 +391,9 @@ fileAlert msg files = (activityAlert Nothing shortfiles)
 			in (keep, length rest)
 	
 	combiner new old =
-		let (fs, n) = splitcounter $
+		let (!fs, n) = splitcounter $
 			dedupadjacent $ alertData new ++ alertData old
-		    cnt = n + alertCounter new + alertCounter old
+		    !cnt = n + alertCounter new + alertCounter old
 		in old
 			{ alertData = fs
 			, alertCounter = cnt

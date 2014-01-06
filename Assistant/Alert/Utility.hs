@@ -13,7 +13,7 @@ import Utility.Tense
 
 import qualified Data.Text as T
 import Data.Text (Text)
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 
 {- This is as many alerts as it makes sense to display at a time.
  - A display might be smaller, or larger, the point is to not overwhelm the
@@ -122,7 +122,7 @@ mergeAlert i al m = maybe updatePrune updateCombine (alertCombiner al)
 	 		let (f, rest) = partition (\(_, a) -> isFiller a) l
 			in drop bloat f ++ rest
 	updatePrune = pruneBloat $ M.filterWithKey pruneSame $
-		M.insertWith' const i al m
+		M.insert i al m
 	updateCombine combiner = 
 		let combined = M.mapMaybe (combiner al) m
 		in if M.null combined

@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Assistant.DaemonStatus where
 
 import Assistant.Common
@@ -23,7 +25,7 @@ import System.Posix.Types
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
-import qualified Data.Map as M
+import qualified Data.Map.Strict as M
 import qualified Data.Text as T
 
 getDaemonStatus :: Assistant DaemonStatus
@@ -37,7 +39,7 @@ modifyDaemonStatus a = do
 	dstatus <- getAssistant daemonStatusHandle
 	liftIO $ do
 		(s, b) <- atomically $ do
-			r@(s, _) <- a <$> takeTMVar dstatus
+			r@(!s, _) <- a <$> takeTMVar dstatus
 			putTMVar dstatus s
 			return r
 		sendNotification $ changeNotifier s
@@ -153,7 +155,8 @@ tenMinutes = 10 * 60
 adjustTransfersSTM :: DaemonStatusHandle -> (TransferMap -> TransferMap) -> STM ()
 adjustTransfersSTM dstatus a = do
 	s <- takeTMVar dstatus
-	putTMVar dstatus $ s { currentTransfers = a (currentTransfers s) }
+	let !v = a (currentTransfers s)
+	putTMVar dstatus $ s { currentTransfers = v }
 
 {- Checks if a transfer is currently running. -}
 checkRunningTransferSTM :: DaemonStatusHandle -> Transfer -> STM Bool
@@ -168,7 +171,7 @@ alterTransferInfo t a = updateTransferInfo' $ M.adjust a t
  - or if already present, updates it while preserving the old transferTid,
  - transferPaused, and bytesComplete values, which are not written to disk. -}
 updateTransferInfo :: Transfer -> TransferInfo -> Assistant ()
-updateTransferInfo t info = updateTransferInfo' $ M.insertWith' merge t info
+updateTransferInfo t info = updateTransferInfo' $ M.insertWith merge t info
   where
 	merge new old = new
 		{ transferTid = maybe (transferTid new) Just (transferTid old)
@@ -213,8 +216,8 @@ addAlert alert = do
   where
 	add s = (s { lastAlertId = i, alertMap = m }, i)
 	  where
-		i = nextAlertId $ lastAlertId s
-		m = mergeAlert i alert (alertMap s)
+		!i = nextAlertId $ lastAlertId s
+		!m = mergeAlert i alert (alertMap s)
 
 removeAlert :: AlertId -> Assistant ()
 removeAlert i = updateAlert i (const Nothing)
@@ -225,7 +228,9 @@ updateAlert i a = updateAlertMap $ \m -> M.update a i m
 updateAlertMap :: (AlertMap -> AlertMap) -> Assistant ()
 updateAlertMap a = notifyAlert `after` modifyDaemonStatus_ update
   where
-	update s = s { alertMap = a (alertMap s) }
+	update s = 
+		let !m = a (alertMap s)
+		in s { alertMap = a (alertMap s) }
 
 {- Displays an alert while performing an activity that returns True on
  - success.
