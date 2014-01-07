@@ -14,3 +14,4 @@ the public repositories that you can clone to try out git-annex.
   Submit a pull request to add your own!
 
 This is a wiki -- add your own public repository to the list!
+See [[tips/centralized_git_repository_tutorial]].
