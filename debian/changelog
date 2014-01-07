@@ -23,6 +23,7 @@ git-annex (5.20131231) UNRELEASED; urgency=medium
   * assistant: Start a new git-annex transferkeys process
     after a network connection change, so that remotes that use a persistent
     network connection are restarted.
+  * Adjust Debian build deps to match current state of sparc, mipsel.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 31 Dec 2013 13:41:18 -0400
 
