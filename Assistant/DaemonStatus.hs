@@ -25,7 +25,7 @@ import System.Posix.Types
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
-import qualified Data.Map.Strict as M
+import qualified Data.Map as M
 import qualified Data.Text as T
 
 getDaemonStatus :: Assistant DaemonStatus
@@ -171,7 +171,7 @@ alterTransferInfo t a = updateTransferInfo' $ M.adjust a t
  - or if already present, updates it while preserving the old transferTid,
  - transferPaused, and bytesComplete values, which are not written to disk. -}
 updateTransferInfo :: Transfer -> TransferInfo -> Assistant ()
-updateTransferInfo t info = updateTransferInfo' $ M.insertWith merge t info
+updateTransferInfo t info = updateTransferInfo' $ M.insertWith' merge t info
   where
 	merge new old = new
 		{ transferTid = maybe (transferTid new) Just (transferTid old)

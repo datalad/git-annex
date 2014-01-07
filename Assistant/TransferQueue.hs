@@ -34,7 +34,7 @@ import Annex.Wanted
 import Utility.TList
 
 import Control.Concurrent.STM
-import qualified Data.Map.Strict as M
+import qualified Data.Map as M
 import qualified Data.Set as S
 
 type Reason = String
@@ -191,7 +191,7 @@ getNextTransfer acceptable = do
 				if acceptable info
 					then do
 						adjustTransfersSTM dstatus $
-							M.insert t info
+							M.insertWith' const t info
 						return $ Just r
 					else return Nothing
 
