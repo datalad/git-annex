@@ -1,0 +1,14 @@
+Problem: I don't have admin access on all the computers I want to plug my USB with git-annex on.
+Solution: Make git & git-annex portable.
+
+The only catch is I'm not familiar enough with git to be able to actually tell if the more specialized git-annex working properly. The commands execute without crashing so I suspect it's fine but I was hoping someone else more competent could try this out and let me know if I it's working so I can add it to the tips section. Thanks in advance!
+
+Ingredients:
+1. Portable version of msysgit: <http://code.google.com/p/msysgit/downloads/list>
+2. Windows git-annex installer: <http://git-annex.branchable.com/install/>
+3. 7-zip (portable version optional): <http://portableapps.com/apps/utilities/7-zip_portable>
+
+Steps:
+1. Use 7-zip to extract the contents of the git-annex installer into their own folder.
+2. Extract the portable version of git and copy all files extracted from git-annex installer into the "cmd" folder.
+3. Run it!
