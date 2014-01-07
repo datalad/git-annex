@@ -352,7 +352,9 @@ startExternal externaltype = liftIO $ do
 	checkearlytermination Nothing = noop
 	checkearlytermination (Just exitcode) = ifM (inPath cmd)
 		( error $ unwords [ "failed to run", cmd, "(" ++ show exitcode ++ ")" ]
-		, error $ cmd ++ " is not installed in PATH"
+		, do
+			path <- intercalate ":" <$> getSearchPath
+			error $ cmd ++ " is not installed in PATH (" ++ path ++ ")"
 		)
 
 stopExternal :: External -> Annex ()
