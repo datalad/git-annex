@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="rtwolf"
+ ip="69.165.155.234"
+ subject="comment 1"
+ date="2014-01-07T17:30:50Z"
+ content="""
+Found a problem: it seems the portable version can only work in direct mode. Getting the \"fatal: This operation must be run in a work tree\" when trying to commit. Ran \"git annex indirect\". Got \"git-annex: Git is configured to not use symlinks, so you must use direct mode.\"
+
+More info on direct/indirect mode: <http://git-annex.branchable.com/direct_mode/>
+"""]]
