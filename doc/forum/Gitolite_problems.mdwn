@@ -8,3 +8,4 @@ Instead, got: "annex.uuid=\ncore.gcrypt-id=\n"
 
 Has anyone found any solution to this? Also, I am using the latest version of Gitolite, because I wanted to see whether it would work.
 Thanks, Zack.
+EDIT: It might also be worthy to note that I did have a go at following the guide on this site.
