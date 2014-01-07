@@ -1,0 +1,16 @@
+git-annex repositories are often kept private, but here's a list of some of
+the public repositories that you can clone to try out git-annex.
+
+* [downloads.kitenet.net](http://downloads.kitenet.net/)  
+  `git clone https://downloads.kitenet.net/.git/`  
+  Various downloads of things produced by Joey Hess, including git-annex
+  builds.
+* [debconf-share](https://downloads.kitenet.net/.git/)  
+  `git clone http://annex.debconf.org/debconf-share/.git/`  
+  [DebConf](http://debconf.org/) Media, photos, videos, etc.
+* [conference-proceedings](https://github.com/RichiH/conference_proceedings)  
+  `git clone https://github.com/RichiH/conference_proceedings.git`  
+  A growing collection of videos of technology conferences.
+  Submit a pull request to add your own!
+
+This is a wiki -- add your own public repository to the list!
