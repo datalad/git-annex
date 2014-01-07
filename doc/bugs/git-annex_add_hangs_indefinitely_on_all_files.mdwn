@@ -28,3 +28,5 @@ add test.txt
 
 # End of transcript or log.
 """]]
+
+> [[done]]
