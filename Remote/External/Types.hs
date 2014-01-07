@@ -172,6 +172,7 @@ data RemoteRequest
 	| GETWANTED
 	| SETSTATE Key String
 	| GETSTATE Key
+	| DEBUG String
 	deriving (Show)
 
 instance Receivable RemoteRequest where
@@ -187,6 +188,7 @@ instance Receivable RemoteRequest where
 	parseCommand "GETWANTED" = parse0 GETWANTED
 	parseCommand "SETSTATE" = parse2 SETSTATE
 	parseCommand "GETSTATE" = parse1 GETSTATE
+	parseCommand "DEBUG" = parse1 DEBUG
 	parseCommand _ = parseFail
 
 -- Responses to RemoteRequest.

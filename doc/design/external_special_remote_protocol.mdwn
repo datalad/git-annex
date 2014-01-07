@@ -233,6 +233,8 @@ in control.
 * `GETSTATE Key`  
   Gets any state that has been stored for the key.  
   (git-annex replies with VALUE followed by the state.)
+* `DEBUG message`
+  Tells git-annex to display the message if --debug is enabled.
 
 ## general messages
 

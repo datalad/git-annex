@@ -242,6 +242,7 @@ handleRequest' lck external req mp responsehandler
 		state <- fromMaybe ""
 			<$> getRemoteState (externalUUID external) key
 		send $ VALUE state
+	handleRemoteRequest (DEBUG msg) = liftIO $ debugM "external" msg
 	handleRemoteRequest (VERSION _) =
 		sendMessage lck external $ ERROR "too late to send VERSION"
 

@@ -2,7 +2,7 @@ git-annex (5.20140107) unstable; urgency=medium
 
   * mirror: Support --all (and --unused).
   * external special remote protocol: Added GETUUID, GETWANTED, SETWANTED,
-    SETSTATE, GETSTATE.
+    SETSTATE, GETSTATE, DEBUG.
   * Windows: Fix bug in direct mode merge code that could cause files
     in subdirectories to go missing.
   * Windows: Avoid eating stdin when running ssh to add a authorized key,
