@@ -1,4 +1,4 @@
-git-annex (5.20131231) UNRELEASED; urgency=medium
+git-annex (5.20140107) unstable; urgency=medium
 
   * mirror: Support --all (and --unused).
   * external special remote protocol: Added GETUUID, GETWANTED, SETWANTED,
@@ -25,7 +25,7 @@ git-annex (5.20131231) UNRELEASED; urgency=medium
     network connection are restarted.
   * Adjust Debian build deps to match current state of sparc, mipsel.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 31 Dec 2013 13:41:18 -0400
+ -- Joey Hess <joeyh@debian.org>  Tue, 07 Jan 2014 12:22:18 -0400
 
 git-annex (5.20131230) unstable; urgency=medium
 
