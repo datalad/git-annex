@@ -85,7 +85,7 @@ Flag EKG
 Executable git-annex
   Main-Is: git-annex.hs
   Build-Depends: MissingH, hslogger, directory, filepath,
-   containers (>= 0.5.0.0), utf8-string, network (>= 2.0), mtl (>= 2),
+   containers, utf8-string, network (>= 2.0), mtl (>= 2),
    bytestring, old-locale, time, HTTP,
    extensible-exceptions, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.9), monad-control, MonadCatchIO-transformers,
