@@ -1,0 +1,43 @@
+This special remote stores file contents using
+[Tahoe-LAFS](http://tahoe-lafs.org/). There are a number of commercial
+providers, or you can build your own tahoe storage grid.
+
+Since Tahoe-LAFS encrypts all data stored in it, git-annex does not do any
+additional encryption of its own.
+
+Note that data stored in a tahoe remote cannot be dropped from it, as 
+Tahoe-LAFS does not support removing data once it is stored in the Tahoe grid.
+This, along with Tahoe's ability to recover data when some nodes fail,
+makes a tahoe special remote an excellent choice for storing backups.
+
+Typically you will have an account on a Tahoe-LAFS storage grid, which
+is represented by an "introducer furl". You need to supply this to
+git-annex in the `TAHOE_FURL` environment variable when initializing the
+remote. git-annex will then generate a tahoe configuration directory for
+the remote under `~/.tahoe/git-annex/`, and automatically start the tahoe
+daemon as needed.
+
+## configuration
+
+These parameters can be passed to `git annex initremote` to configure
+the tahoe remote.
+
+* `embedcreds` - Optional. Set to "yes" embed the tahoe credentials 
+  (specifically the introducer furl and shared-convergence-secret)
+  inside the git repository, which allows other clones to also use them
+  in order to access the tahoe grid.
+
+  Think carefully about who can access your git repository, and
+  whether you want to give them access to your tahoe system before
+  using embedcreds!
+
+Setup example:
+
+	# TAHOE_FURL=... git annex initremote tahoe type=tahoe embedcreds=yes
+
+----
+
+An older implementation of tahoe for git-annex used
+the hook special remote. It is not compatible with this newer
+implementation. See
+[[tahoe-lafs|forum/tips:_special__95__remotes__47__hook_with_tahoe-lafs]].

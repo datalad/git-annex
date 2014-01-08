@@ -1401,6 +1401,11 @@ Here are all the supported configuration settings.
   Used to identify webdav special remotes.
   Normally this is automatically set up by `git annex initremote`.
 
+* `remote.<name>.tahoe`
+
+  Used to identify tahoe special remotes.
+  Points to the configuration directory for tahoe.
+
 * `remote.<name>.annex-xmppaddress`
 
   Used to identify the XMPP address of a Jabber buddy.

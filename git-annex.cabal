@@ -75,6 +75,9 @@ Flag Feed
 Flag Quvi
   Description: Enable use of quvi to download videos
 
+Flag Tahoe
+  Description: Enable the tahoe special remote
+
 Flag CryptoHash
   Description: Enable use of cryptohash for checksumming
 
@@ -192,6 +195,10 @@ Executable git-annex
   if flag(Quvi)
     Build-Depends: aeson
     CPP-Options: -DWITH_QUVI
+  
+  if flag(Tahoe)
+    Build-Depends: aeson
+    CPP-Options: -DWITH_TAHOE
 
   if flag(EKG)
     Build-Depends: ekg

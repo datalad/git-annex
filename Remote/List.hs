@@ -34,6 +34,9 @@ import qualified Remote.Web
 #ifdef WITH_WEBDAV
 import qualified Remote.WebDAV
 #endif
+#ifdef WITH_TAHOE
+import qualified Remote.Tahoe
+#endif
 import qualified Remote.Glacier
 import qualified Remote.Hook
 import qualified Remote.External
@@ -51,6 +54,9 @@ remoteTypes =
 	, Remote.Web.remote
 #ifdef WITH_WEBDAV
 	, Remote.WebDAV.remote
+#endif
+#ifdef WITH_TAHOE
+	, Remote.Tahoe.remote
 #endif
 	, Remote.Glacier.remote
 	, Remote.Hook.remote

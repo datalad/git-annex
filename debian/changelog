@@ -1,3 +1,9 @@
+git-annex (5.20140108) UNRELEASED; urgency=medium
+
+  * Added tahoe special remote.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 08 Jan 2014 13:13:54 -0400
+
 git-annex (5.20140107) unstable; urgency=medium
 
   * mirror: Support --all (and --unused).
