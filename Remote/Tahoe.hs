@@ -39,6 +39,7 @@ import Logs.RemoteState
 import Utility.UserInfo
 import Utility.Metered
 import Utility.Env
+import Utility.ThreadScheduler
 
 {- The TMVar is left empty until tahoe has been verified to be running. -}
 data TahoeHandle = TahoeHandle TahoeConfigDir (TMVar ())
@@ -170,7 +171,9 @@ getSharedConvergenceSecret configdir = go (60 :: Int)
 			case v of
 				Just s | "\n" `isSuffixOf` s || "\r" `isSuffixOf` s ->
 					return $ takeWhile (`notElem` "\n\r") s
-				_ -> go (n - 1)
+				_ -> do
+					threadDelaySeconds (Seconds 1)
+					go (n - 1)
 
 convergenceFile :: TahoeConfigDir -> FilePath
 convergenceFile configdir = configdir </> "private" </> "convergence"
