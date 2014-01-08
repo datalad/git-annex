@@ -25,6 +25,7 @@ module Remote.Tahoe (remote) where
 import qualified Data.Map as M
 import Data.Aeson
 import Data.ByteString.Lazy.UTF8 (fromString)
+import Control.Concurrent.STM
 
 import Common.Annex
 import Types.Remote
@@ -38,6 +39,9 @@ import Logs.RemoteState
 import Utility.UserInfo
 import Utility.Metered
 import Utility.Env
+
+{- The TMVar is left empty until tahoe has been verified to be running. -}
+data TahoeHandle = TahoeHandle TahoeConfigDir (TMVar ())
 
 type TahoeConfigDir = FilePath
 type SharedConvergenceSecret = String
@@ -55,16 +59,18 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	cst <- remoteCost gc expensiveRemoteCost
-	configdir <- liftIO $ maybe (defaultTahoeConfigDir u) return (remoteAnnexTahoe gc)
+	hdl <- liftIO $ TahoeHandle
+		<$> maybe (defaultTahoeConfigDir u) return (remoteAnnexTahoe gc)
+		<*> newEmptyTMVarIO
 	return $ Just $ Remote {
 		uuid = u,
 		cost = cst,
 		name = Git.repoDescribe r,
-		storeKey = store u configdir,
-		retrieveKeyFile = retrieve u configdir,
+		storeKey = store u hdl,
+		retrieveKeyFile = retrieve u hdl,
 		retrieveKeyFileCheap = \_ _ -> return False,
 		removeKey = remove,
-		hasKey = checkPresent u configdir,
+		hasKey = checkPresent u hdl,
 		hasKeyCheap = False,
 		whereisKey = Nothing,
 		remoteFsck = Nothing,
@@ -98,36 +104,31 @@ tahoeSetup mu c = do
 	furlk = "introducer-furl"
 	missingfurl = error "Set TAHOE_FURL to the introducer furl to use."
 
-store :: UUID -> TahoeConfigDir -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
-store u configdir k _f _p = sendAnnex k noop $ \src -> do
-	liftIO $ startTahoeDaemon configdir
-	parsePut <$> liftIO (readTahoe configdir "put" [File src]) >>= maybe
+store :: UUID -> TahoeHandle -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
+store u hdl k _f _p = sendAnnex k noop $ \src ->
+	parsePut <$> liftIO (readTahoe hdl "put" [File src]) >>= maybe
 		(return False)
 		(\cap -> storeCapability u k cap >> return True)
 
-retrieve :: UUID -> TahoeConfigDir -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve u configdir k _f d _p = go =<< getCapability u k
+retrieve :: UUID -> TahoeHandle -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
+retrieve u hdl k _f d _p = go =<< getCapability u k
   where
 	go Nothing = return False
-	go (Just cap) = liftIO $ do
-		startTahoeDaemon configdir
-		boolTahoe configdir "get" [Param cap, File d]
+	go (Just cap) = liftIO $ requestTahoe hdl "get" [Param cap, File d]
 
 remove :: Key -> Annex Bool
 remove _k = do
 	warning "content cannot be removed from tahoe remote"
 	return False
 
-checkPresent :: UUID -> TahoeConfigDir -> Key -> Annex (Either String Bool)
-checkPresent u configdir k = go =<< getCapability u k
+checkPresent :: UUID -> TahoeHandle -> Key -> Annex (Either String Bool)
+checkPresent u hdl k = go =<< getCapability u k
   where
 	go Nothing = return (Right False)
-	go (Just cap) = liftIO $ do
-		startTahoeDaemon configdir
-		parseCheck <$> readTahoe configdir "check"
-			[ Param "--raw"
-			, Param cap
-			]
+	go (Just cap) = liftIO $ parseCheck <$> readTahoe hdl "check"
+		[ Param "--raw"
+		, Param cap
+		]
 
 defaultTahoeConfigDir :: UUID -> IO TahoeConfigDir
 defaultTahoeConfigDir u = do
@@ -174,18 +175,40 @@ getSharedConvergenceSecret configdir = go (60 :: Int)
 convergenceFile :: TahoeConfigDir -> FilePath
 convergenceFile configdir = configdir </> "private" </> "convergence"
 
-{- XXX Avoid starting tahoe if it is already running. -}
 startTahoeDaemon :: TahoeConfigDir -> IO ()
 startTahoeDaemon configdir = void $ boolTahoe configdir "start" []
+
+{- Ensures that tahoe has been started, before running an action
+ - that uses it. -}
+withTahoeConfigDir :: TahoeHandle -> (TahoeConfigDir -> IO a) -> IO a
+withTahoeConfigDir (TahoeHandle configdir v) a = go =<< atomically needsstart
+  where
+  	go True = do
+		startTahoeDaemon configdir
+		a configdir
+	go False = a configdir
+	needsstart = ifM (isEmptyTMVar v)
+		( do
+			putTMVar v ()
+			return True
+		, return False
+		)
 
 boolTahoe :: TahoeConfigDir -> String -> [CommandParam] -> IO Bool
 boolTahoe configdir command params = boolSystem "tahoe" $
 	tahoeParams configdir command params
 
-readTahoe :: TahoeConfigDir -> String -> [CommandParam] -> IO String
-readTahoe configdir command params = catchDefaultIO "" $
-	readProcess "tahoe" $ toCommand $
-		tahoeParams configdir command params
+{- Runs a tahoe command that requests the daemon do something. -}
+requestTahoe :: TahoeHandle -> String -> [CommandParam] -> IO Bool
+requestTahoe hdl command params = withTahoeConfigDir hdl $ \configdir ->
+	boolTahoe configdir command params	
+
+{- Runs a tahoe command that requests the daemon output something. -}
+readTahoe :: TahoeHandle -> String -> [CommandParam] -> IO String
+readTahoe hdl command params = withTahoeConfigDir hdl $ \configdir ->
+	catchDefaultIO "" $
+		readProcess "tahoe" $ toCommand $
+			tahoeParams configdir command params
 
 tahoeParams :: TahoeConfigDir -> String -> [CommandParam] -> [CommandParam]
 tahoeParams configdir command params = 
