@@ -14,6 +14,7 @@ I'm told the AUR has some dependency problems currently.
 If it doesn't work, you can just use cabal:
 
 <pre>
-pacman -S git rsync curl wget gpg openssh cabal-install
+pacman -S git rsync curl wget gnupg openssh cabal-install
+cabal update
 cabal install git-annex --bindir=$HOME/bin
 </pre>
