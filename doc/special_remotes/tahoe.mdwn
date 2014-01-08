@@ -35,7 +35,7 @@ Setup example:
 
 	# TAHOE_FURL=... git annex initremote tahoe type=tahoe embedcreds=yes
 
-----
+## old version of tahoe special remote
 
 An older implementation of tahoe for git-annex used
 the hook special remote. It is not compatible with this newer
