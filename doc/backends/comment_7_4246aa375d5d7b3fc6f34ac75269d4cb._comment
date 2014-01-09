@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmlnEK_po7A0xMC9Xdp0FdcBgYllsCORXM"
- nickname="Johnny"
- subject="Changing backend"
- date="2014-01-09T13:36:23Z"
- content="""
-How do I convert my SHA256 objects to SHA256E? Right now its a mix of both depending on which computer I run git annex add on.
-"""]]
