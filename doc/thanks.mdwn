@@ -108,7 +108,7 @@ Adam Baxter, Sören Köpping, Pierce Lopez, David Lehn, Michal Politowski,
 John Lawrence, Nicholas Golder, Adam Spiers, Pär Mattsson, Matthew Lee,
 Timo Heister, Asbjørn Sloth Tønnesen, James Valleroy, Felix Gruber, Björn
 Pettersson, Nicola Chiapolini, Christer Stenbrenden, Hannes Maier-Flaig,
-Paul Walker, Cary Kempston, Andrew Cant, Albert albert@fsfe.org Drengg,
+Paul Walker, Cary Kempston, Andrew Cant, Albert Drengg,
 Martin Pollow, Karl-Georg Sommer, Francois Cocquemas, Daniel Bross, Martin
 Florian, Grigorios Prasinos, Olivier Berger, Andreas Herten, Kyle MacLea,
 Sozykin Mikhail, André Klärner, Pascal VITOUX, Gunilla Johansson, Dara
