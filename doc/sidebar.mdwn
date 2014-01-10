@@ -9,7 +9,4 @@
 * [[forum]]
 * [[comments]]
 * [[contact]]
-
-[crowdfunding campaign underway!](https://campaign.joeyh.name/)
-
-<!-- * <a href="http://flattr.com/thing/84843/git-annex"><img src="https://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" /></a> -->
+* <a href="http://flattr.com/thing/84843/git-annex"><img src="https://api.flattr.com/button/flattr-badge-large.png" alt="Flattr this" title="Flattr this" /></a>
