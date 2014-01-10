@@ -1,4 +1,4 @@
-imapannex
+imapannex 0.2.0
 =========
 
 Hook program for gitannex to use imap as backend
