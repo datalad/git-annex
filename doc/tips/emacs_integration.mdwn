@@ -17,4 +17,9 @@ Emacs, which aims to integrate with the standard facilities
 He has also added support to org-attach; if
 `org-attach-git-annex-cutoff' is non-nil and smaller than the size
  of the file you're attaching then org-attach will `git annex add the
-file`; otherwise it will "git add" it. 
+file`; otherwise it will "git add" it.
+
+----
+
+[magit-annex](https://github.com/kyleam/magit-annex) adds magit support
+for a few features, including adding files and syncing.
