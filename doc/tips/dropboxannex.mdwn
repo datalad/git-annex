@@ -1,4 +1,4 @@
-dropboxannex
+dropboxannex 0.2.0
 =========
 
 Hook program for gitannex to use dropbox as backend
@@ -6,6 +6,7 @@ Hook program for gitannex to use dropbox as backend
 # Requirements:
 
     python2
+    python-pkg-resources
 
 Credit for the Dropbox api interface goes to Dropbox.
 
@@ -17,12 +18,12 @@ Clone the git repository in your home folder.
 This should make a ~/dropboxannex folder
 
 # Setup
-Run the program once to set it up.
+Make the file executable, and link it into PATH
 
-    cd ~/dropboxannex; python2 dropboxannex.py
+    cd ~/dropboxannex; chmod +x git-annex-remote-dropbox; sudo ln -sf `pwd`/git-annex-remote-dropbox /usr/local/bin/git-annex-remote-dropbox
 
 # Commands for gitannex:
 
-    git config annex.dropbox-hook '/usr/bin/python2 ~/dropboxannex/dropboxannex.py'
-    git annex initremote dropbox type=hook hooktype=dropbox encryption=shared
+    git annex initremote dropbox type=external externaltype=dropbox encryption=shared folder=gitannex
     git annex describe dropbox "the dropbox library"
+

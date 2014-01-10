@@ -1,4 +1,4 @@
-imapannex
+imapannex 0.2.0
 =========
 
 Hook program for gitannex to use imap as backend
@@ -15,13 +15,11 @@ Clone the git repository in your home folder.
 This should make a ~/imapannex folder
 
 # Setup
-Run the program once to set it up.
+Make the file executable, and link it into PATH
 
-    cd ~/imapannex; python2 imapannex.py
+    cd ~/imapannex; chmod +x git-annex-remote-imap; sudo ln -sf `pwd`/git-annex-remote-imap /usr/local/bin/git-annex-remote-imap
 
 # Commands for gitannex:
 
-    git config annex.imap-hook '/usr/bin/python2 ~/imapannex/imapannex.py'
-    git annex initremote imap type=hook hooktype=imap encryption=shared
+    USERNAME="username@provider.com" PASSWORD="password" git annex initremote imap type=external externaltype=imap encryption=shared folder=gitannex method="Normal password" ssl="SSL/TLS" host="imap.host.com" port="993"
     git annex describe imap "the imap library"
-    git annex wanted imap exclude=largerthan=30mb

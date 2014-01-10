@@ -1,4 +1,4 @@
-owncloudannex
+owncloudannex 0.2.0
 =========
 
 Hook program for gitannex to use owncloud as backend
@@ -6,8 +6,9 @@ Hook program for gitannex to use owncloud as backend
 # Requirements:
 
     python2
+    python-requests
 
-Credit for the Owncloud api interface goes to me.
+Credit for the webdav api interface goes to https://launchpad.net/python-webdav-lib
 
 # Install
 Clone the git repository in your home folder.
@@ -17,12 +18,11 @@ Clone the git repository in your home folder.
 This should make a ~/owncloudannex folder
 
 # Setup
-Run the program once to set it up.
+Make the file executable, and link it into PATH
 
-    cd ~/owncloudannex; python2 owncloudannex.py
+    cd ~/owncloudannex; chmod +x git-annex-remote-owncloud; sudo ln -sf `pwd`/git-annex-remote-owncloud /usr/local/bin/git-annex-remote-owncloud
 
 # Commands for gitannex:
 
-    git config annex.owncloud-hook '/usr/bin/python2 ~/owncloudannex/owncloudannex.py'
-    git annex initremote owncloud type=hook hooktype=owncloud encryption=shared
-    git annex describe owncloud "the owncloud library"
+    USERNAME="login" PASSWORD="password" git annex initremote owncloud type=external externaltype=owncloud encryption=shared folder=gitannex url="https://host/remote.php/webdav/"
+    git annex describe dropbox "the owncloud library"

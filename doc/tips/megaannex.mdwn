@@ -1,5 +1,7 @@
-[Megaannex](https://github.com/TobiasTheViking/megaannex)
-is a hook program for git-annex to use mega.co.nz as backend
+megaannex 0.2.0
+=========
+
+Hook program for gitannex to use mega.co.nz as backend
 
 # Requirements:
 
@@ -7,35 +9,21 @@ is a hook program for git-annex to use mega.co.nz as backend
     requests>=0.10
     pycrypto
 
-Credit for the mega api interface goes to:
-<https://github.com/richardasaurus/mega.py>
+Credit for the mega api interface goes to: https://github.com/richardasaurus/mega.py 
 
-## Install
-
+# Install
 Clone the git repository in your home folder.
 
     git clone git://github.com/TobiasTheViking/megaannex.git 
 
-This should make a ~/megannex folder
+This should make a ~/megaannex folder
 
-## Setup
+# Setup
+Make the file executable, and link it into PATH
 
-Run the program once to make an empty config file.
+    cd ~/megaannex; chmod +x git-annex-remote-mega; sudo ln -sf `pwd`/git-annex-remote-mega /usr/local/bin/git-annex-remote-mega
 
-    cd ~/megaannex; python2 megaannex.py
+# Commands for gitannex:
 
-Edit the megaannex.conf file. Add your mega.co.nz username, password, and folder name.
-
-## Configuring git-annex
-
-	git config annex.mega-hook '/usr/bin/python2 ~/megaannex/megaannex.py'
-
-	git annex initremote mega type=hook hooktype=mega encryption=shared
-	git annex describe mega "the mega.co.nz library"
-
-## Notes
-
-You may need to use a different command than "python2", depending
-on your python installation.
-
--- Tobias
+    USERNAME="user" PASSWORD="pword" git annex initremote mega type=external externaltype=mega encryption=shared folder=gitannex
+    git annex describe mega "the mega.co.nz library"
