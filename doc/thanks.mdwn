@@ -105,7 +105,7 @@ Barbosa, Thomas de Ruiter, Anders Claesson, Philipp Meier, Henrik Ahlgren,
 Michael Hofmann, Audric SCHILTKNECHT, Wojtek Burakiewicz, Christian
 Dietrich, Jacob Kirkwood, Fabian Jansen, gregor herrmann, Martin Werner,
 Adam Baxter, Sören Köpping, Pierce Lopez, David Lehn, Michal Politowski,
-John Lawrence, Nicholas Golder, Adam Spiers, Pär Mattsson, Matthew Lee,
+John Lawrence, Nicholas Golder, Adam Spiers, Pär Mattsson, Matt Lee,
 Timo Heister, Asbjørn Sloth Tønnesen, James Valleroy, Felix Gruber, Björn
 Pettersson, Nicola Chiapolini, Christer Stenbrenden, Hannes Maier-Flaig,
 Paul Walker, Cary Kempston, Andrew Cant, Albert Drengg,
