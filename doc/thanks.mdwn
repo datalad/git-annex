@@ -47,7 +47,7 @@ Glendon Solsberry, Georg Bauer, Andreas Leha, Ian Kozhurin, Boris Hupkens
 van der Elst, Daniel Brockman, Scott Robinson, Olaf Lorenzen, Øyvind
 Andersen Holm, Logan Owen, Christopher Douglass, Nicolas Pouillard, Florian
 Schlegel, Hans-Christian Jehg, Thomas Mechtler, Joshua McKinney, Tom
-Atkins, Paul Scott, Rafal Czlonka, Benjamin Williams, Ulises Vitulli, Mesar
+Atkins, Paul Scott-Wilson, Rafal Czlonka, Benjamin Williams, Ulises Vitulli, Mesar
 Hameed, Vishakh Vishakh, Daniel Washburn, Maximilian Haack, Jan Gondol,
 Carlo Matteo Capocasa, Jevgenijs Zolotarskis, John Cooper, Matthew Gregg,
 Peter Jarosak, Edward Heil, Kyle Kurtenbach, David Kaminski, Joonathan
