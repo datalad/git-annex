@@ -18,12 +18,15 @@ Clone the git repository in your home folder.
 This should make a ~/skydriveannex folder
 
 # Setup
-Run the program once to set it up.
+Make the file executable, and link it into PATH
 
-    cd ~/skydriveannex; python2 skydriveannex.py
+    cd ~/skydriveannex; chmod +x git-annex-remote-skydrive; sudo ln -sf `pwd`/git-annex-remote-skydrive /usr/local/bin/git-annex-remote-skydrive
 
 # Commands for gitannex:
 
-    git config annex.skydrive-hook '/usr/bin/python2 ~/skydriveannex/skydriveannex.py'
-    git annex initremote skydrive type=hook hooktype=skydrive encryption=shared
+    git annex initremote skydrive type=external externaltype=skydrive encryption=shared folder=gitannex
+    
+An oauth authentication link should now be launched in the default browser. Authenticate, and use the last url as OAUTH key.
+
+    OAUTH='URL after last redirect' git annex initremote skydrive type=external externaltype=skydrive encryption=shared folder=gitannex
     git annex describe skydrive "the skydrive library"
