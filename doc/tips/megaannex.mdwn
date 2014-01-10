@@ -1,4 +1,4 @@
-megaannex
+megaannex 0.2.0
 =========
 
 Hook program for gitannex to use mega.co.nz as backend
