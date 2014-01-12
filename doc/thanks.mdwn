@@ -11,7 +11,7 @@ email <joey@kitenet.net>.)
 Continued git-annex development was [crowd funded](https://campaign.joeyh.name/)
 by these excellent people.
 
-Eric Hanchrow, Mikhail Barabanov, Douglas Butts, Cody Woodard, Anna Hess,
+Eric Hanchrow, Michael Barabanov, Douglas Butts, Cody Woodard, Anna Hess,
 Maggie Hess, Francois Marier, Michael Linksvayer, Alexander Brem, Yaroslav
 Halchenko, Otavio Real Salvador, Giovanni Moretti, Mark Hepburn, Jim
 Cheetham, Ali Gündüz, Chia Shee Liang, Vincent Arel-Bundock, Mark R Jones,
