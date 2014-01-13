@@ -38,6 +38,7 @@ import Utility.Metered (BytesProcessed(..))
 import Logs.Transfer (Direction(..))
 import Config.Cost (Cost)
 import Types.Remote (RemoteConfig)
+import Types.Availability (Availability(..))
 
 import Data.Char
 import Control.Concurrent.STM
@@ -105,6 +106,7 @@ data Request
 	= PREPARE 
 	| INITREMOTE
 	| GETCOST
+	| GETAVAILABILITY
 	| TRANSFER Direction Key FilePath
 	| CHECKPRESENT Key
 	| REMOVE Key
@@ -120,6 +122,7 @@ instance Sendable Request where
 	formatMessage PREPARE = ["PREPARE"]
 	formatMessage INITREMOTE = ["INITREMOTE"]
 	formatMessage GETCOST = ["GETCOST"]
+	formatMessage GETAVAILABILITY = ["GETAVAILABILITY"]
 	formatMessage (TRANSFER direction key file) =
 		[ "TRANSFER", serialize direction, serialize key, serialize file ]
 	formatMessage (CHECKPRESENT key) = [ "CHECKPRESENT", serialize key ]
@@ -137,6 +140,7 @@ data Response
 	| REMOVE_SUCCESS Key
 	| REMOVE_FAILURE Key ErrorMsg
 	| COST Cost
+	| AVAILABILITY Availability
 	| INITREMOTE_SUCCESS
 	| INITREMOTE_FAILURE ErrorMsg
 	| UNSUPPORTED_REQUEST
@@ -153,6 +157,7 @@ instance Receivable Response where
 	parseCommand "REMOVE-SUCCESS" = parse1 REMOVE_SUCCESS
 	parseCommand "REMOVE-FAILURE" = parse2 REMOVE_FAILURE
 	parseCommand "COST" = parse1 COST
+	parseCommand "AVAILABILITY" = parse1 AVAILABILITY
 	parseCommand "INITREMOTE-SUCCESS" = parse0 INITREMOTE_SUCCESS
 	parseCommand "INITREMOTE-FAILURE" = parse1 INITREMOTE_FAILURE
 	parseCommand "UNSUPPORTED-REQUEST" = parse0 UNSUPPORTED_REQUEST
@@ -251,6 +256,14 @@ instance Serializable ProtocolVersion where
 instance Serializable Cost where
 	serialize = show
 	deserialize = readish
+
+instance Serializable Availability where
+	serialize GloballyAvailable = "GLOBAL"
+	serialize LocallyAvailable = "LOCAL"
+
+	deserialize "GLOBAL" = Just GloballyAvailable
+	deserialize "LOCAL" = Just LocallyAvailable
+	deserialize _ = Nothing
 
 instance Serializable BytesProcessed where
 	serialize (BytesProcessed n) = show n

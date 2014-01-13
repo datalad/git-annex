@@ -2,12 +2,19 @@
  -
  - Most things should not need this, using Types instead
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Types.Remote where
+module Types.Remote
+	( RemoteConfigKey
+	, RemoteConfig
+	, RemoteTypeA(..)
+	, RemoteA(..)
+	, Availability(..)
+	)
+	where
 
 import Data.Map as M
 import Data.Ord
@@ -16,6 +23,7 @@ import qualified Git
 import Types.Key
 import Types.UUID
 import Types.GitConfig
+import Types.Availability
 import Config.Cost
 import Utility.Metered
 import Git.Types
@@ -82,7 +90,7 @@ data RemoteA a = Remote {
 	-- a Remote can be known to be readonly
 	readonly :: Bool,
 	-- a Remote can be globally available. (Ie, "in the cloud".)
-	globallyAvailable :: Bool,
+	availability :: Availability,
 	-- the type of the remote
 	remotetype :: RemoteTypeA a
 }

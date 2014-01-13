@@ -45,6 +45,7 @@ gen r u c gc = do
 	external <- newExternal externaltype u c
 	Annex.addCleanup (fromUUID u) $ stopExternal external
 	cst <- getCost external r gc
+	avail <- getAvailability external r gc
 	return $ Just $ encryptableRemote c
 		(storeEncrypted external $ getGpgEncParams (c,gc))
 		(retrieveEncrypted external)
@@ -66,11 +67,11 @@ gen r u c gc = do
 			repo = r,
 			gitconfig = gc,
 			readonly = False,
-			globallyAvailable = False,
+			availability = avail,
 			remotetype = remote
 		}
   where
-	externaltype = fromMaybe (error "missing externaltype") $ remoteAnnexExternalType gc
+	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
 
 externalSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
 externalSetup mu c = do
@@ -419,3 +420,21 @@ getCost external r gc = go =<< remoteCost' gc
 			_ -> Nothing
 		setRemoteCost r c
 		return c
+
+{- Caches the availability in the git config to avoid needing to start up an
+ - external special remote every time time just to ask it what its
+ - availability is.
+ -
+ - Most remotes do not bother to implement a reply to this request;
+ - globally available is the default.
+ -}
+getAvailability :: External -> Git.Repo -> RemoteGitConfig -> Annex Availability
+getAvailability external r gc = maybe query return (remoteAnnexAvailability gc)
+  where
+	query = do
+		avail <- handleRequest external GETAVAILABILITY Nothing $ \req -> case req of
+			AVAILABILITY avail -> Just $ return avail
+			UNSUPPORTED_REQUEST -> Just $ return GloballyAvailable
+			_ -> Nothing
+		setRemoteAvailability r avail
+		return avail

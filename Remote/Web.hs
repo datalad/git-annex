@@ -61,7 +61,7 @@ gen r _ c gc =
 		localpath = Nothing,
 		repo = r,
 		readonly = True,
-		globallyAvailable = True,
+		availability = GloballyAvailable,
 		remotetype = remote
 	}
 

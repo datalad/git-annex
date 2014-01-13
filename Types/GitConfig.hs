@@ -18,6 +18,7 @@ import qualified Git.Config
 import Utility.DataUnits
 import Config.Cost
 import Types.Distribution
+import Types.Availability
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
@@ -101,6 +102,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexTrustLevel :: Maybe String
 	, remoteAnnexStartCommand :: Maybe String
 	, remoteAnnexStopCommand :: Maybe String
+	, remoteAnnexAvailability :: Maybe Availability
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
@@ -130,6 +132,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
 	, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
 	, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
+	, remoteAnnexAvailability = getmayberead "availability"
 
 	, remoteAnnexSshOptions = getoptions "ssh-options"
 	, remoteAnnexRsyncOptions = getoptions "rsync-options"

@@ -59,7 +59,7 @@ gen r u c gc = do
 			repo = r,
 			gitconfig = gc,
 			readonly = False,
-			globallyAvailable = False,
+			availability = GloballyAvailable,
 			remotetype = remote
 		}
   where

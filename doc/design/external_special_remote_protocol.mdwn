@@ -118,6 +118,11 @@ replying with `UNSUPPORTED-REQUEST` is acceptable.
 * `GETCOST`  
   Requests the remote return a use cost. Higher costs are more expensive.
   (See Config/Cost.hs for some standard costs.)
+* `GETAVAILABILITY`
+  Requests the remote send back an `AVAILABILITY` reply.
+  If the remote replies with `UNSUPPORTED-REQUEST`, its availability
+  is asssumed to be global. So, only remotes that are only reachable
+  locally need to worry about implementing this.
 
 More optional requests may be added, without changing the protocol version,
 so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
@@ -153,6 +158,9 @@ while it's handling a request.
   Indicates that the key was unable to be removed from the remote.
 * `COST Int`  
   Indicates the cost of the remote.
+* `AVAILABILITY GLOBAL|LOCAL`
+  Indicates if the remote is globally or only locally available.
+  (Ie stored in the cloud vs on a local disk.)
 * `INITREMOTE-SUCCESS`  
   Indicates the INITREMOTE succeeded and the remote is ready to use.
 * `INITREMOTE-FAILURE ErrorMsg`  

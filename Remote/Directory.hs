@@ -61,7 +61,7 @@ gen r u c gc = do
 			gitconfig = gc,
 			localpath = Just dir,
 			readonly = False,
-			globallyAvailable = False,
+			availability = LocallyAvailable,
 			remotetype = remote
 		}
   where

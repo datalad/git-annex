@@ -1,6 +1,6 @@
 {- Git configuration
  -
- - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
 import Config.Cost
+import Types.Availability
 
 type UnqualifiedConfigKey = String
 data ConfigKey = ConfigKey String
@@ -64,6 +65,9 @@ remoteCost' c = case remoteAnnexCostCommand c of
 
 setRemoteCost :: Git.Repo -> Cost -> Annex ()
 setRemoteCost r c = setConfig (remoteConfig r "cost") (show c)
+
+setRemoteAvailability :: Git.Repo -> Availability -> Annex ()
+setRemoteAvailability r c = setConfig (remoteConfig r "availability") (show c)
 
 getNumCopies :: Maybe Int -> Annex Int
 getNumCopies (Just v) = return v

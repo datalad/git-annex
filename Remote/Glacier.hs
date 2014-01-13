@@ -66,7 +66,7 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			gitconfig = gc,
 			localpath = Nothing,
 			readonly = False,
-			globallyAvailable = True,
+			availability = GloballyAvailable,
 			remotetype = remote
 		}
 
