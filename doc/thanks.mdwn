@@ -9,7 +9,7 @@ email <joey@kitenet.net>.)
 ## 2013-2014
 
 Continued git-annex development was [crowd funded](https://campaign.joeyh.name/)
-by these excellent people.
+by these excellent people. *Hug*
 
 Eric Hanchrow, Michael Barabanov, Douglas Butts, Cody Woodard, Anna Hess,
 Maggie Hess, Francois Marier, Michael Linksvayer, Alexander Brem, Yaroslav
@@ -23,7 +23,7 @@ Castello, Nimrod Mesika, Amitai Schlair, Zellyn Hunter, Jan Pieper, Boyd
 Smith, Brett Eisenberg, Péter Károly Juhász, Allan Franta, Aaron De Vries,
 Donald Plummer, Joona Lehtomäki, Evan Anderson, Pedro Côrte-Real, Bradley
 Unterrheiner, Wietse van Buitenen, James Shubin, Daniel de Kok, Michael
-Zehrer, Jen deHaan, David Schmitt, Ian Downes, Gioele Barabucci, Gergely
+Zehrer, Peter deHaan, David Schmitt, Ian Downes, Gioele Barabucci, Gergely
 Nagy, Diego Ongaro, Jonas Wiklund, Strakhov Artem, £ukasz Szczęsny, Peter
 Olson, Thomas Berker, Greg Young, narf, Michael Jakl, Andrea Rota, Tobias
 Nix, Andreas Olsson, Tobias Ussing, Pere Quintana Segui, Pierre Gambarotto,
