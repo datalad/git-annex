@@ -9,7 +9,7 @@ It would also be nice to have a per remote number of threads. Especially if addi
 
 For now i've made a shell script that i call:
 
-# for j in `seq -w 0 10`; do echo DOING $j; for i in `curl "http://127.0.0.1:$1/?auth=$2" | grep "continue" | gawk -F\"  ' { print $8 } '`; do curl "http://127.0.0.1:$1$i"; sleep 0; done; done
+    # for j in `seq -w 0 10`; do echo DOING $j; for i in `curl "http://127.0.0.1:$1/?auth=$2" | grep "continue" | gawk -F\"  ' { print $8 } '`; do curl "http://127.0.0.1:$1$i"; sleep 0; done; done
 
 But it is very rough, and basically just starts all transfers on the page. Which means i currently have 315 active transfers running. whoops.
 
