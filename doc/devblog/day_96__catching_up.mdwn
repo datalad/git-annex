@@ -1,6 +1,6 @@
 Been on reduced activity the past several days. I did spend a full day
 somewhere in there building the Tahoe LAFS special remote. Also, Tobias has
-finished updated his full suite of external special remotes to use the new
+finished updating his full suite of external special remotes to use the new
 interface!
 
 Worked on closing up the fundraising campaign today (long overdue).
