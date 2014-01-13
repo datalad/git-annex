@@ -53,4 +53,4 @@ Linux quad 3.8.0-34-generic #49~precise1-Ubuntu SMP Wed Nov 13 18:05:00 UTC 2013
 # End of transcript or log.
 """]]
 
-> Ancient git-annex version. Doubt it affects current version. [[moreinfo]] --[[Joey]] 
+> Ancient git-annex version. Doubt it affects current version. [[!tag moreinfo]] --[[Joey]] 
