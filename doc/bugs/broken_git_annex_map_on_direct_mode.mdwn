@@ -54,3 +54,5 @@ git annex map
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]]; thanks for a good test case. --[[Joey]]
