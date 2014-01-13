@@ -26,3 +26,16 @@ usage: git checkout [options] <branch>
 
 # End of transcript or log.
 """]]
+
+> git-annex checks the git version at compile time and arranges to use
+> commands that will work with that version of git at run time.
+> 
+> Adding a runtime check for a minimum git version would slow every git-annex
+> command down and so I don't want to do it. It's up to the user to not
+> built git-annex with a new version of git and then try to use it with an
+> old version of git.
+> 
+> `git checkout -B` seems to have been added to git quite a long time ago
+> (2010), in version 1.7.1.1. I've made git-annex check at compile
+> time if being built with such an old version and refuse to build.
+> [[done]]. --[[Joey]]

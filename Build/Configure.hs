@@ -10,6 +10,7 @@ import System.FilePath
 import System.Environment (getArgs)
 import Data.Maybe
 import Control.Monad.IfElse
+import Control.Monad
 import Data.Char
 
 import Build.TestConfig
@@ -95,8 +96,12 @@ getUpgradeLocation = do
 	return $ Config "upgradelocation" $ MaybeStringConfig e
 
 getGitVersion :: Test
-getGitVersion = Config "gitversion" . StringConfig . show
-	<$> Git.Version.installed
+getGitVersion = do
+	v <- Git.Version.installed
+	let oldestallowed = Git.Version.normalize "1.7.1.0"
+	when (v < oldestallowed) $
+		error $ "installed git version " ++ show v ++ " is too old! (Need " ++ show oldestallowed ++ " or newer)"
+	return $ Config "gitversion" $ StringConfig $ show v
 
 getSshConnectionCaching :: Test
 getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>
