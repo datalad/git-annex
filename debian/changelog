@@ -6,6 +6,8 @@ git-annex (5.20140108) UNRELEASED; urgency=medium
   * Refuse to build with git older than 1.7.1.1, which is needed for
     git checkout -B
   * map: Fix display of v5 direct mode repos.
+  * repair: Support old git versions from before git fsck --no-dangling was
+    implemented.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 08 Jan 2014 13:13:54 -0400
 

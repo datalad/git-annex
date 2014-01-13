@@ -20,6 +20,7 @@ import Git
 import Git.Command
 import Git.Sha
 import Utility.Batch
+import qualified Git.BuildVersion
 
 import qualified Data.Set as S
 
@@ -75,11 +76,20 @@ isMissing s r = either (const True) (const False) <$> tryIO dump
 		] r
 
 findShas :: String -> [Sha]
-findShas = catMaybes . map extractSha . concat . map words . lines
+findShas = catMaybes . map extractSha . concat . map words . filter wanted . lines
+  where
+	wanted l
+		| supportsNoDangling = True
+		| otherwise = not ("dangling " `isPrefixOf` l)
 
 fsckParams :: Repo -> [CommandParam]
-fsckParams = gitCommandLine $
-	[ Param "fsck"
-	, Param "--no-dangling"
-	, Param "--no-reflogs"
+fsckParams = gitCommandLine $ map Param $ catMaybes
+	[ Just "fsck"
+	, if supportsNoDangling
+		then Just "--no-dangling"
+		else Nothing
+	, Just "--no-reflogs"
 	]
+
+supportsNoDangling :: Bool
+supportsNoDangling = not $ Git.BuildVersion.older "1.7.10"
