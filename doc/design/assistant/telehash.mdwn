@@ -1,11 +1,11 @@
 [Telehash](http://telehash.org/) for secure P2P communication between
 git-annex (assistant) repositories.
 
-## telelhash implementation status
+## telehash implementation status
 
-* node.js version seems most complete
+* node.js version seems almost complete
 * C version currently lacks channel support and seems buggy (13 Jan 2014)
-* No pure haskell implementation of telelhash v2. There was one of
+* No pure haskell implementation of telehash v2. There was one of
   telehash v1 (even that seems incomplete). I have pinged its author
   to see if he anticipates updating it.
 * Rapid development, situation may change in a month or 2.
@@ -33,7 +33,7 @@ git-annex (assistant) repositories.
 * XMPP pairing can also be used for telehash address discovery. (Note that
   MITM attacks are possible.) Is it worth keeping XMPP in git-annex just
   for this?
-* Telelhash addresses of repoitories can be communicated out of band (eg,
+* Telehash addresses of repoitories can be communicated out of band (eg,
   via an OTR session or gpg signed mail), and pasted into the webapp to
   initiate a repository pairing that then proceeds entirely over telehash.
   Once both sides do this, the pairing can proceed automatically.
@@ -43,14 +43,14 @@ git-annex (assistant) repositories.
 * In some circumstances, it would be ok to do annexed content transfer
   over telehash.  
   Need to check if there are MTU problems with large data bodies in
-  telelhash messages.  
+  telehash messages.  
   Probably not when a bridge is being used, due to required rate
   limiting in bridging over telehash. Cloud transfer remotes still needed for
   those situations.
 * On a LAN, telehash can be used to determine the current local IP address
   of another computer on the LAN. The 2 could then determine if either uses
   ssh and if so use regular git-annex-shell for transfers. Or could do
-  annexed content transfer directly over telelhash.
+  annexed content transfer directly over telehash.
 
 ## generic git-remote-telehash
 
