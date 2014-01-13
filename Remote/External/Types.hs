@@ -168,6 +168,7 @@ data RemoteRequest
 	| SETCREDS Setting String String
 	| GETCREDS Setting
 	| GETUUID
+	| GETGITDIR
 	| SETWANTED PreferredContentExpression
 	| GETWANTED
 	| SETSTATE Key String
@@ -184,6 +185,7 @@ instance Receivable RemoteRequest where
 	parseCommand "SETCREDS" = parse3 SETCREDS
 	parseCommand "GETCREDS" = parse1 GETCREDS
 	parseCommand "GETUUID" = parse0 GETUUID
+	parseCommand "GETGITDIR" = parse0 GETGITDIR
 	parseCommand "SETWANTED" = parse1 SETWANTED
 	parseCommand "GETWANTED" = parse0 GETWANTED
 	parseCommand "SETSTATE" = parse2 SETSTATE

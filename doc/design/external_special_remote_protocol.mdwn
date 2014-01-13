@@ -212,6 +212,10 @@ in control.
 * `GETUUID`  
   Queries for the UUID of the special remote being used.  
   (git-annex replies with VALUE followed by the UUID.)
+* `GETGITDIR`  
+  Queries for the path to the git directory of the repository that
+  is using the external special remote.
+  (git-annex replies with VALUE followed by the path.)
 * `SETWANTED PreferredContentExpression`  
   Can be used to set the preferred content of a repository. Normally
   this is not configured by a special remote, but it may make sense

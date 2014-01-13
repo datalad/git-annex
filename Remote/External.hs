@@ -230,6 +230,7 @@ handleRequest' lck external req mp responsehandler
 		send $ CREDS (fst creds) (snd creds)
 	handleRemoteRequest GETUUID = send $
 		VALUE $ fromUUID $ externalUUID external
+	handleRemoteRequest GETGITDIR = send . VALUE =<< fromRepo Git.localGitDir
 	handleRemoteRequest (SETWANTED expr) =
 		preferredContentSet (externalUUID external) expr
 	handleRemoteRequest GETWANTED = do
