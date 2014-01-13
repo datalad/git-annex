@@ -11,7 +11,7 @@ development and the C implementation is not even usable yet..
 (I'll probably end up writing Haskell bindings to that.)
 So I've pushed it down the roadmap to at least March.
 
-Spent rest of the day making some minor improvements to external special
+Spent the rest of the day making some minor improvements to external special
 remote protocol and doing some other minor bug fixes and backlog catch up.
 My backlog has exploded to nearly 50 messages remaining.
 
