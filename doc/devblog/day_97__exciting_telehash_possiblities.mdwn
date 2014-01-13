@@ -1,0 +1,20 @@
+If you've been keeping an eye on the [[design/roadmap]], you'll have seen that
+[[design/assistant/xmpp_security]] keeps being pushed back. This was because
+it's a hard and annoying problem requiring custom crypto and with an
+ugly key validation problem built into it too. I've now removed it from the
+roadmap entirely, replacing it with a [[design/assistant/telehash]] design.
+
+I'm excited by the possibilities of using telehash with git-annex. It seems
+it would be quite easy to make it significantly more peer-to-peer and
+flexible. The only issue is that telehash is still under heavy
+development and the C implementation is not even usable yet..
+(I'll probably end up writing Haskell bindings to that.)
+So I've pushed it down the roadmap to at least March.
+
+Spent rest of the day making some minor improvements to external special
+remote protocol and doing some other minor bug fixes and backlog catch up.
+My backlog has exploded to nearly 50 messages remaining.
+
+----
+
+Today's work was sponsored by Chad Horohoe.
