@@ -16,6 +16,7 @@ import Assistant.DaemonStatus
 import Assistant.Alert
 import Assistant.Repair
 import Assistant.Ssh
+import qualified Annex.Branch
 import qualified Git.LsFiles
 import qualified Git.Command
 import qualified Git.Config
@@ -53,6 +54,12 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 			debug ["no index file; restaging"]
 			modifyDaemonStatus_ $ \s -> s { forceRestage = True }
 		)
+	{- If the git-annex index file is corrupt, it's ok to remove it;
+	 - the data from the git-annex branch will be used, and the index
+	 - will be automatically regenerated. -}
+	unlessM (liftAnnex $ Annex.Branch.withIndex $ inRepo $ Git.Repair.checkIndexFast) $ do
+		notice ["corrupt annex/index file found at startup; removing"]
+		liftAnnex $ liftIO . nukeFile =<< fromRepo gitAnnexIndex
 
 	{- Fix up ssh remotes set up by past versions of the assistant. -}
 	liftIO $ fixUpSshRemotes

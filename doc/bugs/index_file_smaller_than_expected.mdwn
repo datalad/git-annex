@@ -48,3 +48,6 @@ NetWatcherFallback crashed: user error (git ["--git-dir=/Users/juh/Share/.git","
 
 # End of transcript or log.
 """]]
+
+> Made assistant detect corrupted .git/annex/index on startup and correct
+> it. [[fixed|done]] --[[Joey]]
