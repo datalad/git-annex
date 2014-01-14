@@ -109,7 +109,7 @@ expand_rpath libs replacement_libs cmd
 		let m = if (null s)
 			then M.fromList replacement_libs
 			else M.fromList $ mapMaybe parse $ lines s
-		return $ map (replace m) libs
+		return $ map (replacem m) libs
 	| otherwise = return libs
   where
   	probe c = "DYLD_PRINT_RPATHS=1 " ++ c ++ " --getting-rpath-dummy-option 2>&1 | grep RPATH"
@@ -117,7 +117,7 @@ expand_rpath libs replacement_libs cmd
 		("RPATH":"successful":"expansion":"of":old:"to:":new:[]) -> 
 			Just (old, new)
 		_ -> Nothing
-	replace m l = fromMaybe l $ M.lookup l m
+	replacem m l = fromMaybe l $ M.lookup l m
 
 parseOtool :: String -> [FilePath]
 parseOtool = catMaybes . map parse . lines
