@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://cstork.org/"
+ nickname="Chris Stork"
+ subject="Many peoples' use case"
+ date="2014-01-14T09:34:14Z"
+ content="""
+Well, a description of this use case is posted every few weeks in different forms.  Here are two, including my own: ;-)
+
+* <http://git-annex.branchable.com/forum/Using_git_annex_with_a_SMB__47__FTP_TV_NAS_with_preconfigured_dirs/> (Damn, I can't use a WikiLink for this page due to the slash.  How do I get around that?)
+* [[Direct special remotes]]
+"""]]
