@@ -9,6 +9,7 @@ module Remote.Glacier (remote, jobList) where
 
 import qualified Data.Map as M
 import qualified Data.Text as T
+import Data.AssocList as A
 import System.Environment
 
 import Common.Annex
@@ -232,7 +233,7 @@ glacierEnv c u = go =<< getRemoteCredPairFor "glacier" c creds
 	go Nothing = return Nothing
 	go (Just (user, pass)) = do
 		e <- liftIO getEnvironment
-		return $ Just $ (uk, user):(pk, pass):e
+		return $ Just $ A.addEntries [(uk, user), (pk, pass)] e
 
 	creds = AWS.creds u
 	(uk, pk) = credPairEnvironment creds

@@ -71,3 +71,12 @@ Where does the e6a directory comes from? I don't suspect a bug there, but in my 
 
 Thanks!
 Florian
+
+> [[fixed|done]]
+> 
+> I know someone reported this a looong time ago (years), and I cannot find
+> that bug report. Probably I closed it because I was unable to find a way
+> to reproduce it.
+> 
+> The spurious log files can be safely removed from your working tree.
+> --[[Joey]] 

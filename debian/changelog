@@ -8,6 +8,11 @@ git-annex (5.20140108) UNRELEASED; urgency=medium
   * map: Fix display of v5 direct mode repos.
   * repair: Support old git versions from before git fsck --no-dangling was
     implemented.
+  * Fix a long-standing bug that could cause the wrong index file to be used
+    when committing to the git-annex branch, if GIT_INDEX_FILE is set in the
+    environment. This typically resulted in git-annex branch log files being
+    committed to the master branch and later showing up in the work tree.
+    (These log files can be safely removed.)
 
  -- Joey Hess <joeyh@debian.org>  Wed, 08 Jan 2014 13:13:54 -0400
 

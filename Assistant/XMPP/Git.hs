@@ -43,6 +43,7 @@ import Control.Concurrent
 import System.Timeout
 import qualified Data.ByteString as B
 import qualified Data.Map as M
+import qualified Data.AssocList as A
 
 {- Largest chunk of data to send in a single XMPP message. -}
 chunkSize :: Int
@@ -114,13 +115,13 @@ xmppPush cid gitpush = do
 
 	env <- liftIO getEnvironment
 	path <- liftIO getSearchPath
-	let myenv = M.fromList
+	let myenv = A.addEntries
 		[ ("PATH", intercalate [searchPathSeparator] $ tmpdir:path)
 		, (relayIn, show inf)
 		, (relayOut, show outf)
 		, (relayControl, show controlf)
 		]
-		`M.union` M.fromList env
+		env
 
 	inh <- liftIO $ fdToHandle readpush
 	outh <- liftIO $ fdToHandle writepush
@@ -132,7 +133,7 @@ xmppPush cid gitpush = do
 	{- This can take a long time to run, so avoid running it in the
 	 - Annex monad. Also, override environment. -}
 	g <- liftAnnex gitRepo
-	r <- liftIO $ gitpush $ g { gitEnv = Just $ M.toList myenv }
+	r <- liftIO $ gitpush $ g { gitEnv = Just myenv }
 
 	liftIO $ do
 		mapM_ killThread [t1, t2]
