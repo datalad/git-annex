@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmTIL7ubr5opWM69Q5VtCxuxC2H0SSnzic"
+ nickname="Petr"
+ subject="Where are your repositories located?"
+ date="2014-01-14T08:58:31Z"
+ content="""
+First - Where are the repos actually located ~/Desktop or ~/annex/<repo>? Other?
+ 
+I can confirm, that like two weeks back I have had similar issue using git-annex-assistant with other synced repos on local LAN and at Box.com. The git-annex processes actually overloaded the CPU and I was forced to kill annex processes to get over.
+
+I also found myself that NFS mounted shares, linked by symlink to home directory, can slowdown mac finder app as well if NFS has slight delays in response.
+"""]]
