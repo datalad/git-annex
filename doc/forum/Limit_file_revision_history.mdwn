@@ -1,0 +1,22 @@
+Hi, I am assuming to use git-annex-assistant for two usecases, but I would like to ask about the options or planed roadmap for dropped/removed files from the repository.
+
+Usecases:
+
+1. sync working directory between laptop, home computer, work komputer
+2. archive functionality for my photograps
+
+Both usecases have one common factor. Some files might become obsolate and in long time frame nobody is interested to keep their revisions. Let's assume photographs. Usuall workflow I take is to import all photograps to filesystem, then assess (select) the good ones I want to keep and then process them what ever way.
+
+Problem with git-annex(-assistant) I have is that it start to revision all of the files at the time they are added to directory. This is welcome at first but might be an issue if you are used to put 80% of the size of your imported files to trash.
+
+I am aware of what git-annex is not. I have been reading documentation for "git-annex drop" and "unused" options including forums. I do understand that I am actually able to delete all revisions of the file if I will drop it, remove it and if I will run git annex unused 1..###. (on all synced repositories).
+
+I actually miss the option to have above process automated/replicated to the other synced repositories.
+
+I would formulate the 'use case' requirements for git-annex as:
+
+* command to drop an file including revisions from all annex repositories? (for example like moving a file to /trash folder) that will schedulle it's deletition)
+* option to keep like max. 10 last revisions of the file?
+* option to keep only previous revisions if younger than 6 months from now?
+
+Finally, how to specify a feature request for git-annex?
