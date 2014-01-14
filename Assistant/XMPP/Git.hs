@@ -43,7 +43,6 @@ import Control.Concurrent
 import System.Timeout
 import qualified Data.ByteString as B
 import qualified Data.Map as M
-import qualified Data.AssocList as A
 
 {- Largest chunk of data to send in a single XMPP message. -}
 chunkSize :: Int
@@ -115,7 +114,7 @@ xmppPush cid gitpush = do
 
 	env <- liftIO getEnvironment
 	path <- liftIO getSearchPath
-	let myenv = A.addEntries
+	let myenv = addEntries
 		[ ("PATH", intercalate [searchPathSeparator] $ tmpdir:path)
 		, (relayIn, show inf)
 		, (relayOut, show outf)

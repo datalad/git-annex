@@ -29,7 +29,6 @@ module Annex.Branch (
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Set as S
 import qualified Data.Map as M
-import qualified Data.AssocList as A
 import qualified Control.Exception as E
 
 import Common.Annex
@@ -346,7 +345,7 @@ withIndex' bootstrapping a = do
 	let e' = ("GIT_INDEX_FILE", f):e
 #else
 	e <- liftIO getEnvironment
-	let e' = A.addEntry "GIT_INDEX_FILE" f e
+	let e' = addEntry "GIT_INDEX_FILE" f e
 #endif
 	let g' = g { gitEnv = Just e' }
 

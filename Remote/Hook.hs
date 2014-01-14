@@ -9,8 +9,6 @@ module Remote.Hook (remote) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-import qualified Data.AssocList as A
-import System.Environment
 
 import Common.Annex
 import Types.Remote
@@ -24,6 +22,7 @@ import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
 import Utility.Metered
+import Utility.Env
 
 type Action = String
 type HookName = String
@@ -78,7 +77,7 @@ hookSetup mu c = do
 hookEnv :: Action -> Key -> Maybe FilePath -> IO (Maybe [(String, String)])
 hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)
   where
-	mergeenv l = A.addEntries l <$> getEnvironment
+	mergeenv l = addEntries l <$> getEnvironment
 	env s v = ("ANNEX_" ++ s, v)
 	keyenv = catMaybes
 		[ Just $ env "KEY" (key2file k)

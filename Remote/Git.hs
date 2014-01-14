@@ -54,7 +54,6 @@ import Control.Concurrent
 import Control.Concurrent.MSampleVar
 import System.Process (std_in, std_err)
 import qualified Data.Map as M
-import qualified Data.AssocList as A
 import Control.Exception.Extensible
 
 remote :: RemoteType
@@ -417,7 +416,7 @@ fsckOnRemote r params
 		program <- readProgramFile
 		r' <- Git.Config.read r
 		env <- getEnvironment
-		let env' = A.addEntries 
+		let env' = addEntries 
 			[ ("GIT_WORK_TREE", Git.repoPath r')
 			, ("GIT_DIR", Git.localGitDir r')
 			] env
