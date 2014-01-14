@@ -8,13 +8,13 @@
 module Main where
 
 import Control.Applicative
-import System.Environment
+import System.Environment (getArgs)
 import Data.Maybe
 import System.FilePath
 import System.Directory
-import System.IO
 import Control.Monad
 import Data.List
+import Data.String.Utils
 
 import Utility.PartialPrelude
 import Utility.Directory
@@ -23,6 +23,7 @@ import Utility.Monad
 import Utility.SafeCommand
 import Utility.Path
 import Utility.Exception
+import Utility.Env
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -57,7 +58,12 @@ installLibs appbase replacement_libs libmap = do
 			)
 	return (catMaybes libs, replacement_libs', libmap')
 
-{- Returns libraries to install. -}
+{- Returns libraries to install.
+ -
+ - Note that otool -L ignores DYLD_LIBRARY_PATH. But we do want to honor
+ - that if set, so the library files found by otool are searched for on
+ - that path.
+ -}
 otool :: FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [(FilePath, FilePath)], LibMap)
 otool appbase replacement_libs libmap = do
 	files <- filterM doesFileExist =<< dirContentsRecursive appbase
@@ -69,12 +75,21 @@ otool appbase replacement_libs libmap = do
 	process c [] rls m = return (nub $ concat c, rls, m)
 	process c (file:rest) rls m = do
 		_ <- boolSystem "chmod" [Param "755", File file]
-		libs <- filter want . parseOtool
+		libs <- mapM findLibPath
+			=<< filter want . parseOtool
 			<$> readProcess "otool" ["-L", file]
 		expanded_libs <- expand_rpath libs replacement_libs file
 		let rls' = nub $ rls ++ (zip libs expanded_libs)
 		m' <- install_name_tool file libs expanded_libs m
 		process (expanded_libs:c) rest rls' m'
+
+findLibPath :: FilePath -> IO FilePath
+findLibPath l = go =<< getEnv "DYLD_LIBRARY_PATH"
+  where
+	go Nothing = return l
+	go (Just p) = fromMaybe l
+		<$> firstM doesFileExist (map (</> f) (split ":" p))
+	f = takeFileName l
 
 {- Expands any @rpath in the list of libraries.
  -
