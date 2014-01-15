@@ -231,7 +231,7 @@ explodePackedRefsFile r = do
 		nukeFile f
   where
 	makeref (sha, ref) = do
-		let dest = localGitDir r ++ show ref
+		let dest = localGitDir r </> show ref
 		createDirectoryIfMissing True (parentDir dest)
 		unlessM (doesFileExist dest) $
 			writeFile dest (show sha)
