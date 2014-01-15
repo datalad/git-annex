@@ -1,3 +1,8 @@
 This is probably an extension of [[wishlist: more info in the standard commit message of `sync`]]:
 
 It would also help debugging if the default commit messages listed, e.g., the name of all the files modified by that commit (or merge).
+
+> No, it would not help debugging to put redundant info in commit
+> messages. It will only make your repository take up more disk space.
+> git log --stat will already show you the files changes by
+> any commit.  [[wontfix|done]] --[[Joey]]
