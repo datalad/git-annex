@@ -42,6 +42,7 @@ installLibs :: FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [
 installLibs appbase replacement_libs libmap = do
 	(needlibs, replacement_libs', libmap') <- otool appbase replacement_libs libmap
 	libs <- forM needlibs $ \lib -> do
+		pathlib <- findLibPath lib
 		let shortlib = fromMaybe (error "internal") (M.lookup lib libmap')
 		let fulllib = dropWhile (== '/') lib
 		let dest = appbase </> fulllib
@@ -50,8 +51,8 @@ installLibs appbase replacement_libs libmap = do
 			( return Nothing
 			, do
 				createDirectoryIfMissing True (parentDir dest)
-				putStrLn $ "installing " ++ lib ++ " as " ++ shortlib
-				_ <- boolSystem "cp" [File lib, File dest]
+				putStrLn $ "installing " ++ pathlib ++ " as " ++ shortlib
+				_ <- boolSystem "cp" [File pathlib, File dest]
 				_ <- boolSystem "chmod" [Param "644", File dest]
 				_ <- boolSystem "ln" [Param "-s", File fulllib, File symdest]
 				return $ Just appbase
@@ -60,9 +61,9 @@ installLibs appbase replacement_libs libmap = do
 
 {- Returns libraries to install.
  -
- - Note that otool -L ignores DYLD_LIBRARY_PATH. But we do want to honor
- - that if set, so the library files found by otool are searched for on
- - that path.
+ - Note that otool -L ignores DYLD_LIBRARY_PATH, so the
+ - library files returned may need to be run through findLibPath
+ - to find the actual libraries to install.
  -}
 otool :: FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [(FilePath, FilePath)], LibMap)
 otool appbase replacement_libs libmap = do
@@ -75,8 +76,7 @@ otool appbase replacement_libs libmap = do
 	process c [] rls m = return (nub $ concat c, rls, m)
 	process c (file:rest) rls m = do
 		_ <- boolSystem "chmod" [Param "755", File file]
-		libs <- mapM findLibPath
-			=<< filter want . parseOtool
+		libs <- filter want . parseOtool
 			<$> readProcess "otool" ["-L", file]
 		expanded_libs <- expand_rpath libs replacement_libs file
 		let rls' = nub $ rls ++ (zip libs expanded_libs)
