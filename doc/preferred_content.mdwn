@@ -125,6 +125,9 @@ data until all clients have a copy.
 
 `(not (inallgroup=client and copies=client:2) and ($client)`
 
+(Where $client is a copy of the preferred content expression used for
+clients.)
+
 The "copies=client:2" part of the above handles the case where
 there is only one client repository. It makes a transfer repository
 speculatively  prefer content in this case, even though it as of yet
@@ -187,6 +190,9 @@ directories are not preferred once their content has
 reached an archive repository.
 
 `present and ($client)`
+
+(Where $client is a copy of the preferred content expression used for
+clients.)
 
 ### public
 
