@@ -7,11 +7,11 @@ at last. (I'm pretty sure the code would have never had this bug if
 Data.AssocList was not buried inside an xml library, which rather
 discourages using it when dealing with the environment.)
 
-Also worked on, and hopefully fixed anther OSX cpu optimisations problem.
+Also worked on, and hopefully fixed, another OSX cpu optimisations problem.
 This one involving shared libraries that git-annex uses for XMPP.
 
 Also made the assistant detect corrupt .git/annex/index files on startup
-and remove them. It already was able to recover from corrupt .git/index
+and remove them. It was already able to recover from corrupt .git/index
 files.
 
 Today's work was sponsored by David Wagner.
