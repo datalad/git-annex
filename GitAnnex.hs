@@ -84,8 +84,8 @@ import qualified Command.WebApp
 import qualified Command.XMPPGit
 #endif
 #endif
-#ifdef WITH_TESTSUITE
 import qualified Command.Test
+#ifdef WITH_TESTSUITE
 import qualified Command.FuzzTest
 #endif
 #ifdef WITH_EKG
