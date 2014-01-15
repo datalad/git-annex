@@ -1,0 +1,3 @@
+This is probably an extension of [[wishlist: more info in the standard commit message of `sync`]]:
+
+It would also help debugging if the default commit messages listed, e.g., the name of all the files modified by that commit (or merge).
