@@ -105,8 +105,8 @@ ok
 add conf/The Essence of Compiling with Continuations.pdf (checksum...) ok
 add conf/The Essence of Compiling with Continuations.pdf (checksum...) [2014-01-05 21:28:09 CST] Committer: Committing changes to git
 [2014-01-05 21:28:49 CST] Committer: Committing changes to git
-gpg: new configuration file `/home/tyc20/.gnupg/gpg.conf' created
-gpg: WARNING: options in `/home/tyc20/.gnupg/gpg.conf' are not yet active during this run
+gpg: new configuration file \`/home/tyc20/.gnupg/gpg.conf\' created
+gpg: WARNING: options in \`/home/tyc20/.gnupg/gpg.conf\' are not yet active during this run
 ok
 (Recording state in git...)
 (Recording state in git...)
