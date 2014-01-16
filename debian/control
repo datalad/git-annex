@@ -63,7 +63,7 @@ Build-Depends:
 	curl,
 	openssh-client,
 Maintainer: Joey Hess <joeyh@debian.org>
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Vcs-Git: git://git.kitenet.net/git-annex
 Homepage: http://git-annex.branchable.com/
 XS-Testsuite: autopkgtest
@@ -84,8 +84,12 @@ Recommends:
 	ssh-askpass,
 	quvi,
 	git-remote-gcrypt (>= 0.20130908-4),
-	nocache
-Suggests: graphviz, bup, libnss-mdns
+	nocache,
+Suggests:
+	graphviz,
+	bup,
+	tahoe-lafs,
+	libnss-mdns,
 Description: manage files with git, without checking their contents into git
  git-annex allows managing files with git, without checking the file
  contents into git. While that may seem paradoxical, it is useful when

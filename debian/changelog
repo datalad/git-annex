@@ -1,8 +1,7 @@
-git-annex (5.20140108) UNRELEASED; urgency=medium
+git-annex (5.20140116) unstable; urgency=medium
 
   * Added tahoe special remote.
   * external special remote protocol: Added GETGITDIR, and GETAVAILABILITY.
-  * Android: Avoid passing --clobber to busybox wget.
   * Refuse to build with git older than 1.7.1.1, which is needed for
     git checkout -B
   * map: Fix display of v5 direct mode repos.
@@ -15,12 +14,13 @@ git-annex (5.20140108) UNRELEASED; urgency=medium
     (These log files can be safely removed.)
   * assistant: Detect if .git/annex/index is corrupt at startup, and
     recover.
-  * Fix FTBFS on mipsel and sparc due to test suite not being available
-    on those architectures.
   * repair: Fix bug in packed refs file exploding code that caused a .gitrefs
     directory to be created instead of .git/refs
+  * Fix FTBFS on mipsel and sparc due to test suite not being available
+    on those architectures.
+  * Android: Avoid passing --clobber to busybox wget.
 
- -- Joey Hess <joeyh@debian.org>  Wed, 08 Jan 2014 13:13:54 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 16 Jan 2014 11:34:54 -0400
 
 git-annex (5.20140107) unstable; urgency=medium
 

@@ -1,11 +1,11 @@
 Name: git-annex
-Version: 5.20140107
+Version: 5.20140116
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
 Author: Joey Hess
 Stability: Stable
-Copyright: 2010-2013 Joey Hess
+Copyright: 2010-2014 Joey Hess
 License-File: COPYRIGHT
 Homepage: http://git-annex.branchable.com/
 Build-type: Custom
