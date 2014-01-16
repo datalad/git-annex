@@ -1,4 +1,0 @@
-git-annex 5.20131130 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * init: Fix a bug that caused git annex init, when run in a bare
-     repository, to set core.bare=false."""]]
