@@ -7,11 +7,12 @@
 
 module Command.Test where
 
+import Common
 import Command
 import Messages
 
 def :: [Command]
-def = [ dontCheck repoExists $
+def = [ noRepo startIO $ dontCheck repoExists $
 	command "test" paramNothing seek SectionPlumbing
 		"run built-in test suite"]
 
@@ -28,7 +29,10 @@ seek = [withWords start]
  - test suite.
  -}
 start :: [String] -> CommandStart
-start [] = do
-	warning "git-annex was built without its test suite; not testing"
+start ps = do
+	liftIO $ startIO ps
 	stop
-start _ = error "Cannot specify any additional parameters when running test"
+
+startIO :: CmdParams -> IO ()
+startIO [] = warningIO "git-annex was built without its test suite; not testing"
+startIO _ = error "Cannot specify any additional parameters when running test"

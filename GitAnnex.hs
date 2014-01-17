@@ -164,8 +164,8 @@ cmds = concat
 	, Command.XMPPGit.def
 #endif
 #endif
-#ifdef WITH_TESTSUITE
 	, Command.Test.def
+#ifdef WITH_TESTSUITE
 	, Command.FuzzTest.def
 #endif
 	]
