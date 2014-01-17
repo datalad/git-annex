@@ -276,7 +276,6 @@ deleteFromManifest dir = do
 
 removeEmptyRecursive :: FilePath -> IO ()
 removeEmptyRecursive dir = do
-	print ("remove", dir)
 	mapM_ removeEmptyRecursive =<< dirContents dir
 	void $ tryIO $ removeDirectory dir
 
