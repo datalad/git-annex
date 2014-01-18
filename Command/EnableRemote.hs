@@ -40,10 +40,10 @@ start (name:ws) = go =<< InitRemote.findExisting name
 unknownNameError :: String -> Annex a
 unknownNameError prefix = do
 	names <- InitRemote.remoteNames
-	error $ prefix ++
+	error $ prefix ++ "\n" ++
 		if null names
-			then ""
-			else " Known special remotes: " ++ unwords names
+			then "(No special remotes are currently known; perhaps use initremote instead?)"
+			else "Known special remotes: " ++ unwords names
 
 perform :: RemoteType -> UUID -> R.RemoteConfig -> CommandPerform
 perform t u c = do
