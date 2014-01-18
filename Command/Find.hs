@@ -18,9 +18,10 @@ import qualified Utility.Format
 import Utility.DataUnits
 import Types.Key
 import qualified Option
+import GitAnnex.Options
 
 def :: [Command]
-def = [noCommit $ noMessages $ withOptions [formatOption, print0Option] $
+def = [noCommit $ noMessages $ withOptions [formatOption, print0Option, jsonOption] $
 	command "find" paramPaths seek SectionQuery "lists available files"]
 
 formatOption :: Option

@@ -35,8 +35,6 @@ common =
 		"avoid verbose output"
 	, Option ['v'] ["verbose"] (NoArg (Annex.setOutput NormalOutput))
 		"allow verbose output (default)"
-	, Option ['j'] ["json"] (NoArg (Annex.setOutput JSONOutput))
-		"enable JSON output"
 	, Option ['d'] ["debug"] (NoArg setdebug)
 		"show debug messages"
 	, Option [] ["no-debug"] (NoArg unsetdebug)

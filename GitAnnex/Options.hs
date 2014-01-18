@@ -14,6 +14,7 @@ import qualified Git.Config
 import Git.Types
 import Command
 import Types.TrustLevel
+import Types.Messages
 import qualified Annex
 import qualified Remote
 import qualified Limit
@@ -85,3 +86,7 @@ toOption = Option.field ['t'] "to" paramRemote "destination remote"
 
 fromToOptions :: [Option]
 fromToOptions = [fromOption, toOption]
+
+jsonOption :: Option
+jsonOption = Option ['j'] ["json"] (NoArg (Annex.setOutput JSONOutput))
+	"enable JSON output"

@@ -21,6 +21,7 @@ import qualified Remote
 import qualified Command.Unused
 import qualified Git
 import qualified Annex
+import GitAnnex.Options
 import Command
 import Utility.DataUnits
 import Utility.DiskFree
@@ -70,8 +71,9 @@ data StatInfo = StatInfo
 type StatState = StateT StatInfo Annex
 
 def :: [Command]
-def = [noCommit $ command "info" paramPaths seek
-	SectionQuery "shows general information about the annex"]
+def = [noCommit $ withOptions [jsonOption] $
+	command "info" paramPaths seek SectionQuery
+	"shows general information about the annex"]
 
 seek :: [CommandSeek]
 seek = [withWords start]

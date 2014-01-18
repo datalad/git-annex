@@ -12,9 +12,10 @@ import Command
 import qualified Utility.Format
 import Command.Find (formatOption, withFormat, showFormatted, keyVars)
 import Types.Key
+import GitAnnex.Options
 
 def :: [Command]
-def = [noCommit $ noMessages $ withOptions [formatOption] $
+def = [noCommit $ noMessages $ withOptions [formatOption, jsonOption] $
 	command "examinekey" (paramRepeating paramKey) seek
 	SectionPlumbing "prints information from a key"]
 
