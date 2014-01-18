@@ -165,7 +165,7 @@ prepFiltered a fs = do
 	matcher <- Limit.getMatcher
 	map (process matcher) <$> fs
   where
-	process matcher f = ifM (matcher $ FileInfo f f)
+	process matcher f = ifM (matcher $ MatchingFile $ FileInfo f f)
 		( a f , return Nothing )
 
 notSymlink :: FilePath -> IO Bool

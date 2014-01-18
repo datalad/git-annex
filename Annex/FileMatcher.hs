@@ -35,11 +35,11 @@ checkFileMatcher' matcher file notpresent def
 	| isEmpty matcher = return def
 	| otherwise = do
 		matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
-		let fi = FileInfo
+		let mi = MatchingFile $ FileInfo
 			{ matchFile = matchfile
 			, relFile = file
 			}
-		matchMrun matcher $ \a -> a notpresent fi
+		matchMrun matcher $ \a -> a notpresent mi
 
 matchAll :: FileMatcher
 matchAll = generate []

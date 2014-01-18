@@ -75,7 +75,7 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 	)
 
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
-type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> FileInfo -> Annex Bool))
+type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> MatchInfo -> Annex Bool))
 
 -- internal state storage
 data AnnexState = AnnexState
@@ -95,7 +95,7 @@ data AnnexState = AnnexState
 	, checkignorehandle :: Maybe (Maybe CheckIgnoreHandle)
 	, forcebackend :: Maybe String
 	, forcenumcopies :: Maybe Int
-	, limit :: Matcher (FileInfo -> Annex Bool)
+	, limit :: Matcher (MatchInfo -> Annex Bool)
 	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe PreferredContentMap
 	, shared :: Maybe SharedRepository

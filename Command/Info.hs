@@ -312,7 +312,7 @@ getLocalStatInfo dir = do
   where
 	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats)
 	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats) =
-		ifM (matcher $ FileInfo file file)
+		ifM (matcher $ MatchingFile $ FileInfo file file)
 			( do
 				!presentdata' <- ifM (inAnnex key)
 					( return $ addKey key presentdata
