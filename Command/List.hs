@@ -33,7 +33,7 @@ allrepos = Option.flag [] "allrepos" "show all repositories, not only remotes"
 
 seek :: [CommandSeek]
 seek = 
-	[ withValue getList $ withNothing . startHeader
+	[ withValue getList $ withWords . startHeader
 	, withValue getList $ withFilesInGit . whenAnnexed . start
 	]
 
@@ -58,8 +58,8 @@ getList = ifM (Annex.getFlag $ Option.name allrepos)
 		return $ sortBy (comparing snd3) $
 			filter (\t -> thd3 t /= DeadTrusted) rs3
 
-startHeader :: [(UUID, RemoteName, TrustLevel)] -> CommandStart
-startHeader l = do
+startHeader :: [(UUID, RemoteName, TrustLevel)] -> [String] -> CommandStart
+startHeader l _ = do
 	liftIO $ putStrLn $ header $ map (\(_, n, t) -> (n, t)) l
 	stop
 
