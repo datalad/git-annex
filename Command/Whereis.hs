@@ -13,10 +13,12 @@ import Common.Annex
 import Command
 import Remote
 import Logs.Trust
+import GitAnnex.Options
 
 def :: [Command]
-def = [noCommit $ command "whereis" paramPaths seek
-	SectionQuery "lists repositories that have file content"]
+def = [noCommit $ withOptions [jsonOption] $
+	command "whereis" paramPaths seek SectionQuery
+		"lists repositories that have file content"]
 
 seek :: [CommandSeek]
 seek = [withValue (remoteMap id) $ \m ->
