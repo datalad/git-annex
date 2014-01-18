@@ -338,7 +338,9 @@ withUnusedMaps a params = do
 
 unusedSpec :: UnusedMap -> String -> [Int]
 unusedSpec m spec
-	| spec == "all" = [fst (M.findMin m)..fst (M.findMax m)]
+	| spec == "all" = if M.null m
+		then []
+		else [fst (M.findMin m)..fst (M.findMax m)]
 	| "-" `isInfixOf` spec = range $ separate (== '-') spec
 	| otherwise = maybe badspec (: []) (readish spec)
   where
