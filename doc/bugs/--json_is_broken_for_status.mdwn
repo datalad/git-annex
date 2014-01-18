@@ -29,3 +29,6 @@ Debian sid 5.20140116
 
 # End of transcript or log.
 """]]
+
+> Not all commands support json. Made this explict by making --json not be
+> a global option. Added --json support to status. [[done]]. --[[Joey]]

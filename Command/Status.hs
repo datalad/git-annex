@@ -15,9 +15,10 @@ import Config
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Ref
 import qualified Git
+import GitAnnex.Options
 
 def :: [Command]
-def = [notBareRepo $ noCommit $ noMessages $
+def = [notBareRepo $ noCommit $ noMessages $ withOptions [jsonOption] $
 	command "status" paramPaths seek SectionCommon
 		"show the working tree status"]
 
@@ -32,11 +33,11 @@ start [] = do
 	-- given the path to the top of the repository.
 	cwd <- liftIO getCurrentDirectory
 	top <- fromRepo Git.repoPath
-	next $ perform [relPathDirToFile cwd top]
-start locs = next $ perform locs
+	start' [relPathDirToFile cwd top]
+start locs = start' locs
 	
-perform :: [FilePath] -> CommandPerform
-perform locs = do
+start' :: [FilePath] -> CommandStart
+start' locs = do
 	(l, cleanup) <- inRepo $ LsFiles.modifiedOthers locs
 	getstatus <- ifM isDirect
 		( return statusDirect
@@ -44,7 +45,7 @@ perform locs = do
 		)
 	forM_ l $ \f -> maybe noop (showFileStatus f) =<< getstatus f
 	void $ liftIO cleanup
-	next $ return True
+	stop
 
 data Status 
 	= NewFile
@@ -57,7 +58,10 @@ showStatus DeletedFile = "D"
 showStatus ModifiedFile = "M"
 
 showFileStatus :: FilePath -> Status -> Annex ()
-showFileStatus f s  = liftIO $ putStrLn $ showStatus s ++ " " ++ f
+showFileStatus f s  = unlessM (showFullJSON [("status", ss), ("file", f)]) $
+	liftIO $ putStrLn $ ss ++ " " ++ f
+  where
+	ss = showStatus s
 
 statusDirect :: FilePath -> Annex (Maybe Status)
 statusDirect f = checkstatus =<< liftIO (catchMaybeIO $ getFileStatus f)

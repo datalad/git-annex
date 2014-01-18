@@ -1,6 +1,7 @@
 git-annex (5.20140118) UNRELEASED; urgency=medium
 
   * Remove --json option from commands not supporting it.
+  * status: Support --json.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 18 Jan 2014 11:54:17 -0400
 
