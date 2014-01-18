@@ -156,8 +156,8 @@ subdirectories).
   are pushed to the remote, so they can be merged into its working tree
   by running "git annex sync" on the remote.
 
-  Note that sync does not transfer any file contents from or to the remote
-  repositories.
+  Note that sync does not transfer any annexed file contents from or
+  to the remote repositories; it only syncs the git repositories.
 
 * `merge`
 
