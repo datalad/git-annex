@@ -23,7 +23,7 @@ revision control.
 
 When a file is annexed, its content is moved into a key-value store, and
 a symlink is made that points to the content. These symlinks are checked into
-git and versioned like regular files. You can move them around, delete 
+git and versioned like regular files. You can move them around, delete
 them, and so on. Pushing to another git repository will make git-annex
 there aware of the annexed file, and it can be used to retrieve its
 content from the key-value store.
@@ -54,7 +54,7 @@ content from the key-value store.
 
 # COMMONLY USED COMMANDS
 
-Like many git commands, git-annex can be passed a path that 
+Like many git commands, git-annex can be passed a path that
 is either a file or a directory. In the latter case it acts on all relevant
 files in the directory. When no path is specified, most git-annex commands
 default to acting on all relevant files in the current directory (and
@@ -78,7 +78,7 @@ subdirectories).
 
 * `drop [path ...]`
 
-  Drops the content of annexed files from this repository. 
+  Drops the content of annexed files from this repository.
 
   git-annex will refuse to drop content if it cannot verify it is
   safe to do so. This can be overridden with the `--force` switch.
@@ -86,7 +86,7 @@ subdirectories).
   To drop content from a remote, specify `--from`.
 
 * `move [path ...]`
-  
+
   When used with the `--from` option, moves the content of annexed files
   from the specified repository to the current one.
 
@@ -111,13 +111,13 @@ subdirectories).
 
   Similar to `git status --short`, displays the status of the files in the
   working tree. Shows files that are not checked into git, files that
-  have been deleted, and files that have been modified. 
-  Particulary useful in direct mode.
+  have been deleted, and files that have been modified.
+  Particularly useful in direct mode.
 
 * `unlock [path ...]`
 
   Normally, the content of annexed files is protected from being changed.
-  Unlocking a annexed file allows it to be modified. This replaces the
+  Unlocking an annexed file allows it to be modified. This replaces the
   symlink for each specified file with a copy of the file's content.
   You can then modify it and `git annex add` (or `git commit`) to inject
   it back into the annex.
@@ -139,21 +139,21 @@ subdirectories).
   the default is to sync with all remotes. Or specify `--fast` to sync with
   the remotes with the lowest annex-cost value.
 
-  The sync process involves first committing all local changes
+  The sync process involves first committing all local changes,
   then fetching and merging the `synced/master` and the `git-annex` branch
-  from the remote repositories and finally pushing the changes back to
+  from the remote repositories, and finally pushing the changes back to
   those branches on the remote repositories. You can use standard git
   commands to do each of those steps by hand, or if you don't want to
   worry about the details, you can use sync.
 
-  Merge conflicts are automatically resolved by sync. When two conflicting
+  Merge conflicts are automatically handled by sync. When two conflicting
   versions of a file have been committed, both will be added to the tree,
   under different filenames. For example, file "foo" would be replaced
   with "foo.somekey" and "foo.otherkey".
 
   Note that syncing with a remote will not update the remote's working
   tree with changes made to the local repository. However, those changes
-  are pushed to the remote, so can be merged into its working tree
+  are pushed to the remote, so they can be merged into its working tree
   by running "git annex sync" on the remote.
 
   Note that sync does not transfer any file contents from or to the remote
@@ -212,7 +212,7 @@ subdirectories).
   addurl can be used both to add new files, or to add urls to existing files.
 
   When quvi is installed, urls are automatically tested to see if they
-  are on a video hosting site, and the video is downloaded instead.
+  point to a video hosting site, and the video is downloaded instead.
 
 * `rmurl file url`
 
@@ -221,7 +221,7 @@ subdirectories).
 * `import [path ...]`
 
   Moves files from somewhere outside the git working copy, and adds them to
-  the annex. Individual files to import can be specified. 
+  the annex. Individual files to import can be specified.
   If a directory is specified, the entire directory is imported.
 
         	git annex import /media/camera/DCIM/*
@@ -285,7 +285,7 @@ subdirectories).
   files that it does not match will instead be added with `git add`.
 
   To not daemonize, run with `--foreground` ; to stop a running daemon,
-  run with `--stop`
+  run with `--stop`.
 
 * `assistant`
 
@@ -293,7 +293,7 @@ subdirectories).
   Typically started at boot, or when you log in.
 
   With the `--autostart` option, the assistant is started in any repositories
-  it has created. These are listed in `~/.config/git-annex/autostart`
+  it has created. These are listed in `~/.config/git-annex/autostart`.
 
 * `webapp`
 
@@ -319,7 +319,7 @@ subdirectories).
 
   It's useful, but not mandatory, to initialize each new clone
   of a repository with its own description. If you don't provide one,
-  one will be generated.
+  one will be generated using the username, hostname and the path.
 
 * `describe repository description`
 
@@ -331,7 +331,7 @@ subdirectories).
 
 * `initremote name [param=value ...]`
 
-  Creates a new special remote, and adds it to `.git/config`. 
+  Creates a new special remote, and adds it to `.git/config`.
 
   The remote's configuration is specified by the parameters. Different
   types of special remotes need different configuration values. The
@@ -340,7 +340,7 @@ subdirectories).
   All special remotes support encryption. You can either specify
   `encryption=none` to disable encryption, or specify
   `encryption=hybrid keyid=$keyid ...` to specify a GPG key id (or an email
-  address associated with a key.)
+  address associated with a key).
 
   There are actually three schemes that can be used for management of the
   encryption keys. When using the encryption=hybrid scheme, additional
@@ -368,7 +368,7 @@ subdirectories).
   which may be a different repository than the one in which it was
   originally created with the initremote command.
 
-  The name of the remote is the same name used when originally 
+  The name of the remote is the same name used when originally
   creating that remote with "initremote". Run "git annex enableremote"
   with no parameters to get a list of special remote names.
 
@@ -381,7 +381,7 @@ subdirectories).
   the as the encryption scheme cannot be changed once a special remote
   has been created.)
 
-  The GPG keys that an encrypted special remote is encrypted to can be
+  The GPG keys that an encrypted special remote is encrypted with can be
   changed using the keyid+= and keyid-= parameters. These respectively
   add and remove keys from the list. However, note that removing a key
   does NOT necessarily prevent the key's owner from accessing data
@@ -417,7 +417,7 @@ subdirectories).
 
 * `dead [repository ...]`
 
-  Indicates that the repository has been irretrevably lost.
+  Indicates that the repository has been irretrievably lost.
   (To undo, use semitrust.)
 
 * `group repository groupname`
@@ -632,7 +632,7 @@ subdirectories).
   `--since`, `--after`, `--until`, `--before`, and `--max-count` can be specified.
   They are passed through to git log. For example, `--since "1 month ago"`
 
-  To generate output suitable for the gource visualisation program,
+  To generate output suitable for the gource visualization program,
   specify `--gource`.
 
 * `info [directory ...]`
@@ -652,6 +652,7 @@ subdirectories).
   Then run:
 
         	git annex info --fast . --not --in here
+
 * `version`
 
   Shows the version of git-annex, as well as repository version information.
@@ -757,7 +758,7 @@ subdirectories).
 
   For example, the location a key's value is stored (in indirect mode)
   can be looked up by running:
-  
+
         	git annex examinekey --format='.git/annex/objects/${hashdirmixed}${key}/${key}'
 
 * `fromkey key file`
@@ -817,12 +818,12 @@ subdirectories).
 
 * `--fast`
 
-  Enables less expensive, but also less thorough versions of some commands.
+  Enable less expensive, but also less thorough versions of some commands.
   What is avoided depends on the command.
 
 * `--auto`
 
-  Enables automatic mode. Commands that get, drop, or move file contents
+  Enable automatic mode. Commands that get, drop, or move file contents
   will only do so when needed to help satisfy the setting of annex.numcopies,
   and preferred content configuration.
 
@@ -852,8 +853,8 @@ subdirectories).
 
   Rather than the normal output, generate JSON. This is intended to be
   parsed by programs that use git-annex. Each line of output is a JSON
-  object. Note that json output is only usable with some git-annex commands,
-  like info and find.
+  object. Note that JSON output is only usable with some git-annex commands,
+  like info, find, and whereis.
 
 * `--debug`
 
@@ -879,7 +880,7 @@ subdirectories).
 * `--numcopies=n`
 
   Overrides the `annex.numcopies` setting, forcing git-annex to ensure the
-  specified number of copies exist. 
+  specified number of copies exist.
 
   Note that setting numcopies to 0 is very unsafe.
 
@@ -891,7 +892,7 @@ subdirectories).
   Note that git-annex may continue running a little past the specified
   time limit, in order to finish processing a file.
 
-  Also, note that if the time limit prevents git-annex from doing all it 
+  Also, note that if the time limit prevents git-annex from doing all it
   was asked to, it will exit with a special code, 101.
 
 * `--trust=repository`
@@ -912,7 +913,7 @@ subdirectories).
 
   Be careful using this, especially if you or someone else might have recently
   removed a file from Glacier. If you try to drop the only other copy of the
-  file, and this switch is enabled, you could lose data!  
+  file, and this switch is enabled, you could lose data!
 
 * `--backend=name`
 
@@ -937,7 +938,7 @@ subdirectories).
 
 * `-c name=value`
 
-  Used to override git configuration settings. May be specified multiple times.
+  Overrides git configuration settings. May be specified multiple times.
 
 # FILE MATCHING OPTIONS
 
@@ -1020,13 +1021,13 @@ file contents are present at either of two repositories.
 
   Matches files that the preferred content settings for the repository
   make it want to get. Note that this will match even files that are
-  already present, unless limited with eg, `--not --in .`
+  already present, unless limited with e.g., `--not --in .`
 
 * `--want-drop`
 
   Matches files that the preferred content settings for the repository
   make it want to drop. Note that this will match even files that have
-  already been dropped, unless limited with eg, `--in .`
+  already been dropped, unless limited with e.g., `--in .`
 
 * `--not`
 
@@ -1076,7 +1077,7 @@ built-in preferred content expression developed for that group.
 The git-annex assistant daemon can be configured to run scheduled jobs.
 This is similar to cron and anacron (and you can use them if you prefer),
 but has the advantage of being integrated into git-annex, and so being able
-to eg, fsck a repository on a removable drive when the drive gets
+to e.g., fsck a repository on a removable drive when the drive gets
 connected.
 
 The scheduled jobs can be configured using `git annex vicfg` or
@@ -1158,7 +1159,7 @@ Here are all the supported configuration settings.
 * `annex.bloomaccuracy`
 
   Adjusts the accuracy of the bloom filter used by
-  `git annex unused`. The default accuracy is 1000 -- 
+  `git annex unused`. The default accuracy is 1000 --
   1 unused file out of 1000 will be missed by `git annex unused`. Increasing
   the accuracy will make `git annex unused` consume more memory;
   run `git annex info` for memory usage numbers.
@@ -1238,7 +1239,7 @@ Here are all the supported configuration settings.
 * `remote.<name>.annex-cost-command`
 
   If set, the command is run, and the number it outputs is used as the cost.
-  This allows varying the cost based on eg, the current network. The
+  This allows varying the cost based on e.g., the current network. The
   cost-command can be any shell command line.
 
 * `remote.<name>.annex-start-command`
@@ -1423,7 +1424,7 @@ Here are all the supported configuration settings.
 
   It is set to "true" if this is a gcrypt remote.
   If the gcrypt remote is accessible over ssh and has git-annex-shell
-  available to manage it, it's set to "shell"
+  available to manage it, it's set to "shell".
 
 * `remote.<name>.hooktype`, `remote.<name>.externaltype`
 
@@ -1466,11 +1467,11 @@ to start the git-annex assistant in.
 
 # SEE ALSO
 
-Most of git-annex's documentation is available on its web site, 
+Most of git-annex's documentation is available on its web site,
 <http://git-annex.branchable.com/>
 
 If git-annex is installed from a package, a copy of its documentation
-should be included, in, for example, `/usr/share/doc/git-annex/`
+should be included, in, for example, `/usr/share/doc/git-annex/`.
 
 # AUTHOR
 
@@ -1478,4 +1479,4 @@ Joey Hess <joey@kitenet.net>
 
 <http://git-annex.branchable.com/>
 
-Warning: Automatically converted into a man page by mdwn2man. Edit with care
+Warning: Automatically converted into a man page by mdwn2man. Edit with care.
