@@ -158,7 +158,10 @@ withKeyOptions keyop fallbackop params = do
   	go a = do
 		unless (null params) $
 			error "Cannot mix --all or --unused with file names."
-		map keyop <$> a
+		matcher <- Limit.getMatcher
+		map (process matcher) <$> a
+	process matcher k = ifM (matcher $ MatchingKey k)
+		( keyop k , return Nothing)
 
 prepFiltered :: (FilePath -> CommandStart) -> Annex [FilePath] -> Annex [CommandStart]
 prepFiltered a fs = do

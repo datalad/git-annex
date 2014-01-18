@@ -16,7 +16,7 @@ If a file matches, it's preferred to have its content stored in the
 repository. If it doesn't, it's preferred to drop its content from
 the repository (if there are enough copies elsewhere).
 
-The expressions are very similar to the file matching options documented
+The expressions are very similar to the matching options documented
 on the [[git-annex]] man page. At the command line, you can use those
 options in commands like this:
 

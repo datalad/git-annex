@@ -601,7 +601,7 @@ subdirectories).
   finds files in the current directory and its subdirectories.
 
   By default, only lists annexed files whose content is currently present.
-  This can be changed by specifying file matching options. To list all
+  This can be changed by specifying matching options. To list all
   annexed files, present or not, specify `--include "*"`. To list all
   annexed files whose content is not present, specify `--not --in=here`
 
@@ -643,7 +643,7 @@ subdirectories).
   To only show the data that can be gathered quickly, use `--fast`.
 
   When a directory is specified, shows a differently formatted info
-  display for that directory. In this mode, all of the file matching
+  display for that directory. In this mode, all of the matching
   options can be used to filter the files that will be included in
   the information.
 
@@ -835,8 +835,6 @@ subdirectories).
   normal behavior is to only operate on specified files in the working
   tree.
 
-  Note that --all overrides any other file matching options.
-
 * `--unused`
 
   Operate on all data that has been determined to be unused by
@@ -942,7 +940,7 @@ subdirectories).
 
   Overrides git configuration settings. May be specified multiple times.
 
-# FILE MATCHING OPTIONS
+# MATCHING OPTIONS
 
 These options can all be specified multiple times, and can be combined to
 limit which files git-annex acts on.
@@ -962,12 +960,16 @@ file contents are present at either of two repositories.
 
         	--exclude='*.mp3' --exclude='subdir/*'
 
+  Note that this will not match anything when using --all or --unused.
+
 * `--include=glob`
 
   Skips files not matching the glob pattern.  (Same as `--not --exclude`.)
   For example, to include only mp3 and ogg files:
 
         	--include='*.mp3' --or --include='*.ogg'
+
+  Note that this will not skip anything when using --all or --unused.
 
 * `--in=repository`
 
@@ -1024,34 +1026,38 @@ file contents are present at either of two repositories.
   Matches files that the preferred content settings for the repository
   make it want to get. Note that this will match even files that are
   already present, unless limited with e.g., `--not --in .`
+  
+  Note that this will not match anything when using --all or --unused.
 
 * `--want-drop`
 
   Matches files that the preferred content settings for the repository
   make it want to drop. Note that this will match even files that have
   already been dropped, unless limited with e.g., `--in .`
+  
+  Note that this will not match anything when using --all or --unused.
 
 * `--not`
 
-  Inverts the next file matching option. For example, to only act on
+  Inverts the next matching option. For example, to only act on
   files with less than 3 copies, use `--not --copies=3`
 
 * `--and`
 
-  Requires that both the previous and the next file matching option matches.
+  Requires that both the previous and the next matching option matches.
   The default.
 
 * `--or`
 
-  Requires that either the previous, or the next file matching option matches.
+  Requires that either the previous, or the next matching option matches.
 
 * `-(`
 
-  Opens a group of file matching options.
+  Opens a group of matching options.
 
 * `-)`
 
-  Closes a group of file matching options.
+  Closes a group of matching options.
 
 # PREFERRED CONTENT
 
@@ -1061,7 +1067,7 @@ using `git annex vicfg` or `git annex wanted`.
 They are used by the `--auto` option, and by the git-annex assistant.
 
 The preferred content settings are similar, but not identical to
-the file matching options specified above, just without the dashes.
+the matching options specified above, just without the dashes.
 For example:
 
 	exclude=archive/* and (include=*.mp3 or smallerthan=1mb)
