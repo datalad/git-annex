@@ -504,11 +504,13 @@ syncContent rs f (k, _) = do
 	locs <- loggedLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 	
-	results <- mapM run =<< concat <$> sequence
-		[ handleget have
-		, handleput lack
-		]
-	handleDropsFrom locs rs "unwanted" True k (Just f) Nothing
+	getresults <- sequence =<< handleget have
+	(putresults, putrs) <- unzip <$> (sequence =<< handleput lack)
+
+	let locs' = catMaybes putrs ++ locs
+	handleDropsFrom locs' rs "unwanted" True k (Just f) Nothing
+
+	let results = getresults ++ putresults
 	if null results
 		then stop
 		else do
@@ -531,7 +533,7 @@ syncContent rs f (k, _) = do
 		)
 	get have = do
 		showStart "get" f
-		getViaTmp k $ \dest -> getKeyFile' k (Just f) dest have
+		run $ getViaTmp k $ \dest -> getKeyFile' k (Just f) dest have
 
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Types.Remote.gitconfig r) = return False
@@ -543,8 +545,8 @@ syncContent rs f (k, _) = do
 	put dest = do
 		showStart "copy" f
 		showAction $ "to " ++ Remote.name dest
-		ok <- upload (Remote.uuid dest) k (Just f) noRetry $
+		ok <- run $ upload (Remote.uuid dest) k (Just f) noRetry $
 			Remote.storeKey dest k (Just f)
 		when ok $
 			Remote.logStatus dest k InfoPresent
-		return ok
+		return (ok, if ok then Just (Remote.uuid dest) else Nothing)
