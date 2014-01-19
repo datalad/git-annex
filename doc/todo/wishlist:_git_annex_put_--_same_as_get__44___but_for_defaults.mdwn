@@ -15,3 +15,6 @@ My main reason for not wanting to use copy --to is that I need to specify the re
     mr push
 
 to do the right thing all by itself.
+
+> I feel that the new `git annex sync --content` is pretty close to what's
+> requested here. [[done]] --[[Joey]]

@@ -30,3 +30,5 @@ M.
 
 # End of transcript or log.
 """]]
+
+> [[duplicate|done]] of [[checksum_verification_on_transfer]] --[[Joey]] 

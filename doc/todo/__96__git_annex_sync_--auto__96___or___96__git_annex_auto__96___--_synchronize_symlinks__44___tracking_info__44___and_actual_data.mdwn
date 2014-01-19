@@ -1,3 +1,6 @@
-As per DebConf13: Introduce a one-shot command to synchronize everything, including data, with the other remotes.
+As per DebConf13: Introduce a one-shot command to synchronize everything,
+including data, with the other remotes.
 
 Especially useful for the debconf annex.
+
+> [[done]]; `git annex sync --content` --[[Joey]]
