@@ -7,7 +7,7 @@ fixes to make it build on all architectures again, and then the
 backport can be updated again too.
 
 I have been struggling with a problem with the OSX builds, which fail with
-a SIGILL on some machines. It seems that homebrew likes to agressively
+a SIGKILL on some machines. It seems that homebrew likes to agressively
 optimise things it builds, and while I have had some success with its
 `--build-bottle` option, something in the gnutls stack used for XMPP is
 still over-optimised. Waiting to hear back from Kevin on cleaning up some
