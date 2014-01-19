@@ -156,8 +156,12 @@ subdirectories).
   are pushed to the remote, so they can be merged into its working tree
   by running "git annex sync" on the remote.
 
-  Note that sync does not transfer any annexed file contents from or
-  to the remote repositories; it only syncs the git repositories.
+  With the `--content` option, the contents of annexed files in the work
+  tree will also be uploaded and downloaded from remotes. By default,
+  this tries to get each annexed file that the local repository does not
+  yet have, and then copies each file to every remote that it is syncing with.
+  This behavior can be overridden by configuring the preferred content of
+  a repository. See see PREFERRED CONTENT below.
 
 * `merge`
 

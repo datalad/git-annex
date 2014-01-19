@@ -1,5 +1,8 @@
 git-annex (5.20140118) UNRELEASED; urgency=medium
 
+  * sync --content: New option that makes the content of annexed files be
+    transferred. Similar to the assistant, this honors any configured
+    preferred content expressions.
   * Remove --json option from commands not supporting it.
   * status: Support --json.
   * list: Fix specifying of files to list.

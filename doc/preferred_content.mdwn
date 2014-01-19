@@ -3,13 +3,15 @@ data always exist, and leaves it up to you to use commands like `git annex
 get` and `git annex drop` to move the content to the repositories you want
 to contain it. But sometimes, it can be good to have more fine-grained
 control over which repositories prefer to have which content. Configuring
-this allows `git annex get --auto`, `git annex drop --auto`, etc to do
-smarter things.
+this allows the git-annex assistant as well as 
+`git annex get --auto`, `git annex drop --auto`, `git annex sync --content`,
+etc to do smarter things.
 
 Preferred content settings can be edited using `git
 annex vicfg`, or viewed and set at the command line with `git annex wanted`.
-Each repository can have its own settings, and other repositories may also
-try to honor those settings. So there's no local `.git/config` setting it.
+Each repository can have its own settings, and other repositories will
+try to honor those settings when interacting with it.
+So there's no local `.git/config` for preferred content settings.
 
 The idea is that you write an expression that files are matched against.
 If a file matches, it's preferred to have its content stored in the

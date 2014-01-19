@@ -1,7 +1,7 @@
 {- git-annex command
  -
  - Copyright 2011 Joachim Breitner <mail@joachim-breitner.de>
- - Copyright 2011,2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,10 +10,11 @@ module Command.Sync where
 
 import Common.Annex
 import Command
-import qualified Remote
 import qualified Annex
 import qualified Annex.Branch
 import qualified Annex.Queue
+import qualified Remote
+import qualified Types.Remote as Remote
 import Annex.Direct
 import Annex.CatFile
 import Annex.Link
@@ -26,18 +27,33 @@ import qualified Git
 import Git.Types (BlobType(..))
 import qualified Types.Remote
 import qualified Remote.Git
+import qualified Option
 import Types.Key
 import Config
 import Annex.ReplaceFile
 import Git.FileMode
+import Annex.Wanted
+import Annex.Content
+import Command.Get (getKeyFile')
+import Logs.Transfer
+import Logs.Presence
+import Logs.Location
+import Annex.Drop
 
 import qualified Data.Set as S
 import Data.Hash.MD5
 import Control.Concurrent.MVar
 
 def :: [Command]
-def = [command "sync" (paramOptional (paramRepeating paramRemote))
+def = [withOptions syncOptions $
+	command "sync" (paramOptional (paramRepeating paramRemote))
 	[seek] SectionCommon "synchronize local repository with remotes"]
+
+syncOptions :: [Option]
+syncOptions = [ contentOption ]
+
+contentOption :: Option
+contentOption = Option.flag [] "content" "also transfer file contents"
 
 -- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek
@@ -60,17 +76,26 @@ seek rs = do
 	let withbranch a = a =<< getbranch
 
 	remotes <- syncRemotes rs
+	let gitremotes = filter Remote.gitSyncableRemote remotes
+
+	synccontent <- ifM (Annex.getFlag $ Option.name contentOption)
+		( withFilesInGit (whenAnnexed $ syncContent remotes) []
+		, return []
+		)
+	
 	return $ concat
 		[ [ commit ]
 		, [ withbranch mergeLocal ]
-		, [ withbranch (pullRemote remote) | remote <- remotes ]
+		, map (withbranch . pullRemote) gitremotes
 		, [ mergeAnnex ]
+		, synccontent
 		, [ withbranch pushLocal ]
-		, [ withbranch (pushRemote remote) | remote <- remotes ]
+		, map (withbranch . pushRemote) gitremotes
 		]
 
 {- Merging may delete the current directory, so go to the top
- - of the repo. -}
+ - of the repo. This also means that sync always acts on all files in the
+ - repository, not just on a subdirectory. -}
 prepMerge :: Annex ()
 prepMerge = liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
 
@@ -83,21 +108,16 @@ remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
 syncRemotes :: [String] -> Annex [Remote]
 syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
   where
-	pickfast = (++) <$> listed <*> (good =<< fastest <$> available)
+	pickfast = (++) <$> listed <*> (filterM good =<< fastest <$> available)
 	wanted
-		| null rs = good =<< concat . Remote.byCost <$> available
+		| null rs = filterM good =<< concat . Remote.byCost <$> available
 		| otherwise = listed
-	listed = do
-		l <- catMaybes <$> mapM (Remote.byName . Just) rs
-		let s = filter (not . Remote.syncableRemote) l
-		unless (null s) $
-			error $ "cannot sync special remotes: " ++
-				unwords (map Types.Remote.name s)
-		return l
-	available = filter Remote.syncableRemote
-		. filter (remoteAnnexSync . Types.Remote.gitconfig)
+	listed = catMaybes <$> mapM (Remote.byName . Just) rs
+	available = filter (remoteAnnexSync . Types.Remote.gitconfig)
 		<$> Remote.remoteList
-	good = filterM $ Remote.Git.repoAvail . Types.Remote.repo
+	good r
+		| Remote.gitSyncableRemote r = Remote.Git.repoAvail $ Types.Remote.repo r
+		| otherwise = return True
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
 commit :: CommandStart
@@ -152,6 +172,9 @@ mergeLocal (Just branch) = go =<< needmerge
 pushLocal :: Maybe Git.Ref -> CommandStart
 pushLocal Nothing = stop
 pushLocal (Just branch) = do
+	-- In case syncing content made changes to the git-annex branch,
+	-- commit it.
+	Annex.Branch.commit "update"
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch $ syncBranch branch
 	-- In direct mode, we're operating on some special direct mode
@@ -464,3 +487,64 @@ newer remote b = do
 		( inRepo $ Git.Branch.changed r b
 		, return True
 		)
+
+{- If it's preferred content, and we don't have it, get it from one of the
+ - listed remotes (preferring the cheaper earlier ones).
+ -
+ - Send it to each remote that doesn't have it, and for which it's
+ - preferred content.
+ -
+ - Drop it locally if it's not preferred content (honoring numcopies).
+ - 
+ - Drop it from each remote that has it, where it's not preferred content
+ - (honoring numcopies).
+ -}
+syncContent :: [Remote] -> FilePath -> (Key, Backend) -> CommandStart
+syncContent rs f (k, _) = do
+	locs <- loggedLocations k
+	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
+	
+	results <- mapM run =<< concat <$> sequence
+		[ handleget have
+		, handleput lack
+		]
+	handleDropsFrom locs rs "unwanted" True k (Just f) Nothing
+	if null results
+		then stop
+		else do
+			showStart "sync" f
+			next $ next $ return $ all id results
+  where
+	run a = do
+		r <- a
+		showEndResult r
+		return r
+
+  	wantget have = allM id 
+		[ pure (not $ null have)
+		, not <$> inAnnex k
+		, wantGet True (Just f)
+		]
+	handleget have = ifM (wantget have)
+		( return [ get have ]
+		, return []
+		)
+	get have = do
+		showStart "get" f
+		getViaTmp k $ \dest -> getKeyFile' k (Just f) dest have
+
+	wantput r
+		| Remote.readonly r || remoteAnnexReadOnly (Types.Remote.gitconfig r) = return False
+		| otherwise = wantSend True (Just f) (Remote.uuid r)
+	handleput lack = ifM (inAnnex k)
+		( map put <$> (filterM wantput lack)
+		, return []
+		)
+	put dest = do
+		showStart "copy" f
+		showAction $ "to " ++ Remote.name dest
+		ok <- upload (Remote.uuid dest) k (Just f) noRetry $
+			Remote.storeKey dest k (Just f)
+		when ok $
+			Remote.logStatus dest k InfoPresent
+		return ok

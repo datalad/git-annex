@@ -59,7 +59,11 @@ perform key afile = stopUnless (getViaTmp key $ getKeyFile key afile) $
 {- Try to find a copy of the file in one of the remotes,
  - and copy it to here. -}
 getKeyFile :: Key -> AssociatedFile -> FilePath -> Annex Bool
-getKeyFile key afile dest = dispatch =<< Remote.keyPossibilities key
+getKeyFile key afile dest = getKeyFile' key afile dest
+	=<< Remote.keyPossibilities key
+
+getKeyFile' :: Key -> AssociatedFile -> FilePath -> [Remote] -> Annex Bool
+getKeyFile' key afile dest = dispatch
   where
 	dispatch [] = do
 		showNote "not available"

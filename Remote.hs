@@ -20,7 +20,7 @@ module Remote (
 
 	remoteTypes,
 	remoteList,
-	syncableRemote,
+	gitSyncableRemote,
 	remoteMap,
 	uuidDescriptions,
 	byName,

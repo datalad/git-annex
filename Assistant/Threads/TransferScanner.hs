@@ -156,7 +156,7 @@ expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 		syncrs <- syncDataRemotes <$> getDaemonStatus
 		locs <- liftAnnex $ loggedLocations key
 		present <- liftAnnex $ inAnnex key
-		handleDropsFrom locs syncrs
+		liftAnnex $ handleDropsFrom locs syncrs
 			"expensive scan found too many copies of object"
 			present key (Just f) Nothing
 		liftAnnex $ do

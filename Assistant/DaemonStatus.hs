@@ -59,7 +59,7 @@ calcSyncRemotes = do
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
-		, syncGitRemotes = filter Remote.syncableRemote syncable
+		, syncGitRemotes = filter Remote.gitSyncableRemote syncable
 		, syncDataRemotes = syncdata
 		, syncingToCloudRemote = any iscloud syncdata
 		}
