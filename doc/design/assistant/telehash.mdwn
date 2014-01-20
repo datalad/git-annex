@@ -75,7 +75,9 @@ Advantages:
   (for example, if c-telehash development stalls and the nodejs version is
   already usable)
 * Potentially could be generalized to handle other similar protocols.
-  Or even the xmpp code moved into it.
+  Or even the xmpp code moved into it. There could even be git-annex native
+  exchange protocols implemented in such a daemon to allow SSH-less
+  transfers.
 * Security holes in telehash would not need to compromise the entire
   git-annex. gathd could be sandboxed in one way or another.
 
