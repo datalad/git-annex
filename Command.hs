@@ -16,7 +16,6 @@ module Command (
 	next,
 	stop,
 	stopUnless,
-	runCommand,
 	whenAnnexed,
 	ifAnnexed,
 	isBareRepo,
