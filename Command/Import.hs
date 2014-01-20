@@ -61,8 +61,10 @@ getDuplicateMode = gen
 	gen False False False True = SkipDuplicates
 	gen _ _ _ _ = error "bad combination of --duplicate, --deduplicate, --clean-duplicates, --skip-duplicates"
 
-seek :: [CommandSeek]
-seek = [withValue getDuplicateMode $ \mode -> withPathContents $ start mode]
+seek :: CommandSeek
+seek ps = do
+	mode <- getDuplicateMode
+	withPathContents (start mode) ps
 
 start :: DuplicateMode -> (FilePath, FilePath) -> CommandStart
 start mode (srcfile, destfile) =

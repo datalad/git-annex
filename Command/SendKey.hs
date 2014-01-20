@@ -20,8 +20,8 @@ def :: [Command]
 def = [noCommit $ command "sendkey" paramKey seek
 	SectionPlumbing "runs rsync in server mode to send content"]
 
-seek :: [CommandSeek]
-seek = [withKeys start]
+seek :: CommandSeek
+seek = withKeys start
 
 start :: Key -> CommandStart
 start key = do

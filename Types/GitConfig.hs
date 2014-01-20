@@ -24,7 +24,7 @@ import Types.Availability
  - such as annex.foo -}
 data GitConfig = GitConfig
 	{ annexVersion :: Maybe String
-	, annexNumCopies :: Int
+	, annexNumCopies :: Maybe Int
 	, annexDiskReserve :: Integer
 	, annexDirect :: Bool
 	, annexBackends :: [String]
@@ -52,7 +52,7 @@ data GitConfig = GitConfig
 extractGitConfig :: Git.Repo -> GitConfig
 extractGitConfig r = GitConfig
 	{ annexVersion = notempty $ getmaybe (annex "version")
-	, annexNumCopies = get (annex "numcopies") 1
+	, annexNumCopies = getmayberead (annex "numcopies")
 	, annexDiskReserve = fromMaybe onemegabyte $
 		readSize dataUnits =<< getmaybe (annex "diskreserve")
 	, annexDirect = getbool (annex "direct") False

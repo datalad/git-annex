@@ -27,9 +27,10 @@ def = [withOptions [fromOption] $ command "drop" paramPaths seek
 fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "drop content from a remote"
 
-seek :: [CommandSeek]
-seek = [withField fromOption Remote.byNameWithUUID $ \from ->
-	withFilesInGit $ whenAnnexed $ start from]
+seek :: CommandSeek
+seek ps = do
+	from <- getOptionField fromOption Remote.byNameWithUUID
+	withFilesInGit (whenAnnexed $ start from) ps
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = checkDropAuto from file key $ \numcopies ->
@@ -138,7 +139,7 @@ notEnoughCopies key need have skip bad = do
 	return False
   where
 	unsafe = showNote "unsafe"
-	hint = showLongNote "(Use --force to override this check, or adjust annex.numcopies.)"
+	hint = showLongNote "(Use --force to override this check, or adjust numcopies.)"
 
 {- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories.

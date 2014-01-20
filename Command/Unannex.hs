@@ -23,8 +23,8 @@ def :: [Command]
 def = [command "unannex" paramPaths seek SectionUtility
 		"undo accidential add command"]
 
-seek :: [CommandSeek]
-seek = [withFilesInGit $ whenAnnexed start]
+seek :: CommandSeek
+seek = withFilesInGit $ whenAnnexed start
 
 start :: FilePath -> (Key, Backend) -> CommandStart
 start file (key, _) = stopUnless (inAnnex key) $ do

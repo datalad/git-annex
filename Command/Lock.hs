@@ -16,8 +16,10 @@ def :: [Command]
 def = [notDirect $ command "lock" paramPaths seek SectionCommon
 	"undo unlock command"]
 
-seek :: [CommandSeek]
-seek = [withFilesUnlocked start, withFilesUnlockedToBeCommitted start]
+seek :: CommandSeek
+seek ps = do
+	withFilesUnlocked start ps
+	withFilesUnlockedToBeCommitted start ps
 
 start :: FilePath -> CommandStart
 start file = do

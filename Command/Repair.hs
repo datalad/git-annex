@@ -20,8 +20,8 @@ def :: [Command]
 def = [noCommit $ dontCheck repoExists $
 	command "repair" paramNothing seek SectionMaintenance "recover broken git repository"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = next $ next $ runRepair =<< Annex.getState Annex.force

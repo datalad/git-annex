@@ -104,7 +104,7 @@ builtin cmd dir params = do
 		Git.Construct.repoAbsPath dir >>= Git.Construct.fromAbsPath
   where
 	addrsyncopts opts seek k = setField "RsyncOptions" opts >> seek k
-	newcmd opts c = c { cmdseek = map (addrsyncopts opts) (cmdseek c) }
+	newcmd opts c = c { cmdseek = addrsyncopts opts (cmdseek c) }
 
 external :: [String] -> IO ()
 external params = do

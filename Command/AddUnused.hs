@@ -18,8 +18,8 @@ def :: [Command]
 def = [notDirect $ command "addunused" (paramRepeating paramNumRange)
 	seek SectionMaintenance "add back unused files"]
 
-seek :: [CommandSeek]
-seek = [withUnusedMaps start]
+seek :: CommandSeek
+seek = withUnusedMaps start
 
 start :: UnusedMaps -> Int -> CommandStart
 start = startUnused "addunused" perform

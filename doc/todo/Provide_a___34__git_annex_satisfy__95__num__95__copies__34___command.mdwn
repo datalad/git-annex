@@ -7,12 +7,10 @@ for i in `git remote`; do git copy -to $i --auto; done
 The use case is this:
 I have a very large repo (300.000 files) in three places. Now I want the fastest possible way to ensure, that every file exists in annex.numcopies. This should scan every file one time and then get it or copy it to other repos as needed. Right now, I make one "git annex get --auto" in every repo, which is is a waste of time, since most of the files never change anyway!
 
-> The closest we have to this is the (new) `git annex sync --content`.
-> It does effectivly just what the shown for loop does.
+> Now `git annex sync --content` does effectivly just what the shown for
+> loop does. [[done]]
 > 
-> But, that actually satisfies preferred content settings, which default
-> to preferring every repo have a copy, and even if configured will
-> typically be more than numcopies.
-> 
-> Numcopies is more of a minimum lower bound (though not a hard bound).
+> The only difference is that copy --auto proactively downloads otherwise
+> unwanted files to satisfy numcopies, and sync --content does not.
+> We need a [[preferred_content_numcopies_check]] to solve that.
 > --[[Joey]]

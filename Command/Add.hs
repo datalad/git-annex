@@ -41,18 +41,18 @@ def = [notBareRepo $ command "add" paramPaths seek SectionCommon
 {- Add acts on both files not checked into git yet, and unlocked files.
  -
  - In direct mode, it acts on any files that have changed. -}
-seek :: [CommandSeek]
-seek =
-	[ go withFilesNotInGit
-	, whenNotDirect $ go withFilesUnlocked
-	, whenDirect $ go withFilesMaybeModified
-	]
-  where
-  	go a = withValue largeFilesMatcher $ \matcher ->
-		a $ \file -> ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
-			( start file
-			, stop
-			)
+seek :: CommandSeek
+seek ps = do
+	matcher <- largeFilesMatcher
+	let go a = flip a ps $ \file -> ifM (checkFileMatcher matcher file <||> Annex.getState Annex.force)
+		( start file
+		, stop
+		)
+	go withFilesNotInGit
+	ifM isDirect
+		( go withFilesMaybeModified
+		, go withFilesUnlocked
+		)
 
 {- The add subcommand annexes a file, generating a key for it using a
  - backend, and then moving it into the annex directory and setting up

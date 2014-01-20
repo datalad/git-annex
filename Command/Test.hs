@@ -16,8 +16,8 @@ def = [ noRepo startIO $ dontCheck repoExists $
 	command "test" paramNothing seek SectionPlumbing
 		"run built-in test suite"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 {- We don't actually run the test suite here because of a dependency loop.
  - The main program notices when the command is test and runs it; this

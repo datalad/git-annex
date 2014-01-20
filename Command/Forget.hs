@@ -26,9 +26,10 @@ forgetOptions = [dropDeadOption]
 dropDeadOption :: Option
 dropDeadOption = Option.flag [] "drop-dead" "drop references to dead repositories"
 
-seek :: [CommandSeek]
-seek = [withFlag dropDeadOption $ \dropdead ->
-	withNothing $ start dropdead]
+seek :: CommandSeek
+seek ps = do
+	dropdead <- getOptionFlag dropDeadOption
+	withNothing (start dropdead) ps
 
 start :: Bool -> CommandStart
 start dropdead = do

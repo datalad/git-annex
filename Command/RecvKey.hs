@@ -26,8 +26,8 @@ def :: [Command]
 def = [noCommit $ command "recvkey" paramKey seek
 	SectionPlumbing "runs rsync in server mode to receive content"]
 
-seek :: [CommandSeek]
-seek = [withKeys start]
+seek :: CommandSeek
+seek = withKeys start
 
 start :: Key -> CommandStart
 start key = ifM (inAnnex key)

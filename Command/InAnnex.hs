@@ -15,8 +15,8 @@ def :: [Command]
 def = [noCommit $ command "inannex" (paramRepeating paramKey) seek
 	SectionPlumbing "checks if keys are present in the annex"]
 
-seek :: [CommandSeek]
-seek = [withKeys start]
+seek :: CommandSeek
+seek = withKeys start
 
 start :: Key -> CommandStart
 start key = inAnnexSafe key >>= dispatch

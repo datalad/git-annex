@@ -25,9 +25,9 @@ quite a lot.
   * [extensible-exceptions](http://hackage.haskell.org/package/extensible-exceptions)
   * [feed](http://hackage.haskell.org/package/feed)
   * [async](http://hackage.haskell.org/package/async)
-* Optional haskell stuff, used by the [[assistant]] and its webapp
   * [stm](http://hackage.haskell.org/package/stm)
     (version 2.3 or newer)
+* Optional haskell stuff, used by the [[assistant]] and its webapp
   * [hinotify](http://hackage.haskell.org/package/hinotify)
     (Linux only)
   * [dbus](http://hackage.haskell.org/package/dbus)

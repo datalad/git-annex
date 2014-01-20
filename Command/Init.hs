@@ -15,8 +15,8 @@ def :: [Command]
 def = [dontCheck repoExists $
 	command "init" paramDesc seek SectionSetup "initialize git-annex"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start ws = do

@@ -48,9 +48,10 @@ listenOption :: Option
 listenOption = Option.field [] "listen" paramAddress
 	"accept connections to this address"
 
-seek :: [CommandSeek]
-seek = [withField listenOption return $ \listenhost ->
-	withNothing $ start listenhost]
+seek :: CommandSeek
+seek ps = do
+	listenhost <- getOptionField listenOption return
+	withNothing (start listenhost) ps
 
 start :: Maybe HostName -> CommandStart
 start = start' True
@@ -107,7 +108,7 @@ startNoRepo _ = do
 		(d:_) -> do
 			setCurrentDirectory d
 			state <- Annex.new =<< Git.CurrentRepo.get
-			void $ Annex.eval state $ doCommand $
+			void $ Annex.eval state $ callCommand $
 				start' False listenhost
 
 {- Run the webapp without a repository, which prompts the user, makes one,

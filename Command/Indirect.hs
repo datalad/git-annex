@@ -31,8 +31,8 @@ def = [notBareRepo $ noDaemonRunning $
 	command "indirect" paramNothing seek
 		SectionSetup "switch repository to indirect mode"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = ifM isDirect

@@ -94,7 +94,7 @@ data AnnexState = AnnexState
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, checkignorehandle :: Maybe (Maybe CheckIgnoreHandle)
 	, forcebackend :: Maybe String
-	, forcenumcopies :: Maybe Int
+	, globalnumcopies :: Maybe Int
 	, limit :: Matcher (MatchInfo -> Annex Bool)
 	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe PreferredContentMap
@@ -109,6 +109,7 @@ data AnnexState = AnnexState
 	, cleanup :: M.Map String (Annex ())
 	, inodeschanged :: Maybe Bool
 	, useragent :: Maybe String
+	, errcounter :: Integer
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -128,7 +129,7 @@ newState c r = AnnexState
 	, checkattrhandle = Nothing
 	, checkignorehandle = Nothing
 	, forcebackend = Nothing
-	, forcenumcopies = Nothing
+	, globalnumcopies = Nothing
 	, limit = Left []
 	, uuidmap = Nothing
 	, preferredcontentmap = Nothing
@@ -143,6 +144,7 @@ newState c r = AnnexState
 	, cleanup = M.empty
 	, inodeschanged = Nothing
 	, useragent = Nothing
+	, errcounter = 0
 	}
 
 {- Makes an Annex state object for the specified git repo.

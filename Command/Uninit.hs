@@ -34,12 +34,11 @@ check = do
 	revhead = inRepo $ Git.Command.pipeReadStrict
 		[Params "rev-parse --abbrev-ref HEAD"]
 
-seek :: [CommandSeek]
-seek = 
-	[ withFilesNotInGit $ whenAnnexed startCheckIncomplete
-	, withFilesInGit $ whenAnnexed Command.Unannex.start
-	, withNothing start
-	]
+seek :: CommandSeek
+seek ps = do
+	withFilesNotInGit (whenAnnexed startCheckIncomplete) ps
+	withFilesInGit (whenAnnexed Command.Unannex.start) ps
+	finish
 
 {- git annex symlinks that are not checked into git could be left by an
  - interrupted add. -}
@@ -50,8 +49,8 @@ startCheckIncomplete file _ = error $ unlines
 	, "Not continuing with uninit; either delete or git annex add the file and retry."
 	]
 
-start :: CommandStart
-start = next $ next $ do
+finish :: Annex ()
+finish = do
 	annexdir <- fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
 	leftovers <- removeUnannexed =<< getKeysPresent

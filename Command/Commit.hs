@@ -16,8 +16,8 @@ def :: [Command]
 def = [command "commit" paramNothing seek
 	SectionPlumbing "commits any staged changes to the git-annex branch"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = next $ next $ do

@@ -1,9 +1,11 @@
 {- git-annex command infrastructure
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE BangPatterns #-}
 
 module Command (
 	command,
@@ -14,8 +16,6 @@ module Command (
 	next,
 	stop,
 	stopUnless,
-	prepCommand,
-	doCommand,
 	whenAnnexed,
 	ifAnnexed,
 	isBareRepo,
@@ -35,12 +35,14 @@ import Types.Option as ReExported
 import Seek as ReExported
 import Checks as ReExported
 import Usage as ReExported
+import RunCommand as ReExported
 import Logs.Trust
+import Logs.NumCopies
 import Config
 import Annex.CheckAttr
 
 {- Generates a normal command -}
-command :: String -> String -> [CommandSeek] -> CommandSection -> String -> Command
+command :: String -> String -> CommandSeek -> CommandSection -> String -> Command
 command = Command [] Nothing commonChecks False False
 
 {- Indicates that a command doesn't need to commit any changes to
@@ -74,25 +76,6 @@ stop = return Nothing
 stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
 stopUnless c a = ifM c ( a , stop )
 
-{- Prepares to run a command via the check and seek stages, returning a
- - list of actions to perform to run the command. -}
-prepCommand :: Command -> [String] -> Annex [CommandCleanup]
-prepCommand Command { cmdseek = seek, cmdcheck = c } params = do
-	mapM_ runCheck c
-	map doCommand . concat <$> mapM (\s -> s params) seek
-
-{- Runs a command through the start, perform and cleanup stages -}
-doCommand :: CommandStart -> CommandCleanup
-doCommand = start
-  where
-	start   = stage $ maybe skip perform
-	perform = stage $ maybe failure cleanup
-	cleanup = stage $ status
-	stage = (=<<)
-	skip = return True
-	failure = showEndFail >> return False
-	status r = showEndResult r >> return r
-
 {- Modifies an action to only act on files that are already annexed,
  - and passes the key and backend on to it. -}
 whenAnnexed :: (FilePath -> (Key, Backend) -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
@@ -106,8 +89,8 @@ isBareRepo = fromRepo Git.repoIsLocalBare
 
 numCopies :: FilePath  -> Annex (Maybe Int)
 numCopies file = do
-	forced <- Annex.getState Annex.forcenumcopies
-	case forced of
+	global <- getGlobalNumCopies
+	case global of
 		Just n -> return $ Just n
 		Nothing -> readish <$> checkAttr "annex.numcopies" file
 

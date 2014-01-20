@@ -20,8 +20,8 @@ def = [notDirect $ notBareRepo $
 	command "fromkey" (paramPair paramKey paramPath) seek
 		SectionPlumbing "adds a file using a specific key"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start (keyname:file:[]) = do

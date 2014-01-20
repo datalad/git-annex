@@ -58,3 +58,33 @@ This might turn out to be easy to split off from git-annex, so `git pull`
 and `git push` can be used at the command line to access telehash remotes.
 Allows using general git entirely decentralized and with end-to-end
 encryption.
+
+## separate daemon?
+
+A `gathd` could contain all the telehash specific code, and git-annex
+communicate with it via a local socket.
+
+Advantages:
+
+* `git annex sync` could also use the running daemon
+* `git-remote-telehash` could use the running daemon
+* c-telehash might end up linked to openssl, which has licence combination
+  problems with git-annex. A separate process not using git-annex's code
+  would avoid this.
+* Allows the daemon to be written in some other language if necessary
+  (for example, if c-telehash development stalls and the nodejs version is
+  already usable)
+* Potentially could be generalized to handle other similar protocols.
+  Or even the xmpp code moved into it. There could even be git-annex native
+  exchange protocols implemented in such a daemon to allow SSH-less
+  transfers.
+* Security holes in telehash would not need to compromise the entire
+  git-annex. gathd could be sandboxed in one way or another.
+
+Disadvantages:
+
+* Adds a memcopy when large files are being transferred through telehash.
+  Unlikely to be a bottleneck.
+* Adds some complexity.
+* What IPC to use on Windows? Might have to make git-annex communicate
+  with it over its stdin/stdout there.

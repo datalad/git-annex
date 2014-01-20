@@ -20,8 +20,8 @@ def = [command "enableremote"
 	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
 	seek SectionSetup "enables use of an existing special remote"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start [] = unknownNameError "Specify the name of the special remote to enable."

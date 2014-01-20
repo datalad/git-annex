@@ -4,7 +4,7 @@
  - the values a user passes to a command, and prepare actions operating
  - on them.
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,23 +23,14 @@ import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Limit
 import qualified Option
-import Config
 import Logs.Location
 import Logs.Unused
 import Annex.CatFile
-
-seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
-seekHelper a params = do
-	ll <- inRepo $ \g ->
-		runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) params
-	{- Show warnings only for files/directories that do not exist. -}
-	forM_ (map fst $ filter (null . snd) $ zip params ll) $ \p ->
-		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $
-			fileNotFound p
-	return $ concat ll
+import RunCommand
 
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
-withFilesInGit a params = prepFiltered a $ seekHelper LsFiles.inRepo params
+withFilesInGit a params = seekActions $ prepFiltered a $
+	seekHelper LsFiles.inRepo params
 
 withFilesNotInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesNotInGit a params = do
@@ -47,7 +38,8 @@ withFilesNotInGit a params = do
 	files <- filter (not . dotfile) <$>
 		seekunless (null ps && not (null params)) ps
 	dotfiles <- seekunless (null dotps) dotps
-	prepFiltered a $ return $ concat $ segmentPaths params (files++dotfiles)
+	seekActions $ prepFiltered a $
+		return $ concat $ segmentPaths params (files++dotfiles)
   where
 	(dotps, ps) = partition dotfile params
 	seekunless True _ = return []
@@ -57,7 +49,8 @@ withFilesNotInGit a params = do
 		liftIO $ Git.Command.leaveZombie <$> LsFiles.notInRepo force l g
 
 withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
-withPathContents a params = map a . concat <$> liftIO (mapM get params)
+withPathContents a params = seekActions $ 
+	map a . concat <$> liftIO (mapM get params)
   where
 	get p = ifM (isDirectory <$> getFileStatus p)
 		( map (\f -> (f, makeRelative (parentDir p) f))
@@ -66,20 +59,20 @@ withPathContents a params = map a . concat <$> liftIO (mapM get params)
 		)
 
 withWords :: ([String] -> CommandStart) -> CommandSeek
-withWords a params = return [a params]
+withWords a params = seekActions $ return [a params]
 
 withStrings :: (String -> CommandStart) -> CommandSeek
-withStrings a params = return $ map a params
+withStrings a params = seekActions $ return $ map a params
 
 withPairs :: ((String, String) -> CommandStart) -> CommandSeek
-withPairs a params = return $ map a $ pairs [] params
+withPairs a params = seekActions $ return $ map a $ pairs [] params
   where
 	pairs c [] = reverse c
 	pairs c (x:y:xs) = pairs ((x,y):c) xs
 	pairs _ _ = error "expected pairs"
 
 withFilesToBeCommitted :: (String -> CommandStart) -> CommandSeek
-withFilesToBeCommitted a params = prepFiltered a $
+withFilesToBeCommitted a params = seekActions $ prepFiltered a $
 	seekHelper LsFiles.stagedNotDeleted params
 
 withFilesUnlocked :: (FilePath -> CommandStart) -> CommandSeek
@@ -94,7 +87,8 @@ withFilesUnlockedToBeCommitted = withFilesUnlocked' LsFiles.typeChangedStaged
  - not some other sort of symlink.
  -}
 withFilesUnlocked' :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> (FilePath -> CommandStart) -> CommandSeek
-withFilesUnlocked' typechanged a params = prepFiltered a unlockedfiles
+withFilesUnlocked' typechanged a params = seekActions $
+	prepFiltered a unlockedfiles
   where
   	check f = liftIO (notSymlink f) <&&> 
 		(isJust <$> catKeyFile f <||> isJust <$> catKeyFileHEAD f)
@@ -102,32 +96,25 @@ withFilesUnlocked' typechanged a params = prepFiltered a unlockedfiles
 
 {- Finds files that may be modified. -}
 withFilesMaybeModified :: (FilePath -> CommandStart) -> CommandSeek
-withFilesMaybeModified a params =
+withFilesMaybeModified a params = seekActions $
 	prepFiltered a $ seekHelper LsFiles.modified params
 
 withKeys :: (Key -> CommandStart) -> CommandSeek
-withKeys a params = return $ map (a . parse) params
+withKeys a params = seekActions $ return $ map (a . parse) params
   where
 	parse p = fromMaybe (error "bad key") $ file2key p
 
-withValue :: Annex v -> (v -> CommandSeek) -> CommandSeek
-withValue v a params = do
-	r <- v
-	a r params
-
-{- Modifies a seek action using the value of a field option, which is fed into
- - a conversion function, and then is passed into the seek action.
- - This ensures that the conversion function only runs once.
+{- Gets the value of a field options, which is fed into
+ - a conversion function.
  -}
-withField :: Option -> (Maybe String -> Annex a) -> (a -> CommandSeek) -> CommandSeek
-withField option converter = withValue $
-	converter <=< Annex.getField $ Option.name option
+getOptionField :: Option -> (Maybe String -> Annex a) -> Annex a
+getOptionField option converter = converter <=< Annex.getField $ Option.name option
 
-withFlag :: Option -> (Bool -> CommandSeek) -> CommandSeek
-withFlag option = withValue $ Annex.getFlag (Option.name option)
+getOptionFlag :: Option -> Annex Bool
+getOptionFlag option = Annex.getFlag (Option.name option)
 
 withNothing :: CommandStart -> CommandSeek
-withNothing a [] = return [a]
+withNothing a [] = seekActions $ return [a]
 withNothing _ _ = error "This command takes no parameters."
 
 {- If --all is specified, or in a bare repo, runs an action on all
@@ -159,7 +146,7 @@ withKeyOptions keyop fallbackop params = do
 		unless (null params) $
 			error "Cannot mix --all or --unused with file names."
 		matcher <- Limit.getMatcher
-		map (process matcher) <$> a
+		seekActions $ map (process matcher) <$> a
 	process matcher k = ifM (matcher $ MatchingKey k)
 		( keyop k , return Nothing)
 
@@ -171,11 +158,20 @@ prepFiltered a fs = do
 	process matcher f = ifM (matcher $ MatchingFile $ FileInfo f f)
 		( a f , return Nothing )
 
+seekActions :: Annex [CommandStart] -> Annex ()
+seekActions gen = do
+	as <- gen
+	mapM_ commandAction as
+
+seekHelper :: ([FilePath] -> Git.Repo -> IO ([FilePath], IO Bool)) -> [FilePath] -> Annex [FilePath]
+seekHelper a params = do
+	ll <- inRepo $ \g ->
+		runSegmentPaths (\fs -> Git.Command.leaveZombie <$> a fs g) params
+	{- Show warnings only for files/directories that do not exist. -}
+	forM_ (map fst $ filter (null . snd) $ zip params ll) $ \p ->
+		unlessM (isJust <$> liftIO (catchMaybeIO $ getSymbolicLinkStatus p)) $
+			fileNotFound p
+	return $ concat ll
+
 notSymlink :: FilePath -> IO Bool
 notSymlink f = liftIO $ not . isSymbolicLink <$> getSymbolicLinkStatus f
-
-whenNotDirect :: CommandSeek -> CommandSeek
-whenNotDirect a params = ifM isDirect ( return [] , a params )
-
-whenDirect :: CommandSeek -> CommandSeek
-whenDirect a params = ifM isDirect ( a params, return [] )

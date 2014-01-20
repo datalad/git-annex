@@ -41,6 +41,8 @@ options = Option.common ++
 		"match files present in a remote"
 	, Option ['C'] ["copies"] (ReqArg Limit.addCopies paramNumber)
 		"skip files with fewer copies"
+	, Option [] ["numcopiesneeded"] (ReqArg Limit.addNumCopiesNeeded paramNumber)
+		"match files that need more copies"
 	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
 		"match files using a key-value backend"
 	, Option [] ["inallgroup"] (ReqArg Limit.addInAllGroup paramGroup)
@@ -63,7 +65,7 @@ options = Option.common ++
   where
 	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
 	setnumcopies v = maybe noop
-		(\n -> Annex.changeState $ \s -> s { Annex.forcenumcopies = Just n })
+		(\n -> Annex.changeState $ \s -> s { Annex.globalnumcopies = Just n })
 		(readish v)
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
 	setgitconfig v = inRepo (Git.Config.store v)

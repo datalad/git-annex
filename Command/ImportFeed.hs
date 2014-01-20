@@ -41,11 +41,12 @@ def = [notBareRepo $ withOptions [templateOption, relaxedOption] $
 templateOption :: Option
 templateOption = Option.field [] "template" paramFormat "template for filenames"
 
-seek :: [CommandSeek]
-seek = [withField templateOption return $ \tmpl ->
-	withFlag relaxedOption $ \relaxed ->
-	withValue (getCache tmpl) $ \cache ->
-	withStrings $ start relaxed cache]
+seek :: CommandSeek
+seek ps = do
+	tmpl <- getOptionField templateOption return
+	relaxed <- getOptionFlag relaxedOption
+	cache <- getCache tmpl
+	withStrings (start relaxed cache) ps
 
 start :: Bool -> Cache -> URLString -> CommandStart
 start relaxed cache url = do

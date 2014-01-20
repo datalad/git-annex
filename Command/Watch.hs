@@ -17,10 +17,11 @@ def :: [Command]
 def = [notBareRepo $ withOptions [foregroundOption, stopOption] $ 
 	command "watch" paramNothing seek SectionCommon "watch for changes"]
 
-seek :: [CommandSeek]
-seek = [withFlag stopOption $ \stopdaemon -> 
-	withFlag foregroundOption $ \foreground ->
-	withNothing $ start False foreground stopdaemon Nothing]
+seek :: CommandSeek
+seek ps = do
+	stopdaemon <- getOptionFlag stopOption
+	foreground <- getOptionFlag foregroundOption
+	withNothing (start False foreground stopdaemon Nothing) ps
 
 foregroundOption :: Option
 foregroundOption = Option.flag [] "foreground" "do not daemonize"

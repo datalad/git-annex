@@ -75,8 +75,8 @@ def = [noCommit $ withOptions [jsonOption] $
 	command "info" paramPaths seek SectionQuery
 	"shows general information about the annex"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [FilePath] -> CommandStart
 start [] = do

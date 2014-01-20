@@ -31,8 +31,8 @@ def = [dontCheck repoExists $
 	command "map" paramNothing seek SectionQuery
 		"generate map of repositories"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = do

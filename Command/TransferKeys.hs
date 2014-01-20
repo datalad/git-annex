@@ -25,8 +25,8 @@ def :: [Command]
 def = [command "transferkeys" paramNothing seek
 	SectionPlumbing "transfers keys"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = withHandles $ \(readh, writeh) -> do

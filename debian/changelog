@@ -8,6 +8,15 @@ git-annex (5.20140118) UNRELEASED; urgency=medium
   * list: Fix specifying of files to list.
   * Allow --all to be mixed with matching options like --copies and --in
     (but not --include and --exclude).
+  * numcopies: New command, sets global numcopies value that is seen by all
+    clones of a repository.
+  * The annex.numcopies git config setting is deprecated. Once the numcopies
+    command is used to set the global number of copies, any annex.numcopies
+    git configs will be ignored.
+  * assistant: Make the prefs page set the global numcopies.
+  * Add numcopiesneeded preferred content expression.
+  * Client, transfer, incremental backup, and archive repositories
+    now want to get content that does not yet have enough copies.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 18 Jan 2014 11:54:17 -0400
 

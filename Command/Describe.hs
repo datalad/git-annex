@@ -16,8 +16,8 @@ def :: [Command]
 def = [command "describe" (paramPair paramRemote paramDesc) seek
 	SectionSetup "change description of a repository"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start (name:description) = do
