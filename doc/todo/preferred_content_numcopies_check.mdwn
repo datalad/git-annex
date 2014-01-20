@@ -56,6 +56,26 @@ Conclusion:
   for a particular file. It should ignore the other ways to specify
   numcopies.
 * Make the repo groups that currently end with "or (not copies=semitrusted+:1)"
-  to instead end with "or (not numcopiesneeded=1)"
+  to instead end with "or numcopiesneeded=1"
+
+## Stability analysis
+
+If a remote prefers eg, "blah or numcopiesneeded=1", and
+file $foo does not match blah, but needs more copies, then then the
+expression will match.
+
+So, git-annex will get $foo, adding a copy. Which means that the 
+numcopiesneeded=1 will no longer match, so the file is no longer wanted
+now that it has been downloaded.
+
+Now there are two cases for what can happen:
+
+* git-annex tries to drop $foo, but fails because it cannot find enough
+  other copies
+* git-annex copies $foo to some other remote that wants it, and then
+  manages to drop $foo from the local remote.
+
+This seems ok. Files flow through repos and they act like transfer
+repos when there are not enough copies.
 
 --[[Joey]]
