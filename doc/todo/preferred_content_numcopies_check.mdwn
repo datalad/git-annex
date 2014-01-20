@@ -54,9 +54,12 @@ Conclusion:
 * Add "numcopiesneeded=N" preferred content expression using the git-annex
   branch numcopies setting, overridden by any .gitattributes numcopies setting
   for a particular file. It should ignore the other ways to specify
-  numcopies.
+  numcopies, particularly git config annex.numcopies. **done**
 * Make the repo groups that currently end with "or (not copies=semitrusted+:1)"
-  to instead end with "or numcopiesneeded=1"
+  to instead end with "or numcopiesneeded=1" **done**
+* See if "numcopiesneeded=N" can check .gitattributes without getting
+  a lot slower. If now, perhaps add a "numcopiesneededaccurate=N" that
+  checks it.
 
 ## Stability analysis
 

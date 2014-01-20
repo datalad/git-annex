@@ -70,6 +70,7 @@ parseToken checkpresent checkpreferreddir groupmap t
 			[ ("include", limitInclude)
 			, ("exclude", limitExclude)
 			, ("copies", limitCopies)
+			, ("numcopiesneeded", limitNumCopiesNeeded)
 			, ("inbackend", limitInBackend)
 			, ("largerthan", limitSize (>))
 			, ("smallerthan", limitSize (<))

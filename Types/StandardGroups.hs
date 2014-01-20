@@ -93,6 +93,6 @@ notArchived :: String
 notArchived = "not (copies=archive:1 or copies=smallarchive:1)"
   	
 {- Most repositories want any content that is only on untrusted
- - or dead repositories. -}
+ - or dead repositories, or that otherwise does not have enough copies. -}
 lastResort :: String -> PreferredContentExpression
-lastResort s = "(" ++ s ++ ") or (not copies=semitrusted+:1)"
+lastResort s = "(" ++ s ++ ") or numcopiesneeded=1"

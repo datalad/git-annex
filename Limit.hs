@@ -1,6 +1,6 @@
 {- user-specified limits on files to act on
  -
- - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,6 +23,7 @@ import qualified Backend
 import Annex.Content
 import Annex.UUID
 import Logs.Trust
+import Logs.NumCopies
 import Types.TrustLevel
 import Types.Key
 import Types.Group
@@ -176,6 +177,30 @@ limitCopies want = case split ":" want of
 	parsetrustspec s
 		| "+" `isSuffixOf` s = (>=) <$> readTrustLevel (beginning s)
 		| otherwise = (==) <$> readTrustLevel s
+
+{- Adds a limit to match files that need more copies made.
+ -
+ - Does not look at annex.numcopies .gitattributes, because that
+ - would require querying git check-attr every time a preferred content
+ - expression is checked, which would probably be quite slow.
+ -}
+addNumCopiesNeeded :: String -> Annex ()
+addNumCopiesNeeded = addLimit . limitNumCopiesNeeded
+
+limitNumCopiesNeeded :: MkLimit
+limitNumCopiesNeeded want = case readish want of
+	Just needed -> Right $ \notpresent -> checkKey $
+		handle needed notpresent
+	Nothing -> Left "bad value for numcopiesneeded"
+  where
+	handle needed notpresent key = do
+		gv <- getGlobalNumCopies
+		case gv of
+			Nothing -> return False
+			Just numcopies -> do
+				us <- filter (`S.notMember` notpresent)
+					<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
+				return $ numcopies - length us >= needed
 
 {- Adds a limit to skip files not believed to be present in all
  - repositories in the specified group. -}
