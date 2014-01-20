@@ -15,6 +15,8 @@ import Types.Command
 import qualified Annex.Queue
 import Annex.Exception
 
+type CommandActionRunner = CommandStart -> CommandCleanup
+
 {- Runs a command, starting with the check stage, and then
  - the seek stage. Finishes by printing the number of commandActions that
  - failed. -}
@@ -34,25 +36,29 @@ performCommand Command { cmdseek = seek, cmdcheck = c, cmdname = name } params =
  - command).
  - 
  - This should only be run in the seek stage. -}
-commandAction :: CommandStart -> Annex ()
+commandAction :: CommandActionRunner
 commandAction a = handle =<< tryAnnexIO go
   where
 	go = do
 		Annex.Queue.flushWhenFull
 		callCommand a
-	handle (Right True) = noop
+	handle (Right True) = return True
 	handle (Right False) = incerr
 	handle (Left err) = do
 		showErr err
 		showEndFail
 		incerr
-	incerr = Annex.changeState $ \s -> 
-		let ! c = Annex.errcounter s + 1 
-		    ! s' = s { Annex.errcounter = c }
-		in s'
+	incerr = do
+		Annex.changeState $ \s -> 
+			let ! c = Annex.errcounter s + 1 
+			    ! s' = s { Annex.errcounter = c }
+			in s'
+		return False
 
-{- Runs a single command action through the start, perform and cleanup stages -}
-callCommand :: CommandStart -> CommandCleanup
+{- Runs a single command action through the start, perform and cleanup
+ - stages, without catching errors. Useful if one command wants to run
+ - part of another command. -}
+callCommand :: CommandActionRunner
 callCommand = start
   where
 	start   = stage $ maybe skip perform

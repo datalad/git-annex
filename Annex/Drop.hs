@@ -18,6 +18,7 @@ import Annex.Wanted
 import Annex.Exception
 import Config
 import Annex.Content.Direct
+import RunCommand
 
 import qualified Data.Set as S
 import System.Log.Logger (debugM)
@@ -27,29 +28,24 @@ type Reason = String
 {- Drop a key from local and/or remote when allowed by the preferred content
  - and numcopies settings.
  -
- - The Remote list can include other remotes that do not have the content.
- -
- - A remote can be specified that is known to have the key. This can be
- - used an an optimisation when eg, a key has just been uploaded to a
- - remote.
- -}
-handleDrops :: Reason -> [Remote] -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Annex ()
-handleDrops _ _ _ _ Nothing _ = noop
-handleDrops reason rs fromhere key f knownpresentremote = do
-	locs <- loggedLocations key
-	handleDropsFrom locs rs reason fromhere key f knownpresentremote
-
-{- The UUIDs are ones where the content is believed to be present.
+ - The UUIDs are ones where the content is believed to be present.
  - The Remote list can include other remotes that do not have the content;
  - only ones that match the UUIDs will be dropped from.
  - If allowed to drop fromhere, that drop will be tried first.
  -
+ - A remote can be specified that is known to have the key. This can be
+ - used an an optimisation when eg, a key has just been uploaded to a
+ - remote.
+ -
  - In direct mode, all associated files are checked, and only if all
  - of them are unwanted are they dropped.
+ -
+ - The runner is used to run commands, and so can be either callCommand
+ - or commandAction.
  -}
-handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Annex ()
-handleDropsFrom _ _ _ _ _ Nothing _ = noop
-handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote = do
+handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> CommandActionRunner -> Annex ()
+handleDropsFrom _ _ _ _ _ Nothing _ _ = noop
+handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote runner = do
 	fs <- ifM isDirect
 		( do
 			l <- associatedFilesRelative key
@@ -92,7 +88,7 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote = do
 
 	checkdrop fs n@(have, numcopies, _untrusted) u a =
 		ifM (allM (wantDrop True u . Just) fs)
-			( ifM (safely $ callCommand $ a (Just numcopies))
+			( ifM (safely $ runner $ a (Just numcopies))
 				( do
 					liftIO $ debugM "drop" $ unwords
 						[ "dropped"
@@ -113,6 +109,7 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote = do
 	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies ->
 		Command.Drop.startRemote (Just afile) numcopies key r
 
+	slocs = S.fromList locs
+	
 	safely a = either (const False) id <$> tryAnnex a
 
-	slocs = S.fromList locs

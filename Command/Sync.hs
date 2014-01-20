@@ -79,14 +79,18 @@ seek rs = do
 
 	-- Syncing involves many actions, any of which can independently
 	-- fail, without preventing the others from running.
-	seekActions $ return [ commit ]
-	seekActions $ return [ withbranch mergeLocal ]
-	seekActions $ return $ map (withbranch . pullRemote) gitremotes
-	seekActions $ return [ mergeAnnex ]
+	seekActions $ return $ concat
+		[ [ commit ]
+		, [ withbranch mergeLocal ]
+		, map (withbranch . pullRemote) gitremotes
+		,  [ mergeAnnex ]
+		]
 	whenM (Annex.getFlag $ Option.name contentOption) $
-		withFilesInGit (whenAnnexed $ syncContent remotes) []
-	seekActions $ return $ [ withbranch pushLocal ]
-	seekActions $ return $ map (withbranch . pushRemote) gitremotes
+		seekSyncContent remotes
+	seekActions $ return $ concat
+		[ [ withbranch pushLocal ]
+		, map (withbranch . pushRemote) gitremotes
+		]
 
 {- Merging may delete the current directory, so go to the top
  - of the repo. This also means that sync always acts on all files in the
@@ -494,29 +498,24 @@ newer remote b = do
  - Drop it from each remote that has it, where it's not preferred content
  - (honoring numcopies).
  -}
-syncContent :: [Remote] -> FilePath -> (Key, Backend) -> CommandStart
-syncContent rs f (k, _) = do
+seekSyncContent :: [Remote] -> Annex ()
+seekSyncContent rs = mapM_ go =<< seekHelper LsFiles.inRepo []
+  where
+	go f = ifAnnexed f (syncFile rs f) noop
+
+syncFile :: [Remote] -> FilePath -> (Key, Backend) -> Annex ()
+syncFile rs f (k, _) = do
 	locs <- loggedLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
-	
-	getresults <- sequence =<< handleget have
-	(putresults, putrs) <- unzip <$> (sequence =<< handleput lack)
 
-	let locs' = catMaybes putrs ++ locs
-	handleDropsFrom locs' rs "unwanted" True k (Just f) Nothing
+	sequence_ =<< handleget have
+	putrs <- catMaybes . snd . unzip <$> (sequence =<< handleput lack)
 
-	let results = getresults ++ putresults
-	if null results
-		then stop
-		else do
-			showStart "sync" f
-			next $ next $ return $ all id results
+	-- Using callCommand rather than commandAction for drops,
+	-- because a failure to drop does not mean the sync failed.
+	handleDropsFrom (putrs ++ locs) rs "unwanted" True k (Just f)
+		Nothing callCommand
   where
-	run a = do
-		r <- a
-		showEndResult r
-		return r
-
   	wantget have = allM id 
 		[ pure (not $ null have)
 		, not <$> inAnnex k
@@ -526,9 +525,9 @@ syncContent rs f (k, _) = do
 		( return [ get have ]
 		, return []
 		)
-	get have = do
+	get have = commandAction $ do
 		showStart "get" f
-		run $ getViaTmp k $ \dest -> getKeyFile' k (Just f) dest have
+		next $ next $ getViaTmp k $ \dest -> getKeyFile' k (Just f) dest have
 
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Types.Remote.gitconfig r) = return False
@@ -538,10 +537,13 @@ syncContent rs f (k, _) = do
 		, return []
 		)
 	put dest = do
-		showStart "copy" f
-		showAction $ "to " ++ Remote.name dest
-		ok <- run $ upload (Remote.uuid dest) k (Just f) noRetry $
-			Remote.storeKey dest k (Just f)
-		when ok $
-			Remote.logStatus dest k InfoPresent
+		ok <- commandAction $ do
+			showStart "copy" f
+			showAction $ "to " ++ Remote.name dest
+			next $ next $ do
+				ok <- upload (Remote.uuid dest) k (Just f) noRetry $
+					Remote.storeKey dest k (Just f)
+				when ok $
+					Remote.logStatus dest k InfoPresent
+				return ok
 		return (ok, if ok then Just (Remote.uuid dest) else Nothing)
