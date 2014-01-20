@@ -28,11 +28,12 @@ transferKeyOptions = fileOption : fromToOptions
 fileOption :: Option
 fileOption = Option.field [] "file" paramFile "the associated file"
 
-seek :: [CommandSeek]
-seek = [withField toOption Remote.byNameWithUUID $ \to ->
-	withField fromOption Remote.byNameWithUUID $ \from ->
-	withField fileOption return $ \file ->
-		withKeys $ start to from file]
+seek :: CommandSeek
+seek ps = do
+	to <- getOptionField toOption Remote.byNameWithUUID
+	from <- getOptionField fromOption Remote.byNameWithUUID
+	file <- getOptionField fileOption return
+	withKeys (start to from file) ps
 
 start :: Maybe Remote -> Maybe Remote -> AssociatedFile -> Key -> CommandStart
 start to from file key =

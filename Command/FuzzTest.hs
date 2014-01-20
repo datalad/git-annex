@@ -25,8 +25,8 @@ def :: [Command]
 def = [ notBareRepo $ command "fuzztest" paramNothing seek SectionPlumbing
 	"generates fuzz test files"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = do

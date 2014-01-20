@@ -21,8 +21,8 @@ def :: [Command]
 def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "version" paramNothing seek SectionQuery "show version info"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = do

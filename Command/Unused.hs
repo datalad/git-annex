@@ -45,8 +45,8 @@ def = [withOptions [fromOption] $ command "unused" paramNothing seek
 fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "remote to check for unused content"
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 {- Finds unused content in the annex. -} 
 start :: CommandStart
@@ -326,14 +326,14 @@ data UnusedMaps = UnusedMaps
 	, unusedTmpMap :: UnusedMap
 	}
 
-{- Read unused logs once, and pass the maps to each start action. -}
 withUnusedMaps :: (UnusedMaps -> Int -> CommandStart) -> CommandSeek
 withUnusedMaps a params = do
 	unused <- readUnusedLog ""
 	unusedbad <- readUnusedLog "bad"
 	unusedtmp <- readUnusedLog "tmp"
 	let m = unused `M.union` unusedbad `M.union` unusedtmp
-	return $ map (a $ UnusedMaps unused unusedbad unusedtmp) $
+	let unusedmaps = UnusedMaps unused unusedbad unusedtmp
+	seekActions $ return $ map (a unusedmaps) $
 		concatMap (unusedSpec m) params
 
 unusedSpec :: UnusedMap -> String -> [Int]
@@ -349,8 +349,8 @@ unusedSpec m spec
 		_ -> badspec
 	badspec = error $ "Expected number or range, not \"" ++ spec ++ "\""
 
-{- Start action for unused content. Finds the number in the maps, and
- - calls either of 3 actions, depending on the type of unused file. -}
+{- Seek action for unused content. Finds the number in the maps, and
+ - calls one of 3 actions, depending on the type of unused file. -}
 startUnused :: String
 	-> (Key -> CommandPerform)
 	-> (Key -> CommandPerform) 

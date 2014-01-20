@@ -16,8 +16,8 @@ def = [notBareRepo $
 	command "rmurl" (paramPair paramFile paramUrl) seek
 		SectionCommon "record file is not available at url"]
 
-seek :: [CommandSeek]
-seek = [withPairs start]
+seek :: CommandSeek
+seek = withPairs start
 
 start :: (FilePath, String) -> CommandStart
 start (file, url) = flip whenAnnexed file $ \_ (key, _) -> do

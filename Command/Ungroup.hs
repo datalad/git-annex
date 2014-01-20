@@ -19,8 +19,8 @@ def :: [Command]
 def = [command "ungroup" (paramPair paramRemote paramDesc) seek
 	SectionSetup "remove a repository from a group"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start (name:g:[]) = do

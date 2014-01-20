@@ -19,8 +19,8 @@ def :: [Command]
 def = [command "dead" (paramRepeating paramRemote) seek
 	SectionSetup "hide a lost repository"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start ws = do

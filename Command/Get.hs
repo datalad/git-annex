@@ -24,12 +24,13 @@ def = [withOptions getOptions $ command "get" paramPaths seek
 getOptions :: [Option]
 getOptions = fromOption : keyOptions
 
-seek :: [CommandSeek]
-seek = 
-	[ withField fromOption Remote.byNameWithUUID $ \from ->
-	  withKeyOptions (startKeys from) $
-	  withFilesInGit $ whenAnnexed $ start from
-	]
+seek :: CommandSeek
+seek ps = do
+	from <- getOptionField fromOption Remote.byNameWithUUID
+	withKeyOptions
+		(startKeys from)
+		(withFilesInGit $ whenAnnexed $ start from)
+		ps
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = start' expensivecheck from key (Just file)

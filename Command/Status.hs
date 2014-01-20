@@ -22,10 +22,8 @@ def = [notBareRepo $ noCommit $ noMessages $ withOptions [jsonOption] $
 	command "status" paramPaths seek SectionCommon
 		"show the working tree status"]
 
-seek :: [CommandSeek]
-seek = 
-	[ withWords start
-	]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [FilePath] -> CommandStart
 start [] = do

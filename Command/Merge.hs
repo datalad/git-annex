@@ -17,11 +17,10 @@ def :: [Command]
 def = [command "merge" paramNothing seek SectionMaintenance
 	"automatically merge changes from remotes"]
 
-seek :: [CommandSeek]
-seek =
-	[ withNothing mergeBranch
-	, withNothing mergeSynced
-	]
+seek :: CommandSeek
+seek ps = do
+	withNothing mergeBranch ps
+	withNothing mergeSynced ps
 
 mergeBranch :: CommandStart
 mergeBranch = do

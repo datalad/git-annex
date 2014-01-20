@@ -92,7 +92,7 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote = do
 
 	checkdrop fs n@(have, numcopies, _untrusted) u a =
 		ifM (allM (wantDrop True u . Just) fs)
-			( ifM (safely $ doCommand $ a (Just numcopies))
+			( ifM (safely $ callCommand $ a (Just numcopies))
 				( do
 					liftIO $ debugM "drop" $ unwords
 						[ "dropped"

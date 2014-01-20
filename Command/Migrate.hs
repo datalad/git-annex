@@ -22,8 +22,8 @@ def = [notDirect $
 	command "migrate" paramPaths seek
 		SectionUtility "switch data to different backend"]
 
-seek :: [CommandSeek]
-seek = [withFilesInGit $ whenAnnexed start]
+seek :: CommandSeek
+seek = withFilesInGit $ whenAnnexed start
 
 start :: FilePath -> (Key, Backend) -> CommandStart
 start file (key, oldbackend) = do

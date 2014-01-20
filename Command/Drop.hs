@@ -27,9 +27,10 @@ def = [withOptions [fromOption] $ command "drop" paramPaths seek
 fromOption :: Option
 fromOption = Option.field ['f'] "from" paramRemote "drop content from a remote"
 
-seek :: [CommandSeek]
-seek = [withField fromOption Remote.byNameWithUUID $ \from ->
-	withFilesInGit $ whenAnnexed $ start from]
+seek :: CommandSeek
+seek ps = do
+	from <- getOptionField fromOption Remote.byNameWithUUID
+	withFilesInGit (whenAnnexed $ start from) ps
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = checkDropAuto from file key $ \numcopies ->

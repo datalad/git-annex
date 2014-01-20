@@ -18,8 +18,8 @@ def = [dontCheck repoExists $ noCommit $
 	command "gcryptsetup" paramValue seek
 		SectionPlumbing "sets up gcrypt repository"]
 
-seek :: [CommandSeek]
-seek = [withStrings start]
+seek :: CommandSeek
+seek = withStrings start
 
 start :: String -> CommandStart
 start gcryptid = next $ next $ do

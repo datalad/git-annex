@@ -16,8 +16,8 @@ def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "xmppgit" paramNothing seek
 		SectionPlumbing "git to XMPP relay"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start _ = do

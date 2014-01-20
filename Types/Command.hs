@@ -18,9 +18,9 @@ import Types
 data CommandCheck = CommandCheck { idCheck :: Int, runCheck :: Annex () }
 {- b. The seek stage takes the parameters passed to the command,
  -    looks through the repo to find the ones that are relevant
- -    to that command (ie, new files to add), and generates
- -    a list of start stage actions. -}
-type CommandSeek = [String] -> Annex [CommandStart]
+ -    to that command (ie, new files to add), and runs commandAction
+ -    to handle all necessary actions. -}
+type CommandSeek = [String] -> Annex ()
 {- c. The start stage is run before anything is printed about the
  -    command, is passed some input, and can early abort it
  -    if the input does not make sense. It should run quickly and
@@ -42,7 +42,7 @@ data Command = Command
 	, cmdnomessages :: Bool      -- don't output normal messages
 	, cmdname :: String
 	, cmdparamdesc :: String     -- description of params for usage
-	, cmdseek :: [CommandSeek]   -- seek stage
+	, cmdseek :: CommandSeek
 	, cmdsection :: CommandSection
 	, cmddesc :: String          -- description of command for usage
 	}

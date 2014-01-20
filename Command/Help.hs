@@ -26,8 +26,8 @@ def :: [Command]
 def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "help" paramNothing seek SectionQuery "display help"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start params = do

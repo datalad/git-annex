@@ -22,13 +22,14 @@ def = [withOptions (fromToOptions ++ keyOptions) $
 	command "mirror" paramPaths seek
 		SectionCommon "mirror content of files to/from another repository"]
 
-seek :: [CommandSeek]
-seek =
-	[ withField toOption Remote.byNameWithUUID $ \to ->
-	  withField fromOption Remote.byNameWithUUID $ \from ->
-	  withKeyOptions (startKey Nothing to from Nothing) $
-	  withFilesInGit $ whenAnnexed $ start to from
-	]
+seek :: CommandSeek
+seek ps = do
+	to <- getOptionField toOption Remote.byNameWithUUID
+	from <- getOptionField fromOption Remote.byNameWithUUID
+	withKeyOptions
+		(startKey Nothing to from Nothing)
+		(withFilesInGit $ whenAnnexed $ start to from)
+		ps
 
 start :: Maybe Remote -> Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start to from file (key, _backend) = do

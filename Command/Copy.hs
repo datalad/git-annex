@@ -18,13 +18,14 @@ def :: [Command]
 def = [withOptions Command.Move.moveOptions $ command "copy" paramPaths seek
 	SectionCommon "copy content of files to/from another repository"]
 
-seek :: [CommandSeek]
-seek =
-	[ withField toOption Remote.byNameWithUUID $ \to ->
-	  withField fromOption Remote.byNameWithUUID $ \from ->
-	  withKeyOptions (Command.Move.startKey to from False) $
-	  withFilesInGit $ whenAnnexed $ start to from
-	]
+seek :: CommandSeek
+seek ps = do
+	to <- getOptionField toOption Remote.byNameWithUUID
+	from <- getOptionField fromOption Remote.byNameWithUUID
+	withKeyOptions
+	 	(Command.Move.startKey to from False)
+		(withFilesInGit $ whenAnnexed $ start to from)
+		ps
 
 {- A copy is just a move that does not delete the source file.
  - However, --auto mode avoids unnecessary copies, and avoids getting or

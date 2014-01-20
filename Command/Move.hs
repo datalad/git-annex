@@ -26,13 +26,14 @@ def = [withOptions moveOptions $ command "move" paramPaths seek
 moveOptions :: [Option]
 moveOptions = fromToOptions ++ keyOptions
 
-seek :: [CommandSeek]
-seek = 
-	[ withField toOption Remote.byNameWithUUID $ \to ->
-	  withField fromOption Remote.byNameWithUUID $ \from ->
-	  withKeyOptions (startKey to from True) $
-	  withFilesInGit $ whenAnnexed $ start to from True
-	]
+seek :: CommandSeek
+seek ps = do
+	to <- getOptionField toOption Remote.byNameWithUUID
+	from <- getOptionField fromOption Remote.byNameWithUUID
+	withKeyOptions
+		(startKey to from True)
+		(withFilesInGit $ whenAnnexed $ start to from True)
+		ps
 
 start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> CommandStart
 start to from move file (key, _) = start' to from move (Just file) key

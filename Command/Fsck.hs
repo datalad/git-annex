@@ -70,16 +70,17 @@ fsckOptions =
 	, incrementalScheduleOption
 	] ++ keyOptions
 
-seek :: [CommandSeek]
-seek =
-	[ withField fromOption Remote.byNameWithUUID $ \from ->
-	  withIncremental $ \i ->
-	  withKeyOptions (startKey i) $
-	  withFilesInGit $ whenAnnexed $ start from i
-	]
+seek :: CommandSeek
+seek ps = do
+	from <- getOptionField fromOption Remote.byNameWithUUID
+	i <- getIncremental
+	withKeyOptions
+		(startKey i)
+		(withFilesInGit $ whenAnnexed $ start from i)
+		ps
 
-withIncremental :: (Incremental -> CommandSeek) -> CommandSeek
-withIncremental = withValue $ do
+getIncremental :: Annex Incremental
+getIncremental = do
 	i <- maybe (return False) (checkschedule . parseDuration)
 		=<< Annex.getField (Option.name incrementalScheduleOption)
 	starti <- Annex.getFlag (Option.name startIncrementalOption)

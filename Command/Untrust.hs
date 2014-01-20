@@ -16,8 +16,8 @@ def :: [Command]
 def = [command "untrust" (paramRepeating paramRemote) seek
 	SectionSetup "do not trust a repository"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start ws = do

@@ -27,8 +27,8 @@ def = [noCommit $ noMessages $ withOptions [formatOption, print0Option, jsonOpti
 formatOption :: Option
 formatOption = Option.field [] "format" paramFormat "control format of output"
 
-withFormat :: (Maybe Utility.Format.Format -> CommandSeek) -> CommandSeek
-withFormat = withField formatOption $ return . fmap Utility.Format.gen
+getFormat :: Annex (Maybe Utility.Format.Format)
+getFormat = getOptionField formatOption $ return . fmap Utility.Format.gen
 
 print0Option :: Option
 print0Option = Option.Option [] ["print0"] (Option.NoArg set)
@@ -36,8 +36,10 @@ print0Option = Option.Option [] ["print0"] (Option.NoArg set)
   where
 	set = Annex.setField (Option.name formatOption) "${file}\0"
 
-seek :: [CommandSeek]
-seek = [withFormat $ \f -> withFilesInGit $ whenAnnexed $ start f]
+seek :: CommandSeek
+seek ps = do
+	format <- getFormat
+	withFilesInGit (whenAnnexed $ start format) ps
 
 start :: Maybe Utility.Format.Format -> FilePath -> (Key, Backend) -> CommandStart
 start format file (key, _) = do

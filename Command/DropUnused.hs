@@ -21,8 +21,8 @@ def = [withOptions [Command.Drop.fromOption] $
 	command "dropunused" (paramRepeating paramNumRange)
 		seek SectionMaintenance "drop unused file content"]
 
-seek :: [CommandSeek]
-seek = [withUnusedMaps start]
+seek :: CommandSeek
+seek = withUnusedMaps start
 
 start :: UnusedMaps -> Int -> CommandStart
 start = startUnused "dropunused" perform (performOther gitAnnexBadLocation) (performOther gitAnnexTmpLocation)

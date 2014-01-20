@@ -20,8 +20,8 @@ def :: [Command]
 def = [command "wanted" (paramPair paramRemote (paramOptional paramExpression)) seek
 	SectionSetup "get or set preferred content expression"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start = parse

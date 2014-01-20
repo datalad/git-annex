@@ -47,7 +47,7 @@ import Control.Concurrent.MVar
 def :: [Command]
 def = [withOptions syncOptions $
 	command "sync" (paramOptional (paramRepeating paramRemote))
-	[seek] SectionCommon "synchronize local repository with remotes"]
+	seek SectionCommon "synchronize local repository with remotes"]
 
 syncOptions :: [Option]
 syncOptions = [ contentOption ]
@@ -55,7 +55,6 @@ syncOptions = [ contentOption ]
 contentOption :: Option
 contentOption = Option.flag [] "content" "also transfer file contents"
 
--- syncing involves several operations, any of which can independently fail
 seek :: CommandSeek
 seek rs = do
 	prepMerge
@@ -78,20 +77,16 @@ seek rs = do
 	remotes <- syncRemotes rs
 	let gitremotes = filter Remote.gitSyncableRemote remotes
 
-	synccontent <- ifM (Annex.getFlag $ Option.name contentOption)
-		( withFilesInGit (whenAnnexed $ syncContent remotes) []
-		, return []
-		)
-	
-	return $ concat
-		[ [ commit ]
-		, [ withbranch mergeLocal ]
-		, map (withbranch . pullRemote) gitremotes
-		, [ mergeAnnex ]
-		, synccontent
-		, [ withbranch pushLocal ]
-		, map (withbranch . pushRemote) gitremotes
-		]
+	-- Syncing involves many actions, any of which can independently
+	-- fail, without preventing the others from running.
+	seekActions $ return [ commit ]
+	seekActions $ return [ withbranch mergeLocal ]
+	seekActions $ return $ map (withbranch . pullRemote) gitremotes
+	seekActions $ return [ mergeAnnex ]
+	whenM (Annex.getFlag $ Option.name contentOption) $
+		withFilesInGit (whenAnnexed $ syncContent remotes) []
+	seekActions $ return $ [ withbranch pushLocal ]
+	seekActions $ return $ map (withbranch . pushRemote) gitremotes
 
 {- Merging may delete the current directory, so go to the top
  - of the repo. This also means that sync always acts on all files in the

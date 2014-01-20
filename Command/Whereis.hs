@@ -20,9 +20,10 @@ def = [noCommit $ withOptions [jsonOption] $
 	command "whereis" paramPaths seek SectionQuery
 		"lists repositories that have file content"]
 
-seek :: [CommandSeek]
-seek = [withValue (remoteMap id) $ \m ->
-	withFilesInGit $ whenAnnexed $ start m]
+seek :: CommandSeek
+seek ps = do
+	m <- remoteMap id
+	withFilesInGit (whenAnnexed $ start m) ps
 
 start :: M.Map UUID Remote -> FilePath -> (Key, Backend) -> CommandStart
 start remotemap file (key, _) = do

@@ -18,8 +18,8 @@ def :: [Command]
 def = [noCommit $ command "dropkey" (paramRepeating paramKey) seek
 	SectionPlumbing "drops annexed content for specified keys"] 
 
-seek :: [CommandSeek]
-seek = [withKeys start]
+seek :: CommandSeek
+seek = withKeys start
 
 start :: Key -> CommandStart
 start key = stopUnless (inAnnex key) $ do
