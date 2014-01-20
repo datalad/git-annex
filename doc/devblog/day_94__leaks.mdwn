@@ -7,6 +7,6 @@ have gotten them all fixed:
 Before: [[bugs/import_memleak_from_the_assistant/leakbefore.png]]
 After: [[bugs/import_memleak_from_the_assistant/leakafter.png]]
 
-Also fixed a bug in `git annex add` when the disk was completely full. It
-could sometimes in that situation move the file from the work tree to
+Also fixed a bug in `git annex add` when the disk was completely full.
+In that situation, it could sometimes move the file from the work tree to
 .git/annex/objects and fail to put the symlink in place.
