@@ -64,7 +64,7 @@ showMoveAction False key Nothing = showStart "copy" (key2file key)
  - If the remote already has the content, it is still removed from
  - the current repository.
  -
- - Note that unlike drop, this does not honor annex.numcopies.
+ - Note that unlike drop, this does not honor numcopies.
  - A file's content can be moved even if there are insufficient copies to
  - allow it to be dropped.
  -}

@@ -6,8 +6,8 @@ command.  So, git-annex can be configured to try
 to keep N copies of a file's content available across all repositories. 
 (Although [[untrusted_repositories|trust]] don't count toward this total.)
 
-By default, N is 1; it is configured by annex.numcopies. This default
-can be overridden on a per-file-type basis by the annex.numcopies
+By default, N is 1; it is configured by running `git annex numcopies N`.
+This default can be overridden on a per-file-type basis by the annex.numcopies
 setting in `.gitattributes` files. The --numcopies switch allows
 temporarily using a different value.
 
@@ -30,9 +30,3 @@ refuse to do so.
 
 With N=2, in order to drop the file content from Laptop, it would need access
 to both USB and Server.
-
-Note that different repositories can be configured with different values of
-N. So just because Laptop has N=2, this does not prevent the number of
-copies falling to 1, when USB and Server have N=1. To avoid this,
-configure it in `.gitattributes`, which is shared between repositories
-using git.

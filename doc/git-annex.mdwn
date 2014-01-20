@@ -403,6 +403,20 @@ subdirectories).
   keyid+= and keyid-= with such remotes should be used with care, and
   make little sense except in cases like the revoked key example above.
 
+* `numcopies [N]`
+
+  Tells git-annex how many copies it should preserve of files, over all
+  repositories. The default is 1.
+
+  Run without a number to get the current value.
+
+  When git-annex is asked to drop a file, it first verifies that the
+  required number of copies can be satisfied amoung all the other
+  repositories that have a copy of the file.
+
+  This can be overridden on a per-file basis by the annex.numcopies setting
+  in .gitattributes files.
+
 * `trust [repository ...]`
 
   Records that a repository is trusted to not unexpectedly lose
@@ -828,7 +842,7 @@ subdirectories).
 * `--auto`
 
   Enable automatic mode. Commands that get, drop, or move file contents
-  will only do so when needed to help satisfy the setting of annex.numcopies,
+  will only do so when needed to help satisfy the setting of numcopies,
   and preferred content configuration.
 
 * `--all`
@@ -883,7 +897,7 @@ subdirectories).
 
 * `--numcopies=n`
 
-  Overrides the `annex.numcopies` setting, forcing git-annex to ensure the
+  Overrides the numcopies setting, forcing git-annex to ensure the
   specified number of copies exist.
 
   Note that setting numcopies to 0 is very unsafe.
@@ -1117,12 +1131,6 @@ Here are all the supported configuration settings.
 
   A unique UUID for this repository (automatically set).
 
-* `annex.numcopies`
-
-  Number of copies of files to keep across all repositories. (default: 1)
-
-  Note that setting numcopies to 0 is very unsafe.
-
 * `annex.backends`
 
   Space-separated list of names of the key-value backends to use.
@@ -1150,6 +1158,17 @@ Here are all the supported configuration settings.
   Example:
 
         	annex.largefiles = largerthan=100kb and not (include=*.c or include=*.h)
+
+* `annex.numcopies`
+
+  This is a deprecated setting. You should instead use the
+  `git annex numcopies` command to configure how many copies of files
+  are kept acros all repositories.
+
+  This config setting is only looked at when `git annex numcopies` has
+  never been configured.
+
+  Note that setting numcopies to 0 is very unsafe.
 
 * `annex.queuesize`
 
@@ -1456,10 +1475,12 @@ but the SHA256E backend for ogg files:
 
 The numcopies setting can also be configured on a per-file-type basis via
 the `annex.numcopies` attribute in `.gitattributes` files. This overrides
-any value set using `annex.numcopies` in `.git/config`.
-For example, this makes two copies be needed for wav files:
+other numcopies settings.
+For example, this makes two copies be needed for wav files and 3 copies
+for flac files:
 
 	*.wav annex.numcopies=2
+	*.flac annex.numcopies=3
 
 Note that setting numcopies to 0 is very unsafe.
 

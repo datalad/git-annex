@@ -292,6 +292,9 @@ test_drop_withremote :: TestEnv -> Assertion
 test_drop_withremote env = intmpclonerepo env $ do
 	git_annex env "get" [annexedfile] @? "get failed"
 	annexed_present annexedfile
+	git_annex env "numcopies" ["2"] @? "numcopies config failed"
+	not <$> git_annex env "drop" [annexedfile] @? "drop succeeded although numcopies is not satisfied"
+	git_annex env "numcopies" ["1"] @? "numcopies config failed"
 	git_annex env "drop" [annexedfile] @? "drop failed though origin has copy"
 	annexed_notpresent annexedfile
 	inmainrepo env $ annexed_present annexedfile
@@ -511,9 +514,9 @@ test_trust env = intmpclonerepo env $ do
 test_fsck_basic :: TestEnv -> Assertion
 test_fsck_basic env = intmpclonerepo env $ do
 	git_annex env "fsck" [] @? "fsck failed"
-	boolSystem "git" [Params "config annex.numcopies 2"] @? "git config failed"
+	git_annex env "numcopies" ["2"] @? "numcopies config failed"
 	fsck_should_fail env "numcopies unsatisfied"
-	boolSystem "git" [Params "config annex.numcopies 1"] @? "git config failed"
+	git_annex env "numcopies" ["1"] @? "numcopies config failed"
 	corrupt annexedfile
 	corrupt sha1annexedfile
   where
@@ -542,7 +545,7 @@ test_fsck_localuntrusted env = intmpclonerepo env $ do
 
 test_fsck_remoteuntrusted :: TestEnv -> Assertion
 test_fsck_remoteuntrusted env = intmpclonerepo env $ do
-	boolSystem "git" [Params "config annex.numcopies 2"] @? "git config failed"
+	git_annex env "numcopies" ["2"] @? "numcopies config failed"
 	git_annex env "get" [annexedfile] @? "get failed"
 	git_annex env "get" [sha1annexedfile] @? "get failed"
 	git_annex env "fsck" [] @? "fsck failed with numcopies=2 and 2 copies"

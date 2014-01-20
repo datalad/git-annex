@@ -17,6 +17,7 @@ import Logs.UUID
 import Logs.Trust
 import Logs.PreferredContent
 import Logs.Group
+import Logs.NumCopies
 import Remote.List (remoteListRefresh)
 import qualified Git.LsTree as LsTree
 import Git.FilePath
@@ -59,6 +60,7 @@ configFilesActions =
 	, (remoteLog, void $ liftAnnex remoteListRefresh)
 	, (trustLog, void $ liftAnnex trustMapLoad)
 	, (groupLog, void $ liftAnnex groupMapLoad)
+	, (numcopiesLog, void $ liftAnnex numCopiesLoad)
 	, (scheduleLog, void updateScheduleLog)
 	-- Preferred content settings depend on most of the other configs,
 	-- so will be reloaded whenever any configs change.

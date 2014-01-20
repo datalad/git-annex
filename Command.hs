@@ -37,6 +37,7 @@ import Checks as ReExported
 import Usage as ReExported
 import RunCommand as ReExported
 import Logs.Trust
+import Logs.NumCopies
 import Config
 import Annex.CheckAttr
 
@@ -88,8 +89,8 @@ isBareRepo = fromRepo Git.repoIsLocalBare
 
 numCopies :: FilePath  -> Annex (Maybe Int)
 numCopies file = do
-	forced <- Annex.getState Annex.forcenumcopies
-	case forced of
+	global <- getGlobalNumCopies
+	case global of
 		Just n -> return $ Just n
 		Nothing -> readish <$> checkAttr "annex.numcopies" file
 

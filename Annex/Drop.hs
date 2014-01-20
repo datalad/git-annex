@@ -8,7 +8,6 @@
 module Annex.Drop where
 
 import Common.Annex
-import Logs.Location
 import Logs.Trust
 import Types.Remote (uuid)
 import qualified Remote
@@ -18,7 +17,6 @@ import Annex.Wanted
 import Annex.Exception
 import Config
 import Annex.Content.Direct
-import RunCommand
 
 import qualified Data.Set as S
 import System.Log.Logger (debugM)

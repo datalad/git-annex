@@ -47,10 +47,10 @@ work tree, which gitattributes settings do not.
 Conclusion:
 
 * Add to the git-annex branch a numcopies file that holds the global
-  numcopies default if present.
-* Modify the assistant to use it when configuring numcopies.
+  numcopies default if present. **done**
+* Modify the assistant to use it when configuring numcopies. **done**
 * To deprecate .git/config's annex.numcopies, only make it take effect
-  when there is no numcopies file in the git-annex branch.
+  when there is no numcopies file in the git-annex branch. **done**
 * Add "numcopiesneeded=N" preferred content expression using the git-annex
   branch numcopies setting, overridden by any .gitattributes numcopies setting
   for a particular file. It should ignore the other ways to specify

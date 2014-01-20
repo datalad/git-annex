@@ -63,7 +63,7 @@ options = Option.common ++
   where
 	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
 	setnumcopies v = maybe noop
-		(\n -> Annex.changeState $ \s -> s { Annex.forcenumcopies = Just n })
+		(\n -> Annex.changeState $ \s -> s { Annex.globalnumcopies = Just n })
 		(readish v)
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
 	setgitconfig v = inRepo (Git.Config.store v)
