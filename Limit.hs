@@ -178,29 +178,26 @@ limitCopies want = case split ":" want of
 		| "+" `isSuffixOf` s = (>=) <$> readTrustLevel (beginning s)
 		| otherwise = (==) <$> readTrustLevel s
 
-{- Adds a limit to match files that need more copies made.
- -
- - Does not look at annex.numcopies .gitattributes, because that
- - would require querying git check-attr every time a preferred content
- - expression is checked, which would probably be quite slow.
- -}
-addNumCopiesNeeded :: String -> Annex ()
-addNumCopiesNeeded = addLimit . limitNumCopiesNeeded
+{- Adds a limit to match files that need more copies made. -}
+addLackingCopies :: Bool -> String -> Annex ()
+addLackingCopies approx = addLimit . limitLackingCopies approx
 
-limitNumCopiesNeeded :: MkLimit
-limitNumCopiesNeeded want = case readish want of
-	Just needed -> Right $ \notpresent -> checkKey $
-		handle needed notpresent
-	Nothing -> Left "bad value for numcopiesneeded"
+limitLackingCopies :: Bool -> MkLimit
+limitLackingCopies approx want = case readish want of
+	Just needed -> Right $ \notpresent mi -> flip checkKey mi $
+		handle mi needed notpresent
+	Nothing -> Left "bad value for number of lacking copies"
   where
-	handle needed notpresent key = do
-		gv <- getGlobalNumCopies
-		case gv of
-			Nothing -> return False
-			Just (NumCopies numcopies) -> do
-				us <- filter (`S.notMember` notpresent)
-					<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
-				return $ numcopies - length us >= needed
+	handle mi needed notpresent key = do
+		NumCopies numcopies <- if approx
+			then approxNumCopies
+			else case mi of
+				MatchingKey _ -> approxNumCopies
+				MatchingFile fi -> getGlobalFileNumCopies $ matchFile fi
+		us <- filter (`S.notMember` notpresent)
+			<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
+		return $ numcopies - length us >= needed
+	approxNumCopies = fromMaybe defaultNumCopies <$> getGlobalNumCopies
 
 {- Adds a limit to skip files not believed to be present in all
  - repositories in the specified group. -}

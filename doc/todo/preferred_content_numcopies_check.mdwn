@@ -59,7 +59,9 @@ Conclusion:
   to instead end with "or numcopiesneeded=1" **done**
 * See if "numcopiesneeded=N" can check .gitattributes without getting
   a lot slower. If now, perhaps add a "numcopiesneededaccurate=N" that
-  checks it.
+  checks it. **done**
+
+[[done]] 
 
 ## Stability analysis
 

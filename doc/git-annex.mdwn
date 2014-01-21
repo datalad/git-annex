@@ -1022,14 +1022,16 @@ file contents are present at either of two repositories.
   copies, on remotes in the specified group. For example,
   `--copies=archive:2`
 
-* `--numcopiesneeded=number`
+* `--lackingcopies=number`
 
   Matches only files that git-annex believes need the specified number or 
   more additional copies to be made in order to satisfy their numcopies
-  setting, as configured by the global numcopies setting of the repository.
+  settings.
 
-  Note that for various reasons, including speed, this does not look 
-  at the annex.numcopies .gitattributes settings of files.
+* `--approxlackingcopies=number`
+
+  Like lackingcopies, but does not look at .gitattributes annex.numcopies
+  settings. This makes it significantly faster.
 
 * `--inbackend=name`
 

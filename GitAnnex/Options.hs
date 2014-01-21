@@ -42,8 +42,10 @@ options = Option.common ++
 		"match files present in a remote"
 	, Option ['C'] ["copies"] (ReqArg Limit.addCopies paramNumber)
 		"skip files with fewer copies"
-	, Option [] ["numcopiesneeded"] (ReqArg Limit.addNumCopiesNeeded paramNumber)
+	, Option [] ["lackingcopies"] (ReqArg (Limit.addLackingCopies False) paramNumber)
 		"match files that need more copies"
+	, Option [] ["approxlackingcopies"] (ReqArg (Limit.addLackingCopies True) paramNumber)
+		"match files that need more copies (faster)"
 	, Option ['B'] ["inbackend"] (ReqArg Limit.addInBackend paramName)
 		"match files using a key-value backend"
 	, Option [] ["inallgroup"] (ReqArg Limit.addInAllGroup paramGroup)
