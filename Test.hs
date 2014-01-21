@@ -74,20 +74,19 @@ type TestEnv = M.Map String String
 
 main :: [String] -> IO ()
 main ps = do
+	let tests = testGroup "Tests"
+		-- Test both direct and indirect mode.
+		-- Windows is only going to use direct mode,
+		-- so don't test twice.
+		[ properties
 #ifndef mingw32_HOST_OS
-	indirectenv <- prepare False
-	directenv <- prepare True
-	let tests = testGroup "Tests"
-		[ localOption (QuickCheckTests 1000) properties
-		, unitTests directenv "(direct)"
-		, unitTests indirectenv "(indirect)"
-		]
+		, withTestEnv True $ unitTests "(direct)"
+		, withTestEnv False $ unitTests "(indirect)"
 #else
-	-- Windows is only going to use direct mode, so don't test twice.
-	env <- prepare False
-	let tests = testGroup "Tests"
-		[properties, unitTests env ""]
+		, withTestEnv False $ unitTests ""
 #endif
+		]
+
 	-- Can't use tasty's defaultMain because one of the command line
 	-- parameters is "test".
 	let pinfo = info (helper <*> suiteOptionParser ingredients tests)
@@ -111,7 +110,7 @@ ingredients =
 	]
 
 properties :: TestTree
-properties = testGroup "QuickCheck"
+properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	[ testProperty "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
 	, testProperty "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
 	, testProperty "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
@@ -142,9 +141,8 @@ properties = testGroup "QuickCheck"
 	, testProperty "prop_duration_roundtrips" Utility.HumanTime.prop_duration_roundtrips
 	]
 
-unitTests :: TestEnv -> String -> TestTree
-unitTests env note = testGroup ("Unit Tests " ++ note)
-	-- test order matters, later tests may rely on state from earlier
+unitTests :: String -> IO TestEnv -> TestTree
+unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	[ check "init" test_init
 	, check "add" test_add
 	, check "add sha1dup" test_add_sha1dup
@@ -190,13 +188,13 @@ unitTests env note = testGroup ("Unit Tests " ++ note)
 	, check "bup remote" test_bup_remote
 	, check "crypto" test_crypto
 	, check "preferred content" test_preferred_content
-	, check "global cleanup" test_global_cleanup
 	]
   where
-	check desc t = testCase desc (t env)
+	check desc t = testCase desc (getenv >>= t)
 
-test_global_cleanup :: TestEnv -> Assertion
-test_global_cleanup _env = cleanup tmpdir
+{- Tests that need a origin git repo. -}
+withTestEnv :: Bool -> (IO TestEnv -> TestTree) -> TestTree
+withTestEnv forcedirect = withResource (prepareTestEnv forcedirect) releaseTestEnv
 
 test_init :: TestEnv -> Assertion
 test_init env = innewrepo env $ do
@@ -1258,8 +1256,12 @@ annexed_present = runchecks
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
-prepare :: Bool -> IO TestEnv
-prepare forcedirect = do
+releaseTestEnv :: TestEnv -> IO ()
+releaseTestEnv _env = do
+	cleanup tmpdir
+
+prepareTestEnv :: Bool -> IO TestEnv
+prepareTestEnv forcedirect = do
 	whenM (doesDirectoryExist tmpdir) $
 		error $ "The temporary directory " ++ tmpdir ++ " already exists; cannot run test suite."
 
