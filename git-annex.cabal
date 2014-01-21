@@ -114,7 +114,7 @@ Executable git-annex
     CPP-Options: -DWITH_CLIBS
 
   if flag(TestSuite)
-    Build-Depends: tasty, tasty-hunit, tasty-quickcheck
+    Build-Depends: tasty, tasty-hunit, tasty-quickcheck, optparse-applicative
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(TDFA)

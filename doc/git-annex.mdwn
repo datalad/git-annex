@@ -822,6 +822,8 @@ subdirectories).
 
   This runs git-annex's built-in test suite.
 
+  There are several parameters, provided by Haskell's tasty test framework.
+
 * `xmppgit`
 
   This command is used internally to perform git pulls over XMPP.

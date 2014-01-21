@@ -34,5 +34,4 @@ start ps = do
 	stop
 
 startIO :: CmdParams -> IO ()
-startIO [] = warningIO "git-annex was built without its test suite; not testing"
-startIO _ = error "Cannot specify any additional parameters when running test"
+startIO _ = warningIO "git-annex was built without its test suite; not testing"

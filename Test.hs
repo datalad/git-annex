@@ -14,9 +14,9 @@ import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
 
+import Options.Applicative hiding (command)
 import System.PosixCompat.Files
 import Control.Exception.Extensible
-import Data.Monoid
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
 import qualified Text.JSON
@@ -72,8 +72,8 @@ import qualified Utility.Gpg
 
 type TestEnv = M.Map String String
 
-main :: IO ()
-main = do
+main :: [String] -> IO ()
+main ps = do
 #ifndef mingw32_HOST_OS
 	indirectenv <- prepare False
 	directenv <- prepare True
@@ -88,14 +88,27 @@ main = do
 	let tests = testGroup "Tests"
 		[properties, unitTests env ""]
 #endif
-	let runner = tryIngredients [consoleTestReporter] mempty tests
-	ifM (maybe (error "tasty failed to return a runner!") id runner)
-		( exitSuccess
-		, do
-			putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
-			putStrLn "   with utilities, such as git, installed on this system.)"
-			exitFailure
-		)
+	-- Can't use tasty's defaultMain because one of the command line
+	-- parameters is "test".
+	let pinfo = info (helper <*> suiteOptionParser ingredients tests)
+		( fullDesc <> header "Builtin test suite" )
+	opts <- either (\f -> error =<< errMessage f "git-annex test") return $
+		execParserPure (prefs idm) pinfo ps
+	case tryIngredients ingredients opts tests of
+		Nothing -> error "No tests found!?"
+		Just act -> ifM act
+			( exitSuccess
+			, do
+				putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
+				putStrLn "   with utilities, such as git, installed on this system.)"
+				exitFailure
+			)
+
+ingredients :: [Ingredient]
+ingredients =
+	[ consoleTestReporter
+	, listingTests
+	]
 
 properties :: TestTree
 properties = testGroup "QuickCheck"

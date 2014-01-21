@@ -26,9 +26,9 @@ main = run =<< getProgName
 	go a = do
 		ps <- getArgs
 #ifdef WITH_TESTSUITE
-		if ps == ["test"]
-			then Test.main
-			else a ps
+		case ps of
+			("test":ps') -> Test.main ps'
+			_ -> a ps
 #else
 		a ps
 #endif
