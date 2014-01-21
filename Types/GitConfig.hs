@@ -79,7 +79,6 @@ extractGitConfig r = GitConfig
 	, gcryptId = getmaybe "core.gcrypt-id"
 	}
   where
-	get k def = fromMaybe def $ getmayberead k
 	getbool k def = fromMaybe def $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue =<< getmaybe k
 	getmayberead k = readish =<< getmaybe k

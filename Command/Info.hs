@@ -29,7 +29,7 @@ import Annex.Content
 import Types.Key
 import Logs.UUID
 import Logs.Trust
-import Logs.NumCopies
+import Config.NumCopies
 import Remote
 import Config
 import Utility.Percentage

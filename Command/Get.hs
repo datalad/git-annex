@@ -12,7 +12,7 @@ import Command
 import qualified Remote
 import Annex.Content
 import Logs.Transfer
-import Logs.NumCopies
+import Config.NumCopies
 import Annex.Wanted
 import GitAnnex.Options
 import qualified Command.Move

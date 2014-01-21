@@ -17,11 +17,11 @@ import qualified Annex
 import qualified Git
 import Config
 import Config.Files
+import Config.NumCopies
 import Utility.DataUnits
 import Git.Config
 import Types.Distribution
 import qualified Build.SysConfig
-import Logs.NumCopies
 
 import qualified Data.Text as T
 

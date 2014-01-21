@@ -16,7 +16,7 @@ import qualified Command.Get
 import qualified Remote
 import Annex.Content
 import qualified Annex
-import Logs.NumCopies
+import Config.NumCopies
 
 def :: [Command]
 def = [withOptions (fromToOptions ++ keyOptions) $

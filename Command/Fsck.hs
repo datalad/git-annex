@@ -25,7 +25,7 @@ import Annex.Perms
 import Annex.Link
 import Logs.Location
 import Logs.Trust
-import Logs.NumCopies
+import Config.NumCopies
 import Annex.UUID
 import Utility.DataUnits
 import Utility.FileMode

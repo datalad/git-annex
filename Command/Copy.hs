@@ -13,7 +13,7 @@ import GitAnnex.Options
 import qualified Command.Move
 import qualified Remote
 import Annex.Wanted
-import Logs.NumCopies
+import Config.NumCopies
 
 def :: [Command]
 def = [withOptions Command.Move.moveOptions $ command "copy" paramPaths seek

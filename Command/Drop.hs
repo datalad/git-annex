@@ -14,7 +14,7 @@ import qualified Annex
 import Annex.UUID
 import Logs.Location
 import Logs.Trust
-import Logs.NumCopies
+import Config.NumCopies
 import Annex.Content
 import qualified Option
 import Annex.Wanted

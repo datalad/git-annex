@@ -15,7 +15,7 @@ import qualified Remote
 import qualified Git
 import qualified Option
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
-import Logs.NumCopies
+import Config.NumCopies
 
 def :: [Command]
 def = [withOptions [Command.Drop.fromOption] $
