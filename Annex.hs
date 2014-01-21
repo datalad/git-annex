@@ -56,6 +56,7 @@ import Types.Group
 import Types.Messages
 import Types.UUID
 import Types.FileMatcher
+import Types.NumCopies
 import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -94,7 +95,7 @@ data AnnexState = AnnexState
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, checkignorehandle :: Maybe (Maybe CheckIgnoreHandle)
 	, forcebackend :: Maybe String
-	, globalnumcopies :: Maybe Int
+	, globalnumcopies :: Maybe NumCopies
 	, limit :: Matcher (MatchInfo -> Annex Bool)
 	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe PreferredContentMap

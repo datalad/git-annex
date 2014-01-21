@@ -60,7 +60,7 @@ configFilesActions =
 	, (remoteLog, void $ liftAnnex remoteListRefresh)
 	, (trustLog, void $ liftAnnex trustMapLoad)
 	, (groupLog, void $ liftAnnex groupMapLoad)
-	, (numcopiesLog, void $ liftAnnex numCopiesLoad)
+	, (numcopiesLog, void $ liftAnnex globalNumCopiesLoad)
 	, (scheduleLog, void updateScheduleLog)
 	-- Preferred content settings depend on most of the other configs,
 	-- so will be reloaded whenever any configs change.

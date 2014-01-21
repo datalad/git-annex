@@ -197,7 +197,7 @@ limitNumCopiesNeeded want = case readish want of
 		gv <- getGlobalNumCopies
 		case gv of
 			Nothing -> return False
-			Just numcopies -> do
+			Just (NumCopies numcopies) -> do
 				us <- filter (`S.notMember` notpresent)
 					<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
 				return $ numcopies - length us >= needed

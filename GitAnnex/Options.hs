@@ -14,6 +14,7 @@ import qualified Git.Config
 import Git.Types
 import Command
 import Types.TrustLevel
+import Types.NumCopies
 import Types.Messages
 import qualified Annex
 import qualified Remote
@@ -65,7 +66,7 @@ options = Option.common ++
   where
 	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
 	setnumcopies v = maybe noop
-		(\n -> Annex.changeState $ \s -> s { Annex.globalnumcopies = Just n })
+		(\n -> Annex.changeState $ \s -> s { Annex.globalnumcopies = Just $ NumCopies n })
 		(readish v)
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
 	setgitconfig v = inRepo (Git.Config.store v)

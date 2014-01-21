@@ -25,6 +25,7 @@ import Annex.Perms
 import Annex.Link
 import Logs.Location
 import Logs.Trust
+import Logs.NumCopies
 import Annex.UUID
 import Utility.DataUnits
 import Utility.FileMode
@@ -111,14 +112,14 @@ getIncremental = do
 
 start :: Maybe Remote -> Incremental -> FilePath -> (Key, Backend) -> CommandStart
 start from inc file (key, backend) = do
-	numcopies <- numCopies file
+	numcopies <- getFileNumCopies file
 	case from of
 		Nothing -> go $ perform key file backend numcopies
 		Just r -> go $ performRemote key file backend numcopies r
   where
 	go = runFsck inc file key
 
-perform :: Key -> FilePath -> Backend -> Maybe Int -> Annex Bool
+perform :: Key -> FilePath -> Backend -> Maybe NumCopies -> Annex Bool
 perform key file backend numcopies = check
 	-- order matters
 	[ fixLink key file
@@ -132,7 +133,7 @@ perform key file backend numcopies = check
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
-performRemote :: Key -> FilePath -> Backend -> Maybe Int -> Remote -> Annex Bool
+performRemote :: Key -> FilePath -> Backend -> Maybe NumCopies -> Remote -> Annex Bool
 performRemote key file backend numcopies remote =
 	dispatch =<< Remote.hasKey remote key
   where
@@ -368,11 +369,11 @@ checkBackendOr' bad backend key file postcheck =
 				, return True
 				)
 
-checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
+checkKeyNumCopies :: Key -> FilePath -> Maybe NumCopies -> Annex Bool
 checkKeyNumCopies key file numcopies = do
 	needed <- getNumCopies numcopies
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< Remote.keyLocations key
-	let present = length safelocations
+	let present = NumCopies (length safelocations)
 	if present < needed
 		then do
 			ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
@@ -380,15 +381,15 @@ checkKeyNumCopies key file numcopies = do
 			return False
 		else return True
 
-missingNote :: String -> Int -> Int -> String -> String
-missingNote file 0 _ [] = 
+missingNote :: String -> NumCopies -> NumCopies -> String -> String
+missingNote file (NumCopies 0) _ [] = 
 		"** No known copies exist of " ++ file
-missingNote file 0 _ untrusted =
+missingNote file (NumCopies 0) _ untrusted =
 		"Only these untrusted locations may have copies of " ++ file ++
 		"\n" ++ untrusted ++
 		"Back it up to trusted locations with git-annex copy."
 missingNote file present needed [] =
-		"Only " ++ show present ++ " of " ++ show needed ++ 
+		"Only " ++ show (fromNumCopies present) ++ " of " ++ show (fromNumCopies needed) ++ 
 		" trustworthy copies exist of " ++ file ++
 		"\nBack it up with git-annex copy."
 missingNote file present needed untrusted = 

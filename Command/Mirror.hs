@@ -16,6 +16,7 @@ import qualified Command.Get
 import qualified Remote
 import Annex.Content
 import qualified Annex
+import Logs.NumCopies
 
 def :: [Command]
 def = [withOptions (fromToOptions ++ keyOptions) $
@@ -33,10 +34,10 @@ seek ps = do
 
 start :: Maybe Remote -> Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start to from file (key, _backend) = do
-	numcopies <- numCopies file
+	numcopies <- getFileNumCopies file
 	startKey numcopies to from (Just file) key
 
-startKey :: Maybe Int -> Maybe Remote -> Maybe Remote -> Maybe FilePath -> Key -> CommandStart
+startKey :: Maybe NumCopies -> Maybe Remote -> Maybe Remote -> Maybe FilePath -> Key -> CommandStart
 startKey numcopies to from afile key = do
 	noAuto
 	case (from, to) of

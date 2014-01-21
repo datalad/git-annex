@@ -21,7 +21,7 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 
-class Serializable v where
+class SingleValueSerializable v where
 	serialize :: v -> String
 	deserialize :: String -> Maybe v
 
@@ -32,12 +32,12 @@ data LogEntry v = LogEntry
 
 type Log v = S.Set (LogEntry v)
 
-showLog :: (Serializable v) => Log v -> String
+showLog :: (SingleValueSerializable v) => Log v -> String
 showLog = unlines . map showline . S.toList
   where
 	showline (LogEntry t v) = unwords [show t, serialize v]
 
-parseLog :: (Ord v, Serializable v) => String -> Log v
+parseLog :: (Ord v, SingleValueSerializable v) => String -> Log v
 parseLog = S.fromList . mapMaybe parse . lines
   where
 	parse line = do
@@ -52,13 +52,13 @@ newestValue s
 	| S.null s = Nothing
 	| otherwise = Just (value $ S.findMax s)
 
-readLog :: (Ord v, Serializable v) => FilePath -> Annex (Log v)
+readLog :: (Ord v, SingleValueSerializable v) => FilePath -> Annex (Log v)
 readLog = parseLog <$$> Annex.Branch.get
 
-getLog :: (Ord v, Serializable v) => FilePath -> Annex (Maybe v)
+getLog :: (Ord v, SingleValueSerializable v) => FilePath -> Annex (Maybe v)
 getLog = newestValue <$$> readLog
 
-setLog :: (Serializable v) => FilePath -> v -> Annex ()
+setLog :: (SingleValueSerializable v) => FilePath -> v -> Annex ()
 setLog f v = do
         now <- liftIO getPOSIXTime
         let ent = LogEntry now v

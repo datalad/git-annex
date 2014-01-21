@@ -69,13 +69,6 @@ setRemoteCost r c = setConfig (remoteConfig r "cost") (show c)
 setRemoteAvailability :: Git.Repo -> Availability -> Annex ()
 setRemoteAvailability r c = setConfig (remoteConfig r "availability") (show c)
 
-getNumCopies :: Maybe Int -> Annex Int
-getNumCopies (Just v) = return v
-getNumCopies Nothing = deprecatedNumCopies
-
-deprecatedNumCopies :: Annex Int
-deprecatedNumCopies = fromMaybe 1 . annexNumCopies <$> Annex.getGitConfig
-
 isDirect :: Annex Bool
 isDirect = annexDirect <$> Annex.getGitConfig
 

@@ -106,34 +106,34 @@ readResponse h = fromMaybe False . deserialize <$> hGetLine h
 fieldSep :: String
 fieldSep = "\0"
 
-class Serialized a where
+class TCSerialized a where
 	serialize :: a -> String
 	deserialize :: String -> Maybe a
 
-instance Serialized Bool where
+instance TCSerialized Bool where
 	serialize True = "1"
 	serialize False = "0"
 	deserialize "1" = Just True
 	deserialize "0" = Just False
 	deserialize _ = Nothing
 
-instance Serialized Direction where
+instance TCSerialized Direction where
 	serialize Upload = "u"
 	serialize Download = "d"
 	deserialize "u" = Just Upload
 	deserialize "d" = Just Download
 	deserialize _ = Nothing
 
-instance Serialized AssociatedFile where
+instance TCSerialized AssociatedFile where
 	serialize (Just f) = f
 	serialize Nothing = ""
 	deserialize "" = Just Nothing
 	deserialize f = Just $ Just f
 
-instance Serialized UUID where
+instance TCSerialized UUID where
 	serialize = fromUUID
 	deserialize = Just . toUUID
 
-instance Serialized Key where
+instance TCSerialized Key where
 	serialize = key2file
 	deserialize = file2key

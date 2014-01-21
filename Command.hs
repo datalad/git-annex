@@ -19,8 +19,6 @@ module Command (
 	whenAnnexed,
 	ifAnnexed,
 	isBareRepo,
-	numCopies,
-	numCopiesCheck,
 	checkAuto,
 	module ReExported
 ) where
@@ -29,17 +27,12 @@ import Common.Annex
 import qualified Backend
 import qualified Annex
 import qualified Git
-import qualified Remote
 import Types.Command as ReExported
 import Types.Option as ReExported
 import Seek as ReExported
 import Checks as ReExported
 import Usage as ReExported
 import RunCommand as ReExported
-import Logs.Trust
-import Logs.NumCopies
-import Config
-import Annex.CheckAttr
 
 {- Generates a normal command -}
 command :: String -> String -> CommandSeek -> CommandSection -> String -> Command
@@ -86,20 +79,6 @@ ifAnnexed file yes no = maybe no yes =<< Backend.lookupFile file
 
 isBareRepo :: Annex Bool
 isBareRepo = fromRepo Git.repoIsLocalBare
-
-numCopies :: FilePath  -> Annex (Maybe Int)
-numCopies file = do
-	global <- getGlobalNumCopies
-	case global of
-		Just n -> return $ Just n
-		Nothing -> readish <$> checkAttr "annex.numcopies" file
-
-numCopiesCheck :: FilePath -> Key -> (Int -> Int -> v) -> Annex v
-numCopiesCheck file key vs = do
-	numcopiesattr <- numCopies file
-	needed <- getNumCopies numcopiesattr
-	have <- trustExclude UnTrusted =<< Remote.keyLocations key
-	return $ length have `vs` needed
 
 checkAuto :: Annex Bool -> Annex Bool
 checkAuto checker = ifM (Annex.getState Annex.auto)

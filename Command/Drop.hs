@@ -14,8 +14,8 @@ import qualified Annex
 import Annex.UUID
 import Logs.Location
 import Logs.Trust
+import Logs.NumCopies
 import Annex.Content
-import Config
 import qualified Option
 import Annex.Wanted
 import Types.Key
@@ -43,17 +43,17 @@ start from file (key, _) = checkDropAuto from file key $ \numcopies ->
 					then startLocal (Just file) numcopies key Nothing
 					else startRemote (Just file) numcopies key remote
 
-startLocal :: AssociatedFile -> Maybe Int -> Key -> Maybe Remote -> CommandStart
+startLocal :: AssociatedFile -> Maybe NumCopies -> Key -> Maybe Remote -> CommandStart
 startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
 	showStart "drop" (fromMaybe (key2file key) afile)
 	next $ performLocal key numcopies knownpresentremote
 
-startRemote :: AssociatedFile -> Maybe Int -> Key -> Remote -> CommandStart
+startRemote :: AssociatedFile -> Maybe NumCopies -> Key -> Remote -> CommandStart
 startRemote afile numcopies key remote = do
 	showStart ("drop " ++ Remote.name remote) (fromMaybe (key2file key) afile)
 	next $ performRemote key numcopies remote
 
-performLocal :: Key -> Maybe Int -> Maybe Remote -> CommandPerform
+performLocal :: Key -> Maybe NumCopies -> Maybe Remote -> CommandPerform
 performLocal key numcopies knownpresentremote = lockContent key $ do
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
 	let trusteduuids' = case knownpresentremote of
@@ -65,7 +65,7 @@ performLocal key numcopies knownpresentremote = lockContent key $ do
 		removeAnnex key
 		next $ cleanupLocal key
 
-performRemote :: Key -> Maybe Int -> Remote -> CommandPerform
+performRemote :: Key -> Maybe NumCopies -> Remote -> CommandPerform
 performRemote key numcopies remote = lockContent key $ do
 	-- Filter the remote it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
@@ -98,23 +98,23 @@ cleanupRemote key remote ok = do
 {- Checks specified remotes to verify that enough copies of a key exist to
  - allow it to be safely removed (with no data loss). Can be provided with
  - some locations where the key is known/assumed to be present. -}
-canDropKey :: Key -> Maybe Int -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
+canDropKey :: Key -> Maybe NumCopies -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
 canDropKey key numcopiesM have check skip = do
 	force <- Annex.getState Annex.force
-	if force || numcopiesM == Just 0
+	if force || numcopiesM == Just (NumCopies 0)
 		then return True
 		else do
 			need <- getNumCopies numcopiesM
 			findCopies key need skip have check
 
-findCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
+findCopies :: Key -> NumCopies -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
 findCopies key need skip = helper [] []
   where
 	helper bad missing have []
-		| length have >= need = return True
+		| NumCopies (length have) >= need = return True
 		| otherwise = notEnoughCopies key need have (skip++missing) bad
 	helper bad missing have (r:rs)
-		| length have >= need = return True
+		| NumCopies (length have) >= need = return True
 		| otherwise = do
 			let u = Remote.uuid r
 			let duplicate = u `elem` have
@@ -125,12 +125,12 @@ findCopies key need skip = helper [] []
 				(False, Right False) -> helper bad (u:missing) have rs
 				_                    -> helper bad missing have rs
 
-notEnoughCopies :: Key -> Int -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
+notEnoughCopies :: Key -> NumCopies -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
 notEnoughCopies key need have skip bad = do
 	unsafe
 	showLongNote $
 		"Could only verify the existence of " ++
-		show (length have) ++ " out of " ++ show need ++ 
+		show (length have) ++ " out of " ++ show (fromNumCopies need) ++ 
 		" necessary copies"
 	Remote.showTriedRemotes bad
 	Remote.showLocations key (have++skip)
@@ -146,9 +146,9 @@ notEnoughCopies key need have skip bad = do
  -
  - Passes any numcopies attribute of the file on to the action as an
  - optimisation. -}
-checkDropAuto :: Maybe Remote -> FilePath -> Key -> (Maybe Int -> CommandStart) -> CommandStart
+checkDropAuto :: Maybe Remote -> FilePath -> Key -> (Maybe NumCopies -> CommandStart) -> CommandStart
 checkDropAuto mremote file key a = do
-	numcopiesattr <- numCopies file
+	numcopiesattr <- getFileNumCopies file
 	Annex.getState Annex.auto >>= auto numcopiesattr
   where
 	auto numcopiesattr False = a numcopiesattr
@@ -158,6 +158,6 @@ checkDropAuto mremote file key a = do
 		uuid <- getUUID
 		let remoteuuid = fromMaybe uuid $ Remote.uuid <$> mremote
 		locs' <- trustExclude UnTrusted $ filter (/= remoteuuid) locs
-		if length locs' >= needed
+		if NumCopies (length locs') >= needed
 			then a numcopiesattr
 			else stop

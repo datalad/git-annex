@@ -9,6 +9,7 @@ module Annex.Drop where
 
 import Common.Annex
 import Logs.Trust
+import Logs.NumCopies
 import Types.Remote (uuid)
 import qualified Remote
 import qualified Command.Drop
@@ -59,8 +60,9 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote runn
   where
 	getcopies fs = do
 		(untrusted, have) <- trustPartition UnTrusted locs
-		numcopies <- maximum <$> mapM (getNumCopies <=< numCopies) fs
-		return (length have, numcopies, S.fromList untrusted)
+		numcopies <- maximum
+			<$> mapM (getNumCopies <=< getFileNumCopies) fs
+		return (NumCopies (length have), numcopies, S.fromList untrusted)
 
 	{- Check that we have enough copies still to drop the content.
 	 - When the remote being dropped from is untrusted, it was not
@@ -72,7 +74,7 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote runn
 		| otherwise = have > numcopies
 	
 	decrcopies (have, numcopies, untrusted) Nothing =
-		(have - 1, numcopies, untrusted)
+		(NumCopies (fromNumCopies have - 1), numcopies, untrusted)
 	decrcopies v@(_have, _numcopies, untrusted) (Just u)
 		| S.member u untrusted = v
 		| otherwise = decrcopies v Nothing
@@ -92,7 +94,7 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote runn
 						[ "dropped"
 						, afile
 						, "(from " ++ maybe "here" show u ++ ")"
-						, "(copies now " ++ show (have - 1) ++ ")"
+						, "(copies now " ++ show (fromNumCopies have - 1) ++ ")"
 						, ": " ++ reason
 						]
 					return $ decrcopies n u

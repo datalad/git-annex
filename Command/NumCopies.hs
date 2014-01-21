@@ -39,7 +39,7 @@ startGet = next $ next $ do
 	Annex.setOutput QuietOutput
 	v <- getGlobalNumCopies
 	case v of
-		Just n -> liftIO $ putStrLn $ show n
+		Just n -> liftIO $ putStrLn $ show $ fromNumCopies n
 		Nothing -> do
 			liftIO $ putStrLn $ "global numcopies is not set"
 			old <- annexNumCopies <$> Annex.getGitConfig
@@ -52,5 +52,5 @@ startSet :: Int -> CommandStart
 startSet n = do
 	showStart "numcopies" (show n)
 	next $ next $ do
-		setGlobalNumCopies n
+		setGlobalNumCopies $ NumCopies n
 		return True
