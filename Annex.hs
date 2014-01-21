@@ -96,6 +96,7 @@ data AnnexState = AnnexState
 	, checkignorehandle :: Maybe (Maybe CheckIgnoreHandle)
 	, forcebackend :: Maybe String
 	, globalnumcopies :: Maybe NumCopies
+	, forcenumcopies :: Maybe NumCopies
 	, limit :: Matcher (MatchInfo -> Annex Bool)
 	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe PreferredContentMap
@@ -131,6 +132,7 @@ newState c r = AnnexState
 	, checkignorehandle = Nothing
 	, forcebackend = Nothing
 	, globalnumcopies = Nothing
+	, forcenumcopies = Nothing
 	, limit = Left []
 	, uuidmap = Nothing
 	, preferredcontentmap = Nothing

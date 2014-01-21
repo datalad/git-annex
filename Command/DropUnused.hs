@@ -15,6 +15,7 @@ import qualified Remote
 import qualified Git
 import qualified Option
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
+import Logs.NumCopies
 
 def :: [Command]
 def = [withOptions [Command.Drop.fromOption] $
@@ -22,18 +23,20 @@ def = [withOptions [Command.Drop.fromOption] $
 		seek SectionMaintenance "drop unused file content"]
 
 seek :: CommandSeek
-seek = withUnusedMaps start
+seek ps = do
+	numcopies <- getNumCopies
+	withUnusedMaps (start numcopies) ps
 
-start :: UnusedMaps -> Int -> CommandStart
-start = startUnused "dropunused" perform (performOther gitAnnexBadLocation) (performOther gitAnnexTmpLocation)
+start :: NumCopies -> UnusedMaps -> Int -> CommandStart
+start numcopies = startUnused "dropunused" (perform numcopies) (performOther gitAnnexBadLocation) (performOther gitAnnexTmpLocation)
 
-perform :: Key -> CommandPerform
-perform key = maybe droplocal dropremote =<< Remote.byNameWithUUID =<< from
+perform :: NumCopies -> Key -> CommandPerform
+perform numcopies key = maybe droplocal dropremote =<< Remote.byNameWithUUID =<< from
   where
 	dropremote r = do
 		showAction $ "from " ++ Remote.name r
-		Command.Drop.performRemote key Nothing r
-	droplocal = Command.Drop.performLocal key Nothing Nothing
+		Command.Drop.performRemote key numcopies r
+	droplocal = Command.Drop.performLocal key numcopies Nothing
 	from = Annex.getField $ Option.name Command.Drop.fromOption
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform

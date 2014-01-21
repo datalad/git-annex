@@ -42,10 +42,10 @@ startGet = next $ next $ do
 		Just n -> liftIO $ putStrLn $ show $ fromNumCopies n
 		Nothing -> do
 			liftIO $ putStrLn $ "global numcopies is not set"
-			old <- annexNumCopies <$> Annex.getGitConfig
+			old <- deprecatedNumCopies
 			case old of
 				Nothing -> liftIO $ putStrLn "(default is 1)"
-				Just n -> liftIO $ putStrLn $ "(deprecated git config annex.numcopies is set to " ++ show n ++ " locally)"
+				Just n -> liftIO $ putStrLn $ "(deprecated git config annex.numcopies is set to " ++ show (fromNumCopies n) ++ " locally)"
 	return True
 
 startSet :: Int -> CommandStart

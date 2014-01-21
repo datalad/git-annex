@@ -82,7 +82,7 @@ prefsAForm def = PrefsForm
 getPrefs :: Annex PrefsForm
 getPrefs = PrefsForm
 	<$> (T.pack . roughSize storageUnits False . annexDiskReserve <$> Annex.getGitConfig)
-	<*> (fromNumCopies <$> (maybe deprecatedNumCopies return =<< getGlobalNumCopies))
+	<*> (fromNumCopies <$> getNumCopies)
 	<*> inAutoStartFile
 	<*> (annexAutoUpgrade <$> Annex.getGitConfig)
 	<*> (annexDebug <$> Annex.getGitConfig)

@@ -119,7 +119,7 @@ start from inc file (key, backend) = do
   where
 	go = runFsck inc file key
 
-perform :: Key -> FilePath -> Backend -> Maybe NumCopies -> Annex Bool
+perform :: Key -> FilePath -> Backend -> NumCopies -> Annex Bool
 perform key file backend numcopies = check
 	-- order matters
 	[ fixLink key file
@@ -133,7 +133,7 @@ perform key file backend numcopies = check
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
-performRemote :: Key -> FilePath -> Backend -> Maybe NumCopies -> Remote -> Annex Bool
+performRemote :: Key -> FilePath -> Backend -> NumCopies -> Remote -> Annex Bool
 performRemote key file backend numcopies remote =
 	dispatch =<< Remote.hasKey remote key
   where
@@ -369,15 +369,14 @@ checkBackendOr' bad backend key file postcheck =
 				, return True
 				)
 
-checkKeyNumCopies :: Key -> FilePath -> Maybe NumCopies -> Annex Bool
+checkKeyNumCopies :: Key -> FilePath -> NumCopies -> Annex Bool
 checkKeyNumCopies key file numcopies = do
-	needed <- getNumCopies numcopies
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< Remote.keyLocations key
 	let present = NumCopies (length safelocations)
-	if present < needed
+	if present < numcopies
 		then do
 			ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
-			warning $ missingNote file present needed ppuuids
+			warning $ missingNote file present numcopies ppuuids
 			return False
 		else return True
 

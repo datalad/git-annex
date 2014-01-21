@@ -60,8 +60,7 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote runn
   where
 	getcopies fs = do
 		(untrusted, have) <- trustPartition UnTrusted locs
-		numcopies <- maximum
-			<$> mapM (getNumCopies <=< getFileNumCopies) fs
+		numcopies <- maximum <$> mapM getFileNumCopies fs
 		return (NumCopies (length have), numcopies, S.fromList untrusted)
 
 	{- Check that we have enough copies still to drop the content.
@@ -88,7 +87,7 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote runn
 
 	checkdrop fs n@(have, numcopies, _untrusted) u a =
 		ifM (allM (wantDrop True u . Just) fs)
-			( ifM (safely $ runner $ a (Just numcopies))
+			( ifM (safely $ runner $ a numcopies)
 				( do
 					liftIO $ debugM "drop" $ unwords
 						[ "dropped"

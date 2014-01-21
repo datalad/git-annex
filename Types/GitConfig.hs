@@ -19,12 +19,13 @@ import Utility.DataUnits
 import Config.Cost
 import Types.Distribution
 import Types.Availability
+import Types.NumCopies
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
 data GitConfig = GitConfig
 	{ annexVersion :: Maybe String
-	, annexNumCopies :: Maybe Int
+	, annexNumCopies :: Maybe NumCopies
 	, annexDiskReserve :: Integer
 	, annexDirect :: Bool
 	, annexBackends :: [String]
@@ -52,7 +53,7 @@ data GitConfig = GitConfig
 extractGitConfig :: Git.Repo -> GitConfig
 extractGitConfig r = GitConfig
 	{ annexVersion = notempty $ getmaybe (annex "version")
-	, annexNumCopies = getmayberead (annex "numcopies")
+	, annexNumCopies = NumCopies <$> getmayberead (annex "numcopies")
 	, annexDiskReserve = fromMaybe onemegabyte $
 		readSize dataUnits =<< getmaybe (annex "diskreserve")
 	, annexDirect = getbool (annex "direct") False
