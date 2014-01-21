@@ -13,6 +13,7 @@ import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
+import Data.Monoid
 
 import Options.Applicative hiding (command)
 import System.PosixCompat.Files
@@ -141,11 +142,20 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_duration_roundtrips" Utility.HumanTime.prop_duration_roundtrips
 	]
 
-unitTests :: String -> IO TestEnv -> TestTree
-unitTests note getenv = testGroup ("Unit Tests " ++ note)
+{- These tests set up the test environment, but also test some basic parts
+ - of git-annex. They are always run before the unitTests. -}
+initTests :: TestEnv -> TestTree
+initTests env = testGroup ("Init Tests")
 	[ check "init" test_init
 	, check "add" test_add
-	, check "add sha1dup" test_add_sha1dup
+	]
+  where
+	check desc t = testCase desc (t env)
+
+unitTests :: String -> IO TestEnv -> TestTree
+unitTests note getenv = testGroup ("Unit Tests " ++ note)
+	[ check "add sha1dup" test_add_sha1dup
+	, check "add extras" test_add_extras
 	, check "add subdirs" test_add_subdirs
 	, check "reinject" test_reinject
 	, check "unannex (no copy)" test_unannex_nocopy
@@ -192,10 +202,7 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
   where
 	check desc t = testCase desc (getenv >>= t)
 
-{- Tests that need a origin git repo. -}
-withTestEnv :: Bool -> (IO TestEnv -> TestTree) -> TestTree
-withTestEnv forcedirect = withResource (prepareTestEnv forcedirect) releaseTestEnv
-
+-- this test case create the main repo
 test_init :: TestEnv -> Assertion
 test_init env = innewrepo env $ do
 	git_annex env "init" [reponame] @? "init failed"
@@ -214,19 +221,13 @@ test_add env = inmainrepo env $ do
 	git_annex env "add" [sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
 	annexed_present sha1annexedfile
 	checkbackend sha1annexedfile backendSHA1
-	writeFile wormannexedfile $ content wormannexedfile
-	git_annex env "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
-	annexed_present wormannexedfile
-	checkbackend wormannexedfile backendWORM
 	ifM (annexeval Config.isDirect)
 		( do
-			boolSystem "rm" [Params "-f", File wormannexedfile] @? "rm failed"
 			writeFile ingitfile $ content ingitfile
 			not <$> boolSystem "git" [Param "add", File ingitfile] @? "git add failed to fail in direct mode"
 			boolSystem "rm" [Params "-f", File ingitfile] @? "rm failed"
 			git_annex env "sync" [] @? "sync failed"
 		, do
-			boolSystem "git" [Params "rm --force -q", File wormannexedfile] @? "git rm failed"
 			writeFile ingitfile $ content ingitfile
 			boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
 			boolSystem "git" [Params "commit -q -m commit"] @? "git commit failed"
@@ -240,6 +241,13 @@ test_add_sha1dup env = intmpclonerepo env $ do
 	git_annex env "add" [sha1annexedfiledup, "--backend=SHA1"] @? "add of second file with same SHA1 failed"
 	annexed_present sha1annexedfiledup
 	annexed_present sha1annexedfile
+
+test_add_extras :: TestEnv -> Assertion
+test_add_extras env = intmpclonerepo env $ do
+	writeFile wormannexedfile $ content wormannexedfile
+	git_annex env "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
+	annexed_present wormannexedfile
+	checkbackend wormannexedfile backendWORM
 
 test_add_subdirs :: TestEnv -> Assertion
 test_add_subdirs env = intmpclonerepo env $ do
@@ -1255,6 +1263,18 @@ annexed_present = runchecks
 
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
+
+withTestEnv :: Bool -> (IO TestEnv -> TestTree) -> TestTree
+withTestEnv forcedirect = withResource prepare release
+  where
+	prepare = do
+		env <- prepareTestEnv forcedirect
+		case tryIngredients ingredients mempty (initTests env) of
+			Nothing -> error "No tests found!?"
+			Just act -> unlessM act $
+				error "init tests failed! cannot continue"
+		return env
+	release = releaseTestEnv
 
 releaseTestEnv :: TestEnv -> IO ()
 releaseTestEnv _env = do

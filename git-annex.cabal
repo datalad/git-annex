@@ -115,7 +115,7 @@ Executable git-annex
 
   if flag(TestSuite)
     Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck,
-    	optparse-applicative
+     optparse-applicative
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(TDFA)
