@@ -122,6 +122,7 @@ waitForNextCheck = do
 dailyCheck :: Assistant Bool
 dailyCheck = do
 	g <- liftAnnex gitRepo
+	batchmaker <- liftIO getBatchCommandMaker
 
 	-- Find old unstaged symlinks, and add them to git.
 	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo False ["."] g
@@ -140,7 +141,7 @@ dailyCheck = do
 	 - to have a lot of small objects and they should not be a
 	 - significant size. -}
 	when (Git.Config.getMaybe "gc.auto" g == Just "0") $
-		liftIO $ void $ Git.Command.runBool
+		liftIO $ void $ Git.Command.runBatch batchmaker
 			[ Param "-c", Param "gc.auto=670000"
 			, Param "gc"
 			, Param "--auto"

@@ -18,6 +18,7 @@ import qualified Utility.CoProcess as CoProcess
 #ifdef mingw32_HOST_OS
 import Git.FilePath
 #endif
+import Utility.Batch
 
 {- Constructs a git command line operating on the specified repo. -}
 gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
@@ -41,9 +42,13 @@ gitCommandLine _ repo = assertLocal repo $ error "internal"
 {- Runs git in the specified repo. -}
 runBool :: [CommandParam] -> Repo -> IO Bool
 runBool params repo = assertLocal repo $
-	boolSystemEnv "git"
-		(gitCommandLine params repo)
-		(gitEnv repo)
+	boolSystemEnv "git" (gitCommandLine params repo) (gitEnv repo)
+
+{- Runs git in batch mode. -}
+runBatch :: BatchCommandMaker -> [CommandParam] -> Repo -> IO Bool
+runBatch batchmaker params repo = assertLocal repo $ do
+	let (cmd, params') = batchmaker ("git", gitCommandLine params repo)
+	boolSystemEnv cmd params' (gitEnv repo)
 
 {- Runs git in the specified repo, throwing an error if it fails. -}
 run :: [CommandParam] -> Repo -> IO ()
