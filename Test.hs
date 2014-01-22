@@ -683,7 +683,7 @@ test_unused env = intmpclonerepoInDirect env $ do
   where
 	checkunused expectedkeys desc = do
 		git_annex env "unused" [] @? "unused failed"
-		unusedmap <- annexeval $ Logs.Unused.readUnusedLog ""
+		unusedmap <- annexeval $ Logs.Unused.readUnusedMap ""
 		let unusedkeys = M.elems unusedmap
 		assertEqual ("unused keys differ " ++ desc)
 			(sort expectedkeys) (sort unusedkeys)

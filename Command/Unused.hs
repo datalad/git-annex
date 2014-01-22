@@ -92,7 +92,7 @@ check file msg a c = do
 	l <- a
 	let unusedlist = number c l
 	unless (null l) $ showLongNote $ msg unusedlist
-	writeUnusedLog file unusedlist
+	updateUnusedLog file $ M.fromList unusedlist
 	return $ c + length l
 
 number :: Int -> [a] -> [(Int, a)]
@@ -328,9 +328,9 @@ data UnusedMaps = UnusedMaps
 
 withUnusedMaps :: (UnusedMaps -> Int -> CommandStart) -> CommandSeek
 withUnusedMaps a params = do
-	unused <- readUnusedLog ""
-	unusedbad <- readUnusedLog "bad"
-	unusedtmp <- readUnusedLog "tmp"
+	unused <- readUnusedMap ""
+	unusedbad <- readUnusedMap "bad"
+	unusedtmp <- readUnusedMap "tmp"
 	let m = unused `M.union` unusedbad `M.union` unusedtmp
 	let unusedmaps = UnusedMaps unused unusedbad unusedtmp
 	seekActions $ return $ map (a unusedmaps) $
