@@ -14,7 +14,8 @@ git-annex (5.20140118) UNRELEASED; urgency=medium
     command is used to set the global number of copies, any annex.numcopies
     git configs will be ignored.
   * assistant: Make the prefs page set the global numcopies.
-  * Add lackingcopies and approxlackingcopies preferred content expressions.
+  * Add lackingcopies, approxlackingcopies, and unused to
+    preferred content expressions.
   * Client, transfer, incremental backup, and archive repositories
     now want to get content that does not yet have enough copies.
   * repair: Check git version at run time.

@@ -133,9 +133,9 @@ withKeyOptions keyop fallbackop params = do
 	auto <- Annex.getState Annex.auto
 	case    (allkeys || bare , unused, auto ) of
 		(True    , False , False) -> go loggedKeys
-		(False   , True  , False) -> go unusedKeys
+		(False   , True  , False) -> go unusedKeys'
 		(True    , True  , _    )
-			| bare && not allkeys -> go unusedKeys
+			| bare && not allkeys -> go unusedKeys'
 			| otherwise -> error "Cannot use --all with --unused."
 		(False   , False , _    ) -> fallbackop params
 		(_       , _     , True )

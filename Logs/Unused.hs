@@ -21,14 +21,17 @@ module Logs.Unused (
 	readUnusedLog,
 	readUnusedMap,
 	unusedKeys,
+	unusedKeys'
 ) where
 
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 
 import Common.Annex
+import qualified Annex
 import Types.Key
 import Utility.Tmp
 
@@ -84,5 +87,16 @@ readUnusedLog prefix = do
 readUnusedMap :: FilePath -> Annex UnusedMap
 readUnusedMap = log2map <$$> readUnusedLog
 
-unusedKeys :: Annex [Key]
-unusedKeys = M.keys <$> readUnusedLog ""
+{- Set of unused keys. This is cached for speed. -}
+unusedKeys :: Annex (S.Set Key)
+unusedKeys = maybe (setUnusedKeys =<< unusedKeys') return
+	=<< Annex.getState Annex.unusedkeys
+
+unusedKeys' :: Annex [Key]
+unusedKeys' = M.keys <$> readUnusedLog ""
+
+setUnusedKeys :: [Key] -> Annex (S.Set Key)
+setUnusedKeys ks = do
+	let v = S.fromList ks
+	Annex.changeState $ \s -> s { Annex.unusedkeys = Just v }
+	return v

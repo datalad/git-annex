@@ -39,17 +39,16 @@ Finally, how to specify a feature request for git-annex?
 > So, let's spec out a design.
 > 
 > * Add preferred content terminal to configure whether a repository wants
->   to hang on to unused content.
->   Something like "unused=true" I suppose, because not having a parameter
->   would complicate preferred content parsing, and I cannot think
->   of a useful parameter. (It cannot be a timestamp, because there's
->   no way repos can agree on about when a key became unused.)
+>   to hang on to unused content. Simply `unused`.
+>   (It cannot include a timestamp, because there's
+>   no way repos can agree on about when a key became unused.) **done**
 > * In order to quickly match that terminal, the Annex monad will need
->   to keep a Set of unused Keys. This should only be loaded on demand.  
+>   to keep a Set of unused Keys. This should only be loaded on demand.
+>   **done**  
 >   NB: There is some potential for a great many unused Keys to cause
 >   memory usage to balloon.
 > * Client repositories will end their preferred content with
->   `and unused=false`. Transfer repositories too, because typically
+>   `and (not unused)`. Transfer repositories too, because typically
 >   only client repos connect to them, and so otherwise unused files
 >   would build up there. Backup repos would want unused files. I
 >   think that archive repos would too.
@@ -90,7 +89,7 @@ Finally, how to specify a feature request for git-annex?
 > client directly edits it, or deletes it, it loses the old version,
 > but the other client will still be storing that old version.
 > 
-> ## Stability analysis for unused= in preferred content expressions
+> ## Stability analysis for unused in preferred content expressions
 > 
 > This is tricky, because two repos that are otherwise entirely
 > in sync may have differing opinons about whether a key is unused,

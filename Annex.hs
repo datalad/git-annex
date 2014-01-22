@@ -46,6 +46,7 @@ import Git.CheckAttr
 import Git.CheckIgnore
 import Git.SharedRepository
 import qualified Git.Queue
+import Types.Key
 import Types.Backend
 import Types.GitConfig
 import qualified Types.Remote
@@ -112,6 +113,7 @@ data AnnexState = AnnexState
 	, inodeschanged :: Maybe Bool
 	, useragent :: Maybe String
 	, errcounter :: Integer
+	, unusedkeys :: Maybe (S.Set Key)
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -148,6 +150,7 @@ newState c r = AnnexState
 	, inodeschanged = Nothing
 	, useragent = Nothing
 	, errcounter = 0
+	, unusedkeys = Nothing
 	}
 
 {- Makes an Annex state object for the specified git repo.

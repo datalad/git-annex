@@ -30,6 +30,7 @@ import Types.Group
 import Types.FileMatcher
 import Types.Limit
 import Logs.Group
+import Logs.Unused
 import Utility.HumanTime
 import Utility.DataUnits
 
@@ -198,6 +199,15 @@ limitLackingCopies approx want = case readish want of
 			<$> (trustExclude UnTrusted =<< Remote.keyLocations key)
 		return $ numcopies - length us >= needed
 	approxNumCopies = fromMaybe defaultNumCopies <$> getGlobalNumCopies
+
+{- Match keys that are unused.
+ - 
+ - This has a nice optimisation: When a file exists,
+ - its key is obviously not unused.
+ -}
+limitUnused :: MatchFiles
+limitUnused _ (MatchingFile _) = return False
+limitUnused _ (MatchingKey k) = S.member k <$> unusedKeys
 
 {- Adds a limit to skip files not believed to be present in all
  - repositories in the specified group. -}

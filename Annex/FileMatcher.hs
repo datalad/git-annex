@@ -65,6 +65,7 @@ parseToken checkpresent checkpreferreddir groupmap t
 	| t `elem` tokens = Right $ token t
 	| t == "present" = use checkpresent
 	| t == "inpreferreddir" = use checkpreferreddir
+	| t == "unused" = Right (Operation limitUnused)
 	| otherwise = maybe (Left $ "near " ++ show t) use $ M.lookup k $
 		M.fromList
 			[ ("include", limitInclude)
