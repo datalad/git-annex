@@ -42,7 +42,8 @@ Finally, how to specify a feature request for git-annex?
 >   to hang on to unused content.
 >   Something like "unused=true" I suppose, because not having a parameter
 >   would complicate preferred content parsing, and I cannot think
->   of a useful parameter.
+>   of a useful parameter. (It cannot be a timestamp, because there's
+>   no way repos can agree on about when a key became unused.)
 > * In order to quickly match that terminal, the Annex monad will need
 >   to keep a Set of unused Keys. This should only be loaded on demand.  
 >   NB: There is some potential for a great many unused Keys to cause
@@ -57,7 +58,7 @@ Finally, how to specify a feature request for git-annex?
 >   for most repos. Note that the assistant could also notice on the
 >   fly when files are removed and mark their keys as unused if that was
 >   the last associated file. (Only currently possible in direct mode.)
-> * It makes sense for the
+> * After scanning for unused files, it makes sense for the
 >   assistant to queue transfers of unused files to any remotes that
 >   do want them (eg, backup remotes). If the files can successfully be
 >   sent to a remote, that will lead to them being dropped locally as
@@ -70,6 +71,7 @@ Finally, how to specify a feature request for git-annex?
 >   time stamp of the object; we could use the mtime of the .map file,
 >   that that's direct mode only and may be replaced with a database
 >   later. Seems best to just keep a unused log file with timestamps.
+>   **done**
 > * After the assistant scans for unused files, if annex.expireunused
 >   is not set, and there is some significant quantity of unused files
 >   (eg, more than 1000, or more than 1 gb, or more than the amount of
@@ -87,3 +89,27 @@ Finally, how to specify a feature request for git-annex?
 > might be. For example, if a file is replicated to 2 clients, and one
 > client directly edits it, or deletes it, it loses the old version,
 > but the other client will still be storing that old version.
+> 
+> ## Stability analysis for unused= in preferred content expressions
+> 
+> This is tricky, because two repos that are otherwise entirely
+> in sync may have differing opinons about whether a key is unused,
+> depending on when each last scanned for unused keys.
+> 
+> So, this preferred content terminal is *not stable*.
+> It may be possible to write preferred content expressions 
+> that constantly moved such keys around without reaching a steady state.
+> 
+> Example:
+> 
+> A and B are clients directly connected, and both also connected
+> to BACKUP.
+> 
+> A deletes F. B syncs with A, and runs unused check; decides F
+> is unused. B sends F to BACKUP. B will then think A doesn't want F,
+> and will drop F from A. Next time A runs a full transfer scan, it will
+> *not* find F (because the file was deleted!). So it won't get F back from
+> BACKUP.
+> 
+> So, it looks like the fact that unused files are not going to be
+> looked for on the full transfer scan seems to make this work out ok.
