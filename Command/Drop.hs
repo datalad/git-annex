@@ -34,7 +34,7 @@ seek ps = do
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = checkDropAuto from file key $ \numcopies ->
-	stopUnless (checkAuto $ wantDrop False (Remote.uuid <$> from) (Just file)) $
+	stopUnless (checkAuto $ wantDrop False (Remote.uuid <$> from) (Just key) (Just file)) $
 		case from of
 			Nothing -> startLocal (Just file) numcopies key Nothing
 			Just remote -> do

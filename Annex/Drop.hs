@@ -11,6 +11,7 @@ import Common.Annex
 import Logs.Trust
 import Config.NumCopies
 import Types.Remote (uuid)
+import Types.Key (key2file)
 import qualified Remote
 import qualified Command.Drop
 import Command
@@ -43,15 +44,14 @@ type Reason = String
  - or commandAction.
  -}
 handleDropsFrom :: [UUID] -> [Remote] -> Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> CommandActionRunner -> Annex ()
-handleDropsFrom _ _ _ _ _ Nothing _ _ = noop
-handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote runner = do
+handleDropsFrom locs rs reason fromhere key afile knownpresentremote runner = do
 	fs <- ifM isDirect
 		( do
 			l <- associatedFilesRelative key
 			if null l
-				then return [afile]
+				then return $ maybe [] (:[]) afile
 				else return l
-		, return [afile]
+		, return $ maybe [] (:[]) afile
 		)
 	n <- getcopies fs
 	if fromhere && checkcopies n Nothing
@@ -60,7 +60,9 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote runn
   where
 	getcopies fs = do
 		(untrusted, have) <- trustPartition UnTrusted locs
-		numcopies <- maximum <$> mapM getFileNumCopies fs
+		numcopies <- if null fs
+			then getNumCopies
+			else maximum <$> mapM getFileNumCopies fs
 		return (NumCopies (length have), numcopies, S.fromList untrusted)
 
 	{- Check that we have enough copies still to drop the content.
@@ -85,28 +87,36 @@ handleDropsFrom locs rs reason fromhere key (Just afile) knownpresentremote runn
 			dropr fs r n >>= go fs rest
 		| otherwise = noop
 
-	checkdrop fs n@(have, numcopies, _untrusted) u a =
-		ifM (allM (wantDrop True u . Just) fs)
-			( ifM (safely $ runner $ a numcopies)
-				( do
-					liftIO $ debugM "drop" $ unwords
-						[ "dropped"
-						, afile
-						, "(from " ++ maybe "here" show u ++ ")"
-						, "(copies now " ++ show (fromNumCopies have - 1) ++ ")"
-						, ": " ++ reason
-						]
-					return $ decrcopies n u
+	checkdrop fs n u a
+		| null fs = check $ -- no associated files; unused content
+			wantDrop True u (Just key) Nothing
+		| otherwise = check $
+			allM (wantDrop True u (Just key) . Just) fs
+		where
+			check c = ifM c
+				( dodrop n u a
 				, return n
 				)
+
+	dodrop n@(have, numcopies, _untrusted) u a = 
+		ifM (safely $ runner $ a numcopies)
+			( do
+				liftIO $ debugM "drop" $ unwords
+					[ "dropped"
+					, fromMaybe (key2file key) afile
+					, "(from " ++ maybe "here" show u ++ ")"
+					, "(copies now " ++ show (fromNumCopies have - 1) ++ ")"
+					, ": " ++ reason
+					]
+				return $ decrcopies n u
 			, return n
 			)
 
 	dropl fs n = checkdrop fs n Nothing $ \numcopies ->
-		Command.Drop.startLocal (Just afile) numcopies key knownpresentremote
+		Command.Drop.startLocal afile numcopies key knownpresentremote
 
 	dropr fs r n  = checkdrop fs n (Just $ Remote.uuid r) $ \numcopies ->
-		Command.Drop.startRemote (Just afile) numcopies key r
+		Command.Drop.startRemote afile numcopies key r
 
 	slocs = S.fromList locs
 	

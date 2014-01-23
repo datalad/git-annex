@@ -14,19 +14,16 @@ import Annex.UUID
 import qualified Data.Set as S
 
 {- Check if a file is preferred content for the local repository. -}
-wantGet :: Bool -> AssociatedFile -> Annex Bool
-wantGet def Nothing = return def
-wantGet def (Just file) = isPreferredContent Nothing S.empty file def
+wantGet :: Bool -> Maybe Key -> AssociatedFile -> Annex Bool
+wantGet def key file = isPreferredContent Nothing S.empty key file def
 
 {- Check if a file is preferred content for a remote. -}
-wantSend :: Bool -> AssociatedFile -> UUID -> Annex Bool
-wantSend def Nothing _ = return def
-wantSend def (Just file) to = isPreferredContent (Just to) S.empty file def
+wantSend :: Bool -> Maybe Key -> AssociatedFile -> UUID -> Annex Bool
+wantSend def key file to = isPreferredContent (Just to) S.empty key file def
 
 {- Check if a file can be dropped, maybe from a remote.
  - Don't drop files that are preferred content. -}
-wantDrop :: Bool -> Maybe UUID -> AssociatedFile -> Annex Bool
-wantDrop def _ Nothing = return $ not def
-wantDrop def from (Just file) = do
+wantDrop :: Bool -> Maybe UUID -> Maybe Key -> AssociatedFile -> Annex Bool
+wantDrop def from key file = do
 	u <- maybe getUUID (return . id) from
-	not <$> isPreferredContent (Just u) (S.singleton u) file def
+	not <$> isPreferredContent (Just u) (S.singleton u) key file def

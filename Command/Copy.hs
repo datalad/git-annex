@@ -37,5 +37,5 @@ start to from file (key, backend) = stopUnless shouldCopy $
   where
 	shouldCopy = checkAuto (check <||> numCopiesCheck file key (<))
 	check = case to of
-		Nothing -> wantGet False (Just file)
-		Just r -> wantSend False (Just file) (Remote.uuid r)
+		Nothing -> wantGet False (Just key) (Just file)
+		Just r -> wantSend False (Just key) (Just file) (Remote.uuid r)

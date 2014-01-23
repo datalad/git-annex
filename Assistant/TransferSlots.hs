@@ -103,8 +103,8 @@ runTransferThread' program batchmaker d run = go
 {- By the time this is called, the daemonstatus's currentTransfers map should
  - already have been updated to include the transfer. -}
 genTransfer :: Transfer -> TransferInfo -> TransferGenerator
-genTransfer t info = case (transferRemote info, associatedFile info) of
-	(Just remote, Just file) 
+genTransfer t info = case transferRemote info of
+	Just remote 
 		| Git.repoIsLocalUnknown (Remote.repo remote) -> do
 			-- optimisation for removable drives not plugged in
 			liftAnnex $ recordFailedTransfer t info
@@ -114,7 +114,7 @@ genTransfer t info = case (transferRemote info, associatedFile info) of
 			( do
 				debug [ "Transferring:" , describeTransfer t info ]
 				notifyTransfer
-				return $ Just (t, info, go remote file)
+				return $ Just (t, info, go remote)
 			, do
 				debug [ "Skipping unnecessary transfer:",
 					describeTransfer t info ]
@@ -149,10 +149,12 @@ genTransfer t info = case (transferRemote info, associatedFile info) of
 	 - usual cleanup. However, first check if something else is
 	 - running the transfer, to avoid removing active transfers.
 	 -}
-	go remote file transferrer = ifM (liftIO $ performTransfer transferrer t $ associatedFile info)
+	go remote transferrer = ifM (liftIO $ performTransfer transferrer t $ associatedFile info)
 		( do
-			void $ addAlert $ makeAlertFiller True $
-				transferFileAlert direction True file
+			maybe noop
+				(void . addAlert . makeAlertFiller True 
+					. transferFileAlert direction True)
+				(associatedFile info)
 			unless isdownload $
 				handleDrops
 					("object uploaded to " ++ show remote)
@@ -188,11 +190,11 @@ genTransfer t info = case (transferRemote info, associatedFile info) of
 shouldTransfer :: Transfer -> TransferInfo -> Annex Bool
 shouldTransfer t info
 	| transferDirection t == Download =
-		(not <$> inAnnex key) <&&> wantGet True file
+		(not <$> inAnnex key) <&&> wantGet True (Just key) file
 	| transferDirection t == Upload = case transferRemote info of
 		Nothing -> return False
 		Just r -> notinremote r
-			<&&> wantSend True file (Remote.uuid r)
+			<&&> wantSend True (Just key) file (Remote.uuid r)
 	| otherwise = return False
   where
 	key = transferKey t

@@ -19,7 +19,6 @@ import RunCommand
 {- Drop from local and/or remote when allowed by the preferred content and
  - numcopies settings. -}
 handleDrops :: Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Assistant ()
-handleDrops _ _ _ Nothing _ = noop
 handleDrops reason fromhere key f knownpresentremote = do
 	syncrs <- syncDataRemotes <$> getDaemonStatus
 	locs <- liftAnnex $ loggedLocations key

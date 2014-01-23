@@ -1,6 +1,6 @@
 {- git-annex file matching
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -28,18 +28,25 @@ import qualified Data.Set as S
 type FileMatcher = Matcher MatchFiles
 
 checkFileMatcher :: FileMatcher -> FilePath -> Annex Bool
-checkFileMatcher matcher file = checkFileMatcher' matcher file S.empty True
+checkFileMatcher matcher file = checkMatcher matcher Nothing (Just file) S.empty True
 
-checkFileMatcher' :: FileMatcher -> FilePath -> AssumeNotPresent -> Bool -> Annex Bool
-checkFileMatcher' matcher file notpresent def
+checkMatcher :: FileMatcher -> Maybe Key -> AssociatedFile -> AssumeNotPresent -> Bool -> Annex Bool
+checkMatcher matcher mkey afile notpresent def
 	| isEmpty matcher = return def
-	| otherwise = do
-		matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
-		let mi = MatchingFile $ FileInfo
-			{ matchFile = matchfile
-			, relFile = file
-			}
-		matchMrun matcher $ \a -> a notpresent mi
+	| otherwise = case (mkey, afile) of
+		(_, Just file) -> go =<< fileMatchInfo file
+		(Just key, _) -> go (MatchingKey key)
+		_ -> return def
+  where
+	go mi = matchMrun matcher $ \a -> a notpresent mi
+
+fileMatchInfo :: FilePath -> Annex MatchInfo
+fileMatchInfo file = do
+	matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
+	return $ MatchingFile $ FileInfo
+		{ matchFile = matchfile
+		, relFile = file
+		}
 
 matchAll :: FileMatcher
 matchAll = generate []

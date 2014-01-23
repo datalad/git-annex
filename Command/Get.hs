@@ -36,7 +36,7 @@ seek ps = do
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = start' expensivecheck from key (Just file)
   where
-	expensivecheck = checkAuto (numCopiesCheck file key (<) <||> wantGet False (Just file))
+	expensivecheck = checkAuto (numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file))
 
 startKeys :: Maybe Remote -> Key -> CommandStart
 startKeys from key = start' (return True) from key Nothing

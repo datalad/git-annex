@@ -519,7 +519,7 @@ syncFile rs f (k, _) = do
   	wantget have = allM id 
 		[ pure (not $ null have)
 		, not <$> inAnnex k
-		, wantGet True (Just f)
+		, wantGet True (Just k) (Just f)
 		]
 	handleget have = ifM (wantget have)
 		( return [ get have ]
@@ -531,7 +531,7 @@ syncFile rs f (k, _) = do
 
 	wantput r
 		| Remote.readonly r || remoteAnnexReadOnly (Types.Remote.gitconfig r) = return False
-		| otherwise = wantSend True (Just f) (Remote.uuid r)
+		| otherwise = wantSend True (Just k) (Just f) (Remote.uuid r)
 	handleput lack = ifM (inAnnex k)
 		( map put <$> (filterM wantput lack)
 		, return []

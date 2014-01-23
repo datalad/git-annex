@@ -164,9 +164,9 @@ expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 			let slocs = S.fromList locs
 			let use a = return $ mapMaybe (a key slocs) syncrs
 			ts <- if present
-				then filterM (wantSend True (Just f) . Remote.uuid . fst)
+				then filterM (wantSend True (Just key) (Just f) . Remote.uuid . fst)
 					=<< use (genTransfer Upload False)
-				else ifM (wantGet True $ Just f)
+				else ifM (wantGet True (Just key) (Just f))
 					( use (genTransfer Download True) , return [] )
 			let unwanted' = S.difference unwanted slocs
 			return (unwanted', ts)
