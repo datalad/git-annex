@@ -78,9 +78,9 @@ Finally, how to specify a feature request for git-annex?
 >   remaining free disk space),
 >   it can pop up a webapp alert asking to configure it. **done**
 > * Webapp interface to configure annex.expireunused. Reasonable values
->   are no expiring, or any number of days.
+>   are no expiring, or any number of days. **done**
 > 
-> This does not cover every use case that was requested.
+> [[done]] This does not cover every use case that was requested.
 > But I don't see a cheap way to ensure it keeps eg the past 10 versions of
 > a file. I guess that if you care about that, you leave
 > annex.expireunused=false, and set up a backup repository where the unused
