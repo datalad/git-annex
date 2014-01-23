@@ -95,11 +95,11 @@ sanityCheckerHourlyThread = namedThread "SanityCheckerHourly" $ forever $ do
 {- This thread wakes up daily to make sure the tree is in good shape. -}
 sanityCheckerDailyThread :: UrlRenderer -> NamedThread
 sanityCheckerDailyThread urlrenderer = namedThread "SanityCheckerDaily" $ forever $ do
+	waitForNextCheck
+
 	debug ["starting sanity check"]
 	void $ alertWhile sanityCheckAlert go
 	debug ["sanity check complete"]
-	waitForNextCheck
-
   where
 	go = do
 		modifyDaemonStatus_ $ \s -> s { sanityCheckRunning = True }
