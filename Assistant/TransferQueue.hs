@@ -51,14 +51,17 @@ stubInfo f r = stubTransferInfo
 
 {- Adds transfers to queue for some of the known remotes.
  - Honors preferred content settings, only transferring wanted files. -}
-queueTransfers :: Reason -> Schedule -> Key -> AssociatedFile -> Direction -> Assistant ()
+queueTransfers :: Reason -> Schedule -> Key -> AssociatedFile -> Direction -> Assistant Bool
 queueTransfers = queueTransfersMatching (const True)
 
 {- Adds transfers to queue for some of the known remotes, that match a
  - condition. Honors preferred content settings. -}
-queueTransfersMatching :: (UUID -> Bool) -> Reason -> Schedule -> Key -> AssociatedFile -> Direction -> Assistant ()
+queueTransfersMatching :: (UUID -> Bool) -> Reason -> Schedule -> Key -> AssociatedFile -> Direction -> Assistant Bool
 queueTransfersMatching matching reason schedule k f direction
-	| direction == Download = whenM (liftAnnex $ wantGet True (Just k) f) go
+	| direction == Download = ifM (liftAnnex $ wantGet True (Just k) f)
+		( go
+		, return False
+		)
 	| otherwise = go
   where
 	go = do
@@ -67,9 +70,13 @@ queueTransfersMatching matching reason schedule k f direction
 			=<< syncDataRemotes <$> getDaemonStatus
 		let matchingrs = filter (matching . Remote.uuid) rs
 		if null matchingrs
-			then defer
-			else forM_ matchingrs $ \r ->
-				enqueue reason schedule (gentransfer r) (stubInfo f r)
+			then do
+				defer
+				return False
+			else do
+				forM_ matchingrs $ \r ->
+					enqueue reason schedule (gentransfer r) (stubInfo f r)
+				return True
 	selectremotes rs
 		{- Queue downloads from all remotes that
 		 - have the key. The list of remotes is ordered with

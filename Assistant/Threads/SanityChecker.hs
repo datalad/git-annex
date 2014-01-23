@@ -17,6 +17,7 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.Alert
 import Assistant.Repair
+import Assistant.Drop
 import Assistant.Ssh
 import Assistant.TransferQueue
 import Assistant.Types.UrlRenderer
@@ -94,11 +95,11 @@ sanityCheckerHourlyThread = namedThread "SanityCheckerHourly" $ forever $ do
 {- This thread wakes up daily to make sure the tree is in good shape. -}
 sanityCheckerDailyThread :: UrlRenderer -> NamedThread
 sanityCheckerDailyThread urlrenderer = namedThread "SanityCheckerDaily" $ forever $ do
-	waitForNextCheck
-
 	debug ["starting sanity check"]
 	void $ alertWhile sanityCheckAlert go
 	debug ["sanity check complete"]
+	waitForNextCheck
+
   where
 	go = do
 		modifyDaemonStatus_ $ \s -> s { sanityCheckRunning = True }
@@ -172,11 +173,12 @@ dailyCheck urlrenderer = do
 	let (program', params') = batchmaker (program, [Param "unused"])
 	void $ liftIO $ boolSystem program' params'
 	{- Invalidate unused keys cache, and queue transfers of all unused
-	 - keys. -}
+	 - keys, or if no transfers are called for, drop them. -}
 	unused <- liftAnnex unusedKeys'
 	void $ liftAnnex $ setUnusedKeys unused
-	forM_ unused $ \k ->
-		queueTransfers "unused" Later k Nothing Upload
+	forM_ unused $ \k -> do
+		unlessM (queueTransfers "unused" Later k Nothing Upload) $
+			handleDrops "unused" True k Nothing Nothing
 
 	return True
   where

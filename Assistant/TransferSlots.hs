@@ -218,7 +218,7 @@ finishedTransfer t (Just info)
 	| transferDirection t == Download =
 		whenM (liftAnnex $ inAnnex $ transferKey t) $ do
 			dodrops False
-			queueTransfersMatching (/= transferUUID t)
+			void $ queueTransfersMatching (/= transferUUID t)
 				"newly received object"
 				Later (transferKey t) (associatedFile info) Upload
 	| otherwise = dodrops True
