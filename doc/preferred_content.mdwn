@@ -111,9 +111,9 @@ any repository that can will back it up.)
 ### client
 
 All content is preferred, unless it's for a file in a "archive" directory,
-which has reached an archive repository.
+which has reached an archive repository, or is unused.
 
-`((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) or roughlylackingcopies=1`
+`(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) or roughlylackingcopies=1) and not unused`
 
 ### transfer
 

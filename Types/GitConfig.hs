@@ -1,6 +1,6 @@
 {- git-annex configuration
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -20,6 +20,7 @@ import Config.Cost
 import Types.Distribution
 import Types.Availability
 import Types.NumCopies
+import Utility.HumanTime
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
@@ -46,6 +47,7 @@ data GitConfig = GitConfig
 	, annexLargeFiles :: Maybe String
 	, annexFsckNudge :: Bool
 	, annexAutoUpgrade :: AutoUpgrade
+	, annexExpireUnused :: Maybe Duration
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
 	}
@@ -75,6 +77,7 @@ extractGitConfig r = GitConfig
 	, annexLargeFiles = getmaybe (annex "largefiles")
 	, annexFsckNudge = getbool (annex "fscknudge") True
 	, annexAutoUpgrade = toAutoUpgrade $ getmaybe (annex "autoupgrade")
+	, annexExpireUnused = parseDuration =<< getmaybe (annex "expireunused")
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
 	}

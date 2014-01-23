@@ -51,12 +51,13 @@ Finally, how to specify a feature request for git-annex?
 >   `and (not unused)`. Transfer repositories too, because typically
 >   only client repos connect to them, and so otherwise unused files
 >   would build up there. Backup repos would want unused files. I
->   think that archive repos would too.
+>   think that archive repos would too. **done**
 > * Make the assistant check for unused files periodically. Exactly
 >   how often may need to be tuned, but once per day seems reasonable
 >   for most repos. Note that the assistant could also notice on the
 >   fly when files are removed and mark their keys as unused if that was
 >   the last associated file. (Only currently possible in direct mode.)
+>   **done**
 > * After scanning for unused files, it makes sense for the
 >   assistant to queue transfers of unused files to any remotes that
 >   do want them (eg, backup remotes). If the files can successfully be
@@ -75,7 +76,9 @@ Finally, how to specify a feature request for git-annex?
 >   is not set, and there is some significant quantity of unused files
 >   (eg, more than 1000, or more than 1 gb, or more than the amount of
 >   remaining free disk space),
->   it can pop up a webapp alert asking to configure it.
+>   it can pop up a webapp alert asking to configure it. **done**
+> * Webapp interface to configure annex.expireunused. Reasonable values
+>   are no expiring, or any number of days.
 > 
 > This does not cover every use case that was requested.
 > But I don't see a cheap way to ensure it keeps eg the past 10 versions of

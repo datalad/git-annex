@@ -145,7 +145,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 				, assist $ transferPollerThread
 				, assist $ transfererThread
 				, assist $ daemonStatusThread
-				, assist $ sanityCheckerDailyThread
+				, assist $ sanityCheckerDailyThread urlrenderer
 				, assist $ sanityCheckerHourlyThread
 				, assist $ problemFixerThread urlrenderer
 #ifdef WITH_CLIBS

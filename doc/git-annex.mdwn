@@ -1228,6 +1228,19 @@ Here are all the supported configuration settings.
   to close it. On Mac OSX, when not using direct mode this defaults to
   1 second, to work around a bad interaction with software there.
 
+* `annex.expireunused`
+
+  Controls what the assistant does about unused file contents
+  that are stored in the repository.
+  
+  The default is `false`, which causes
+  all old and unused file contents to be retained, unless the assistant
+  is able to move them to some other repository (such as a backup repository).
+
+  Can be set to a time specification, like "7d" or "1m", and then
+  file contents that have been known to be unused for a week or a
+  month will be deleted.
+
 * `annex.fscknudge`
 
   When set to false, prevents the webapp from reminding you when using

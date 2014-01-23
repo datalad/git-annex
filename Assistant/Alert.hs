@@ -260,6 +260,25 @@ upgradeFailedAlert :: String -> Alert
 upgradeFailedAlert msg = (errorAlert msg [])
 	{ alertHeader = Just $ fromString "Upgrade failed." }
 
+unusedFilesAlert :: [AlertButton] -> String -> Alert
+unusedFilesAlert buttons message = Alert
+	{ alertHeader = Just $ fromString $ unwords
+		[ "Old and deleted files are piling up --"
+		, message
+		]
+	, alertIcon = Just InfoIcon
+	, alertPriority = High
+	, alertButtons = buttons
+	, alertClosable = True
+	, alertClass = Message
+	, alertMessageRender = renderData
+	, alertCounter = 0
+	, alertBlockDisplay = True
+	, alertName = Just UnusedFilesAlert
+	, alertCombiner = Just $ fullCombiner $ \new _old -> new
+	, alertData = []
+	}
+
 brokenRepositoryAlert :: [AlertButton] -> Alert
 brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"
 

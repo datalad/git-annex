@@ -21,6 +21,7 @@ module Logs.Unused (
 	readUnusedLog,
 	readUnusedMap,
 	unusedKeys,
+	setUnusedKeys,
 	unusedKeys'
 ) where
 

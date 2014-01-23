@@ -27,6 +27,7 @@ import Assistant.WebApp.Configurators.IA
 import Assistant.WebApp.Configurators.WebDAV
 import Assistant.WebApp.Configurators.XMPP
 import Assistant.WebApp.Configurators.Preferences
+import Assistant.WebApp.Configurators.Unused
 import Assistant.WebApp.Configurators.Edit
 import Assistant.WebApp.Configurators.Delete
 import Assistant.WebApp.Configurators.Fsck

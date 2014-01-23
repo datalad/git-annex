@@ -75,7 +75,7 @@ associatedDirectory _ _ = Nothing
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
 preferredContent :: StandardGroup -> PreferredContentExpression
 preferredContent ClientGroup = lastResort $
-	"(exclude=*/archive/* and exclude=archive/*) or (" ++ notArchived ++ ")"
+	"((exclude=*/archive/* and exclude=archive/*) or (" ++ notArchived ++ ")) and not unused"
 preferredContent TransferGroup = lastResort $
 	"not (inallgroup=client and copies=client:2) and (" ++ preferredContent ClientGroup ++ ")"
 preferredContent BackupGroup = "include=*"
