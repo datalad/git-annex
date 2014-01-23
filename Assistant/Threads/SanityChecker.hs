@@ -21,7 +21,6 @@ import Assistant.Ssh
 import Assistant.TransferQueue
 import Assistant.Types.UrlRenderer
 import qualified Annex.Branch
-import qualified Git
 import qualified Git.LsFiles
 import qualified Git.Command
 import qualified Git.Config
@@ -30,25 +29,21 @@ import qualified Assistant.Threads.Watcher as Watcher
 import Utility.LogFile
 import Utility.Batch
 import Utility.NotificationBroadcaster
-import Utility.DiskFree
 import Config
 import Utility.HumanTime
-import Utility.DataUnits
+import Utility.Tense
 import Git.Repair
 import Git.Index
+import Assistant.Unused
 import Logs.Unused
-import Logs.Location
 import Logs.Transfer
-import Annex.Content
 import Config.Files
-import Types.Key
 import qualified Annex
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
 #endif
 
 import Data.Time.Clock.POSIX
-import qualified Data.Map as M
 import qualified Data.Text as T
 
 {- This thread runs once at startup, and most other threads wait for it
@@ -226,56 +221,19 @@ oneDay = 24 * oneHour
  - for the specified duration, and remove them.
  -
  - Otherwise, check to see if unused keys are piling up, and let the user
- - know. This uses heuristics: 1000 unused keys, or more unused keys 
- - than the remaining free disk space, or more than 1/10th the total
- - disk space being unused keys all suggest a problem. -}
+ - know. -}
 checkOldUnused :: UrlRenderer -> Assistant ()
 checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGitConfig
   where
 	go (Just Nothing) = noop
-  	go (Just (Just expireunused)) = do
-		m <- liftAnnex $ readUnusedLog ""
-		now <- liftIO getPOSIXTime
-		let duration = durationToPOSIXTime expireunused
-		let oldkeys = M.keys $ M.filter (tooold now duration) m
-		forM_ oldkeys $ \k -> do
-			debug ["removing old unused key", key2file k]
-			liftAnnex $ do
-				removeAnnex k
-				logStatus k InfoMissing
-	go Nothing = maybe noop prompt
-		=<< toobig =<< liftAnnex (readUnusedLog "")
-
-	tooold now duration (_, mt) =
-		maybe False (\t -> now - t >= duration) mt
-
-	toobig m = do
-		let num = M.size m
-		let diskused = foldl' sumkeysize 0 (M.keys m)
-		df <- forpath getDiskFree
-		disksize <- forpath getDiskSize
-		return $ if moreused df diskused || tenthused disksize diskused
-			then Just $ roughSize storageUnits False diskused ++
-				" is used by old files"
-			else if num > 1000
-				then Just $ show num ++ " old files exist"
-				else Nothing
-
-	moreused Nothing _ = False
-	moreused (Just df) used = df <= used
-
-	tenthused Nothing _ = False
-	tenthused (Just disksize) used = used >= disksize `div` 10
-
-	sumkeysize s k = s + fromMaybe 0 (keySize k)
-
-	forpath a = liftAnnex $ inRepo $ liftIO . a . Git.repoPath
+  	go (Just (Just expireunused)) = expireUnused (Just expireunused)
+	go Nothing = maybe noop prompt =<< describeUnusedWhenBig
 
 	prompt msg = 
 #ifdef WITH_WEBAPP
 		do
-			button <- mkAlertButton True (T.pack "Fix This") urlrenderer ConfigUnusedR
-			void $ addAlert $ unusedFilesAlert [button] msg
+			button <- mkAlertButton True (T.pack "Configure") urlrenderer ConfigUnusedR
+			void $ addAlert $ unusedFilesAlert [button] $ T.unpack $ renderTense Present msg
 #else
 		debug [msg]
 #endif

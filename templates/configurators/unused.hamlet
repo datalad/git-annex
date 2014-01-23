@@ -1,0 +1,38 @@
+<div .span9 .hero-unit>
+  <h2>
+    Managing unused files
+  <p>
+    $maybe desc <- munuseddesc
+      Some old versions of files and deleted files have been preserved #
+      inside this repository.
+      <div .alert .alert-info>
+        <i .icon-info-sign></i> #{renderTense Past desc} #
+        $maybe lastchecked <- mlastchecked
+          (last checked #{fromDuration lastchecked} ago)
+    $nothing
+      Old versions of files and deleted files can be preserved inside #
+      this repository.
+  <p>
+    This might be useful, if you ever need to access those old or deleted #
+    files. But they'll also use up disk space. There are three ways to deal #
+    with this.
+  <ol>
+    <li>
+      <p>
+        Set up a backup or archive repository, on a removable drive #
+        or in the cloud, and the unused files will be moved to it, freeing #
+        up space.
+        <br>
+        <a .btn href="@{AddRepositoryR}">
+          <i .icon-plus></i> Add a new repository
+    <li>
+      <p>
+        Or, you can let unused files expire after a period of time.
+        <form method="post" .form-inline enctype=#{enctype}>
+          ^{form}
+    <li>
+      <p>
+        Finally, you can clean up all unused files manually at any time.
+        <br>
+        <a .btn href="@{CleanupUnusedR}">
+          <i .icon-trash></i> Clean up unused files now

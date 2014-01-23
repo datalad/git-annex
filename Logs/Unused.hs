@@ -20,9 +20,10 @@ module Logs.Unused (
 	updateUnusedLog,
 	readUnusedLog,
 	readUnusedMap,
+	dateUnusedLog,
 	unusedKeys,
+	unusedKeys',
 	setUnusedKeys,
-	unusedKeys'
 ) where
 
 import qualified Data.Map as M
@@ -87,6 +88,11 @@ readUnusedLog prefix = do
 
 readUnusedMap :: FilePath -> Annex UnusedMap
 readUnusedMap = log2map <$$> readUnusedLog
+
+dateUnusedLog :: FilePath -> Annex (Maybe UTCTime)
+dateUnusedLog prefix = do
+	f <- fromRepo $ gitAnnexUnusedLog prefix
+	liftIO $ catchMaybeIO $ getModificationTime f
 
 {- Set of unused keys. This is cached for speed. -}
 unusedKeys :: Annex (S.Set Key)
