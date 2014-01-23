@@ -47,7 +47,7 @@ data GitConfig = GitConfig
 	, annexLargeFiles :: Maybe String
 	, annexFsckNudge :: Bool
 	, annexAutoUpgrade :: AutoUpgrade
-	, annexExpireUnused :: Maybe Duration
+	, annexExpireUnused :: Maybe (Maybe Duration)
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
 	}
@@ -77,7 +77,8 @@ extractGitConfig r = GitConfig
 	, annexLargeFiles = getmaybe (annex "largefiles")
 	, annexFsckNudge = getbool (annex "fscknudge") True
 	, annexAutoUpgrade = toAutoUpgrade $ getmaybe (annex "autoupgrade")
-	, annexExpireUnused = parseDuration =<< getmaybe (annex "expireunused")
+	, annexExpireUnused = maybe Nothing Just . parseDuration
+		<$> getmaybe (annex "expireunused")
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
 	}

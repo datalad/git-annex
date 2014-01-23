@@ -232,7 +232,8 @@ oneDay = 24 * oneHour
 checkOldUnused :: UrlRenderer -> Assistant ()
 checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGitConfig
   where
-  	go (Just expireunused) = do
+	go (Just Nothing) = noop
+  	go (Just (Just expireunused)) = do
 		m <- liftAnnex $ readUnusedLog ""
 		now <- liftIO getPOSIXTime
 		let duration = durationToPOSIXTime expireunused
