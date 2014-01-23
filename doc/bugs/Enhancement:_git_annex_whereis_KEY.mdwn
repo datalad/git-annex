@@ -1,0 +1,7 @@
+### Please describe the problem.
+
+Great work on git annex! One possible enhancement occured to me: It would be very useful though if the "whereis" command would support looking up the location of files by arbitrary keys. This way one could inspect the location of old content which is not currently checked-out in the tree.
+
+In a related vein, the "unused" command could report old filenames or describe the associated commits. Tracking old versions is a great feature of your git-based approach, but currently, tasks such as pruning selected content seem unwiedly. Though I might be missing existing solutions. You can easily "cut-off" the history by forcing a drop of all unused content. It would be cool if one could somehow "address" old versions by filename and commit/date and selectively drop just these. The same could go for the "whereis" command, where one could e.g. query which remote holds content which was stored under some filename at some specific date.
+
+Thanks Cheers!
