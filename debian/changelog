@@ -1,4 +1,4 @@
-git-annex (5.20140117) unstable; urgency=medium
+git-annex (5.20140117~bpo70+1) wheezy-backports; urgency=medium
 
   * Really fix FTBFS on mipsel and sparc due to test suite not being available
     on those architectures.
