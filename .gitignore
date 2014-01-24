@@ -28,3 +28,4 @@ cabal-dev
 # OSX related
 .DS_Store
 .virthualenv
+.tasty-rerun-log
