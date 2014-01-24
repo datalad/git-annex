@@ -101,7 +101,18 @@ subdirectories).
   When used with the `--to` option, copies the content of annexed files from
   the current repository to the specified one.
 
-  To avoid contacting the remote to check if it has every file, specify `--fast`
+  To avoid contacting the remote to check if it has every file
+  when copying --to the repository, specify `--fast`
+
+  To force checking the remote for every file when copying --from the
+  repository, specify `--force`.
+
+* `status [path ...]`
+
+  Similar to `git status --short`, displays the status of the files in the
+  working tree. Shows files that are not checked into git, files that
+  have been deleted, and files that have been modified. 
+  Particulary useful in direct mode.
 
 * `unlock [path ...]`
 
@@ -124,7 +135,7 @@ subdirectories).
 * `sync [remote ...]`
 
   Use this command when you want to synchronize the local repository with
-  one or more of its remotes. You can specifiy the remotes to sync with;
+  one or more of its remotes. You can specify the remotes to sync with;
   the default is to sync with all remotes. Or specify `--fast` to sync with
   the remotes with the lowest annex-cost value.
 
@@ -158,7 +169,7 @@ subdirectories).
   copy automatically.
 
 * `mirror [path ...]`
-  
+
   This causes a destination repository to mirror a source repository.
 
   To use the local repository as the source repository,
@@ -170,10 +181,15 @@ subdirectories).
   repository. If a file's content is present in the source repository, it is
   copied to the destination repository. If a file's content is not present in
   the source repository, it will be dropped from the destination repository
-  when possible. 
+  when the numcopies setting allows.
 
   Note that mirror does not sync the git repository, but only the file
   contents.
+
+  Also, --all may be specified to mirror all objects stored in the git
+  annex, not only objects used by currently existing files. However, this
+  bypasses checking the .gitattributes annex.numcopies setting when
+  dropping files.
 
 * `addurl [url ...]`
 
@@ -224,11 +240,14 @@ subdirectories).
   To only import files whose content has not been seen before by git-annex,
   use the `--deduplicate` option. Duplicate files will be deleted from the
   import location.
-  
+
+  To only import files whose content has not been seen before by git-annex,
+  but avoid deleting duplicate files, use the `--skip-duplicates` option.
+
   The `--clean-duplicates` option does not import any new files, but any files
   found in the import location that are duplicates of content in the annex
   are deleted.
-  
+
   (Note that using `--deduplicate` or `--clean-duplicates` with the WORM
   backend does not look at file content, but filename and mtime.)
 
@@ -244,6 +263,10 @@ subdirectories).
   (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid)
 
   The `--relaxed` and `--fast` options behave the same as they do in addurl.
+  
+  When quvi is installed, links in the feed are tested to see if they
+  are on a video hosting site, and the video is downloaded. This allows
+  importing eg, youtube playlists.
 
 * `watch`
 
@@ -252,6 +275,14 @@ subdirectories).
   deleted, copied, and moved files. With this running as a daemon in the
   background, you no longer need to manually run git commands when
   manipulating your files.
+
+  By default, all files in the directory will be added to the repository.
+  (Including dotfiles.) To block some files from being added, use
+  `.gitignore` files.
+
+  By default, all files that are added are added to the annex, the same
+  as when you run `git annex add`. If you configure annex.largefiles,
+  files that it does not match will instead be added with `git add`.
 
   To not daemonize, run with `--foreground` ; to stop a running daemon,
   run with `--stop`
@@ -283,7 +314,7 @@ subdirectories).
 * `init [description]`
 
   Until a repository (or one of its remotes) has been initialized,
-  git-annex will refuse to operate on it, to avoid accidentially
+  git-annex will refuse to operate on it, to avoid accidentally
   using it in a repository that was not intended to have an annex.
 
   It's useful, but not mandatory, to initialize each new clone
@@ -307,23 +338,23 @@ subdirectories).
   command will prompt for parameters as needed.
 
   All special remotes support encryption. You can either specify
-  `encryption=none` to disable encryption, or specify 
-  `encryption=hybrid keyid=$keyid ...` to specify a gpg key id (or an email
+  `encryption=none` to disable encryption, or specify
+  `encryption=hybrid keyid=$keyid ...` to specify a GPG key id (or an email
   address associated with a key.)
 
   There are actually three schemes that can be used for management of the
   encryption keys. When using the encryption=hybrid scheme, additional
-  gpg keys can be given access to the encrypted special remote easily
+  GPG keys can be given access to the encrypted special remote easily
   (without re-encrypting everything). When using encryption=shared,
   a shared key is generated and stored in the git repository, allowing
   anyone who can clone the git repository to access it. Finally, when using
   encryption=pubkey, content in the special remote is directly encrypted
-  to the specified gpg keys, and additional ones cannot easily be given
+  to the specified GPG keys, and additional ones cannot easily be given
   access.
 
   Note that with encryption enabled, a cryptographic key is created.
   This requires sufficient entropy. If initremote seems to hang or take
-  a long time while generating the key, you may want to ctrl-c it and
+  a long time while generating the key, you may want to Ctrl-c it and
   re-run with `--fast`, which causes it to use a lower-quality source of
   randomness.
 
@@ -335,9 +366,9 @@ subdirectories).
 
   Enables use of an existing special remote in the current repository,
   which may be a different repository than the one in which it was
-  originally created with the initremote command. 
+  originally created with the initremote command.
 
-  The name of the remote is the same name used when origianlly 
+  The name of the remote is the same name used when originally 
   creating that remote with "initremote". Run "git annex enableremote"
   with no parameters to get a list of special remote names.
 
@@ -350,7 +381,7 @@ subdirectories).
   the as the encryption scheme cannot be changed once a special remote
   has been created.)
 
-  The gpg keys that an encrypted special remote is encrypted to can be
+  The GPG keys that an encrypted special remote is encrypted to can be
   changed using the keyid+= and keyid-= parameters. These respectively
   add and remove keys from the list. However, note that removing a key
   does NOT necessarily prevent the key's owner from accessing data
@@ -494,6 +525,7 @@ subdirectories).
   `git annex unused`
 
   You can also specify ranges of numbers, such as "1-1000".
+  Or, specify "all" to drop all unused data.
 
   To drop the data from a remote, specify `--from.`
 
@@ -519,30 +551,30 @@ subdirectories).
   data about past locations of files. The resulting branch will use less
   space, but `git annex log` will not be able to show where
   files used to be located.
-  
+
   To also prune references to repositories that have been marked as dead,
   specify `--drop-dead`.
 
   When this rewritten branch is merged into other clones of
   the repository, `git-annex` will automatically perform the same rewriting
   to their local `git-annex` branches. So the forgetfulness will automatically
-  propigate out from its starting point until all repositories running
+  propagate out from its starting point until all repositories running
   git-annex have forgotten their old history. (You may need to force
-  git to push the branch to any git repositories not running git-annex.
+  git to push the branch to any git repositories not running git-annex.)
 
 * `repair`
 
-  This can repair many of the problems with git repositories that `git fsck` 
+  This can repair many of the problems with git repositories that `git fsck`
   detects, but does not itself fix. It's useful if a repository has become
-  badly damaged. One way this can happen is if a repisitory used by git-annex
+  badly damaged. One way this can happen is if a repository used by git-annex
   is on a removable drive that gets unplugged at the wrong time.
-  
+
   This command can actually be used inside git repositories that do not
   use git-annex at all; when used in a repository using git-annex, it
   does additional repairs of the git-annex branch.
 
   It works by deleting any corrupt objects from the git repository, and
-  retriving all missing objects it can from the remotes of the repository.
+  retrieving all missing objects it can from the remotes of the repository.
 
   If that is not sufficient to fully recover the repository, it can also
   reset branches back to commits before the corruption happened, delete
@@ -563,10 +595,6 @@ subdirectories).
 
 # QUERY COMMANDS
 
-* `version`
-
-  Shows the version of git-annex, as well as repository version information.
-
 * `find [path ...]`
 
   Outputs a list of annexed files in the specified path. With no path,
@@ -582,7 +610,7 @@ subdirectories).
   `--format`. The default output format is the same as `--format='${file}\\n'`
 
   These variables are available for use in formats: file, key, backend,
-  bytesize, humansize
+  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime.
 
 * `whereis [path ...]`
 
@@ -600,30 +628,33 @@ subdirectories).
   Displays the location log for the specified file or files,
   showing each repository they were added to ("+") and removed from ("-").
 
-  To limit how far back to seach for location log changes, the options
+  To limit how far back to search for location log changes, the options
   `--since`, `--after`, `--until`, `--before`, and `--max-count` can be specified.
   They are passed through to git log. For example, `--since "1 month ago"`
 
   To generate output suitable for the gource visualisation program,
   specify `--gource`.
 
-* `status [directory ...]`
+* `info [directory ...]`
 
   Displays some statistics and other information, including how much data
   is in the annex and a list of all known repositories.
 
   To only show the data that can be gathered quickly, use `--fast`.
 
-  When a directory is specified, shows a differently formatted status
+  When a directory is specified, shows a differently formatted info
   display for that directory. In this mode, all of the file matching
   options can be used to filter the files that will be included in
-  the status.
+  the information.
 
   For example, suppose you want to run "git annex get .", but
   would first like to see how much disk space that will use.
   Then run:
 
-        	git annex status --fast . --not --in here
+        	git annex info --fast . --not --in here
+* `version`
+
+  Shows the version of git-annex, as well as repository version information.
 
 * `map`
 
@@ -676,8 +707,8 @@ subdirectories).
   Use this to undo an accidental `git annex add` command. It puts the
   file back how it was before the add.
 
-  Note that for safety, the content of the file remains in the annex (as a
-  hard link), until you use `git annex unused` and `git annex dropunused`.
+  Note that for safety, the content of the file remains in the annex,
+  until you use `git annex unused` and `git annex dropunused`.
 
   This is not the command you should use if you intentionally annexed a
   file and don't want its contents any more. In that case you should use
@@ -698,12 +729,36 @@ subdirectories).
 
 * `pre-commit [path ...]`
 
+  This is meant to be called from git's pre-commit hook. `git annex init`
+  automatically creates a pre-commit hook using this.
+
   Fixes up symlinks that are staged as part of a commit, to ensure they
   point to annexed content. Also handles injecting changes to unlocked
   files into the annex.
 
-  This is meant to be called from git's pre-commit hook. `git annex init`
-  automatically creates a pre-commit hook using this.
+* `lookupkey [file ...]`
+
+  This plumbing-level command looks up the key used for a file in the
+  index. The key is output to stdout. If there is no key (because
+  the file is not present in the index, or is not a git-annex managed file),
+  nothing is output, and it exits nonzero.
+
+* `examinekey [key ...]`
+
+  This plumbing-level command is given a key, and prints information
+  that can be determined purely by looking at the key.
+
+  To specify what information to print, use `--format`. Or use `--json`
+  to get all available information in JSON format.
+
+  The same variables can be used in the format string as can be used in
+  the format string of git annex find (except there is no file option
+  here).
+
+  For example, the location a key's value is stored (in indirect mode)
+  can be looked up by running:
+  
+        	git annex examinekey --format='.git/annex/objects/${hashdirmixed}${key}/${key}'
 
 * `fromkey key file`
 
@@ -722,9 +777,19 @@ subdirectories).
 
         	git annex dropkey SHA1-s10-7da006579dd64330eb2456001fd01948430572f2
 
+* `transferkey`
+
+  This plumbing-level command is used to request a single key be
+  transferred. Either the --from or the --to option can be used to specify
+  the remote to use. A --file option can be used to hint at the file
+  associated with the key.
+
 * `transferkeys`
 
   This plumbing-level command is used by the assistant to transfer data.
+  It is fed instructions about the keys to transfer using an internal
+  stdio protocol, which is intentionally not documented (as it may change
+  at any time).
 
 * `rekey [file key ...]`
 
@@ -788,7 +853,7 @@ subdirectories).
   Rather than the normal output, generate JSON. This is intended to be
   parsed by programs that use git-annex. Each line of output is a JSON
   object. Note that json output is only usable with some git-annex commands,
-  like status and find.
+  like info and find.
 
 * `--debug`
 
@@ -1004,7 +1069,7 @@ no equivilant to `--in`.
 
 When a repository is in one of the standard predefined groups, like "backup"
 and "client", setting its preferred content to "standard" will use a
-built-in preferred content expression ddeveloped for that group.
+built-in preferred content expression developed for that group.
 
 # SCHEDULED JOBS
 
@@ -1042,13 +1107,13 @@ Here are all the supported configuration settings.
 * `annex.numcopies`
 
   Number of copies of files to keep across all repositories. (default: 1)
-  
+
   Note that setting numcopies to 0 is very unsafe.
 
 * `annex.backends`
 
-  Space-separated list of names of the key-value backends to use. 
-  The first listed is used to store new files by default. 
+  Space-separated list of names of the key-value backends to use.
+  The first listed is used to store new files by default.
 
 * `annex.diskreserve`
 
@@ -1056,7 +1121,7 @@ Here are all the supported configuration settings.
   content to avoid running out, and additional free space can be reserved
   via this option, to make space for more important content (such as git
   commit logs). Can be specified with any commonly used units, for example,
-  "0.5 gb" or "100 KiloBytes"
+  "0.5 gb", "500M", or "100 KiloBytes"
 
   The default reserve is 1 megabyte.
 
@@ -1088,7 +1153,7 @@ Here are all the supported configuration settings.
   up to 500000 keys. If your repository is larger than that,
   you can adjust this to avoid `git annex unused` not noticing some unused
   data files. Increasing this will make `git-annex unused` consume more memory;
-  run `git annex status` for memory usage numbers.
+  run `git annex info` for memory usage numbers.
 
 * `annex.bloomaccuracy`
 
@@ -1096,7 +1161,7 @@ Here are all the supported configuration settings.
   `git annex unused`. The default accuracy is 1000 -- 
   1 unused file out of 1000 will be missed by `git annex unused`. Increasing
   the accuracy will make `git annex unused` consume more memory;
-  run `git annex status` for memory usage numbers.
+  run `git annex info` for memory usage numbers.
 
 * `annex.sshcaching`
 
@@ -1122,6 +1187,21 @@ Here are all the supported configuration settings.
 
   When set to false, prevents the webapp from reminding you when using
   repositories that lack consistency checks.
+
+* `annex.autoupgrade`
+
+  When set to ask (the default), the webapp will check for new versions
+  and prompt if they should be upgraded to. When set to true, automatically
+  upgrades without prompting (on some supported platforms). When set to
+  false, disables any upgrade checking.
+
+  Note that upgrade checking is only done when git-annex is installed
+  from one of the prebuilt images from its website. This does not
+  bypass e.g., a Linux distribution's own upgrade handling code.
+
+  This setting also controls whether to restart the git-annex assistant
+  when the git-annex binary is detected to have changed. That is useful
+  no matter how you installed git-annex.
 
 * `annex.autocommit`
 
@@ -1195,6 +1275,12 @@ Here are all the supported configuration settings.
   If set to `false`, prevents git-annex sync (and the git-annex assistant)
   from syncing with this remote.
 
+* `remote.<name>.annex-readonly`
+
+  If set to `true`, prevents git-annex from making changes to a remote.
+  This both prevents git-annex sync from pushing changes, and prevents
+  storing or removing files from read-only remote.
+
 * `remote.<name>.annexUrl`
 
   Can be used to specify a different url than the regular `remote.<name>.url`
@@ -1210,6 +1296,11 @@ Here are all the supported configuration settings.
   Configures a local trust level for the remote. This overrides the value
   configured by the trust and untrust commands. The value can be any of
   "trusted", "semitrusted" or "untrusted".
+
+* `remote.<name>.availability`
+
+  Can be used to tell git-annex whether a remote is LocallyAvailable
+  or GloballyAvailable. Normally, git-annex determines this automatically.
 
 * `remote.<name>.annex-ssh-options`
 
@@ -1315,6 +1406,11 @@ Here are all the supported configuration settings.
   Used to identify webdav special remotes.
   Normally this is automatically set up by `git annex initremote`.
 
+* `remote.<name>.tahoe`
+
+  Used to identify tahoe special remotes.
+  Points to the configuration directory for tahoe.
+
 * `remote.<name>.annex-xmppaddress`
 
   Used to identify the XMPP address of a Jabber buddy.
@@ -1328,6 +1424,11 @@ Here are all the supported configuration settings.
   It is set to "true" if this is a gcrypt remote.
   If the gcrypt remote is accessible over ssh and has git-annex-shell
   available to manage it, it's set to "shell"
+
+* `remote.<name>.hooktype`, `remote.<name>.externaltype`
+
+  Used by hook special remotes and external special remotes to record
+  the type of the remote.
 
 # CONFIGURATION VIA .gitattributes
 

@@ -17,6 +17,8 @@ import qualified Git
 import qualified Git.Config
 import Utility.DataUnits
 import Config.Cost
+import Types.Distribution
+import Types.Availability
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
@@ -42,6 +44,7 @@ data GitConfig = GitConfig
 	, annexCrippledFileSystem :: Bool
 	, annexLargeFiles :: Maybe String
 	, annexFsckNudge :: Bool
+	, annexAutoUpgrade :: AutoUpgrade
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
 	}
@@ -70,6 +73,7 @@ extractGitConfig r = GitConfig
 	, annexCrippledFileSystem = getbool (annex "crippledfilesystem") False
 	, annexLargeFiles = getmaybe (annex "largefiles")
 	, annexFsckNudge = getbool (annex "fscknudge") True
+	, annexAutoUpgrade = toAutoUpgrade $ getmaybe (annex "autoupgrade")
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
 	}
@@ -94,9 +98,11 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexCostCommand :: Maybe String
 	, remoteAnnexIgnore :: Bool
 	, remoteAnnexSync :: Bool
+	, remoteAnnexReadOnly :: Bool
 	, remoteAnnexTrustLevel :: Maybe String
 	, remoteAnnexStartCommand :: Maybe String
 	, remoteAnnexStopCommand :: Maybe String
+	, remoteAnnexAvailability :: Maybe Availability
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
@@ -106,10 +112,12 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexGnupgOptions :: [String]
 	, remoteAnnexRsyncUrl :: Maybe String
 	, remoteAnnexBupRepo :: Maybe String
+	, remoteAnnexTahoe :: Maybe FilePath
 	, remoteAnnexBupSplitOptions :: [String]
 	, remoteAnnexDirectory :: Maybe FilePath
 	, remoteAnnexGCrypt :: Maybe String
 	, remoteAnnexHookType :: Maybe String
+	, remoteAnnexExternalType :: Maybe String
 	{- A regular git remote's git repository config. -}
 	, remoteGitConfig :: Maybe GitConfig
 	}
@@ -120,9 +128,11 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexCostCommand = notempty $ getmaybe "cost-command"
 	, remoteAnnexIgnore = getbool "ignore" False
 	, remoteAnnexSync = getbool "sync" True
+	, remoteAnnexReadOnly = getbool "readonly" False
 	, remoteAnnexTrustLevel = notempty $ getmaybe "trustlevel"
 	, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
 	, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
+	, remoteAnnexAvailability = getmayberead "availability"
 
 	, remoteAnnexSshOptions = getoptions "ssh-options"
 	, remoteAnnexRsyncOptions = getoptions "rsync-options"
@@ -130,10 +140,12 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexGnupgOptions = getoptions "gnupg-options"
 	, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"
 	, remoteAnnexBupRepo = getmaybe "buprepo"
+	, remoteAnnexTahoe = getmaybe "tahoe"
 	, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
 	, remoteAnnexDirectory = notempty $ getmaybe "directory"
 	, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
 	, remoteAnnexHookType = notempty $ getmaybe "hooktype"
+	, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
 	, remoteGitConfig = Nothing
 	}
   where

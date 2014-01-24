@@ -12,13 +12,6 @@ available!
   See [[bug|bugs/Issue_on_OSX_with_some_system_limits]]. (Does not affect
   OSX any longer, only other BSDs).
 
-## todo
-
-* There needs to be a way for a new version of git-annex, when installed,
-  to restart any running watch or assistant daemons. Or for the daemons
-  to somehow detect it's been upgraded and restart themselves. Needed
-  to allow for incompatable changes and, I suppose, for security upgrades..
-
 ## beyond Linux
 
 I'd also like to support OSX and if possible the BSDs.
@@ -64,7 +57,52 @@ I'd also like to support OSX and if possible the BSDs.
   * <http://pypi.python.org/pypi/MacFSEvents/0.2.8> (good example program)
   * <https://github.com/gorakhargosh/watchdog/blob/master/src/watchdog/observers/fsevents.py> (good example program)
 
+  *hfsevents is now supported*
+
 * Windows has a Win32 ReadDirectoryChangesW, and perhaps other things.
+
+  It was easy to get watching to work in windows. But there is no lsof,
+  to check if a file can safely be added. So, need to carefully consider
+  how to make adding a file safe in windows.
+
+  Without lsof, an InodeCache is generated in "lockdown" (which doesn't
+  do anything to prevent new writers), and is compared with the stat of the
+  file after it's ingested (and checksummed). This will detect many changes
+  to files, which change the size or mtime.
+
+  So, we have 2 cases to worry about. 
+
+  1. A process has the file open for write as it's added, does not change
+     it until the add is done.
+
+     As long as an event is generated once the file does get closed, this
+     is fine -- the modified version will be re-added. And such events are
+     indeed generated on windows.
+
+  2. A process has the file open for write as it's added, and changes it 
+     in some way that does not affect size or mtime.
+
+     If an event is generated when the file does get closed, this is the
+     same as a scenario where a process opens the file after it's added,
+     makes such a change, and closes it. In either case, a file closed
+     event is generated, and the Watcher will not detect any change
+     using the inode cache, so will not re-add the file.
+
+     So, this scenario is a potential problem, but it seems at least
+     unlikely that a program would modify a file without affecting its
+     mtime. Note that this same scenario can happen even with lsof, and
+     even on linux (although on linux the InodeCache includes an actual
+     inode, which might detect the change too).
+
+  Conclusion: It's probably ok to run without lsof on Windows.
+
+  Corrolary: lsof might not generally be needed in direct mode, on
+  systems that do generate file close events (but not when
+  eventsCoalesce).
+  The same arguments given above seem to apply to !Windows. Note that lsof
+  is needed in indirect mode, as discussed below.
+
+  **windows is now supported**
 
 ## the races
 

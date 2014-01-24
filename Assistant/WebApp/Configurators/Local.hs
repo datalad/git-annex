@@ -10,10 +10,10 @@
 module Assistant.WebApp.Configurators.Local where
 
 import Assistant.WebApp.Common
-import Assistant.WebApp.OtherRepos
 import Assistant.WebApp.Gpg
 import Assistant.WebApp.MakeRemote
 import Assistant.Sync
+import Assistant.Restart
 import Init
 import qualified Git
 import qualified Git.Construct
@@ -22,14 +22,15 @@ import qualified Git.Command
 import qualified Annex
 import Config.Files
 import Utility.FreeDesktop
+import Utility.DiskFree
 #ifdef WITH_CLIBS
 import Utility.Mounts
-import Utility.DiskFree
 #endif
 import Utility.DataUnits
 import Utility.Network
 import Remote (prettyUUID)
 import Annex.UUID
+import Annex.Direct
 import Types.StandardGroups
 import Logs.PreferredContent
 import Logs.UUID
@@ -115,19 +116,28 @@ defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
 	cwd <- liftIO getCurrentDirectory
 	home <- myHomeDir
+#ifndef mingw32_HOST_OS
 	if home == cwd && firstrun
 		then inhome
 		else ifM (legit cwd <&&> canWrite cwd)
 			( return cwd
 			, inhome
 			)
+#else
+	-- On Windows, always default to ~/Desktop/annex or ~/annex,
+	-- no cwd handling because the user might be able to write
+	-- to the entire drive.
+	inhome
+#endif
   where
 	inhome = do
 		desktop <- userDesktopDir
-		ifM (doesDirectoryExist desktop)
+		ifM (doesDirectoryExist desktop <&&> canWrite desktop)
 			( relHome $ desktop </> gitAnnexAssistantDefaultDir
 			, return $ "~" </> gitAnnexAssistantDefaultDir
 			)
+	-- Avoid using eg, standalone build's git-annex.linux/ directory
+	-- when run from there.
 	legit d = not <$> doesFileExist (d </> "git-annex")
 
 newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
@@ -167,7 +177,7 @@ getAndroidCameraRepositoryR =
   where
   	addignore = do
 		liftIO $ unlessM (doesFileExist ".gitignore") $
-			writeFile ".gitignore" ".thumbnails/*"
+			writeFile ".gitignore" ".thumbnails"
 		void $ inRepo $
 			Git.Command.runBool [Param "add", File ".gitignore"]
 
@@ -199,14 +209,14 @@ getCombineRepositoryR :: FilePath -> UUID -> Handler Html
 getCombineRepositoryR newrepopath newrepouuid = do
 	r <- combineRepos newrepopath remotename
 	liftAssistant $ syncRemote r
-	redirect $ EditRepositoryR newrepouuid
+	redirect $ EditRepositoryR $ RepoUUID newrepouuid
   where
 	remotename = takeFileName newrepopath
 
 selectDriveForm :: [RemovableDrive] -> Hamlet.Html -> MkMForm RemovableDrive
 selectDriveForm drives = renderBootstrap $ RemovableDrive
 	<$> pure Nothing
-	<*> areq (selectFieldList pairs) "Select drive:" Nothing
+	<*> areq (selectFieldList pairs `withNote` onlywritable) "Select drive:" Nothing
 	<*> areq textField "Use this directory on the drive:"
 		(Just $ T.pack gitAnnexAssistantDefaultDir)
   where
@@ -220,6 +230,7 @@ selectDriveForm drives = renderBootstrap $ RemovableDrive
 				, T.concat ["(", T.pack sz]
 				, "free)"
 				]
+	onlywritable = [whamlet|This list only includes drives you can write to.|]
 
 removableDriveRepository :: RemovableDrive -> FilePath
 removableDriveRepository drive =
@@ -341,13 +352,14 @@ getEnableDirectoryR uuid = page "Enable a repository" (Just Configuration) $ do
 
 {- List of removable drives. -}
 driveList :: IO [RemovableDrive]
+#ifdef mingw32_HOST_OS
+-- Just enumerate all likely drive letters for Windows.
+-- Could use wmic, but it only works for administrators.
+driveList = mapM (\d -> genRemovableDrive $ d:":\\") ['A'..'Z']
+#else
 #ifdef WITH_CLIBS
-driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
+driveList = mapM (genRemovableDrive . mnt_dir) =<< filter sane <$> getMounts
   where
-	gen dir = RemovableDrive
-		<$> getDiskFree dir
-		<*> pure (T.pack dir)
-		<*> pure (T.pack gitAnnexAssistantDefaultDir)
 	-- filter out some things that are surely not removable drives
 	sane Mntent { mnt_dir = dir, mnt_fsname = dev }
 		{- We want real disks like /dev/foo, not
@@ -368,6 +380,13 @@ driveList = mapM (gen . mnt_dir) =<< filter sane <$> getMounts
 #else
 driveList = return []
 #endif
+#endif
+
+genRemovableDrive :: FilePath -> IO RemovableDrive
+genRemovableDrive dir = RemovableDrive
+	<$> getDiskFree dir
+	<*> pure (T.pack dir)
+	<*> pure (T.pack gitAnnexAssistantDefaultDir)
 
 {- Bootstraps from first run mode to a fully running assistant in a
  - repository, by running the postFirstRun callback, which returns the

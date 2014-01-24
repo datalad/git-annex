@@ -22,7 +22,7 @@ git-annex can encrypt data stored in special remotes. This allows you to
 store files in the cloud without exposing their file names, or their
 contents. See [[design/encryption]] for details.
 
-When using the shared enctyption method, the encryption key gets stored
+When using the shared encryption method, the encryption key gets stored
 in git, and so anyone who has a clone of your repository can decrypt files
 from the encrypted special remote.
 
@@ -41,7 +41,7 @@ output you post, and feel free to remove identifying information.
 Note that the git-annex assistant *does* sanitize XMPP protocol information
 logged when debugging is enabled.
 
-If you prefer not to post information publically, you can send a GPG
+If you prefer not to post information publicaly, you can send a GPG
 encrypted mail to Joey Hess <id@joeyh.name> (gpg key ID 2512E3C7).
 Or you can post a public bug report, and send a followup email with private
 details.

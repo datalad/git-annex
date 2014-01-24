@@ -61,7 +61,7 @@ gen r _ c gc =
 		localpath = Nothing,
 		repo = r,
 		readonly = True,
-		globallyAvailable = True,
+		availability = GloballyAvailable,
 		remotetype = remote
 	}
 
@@ -118,7 +118,8 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 #endif
 		DefaultDownloader -> do
 			headers <- getHttpHeaders
-			Right <$> Url.withUserAgent (Url.checkBoth u' headers $ keySize key)
+			Url.withUserAgent $ catchMsgIO .
+				Url.checkBoth u' headers (keySize key)
   where
   	firsthit [] miss _ = return miss
 	firsthit (u:rest) _ a = do

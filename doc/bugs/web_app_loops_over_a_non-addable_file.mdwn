@@ -52,3 +52,5 @@ failed
 Turns out that file is owned by root, so it's an expected failure. But the webapp should simply skip this file, not loop over it.
 
 The workaround is obviously to give this file to the proper user. --[[anarcat]]
+
+> [[fixed|done]] --[[Joey]]

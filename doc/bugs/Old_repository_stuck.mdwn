@@ -5,5 +5,5 @@ I had created a test repository a time ago with an old version of git-annex. I d
 * OS: Ubuntu 12.04.1 LTS 3.2.0-35-generic-pae #55-Ubuntu SMP Wed Dec 5 18:04:39 UTC 2012 i686 i686 i386 GNU/Linux
 
 > This is [[fixed|done]] in git; assuming the repo was showing up
-> in the upper-right menu for switching amoung local repositories.
+> in the upper-right menu for switching among local repositories.
 > --[[Joey]] 

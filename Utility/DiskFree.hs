@@ -31,8 +31,22 @@ getDiskFree path = withFilePath path $ \c_path -> do
 	safeErrno (Errno v) = v == 0
 
 #else
+#ifdef mingw32_HOST_OS
+
+import Common
+
+import System.Win32.File
+
+getDiskFree :: FilePath -> IO (Maybe Integer)
+getDiskFree path = catchMaybeIO $ do
+	(sectors, bytes, nfree, _ntotal) <- getDiskFreeSpace (Just path)
+	return $ toInteger sectors * toInteger bytes * toInteger nfree
+#else
+
+#warning Building without disk free space checking support
 
 getDiskFree :: FilePath -> IO (Maybe Integer)
 getDiskFree _ = return Nothing
 
+#endif
 #endif

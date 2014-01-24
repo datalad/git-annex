@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE BangPatterns #-}
+
 module Assistant.TransferQueue (
 	TransferQueue,
 	Schedule(..),
@@ -217,7 +219,8 @@ dequeueTransfers c = do
 
 dequeueTransfersSTM :: TransferQueue -> (Transfer -> Bool) -> STM [(Transfer, TransferInfo)]
 dequeueTransfersSTM q c = do
-	(removed, ts) <- partition (c . fst) <$> readTList (queuelist q)
-	void $ writeTVar (queuesize q) (length ts)
+	!(removed, ts) <- partition (c . fst) <$> readTList (queuelist q)
+	let !len = length ts
+	void $ writeTVar (queuesize q) len
 	setTList (queuelist q) ts
 	return removed

@@ -11,18 +11,18 @@ module Assistant.Install where
 
 import Assistant.Common
 import Assistant.Install.AutoStart
-import Assistant.Install.Menu
-import Assistant.Ssh
 import Config.Files
 import Utility.FileMode
 import Utility.Shell
 import Utility.Tmp
 import Utility.Env
+import Utility.SshConfig
 
 #ifdef darwin_HOST_OS
 import Utility.OSX
 #else
 import Utility.FreeDesktop
+import Assistant.Install.Menu
 #endif
 
 standaloneAppBase :: IO (Maybe FilePath)
@@ -96,6 +96,7 @@ cleanEnvironment = clean <$> getEnvironment
 			lookup "GIT_ANNEX_STANDLONE_ENV" env
 		restoreorig oldenv p@(k, _v)
 			| k `elem` vars = case lookup ("ORIG_" ++ k) oldenv of
-				Nothing -> Nothing
-				(Just v') -> Just (k, v')
+				(Just v')
+					| not (null v') -> Just (k, v')
+				_ -> Nothing
 			| otherwise = Just p

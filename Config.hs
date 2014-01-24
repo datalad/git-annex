@@ -1,6 +1,6 @@
 {- Git configuration
  -
- - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,8 +12,8 @@ import qualified Git
 import qualified Git.Config
 import qualified Git.Command
 import qualified Annex
-import qualified Types.Remote as Remote
 import Config.Cost
+import Types.Availability
 
 type UnqualifiedConfigKey = String
 data ConfigKey = ConfigKey String
@@ -55,14 +55,19 @@ annexConfig key = ConfigKey $ "annex." ++ key
  - by remote.<name>.annex-cost, or if remote.<name>.annex-cost-command
  - is set and prints a number, that is used. -}
 remoteCost :: RemoteGitConfig -> Cost -> Annex Cost
-remoteCost c def = case remoteAnnexCostCommand c of
-	Just cmd | not (null cmd) -> liftIO $
-		(fromMaybe def . readish) <$>
-			readProcess "sh" ["-c", cmd]
-	_ -> return $ fromMaybe def $ remoteAnnexCost c
+remoteCost c def = fromMaybe def <$> remoteCost' c
 
-setRemoteCost :: Remote -> Cost -> Annex ()
-setRemoteCost r c = setConfig (remoteConfig (Remote.repo r) "cost") (show c)
+remoteCost' :: RemoteGitConfig -> Annex (Maybe Cost)
+remoteCost' c = case remoteAnnexCostCommand c of
+	Just cmd | not (null cmd) -> liftIO $
+		readish <$> readProcess "sh" ["-c", cmd]
+	_ -> return $ remoteAnnexCost c
+
+setRemoteCost :: Git.Repo -> Cost -> Annex ()
+setRemoteCost r c = setConfig (remoteConfig r "cost") (show c)
+
+setRemoteAvailability :: Git.Repo -> Availability -> Annex ()
+setRemoteAvailability r c = setConfig (remoteConfig r "availability") (show c)
 
 getNumCopies :: Maybe Int -> Annex Int
 getNumCopies (Just v) = return v
@@ -70,11 +75,6 @@ getNumCopies Nothing = annexNumCopies <$> Annex.getGitConfig
 
 isDirect :: Annex Bool
 isDirect = annexDirect <$> Annex.getGitConfig
-
-setDirect :: Bool -> Annex ()
-setDirect b = do
-	setConfig (annexConfig "direct") (Git.Config.boolConfig b)
-	Annex.changeGitConfig $ \c -> c { annexDirect = b }
 
 crippledFileSystem :: Annex Bool
 crippledFileSystem = annexCrippledFileSystem <$> Annex.getGitConfig

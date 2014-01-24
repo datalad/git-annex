@@ -30,6 +30,8 @@ import qualified Git.CurrentRepo
 import qualified Annex
 import Config.Files
 import qualified Option
+import Upgrade
+import Annex.Version
 
 import Control.Concurrent
 import Control.Concurrent.STM
@@ -56,10 +58,14 @@ start = start' True
 start' :: Bool -> Maybe HostName -> CommandStart
 start' allowauto listenhost = do
 	liftIO ensureInstalled
-	ifM isInitialized ( go , auto )
+	ifM isInitialized 
+		( go
+		, auto
+		)
 	stop
   where
 	go = do
+		cannotrun <- needsUpgrade . fromMaybe (error "no version") =<< getVersion
 		browser <- fromRepo webBrowser
 		f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 		ifM (checkpid <&&> checkshim f)
@@ -69,14 +75,14 @@ start' allowauto listenhost = do
 					url <- liftIO . readFile
 						=<< fromRepo gitAnnexUrlFile
 					liftIO $ openBrowser browser f url Nothing Nothing
-			, startDaemon True True Nothing listenhost $ Just $ 
+			, startDaemon True True Nothing cannotrun listenhost $ Just $ 
 				\origout origerr url htmlshim ->
 					if isJust listenhost
 						then maybe noop (`hPutStrLn` url) origout
 						else openBrowser browser htmlshim url origout origerr
 			)
 	auto
-		| allowauto = liftIO startNoRepo
+		| allowauto = liftIO $ startNoRepo []
 		| otherwise = do
 			d <- liftIO getCurrentDirectory
 			error $ "no git repository in " ++ d
@@ -87,8 +93,8 @@ start' allowauto listenhost = do
 
 {- When run without a repo, start the first available listed repository in
  - the autostart file. If not, it's our first time being run! -}
-startNoRepo :: IO ()
-startNoRepo = do
+startNoRepo :: CmdParams -> IO ()
+startNoRepo _ = do
 	-- FIXME should be able to reuse regular getopt, but 
 	-- it currently runs in the Annex monad.
 	args <- getArgs
@@ -133,7 +139,7 @@ firstRun listenhost = do
 	let callback a = Just $ a v
 	runAssistant d $ do
 		startNamedThread urlrenderer $
-			webAppThread d urlrenderer True listenhost
+			webAppThread d urlrenderer True Nothing listenhost
 				(callback signaler)
 				(callback mainthread)
 		waitNamedThreads
@@ -155,7 +161,7 @@ firstRun listenhost = do
 			_wait <- takeMVar v
 			state <- Annex.new =<< Git.CurrentRepo.get
 			Annex.eval state $
-				startDaemon True True Nothing listenhost $ Just $
+				startDaemon True True Nothing Nothing listenhost $ Just $
 					sendurlback v
 	sendurlback v _origout _origerr url _htmlshim = do
 		recordUrl url

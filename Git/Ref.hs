@@ -10,6 +10,7 @@ module Git.Ref where
 import Common
 import Git
 import Git.Command
+import Git.Sha
 
 import Data.Char (chr)
 
@@ -29,16 +30,41 @@ base = Ref . remove "refs/heads/" . remove "refs/remotes/" . show
 		| prefix `isPrefixOf` s = drop (length prefix) s
 		| otherwise = s
 
+{- Given a directory and any ref, takes the basename of the ref and puts
+ - it under the directory. -}
+under :: String -> Ref -> Ref
+under dir r = Ref $ dir ++ "/" ++
+	(reverse $ takeWhile (/= '/') $ reverse $ show r)
+
 {- Given a directory such as "refs/remotes/origin", and a ref such as
  - refs/heads/master, yields a version of that ref under the directory,
  - such as refs/remotes/origin/master. -}
-under :: String -> Ref -> Ref
-under dir r = Ref $ dir </> show (base r)
+underBase :: String -> Ref -> Ref
+underBase dir r = Ref $ dir ++ "/" ++ show (base r)
+
+{- A Ref that can be used to refer to a file in the repository, as staged
+ - in the index.
+ -
+ - Prefixing the file with ./ makes this work even if in a subdirectory
+ - of a repo.
+ -}
+fileRef :: FilePath -> Ref
+fileRef f = Ref $ ":./" ++ f
+
+{- A Ref that can be used to refer to a file in the repository as it
+ - appears in a given Ref. -}
+fileFromRef :: Ref -> FilePath -> Ref
+fileFromRef (Ref r) f = let (Ref fr) = fileRef f in Ref (r ++ fr)
 
 {- Checks if a ref exists. -}
 exists :: Ref -> Repo -> IO Bool
 exists ref = runBool
 	[Param "show-ref", Param "--verify", Param "-q", Param $ show ref]
+
+{- The file used to record a ref. (Git also stores some refs in a
+ - packed-refs file.) -}
+file :: Ref -> Repo -> FilePath
+file ref repo = localGitDir repo </> show ref
 
 {- Checks if HEAD exists. It generally will, except for in a repository
  - that was just created. -}
@@ -79,6 +105,11 @@ matchingUniq :: [Ref] -> Repo -> IO [(Sha, Branch)]
 matchingUniq refs repo = nubBy uniqref <$> matching refs repo
   where
 	uniqref (a, _) (b, _) = a == b
+
+{- Gets the sha of the tree a ref uses. -}
+tree :: Ref -> Repo -> IO (Maybe Sha)
+tree ref = extractSha <$$> pipeReadStrict
+	[ Param "rev-parse", Param (show ref ++ ":") ]
 
 {- Checks if a String is a legal git ref name.
  -

@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="robohack"
+ ip="24.67.98.78"
+ subject="a different error trying to build from the git repo...."
+ date="2013-11-21T21:14:54Z"
+ content="""
+I'm using the ghc7.0 branch because Fink's GHC is still at 7.0.4....
+
+	$ cabal build                                
+	Building git-annex-3.20120523...
+	Preprocessing executable 'git-annex' for git-annex-3.20120523...
+	[ 78 of 163] Compiling Utility.Url      ( Utility/Url.hs, dist/build/git-annex/git-annex-tmp/Utility/Url.o )
+	
+	Utility/Url.hs:111:88:
+	    Couldn't match expected type `Maybe URI' with actual type `URI'
+	    In the second argument of `fromMaybe', namely
+	      `(newURI `relativeTo` u)'
+	    In the expression: fromMaybe newURI (newURI `relativeTo` u)
+	    In an equation for `newURI_abs':
+	        newURI_abs = fromMaybe newURI (newURI `relativeTo` u)
+
+"""]]

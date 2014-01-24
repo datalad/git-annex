@@ -16,39 +16,21 @@ import Logs.Location
 import Logs.Transfer
 import qualified Remote
 import Types.Key
-import qualified Option
+
+import GHC.IO.Handle
 
 data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
 def :: [Command]
-def = [withOptions options $
-	command "transferkeys" paramNothing seek
+def = [command "transferkeys" paramNothing seek
 	SectionPlumbing "transfers keys"]
 
-options :: [Option]
-options = [readFdOption, writeFdOption]
-
-readFdOption :: Option
-readFdOption = Option.field [] "readfd" paramNumber "read from this fd"
-
-writeFdOption :: Option
-writeFdOption = Option.field [] "writefd" paramNumber "write to this fd"
-
 seek :: [CommandSeek]
-seek = [withField readFdOption convertFd $ \readh ->
-	withField writeFdOption convertFd $ \writeh ->
-	withNothing $ start readh writeh]
+seek = [withNothing start]
 
-convertFd :: Maybe String -> Annex (Maybe Handle)
-convertFd Nothing = return Nothing
-convertFd (Just s) = liftIO $ 
-	case readish s of
-		Nothing -> error "bad fd"
-		Just fd -> Just <$> fdToHandle fd
-
-start :: Maybe Handle -> Maybe Handle -> CommandStart
-start readh writeh = do
-	runRequests (fromMaybe stdin readh) (fromMaybe stdout writeh) runner
+start :: CommandStart
+start = withHandles $ \(readh, writeh) -> do
+	runRequests readh writeh runner
 	stop
   where
 	runner (TransferRequest direction remote key file)
@@ -60,6 +42,21 @@ start readh writeh = do
 				return ok
 		| otherwise = download (Remote.uuid remote) key file forwardRetry $ \p ->
 			getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
+
+{- stdin and stdout are connected with the caller, to be used for
+ - communication with it. But doing a transfer might involve something
+ - that tries to read from stdin, or write to stdout. To avoid that, close
+ - stdin, and duplicate stderr to stdout. Return two new handles
+ - that are duplicates of the original (stdin, stdout). -}
+withHandles :: ((Handle, Handle) -> Annex a) -> Annex a
+withHandles a = do
+	readh <- liftIO $ hDuplicate stdin
+	writeh <- liftIO $ hDuplicate stdout
+	liftIO $ do
+		nullh <- openFile devNull ReadMode
+		nullh `hDuplicateTo` stdin
+		stderr `hDuplicateTo` stdout
+	a (readh, writeh)
 
 runRequests
 	:: Handle

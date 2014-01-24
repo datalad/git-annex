@@ -22,6 +22,11 @@ bundledPrograms = catMaybes
 #ifndef mingw32_HOST_OS
 	-- git is not included in the windows bundle
 	, Just "git"
+	-- Not strictly needed in PATH by git-annex, but called
+	-- by git when it sshes to a remote.
+	, Just "git-upload-pack"
+	, Just "git-receive-pack"
+	, Just "git-shell"
 #endif
 	, Just "cp"
 #ifndef mingw32_HOST_OS
@@ -29,7 +34,12 @@ bundledPrograms = catMaybes
 	, Just "xargs"
 #endif
 	, Just "rsync"
+#ifndef darwin_HOST_OS
+	-- OS X has ssh installed by default.
+	-- (Linux probably, but not guaranteed.)
 	, Just "ssh"
+	, Just "ssh-keygen"
+#endif
 #ifndef mingw32_HOST_OS
 	, Just "sh"
 #endif
@@ -44,8 +54,14 @@ bundledPrograms = catMaybes
 	, SysConfig.sha512
 	, SysConfig.sha224
 	, SysConfig.sha384
-	-- nice and ionice are not included in the bundle; we rely on the
-	-- system's own version, which may better match its kernel
+#ifdef linux_HOST_OS
+	-- used to unpack the tarball when upgrading
+	, Just "gunzip"
+	, Just "tar"
+#endif
+	-- nice, ionice, and nocache are not included in the bundle;
+	-- we rely on the system's own version, which may better match
+	-- its kernel, and avoid using them if not available.
 	]
   where
 	ifset True s = Just s

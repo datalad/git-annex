@@ -4,7 +4,7 @@
  subject="comment 8"
  date="2011-12-19T18:29:01Z"
  content="""
-I don't mind changing the behavior of git-annex sync, certianly..
+I don't mind changing the behavior of git-annex sync, certainly..
 
 Looking thru git's documentation, I found some existing configuration that could be reused following your idea.
 There is a remote.name.skipDefaultUpdate and a remote.name.skipFetchAll. Though both have to do with fetches, not pushes.

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://alerque.com/"
+ nickname="Caleb"
+ subject="Out of date"
+ date="2013-12-28T22:04:24Z"
+ content="""
+The AUR package you reference is woefully out of date. I have updated the standalone variant so it might be worth using that until the maintainer catches up.
+
+    yaourt -Sy git-annex-standalone
+"""]]

@@ -1,0 +1,3 @@
+When adding a Remote server through the webapp, it set-up a specific SSH key for later sync.
+
+However, when the remote has been set-up manually, then later gets the assistant thrown at it, there doesn't appear to be a way to create and deploy such a key. This option could be offered in, e.g., the settings of the repo in the webapp.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 10"
+ date="2013-12-12T17:35:28Z"
+ content="""
+The behavior is direct mode is a bug: [[bugs/when syncing a direct repository, git annex delete non annexed new git files]]. Hopefully it will be fixed soon.
+"""]]

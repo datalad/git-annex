@@ -15,6 +15,8 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.Alert
 import Assistant.Repair
+import Assistant.Ssh
+import qualified Annex.Branch
 import qualified Git.LsFiles
 import qualified Git.Command
 import qualified Git.Config
@@ -25,6 +27,8 @@ import Utility.Batch
 import Utility.NotificationBroadcaster
 import Config
 import Utility.HumanTime
+import Git.Repair
+import Git.Index
 
 import Data.Time.Clock.POSIX
 
@@ -35,6 +39,30 @@ sanityCheckerStartupThread :: Maybe Duration -> NamedThread
 sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerStartup" $ do
 	{- Stale git locks can prevent commits from happening, etc. -}
 	void $ repairStaleGitLocks =<< liftAnnex gitRepo
+
+	{- A corrupt index file can prevent the assistant from working at
+	 - all, so detect and repair. -}
+	ifM (not <$> liftAnnex (inRepo checkIndexFast))
+		( do
+			notice ["corrupt index file found at startup; removing and restaging"]
+			liftAnnex $ inRepo $ nukeFile . indexFile
+			{- Normally the startup scan avoids re-staging files,
+			 - but with the index deleted, everything needs to be
+			 - restaged. -}
+			modifyDaemonStatus_ $ \s -> s { forceRestage = True }
+		, whenM (liftAnnex $ inRepo missingIndex) $ do
+			debug ["no index file; restaging"]
+			modifyDaemonStatus_ $ \s -> s { forceRestage = True }
+		)
+	{- If the git-annex index file is corrupt, it's ok to remove it;
+	 - the data from the git-annex branch will be used, and the index
+	 - will be automatically regenerated. -}
+	unlessM (liftAnnex $ Annex.Branch.withIndex $ inRepo $ Git.Repair.checkIndexFast) $ do
+		notice ["corrupt annex/index file found at startup; removing"]
+		liftAnnex $ liftIO . nukeFile =<< fromRepo gitAnnexIndex
+
+	{- Fix up ssh remotes set up by past versions of the assistant. -}
+	liftIO $ fixUpSshRemotes
 
 	{- If there's a startup delay, it's done here. -}
 	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay

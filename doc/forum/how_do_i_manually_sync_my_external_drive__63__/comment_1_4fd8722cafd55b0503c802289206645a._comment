@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2014-01-01T20:43:05Z"
+ content="""
+Pulling location tracking data out of git is unlikely to be faster than statting a single file on the drive, unless the drive is dead slow.
+
+If you really want to force it to use the location tracking information, use `--not --in backup`
+"""]]

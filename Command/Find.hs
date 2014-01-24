@@ -26,6 +26,9 @@ def = [noCommit $ noMessages $ withOptions [formatOption, print0Option] $
 formatOption :: Option
 formatOption = Option.field [] "format" paramFormat "control format of output"
 
+withFormat :: (Maybe Utility.Format.Format -> CommandSeek) -> CommandSeek
+withFormat = withField formatOption $ return . fmap Utility.Format.gen
+
 print0Option :: Option
 print0Option = Option.Option [] ["print0"] (Option.NoArg set)
 	"terminate output with null"
@@ -33,29 +36,36 @@ print0Option = Option.Option [] ["print0"] (Option.NoArg set)
 	set = Annex.setField (Option.name formatOption) "${file}\0"
 
 seek :: [CommandSeek]
-seek = [withField formatOption formatconverter $ \f ->
-		withFilesInGit $ whenAnnexed $ start f]
-  where
-	formatconverter = return . fmap Utility.Format.gen
+seek = [withFormat $ \f -> withFilesInGit $ whenAnnexed $ start f]
 
 start :: Maybe Utility.Format.Format -> FilePath -> (Key, Backend) -> CommandStart
 start format file (key, _) = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
 	whenM (limited <||> inAnnex key) $
-		unlessM (showFullJSON vars) $
-			case format of
-				Nothing -> liftIO $ putStrLn file
-				Just formatter -> liftIO $ putStr $
-					Utility.Format.format formatter $
-						M.fromList vars
+		showFormatted format file $ ("file", file) : keyVars key
 	stop
+
+showFormatted :: Maybe Utility.Format.Format -> String -> [(String, String)] -> Annex ()
+showFormatted format unformatted vars =
+	unlessM (showFullJSON vars) $
+		case format of
+			Nothing -> liftIO $ putStrLn unformatted
+			Just formatter -> liftIO $ putStr $
+				Utility.Format.format formatter $
+					M.fromList vars
+
+keyVars :: Key -> [(String, String)]
+keyVars key =
+	[ ("key", key2file key)
+	, ("backend", keyBackendName key)
+	, ("bytesize", size show)
+	, ("humansize", size $ roughSize storageUnits True)
+	, ("keyname", keyName key)
+	, ("hashdirlower", hashDirLower key)
+	, ("hashdirmixed", hashDirMixed key)
+	, ("mtime", whenavail show $ keyMtime key)
+	]
   where
-	vars =
-		[ ("file", file)
-		, ("key", key2file key)
-		, ("backend", keyBackendName key)
-		, ("bytesize", size show)
-		, ("humansize", size $ roughSize storageUnits True)
-		]
-	size c = maybe "unknown" c $ keySize key
+	size c = whenavail c $ keySize key
+	whenavail = maybe "unknown"

@@ -75,10 +75,10 @@ prepMerge :: Annex ()
 prepMerge = liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
 
 syncBranch :: Git.Ref -> Git.Ref
-syncBranch = Git.Ref.under "refs/heads/synced/"
+syncBranch = Git.Ref.under "refs/heads/synced" . fromDirectBranch
 
 remoteBranch :: Remote -> Git.Ref -> Git.Ref
-remoteBranch remote = Git.Ref.under $ "refs/remotes/" ++ Remote.name remote
+remoteBranch remote = Git.Ref.underBase $ "refs/remotes/" ++ Remote.name remote
 
 syncRemotes :: [String] -> Annex [Remote]
 syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
@@ -103,19 +103,33 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 commit :: CommandStart
 commit = next $ next $ ifM isDirect
 	( do
-		void stageDirect
-		runcommit []
-	, runcommit [Param "-a"]
-	)
-  where
-	runcommit ps = do
 		showStart "commit" ""
-		showOutput
+		void stageDirect
+		void preCommitDirect
+		commitStaged commitmessage
+	, do
+		showStart "commit" ""
 		Annex.Branch.commit "update"
 		-- Commit will fail when the tree is clean, so ignore failure.
-		let params = Param "commit" : ps ++
-			[Param "-m", Param "git-annex automatic sync"]
-		_ <- inRepo $ tryIO . Git.Command.runQuiet params
+		_ <- inRepo $ tryIO . Git.Command.runQuiet
+			[ Param "commit"
+			, Param "-a"
+			, Param "-m"
+			, Param commitmessage
+			]
+		return True
+	)
+  where
+	commitmessage = "git-annex automatic sync"
+
+commitStaged :: String -> Annex Bool
+commitStaged commitmessage = go =<< inRepo Git.Branch.currentUnsafe
+  where
+	go Nothing = return False
+	go (Just branch) = do
+		parent <- inRepo $ Git.Ref.sha branch
+		void $ inRepo $ Git.Branch.commit False commitmessage branch
+			(maybe [] (:[]) parent)
 		return True
 
 mergeLocal :: Maybe Git.Ref -> CommandStart
@@ -138,7 +152,13 @@ mergeLocal (Just branch) = go =<< needmerge
 pushLocal :: Maybe Git.Ref -> CommandStart
 pushLocal Nothing = stop
 pushLocal (Just branch) = do
+	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch $ syncBranch branch
+	-- In direct mode, we're operating on some special direct mode
+	-- branch, rather than the intended branch, so update the indended
+	-- branch.
+	whenM isDirect $
+		inRepo $ updateBranch $ fromDirectBranch branch
 	stop
 
 updateBranch :: Git.Ref -> Git.Repo -> IO ()
@@ -183,7 +203,9 @@ pushRemote :: Remote -> Maybe Git.Ref -> CommandStart
 pushRemote _remote Nothing = stop
 pushRemote remote (Just branch) = go =<< needpush
   where
-	needpush = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
+	needpush
+		| remoteAnnexReadOnly (Types.Remote.gitconfig remote) = return False
+		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 	go False = stop
 	go True = do
 		showStart "push" (Remote.name remote)
@@ -232,7 +254,7 @@ pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
 		, refspec branch
 		]
 	directpush = Git.Command.runQuiet $ pushparams
-		[show $ Git.Ref.base branch]
+		[show $ Git.Ref.base $ fromDirectBranch branch]
 	pushparams branches =
 		[ Param "push"
 		, Param $ Remote.name remote
@@ -315,6 +337,7 @@ resolveMerge = do
 			, Param "-m"
 			, Param "git-annex automatic merge conflict fix"
 			]
+		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
 
 resolveMerge' :: LsFiles.Unmerged -> Annex (Maybe FilePath)

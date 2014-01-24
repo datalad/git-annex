@@ -22,7 +22,7 @@ A related problem though is the size of the tree objects git needs to
 commit. Having the logs in a separate branch doesn't help with that.
 As more keys are added, the tree object size will increase, and git will
 take longer and longer to commit, and use more space. One way to deal with
-this is simply by splitting the logs amoung subdirectories. Git then can
+this is simply by splitting the logs among subdirectories. Git then can
 reuse trees for most directories. (Check: Does it still have to build
 dup trees in memory?)
 
@@ -54,7 +54,7 @@ Let's use one branch per uuid, named git-annex/$UUID.
 - (BTW, UUIDs probably don't compress well, and this reduces the bloat of having
   them repeated lots of times in the tree.)
 - Per UUID branches mean that if it wants to find a file's location
-  amoung configured remotes, it can examine only their branches, if
+  among configured remotes, it can examine only their branches, if
   desired.
 - It's important that the per-repo branches propigate beyond immediate
   remotes. If there is a central bare repo, that means push --all. Without

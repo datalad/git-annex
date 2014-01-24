@@ -1,0 +1,22 @@
+Still working on the git repair code. Improved the test suite, which found
+some more bugs, and so I've been running tests all day and occasionally
+going and fixing a bug in the repair code. The hardest part of repairing a
+git repo has turned out to be reliably determining which objects in it are
+broken. Bugs in git don't help (but the git devs are going to fix the one I
+reported).
+
+But the interesting new thing today is that I added some upgrade alert code
+to the webapp. Ideally everyone would get git-annex and other software as
+part of an OS distribution, which would include its own upgrade system -- 
+But the  [survey](http://git-annex-survey.branchable.com/polls/2013/how_installed/)
+tells me that a quarter of installs are from the prebuilt binaries I
+distribute.
+
+So, those builds are going to be built with knowledge of an upgrade url,
+and will periodically download a small info file (over https) to see if a
+newer version is available, and show an alert.
+
+I think all that's working, though I have not yet put the info files in
+place and tested it. The actual upgrade process will be a manual
+download and reinstall, to start with, and then perhaps I'll automate it
+further, depending on how hard that is on the different platforms.

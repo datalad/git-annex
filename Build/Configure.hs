@@ -7,9 +7,10 @@ import Data.List
 import System.Process
 import Control.Applicative
 import System.FilePath
-import System.Environment
+import System.Environment (getArgs)
 import Data.Maybe
 import Control.Monad.IfElse
+import Control.Monad
 import Data.Char
 
 import Build.TestConfig
@@ -17,11 +18,13 @@ import Build.Version
 import Utility.SafeCommand
 import Utility.Monad
 import Utility.ExternalSHA
+import Utility.Env
 import qualified Git.Version
 
 tests :: [TestCase]
 tests =
 	[ TestCase "version" getVersion
+	, TestCase "UPGRADE_LOCATION" getUpgradeLocation
 	, TestCase "git" $ requireCmd "git" "git --version >/dev/null"
 	, TestCase "git version" getGitVersion
 	, testCp "cp_a" "-a"
@@ -33,8 +36,10 @@ tests =
 	, TestCase "wget" $ testCmd "wget" "wget --version >/dev/null"
 	, TestCase "bup" $ testCmd "bup" "bup --version >/dev/null"
 	, TestCase "quvi" $ testCmd "quvi" "quvi --version >/dev/null"
+	, TestCase "newquvi" $ testCmd "newquvi" "quvi info >/dev/null"
 	, TestCase "nice" $ testCmd "nice" "nice true >/dev/null"
 	, TestCase "ionice" $ testCmd "ionice" "ionice -c3 true >/dev/null"
+	, TestCase "nocache" $ testCmd "nocache" "nocache true >/dev/null"
 	, TestCase "gpg" $ maybeSelectCmd "gpg"
 		[ ("gpg", "--version >/dev/null")
 		, ("gpg2", "--version >/dev/null") ]
@@ -49,8 +54,8 @@ tests =
 	, (384, "38b060a751ac96384cd9327eb1b1e36a21fdb71114be07434c0cc7bf63f6e1da274edebfe76f65fbd51ad2f14898b95b")
 	]
 
-{- shaNsum are the program names used by coreutils. Some systems like OSX
- - sometimes install these with 'g' prefixes.
+{- shaNsum are the program names used by coreutils. Some systems
+ - install these with 'g' prefixes.
  -
  - On some systems, shaN is used instead, but on other
  - systems, it might be "hashalot", which does not produce
@@ -70,13 +75,8 @@ shaTestCases l = map make l
 				then return $ Just c
 				else search cmds
 	
-	shacmds n = concatMap (\x -> [x, 'g':x, osxpath </> x]) $
+	shacmds n = concatMap (\x -> [x, 'g':x]) $
 		map (\x -> "sha" ++ show n ++ x) ["sum", ""]
-
-	{- Max OSX sometimes puts GNU tools outside PATH, so look in
-	 - the location it uses, and remember where to run them
-	 - from. -}
-	osxpath = "/opt/local/libexec/gnubin"
 
 tmpDir :: String
 tmpDir = "tmp"
@@ -90,9 +90,18 @@ testCp k option = TestCase cmd $ testCmd k cmdline
 	cmd = "cp " ++ option
 	cmdline = cmd ++ " " ++ testFile ++ " " ++ testFile ++ ".new"
 
+getUpgradeLocation :: Test
+getUpgradeLocation = do
+	e <- getEnv "UPGRADE_LOCATION"
+	return $ Config "upgradelocation" $ MaybeStringConfig e
+
 getGitVersion :: Test
-getGitVersion = Config "gitversion" . StringConfig . show
-	<$> Git.Version.installed
+getGitVersion = do
+	v <- Git.Version.installed
+	let oldestallowed = Git.Version.normalize "1.7.1.0"
+	when (v < oldestallowed) $
+		error $ "installed git version " ++ show v ++ " is too old! (Need " ++ show oldestallowed ++ " or newer)"
+	return $ Config "gitversion" $ StringConfig $ show v
 
 getSshConnectionCaching :: Test
 getSshConnectionCaching = Config "sshconnectioncaching" . BoolConfig <$>
@@ -130,4 +139,3 @@ androidConfig c = overrides ++ filter (not . overridden) c
 		]
 	overridden (Config k _) = k `elem` overridekeys
 	overridekeys = map (\(Config k _) -> k) overrides
-

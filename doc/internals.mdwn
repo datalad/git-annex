@@ -16,7 +16,7 @@ Each subdirectory has the [[name_of_a_key|key_format]] in one of the
 [[key-value_backends|backends]]. The file inside also has the name of the key.
 This two-level structure is used because it allows the write bit to be removed
 from the subdirectories as well as from the files. That prevents accidentially
-deleting or changing the file contents. See [[permissions]] for details.
+deleting or changing the file contents. See [[lockdown]] for details.
 
 In [[direct_mode]], file contents are not stored in here, and instead
 are stored directly in the file. However, the same symlinks are still
@@ -38,6 +38,10 @@ are added to git.
 
 This branch operates on objects exclusively. No file names will ever
 be stored in this branch.
+
+The files stored in this branch are all designed to be auto-merged
+using git's [[union merge driver|git-union-merge]]. So each line
+has a timestamp, to allow the most recent information to be identified.
 
 ### `uuid.log`
 
@@ -110,7 +114,7 @@ somewhere else.
 ## `aaa/bbb/*.log`
 
 These log files record [[location_tracking]] information
-for file contents. Again these are placed in two levels of subdirectories
+for file contents. These are placed in two levels of subdirectories
 for hashing. See [[hashing]] for details.
 
 The name of the key is the filename, and the content
@@ -122,11 +126,46 @@ Example:
 	1287290776.765152s 1 e605dca6-446a-11e0-8b2a-002170d25c55
 	1287290767.478634s 0 26339d22-446b-11e0-9101-002170d25c55
 
-These files are designed to be auto-merged using git's [[union merge driver|git-union-merge]].
-The timestamps allow the most recent information to be identified.
-
 ## `aaa/bbb/*.log.web`
 
 These log files record urls used by the
 [[web_special_remote|special_remotes/web]]. Their format is similar
 to the location tracking files, but with urls rather than UUIDs.
+
+## `aaa/bbb/*.log.rmt`
+
+These log files are used by remotes that need to record their own state
+about keys. Each remote can store one line of data about a key, in
+its own format.
+
+Example:
+
+	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55 blah blah
+	1287290767.478634s 26339d22-446b-11e0-9101-002170d25c55 foo=bar
+
+## `schedule.log`
+
+Used to record scheduled events, such as periodic fscks.
+
+The file format is simply one line per repository, with the uuid followed by a
+space and then its schedule, followed by a timestamp.
+
+There can be multiple events in the schedule, separated by "; "
+
+The format of the scheduled events is the same described in
+the SCHEDULED JOBS section of the man page.
+
+Example:
+
+	42bf2035-0636-461d-a367-49e9dfd361dd fsck self 30m every day at any time; fsck 4b3ebc86-0faf-4892-83c5-ce00cbe30f0a 1h every year at any time timestamp=1385646997.053162s
+
+## `transitions.log`
+
+Used to record transitions, eg by `git annex forget`
+
+Each line of the file is a transition, followed by a timestamp.
+
+Example:
+
+	ForgetGitHistory 1387325539.685136s
+	ForgetDeadRemotes 1387325539.685136s

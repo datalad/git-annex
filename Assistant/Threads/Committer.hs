@@ -20,9 +20,7 @@ import Assistant.Drop
 import Logs.Transfer
 import Logs.Location
 import qualified Annex.Queue
-import qualified Git.Command
 import qualified Git.LsFiles
-import qualified Git.BuildVersion
 import qualified Command.Add
 import Utility.ThreadScheduler
 import qualified Utility.Lsof as Lsof
@@ -36,6 +34,7 @@ import Annex.CatFile
 import qualified Annex
 import Utility.InodeCache
 import Annex.Content.Direct
+import qualified Command.Sync
 
 import Data.Time.Clock
 import Data.Tuple.Utils
@@ -47,12 +46,13 @@ import Control.Concurrent
 {- This thread makes git commits at appropriate times. -}
 commitThread :: NamedThread
 commitThread = namedThread "Committer" $ do
+	havelsof <- liftIO $ inPath "lsof"
 	delayadd <- liftAnnex $
 		maybe delayaddDefault (return . Just . Seconds)
 			=<< annexDelayAdd <$> Annex.getGitConfig
 	waitChangeTime $ \(changes, time) -> do
-		readychanges <- handleAdds delayadd changes
-		if shouldCommit time (length readychanges) readychanges
+		readychanges <- handleAdds havelsof delayadd changes
+		if shouldCommit False time (length readychanges) readychanges
 			then do
 				debug
 					[ "committing"
@@ -94,16 +94,17 @@ waitChangeTime a = waitchanges 0
 		let len = length changes
 		-- See if now's a good time to commit.
 		now <- liftIO getCurrentTime
-		case (lastcommitsize >= maxCommitSize, shouldCommit now len changes, possiblyrename changes) of
+		scanning <- not . scanComplete <$> getDaemonStatus
+		case (lastcommitsize >= maxCommitSize, shouldCommit scanning now len changes, possiblyrename changes) of
 			(True, True, _)
 				| len > maxCommitSize -> 
-					waitchanges =<< a (changes, now)
+					a (changes, now) >>= waitchanges
 				| otherwise -> aftermaxcommit changes
 			(_, True, False) ->
-				waitchanges =<< a (changes, now)
+				a (changes, now) >>= waitchanges
 			(_, True, True) -> do
 				morechanges <- getrelatedchanges changes
-				waitchanges =<< a (changes ++ morechanges, now)
+				a (changes ++ morechanges, now) >>= waitchanges
 			_ -> do
 				refill changes
 				waitchanges lastcommitsize
@@ -199,8 +200,9 @@ maxCommitSize = 5000
  - Current strategy: If there have been 10 changes within the past second,
  - a batch activity is taking place, so wait for later.
  -}
-shouldCommit :: UTCTime -> Int -> [Change] -> Bool
-shouldCommit now len changes
+shouldCommit :: Bool -> UTCTime -> Int -> [Change] -> Bool
+shouldCommit scanning now len changes
+	| scanning = len >= maxCommitSize
 	| len == 0 = False
 	| len >= maxCommitSize = True
 	| length recentchanges < 10 = True
@@ -217,31 +219,7 @@ commitStaged = do
 	v <- tryAnnex Annex.Queue.flush
 	case v of
 		Left _ -> return False
-		Right _ -> do
-			{- Empty commits may be made if tree changes cancel
-			 - each other out, etc. Git returns nonzero on those,
-			 - so don't propigate out commit failures. -}
-			void $ inRepo $ catchMaybeIO . 
-				Git.Command.runQuiet
-					(Param "commit" : nomessage params)
-			return True
-  where
-	params =
-		[ Param "--quiet"
-		{- Avoid running the usual pre-commit hook;
-		 - the Watcher does the same symlink fixing,
-		 - and direct mode bookkeeping updating. -}
-		, Param "--no-verify"
-		]
-	nomessage ps
-		| Git.BuildVersion.older "1.7.2" =
-			Param "-m" : Param "autocommit" : ps
-		| Git.BuildVersion.older "1.7.8" =
-			Param "--allow-empty-message" :
-			Param "-m" : Param "" : ps
-		| otherwise =
-			Param "--allow-empty-message" :
-			Param "--no-edit" : Param "-m" : Param "" : ps
+		Right _ -> Command.Sync.commitStaged ""
 
 {- OSX needs a short delay after a file is added before locking it down,
  - when using a non-direct mode repository, as pasting a file seems to
@@ -277,14 +255,14 @@ delayaddDefault = return Nothing
  - Any pending adds that are not ready yet are put back into the ChangeChan,
  - where they will be retried later.
  -}
-handleAdds :: Maybe Seconds -> [Change] -> Assistant [Change]
-handleAdds delayadd cs = returnWhen (null incomplete) $ do
+handleAdds :: Bool -> Maybe Seconds -> [Change] -> Assistant [Change]
+handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	let (pending, inprocess) = partition isPendingAddChange incomplete
 	direct <- liftAnnex isDirect
 	(pending', cleanup) <- if direct
 		then return (pending, noop)
 		else findnew pending
-	(postponed, toadd) <- partitionEithers <$> safeToAdd delayadd pending' inprocess
+	(postponed, toadd) <- partitionEithers <$> safeToAdd havelsof delayadd pending' inprocess
 	cleanup
 
 	unless (null postponed) $
@@ -298,7 +276,7 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
 		if DirWatcher.eventsCoalesce || null added || direct
 			then return $ added ++ otherchanges
 			else do
-				r <- handleAdds delayadd =<< getChanges
+				r <- handleAdds havelsof delayadd =<< getChanges
 				return $ r ++ added ++ otherchanges
   where
 	(incomplete, otherchanges) = partition (\c -> isPendingAddChange c || isInProcessAddChange c) cs
@@ -411,15 +389,17 @@ handleAdds delayadd cs = returnWhen (null incomplete) $ do
  -
  - Check by running lsof on the repository.
  -}
-safeToAdd :: Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
-safeToAdd _ [] [] = return []
-safeToAdd delayadd pending inprocess = do
+safeToAdd :: Bool -> Maybe Seconds -> [Change] -> [Change] -> Assistant [Either Change Change]
+safeToAdd _ _ [] [] = return []
+safeToAdd havelsof delayadd pending inprocess = do
 	maybe noop (liftIO . threadDelaySeconds) delayadd
 	liftAnnex $ do
 		keysources <- forM pending $ Command.Add.lockDown . changeFile
 		let inprocess' = inprocess ++ mapMaybe mkinprocess (zip pending keysources)
-		openfiles <- S.fromList . map fst3 . filter openwrite <$>
-			findopenfiles (map keySource inprocess')
+		openfiles <- if havelsof
+			then S.fromList . map fst3 . filter openwrite <$>
+				findopenfiles (map keySource inprocess')
+			else pure S.empty
 		let checked = map (check openfiles) inprocess'
 
 		{- If new events are received when files are closed,

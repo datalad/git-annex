@@ -19,6 +19,8 @@ import Config
 import Config.Files
 import Utility.DataUnits
 import Git.Config
+import Types.Distribution
+import qualified Build.SysConfig
 
 import qualified Data.Text as T
 
@@ -26,6 +28,7 @@ data PrefsForm = PrefsForm
 	{ diskReserve :: Text
 	, numCopies :: Int
 	, autoStart :: Bool
+	, autoUpgrade :: AutoUpgrade
 	, debugEnabled :: Bool
 	}
 
@@ -37,6 +40,8 @@ prefsAForm def = PrefsForm
 		"Number of copies" (Just $ numCopies def)
 	<*> areq (checkBoxField `withNote` autostartnote)
 		"Auto start" (Just $ autoStart def)
+	<*> areq (selectFieldList autoUpgradeChoices)
+		autoUpgradeLabel (Just $ autoUpgrade def)
 	<*> areq (checkBoxField `withNote` debugnote)
 		"Enable debug logging" (Just $ debugEnabled def)
   where
@@ -44,6 +49,16 @@ prefsAForm def = PrefsForm
 	numcopiesnote = [whamlet|<br>Only drop a file after verifying that other repositories contain this many copies.|]
 	debugnote = [whamlet|<a href="@{LogR}">View Log</a>|]
 	autostartnote = [whamlet|Start the git-annex assistant at boot or on login.|]
+
+	autoUpgradeChoices :: [(Text, AutoUpgrade)]
+	autoUpgradeChoices =
+		[ ("ask me", AskUpgrade)
+		, ("enabled", AutoUpgrade)
+		, ("disabled", NoAutoUpgrade)
+		]
+	autoUpgradeLabel
+		| isJust Build.SysConfig.upgradelocation = "Auto upgrade"
+		| otherwise = "Auto restart on upgrade"
 
 	positiveIntField = check isPositive intField
 	  where
@@ -68,12 +83,14 @@ getPrefs = PrefsForm
 	<$> (T.pack . roughSize storageUnits False . annexDiskReserve <$> Annex.getGitConfig)
 	<*> (annexNumCopies <$> Annex.getGitConfig)
 	<*> inAutoStartFile
+	<*> (annexAutoUpgrade <$> Annex.getGitConfig)
 	<*> (annexDebug <$> Annex.getGitConfig)
 
 storePrefs :: PrefsForm -> Annex ()
 storePrefs p = do
 	setConfig (annexConfig "diskreserve") (T.unpack $ diskReserve p)
 	setConfig (annexConfig "numcopies") (show $ numCopies p)
+	setConfig (annexConfig "autoupgrade") (fromAutoUpgrade $ autoUpgrade p)
 	unlessM ((==) <$> pure (autoStart p) <*> inAutoStartFile) $ do
 		here <- fromRepo Git.repoPath
 		liftIO $ if autoStart p

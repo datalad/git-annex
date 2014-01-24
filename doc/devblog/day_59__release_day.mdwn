@@ -1,0 +1,11 @@
+Release today, right on bi-weekly schedule. Rather startled
+at the size of the changelog for this one; along with the direct mode
+guard, it adds support for OS X Mavericks, Android 4.3/4.4, and fixes
+numerous bugs.
+
+Posted another question in the survey,
+<http://git-annex-survey.branchable.com/polls/2013/roadmap/>.
+
+Spun off git-repair as an independant package from git-annex. Of course,
+most of the source code is shared with git-annex. I need to do something
+with libraries eventually..

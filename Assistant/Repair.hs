@@ -10,7 +10,7 @@
 module Assistant.Repair where
 
 import Assistant.Common
-import Command.Repair (repairAnnexBranch)
+import Command.Repair (repairAnnexBranch, trackingOrSyncBranch)
 import Git.Fsck (FsckResults, foundBroken)
 import Git.Repair (runRepairOf)
 import qualified Git
@@ -46,7 +46,7 @@ repairWhenNecessary urlrenderer u mrmt fsckresults
 		unless ok $ do
 			button <- mkAlertButton True (T.pack "Click Here") urlrenderer $
 				RepairRepositoryR u
-			void $ addAlert $ brokenRepositoryAlert button
+			void $ addAlert $ brokenRepositoryAlert [button]
 #endif
 		return ok
 	| otherwise = return False
@@ -58,7 +58,7 @@ runRepair u mrmt destructiverepair = do
 	ok <- if u == myu
 		then localrepair fsckresults
 		else remoterepair fsckresults
-	liftAnnex $ writeFsckResults u Nothing
+	liftAnnex $ clearFsckResults u
 	debug [ "Repaired", show u, show ok ]
 
 	return ok
@@ -98,10 +98,10 @@ runRepair u mrmt destructiverepair = do
 			liftIO $ catchBoolIO a
 
 	repair fsckresults referencerepo = do
-		(ok, stillmissing, modifiedbranches) <- inRepo $
-			runRepairOf fsckresults destructiverepair referencerepo
+		(ok, modifiedbranches) <- inRepo $
+			runRepairOf fsckresults trackingOrSyncBranch destructiverepair referencerepo
 		when destructiverepair $
-			repairAnnexBranch stillmissing modifiedbranches
+			repairAnnexBranch modifiedbranches
 		return ok
 	
 	backgroundfsck params = liftIO $ void $ async $ do
@@ -113,23 +113,30 @@ runRepair u mrmt destructiverepair = do
  -
  - However, this could be on a network filesystem. Which is not very safe
  - anyway (the assistant relies on being able to check when files have
- - no writers to know when to commit them). Just in case, when the lock
- - file appears stale, we delay for one minute, and check its size. If
- - the size changed, delay for another minute, and so on. This will at
- - least work to detect is another machine is writing out a new index
- - file, since git does so by writing the new content to index.lock.
+ - no writers to know when to commit them). Also, a few lock-file-ish
+ - things used by git are not kept open, particularly MERGE_HEAD.
+ -
+ - So, just in case, when the lock file appears stale, we delay for one
+ - minute, and check its size. If the size changed, delay for another
+ - minute, and so on. This will at work to detect when another machine
+ - is writing out a new index file, since git does so by writing the
+ - new content to index.lock.
  -
  - Returns true if locks were cleaned up.
  -}
 repairStaleGitLocks :: Git.Repo -> Assistant Bool
 repairStaleGitLocks r = do
-	lockfiles <- filter (not . isInfixOf "gc.pid") 
-		. filter (".lock" `isSuffixOf`)
-		<$> liftIO (findgitfiles r)
+	lockfiles <- liftIO $ filter islock <$> findgitfiles r
 	repairStaleLocks lockfiles
 	return $ not $ null lockfiles
   where
-	findgitfiles = dirContentsRecursiveSkipping (== dropTrailingPathSeparator annexDir) . Git.localGitDir
+	findgitfiles = dirContentsRecursiveSkipping (== dropTrailingPathSeparator annexDir) True . Git.localGitDir
+	islock f
+		| "gc.pid" `isInfixOf` f = False
+		| ".lock" `isSuffixOf` f = True
+		| takeFileName f == "MERGE_HEAD" = True
+		| otherwise = False
+
 repairStaleLocks :: [FilePath] -> Assistant ()
 repairStaleLocks lockfiles = go =<< getsizes
   where

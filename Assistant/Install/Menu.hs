@@ -14,10 +14,10 @@ import Common
 import Utility.FreeDesktop
 
 installMenu :: FilePath -> FilePath -> FilePath -> FilePath -> IO ()
-installMenu command menufile iconsrcdir icondir = do
 #ifdef darwin_HOST_OS
-	return ()
+installMenu _command _menufile _iconsrcdir _icondir = return ()
 #else
+installMenu command menufile iconsrcdir icondir = do
 	writeDesktopMenuFile (fdoDesktopMenu command) menufile
 	installIcon (iconsrcdir </> "logo.svg") $
 		iconFilePath (iconBaseName ++ ".svg") "scalable" icondir

@@ -3,6 +3,9 @@
  - Based on DLists, a transactional list can quickly and efficiently
  - have items inserted at either end, or a whole list appended to it.
  -
+ - Unlike a TQueue, the entire contents of a TList can be efficiently
+ - read without modifying it.
+ -
  - Copyright 2013 Joey Hess <joey@kitenet.net>
  -}
 

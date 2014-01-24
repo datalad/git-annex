@@ -156,7 +156,9 @@ absRepo :: Git.Repo -> Git.Repo -> Annex Git.Repo
 absRepo reference r
 	| Git.repoIsUrl reference = return $ Git.Construct.localToUrl reference r
 	| Git.repoIsUrl r = return r
-	| otherwise = liftIO $ Git.Construct.fromAbsPath =<< absPath (Git.repoPath r)
+	| otherwise = liftIO $ do
+		r' <- Git.Construct.fromAbsPath =<< absPath (Git.repoPath r)
+		flip Annex.eval Annex.gitRepo =<< Annex.new r'
 
 {- Checks if two repos are the same. -}
 same :: Git.Repo -> Git.Repo -> Bool

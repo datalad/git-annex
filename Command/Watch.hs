@@ -32,5 +32,5 @@ start :: Bool -> Bool -> Bool -> Maybe Duration -> CommandStart
 start assistant foreground stopdaemon startdelay = do
 	if stopdaemon
 		then stopDaemon
-		else startDaemon assistant foreground startdelay Nothing Nothing -- does not return
+		else startDaemon assistant foreground startdelay Nothing Nothing Nothing -- does not return
 	stop

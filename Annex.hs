@@ -5,14 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, PackageImports #-}
 
 module Annex (
 	Annex,
 	AnnexState(..),
 	PreferredContentMap,
 	new,
-	newState,
 	run,
 	eval,
 	getState,
@@ -41,6 +40,7 @@ import Control.Concurrent
 import Common
 import qualified Git
 import qualified Git.Config
+import Annex.Direct.Fixup
 import Git.CatFile
 import Git.CheckAttr
 import Git.CheckIgnore
@@ -111,10 +111,10 @@ data AnnexState = AnnexState
 	, useragent :: Maybe String
 	}
 
-newState :: Git.Repo -> AnnexState
-newState gitrepo = AnnexState
-	{ repo = gitrepo
-	, gitconfig = extractGitConfig gitrepo
+newState :: GitConfig -> Git.Repo -> AnnexState
+newState c r = AnnexState
+	{ repo = r
+	, gitconfig = c
 	, backends = []
 	, remotes = []
 	, output = defaultMessageState
@@ -148,7 +148,10 @@ newState gitrepo = AnnexState
 {- Makes an Annex state object for the specified git repo.
  - Ensures the config is read, if it was not already. -}
 new :: Git.Repo -> IO AnnexState
-new = newState <$$> Git.Config.read
+new r = do
+	r' <- Git.Config.read r
+	let c = extractGitConfig r'
+	newState c <$> if annexDirect c then fixupDirect r' else return r'
 
 {- Performs an action in the Annex monad from a starting state,
  - returning a new state. -}

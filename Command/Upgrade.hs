@@ -10,7 +10,6 @@ module Command.Upgrade where
 import Common.Annex
 import Command
 import Upgrade
-import Annex.Version
 
 def :: [Command]
 def = [dontCheck repoExists $ -- because an old version may not seem to exist
@@ -23,6 +22,5 @@ seek = [withNothing start]
 start :: CommandStart
 start = do
 	showStart "upgrade" "."
-	r <- upgrade
-	setVersion defaultVersion
+	r <- upgrade False
 	next $ next $ return r

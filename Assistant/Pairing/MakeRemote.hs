@@ -15,6 +15,7 @@ import Assistant.MakeRemote
 import Assistant.Sync
 import Config.Cost
 import Config
+import qualified Types.Remote as Remote
 
 import Network.Socket
 import qualified Data.Text as T
@@ -46,7 +47,7 @@ finishedLocalPairing msg keypair = do
 			]
 			Nothing
 	r <- liftAnnex $ addRemote $ makeSshRemote sshdata
-	liftAnnex $ setRemoteCost r semiExpensiveRemoteCost
+	liftAnnex $ setRemoteCost (Remote.repo r) semiExpensiveRemoteCost
 	syncRemote r
 
 {- Mostly a straightforward conversion.  Except:

@@ -230,6 +230,7 @@ newFrom l = return Repo
 	, remotes = []
 	, remoteName = Nothing
 	, gitEnv = Nothing
+	, gitGlobalOpts = []
 	}
 
 

@@ -9,7 +9,6 @@ module Remote.Hook (remote) where
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-import System.Environment
 
 import Common.Annex
 import Types.Remote
@@ -23,6 +22,7 @@ import Remote.Helper.Special
 import Remote.Helper.Encryptable
 import Crypto
 import Utility.Metered
+import Utility.Env
 
 type Action = String
 type HookName = String
@@ -59,11 +59,11 @@ gen r u c gc = do
 			repo = r,
 			gitconfig = gc,
 			readonly = False,
-			globallyAvailable = False,
+			availability = GloballyAvailable,
 			remotetype = remote
 		}
   where
-	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc	
+	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc
 
 hookSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
 hookSetup mu c = do
@@ -77,8 +77,7 @@ hookSetup mu c = do
 hookEnv :: Action -> Key -> Maybe FilePath -> IO (Maybe [(String, String)])
 hookEnv action k f = Just <$> mergeenv (fileenv f ++ keyenv)
   where
-	mergeenv l = M.toList . M.union (M.fromList l) 
-		<$> M.fromList <$> getEnvironment
+	mergeenv l = addEntries l <$> getEnvironment
 	env s v = ("ANNEX_" ++ s, v)
 	keyenv = catMaybes
 		[ Just $ env "KEY" (key2file k)

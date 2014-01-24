@@ -1,9 +1,12 @@
 This special remote type lets you store content in a remote of your own
-devising.
+devising, configured via some simple hooks.
 
 It's not recommended to use this remote type when another like [[rsync]]
 or [[directory]] will do. If your hooks are not carefully written, data
-could be lost.
+could be lost. 
+
+If you're building a special remote for others to use,
+instead consider building an [[external_special_remote|external]].
 
 ## example
 
@@ -68,6 +71,9 @@ The settings to use in git config for the hook commands are as follows:
 
 ## combined hook program
 
+This interface is deprecated -- it's better, and not much harder,
+to write an [[external_special_remote|external]]!
+
 Rather than setting all of the above hooks, you can write a single
 program that handles everything, and set a single hook to make it be used.
 
@@ -75,7 +81,7 @@ program that handles everything, and set a single hook to make it be used.
 	# git annex initremote mydemorepo type=hook hooktype=demo encryption=none
 
 The program just needs to look at the `ANNEX_ACTION` environment variable
-to see what it's being asked to do  For example:
+to see what it's being asked to do. For example:
 
 [[!format sh """
 #!/bin/sh

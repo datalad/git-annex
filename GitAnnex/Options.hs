@@ -11,6 +11,7 @@ import System.Console.GetOpt
 
 import Common.Annex
 import qualified Git.Config
+import Git.Types
 import Command
 import Types.TrustLevel
 import qualified Annex
@@ -59,12 +60,14 @@ options = Option.common ++
 		"Trust Amazon Glacier inventory"
 	] ++ Option.matcher
   where
+	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
 	setnumcopies v = maybe noop
 		(\n -> Annex.changeState $ \s -> s { Annex.forcenumcopies = Just n })
 		(readish v)
 	setuseragent v = Annex.changeState $ \s -> s { Annex.useragent = Just v }
-	setgitconfig v = Annex.changeGitRepo =<< inRepo (Git.Config.store v)
-	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
+	setgitconfig v = inRepo (Git.Config.store v)
+		>>= pure . (\r -> r { gitGlobalOpts = gitGlobalOpts r ++ [Param "-c", Param v] })
+		>>= Annex.changeGitRepo
 
 keyOptions :: [Option]
 keyOptions = 

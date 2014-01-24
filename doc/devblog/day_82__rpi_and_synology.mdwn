@@ -1,0 +1,21 @@
+Fixed a few problems in the [[armel build|install/Linux_standalone]], and
+it's been confirmed to work on Raspberry Pi and Synology NAS. Since none of
+the fixes were specific to those platforms, it will probably work anywhere
+the kernel is new enough. That covers 9+% of the 
+[missing ports in the user survey](http://git-annex-survey.branchable.com/polls/2013/missing_ports/)!
+
+Thought through the possible issues with the assistant on Windows not being
+able to use lsof. I've convinced myself it's probably safe. (In fact, it
+might be safe to stop checking with lsof when using the assistant in direct
+mode entirely.) Also did some testing of some specific interesting
+circumstances (including 2 concurrent writers to a single file).
+
+I've been working on adding the webapp to the armel build. This can mostly
+reuse the patches and EvilSplicer developed for Android, but it's taking
+some babysitting of the build to get yesod etc installer for various reasons.
+Will be surprised if I don't get there tomorrow.
+
+One other thing.. I notice that <http://git-annex.org/> is up and running.
+This was set up by Subito, who offered me the domain, but I suggested he
+keep it and set up a pretty start page that points new users at the
+relevant parts of the wiki. I think he's done a good job with that!

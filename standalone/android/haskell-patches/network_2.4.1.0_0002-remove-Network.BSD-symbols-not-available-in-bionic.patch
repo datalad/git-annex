@@ -1,14 +1,14 @@
-From 8456a3b26261212052bad4d1de207504a3f85995 Mon Sep 17 00:00:00 2001
+From 7861b133bb269b50fcf709291449cb0473818902 Mon Sep 17 00:00:00 2001
 From: Joey Hess <joey@kitenet.net>
-Date: Fri, 19 Apr 2013 15:14:10 -0400
+Date: Sun, 29 Dec 2013 21:29:23 +0000
 Subject: [PATCH] remove Network.BSD symbols not available in bionic
 
 ---
- Network/BSD.hsc | 98 ---------------------------------------------------------
+ Network/BSD.hsc |   98 -------------------------------------------------------
  1 file changed, 98 deletions(-)
 
 diff --git a/Network/BSD.hsc b/Network/BSD.hsc
-index c199036..f0c9f5b 100644
+index d6dae85..27910f4 100644
 --- a/Network/BSD.hsc
 +++ b/Network/BSD.hsc
 @@ -30,15 +30,6 @@ module Network.BSD
@@ -54,7 +54,7 @@ index c199036..f0c9f5b 100644
  #endif
      ) where
  
-@@ -305,31 +284,6 @@ getProtocolNumber proto = do
+@@ -303,31 +282,6 @@ getProtocolNumber proto = do
   (ProtocolEntry _ _ num) <- getProtocolByName proto
   return num
  
@@ -86,7 +86,7 @@ index c199036..f0c9f5b 100644
  -- ---------------------------------------------------------------------------
  -- Host lookups
  
-@@ -404,31 +358,6 @@ getHostByAddr family addr = do
+@@ -402,31 +356,6 @@ getHostByAddr family addr = do
  foreign import CALLCONV safe "gethostbyaddr"
     c_gethostbyaddr :: Ptr HostAddress -> CInt -> CInt -> IO (Ptr HostEntry)
  
@@ -118,8 +118,8 @@ index c199036..f0c9f5b 100644
  -- ---------------------------------------------------------------------------
  -- Accessing network information
  
-@@ -490,33 +419,6 @@ getNetworkByAddr addr family = withLock $ do
- foreign import ccall unsafe "getnetbyaddr" 
+@@ -488,33 +417,6 @@ getNetworkByAddr addr family = withLock $ do
+ foreign import ccall unsafe "getnetbyaddr"
     c_getnetbyaddr  :: NetworkAddr -> CInt -> IO (Ptr NetworkEntry)
  
 -getNetworkEntry :: IO NetworkEntry
@@ -153,5 +153,5 @@ index c199036..f0c9f5b 100644
  
  -- Mutex for name service lockdown
 -- 
-1.8.2.rc3
+1.7.10.4
 

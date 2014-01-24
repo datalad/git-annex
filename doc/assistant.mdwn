@@ -1,6 +1,6 @@
 The git-annex assistant creates a synchronised folder on each of your
-OSX and Linux  computers, Android devices, removable drives, and
-cloud services. The contents of the folder are the same everywhere.
+OSX and Linux computers, Android devices, removable drives, NAS appliances,
+and cloud services. The contents of the folder are the same everywhere.
 It's very easy to use, and has all the power of git and git-annex.
 
 ## installation
@@ -33,9 +33,7 @@ instructions.
 
 The git-annex assistant was [crowd funded on
 Kickstarter](http://www.kickstarter.com/projects/joeyh/git-annex-assistant-like-dropbox-but-with-your-own/).
-[[/assistant/Thanks]] to all my backers. This kickstarter is now closed,
-and there is a new home-made crowdfunding project to support the project
-for 2013-2014 [here](https://campaign.joeyh.name/).
+[[/Thanks]] to all my backers.
 
 I blog about my work on git-annex and the assistant on a daily basis
 in [[this_blog|/devblog]]. Follow along!

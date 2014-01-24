@@ -45,15 +45,24 @@ asTopFilePath :: FilePath -> TopFilePath
 asTopFilePath file = TopFilePath file
 
 {- Git may use a different representation of a path when storing
- - it internally. For example, on Windows, git uses '/' to separate paths
- - stored in the repository, despite Windows using '\' -}
+ - it internally. 
+ -
+ - On Windows, git uses '/' to separate paths stored in the repository,
+ - despite Windows using '\'. Also, git on windows dislikes paths starting
+ - with "./" or ".\".
+ -
+ -}
 type InternalGitPath = String
 
 toInternalGitPath :: FilePath -> InternalGitPath
 #ifndef mingw32_HOST_OS
 toInternalGitPath = id
 #else
-toInternalGitPath = replace "\\" "/"
+toInternalGitPath p =
+	let p' = replace "\\" "/" p
+	in if "./" `isPrefixOf` p'
+		then dropWhile (== '/') (drop 1 p')
+		else p'
 #endif
 
 fromInternalGitPath :: InternalGitPath -> FilePath

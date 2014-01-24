@@ -1,0 +1,25 @@
+From cb5252db1a0d515da69d9167a8b2facd839940b2 Mon Sep 17 00:00:00 2001
+From: androidbuilder <androidbuilder@example.com>
+Date: Mon, 11 Nov 2013 02:29:06 +0000
+Subject: [PATCH] fix build with new ghc
+
+---
+ src/Language/JavaScript/Parser/Lexer.hs |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/src/Language/JavaScript/Parser/Lexer.hs b/src/Language/JavaScript/Parser/Lexer.hs
+index 79fa9c5..fa96e29 100644
+--- a/src/Language/JavaScript/Parser/Lexer.hs
++++ b/src/Language/JavaScript/Parser/Lexer.hs
+@@ -712,7 +712,7 @@ alex_scan_tkn user orig_input len input s last_acc =
+ 		(offset) = (base +# ord_c)
+ 		(check)  = alexIndexInt16OffAddr alex_check offset
+ 		
+-		(new_s) = if (offset >=# 0#) && (check ==# ord_c)
++		(new_s) = if (tagToEnum# (offset >=# 0#)) && (tagToEnum# (check ==# ord_c))
+ 			  then alexIndexInt16OffAddr alex_table offset
+ 			  else alexIndexInt16OffAddr alex_deflt s
+ 	in
+-- 
+1.7.10.4
+

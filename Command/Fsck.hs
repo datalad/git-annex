@@ -38,7 +38,7 @@ import GitAnnex.Options hiding (fromOption)
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
 #else
-import System.Random (getStdRandom, random)
+import System.Win32.Process.Current (getCurrentProcessId)
 #endif
 import Data.Time.Clock.POSIX
 import Data.Time
@@ -154,7 +154,7 @@ performRemote key file backend numcopies remote =
 #ifndef mingw32_HOST_OS
 		v <- liftIO getProcessID
 #else
-		v <- liftIO (getStdRandom random :: IO Int)
+		v <- liftIO getCurrentProcessId
 #endif
 		t <- fromRepo gitAnnexTmpDir
 		createAnnexDirectory t
@@ -218,9 +218,10 @@ verifyLocationLog key desc = do
 	
 	{- Since we're checking that a key's file is present, throw
 	 - in a permission fixup here too. -}
-	when (present && not direct) $ do
-		file <- calcRepo $ gitAnnexLocation key
+	file <- calcRepo $ gitAnnexLocation key
+	when (present && not direct) $
 		freezeContent file
+	whenM (liftIO $ doesDirectoryExist $ parentDir file) $
 		freezeContentDir file
 
 	{- In direct mode, modified files will show up as not present,
@@ -235,7 +236,7 @@ verifyLocationLogRemote key desc remote present =
 		(Remote.logStatus remote key)
 
 verifyLocationLog' :: Key -> String -> Bool -> UUID -> (LogStatus -> Annex ()) -> Annex Bool
-verifyLocationLog' key desc present u bad = do
+verifyLocationLog' key desc present u updatestatus = do
 	uuids <- Remote.keyLocations key
 	case (present, u `elem` uuids) of
 		(True, False) -> do
@@ -253,7 +254,7 @@ verifyLocationLog' key desc present u bad = do
   where
 	fix s = do
 		showNote "fixing location log"
-		bad s
+		updatestatus s
 
 {- Ensures the direct mode mapping file is consistent. Each file
  - it lists for the key should exist, and the specified file should be

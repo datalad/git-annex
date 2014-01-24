@@ -23,10 +23,11 @@ import Annex.Perms
 import Annex.Link
 import qualified Annex
 import qualified Annex.Queue
+#ifdef WITH_CLIBS
 #ifndef __ANDROID__
 import Utility.Touch
 #endif
-import Utility.FileMode
+#endif
 import Config
 import Utility.InodeCache
 import Annex.FileMatcher
@@ -86,11 +87,6 @@ start file = ifAnnexed file addpresent add
  - So a KeySource is returned. Its inodeCache can be used to detect any
  - changes that might be made to the file after it was locked down.
  -
- - In indirect mode, the write bit is removed from the file as part of lock
- - down to guard against further writes, and because objects in the annex
- - have their write bit disabled anyway. This is not done in direct mode,
- - because files there need to remain writable at all times.
- -
  - When possible, the file is hard linked to a temp directory. This guards
  - against some changes, like deletion or overwrite of the file, and
  - allows lsof checks to be done more efficiently when adding a lot of files.
@@ -103,16 +99,28 @@ lockDown file = ifM crippledFileSystem
 	, do
 		tmp <- fromRepo gitAnnexTmpDir
 		createAnnexDirectory tmp
-		unlessM isDirect $ 
-			void $ liftIO $ tryIO $ preventWrite file
-		liftIO $ catchMaybeIO $ do
+		eitherToMaybe <$> tryAnnexIO (go tmp)
+	)
+  where
+	{- In indirect mode, the write bit is removed from the file as part
+	 - of lock down to guard against further writes, and because objects
+	 - in the annex have their write bit disabled anyway.
+	 -
+	 - Freezing the content early also lets us fail early when
+	 - someone else owns the file.
+	 -
+	 - This is not done in direct mode, because files there need to
+	 - remain writable at all times.
+	-}
+  	go tmp = do
+		unlessM isDirect $
+			freezeContent file
+		liftIO $ do
 			(tmpfile, h) <- openTempFile tmp $
 				relatedTemplate $ takeFileName file
 			hClose h
 			nukeFile tmpfile
 			withhardlink tmpfile `catchIO` const nohardlink
-	)
-  where
   	nohardlink = do
 		cache <- genInodeCache file
 		return KeySource
@@ -205,12 +213,14 @@ link file key mcache = flip catchAnnex (undo file key) $ do
 	l <- inRepo $ gitAnnexLink file key
 	replaceFile file $ makeAnnexLink l
 
+#ifdef WITH_CLIBS
 #ifndef __ANDROID__
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
 	case mcache of
 		Just c -> liftIO $ touch file (TimeSpec $ inodeCacheToMtime c) False
 		Nothing -> noop
+#endif
 #endif
 
 	return l
@@ -240,12 +250,12 @@ addLink file key mcache = ifM (coreSymlinks <$> Annex.getGitConfig)
 
 cleanup :: FilePath -> Key -> Maybe InodeCache -> Bool -> CommandCleanup
 cleanup file key mcache hascontent = do
-	when hascontent $
-		logStatus key InfoPresent
 	ifM (isDirect <&&> pure hascontent)
 		( do
 			l <- inRepo $ gitAnnexLink file key
 			stageSymlink file =<< hashSymlink l
 		, addLink file key mcache
 		)
+	when hascontent $
+		logStatus key InfoPresent
 	return True

@@ -1,6 +1,6 @@
 {- git-annex assistant webapp control
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -10,15 +10,22 @@
 module Assistant.WebApp.Control where
 
 import Assistant.WebApp.Common
-import Config.Files
-import Utility.LogFile
 import Assistant.DaemonStatus
 import Assistant.Alert
 import Assistant.TransferSlots
+import Assistant.Restart
+import Utility.LogFile
+import Utility.NotificationBroadcaster
 
 import Control.Concurrent
-import System.Posix (getProcessID, signalProcess, sigTERM)
 import qualified Data.Map as M
+import qualified Data.Text as T
+#ifndef mingw32_HOST_OS
+import System.Posix (getProcessID, signalProcess, sigTERM)
+#else
+import System.Win32.Process.Current (getCurrentProcessId)
+import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT)
+#endif
 
 getShutdownR :: Handler Html
 getShutdownR = page "Shutdown" Nothing $
@@ -36,26 +43,36 @@ getShutdownConfirmedR = do
 		 - the transfer processes). -}
 		ts <- M.keys . currentTransfers <$> getDaemonStatus
 		mapM_ pauseTransfer ts
-	page "Shutdown" Nothing $ do
-		{- Wait 2 seconds before shutting down, to give the web
-		 - page time to load in the browser. -}
-		void $ liftIO $ forkIO $ do
-			threadDelay 2000000
-			signalProcess sigTERM =<< getProcessID
-		$(widgetFile "control/shutdownconfirmed")
-
-{- Quite a hack, and doesn't redirect the browser window. -}
-getRestartR :: Handler Html
-getRestartR = page "Restarting" Nothing $ do
+	webapp <- getYesod
+	let url = T.unpack $ yesodRender webapp (T.pack "") NotRunningR []
+	{- Signal any other web browsers. -}
+	liftAssistant $ do
+		modifyDaemonStatus_ $ \status -> status { globalRedirUrl = Just url }
+		liftIO . sendNotification . globalRedirNotifier =<< getDaemonStatus
+	{- Wait 2 seconds before shutting down, to give the web
+	 - page time to load in the browser. -}
 	void $ liftIO $ forkIO $ do
 		threadDelay 2000000
-		program <- readProgramFile
-		unlessM (boolSystem "sh" [Param "-c", Param $ restartcommand program]) $
-			error "restart failed"
-	$(widgetFile "control/restarting")
-  where
-	restartcommand program = program ++ " assistant --stop; exec " ++
-		program ++ " webapp"
+#ifndef mingw32_HOST_OS
+		signalProcess sigTERM =<< getProcessID
+#else
+		generateConsoleCtrlEvent cTRL_C_EVENT =<< getCurrentProcessId
+#endif
+	redirect NotRunningR
+
+{- Use a custom page to avoid putting long polling elements on it that will 
+ - fail and cause the web browser to show an error once the webapp is
+ - truely stopped. -}
+getNotRunningR :: Handler Html
+getNotRunningR = customPage' False Nothing $
+	$(widgetFile "control/notrunning")
+
+getRestartR :: Handler Html
+getRestartR = do
+	liftAssistant prepRestart
+	url <- liftAssistant runRestart
+	liftAssistant $ postRestart url
+	redirect url
 
 getRestartThreadR :: ThreadName -> Handler ()
 getRestartThreadR name = do
@@ -67,5 +84,5 @@ getLogR :: Handler Html
 getLogR = page "Logs" Nothing $ do
 	logfile <- liftAnnex $ fromRepo gitAnnexLogFile
 	logs <- liftIO $ listLogs logfile
-	logcontent <- liftIO $ concat <$> mapM readFile logs
+	logcontent <- liftIO $ concat <$> mapM readFileStrictAnyEncoding logs
 	$(widgetFile "control/log")

@@ -53,7 +53,7 @@ quite a lot.
   * [unix-compat](http://hackage.haskell.org/package/unix-compat)
   * [MonadCatchIO-transformers](http://hackage.haskell.org/package/MonadCatchIO-transformers)
 * Shell commands
-  * [git](http://git-scm.com/)
+  * [git](http://git-scm.com/) (1.7.2 or newer; 1.8.5 recommended)
   * [xargs](http://savannah.gnu.org/projects/findutils/)
   * [rsync](http://rsync.samba.org/)
   * [curl](http://http://curl.haxx.se/) (optional, but recommended)
@@ -64,6 +64,8 @@ quite a lot.
   * [lsof](ftp://lsof.itap.purdue.edu/pub/tools/unix/lsof/)
     (optional; recommended for watch mode)
   * [gcrypt](https://github.com/joeyh/git-remote-gcrypt)
+    (optional)
+  * [nocache](https://github.com/Feh/nocache)
     (optional)
   * multicast DNS support, provided on linux by [nss-mdns](http://www.0pointer.de/lennart/projects/nss-mdns/)
     (optional; recommended for the assistant to support pairing well)

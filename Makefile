@@ -1,9 +1,11 @@
 mans=git-annex.1 git-annex-shell.1
 all=git-annex $(mans) docs
 
-GHC?=ghc
-PREFIX?=/usr
 CABAL?=cabal # set to "./Setup" if you lack a cabal program
+GHC?=ghc
+
+PREFIX?=/usr
+SHAREDIR?=share
 
 # Am I typing :make in vim? Do a fast build.
 ifdef VIM
@@ -30,21 +32,17 @@ git-annex-shell.1: doc/git-annex-shell.mdwn
 # These are not built normally.
 git-union-merge.1: doc/git-union-merge.mdwn
 	./Build/mdwn2man git-union-merge 1 doc/git-union-merge.mdwn > git-union-merge.1
-git-recover-repository.1: doc/git-recover-repository.mdwn
-	./Build/mdwn2man git-recover-repository 1 doc/git-recover-repository.mdwn > git-recover-repository.1
 git-union-merge:
-	$(GHC) --make -threaded $@
-git-recover-repository:
 	$(GHC) --make -threaded $@
 
 install-mans: $(mans)
-	install -d $(DESTDIR)$(PREFIX)/share/man/man1
-	install -m 0644 $(mans) $(DESTDIR)$(PREFIX)/share/man/man1
+	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
+	install -m 0644 $(mans) $(DESTDIR)$(PREFIX)/$(SHAREDIR)/man/man1
 
 install-docs: docs install-mans
-	install -d $(DESTDIR)$(PREFIX)/share/doc/git-annex
+	install -d $(DESTDIR)$(PREFIX)/$(SHAREDIR)/doc/git-annex
 	if [ -d html ]; then \
-		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/share/doc/git-annex/html/; \
+		rsync -a --delete html/ $(DESTDIR)$(PREFIX)/$(SHAREDIR)/doc/git-annex/html/; \
 	fi
 
 install: build install-docs Build/InstallDesktopFile
@@ -81,19 +79,21 @@ clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
-		Build/Standalone Build/OSXMkLibs \
-		git-union-merge git-recover-repository
-	find -name \*.o -exec rm {} \;
-	find -name \*.hi -exec rm {} \;
+		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs Build/DistributionUpdate \
+		git-union-merge
+	find . -name \*.o -exec rm {} \;
+	find . -name \*.hi -exec rm {} \;
 
 Build/InstallDesktopFile: Build/InstallDesktopFile.hs
-	$(GHC) --make $@
+	$(GHC) --make $@ -Wall
 Build/EvilSplicer: Build/EvilSplicer.hs
-	$(GHC) --make $@
+	$(GHC) --make $@ -Wall
 Build/Standalone: Build/Standalone.hs Build/SysConfig.hs
-	$(GHC) --make $@
+	$(GHC) --make $@ -Wall
 Build/OSXMkLibs: Build/OSXMkLibs.hs
-	$(GHC) --make $@
+	$(GHC) --make $@ -Wall
+Build/LinuxMkLibs: Build/LinuxMkLibs.hs
+	$(GHC) --make $@ -Wall
 
 sdist: clean $(mans)
 	./Build/make-sdist.sh
@@ -103,15 +103,15 @@ hackage: sdist
 	@cabal upload dist/*.tar.gz
 
 LINUXSTANDALONE_DEST=tmp/git-annex.linux
-linuxstandalone: Build/Standalone
-	$(MAKE) git-annex
-
+linuxstandalone:
+	$(MAKE) git-annex linuxstandalone-nobuild
+linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	rm -rf "$(LINUXSTANDALONE_DEST)"
 	mkdir -p tmp
-	cp -R standalone/linux "$(LINUXSTANDALONE_DEST)"
-
+	cp -R standalone/linux/skel "$(LINUXSTANDALONE_DEST)"
+	
 	install -d "$(LINUXSTANDALONE_DEST)/bin"
-	cp git-annex "$(LINUXSTANDALONE_DEST)/bin/"
+	cp dist/build/git-annex/git-annex "$(LINUXSTANDALONE_DEST)/bin/"
 	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
@@ -123,20 +123,12 @@ linuxstandalone: Build/Standalone
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(LINUXSTANDALONE_DEST)"/git-core && tar x)
 	install -d "$(LINUXSTANDALONE_DEST)/templates"
 	
-	touch "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
-	for lib in $$(ldd "$(LINUXSTANDALONE_DEST)"/bin/* $$(find "$(LINUXSTANDALONE_DEST)"/git-core/ -type f) | grep -v -f standalone/linux/glibc-libs | grep -v "not a dynamic executable" | egrep '^	' | sed 's/^\t//' | sed 's/.*=> //' | cut -d ' ' -f 1 | sort | uniq); do \
-		dir=$$(dirname "$$lib"); \
-		install -d "$(LINUXSTANDALONE_DEST)/$$dir"; \
-		echo "$$dir" >> "$(LINUXSTANDALONE_DEST)/libdirs.tmp"; \
-		cp "$$lib" "$(LINUXSTANDALONE_DEST)/$$dir"; \
-		if [ -L "$lib" ]; then \
-			link=$$(readlink -f "$$lib"); \
-			cp "$$link" "$(LINUXSTANDALONE_DEST)/$$(dirname "$$link")"; \
-		fi; \
-	done
-	sort "$(LINUXSTANDALONE_DEST)/libdirs.tmp" | uniq > "$(LINUXSTANDALONE_DEST)/libdirs"
-	rm -f "$(LINUXSTANDALONE_DEST)/libdirs.tmp"
+	./Build/LinuxMkLibs "$(LINUXSTANDALONE_DEST)"
+	
+	$(MAKE) install-mans DESTDIR="$(LINUXSTANDALONE_DEST)"
 
+	cd tmp/git-annex.linux && find . -type f > git-annex.MANIFEST
+	cd tmp/git-annex.linux && find . -type l >> git-annex.MANIFEST
 	cd tmp && tar czf git-annex-standalone-$(shell dpkg --print-architecture).tar.gz git-annex.linux
 
 OSXAPP_DEST=tmp/build-dmg/git-annex.app
@@ -160,23 +152,54 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	(cd "$(shell git --exec-path)" && tar c .) | (cd "$(OSXAPP_BASE)" && tar x)
 	install -d "$(OSXAPP_BASE)/templates"
 
-	./Build/OSXMkLibs $(OSXAPP_BASE)
-	rm -f tmp/git-annex.dmg
-	hdiutil create -size 640m -format UDRW -srcfolder tmp/build-dmg \
-		-volname git-annex -o tmp/git-annex.dmg
-	rm -f tmp/git-annex.dmg.bz2
-	bzip2 --fast tmp/git-annex.dmg
+	# OSX looks in man dir nearby the bin
+	$(MAKE) install-mans DESTDIR="$(OSXAPP_BASE)/.." SHAREDIR="" PREFIX=""
 
-ANDROID_FLAGS?=-f-XMPP
+	./Build/OSXMkLibs $(OSXAPP_BASE)
+	cd $(OSXAPP_DEST) && find . -type f > Contents/MacOS/git-annex.MANIFEST
+	cd $(OSXAPP_DEST) && find . -type l >> Contents/MacOS/git-annex.MANIFEST
+	rm -f tmp/git-annex.dmg
+	hdiutil create -format UDBZ -size 640m -srcfolder tmp/build-dmg \
+		-volname git-annex -o tmp/git-annex.dmg
+
+# Must be run on a system with TH supported, and the same
+# versions of TH splice generating packages as the arm system installed.
+no-th-webapp-stage1: Build/EvilSplicer
+	echo "Running throwaway build, to get TH splices.."
+	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f-Production -O0;  fi
+	mkdir -p tmp
+	if ! $(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices; then tail tmp/dump-splices >&2; exit 1; fi
+	echo "Setting up no-th build tree.."
+	./Build/EvilSplicer tmp/splices tmp/dump-splices standalone/no-th/evilsplicer-headers.hs
+	rsync -az --exclude tmp --exclude dist . tmp/no-th-tree
+# Copy the files with expanded splices to the source tree, but
+# only if the existing source file is not newer. (So, if a file
+# used to have TH splices but they were removed, it will be newer,
+# and not overwritten.)
+	cp -uR tmp/splices/* tmp/no-th-tree || true
+# Some additional dependencies needed by the expanded splices.
+	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, /' tmp/no-th-tree/git-annex.cabal
+# Avoid warnings due to sometimes unused imports added for the splices.
+	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/no-th-tree/git-annex.cabal
+
+# Run on the arm system, after stage1
+no-th-webapp-stage2: 
+	if [ ! -e tmp/no-th-tree/dist/setup-config ]; then \
+		cd tmp/no-th-tree && cabal configure; \
+	fi
+	cd tmp/no-th-tree && cabal build --ghc-option=-D__NO_TH__
+	cd tmp/no-th-tree && $(MAKE) linuxstandalone-nobuild
+
+ANDROID_FLAGS?=
 # Cross compile for Android.
 # Uses https://github.com/neurocyte/ghc-android
 android: Build/EvilSplicer
 	echo "Running native build, to get TH splices.."
-	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f-Production -O0 $(ANDROID_FLAGS);  fi
+	if [ ! -e dist/setup/setup ]; then $(CABAL) configure -f-Production -O0 $(ANDROID_FLAGS) -fAndroidSplice;  fi
 	mkdir -p tmp
 	if ! $(CABAL) build --ghc-options=-ddump-splices 2> tmp/dump-splices; then tail tmp/dump-splices >&2; exit 1; fi
 	echo "Setting up Android build tree.."
-	./Build/EvilSplicer tmp/splices tmp/dump-splices standalone/android/evilsplicer-headers.hs
+	./Build/EvilSplicer tmp/splices tmp/dump-splices standalone/no-th/evilsplicer-headers.hs
 	rsync -az --exclude tmp --exclude dist . tmp/androidtree
 # Copy the files with expanded splices to the source tree, but
 # only if the existing source file is not newer. (So, if a file
@@ -189,14 +212,16 @@ android: Build/EvilSplicer
 	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/androidtree/git-annex.cabal
 # Cabal cannot cross compile with custom build type, so workaround.
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
-	if [ ! -e tmp/androidtree/dist/setup/setup ]; then \
-		cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
+# Build just once, but link twice, for 2 different versions of Android.
+	mkdir -p tmp/androidtree/dist/build/git-annex/4.0 tmp/androidtree/dist/build/git-annex/4.3
+	if [ ! -e tmp/androidtree/dist/setup-config ]; then \
+		cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal configure -fAndroid $(ANDROID_FLAGS); \
 	fi
-	cd tmp/androidtree && $$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin/cabal build
-
-adb:
-	ANDROID_FLAGS="-Production" $(MAKE) android
-	adb push tmp/androidtree/dist/build/git-annex/git-annex /data/data/ga.androidterm/bin/git-annex
+	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
+		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.0/git-annex
+	cd tmp/androidtree && $$HOME/.ghc/$(shell cat standalone/android/abiversion)/arm-linux-androideabi/bin/cabal build \
+		--ghc-options=-optl-z --ghc-options=-optlnocopyreloc \
+		&& mv dist/build/git-annex/git-annex dist/build/git-annex/4.3/git-annex
 
 androidapp:
 	$(MAKE) android
@@ -220,5 +245,10 @@ dist/caballog: git-annex.cabal
 hdevtools:
 	hdevtools --stop-server || true
 	hdevtools check git-annex.hs -g -cpp -g -i -g -idist/build/git-annex/git-annex-tmp -g -i. -g -idist/build/autogen -g -Idist/build/autogen -g -Idist/build/git-annex/git-annex-tmp -g -IUtility -g -DWITH_TESTSUITE -g -DWITH_S3 -g -DWITH_ASSISTANT -g -DWITH_INOTIFY -g -DWITH_DBUS -g -DWITH_PAIRING -g -DWITH_XMPP -g -optP-include -g -optPdist/build/autogen/cabal_macros.h -g -odir -g dist/build/git-annex/git-annex-tmp -g -hidir -g dist/build/git-annex/git-annex-tmp -g -stubdir -g dist/build/git-annex/git-annex-tmp -g -threaded -g -Wall -g -XHaskell98 -g -XPackageImports
+
+distributionupdate:
+	git pull
+	ghc --make Build/DistributionUpdate
+	./Build/DistributionUpdate
 
 .PHONY: git-annex git-union-merge git-recover-repository tags build-stamp

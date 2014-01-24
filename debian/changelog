@@ -1,3 +1,244 @@
+git-annex (5.20140117) unstable; urgency=medium
+
+  * Really fix FTBFS on mipsel and sparc due to test suite not being available
+    on those architectures.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 17 Jan 2014 14:46:27 -0400
+
+git-annex (5.20140116) unstable; urgency=medium
+
+  * Added tahoe special remote.
+  * external special remote protocol: Added GETGITDIR, and GETAVAILABILITY.
+  * Refuse to build with git older than 1.7.1.1, which is needed for
+    git checkout -B
+  * map: Fix display of v5 direct mode repos.
+  * repair: Support old git versions from before git fsck --no-dangling was
+    implemented.
+  * Fix a long-standing bug that could cause the wrong index file to be used
+    when committing to the git-annex branch, if GIT_INDEX_FILE is set in the
+    environment. This typically resulted in git-annex branch log files being
+    committed to the master branch and later showing up in the work tree.
+    (These log files can be safely removed.)
+  * assistant: Detect if .git/annex/index is corrupt at startup, and
+    recover.
+  * repair: Fix bug in packed refs file exploding code that caused a .gitrefs
+    directory to be created instead of .git/refs
+  * Fix FTBFS on mipsel and sparc due to test suite not being available
+    on those architectures.
+  * Android: Avoid passing --clobber to busybox wget.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 16 Jan 2014 11:34:54 -0400
+
+git-annex (5.20140107) unstable; urgency=medium
+
+  * mirror: Support --all (and --unused).
+  * external special remote protocol: Added GETUUID, GETWANTED, SETWANTED,
+    SETSTATE, GETSTATE, DEBUG.
+  * Windows: Fix bug in direct mode merge code that could cause files
+    in subdirectories to go missing.
+  * Windows: Avoid eating stdin when running ssh to add a authorized key,
+    since this is used for password prompting.
+  * Avoid looping if long-running git cat-file or git hash-object crashes
+    and keeps crashing when restarted.
+  * Assistant: Remove stale MERGE_HEAD files in lockfile cleanup.
+  * Remotes can now be made read-only, by setting remote.<name>.annex-readonly
+  * wanted, schedule: Avoid printing "ok" after requested value.
+  * assistant: Ensure that .ssh/config and .ssh/authorized_keys are not
+    group or world writable when writing to those files, as that can make
+    ssh refuse to use them, if it allows another user to write to them.
+  * addurl, importfeed: Honor annex.diskreserve as long as the size of the
+    url can be checked.
+  * add: Fix rollback when disk is completely full.
+  * assistant: Fixed several minor memory leaks that manifested when
+    adding a large number of files.
+  * assistant: Start a new git-annex transferkeys process
+    after a network connection change, so that remotes that use a persistent
+    network connection are restarted.
+  * Adjust Debian build deps to match current state of sparc, mipsel.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 07 Jan 2014 12:22:18 -0400
+
+git-annex (5.20131230) unstable; urgency=medium
+
+  * Added new external special remote interface.
+  * importfeed: Support youtube playlists.
+  * Add tasty to build-depends, so that test suite builds again.
+    (tasty was stuck in incoming.)
+  * Fix typo in test suite.
+  * Fix bug in Linux standalone build's shimming that broke git-annex-shell.
+  * Include git-receive-pack, git-upload-pack, git, and git-shell wrappers
+    in the Linux standalone build, and OSX app, so they will be available
+    when it's added to PATH.
+  * addurl, importfeed: Sanitize | and some other symbols and special
+    characters.
+  * Auto-upgrade v3 indirect repos to v5 with no changes.
+    This also fixes a problem when a direct mode repo was somehow set to v3
+    rather than v4, and so the automatic direct mode upgrade to v5 was not
+    done.
+  * Android: Avoid trying to use Android's own ionice, which does not
+    allow specifying a command to run. Fixes transferring files to/from
+    android and probably a few other things.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 30 Dec 2013 14:13:40 -0400
+
+git-annex (5.20131221) unstable; urgency=low
+
+  * assistant: Fix OSX-specific bug that caused the startup scan to try to
+    follow symlinks to other directories, and add their contents to the annex.
+  * assistant: Set StrictHostKeyChecking yes when creating ssh remotes,
+    and add it to the configuration for any ssh remotes previously created
+    by the assistant. This avoids repeated prompts by ssh if the host key
+    changes, instead syncing with such a remote will fail. Closes: #732602
+  * Fix test suite to cover lock --force change.
+  * Add plumbing-level lookupkey and examinekey commands.
+  * find --format: Added hashdirlower, hashdirmixed, keyname, and mtime
+    format variables.
+  * assistant: Always batch changes found in startup scan.
+  * An armel Linux standalone build is now available, which includes the
+    webapp.
+  * Programs from Linux and OSX standalone builds can now be symlinked
+    into a directory in PATH as an alternative installation method, and will
+    use readlink to find where the build was unpacked.
+  * Include man pages in Linux and OSX standalone builds.
+  * Linux standalone build now includes its own glibc and forces the linker to
+    use it, to remove dependence on the host glibc.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 21 Dec 2013 12:00:17 -0400
+
+git-annex (5.20131213) unstable; urgency=low
+
+  * Avoid using git commit in direct mode, since in some situations
+    it will read the full contents of files in the tree.
+  * assistant: Batch jobs are now run with ionice and nocache, when
+    those commands are available.
+  * assistant: Run transferkeys as batch jobs.
+  * Automatically fix up bad bare repositories created by
+    versions 5.20131118 through 5.20131127.
+  * rsync special remote: Fix fallback mode for rsync remotes that
+    use hashDirMixed. Closes: #731142
+  * copy --from, get --from: When --force is used, ignore the
+    location log and always try to get the file from the remote.
+  * Deal with box.com changing the url of their webdav endpoint.
+  * Android: Fix SRV record lookups for XMPP to use android getprop
+    command to find DNS server, since there is no resolv.conf.
+  * import: Add --skip-duplicates option.
+  * lock: Require --force. Closes: #731606
+  * import: better handling of overwriting an existing file/directory/broken
+    link when importing
+  * Windows: assistant and webapp work! (very experimental)
+  * Windows: Support annex.diskreserve.
+  * Fix bad behavior in Firefox, which was caused by an earlier fix to
+    bad behavior in Chromium.
+  * repair: Improve repair of git-annex index file.
+  * repair: Remove damaged git-annex sync branches.
+  * status: Ignore new files that are gitignored.
+  * Fix direct mode's handling when modifications to non-annexed files
+    are pulled from a remote. A bug prevented the files from being updated
+    in the work tree, and this caused the modification to be reverted.
+  * OSX: Remove ssh and ssh-keygen from dmg as they're included in OSX by
+    default.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 13 Dec 2013 14:20:32 -0400
+
+git-annex (5.20131130) unstable; urgency=low
+
+  * init: Fix a bug that caused git annex init, when run in a bare
+    repository, to set core.bare=false.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 30 Nov 2013 16:32:35 -0400
+
+git-annex (5.20131127.1) unstable; urgency=low
+
+  * Rebuild that does not try to use quvi 0.9 from experimental.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 28 Nov 2013 07:57:36 -0400
+
+git-annex (5.20131127) unstable; urgency=low
+
+  * webapp: Detect when upgrades are available, and upgrade if the user
+    desires.
+    (Only when git-annex is installed using the prebuilt binaries
+    from git-annex upstream, not from eg Debian.)
+  * assistant: Detect when the git-annex binary is modified or replaced,
+    and either prompt the user to restart the program, or automatically
+    restart it.
+  * annex.autoupgrade configures both the above upgrade behaviors.
+  * Added support for quvi 0.9. Slightly suboptimal due to limitations in its
+    interface compared with the old version.
+  * Bug fix: annex.version did not get set on automatic upgrade to v5 direct
+    mode repo, so the upgrade was performed repeatedly, slowing commands down.
+  * webapp: Fix bug that broke switching between local repositories
+    that use the new guarded direct mode.
+  * Android: Fix stripping of the git-annex binary.
+  * Android: Make terminal app show git-annex version number.
+  * Android: Re-enable XMPP support.
+  * reinject: Allow to be used in direct mode.
+  * Futher improvements to git repo repair. Has now been tested in tens
+    of thousands of intentionally damaged repos, and successfully
+    repaired them all.
+  * Allow use of --unused in bare repository.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 27 Nov 2013 18:41:44 -0400
+
+git-annex (5.20131120) unstable; urgency=low
+
+  * Fix Debian package to not try to run test suite, since haskell-tasty
+    is not out of new or in Build-Depends yet.
+  * dropunused, addunused: Allow "all" instead of a range to
+    act on all unused data.
+  * Ensure execute bit is set on directories when core.sharedrepository is set.
+  * Ensure that core.sharedrepository is honored when creating the .git/annex
+    directory.
+  * Improve repair code in the case where the index file is corrupt,
+    and this hides other problems from git fsck.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 20 Nov 2013 12:54:18 -0400
+
+git-annex (5.20131118) unstable; urgency=low
+
+  * Direct mode repositories now have core.bare=true set, to prevent
+    accidentally running git commands that try to operate on the work tree,
+    and so do the wrong thing in direct mode.
+  * annex.version is now set to 5 for direct mode repositories.
+    This upgrade is handled fully automatically, no need to run
+    git annex upgrade
+  * The "status" command has been renamed to "info", to allow
+    "git annex status" to be used in direct mode repositories, now that
+    "git status" won't work in them.
+  * The -c option now not only modifies the git configuration seen by
+    git-annex, but it is passed along to every git command git-annex runs.
+  * watcher: Avoid loop when adding a file owned by someone else fails
+    in indirect mode because its permissions cannot be modified.
+  * webapp: Avoid encoding problems when displaying the daemon log file.
+  * webapp: Improve UI around remote that have no annex.uuid set,
+    either because setup of them is incomplete, or because the remote
+    git repository is not a git-annex repository.
+  * Include ssh-keygen in standalone bundle.
+  * Allow optionally configuring git-annex with -fEKG to enable awesome
+    remote monitoring interfaceat http://localhost:4242/
+  * Fix bug that caused bad information to be written to the git-annex branch
+    when running describe or other commands with a remote that has no uuid.
+  * Work around Android linker problem that had prevented git-annex from
+    running on Android 4.3 and 4.4.
+  * repair: Handle case where index file is corrupt, but all objects are ok.
+  * assistant: Notice on startup when the index file is corrupt, and
+    auto-repair.
+  * Fix direct mode merge bug when a direct mode file was deleted and replaced
+    with a directory. An ordering problem caused the directory to not get
+    created in this case.
+    Thanks to Tim for the test case.
+  * Direct mode .git/annex/objects directories are no longer left writable,
+    because that allowed writing to symlinks of files that are not present,
+    which followed the link and put bad content in an object location.
+    Thanks to Tim for the test case.
+  * fsck: Fix up .git/annex/object directory permissions.
+  * Switched to the tasty test framework.
+  * Android: Adjust default .gitignore to ignore .thumbnails at any location
+    in the tree, not just at its top.
+  * webapp: Check annex.version.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 18 Nov 2013 10:45:43 -0400
+
 git-annex (4.20131106~bpo70+1) wheezy-backports; urgency=low
 
   * Backport is now built against git 1.8.4, also now available in backports.

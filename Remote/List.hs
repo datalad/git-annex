@@ -18,6 +18,7 @@ import Types.Remote
 import Types.GitConfig
 import Annex.UUID
 import Remote.Helper.Hooks
+import Remote.Helper.ReadOnly
 import qualified Git
 import qualified Git.Config
 
@@ -33,8 +34,12 @@ import qualified Remote.Web
 #ifdef WITH_WEBDAV
 import qualified Remote.WebDAV
 #endif
+#ifdef WITH_TAHOE
+import qualified Remote.Tahoe
+#endif
 import qualified Remote.Glacier
 import qualified Remote.Hook
+import qualified Remote.External
 
 remoteTypes :: [RemoteType]
 remoteTypes =
@@ -50,8 +55,12 @@ remoteTypes =
 #ifdef WITH_WEBDAV
 	, Remote.WebDAV.remote
 #endif
+#ifdef WITH_TAHOE
+	, Remote.Tahoe.remote
+#endif
 	, Remote.Glacier.remote
 	, Remote.Hook.remote
+	, Remote.External.remote
 	]
 
 {- Builds a list of all available Remotes.
@@ -87,7 +96,7 @@ remoteGen m t r = do
 	let gc = extractRemoteGitConfig g (Git.repoDescribe r)
 	let c = fromMaybe M.empty $ M.lookup u m
 	mrmt <- generate t r u c gc
-	return $ addHooks <$> mrmt
+	return $ adjustReadOnly . addHooks <$> mrmt
 
 {- Updates a local git Remote, re-reading its git config. -}
 updateRemote :: Remote -> Annex (Maybe Remote)

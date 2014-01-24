@@ -35,12 +35,14 @@ patched () {
 	git config user.email dummy@example.com
 	git add .
 	git commit -m "pre-patched state of $pkg"
-	for patch in ../../haskell-patches/${pkg}_*; do
-		echo trying $patch
-		if ! patch -p1 < $patch; then
-			echo "failed to apply $patch"
-			echo "please resolve this, replace the patch with a new version, and exit the subshell to continue"
-			$SHELL
+	for patch in ../../haskell-patches/${pkg}_* ../../../no-th/haskell-patches/${pkg}_*; do
+		if [ -e "$patch" ]; then
+			echo trying $patch
+			if ! patch -p1 < $patch; then
+				echo "failed to apply $patch"
+				echo "please resolve this, replace the patch with a new version, and exit the subshell to continue"
+				$SHELL
+			fi
 		fi
 	done
 	cabalinstall "$@"
@@ -50,7 +52,7 @@ patched () {
 
 installgitannexdeps () {
 	pushd ../..
-	echo cabal install --only-dependencies
+	echo cabal install --only-dependencies "$@"
 	cabal install --only-dependencies "$@"
 	popd
 }
@@ -64,14 +66,11 @@ install_pkgs () {
 	patched unix-time
 	patched lifted-base
 	patched zlib
-	patched process
 	patched MissingH
 	patched bloomfilter
 	patched SafeSemaphore
 	patched distributive
 	patched comonad
-	patched HTTP
-	patched MonadCatchIO-transformers
 	patched iproute
 	patched primitive
 	patched socks
@@ -86,15 +85,22 @@ install_pkgs () {
 	patched wai-app-static
 	patched shakespeare
 	patched shakespeare-css
+	patched shakespeare-js
 	patched yesod-routes
 	patched yesod-core
 	patched yesod-persistent
 	patched yesod-form
+	patched crypto-numbers
 	patched yesod-auth
 	patched yesod
-	patched async
+	patched shakespeare-text
+	patched process-conduit
 	patched gnuidn
 	patched DAV
+	patched yesod-static
+	patched uuid
+	patched dns
+	patched gnutls
 
 	cd ..
 
@@ -112,6 +118,6 @@ echo
 echo
 echo cross build
 echo
-PATH=$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin:$HOME/.ghc/android-14/arm-linux-androideabi-4.7/arm-linux-androideabi/bin:$PATH
+PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
 cabal update
 install_pkgs

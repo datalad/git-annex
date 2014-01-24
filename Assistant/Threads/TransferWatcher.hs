@@ -16,6 +16,7 @@ import Utility.DirWatcher.Types
 import qualified Remote
 
 import Control.Concurrent
+import qualified Data.Map as M
 
 {- This thread watches for changes to the gitAnnexTransferDir,
  - and updates the DaemonStatus's map of ongoing transfers. -}
@@ -88,6 +89,11 @@ onDel file = case parseTransferFile file of
 	Just t -> do
 		debug [ "transfer finishing:", show t]
 		minfo <- removeTransfer t
+
+		-- Run transfer hook.
+		m <- transferHook <$> getDaemonStatus
+		maybe noop (\hook -> void $ liftIO $ forkIO $ hook t)
+			(M.lookup (transferKey t) m)
 
 		finished <- asIO2 finishedTransfer
 		void $ liftIO $ forkIO $ do

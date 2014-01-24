@@ -20,7 +20,7 @@ import Types.StandardGroups
 import Utility.UserInfo
 import Utility.Gpg
 import Types.Remote (RemoteConfig)
-import Git.Remote
+import Git.Types (RemoteName)
 import qualified Remote.GCrypt as GCrypt
 import Annex.UUID
 import Logs.UUID
@@ -278,9 +278,9 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 
 {- Runs a ssh command; if it fails shows the user the transcript,
  - and if it succeeds, runs an action. -}
-sshSetup :: [String] -> String -> Handler Html -> Handler Html
+sshSetup :: [String] -> Maybe String -> Handler Html -> Handler Html
 sshSetup opts input a = do
-	(transcript, ok) <- liftIO $ sshTranscript opts (Just input)
+	(transcript, ok) <- liftIO $ sshTranscript opts input
 	if ok
 		then a
 		else showSshErr transcript
@@ -383,7 +383,7 @@ prepSsh' newgcrypt origsshdata sshdata keypair a = sshSetup
 	 [ "-p", show (sshPort origsshdata)
 	 , genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
 	 , remoteCommand
-	 ] "" (a sshdata)
+	 ] Nothing (a sshdata)
   where
 	remotedir = T.unpack $ sshDirectory sshdata
 	remoteCommand = shellWrap $ intercalate "&&" $ catMaybes
@@ -450,7 +450,7 @@ getMakeRsyncNetGCryptR :: SshData -> RepoKey -> Handler Html
 getMakeRsyncNetGCryptR sshdata NoRepoKey = whenGcryptInstalled $
 	withNewSecretKey $ getMakeRsyncNetGCryptR sshdata . RepoKey
 getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $
-	sshSetup [sshhost, gitinit] [] $ makeGCryptRepo keyid sshdata
+	sshSetup [sshhost, gitinit] Nothing $ makeGCryptRepo keyid sshdata
   where
 	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
 	gitinit = "git init --bare " ++ T.unpack (sshDirectory sshdata)
@@ -498,7 +498,7 @@ prepRsyncNet sshinput reponame a = do
 		, genSshHost (sshHostName sshdata) (sshUserName sshdata)
 		, remotecommand
 		]
-	sshSetup sshopts (sshPubKey keypair) $ a sshdata
+	sshSetup sshopts (Just $ sshPubKey keypair) $ a sshdata
 
 isRsyncNet :: Maybe Text -> Bool
 isRsyncNet Nothing = False

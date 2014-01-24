@@ -25,7 +25,7 @@ type MeterUpdate = (BytesProcessed -> IO ())
 
 {- Total number of bytes processed so far. -}
 newtype BytesProcessed = BytesProcessed Integer
-	deriving (Eq, Ord)
+	deriving (Eq, Ord, Show)
 
 class AsBytesProcessed a where
 	toBytesProcessed :: a -> BytesProcessed

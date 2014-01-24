@@ -1,11 +1,11 @@
 Name: git-annex
-Version: 4.20131106
+Version: 5.20140117
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
 Author: Joey Hess
 Stability: Stable
-Copyright: 2010-2013 Joey Hess
+Copyright: 2010-2014 Joey Hess
 License-File: COPYRIGHT
 Homepage: http://git-annex.branchable.com/
 Build-type: Custom
@@ -56,7 +56,11 @@ Flag Production
   Description: Enable production build (slower build; faster binary)
 
 Flag Android
-  Description: Building for Android
+  Description: Cross building for Android
+  Default: False
+
+Flag AndroidSplice
+  Description: Building to get TH splices for Android
   Default: False
 
 Flag TestSuite
@@ -71,8 +75,15 @@ Flag Feed
 Flag Quvi
   Description: Enable use of quvi to download videos
 
+Flag Tahoe
+  Description: Enable the tahoe special remote
+
 Flag CryptoHash
   Description: Enable use of cryptohash for checksumming
+
+Flag EKG
+  Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
+  Default: False
 
 Executable git-annex
   Main-Is: git-annex.hs
@@ -83,13 +94,8 @@ Executable git-annex
    base (>= 4.5 && < 4.9), monad-control, MonadCatchIO-transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
    SafeSemaphore, uuid, random, dlist, unix-compat, async
-  -- Need to list these because they're generated from .hsc files.
-  Other-Modules: Utility.Touch Utility.Mounts
-  Include-Dirs: Utility
-  C-Sources: Utility/libdiskfree.c Utility/libmounts.c
   CC-Options: -Wall
   GHC-Options: -Wall
-  CPP-Options: -DWITH_CLIBS
   Extensions: PackageImports
   -- Some things don't work with the non-threaded RTS.
   GHC-Options: -threaded
@@ -97,11 +103,18 @@ Executable git-annex
   if flag(Production)
     GHC-Options: -O2
 
-  if (! os(windows))
+  if (os(windows))
+    Build-Depends: Win32, Win32-extras
+  else
     Build-Depends: unix
+    -- Need to list these because they're generated from .hsc files.
+    Other-Modules: Utility.Touch Utility.Mounts
+    Include-Dirs: Utility
+    C-Sources: Utility/libdiskfree.c Utility/libmounts.c
+    CPP-Options: -DWITH_CLIBS
 
   if flag(TestSuite)
-    Build-Depends: HUnit
+    Build-Depends: tasty, tasty-hunit, tasty-quickcheck
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(TDFA)
@@ -121,13 +134,9 @@ Executable git-annex
   --  Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
   --  CPP-Options: -DWITH_WEBDAV
 
-  if flag(Assistant) && ! os(windows) && ! os(solaris)
+  if flag(Assistant) && ! os(solaris)
     Build-Depends: stm (>= 2.3)
     CPP-Options: -DWITH_ASSISTANT
-
-  if flag(Android)
-    Build-Depends: data-endian
-    CPP-Options: -D__ANDROID__
 
   if flag(Assistant)
     if os(linux) && flag(Inotify)
@@ -138,24 +147,34 @@ Executable git-annex
         Build-Depends: hfsevents
         CPP-Options: -DWITH_FSEVENTS
       else
-        if (! os(windows) && ! os(solaris) && ! os(linux))
-          if flag(Android)
-            Build-Depends: hinotify
-            CPP-Options: -DWITH_INOTIFY
-          else
-            CPP-Options: -DWITH_KQUEUE
-            C-Sources: Utility/libkqueue.c
+        if os(windows)
+          Build-Depends: Win32-notify
+          CPP-Options: -DWITH_WIN32NOTIFY
+        else
+          if (! os(solaris) && ! os(linux))
+            if flag(Android)
+              Build-Depends: hinotify
+              CPP-Options: -DWITH_INOTIFY
+            else
+              CPP-Options: -DWITH_KQUEUE
+              C-Sources: Utility/libkqueue.c
 
   if os(linux) && flag(Dbus)
     Build-Depends: dbus (>= 0.10.3)
     CPP-Options: -DWITH_DBUS
+  
+  if flag(Android)
+    Build-Depends: data-endian
+    CPP-Options: -D__ANDROID__ -DANDROID_SPLICES -D__NO_TH__
+  if flag(AndroidSplice)
+    CPP-Options: -DANDROID_SPLICES
 
-  if flag(Webapp) && (! os(windows))
+  if flag(Webapp)
     Build-Depends:
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      case-insensitive, http-types, transformers, wai, wai-logger, warp,
      blaze-builder, crypto-api, hamlet, clientsession,
-     template-haskell, data-default, aeson
+     template-haskell, data-default, aeson, network-conduit
     CPP-Options: -DWITH_WEBAPP
 
   if flag(Pairing)
@@ -177,6 +196,15 @@ Executable git-annex
   if flag(Quvi)
     Build-Depends: aeson
     CPP-Options: -DWITH_QUVI
+  
+  if flag(Tahoe)
+    Build-Depends: aeson
+    CPP-Options: -DWITH_TAHOE
+
+  if flag(EKG)
+    Build-Depends: ekg
+    GHC-Options: -with-rtsopts=-T
+    CPP-Options: -DWITH_EKG
 
 source-repository head
   type: git

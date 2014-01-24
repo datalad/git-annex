@@ -29,8 +29,7 @@ mv adt-bundle-linux-x86-* adt-bundle-linux-x86
 rm -rf adt-bundle-linux-x86/eclipse
 
 # The git-annex android Makefile needs this cc symlink.
-ln -s arm-linux-androideabi-gcc \
-	$HOME/.ghc/android-14/arm-linux-androideabi-4.7/bin/cc
+ln -s arm-linux-androideabi-gcc $HOME/.ghc/$(cat /tmp/abiversion)/bin/cc
 
 cd
 git clone git://git-annex.branchable.com/ git-annex

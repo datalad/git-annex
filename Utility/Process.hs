@@ -22,15 +22,16 @@ module Utility.Process (
 	createProcessChecked,
 	createBackgroundProcess,
 	processTranscript,
+	processTranscript',
 	withHandle,
 	withBothHandles,
 	withQuietOutput,
-	withNullHandle,
 	createProcess,
 	startInteractiveProcess,
 	stdinHandle,
 	stdoutHandle,
 	stderrHandle,
+	devNull,
 ) where
 
 import qualified System.Process
@@ -44,8 +45,10 @@ import qualified Control.Exception as E
 import Control.Monad
 #ifndef mingw32_HOST_OS
 import System.Posix.IO
-import Data.Maybe
+#else
+import Control.Applicative
 #endif
+import Data.Maybe
 
 import Utility.Misc
 import Utility.Exception
@@ -160,8 +163,13 @@ createBackgroundProcess p a = a =<< createProcess p
  - returns a transcript combining its stdout and stderr, and
  - whether it succeeded or failed. -}
 processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
+processTranscript cmd opts input = processTranscript' cmd opts Nothing input
+
+processTranscript' :: String -> [String] -> Maybe [(String, String)] -> (Maybe String) -> IO (String, Bool)
 #ifndef mingw32_HOST_OS
-processTranscript cmd opts input = do
+{- This implementation interleves stdout and stderr in exactly the order
+ - the process writes them. -}
+processTranscript' cmd opts environ input = do
 	(readf, writef) <- createPipe
 	readh <- fdToHandle readf
 	writeh <- fdToHandle writef
@@ -170,13 +178,11 @@ processTranscript cmd opts input = do
 			{ std_in = if isJust input then CreatePipe else Inherit
 			, std_out = UseHandle writeh
 			, std_err = UseHandle writeh
+			, env = environ
 			}
 	hClose writeh
 
-	-- fork off a thread to start consuming the output
-	transcript <- hGetContents readh
-	outMVar <- newEmptyMVar
-	_ <- forkIO $ E.evaluate (length transcript) >> putMVar outMVar ()
+	get <- mkreader readh
 
 	-- now write and flush any input
 	case input of
@@ -188,15 +194,47 @@ processTranscript cmd opts input = do
 			hClose inh
 		Nothing -> return ()
 
-	-- wait on the output
-	takeMVar outMVar
-	hClose readh
+	transcript <- get
 
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
 #else
-processTranscript = error "processTranscript TODO"
+{- This implementation for Windows puts stderr after stdout. -}
+processTranscript' cmd opts environ input = do
+	p@(_, _, _, pid) <- createProcess $
+		(proc cmd opts)
+			{ std_in = if isJust input then CreatePipe else Inherit
+			, std_out = CreatePipe
+			, std_err = CreatePipe
+			, env = environ
+			}
+
+	getout <- mkreader (stdoutHandle p)
+	geterr <- mkreader (stderrHandle p)
+
+	case input of
+		Just s -> do
+			let inh = stdinHandle p
+			unless (null s) $ do
+				hPutStr inh s
+				hFlush inh
+			hClose inh
+		Nothing -> return ()
+	
+	transcript <- (++) <$> getout <*> geterr
+	ok <- checkSuccessProcess pid
+	return (transcript, ok)
 #endif
+  where
+	mkreader h = do
+		s <- hGetContents h
+		v <- newEmptyMVar
+		void $ forkIO $ do
+			void $ E.evaluate (length s)
+			putMVar v ()
+		return $ do
+			takeMVar v
+			return s
 
 {- Runs a CreateProcessRunner, on a CreateProcess structure, that
  - is adjusted to pipe only from/to a single StdHandle, and passes
@@ -242,20 +280,18 @@ withQuietOutput
 	:: CreateProcessRunner
 	-> CreateProcess
 	-> IO ()
-withQuietOutput creator p = withNullHandle $ \nullh -> do
+withQuietOutput creator p = withFile devNull WriteMode $ \nullh -> do
 	let p' = p
 		{ std_out = UseHandle nullh
 		, std_err = UseHandle nullh
 		}
 	creator p' $ const $ return ()
 
-withNullHandle :: (Handle -> IO a) -> IO a
-withNullHandle = withFile devnull WriteMode
-  where
+devNull :: FilePath
 #ifndef mingw32_HOST_OS
-	devnull = "/dev/null"
+devNull = "/dev/null"
 #else
-	devnull = "NUL"
+devNull = "NUL"
 #endif
 
 {- Extract a desired handle from createProcess's tuple.

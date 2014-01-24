@@ -55,8 +55,8 @@ start foreground stopdaemon autostart startdelay
 
 {- Run outside a git repository. Check to see if any parameter is
  - --autostart and enter autostart mode. -}
-checkAutoStart :: IO ()
-checkAutoStart = ifM (elem "--autostart" <$> getArgs)
+checkAutoStart :: CmdParams -> IO ()
+checkAutoStart _ = ifM (elem "--autostart" <$> getArgs)
 	( autoStart Nothing
 	, error "Not in a git repository."
 	) 

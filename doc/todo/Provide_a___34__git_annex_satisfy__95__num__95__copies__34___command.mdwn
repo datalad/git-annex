@@ -1,0 +1,9 @@
+Please provide a command that basically performs something like: 
+
+git get --auto
+for i in `git remote`; do git copy -to $i --auto; done
+
+
+The use case is this:
+I have a very large repo (300.000 files) in three places. Now I want the fastest possible way to ensure, that every file exists in annex.numcopies. This should scan every file one time and then get it or copy it to other repos as needed. Right now, I make one "git annex get --auto" in every repo, which is is a waste of time, since most of the files never change anyway!
+

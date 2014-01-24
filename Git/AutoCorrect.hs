@@ -27,7 +27,7 @@ gitEditCosts = EditCosts
 similarityFloor :: Int
 similarityFloor = 7
 
-{- Finds inexact matches for the input amoung the choices.
+{- Finds inexact matches for the input among the choices.
  - Returns an ordered list of good enough matches, or an empty list if
  - nothing matches well. -}
 fuzzymatches :: String -> (c -> String) -> [c] -> [c]

@@ -61,7 +61,7 @@ withPathContents a params = map a . concat <$> liftIO (mapM get params)
   where
 	get p = ifM (isDirectory <$> getFileStatus p)
 		( map (\f -> (f, makeRelative (parentDir p) f))
-			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) p
+			<$> dirContentsRecursiveSkipping (".git" `isSuffixOf`) True p
 		, return [(p, takeFileName p)]
 		)
 
@@ -141,13 +141,15 @@ withNothing _ _ = error "This command takes no parameters."
 withKeyOptions :: (Key -> CommandStart) -> CommandSeek -> CommandSeek
 withKeyOptions keyop fallbackop params = do
 	bare <- fromRepo Git.repoIsLocalBare
-	allkeys <- Annex.getFlag "all" <||> pure bare
+	allkeys <- Annex.getFlag "all"
 	unused <- Annex.getFlag "unused"
 	auto <- Annex.getState Annex.auto
-	case    (allkeys , unused, auto ) of
+	case    (allkeys || bare , unused, auto ) of
 		(True    , False , False) -> go loggedKeys
 		(False   , True  , False) -> go unusedKeys
-		(True    , True  , _    ) -> error "Cannot use --all with --unused."
+		(True    , True  , _    )
+			| bare && not allkeys -> go unusedKeys
+			| otherwise -> error "Cannot use --all with --unused."
 		(False   , False , _    ) -> fallbackop params
 		(_       , _     , True )
 			| bare -> error "Cannot use --auto in a bare repository."

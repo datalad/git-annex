@@ -10,6 +10,7 @@ module Command.Lock where
 import Common.Annex
 import Command
 import qualified Annex.Queue
+import qualified Annex
 	
 def :: [Command]
 def = [notDirect $ command "lock" paramPaths seek SectionCommon
@@ -21,6 +22,8 @@ seek = [withFilesUnlocked start, withFilesUnlockedToBeCommitted start]
 start :: FilePath -> CommandStart
 start file = do
 	showStart "lock" file
+	unlessM (Annex.getState Annex.force) $
+		error "Locking this file would discard any changes you have made to it. Use 'git annex add' to stage your changes. (Or, use --force to override)"
 	next $ perform file
 
 perform :: FilePath -> CommandPerform

@@ -129,9 +129,7 @@ needsUpgrade key = "\\" `isPrefixOf` keyHash key ||
 	any (not . validExtension) (takeExtensions $ keyName key)
 
 hashFile :: Hash -> FilePath -> Integer -> Annex String
-hashFile hash file filesize = do
-	showAction "checksum"
-	liftIO $ go hash
+hashFile hash file filesize = liftIO $ go hash
   where
   	go (SHAHash hashsize) = case shaHasher hashsize filesize of
 		Left sha -> sha <$> L.readFile file

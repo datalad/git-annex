@@ -14,6 +14,7 @@ import Logs.Transfer
 import Assistant.Types.ThreadName
 import Assistant.Types.NetMessager
 import Assistant.Types.Alert
+import Utility.Url
 
 import Control.Concurrent.STM
 import Control.Concurrent.MVar
@@ -28,6 +29,8 @@ data DaemonStatus = DaemonStatus
 	{ startedThreads :: M.Map ThreadName (Async (), IO ())
 	-- False when the daemon is performing its startup scan
 	, scanComplete :: Bool
+	-- True when all files should be restaged.
+	, forceRestage :: Bool
 	-- Time when a previous process of the daemon was running ok
 	, lastRunning :: Maybe POSIXTime
 	-- True when the daily sanity checker is running
@@ -53,18 +56,25 @@ data DaemonStatus = DaemonStatus
 	, desynced :: S.Set UUID
 	-- Pairing request that is in progress.
 	, pairingInProgress :: Maybe PairingInProgress
-	-- Broadcasts notifications about all changes to the DaemonStatus
+	-- Broadcasts notifications about all changes to the DaemonStatus.
 	, changeNotifier :: NotificationBroadcaster
 	-- Broadcasts notifications when queued or current transfers change.
 	, transferNotifier :: NotificationBroadcaster
-	-- Broadcasts notifications when there's a change to the alerts
+	-- Broadcasts notifications when there's a change to the alerts.
 	, alertNotifier :: NotificationBroadcaster
-	-- Broadcasts notifications when the syncRemotes change
+	-- Broadcasts notifications when the syncRemotes change.
 	, syncRemotesNotifier :: NotificationBroadcaster
-	-- Broadcasts notifications when the scheduleLog changes
+	-- Broadcasts notifications when the scheduleLog changes.
 	, scheduleLogNotifier :: NotificationBroadcaster
 	-- Broadcasts a notification once the startup sanity check has run.
 	, startupSanityCheckNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when the network is connected.
+	, networkConnectedNotifier :: NotificationBroadcaster
+	-- Broadcasts notifications when a global redirect is needed.
+	, globalRedirNotifier :: NotificationBroadcaster
+	, globalRedirUrl :: Maybe URLString
+	-- Actions to run after a Key is transferred.
+	, transferHook :: M.Map Key (Transfer -> IO ())
 	-- When the XMPP client is connected, this will contain the XMPP
 	-- address.
 	, xmppClientID :: Maybe ClientID
@@ -80,6 +90,7 @@ type DaemonStatusHandle = TMVar DaemonStatus
 newDaemonStatus :: IO DaemonStatus
 newDaemonStatus = DaemonStatus
 	<$> pure M.empty
+	<*> pure False
 	<*> pure False
 	<*> pure Nothing
 	<*> pure False
@@ -100,5 +111,9 @@ newDaemonStatus = DaemonStatus
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
 	<*> newNotificationBroadcaster
+	<*> newNotificationBroadcaster
+	<*> newNotificationBroadcaster
+	<*> pure Nothing
+	<*> pure M.empty
 	<*> pure Nothing
 	<*> pure M.empty

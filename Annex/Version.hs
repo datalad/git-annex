@@ -15,21 +15,18 @@ import qualified Annex
 
 type Version = String
 
-defaultVersion :: Version
-defaultVersion = "3"
-
-directModeVersion :: Version
-directModeVersion = "4"
-
-supportedVersions :: [Version]
-supportedVersions = [defaultVersion, directModeVersion]
+supportedVersion :: Version
+supportedVersion = "5"
 
 upgradableVersions :: [Version]
 #ifndef mingw32_HOST_OS
-upgradableVersions = ["0", "1", "2"]
+upgradableVersions = ["0", "1", "2", "4"]
 #else
-upgradableVersions = ["2"]
+upgradableVersions = ["2", "3", "4"]
 #endif
+
+autoUpgradeableVersions :: [Version]
+autoUpgradeableVersions = ["3", "4"]
 
 versionField :: ConfigKey
 versionField = annexConfig "version"
@@ -42,12 +39,3 @@ setVersion = setConfig versionField
 
 removeVersion :: Annex ()
 removeVersion = unsetConfig versionField
-
-checkVersion :: Version -> Annex ()
-checkVersion v
-	| v `elem` supportedVersions = noop
-	| v `elem` upgradableVersions = err "Upgrade this repository: git-annex upgrade"
-	| otherwise = err "Upgrade git-annex."
-  where
-	err msg = error $ "Repository version " ++ v ++
-		" is not supported. " ++ msg

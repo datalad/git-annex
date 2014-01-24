@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 3"
+ date="2013-12-03T17:35:11Z"
+ content="""
+The dns library used only for srv lookups was trying to use /etc/resolv.conf. I've patched it to use the android getprop command instead to discover the DNS server.
+
+The daily build has already been updated with this fix. I have not tested it completely myself.
+"""]]

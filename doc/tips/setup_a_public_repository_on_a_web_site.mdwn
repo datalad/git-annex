@@ -32,7 +32,7 @@ right out of it, also using http.
 ## post-receive hook
 
 If you have git-annex 4.20130703, the post-receive hook mentioned above
-in step 8 just needs to run `git annex merge`.
+in step 9 just needs to run `git annex merge`.
 
 With older versions of git-annex, you can instead use `git annex sync`.
 

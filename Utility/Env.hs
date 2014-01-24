@@ -61,3 +61,21 @@ unsetEnv var = do
 #else
 unsetEnv _ = return False
 #endif
+
+{- Adds the environment variable to the input environment. If already
+ - present in the list, removes the old value.
+ -
+ - This does not really belong here, but Data.AssocList is for some reason
+ - buried inside hxt.
+ -}
+addEntry :: Eq k => k -> v -> [(k, v)] -> [(k, v)]
+addEntry k v l = ( (k,v) : ) $! delEntry k l
+
+addEntries :: Eq k => [(k, v)] -> [(k, v)] -> [(k, v)]
+addEntries = foldr (.) id . map (uncurry addEntry) . reverse
+
+delEntry :: Eq k => k -> [(k, v)] -> [(k, v)]
+delEntry _ []   = []
+delEntry k (x@(k1,_) : rest)
+	| k == k1 = rest
+	| otherwise = ( x : ) $! delEntry k rest

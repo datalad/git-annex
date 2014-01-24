@@ -1,0 +1,1805 @@
+From fbd8f048c239e34625e438a24213534f6f68c3e8 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Tue, 17 Dec 2013 18:34:25 +0000
+Subject: [PATCH] spliced TH
+
+---
+ Yesod/Form/Fields.hs    | 771 ++++++++++++++++++++++++++++++++++++------------
+ Yesod/Form/Functions.hs | 239 ++++++++++++---
+ Yesod/Form/Jquery.hs    | 129 ++++++--
+ Yesod/Form/MassInput.hs | 233 ++++++++++++---
+ Yesod/Form/Nic.hs       |  65 +++-
+ yesod-form.cabal        |   1 +
+ 6 files changed, 1127 insertions(+), 311 deletions(-)
+
+diff --git a/Yesod/Form/Fields.hs b/Yesod/Form/Fields.hs
+index b2a47c6..016c98b 100644
+--- a/Yesod/Form/Fields.hs
++++ b/Yesod/Form/Fields.hs
+@@ -1,4 +1,3 @@
+-{-# LANGUAGE QuasiQuotes #-}
+ {-# LANGUAGE TypeFamilies #-}
+ {-# LANGUAGE OverloadedStrings #-}
+ {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+@@ -36,15 +35,11 @@ module Yesod.Form.Fields
+     , selectFieldList
+     , radioField
+     , radioFieldList
+-    , checkboxesFieldList
+-    , checkboxesField
+     , multiSelectField
+     , multiSelectFieldList
+     , Option (..)
+     , OptionList (..)
+     , mkOptionList
+-    , optionsPersist
+-    , optionsPersistKey
+     , optionsPairs
+     , optionsEnum
+     ) where
+@@ -70,6 +65,15 @@ import Text.HTML.SanitizeXSS (sanitizeBalance)
+ import Control.Monad (when, unless)
+ import Data.Maybe (listToMaybe, fromMaybe)
+ 
++import qualified Text.Blaze as Text.Blaze.Internal
++import qualified Text.Blaze.Internal
++import qualified Text.Hamlet
++import qualified Yesod.Core.Widget
++import qualified Text.Css
++import qualified Data.Monoid
++import qualified Data.Foldable
++import qualified Control.Monad
++
+ import qualified Blaze.ByteString.Builder.Html.Utf8 as B
+ import Blaze.ByteString.Builder (writeByteString, toLazyByteString)
+ import Blaze.ByteString.Builder.Internal.Write (fromWriteList)
+@@ -82,14 +86,12 @@ import Data.Text (Text, unpack, pack)
+ import qualified Data.Text.Read
+ 
+ import qualified Data.Map as Map
+-import Yesod.Persist (selectList, runDB, Filter, SelectOpt, Key, YesodPersist, PersistEntity, PersistQuery, YesodDB)
+ import Control.Arrow ((&&&))
+ 
+ import Control.Applicative ((<$>), (<|>))
+ 
+ import Data.Attoparsec.Text (Parser, char, string, digit, skipSpace, endOfInput, parseOnly)
+ 
+-import Yesod.Persist.Core
+ 
+ defaultFormMessage :: FormMessage -> Text
+ defaultFormMessage = englishFormMessage
+@@ -102,10 +104,24 @@ intField = Field
+             Right (a, "") -> Right a
+             _ -> Left $ MsgInvalidInteger s
+ 
+-    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} type="number" :isReq:required="" value="#{showVal val}">
+-|]
++    , fieldView = \theId name attrs val isReq -> toWidget  $     \ _render_arOn
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++              id (toHtml theId);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++              id (toHtml name);
++              id
++                ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"number\"");
++              Text.Hamlet.condH
++                [(isReq, 
++                  id ((Text.Blaze.Internal.preEscapedText . pack) " required=\"\""))]
++                Nothing;
++              id ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++              id (toHtml (showVal val));
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++              id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = UrlEncoded
+     }
+   where
+@@ -119,10 +135,24 @@ doubleField = Field
+             Right (a, "") -> Right a
+             _ -> Left $ MsgInvalidNumber s
+ 
+-    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} type="text" :isReq:required="" value="#{showVal val}">
+-|]
++    , fieldView = \theId name attrs val isReq -> toWidget  $     \ _render_arOz
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++              id (toHtml theId);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++              id (toHtml name);
++              id
++                ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"text\"");
++              Text.Hamlet.condH
++                [(isReq, 
++                  id ((Text.Blaze.Internal.preEscapedText . pack) " required=\"\""))]
++                Nothing;
++              id ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++              id (toHtml (showVal val));
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++              id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = UrlEncoded
+     }
+   where showVal = either id (pack . show)
+@@ -130,10 +160,24 @@ $newline never
+ dayField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Day
+ dayField = Field
+     { fieldParse = parseHelper $ parseDate . unpack
+-    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} type="date" :isReq:required="" value="#{showVal val}">
+-|]
++    , fieldView = \theId name attrs val isReq -> toWidget  $     \ _render_arOJ
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++              id (toHtml theId);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++              id (toHtml name);
++              id
++                ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"date\"");
++              Text.Hamlet.condH
++                [(isReq, 
++                  id ((Text.Blaze.Internal.preEscapedText . pack) " required=\"\""))]
++                Nothing;
++              id ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++              id (toHtml (showVal val));
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++              id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = UrlEncoded
+     }
+   where showVal = either id (pack . show)
+@@ -141,10 +185,23 @@ $newline never
+ timeField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m TimeOfDay
+ timeField = Field
+     { fieldParse = parseHelper parseTime
+-    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} :isReq:required="" value="#{showVal val}">
+-|]
++    , fieldView = \theId name attrs val isReq -> toWidget  $     \ _render_arOW
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++              id (toHtml theId);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++              id (toHtml name);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++              Text.Hamlet.condH
++                [(isReq, 
++                  id ((Text.Blaze.Internal.preEscapedText . pack) " required=\"\""))]
++                Nothing;
++              id ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++              id (toHtml (showVal val));
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++              id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = UrlEncoded
+     }
+   where
+@@ -157,10 +214,18 @@ $newline never
+ htmlField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Html
+ htmlField = Field
+     { fieldParse = parseHelper $ Right . preEscapedText . sanitizeBalance
+-    , fieldView = \theId name attrs val _isReq -> toWidget [hamlet|
+-$newline never
+-<textarea id="#{theId}" name="#{name}" *{attrs}>#{showVal val}
+-|]
++    , fieldView = \theId name attrs val _isReq -> toWidget  $     \ _render_arP6
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . pack) "<textarea id=\"");
++              id (toHtml theId);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++              id (toHtml name);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++              id ((Text.Blaze.Internal.preEscapedText . pack) ">");
++              id (toHtml (showVal val));
++              id ((Text.Blaze.Internal.preEscapedText . pack) "</textarea>") }
++
+     , fieldEnctype = UrlEncoded
+     }
+   where showVal = either id (pack . renderHtml)
+@@ -169,8 +234,6 @@ $newline never
+ -- br-tags.
+ newtype Textarea = Textarea { unTextarea :: Text }
+     deriving (Show, Read, Eq, PersistField, Ord)
+-instance PersistFieldSql Textarea where
+-    sqlType _ = SqlString
+ instance ToHtml Textarea where
+     toHtml =
+         unsafeByteString
+@@ -188,10 +251,18 @@ instance ToHtml Textarea where
+ textareaField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Textarea
+ textareaField = Field
+     { fieldParse = parseHelper $ Right . Textarea
+-    , fieldView = \theId name attrs val _isReq -> toWidget [hamlet|
+-$newline never
+-<textarea id="#{theId}" name="#{name}" *{attrs}>#{either id unTextarea val}
+-|]
++    , fieldView = \theId name attrs val _isReq -> toWidget  $     \ _render_arPf
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . pack) "<textarea id=\"");
++              id (toHtml theId);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++              id (toHtml name);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++              id ((Text.Blaze.Internal.preEscapedText . pack) ">");
++              id (toHtml (either id unTextarea val));
++              id ((Text.Blaze.Internal.preEscapedText . pack) "</textarea>") }
++
+     , fieldEnctype = UrlEncoded
+     }
+ 
+@@ -199,10 +270,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
+             => Field m p
+ hiddenField = Field
+     { fieldParse = parseHelper $ maybe (Left MsgValueRequired) Right . fromPathPiece
+-    , fieldView = \theId name attrs val _isReq -> toWidget [hamlet|
+-$newline never
+-<input type="hidden" id="#{theId}" name="#{name}" *{attrs} value="#{either id toPathPiece val}">
+-|]
++    , fieldView = \theId name attrs val _isReq -> toWidget  $     \ _render_arPo
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . pack)
++                   "<input type=\"hidden\" id=\"");
++              id (toHtml theId);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++              id (toHtml name);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" value=\"");
++              id (toHtml (either id toPathPiece val));
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++              id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = UrlEncoded
+     }
+ 
+@@ -210,20 +290,55 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
+ textField = Field
+     { fieldParse = parseHelper $ Right
+     , fieldView = \theId name attrs val isReq ->
+-        [whamlet|
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} type="text" :isReq:required value="#{either id id val}">
+-|]
++        do { (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"text\"");
++             Text.Hamlet.condH
++               [(isReq, 
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) " required"))]
++               Nothing;
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               (toHtml (either id id val));
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = UrlEncoded
+     }
+ 
+ passwordField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Text
+ passwordField = Field
+     { fieldParse = parseHelper $ Right
+-    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} type="password" :isReq:required="" value="#{either id id val}">
+-|]
++    , fieldView = \theId name attrs val isReq -> toWidget  $     \ _render_arPF
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++              id (toHtml theId);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++              id (toHtml name);
++              id
++                ((Text.Blaze.Internal.preEscapedText . pack)
++                   "\" type=\"password\"");
++              Text.Hamlet.condH
++                [(isReq, 
++                  id ((Text.Blaze.Internal.preEscapedText . pack) " required=\"\""))]
++                Nothing;
++              id ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++              id (toHtml (either id id val));
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++              id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = UrlEncoded
+     }
+ 
+@@ -295,10 +410,24 @@ emailField = Field
+             case Email.canonicalizeEmail $ encodeUtf8 s of
+                 Just e -> Right $ decodeUtf8With lenientDecode e
+                 Nothing -> Left $ MsgInvalidEmail s
+-    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} type="email" :isReq:required="" value="#{either id id val}">
+-|]
++    , fieldView = \theId name attrs val isReq -> toWidget  $     \ _render_arQe
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++              id (toHtml theId);
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++              id (toHtml name);
++              id
++                ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"email\"");
++              Text.Hamlet.condH
++                [(isReq, 
++                  id ((Text.Blaze.Internal.preEscapedText . pack) " required=\"\""))]
++                Nothing;
++              id ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++              id (toHtml (either id id val));
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++              id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = UrlEncoded
+     }
+ 
+@@ -307,20 +436,78 @@ searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus
+ searchField autoFocus = Field
+     { fieldParse = parseHelper Right
+     , fieldView = \theId name attrs val isReq -> do
+-        [whamlet|\
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} type="search" :isReq:required="" :autoFocus:autofocus="" value="#{either id id val}">
+-|]
++        do { (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"search\"");
++             Text.Hamlet.condH
++               [(isReq, 
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) " required=\"\""))]
++               Nothing;
++             Text.Hamlet.condH
++               [(autoFocus, 
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) " autofocus=\"\""))]
++               Nothing;
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               (toHtml (either id id val));
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+         when autoFocus $ do
+           -- we want this javascript to be placed immediately after the field
+-          [whamlet|
+-$newline never
+-<script>if (!('autofocus' in document.createElement('input'))) {document.getElementById('#{theId}').focus();}
+-|]
+-          toWidget [cassius|
+-            ##{theId}
+-              -webkit-appearance: textfield
+-            |]
++          do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                 ((Text.Blaze.Internal.preEscapedText . pack)
++                    "<script>if (!('autofocus' in document.createElement('input'))) {document.getElementById('");
++               (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++               (Yesod.Core.Widget.asWidgetT . toWidget)
++                 ((Text.Blaze.Internal.preEscapedText . pack)
++                    "').focus();}</script>") }
++
++          toWidget  $           \ _render_arQv
++            -> (Text.Css.CssNoWhitespace
++                . (foldr ($) []))
++                 [((++)
++                   $ (map
++                        Text.Css.TopBlock
++                        (((Text.Css.Block
++                             {Text.Css.blockSelector = Data.Monoid.mconcat
++                                                                                 [(Text.Css.fromText
++                                                                                   . Text.Css.pack)
++                                                                                    "#",
++                                                                                  toCss theId],
++                              Text.Css.blockAttrs = (concat
++                                                                             $ ([Text.Css.Attr
++                                                                                   (Data.Monoid.mconcat
++                                                                                      [(Text.Css.fromText
++                                                                                        . Text.Css.pack)
++                                                                                         "-webkit-appearance"])
++                                                                                   (Data.Monoid.mconcat
++                                                                                      [(Text.Css.fromText
++                                                                                        . Text.Css.pack)
++                                                                                         "textfield"])]
++                                                                                :
++                                                                                  (map
++                                                                                     Text.Css.mixinAttrs
++                                                                                     []))),
++                              Text.Css.blockBlocks = (),
++                              Text.Css.blockMixins = ()}
++                         :)
++                          . ((foldr (.) id [])
++                             . (concatMap Text.Css.mixinBlocks [] ++)))
++                           [])))]
++
+     , fieldEnctype = UrlEncoded
+     }
+ 
+@@ -331,7 +518,30 @@ urlField = Field
+             Nothing -> Left $ MsgInvalidUrl s
+             Just _ -> Right s
+     , fieldView = \theId name attrs val isReq ->
+-        [whamlet|<input ##{theId} name=#{name} *{attrs} type=url :isReq:required value=#{either id id val}>|]
++        do { (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"url\"");
++             Text.Hamlet.condH
++               [(isReq, 
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) " required"))]
++               Nothing;
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               (toHtml (either id id val));
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = UrlEncoded
+     }
+ 
+@@ -344,18 +554,56 @@ selectField :: (Eq a, RenderMessage site FormMessage)
+             => HandlerT site IO (OptionList a)
+             -> Field (HandlerT site IO) a
+ selectField = selectFieldHelper
+-    (\theId name attrs inside -> [whamlet|
+-$newline never
+-<select ##{theId} name=#{name} *{attrs}>^{inside}
+-|]) -- outside
+-    (\_theId _name isSel -> [whamlet|
+-$newline never
+-<option value=none :isSel:selected>_{MsgSelectNone}
+-|]) -- onOpt
+-    (\_theId _name _attrs value isSel text -> [whamlet|
+-$newline never
+-<option value=#{value} :isSel:selected>#{text}
+-|]) -- inside
++    (\theId name attrs inside ->     do { (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "<select id=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) ">");
++         (Yesod.Core.Widget.asWidgetT . toWidget) inside;
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "</select>") })
++ -- outside
++    (\_theId _name isSel ->     do { (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack)
++              "<option value=\"none\"");
++         Text.Hamlet.condH
++           [(isSel, 
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) " selected"))]
++           Nothing;
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) ">");
++         ((Control.Monad.liftM (toHtml .) getMessageRender)
++          >>=
++            (\ urender_arQS
++               -> (Yesod.Core.Widget.asWidgetT . toWidget)
++                    (urender_arQS MsgSelectNone)));
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "</option>") })
++ -- onOpt
++    (\_theId _name _attrs value isSel text ->     do { (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "<option value=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml value);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++         Text.Hamlet.condH
++           [(isSel, 
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) " selected"))]
++           Nothing;
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) ">");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml text);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "</option>") })
++ -- inside
+ 
+ multiSelectFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
+                      => [(msg, a)]
+@@ -378,11 +626,48 @@ multiSelectField ioptlist =
+     view theId name attrs val isReq = do
+         opts <- fmap olOptions $ handlerToWidget ioptlist
+         let selOpts = map (id &&& (optselected val)) opts
+-        [whamlet|
+-            <select ##{theId} name=#{name} :isReq:required multiple *{attrs}>
+-                $forall (opt, optsel) <- selOpts
+-                    <option value=#{optionExternalValue opt} :optsel:selected>#{optionDisplay opt}
+-                |]
++        do { (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "<select id=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++             Text.Hamlet.condH
++               [(isReq, 
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) " required"))]
++               Nothing;
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) " multiple");
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) ">");
++             Data.Foldable.mapM_
++               (\ (opt_arRl, optsel_arRm)
++                  -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . pack) "<option value=\"");
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            (toHtml (optionExternalValue opt_arRl));
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++                          Text.Hamlet.condH
++                            [(optsel_arRm, 
++                              (Yesod.Core.Widget.asWidgetT . toWidget)
++                                ((Text.Blaze.Internal.preEscapedText . pack) " selected"))]
++                            Nothing;
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . pack) ">");
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            (toHtml (optionDisplay opt_arRl));
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . pack) "</option>") })
++               selOpts;
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) "</select>") }
++
+         where
+             optselected (Left _) _ = False
+             optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
+@@ -392,67 +677,172 @@ radioFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
+                -> Field (HandlerT site IO) a
+ radioFieldList = radioField . optionsPairs
+ 
+-checkboxesFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg) => [(msg, a)]
+-                     -> Field (HandlerT site IO) [a]
+-checkboxesFieldList = checkboxesField . optionsPairs
+-
+-checkboxesField :: (Eq a, RenderMessage site FormMessage)
+-                 => HandlerT site IO (OptionList a)
+-                 -> Field (HandlerT site IO) [a]
+-checkboxesField ioptlist = (multiSelectField ioptlist)
+-    { fieldView =
+-        \theId name attrs val isReq -> do
+-            opts <- fmap olOptions $ handlerToWidget ioptlist
+-            let optselected (Left _) _ = False
+-                optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
+-            [whamlet|
+-                <span ##{theId}>
+-                    $forall opt <- opts
+-                        <label>
+-                            <input type=checkbox name=#{name} value=#{optionExternalValue opt} *{attrs} :optselected val opt:checked>
+-                            #{optionDisplay opt}
+-                |]
+-    }
+ 
+ radioField :: (Eq a, RenderMessage site FormMessage)
+            => HandlerT site IO (OptionList a)
+            -> Field (HandlerT site IO) a
+ radioField = selectFieldHelper
+-    (\theId _name _attrs inside -> [whamlet|
+-$newline never
+-<div ##{theId}>^{inside}
+-|])
+-    (\theId name isSel -> [whamlet|
+-$newline never
+-<label .radio for=#{theId}-none>
+-    <div>
+-        <input id=#{theId}-none type=radio name=#{name} value=none :isSel:checked>
+-        _{MsgSelectNone}
+-|])
+-    (\theId name attrs value isSel text -> [whamlet|
+-$newline never
+-<label .radio for=#{theId}-#{value}>
+-    <div>
+-        <input id=#{theId}-#{value} type=radio name=#{name} value=#{value} :isSel:checked *{attrs}>
+-        \#{text}
+-|])
++    (\theId _name _attrs inside ->     do { (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "<div id=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "\">");
++         (Yesod.Core.Widget.asWidgetT . toWidget) inside;
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "</div>") })
++
++    (\theId name isSel ->     do { (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack)
++              "<label class=\"radio\" for=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack)
++              "-none\"><div><input id=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack)
++              "-none\" type=\"radio\" name=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "\" value=\"none\"");
++         Text.Hamlet.condH
++           [(isSel, 
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) " checked"))]
++           Nothing;
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) ">");
++         ((Control.Monad.liftM (toHtml .) getMessageRender)
++          >>=
++            (\ urender_arRA
++               -> (Yesod.Core.Widget.asWidgetT . toWidget)
++                    (urender_arRA MsgSelectNone)));
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "</div></label>") })
++
++    (\theId name attrs value isSel text ->     do { (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack)
++              "<label class=\"radio\" for=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "-");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml value);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack)
++              "\"><div><input id=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "-");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml value);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack)
++              "\" type=\"radio\" name=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "\" value=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml value);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++         Text.Hamlet.condH
++           [(isSel, 
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) " checked"))]
++           Nothing;
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) ">");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml text);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "</div></label>") })
++
+ 
+ boolField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Bool
+ boolField = Field
+       { fieldParse = \e _ -> return $ boolParser e
+-      , fieldView = \theId name attrs val isReq -> [whamlet|
+-$newline never
+-  $if not isReq
+-      <input id=#{theId}-none *{attrs} type=radio name=#{name} value=none checked>
+-      <label for=#{theId}-none>_{MsgSelectNone}
++      , fieldView = \theId name attrs val isReq ->       do { Text.Hamlet.condH
++             [(not isReq, 
++               do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                      ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++                    (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++                    (Yesod.Core.Widget.asWidgetT . toWidget)
++                      ((Text.Blaze.Internal.preEscapedText . pack)
++                         "-none\" type=\"radio\" name=\"");
++                    (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++                    (Yesod.Core.Widget.asWidgetT . toWidget)
++                      ((Text.Blaze.Internal.preEscapedText . pack)
++                         "\" value=\"none\" checked");
++                    (Yesod.Core.Widget.asWidgetT . toWidget)
++                      ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++                    (Yesod.Core.Widget.asWidgetT . toWidget)
++                      ((Text.Blaze.Internal.preEscapedText . pack) "><label for=\"");
++                    (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++                    (Yesod.Core.Widget.asWidgetT . toWidget)
++                      ((Text.Blaze.Internal.preEscapedText . pack) "-none\">");
++                    ((Control.Monad.liftM (toHtml .) getMessageRender)
++                     >>=
++                       (\ urender_arRX
++                          -> (Yesod.Core.Widget.asWidgetT . toWidget)
++                               (urender_arRX MsgSelectNone)));
++                    (Yesod.Core.Widget.asWidgetT . toWidget)
++                      ((Text.Blaze.Internal.preEscapedText . pack) "</label>") })]
++             Nothing;
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++           (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack)
++                "-yes\" type=\"radio\" name=\"");
++           (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack) "\" value=\"yes\"");
++           Text.Hamlet.condH
++             [(showVal id val, 
++               (Yesod.Core.Widget.asWidgetT . toWidget)
++                 ((Text.Blaze.Internal.preEscapedText . pack) " checked"))]
++             Nothing;
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack) "><label for=\"");
++           (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack) "-yes\">");
++           ((Control.Monad.liftM (toHtml .) getMessageRender)
++            >>=
++              (\ urender_arRY
++                 -> (Yesod.Core.Widget.asWidgetT . toWidget)
++                      (urender_arRY MsgBoolYes)));
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack)
++                "</label><input id=\"");
++           (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack)
++                "-no\" type=\"radio\" name=\"");
++           (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack) "\" value=\"no\"");
++           Text.Hamlet.condH
++             [(showVal not val, 
++               (Yesod.Core.Widget.asWidgetT . toWidget)
++                 ((Text.Blaze.Internal.preEscapedText . pack) " checked"))]
++             Nothing;
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack) "><label for=\"");
++           (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack) "-no\">");
++           ((Control.Monad.liftM (toHtml .) getMessageRender)
++            >>=
++              (\ urender_arRZ
++                 -> (Yesod.Core.Widget.asWidgetT . toWidget)
++                      (urender_arRZ MsgBoolNo)));
++           (Yesod.Core.Widget.asWidgetT . toWidget)
++             ((Text.Blaze.Internal.preEscapedText . pack) "</label>") }
+ 
+-
+-<input id=#{theId}-yes *{attrs} type=radio name=#{name} value=yes :showVal id val:checked>
+-<label for=#{theId}-yes>_{MsgBoolYes}
+-
+-<input id=#{theId}-no *{attrs} type=radio name=#{name} value=no :showVal not val:checked>
+-<label for=#{theId}-no>_{MsgBoolNo}
+-|]
+     , fieldEnctype = UrlEncoded
+     }
+   where
+@@ -478,10 +868,25 @@ $newline never
+ checkBoxField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Bool
+ checkBoxField = Field
+     { fieldParse = \e _ -> return $ checkBoxParser e
+-    , fieldView  = \theId name attrs val _ -> [whamlet|
+-$newline never
+-<input id=#{theId} *{attrs} type=checkbox name=#{name} value=yes :showVal id val:checked>
+-|]
++    , fieldView  = \theId name attrs val _ ->     do { (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack)
++              "\" type=\"checkbox\" name=\"");
++         (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) "\" value=\"yes\"");
++         Text.Hamlet.condH
++           [(showVal id val, 
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . pack) " checked"))]
++           Nothing;
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++         (Yesod.Core.Widget.asWidgetT . toWidget)
++           ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = UrlEncoded
+     }
+ 
+@@ -525,49 +930,7 @@ optionsPairs opts = do
+ optionsEnum :: (MonadHandler m, Show a, Enum a, Bounded a) => m (OptionList a)
+ optionsEnum = optionsPairs $ map (\x -> (pack $ show x, x)) [minBound..maxBound]
+ 
+-optionsPersist :: ( YesodPersist site, PersistEntity a
+-                  , PersistQuery (YesodDB site)
+-                  , PathPiece (Key a)
+-                  , PersistEntityBackend a ~ PersistMonadBackend (YesodDB site)
+-                  , RenderMessage site msg
+-                  )
+-               => [Filter a]
+-               -> [SelectOpt a]
+-               -> (a -> msg)
+-               -> HandlerT site IO (OptionList (Entity a))
+-optionsPersist filts ords toDisplay = fmap mkOptionList $ do
+-    mr <- getMessageRender
+-    pairs <- runDB $ selectList filts ords
+-    return $ map (\(Entity key value) -> Option
+-        { optionDisplay = mr (toDisplay value)
+-        , optionInternalValue = Entity key value
+-        , optionExternalValue = toPathPiece key
+-        }) pairs
+-
+--- | An alternative to 'optionsPersist' which returns just the @Key@ instead of
+--- the entire @Entity@.
+---
+--- Since 1.3.2
+-optionsPersistKey
+-  :: (YesodPersist site
+-     , PersistEntity a
+-     , PersistQuery (YesodPersistBackend site (HandlerT site IO))
+-     , PathPiece (Key a)
+-     , RenderMessage site msg
+-     , PersistEntityBackend a ~ PersistMonadBackend (YesodDB site))
+-  => [Filter a]
+-  -> [SelectOpt a]
+-  -> (a -> msg)
+-  -> HandlerT site IO (OptionList (Key a))
+-
+-optionsPersistKey filts ords toDisplay = fmap mkOptionList $ do
+-    mr <- getMessageRender
+-    pairs <- runDB $ selectList filts ords
+-    return $ map (\(Entity key value) -> Option
+-        { optionDisplay = mr (toDisplay value)
+-        , optionInternalValue = key
+-        , optionExternalValue = toPathPiece key
+-        }) pairs
++
+ 
+ selectFieldHelper
+         :: (Eq a, RenderMessage site FormMessage)
+@@ -611,9 +974,21 @@ fileField = Field
+         case files of
+             [] -> Right Nothing
+             file:_ -> Right $ Just file
+-    , fieldView = \id' name attrs _ isReq -> toWidget [hamlet|
+-            <input id=#{id'} name=#{name} *{attrs} type=file :isReq:required>
+-        |]
++    , fieldView = \id' name attrs _ isReq -> toWidget  $     \ _render_arSN
++      -> do { id
++                ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++              id (toHtml id');
++              id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++              id (toHtml name);
++              id
++                ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"file\"");
++              Text.Hamlet.condH
++                [(isReq, 
++                  id ((Text.Blaze.Internal.preEscapedText . pack) " required"))]
++                Nothing;
++              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
++              id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+     , fieldEnctype = Multipart
+     }
+ 
+@@ -640,10 +1015,20 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
+             { fvLabel = toHtml $ renderMessage site langs $ fsLabel fs
+             , fvTooltip = fmap (toHtml . renderMessage site langs) $ fsTooltip fs
+             , fvId = id'
+-            , fvInput = [whamlet|
+-$newline never
+-<input type=file name=#{name} ##{id'} *{fsAttrs fs}>
+-|]
++            , fvInput =             do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack)
++                      "<input type=\"file\" name=\"");
++                 (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) "\" id=\"");
++                 (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml id');
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Hamlet.attrsToHtml . toAttributes) (fsAttrs fs));
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+             , fvErrors = errs
+             , fvRequired = True
+             }
+@@ -672,10 +1057,20 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
+             { fvLabel = toHtml $ renderMessage master langs $ fsLabel fs
+             , fvTooltip = fmap (toHtml . renderMessage master langs) $ fsTooltip fs
+             , fvId = id'
+-            , fvInput = [whamlet|
+-$newline never
+-<input type=file name=#{name} ##{id'} *{fsAttrs fs}>
+-|]
++            , fvInput =             do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack)
++                      "<input type=\"file\" name=\"");
++                 (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) "\" id=\"");
++                 (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml id');
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Hamlet.attrsToHtml . toAttributes) (fsAttrs fs));
++                 (Yesod.Core.Widget.asWidgetT . toWidget)
++                   ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+             , fvErrors = errs
+             , fvRequired = False
+             }
+diff --git a/Yesod/Form/Functions.hs b/Yesod/Form/Functions.hs
+index 8a36710..8675a10 100644
+--- a/Yesod/Form/Functions.hs
++++ b/Yesod/Form/Functions.hs
+@@ -53,12 +53,16 @@ import Text.Blaze (Markup, toMarkup)
+ #define toHtml toMarkup
+ import Yesod.Core
+ import Network.Wai (requestMethod)
+-import Text.Hamlet (shamlet)
++--`import Text.Hamlet (shamlet)
+ import Data.Monoid (mempty)
+ import Data.Maybe (listToMaybe, fromMaybe)
+ import qualified Data.Map as Map
+ import qualified Data.Text.Encoding as TE
+ import Control.Arrow (first)
++import qualified Text.Blaze.Internal
++import qualified Yesod.Core.Widget
++import qualified Data.Foldable
++import qualified Text.Hamlet
+ 
+ -- | Get a unique identifier.
+ newFormIdent :: Monad m => MForm m Text
+@@ -210,7 +214,14 @@ postHelper form env = do
+     let token =
+             case reqToken req of
+                 Nothing -> mempty
+-                Just n -> [shamlet|<input type=hidden name=#{tokenKey} value=#{n}>|]
++                Just n ->                 do { id
++                       ((Text.Blaze.Internal.preEscapedText . pack)
++                          "<input type=\"hidden\" name=\"");
++                     id (toHtml tokenKey);
++                     id ((Text.Blaze.Internal.preEscapedText . pack) "\" value=\"");
++                     id (toHtml n);
++                     id ((Text.Blaze.Internal.preEscapedText . pack) "\">") }
++
+     m <- getYesod
+     langs <- languages
+     ((res, xml), enctype) <- runFormGeneric (form token) m langs env
+@@ -279,7 +290,12 @@ getHelper :: MonadHandler m
+           -> Maybe (Env, FileEnv)
+           -> m (a, Enctype)
+ getHelper form env = do
+-    let fragment = [shamlet|<input type=hidden name=#{getKey}>|]
++    let fragment =     do { id
++           ((Text.Blaze.Internal.preEscapedText . pack)
++              "<input type=\"hidden\" name=\"");
++         id (toHtml getKey);
++         id ((Text.Blaze.Internal.preEscapedText . pack) "\">") }
++
+     langs <- languages
+     m <- getYesod
+     runFormGeneric (form fragment) m langs env
+@@ -293,19 +309,66 @@ renderTable, renderDivs, renderDivsNoLabels :: Monad m => FormRender m a
+ renderTable aform fragment = do
+     (res, views') <- aFormToForm aform
+     let views = views' []
+-    let widget = [whamlet|
+-$newline never
+-\#{fragment}
+-$forall view <- views
+-    <tr :fvRequired view:.required :not $ fvRequired view:.optional>
+-        <td>
+-            <label for=#{fvId view}>#{fvLabel view}
+-            $maybe tt <- fvTooltip view
+-                <div .tooltip>#{tt}
+-        <td>^{fvInput view}
+-        $maybe err <- fvErrors view
+-            <td .errors>#{err}
+-|]
++    let widget =     do { (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml fragment);
++         Data.Foldable.mapM_
++           (\ view_aagq
++              -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "<tr");
++                      Text.Hamlet.condH
++                        [(or [fvRequired view_aagq, not (fvRequired view_aagq)], 
++                          do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                 ((Text.Blaze.Internal.preEscapedText . pack) " class=\"");
++                               Text.Hamlet.condH
++                                 [(fvRequired view_aagq, 
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack) "required "))]
++                                 Nothing;
++                               Text.Hamlet.condH
++                                 [(not (fvRequired view_aagq), 
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack) "optional"))]
++                                 Nothing;
++                               (Yesod.Core.Widget.asWidgetT . toWidget)
++                                 ((Text.Blaze.Internal.preEscapedText . pack) "\"") })]
++                        Nothing;
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "><td><label for=\"");
++                      (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml (fvId view_aagq));
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "\">");
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        (toHtml (fvLabel view_aagq));
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "</label>");
++                      Text.Hamlet.maybeH
++                        (fvTooltip view_aagq)
++                        (\ tt_aagr
++                           -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack)
++                                        "<div class=\"tooltip\">");
++                                   (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml tt_aagr);
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack) "</div>") })
++                        Nothing;
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "</td><td>");
++                      (Yesod.Core.Widget.asWidgetT . toWidget) (fvInput view_aagq);
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "</td>");
++                      Text.Hamlet.maybeH
++                        (fvErrors view_aagq)
++                        (\ err_aags
++                           -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack)
++                                        "<td class=\"errors\">");
++                                   (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml err_aags);
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack) "</td>") })
++                        Nothing;
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "</tr>") })
++           views }
++
+     return (res, widget)
+ 
+ -- | render a field inside a div
+@@ -318,19 +381,67 @@ renderDivsMaybeLabels :: Monad m => Bool -> FormRender m a
+ renderDivsMaybeLabels withLabels aform fragment = do
+     (res, views') <- aFormToForm aform
+     let views = views' []
+-    let widget = [whamlet|
+-$newline never
+-\#{fragment}
+-$forall view <- views
+-    <div :fvRequired view:.required :not $ fvRequired view:.optional>
+-        $if withLabels
+-                <label for=#{fvId view}>#{fvLabel view}
+-        $maybe tt <- fvTooltip view
+-            <div .tooltip>#{tt}
+-        ^{fvInput view}
+-        $maybe err <- fvErrors view
+-            <div .errors>#{err}
+-|]
++    let widget =     do { (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml fragment);
++         Data.Foldable.mapM_
++           (\ view_aagE
++              -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "<div");
++                      Text.Hamlet.condH
++                        [(or [fvRequired view_aagE, not (fvRequired view_aagE)], 
++                          do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                 ((Text.Blaze.Internal.preEscapedText . pack) " class=\"");
++                               Text.Hamlet.condH
++                                 [(fvRequired view_aagE, 
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack) "required "))]
++                                 Nothing;
++                               Text.Hamlet.condH
++                                 [(not (fvRequired view_aagE), 
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack) "optional"))]
++                                 Nothing;
++                               (Yesod.Core.Widget.asWidgetT . toWidget)
++                                 ((Text.Blaze.Internal.preEscapedText . pack) "\"") })]
++                        Nothing;
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) ">");
++                      Text.Hamlet.condH
++                        [(withLabels, 
++                          do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                 ((Text.Blaze.Internal.preEscapedText . pack) "<label for=\"");
++                               (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml (fvId view_aagE));
++                               (Yesod.Core.Widget.asWidgetT . toWidget)
++                                 ((Text.Blaze.Internal.preEscapedText . pack) "\">");
++                               (Yesod.Core.Widget.asWidgetT . toWidget)
++                                 (toHtml (fvLabel view_aagE));
++                               (Yesod.Core.Widget.asWidgetT . toWidget)
++                                 ((Text.Blaze.Internal.preEscapedText . pack) "</label>") })]
++                        Nothing;
++                      Text.Hamlet.maybeH
++                        (fvTooltip view_aagE)
++                        (\ tt_aagF
++                           -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack)
++                                        "<div class=\"tooltip\">");
++                                   (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml tt_aagF);
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack) "</div>") })
++                        Nothing;
++                      (Yesod.Core.Widget.asWidgetT . toWidget) (fvInput view_aagE);
++                      Text.Hamlet.maybeH
++                        (fvErrors view_aagE)
++                        (\ err_aagG
++                           -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack)
++                                        "<div class=\"errors\">");
++                                   (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml err_aagG);
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack) "</div>") })
++                        Nothing;
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "</div>") })
++           views }
++
+     return (res, widget)
+ 
+ -- | Render a form using Bootstrap-friendly shamlet syntax.
+@@ -354,19 +465,63 @@ renderBootstrap aform fragment = do
+     let views = views' []
+         has (Just _) = True
+         has Nothing  = False
+-    let widget = [whamlet|
+-                $newline never
+-                \#{fragment}
+-                $forall view <- views
+-                    <div .control-group .clearfix :fvRequired view:.required :not $ fvRequired view:.optional :has $ fvErrors view:.error>
+-                        <label .control-label for=#{fvId view}>#{fvLabel view}
+-                        <div .controls .input>
+-                            ^{fvInput view}
+-                            $maybe tt <- fvTooltip view
+-                                <span .help-block>#{tt}
+-                            $maybe err <- fvErrors view
+-                                <span .help-block>#{err}
+-                |]
++    let widget =     do { (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml fragment);
++         Data.Foldable.mapM_
++           (\ view_aagR
++              -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack)
++                           "<div class=\"control-group clearfix ");
++                      Text.Hamlet.condH
++                        [(fvRequired view_aagR, 
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . pack) "required "))]
++                        Nothing;
++                      Text.Hamlet.condH
++                        [(not (fvRequired view_aagR), 
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . pack) "optional "))]
++                        Nothing;
++                      Text.Hamlet.condH
++                        [(has (fvErrors view_aagR), 
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . pack) "error"))]
++                        Nothing;
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack)
++                           "\"><label class=\"control-label\" for=\"");
++                      (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml (fvId view_aagR));
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "\">");
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        (toHtml (fvLabel view_aagR));
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack)
++                           "</label><div class=\"controls input\">");
++                      (Yesod.Core.Widget.asWidgetT . toWidget) (fvInput view_aagR);
++                      Text.Hamlet.maybeH
++                        (fvTooltip view_aagR)
++                        (\ tt_aagS
++                           -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack)
++                                        "<span class=\"help-block\">");
++                                   (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml tt_aagS);
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack) "</span>") })
++                        Nothing;
++                      Text.Hamlet.maybeH
++                        (fvErrors view_aagR)
++                        (\ err_aagT
++                           -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack)
++                                        "<span class=\"help-block\">");
++                                   (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml err_aagT);
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . pack) "</span>") })
++                        Nothing;
++                      (Yesod.Core.Widget.asWidgetT . toWidget)
++                        ((Text.Blaze.Internal.preEscapedText . pack) "</div></div>") })
++           views }
++
+     return (res, widget)
+ 
+ check :: (Monad m, RenderMessage (HandlerSite m) msg)
+diff --git a/Yesod/Form/Jquery.hs b/Yesod/Form/Jquery.hs
+index 2c4ae25..ed9b366 100644
+--- a/Yesod/Form/Jquery.hs
++++ b/Yesod/Form/Jquery.hs
+@@ -12,12 +12,24 @@ module Yesod.Form.Jquery
+     , Default (..)
+     ) where
+ 
++import qualified Text.Blaze as Text.Blaze.Internal
++import qualified Text.Blaze.Internal
++import qualified Text.Hamlet
++import qualified Yesod.Core.Widget
++import qualified Text.Css
++import qualified Data.Monoid
++import qualified Data.Foldable
++import qualified Control.Monad
++import qualified Text.Julius
++import qualified Data.Text.Lazy.Builder
++import qualified Text.Shakespeare
++
+ import Yesod.Core
+ import Yesod.Form
+ import Data.Time (Day)
+ import Data.Default
+-import Text.Hamlet (shamlet)
+-import Text.Julius (julius, rawJS)
++--import Text.Hamlet (shamlet)
++import Text.Julius (rawJS)
+ import Data.Text (Text, pack, unpack)
+ import Data.Monoid (mconcat)
+ 
+@@ -60,27 +72,59 @@ jqueryDayField jds = Field
+               . readMay
+               . unpack
+     , fieldView = \theId name attrs val isReq -> do
+-        toWidget [shamlet|
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} type="date" :isReq:required="" value="#{showVal val}">
+-|]
++        toWidget  $         do { id
++               ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
++             id (toHtml theId);
++             id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++             id (toHtml name);
++             id
++               ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"date\"");
++             Text.Hamlet.condH
++               [(isReq, 
++                 id ((Text.Blaze.Internal.preEscapedText . pack) " required=\"\""))]
++               Nothing;
++             id ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++             id (toHtml (showVal val));
++             id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++             id ((Text.Hamlet.attrsToHtml . Text.Hamlet.toAttributes) attrs);
++             id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+         addScript' urlJqueryJs
+         addScript' urlJqueryUiJs
+         addStylesheet' urlJqueryUiCss
+-        toWidget [julius|
+-$(function(){
+-    var i = document.getElementById("#{rawJS theId}");
+-    if (i.type != "date") {
+-        $(i).datepicker({
+-            dateFormat:'yy-mm-dd',
+-            changeMonth:#{jsBool $ jdsChangeMonth jds},
+-            changeYear:#{jsBool $ jdsChangeYear jds},
+-            numberOfMonths:#{rawJS $ mos $ jdsNumberOfMonths jds},
+-            yearRange:#{toJSON $ jdsYearRange jds}
+-        });
+-    }
+-});
+-|]
++        toWidget  $         Text.Julius.asJavascriptUrl
++          (\ _render_a1lYC
++             -> mconcat
++                  [Text.Julius.Javascript
++                     ((Data.Text.Lazy.Builder.fromText
++                       . Text.Shakespeare.pack')
++                        "\n$(function(){\n    var i = document.getElementById(\""),
++                   Text.Julius.toJavascript (rawJS theId),
++                   Text.Julius.Javascript
++                     ((Data.Text.Lazy.Builder.fromText
++                       . Text.Shakespeare.pack')
++                        "\");\n    if (i.type != \"date\") {\n        $(i).datepicker({\n            dateFormat:'yy-mm-dd',\n            changeMonth:"),
++                   Text.Julius.toJavascript (jsBool (jdsChangeMonth jds)),
++                   Text.Julius.Javascript
++                     ((Data.Text.Lazy.Builder.fromText
++                       . Text.Shakespeare.pack')
++                        ",\n            changeYear:"),
++                   Text.Julius.toJavascript (jsBool (jdsChangeYear jds)),
++                   Text.Julius.Javascript
++                     ((Data.Text.Lazy.Builder.fromText
++                       . Text.Shakespeare.pack')
++                        ",\n            numberOfMonths:"),
++                   Text.Julius.toJavascript (rawJS (mos (jdsNumberOfMonths jds))),
++                   Text.Julius.Javascript
++                     ((Data.Text.Lazy.Builder.fromText
++                       . Text.Shakespeare.pack')
++                        ",\n            yearRange:"),
++                   Text.Julius.toJavascript (toJSON (jdsYearRange jds)),
++                   Text.Julius.Javascript
++                     ((Data.Text.Lazy.Builder.fromText
++                       . Text.Shakespeare.pack')
++                        "\n        });\n    }\n});")])
++
+     , fieldEnctype = UrlEncoded
+     }
+   where
+@@ -101,16 +145,47 @@ jqueryAutocompleteField :: (RenderMessage site FormMessage, YesodJquery site)
+ jqueryAutocompleteField src = Field
+     { fieldParse = parseHelper $ Right
+     , fieldView = \theId name attrs val isReq -> do
+-        toWidget [shamlet|
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} type="text" :isReq:required="" value="#{either id id val}" .autocomplete>
+-|]
++        toWidget  $         do { id
++               ((Text.Blaze.Internal.preEscapedText . pack)
++                  "<input class=\"autocomplete\" id=\"");
++             id (toHtml theId);
++             id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++             id (toHtml name);
++             id
++               ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"text\"");
++             Text.Hamlet.condH
++               [(isReq, 
++                 id ((Text.Blaze.Internal.preEscapedText . pack) " required=\"\""))]
++               Nothing;
++             id ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
++             id (toHtml (either id id val));
++             id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++             id ((Text.Hamlet.attrsToHtml . Text.Hamlet.toAttributes) attrs);
++             id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
++
+         addScript' urlJqueryJs
+         addScript' urlJqueryUiJs
+         addStylesheet' urlJqueryUiCss
+-        toWidget [julius|
+-$(function(){$("##{rawJS theId}").autocomplete({source:"@{src}",minLength:2})});
+-|]
++        toWidget  $         Text.Julius.asJavascriptUrl
++          (\ _render_a1lYP
++             -> mconcat
++                  [Text.Julius.Javascript
++                     ((Data.Text.Lazy.Builder.fromText
++                       . Text.Shakespeare.pack')
++                        "\n$(function(){$(\"#"),
++                   Text.Julius.toJavascript (rawJS theId),
++                   Text.Julius.Javascript
++                     ((Data.Text.Lazy.Builder.fromText
++                       . Text.Shakespeare.pack')
++                        "\").autocomplete({source:\""),
++                   Text.Julius.Javascript
++                     (Data.Text.Lazy.Builder.fromText
++                        (_render_a1lYP src [])),
++                   Text.Julius.Javascript
++                     ((Data.Text.Lazy.Builder.fromText
++                       . Text.Shakespeare.pack')
++                        "\",minLength:2})});")])
++
+     , fieldEnctype = UrlEncoded
+     }
+ 
+diff --git a/Yesod/Form/MassInput.hs b/Yesod/Form/MassInput.hs
+index 332eb66..5015e7b 100644
+--- a/Yesod/Form/MassInput.hs
++++ b/Yesod/Form/MassInput.hs
+@@ -9,6 +9,16 @@ module Yesod.Form.MassInput
+     , massTable
+     ) where
+ 
++import qualified Data.Text
++import qualified Text.Blaze as Text.Blaze.Internal
++import qualified Text.Blaze.Internal
++import qualified Text.Hamlet
++import qualified Yesod.Core.Widget
++import qualified Text.Css
++import qualified Data.Monoid
++import qualified Data.Foldable
++import qualified Control.Monad
++
+ import Yesod.Form.Types
+ import Yesod.Form.Functions
+ import Yesod.Form.Fields (boolField)
+@@ -70,16 +80,28 @@ inputList label fixXml single mdef = formToAForm $ do
+         { fvLabel = label
+         , fvTooltip = Nothing
+         , fvId = theId
+-        , fvInput = [whamlet|
+-$newline never
+-^{fixXml views}
+-<p>
+-    $forall xml <- xmls
+-        ^{xml}
+-    <input .count type=hidden name=#{countName} value=#{count}>
+-    <input type=checkbox name=#{addName}>
+-    Add another row
+-|]
++        , fvInput =         do { (Yesod.Core.Widget.asWidgetT . toWidget) (fixXml views);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack) "<p>");
++             Data.Foldable.mapM_
++               (\ xml_aUS3 -> (Yesod.Core.Widget.asWidgetT . toWidget) xml_aUS3)
++               xmls;
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                  "<input class=\"count\" type=\"hidden\" name=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml countName);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                  "\" value=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml count);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                  "\"><input type=\"checkbox\" name=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml addName);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                  "\">Add another row</p>") }
++
+         , fvErrors = Nothing
+         , fvRequired = False
+         }])
+@@ -92,10 +114,14 @@ withDelete af = do
+     deleteName <- newFormIdent
+     (menv, _, _) <- ask
+     res <- case menv >>= Map.lookup deleteName . fst of
+-        Just ("yes":_) -> return $ Left [whamlet|
+-$newline never
+-<input type=hidden name=#{deleteName} value=yes>
+-|]
++        Just ("yes":_) -> return $ Left  $         do { (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                  "<input type=\"hidden\" name=\"");
++             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml deleteName);
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                  "\" value=\"yes\">") }
++
+         _ -> do
+             (_, xml2) <- aFormToForm $ areq boolField FieldSettings
+                 { fsLabel = SomeMessage MsgDelete
+@@ -121,32 +147,155 @@ fixme eithers =
+ massDivs, massTable
+          :: [[FieldView site]]
+          -> WidgetT site IO ()
+-massDivs viewss = [whamlet|
+-$newline never
+-$forall views <- viewss
+-    <fieldset>
+-        $forall view <- views
+-            <div :fvRequired view:.required :not $ fvRequired view:.optional>
+-                <label for=#{fvId view}>#{fvLabel view}
+-                $maybe tt <- fvTooltip view
+-                    <div .tooltip>#{tt}
+-                ^{fvInput view}
+-                $maybe err <- fvErrors view
+-                    <div .errors>#{err}
+-|]
++massDivs viewss = Data.Foldable.mapM_
++  (\ views_aUSm
++     -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                  "<fieldset>");
++             Data.Foldable.mapM_
++               (\ view_aUSn
++                  -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack) "<div");
++                          Text.Hamlet.condH
++                            [(or [fvRequired view_aUSn, not (fvRequired view_aUSn)], 
++                              do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                        " class=\"");
++                                   Text.Hamlet.condH
++                                     [(fvRequired view_aUSn, 
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "required "))]
++                                     Nothing;
++                                   Text.Hamlet.condH
++                                     [(not (fvRequired view_aUSn), 
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "optional"))]
++                                     Nothing;
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                        "\"") })]
++                            Nothing;
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                               "><label for=\"");
++                          (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml (fvId view_aUSn));
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack) "\">");
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            (toHtml (fvLabel view_aUSn));
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack) "</label>");
++                          Text.Hamlet.maybeH
++                            (fvTooltip view_aUSn)
++                            (\ tt_aUSo
++                               -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "<div class=\"tooltip\">");
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         (toHtml tt_aUSo);
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "</div>") })
++                            Nothing;
++                          (Yesod.Core.Widget.asWidgetT . toWidget) (fvInput view_aUSn);
++                          Text.Hamlet.maybeH
++                            (fvErrors view_aUSn)
++                            (\ err_aUSp
++                               -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "<div class=\"errors\">");
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         (toHtml err_aUSp);
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "</div>") })
++                            Nothing;
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack) "</div>") })
++               views_aUSm;
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                  "</fieldset>") })
++  viewss
++
++
++massTable viewss = Data.Foldable.mapM_
++  (\ views_aUSu
++     -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                  "<fieldset><table>");
++             Data.Foldable.mapM_
++               (\ view_aUSv
++                  -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack) "<tr");
++                          Text.Hamlet.condH
++                            [(or [fvRequired view_aUSv, not (fvRequired view_aUSv)], 
++                              do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                        " class=\"");
++                                   Text.Hamlet.condH
++                                     [(fvRequired view_aUSv, 
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "required "))]
++                                     Nothing;
++                                   Text.Hamlet.condH
++                                     [(not (fvRequired view_aUSv), 
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "optional"))]
++                                     Nothing;
++                                   (Yesod.Core.Widget.asWidgetT . toWidget)
++                                     ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                        "\"") })]
++                            Nothing;
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                               "><td><label for=\"");
++                          (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml (fvId view_aUSv));
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack) "\">");
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            (toHtml (fvLabel view_aUSv));
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack) "</label>");
++                          Text.Hamlet.maybeH
++                            (fvTooltip view_aUSv)
++                            (\ tt_aUSw
++                               -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "<div class=\"tooltip\">");
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         (toHtml tt_aUSw);
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "</div>") })
++                            Nothing;
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                               "</td><td>");
++                          (Yesod.Core.Widget.asWidgetT . toWidget) (fvInput view_aUSv);
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack) "</td>");
++                          Text.Hamlet.maybeH
++                            (fvErrors view_aUSv)
++                            (\ err_aUSx
++                               -> do { (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "<td class=\"errors\">");
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         (toHtml err_aUSx);
++                                       (Yesod.Core.Widget.asWidgetT . toWidget)
++                                         ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                                            "</td>") })
++                            Nothing;
++                          (Yesod.Core.Widget.asWidgetT . toWidget)
++                            ((Text.Blaze.Internal.preEscapedText . Data.Text.pack) "</tr>") })
++               views_aUSu;
++             (Yesod.Core.Widget.asWidgetT . toWidget)
++               ((Text.Blaze.Internal.preEscapedText . Data.Text.pack)
++                  "</table></fieldset>") })
++  viewss
+ 
+-massTable viewss = [whamlet|
+-$newline never
+-$forall views <- viewss
+-    <fieldset>
+-        <table>
+-            $forall view <- views
+-                <tr :fvRequired view:.required :not $ fvRequired view:.optional>
+-                    <td>
+-                        <label for=#{fvId view}>#{fvLabel view}
+-                        $maybe tt <- fvTooltip view
+-                            <div .tooltip>#{tt}
+-                    <td>^{fvInput view}
+-                    $maybe err <- fvErrors view
+-                        <td .errors>#{err}
+-|]
+diff --git a/Yesod/Form/Nic.hs b/Yesod/Form/Nic.hs
+index 2862678..04ddaba 100644
+--- a/Yesod/Form/Nic.hs
++++ b/Yesod/Form/Nic.hs
+@@ -9,11 +9,24 @@ module Yesod.Form.Nic
+     , nicHtmlField
+     ) where
+ 
++import qualified Text.Blaze as Text.Blaze.Internal
++import qualified Text.Blaze.Internal
++import qualified Text.Hamlet
++import qualified Yesod.Core.Widget
++import qualified Text.Css
++import qualified Data.Monoid
++import qualified Data.Foldable
++import qualified Control.Monad
++import qualified Text.Julius
++import qualified Data.Text.Lazy.Builder
++import qualified Text.Shakespeare
++
++
+ import Yesod.Core
+ import Yesod.Form
+ import Text.HTML.SanitizeXSS (sanitizeBalance)
+-import Text.Hamlet (shamlet)
+-import Text.Julius (julius, rawJS)
++--import Text.Hamlet (shamlet)
++import Text.Julius ( rawJS)
+ import Text.Blaze.Html.Renderer.String (renderHtml)
+ import Data.Text (Text, pack)
+ import Data.Maybe (listToMaybe)
+@@ -27,20 +40,48 @@ nicHtmlField :: YesodNic site => Field (HandlerT site IO) Html
+ nicHtmlField = Field
+     { fieldParse = \e _ -> return . Right . fmap (preEscapedToMarkup . sanitizeBalance) . listToMaybe $ e
+     , fieldView = \theId name attrs val _isReq -> do
+-        toWidget [shamlet|
+-$newline never
+-    <textarea id="#{theId}" *{attrs} name="#{name}" .html>#{showVal val}
+-|]
++        toWidget  $         do { id
++               ((Text.Blaze.Internal.preEscapedText . pack)
++                  "<textarea class=\"html\" id=\"");
++             id (toHtml theId);
++             id ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
++             id (toHtml name);
++             id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
++             id ((Text.Hamlet.attrsToHtml . Text.Hamlet.toAttributes) attrs);
++             id ((Text.Blaze.Internal.preEscapedText . pack) ">");
++             id (toHtml (showVal val));
++             id ((Text.Blaze.Internal.preEscapedText . pack) "</textarea>") }
++
+         addScript' urlNicEdit
+         master <- getYesod
+         toWidget $
+           case jsLoader master of
+-            BottomOfHeadBlocking -> [julius|
+-bkLib.onDomLoaded(function(){new nicEditor({fullPanel:true}).panelInstance("#{rawJS theId}")});
+-|]
+-            _ -> [julius|
+-(function(){new nicEditor({fullPanel:true}).panelInstance("#{rawJS theId}")})();
+-|]
++            BottomOfHeadBlocking ->             Text.Julius.asJavascriptUrl
++              (\ _render_a1qhO
++                 -> Data.Monoid.mconcat
++                      [Text.Julius.Javascript
++                         ((Data.Text.Lazy.Builder.fromText
++                           . Text.Shakespeare.pack')
++                            "\nbkLib.onDomLoaded(function(){new nicEditor({true}).panelInstance(\""),
++                       Text.Julius.toJavascript (rawJS theId),
++                       Text.Julius.Javascript
++                         ((Data.Text.Lazy.Builder.fromText
++                           . Text.Shakespeare.pack')
++                            "\")});")])
++
++            _ ->             Text.Julius.asJavascriptUrl
++              (\ _render_a1qhS
++                 -> Data.Monoid.mconcat
++                      [Text.Julius.Javascript
++                         ((Data.Text.Lazy.Builder.fromText
++                           . Text.Shakespeare.pack')
++                            "\n(function(){new nicEditor({true}).panelInstance(\""),
++                       Text.Julius.toJavascript (rawJS theId),
++                       Text.Julius.Javascript
++                         ((Data.Text.Lazy.Builder.fromText
++                           . Text.Shakespeare.pack')
++                            "\")})();")])
++
+     , fieldEnctype = UrlEncoded
+     }
+   where
+diff --git a/yesod-form.cabal b/yesod-form.cabal
+index 9e0c710..a39f71f 100644
+--- a/yesod-form.cabal
++++ b/yesod-form.cabal
+@@ -19,6 +19,7 @@ library
+                    , time                  >= 1.1.4
+                    , hamlet                >= 1.1      && < 1.2
+                    , shakespeare-css       >= 1.0      && < 1.1
++                   , shakespeare
+                    , shakespeare-js        >= 1.0.2    && < 1.3
+                    , persistent            >= 1.2      && < 1.3
+                    , template-haskell
+-- 
+1.8.5.1
+

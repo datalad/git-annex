@@ -32,16 +32,13 @@ import Annex.Environment
 import Command
 import Types.Messages
 
-type Params = [String]
-type Flags = [Annex ()]
-
 {- Runs the passed command line. -}
-dispatch :: Bool -> Params -> [Command] -> [Option] -> [(String, String)] -> String -> IO Git.Repo -> IO ()
+dispatch :: Bool -> CmdParams -> [Command] -> [Option] -> [(String, String)] -> String -> IO Git.Repo -> IO ()
 dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 	setupConsole
 	r <- E.try getgitrepo :: IO (Either E.SomeException Git.Repo)
 	case r of
-		Left e -> fromMaybe (throw e) (cmdnorepo cmd)
+		Left e -> maybe (throw e) (\a -> a params) (cmdnorepo cmd)
 		Right g -> do
 			state <- Annex.new g
 			(actions, state') <- Annex.run state $ do
@@ -66,7 +63,7 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 {- Parses command line params far enough to find the Command to run, and
  - returns the remaining params.
  - Does fuzzy matching if necessary, which may result in multiple Commands. -}
-findCmd :: Bool -> Params -> [Command] -> (String -> String) -> (Bool, [Command], String, Params)
+findCmd :: Bool -> CmdParams -> [Command] -> (String -> String) -> (Bool, [Command], String, CmdParams)
 findCmd fuzzyok argv cmds err
 	| isNothing name = error $ err "missing command"
 	| not (null exactcmds) = (False, exactcmds, fromJust name, args)
@@ -85,7 +82,7 @@ findCmd fuzzyok argv cmds err
 
 {- Parses command line options, and returns actions to run to configure flags
  - and the remaining parameters for the command. -}
-getOptCmd :: Params -> Command -> [Option] -> (Flags, Params)
+getOptCmd :: CmdParams -> Command -> [Option] -> ([Annex ()], CmdParams)
 getOptCmd argv cmd commonoptions = check $
 	getOpt Permute (commonoptions ++ cmdoptions cmd) argv
   where

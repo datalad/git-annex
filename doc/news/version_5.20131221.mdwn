@@ -1,0 +1,21 @@
+git-annex 5.20131221 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * assistant: Fix OSX-specific bug that caused the startup scan to try to
+     follow symlinks to other directories, and add their contents to the annex.
+   * assistant: Set StrictHostKeyChecking yes when creating ssh remotes,
+     and add it to the configuration for any ssh remotes previously created
+     by the assistant. This avoids repeated prompts by ssh if the host key
+     changes, instead syncing with such a remote will fail. Closes: #[732602](http://bugs.debian.org/732602)
+   * Fix test suite to cover lock --force change.
+   * Add plumbing-level lookupkey and examinekey commands.
+   * find --format: Added hashdirlower, hashdirmixed, keyname, and mtime
+     format variables.
+   * assistant: Always batch changes found in startup scan.
+   * An armel Linux standalone build is now available, which includes the
+     webapp.
+   * Programs from Linux and OSX standalone builds can now be symlinked
+     into a directory in PATH as an alternative installation method, and will
+     use readlink to find where the build was unpacked.
+   * Include man pages in Linux and OSX standalone builds.
+   * Linux standalone build now includes its own glibc and forces the linker to
+     use it, to remove dependence on the host glibc."""]]

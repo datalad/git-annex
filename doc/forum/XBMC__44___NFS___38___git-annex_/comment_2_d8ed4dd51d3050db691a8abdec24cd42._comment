@@ -6,5 +6,5 @@
  content="""
 The default git-annex backend for over a year now is SHA256E, which includes the filename extension in the key to deal with programs that rely on them. If you're not using that backend, you can `git annex migrate` to it.
 
-Or you can turn on direct mode, which will certianly solve the problem.
+Or you can turn on direct mode, which will certainly solve the problem.
 """]]

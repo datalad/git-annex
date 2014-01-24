@@ -15,7 +15,6 @@ import Git.Construct
 import qualified Git.Config as Config
 import qualified Git.Command as Command
 import Utility.Gpg
-import Git.Remote
 
 urlPrefix :: String
 urlPrefix = "gcrypt::"

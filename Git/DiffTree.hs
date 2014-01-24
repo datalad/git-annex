@@ -87,7 +87,7 @@ parseDiffTree l = go l []
 		, srcsha = fromMaybe (error "bad srcsha") $ extractSha ssha
 		, dstsha = fromMaybe (error "bad dstsha") $ extractSha dsha
 		, status = s
-		, file = asTopFilePath $ Git.Filename.decode f
+		, file = asTopFilePath $ fromInternalGitPath $ Git.Filename.decode f
 		}
 	  where
 		readmode = fst . Prelude.head . readOct

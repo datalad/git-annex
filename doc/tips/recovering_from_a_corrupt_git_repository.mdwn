@@ -1,0 +1,17 @@
+I have found this the most reliable way to recover from a corrupt git repository. I have had a lot of them lately, there might be a regression in btrfs in Ubuntu's Linux 3.8.0-33 (!).
+
+1. Create a clone of a known good repository.
+2. Add the clone as an object alternate to the broken repository.
+3. Do a `git-repack -a -d` to lift the external objects into repo-local packs.
+4. Remove the clone
+
+[[!format sh """
+$ cd /tmp/
+$ git clone good-host:/path/to/good-repo
+$ cd /home/user/broken-repo
+$ echo /tmp/good-repo/.git/objects/ > .git/objects/info/alternates
+$ git repack -a -d
+$ rm -rf /tmp/good-repo
+"""]]
+
+... and push early, push often. ;-)

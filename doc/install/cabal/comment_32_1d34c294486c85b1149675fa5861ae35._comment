@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 32"
+ date="2013-11-22T16:27:36Z"
+ content="""
+@robohack, the ghc7.0 branch is not being maintained, and is so old I don't recommend it. To build it against current cabal you will probably need to version its dependency on network to an older version than 2.4.0. 
+
+Also, git-annex has not depended on pcre for a long time. But you're building thoroughly old version so get to trip over every bug that's been reported for the past 2 years..
+"""]]

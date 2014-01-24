@@ -10,7 +10,6 @@ Build-Depends:
 	libghc-pcre-light-dev,
 	libghc-sha-dev,
 	libghc-cryptohash-dev,
-	libghc-regex-tdfa-dev [!mips !mipsel !s390],
 	libghc-dataenc-dev,
 	libghc-utf8-string-dev,
 	libghc-hs3-dev (>= 0.5.6),
@@ -50,15 +49,20 @@ Build-Depends:
 	libghc-async-dev,
 	libghc-http-dev,
 	libghc-feed-dev,
+	libghc-regex-tdfa-dev [!mipsel !s390],
+	libghc-tasty-dev [!mipsel !sparc],
+	libghc-tasty-hunit-dev [!mipsel !sparc],
+	libghc-tasty-quickcheck-dev [!mipsel !sparc],
+	lsof [!kfreebsd-i386 !kfreebsd-amd64],
 	ikiwiki,
 	perlmagick,
-	git (>= 1:1.8.4~rc3),
+	git (>= 1:1.8.4),
 	rsync,
 	wget,
 	curl,
 	openssh-client,
 Maintainer: Joey Hess <joeyh@debian.org>
-Standards-Version: 3.9.4
+Standards-Version: 3.9.5
 Vcs-Git: git://git.kitenet.net/git-annex
 Homepage: http://git-annex.branchable.com/
 XS-Testsuite: autopkgtest
@@ -67,13 +71,24 @@ Package: git-annex
 Architecture: any
 Section: utils
 Depends: ${misc:Depends}, ${shlibs:Depends},
-	git (>= 1:1.8.4~rc3),
+	git (>= 1:1.8.4),
 	rsync,
 	wget,
 	curl,
 	openssh-client (>= 1:5.6p1)
-Recommends: lsof, gnupg, bind9-host, ssh-askpass, quvi, git-remote-gcrypt (>= 0.20130908-4)
-Suggests: graphviz, bup, libnss-mdns
+Recommends: 
+	lsof,
+	gnupg,
+	bind9-host,
+	ssh-askpass,
+	quvi,
+	git-remote-gcrypt (>= 0.20130908-4),
+	nocache,
+Suggests:
+	graphviz,
+	bup,
+	tahoe-lafs,
+	libnss-mdns,
 Description: manage files with git, without checking their contents into git
  git-annex allows managing files with git, without checking the file
  contents into git. While that may seem paradoxical, it is useful when

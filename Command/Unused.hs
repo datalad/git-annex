@@ -332,11 +332,13 @@ withUnusedMaps a params = do
 	unused <- readUnusedLog ""
 	unusedbad <- readUnusedLog "bad"
 	unusedtmp <- readUnusedLog "tmp"
+	let m = unused `M.union` unusedbad `M.union` unusedtmp
 	return $ map (a $ UnusedMaps unused unusedbad unusedtmp) $
-		concatMap unusedSpec params
+		concatMap (unusedSpec m) params
 
-unusedSpec :: String -> [Int]
-unusedSpec spec
+unusedSpec :: UnusedMap -> String -> [Int]
+unusedSpec m spec
+	| spec == "all" = [fst (M.findMin m)..fst (M.findMax m)]
 	| "-" `isInfixOf` spec = range $ separate (== '-') spec
 	| otherwise = maybe badspec (: []) (readish spec)
   where

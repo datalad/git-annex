@@ -5,8 +5,7 @@ git-annex has recently been ported to Windows!
 
 This port is in an early state. While it works well enough to use
 git-annex, many things will not work. See [[todo/windows_support]] for
-current status. Note especially that git-annex always uses [[direct_mode]]
-on Windows.
+current status.
 
 The autobuilder is not currently able to run the test suite, so
 testing git-annex on Windows is up to you! To check that the build of
@@ -25,10 +24,15 @@ A daily build is also available, thanks to Yury V. Zaytsev and
 ## building it yourself
 
 To build git-annex from source on Windows, you need to install
-the Haskell Platform, Mingw, and Cygwin. Use Cygwin to install
-gcc, rsync, git, wget, ssh, and gnupg. To build the git-annex installer,
-you also need to install the NulSoft installer system.
+the Haskell Platform, Mingw, and Cygwin. Use Cygwin to install:
+gcc rsync git wget ssh gnupg
 
-There is a shell script `standalone/windows/build.sh` that can be
-used to build git-annex. Note that this shell script cannot be run
-in Cygwin; run it with the Mingw sh.
+Once the prerequisites are installed, run:
+
+	cabal update
+	git clone git://git-annex.branchable.com/ gitannex
+	cd gitannex
+	build
+
+(To build the git-annex installer, you also need to install the NulSoft
+installer system.)

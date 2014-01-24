@@ -53,8 +53,11 @@ unboundDelay time = do
 {- Pauses the main thread, letting children run until program termination. -}
 waitForTermination :: IO ()
 waitForTermination = do
+#ifdef mingw32_HOST_OS
+	runEvery (Seconds 600) $
+		void getLine
+#else
 	lock <- newEmptyMVar
-#ifndef mingw32_HOST_OS
 	let check sig = void $
 		installHandler sig (CatchOnce $ putMVar lock ()) Nothing
 	check softwareTermination
@@ -62,8 +65,8 @@ waitForTermination = do
 	whenM (queryTerminal stdInput) $
 		check keyboardSignal
 #endif
-#endif
 	takeMVar lock
+#endif
 
 oneSecond :: Microseconds
 oneSecond = 1000000

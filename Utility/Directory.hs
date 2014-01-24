@@ -35,14 +35,18 @@ dirContents :: FilePath -> IO [FilePath]
 dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
 
 {- Gets files in a directory, and then its subdirectories, recursively,
- - and lazily. If the directory does not exist, no exception is thrown,
+ - and lazily.
+ -
+ - Does not follow symlinks to other subdirectories.
+ -
+ - When the directory does not exist, no exception is thrown,
  - instead, [] is returned. -}
 dirContentsRecursive :: FilePath -> IO [FilePath]
-dirContentsRecursive topdir = dirContentsRecursiveSkipping (const False) topdir
+dirContentsRecursive topdir = dirContentsRecursiveSkipping (const False) True topdir
 
 {- Skips directories whose basenames match the skipdir. -}
-dirContentsRecursiveSkipping :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
-dirContentsRecursiveSkipping skipdir topdir = go [topdir]
+dirContentsRecursiveSkipping :: (FilePath -> Bool) -> Bool -> FilePath -> IO [FilePath]
+dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir = go [topdir]
   where
   	go [] = return []
 	go (dir:dirs)
@@ -56,10 +60,18 @@ dirContentsRecursiveSkipping skipdir topdir = go [topdir]
 	collect files dirs' (entry:entries)
 		| dirCruft entry = collect files dirs' entries
 		| otherwise = do
-			ifM (doesDirectoryExist entry)
-				( collect files (entry:dirs') entries
-				, collect (entry:files) dirs' entries
-				)			
+			let skip = collect (entry:files) dirs' entries
+			let recurse = collect files (entry:dirs') entries
+			ms <- catchMaybeIO $ getSymbolicLinkStatus entry
+			case ms of
+				(Just s) 
+					| isDirectory s -> recurse
+					| isSymbolicLink s && followsubdirsymlinks ->
+						ifM (doesDirectoryExist entry)
+							( recurse
+							, skip
+							)
+				_ -> skip
 
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}

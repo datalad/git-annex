@@ -4,6 +4,6 @@
  subject="comment 1"
  date="2013-07-12T19:36:28Z"
  content="""
-Ah, I just found that git annex status can do the same :)
+Ah, I just found that git annex info can do the same :)
 Disregard this.
 """]]

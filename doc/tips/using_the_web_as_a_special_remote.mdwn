@@ -94,7 +94,15 @@ either load the short url in a browser to get the full url, or you
 can force use of quvi with redirect detection, by prepending "quvi:" to the
 url.
 
-Downloading whole YouTube playlists is not currently supported by quvi.
+To download a youtube playlist, you need to find the feed associated with that
+playlist, and pass it to `git annex importfeed`. There does not seem to be
+an easy link anywhere to get the feed, but you can construct its url
+manually. For a playlist like
+"https://www.youtube.com/playlist?list=PL4F80C7D2DC8D9B6C", the
+feed is "http://gdata.youtube.com/feeds/api/playlists/PL4F80C7D2DC8D9B6C"
+
+More details about youtube feeds at <http://googlesystem.blogspot.com/2008/01/youtube-feeds.html>
+-- `git-annex importfeed` should handle all of them.
 
 ## podcasts
 

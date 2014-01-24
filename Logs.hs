@@ -10,19 +10,21 @@ module Logs where
 import Common.Annex
 import Types.Key
 
-data LogVariety = UUIDBasedLog | PresenceLog Key
+{- There are several varieties of log file formats. -}
+data LogVariety = UUIDBasedLog | NewUUIDBasedLog | PresenceLog Key
 	deriving (Show)
 
 {- Converts a path from the git-annex branch into one of the varieties
  - of logs used by git-annex, if it's a known path. -}
 getLogVariety :: FilePath -> Maybe LogVariety
 getLogVariety f
-	| f `elem` uuidBasedLogs = Just UUIDBasedLog
+	| f `elem` topLevelUUIDBasedLogs = Just UUIDBasedLog
+	| isRemoteStateLog f = Just NewUUIDBasedLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
 
-{- All the uuid-based logs stored in the git-annex branch. -}
-uuidBasedLogs :: [FilePath]
-uuidBasedLogs =
+{- All the uuid-based logs stored in the top of the git-annex branch. -}
+topLevelUUIDBasedLogs :: [FilePath]
+topLevelUUIDBasedLogs =
 	[ uuidLog
 	, remoteLog
 	, trustLog
@@ -99,16 +101,29 @@ urlLogFileKey path
 isUrlLog :: FilePath -> Bool
 isUrlLog file = urlLogExt `isSuffixOf` file
 
+{- The filename of the remote state log for a given key. -}
+remoteStateLogFile :: Key -> FilePath
+remoteStateLogFile key = hashDirLower key </> keyFile key ++ remoteStateLogExt
+
+remoteStateLogExt :: String
+remoteStateLogExt = ".log.rmt"
+
+isRemoteStateLog :: FilePath -> Bool
+isRemoteStateLog path = remoteStateLogExt `isSuffixOf` path
+
 prop_logs_sane :: Key -> Bool
 prop_logs_sane dummykey = all id
 	[ isNothing (getLogVariety "unknown")
 	, expect isUUIDBasedLog (getLogVariety uuidLog)
 	, expect isPresenceLog (getLogVariety $ locationLogFile dummykey)
 	, expect isPresenceLog (getLogVariety $ urlLogFile dummykey)
+	, expect isNewUUIDBasedLog (getLogVariety $ remoteStateLogFile dummykey)
 	]
   where
   	expect = maybe False
   	isUUIDBasedLog UUIDBasedLog = True
 	isUUIDBasedLog _ = False
+  	isNewUUIDBasedLog NewUUIDBasedLog = True
+	isNewUUIDBasedLog _ = False
 	isPresenceLog (PresenceLog k) = k == dummykey
 	isPresenceLog _ = False

@@ -16,3 +16,6 @@ Description:	Ubuntu 12.04.2 LTS
 Release:	12.04
 Codename:	precise
 ~~~~
+
+> [[fixed|done]]. Why did I take so long to do this, it was a trivial 1
+> word change! --[[Joey]]

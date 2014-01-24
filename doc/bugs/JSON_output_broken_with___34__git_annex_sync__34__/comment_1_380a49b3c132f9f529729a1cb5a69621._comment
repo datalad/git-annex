@@ -4,5 +4,5 @@
  subject="comment 1"
  date="2012-11-27T21:13:08Z"
  content="""
-Yeah, so git-annex has --json as a option available to any command, but the set of commands where it's actually useful is rather smaller, and certianly does not include this one. In general there are quite a lot of places where third-party program output is allowed to show through to provide necessary progress or debugging output, and that of course makes the json mode invalid.
+Yeah, so git-annex has --json as a option available to any command, but the set of commands where it's actually useful is rather smaller, and certainly does not include this one. In general there are quite a lot of places where third-party program output is allowed to show through to provide necessary progress or debugging output, and that of course makes the json mode invalid.
 """]]

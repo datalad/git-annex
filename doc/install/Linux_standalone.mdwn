@@ -2,21 +2,27 @@ If your Linux distribution does not have git-annex packaged up for you,
 you can either build it [[fromscratch]], or you can use a handy
 prebuilt tarball of the most recent release.
 
-This tarball should work on most Linux systems. It does not depend
-on anything except for glibc.
+This tarball should work on most Linux systems. It has basically no
+dependencies and is self-contained.
 
-[download tarball](https://downloads.kitenet.net/git-annex/linux/current/)
+* i386: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-i386.tar.gz)
+* amd64: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz)
+* armel: [download tarball](https://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-armel.tar.gz)
 
 To use, just unpack the tarball, `cd git-annex.linux` and run `./runshell`
 -- this sets up an environment where you can use `git annex`, as well
 as everything else included in the bundle.
 
 Alternatively, you can unpack the tarball, and add the directory to your
-`PATH`. This lets you use `git annex`, without overriding your system's
+`PATH`, or symlink the programs in the directory to a directory in your
+PATH. This lets you use `git annex`, without overriding your system's
 own versions of git, etc.
 
-Warning: This is a last resort. Most Linux users should instead
-[[install]] git-annex from their distribution of choice.
+The armel version can be installed on NAS devices and other embedded ARM
+linux systems.
+
+* [[tips/Synology_NAS_and_git_annex]]
+* [[forum_thread|forum/new_linux_arm_tarball_build]]
 
 ## autobuilds
 
@@ -25,10 +31,4 @@ of Bath CS department.
 
 * i386: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-i386.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/i386/))
 * amd64: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/amd64/git-annex-standalone-amd64.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/amd64/))
-
-## gitannex-install
-
-Eskild Hustvedt has contributed a
-[gitannex-install](https://github.com/zerodogg/scriptbucket/blob/master/gitannex-install)
-script to manage keeping up to date with new releases using the standalone
-build.
+* armel: [download tarball](https://downloads.kitenet.net/git-annex/autobuild/armel/git-annex-standalone-armel.tar.gz) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/armel/))

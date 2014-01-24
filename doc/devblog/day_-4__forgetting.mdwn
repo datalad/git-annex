@@ -72,7 +72,7 @@ feature.
   to handle this case, too..
 
 * For some reason the automatic transitioning code triggers
-  a "(recovery from race)" commit. This is certianly a bug somewhere,
+  a "(recovery from race)" commit. This is certainly a bug somewhere,
   because you can't have a race with only 1 participant.
 
 ----

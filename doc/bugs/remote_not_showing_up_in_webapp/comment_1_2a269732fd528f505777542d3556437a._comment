@@ -8,7 +8,7 @@ marcov does not show up in the webapp because there is no configured git remote 
 
 This is a slightly confusing corner of the webapp. The webapp will show repositories that do not have a configured remote, but it only does it for special remotes. ssh repos, being regular git remotes, don't currently show up in the webapp unless that repository is actually set up as a remote.
 
-It should certianly not show it as \"unknown\"; it would be much better to use the full repo description here, since it does not have a remote name.
+It should certainly not show it as \"unknown\"; it would be much better to use the full repo description here, since it does not have a remote name.
 (Unless the description is really long!)
 
 I think you'll also get the \"unknown uuid\" screen even for a special remote that is not configured in the local repository. So that needs to be fixed.

@@ -1,18 +1,17 @@
-# Latest version 0.1.10
-Hook program for gitannex to use flickr as backend.
+flickrannex
+=========
 
-This allows storing any type of file on flickr, not only images and movies.
+Hook program for gitannex to use flickr as backend
 
 # Requirements:
 
     python2
 
-Credit for the flickr api interface goes to: <http://stuvel.eu/flickrapi>  
-Credit for the png library goes to: <https://github.com/drj11/pypng>  
-Credit for the png tEXt patch goes to: <https://code.google.com/p/pypng/issues/detail?id=65>
+Credit for the flickr api interface goes to: http://stuvel.eu/flickrapi
+Credit for the png library goes to: https://github.com/drj11/pypng
+Credit for the png tEXt patch goes to: https://code.google.com/p/pypng/issues/detail?id=65
 
 # Install
-
 Clone the git repository in your home folder.
 
     git clone git://github.com/TobiasTheViking/flickrannex.git 
@@ -20,39 +19,28 @@ Clone the git repository in your home folder.
 This should make a ~/flickrannex folder
 
 # Setup
+Make the file executable, and link it into PATH
 
-Run the program once to set it up. 
+    cd ~/flickrannex; chmod +x git-annex-remote-flickr; sudo ln -sf `pwd`/git-annex-remote-flickr /usr/local/bin/git-annex-remote-flickr
 
-    cd ~/flickrannex; python2 flickrannex.py
+# Commands for gitannex:
 
-After the setup has finished, it will print the git-annex configure lines.
+    USERNAME="username@provider.com" git annex initremote flickr type=external externaltype=flickr encryption=shared folder=gitannex
 
-# Configuring git-annex
+An oauth authentication link should now be launched in the default browser. The hook will wait for 30s for you to login and authenticate.
 
-    git config annex.flickr-hook '/usr/bin/python2 ~/flickrannex/flickrannex.py'
-    git annex initremote flickr type=hook hooktype=flickr encryption=shared
-    git annex describe flickr "the flickr library"
+    git annex describe dropbox "the flickr library"
 
 # Notes
 
 ## Unencrypted mode
 The photo name on flickr is currently the GPGHMACSHA1 version.
 
-Run the following command in your annex directory
-   git annex wanted flickr uuid include=*.jpg or include=*.jpeg or include=*.gif or include=*.png
-
 ## Encrypted mode
 The current version base64 encodes all the data, which results in ~35% larger filesize.
 
-I might look into yyenc instead. I'm not sure if it will work in the tEXt field.
-
-Run the following command in your annex directory
-   git annex wanted flickr exclude=largerthan=30mb
-
 ## Including directories as tags
-Get get each of the directories below the top level git directory added as tags to uploads:
-
-    git config annex.flickr-hook 'GIT_TOP_LEVEL=`git rev-parse --show-toplevel` /usr/bin/python2 %s/flickrannex.py'
+This feature is currently disabled, if it gets implemented again it will most likely not require user action to enable it.
 
 In this case the image:
    /home/me/annex-photos/holidays/2013/Greenland/img001.jpg

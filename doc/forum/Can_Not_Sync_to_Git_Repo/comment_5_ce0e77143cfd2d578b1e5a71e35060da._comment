@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn26WQjIP5fnMgQF_L_k3Q3UrR5v8mjRTY"
+ nickname="Ellis"
+ subject="comment 5"
+ date="2013-12-07T18:14:21Z"
+ content="""
+I'm experiencing the same problem in one of my repositories on a couple computers now.
+
+> git-annex version: 5.20131118-gc7e5cde
+> build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus XMPP Feeds Quvi TDFA
+> key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+> remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+> local repository version: 3
+> default repository version: 3
+> supported repository versions: 3 5
+> upgrade supported from repository versions: 0 1 2 4
+
+"""]]

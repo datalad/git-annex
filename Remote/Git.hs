@@ -126,7 +126,7 @@ gen r u c gc
 			, gitconfig = gc
 				{ remoteGitConfig = Just $ extractGitConfig r }
 			, readonly = Git.repoIsHttp r
-			, globallyAvailable = globallyAvailableCalc r
+			, availability = availabilityCalc r
 			, remotetype = remote
 			}
 
@@ -414,13 +414,13 @@ fsckOnRemote r params
 			Just (c, ps) -> batchCommand c ps
 	| otherwise = return $ do
 		program <- readProgramFile
-		env <- getEnvironment
 		r' <- Git.Config.read r
-		let env' =
+		env <- getEnvironment
+		let env' = addEntries 
 			[ ("GIT_WORK_TREE", Git.repoPath r')
 			, ("GIT_DIR", Git.localGitDir r')
-			] ++ env
-		batchCommandEnv program (Param "fsck" : params) (Just env')
+			] env
+		batchCommandEnv program (Param "fsck" : params) $ Just env'
 
 {- The passed repair action is run in the Annex monad of the remote. -}
 repairRemote :: Git.Repo -> Annex Bool -> Annex (IO Bool)

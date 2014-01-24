@@ -1,7 +1,7 @@
 $(function() {
 	$.get("@{geturl}", function(url){
 		var f = function() {
-			longpoll(url, #{ident}
+			longpoll_div(url, #{ident}
 				, function() { setTimeout(f, #{delay}); }
 				, function() { window.location.reload(true); }
 			);	

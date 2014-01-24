@@ -28,7 +28,6 @@ import Config
 import Annex.Content.Direct
 import Logs.Location
 import qualified Logs.Transfer as Transfer
-import Utility.Daemon (checkDaemon)
 #ifdef WITH_QUVI
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi
@@ -98,20 +97,32 @@ performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
   where
   	quviurl = setDownloader pageurl QuviDownloader
   	addurl (key, _backend) = next $ cleanup quviurl file key Nothing
-	geturl = do
-		key <- Backend.URL.fromUrl quviurl Nothing
-		ifM (pure relaxed <||> Annex.getState Annex.fast)
-			( next $ cleanup quviurl file key Nothing
-			, do
+	geturl = next $ addUrlFileQuvi relaxed quviurl videourl file
+#endif
+
+#ifdef WITH_QUVI
+addUrlFileQuvi :: Bool -> URLString -> URLString -> FilePath -> Annex Bool
+addUrlFileQuvi relaxed quviurl videourl file = do
+	key <- Backend.URL.fromUrl quviurl Nothing
+	ifM (pure relaxed <||> Annex.getState Annex.fast)
+		( cleanup quviurl file key Nothing
+		, do
+			{- Get the size, and use that to check
+			 - disk space. However, the size info is not
+			 - retained, because the size of a video stream
+			 - might change and we want to be able to download
+			 - it later. -}
+			sizedkey <- addSizeUrlKey videourl key
+			prepGetViaTmpChecked sizedkey $ do
 				tmp <- fromRepo $ gitAnnexTmpLocation key
 				showOutput
 				ok <- Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
 					liftIO $ createDirectoryIfMissing True (parentDir tmp)
 					downloadUrl [videourl] tmp
 				if ok
-					then next $ cleanup quviurl file key (Just tmp)
-					else stop
-			)
+					then cleanup quviurl file key (Just tmp)
+					else return False
+		)
 #endif
 
 perform :: Bool -> URLString -> FilePath -> CommandPerform
@@ -147,45 +158,43 @@ addUrlFile relaxed url file = do
 
 download :: URLString -> FilePath -> Annex Bool
 download url file = do
-	dummykey <- genkey
-	tmp <- fromRepo $ gitAnnexTmpLocation dummykey
-	showOutput
-	ifM (runtransfer dummykey tmp)
-		( do
-			backend <- chooseBackend file
-			let source = KeySource
-				{ keyFilename = file
-				, contentLocation = tmp
-				, inodeCache = Nothing
-				}
-			k <- genKey source backend
-			case k of
-				Nothing -> return False
-				Just (key, _) -> cleanup url file key (Just tmp)
-		, return False
-		)
-  where
 	{- Generate a dummy key to use for this download, before we can
 	 - examine the file and find its real key. This allows resuming
-	 - downloads, as the dummy key for a given url is stable.
-	 -
-	 - If the assistant is running, actually hits the url here,
-	 - to get the size, so it can display a pretty progress bar.
-	 -}
-	genkey = do
-		pidfile <- fromRepo gitAnnexPidFile
-		size <- ifM (liftIO $ isJust <$> checkDaemon pidfile)
+	 - downloads, as the dummy key for a given url is stable. -}
+	dummykey <- addSizeUrlKey url =<< Backend.URL.fromUrl url Nothing
+	prepGetViaTmpChecked dummykey $ do
+		tmp <- fromRepo $ gitAnnexTmpLocation dummykey
+		showOutput
+		ifM (runtransfer dummykey tmp)
 			( do
-				headers <- getHttpHeaders
-				snd <$> Url.withUserAgent (Url.exists url headers)
-			, return Nothing
+				backend <- chooseBackend file
+				let source = KeySource
+					{ keyFilename = file
+					, contentLocation = tmp
+					, inodeCache = Nothing
+					}
+				k <- genKey source backend
+				case k of
+					Nothing -> return False
+					Just (key, _) -> cleanup url file key (Just tmp)
+			, return False
 			)
-		Backend.URL.fromUrl url size
+  where
   	runtransfer dummykey tmp = 
 		Transfer.download webUUID dummykey (Just file) Transfer.forwardRetry $ const $ do
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloadUrl [url] tmp
-		
+
+{- Hits the url to get the size, if available.
+ -
+ - This is needed to avoid exceeding the diskreserve when downloading,
+ - and so the assistant can display a pretty progress bar.
+ -}
+addSizeUrlKey :: URLString -> Key -> Annex Key
+addSizeUrlKey url key = do
+	headers <- getHttpHeaders
+	size <- snd <$> Url.withUserAgent (Url.exists url headers)
+	return $ key { keySize = size }
 
 cleanup :: URLString -> FilePath -> Key -> Maybe FilePath -> Annex Bool
 cleanup url file key mtmp = do

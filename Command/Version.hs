@@ -18,7 +18,7 @@ import qualified Remote
 import qualified Backend
 
 def :: [Command]
-def = [noCommit $ noRepo showPackageVersion $ dontCheck repoExists $
+def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "version" paramNothing seek SectionQuery "show version info"]
 
 seek :: [CommandSeek]
@@ -30,12 +30,13 @@ start = do
 	liftIO $ do
 		showPackageVersion
 		info "local repository version" $ fromMaybe "unknown" v
-		info "default repository version" defaultVersion
-		info "supported repository versions" $
-			unwords supportedVersions
+		info "supported repository version" supportedVersion
 		info "upgrade supported from repository versions" $
 			unwords upgradableVersions
 	stop
+
+startNoRepo :: CmdParams -> IO ()
+startNoRepo _ = showPackageVersion
 
 showPackageVersion :: IO ()
 showPackageVersion = do

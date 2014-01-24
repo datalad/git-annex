@@ -2,10 +2,18 @@ In both the .git/annex directory and the git-annex branch, two levels of
 hash directories are used, to avoid issues with too many files in one
 directory.
 
-Two separate hash methods are used. One, the old hash format, is only used
-for non-bare git repositories. The other, the new hash format, is used for
-bare git repositories, the git-annex branch, and on special remotes as
-well.
+Two separate hash methods are used. 
+
+* hashdirmixed is only used for non-bare git repositories.
+  (We'd like to stop using this, but it'd be too annoying to change
+  all the git-annex symlinks!)
+
+* hashdirlower is used for bare git repositories, the 
+  git-annex branch, and on special remotes as well.
+
+Note that `git annex find` and `git annex examinekey` can be used with
+the `--format` option to find the hash directories. The explanation
+below is only for completeness.
 
 ## new hash format
 

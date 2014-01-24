@@ -3,7 +3,7 @@ Preventing a stray `git commit -a` or `git add` doing bad things in a
 direct mode repository seems increasingly important.
 
 First, considered moving `.git`, so git won't know it's a git repository.
-This doesn't seem *too* hard to do, but there will certianly be unexpected
+This doesn't seem *too* hard to do, but there will certainly be unexpected
 places that assume `.git` is the directory name.
 
 I dislike it more and more as I think about it though, because it moves

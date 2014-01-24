@@ -15,7 +15,7 @@ Today is also the last day of the [campaign](https://campaign.joeyh.name/)!
 ----
 
 There has been a ton of discussion about git-annex here at DebConf,
-including 3 BoF sessions that mostly focused on it, amoung other git stuff.
+including 3 BoF sessions that mostly focused on it, among other git stuff.
 Also, RichiH will be presenting his
 "[Gitify Your Life](http://penta.debconf.org/dc13_schedule/events/1025.en.html)"
 talk on Friday; you can catch it on the [live stream](http://blog.debconf.org/blog/2013/08/14#hl_dc13_recordings).

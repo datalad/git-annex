@@ -1,5 +1,11 @@
 #!/bin/sh
-base="$(dirname "$0")"
+link="$(readlink "$0")" || true
+if [ -n "$link" ]; then
+	base="$(dirname "$link")"
+else
+	base="$(dirname "$0")"
+fi
+
 if [ ! -d "$base" ]; then
 	echo "** cannot find base directory (I seem to be $0)" >&2
 	exit 1

@@ -7,6 +7,8 @@
 
 module Git.Index where
 
+import Common
+import Git
 import Utility.Env
 
 {- Forces git to use the specified index file.
@@ -19,9 +21,12 @@ import Utility.Env
 override :: FilePath -> IO (IO ())
 override index = do
 	res <- getEnv var
-	setEnv var index True
-	return $ reset res
+	void $ setEnv var index True
+	return $ void $ reset res
   where
 	var = "GIT_INDEX_FILE"
 	reset (Just v) = setEnv var v True
 	reset _ = unsetEnv var
+
+indexFile :: Repo -> FilePath
+indexFile r = localGitDir r </> "index"

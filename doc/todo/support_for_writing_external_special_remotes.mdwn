@@ -23,3 +23,5 @@ should look for `git-annex-remote-$bar` in PATH if that's not a built-in
 special remote name.
 
 --[[Joey]]
+
+[[done]]

@@ -18,7 +18,7 @@ import qualified Remote
 import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Logs.Remote
-import Git.Remote
+import Git.Types (RemoteName)
 
 import qualified Data.Map as M
 #endif
@@ -73,7 +73,7 @@ postAddBoxComR = boxConfigurator $ do
 				[ configureEncryption $ enableEncryption input
 				, ("embedcreds", if embedCreds input then "yes" else "no")
 				, ("type", "webdav")
-				, ("url", "https://www.box.com/dav/" ++ T.unpack (directory input))
+				, ("url", "https://dav.box.com/dav/" ++ T.unpack (directory input))
 				-- Box.com has a max file size of 100 mb, but
 				-- using smaller chunks has better memory
 				-- performance.

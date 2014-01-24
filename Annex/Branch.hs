@@ -95,7 +95,7 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
 		fromMaybe (error $ "failed to create " ++ show name)
 			<$> branchsha
 	go False = withIndex' True $
-		inRepo $ Git.Branch.commit "branch created" fullname []
+		inRepo $ Git.Branch.commitAlways "branch created" fullname []
 	use sha = do
 		setIndexSha sha
 		return sha
@@ -249,7 +249,7 @@ commitIndex jl branchref message parents = do
 commitIndex' :: JournalLocked -> Git.Ref -> String -> [Git.Ref] -> Annex ()
 commitIndex' jl branchref message parents = do
 	updateIndex jl branchref
-	committedref <- inRepo $ Git.Branch.commit message fullname parents
+	committedref <- inRepo $ Git.Branch.commitAlways message fullname parents
 	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
 	when (racedetected branchref parentrefs) $ do
@@ -342,16 +342,18 @@ withIndex' bootstrapping a = do
 	let keyenv = words "USER PATH GIT_EXEC_PATH HOSTNAME HOME"
 	let getEnvPair k = maybe Nothing (\v -> Just (k, v)) <$> getEnv k
 	e <- liftIO $ catMaybes <$> forM keyenv getEnvPair
+	let e' = ("GIT_INDEX_FILE", f):e
 #else
 	e <- liftIO getEnvironment
+	let e' = addEntry "GIT_INDEX_FILE" f e
 #endif
-	let g' = g { gitEnv = Just $ ("GIT_INDEX_FILE", f):e }
+	let g' = g { gitEnv = Just e' }
 
 	r <- tryAnnex $ do
 		Annex.changeState $ \s -> s { Annex.repo = g' }
 		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
-			liftIO $ createDirectoryIfMissing True $ takeDirectory f
+			createAnnexDirectory $ takeDirectory f
 			unless bootstrapping $ inRepo genIndex
 		a
 	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }
@@ -386,7 +388,7 @@ setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
 	f <- fromRepo gitAnnexIndexStatus
 	liftIO $ writeFile f $ show ref ++ "\n"
-	setAnnexPerm f
+	setAnnexFilePerm f
 
 {- Stages the journal into the index and returns an action that will
  - clean up the staged journal files, which should only be run once
@@ -486,7 +488,7 @@ performTransitionsLocked jl ts neednewlocalbranch transitionedrefs = do
 		Annex.Queue.flush
 		if neednewlocalbranch
 			then do
-				committedref <- inRepo $ Git.Branch.commit message fullname transitionedrefs
+				committedref <- inRepo $ Git.Branch.commitAlways message fullname transitionedrefs
 				setIndexSha committedref
 			else do
 				ref <- getBranch

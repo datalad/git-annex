@@ -11,6 +11,7 @@ module Git.LsFiles (
 	allFiles,
 	deleted,
 	modified,
+	modifiedOthers,
 	staged,
 	stagedNotDeleted,
 	stagedOthersDetails,
@@ -64,6 +65,13 @@ modified :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
 modified l repo = pipeNullSplit params repo
   where
 	params = [Params "ls-files --modified -z --"] ++ map File l
+
+{- Files that have been modified or are not checked into git (and are not
+ - ignored). -}
+modifiedOthers :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)
+modifiedOthers l repo = pipeNullSplit params repo
+  where
+	params = [Params "ls-files --modified --others --exclude-standard -z --"] ++ map File l
 
 {- Returns a list of all files that are staged for commit. -}
 staged :: [FilePath] -> Repo -> IO ([FilePath], IO Bool)

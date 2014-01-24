@@ -7,7 +7,7 @@ To support using gpg keys in the assistant, we need some things:
 1. Help user set up a gpg key if they don't have one. This could be a
    special-purpose key dedicated to being used by git-annex. It might be
    nice to leave the user with a securely set up general purpose key,
-   but that would certianly preclude prompting for its password in the
+   but that would certainly preclude prompting for its password in the
    webapp. Indeed, the password prompt is the main problem here.
    Best solution would be to get gpg agent working on all supported 
    platforms.
@@ -23,6 +23,9 @@ To support using gpg keys in the assistant, we need some things:
    are good; a 4096 bit secret key fits in a QR code (a secret key
    with many subkeys may not). Debian has command-line utilities that
    can generate and read such a QR code.
+
+   Another way would be to use shamir secret sharing to split the key into
+   N peices and send each one to one of the user's repos.
 
 3. Help user learn the gpg keys of people they want to share their repo
    with, and give them access. If the public key was recorded in the git-annex

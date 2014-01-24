@@ -1,0 +1,93 @@
+### Please describe the problem.
+
+I'm unable to 'git annex get' a file from a bup-remote with encryption set to 'pubkey'.
+
+### What steps will reproduce the problem?
+     
+I added a bup-remote using [these instructions](http://git-annex.branchable.com/walkthrough/using_bup/):
+
+        bash-3.2$ git annex initremote mybup type=bup encryption=pubkey keyid=0xABE8244505D63E81 buprepo=gumdrop:/home/gert/.bup
+
+        # now adding files and moving them:
+        bash-3.2$ mkdir orgmode && touch orgmode/some.org
+        bash-3.2$ git annex add orgmode/some.org
+        add orgmode/some.org (checksum...) ok
+        (Recording state in git...)
+        bash-3.2$ git commit
+        [master bce8c83] Some.org
+         1 file changed, 1 insertion(+)
+         create mode 120000 orgmode/some.org
+        bash-3.2$ git annex move orgmode/ --to=mybup
+        move orgmode/another.org (gpg)
+        U moet een geheime zin opgeven om de geheime sleutel te gebruiken
+        van: “email”
+        4096-bit RSA key, ID 0xFF8DE378DE223820, created 2013-11-10
+                 (sub-sleutel bij hoofd sleutel ID 0xE9B90528FDA4E1E6)
+
+        (checking mybup...) ok
+        (Recording state in git...)
+        bash-3.2$ less orgmode/another.org
+        orgmode/another.org: No such file or directory
+        bash-3.2$ git annex get orgmode/another.org --debug
+        [2013-11-13 16:18:07 CET] read: git ["--git-dir=/Users/gert/annex/.git","--work-tree=/Users/gert/annex","ls-files","--cached","-z","--","orgmode/another.org"]
+        get orgmode/another.org [2013-11-13 16:18:08 CET] read: git ["--git-dir=/Users/gert/annex/.git","--work-tree=/Users/gert/annex","show-ref","git-annex"]
+        [2013-11-13 16:18:08 CET] read: git ["--git-dir=/Users/gert/annex/.git","--work-tree=/Users/gert/annex","show-ref","--hash","refs/heads/git-annex"]
+        [2013-11-13 16:18:08 CET] read: git ["--git-dir=/Users/gert/annex/.git","--work-tree=/Users/gert/annex","log","refs/heads/git-annex..f25f9bb2b78a8b9c4b64087f1378c68fb5c0a2f1","--oneline","-n1"]
+        [2013-11-13 16:18:08 CET] read: git ["--git-dir=/Users/gert/annex/.git","--work-tree=/Users/gert/annex","log","refs/heads/git-annex..1b0a3dd72be437d800e58d659837d6e528cbbc39","--oneline","-n1"]
+        [2013-11-13 16:18:08 CET] read: git ["--git-dir=/Users/gert/annex/.git","--work-tree=/Users/gert/annex","log","refs/heads/git-annex..f62419efea58245d232a52ceaf0eaefe3b0fdced","--oneline","-n1"]
+        [2013-11-13 16:18:08 CET] read: git ["--git-dir=/Users/gert/annex/.git","--work-tree=/Users/gert/annex","log","refs/heads/git-annex..eb6f0cd983d9a3637e984aa815537fe20a5c2a69","--oneline","-n1"]
+        [2013-11-13 16:18:08 CET] read: git ["--git-dir=/Users/gert/annex/.git","--work-tree=/Users/gert/annex","log","refs/heads/git-annex..5362118e643462a0875bfe31d493ffe64413f2d8","--oneline","-n1"]
+        [2013-11-13 16:18:08 CET] read: git ["--git-dir=/Users/gert/annex/.git","--work-tree=/Users/gert/annex","log","refs/heads/git-annex..e5afaf82ce25f60a108c0ae873b6fd57c5d28ca7","--oneline","-n1"]
+        [2013-11-13 16:18:08 CET] chat: git ["--git-dir=/Users/gert/annex/.git","--work-tree=/Users/gert/annex","cat-file","--batch"]
+        [2013-11-13 16:18:08 CET] read: git ["config","--null","--list"]
+        (from mybup...) (gpg) [2013-11-13 16:18:08 CET] chat: gpg ["--quiet","--trust-model","always","--decrypt"]
+
+        U moet een geheime zin opgeven om de geheime sleutel te gebruiken
+        van: “<email>”
+        4096-bit RSA key, ID 0xFF8DE378DE223820, created 2013-11-10
+                 (sub-sleutel bij hoofd sleutel ID 0xE9B90528FDA4E1E6)
+
+        [2013-11-13 16:18:15 CET] read: bup ["join","-r","gumdrop:/home/gert/.bup","GPGHMACSHA1--67aec1b62d05d000442cf8e7d9df8d327eaf26d5"]
+        [2013-11-13 16:18:15 CET] chat: gpg ["--quiet","--trust-model","always","--batch","--decrypt"]
+        gpg: kan geheime zin niet opvragen in batch modus
+        gpg: decoderen mislukt: secret key not available
+
+          Unable to access these remotes: mybup
+
+          Try making some of these repositories available:
+          080e97d2-4f82-4292-acb7-a48d82009258 -- mybup (mybupmy bup repository at gumdrop)
+
+          (Note that these git remotes have annex-ignore set: origin)
+        failed
+        git-annex: get: 1 failed
+
+### What version of git-annex are you using? On what operating system?
+
+Running git-annex version 4.20131105-g136b030 on OSX 10.8.5.
+
+### Please provide any additional information below.
+
+My ideas:
+
+"Unable to access these remotes: mybup" is weird, I just moved files there.
+
+"secret key not available" makes me think it's looking for the primary secret key (which is indeed offline).
+When I encrypt a file with the same key I used to create the remote it just works:
+
+    $ gpg --armor --recipient 0xABE8244505D63E81 --encrypt file.txt
+    $ gpg --decrypt file.txt.asc
+
+When prompting for my passphrase it states "4096-bit RSA key, ID 0xFF8DE378DE223820, created 2013-11-10".
+That is a different subkey than what I entered when I setting up the remote.
+
+My keys/subkeys:
+
+    pub  4096R/0xE9B90528FDA4E1E6  aangemaakt: 2013-11-10  vervaldatum: 2014-11-10  gebruik: SC
+                               vertrouwen: ultimate      geldigheid: ultimate
+    sub  4096R/0x98816CFB398B4666  aangemaakt: 2013-11-10  vervaldatum: 2014-11-10  gebruik: E
+    sub  4096R/0x91951718D5F11CDD  aangemaakt: 2013-11-10  vervaldatum: 2014-11-10  gebruik: S
+    sub  4096R/0xABE8244505D63E81  aangemaakt: 2013-11-10  vervaldatum: 2014-11-10  gebruik: E
+    sub  4096R/0xB44520A46B27144D  aangemaakt: 2013-11-10  vervaldatum: 2014-11-10  gebruik: S
+    sub  4096R/0xFF8DE378DE223820  aangemaakt: 2013-11-10  vervaldatum: 2014-11-10  gebruik: E
+
+> This was already fixed in version 4.20131106. [[done]] --[[Joey]] 

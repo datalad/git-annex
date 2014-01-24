@@ -1,0 +1,70 @@
+From 4ea1e94794b59ba4eb0dab7384c4195a224f468d Mon Sep 17 00:00:00 2001
+From: androidbuilder <androidbuilder@example.com>
+Date: Fri, 27 Dec 2013 00:28:51 -0400
+Subject: [PATCH] avoid building with jsmin
+
+jsmin needs language-javascript, which fails to build for android due to
+a problem or incompatability with happy.
+
+This also avoids all the TH code.
+
+---
+ Yesod/EmbeddedStatic/Generators.hs |    3 +--
+ yesod-static.cabal                 |    7 -------
+ 2 files changed, 1 insertion(+), 9 deletions(-)
+
+diff --git a/Yesod/EmbeddedStatic/Generators.hs b/Yesod/EmbeddedStatic/Generators.hs
+index e83785d..6b1c10e 100644
+--- a/Yesod/EmbeddedStatic/Generators.hs
++++ b/Yesod/EmbeddedStatic/Generators.hs
+@@ -43,7 +43,6 @@ import Language.Haskell.TH
+ import Network.Mime (defaultMimeLookup)
+ import System.Directory (doesDirectoryExist, getDirectoryContents, findExecutable)
+ import System.FilePath ((</>))
+-import Text.Jasmine (minifym)
+ import qualified Data.ByteString.Lazy as BL
+ import qualified Data.Conduit.List as C
+ import qualified Data.Text as T
+@@ -158,7 +157,7 @@ concatFilesWith loc process files = do
+ 
+ -- | Convienient rexport of 'minifym' with a type signature to work with 'concatFilesWith'.
+ jasmine :: BL.ByteString -> IO BL.ByteString
+-jasmine ct = return $ either (const ct) id $ minifym ct
++jasmine ct = return ct
+ 
+ -- | Use <https://github.com/mishoo/UglifyJS2 UglifyJS2> to compress javascript.
+ -- Assumes @uglifyjs@ is located in the path and uses options @[\"-m\", \"-c\"]@
+diff --git a/yesod-static.cabal b/yesod-static.cabal
+index df05ecf..31abe1a 100644
+--- a/yesod-static.cabal
++++ b/yesod-static.cabal
+@@ -48,18 +48,12 @@ library
+                    , data-default
+                    , shakespeare-css       >= 1.0.3
+                    , mime-types            >= 0.1
+-                   , hjsmin
+                    , process-conduit       >= 1.0      && < 1.1
+                    , filepath              >= 1.3
+                    , resourcet             >= 0.4
+                    , unordered-containers  >= 0.2
+ 
+     exposed-modules: Yesod.Static
+-                     Yesod.EmbeddedStatic
+-                     Yesod.EmbeddedStatic.Generators
+-                     Yesod.EmbeddedStatic.Types
+-
+-    other-modules:   Yesod.EmbeddedStatic.Internal
+ 
+     ghc-options:     -Wall
+     extensions: TemplateHaskell
+@@ -99,7 +93,6 @@ test-suite tests
+                    , data-default
+                    , shakespeare-css
+                    , mime-types
+-                   , hjsmin
+                    , process-conduit
+                    , filepath
+                    , resourcet
+-- 
+1.7.10.4
+

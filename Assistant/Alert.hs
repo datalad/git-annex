@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE OverloadedStrings, CPP #-}
+{-# LANGUAGE OverloadedStrings, CPP, BangPatterns #-}
 
 module Assistant.Alert where
 
@@ -15,6 +15,7 @@ import Assistant.Alert.Utility
 import qualified Remote
 import Utility.Tense
 import Logs.Transfer
+import Types.Distribution
 
 import Data.String
 import qualified Data.Text as T
@@ -42,6 +43,7 @@ mkAlertButton autoclose label urlrenderer route = do
 		{ buttonLabel = label
 		, buttonUrl = url
 		, buttonAction = if autoclose then Just close else Nothing
+		, buttonPrimary = True
 		}
 #endif
 
@@ -61,7 +63,7 @@ baseActivityAlert = Alert
 	, alertIcon = Just ActivityIcon
 	, alertCombiner = Nothing
 	, alertName = Nothing
-	, alertButton = Nothing
+	, alertButtons = []
 	}
 
 warningAlert :: String -> String -> Alert
@@ -77,11 +79,11 @@ warningAlert name msg = Alert
 	, alertIcon = Just ErrorIcon
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertName = Just $ WarningAlert name
-	, alertButton = Nothing
+	, alertButtons = []
 	}
 
-errorAlert :: String -> AlertButton -> Alert
-errorAlert msg button = Alert
+errorAlert :: String -> [AlertButton] -> Alert
+errorAlert msg buttons = Alert
 	{ alertClass = Error
 	, alertHeader = Nothing
 	, alertMessageRender = renderData
@@ -93,7 +95,7 @@ errorAlert msg button = Alert
 	, alertIcon = Just ErrorIcon
 	, alertCombiner = Nothing
 	, alertName = Nothing
-	, alertButton = Just button
+	, alertButtons = buttons
 	}
 
 activityAlert :: Maybe TenseText -> [TenseChunk] -> Alert
@@ -160,7 +162,7 @@ sanityCheckFixAlert msg = Alert
 	, alertIcon = Just ErrorIcon
 	, alertName = Just SanityCheckFixAlert
 	, alertCombiner = Just $ dataCombiner (++)
-	, alertButton = Nothing
+	, alertButtons = []
 	}
   where
 	render alert = tenseWords $ alerthead : alertData alert ++ [alertfoot]
@@ -172,7 +174,7 @@ fsckingAlert button mr = baseActivityAlert
 	{ alertData = case mr of
 		Nothing -> [ UnTensed $ T.pack $ "Consistency check in progress" ]
 		Just r -> [ UnTensed $ T.pack $ "Consistency check of " ++ Remote.name r ++ " in progress"]
-	, alertButton = Just button
+	, alertButtons = [button]
 	}
 
 showFscking :: UrlRenderer -> Maybe Remote -> IO (Either E.SomeException a) -> Assistant a
@@ -204,7 +206,7 @@ notFsckedAlert mr button = Alert
 		]
 	, alertIcon = Just InfoIcon
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = [button]
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
@@ -215,7 +217,50 @@ notFsckedAlert mr button = Alert
 	, alertData = []
 	}
 
-brokenRepositoryAlert :: AlertButton -> Alert
+baseUpgradeAlert :: [AlertButton] -> TenseText -> Alert
+baseUpgradeAlert buttons message = Alert
+	{ alertHeader = Just message
+	, alertIcon = Just UpgradeIcon
+	, alertPriority = High
+	, alertButtons = buttons
+	, alertClosable = True
+	, alertClass = Message
+	, alertMessageRender = renderData
+	, alertCounter = 0
+	, alertBlockDisplay = True
+	, alertName = Just UpgradeAlert
+	, alertCombiner = Just $ fullCombiner $ \new _old -> new
+	, alertData = []
+	}
+
+canUpgradeAlert :: AlertPriority -> GitAnnexVersion -> AlertButton -> Alert
+canUpgradeAlert priority version button = 
+	(baseUpgradeAlert [button] $ fromString msg)
+		{ alertPriority = priority
+		, alertData = [fromString $ " (version " ++ version ++ ")"]
+		}
+  where
+	msg = if priority >= High
+		then "An important upgrade of git-annex is available!"
+		else "An upgrade of git-annex is available."
+
+upgradeReadyAlert :: AlertButton -> Alert
+upgradeReadyAlert button = baseUpgradeAlert [button] $
+	fromString "A new version of git-annex has been installed."
+
+upgradingAlert :: Alert
+upgradingAlert = activityAlert Nothing [ fromString "Upgrading git-annex" ]
+
+upgradeFinishedAlert :: Maybe AlertButton -> GitAnnexVersion -> Alert
+upgradeFinishedAlert button version =
+	baseUpgradeAlert (maybe [] (:[]) button) $ fromString $ 
+		"Finished upgrading git-annex to version " ++ version
+
+upgradeFailedAlert :: String -> Alert
+upgradeFailedAlert msg = (errorAlert msg [])
+	{ alertHeader = Just $ fromString "Upgrade failed." }
+
+brokenRepositoryAlert :: [AlertButton] -> Alert
 brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"
 
 repairingAlert :: String -> Alert
@@ -228,7 +273,7 @@ pairingAlert :: AlertButton -> Alert
 pairingAlert button = baseActivityAlert
 	{ alertData = [ UnTensed "Pairing in progress" ]
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = [button]
 	}
 
 pairRequestReceivedAlert :: String -> AlertButton -> Alert
@@ -244,7 +289,7 @@ pairRequestReceivedAlert who button = Alert
 	, alertIcon = Just InfoIcon
 	, alertName = Just $ PairAlert who
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
-	, alertButton = Just button
+	, alertButtons = [button]
 	}
 
 pairRequestAcknowledgedAlert :: String -> Maybe AlertButton -> Alert
@@ -253,7 +298,7 @@ pairRequestAcknowledgedAlert who button = baseActivityAlert
 	, alertPriority = High
 	, alertName = Just $ PairAlert who
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
-	, alertButton = button
+	, alertButtons = maybe [] (:[]) button
 	}
 
 xmppNeededAlert :: AlertButton -> Alert
@@ -261,7 +306,7 @@ xmppNeededAlert button = Alert
 	{ alertHeader = Just "Share with friends, and keep your devices in sync across the cloud."
 	, alertIcon = Just TheCloud
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = [button]
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
@@ -280,7 +325,7 @@ cloudRepoNeededAlert friendname button = Alert
 		]
 	, alertIcon = Just ErrorIcon
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = [button]
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
@@ -298,7 +343,7 @@ remoteRemovalAlert desc button = Alert
 		"\" has been emptied, and can now be removed."
 	, alertIcon = Just InfoIcon
 	, alertPriority = High
-	, alertButton = Just button
+	, alertButtons = [button]
 	, alertClosable = True
 	, alertClass = Message
 	, alertMessageRender = renderData
@@ -322,8 +367,8 @@ fileAlert msg files = (activityAlert Nothing shortfiles)
   where
 	maxfilesshown = 10
 
-	(somefiles, counter) = splitcounter (dedupadjacent files)
-	shortfiles = map (fromString . shortFile . takeFileName) somefiles
+	(!somefiles, !counter) = splitcounter (dedupadjacent files)
+	!shortfiles = map (fromString . shortFile . takeFileName) somefiles
 
 	renderer alert = tenseWords $ msg : alertData alert ++ showcounter
 	  where
@@ -346,9 +391,9 @@ fileAlert msg files = (activityAlert Nothing shortfiles)
 			in (keep, length rest)
 	
 	combiner new old =
-		let (fs, n) = splitcounter $
+		let (!fs, n) = splitcounter $
 			dedupadjacent $ alertData new ++ alertData old
-		    cnt = n + alertCounter new + alertCounter old
+		    !cnt = n + alertCounter new + alertCounter old
 		in old
 			{ alertData = fs
 			, alertCounter = cnt

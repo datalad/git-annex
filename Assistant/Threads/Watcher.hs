@@ -50,9 +50,13 @@ import Data.Time.Clock
 checkCanWatch :: Annex ()
 checkCanWatch
 	| canWatch = do
+#ifndef mingw32_HOST_OS
 		liftIO Lsof.setup
 		unlessM (liftIO (inPath "lsof") <||> Annex.getState Annex.force)
 			needLsof
+#else
+		noop
+#endif
 	| otherwise = error "watch mode is not available on this system"
 
 needLsof :: Annex ()
@@ -140,6 +144,11 @@ startupScan scanner = do
 		
 		modifyDaemonStatus_ $ \s -> s { scanComplete = True }
 
+		-- Ensure that the Committer sees any changes
+		-- that it did not process, and acts on them now that
+		-- the scan is complete.
+		refillChanges =<< getAnyChanges
+
 		return (True, r)
 
 {- Hardcoded ignores, passed to the DirWatcher so it can avoid looking
@@ -200,6 +209,9 @@ onAdd matcher file filestatus
 			add matcher file
 	| otherwise = noChange
 
+shouldRestage :: DaemonStatus -> Bool
+shouldRestage ds = scanComplete ds || forceRestage ds
+
 {- In direct mode, add events are received for both new files, and
  - modified existing files.
  -}
@@ -214,7 +226,7 @@ onAddDirect symlinkssupported matcher file fs = do
 				 - really modified, but it might have
 				 - just been deleted and been put back,
 				 - so it symlink is restaged to make sure. -}
-				( ifM (scanComplete <$> getDaemonStatus)
+				( ifM (shouldRestage <$> getDaemonStatus)
 					( do
 						link <- liftAnnex $ inRepo $ gitAnnexLink file key
 						addLink file link (Just key)
@@ -286,7 +298,7 @@ onAddSymlink' linktarget mk isdirect file filestatus = go mk
 	 - links too.)
 	 -}
 	ensurestaged (Just link) daemonstatus
-		| scanComplete daemonstatus = addLink file link mk
+		| shouldRestage daemonstatus = addLink file link mk
 		| otherwise = case filestatus of
 			Just s
 				| not (afterLastDaemonRun (statusChangeTime s) daemonstatus) -> noChange

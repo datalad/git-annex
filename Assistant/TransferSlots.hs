@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant.TransferSlots where
 
 import Assistant.Common
@@ -27,30 +29,35 @@ import qualified Types.Remote as Remote
 import Annex.Content
 import Annex.Wanted
 import Config.Files
+import Utility.Batch
 
 import qualified Data.Map as M 
 import qualified Control.Exception as E
 import Control.Concurrent
 import qualified Control.Concurrent.MSemN as MSemN
-import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
+#ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessGroupIDOf)
+import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
+#else
+import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT, cTRL_BREAK_EVENT)
+#endif
 
 type TransferGenerator = Assistant (Maybe (Transfer, TransferInfo, Transferrer -> Assistant ()))
 
 {- Waits until a transfer slot becomes available, then runs a
  - TransferGenerator, and then runs the transfer action in its own thread. 
  -}
-inTransferSlot :: FilePath -> TransferGenerator -> Assistant ()
-inTransferSlot program gen = do
+inTransferSlot :: FilePath -> BatchCommandMaker -> TransferGenerator -> Assistant ()
+inTransferSlot program batchmaker gen = do
 	flip MSemN.wait 1 <<~ transferSlots
-	runTransferThread program =<< gen
+	runTransferThread program batchmaker =<< gen
 
 {- Runs a TransferGenerator, and its transfer action,
  - without waiting for a slot to become available. -}
-inImmediateTransferSlot :: FilePath -> TransferGenerator -> Assistant ()
-inImmediateTransferSlot program gen = do
+inImmediateTransferSlot :: FilePath -> BatchCommandMaker -> TransferGenerator -> Assistant ()
+inImmediateTransferSlot program batchmaker gen = do
 	flip MSemN.signal (-1) <<~ transferSlots
-	runTransferThread program =<< gen
+	runTransferThread program batchmaker =<< gen
 
 {- Runs a transfer action, in an already allocated transfer slot.
  - Once it finishes, frees the transfer slot.
@@ -62,19 +69,19 @@ inImmediateTransferSlot program gen = do
  - then pausing the thread until a ResumeTransfer exception is raised,
  - then rerunning the action.
  -}
-runTransferThread :: FilePath -> Maybe (Transfer, TransferInfo, Transferrer -> Assistant ()) -> Assistant ()
-runTransferThread _ Nothing = flip MSemN.signal 1 <<~ transferSlots
-runTransferThread program (Just (t, info, a)) = do
+runTransferThread :: FilePath -> BatchCommandMaker -> Maybe (Transfer, TransferInfo, Transferrer -> Assistant ()) -> Assistant ()
+runTransferThread _ _ Nothing = flip MSemN.signal 1 <<~ transferSlots
+runTransferThread program batchmaker (Just (t, info, a)) = do
 	d <- getAssistant id
 	aio <- asIO1 a
-	tid <- liftIO $ forkIO $ runTransferThread' program d aio
+	tid <- liftIO $ forkIO $ runTransferThread' program batchmaker d aio
 	updateTransferInfo t $ info { transferTid = Just tid }
 
-runTransferThread' :: FilePath -> AssistantData -> (Transferrer -> IO ()) -> IO ()
-runTransferThread' program d run = go
+runTransferThread' :: FilePath -> BatchCommandMaker -> AssistantData -> (Transferrer -> IO ()) -> IO ()
+runTransferThread' program batchmaker d run = go
   where
 	go = catchPauseResume $
-		withTransferrer program (transferrerPool d)
+		withTransferrer program batchmaker (transferrerPool d)
 			run
 	pause = catchPauseResume $
 		runEvery (Seconds 86400) noop
@@ -248,12 +255,22 @@ cancelTransfer pause t = do
 		| pause = throwTo tid PauseTransfer
 		| otherwise = killThread tid
 	{- In order to stop helper processes like rsync,
-	 - kill the whole process group of the process running the transfer. -}
+	 - kill the whole process group of the process
+	 - running the transfer. -}
 	killproc pid = void $ tryIO $ do
+#ifndef mingw32_HOST_OS
 		g <- getProcessGroupIDOf pid
-		void $ tryIO $ signalProcessGroup sigTERM g
-		threadDelay 50000 -- 0.05 second grace period
-		void $ tryIO $ signalProcessGroup sigKILL g
+		let signal sig = void $ tryIO $ signalProcessGroup sig g
+		signal sigTERM
+		graceperiod
+		signal sigKILL
+#else
+		let signal sig = void $ tryIO $ generateConsoleCtrlEvent sig pid
+		signal cTRL_C_EVENT
+		graceperiod
+		signal cTRL_BREAK_EVENT
+#endif
+	graceperiod = threadDelay 50000 -- 0.05 second
 
 {- Start or resume a transfer. -}
 startTransfer :: Transfer -> Assistant ()
@@ -270,7 +287,8 @@ startTransfer t = do
 		liftIO $ throwTo tid ResumeTransfer
 	start info = do
 		program <- liftIO readProgramFile
-		inImmediateTransferSlot program $
+		batchmaker <- liftIO getBatchCommandMaker
+		inImmediateTransferSlot program batchmaker $
 			genTransfer t info
 
 getCurrentTransfers :: Assistant TransferMap

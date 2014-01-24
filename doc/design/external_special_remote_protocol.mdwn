@@ -1,0 +1,293 @@
+Communication between git-annex and a program implementing an external
+special remote uses this protocol.
+
+[[!toc]]
+
+## starting the program
+
+The external special remote program has a name like
+`git-annex-remote-$bar`. When 
+`git annex initremote foo type=external externaltype=$bar` is run,
+git-annex finds the appropriate program in PATH.
+
+The program is started by git-annex when it needs to access the special
+remote, and may be left running for a long period of time. This allows
+it to perform expensive setup tasks, etc. Note that git-annex may choose to
+start multiple instances of the program (eg, when multiple git-annex
+commands are run concurrently in a repository).
+
+## protocol overview
+
+Communication is via stdin and stdout. Therefore, the external special
+remote must avoid doing any prompting, or outputting anything like eg,
+progress to stdout. (Such stuff can be sent to stderr instead.)
+
+The protocol is line based. Messages are sent in either direction, from
+git-annex to the special remote, and from the special remote to git-annex.
+
+In order to avoid confusing interactions, one or the other has control
+at any given time, and is responsible for sending requests, while the other
+only sends replies to the requests.
+
+Each protocol line starts with a command, which is followed by the
+command's parameters (a fixed number per command), each separated by a
+single space. The last parameter may contain spaces. Parameters may be
+empty, but the separating spaces are still required in that case.
+
+## example session
+
+The special remote is responsible for sending the first message, indicating
+the version of the protocol it is using.
+
+	VERSION 1
+
+Once it knows the version, git-annex will generally 
+send a message telling the special remote to start up.
+(Or it might send a INITREMOTE, so don't hardcode this order.)
+
+	PREPARE
+
+The special remote can now ask git-annex for its configuration, as needed,
+and check that it's valid. git-annex responds with the configuration values
+
+	GETCONFIG directory
+	VALUE /media/usbdrive/repo
+	GETCONFIG automount
+	VALUE true
+
+Once the special remote is satisfied with its configuration and is
+ready to go, it tells git-annex.
+
+	PREPARE-SUCCESS
+
+Now git-annex will tell the special remote what to do. Let's suppose
+it wants to store a key. 
+
+	TRANSFER STORE somekey tmpfile
+
+The special remote can continue sending messages to git-annex during this
+transfer. It will typically send progress messages, indicating how many
+bytes have been sent:
+
+	PROGRESS 10240
+	PROGRESS 20480
+
+Once the key has been stored, the special remote tells git-annex the result:
+
+	TRANSFER-SUCCESS STORE somekey
+
+Once git-annex is done with the special remote, it will close its stdin.
+The special remote program can then exit.
+
+## git-annex request messages
+
+These are messages git-annex sends to the special remote program.
+None of these messages require an immediate reply. The special
+remote can send any messages it likes while handling the requests.
+
+Once the special remote has finished performing the request, it should
+send one of the corresponding replies listed in the next section.
+
+The following requests *must* all be supported by the special remote.
+
+* `INITREMOTE`  
+  Request that the remote initialize itself. This is where any one-time
+  setup tasks can be done, for example creating an Amazon S3 bucket.  
+  Note: This may be run repeatedly over time, as a remote is initialized in
+  different repositories, or as the configuration of a remote is changed.
+  (Both `git annex initremote` and `git-annex enableremote` run this.)
+  So any one-time setup tasks should be done idempotently.
+* `PREPARE`  
+  Tells the special remote it's time to prepare itself to be used.  
+  Only INITREMOTE can come before this.
+* `TRANSFER STORE|RETRIEVE Key File`  
+  Requests the transfer of a key. For Send, the File is the file to upload;
+  for Receive the File is where to store the download.  
+  Note that the File should not influence the filename used on the remote.
+  The filename will not contain any whitespace.  
+  Multiple transfers might be requested by git-annex, but it's fine for the 
+  program to serialize them and only do one at a time.
+* `CHECKPRESENT Key`  
+  Requests the remote check if a key is present in it.
+* `REMOVE Key`  
+  Requests the remote remove a key's contents.
+
+The following requests can optionally be supported. If not handled,
+replying with `UNSUPPORTED-REQUEST` is acceptable.
+
+* `GETCOST`  
+  Requests the remote return a use cost. Higher costs are more expensive.
+  (See Config/Cost.hs for some standard costs.)
+* `GETAVAILABILITY`
+  Requests the remote send back an `AVAILABILITY` reply.
+  If the remote replies with `UNSUPPORTED-REQUEST`, its availability
+  is asssumed to be global. So, only remotes that are only reachable
+  locally need to worry about implementing this.
+
+More optional requests may be added, without changing the protocol version,
+so if an unknown request is seen, reply with `UNSUPPORTED-REQUEST`.
+
+## special remote replies
+
+These should be sent only in response to the git-annex request messages.
+They do not have to be sent immediately after the request; the special
+remote can send its own requests (listed in the next section below)
+while it's handling a request.
+
+* `PREPARE-SUCCESS`  
+  Sent as a response to PREPARE once the special remote is ready for use.
+* `PREPARE-FAILURE ErrorMsg`
+  Sent as a response to PREPARE if the special remote cannot be used.
+* `TRANSFER-SUCCESS STORE|RETRIEVE Key`  
+  Indicates the transfer completed successfully.
+* `TRANSFER-FAILURE STORE|RETRIEVE Key ErrorMsg`  
+  Indicates the transfer failed.
+* `CHECKPRESENT-SUCCESS Key`  
+  Indicates that a key has been positively verified to be present in the
+  remote.
+* `CHECKPRESENT-FAILURE Key`  
+  Indicates that a key has been positively verified to not be present in the
+  remote.
+* `CHECKPRESENT-UNKNOWN Key ErrorMsg`  
+  Indicates that it is not currently possible to verify if the key is
+  present in the remote. (Perhaps the remote cannot be contacted.)
+* `REMOVE-SUCCESS Key`  
+  Indicates the key has been removed from the remote. May be returned if
+  the remote didn't have the key at the point removal was requested.
+* `REMOVE-FAILURE Key ErrorMsg`  
+  Indicates that the key was unable to be removed from the remote.
+* `COST Int`  
+  Indicates the cost of the remote.
+* `AVAILABILITY GLOBAL|LOCAL`
+  Indicates if the remote is globally or only locally available.
+  (Ie stored in the cloud vs on a local disk.)
+* `INITREMOTE-SUCCESS`  
+  Indicates the INITREMOTE succeeded and the remote is ready to use.
+* `INITREMOTE-FAILURE ErrorMsg`  
+  Indicates that INITREMOTE failed.
+* `UNSUPPORTED-REQUEST`  
+  Indicates that the special remote does not know how to handle a request.
+
+## special remote messages
+
+These messages may be sent by the special remote at any time that it's
+in control.
+
+* `VERSION Int`  
+  Supported protocol version. Current version is 1. Must be sent first
+  thing at startup, as until it sees this git-annex does not know how to
+  talk with the special remote program!
+* `PROGRESS Int`  
+  Indicates the current progress of the transfer (in bytes). May be repeated
+  any number of times during the transfer process, but it's wasteful to
+  update the progress until at least another 1% of the file has been sent.
+  This is highly recommended for STORE. (It is optional but good for RETRIEVE.)  
+  (git-annex does not send a reply to this message.)
+* `DIRHASH Key`  
+  Gets a two level hash associated with a Key. Something like "abc/def".
+  This is always the same for any given Key, so can be used for eg,
+  creating hash directory structures to store Keys in.  
+  (git-annex replies with VALUE followed by the value.)
+* `SETCONFIG Setting`  
+  Sets one of the special remote's configuration settings.  
+  Normally this is sent during INITREMOTE, which allows these settings
+  to be stored in the git-annex branch, so will be available if the same
+  special remote is used elsewhere. (If sent after INITREMOTE, the changed
+  configuration will only be available while the remote is running.)
+* `GETCONFIG Setting`  
+  Gets one of the special remote's configuration settings, which can have
+  been passed by the user when running `git annex initremote`, or
+  can have been set by a previous SETCONFIG. Can be run at any time.  
+  (git-annex replies with VALUE followed by the value. If the setting is
+  not set, the value will be empty.)
+* `SETCREDS Setting User Password`  
+  When some form of user and password is needed to access a special remote,
+  this can be used to securely store them for later use.
+  (Like SETCONFIG, this is normally sent only during INITREMOTE.)  
+  The Setting indicates which value in a remote's configuration can be
+  used to store the creds.  
+  Note that creds are normally only stored in the remote's configuration
+  when it's surely safe to do so; when gpg encryption is used, in which
+  case the creds will be encrypted using it. If creds are not stored in
+  the configuration, they'll only be stored in a local file.  
+  (embedcreds can be set to yes by the user or by SETCONFIG to force
+   the creds to be stored in the remote's configuration).
+* `GETCREDS Setting`  
+  Gets any creds that were previously stored in the remote's configuration
+  or a file.
+  (git-annex replies with "CREDS User Password". If no creds are found,
+  User and Password are both empty.)
+* `GETUUID`  
+  Queries for the UUID of the special remote being used.  
+  (git-annex replies with VALUE followed by the UUID.)
+* `GETGITDIR`  
+  Queries for the path to the git directory of the repository that
+  is using the external special remote.
+  (git-annex replies with VALUE followed by the path.)
+* `SETWANTED PreferredContentExpression`  
+  Can be used to set the preferred content of a repository. Normally
+  this is not configured by a special remote, but it may make sense
+  in some situations to hint at the kind of content that should be stored
+  in the special remote. Note that if a unparsable expression is set,
+  git-annex will ignore it.
+* `GETWANTED`  
+  Gets the current preferred content setting of the repository.
+  (git-annex replies with VALUE followed by the preferred content
+  expression.)
+* `SETSTATE Key Value`  
+  Can be used to store some form of state for a Key. The state stored
+  can be anything this remote needs to store, in any format.
+  It is stored in the git-annex branch. Note that this means that if
+  multiple repositories are using the same special remote, and store
+  different state, whichever one stored the state last will win. Also,
+  it's best to avoid storing much state, since this will bloat the
+  git-annex branch. Most remotes will not need to store any state.
+* `GETSTATE Key`  
+  Gets any state that has been stored for the key.  
+  (git-annex replies with VALUE followed by the state.)
+* `DEBUG message`
+  Tells git-annex to display the message if --debug is enabled.
+
+## general messages
+
+These messages can be sent at any time by either git-annex or the special
+remote.
+
+* `ERROR ErrorMsg`  
+  Generic error. Can be sent at any time if things get too messed up
+  to continue. When possible, use a more specific reply from the list above.  
+  The special remote program should exit after sending this, as
+  git-annex will not talk to it any further. If the program receives
+  an ERROR from git-annex, it can exit with its own ERROR.
+
+## long running network connections
+
+Since an external special remote is started only when git-annex needs to
+access the remote, and then left running, it's ok to open a network
+connection in the PREPARE stage, and continue to use that network
+connection as requests are made.
+
+If you're unable to open a network connection, or the connection closes,
+perhaps because the network is down, it's ok to fail to perform any
+requests. Or you can try to reconnect when a new request is made.
+
+Note that the external special remote program may be left running for
+quite a long time, especially when the git-annex assistant is using it.
+The assistant will detect when the system connects to a network, and will
+start a new process the next time it needs to use a remote.
+
+## TODO
+
+* When storing encrypted files stream the file up/down the pipe, rather
+  than using a temp file. Will probably involve less space and disk IO, 
+  and makes the progress display better, since the encryption can happen
+  concurrently with the transfer. Also, no need to use PROGRESS in this
+  scenario, since git-annex can see how much data it has sent/received from
+  the remote. However, \n and probably \0 need to be escaped somehow in the
+  file data, which adds complication.
+* uuid discovery during INITREMOTE.
+* Support for splitting files into chunks.
+* Support for getting and setting the list of urls that can be associated
+  with a key.
+* Hook into webapp. Needs a way to provide some kind of prompt to the user
+  in the webapp, etc.

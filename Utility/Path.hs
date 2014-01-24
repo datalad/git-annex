@@ -242,13 +242,13 @@ fileNameLengthLimit dir = do
  - was provided by a third party and is not to be trusted, returns the closest
  - sane FilePath.
  -
- - All spaces and punctuation are replaced with '_', except for '.'
- - "../" will thus turn into ".._", which is safe.
+ - All spaces and punctuation and other wacky stuff are replaced
+ - with '_', except for '.' "../" will thus turn into ".._", which is safe.
  -}
 sanitizeFilePath :: String -> FilePath
 sanitizeFilePath = map sanitize
   where
   	sanitize c
 		| c == '.' = c
-		| isSpace c || isPunctuation c || c == '/' = '_'
+		| isSpace c || isPunctuation c || isSymbol c || isControl c || c == '/' = '_'
 		| otherwise = c

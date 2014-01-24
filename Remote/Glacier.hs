@@ -9,7 +9,6 @@ module Remote.Glacier (remote, jobList) where
 
 import qualified Data.Map as M
 import qualified Data.Text as T
-import System.Environment
 
 import Common.Annex
 import Types.Remote
@@ -26,6 +25,7 @@ import Utility.Metered
 import qualified Annex
 import Annex.Content
 import Annex.UUID
+import Utility.Env
 
 import System.Process
 
@@ -66,7 +66,7 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			gitconfig = gc,
 			localpath = Nothing,
 			readonly = False,
-			globallyAvailable = True,
+			availability = GloballyAvailable,
 			remotetype = remote
 		}
 
@@ -232,7 +232,7 @@ glacierEnv c u = go =<< getRemoteCredPairFor "glacier" c creds
 	go Nothing = return Nothing
 	go (Just (user, pass)) = do
 		e <- liftIO getEnvironment
-		return $ Just $ (uk, user):(pk, pass):e
+		return $ Just $ addEntries [(uk, user), (pk, pass)] e
 
 	creds = AWS.creds u
 	(uk, pk) = credPairEnvironment creds

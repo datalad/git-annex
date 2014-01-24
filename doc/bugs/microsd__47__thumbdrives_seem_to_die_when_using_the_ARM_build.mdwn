@@ -34,3 +34,5 @@ I can try and autosync the daemon.log somewhere if I happen to come along a bunc
 
 # End of transcript or log.
 """]]
+
+[[done]]

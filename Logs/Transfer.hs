@@ -18,12 +18,24 @@ import Utility.Metered
 import Utility.Percentage
 import Utility.QuickCheck
 
-import System.Posix.Types
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import Control.Concurrent
+
+#ifndef mingw32_HOST_OS
+import System.Posix.Types (ProcessID)
+#else
+import System.Win32.Process (ProcessId)
+import System.Win32.Process.Current (getCurrentProcessId)
+#endif
+
+#ifndef mingw32_HOST_OS
+type PID = ProcessID
+#else
+type PID = ProcessId
+#endif
 
 {- Enough information to uniquely identify a transfer, used as the filename
  - of the transfer information file. -}
@@ -42,7 +54,7 @@ data Transfer = Transfer
  -}
 data TransferInfo = TransferInfo
 	{ startedTime :: Maybe POSIXTime
-	, transferPid :: Maybe ProcessID
+	, transferPid :: Maybe PID
 	, transferTid :: Maybe ThreadId
 	, transferRemote :: Maybe Remote
 	, bytesComplete :: Maybe Integer
@@ -204,7 +216,11 @@ mkProgressUpdater t info = do
 startTransferInfo :: Maybe FilePath -> IO TransferInfo
 startTransferInfo file = TransferInfo
 	<$> (Just . utcTimeToPOSIXSeconds <$> getCurrentTime)
+#ifndef mingw32_HOST_OS
 	<*> pure Nothing -- pid not stored in file, so omitted for speed
+#else
+	<*> (Just <$> getCurrentProcessId)
+#endif
 	<*> pure Nothing -- tid ditto
 	<*> pure Nothing -- not 0; transfer may be resuming
 	<*> pure Nothing
@@ -318,33 +334,48 @@ writeTransferInfoFile info tfile = do
 {- File format is a header line containing the startedTime and any
  - bytesComplete value. Followed by a newline and the associatedFile.
  -
- - The transferPid is not included; instead it is obtained by looking
- - at the process that locks the file.
+ - On unix, the transferPid is not included; instead it is obtained
+ - by looking at the process that locks the file.
+ -
+ - On windows, the transferPid is included, as a second line.
  -}
 writeTransferInfo :: TransferInfo -> String
 writeTransferInfo info = unlines
 	[ (maybe "" show $ startedTime info) ++
 	  (maybe "" (\b -> ' ' : show b) (bytesComplete info))
+#ifdef mingw32_HOST_OS
+	, maybe "" show (transferPid info)
+#endif
 	, fromMaybe "" $ associatedFile info -- comes last; arbitrary content
 	]
 
-readTransferInfoFile :: Maybe ProcessID -> FilePath -> IO (Maybe TransferInfo)
+readTransferInfoFile :: Maybe PID -> FilePath -> IO (Maybe TransferInfo)
 readTransferInfoFile mpid tfile = catchDefaultIO Nothing $ do
 	h <- openFile tfile ReadMode
 	fileEncoding h
 	hClose h `after` (readTransferInfo mpid <$> hGetContentsStrict h)
 
-readTransferInfo :: Maybe ProcessID -> String -> Maybe TransferInfo
+readTransferInfo :: Maybe PID -> String -> Maybe TransferInfo
 readTransferInfo mpid s = TransferInfo
 	<$> time
+#ifdef mingw32_HOST_OS
+	<*> pure (if isJust mpid then mpid else mpid')
+#else
 	<*> pure mpid
+#endif
 	<*> pure Nothing
 	<*> pure Nothing
 	<*> bytes
 	<*> pure (if null filename then Nothing else Just filename)
 	<*> pure False
   where
+#ifdef mingw32_HOST_OS
+	(firstline, rem) = separate (== '\n') s
+	(secondline, rest) = separate (== '\n') rem
+	mpid' = readish secondline
+#else
 	(firstline, rest) = separate (== '\n') s
+#endif
 	filename
 		| end rest == "\n" = beginning rest
 		| otherwise = rest

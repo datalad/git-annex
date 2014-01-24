@@ -53,14 +53,14 @@ upgrade = do
 	ifM (fromRepo Git.repoIsLocalBare)
 		( do
 			moveContent
-			setVersion defaultVersion
+			setVersion supportedVersion
 		, do
 			moveContent
 			updateSymlinks
 			moveLocationLogs
 	
 			Annex.Queue.flush
-			setVersion defaultVersion
+			setVersion supportedVersion
 		)
 	
 	Upgrade.V2.upgrade

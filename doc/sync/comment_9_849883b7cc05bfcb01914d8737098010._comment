@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 9"
+ date="2013-12-12T17:54:55Z"
+ content="""
+@Dav what kind of url does the upstream remote have? Perhaps it would be sufficient to make sync skip trying to push to git:// and http[s]:// remotes. Both are unlikely to accept pushes and in the cases where they do accept pushes it would be fine to need a manual `git push`. 
+
+Anyway, you can already configure which remotes get synced with. From the man page:
+
+<pre>
+       remote.&lt;name&gt;.annex-sync
+              If set to false, prevents  git-annex  sync  (and  the  git-annex
+              assistant) from syncing with this remote.
+</pre>
+
+So `git config remote.upstream.annex-sync=false`
+"""]]

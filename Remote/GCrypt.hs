@@ -114,7 +114,7 @@ gen' r u c gc = do
 		, repo = r
 		, gitconfig = gc { remoteGitConfig = Just $ extractGitConfig r }
 		, readonly = Git.repoIsHttp r
-		, globallyAvailable = globallyAvailableCalc r
+		, availability = availabilityCalc r
 		, remotetype = remote
 	}
 	return $ Just $ encryptableRemote c

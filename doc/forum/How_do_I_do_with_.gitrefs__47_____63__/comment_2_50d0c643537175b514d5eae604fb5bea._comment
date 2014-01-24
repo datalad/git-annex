@@ -1,0 +1,51 @@
+[[!comment format=mdwn
+ username="EskildHustvedt"
+ ip="80.203.53.96"
+ subject="comment 2"
+ date="2014-01-11T07:51:57Z"
+ content="""
+I have noticed a .gitrefs/ directory being added to my git-annex repositories as well.
+Two direct-mode git-annex assistant-managed repos have turned up a .gitrefs directory the past month or so, with the directory often returning after I remove it. First occurrance according to git logs is on the 3rd of December.
+
+The directory looks a lot like .git/refs, as if some tool is trying to do something to .git/refs but has a bug that removes the first /, and then proceeds to copy or recreate the files.
+
+    [0 zerodogg@firefly annexed]$ du -hs .gitrefs .git/refs
+    172K    .gitrefs
+    192K    .git/refs
+    [0 zerodogg@firefly annexed]$ find .gitrefs > /tmp/gitr1
+    [0 zerodogg@firefly annexed]$ find .git/refs > /tmp/gitr2
+    [0 zerodogg@firefly annexed]$ perl -pi -e 's/^\.git.?refs//' /tmp/gitr*                                                                                                   
+    [0 zerodogg@firefly annexed]$ diff -BrayN --suppress-common-lines /tmp/gitr1 /tmp/gitr2                                                                                   
+                                                                  > /tags
+                                                                  > /remotes/browncoats
+                                                                  > /remotes/browncoats/master
+                                                                  > /remotes/browncoats/synced
+                                                                  > /remotes/browncoats/synced/master
+                                                                  > /remotes/browncoats/synced/git-annex
+                                                                  > /remotes/browncoats/git-annex
+                                                                  > /remotes/browncoats/annex
+                                                                  > /remotes/browncoats/annex/direct
+                                                                  > /remotes/browncoats/annex/direct/master
+    /remotes/serenity/master                                      <
+    /remotes/zoe                                                  | /remotes/faerun/annex
+    /remotes/zoe/master                                           | /remotes/faerun/annex/direct
+    /remotes/zoe/synced                                           | /remotes/faerunpi
+    /remotes/zoe/synced/master                                    | /remotes/faerunpi/synced
+    /remotes/zoe/synced/git-annex                                 | /remotes/faerunpi/annex
+    /remotes/firefly                                              | /remotes/faerunpi/annex/direct
+    /remotes/firefly/master                                       <
+    /remotes/firefly/synced                                       <
+    /remotes/firefly/synced/master                                <
+    /remotes/firefly/synced/git-annex                             <
+    /remotes/firefly/git-annex                                    <
+    /remotes/firefly/annex                                        <
+    /remotes/firefly/annex/direct                                 <
+    /remotes/firefly/annex/direct/master                          <
+    /remotes/river/master                                         <
+                                                                  > /remotes/origin
+                                                                  > /remotes/origin/synced
+                                                                  > /remotes/hufsa
+                                                                  > /remotes/hufsa/synced
+                                                                  > /synced
+
+"""]]

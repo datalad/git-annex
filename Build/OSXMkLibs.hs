@@ -8,13 +8,13 @@
 module Main where
 
 import Control.Applicative
-import System.Environment
+import System.Environment (getArgs)
 import Data.Maybe
 import System.FilePath
 import System.Directory
-import System.IO
 import Control.Monad
 import Data.List
+import Data.String.Utils
 
 import Utility.PartialPrelude
 import Utility.Directory
@@ -23,6 +23,7 @@ import Utility.Monad
 import Utility.SafeCommand
 import Utility.Path
 import Utility.Exception
+import Utility.Env
 
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -41,6 +42,7 @@ installLibs :: FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [
 installLibs appbase replacement_libs libmap = do
 	(needlibs, replacement_libs', libmap') <- otool appbase replacement_libs libmap
 	libs <- forM needlibs $ \lib -> do
+		pathlib <- findLibPath lib
 		let shortlib = fromMaybe (error "internal") (M.lookup lib libmap')
 		let fulllib = dropWhile (== '/') lib
 		let dest = appbase </> fulllib
@@ -49,15 +51,20 @@ installLibs appbase replacement_libs libmap = do
 			( return Nothing
 			, do
 				createDirectoryIfMissing True (parentDir dest)
-				putStrLn $ "installing " ++ lib ++ " as " ++ shortlib
-				_ <- boolSystem "cp" [File lib, File dest]
+				putStrLn $ "installing " ++ pathlib ++ " as " ++ shortlib
+				_ <- boolSystem "cp" [File pathlib, File dest]
 				_ <- boolSystem "chmod" [Param "644", File dest]
 				_ <- boolSystem "ln" [Param "-s", File fulllib, File symdest]
 				return $ Just appbase
 			)
 	return (catMaybes libs, replacement_libs', libmap')
 
-{- Returns libraries to install. -}
+{- Returns libraries to install.
+ -
+ - Note that otool -L ignores DYLD_LIBRARY_PATH, so the
+ - library files returned may need to be run through findLibPath
+ - to find the actual libraries to install.
+ -}
 otool :: FilePath -> [(FilePath, FilePath)] -> LibMap -> IO ([FilePath], [(FilePath, FilePath)], LibMap)
 otool appbase replacement_libs libmap = do
 	files <- filterM doesFileExist =<< dirContentsRecursive appbase
@@ -75,6 +82,14 @@ otool appbase replacement_libs libmap = do
 		let rls' = nub $ rls ++ (zip libs expanded_libs)
 		m' <- install_name_tool file libs expanded_libs m
 		process (expanded_libs:c) rest rls' m'
+
+findLibPath :: FilePath -> IO FilePath
+findLibPath l = go =<< getEnv "DYLD_LIBRARY_PATH"
+  where
+	go Nothing = return l
+	go (Just p) = fromMaybe l
+		<$> firstM doesFileExist (map (</> f) (split ":" p))
+	f = takeFileName l
 
 {- Expands any @rpath in the list of libraries.
  -
@@ -94,7 +109,7 @@ expand_rpath libs replacement_libs cmd
 		let m = if (null s)
 			then M.fromList replacement_libs
 			else M.fromList $ mapMaybe parse $ lines s
-		return $ map (replace m) libs
+		return $ map (replacem m) libs
 	| otherwise = return libs
   where
   	probe c = "DYLD_PRINT_RPATHS=1 " ++ c ++ " --getting-rpath-dummy-option 2>&1 | grep RPATH"
@@ -102,7 +117,7 @@ expand_rpath libs replacement_libs cmd
 		("RPATH":"successful":"expansion":"of":old:"to:":new:[]) -> 
 			Just (old, new)
 		_ -> Nothing
-	replace m l = fromMaybe l $ M.lookup l m
+	replacem m l = fromMaybe l $ M.lookup l m
 
 parseOtool :: String -> [FilePath]
 parseOtool = catMaybes . map parse . lines

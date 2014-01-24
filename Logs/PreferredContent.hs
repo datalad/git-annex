@@ -19,9 +19,9 @@ module Logs.PreferredContent (
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Data.Either
-import Data.Time.Clock.POSIX
 
 import Common.Annex
+import Logs.PreferredContent.Raw
 import qualified Annex.Branch
 import qualified Annex
 import Logs
@@ -35,15 +35,6 @@ import Types.Remote (RemoteConfig)
 import Logs.Group
 import Logs.Remote
 import Types.StandardGroups
-
-{- Changes the preferred content configuration of a remote. -}
-preferredContentSet :: UUID -> String -> Annex ()
-preferredContentSet uuid@(UUID _) val = do
-	ts <- liftIO getPOSIXTime
-	Annex.Branch.change preferredContentLog $
-		showLog id . changeLog ts uuid val . parseLog Just
-	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Nothing }
-preferredContentSet NoUUID _ = error "unknown UUID; cannot modify"
 
 {- Checks if a file is preferred content for the specified repository
  - (or the current repository if none is specified). -}
@@ -71,15 +62,11 @@ preferredContentMapLoad = do
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Just m }
 	return m
 
-preferredContentMapRaw :: Annex (M.Map UUID String)
-preferredContentMapRaw = simpleMap . parseLog Just
-	<$> Annex.Branch.get preferredContentLog
-
 {- This intentionally never fails, even on unparsable expressions,
- - because the configuration is shared amoung repositories and newer
+ - because the configuration is shared among repositories and newer
  - versions of git-annex may add new features. Instead, parse errors
  - result in a Matcher that will always succeed. -}
-makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> String -> FileMatcher
+makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> PreferredContentExpression -> FileMatcher
 makeMatcher groupmap configmap u expr
 	| expr == "standard" = standardMatcher groupmap configmap u
 	| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
@@ -95,7 +82,7 @@ standardMatcher groupmap configmap u =
 		getStandardGroup =<< u `M.lookup` groupsByUUID groupmap
 
 {- Checks if an expression can be parsed, if not returns Just error -}
-checkPreferredContentExpression :: String -> Maybe String
+checkPreferredContentExpression :: PreferredContentExpression -> Maybe String
 checkPreferredContentExpression expr
 	| expr == "standard" = Nothing
 	| otherwise = case parsedToMatcher tokens of

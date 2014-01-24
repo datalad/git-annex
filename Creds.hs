@@ -35,25 +35,27 @@ data CredPairStorage = CredPairStorage
 {- Stores creds in a remote's configuration, if the remote allows
  - that. Otherwise, caches them locally. -}
 setRemoteCredPair :: RemoteConfig -> CredPairStorage -> Annex RemoteConfig
-setRemoteCredPair c storage = go =<< getRemoteCredPair c storage
-  where
-	go (Just creds)
-		| embedCreds c = case credPairRemoteKey storage of
-			Nothing -> localcache creds
-			Just key -> storeconfig creds key =<< remoteCipher c
-		| otherwise = localcache creds
-	go Nothing = return c
+setRemoteCredPair c storage = 
+	maybe (return c) (setRemoteCredPair' c storage)
+		=<< getRemoteCredPair c storage
 
-	localcache creds = do
+setRemoteCredPair' :: RemoteConfig -> CredPairStorage -> CredPair -> Annex RemoteConfig
+setRemoteCredPair' c storage creds
+	| embedCreds c = case credPairRemoteKey storage of
+		Nothing -> localcache
+		Just key -> storeconfig key =<< remoteCipher c
+	| otherwise = localcache
+  where
+	localcache = do
 		writeCacheCredPair creds storage
 		return c
 
-	storeconfig creds key (Just cipher) = do
+	storeconfig key (Just cipher) = do
 		s <- liftIO $ encrypt [] cipher
 			(feedBytes $ L.pack $ encodeCredPair creds)
 			(readBytes $ return . L.unpack)
 		return $ M.insert key (toB64 s) c
-	storeconfig creds key Nothing =
+	storeconfig key Nothing =
 		return $ M.insert key (toB64 $ encodeCredPair creds) c
 
 {- Gets a remote's credpair, from the environment if set, otherwise

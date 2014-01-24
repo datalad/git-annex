@@ -19,8 +19,8 @@ the repository in your computer you want to archive. In short:
 	git remote add archivedrive /media/archive/annex
 	git annex sync archivedrive
 
-Don't forget to  tell git-annex this is an archive drive (or perhaps a backup
-drive). Also, give the drive a description that matches something you write on
+Don't forget to  tell git-annex this is an archive drive (or a backup
+drive; see [[preferred_content]].). Also, give the drive a description that matches something you write on
 its label, so you can find it later:
 
 	git annex group archivedrive archive

@@ -2,11 +2,11 @@ Format: http://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
 Source: native package
 
 Files: *
-Copyright: © 2010-2013 Joey Hess <joey@kitenet.net>
+Copyright: © 2010-2014 Joey Hess <joey@kitenet.net>
 License: GPL-3+
 
 Files: Assistant/WebApp.hs Assistant/WebApp/* templates/* static/*
-Copyright: © 2012-2013 Joey Hess <joey@kitenet.net>
+Copyright: © 2012-2014 Joey Hess <joey@kitenet.net>
 License: AGPL-3+
 
 Files: Utility/ThreadScheduler.hs
@@ -88,7 +88,7 @@ License: MIT or GPL-2
  OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-Files: static/*/bootstrap* static/img/glyphicons-halflings*
+Files: static/bootstrap* static/glyphicons-halflings*
 Copyright: 2012 Twitter, Inc.
 License: Apache-2.0
  Licensed under the Apache License, Version 2.0 (the "License");

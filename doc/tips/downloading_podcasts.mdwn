@@ -61,3 +61,9 @@ time-delayed deletion of upstream content. You can also work around slow
 downloads upstream by podcatching to a server with ample bandwidth or work
 around a slow local Internet connection by podcatching to your home server
 and transferring to your laptop on demand.
+
+## youtube playlists
+
+If your git-annex is also built with quvi support, you can also use
+`git annex importfeed` on youtube playlists. It will automatically download
+the videos linked to by the playlist.

@@ -8,10 +8,12 @@
 module Command.Schedule where
 
 import Common.Annex
+import qualified Annex
 import Command
 import qualified Remote
 import Logs.Schedule
 import Types.ScheduledActivity
+import Types.Messages
 
 import qualified Data.Set as S
 
@@ -37,6 +39,7 @@ start = parse
 
 performGet :: UUID -> CommandPerform
 performGet uuid = do
+	Annex.setOutput QuietOutput
 	s <- scheduleGet uuid
 	liftIO $ putStrLn $ intercalate "; " $ 
 		map fromScheduledActivity $ S.toList s

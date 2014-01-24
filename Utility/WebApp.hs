@@ -53,7 +53,11 @@ browserProc url = proc "open" [url]
 browserProc url = proc "am"
 	["start", "-a", "android.intent.action.VIEW", "-d", url]
 #else
+#ifdef mingw32_HOST_OS
+browserProc url = proc "cmd" ["/c start " ++ url]
+#else
 browserProc url = proc "xdg-open" [url]
+#endif
 #endif
 #endif
 
@@ -64,7 +68,7 @@ browserProc url = proc "xdg-open" [url]
  - such as start a web browser to view the webapp.
  -}
 runWebApp :: Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
-runWebApp h app observer = do
+runWebApp h app observer = withSocketsDo $ do
 	sock <- getSocket h
 	void $ forkIO $ runSettingsSocket webAppSettings sock app
 	sockaddr <- fixSockAddr <$> getSocketName sock
@@ -93,11 +97,11 @@ webAppSettings = defaultSettings
  -}
 getSocket :: Maybe HostName -> IO Socket
 getSocket h = do
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined (mingw32_HOST_OS)
 	-- getAddrInfo currently segfaults on Android.
 	-- The HostName is ignored by this code.
 	when (isJust h) $
-		error "getSocket with HostName not supported on Android"
+		error "getSocket with HostName not supported on this OS"
 	addr <- inet_addr "127.0.0.1"
  	sock <- socket AF_INET Stream defaultProtocol
 	preparesocket sock

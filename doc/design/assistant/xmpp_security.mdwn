@@ -24,3 +24,6 @@ AES encryption:
   * Rely on the user's gpg key, and do gpg key verification during XMPP
     pairing. Problimatic because who wants to put their gpg key on their
     phone? Also, require the users be in the WOT and be gpg literate.
+
+Update: This seems unlikely to be worth doing. [[Telehash]] is better.
+--[[Joey]]

@@ -13,7 +13,7 @@
 module Utility.Yesod 
 	( module Y
 	, liftH
-#ifndef __ANDROID__
+#ifndef __NO_TH__
 	, widgetFile
 	, hamletTemplate
 #endif
@@ -28,7 +28,7 @@ import Yesod as Y
 #else
 import Yesod as Y hiding (Html)
 #endif
-#ifndef __ANDROID__
+#ifndef __NO_TH__
 import Yesod.Default.Util
 import Language.Haskell.TH.Syntax (Q, Exp)
 #if MIN_VERSION_yesod_default(1,1,0)
@@ -37,7 +37,7 @@ import Text.Hamlet hiding (Html)
 #endif
 #endif
 
-#ifndef __ANDROID__
+#ifndef __NO_TH__
 widgetFile :: String -> Q Exp
 #if ! MIN_VERSION_yesod_default(1,1,0)
 widgetFile = widgetFileNoReload

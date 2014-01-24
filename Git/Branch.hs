@@ -13,7 +13,7 @@ import Common
 import Git
 import Git.Sha
 import Git.Command
-import Git.Ref (headRef)
+import qualified Git.Ref
 
 {- The currently checked out branch.
  -
@@ -36,7 +36,7 @@ current r = do
 {- The current branch, which may not really exist yet. -}
 currentUnsafe :: Repo -> IO (Maybe Git.Ref)
 currentUnsafe r = parse . firstLine
-	<$> pipeReadStrict [Param "symbolic-ref", Param $ show headRef] r
+	<$> pipeReadStrict [Param "symbolic-ref", Param $ show Git.Ref.headRef] r
   where
 	parse l
 		| null l = Nothing
@@ -89,19 +89,65 @@ fastForward branch (first:rest) repo =
 			(False, False) -> findbest c rs -- same
 
 {- Commits the index into the specified branch (or other ref), 
- - with the specified parent refs, and returns the committed sha -}
-commit :: String -> Branch -> [Ref] -> Repo -> IO Sha
-commit message branch parentrefs repo = do
+ - with the specified parent refs, and returns the committed sha.
+ -
+ - Without allowempy set, avoids making a commit if there is exactly
+ - one parent, and it has the same tree that would be committed.
+ -
+ - Unlike git-commit, does not run any hooks, or examine the work tree
+ - in any way.
+ -}
+commit :: Bool -> String -> Branch -> [Ref] -> Repo -> IO (Maybe Sha)
+commit allowempty message branch parentrefs repo = do
 	tree <- getSha "write-tree" $
 		pipeReadStrict [Param "write-tree"] repo
-	sha <- getSha "commit-tree" $ pipeWriteRead
-		(map Param $ ["commit-tree", show tree] ++ ps)
-		(Just $ flip hPutStr message) repo
-	run [Param "update-ref", Param $ show branch, Param $ show sha] repo
-	return sha
+	ifM (cancommit tree)
+		( do
+			sha <- getSha "commit-tree" $ pipeWriteRead
+				(map Param $ ["commit-tree", show tree] ++ ps)
+				(Just $ flip hPutStr message) repo
+			update branch sha repo
+			return $ Just sha
+		, return Nothing
+		)
   where
 	ps = concatMap (\r -> ["-p", show r]) parentrefs
+	cancommit tree
+		| allowempty = return True
+		| otherwise = case parentrefs of
+			[p] -> maybe False (tree /=) <$> Git.Ref.tree p repo
+			_ -> return True
+
+commitAlways :: String -> Branch -> [Ref] -> Repo -> IO Sha
+commitAlways message branch parentrefs repo = fromJust
+	<$> commit True message branch parentrefs repo
 
 {- A leading + makes git-push force pushing a branch. -}
 forcePush :: String -> String
 forcePush b = "+" ++ b
+
+{- Updates a branch (or other ref) to a new Sha. -}
+update :: Branch -> Sha -> Repo -> IO ()
+update branch sha = run 
+	[ Param "update-ref"
+	, Param $ show branch
+	, Param $ show sha
+	]
+
+{- Checks out a branch, creating it if necessary. -}
+checkout :: Branch -> Repo -> IO ()
+checkout branch = run
+	[ Param "checkout"
+	, Param "-q"
+	, Param "-B"
+	, Param $ show $ Git.Ref.base branch
+	]
+
+{- Removes a branch. -}
+delete :: Branch -> Repo -> IO ()
+delete branch = run
+	[ Param "branch"
+	, Param "-q"
+	, Param "-D"
+	, Param $ show $ Git.Ref.base branch
+	]

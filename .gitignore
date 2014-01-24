@@ -10,13 +10,12 @@ Build/InstallDesktopFile
 Build/EvilSplicer
 Build/Standalone
 Build/OSXMkLibs
+Build/LinuxMkLibs
 git-annex
 git-annex.1
 git-annex-shell.1
 git-union-merge
 git-union-merge.1
-git-recover-repository
-git-recover-repository.1
 doc/.ikiwiki
 html
 *.tix

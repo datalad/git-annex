@@ -1,5 +1,5 @@
 Encrypted git remotes are now possible 
-using [git-remote-gcrypt](https://github.com/blake2-ppc/git-remote-gcrypt).
+using [git-remote-gcrypt](https://github.com/joeyh/git-remote-gcrypt).
 
 There are at least two use cases for this in the assistant:
 

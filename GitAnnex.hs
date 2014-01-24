@@ -1,11 +1,11 @@
 {- git-annex main program
  -
- - Copyright 2010 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
+{-# LANGUAGE CPP, OverloadedStrings #-}
 
 module GitAnnex where
 
@@ -20,12 +20,12 @@ import qualified Command.Drop
 import qualified Command.Move
 import qualified Command.Copy
 import qualified Command.Get
+import qualified Command.LookupKey
+import qualified Command.ExamineKey
 import qualified Command.FromKey
 import qualified Command.DropKey
 import qualified Command.TransferKey
-#ifndef mingw32_HOST_OS
 import qualified Command.TransferKeys
-#endif
 import qualified Command.ReKey
 import qualified Command.Reinject
 import qualified Command.Fix
@@ -46,6 +46,7 @@ import qualified Command.Whereis
 import qualified Command.List
 import qualified Command.Log
 import qualified Command.Merge
+import qualified Command.Info
 import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
@@ -83,9 +84,12 @@ import qualified Command.WebApp
 import qualified Command.XMPPGit
 #endif
 #endif
-#ifdef WITH_TESTSUITE
 import qualified Command.Test
+#ifdef WITH_TESTSUITE
 import qualified Command.FuzzTest
+#endif
+#ifdef WITH_EKG
+import System.Remote.Monitoring
 #endif
 
 cmds :: [Command]
@@ -122,12 +126,12 @@ cmds = concat
 	, Command.Schedule.def
 	, Command.Ungroup.def
 	, Command.Vicfg.def
+	, Command.LookupKey.def
+	, Command.ExamineKey.def
 	, Command.FromKey.def
 	, Command.DropKey.def
 	, Command.TransferKey.def
-#ifndef mingw32_HOST_OS
 	, Command.TransferKeys.def
-#endif
 	, Command.ReKey.def
 	, Command.Fix.def
 	, Command.Fsck.def
@@ -140,6 +144,7 @@ cmds = concat
 	, Command.List.def
 	, Command.Log.def
 	, Command.Merge.def
+	, Command.Info.def
 	, Command.Status.def
 	, Command.Migrate.def
 	, Command.Map.def
@@ -159,8 +164,8 @@ cmds = concat
 	, Command.XMPPGit.def
 #endif
 #endif
-#ifdef WITH_TESTSUITE
 	, Command.Test.def
+#ifdef WITH_TESTSUITE
 	, Command.FuzzTest.def
 #endif
 	]
@@ -169,4 +174,8 @@ header :: String
 header = "git-annex command [option ...]"
 
 run :: [String] -> IO ()
-run args = dispatch True args cmds options [] header Git.CurrentRepo.get
+run args = do
+#ifdef WITH_EKG
+	_ <- forkServer "localhost" 4242
+#endif
+	dispatch True args cmds options [] header Git.CurrentRepo.get

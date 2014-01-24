@@ -24,6 +24,8 @@ import Logs.Transfer
 import Utility.Gpg (KeyId)
 import Build.SysConfig (packageversion)
 import Types.ScheduledActivity
+import Assistant.WebApp.RepoId
+import Types.Distribution
 
 import Yesod.Static
 import Text.Hamlet
@@ -43,6 +45,7 @@ data WebApp = WebApp
 	, relDir :: Maybe FilePath
 	, getStatic :: Static
 	, postFirstRun :: Maybe (IO String)
+	, cannotRun :: Maybe String
 	, noAnnex :: Bool
 	, listenHost ::Maybe HostName
 	}
@@ -70,8 +73,8 @@ instance Yesod WebApp where
 	defaultLayout content = do
 		webapp <- getYesod
 		pageinfo <- widgetToPageContent $ do
-			addStylesheet $ StaticR css_bootstrap_css
-			addStylesheet $ StaticR css_bootstrap_responsive_css
+			addStylesheet $ StaticR bootstrap_css
+			addStylesheet $ StaticR bootstrap_responsive_css
 			$(widgetFile "error")
 		giveUrlRenderer $(hamletFile $ hamletTemplate "bootstrap")
 
@@ -161,6 +164,10 @@ data RemovableDrive = RemovableDrive
 data RepoKey = RepoKey KeyId | NoRepoKey
 	deriving (Read, Show, Eq, Ord)
 
+instance PathPiece Bool where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
 instance PathPiece RemovableDrive where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack
@@ -214,5 +221,13 @@ instance PathPiece ThreadName where
 	fromPathPiece = readish . unpack
 
 instance PathPiece ScheduledActivity where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece RepoId where
+	toPathPiece = pack . show
+	fromPathPiece = readish . unpack
+
+instance PathPiece GitAnnexDistribution where
 	toPathPiece = pack . show
 	fromPathPiece = readish . unpack

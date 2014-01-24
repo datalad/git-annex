@@ -14,10 +14,11 @@ import Assistant.Common
 import Assistant.WebApp.Types
 import Assistant.Sync
 import qualified Remote
+import qualified Types.Remote as Remote
 import qualified Config
 import Config.Cost
 import Types.StandardGroups
-import Git.Remote
+import Git.Types (RemoteName)
 import Logs.PreferredContent
 import Assistant.MakeRemote
 
@@ -31,6 +32,6 @@ setupCloudRemote defaultgroup mcost maker = do
 	r <- liftAnnex $ addRemote maker
 	liftAnnex $ do
 		setStandardGroup (Remote.uuid r) defaultgroup
-		maybe noop (Config.setRemoteCost r) mcost
+		maybe noop (Config.setRemoteCost (Remote.repo r)) mcost
 	liftAssistant $ syncRemote r
 	redirect $ EditNewCloudRepositoryR $ Remote.uuid r

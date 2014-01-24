@@ -69,6 +69,9 @@ uninstaller = "git-annex-uninstall.exe"
 gitInstallDir :: Exp FilePath
 gitInstallDir = fromString "$PROGRAMFILES\\Git\\cmd"
 
+startMenuItem :: Exp FilePath
+startMenuItem = "$SMPROGRAMS/git-annex.lnk"
+
 needGit :: Exp String
 needGit = strConcat
 	[ fromString "You need git installed to use git-annex. Looking at "
@@ -85,7 +88,7 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	{- Installing into the same directory as git avoids needing to modify
  	 - path myself, since the git installer already does it. -}
 	installDir gitInstallDir
-	requestExecutionLevel User
+	requestExecutionLevel Admin
 
 	iff (fileExists gitInstallDir)
 		(return ())
@@ -95,6 +98,17 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	page Directory                   -- Pick where to install
 	page (License license)
 	page InstFiles                   -- Give a progress bar while installing
+	-- Start menu shortcut
+	Development.NSIS.createDirectory "$SMPROGRAMS"
+	createShortcut startMenuItem
+		[ Target "$INSTDIR/git-annex.exe"
+		, Parameters "webapp"
+		, IconFile "$INSTDIR/git-annex.exe"
+		, IconIndex 2
+		, StartOptions "SW_SHOWMINIMIZED"
+		, KeyboardShortcut "ALT|CONTROL|a"
+		, Description "git-annex webapp"
+		]
 	-- Groups of files to install
 	section "main" [] $ do
 		setOutPath "$INSTDIR"
@@ -102,7 +116,8 @@ makeInstaller gitannex license extrafiles = nsis $ do
 		addfile license
 		mapM_ addfile extrafiles
 		writeUninstaller $ str uninstaller
-	uninstall $
+	uninstall $ do
+		delete [RebootOK] $ startMenuItem
 		mapM_ (\f -> delete [RebootOK] $ fromString $ "$INSTDIR/" ++ f) $
 			[ gitannexprogram
 			, licensefile
@@ -115,6 +130,8 @@ cygwinPrograms :: [FilePath]
 cygwinPrograms = map (\p -> p ++ ".exe") bundledPrograms
 
 -- These are the dlls needed by Cygwin's rsync, ssh, etc.
+-- TODO: Use ldd (available in cygwin) to automatically find all
+-- needed libs.
 cygwinDlls :: [FilePath]
 cygwinDlls =
 	[ "cygwin1.dll"
@@ -136,4 +153,18 @@ cygwinDlls =
 	, "cyggssapi-3.dll"
 	, "cygkrb5-26.dll"
 	, "cygz.dll"
+	, "cygidn-11.dll"
+	, "libcurl-4.dll"
+	, "cyggnutls-26.dll"
+	, "libcrypto.dll"
+	, "libssl.dll"
+	, "cyggcrypt-11.dll"
+	, "cyggpg-error-0.dll"
+	, "cygp11-kit-0.dll"
+	, "cygtasn1-3.dll"
+	, "cygffi-6.dll"
+	, "cygbz2-1.dll"
+	, "cygreadline7.dll"
+	, "cygncursesw-10.dll"
+	, "cygusb0.dll"
 	]

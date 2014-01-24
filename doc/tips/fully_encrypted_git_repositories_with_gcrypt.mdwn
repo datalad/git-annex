@@ -124,4 +124,4 @@ of you can see it.
 	
 	git remote add sharedencrypted gcrypt::ssh://hostingsite/myrepo.git
 	git config remote.sharedencrypted.gcryt-participants "$mykey $friendkey"
-	git config git push sharedencrypted master git-annex
+	git push sharedencrypted master git-annex

@@ -23,7 +23,7 @@ import Types.Remote (RemoteConfig)
 import Types.StandardGroups
 import Creds
 import Assistant.Gpg
-import Git.Remote
+import Git.Types (RemoteName)
 
 import qualified Data.Text as T
 import qualified Data.Map as M

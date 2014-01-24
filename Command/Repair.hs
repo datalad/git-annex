@@ -12,7 +12,7 @@ import Command
 import qualified Annex
 import qualified Git.Repair
 import qualified Annex.Branch
-import Git.Fsck (MissingObjects)
+import qualified Git.Ref
 import Git.Types
 import Annex.Version
 
@@ -28,12 +28,12 @@ start = next $ next $ runRepair =<< Annex.getState Annex.force
 
 runRepair :: Bool -> Annex Bool
 runRepair forced = do
-	(ok, stillmissing, modifiedbranches) <- inRepo $
-		Git.Repair.runRepair forced
+	(ok, modifiedbranches) <- inRepo $
+		Git.Repair.runRepair isAnnexSyncBranch forced
 	-- This command can be run in git repos not using git-annex,
 	-- so avoid git annex branch stuff in that case.
 	whenM (isJust <$> getVersion) $
-		repairAnnexBranch stillmissing modifiedbranches
+		repairAnnexBranch modifiedbranches
 	return ok
 
 {- After git repository repair, the .git/annex/index file could
@@ -50,22 +50,35 @@ runRepair forced = do
  - yet reflected in the index, this does properly merge those into the
  - index before committing.
  -}
-repairAnnexBranch :: MissingObjects -> [Branch] -> Annex ()
-repairAnnexBranch missing modifiedbranches
+repairAnnexBranch :: [Branch] -> Annex ()
+repairAnnexBranch modifiedbranches
 	| Annex.Branch.fullname `elem` modifiedbranches = ifM okindex
 		( commitindex
 		, do
 			nukeindex
-			liftIO $ putStrLn "Had to delete the .git/annex/index file as it was corrupt. Since the git-annex branch is not up-to-date anymore. It would be a very good idea to run: git annex fsck --fast"
+			missingbranch
 		)
 	| otherwise = ifM okindex
 		( noop
-		, nukeindex
+		, do
+			nukeindex
+			ifM (null <$> inRepo (Git.Ref.matching [Annex.Branch.fullname]))
+				( missingbranch
+				, liftIO $ putStrLn "No data was lost."
+				)
 		)
   where
-	okindex = Annex.Branch.withIndex $
-		inRepo $ Git.Repair.checkIndex missing
+	okindex = Annex.Branch.withIndex $ inRepo $ Git.Repair.checkIndex
 	commitindex = do
 		Annex.Branch.forceCommit "committing index after git repository repair"
 		liftIO $ putStrLn "Successfully recovered the git-annex branch using .git/annex/index"
-	nukeindex = inRepo $ nukeFile . gitAnnexIndex
+	nukeindex = do
+		inRepo $ nukeFile . gitAnnexIndex
+		liftIO $ putStrLn "Had to delete the .git/annex/index file as it was corrupt."
+	missingbranch = liftIO $ putStrLn "Since the git-annex branch is not up-to-date anymore. It would be a very good idea to run: git annex fsck --fast"
+
+trackingOrSyncBranch :: Ref -> Bool
+trackingOrSyncBranch b = Git.Repair.isTrackingBranch b || isAnnexSyncBranch b
+
+isAnnexSyncBranch :: Ref -> Bool
+isAnnexSyncBranch b = "refs/synced/" `isPrefixOf` show b

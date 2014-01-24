@@ -68,6 +68,6 @@ still possible with other network topologies (ie, if D is connected to both
 B and C, there would be an upload loop 'B -> C -> D -> B`). So unless I can
 find a better event to hook into, this idea is doomed.
 
-I do have another idea to fix the same problem. C could certianly remember
+I do have another idea to fix the same problem. C could certainly remember
 that it saw a file and didn't know where to get the content from, and then
 when it receives a git push of a git-annex branch, try again.

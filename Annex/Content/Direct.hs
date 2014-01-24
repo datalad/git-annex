@@ -10,6 +10,7 @@ module Annex.Content.Direct (
 	associatedFilesRelative,
 	removeAssociatedFile,
 	removeAssociatedFileUnchecked,
+	removeAssociatedFiles,
 	addAssociatedFile,
 	goodContent,
 	recordedInodeCache,
@@ -64,8 +65,8 @@ changeAssociatedFiles key transform = do
 	files <- associatedFilesRelative key
 	let files' = transform files
 	when (files /= files') $ do
-		createContentDir mapping
-		liftIO $ viaTmp write mapping $ unlines files'
+		modifyContent mapping $
+			liftIO $ viaTmp write mapping $ unlines files'
 	top <- fromRepo Git.repoPath
 	return $ map (top </>) files'
   where
@@ -74,6 +75,13 @@ changeAssociatedFiles key transform = do
 		fileEncoding h
  		hPutStr h content
 		hClose h
+
+{- Removes the list of associated files. -}
+removeAssociatedFiles :: Key -> Annex ()
+removeAssociatedFiles key = do
+	mapping <- calcRepo $ gitAnnexMapping key
+	modifyContent mapping $
+		liftIO $ nukeFile mapping
 
 {- Removes an associated file. Returns new associatedFiles value.
  - Checks if this was the last copy of the object, and updates location
@@ -142,16 +150,16 @@ addInodeCache key cache = do
 
 {- Writes inode cache for a key. -}
 writeInodeCache :: Key -> [InodeCache] -> Annex ()
-writeInodeCache key caches = withInodeCacheFile key $ \f -> do
-	createContentDir f
-	liftIO $ writeFile f $
-		unlines $ map showInodeCache caches
+writeInodeCache key caches = withInodeCacheFile key $ \f -> 
+	modifyContent f $
+		liftIO $ writeFile f $
+			unlines $ map showInodeCache caches
 
 {- Removes an inode cache. -}
 removeInodeCache :: Key -> Annex ()
-removeInodeCache key = withInodeCacheFile key $ \f -> do
-	createContentDir f -- also thaws directory
-	liftIO $ nukeFile f
+removeInodeCache key = withInodeCacheFile key $ \f ->
+	modifyContent f $
+		liftIO $ nukeFile f
 
 withInodeCacheFile :: Key -> (FilePath -> Annex a) -> Annex a
 withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkI9AR8BqG4RPw_Ov2lnDCJWMuM6WMRobQ"
+ nickname="Dav"
+ subject="Syncing only a specific branch"
+ date="2013-11-24T17:48:22Z"
+ content="""
+By default, `git annex sync` will sync to all remotes, unless you specify a remote. So, I have to specify, e.g., `git annex sync origin`. I can simplify this with aliases, I suppose, but I do a lot of teaching non-programmer scientists... so it'd be nice to be able to configure this (so beginning users don't have to keep track of as many things).
+
+Is there (or will there be) a way to do this?
+"""]]

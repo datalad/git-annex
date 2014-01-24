@@ -14,7 +14,8 @@ module Utility.Url (
 	checkBoth,
 	exists,
 	download,
-	downloadQuiet
+	downloadQuiet,
+	parseURIRelaxed
 ) where
 
 import Common
@@ -124,7 +125,15 @@ download' quiet url headers options file ua =
 		_ -> return False
   where
 	headerparams = map (\h -> Param $ "--header=" ++ h) headers
-	wget = go "wget" $ headerparams ++ quietopt "-q" ++ [Params "--clobber -c -O"]
+	wget = go "wget" $ headerparams ++ quietopt "-q" ++ wgetparams
+	{- Regular wget needs --clobber to continue downloading an existing
+	 - file. On Android, busybox wget is used, which does not
+	 - support, or need that option. -}
+#ifndef __ANDROID__
+	wgetparams = [Params "--clobber -c -O"]
+#else
+	wgetparams = [Params "-c -O"]
+#endif
 	{- Uses the -# progress display, because the normal
 	 - one is very confusing when resuming, showing
 	 - the remainder to download as the whole file,
