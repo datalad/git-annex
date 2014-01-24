@@ -1427,8 +1427,16 @@ Here are all the supported configuration settings.
 
   In the command line, %url is replaced with the url to download,
   and %file is replaced with the file that it should be saved to.
-  Note that both these values will automatically be quoted, since
-  the command is run in a shell.
+
+* `annex.secure-erase-command`
+
+  This can be set to a command that should be run whenever git-annex
+  removes the content of a file from the repository.
+
+  In the command line, %file is replaced with the file that should be
+  erased.
+
+  For example, to use the wipe command, set it to `wipe -f %file`
 
 * `remote.<name>.rsyncurl`
 

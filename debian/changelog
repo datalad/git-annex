@@ -29,6 +29,7 @@ git-annex (5.20140118) UNRELEASED; urgency=medium
     contents when a lot of them seem to be piling up in the repository.
   * repair: Check git version at run time.
   * assistant: Run the periodic git gc in batch mode.
+  * added annex.secure-erase-command config option.
   * test suite: Use tasty-rerun, and expose tasty command-line options.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 18 Jan 2014 11:54:17 -0400

@@ -48,6 +48,7 @@ data GitConfig = GitConfig
 	, annexFsckNudge :: Bool
 	, annexAutoUpgrade :: AutoUpgrade
 	, annexExpireUnused :: Maybe (Maybe Duration)
+	, annexSecureEraseCommand :: Maybe String
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
 	}
@@ -79,6 +80,7 @@ extractGitConfig r = GitConfig
 	, annexAutoUpgrade = toAutoUpgrade $ getmaybe (annex "autoupgrade")
 	, annexExpireUnused = maybe Nothing Just . parseDuration
 		<$> getmaybe (annex "expireunused")
+	, annexSecureEraseCommand = getmaybe (annex "secure-erase-command")
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
 	}

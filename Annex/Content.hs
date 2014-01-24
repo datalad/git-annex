@@ -377,6 +377,7 @@ removeAnnex :: Key -> Annex ()
 removeAnnex key = withObjectLoc key remove removedirect
   where
 	remove file = cleanObjectLoc key $ do
+		secureErase file
 		liftIO $ nukeFile file
 		removeInodeCache key
 	removedirect fs = do
@@ -389,7 +390,18 @@ removeAnnex key = withObjectLoc key remove removedirect
 		cwd <- liftIO getCurrentDirectory
 		let top' = fromMaybe top $ absNormPath cwd top
 		let l' = relPathDirToFile top' (fromMaybe l $ absNormPath top' l)
+		secureErase f
 		replaceFile f $ makeAnnexLink l'
+
+{- Runs the secure erase command if set, otherwise does nothing.
+ - File may or may not be deleted at the end; caller is responsible for
+ - making sure it's deleted. -}
+secureErase :: FilePath -> Annex ()
+secureErase file = maybe noop go =<< annexSecureEraseCommand <$> Annex.getGitConfig
+  where
+  	go basecmd = void $ liftIO $
+		boolSystem "sh" [Param "-c", Param $ gencmd basecmd]
+	gencmd = massReplace [ ("%file", shellEscape file) ]
 
 {- Moves a key's file out of .git/annex/objects/ -}
 fromAnnex :: Key -> FilePath -> Annex ()
