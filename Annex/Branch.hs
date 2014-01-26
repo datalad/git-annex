@@ -252,8 +252,7 @@ commitIndex' jl branchref message parents = do
 	committedref <- inRepo $ Git.Branch.commitAlways message fullname parents
 	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
-	when (racedetected branchref parentrefs) $ do
-		liftIO $ print ("race detected", branchref, parentrefs, "committing", (branchref, parents))
+	when (racedetected branchref parentrefs) $
 		fixrace committedref parentrefs
   where
 	-- look for "parent ref" lines and return the refs
