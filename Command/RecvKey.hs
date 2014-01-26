@@ -17,7 +17,7 @@ import Annex
 import Utility.Rsync
 import Logs.Transfer
 import Command.SendKey (fieldTransfer)
-import qualified Fields
+import qualified CmdLine.GitAnnexShell.Fields as Fields
 import qualified Types.Key
 import qualified Types.Backend
 import qualified Backend

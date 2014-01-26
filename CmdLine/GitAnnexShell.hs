@@ -16,7 +16,7 @@ import CmdLine
 import Command
 import Annex.UUID
 import Annex (setField)
-import Fields
+import CmdLine.GitAnnexShell.Fields
 import Utility.UserInfo
 import Remote.GCrypt (getGCryptUUID)
 import qualified Annex

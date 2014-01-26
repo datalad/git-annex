@@ -12,8 +12,8 @@ import qualified Git
 import qualified Git.Url
 import Annex.UUID
 import Annex.Ssh
-import Fields (Field, fieldName)
-import qualified Fields
+import CmdLine.GitAnnexShell.Fields (Field, fieldName)
+import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Types.GitConfig
 import Types.Key
 import Remote.Helper.Messages

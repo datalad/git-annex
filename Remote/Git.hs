@@ -36,7 +36,7 @@ import Config
 import Config.Cost
 import Init
 import Types.Key
-import qualified Fields
+import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location
 import Utility.Metered
 #ifndef mingw32_HOST_OS

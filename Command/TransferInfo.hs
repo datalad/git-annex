@@ -12,7 +12,7 @@ import Command
 import Annex.Content
 import Logs.Transfer
 import Types.Key
-import qualified Fields
+import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 
 def :: [Command]
