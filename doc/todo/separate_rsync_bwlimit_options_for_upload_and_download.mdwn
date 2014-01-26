@@ -1,0 +1,2 @@
+The bandwidth for upload and download are often different.  It would be useful to have different settings for upload and download limits.
+As it is, I have to keep changing annex-rsync-options options between uploads and downloads.
