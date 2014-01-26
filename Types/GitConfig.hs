@@ -109,6 +109,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexStartCommand :: Maybe String
 	, remoteAnnexStopCommand :: Maybe String
 	, remoteAnnexAvailability :: Maybe Availability
+	, remoteAnnexBare :: Maybe Bool
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
@@ -139,6 +140,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
 	, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
 	, remoteAnnexAvailability = getmayberead "availability"
+	, remoteAnnexBare = getmaybebool "bare"
 
 	, remoteAnnexSshOptions = getoptions "ssh-options"
 	, remoteAnnexRsyncOptions = getoptions "rsync-options"

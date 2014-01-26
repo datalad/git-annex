@@ -111,7 +111,7 @@ gen r u c gc
 			, retrieveKeyFile = copyFromRemote new
 			, retrieveKeyFileCheap = copyFromRemoteCheap new
 			, removeKey = dropKey new
-			, hasKey = inAnnex r
+			, hasKey = inAnnex new
 			, hasKeyCheap = repoCheap r
 			, whereisKey = Nothing
 			, remoteFsck = if Git.repoIsUrl r
@@ -197,7 +197,12 @@ tryGitConfigRead r
 			Left _ -> do
 				set_ignore "not usable by git-annex"
 				return r
-			Right r' -> return r'
+			Right r' -> do
+				-- Cache when http remote is not bare for
+				-- optimisation.
+				unless (Git.Config.isBare r') $
+					setremote "annex-bare" (Git.Config.boolConfig False)
+				return r'
 
 	store = observe $ \r' -> do
 		g <- gitRepo
@@ -222,12 +227,18 @@ tryGitConfigRead r
 				set_ignore "does not have git-annex installed"
 			return r
 	
-	set_ignore msg = case Git.remoteName r of
+	set_ignore msg = do
+		let k = "annex-ignore"
+		case Git.remoteName r of
+			Nothing -> noop
+			Just n -> warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting " ++ k
+		setremote k (Git.Config.boolConfig True)
+	
+	setremote k v = case Git.remoteName r of
 		Nothing -> noop
 		Just n -> do
-			let k = "remote." ++ n ++ ".annex-ignore"
-			warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting " ++ k
-			inRepo $ Git.Command.run [Param "config", Param k, Param "true"]
+			let k' = "remote." ++ n ++ "." ++ k
+			inRepo $ Git.Command.run [Param "config", Param k', Param v]
 		
 	handlegcrypt Nothing = return r
 	handlegcrypt (Just _cacheduuid) = do
@@ -242,15 +253,16 @@ tryGitConfigRead r
  - If the remote cannot be accessed, or if it cannot determine
  - whether it has the content, returns a Left error message.
  -}
-inAnnex :: Git.Repo -> Key -> Annex (Either String Bool)
-inAnnex r key
+inAnnex :: Remote -> Key -> Annex (Either String Bool)
+inAnnex rmt key
 	| Git.repoIsHttp r = checkhttp =<< getHttpHeaders
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
   where
+  	r = repo rmt
 	checkhttp headers = do
 		showChecking r
-		ifM (anyM (\u -> Url.withUserAgent $ Url.checkBoth u headers (keySize key)) (keyUrls r key))
+		ifM (anyM (\u -> Url.withUserAgent $ Url.checkBoth u headers (keySize key)) (keyUrls rmt key))
 			( return $ Right True
 			, return $ Left "not found"
 			)
@@ -263,14 +275,19 @@ inAnnex r key
 		dispatch (Right (Just b)) = Right b
 		dispatch (Right Nothing) = cantCheck r
 
-keyUrls :: Git.Repo -> Key -> [String]
-keyUrls r key = map tourl locs
+keyUrls :: Remote -> Key -> [String]
+keyUrls r key = map tourl locs'
   where
-	tourl l = Git.repoLocation r ++ "/" ++ l
+	tourl l = Git.repoLocation (repo r) ++ "/" ++ l
+	-- If the remote is known to not be bare, try the hash locations
+	-- used for non-bare repos first, as an optimisation.
+	locs
+		| remoteAnnexBare (gitconfig r) == Just False = reverse (annexLocations key)
+		| otherwise = annexLocations key
 #ifndef mingw32_HOST_OS
-	locs = annexLocations key
+	locs' = locs
 #else
-	locs = map (replace "\\" "/") (annexLocations key)
+	locs' = map (replace "\\" "/") (annexLocations key)
 #endif
 
 dropKey :: Remote -> Key -> Annex Bool
@@ -309,7 +326,7 @@ copyFromRemote' r key file dest
 		direct <- isDirect
 		Ssh.rsyncHelper (Just feeder) 
 			=<< Ssh.rsyncParamsRemote direct r Download key dest file
-	| Git.repoIsHttp (repo r) = Annex.Content.downloadUrl (keyUrls (repo r) key) dest
+	| Git.repoIsHttp (repo r) = Annex.Content.downloadUrl (keyUrls r key) dest
 	| otherwise = error "copying from non-ssh, non-http remote not supported"
   where
 	{- Feed local rsync's progress info back to the remote,

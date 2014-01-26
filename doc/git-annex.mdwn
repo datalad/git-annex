@@ -1355,10 +1355,15 @@ Here are all the supported configuration settings.
   configured by the trust and untrust commands. The value can be any of
   "trusted", "semitrusted" or "untrusted".
 
-* `remote.<name>.availability`
+* `remote.<name>.annex-availability`
 
   Can be used to tell git-annex whether a remote is LocallyAvailable
   or GloballyAvailable. Normally, git-annex determines this automatically.
+
+* `remote.<name>.annex-bare`
+
+  Can be used to tell git-annex if a remote is a bare repository
+  or not. Normally, git-annex determines this automatically.
 
 * `remote.<name>.annex-ssh-options`
 
