@@ -123,6 +123,8 @@ withNothing _ _ = error "This command takes no parameters."
  - If --unused is specified, runs an action on all keys found by
  - the last git annex unused scan.
  -
+ - If --key is specified, operates only on that key.
+ -
  - Otherwise, fall back to a regular CommandSeek action on
  - whatever params were passed. -}
 withKeyOptions :: (Key -> CommandStart) -> CommandSeek -> CommandSeek
@@ -130,21 +132,24 @@ withKeyOptions keyop fallbackop params = do
 	bare <- fromRepo Git.repoIsLocalBare
 	allkeys <- Annex.getFlag "all"
 	unused <- Annex.getFlag "unused"
+	specifickey <- Annex.getField "key"
 	auto <- Annex.getState Annex.auto
-	case    (allkeys || bare , unused, auto ) of
-		(True    , False , False) -> go loggedKeys
-		(False   , True  , False) -> go unusedKeys'
-		(True    , True  , _    )
-			| bare && not allkeys -> go unusedKeys'
-			| otherwise -> error "Cannot use --all with --unused."
-		(False   , False , _    ) -> fallbackop params
-		(_       , _     , True )
-			| bare -> error "Cannot use --auto in a bare repository."
-			| otherwise -> error "Cannot use --auto with --all or --unused."
+	when (auto && bare) $
+		error "Cannot use --auto in a bare repository"
+	case	(allkeys, unused, null params, specifickey) of
+		(False  , False , True       , Nothing)
+			| bare -> go auto loggedKeys
+			| otherwise -> fallbackop params
+		(False  , False , _          , Nothing) -> fallbackop params
+		(True   , False , True       , Nothing) -> go auto loggedKeys
+		(False  , True  , True       , Nothing) -> go auto unusedKeys'
+		(False  , False , True       , Just ks) -> case file2key ks of
+			Nothing -> error "Invalid key"
+			Just k -> go auto $ return [k]
+		_ -> error "Can only specify one of file names, --all, --unused, or --key"
   where
-  	go a = do
-		unless (null params) $
-			error "Cannot mix --all or --unused with file names."
+  	go True _ = error "Cannot use --auto with --all or --unused or --key"
+	go False a = do
 		matcher <- Limit.getMatcher
 		seekActions $ map (process matcher) <$> a
 	process matcher k = ifM (matcher $ MatchingKey k)

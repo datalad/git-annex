@@ -81,6 +81,8 @@ keyOptions =
 		"operate on all versions of all files"
 	, Option ['U'] ["unused"] (NoArg (Annex.setFlag "unused"))
 		"operate on files found by last run of git-annex unused"
+	, Option [] ["key"] (ReqArg (Annex.setField "key") paramKey)
+		"operate on specified key"
 	]
 
 fromOption :: Option

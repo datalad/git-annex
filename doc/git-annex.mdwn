@@ -860,6 +860,10 @@ subdirectories).
   Operate on all data that has been determined to be unused by
   a previous run of `git-annex unused`.
 
+* `--key=key`
+
+  Operate on only the specified key.
+
 * `--quiet`
 
   Avoid the default verbose display of what is done; only show errors

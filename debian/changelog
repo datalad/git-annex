@@ -38,6 +38,8 @@ git-annex (5.20140118) UNRELEASED; urgency=medium
   * webapp: After upgrading a git repository to git-annex, fix
     bug that made it temporarily not be synced with.
   * whereis: Support --all.
+  * All commands that support --all also support a --key option,
+    which limits them to acting on a single key.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 18 Jan 2014 11:54:17 -0400
 
