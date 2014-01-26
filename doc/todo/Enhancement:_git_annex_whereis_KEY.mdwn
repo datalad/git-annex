@@ -5,3 +5,15 @@ Great work on git annex! One possible enhancement occured to me: It would be ver
 In a related vein, the "unused" command could report old filenames or describe the associated commits. Tracking old versions is a great feature of your git-based approach, but currently, tasks such as pruning selected content seem unwiedly. Though I might be missing existing solutions. You can easily "cut-off" the history by forcing a drop of all unused content. It would be cool if one could somehow "address" old versions by filename and commit/date and selectively drop just these. The same could go for the "whereis" command, where one could e.g. query which remote holds content which was stored under some filename at some specific date.
 
 Thanks Cheers!
+
+> I agree that it's useful to run whereis on a specific key. This can
+> now be done using `git annex whereis --key KEY`
+> [[done]] --[[Joey]]
+> 
+> To report old filenames, unused would have to search back through the
+> contents of symlinks in old versions of the repo, to find symlinks that
+> referred to a key. The best way I know how to do that is `git log -S$KEY`,
+> which is what unused suggests you use. But this is slow --
+> searching for a single key in one of my repos takes 25 seconds.
+> That's why it doesn't do it for you.
+> 
