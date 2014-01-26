@@ -23,7 +23,7 @@ import Utility.Daemon (checkDaemon)
 #ifdef __ANDROID__
 import Utility.Env
 #endif
-import Init
+import Annex.Init
 import qualified Git
 import qualified Git.Config
 import qualified Git.CurrentRepo

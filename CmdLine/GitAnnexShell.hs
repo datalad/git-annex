@@ -20,7 +20,7 @@ import CmdLine.GitAnnexShell.Fields
 import Utility.UserInfo
 import Remote.GCrypt (getGCryptUUID)
 import qualified Annex
-import Init
+import Annex.Init
 
 import qualified Command.ConfigList
 import qualified Command.InAnnex

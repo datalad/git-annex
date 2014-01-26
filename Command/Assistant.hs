@@ -10,7 +10,7 @@ module Command.Assistant where
 import Common.Annex
 import Command
 import qualified Command.Watch
-import Init
+import Annex.Init
 import Config.Files
 import qualified Build.SysConfig
 import Utility.HumanTime

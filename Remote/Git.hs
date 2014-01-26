@@ -34,7 +34,7 @@ import qualified Annex.Url as Url
 import Utility.Tmp
 import Config
 import Config.Cost
-import Init
+import Annex.Init
 import Types.Key
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location

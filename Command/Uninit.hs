@@ -12,9 +12,9 @@ import Command
 import qualified Git
 import qualified Git.Command
 import qualified Command.Unannex
-import Init
 import qualified Annex.Branch
 import Annex.Content
+import Annex.Init
 
 def :: [Command]
 def = [addCheck check $ command "uninit" paramPaths seek 

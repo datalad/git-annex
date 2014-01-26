@@ -9,7 +9,7 @@ module Command.Init where
 
 import Common.Annex
 import Command
-import Init
+import Annex.Init
 	
 def :: [Command]
 def = [dontCheck repoExists $

@@ -7,7 +7,7 @@
 
 {-# LANGUAGE CPP #-}
 
-module Init (
+module Annex.Init (
 	ensureInitialized,
 	isInitialized,
 	initialize,

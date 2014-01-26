@@ -50,7 +50,7 @@ import qualified Types.Messages
 import qualified Config
 import qualified Config.Cost
 import qualified Crypto
-import qualified Init
+import qualified Annex.Init
 import qualified Utility.Path
 import qualified Utility.FileMode
 import qualified Build.SysConfig
@@ -1106,7 +1106,7 @@ intmpclonerepoInDirect env a = intmpclonerepo env $
 		)
   where
   	isdirect = annexeval $ do
-		Init.initialize Nothing
+		Annex.Init.initialize Nothing
 		Config.isDirect
 
 intmpbareclonerepo :: TestEnv -> Assertion -> Assertion

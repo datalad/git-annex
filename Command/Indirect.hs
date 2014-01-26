@@ -23,7 +23,7 @@ import Annex.Content
 import Annex.Content.Direct
 import Annex.CatFile
 import Annex.Exception
-import Init
+import Annex.Init
 import qualified Command.Add
 
 def :: [Command]
