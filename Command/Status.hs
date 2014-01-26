@@ -15,7 +15,6 @@ import Config
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Ref
 import qualified Git
-import GitAnnex.Options
 
 def :: [Command]
 def = [notBareRepo $ noCommit $ noMessages $ withOptions [jsonOption] $

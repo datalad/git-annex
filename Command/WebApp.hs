@@ -29,7 +29,6 @@ import qualified Git.Config
 import qualified Git.CurrentRepo
 import qualified Annex
 import Config.Files
-import qualified Option
 import Upgrade
 import Annex.Version
 
@@ -45,7 +44,7 @@ def = [ withOptions [listenOption] $
 	command "webapp" paramNothing seek SectionCommon "launch webapp"]
 
 listenOption :: Option
-listenOption = Option.field [] "listen" paramAddress
+listenOption = fieldOption [] "listen" paramAddress
 	"accept connections to this address"
 
 seek :: CommandSeek

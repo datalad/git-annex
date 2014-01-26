@@ -10,7 +10,6 @@ module Command.Watch where
 import Common.Annex
 import Assistant
 import Command
-import Option
 import Utility.HumanTime
 
 def :: [Command]
@@ -24,10 +23,10 @@ seek ps = do
 	withNothing (start False foreground stopdaemon Nothing) ps
 
 foregroundOption :: Option
-foregroundOption = Option.flag [] "foreground" "do not daemonize"
+foregroundOption = flagOption [] "foreground" "do not daemonize"
 
 stopOption :: Option
-stopOption = Option.flag [] "stop" "stop daemon"
+stopOption = flagOption [] "stop" "stop daemon"
 
 start :: Bool -> Bool -> Bool -> Maybe Duration -> CommandStart
 start assistant foreground stopdaemon startdelay = do

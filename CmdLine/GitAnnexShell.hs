@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module GitAnnexShell where
+module CmdLine.GitAnnexShell where
 
 import System.Environment
 import System.Console.GetOpt
@@ -16,7 +16,6 @@ import CmdLine
 import Command
 import Annex.UUID
 import Annex (setField)
-import qualified Option
 import Fields
 import Utility.UserInfo
 import Remote.GCrypt (getGCryptUUID)
@@ -54,7 +53,7 @@ cmds = map adddirparam $ cmds_readonly ++ cmds_notreadonly
 	adddirparam c = c { cmdparamdesc = "DIRECTORY " ++ cmdparamdesc c }
 
 options :: [OptDescr (Annex ())]
-options = Option.common ++
+options = commonOptions ++
 	[ Option [] ["uuid"] (ReqArg checkUUID paramUUID) "local repository uuid"
 	]
   where

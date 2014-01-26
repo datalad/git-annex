@@ -12,7 +12,6 @@ import Command
 import qualified Utility.Format
 import Command.Find (formatOption, getFormat, showFormatted, keyVars)
 import Types.Key
-import GitAnnex.Options
 
 def :: [Command]
 def = [noCommit $ noMessages $ withOptions [formatOption, jsonOption] $

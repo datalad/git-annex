@@ -13,7 +13,6 @@ import Common.Annex
 import Command
 import Remote
 import Logs.Trust
-import GitAnnex.Options
 
 def :: [Command]
 def = [noCommit $ withOptions (jsonOption : keyOptions) $

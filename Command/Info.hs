@@ -21,7 +21,6 @@ import qualified Remote
 import qualified Command.Unused
 import qualified Git
 import qualified Annex
-import GitAnnex.Options
 import Command
 import Utility.DataUnits
 import Utility.DiskFree

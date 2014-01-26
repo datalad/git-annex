@@ -9,7 +9,6 @@ module Command.Copy where
 
 import Common.Annex
 import Command
-import GitAnnex.Options
 import qualified Command.Move
 import qualified Remote
 import Annex.Wanted

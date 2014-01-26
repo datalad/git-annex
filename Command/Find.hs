@@ -17,24 +17,22 @@ import qualified Annex
 import qualified Utility.Format
 import Utility.DataUnits
 import Types.Key
-import qualified Option
-import GitAnnex.Options
 
 def :: [Command]
 def = [noCommit $ noMessages $ withOptions [formatOption, print0Option, jsonOption] $
 	command "find" paramPaths seek SectionQuery "lists available files"]
 
 formatOption :: Option
-formatOption = Option.field [] "format" paramFormat "control format of output"
+formatOption = fieldOption [] "format" paramFormat "control format of output"
 
 getFormat :: Annex (Maybe Utility.Format.Format)
 getFormat = getOptionField formatOption $ return . fmap Utility.Format.gen
 
 print0Option :: Option
-print0Option = Option.Option [] ["print0"] (Option.NoArg set)
+print0Option = Option [] ["print0"] (NoArg set)
 	"terminate output with null"
   where
-	set = Annex.setField (Option.name formatOption) "${file}\0"
+	set = Annex.setField (optionName formatOption) "${file}\0"
 
 seek :: CommandSeek
 seek ps = do

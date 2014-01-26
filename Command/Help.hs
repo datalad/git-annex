@@ -18,7 +18,6 @@ import qualified Command.Copy
 import qualified Command.Sync
 import qualified Command.Whereis
 import qualified Command.Fsck
-import GitAnnex.Options
 
 import System.Console.GetOpt
 
@@ -42,7 +41,7 @@ start' ["options"] = showCommonOptions
 start' _ = showGeneralHelp
 
 showCommonOptions :: IO ()
-showCommonOptions = putStrLn $ usageInfo "Common options:" options
+showCommonOptions = putStrLn $ usageInfo "Common options:" gitAnnexOptions
 
 showGeneralHelp :: IO ()
 showGeneralHelp = putStrLn $ unlines

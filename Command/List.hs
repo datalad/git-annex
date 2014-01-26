@@ -20,7 +20,6 @@ import Remote
 import Logs.Trust
 import Logs.UUID
 import Annex.UUID
-import qualified Option
 import qualified Annex
 import Git.Types (RemoteName)
 
@@ -29,7 +28,7 @@ def = [noCommit $ withOptions [allrepos] $ command "list" paramPaths seek
 	SectionQuery "show which remotes contain files"]
 
 allrepos :: Option
-allrepos = Option.flag [] "allrepos" "show all repositories, not only remotes"
+allrepos = flagOption [] "allrepos" "show all repositories, not only remotes"
 
 seek :: CommandSeek
 seek ps = do
@@ -38,7 +37,7 @@ seek ps = do
 	withFilesInGit (whenAnnexed $ start list) ps
 
 getList :: Annex [(UUID, RemoteName, TrustLevel)]
-getList = ifM (Annex.getFlag $ Option.name allrepos)
+getList = ifM (Annex.getFlag $ optionName allrepos)
 	( nubBy ((==) `on` fst3) <$> ((++) <$> getRemotes <*> getAll)
 	, getRemotes
 	)

@@ -16,19 +16,18 @@ import Logs.Location
 import Logs.Trust
 import Config.NumCopies
 import Annex.Content
-import qualified Option
 import Annex.Wanted
 
 def :: [Command]
-def = [withOptions [fromOption] $ command "drop" paramPaths seek
+def = [withOptions [dropFromOption] $ command "drop" paramPaths seek
 	SectionCommon "indicate content of files not currently wanted"]
 
-fromOption :: Option
-fromOption = Option.field ['f'] "from" paramRemote "drop content from a remote"
+dropFromOption :: Option
+dropFromOption = fieldOption ['f'] "from" paramRemote "drop content from a remote"
 
 seek :: CommandSeek
 seek ps = do
-	from <- getOptionField fromOption Remote.byNameWithUUID
+	from <- getOptionField dropFromOption Remote.byNameWithUUID
 	withFilesInGit (whenAnnexed $ start from) ps
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart

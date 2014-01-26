@@ -10,8 +10,8 @@
 import System.Environment
 import System.FilePath
 
-import qualified GitAnnex
-import qualified GitAnnexShell
+import qualified CmdLine.GitAnnex
+import qualified CmdLine.GitAnnexShell
 #ifdef WITH_TESTSUITE
 import qualified Test
 #endif
@@ -20,8 +20,8 @@ main :: IO ()
 main = run =<< getProgName
   where
 	run n
-		| isshell n = go GitAnnexShell.run
-		| otherwise = go GitAnnex.run
+		| isshell n = go CmdLine.GitAnnexShell.run
+		| otherwise = go CmdLine.GitAnnex.run
 	isshell n = takeFileName n == "git-annex-shell"
 	go a = do
 		ps <- getArgs

@@ -7,12 +7,11 @@
 
 {-# LANGUAGE CPP, OverloadedStrings #-}
 
-module GitAnnex where
+module CmdLine.GitAnnex where
 
 import qualified Git.CurrentRepo
 import CmdLine
 import Command
-import GitAnnex.Options
 
 import qualified Command.Add
 import qualified Command.Unannex
@@ -180,4 +179,4 @@ run args = do
 #ifdef WITH_EKG
 	_ <- forkServer "localhost" 4242
 #endif
-	dispatch True args cmds options [] header Git.CurrentRepo.get
+	dispatch True args cmds gitAnnexOptions [] header Git.CurrentRepo.get

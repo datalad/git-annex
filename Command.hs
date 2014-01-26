@@ -29,10 +29,12 @@ import qualified Annex
 import qualified Git
 import Types.Command as ReExported
 import Types.Option as ReExported
-import Seek as ReExported
+import CmdLine.Seek as ReExported
 import Checks as ReExported
-import Usage as ReExported
+import CmdLine.Usage as ReExported
 import RunCommand as ReExported
+import CmdLine.Option as ReExported
+import CmdLine.GitAnnex.Options as ReExported
 
 {- Generates a normal command -}
 command :: String -> String -> CommandSeek -> CommandSection -> String -> Command

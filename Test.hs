@@ -66,7 +66,7 @@ import qualified Utility.Hash
 import qualified Utility.Scheduled
 import qualified Utility.HumanTime
 #ifndef mingw32_HOST_OS
-import qualified GitAnnex
+import qualified CmdLine.GitAnnex as GitAnnex
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
 import qualified Utility.Gpg

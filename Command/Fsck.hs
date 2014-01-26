@@ -30,11 +30,9 @@ import Annex.UUID
 import Utility.DataUnits
 import Utility.FileMode
 import Config
-import qualified Option
 import Types.Key
 import Utility.HumanTime
 import Git.FilePath
-import GitAnnex.Options hiding (fromOption)
 
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
@@ -50,22 +48,22 @@ def :: [Command]
 def = [withOptions fsckOptions $ command "fsck" paramPaths seek
 	SectionMaintenance "check for problems"]
 
-fromOption :: Option
-fromOption = Option.field ['f'] "from" paramRemote "check remote"
+fsckFromOption :: Option
+fsckFromOption = fieldOption ['f'] "from" paramRemote "check remote"
 
 startIncrementalOption :: Option
-startIncrementalOption = Option.flag ['S'] "incremental" "start an incremental fsck"
+startIncrementalOption = flagOption ['S'] "incremental" "start an incremental fsck"
 
 moreIncrementalOption :: Option
-moreIncrementalOption = Option.flag ['m'] "more" "continue an incremental fsck"
+moreIncrementalOption = flagOption ['m'] "more" "continue an incremental fsck"
 
 incrementalScheduleOption :: Option
-incrementalScheduleOption = Option.field [] "incremental-schedule" paramTime
+incrementalScheduleOption = fieldOption [] "incremental-schedule" paramTime
 	"schedule incremental fscking"
 
 fsckOptions :: [Option]
 fsckOptions = 
-	[ fromOption
+	[ fsckFromOption
 	, startIncrementalOption
 	, moreIncrementalOption
 	, incrementalScheduleOption
@@ -73,7 +71,7 @@ fsckOptions =
 
 seek :: CommandSeek
 seek ps = do
-	from <- getOptionField fromOption Remote.byNameWithUUID
+	from <- getOptionField fsckFromOption Remote.byNameWithUUID
 	i <- getIncremental
 	withKeyOptions
 		(startKey i)
@@ -83,9 +81,9 @@ seek ps = do
 getIncremental :: Annex Incremental
 getIncremental = do
 	i <- maybe (return False) (checkschedule . parseDuration)
-		=<< Annex.getField (Option.name incrementalScheduleOption)
-	starti <- Annex.getFlag (Option.name startIncrementalOption)
-	morei <- Annex.getFlag (Option.name moreIncrementalOption)
+		=<< Annex.getField (optionName incrementalScheduleOption)
+	starti <- Annex.getFlag (optionName startIncrementalOption)
+	morei <- Annex.getFlag (optionName moreIncrementalOption)
 	case (i, starti, morei) of
 		(False, False, False) -> return NonIncremental
 		(False, True, _) -> startIncremental

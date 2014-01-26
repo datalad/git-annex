@@ -5,14 +5,13 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module GitAnnex.Options where
+module CmdLine.GitAnnex.Options where
 
 import System.Console.GetOpt
 
 import Common.Annex
 import qualified Git.Config
 import Git.Types
-import Command
 import Types.TrustLevel
 import Types.NumCopies
 import Types.Messages
@@ -20,10 +19,11 @@ import qualified Annex
 import qualified Remote
 import qualified Limit
 import qualified Limit.Wanted
-import qualified Option
+import CmdLine.Option
+import CmdLine.Usage
 
-options :: [Option]
-options = Option.common ++
+gitAnnexOptions :: [Option]
+gitAnnexOptions = commonOptions ++
 	[ Option ['N'] ["numcopies"] (ReqArg setnumcopies paramNumber)
 		"override default number of copies"
 	, Option [] ["trust"] (trustArg Trusted)
@@ -64,7 +64,7 @@ options = Option.common ++
 		"override default User-Agent"
 	, Option [] ["trust-glacier"] (NoArg (Annex.setFlag "trustglacier"))
 		"Trust Amazon Glacier inventory"
-	] ++ Option.matcher
+	] ++ matcherOptions
   where
 	trustArg t = ReqArg (Remote.forceTrust t) paramRemote
 	setnumcopies v = maybe noop
@@ -86,10 +86,10 @@ keyOptions =
 	]
 
 fromOption :: Option
-fromOption = Option.field ['f'] "from" paramRemote "source remote"
+fromOption = fieldOption ['f'] "from" paramRemote "source remote"
 
 toOption :: Option
-toOption = Option.field ['t'] "to" paramRemote "destination remote"
+toOption = fieldOption ['t'] "to" paramRemote "destination remote"
 
 fromToOptions :: [Option]
 fromToOptions = [fromOption, toOption]

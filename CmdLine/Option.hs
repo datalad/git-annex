@@ -5,12 +5,12 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Option (
-	common,
-	matcher,
-	flag,
-	field,
-	name,
+module CmdLine.Option (
+	commonOptions,
+	matcherOptions,
+	flagOption,
+	fieldOption,
+	optionName,
 	ArgDescr(..),
 	OptDescr(..),
 ) where
@@ -21,10 +21,10 @@ import Common.Annex
 import qualified Annex
 import Types.Messages
 import Limit
-import Usage
+import CmdLine.Usage
 
-common :: [Option]
-common =
+commonOptions :: [Option]
+commonOptions =
 	[ Option [] ["force"] (NoArg (setforce True))
 		"allow actions that may lose annexed data"
 	, Option ['F'] ["fast"] (NoArg (setfast True))
@@ -50,8 +50,8 @@ common =
 	setdebug = Annex.changeGitConfig $ \c -> c { annexDebug = True }
 	unsetdebug = Annex.changeGitConfig $ \c -> c { annexDebug = False }
 
-matcher :: [Option]
-matcher =
+matcherOptions :: [Option]
+matcherOptions =
 	[ longopt "not" "negate next option"
 	, longopt "and" "both previous and next option must match"
 	, longopt "or" "either previous or next option must match"
@@ -63,15 +63,15 @@ matcher =
 	shortopt o = Option o [] $ NoArg $ addToken o
 
 {- An option that sets a flag. -}
-flag :: String -> String -> String -> Option
-flag short opt description = 
+flagOption :: String -> String -> String -> Option
+flagOption short opt description = 
 	Option short [opt] (NoArg (Annex.setFlag opt)) description
 
 {- An option that sets a field. -}
-field :: String -> String -> String -> String -> Option
-field short opt paramdesc description = 
+fieldOption :: String -> String -> String -> String -> Option
+fieldOption short opt paramdesc description = 
 	Option short [opt] (ReqArg (Annex.setField opt) paramdesc) description
 
 {- The flag or field name used for an option. -}
-name :: Option -> String
-name (Option _ o _ _) = Prelude.head o
+optionName :: Option -> String
+optionName (Option _ o _ _) = Prelude.head o

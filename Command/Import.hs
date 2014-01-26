@@ -13,7 +13,6 @@ import Common.Annex
 import Command
 import qualified Annex
 import qualified Command.Add
-import qualified Option
 import Utility.CopyFile
 import Backend
 import Remote
@@ -32,16 +31,16 @@ opts =
 	]
 
 duplicateOption :: Option
-duplicateOption = Option.flag [] "duplicate" "do not delete source files"
+duplicateOption = flagOption [] "duplicate" "do not delete source files"
 
 deduplicateOption :: Option
-deduplicateOption = Option.flag [] "deduplicate" "delete source files whose content was imported before"
+deduplicateOption = flagOption [] "deduplicate" "delete source files whose content was imported before"
 
 cleanDuplicatesOption :: Option
-cleanDuplicatesOption = Option.flag [] "clean-duplicates" "delete duplicate source files (import nothing)"
+cleanDuplicatesOption = flagOption [] "clean-duplicates" "delete duplicate source files (import nothing)"
 
 skipDuplicatesOption :: Option
-skipDuplicatesOption = Option.flag [] "skip-duplicates" "import only new files"
+skipDuplicatesOption = flagOption [] "skip-duplicates" "import only new files"
 
 data DuplicateMode = Default | Duplicate | DeDuplicate | CleanDuplicates | SkipDuplicates
 	deriving (Eq)
@@ -53,7 +52,7 @@ getDuplicateMode = gen
 	<*> getflag cleanDuplicatesOption
 	<*> getflag skipDuplicatesOption
   where
-  	getflag = Annex.getFlag . Option.name
+  	getflag = Annex.getFlag . optionName
   	gen False False False False = Default
 	gen True False False False = Duplicate
 	gen False True False False = DeDuplicate

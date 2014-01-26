@@ -14,7 +14,6 @@ import Annex.Content
 import Logs.Transfer
 import Config.NumCopies
 import Annex.Wanted
-import GitAnnex.Options
 import qualified Command.Move
 
 def :: [Command]

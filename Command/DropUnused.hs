@@ -13,12 +13,11 @@ import qualified Annex
 import qualified Command.Drop
 import qualified Remote
 import qualified Git
-import qualified Option
 import Command.Unused (withUnusedMaps, UnusedMaps(..), startUnused)
 import Config.NumCopies
 
 def :: [Command]
-def = [withOptions [Command.Drop.fromOption] $
+def = [withOptions [Command.Drop.dropFromOption] $
 	command "dropunused" (paramRepeating paramNumRange)
 		seek SectionMaintenance "drop unused file content"]
 
@@ -37,7 +36,7 @@ perform numcopies key = maybe droplocal dropremote =<< Remote.byNameWithUUID =<<
 		showAction $ "from " ++ Remote.name r
 		Command.Drop.performRemote key numcopies r
 	droplocal = Command.Drop.performLocal key numcopies Nothing
-	from = Annex.getField $ Option.name Command.Drop.fromOption
+	from = Annex.getField $ optionName Command.Drop.dropFromOption
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform
 performOther filespec key = do

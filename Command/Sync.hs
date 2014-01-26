@@ -27,7 +27,6 @@ import qualified Git
 import Git.Types (BlobType(..))
 import qualified Types.Remote
 import qualified Remote.Git
-import qualified Option
 import Types.Key
 import Config
 import Annex.ReplaceFile
@@ -53,7 +52,7 @@ syncOptions :: [Option]
 syncOptions = [ contentOption ]
 
 contentOption :: Option
-contentOption = Option.flag [] "content" "also transfer file contents"
+contentOption = flagOption [] "content" "also transfer file contents"
 
 seek :: CommandSeek
 seek rs = do
@@ -85,7 +84,7 @@ seek rs = do
 		, map (withbranch . pullRemote) gitremotes
 		,  [ mergeAnnex ]
 		]
-	whenM (Annex.getFlag $ Option.name contentOption) $
+	whenM (Annex.getFlag $ optionName contentOption) $
 		seekSyncContent remotes
 	seekActions $ return $ concat
 		[ [ withbranch pushLocal ]

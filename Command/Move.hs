@@ -16,7 +16,6 @@ import qualified Remote
 import Annex.UUID
 import Logs.Presence
 import Logs.Transfer
-import GitAnnex.Options
 
 def :: [Command]
 def = [withOptions moveOptions $ command "move" paramPaths seek

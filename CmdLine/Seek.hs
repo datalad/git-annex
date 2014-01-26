@@ -9,7 +9,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Seek where
+module CmdLine.Seek where
 
 import System.PosixCompat.Files
 
@@ -22,7 +22,7 @@ import qualified Git
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Limit
-import qualified Option
+import CmdLine.Option
 import Logs.Location
 import Logs.Unused
 import Annex.CatFile
@@ -108,10 +108,10 @@ withKeys a params = seekActions $ return $ map (a . parse) params
  - a conversion function.
  -}
 getOptionField :: Option -> (Maybe String -> Annex a) -> Annex a
-getOptionField option converter = converter <=< Annex.getField $ Option.name option
+getOptionField option converter = converter <=< Annex.getField $ optionName option
 
 getOptionFlag :: Option -> Annex Bool
-getOptionFlag option = Annex.getFlag (Option.name option)
+getOptionFlag option = Annex.getFlag (optionName option)
 
 withNothing :: CommandStart -> CommandSeek
 withNothing a [] = seekActions $ return [a]

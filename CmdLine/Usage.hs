@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Usage where
+module CmdLine.Usage where
 
 import Common.Annex
 

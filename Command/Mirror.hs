@@ -9,7 +9,6 @@ module Command.Mirror where
 
 import Common.Annex
 import Command
-import GitAnnex.Options
 import qualified Command.Move
 import qualified Command.Drop
 import qualified Command.Get

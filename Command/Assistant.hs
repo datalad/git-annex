@@ -9,7 +9,6 @@ module Command.Assistant where
 
 import Common.Annex
 import Command
-import qualified Option
 import qualified Command.Watch
 import Init
 import Config.Files
@@ -32,10 +31,10 @@ options =
 	]
 
 autoStartOption :: Option
-autoStartOption = Option.flag [] "autostart" "start in known repositories"
+autoStartOption = flagOption [] "autostart" "start in known repositories"
 
 startDelayOption :: Option
-startDelayOption = Option.field [] "startdelay" paramNumber "delay before running startup scan"
+startDelayOption = fieldOption [] "startdelay" paramNumber "delay before running startup scan"
 
 seek :: CommandSeek
 seek ps = do

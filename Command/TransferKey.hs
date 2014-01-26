@@ -14,8 +14,6 @@ import Logs.Location
 import Logs.Transfer
 import qualified Remote
 import Types.Remote
-import GitAnnex.Options
-import qualified Option
 
 def :: [Command]
 def = [withOptions transferKeyOptions $
@@ -26,7 +24,7 @@ transferKeyOptions :: [Option]
 transferKeyOptions = fileOption : fromToOptions
 
 fileOption :: Option
-fileOption = Option.field [] "file" paramFile "the associated file"
+fileOption = fieldOption [] "file" paramFile "the associated file"
 
 seek :: CommandSeek
 seek ps = do

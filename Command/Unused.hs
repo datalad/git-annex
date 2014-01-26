@@ -33,17 +33,16 @@ import qualified Git.DiffTree as DiffTree
 import qualified Backend
 import qualified Remote
 import qualified Annex.Branch
-import qualified Option
 import Annex.CatFile
 import Types.Key
 import Git.FilePath
 
 def :: [Command]
-def = [withOptions [fromOption] $ command "unused" paramNothing seek
+def = [withOptions [unusedFromOption] $ command "unused" paramNothing seek
 	SectionMaintenance "look for unused file content"]
 
-fromOption :: Option
-fromOption = Option.field ['f'] "from" paramRemote "remote to check for unused content"
+unusedFromOption :: Option
+unusedFromOption = fieldOption ['f'] "from" paramRemote "remote to check for unused content"
 
 seek :: CommandSeek
 seek = withNothing start
@@ -51,7 +50,7 @@ seek = withNothing start
 {- Finds unused content in the annex. -} 
 start :: CommandStart
 start = do
-	from <- Annex.getField $ Option.name fromOption
+	from <- Annex.getField $ optionName unusedFromOption
 	let (name, action) = case from of
 		Nothing -> (".", checkUnused)
 		Just "." -> (".", checkUnused)
