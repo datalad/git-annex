@@ -12,7 +12,6 @@ import Command
 import qualified Annex
 import Logs.Location
 import Annex.Content
-import Types.Key
 
 def :: [Command]
 def = [noCommit $ command "dropkey" (paramRepeating paramKey) seek
@@ -25,7 +24,7 @@ start :: Key -> CommandStart
 start key = stopUnless (inAnnex key) $ do
 	unlessM (Annex.getState Annex.force) $
 		error "dropkey can cause data loss; use --force if you're sure you want to do this"
-	showStart "dropkey" (key2file key)
+	showStart' "dropkey" key Nothing
 	next $ perform key
 
 perform :: Key -> CommandPerform

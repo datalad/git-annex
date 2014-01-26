@@ -18,7 +18,6 @@ import Config.NumCopies
 import Annex.Content
 import qualified Option
 import Annex.Wanted
-import Types.Key
 
 def :: [Command]
 def = [withOptions [fromOption] $ command "drop" paramPaths seek
@@ -45,12 +44,12 @@ start from file (key, _) = checkDropAuto from file key $ \numcopies ->
 
 startLocal :: AssociatedFile -> NumCopies -> Key -> Maybe Remote -> CommandStart
 startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
-	showStart "drop" (fromMaybe (key2file key) afile)
+	showStart' "drop" key afile
 	next $ performLocal key numcopies knownpresentremote
 
 startRemote :: AssociatedFile -> NumCopies -> Key -> Remote -> CommandStart
 startRemote afile numcopies key remote = do
-	showStart ("drop " ++ Remote.name remote) (fromMaybe (key2file key) afile)
+	showStart' ("drop " ++ Remote.name remote) key afile
 	next $ performRemote key numcopies remote
 
 performLocal :: Key -> NumCopies -> Maybe Remote -> CommandPerform

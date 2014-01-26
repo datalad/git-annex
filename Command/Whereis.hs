@@ -14,7 +14,6 @@ import Command
 import Remote
 import Logs.Trust
 import GitAnnex.Options
-import Types.Key
 
 def :: [Command]
 def = [noCommit $ withOptions (jsonOption : keyOptions) $
@@ -37,7 +36,7 @@ startKeys remotemap key = start' remotemap key Nothing
 
 start' :: M.Map UUID Remote -> Key -> AssociatedFile -> CommandStart
 start' remotemap key afile = do
-	showStart "whereis" (fromMaybe (key2file key) afile)
+	showStart' "whereis" key afile
 	next $ perform remotemap key
 
 perform :: M.Map UUID Remote -> Key -> CommandPerform

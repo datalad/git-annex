@@ -17,7 +17,6 @@ import Annex.UUID
 import Logs.Presence
 import Logs.Transfer
 import GitAnnex.Options
-import Types.Key
 
 def :: [Command]
 def = [withOptions moveOptions $ command "move" paramPaths seek
@@ -54,10 +53,7 @@ start' to from move afile key = do
 		"--auto is not supported for move"
 
 showMoveAction :: Bool -> Key -> AssociatedFile -> Annex ()
-showMoveAction True _ (Just file) = showStart "move" file
-showMoveAction False _ (Just file) = showStart "copy" file
-showMoveAction True key Nothing = showStart "move" (key2file key)
-showMoveAction False key Nothing = showStart "copy" (key2file key)
+showMoveAction move = showStart' (if move then "move" else "copy")
 
 {- Moves (or copies) the content of an annexed file to a remote.
  -

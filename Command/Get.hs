@@ -16,7 +16,6 @@ import Config.NumCopies
 import Annex.Wanted
 import GitAnnex.Options
 import qualified Command.Move
-import Types.Key
 
 def :: [Command]
 def = [withOptions getOptions $ command "get" paramPaths seek
@@ -51,7 +50,7 @@ start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
 					go $ Command.Move.fromPerform src False key afile
   where
   	go a = do
-		showStart "get" (fromMaybe (key2file key) afile)
+		showStart' "get" key afile
 		next a
 
 perform :: Key -> AssociatedFile -> CommandPerform
