@@ -37,6 +37,7 @@ git-annex (5.20140118) UNRELEASED; urgency=medium
     http remote.
   * webapp: After upgrading a git repository to git-annex, fix
     bug that made it temporarily not be synced with.
+  * whereis: Support --all.
 
  -- Joey Hess <joeyh@debian.org>  Sat, 18 Jan 2014 11:54:17 -0400
 
