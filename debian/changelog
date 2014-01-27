@@ -1,4 +1,4 @@
-git-annex (5.20140118) UNRELEASED; urgency=medium
+git-annex (5.20140127) unstable; urgency=medium
 
   * sync --content: New option that makes the content of annexed files be
     transferred. Similar to the assistant, this honors any configured
@@ -41,7 +41,7 @@ git-annex (5.20140118) UNRELEASED; urgency=medium
   * All commands that support --all also support a --key option,
     which limits them to acting on a single key.
 
- -- Joey Hess <joeyh@debian.org>  Sat, 18 Jan 2014 11:54:17 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 27 Jan 2014 13:43:28 -0400
 
 git-annex (5.20140117) unstable; urgency=medium
 
