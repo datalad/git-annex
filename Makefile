@@ -54,9 +54,6 @@ install: build install-docs Build/InstallDesktopFile
 test: git-annex
 	./git-annex test
 
-retest: git-annex
-	./git-annex test --rerun-update --rerun-filter failures
-
 # hothasktags chokes on some template haskell etc, so ignore errors
 tags:
 	find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$' | xargs hothasktags > tags 2>/dev/null
@@ -83,7 +80,7 @@ clean:
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
 		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs Build/DistributionUpdate \
-		git-union-merge .tasty-rerun-log
+		git-union-merge
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;
 
