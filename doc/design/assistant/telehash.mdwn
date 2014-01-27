@@ -33,7 +33,7 @@ git-annex (assistant) repositories.
 * XMPP pairing can also be used for telehash address discovery. (Note that
   MITM attacks are possible.) Is it worth keeping XMPP in git-annex just
   for this?
-* Telehash addresses of repoitories can be communicated out of band (eg,
+* Telehash addresses of repositories can be communicated out of band (eg,
   via an OTR session or gpg signed mail), and pasted into the webapp to
   initiate a repository pairing that then proceeds entirely over telehash.
   Once both sides do this, the pairing can proceed automatically.

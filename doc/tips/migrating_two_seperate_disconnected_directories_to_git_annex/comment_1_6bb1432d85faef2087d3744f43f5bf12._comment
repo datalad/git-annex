@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlUmrSFcLMuk2ny0QNlx4BosEuhG0ij0XQ"
+ nickname="Gregor"
+ subject="Same thing using the assistant?"
+ date="2014-01-27T16:44:13Z"
+ content="""
+Hi can this also be done using the assistant. If I follow above instructions I end up with the directories being full of symlinks instead of the actual data. Using the assistant I get repositories that are still my original files (which I prefer). How can I sync two such repositories (created using existing data and the assistant)?
+
+Gregor
+"""]]
