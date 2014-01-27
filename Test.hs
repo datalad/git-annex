@@ -13,6 +13,7 @@ import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
+import Test.Tasty.Ingredients.Rerun
 import Data.Monoid
 
 import Options.Applicative hiding (command)
@@ -106,7 +107,7 @@ main ps = do
 
 ingredients :: [Ingredient]
 ingredients =
-	[ consoleTestReporter
+	[ rerunningTests [consoleTestReporter]
 	, listingTests
 	]
 
@@ -1269,7 +1270,7 @@ withTestEnv forcedirect = withResource prepare release
   where
 	prepare = do
 		env <- prepareTestEnv forcedirect
-		case tryIngredients ingredients mempty (initTests env) of
+		case tryIngredients [consoleTestReporter] mempty (initTests env) of
 			Nothing -> error "No tests found!?"
 			Just act -> unlessM act $
 				error "init tests failed! cannot continue"
