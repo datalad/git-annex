@@ -25,34 +25,34 @@ May be this kind of information could be provided if the verbose flag is set.
 
 Another awesome (totally subjectively speaking) way of doing it could be to get the file before copying it
 
-        $ git annex copy --to someremote SomeDirectory
-        Cannot copy SomeFile1 since it is not present in here, attempting getting it first
-        get SomeFile1 (from someotherremote...)
-        SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
-             12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
-        ok
-        copy SomeFile1 (checking someremote...) (to someremote...)
-        SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
-             12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
-        ok
-        Cannot copy SomeFile2 since it is not present in here, attempting getting it first
-        get SomeFile2 (from someotherremote...)
-        SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
-             12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
-        ok
-        copy SomeFile2 (checking someremote...) (to someremote...)
-        SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
-             12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
-        ok
-        Cannot copy SomeFile3 since it is not present in here, attempting getting it first
-        get SomeFile3 (from someotherremote...)
-        SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
-             12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
-        ok
-        copy SomeFile3 (checking someremote...) (to someremote...)
-        SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
-             12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
-        ok
+    $ git annex copy --to someremote SomeDirectory
+    Cannot copy SomeFile1 since it is not present in here, attempting getting it first
+    get SomeFile1 (from someotherremote...)
+    SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
+         12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
+    ok
+    copy SomeFile1 (checking someremote...) (to someremote...)
+    SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
+         12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
+    ok
+    Cannot copy SomeFile2 since it is not present in here, attempting getting it first
+    get SomeFile2 (from someotherremote...)
+    SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
+         12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
+    ok
+    copy SomeFile2 (checking someremote...) (to someremote...)
+    SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
+         12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
+    ok
+    Cannot copy SomeFile3 since it is not present in here, attempting getting it first
+    get SomeFile3 (from someotherremote...)
+    SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
+         12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
+    ok
+    copy SomeFile3 (checking someremote...) (to someremote...)
+    SHA256E-s109353088--71734pq1p4qo6qs1p156r48s2290q7p61p1658029p103591nrs1rr708s064p59
+         12,615,808 100%  161.27kB/s    0:01:16 (xfr#1, to-chk=0/1)
+    ok
 
 We could also specify from which remote to get the file with
 
