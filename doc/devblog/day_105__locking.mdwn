@@ -1,0 +1,30 @@
+With yesterday's release, I'm pretty much done with the month's work. Since
+there was no particular goal this month, it's been a grab bag of features
+and bugfixes. Quite a lot of them in this last release.
+
+I'll be away the next couple of days.. But got a start today on the next
+part of the roadmap, which is planned to be all about Windows and Android
+porting. Today, it was all about lock files, mostly on Windows.
+
+Lock files on Windows are horrific. I especially like that programs that
+want to open a file, for any reason, are encouraged in the official
+documentation to retry repeatedly if it fails, because some other
+random program, like a virus checker, might have opened the file first.
+
+Turns out Windows does support a shared file read mode. This was
+just barely enough for me to implement both shared and exclusive
+file locking a-la-flock.
+
+Couldn't avoid a busy wait in a few places that block on a lock.
+Luckily, these are few, and the chances the lock will be taken for a long
+time is small. (I did think about trying to watch the file for close events
+and detect when the lock was released that way, but it seemed much too
+complicated and hard to avoid races.)
+
+Also, Windows only seems to support mandatory locks, while all locking in
+git-annex needs to be advisory locks. Ie, git-annex's locking shouldn't
+prevent a program from opening an annexed file! To work around that,
+I am using dedicated lock files on Windows.
+
+Also switched direct mode's annexed object locking to use dedicated lock
+files. AFAICS, this was pretty well broken in direct mode before.
