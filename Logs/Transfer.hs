@@ -385,8 +385,8 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure False
   where
 #ifdef mingw32_HOST_OS
-	(firstline, rem) = separate (== '\n') s
-	(secondline, rest) = separate (== '\n') rem
+	(firstline, otherlines) = separate (== '\n') s
+	(secondline, rest) = separate (== '\n') otherlines
 	mpid' = readish secondline
 #else
 	(firstline, rest) = separate (== '\n') s
