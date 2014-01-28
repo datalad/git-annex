@@ -14,6 +14,7 @@ module Locations (
 	objectDir,
 	gitAnnexLocation,
 	gitAnnexLink,
+	gitAnnexContentLock,
 	gitAnnexMapping,
 	gitAnnexInodeCache,
 	gitAnnexInodeSentinal,
@@ -141,6 +142,12 @@ gitAnnexLink file key r = do
 	return $ relPathDirToFile (parentDir absfile) loc
   where
   	whoops = error $ "unable to normalize " ++ file
+
+{- File used to lock a key's content. -}
+gitAnnexContentLock :: Key -> Git.Repo -> GitConfig -> IO FilePath
+gitAnnexContentLock key r config = do
+	loc <- gitAnnexLocation key r config
+	return $ loc ++ ".lck"
 
 {- File that maps from a key to the file(s) in the git repository.
  - Used in direct mode. -}

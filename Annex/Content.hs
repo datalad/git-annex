@@ -1,6 +1,6 @@
 {- git-annex file content managing
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -57,6 +57,10 @@ import Annex.Content.Direct
 import Annex.ReplaceFile
 import Annex.Exception
 
+#ifdef mingw32_HOST_OS
+import Utility.WinLock
+#endif
+
 {- Checks if a given key's content is currently present. -}
 inAnnex :: Key -> Annex Bool
 inAnnex key = inAnnexCheck key $ liftIO . doesFileExist
@@ -90,60 +94,105 @@ inAnnex' isgood bad check key = withObjectLoc key checkindirect checkdirect
 {- A safer check; the key's content must not only be present, but
  - is not in the process of being removed. -}
 inAnnexSafe :: Key -> Annex (Maybe Bool)
-inAnnexSafe = inAnnex' (fromMaybe False) (Just False) go
+inAnnexSafe key = inAnnex' (fromMaybe False) (Just False) go key
   where
-	go f = liftIO $ openforlock f >>= check
+	is_locked = Nothing
+	is_unlocked = Just True
+	is_missing = Just False
+
+	go contentfile = maybe (checkindirect contentfile) (checkdirect contentfile)
+		=<< contentLockFile key
+
 #ifndef mingw32_HOST_OS
+	checkindirect f = liftIO $ openforlock f >>= check is_missing
+	{- In direct mode, the content file must exist, but
+	 - the lock file often generally won't exist unless a removal is in
+	 - process. This does not create the lock file, it only checks for
+	 - it. -}
+	checkdirect contentfile lockfile = liftIO $
+		ifM (doesFileExist contentfile)
+			( openforlock lockfile >>= check is_unlocked
+			, return is_missing
+			)
 	openforlock f = catchMaybeIO $
 		openFd f ReadOnly Nothing defaultFileFlags
-#else
-	openforlock _ = return $ Just ()
-#endif
-	check Nothing = return is_missing
-#ifndef mingw32_HOST_OS
-	check (Just h) = do
+	check _ (Just h) = do
 		v <- getLock h (ReadLock, AbsoluteSeek, 0, 0)
 		closeFd h
 		return $ case v of
 			Just _ -> is_locked
 			Nothing -> is_unlocked
+	check def Nothing = return def
 #else
-	check (Just _) = return is_unlocked
+	checkindirect _ = return is_missing
+	{- In Windows, see if we can take a shared lock. If so, 
+	 - remove the lock file to clean up after ourselves. -}
+	checkdirect contentfile lockfile =
+		ifM (liftIO $ doesFileExist contentfile)
+			( modifyContent lockfile $ liftIO $ do
+				v <- lockShared lockfile
+				case v of
+					Nothing -> return is_locked
+					Just lockhandle -> do
+						dropLock lockhandle
+						void $ tryIO $ nukeFile lockfile
+						return is_unlocked
+			, return is_missing
+			)
 #endif
-#ifndef mingw32_HOST_OS
-	is_locked = Nothing
-#endif
-	is_unlocked = Just True
-	is_missing = Just False
+
+{- Direct mode and especially Windows has to use a separate lock
+ - file from the content, since locking the actual content file
+ - would interfere with the user's use of it. -}
+contentLockFile :: Key -> Annex (Maybe FilePath)
+contentLockFile key = ifM isDirect
+	( Just <$> calcRepo (gitAnnexContentLock key)
+	, return Nothing
+	)
 
 {- Content is exclusively locked while running an action that might remove
  - it. (If the content is not present, no locking is done.) -}
 lockContent :: Key -> Annex a -> Annex a
-#ifndef mingw32_HOST_OS
 lockContent key a = do
-	file <- calcRepo $ gitAnnexLocation key
-	bracketIO (openforlock file >>= lock) unlock (const a)
+	contentfile <- calcRepo $ gitAnnexLocation key
+	lockfile <- contentLockFile key
+	maybe noop setuplockfile lockfile
+	bracketAnnex (liftIO $ lock contentfile lockfile) (unlock lockfile) (const a)
   where
-	{- Since files are stored with the write bit disabled, have
+	alreadylocked = error "content is locked"
+	setuplockfile lockfile = modifyContent lockfile $
+		void $ liftIO $ tryIO $
+			writeFile lockfile ""
+	cleanuplockfile lockfile = modifyContent lockfile $
+		void $ liftIO $ tryIO $
+			nukeFile lockfile
+#ifndef mingw32_HOST_OS
+	lock contentfile Nothing = opencontentforlock contentfile >>= dolock
+	lock _ (Just lockfile) = openforlock lockfile >>= dolock . Just
+	{- Since content files are stored with the write bit disabled, have
 	 - to fiddle with permissions to open for an exclusive lock. -}
-	openforlock f = catchMaybeIO $ ifM (doesFileExist f)
+	opencontentforlock f = catchMaybeIO $ ifM (doesFileExist f)
 		( withModifiedFileMode f
 			(`unionFileModes` ownerWriteMode)
-			open
-		, open
+			(openforlock f)
+		, openforlock f
 		)
-	  where
-		open = openFd f ReadWrite Nothing defaultFileFlags
-	lock Nothing = return Nothing
-	lock (Just fd) = do
+	openforlock f = openFd f ReadWrite Nothing defaultFileFlags
+	dolock Nothing = return Nothing
+	dolock (Just fd) = do
 		v <- tryIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 		case v of
-			Left _ -> error "content is locked"
+			Left _ -> alreadylocked
 			Right _ -> return $ Just fd
-	unlock Nothing = noop
-	unlock (Just l) = closeFd l
+	unlock mlockfile mfd = do
+		maybe noop cleanuplockfile mlockfile
+		liftIO $ maybe noop closeFd mfd
 #else
-lockContent _key a = a -- no locking for Windows!
+	lock _ (Just lockfile) = maybe alreadylocked (return . Just) =<< lockExclusive lockfile
+	lock _ Nothing = return Nothing
+	unlock mlockfile mlockhandle = do
+		liftIO $ maybe noop dropLock mlockhandle
+		maybe noop cleanuplockfile mlockfile
 #endif
 
 {- Runs an action, passing it a temporary filename to get,
