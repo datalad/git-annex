@@ -34,7 +34,6 @@ module Annex (
 
 import "mtl" Control.Monad.Reader
 import "MonadCatchIO-transformers" Control.Monad.CatchIO
-import System.Posix.Types (Fd)
 import Control.Concurrent
 
 import Common
@@ -58,6 +57,7 @@ import Types.Messages
 import Types.UUID
 import Types.FileMatcher
 import Types.NumCopies
+import Types.LockPool
 import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -106,7 +106,7 @@ data AnnexState = AnnexState
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
-	, lockpool :: M.Map FilePath Fd
+	, lockpool :: LockPool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	, cleanup :: M.Map String (Annex ())

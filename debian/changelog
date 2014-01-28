@@ -1,3 +1,10 @@
+git-annex (5.20140128) UNRELEASED; urgency=medium
+
+  * Windows: It's now safe to run multiple git-annex processes concurrently
+    on Windows; the lock files have been sorted out.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 28 Jan 2014 13:57:19 -0400
+
 git-annex (5.20140127) unstable; urgency=medium
 
   * sync --content: New option that makes the content of annexed files be

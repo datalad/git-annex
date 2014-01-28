@@ -9,10 +9,9 @@ module Utility.WinLock (
 	lockShared,
 	lockExclusive,
 	dropLock,
-	waitToLock
+	waitToLock,
+	LockHandle
 ) where
-
-import Common
 
 import System.Win32.Types
 import System.Win32.File
