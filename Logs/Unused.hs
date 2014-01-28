@@ -99,7 +99,7 @@ dateUnusedLog prefix = do
 #else
 #warning foo
 -- old ghc's getModificationTime returned a ClockTime
-dateUnusedLog _prefix = Nothing
+dateUnusedLog _prefix = return Nothing
 #endif
 
 {- Set of unused keys. This is cached for speed. -}
