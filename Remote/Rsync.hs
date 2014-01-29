@@ -296,7 +296,7 @@ rsyncSend o callback k canrename src = withRsyncScratchDir $ \tmp -> do
 	liftIO $ createDirectoryIfMissing True $ parentDir dest
 	ok <- liftIO $ if canrename
 		then do
-			renameFile src dest
+			rename src dest
 			return True
 		else createLinkOrCopy src dest
 	ps <- sendParams

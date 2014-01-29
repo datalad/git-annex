@@ -77,7 +77,7 @@ lockPidFile file = do
 #else
 	writeFile newfile "-1"
 #endif
-	renameFile newfile file
+	rename newfile file
   where
 	newfile = file ++ ".new"
 
