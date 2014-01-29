@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="comment 3"
+ date="2014-01-29T08:22:13Z"
+ content="""
+well, at least in the assistant there is no selection to add a webdav repository - only box.com, rsync.net, S3, remote ssh, and the archives on glazier or internet archive. It is the binary version from 16th this month. I thought it was still excluded due to the compiler crashes you wrote about, because it doesn't show up in the webapp as option. I was scratching my head anyway about that windows build, because there was nothing about setting up encryption in the configuration in the webapp.
+
+Proxy support on Windows is kinda like proxy support on linux when you pull the proxy from gnome settings - just it is pulled from the registry. I don't know how Haskell HTTP client libraries handle it, only know it for Python - there the client libraries usually grab proxy settings automatically from the system configuration.
+
+Another option which could work for me to get through our firewall at work would be ssh - I can use ssh with proxy commands to reach the outside, but didn't yet find the used ssh configs on the windows git-annex installation - it doesn't use the one in ~/.ssh, I added my proxy commands there, but that isn't used.
+"""]]
