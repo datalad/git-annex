@@ -2,6 +2,7 @@
 
 I get the following error when building:
 
+[[!format sh """
 $ cabal install git-annex --bindir=$HOME/bin -f"-assistant -webapp -webdav -pairing -xmpp -dns"
 
 ...
@@ -29,6 +30,7 @@ RunCommand.hs:44:17:
 cabal: Error: some packages failed to install:
 git-annex-5.20140127 failed during the building phase. The exception was:
 ExitFailure 1
+"""]]
 
 ### What steps will reproduce the problem?
 
