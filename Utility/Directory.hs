@@ -10,7 +10,6 @@
 module Utility.Directory where
 
 import System.IO.Error
-import System.PosixCompat.Files
 import System.Directory
 import Control.Exception (throw)
 import Control.Monad
@@ -19,6 +18,7 @@ import System.FilePath
 import Control.Applicative
 import System.IO.Unsafe (unsafeInterleaveIO)
 
+import Utility.PosixFiles
 import Utility.SafeCommand
 import Utility.Tmp
 import Utility.Exception

@@ -14,7 +14,6 @@ import qualified Data.Map as M
 import Text.JSON
 import Data.Tuple
 import Data.Ord
-import System.PosixCompat.Files
 
 import Common.Annex
 import qualified Remote

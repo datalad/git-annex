@@ -7,7 +7,6 @@
 
 module Command.Indirect where
 
-import System.PosixCompat.Files
 import Control.Exception.Extensible
 
 import Common.Annex

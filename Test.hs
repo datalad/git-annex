@@ -17,7 +17,6 @@ import Test.Tasty.Ingredients.Rerun
 import Data.Monoid
 
 import Options.Applicative hiding (command)
-import System.PosixCompat.Files
 import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))

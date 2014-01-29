@@ -13,7 +13,6 @@ import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
 import System.Path.WildMatch
-import System.PosixCompat.Files
 
 import Common.Annex
 import qualified Annex

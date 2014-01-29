@@ -35,7 +35,6 @@ module Annex.Content (
 ) where
 
 import System.IO.Unsafe (unsafeInterleaveIO)
-import System.PosixCompat.Files
 
 import Common.Annex
 import Logs.Location
