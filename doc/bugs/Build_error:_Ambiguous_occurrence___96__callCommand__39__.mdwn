@@ -40,6 +40,7 @@ Try building the same version.
 
 Building git-annex-5.20140127...
 
+[[!format sh """
 $ cabal --version
 cabal-install version 0.14.0
 using version 1.14.0 of the Cabal library
@@ -56,6 +57,7 @@ Codename:	precise
 
 $ uname -a
 Linux sahnlpt0116 3.2.0-58-generic #88-Ubuntu SMP Tue Dec 3 17:37:58 UTC 2013 x86_64 x86_64 x86_64 GNU/Linux
+"""]]
 
 ### Please provide any additional information below.
 
