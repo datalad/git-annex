@@ -513,7 +513,7 @@ syncFile rs f (k, _) = do
 	-- Using callCommand rather than commandAction for drops,
 	-- because a failure to drop does not mean the sync failed.
 	handleDropsFrom (putrs ++ locs) rs "unwanted" True k (Just f)
-		Nothing callCommand
+		Nothing callCommandAction
   where
   	wantget have = allM id 
 		[ pure (not $ null have)

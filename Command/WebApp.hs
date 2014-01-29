@@ -107,7 +107,7 @@ startNoRepo _ = do
 		(d:_) -> do
 			setCurrentDirectory d
 			state <- Annex.new =<< Git.CurrentRepo.get
-			void $ Annex.eval state $ callCommand $
+			void $ Annex.eval state $ callCommandAction $
 				start' False listenhost
 
 {- Run the webapp without a repository, which prompts the user, makes one,

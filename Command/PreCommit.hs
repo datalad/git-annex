@@ -31,7 +31,7 @@ seek ps = ifM isDirect
 
 startIndirect :: FilePath -> CommandStart
 startIndirect file = next $ do
-	unlessM (callCommand $ Command.Add.start file) $
+	unlessM (callCommandAction $ Command.Add.start file) $
 		error $ "failed to add " ++ file ++ "; canceling commit"
 	next $ return True
 

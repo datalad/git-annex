@@ -50,7 +50,7 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 				whenM (annexDebug <$> Annex.getGitConfig) $
 					liftIO enableDebugOutput
 				startup
-				performCommand cmd params
+				performCommandAction cmd params
 				shutdown $ cmdnocommit cmd
   where
 	err msg = msg ++ "\n\n" ++ usage header allcmds

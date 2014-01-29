@@ -1,4 +1,4 @@
-{- git-annex running commands
+{- git-annex command-line actions
  -
  - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
  -
@@ -7,7 +7,7 @@
 
 {-# LANGUAGE BangPatterns #-}
 
-module RunCommand where
+module CmdLine.Action where
 
 import Common.Annex
 import qualified Annex
@@ -20,8 +20,8 @@ type CommandActionRunner = CommandStart -> CommandCleanup
 {- Runs a command, starting with the check stage, and then
  - the seek stage. Finishes by printing the number of commandActions that
  - failed. -}
-performCommand :: Command -> CmdParams -> Annex ()
-performCommand Command { cmdseek = seek, cmdcheck = c, cmdname = name } params = do
+performCommandAction :: Command -> CmdParams -> Annex ()
+performCommandAction Command { cmdseek = seek, cmdcheck = c, cmdname = name } params = do
 	mapM_ runCheck c
 	Annex.changeState $ \s -> s { Annex.errcounter = 0 }
 	seek params
@@ -41,7 +41,7 @@ commandAction a = handle =<< tryAnnexIO go
   where
 	go = do
 		Annex.Queue.flushWhenFull
-		callCommand a
+		callCommandAction a
 	handle (Right True) = return True
 	handle (Right False) = incerr
 	handle (Left err) = do
@@ -58,8 +58,8 @@ commandAction a = handle =<< tryAnnexIO go
 {- Runs a single command action through the start, perform and cleanup
  - stages, without catching errors. Useful if one command wants to run
  - part of another command. -}
-callCommand :: CommandActionRunner
-callCommand = start
+callCommandAction :: CommandActionRunner
+callCommandAction = start
   where
 	start   = stage $ maybe skip perform
 	perform = stage $ maybe failure cleanup

@@ -29,7 +29,7 @@ import qualified Git.LsFiles as LsFiles
 import qualified Backend
 import Annex.Content
 import Annex.Wanted
-import RunCommand
+import CmdLine.Action
 
 import qualified Data.Set as S
 
@@ -159,7 +159,7 @@ expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 		present <- liftAnnex $ inAnnex key
 		liftAnnex $ handleDropsFrom locs syncrs
 			"expensive scan found too many copies of object"
-			present key (Just f) Nothing callCommand
+			present key (Just f) Nothing callCommandAction
 		liftAnnex $ do
 			let slocs = S.fromList locs
 			let use a = return $ mapMaybe (a key slocs) syncrs

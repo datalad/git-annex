@@ -23,10 +23,10 @@ import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Limit
 import CmdLine.Option
+import CmdLine.Action
 import Logs.Location
 import Logs.Unused
 import Annex.CatFile
-import RunCommand
 
 withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = seekActions $ prepFiltered a $

@@ -70,3 +70,5 @@ Sorry but I don't know what else could help you.
 
 # End of transcript or log.
 """]]
+
+> fixed in git and will update cabal soon [[done]] --[[Joey]]

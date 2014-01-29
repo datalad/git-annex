@@ -32,7 +32,7 @@ import Types.Option as ReExported
 import CmdLine.Seek as ReExported
 import Checks as ReExported
 import CmdLine.Usage as ReExported
-import RunCommand as ReExported
+import CmdLine.Action as ReExported
 import CmdLine.Option as ReExported
 import CmdLine.GitAnnex.Options as ReExported
 

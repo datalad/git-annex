@@ -14,7 +14,7 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Annex.Drop (handleDropsFrom, Reason)
 import Logs.Location
-import RunCommand
+import CmdLine.Action
 
 {- Drop from local and/or remote when allowed by the preferred content and
  - numcopies settings. -}
@@ -22,4 +22,4 @@ handleDrops :: Reason -> Bool -> Key -> AssociatedFile -> Maybe Remote -> Assist
 handleDrops reason fromhere key f knownpresentremote = do
 	syncrs <- syncDataRemotes <$> getDaemonStatus
 	locs <- liftAnnex $ loggedLocations key
-	liftAnnex $ handleDropsFrom locs syncrs reason fromhere key f knownpresentremote callCommand
+	liftAnnex $ handleDropsFrom locs syncrs reason fromhere key f knownpresentremote callCommandAction
