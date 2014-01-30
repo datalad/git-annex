@@ -1,3 +1,10 @@
+git-annex (5.20140117~bpo70+2) wheezy-backports; urgency=medium
+
+  * Version build-dep on haskell-gnutls, so that backport will build with
+    XMPP support enabled.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 30 Jan 2014 13:51:34 -0400
+
 git-annex (5.20140117~bpo70+1) wheezy-backports; urgency=medium
 
   * Really fix FTBFS on mipsel and sparc due to test suite not being available
