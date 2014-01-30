@@ -295,3 +295,11 @@ To ssh://fabian@git-annex-Eifel.fritz.box-fabian_.2Fmnt.2Fraid.2FMedia/mnt/raid/
 To ssh://fabian@git-annex-Eifel.fritz.box-fabian_.2Fmnt.2Fraid.2FMedia/mnt/raid/Media/
    1eda3be..4c70ad2  git-annex -> synced/git-annex
 """]]
+
+> The only way a repository can become "unwanted" is if you
+> tell git-annex to start deleting it (or perhaps set its group to unwanted
+> manually). This will cause git-annex to try to move all files away from
+> that repository. 
+> 
+> So, AFAICS, this must have been a case of operator error. [[done]]
+> --[[Joey]]
