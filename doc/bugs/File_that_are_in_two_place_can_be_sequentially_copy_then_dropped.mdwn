@@ -8,3 +8,10 @@ And again, and again...
 ### What version of git-annex are you using? On what operating system?
 git-annex 5.20140127 in debian/sid
 
+> This is actually a duplicate of
+> [[Handling_of_files_inside_and_outside_archive_directory_at_the_same_time]].
+> As noted in that bug report, this should already be fixed in direct mode,
+> but still happens in indirect mode when the full scan is done (at
+> startup, and occasionally at other times).
+> 
+> [[dup|done]] --[[Joey]]
