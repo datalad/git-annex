@@ -125,8 +125,8 @@ getOutput c ps environ = do
 	putStrLn $ unwords [c, show ps]
 	systemenviron <- getEnvironment
 	let environ' = fromMaybe [] environ ++ systemenviron
-	out@(s, ok) <- processTranscript' c ps (Just environ') Nothing
-	putStrLn $ unwords [c, "finished", show ok, "output size:", show (length s)]
+	out@(_, ok) <- processTranscript' c ps (Just environ') Nothing
+	putStrLn $ unwords [c, "finished", show ok]
 	return out
 
 atFile :: FilePath -> String
