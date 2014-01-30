@@ -44,7 +44,7 @@ Build-Depends:
 	libghc-network-info-dev [linux-any kfreebsd-any],
 	libghc-safesemaphore-dev,
 	libghc-network-protocol-xmpp-dev (>= 0.4.3-1),
-	libghc-gnutls-dev (>= 0.1.4-3),
+	libghc-gnutls-dev (>= 0.1.4-3~bpo70+1),
 	libghc-xml-types-dev,
 	libghc-async-dev,
 	libghc-http-dev,
