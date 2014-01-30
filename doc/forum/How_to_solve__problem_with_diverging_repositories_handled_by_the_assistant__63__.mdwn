@@ -4,7 +4,7 @@ I tried this:
 
     git-annex fsck --from rsync.net_annex
 
-from both machines. No error is reported, but files are missing here and there and files differ here and there.
+on both machines. No error is reported, but files are missing here and there and files differ here and there.
 
 I stopped the assistant on both machines and tried to sync with:
 
@@ -12,9 +12,14 @@ I stopped the assistant on both machines and tried to sync with:
 
 and got:
 
+    commit  
+    ok
+    pull 'XXX'
     fatal: Unable to find remote helper for 'xmpp'
-    Pushing to XXX failed 
-    (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
+    failed
+    push 'XXX'
+        Pushing to XXX failed 
+        (non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)
     failed
     git-annex: sync: 2 failed
 
