@@ -9,3 +9,4 @@ I've installed Git-annex via the backport, everything looks fine. But when I go 
 ### What version of git-annex are you using? On what operating system?
 5.20140117~bpo70+1 and Debian Wheezy with lxde
 
+> Build dependency problem. Fixed and backport updated. [[done]] --[[Joey]]
