@@ -1,6 +1,6 @@
 ### Please describe the problem.
 
-I can't seem to add the rsync.net remote on an OS X 10.9 machine running git-annex assistant version 5.20140128-g0ac94c3. The process complains about a missing /usr/libexec/ssh-askpass in the logs, and after a few retries rsync.net locks me out. This program doesn't exist on my system.
+I can't seem to add the rsync.net remote on an OS X 10.9 machine running git-annex assistant version 5.20140128-g0ac94c3. The process complains about a missing `/usr/libexec/ssh-askpass` in the logs, and after a few retries rsync.net locks me out. This program doesn't exist on my system.
 
 ### What steps will reproduce the problem?
 
