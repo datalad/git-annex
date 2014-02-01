@@ -55,7 +55,7 @@ calcSyncRemotes = do
 	let good r = Remote.uuid r `elem` alive
 	let syncable = filter good rs
 	let syncdata = filter (not . remoteAnnexIgnore . Remote.gitconfig) $
-		filter (not . isXMPPRemote) syncable
+		filter (not . Remote.isXMPPRemote) syncable
 
 	return $ \dstatus -> dstatus
 		{ syncRemotes = syncable
@@ -256,12 +256,6 @@ alertDuring :: Alert -> Assistant a -> Assistant a
 alertDuring alert a = do
 	i <- addAlert $ alert { alertClass = Activity }
 	removeAlert  i `after` a
-
-{- Remotes using the XMPP transport have urls like xmpp::user@host -}
-isXMPPRemote :: Remote -> Bool
-isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
-  where
-	r = Remote.repo remote
 
 getXMPPClientID :: Remote -> ClientID
 getXMPPClientID r = T.pack $ drop (length "xmpp::") (Git.repoLocation (Remote.repo r))

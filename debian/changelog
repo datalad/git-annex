@@ -6,6 +6,9 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
     guard against recursive file drops.
   * Windows: Avoid using unix-compat's rename, which refuses to rename
     directories.
+  * sync --content: Honor annex-ignore configuration.
+  * sync: Don't try to sync with xmpp remotes, which are only currently
+    supported when using the assistant.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 28 Jan 2014 13:57:19 -0400
 

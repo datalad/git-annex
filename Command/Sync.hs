@@ -75,6 +75,7 @@ seek rs = do
 
 	remotes <- syncRemotes rs
 	let gitremotes = filter Remote.gitSyncableRemote remotes
+	let dataremotes = filter (not . remoteAnnexIgnore . Remote.gitconfig) remotes
 
 	-- Syncing involves many actions, any of which can independently
 	-- fail, without preventing the others from running.
@@ -85,7 +86,7 @@ seek rs = do
 		,  [ mergeAnnex ]
 		]
 	whenM (Annex.getFlag $ optionName contentOption) $
-		seekSyncContent remotes
+		seekSyncContent dataremotes
 	seekActions $ return $ concat
 		[ [ withbranch pushLocal ]
 		, map (withbranch . pushRemote) gitremotes
@@ -112,6 +113,7 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 		| otherwise = listed
 	listed = catMaybes <$> mapM (Remote.byName . Just) rs
 	available = filter (remoteAnnexSync . Types.Remote.gitconfig)
+		. filter (not . Remote.isXMPPRemote)
 		<$> Remote.remoteList
 	good r
 		| Remote.gitSyncableRemote r = Remote.Git.repoAvail $ Types.Remote.repo r

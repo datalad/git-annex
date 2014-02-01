@@ -161,7 +161,7 @@ buddyListDisplay = do
 #ifdef WITH_XMPP
 
 getXMPPRemotes :: Assistant [(JID, Remote)]
-getXMPPRemotes = catMaybes . map pair . filter isXMPPRemote . syncGitRemotes
+getXMPPRemotes = catMaybes . map pair . filter Remote.isXMPPRemote . syncGitRemotes
 	<$> getDaemonStatus
   where
   	pair r = maybe Nothing (\jid -> Just (jid, r)) $
