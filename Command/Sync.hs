@@ -86,7 +86,16 @@ seek rs = do
 		,  [ mergeAnnex ]
 		]
 	whenM (Annex.getFlag $ optionName contentOption) $
-		seekSyncContent dataremotes
+		whenM (seekSyncContent dataremotes) $ do
+			-- Transferring content can take a while,
+			-- and other changes can be pushed to the git-annex
+			-- branch on the remotes in the meantime, so pull
+			-- and merge again to avoid our push overwriting
+			-- those changes.
+			seekActions $ return $ concat
+				[ map (withbranch . pullRemote) gitremotes
+				, [ commitAnnex, mergeAnnex ]
+				]
 	seekActions $ return $ concat
 		[ [ withbranch pushLocal ]
 		, map (withbranch . pushRemote) gitremotes
@@ -172,9 +181,6 @@ mergeLocal (Just branch) = go =<< needmerge
 pushLocal :: Maybe Git.Ref -> CommandStart
 pushLocal Nothing = stop
 pushLocal (Just branch) = do
-	-- In case syncing content made changes to the git-annex branch,
-	-- commit it.
-	Annex.Branch.commit "update"
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch $ syncBranch branch
 	-- In direct mode, we're operating on some special direct mode
@@ -287,6 +293,11 @@ pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
 		,  ":"
 		, show $ Git.Ref.base $ syncBranch b
 		]
+
+commitAnnex :: CommandStart
+commitAnnex = do
+	Annex.Branch.commit "update"
+	stop
 
 mergeAnnex :: CommandStart
 mergeAnnex = do
@@ -498,11 +509,18 @@ newer remote b = do
  - 
  - Drop it from each remote that has it, where it's not preferred content
  - (honoring numcopies).
+ -
+ - If any file movements were generated, returns true.
  -}
-seekSyncContent :: [Remote] -> Annex ()
-seekSyncContent rs = mapM_ go =<< seekHelper LsFiles.inRepo []
+seekSyncContent :: [Remote] -> Annex Bool
+seekSyncContent rs = do
+	mvar <- liftIO $ newEmptyMVar
+	mapM_ (go mvar) =<< seekHelper LsFiles.inRepo []
+	liftIO $ not <$> isEmptyMVar mvar
   where
-	go f = ifAnnexed f (syncFile rs f) noop
+	go mvar f = ifAnnexed f
+		(\v -> void (liftIO (tryPutMVar mvar ())) >> syncFile rs f v)
+		noop
 
 syncFile :: [Remote] -> FilePath -> (Key, Backend) -> Annex ()
 syncFile rs f (k, _) = do
