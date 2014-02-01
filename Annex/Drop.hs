@@ -48,10 +48,10 @@ handleDropsFrom locs rs reason fromhere key afile knownpresentremote runner = do
 	fs <- ifM isDirect
 		( do
 			l <- associatedFilesRelative key
-			if null l
-				then return $ maybe [] (:[]) afile
-				else return l
-		, return $ maybe [] (:[]) afile
+			return $ if null l
+				then maybeToList afile
+				else l
+		, return $ maybeToList afile
 		)
 	n <- getcopies fs
 	if fromhere && checkcopies n Nothing

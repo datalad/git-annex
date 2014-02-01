@@ -253,7 +253,7 @@ upgradingAlert = activityAlert Nothing [ fromString "Upgrading git-annex" ]
 
 upgradeFinishedAlert :: Maybe AlertButton -> GitAnnexVersion -> Alert
 upgradeFinishedAlert button version =
-	baseUpgradeAlert (maybe [] (:[]) button) $ fromString $ 
+	baseUpgradeAlert (maybeToList button) $ fromString $ 
 		"Finished upgrading git-annex to version " ++ version
 
 upgradeFailedAlert :: String -> Alert
@@ -317,7 +317,7 @@ pairRequestAcknowledgedAlert who button = baseActivityAlert
 	, alertPriority = High
 	, alertName = Just $ PairAlert who
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
-	, alertButtons = maybe [] (:[]) button
+	, alertButtons = maybeToList button
 	}
 
 xmppNeededAlert :: AlertButton -> Alert

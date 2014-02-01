@@ -158,7 +158,7 @@ commitStaged commitmessage = go =<< inRepo Git.Branch.currentUnsafe
 	go (Just branch) = do
 		parent <- inRepo $ Git.Ref.sha branch
 		void $ inRepo $ Git.Branch.commit False commitmessage branch
-			(maybe [] (:[]) parent)
+			(maybeToList parent)
 		return True
 
 mergeLocal :: Maybe Git.Ref -> CommandStart
