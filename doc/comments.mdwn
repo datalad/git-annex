@@ -7,9 +7,3 @@ Comments in the [[!commentmoderation desc="moderation queue"]]:
 
 Recent comments posted to this site:
 [[!inline pages="comment(*)" template="comment"]]
-
-Thank you for developing Git-annex it is of great help. Also I am not a code person (well was when Turbo Pascal was the rage) so having the assistant for os x and I assume Windows 7 should be of great help. 
-
-Regards,
-
-KT
