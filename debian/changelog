@@ -14,6 +14,8 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
     meantime.
   * Added ways to configure rsync options to be used only when uploading
     or downloading from a remote. Useful to eg limit upload bandwidth.
+  * Document in man page that sshcaching uses ssh ControlMaster.
+    Closes: #737476
 
  -- Joey Hess <joeyh@debian.org>  Tue, 28 Jan 2014 13:57:19 -0400
 
