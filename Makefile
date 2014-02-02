@@ -76,7 +76,8 @@ docs: $(mans)
 		--disable-plugin=smiley \
 		--plugin=comments --set comments_pagespec="*" \
 		--exclude='news/.*' --exclude='design/assistant/blog/*' \
-		--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*'
+		--exclude='bugs/*' --exclude='todo/*' --exclude='forum/*' \
+		--exclude='users/*' --exclude='devblog/*'
 
 clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
