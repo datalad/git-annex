@@ -72,3 +72,9 @@ Below is an untested patch that I think would make the documentation more helpfu
 
 
 # End of transcript or log.
+
+> Largely applied (except example at the end). I agree these
+> changes make it much clearer, especially adding the missing documentation
+> of the directory parameter. So, [[done]]. Note that this website is a
+> wiki and users like you are welcome to edit pages directly to improve the
+> documentation. --[[Joey]]

@@ -1,10 +1,12 @@
 This special remote type stores file contents in directory.
 
 One use case for this would be if you have a removable drive that
-you want to use it to sneakernet files between systems (possibly with
+you want to use to sneakernet files between systems (possibly with
 [[encrypted|encryption]] contents). Just set up both systems to use
 the drive's mountpoint as a directory remote.
 
+Note that directory remotes have a special directory structure
+(by design, the same as the \[[rsync|rsync]] remote).
 If you just want two copies of your repository with the files "visible"
 in the tree in both, the directory special remote is not what you want.
 Instead, you should use a regular `git clone` of your git-annex repository.
@@ -13,6 +15,10 @@ Instead, you should use a regular `git clone` of your git-annex repository.
 
 These parameters can be passed to `git annex initremote` to configure the
 remote:
+
+* `directory` - The path to the directory where the files should be stored
+  for the remote. The directory must already exist. Typically this will
+  be an empty directory, or a directory already used as a directory remote.
 
 * `encryption` - One of "none", "hybrid", "shared", or "pubkey".
   See [[encryption]].
