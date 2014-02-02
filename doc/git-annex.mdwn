@@ -1379,6 +1379,21 @@ Here are all the supported configuration settings.
   to or from this remote. For example, to force ipv6, and limit
   the bandwidth to 100Kbyte/s, set it to `-6 --bwlimit 100`
 
+* `remote.<name>.annex-rsync-upload-options`
+
+  Options to use when using rsync to upload a file to a remote.
+
+  These options are passed after other applicable rsync options,
+  so can be used to override them. For example, to limit upload bandwidth
+  to 10Kbye/s, set `--bwlimit 10`.
+
+* `remote.<name>.annex-rsync-download-options`
+
+  Options to use when using rsync to download a file from a remote.
+
+  These options are passed after other applicable rsync options,
+  so can be used to override them.
+
 * `remote.<name>.annex-rsync-transport`
 
   The remote shell to use to connect to the rsync remote. Possible
@@ -1402,11 +1417,12 @@ Here are all the supported configuration settings.
   precedence over the default GnuPG configuration, which is otherwise
   used.)
 
-* `annex.ssh-options`, `annex.rsync-options`, `annex.bup-split-options`,
-  `annex.gnupg-options`
+* `annex.ssh-options`, `annex.rsync-options`,
+  `annex.rsync-upload-options`, `annex.rsync-download-options`,
+  `annex.bup-split-options`, `annex.gnupg-options`
 
-  Default ssh, rsync, wget/curl, bup, and GnuPG options to use if a
-  remote does not have specific options.
+  Default options to use if a remote does not have more specific options
+  as described above.
 
 * `annex.web-options`
 
