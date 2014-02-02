@@ -25,3 +25,10 @@ rsync error: the --max-delete limit stopped deletions (code 25) at /SourceCache/
   rsync failed -- run git annex again to resume file transfer
 failed
 """]]
+
+> From the error message, I can see that your origin repository
+> has an annex.uuid set (to "03ac7aa9-d14c-4b60-adae-02e4a5ec0fa8").
+> So, I assume that, if you don't want git-annex sync to use it,
+> you must have remote.origin.annex-ignore set to true. So, I think I fixed
+> this a day or two ago when I made sync --content honor the annex-ignore
+> setting. [[done]] --[[Joey]] 
