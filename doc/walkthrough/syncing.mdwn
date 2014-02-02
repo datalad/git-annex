@@ -15,13 +15,13 @@ Let's look at what the sync command does in more detail:
 	push laptop
 	ok
 
-After you run sync, the repository will be updated with all changes made to
-its remotes, and any changes in the repository will be pushed out to its
-remotes, where a sync will get them. This is especially useful when using
-git in a distributed fashion, without a 
-[[central bare repository|tips/centralized_git_repository_tutorial]]. See
-[[sync]] for details.
+After you run sync, the git repository will be updated with all changes
+made to its remotes, and any changes in the git repository will be pushed
+out to its remotes, where a sync will get them. This is especially useful
+when using git in a distributed fashion, without a [[central bare
+repository|tips/centralized_git_repository_tutorial]]. See [[sync]] for
+details.
 
-Note that syncing only syncs the metadata about your files that is stored
-in git. It does not sync the contents of files, that are managed by
-git-annex.
+By default `git annex sync` only syncs the metadata about your
+files that is stored in git. It does not sync the contents of files, that
+are managed by git-annex. To do that, you can use `git annex sync --content`
