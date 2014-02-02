@@ -34,8 +34,7 @@ import Git.FileMode
 import Annex.Wanted
 import Annex.Content
 import Command.Get (getKeyFile')
-import Logs.Transfer
-import Logs.Presence
+import qualified Command.Move
 import Logs.Location
 import Annex.Drop
 
@@ -558,11 +557,5 @@ syncFile rs f (k, _) = do
 	put dest = do
 		ok <- commandAction $ do
 			showStart "copy" f
-			showAction $ "to " ++ Remote.name dest
-			next $ next $ do
-				ok <- upload (Remote.uuid dest) k (Just f) noRetry $
-					Remote.storeKey dest k (Just f)
-				when ok $
-					Remote.logStatus dest k InfoPresent
-				return ok
+			next $ Command.Move.toPerform dest False k (Just f)
 		return (ok, if ok then Just (Remote.uuid dest) else Nothing)

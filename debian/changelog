@@ -12,6 +12,9 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
   * sync --content: Re-pull from remotes after downloading content,
     since that can take a while and other changes may be pushed in the
     meantime.
+  * sync --content: Reuse smart copy code from copy command, including
+    handling and repairing out of date location tracking info.
+    Closes: #737480
   * Added ways to configure rsync options to be used only when uploading
     or downloading from a remote. Useful to eg limit upload bandwidth.
   * Document in man page that sshcaching uses ssh ControlMaster.
