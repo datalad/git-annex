@@ -15,6 +15,7 @@ A walkthrough of the basic features of git-annex.
 	walkthrough/modifying_annexed_files
 	walkthrough/using_ssh_remotes
 	walkthrough/moving_file_content_between_repositories
+	walkthrough/quiet_please:_When_git-annex_seems_to_skip_files
 	walkthrough/using_tags_and_branches
 	walkthrough/unused_data
 	walkthrough/fsck:_verifying_your_data
