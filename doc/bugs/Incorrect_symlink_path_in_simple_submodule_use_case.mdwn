@@ -38,7 +38,7 @@ Here are the exact steps for this simple use case (I have removed unrelated outp
     $ git annex get
     $ ls ./
     -rw-r--r--	.git
-    lrwxr-xr-x	child_big_file -> .git/annex/objects/F5/f2/SHA256E-s1117253--ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd/SHA256E-s1117253--    ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd
+    lrwxr-xr-x	child_big_file -> .git/annex/objects/F5/f2/SHA256E-s1117253--ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd/SHA256E-s1117253--ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd
     -rw-r--r--	child_start
     
     # As you can see above, the child_big_file symlink path is incorrect (the ".git/annex/..." location is not a directory, and should instead be "../.git/modules/submodule/annex/...")
@@ -50,7 +50,7 @@ Here are the exact steps for this simple use case (I have removed unrelated outp
 
 
 ### What version of git-annex are you using? On what operating system?
-Mac OS X Mountain Lion
+Mac OS X Mountain Lion. git-annex files are from within the downloadable git-annex assistant.
 
     $ sw_vers -productVersion
     10.8.5
