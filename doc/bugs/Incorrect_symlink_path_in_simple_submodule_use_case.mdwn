@@ -5,65 +5,66 @@ When creating a simple "parent" git repo, creating another "child" repo with an 
 ### What steps will reproduce the problem?
 Here are the exact steps for this simple use case (I have removed unrelated output for brevity, and setting up the repos is error-free):
 
-# Create "parent" repo
-$ mkdir parent
-$ cd parent/
-$ git init
-$ touch parent_start
-$ git add parent_start
-$ git commit -a -m 'New parent repo'
-$ cd ../
-
-# Create "child" repo
-$ mkdir child
-$ cd child/
-$ git init
-$ touch child_start
-$ git add child_start
-$ git commit -a -m 'New child repo'
-$ git annex init
-$ cp ~/Desktop/some_big_file child_big_file
-$ git annex add child_big_file
-$ git commit -a -m 'Added big file'
-$ cd ../
-
-# Add "child" repo as a submodule of "parent" repo
-$ cd parent/
-$ git submodule add ../child ./submodule
-$ git commit -m 'Added submodule'
-
-# Try to get annexed file
-$ cd submodule/
-$ git annex init
-$ git annex get
-$ ls ./
--rw-r--r--	.git
-lrwxr-xr-x	child_big_file -> .git/annex/objects/F5/f2/SHA256E-s1117253--ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd/SHA256E-s1117253--ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd
--rw-r--r--	child_start
-
-# As you can see above, the child_big_file symlink path is incorrect (the ".git/annex/..." location is not a directory, and should instead be "../.git/modules/submodule/annex/...")
-
-# Show the actual location of the annexed file
-$ cd ../
-$ ls .git/modules/submodule/annex/objects/F5/f2/SHA256E-s1117253--ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd
--r--r--r--	SHA256E-s1117253--ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd
+    # Create "parent" repo
+    $ mkdir parent
+    $ cd parent/
+    $ git init
+    $ touch parent_start
+    $ git add parent_start
+    $ git commit -a -m 'New parent repo'
+    $ cd ../
+    
+    # Create "child" repo
+    $ mkdir child
+    $ cd child/
+    $ git init
+    $ touch child_start
+    $ git add child_start
+    $ git commit -a -m 'New child repo'
+    $ git annex init
+    $ cp ~/Desktop/some_big_file child_big_file
+    $ git annex add child_big_file
+    $ git commit -a -m 'Added big file'
+    $ cd ../
+    
+    # Add "child" repo as a submodule of "parent" repo
+    $ cd parent/
+    $ git submodule add ../child ./submodule
+    $ git commit -m 'Added submodule'
+    
+    # Try to get annexed file
+    $ cd submodule/
+    $ git annex init
+    $ git annex get
+    $ ls ./
+    -rw-r--r--	.git
+    lrwxr-xr-x	child_big_file -> .git/annex/objects/F5/f2/SHA256E-s1117253--ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd/SHA256E-s1117253--    ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd
+    -rw-r--r--	child_start
+    
+    # As you can see above, the child_big_file symlink path is incorrect (the ".git/annex/..." location is not a directory, and should instead be "../.git/modules/submodule/annex/...")
+    
+    # Show the actual location of the annexed file
+    $ cd ../
+    $ ls .git/modules/submodule/annex/objects/F5/f2/SHA256E-s1117253--ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd
+    -r--r--r--	SHA256E-s1117253--ce17632dfd9c61a0a8c1384d25fb3a8a197f8056f224e15fbcad89904a82c5fd
 
 
 ### What version of git-annex are you using? On what operating system?
 Mac OS X Mountain Lion
-$ sw_vers -productVersion
-10.8.5
-$ git --version
-git version 1.7.12.4 (Apple Git-37)
-$ git-annex version
-git-annex version: 4.20131105-g136b030
-build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA
-key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
-remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
-local repository version: 3
-default repository version: 3
-supported repository versions: 3 4
-upgrade supported from repository versions: 0 1 2
+
+    $ sw_vers -productVersion
+    10.8.5
+    $ git --version
+    git version 1.7.12.4 (Apple Git-37)
+    $ git-annex version
+    git-annex version: 4.20131105-g136b030
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
 
 
 Thanks for your help :)
