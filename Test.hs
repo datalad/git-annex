@@ -64,6 +64,7 @@ import qualified Utility.Exception
 import qualified Utility.Hash
 import qualified Utility.Scheduled
 import qualified Utility.HumanTime
+import qualified Utility.ThreadScheduler
 #ifndef mingw32_HOST_OS
 import qualified CmdLine.GitAnnex as GitAnnex
 import qualified Remote.Helper.Encryptable
@@ -1166,15 +1167,24 @@ ensuretmpdir = do
 		createDirectory tmpdir
 
 cleanup :: FilePath -> IO ()
-cleanup dir = do
-	e <- doesDirectoryExist dir
-	when e $ do
-		-- Allow all files and directories to be written to, so
-		-- they can be deleted. Both git and git-annex use file
-		-- permissions to prevent this.
-		recurseDir SystemFS dir >>=
-			mapM_ Utility.FileMode.allowWrite
-		void $ tryIO $ removeDirectoryRecursive dir
+cleanup = cleanup' False
+
+cleanup' :: Bool -> FilePath -> IO ()
+cleanup' final dir = whenM (doesDirectoryExist dir) $ do
+	-- Allow all files and directories to be written to, so
+	-- they can be deleted. Both git and git-annex use file
+	-- permissions to prevent deletion.
+	recurseDir SystemFS dir >>=
+		mapM_ Utility.FileMode.allowWrite
+	-- This sometimes fails on Windows, due to some files
+	-- being still opened by a subprocess.
+	catchIO (removeDirectoryRecursive dir) $ \e -> do
+		when final $ do
+			print e
+			putStrLn "sleeping 10 seconds and will retry directory cleanup"
+			Utility.ThreadScheduler.threadDelaySeconds (Utility.ThreadScheduler.Seconds 10)
+			whenM (doesDirectoryExist dir) $ do
+				removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
 checklink f = do
@@ -1277,7 +1287,7 @@ withTestEnv forcedirect = withResource prepare release
 
 releaseTestEnv :: TestEnv -> IO ()
 releaseTestEnv _env = do
-	cleanup tmpdir
+	cleanup' True tmpdir
 
 prepareTestEnv :: Bool -> IO TestEnv
 prepareTestEnv forcedirect = do
