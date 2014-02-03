@@ -99,7 +99,8 @@ deleteCurrentRepository = dangerPage $ do
 			{- Make all directories writable and files writable
 			 - so all annexed content can be deleted. -}
 			liftIO $ do
-				recurseDir SystemFS dir >>= mapM_ allowWrite
+				recurseDir SystemFS dir
+					>>= mapM_ (void . tryIO . allowWrite)
 				removeDirectoryRecursive dir
 			
 			redirect ShutdownConfirmedR

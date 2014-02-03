@@ -1178,7 +1178,7 @@ cleanup' final dir = whenM (doesDirectoryExist dir) $ do
 	-- they can be deleted. Both git and git-annex use file
 	-- permissions to prevent deletion.
 	recurseDir SystemFS dir >>=
-		mapM_ Utility.FileMode.allowWrite
+		mapM_ (void . tryIO . Utility.FileMode.allowWrite)
 	-- This sometimes fails on Windows, due to some files
 	-- being still opened by a subprocess.
 	catchIO (removeDirectoryRecursive dir) $ \e -> do
