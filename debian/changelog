@@ -1,11 +1,7 @@
 git-annex (5.20140128) UNRELEASED; urgency=medium
 
-  * Windows: It's now safe to run multiple git-annex processes concurrently
-    on Windows; the lock files have been sorted out.
   * Fixed direct mode annexed content locking code, which is used to
     guard against recursive file drops.
-  * Windows: Avoid using unix-compat's rename, which refuses to rename
-    directories.
   * sync --content: Honor annex-ignore configuration.
   * sync: Don't try to sync with xmpp remotes, which are only currently
     supported when using the assistant.
@@ -21,6 +17,10 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
     or downloading from a remote. Useful to eg limit upload bandwidth.
   * Document in man page that sshcaching uses ssh ControlMaster.
     Closes: #737476
+  * Windows: It's now safe to run multiple git-annex processes concurrently
+    on Windows; the lock files have been sorted out.
+  * Windows: Avoid using unix-compat's rename, which refuses to rename
+    directories.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 28 Jan 2014 13:57:19 -0400
 
