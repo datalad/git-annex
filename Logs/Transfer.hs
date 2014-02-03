@@ -340,11 +340,8 @@ parseTransferFile file
 	bits = splitDirectories file
 
 writeTransferInfoFile :: TransferInfo -> FilePath -> IO ()
-writeTransferInfoFile info tfile = do
-	h <- openFile tfile WriteMode
-	fileEncoding h
-	hPutStr h $ writeTransferInfo info
-	hClose h
+writeTransferInfoFile info tfile = writeFileAnyEncoding tfile $
+	writeTransferInfo info
 
 {- File format is a header line containing the startedTime and any
  - bytesComplete value. Followed by a newline and the associatedFile.
@@ -365,10 +362,8 @@ writeTransferInfo info = unlines
 	]
 
 readTransferInfoFile :: Maybe PID -> FilePath -> IO (Maybe TransferInfo)
-readTransferInfoFile mpid tfile = catchDefaultIO Nothing $ do
-	h <- openFile tfile ReadMode
-	fileEncoding h
-	hClose h `after` (readTransferInfo mpid <$> hGetContentsStrict h)
+readTransferInfoFile mpid tfile = catchDefaultIO Nothing $
+	readTransferInfo mpid <$> readFileStrictAnyEncoding tfile
 
 readTransferInfo :: Maybe PID -> String -> Maybe TransferInfo
 readTransferInfo mpid s = TransferInfo

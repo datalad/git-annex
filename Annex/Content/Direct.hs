@@ -52,8 +52,7 @@ associatedFiles key = do
 associatedFilesRelative :: Key -> Annex [FilePath] 
 associatedFilesRelative key = do
 	mapping <- calcRepo $ gitAnnexMapping key
-	liftIO $ catchDefaultIO [] $ do
-		h <- openFile mapping ReadMode
+	liftIO $ catchDefaultIO [] $ withFile mapping ReadMode $ \h -> do
 		fileEncoding h
 		lines <$> hGetContents h
 

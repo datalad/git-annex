@@ -51,19 +51,15 @@ getAnnexLinkTarget file = ifM (coreSymlinks <$> Annex.getGitConfig)
 				| otherwise -> return Nothing
 			Nothing -> fallback
 
-	probefilecontent f = do
-		h <- openFile f ReadMode
+	probefilecontent f = withFile f ReadMode $ \h -> do
 		fileEncoding h
 		-- The first 8k is more than enough to read; link
 		-- files are small.
 		s <- take 8192 <$> hGetContents h
 		-- If we got the full 8k, the file is too large
 		if length s == 8192
-			then do
-				hClose h
-				return ""
-			else do
-				hClose h
+			then return ""
+			else 
 				-- If there are any NUL or newline
 				-- characters, or whitespace, we
 				-- certianly don't have a link to a

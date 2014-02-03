@@ -478,10 +478,9 @@ recordStartTime = do
 	createAnnexDirectory $ parentDir f
 	liftIO $ do
 		nukeFile f
-		h <- openFile f WriteMode
-		t <- modificationTime <$> getFileStatus f
-		hPutStr h $ showTime $ realToFrac t
-		hClose h
+		withFile f WriteMode $ \h -> do
+			t <- modificationTime <$> getFileStatus f
+			hPutStr h $ showTime $ realToFrac t
   where
 	showTime :: POSIXTime -> String
 	showTime = show
