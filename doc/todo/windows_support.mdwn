@@ -12,9 +12,6 @@ now! --[[Joey]]
   is much slower than on systems supporting connection caching.
 * The test suite does not 100% pass, although it seems to be getting
   quite close! Current known failures:
-  * "conflict_resolution (mixed directory and file)" test fails;
-    not because the conflict resolution fails, but the sync fails
-    pushing to synced/master with a non-fast-forward failure.
   * Some tests fail if git has not had the username and email configured.
     This is odd because the test suite goes to some lengths to
     get env vars set to prevent this problem.

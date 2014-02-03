@@ -781,6 +781,7 @@ test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 -> do
 		forM_ [r1, r2] $ \r -> indir env r $ do
 			{- Get all files, see check below. -}
 			git_annex env "get" [] @? "get failed"
+			disconnectOrigin
 		pair env r1 r2
 		forM_ [r1, r2] $ \r -> indir env r $ do
 			{- Set up a conflict. -}
@@ -815,10 +816,12 @@ test_mixed_conflict_resolution env = do
 	check_mixed_conflict inr1 = withtmpclonerepo env False $ \r1 ->
 		withtmpclonerepo env False $ \r2 -> do
 			indir env r1 $ do
+				disconnectOrigin
 				writeFile conflictor "conflictor"
 				git_annex env "add" [conflictor] @? "add conflicter failed"
 				git_annex env "sync" [] @? "sync failed in r1"
 			indir env r2 $ do
+				disconnectOrigin
 				createDirectory conflictor
 				writeFile (conflictor </> "subfile") "subfile"
 				git_annex env "add" [conflictor] @? "add conflicter failed"
@@ -838,16 +841,13 @@ test_mixed_conflict_resolution env = do
 				<$> getDirectoryContents d)
 				@? (d ++ "conflictor file missing")
 
-{- Set up repos as remotes of each other;
- - remove origin since we're going to sync
- - some changes to a file. -}
+{- Set up repos as remotes of each other. -}
 pair :: TestEnv -> FilePath -> FilePath -> Assertion
 pair env r1 r2 = forM_ [r1, r2] $ \r -> indir env r $ do
 	when (r /= r1) $
 		boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
 	when (r /= r2) $
 		boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
-	boolSystem "git" [Params "remote rm origin"] @? "remote rm"
 
 test_map :: TestEnv -> Assertion
 test_map env = intmpclonerepo env $ do
@@ -1116,6 +1116,9 @@ withtmpclonerepo :: TestEnv -> Bool -> (FilePath -> Assertion) -> Assertion
 withtmpclonerepo env bare a = do
 	dir <- tmprepodir
 	bracket (clonerepo env mainrepodir dir bare) cleanup a
+
+disconnectOrigin :: Assertion
+disconnectOrigin = boolSystem "git" [Params "remote rm origin"] @? "remote rm"
 
 withgitrepo :: TestEnv -> (FilePath -> Assertion) -> Assertion
 withgitrepo env = bracket (setuprepo env mainrepodir) return

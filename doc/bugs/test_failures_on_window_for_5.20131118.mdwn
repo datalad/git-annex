@@ -19,6 +19,4 @@ windows 7, NTFS = 2 FAILs
 
 see attachment for full log of git annex test output
 
-> I am seeing the same 2 failures now (I used to see a lot more!)
-> and have put some analysis in [[todo/windows_support]] about them.
-> --[[Joey]]
+> Reproduced and [[fixed|done]]. --[[Joey]]
