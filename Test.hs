@@ -837,9 +837,9 @@ test_mixed_conflict_resolution env = do
 		variantprefix = conflictor ++ ".variant"
 		checkmerge d = do
 			doesDirectoryExist (d </> conflictor) @? (d ++ " conflictor directory missing")
-			(any (variantprefix `isPrefixOf`) 
-				<$> getDirectoryContents d)
-				@? (d ++ "conflictor file missing")
+			l <- getDirectoryContents d
+			any (variantprefix `isPrefixOf`) l
+				@? (d ++ " conflictor file missing in: " ++ show l )
 
 {- Set up repos as remotes of each other. -}
 pair :: TestEnv -> FilePath -> FilePath -> Assertion
