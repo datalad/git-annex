@@ -66,15 +66,10 @@ changeAssociatedFiles key transform = do
 	let files' = transform files
 	when (files /= files') $ do
 		modifyContent mapping $
-			liftIO $ viaTmp write mapping $ unlines files'
+			liftIO $ viaTmp writeFileAnyEncoding mapping $
+				unlines files'
 	top <- fromRepo Git.repoPath
 	return $ map (top </>) files'
-  where
-	write file content = do
-		h <- openFile file WriteMode
-		fileEncoding h
- 		hPutStr h content
-		hClose h
 
 {- Removes the list of associated files. -}
 removeAssociatedFiles :: Key -> Annex ()
