@@ -145,7 +145,7 @@ storeEncrypted r buprepo (cipher, enck) k _p =
 retrieve :: BupRepo -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
 retrieve buprepo k _f d _p = do
 	let params = bupParams "join" buprepo [Param $ bupRef k]
-	liftIO $ catchBoolIO $ withFIle d WriteMode $
+	liftIO $ catchBoolIO $ withFile d WriteMode $
 		pipeBup params Nothing . Just
 
 retrieveCheap :: BupRepo -> Key -> FilePath -> Annex Bool

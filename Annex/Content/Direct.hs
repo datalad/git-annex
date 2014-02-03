@@ -54,7 +54,10 @@ associatedFilesRelative key = do
 	mapping <- calcRepo $ gitAnnexMapping key
 	liftIO $ catchDefaultIO [] $ withFile mapping ReadMode $ \h -> do
 		fileEncoding h
-		lines <$> hGetContents h
+		-- Read strictly to ensure the file is closed
+		-- before changeAssociatedFiles tries to write to it.
+		-- (Especially needed on Windows.)
+		lines <$> hGetContentsStrict h
 
 {- Changes the associated files information for a key, applying a
  - transformation to the list. Returns new associatedFiles value. -}

@@ -12,10 +12,6 @@ now! --[[Joey]]
   is much slower than on systems supporting connection caching.
 * The test suite does not 100% pass, although it seems to be getting
   quite close! Current known failures:
-  * unannex test fails, but only around 50% or less of the time,
-    while updating the .map file. Renaming the new file into place fails
-    with permission denied. Possibly something else has the file
-    open?
   * "conflict_resolution (mixed directory and file)" test fails;
     not because the conflict resolution fails, but the sync fails
     pushing to synced/master with a non-fast-forward failure.
