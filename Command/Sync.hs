@@ -37,6 +37,7 @@ import Command.Get (getKeyFile')
 import qualified Command.Move
 import Logs.Location
 import Annex.Drop
+import Annex.UUID
 
 import qualified Data.Set as S
 import Data.Hash.MD5
@@ -526,12 +527,15 @@ syncFile rs f (k, _) = do
 	locs <- loggedLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 
-	sequence_ =<< handleget have
+	got <- anyM id =<< handleget have
 	putrs <- catMaybes . snd . unzip <$> (sequence =<< handleput lack)
+
+	u <- getUUID
+	let locs' = concat [if got then [u] else [], putrs, locs]
 
 	-- Using callCommandAction rather than commandAction for drops,
 	-- because a failure to drop does not mean the sync failed.
-	handleDropsFrom (putrs ++ locs) rs "unwanted" True k (Just f)
+	handleDropsFrom locs' rs "unwanted" True k (Just f)
 		Nothing callCommandAction
   where
   	wantget have = allM id 
