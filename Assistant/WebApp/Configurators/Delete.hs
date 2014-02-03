@@ -96,12 +96,10 @@ deleteCurrentRepository = dangerPage $ do
 				rs <- syncRemotes <$> getDaemonStatus
 				mapM_ (\r -> changeSyncable (Just r) False) rs
 
-			{- Make all directories writable, so all annexed
-			 - content can be deleted. -}
+			{- Make all directories writable and files writable
+			 - so all annexed content can be deleted. -}
 			liftIO $ do
-				recurseDir SystemFS dir >>=
-					filterM doesDirectoryExist >>=
-						mapM_ allowWrite
+				recurseDir SystemFS dir >>= mapM_ allowWrite
 				removeDirectoryRecursive dir
 			
 			redirect ShutdownConfirmedR

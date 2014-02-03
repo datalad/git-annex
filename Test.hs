@@ -816,12 +816,12 @@ test_mixed_conflict_resolution env = do
 			indir env r1 $ do
 				writeFile conflictor "conflictor"
 				git_annex env "add" [conflictor] @? "add conflicter failed"
-				git_annex env "sync" [] @? "sync failed"
+				git_annex env "sync" [] @? "sync failed in r1"
 			indir env r2 $ do
 				createDirectory conflictor
 				writeFile (conflictor </> "subfile") "subfile"
 				git_annex env "add" [conflictor] @? "add conflicter failed"
-				git_annex env "sync" [] @? "sync failed"
+				git_annex env "sync" [] @? "sync failed in r2"
 			pair env r1 r2
 			let r = if inr1 then r1 else r2
 			indir env r $ do
@@ -1169,12 +1169,11 @@ cleanup :: FilePath -> IO ()
 cleanup dir = do
 	e <- doesDirectoryExist dir
 	when e $ do
-		-- git-annex prevents annexed file content from being
-		-- removed via directory permissions; undo
+		-- Allow all files and directories to be written to, so
+		-- they can be deleted. Both git and git-annex use file
+		-- permissions to prevent this.
 		recurseDir SystemFS dir >>=
-			filterM doesDirectoryExist >>=
-				mapM_ Utility.FileMode.allowWrite
-		-- For unknown reasons, this sometimes fails on Windows.
+			mapM_ Utility.FileMode.allowWrite
 		void $ tryIO $ removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
