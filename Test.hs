@@ -827,19 +827,19 @@ test_mixed_conflict_resolution env = do
 				git_annex env "add" [conflictor] @? "add conflicter failed"
 				git_annex env "sync" [] @? "sync failed in r2"
 			pair env r1 r2
-			let r = if inr1 then r1 else r2
-			indir env r $ do
+			let l = if inr1 then [r1, r2] else [r2, r1]
+			forM_ l $ \r -> indir env r $
 				git_annex env "sync" [] @? "sync failed in mixed conflict"
-			checkmerge r1
-			checkmerge r2
+			checkmerge "r1" r1
+			checkmerge "r1" r2
 	  where
 		conflictor = "conflictor"
 		variantprefix = conflictor ++ ".variant"
-		checkmerge d = do
+		checkmerge what d = do
 			doesDirectoryExist (d </> conflictor) @? (d ++ " conflictor directory missing")
 			l <- getDirectoryContents d
 			any (variantprefix `isPrefixOf`) l
-				@? (d ++ " conflictor file missing in: " ++ show l )
+				@? (what ++ " conflictor file missing in: " ++ show l )
 
 {- Set up repos as remotes of each other. -}
 pair :: TestEnv -> FilePath -> FilePath -> Assertion
