@@ -13,11 +13,6 @@ now! --[[Joey]]
 * Ssh connection caching does not work on Windows, so `git annex get`
   has to connect twice to the remote system over ssh per file, which
   is much slower than on systems supporting connection caching.
-* The test suite does not 100% pass, although it seems to be getting
-  quite close! Current known failures:
-  * Some tests fail if git has not had the username and email configured.
-    This is odd because the test suite goes to some lengths to
-    get env vars set to prevent this problem.
 * `git annex assistant` has not been tested, is probably quite incomplete
   and/or buggy.
 * Doesn't daemonize. Maybe use

@@ -948,7 +948,8 @@ test_rsync_remote env = intmpclonerepo env $ do
 	not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
 #else
-	-- this test doesn't work in Windows TODO
+	-- Rsync remotes with a rsyncurl of a directory do not currently
+	-- work on Windows.
 	noop
 #endif
 
@@ -1140,9 +1141,7 @@ setuprepo env dir = do
 	cleanup dir
 	ensuretmpdir
 	boolSystem "git" [Params "init -q", File dir] @? "git init failed"
-	indir env dir $ do
-		boolSystem "git" [Params "config user.name", Param "Test User"] @? "git config failed"
-		boolSystem "git" [Params "config user.email test@example.com"] @? "git config failed"
+	configrepo env dir
 	return dir
 
 -- clones are always done as local clones; we cannot test ssh clones
@@ -1154,10 +1153,16 @@ clonerepo env old new bare = do
 	boolSystem "git" [Params ("clone -q" ++ b), File old, File new] @? "git clone failed"
 	indir env new $
 		git_annex env "init" ["-q", new] @? "git annex init failed"
+	configrepo env new
 	when (not bare) $
 		indir env new $
 			handleforcedirect env
 	return new
+
+configrepo :: TestEnv -> FilePath -> IO ()
+configrepo env dir = indir env dir $ do
+	boolSystem "git" [Params "config user.name", Param "Test User"] @? "git config failed"
+	boolSystem "git" [Params "config user.email test@example.com"] @? "git config failed"
 
 handleforcedirect :: TestEnv -> IO ()
 handleforcedirect env = when (M.lookup "FORCEDIRECT" env == Just "1") $
