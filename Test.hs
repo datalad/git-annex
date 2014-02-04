@@ -187,6 +187,7 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	, check "sync" test_sync
 	, check "union merge regression" test_union_merge_regression
 	, check "conflict resolution" test_conflict_resolution_movein_bug
+	, check "sync push regression" test_sync_push_regression
 	, check "conflict_resolution (mixed directory and file)" test_mixed_conflict_resolution
 	, check "map" test_map
 	, check "uninit" test_uninit
@@ -742,6 +743,37 @@ test_sync env = intmpclonerepo env $ do
 	 - 7b0970b340d7faeb745c666146c7f701ec71808f, where in direct mode
 	 - sync committed the symlink standin file to the annex. -}
 	git_annex_expectoutput env "find" ["--in", "."] []
+
+test_sync_push_regression :: TestEnv -> Assertion
+test_sync_push_regression env = do
+	check_mixed_conflict True
+	check_mixed_conflict False
+  where
+	check_mixed_conflict inr1 = withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			indir env r1 $ do
+				writeFile conflictor "conflictor"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed in r1"
+			indir env r2 $ do
+				createDirectory conflictor
+				writeFile (conflictor </> "subfile") "subfile"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed in r2"
+			pair env r1 r2
+			let r = if inr1 then r1 else r2
+			indir env r $ do
+				git_annex env "sync" [] @? "sync failed in mixed conflict"
+			checkmerge r1
+			checkmerge r2
+	  where
+		conflictor = "conflictor"
+		variantprefix = conflictor ++ ".variant"
+		checkmerge d = do
+			doesDirectoryExist (d </> conflictor) @? (d ++ " conflictor directory missing")
+			(any (variantprefix `isPrefixOf`) 
+				<$> getDirectoryContents d)
+				@? (d ++ "conflictor file missing")
 
 {- Regression test for union merge bug fixed in
  - 0214e0fb175a608a49b812d81b4632c081f63027 -}
