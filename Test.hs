@@ -187,8 +187,8 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	, check "sync" test_sync
 	, check "union merge regression" test_union_merge_regression
 	, check "conflict resolution" test_conflict_resolution_movein_bug
-	, check "sync push" test_sync_push
 	, check "conflict_resolution (mixed directory and file)" test_mixed_conflict_resolution
+	, check "conflict_resolution (mixed directory and file) 2" test_mixed_conflict_resolution2
 	, check "map" test_map
 	, check "uninit" test_uninit
 	, check "uninit (in git-annex branch)" test_uninit_inbranch
@@ -841,11 +841,19 @@ test_mixed_conflict_resolution env = do
 		any (variantprefix `isPrefixOf`) l
 			@? (what ++ " conflictor file missing in: " ++ show l )
 
-{- A windows-specific failure of mixed conflict resolution. -}
-test_sync_push :: TestEnv -> Assertion
-test_sync_push env = check >> check
+{- 
+ - During conflict resolution, one of the annexed files in git is
+ - accidentially converted from a symlink to a regular file.
+ - This only happens on crippled filesystems.
+ -
+ - This test case happens to detect the problem when it tries the next
+ - pass of conflict resolution, since it's unable to resolve a conflict
+ - between an annexed and non-annexed file.
+ -}
+test_mixed_conflict_resolution2 :: TestEnv -> Assertion
+test_mixed_conflict_resolution2 env = go >> go
   where
-	check = withtmpclonerepo env False $ \r1 ->
+	go = withtmpclonerepo env False $ \r1 ->
 		withtmpclonerepo env False $ \r2 -> do
 			indir env r1 $ do
 				writeFile conflictor "conflictor"

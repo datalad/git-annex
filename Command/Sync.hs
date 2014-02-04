@@ -392,14 +392,10 @@ resolveMerge' u
 			-- Our side is annexed, other side is not.
 			(Just keyUs, Nothing) -> do
 				ifM isDirect
-					-- Move newly added non-annexed object
-					-- out of direct mode merge directory.
 					( do
 						removeoldfile keyUs
 						makelink keyUs
-						d <- fromRepo gitAnnexMergeDir
-						liftIO $ rename (d </> file) file
-					-- cleaup tree after git merge
+						movefromdirectmerge file
 					, do
 						unstageoldfile
 						makelink keyUs
@@ -433,6 +429,31 @@ resolveMerge' u
 	getKey select = case select (LsFiles.unmergedSha u) of
 		Nothing -> return Nothing
 		Just sha -> catKey sha symLinkMode
+	
+	{- Move something out of the direct mode merge directory and into
+	 - the git work tree.
+	 -
+	 - On a filesystem not supporting symlinks, this is complicated
+	 - because a directory may contain annex links, but just
+	 - moving them into the work tree will not let git know they are
+	 - symlinks.
+	 -
+	 - Also, if the content of the file is available, make it available
+	 - in direct mode.
+	 -}
+	movefromdirectmerge item = do
+		d <- fromRepo gitAnnexMergeDir
+		liftIO $ rename (d </> item) item
+		mapM_ setuplink =<< liftIO (dirContentsRecursive item)
+	setuplink f = do
+		v <- getAnnexLinkTarget f
+		case v of
+			Nothing -> noop
+			Just target -> do
+				unlessM (coreSymlinks <$> Annex.getGitConfig) $
+					addAnnexLink target f
+				maybe noop (flip toDirect f) 
+					(fileKey (takeFileName target))
 
 {- git-merge moves conflicting files away to files
  - named something like f~HEAD or f~branch, but the

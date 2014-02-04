@@ -13,6 +13,9 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
     Closes: #737480
   * sync --content: Drop files from remotes that don't have them after
     getting them.
+  * sync: Fix bug in automatic merge conflict resolution code when used
+    on a filesystem not supporting symlinks, which resulted in it losing
+    track of the symlink bit of annexed files.
   * Added ways to configure rsync options to be used only when uploading
     or downloading from a remote. Useful to eg limit upload bandwidth.
   * Document in man page that sshcaching uses ssh ControlMaster.
