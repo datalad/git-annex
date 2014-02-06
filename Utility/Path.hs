@@ -42,7 +42,7 @@ absNormPath :: FilePath -> FilePath -> Maybe FilePath
 #ifndef mingw32_HOST_OS
 absNormPath dir path = MissingH.absNormPath dir path
 #else
-absNormPath dir path = MissingH.absNormPath dir path
+absNormPath dir path = Just $ combine dir path
 #endif
 
 {- On Windows, this converts the paths to unix-style, in order to run
@@ -50,7 +50,6 @@ absNormPath dir path = MissingH.absNormPath dir path
 #ifndef mingw32_HOST_OS
 absNormPathUnix dir path = MissingH.absNormPath dir path
 #else
-absNormPathUnix dir path = Just $ combine dir path
 absNormPathUnix dir path = MissingH.absNormPath (fromdos dir) (fromdos path)
   where
 	fromdos = replace "\\" "/"
