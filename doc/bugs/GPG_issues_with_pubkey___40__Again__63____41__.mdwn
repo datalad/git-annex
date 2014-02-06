@@ -40,3 +40,5 @@ git-annex: initremote: 1 failed
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]] 
