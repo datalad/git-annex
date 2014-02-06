@@ -434,12 +434,8 @@ removeAnnex key = withObjectLoc key remove removedirect
 		mapM_ (resetfile cache) fs
 	resetfile cache f = whenM (sameInodeCache f cache) $ do
 		l <- inRepo $ gitAnnexLink f key
-		top <- fromRepo Git.repoPath
-		cwd <- liftIO getCurrentDirectory
-		let top' = fromMaybe top $ absNormPathUnix cwd top
-		let l' = relPathDirToFile top' (fromMaybe l $ absNormPathUnix top' l)
 		secureErase f
-		replaceFile f $ makeAnnexLink l'
+		replaceFile f $ makeAnnexLink l
 
 {- Runs the secure erase command if set, otherwise does nothing.
  - File may or may not be deleted at the end; caller is responsible for
