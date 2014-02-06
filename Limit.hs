@@ -30,6 +30,8 @@ import Types.FileMatcher
 import Types.Limit
 import Logs.Group
 import Logs.Unused
+import Logs.Location
+import Git.Types (RefDate(..))
 import Utility.HumanTime
 import Utility.DataUnits
 
@@ -112,20 +114,26 @@ matchglob glob (MatchingFile fi) =
 matchglob _ (MatchingKey _) = False
 
 {- Adds a limit to skip files not believed to be present
- - in a specfied repository. -}
+ - in a specfied repository. Optionally on a prior date. -}
 addIn :: String -> Annex ()
 addIn = addLimit . limitIn
 
 limitIn :: MkLimit
-limitIn name = Right $ \notpresent -> checkKey $
+limitIn s = Right $ \notpresent -> checkKey $ \key ->
 	if name == "."
-		then inhere notpresent
-		else inremote notpresent
+		then if null date
+			then inhere notpresent key
+			else inuuid notpresent key =<< getUUID
+		else inuuid notpresent key =<< Remote.nameToUUID name
   where
-	inremote notpresent key = do
-		u <- Remote.nameToUUID name
-		us <- Remote.keyLocations key
-		return $ u `elem` us && u `S.notMember` notpresent
+	(name, date) = separate (== '@') s
+	inuuid notpresent key u
+		| null date = do
+			us <- Remote.keyLocations key
+			return $ u `elem` us && u `S.notMember` notpresent
+		| otherwise = do
+			us <- loggedLocationsHistorical (RefDate date) key
+			return $ u `elem` us
 	inhere notpresent key
 		| S.null notpresent = inAnnex key
 		| otherwise = do

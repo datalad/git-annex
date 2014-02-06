@@ -57,6 +57,10 @@ type Branch = Ref
 type Sha = Ref
 type Tag = Ref
 
+{- A date in the format described in gitrevisions. Includes the
+ - braces, eg, "{yesterday}" -}
+newtype RefDate = RefDate String
+
 {- Types of objects that can be stored in git. -}
 data ObjectType = BlobObject | CommitObject | TreeObject
 	deriving (Eq)

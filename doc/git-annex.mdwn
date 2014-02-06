@@ -1005,6 +1005,19 @@ file contents are present at either of two repositories.
   or the UUID or description of a repository. For the current repository,
   use `--in=here`
 
+* `--in=repository@{date}`
+
+  Matches files currently in the work tree whose content was present in
+  the repository on the given date.
+
+  The date is specified in the same syntax documented in
+  gitrevisions(7). Note that this uses the reflog, so dates far in the
+  past cannot be queried.
+
+  For example, you might need to run `git annex drop .` to temporarily
+  free up disk space. The next day, you can get back the files you dropped
+  using `git annex get . --in=here@{yesterday}`
+
 * `--copies=number`
 
   Matches only files that git-annex believes to have the specified number
