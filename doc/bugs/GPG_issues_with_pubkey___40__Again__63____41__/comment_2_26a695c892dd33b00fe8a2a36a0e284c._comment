@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="71.80.94.56"
+ subject="comment 2"
+ date="2014-02-06T21:51:05Z"
+ content="""
+Seems to me that when gpg fails with \"no such user id\", the obvious reason is that your \"X\" is a gpg key ID that gpg does not know about.
+
+I cannot reproduce anything like this problem when using a directory special remote and encryption=pubkey.
+"""]]
