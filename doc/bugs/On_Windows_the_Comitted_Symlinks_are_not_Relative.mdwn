@@ -90,3 +90,13 @@ The output of `git log -p` for me:
     @@ -0,0 +1 @@
     +.git/annex/objects/5X/qQ/SHA256E-s19915186--c6dc288ec8a77404c0ebc22cbe9b4ec911103fd022c3ca74eec582604dff80a7.exe/SHA256E-s19915186--c6dc288ec8a77404c0ebc22cbe9b4ec911103fd022c3ca74eec582604dff80a7.exe
     \ No newline at end of file
+
+> [[fixed|done]] -- I didn't notice this before because it happened to do
+> the right thing if you cd'd into the subdir before adding the file there.
+>
+> WRT the slow down issue, I don't see how it could matter to git-annex on
+> Windows whether the symlinks point to the right place. It only looks at
+> the basename of the symlink target to get the key. If you have a
+> repository that behaves poorly, you can probably use --debug to see if
+> git-annex is calling some expensive series of git commands somehow.
+> --[[Joey]]
