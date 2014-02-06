@@ -28,6 +28,7 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
     directories.
   * Windows: Fix deletion of repositories by test suite and webapp.
   * Windows: Test suite 100% passes again.
+  * Windows: Fix bug in symlink calculation code.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 28 Jan 2014 13:57:19 -0400
 

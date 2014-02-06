@@ -21,10 +21,10 @@ import Control.Applicative
 import Data.Char
 import qualified System.FilePath.Posix as Posix
 #else
-import qualified "MissingH" System.Path as MissingH
 import System.Posix.Files
 #endif
 
+import qualified "MissingH" System.Path as MissingH
 import Utility.Monad
 import Utility.UserInfo
 
@@ -42,7 +42,18 @@ absNormPath :: FilePath -> FilePath -> Maybe FilePath
 #ifndef mingw32_HOST_OS
 absNormPath dir path = MissingH.absNormPath dir path
 #else
-absNormPath dir path = Just $ combine dir path
+absNormPath dir path = MissingH.absNormPath dir path
+#endif
+
+{- On Windows, this converts the paths to unix-style, in order to run
+ - MissingH's absNormPath on them. Resulting path will use / separators. -}
+#ifndef mingw32_HOST_OS
+absNormPathUnix dir path = MissingH.absNormPath dir path
+#else
+absNormPathUnix dir path = Just $ combine dir path
+absNormPathUnix dir path = MissingH.absNormPath (fromdos dir) (fromdos path)
+  where
+	fromdos = replace "\\" "/"
 #endif
 
 {- Returns the parent directory of a path.

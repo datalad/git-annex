@@ -436,8 +436,8 @@ removeAnnex key = withObjectLoc key remove removedirect
 		l <- inRepo $ gitAnnexLink f key
 		top <- fromRepo Git.repoPath
 		cwd <- liftIO getCurrentDirectory
-		let top' = fromMaybe top $ absNormPath cwd top
-		let l' = relPathDirToFile top' (fromMaybe l $ absNormPath top' l)
+		let top' = fromMaybe top $ absNormPathUnix cwd top
+		let l' = relPathDirToFile top' (fromMaybe l $ absNormPathUnix top' l)
 		secureErase f
 		replaceFile f $ makeAnnexLink l'
 

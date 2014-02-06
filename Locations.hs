@@ -137,7 +137,7 @@ gitAnnexLocation' key r crippled
 gitAnnexLink :: FilePath -> Key -> Git.Repo -> IO FilePath
 gitAnnexLink file key r = do
 	cwd <- getCurrentDirectory
-	let absfile = fromMaybe whoops $ absNormPath cwd file
+	let absfile = fromMaybe whoops $ absNormPathUnix cwd file
 	loc <- gitAnnexLocation' key r False
 	return $ relPathDirToFile (parentDir absfile) loc
   where
