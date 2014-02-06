@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="206.74.132.139"
+ subject="comment 3"
+ date="2014-02-06T17:05:45Z"
+ content="""
+Recent versions of git-annex have tried to extend the --force option to be needed in any operation that can possibly cause data loss. This includes locking a file, since that throws away any changes.
+
+Note that `git annex lock` does not check if the file is unmodified. For a few reasons including 
+
+* some backends don't include a checksum
+* it would be expensive to check a checksum
+* the file could get modified after or during a checksum check, and those modifications would be missed
+
+If you are sure you want to throw away any changes, use --force as suggested. If not, use `git annex add $file`, and assuming you're using a checksumming backend, it will notice the file has not changed and do what you want `git annex lock $file` to have done in this case.
+"""]]
