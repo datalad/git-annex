@@ -31,6 +31,8 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
   * Windows: Fix bug in symlink calculation code.
   * Fix initremote with encryption=pubkey to work with S3, glacier, webdav,
     and external special remotes.
+  * Android: Avoid crashing when unable to set file mode for ssh config file
+    due to Android filesystem horribleness.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 28 Jan 2014 13:57:19 -0400
 

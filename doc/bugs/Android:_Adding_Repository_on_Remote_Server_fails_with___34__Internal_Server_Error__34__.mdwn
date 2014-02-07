@@ -15,3 +15,6 @@ Add a repository on a remote server to an existing repository. After selecting "
 
 git-annex version 5.20140116-g2d9ec29
 Android version 4.4 (running on a Nexus 5)
+
+> I have made this failure to set the file mode not be a fatal error.
+> [[fixed|done]] --[[Joey]]
