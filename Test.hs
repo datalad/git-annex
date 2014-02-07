@@ -1071,14 +1071,10 @@ test_add_subdirs env = intmpclonerepo env $ do
 	l <- annexeval $ encodeW8 . L.unpack <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
 	"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
 
-#ifndef mingw32_HOST_OS
-	{- This does not work on Windows, for whatever reason. -}
 	createDirectory "dir2"
 	writeFile ("dir2" </> "foo") $ content annexedfile
 	setCurrentDirectory "dir"
 	git_annex env "add" [".." </> "dir2"] @? "add of ../subdir failed"
-#endif
-
 
 -- This is equivilant to running git-annex, but it's all run in-process
 -- (when the OS allows) so test coverage collection works.
