@@ -81,6 +81,7 @@ install_pkgs () {
 	patched profunctors
 	patched skein
 	patched lens
+	patched certificate
 	patched persistent-template
 	patched wai-app-static
 	patched shakespeare
@@ -91,7 +92,6 @@ install_pkgs () {
 	patched yesod-persistent
 	patched yesod-form
 	patched crypto-numbers
-	patched certificate
 	patched yesod-auth
 	patched yesod
 	patched shakespeare-text
