@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="71.80.94.56"
+ subject="comment 1"
+ date="2014-02-07T18:59:29Z"
+ content="""
+I guess that this bug report is not about the DCIM/Camera location not being configurable, since that is up to Android, not git-annex. 
+
+So, it seems to be a bug report about a file descriptor leak. It would be helpful, if you can reproduce the leak, to look at /proc/$pid/fd/ to see what files git-annex has open.
+"""]]

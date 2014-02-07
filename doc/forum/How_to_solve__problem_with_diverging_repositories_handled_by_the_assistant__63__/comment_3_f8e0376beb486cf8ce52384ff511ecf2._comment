@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="71.80.94.56"
+ subject="comment 3"
+ date="2014-02-07T19:07:11Z"
+ content="""
+Normally the webapp will tell you whenever it fails to sync with a remote. However, in this case, it had XMPP support compiled right out of it, so had no idea that remote even existed, and never tried to sync with it, so had no failure to report.
+
+
+The \".variant\" files are because you must have made files with the same names in the 2 repositories while they were disconnected.
+"""]]
