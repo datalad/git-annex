@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="71.80.94.56"
+ subject="comment 2"
+ date="2014-02-07T19:21:21Z"
+ content="""
+git-annex does not run ssh-askpass. But your ssh program may try to do so, if git-annex is started without a controlling terminal. So a workaround is to start git-annex from a terminal window and then password prompts will happen there.
+
+[[design/assistant/sshpassword]] is on the roadmap to fix this so git-annex overrides ssh's password prompting, which seems to be broken on a number of systems.
+
+I don't know why it would continue prompting for a ssh password if git-annex successfully set up a ssh keypair for rsync.net. My guess is that it failed to do so.
+"""]]
