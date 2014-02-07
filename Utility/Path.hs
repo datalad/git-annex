@@ -50,9 +50,11 @@ absNormPath dir path = Just $ combine dir path
 #ifndef mingw32_HOST_OS
 absNormPathUnix dir path = MissingH.absNormPath dir path
 #else
-absNormPathUnix dir path = MissingH.absNormPath (fromdos dir) (fromdos path)
+absNormPathUnix dir path = todos <$> MissingH.absNormPath (fromdos dir) (fromdos path)
   where
 	fromdos = replace "\\" "/"
+	todos = replace "/" "\\"
+
 #endif
 
 {- Returns the parent directory of a path.
