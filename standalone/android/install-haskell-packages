@@ -88,6 +88,7 @@ install_pkgs () {
 	patched lens
 	patched certificate
 	patched persistent-template
+	patched system-filepath
 	patched wai-app-static
 	patched shakespeare
 	patched shakespeare-css
@@ -102,7 +103,7 @@ install_pkgs () {
 	patched shakespeare-text
 	patched process-conduit
 	patched gnuidn
-	patched DAV-0.5.1
+	patched DAV 0.5.1
 	patched yesod-static
 	patched uuid
 	patched dns
