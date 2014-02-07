@@ -27,8 +27,13 @@ cabalinstall () {
 
 patched () {
 	pkg=$1
+	ver=$2
 	shift 1
-	cabal unpack $pkg
+	if [ -z "$ver" ]; then
+		cabal unpack $pkg
+	else
+		cabal unpack $pkg-$ver
+	fi
 	cd $pkg*
 	git init
 	git config user.name dummy
@@ -97,7 +102,7 @@ install_pkgs () {
 	patched shakespeare-text
 	patched process-conduit
 	patched gnuidn
-	patched DAV
+	patched DAV-0.5.1
 	patched yesod-static
 	patched uuid
 	patched dns
