@@ -31,3 +31,7 @@ ubuntu 13.10 (saucy), i686
 
 # End of transcript or log.
 """]]
+
+> Seems that [DAV-0.6 is badly broken](http://bugs.debian.org/737902).
+> I have adjusted the cabal file to refuse to build with that broken
+> version.

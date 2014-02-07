@@ -33,6 +33,7 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
     and external special remotes.
   * Android: Avoid crashing when unable to set file mode for ssh config file
     due to Android filesystem horribleness.
+  * Avoid building with DAV 0.6 which is badly broken (see #737902).
 
  -- Joey Hess <joeyh@debian.org>  Tue, 28 Jan 2014 13:57:19 -0400
 
