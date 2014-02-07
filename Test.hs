@@ -22,6 +22,7 @@ import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
 import qualified Text.JSON
 import System.Path
+import qualified Data.ByteString.Lazy as L
 
 import Common
 
@@ -31,6 +32,7 @@ import qualified Annex.UUID
 import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Filename
+import qualified Git.Types
 import qualified Locations
 import qualified Types.KeySource
 import qualified Types.Backend
@@ -50,6 +52,7 @@ import qualified Config
 import qualified Config.Cost
 import qualified Crypto
 import qualified Annex.Init
+import qualified Annex.CatFile
 import qualified Utility.Path
 import qualified Utility.FileMode
 import qualified Build.SysConfig
@@ -157,7 +160,6 @@ unitTests :: String -> IO TestEnv -> TestTree
 unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	[ check "add sha1dup" test_add_sha1dup
 	, check "add extras" test_add_extras
-	, check "add subdirs" test_add_subdirs
 	, check "reinject" test_reinject
 	, check "unannex (no copy)" test_unannex_nocopy
 	, check "unannex (with copy)" test_unannex_withcopy
@@ -200,6 +202,7 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	, check "bup remote" test_bup_remote
 	, check "crypto" test_crypto
 	, check "preferred content" test_preferred_content
+	, check "add subdirs" test_add_subdirs
 	]
   where
 	check desc t = testCase desc (getenv >>= t)
@@ -250,19 +253,6 @@ test_add_extras env = intmpclonerepo env $ do
 	git_annex env "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
 	annexed_present wormannexedfile
 	checkbackend wormannexedfile backendWORM
-
-test_add_subdirs :: TestEnv -> Assertion
-test_add_subdirs env = intmpclonerepo env $ do
-	createDirectory "dir"
-	writeFile ("dir" </> "foo") $ content annexedfile
-	git_annex env "add" ["dir"] @? "add of subdir failed"
-	createDirectory "dir2"
-	writeFile ("dir2" </> "foo") $ content annexedfile
-#ifndef mingw32_HOST_OS
-	{- This does not work on Windows, for whatever reason. -}
-	setCurrentDirectory "dir"
-	git_annex env "add" [".." </> "dir2"] @? "add of ../subdir failed"
-#endif
 
 test_reinject :: TestEnv -> Assertion
 test_reinject env = intmpclonerepoInDirect env $ do
@@ -1068,6 +1058,27 @@ test_crypto env = do
 #else
 test_crypto _env = putStrLn "gpg testing not implemented on Windows"
 #endif
+
+test_add_subdirs :: TestEnv -> Assertion
+test_add_subdirs env = intmpclonerepo env $ do
+	createDirectory "dir"
+	writeFile ("dir" </> "foo") $ "dir/" ++ content annexedfile
+	git_annex env "add" ["dir"] @? "add of subdir failed"
+
+	{- Regression test for Windows bug where symlinks were not
+	 - calculated correctly for files in subdirs. -}
+	git_annex env "sync" [] @? "sync failed"
+	l <- annexeval $ encodeW8 . L.unpack <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
+	"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
+
+#ifndef mingw32_HOST_OS
+	{- This does not work on Windows, for whatever reason. -}
+	createDirectory "dir2"
+	writeFile ("dir2" </> "foo") $ content annexedfile
+	setCurrentDirectory "dir"
+	git_annex env "add" [".." </> "dir2"] @? "add of ../subdir failed"
+#endif
+
 
 -- This is equivilant to running git-annex, but it's all run in-process
 -- (when the OS allows) so test coverage collection works.
