@@ -1,0 +1,20 @@
+Added a new feature that started out with me wanting a way to undo a
+`git-annex drop`, but turned into something rather more powerful. The `--in`
+option can now be told to match files that were in a repository at some
+point in the past. For example, `git annex get --in=here@{yesterday}` will
+get any files that have been dropped over the past day.
+
+While git-annex's location tracking info is stored in git and so versioned,
+very little of it makes use of past versions of the location tracking info
+(only `git annex log`). I'm happy to have finally found a use for it!
+
+OB Windows porting: Fixed a bug in the symlink calculation code.
+Sounds simple; took 2 hours!
+
+Also various bug triage; updated git version on OSX; forwarded bug about
+DAV-0.6 being broken upstream; fixed a bug with initremote in 
+encryption=pubkey mode. Backlog is 65 messages.
+
+---
+
+Today's work was sponsored by Brock Spratlen.
