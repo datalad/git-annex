@@ -1,0 +1,95 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkzwmw_zyMpZC9_J7ey--woeYPoZkAOgGw"
+ nickname="dxtrish"
+ subject="comment 11"
+ date="2014-02-08T19:16:24Z"
+ content="""
+I honestly have no idea why that move works because
+
+    % ls -lh /usr/lib|grep -E '(gsasl|xml2|gnutls|idn)'
+
+returns nothing. But couldn't those symbols already be in the other libraries considering, from what I've read at least, haskell stuff are statically compiled by default?
+
+Anyway, you are completely right that this happened when I try to use XMPP. The reason I was looking in the wrong place to begin with was because the webapp spit out the error messsage. I have redirected my attention to the network library and the xmpp library.
+
+But I might have found something interesting in the network library. Keep in mind that I just learned a little today, so do correct me if I'm wrong.
+
+Looking at http://hackage.haskell.org/package/network-2.2.1.8/docs/src/Network-Socket.html I found:
+    setSocketOption :: Socket 
+                    -> SocketOption -- Option Name
+                    -> Int          -- Option Value
+                    -> IO ()
+    setSocketOption (MkSocket s _ _ _ _) so v = do
+       with (fromIntegral v) $ \ptr_v -> do
+       throwErrnoIfMinus1_ \"setSocketOption\" $
+           c_setsockopt s (socketOptLevel so) (packSocketOption so) ptr_v
+              (fromIntegral (sizeOf v))
+       return ()
+
+Everything here looks good. So I decided to take a look at SocketOption, socketOptLevel and packSocketOption.
+    data SocketOption
+        = DummySocketOption__
+        | Debug         {- SO_DEBUG     -}
+        | ReuseAddr     {- SO_REUSEADDR -}
+        | Type          {- SO_TYPE      -}
+        | SoError       {- SO_ERROR     -}
+        | DontRoute     {- SO_DONTROUTE -}
+        | Broadcast     {- SO_BROADCAST -}
+        | SendBuffer    {- SO_SNDBUF    -}
+        | RecvBuffer    {- SO_RCVBUF    -}
+        | KeepAlive     {- SO_KEEPALIVE -}
+        | OOBInline     {- SO_OOBINLINE -}
+        | TimeToLive    {- IP_TTL       -}
+        | MaxSegment    {- TCP_MAXSEG   -}
+        | NoDelay       {- TCP_NODELAY  -}
+        | Linger        {- SO_LINGER    -}
+        | RecvLowWater  {- SO_RCVLOWAT  -}
+        | SendLowWater  {- SO_SNDLOWAT  -}
+        | RecvTimeOut   {- SO_RCVTIMEO  -}
+        | SendTimeOut   {- SO_SNDTIMEO  -}
+
+    socketOptLevel :: SocketOption -> CInt
+    socketOptLevel so = 
+      case so of
+        TimeToLive   -> 0
+        MaxSegment   -> 6
+        NoDelay      -> 6
+        _            -> 1
+
+    packSocketOption :: SocketOption -> CInt
+    packSocketOption so =
+      case so of
+        Debug         -> 1
+        ReuseAddr     -> 2
+        Type          -> 3
+        SoError       -> 4
+        DontRoute     -> 5
+        Broadcast     -> 6
+        SendBuffer    -> 7
+        RecvBuffer    -> 8
+        KeepAlive     -> 9
+        OOBInline     -> 10
+        TimeToLive    -> 2
+        MaxSegment    -> 2
+        NoDelay       -> 1
+        Linger	  -> 13
+        RecvLowWater  -> 18
+        SendLowWater  -> 19
+        RecvTimeOut   -> 20
+        SendTimeOut   -> 21
+
+Everything looks good so I thought long and hard about this. Then, by chance, I just looked at the man page for setsockopt() and it mentioned SOL_SOCKET and I was like \"Hmm...\"
+
+    % grep -R SOL_SOCKET /usr/include
+    /usr/include/openssl/e_os.h:#define ioctlsocket(a,b,c)            setsockopt((a),SOL_SOCKET,(b),(c),sizeof(*(c)))
+    /usr/include/sys/socket.h:#define       SOL_SOCKET      0xffff          /* options for socket level */
+    /usr/include/sys/socket.h:/* Read using getsockopt() with SOL_SOCKET, SO_PEERCRED */
+
+Wat?
+
+    #define SOL_SOCKET 0xffff
+
+Going back to the Haskell code above I realized that SetSocketOption will NEVER feed 0xffff as level to setsockopt() because socketOptLevel returns 1 unless optname is TimeToLive, MaxSegment or NoDelay.
+
+Am I way off?
+"""]]
