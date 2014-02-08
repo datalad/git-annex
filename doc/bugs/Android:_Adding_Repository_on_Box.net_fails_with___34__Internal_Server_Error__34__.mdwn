@@ -15,3 +15,8 @@ Add a repository on a Box.net server to an existing repository from the webapp (
 
 git annex 5.20140128-g32f1f68 on Android 4.1.2 (Samsung GTN8010)
 Build flags: Assistant Webapp S3 WebDAV Inotify XMPP DNS Feeds Quvi TDFA CryptoHash
+
+> Cooincidentially I noticed I'd dropped the patch that fixes that on
+> Android, and have been in the process of rebuilding the Android
+> autobuilder with it today. That build has finished now. [[done]]
+> --[[Joey]] 
