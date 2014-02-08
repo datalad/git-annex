@@ -86,7 +86,9 @@ readUnusedLog prefix = do
 		_ -> Nothing
 	  where
 		(sint, rest) = separate (== ' ') line
-		(skey, ts) = separate (== ' ') rest
+		(rts, rskey) = separate (== ' ') (reverse rest)
+		skey = reverse rskey
+		ts = reverse rts
 
 readUnusedMap :: FilePath -> Annex UnusedMap
 readUnusedMap = log2map <$$> readUnusedLog
