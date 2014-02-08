@@ -29,12 +29,14 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
   * Windows: Fix deletion of repositories by test suite and webapp.
   * Windows: Test suite 100% passes again.
   * Windows: Fix bug in symlink calculation code.
+  * Windows: Fix handling of absolute unix-style git repository paths.
   * Fix initremote with encryption=pubkey to work with S3, glacier, webdav,
     and external special remotes.
   * Android: Avoid crashing when unable to set file mode for ssh config file
     due to Android filesystem horribleness.
   * Avoid building with DAV 0.6 which is badly broken (see #737902).
   * Fix build on platforms not supporting the webapp.
+  * Fix dropping of unused keys with spaces in their name.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 28 Jan 2014 13:57:19 -0400
 

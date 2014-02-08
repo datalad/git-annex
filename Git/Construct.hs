@@ -33,6 +33,7 @@ import Common
 import Git.Types
 import Git
 import Git.Remote
+import Git.FilePath
 import qualified Git.Url as Url
 import Utility.UserInfo
 
@@ -57,7 +58,7 @@ fromPath dir = fromAbsPath =<< absPath dir
  - specified. -}
 fromAbsPath :: FilePath -> IO Repo
 fromAbsPath dir
-	| isAbsolute dir = ifM (doesDirectoryExist dir') ( ret dir' , hunt )
+	| absoluteGitPath dir = ifM (doesDirectoryExist dir') ( ret dir' , hunt )
 	| otherwise =
 		error $ "internal error, " ++ dir ++ " is not absolute"
   where

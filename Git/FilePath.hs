@@ -20,11 +20,14 @@ module Git.FilePath (
 	asTopFilePath,
 	InternalGitPath,
 	toInternalGitPath,
-	fromInternalGitPath
+	fromInternalGitPath,
+	absoluteGitPath
 ) where
 
 import Common
 import Git
+
+import qualified System.FilePath.Posix
 
 {- A FilePath, relative to the top of the git repository. -}
 newtype TopFilePath = TopFilePath { getTopFilePath :: FilePath }
@@ -66,3 +69,10 @@ fromInternalGitPath = id
 #else
 fromInternalGitPath = replace "/" "\\"
 #endif
+
+{- isAbsolute on Windows does not think "/foo" or "\foo" is absolute,
+ - so try posix paths.
+ -}
+absoluteGitPath :: FilePath -> Bool
+absoluteGitPath p = isAbsolute p ||
+	System.FilePath.Posix.isAbsolute (toInternalGitPath p)

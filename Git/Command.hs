@@ -32,7 +32,7 @@ gitCommandLine params r@(Repo { location = l@(Local _ _ ) }) =
 #ifdef mingw32_HOST_OS
 	-- despite running on windows, msysgit wants a unix-formatted path
 	gitpath s
-		| isAbsolute s = "/" ++ dropDrive (toInternalGitPath s)
+		| absoluteGitPath s = "/" ++ dropDrive (toInternalGitPath s)
 		| otherwise = s
 #else
 	gitpath = id
