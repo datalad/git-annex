@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.163"
+ subject="comment 10"
+ date="2014-02-08T18:31:23Z"
+ content="""
+But you said that setSocketOption failed when you were using XMPP, not when starting the webapp, so I think it's more likely to be one of the setSocketOption calls in the network library, or possibly somewhere else.
+"""]]
