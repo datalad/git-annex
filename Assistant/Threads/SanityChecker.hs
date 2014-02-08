@@ -237,5 +237,5 @@ checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGit
 			button <- mkAlertButton True (T.pack "Configure") urlrenderer ConfigUnusedR
 			void $ addAlert $ unusedFilesAlert [button] $ T.unpack $ renderTense Present msg
 #else
-		debug [msg]
+		debug [show $ renderTense Past msg]
 #endif
