@@ -792,10 +792,6 @@ subdirectories).
   This can be used to drop content for arbitrary keys, which do not need
   to have a file in the git repository pointing at them.
 
-  Example:
-
-        	git annex dropkey SHA1-s10-7da006579dd64330eb2456001fd01948430572f2
-
 * `transferkey`
 
   This plumbing-level command is used to request a single key be
