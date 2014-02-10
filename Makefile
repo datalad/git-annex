@@ -252,6 +252,7 @@ hdevtools:
 
 distributionupdate:
 	git pull
+	cabal configure
 	ghc --make Build/DistributionUpdate
 	./Build/DistributionUpdate
 
