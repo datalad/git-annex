@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ subject="comment 13"
+ date="2014-02-10T18:22:55Z"
+ content="""
+First things first: in the documentation, I think `SETCONFIG Setting` should be `SETCONFIG Setting Value`.
+
+Now a few questions:
+
+- why have `SETCREDS` and `GETCREDS` have both a username and a password? I'd like to use them to store a OAuth token, but because of this I also have to store a dummy value, which seems weird to me. Is it possible to just do `SETCREDS oauth_token XXXYYY123456`?
+- about `PROGRESS`: my remote is sending `PROGRESS xxx` every 64kb uploaded or downloaded, but no upload/download progress is displayed by git-annex. Is this normal? Should I do it myself, or will it be done by a future version of git-annex?
+
+Joey, thanks a lot for all your work on git-annex :)
+"""]]
