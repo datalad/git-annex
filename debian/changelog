@@ -1,9 +1,12 @@
-git-annex (5.20140128) UNRELEASED; urgency=medium
+git-annex (5.20140210) unstable; urgency=medium
 
   * --in can now refer to files that were located in a repository at
     some past date. For example, --in="here@{yesterday}"
   * Fixed direct mode annexed content locking code, which is used to
     guard against recursive file drops.
+  * This is the first beta-level release of the Windows port with important
+    fixes (see below).
+    (The webapp and assistant are still alpha-level on Windows.)
   * sync --content: Honor annex-ignore configuration.
   * sync: Don't try to sync with xmpp remotes, which are only currently
     supported when using the assistant.
@@ -13,13 +16,18 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
   * sync --content: Reuse smart copy code from copy command, including
     handling and repairing out of date location tracking info.
     Closes: #737480
-  * sync --content: Drop files from remotes that don't have them after
+  * sync --content: Drop files from remotes that don't want them after
     getting them.
   * sync: Fix bug in automatic merge conflict resolution code when used
     on a filesystem not supporting symlinks, which resulted in it losing
     track of the symlink bit of annexed files.
   * Added ways to configure rsync options to be used only when uploading
     or downloading from a remote. Useful to eg limit upload bandwidth.
+  * Fix initremote with encryption=pubkey to work with S3, glacier, webdav,
+    and external special remotes.
+  * Avoid building with DAV 0.6 which is badly broken (see #737902).
+  * Fix dropping of unused keys with spaces in their name.
+  * Fix build on platforms not supporting the webapp.
   * Document in man page that sshcaching uses ssh ControlMaster.
     Closes: #737476
   * Windows: It's now safe to run multiple git-annex processes concurrently
@@ -30,15 +38,10 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
   * Windows: Test suite 100% passes again.
   * Windows: Fix bug in symlink calculation code.
   * Windows: Fix handling of absolute unix-style git repository paths.
-  * Fix initremote with encryption=pubkey to work with S3, glacier, webdav,
-    and external special remotes.
   * Android: Avoid crashing when unable to set file mode for ssh config file
     due to Android filesystem horribleness.
-  * Avoid building with DAV 0.6 which is badly broken (see #737902).
-  * Fix build on platforms not supporting the webapp.
-  * Fix dropping of unused keys with spaces in their name.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 28 Jan 2014 13:57:19 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 10 Feb 2014 12:54:57 -0400
 
 git-annex (5.20140127) unstable; urgency=medium
 
