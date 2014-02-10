@@ -54,6 +54,18 @@ makeinfos = do
 		[ Param "annex"
 		, Params "sync"
 		]
+	
+	{- Check for out of date info files. -}
+	infos <- liftIO $ dirContentsRecursiveSkipping (/= "info") True (basedir </> "git-annex")
+	ds <- liftIO $ forM infos (readish <$$> readFile)
+	let dis = zip infos ds
+	let ood = filter (outofdate version) dis
+	unless (null ood) $
+		error $ "Some info files are out of date: " ++ show (map fst ood)
+  where
+	outofdate version (_, md) = case md of
+		Nothing -> True
+		Just d -> distributionVersion d /= version
 
 getRepoDir :: IO FilePath
 getRepoDir = do
