@@ -7,7 +7,6 @@ now! --[[Joey]]
   support use of DOS style paths, which git-annex uses on Windows). 
   Must use Msysgit.
 * rsync special remotes with a rsyncurl of a local directory are known
-			let r = if inr1 then r1 else r2
   buggy. (git-annex tells rsync C:foo and it thinks it means a remote host
   named C...)
 * Ssh connection caching does not work on Windows, so `git annex get`
@@ -34,3 +33,20 @@ now! --[[Joey]]
 
   Also needs gsasl, which is not in cygwin. 
   See <http://josefsson.org/gsasl4win/README.html>
+* Switching between local repos in webapp hangs.
+* After adding a local repo and trying to switch to it, and rebooting,
+  starting git-annex from the menu failed with `file://C:\Documents does
+  not exist`. The local repo was `C:\Documents and Settings\...\...`
+* View debug log is empty in windows -- all log must goes to console.
+* Adding removable drive repo failed setting core.fsyncobjectfiles
+  Error: `could not lock config file /annex/.git/config: No such file or
+  directory` -- seems to be a drive path problem?
+* Local pairing seems to fail, after acking on Linux box, it stalls.
+* box.com and S3 repo setup fails: `setEnvCredPair TODO`
+* rsync.net setup failed. Seems to have generated a hostname including
+  the directory somehow.
+* gcrypt is not ported to windows (and as a shell script, may need
+  to be rewritten)
+* glacier-cli is not easily available (probably)
+* When clicking on the Files at the top of the webapp, a file
+  browser *is* opened, but it has a Z-order underneath the web browser.
