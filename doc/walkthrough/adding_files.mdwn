@@ -7,5 +7,6 @@
 	# git commit -a -m added
 
 When you add a file to the annex and commit it, only a symlink to
-the annexed content is committed. The content itself is stored in
-git-annex's backend.
+the content is committed to git. The content itself is stored in
+git-annex's backend, `.git/annex/` (or in [[direct_mode]] the file
+is left as-is).
