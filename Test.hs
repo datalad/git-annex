@@ -230,7 +230,7 @@ test_add env = inmainrepo env $ do
 		( do
 			writeFile ingitfile $ content ingitfile
 			not <$> boolSystem "git" [Param "add", File ingitfile] @? "git add failed to fail in direct mode"
-			boolSystem "rm" [Params "-f", File ingitfile] @? "rm failed"
+			nukeFile ingitfile
 			git_annex env "sync" [] @? "sync failed"
 		, do
 			writeFile ingitfile $ content ingitfile
