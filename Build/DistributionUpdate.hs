@@ -25,7 +25,7 @@ makeinfos = do
 	version <- liftIO getChangelogVersion
 	now <- liftIO getCurrentTime
 	liftIO $ putStrLn $ "building info files for version " ++ version ++ " in " ++ basedir
-	fs <- liftIO $ dirContentsRecursiveSkipping (== "info") True (basedir </> "git-annex")
+	fs <- liftIO $ dirContentsRecursiveSkipping (const False) True (basedir </> "git-annex")
 	forM_ fs $ \f -> do
 		v <- lookupFile f
 		case v of
@@ -56,7 +56,8 @@ makeinfos = do
 		]
 	
 	{- Check for out of date info files. -}
-	infos <- liftIO $ dirContentsRecursiveSkipping (/= "info") True (basedir </> "git-annex")
+	infos <- liftIO $ filter (".info" `isSuffixOf`)
+		<$> dirContentsRecursive (basedir </> "git-annex")
 	ds <- liftIO $ forM infos (readish <$$> readFile)
 	let dis = zip infos ds
 	let ood = filter (outofdate version) dis
