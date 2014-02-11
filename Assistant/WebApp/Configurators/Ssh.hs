@@ -354,7 +354,7 @@ checkExistingGCrypt sshdata nope = checkGCryptRepoEncryption repourl nope nope $
 enableGCrypt :: SshData -> RemoteName -> Handler Html
 enableGCrypt sshdata reponame = 
 	setupCloudRemote TransferGroup Nothing $ 
-		enableSpecialRemote reponame GCrypt.remote $ M.fromList
+		enableSpecialRemote reponame GCrypt.remote Nothing $ M.fromList
 			[("gitrepo", genSshUrl sshdata)]
 
 {- Combining with a gcrypt repository that may not be

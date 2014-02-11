@@ -42,7 +42,6 @@ now! --[[Joey]]
   Error: `could not lock config file /annex/.git/config: No such file or
   directory` -- seems to be a drive path problem?
 * Local pairing seems to fail, after acking on Linux box, it stalls.
-* box.com and S3 repo setup fails: `setEnvCredPair TODO`
 * rsync.net setup failed. Seems to have generated a hostname including
   the directory somehow.
 * gcrypt is not ported to windows (and as a shell script, may need

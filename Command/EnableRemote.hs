@@ -47,7 +47,7 @@ unknownNameError prefix = do
 
 perform :: RemoteType -> UUID -> R.RemoteConfig -> CommandPerform
 perform t u c = do
-	(c', u') <- R.setup t (Just u) c
+	(c', u') <- R.setup t (Just u) Nothing c
 	next $ cleanup u' c'
 
 cleanup :: UUID -> R.RemoteConfig -> CommandCleanup

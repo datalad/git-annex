@@ -22,9 +22,6 @@ creds u = CredPairStorage
 	, credPairRemoteKey = Just "s3creds"
 	}
 
-setCredsEnv :: CredPair -> IO ()
-setCredsEnv p = setEnvCredPair p $ creds undefined
-
 data Service = S3 | Glacier
 	deriving (Eq)
 

@@ -24,6 +24,7 @@ import Types.Key
 import Types.UUID
 import Types.GitConfig
 import Types.Availability
+import Types.Creds
 import Config.Cost
 import Utility.Metered
 import Git.Types
@@ -41,7 +42,7 @@ data RemoteTypeA a = RemoteType {
 	-- generates a remote of this type
 	generate :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> a (Maybe (RemoteA a)),
 	-- initializes or changes a remote
-	setup :: Maybe UUID -> RemoteConfig -> a (RemoteConfig, UUID)
+	setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> a (RemoteConfig, UUID)
 }
 
 instance Eq (RemoteTypeA a) where

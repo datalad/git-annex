@@ -44,7 +44,7 @@ start (name:ws) = ifM (isJust <$> findExisting name)
 
 perform :: RemoteType -> String -> R.RemoteConfig -> CommandPerform
 perform t name c = do
-	(c', u) <- R.setup t Nothing c
+	(c', u) <- R.setup t Nothing Nothing c
 	next $ cleanup u name c'
 
 cleanup :: UUID -> String -> R.RemoteConfig -> CommandCleanup

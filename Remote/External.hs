@@ -73,8 +73,8 @@ gen r u c gc = do
   where
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
 
-externalSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-externalSetup mu c = do
+externalSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+externalSetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 	let externaltype = fromMaybe (error "Specify externaltype=") $
 		M.lookup "externaltype" c
@@ -225,8 +225,8 @@ handleRequest' lck external req mp responsehandler
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = do
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external
-		c' <- setRemoteCredPair' c (credstorage setting)
-			(login, password)
+		c' <- setRemoteCredPair c (credstorage setting) $
+			Just (login, password)
 		void $ liftIO $ atomically $ swapTMVar (externalConfig external) c'
 	handleRemoteRequest (GETCREDS setting) = do
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external

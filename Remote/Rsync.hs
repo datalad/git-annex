@@ -42,6 +42,7 @@ import Utility.CopyFile
 import Utility.Metered
 import Annex.Perms
 import Logs.Transfer
+import Types.Creds
 
 type RsyncUrl = String
 
@@ -138,8 +139,8 @@ rsyncTransport gc rawurl
 	loginopt = maybe [] (\l -> ["-l",l]) login
 	fromNull as xs = if null xs then as else xs
 
-rsyncSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-rsyncSetup mu c = do
+rsyncSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+rsyncSetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let url = fromMaybe (error "Specify rsyncurl=") $
