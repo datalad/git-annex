@@ -194,8 +194,13 @@ dailyCheck urlrenderer = do
 
 hourlyCheck :: Assistant ()
 hourlyCheck = do
+#ifndef mingw32_HOST_OS
 	checkLogSize 0
+#else
+	noop
+#endif
 
+#ifndef mingw32_HOST_OS
 {- Rotate logs until log file size is < 1 mb. -}
 checkLogSize :: Int -> Assistant ()
 checkLogSize n = do
@@ -209,6 +214,7 @@ checkLogSize n = do
 			checkLogSize $ n + 1
   where
 	filesize f = fromIntegral . fileSize <$> liftIO (getFileStatus f)
+#endif
 
 oneMegabyte :: Int
 oneMegabyte = 1000000
