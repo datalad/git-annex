@@ -158,9 +158,7 @@ So, possible approaches:
   that metadata is not removed. Has the downside that files can seem
   to randomly move around in the tree as their metadata changes.
 * Disallow filter branch checkouts that have duplicate files.
-  Note that duplicate files can only occur when filtering on the content
-  of values, not tags. And values can be used in some simple cases w/o
-  duplicate files. This would cripple it some, but perhaps not too badly?
+  This would cripple it some, but perhaps not too badly?
 
 # gotchas
 
