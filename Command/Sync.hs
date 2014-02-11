@@ -86,7 +86,7 @@ seek rs = do
 		,  [ mergeAnnex ]
 		]
 	whenM (Annex.getFlag $ optionName contentOption) $
-		whenM (seekSyncContent dataremotes) $ do
+		whenM (seekSyncContent dataremotes) $
 			-- Transferring content can take a while,
 			-- and other changes can be pushed to the git-annex
 			-- branch on the remotes in the meantime, so pull
@@ -224,7 +224,7 @@ mergeRemote remote b = case b of
 	Just _ -> and <$> (mapM merge =<< tomerge (branchlist b))
   where
 	merge = mergeFrom . remoteBranch remote
-	tomerge branches = filterM (changed remote) branches
+	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]
 
@@ -452,7 +452,7 @@ resolveMerge' u
 			Just target -> do
 				unlessM (coreSymlinks <$> Annex.getGitConfig) $
 					addAnnexLink target f
-				maybe noop (flip toDirect f) 
+				maybe noop (`toDirect` f) 
 					(fileKey (takeFileName target))
 
 {- git-merge moves conflicting files away to files
@@ -535,7 +535,7 @@ newer remote b = do
  -}
 seekSyncContent :: [Remote] -> Annex Bool
 seekSyncContent rs = do
-	mvar <- liftIO $ newEmptyMVar
+	mvar <- liftIO newEmptyMVar
 	mapM_ (go mvar) =<< seekHelper LsFiles.inRepo []
 	liftIO $ not <$> isEmptyMVar mvar
   where
@@ -552,7 +552,7 @@ syncFile rs f (k, _) = do
 	putrs <- catMaybes . snd . unzip <$> (sequence =<< handleput lack)
 
 	u <- getUUID
-	let locs' = concat [if got then [u] else [], putrs, locs]
+	let locs' = concat [[u | got], putrs, locs]
 
 	-- Using callCommandAction rather than commandAction for drops,
 	-- because a failure to drop does not mean the sync failed.
@@ -576,7 +576,7 @@ syncFile rs f (k, _) = do
 		| Remote.readonly r || remoteAnnexReadOnly (Types.Remote.gitconfig r) = return False
 		| otherwise = wantSend True (Just k) (Just f) (Remote.uuid r)
 	handleput lack = ifM (inAnnex k)
-		( map put <$> (filterM wantput lack)
+		( map put <$> filterM wantput lack
 		, return []
 		)
 	put dest = do
