@@ -25,18 +25,10 @@ gitCommandLine :: [CommandParam] -> Repo -> [CommandParam]
 gitCommandLine params r@(Repo { location = l@(Local _ _ ) }) =
 	setdir : settree ++ gitGlobalOpts r ++ params
   where
-	setdir = Param $ "--git-dir=" ++ gitpath (gitdir l)
+	setdir = Param $ "--git-dir=" ++ gitdir l
 	settree = case worktree l of
 		Nothing -> []
 		Just t -> [Param $ "--work-tree=" ++ gitpath t]
-#ifdef mingw32_HOST_OS
-	-- despite running on windows, msysgit wants a unix-formatted path
-	gitpath s
-		| absoluteGitPath s = "/" ++ dropDrive (toInternalGitPath s)
-		| otherwise = s
-#else
-	gitpath = id
-#endif
 gitCommandLine _ repo = assertLocal repo $ error "internal"
 
 {- Runs git in the specified repo. -}

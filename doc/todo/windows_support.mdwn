@@ -46,7 +46,15 @@ now! --[[Joey]]
   the directory somehow.
 * gcrypt is not ported to windows (and as a shell script, may need
   to be rewritten)
+* webapp lets user choose to encrypt repo, and generate gpg key,
+  before checking that gcrypt is not installed
 * glacier-cli is not easily available (probably)
 * When clicking on the Files at the top of the webapp, a file
   browser *is* opened, but it has a Z-order underneath the web browser.
-* TODO: test S3 and box.com setup in webapp now that they should work..
+
+## stuff needing testing
+
+* test S3 and box.com setup in webapp now that they should work..
+* test that adding a repo on a removable drive works; that git is synced to
+  it and files can be transferred to it and back
+

@@ -300,7 +300,6 @@ getGenKeyForDriveR drive = withNewSecretKey $ \keyid ->
 getFinishAddDriveR :: RemovableDrive -> RepoKey -> Handler Html
 getFinishAddDriveR drive = go
   where
-  	{- Set up new gcrypt special remote. -}
 	go (RepoKey keyid) = whenGcryptInstalled $ makewith $ const $ do
 		r <- liftAnnex $ addRemote $
 			makeGCryptRemote remotename dir keyid
