@@ -86,6 +86,7 @@ install_pkgs () {
 	patched skein
 	patched lens
 	patched certificate
+	patched x509-system
 	patched persistent-template
 	patched system-filepath
 	patched wai-app-static
