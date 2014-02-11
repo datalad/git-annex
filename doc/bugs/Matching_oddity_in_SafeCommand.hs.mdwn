@@ -1,0 +1,26 @@
+In SafeCommand.hs, the code to unwrap a File looks like:
+
+[[!format haskell """
+toCommand :: [CommandParam] -> [String]
+toCommand = concatMap unwrap
+  where
+        [...]
+        -- Files that start with a non-alphanumeric that is not a path
+        -- separator are modified to avoid the command interpreting them as
+        -- options or other special constructs.
+        unwrap (File s@(h:_))
+                | isAlphaNum h || h `elem` pathseps = [s]
+                | otherwise = ["./" ++ s]
+        unwrap (File s) = [s]
+        [...]
+"""]]
+
+I am not sure I understand which case would be caught in the last clause "unwrap (File s)". Is that the empty file? Because all non-empty file names seem to have been caught earlier, at least in the "otherwise" if they do not match the condition. In this case, wouldn't it be an error to use an empty file name and wouldn't it be better to throw an exception instead of returning [[]]?
+
+I would use:
+
+[[!format haskell """
+        unwrap (File []) = throw "Empty file name in SafeCommand.toCommand"
+"""]]
+
+or something similar instead.
