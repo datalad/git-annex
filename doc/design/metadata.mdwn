@@ -67,7 +67,7 @@ so 2013/icfp, 2014/fosdem, etc.
 
 `git annex filter tag=haskell,debian` uses the "tag" field that is
 automatically derived from the set of tags. So this yields a branch
-with hakell and debian subdirectories, containing the files tagged with
+with haskell and debian subdirectories, containing the files tagged with
 either. 
 
 To see all tags, `git annex filter tag=*` !
