@@ -1,3 +1,9 @@
+git-annex (5.20140211) UNRELEASED; urgency=medium
+
+  * Add progress display for transfers to/from external special remotes.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 10 Feb 2014 21:33:03 -0400
+
 git-annex (5.20140210) unstable; urgency=medium
 
   * --in can now refer to files that were located in a repository at
