@@ -1,0 +1,107 @@
+[[!toc]]
+
+# metadata
+
+Attach an arbitrary set of metadata to a key.
+
+Metadata can be tags, but it can also be fields with values (ie, date=xxx,
+conference=yyy).
+
+Store in git-annex branch, next to location log files.
+
+Storage needs to support union merging, including removing tags, and
+changing values.
+
+## automatically added metadata
+
+git annex add should automatically attach the current mtime of a file
+when adding it.
+
+Could also automatically attach permissions.
+
+A git hook could be run by git annex add to gather more metadata.
+
+Also auto adds metadata when adding files to filter branches. See below.
+
+## derived metadata
+
+From the ctime, some additional 
+metadata is derived, at least year=yyyy and probably also month, etc.
+
+Should be a general mechanism for this.
+
+# filtered branches
+
+`git annex filter year=2014 talk` should create a new branch
+filtered/talk/year=2014 containing only files tagged with that, and
+have git check it out. In this example, all files appear in top level
+directory of repo; no subdirs.
+
+`git annex fadd haskell` switches to branch
+filtered/haskell/talk/year=2014 with only the haskell talks.
+
+`git annex fadd year=2013 year=2012` switches to branch
+filtered/haskell/talk/year=2012,2013,2014. This has subdirectories 2012,
+2013 and 2014 with the matching talks.
+
+`git annex frm haskell` switches to
+filtered/talk/year=2012,2013,2014, which has all available talks in it.
+
+`git annex filteradd conference=fosdem conference=icfp` switches to branch
+filtered/conference=fosdem,icfp/talk/year=2012,2013,2014. Now we need
+to either nest the subdirectories, or make fosdem-2014, icfp-2013, etc.
+May need an option to choose this. Note that user may prefer to have year
+first or conference first, so may need an option for that as well.
+
+Note that old filter branches can be deleted when switching to a new one.
+There is no need to retain them. Unless the user has committed non
+git-annexed files to them, In which case, urk.
+
+These command should probably refuse to do anything if run from within a
+subdir of the work tree that would get deleted by checking out the new
+filtered branch.
+
+# operations while on filter branch
+
+* If files are removed and git commit called, git-annex should remove the
+  relevant metadata from the files. **possibly** It's not clear that
+  removing a file should nuke all the metadata used to filter it into the
+  branch (especially if it's derived metadata like the year).
+  Also, this is not usable in direct mode because deleting the
+  file.. actually deletes it.
+* `git annex sync` should avoid pushing out the filter branch, but
+  it should check if there are changes to the metadata pulled in, and update
+  the branch to reflect them.
+* If `git annex add` adds a file, it gets all the metadata of the filter
+  branch it's added to. If it's in a relevent directory (like fosdem-2014),
+  it gets that metadata automatically recorded as well.
+
+# other uses for metadata
+
+Uses are not limited to filter branches.
+
+`git annex checkoutmeta year=2014 talk` in a subdir of master could create the
+same tree of files filter would. The user can then commit that if desired.
+Or, they could run additional commands like `git annex fadd` to refine the
+tree of files in the subdir.
+
+Other programs could query git-annex for the metadata of files in the work
+tree, and do whatever it wants with it.
+
+# filenames
+
+The hard part of this is actually getting a useful filename to put in the
+filter branch, since git-annex only has a key which the user will not
+want to see.
+
+* Could use filename metadata for the key, recorded by git-annex add (which
+  may not correspond to filenames being used in regular git branches like
+  master for the key).
+* Couod use the .map files to get a filename, but this is somewhat
+  arbitrary (.map can contain multiple filenames), and is only
+  currently supported in direct mode.
+
+# efficient metadata lookup
+
+Looking up metadata for filtering so far requires traversing all keys in
+the git-annex branch. This is slow. A fast cache is needed.
