@@ -2,16 +2,14 @@
 
 # metadata
 
-Attach an arbitrary set of metadata to a key.
+Attach an arbitrary set of metadata to a key. This consists of any number
+of fields. Each field has an unordered set of values. The special field
+"tag" has as its values any tags that are set for the key.
 
 Store in git-annex branch, next to location log files.
 
-Metadata can be tags, but it can also be fields with values (ie, date=xxx,
-conference=yyy). Fields can have multiple values, for example
-multiple authors.
-
-Storage needs to support union merging, including removing tags, and
-changing values.
+Storage needs to support union merging, including removing an old value
+of a field, and adding a new value of a field.
 
 ## automatically added metadata
 
@@ -32,9 +30,6 @@ metadata is derived, at least year=yyyy and probably also month, etc.
 
 This is probably not stored anywhere. It's computed on demand by a pure
 function from the other metadata.
-
-From the set of tags a file has, a "tag" field is derived, which has the
-value of each tag. See example below.
 
 Should be a general mechanism for this. (It probably generalizes to
 sql queries if we want to go that far.)
@@ -65,10 +60,8 @@ filtered/year=2012,2013,2014/talk/conference=fosdem,icfp. Now there
 are nested subdirectories. They follow the format of the branch,
 so 2013/icfp, 2014/fosdem, etc.
 
-`git annex filter tag=haskell,debian` uses the "tag" field that is
-automatically derived from the set of tags. So this yields a branch
-with haskell and debian subdirectories, containing the files tagged with
-either. 
+`git annex filter tag=haskell,debian` yields a branch with haskell
+and debian subdirectories.
 
 To see all tags, `git annex filter tag=*` !
 
