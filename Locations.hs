@@ -330,7 +330,7 @@ preSanitizeKeyName = concatMap escape
 		-- other characters. By itself, it is escaped to 
 		-- doubled form.
 		| c == ',' = ",,"
-		| otherwise = ',' : show(ord(c))
+		| otherwise = ',' : show (ord c)
 
 {- Converts a key into a filename fragment without any directory.
  -

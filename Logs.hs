@@ -120,7 +120,7 @@ isRemoteStateLog :: FilePath -> Bool
 isRemoteStateLog path = remoteStateLogExt `isSuffixOf` path
 
 prop_logs_sane :: Key -> Bool
-prop_logs_sane dummykey = all id
+prop_logs_sane dummykey = and
 	[ isNothing (getLogVariety "unknown")
 	, expect isUUIDBasedLog (getLogVariety uuidLog)
 	, expect isPresenceLog (getLogVariety $ locationLogFile dummykey)

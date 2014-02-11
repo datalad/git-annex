@@ -9,11 +9,6 @@
 
 module Limit where
 
-import Data.Time.Clock.POSIX
-import qualified Data.Set as S
-import qualified Data.Map as M
-import System.Path.WildMatch
-
 import Common.Annex
 import qualified Annex
 import qualified Utility.Matcher
@@ -35,14 +30,14 @@ import Git.Types (RefDate(..))
 import Utility.HumanTime
 import Utility.DataUnits
 
+import Data.Time.Clock.POSIX
+import qualified Data.Set as S
+import qualified Data.Map as M
+import System.Path.WildMatch
+
 #ifdef WITH_TDFA
 import Text.Regex.TDFA
 import Text.Regex.TDFA.String
-#else
-#ifndef mingw32_HOST_OS
-import System.Path.WildMatch
-import Types.FileMatcher
-#endif
 #endif
 
 {- Checks if there are user-specified limits. -}
@@ -156,7 +151,7 @@ limitPresent u _ = Right $ const $ checkKey $ \key -> do
 limitInDir :: FilePath -> MkLimit
 limitInDir dir = const $ Right $ const go
   where
-	go (MatchingFile fi) = return $ any (== dir) $ splitPath $ takeDirectory $ matchFile fi
+	go (MatchingFile fi) = return $ elem dir $ splitPath $ takeDirectory $ matchFile fi
 	go (MatchingKey _) = return False
 
 {- Adds a limit to skip files not believed to have the specified number

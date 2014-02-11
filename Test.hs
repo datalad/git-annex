@@ -149,7 +149,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 {- These tests set up the test environment, but also test some basic parts
  - of git-annex. They are always run before the unitTests. -}
 initTests :: TestEnv -> TestTree
-initTests env = testGroup ("Init Tests")
+initTests env = testGroup "Init Tests"
 	[ check "init" test_init
 	, check "add" test_add
 	]
@@ -258,7 +258,7 @@ test_reinject :: TestEnv -> Assertion
 test_reinject env = intmpclonerepoInDirect env $ do
 	git_annex env "drop" ["--force", sha1annexedfile] @? "drop failed"
 	writeFile tmp $ content sha1annexedfile
-	r <- annexeval $ Types.Backend.getKey backendSHA1 $
+	r <- annexeval $ Types.Backend.getKey backendSHA1
 		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp, Types.KeySource.inodeCache = Nothing }
 	let key = Types.Key.key2file $ fromJust r
 	git_annex env "reinject" [tmp, sha1annexedfile] @? "reinject failed"
@@ -542,7 +542,7 @@ test_fsck_basic env = intmpclonerepo env $ do
 		git_annex env "fsck" [] @? "fsck unexpectedly failed again; previous one did not fix problem with " ++ f
 
 test_fsck_bare :: TestEnv -> Assertion
-test_fsck_bare env = intmpbareclonerepo env $ do
+test_fsck_bare env = intmpbareclonerepo env $
 	git_annex env "fsck" [] @? "fsck failed"
 
 test_fsck_localuntrusted :: TestEnv -> Assertion
@@ -585,7 +585,7 @@ test_migrate' usegitattributes env = intmpclonerepoInDirect env $ do
 	annexed_present sha1annexedfile
 	if usegitattributes
 		then do
-			writeFile ".gitattributes" $ "* annex.backend=SHA1"
+			writeFile ".gitattributes" "* annex.backend=SHA1"
 			git_annex env "migrate" [sha1annexedfile]
 				@? "migrate sha1annexedfile failed"
 			git_annex env "migrate" [annexedfile]
@@ -601,7 +601,7 @@ test_migrate' usegitattributes env = intmpclonerepoInDirect env $ do
 	checkbackend sha1annexedfile backendSHA1
 
 	-- check that reversing a migration works
-	writeFile ".gitattributes" $ "* annex.backend=SHA256"
+	writeFile ".gitattributes" "* annex.backend=SHA256"
 	git_annex env "migrate" [sha1annexedfile]
 		@? "migrate sha1annexedfile failed"
 	git_annex env "migrate" [annexedfile]
@@ -712,7 +712,7 @@ test_find env = intmpclonerepo env $ do
 	git_annex_expectoutput env "find" ["--exclude", "*"] []
 
 test_merge :: TestEnv -> Assertion
-test_merge env = intmpclonerepo env $ do
+test_merge env = intmpclonerepo env $
 	git_annex env "merge" [] @? "merge failed"
 
 test_info :: TestEnv -> Assertion
@@ -723,7 +723,7 @@ test_info env = intmpclonerepo env $ do
 		Text.JSON.Error e -> assertFailure e
 
 test_version :: TestEnv -> Assertion
-test_version env = intmpclonerepo env $ do
+test_version env = intmpclonerepo env $
 	git_annex env "version" [] @? "version failed"
 
 test_sync :: TestEnv -> Assertion
@@ -739,8 +739,8 @@ test_sync env = intmpclonerepo env $ do
 test_union_merge_regression :: TestEnv -> Assertion
 test_union_merge_regression env =
 	{- We need 3 repos to see this bug. -}
-	withtmpclonerepo env False $ \r1 -> do
-		withtmpclonerepo env False $ \r2 -> do
+	withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 ->
 			withtmpclonerepo env False $ \r3 -> do
 				forM_ [r1, r2, r3] $ \r -> indir env r $ do
 					when (r /= r1) $
@@ -766,7 +766,7 @@ test_union_merge_regression env =
 {- Regression test for the automatic conflict resolution bug fixed
  - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
 test_conflict_resolution_movein_bug :: TestEnv -> Assertion
-test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 -> do
+test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 -> 
 	withtmpclonerepo env False $ \r2 -> do
 		let rname r = if r == r1 then "r1" else "r2"
 		forM_ [r1, r2] $ \r -> indir env r $ do
@@ -785,7 +785,7 @@ test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 -> do
 				)
 		{- Sync twice in r1 so it gets the conflict resolution
 		 - update from r2 -}
-		forM_ [r1, r2, r1] $ \r -> indir env r $ do
+		forM_ [r1, r2, r1] $ \r -> indir env r $
 			git_annex env "sync" ["--force"] @? "sync failed in " ++ rname r
 		{- After the sync, it should be possible to get all
 		 - files. This includes both sides of the conflict,
@@ -935,7 +935,7 @@ test_hook_remote env = intmpclonerepo env $ do
 test_directory_remote :: TestEnv -> Assertion
 test_directory_remote env = intmpclonerepo env $ do
 	createDirectory "dir"
-	git_annex env "initremote" (words $ "foo type=directory encryption=none directory=dir") @? "initremote failed"
+	git_annex env "initremote" (words "foo type=directory encryption=none directory=dir") @? "initremote failed"
 	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to directory remote failed"
@@ -951,7 +951,7 @@ test_rsync_remote :: TestEnv -> Assertion
 test_rsync_remote env = intmpclonerepo env $ do
 #ifndef mingw32_HOST_OS
 	createDirectory "dir"
-	git_annex env "initremote" (words $ "foo type=rsync encryption=none rsyncurl=dir") @? "initremote failed"
+	git_annex env "initremote" (words "foo type=rsync encryption=none rsyncurl=dir") @? "initremote failed"
 	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to rsync remote failed"
@@ -1085,7 +1085,7 @@ git_annex env command params = do
 		Utility.Env.setEnv var val True
 
 	-- catch all errors, including normally fatal errors
-	r <- try (run)::IO (Either SomeException ())
+	r <- try run::IO (Either SomeException ())
 	case r of
 		Right _ -> return True
 		Left _ -> return False
@@ -1126,7 +1126,7 @@ innewrepo :: TestEnv -> Assertion -> Assertion
 innewrepo env a = withgitrepo env $ \r -> indir env r a
 
 inmainrepo :: TestEnv -> Assertion -> Assertion
-inmainrepo env a = indir env mainrepodir a
+inmainrepo env = indir env mainrepodir
 
 intmpclonerepo :: TestEnv -> Assertion -> Assertion
 intmpclonerepo env a = withtmpclonerepo env False $ \r -> indir env r a
@@ -1163,7 +1163,7 @@ indir env dir a = do
 	-- any type of error and change back to cwd before
 	-- rethrowing.
 	r <- bracket_ (changeToTmpDir env dir) (setCurrentDirectory cwd)
-		(try (a)::IO (Either SomeException ()))
+		(try a::IO (Either SomeException ()))
 	case r of
 		Right () -> return ()
 		Left e -> throw e
@@ -1186,7 +1186,7 @@ clonerepo env old new bare = do
 	indir env new $
 		git_annex env "init" ["-q", new] @? "git annex init failed"
 	configrepo env new
-	when (not bare) $
+	unless bare $
 		indir env new $
 			handleforcedirect env
 	return new
@@ -1218,12 +1218,12 @@ cleanup' final dir = whenM (doesDirectoryExist dir) $ do
 		mapM_ (void . tryIO . Utility.FileMode.allowWrite)
 	-- This sometimes fails on Windows, due to some files
 	-- being still opened by a subprocess.
-	catchIO (removeDirectoryRecursive dir) $ \e -> do
+	catchIO (removeDirectoryRecursive dir) $ \e ->
 		when final $ do
 			print e
 			putStrLn "sleeping 10 seconds and will retry directory cleanup"
 			Utility.ThreadScheduler.threadDelaySeconds (Utility.ThreadScheduler.Seconds 10)
-			whenM (doesDirectoryExist dir) $ do
+			whenM (doesDirectoryExist dir) $
 				removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
@@ -1252,9 +1252,8 @@ checkunwritable f = unlessM (annexeval Config.isDirect) $ do
 	-- modified despite permissions.
 	s <- getFileStatus f
 	let mode = fileMode s
-	if (mode == mode `unionFileModes` ownerWriteMode)
-		then assertFailure $ "able to modify annexed file's " ++ f ++ " content"
-		else return ()
+	when (mode == mode `unionFileModes` ownerWriteMode) $
+		assertFailure $ "able to modify annexed file's " ++ f ++ " content"
 
 checkwritable :: FilePath -> Assertion
 checkwritable f = do
@@ -1280,7 +1279,7 @@ checklocationlog f expected = do
 	case r of
 		Just (k, _) -> do
 			uuids <- annexeval $ Remote.keyLocations k
-			assertEqual ("bad content in location log for " ++ f ++ " key " ++ (Types.Key.key2file k) ++ " uuid " ++ show thisuuid)
+			assertEqual ("bad content in location log for " ++ f ++ " key " ++ Types.Key.key2file k ++ " uuid " ++ show thisuuid)
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"
 
@@ -1326,8 +1325,7 @@ withTestEnv forcedirect = withResource prepare release
 	release = releaseTestEnv
 
 releaseTestEnv :: TestEnv -> IO ()
-releaseTestEnv _env = do
-	cleanup' True tmpdir
+releaseTestEnv _env = cleanup' True tmpdir
 
 prepareTestEnv :: Bool -> IO TestEnv
 prepareTestEnv forcedirect = do
@@ -1404,7 +1402,7 @@ changecontent :: FilePath -> IO ()
 changecontent f = writeFile f $ changedcontent f
 
 changedcontent :: FilePath -> String
-changedcontent f = (content f) ++ " (modified)"
+changedcontent f = content f ++ " (modified)"
 
 backendSHA1 :: Types.Backend
 backendSHA1 = backend_ "SHA1"
@@ -1416,4 +1414,4 @@ backendWORM :: Types.Backend
 backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend
-backend_ name = Backend.lookupBackendName name
+backend_ = Backend.lookupBackendName
