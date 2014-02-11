@@ -31,3 +31,6 @@ Launching web browser on file://C:\Users\bbigras\AppData\Local\Temp\webapp9400.h
 fatal: Not a git repository: '/annex/.git'
 error: could not lock config file /annex/.git/config: No such file or directory
 """]]
+
+> I've fixed this! Yay!! Get the fix from the hourly windows autobuilder.
+> --[[Joey]]
