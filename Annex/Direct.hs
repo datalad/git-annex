@@ -184,7 +184,7 @@ mergeDirectCleanup d oldsha newsha = do
 			tryAnnex . maybe (araw f item) (\k -> void $ a k f)
 				=<< catKey (getsha item) (getmode item)
 
-	moveout k f = removeDirect k f
+	moveout = removeDirect
 
 	{- Files deleted by the merge are removed from the work tree.
 	 - Empty work tree directories are removed, per git behavior. -}

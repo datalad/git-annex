@@ -70,11 +70,10 @@ initialize mdescription = do
 		( do
 			enableDirectMode
 			setDirect True
-		, do
-			-- Handle case where this repo was cloned from a
-			-- direct mode repo.
-			unlessM isBare
-				switchHEADBack
+		-- Handle case where this repo was cloned from a
+		-- direct mode repo
+		, unlessM isBare
+			switchHEADBack
 		)
 	createInodeSentinalFile
 	u <- getUUID
@@ -227,7 +226,7 @@ fixBadBare = whenM checkBadBare $ do
 		logStatus k InfoPresent
 	let dotgit = d </> ".git"
 	liftIO $ removeDirectoryRecursive dotgit
-		`catchIO` (const $ renameDirectory dotgit (d </> "removeme"))
+		`catchIO` const (renameDirectory dotgit (d </> "removeme"))
 
 {- A repostory with the problem won't know it's a bare repository, but will
  - have no pre-commit hook (which is not set up in a bare repository),

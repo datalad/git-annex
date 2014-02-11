@@ -243,10 +243,9 @@ finishGetViaTmp check key action = do
 			moveAnnex key tmpfile
 			logStatus key InfoPresent
 			return True
-		, do
-			-- the tmp file is left behind, in case caller wants
-			-- to resume its transfer
-			return False
+		-- the tmp file is left behind, in case caller wants
+		-- to resume its transfer
+		, return False
 		)
 
 prepTmp :: Key -> Annex FilePath
