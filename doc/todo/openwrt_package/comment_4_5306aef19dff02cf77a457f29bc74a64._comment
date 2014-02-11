@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 4"
+ date="2014-02-11T21:39:46Z"
+ content="""
+Actually, debian stable does still have ghc building for mips/mipsel. It's just newer versions that have failed to build and nobody has fixed it yet.
+"""]]
