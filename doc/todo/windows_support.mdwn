@@ -49,3 +49,4 @@ now! --[[Joey]]
 * glacier-cli is not easily available (probably)
 * When clicking on the Files at the top of the webapp, a file
   browser *is* opened, but it has a Z-order underneath the web browser.
+* TODO: test S3 and box.com setup in webapp now that they should work..
