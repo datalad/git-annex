@@ -76,9 +76,6 @@ Files not matching the filter can be included, by using
 `git annex filter --unmatched=other`. That puts all such files into
 the subdirectory other.
 
-Sometimes you want to see files that do not match a tag, while still
-getting subdirectories for 
-
 Note that old filter branches can be deleted when switching to a new one.
 There is no need to retain them. Unless the user has committed non-annexed
 files to them, In which case, urk. The only reason to use specially named
