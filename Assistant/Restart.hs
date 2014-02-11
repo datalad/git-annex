@@ -16,6 +16,7 @@ import Assistant.NamedThread
 import Utility.ThreadScheduler
 import Utility.NotificationBroadcaster
 import Utility.Url
+import Utility.PID
 import qualified Git.Construct
 import qualified Git.Config
 import Config.Files
@@ -25,9 +26,8 @@ import qualified Git
 import Control.Concurrent
 import System.Process (cwd)
 #ifndef mingw32_HOST_OS
-import System.Posix (getProcessID, signalProcess, sigTERM)
+import System.Posix (signalProcess, sigTERM)
 #else
-import System.Win32.Process.Current (getCurrentProcessId)
 import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT)
 #endif
 
@@ -53,9 +53,9 @@ postRestart url = do
 	void $ liftIO $ forkIO $ do
 		threadDelaySeconds (Seconds 120)
 #ifndef mingw32_HOST_OS
-		signalProcess sigTERM =<< getProcessID
+		signalProcess sigTERM =<< getPID
 #else
-		generateConsoleCtrlEvent cTRL_C_EVENT =<< getCurrentProcessId
+		generateConsoleCtrlEvent cTRL_C_EVENT =<< getPID
 #endif
 
 runRestart :: Assistant URLString

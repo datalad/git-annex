@@ -18,14 +18,6 @@ module Remote.Rsync (
 	RsyncOpts
 ) where
 
-import qualified Data.ByteString.Lazy as L
-import qualified Data.Map as M
-#ifndef mingw32_HOST_OS
-import System.Posix.Process (getProcessID)
-#else
-import System.Win32.Process.Current (getCurrentProcessId)
-#endif
-
 import Common.Annex
 import Types.Remote
 import qualified Git
@@ -40,9 +32,13 @@ import Crypto
 import Utility.Rsync
 import Utility.CopyFile
 import Utility.Metered
+import Utility.PID
 import Annex.Perms
 import Logs.Transfer
 import Types.Creds
+
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Map as M
 
 type RsyncUrl = String
 
@@ -250,14 +246,10 @@ sendParams = ifM crippledFileSystem
  - up trees for rsync. -}
 withRsyncScratchDir :: (FilePath -> Annex a) -> Annex a
 withRsyncScratchDir a = do
-#ifndef mingw32_HOST_OS
-	v <- liftIO getProcessID
-#else
-	v <- liftIO getCurrentProcessId
-#endif
+	p <- liftIO getPID
 	t <- fromRepo gitAnnexTmpDir
 	createAnnexDirectory t
-	let tmp = t </> "rsynctmp" </> show v
+	let tmp = t </> "rsynctmp" </> show p
 	nuke tmp
 	liftIO $ createDirectoryIfMissing True tmp
 	nuke tmp `after` a tmp

@@ -20,7 +20,7 @@ import System.Posix
 import Control.Concurrent.Async
 #else
 import System.PosixCompat.Types
-import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT
+import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT)
 #endif
 
 #ifndef mingw32_HOST_OS

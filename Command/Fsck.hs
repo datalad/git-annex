@@ -31,12 +31,8 @@ import Config
 import Types.Key
 import Utility.HumanTime
 import Git.FilePath
+import Utility.PID
 
-#ifndef mingw32_HOST_OS
-import System.Posix.Process (getProcessID)
-#else
-import System.Win32.Process.Current (getCurrentProcessId)
-#endif
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Posix.Types (EpochTime)
@@ -149,14 +145,10 @@ performRemote key file backend numcopies remote =
 		, checkKeyNumCopies key file numcopies
 		]
 	withtmp a = do
-#ifndef mingw32_HOST_OS
-		v <- liftIO getProcessID
-#else
-		v <- liftIO getCurrentProcessId
-#endif
+		pid <- liftIO getPID
 		t <- fromRepo gitAnnexTmpDir
 		createAnnexDirectory t
-		let tmp = t </> "fsck" ++ show v ++ "." ++ keyFile key
+		let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
 		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 		cleanup
 		cleanup `after` a tmp
