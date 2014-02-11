@@ -1,6 +1,6 @@
 {- daemon support
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,6 +10,7 @@
 module Utility.Daemon where
 
 import Common
+import Utility.PID
 #ifndef mingw32_HOST_OS
 import Utility.LogFile
 #endif
@@ -19,6 +20,7 @@ import System.Posix
 import Control.Concurrent.Async
 #else
 import System.PosixCompat.Types
+import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT
 #endif
 
 #ifndef mingw32_HOST_OS
@@ -70,7 +72,7 @@ lockPidFile file = do
 		(Nothing, _) -> alreadyRunning
 		(_, Nothing) -> alreadyRunning
 		_ -> do
-			_ <- fdWrite fd' =<< show <$> getProcessID
+			_ <- fdWrite fd' =<< show <$> getPID
 			closeFd fd
 #else
 	writeFile newfile "-1"
@@ -86,7 +88,7 @@ alreadyRunning = error "Daemon is already running."
  - is locked by the same process that is listed in the pid file.
  -
  - If it's running, returns its pid. -}
-checkDaemon :: FilePath -> IO (Maybe ProcessID)
+checkDaemon :: FilePath -> IO (Maybe PID)
 #ifndef mingw32_HOST_OS
 checkDaemon pidfile = do
 	v <- catchMaybeIO $
@@ -110,11 +112,14 @@ checkDaemon pidfile = do
 checkDaemon pidfile = maybe Nothing readish <$> catchMaybeIO (readFile pidfile)
 #endif
 
-#ifndef mingw32_HOST_OS
 {- Stops the daemon, safely. -}
 stopDaemon :: FilePath -> IO ()
 stopDaemon pidfile = go =<< checkDaemon pidfile
   where
 	go Nothing = noop
-	go (Just pid) = signalProcess sigTERM pid
+	go (Just pid) =
+#ifndef mingw32_HOST_OS
+		signalProcess sigTERM pid
+#else
+		generateConsoleCtrlEvent cTRL_C_EVENT pid
 #endif
