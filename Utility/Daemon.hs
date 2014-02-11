@@ -21,6 +21,7 @@ import Control.Concurrent.Async
 import System.PosixCompat.Types
 #endif
 
+#ifndef mingw32_HOST_OS
 {- Run an action as a daemon, with all output sent to a file descriptor.
  -
  - Can write its pid to a file, to guard against multiple instances
@@ -28,7 +29,6 @@ import System.PosixCompat.Types
  -
  - When successful, does not return. -}
 daemonize :: Fd -> Maybe FilePath -> Bool -> IO () -> IO ()
-#ifndef mingw32_HOST_OS
 daemonize logfd pidfile changedirectory a = do
 	maybe noop checkalreadyrunning pidfile
 	_ <- forkProcess child1
@@ -52,8 +52,6 @@ daemonize logfd pidfile changedirectory a = do
 		wait =<< asyncWithUnmask (\unmask -> unmask a)
 		out
 	out = exitImmediately ExitSuccess
-#else
-daemonize = error "daemonize is not implemented on Windows" -- TODO
 #endif
 
 {- Locks the pid file, with an exclusive, non-blocking lock.
@@ -112,13 +110,11 @@ checkDaemon pidfile = do
 checkDaemon pidfile = maybe Nothing readish <$> catchMaybeIO (readFile pidfile)
 #endif
 
+#ifndef mingw32_HOST_OS
 {- Stops the daemon, safely. -}
 stopDaemon :: FilePath -> IO ()
-#ifndef mingw32_HOST_OS
 stopDaemon pidfile = go =<< checkDaemon pidfile
   where
 	go Nothing = noop
 	go (Just pid) = signalProcess sigTERM pid
-#else
-stopDaemon = error "stopDaemon is not implemented on Windows" -- TODO
 #endif
