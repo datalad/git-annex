@@ -126,6 +126,39 @@ Note that any of these filenames can in theory conflict. May need to use
 `.variant-*` like sync does on conflict to allow 2 files with same name in
 same filtered branch.
 
+## union merge properties
+
+While the storage could just list all the current values of a field on a
+line with a timestamp, that's not good enough. Two disconnected
+repositories can make changes to the values of a field (setting and
+unsetting tags for example) and when this is union merged back together,
+the changes need to be able to be replayed in order to determine which
+values we end up with. 
+
+To make that work, we log not only when a field is set to a value, 
+but when a value is unset as well.
+
+For example, here two different remotes added tags, and then later
+a tag was removed:
+
+	1287290776.765152s tag +foo +bar
+	1287290991.152124s tag +baz
+	1291237510.141453s tag -bar
+
+The end result is that tags foo and baz are set. This can be simplified:
+
+	1291237510.141453s tag +foo +baz -bar
+
+Note the reuse of the most recent timestamp in the simplified version,
+rather than putting in the timestamp when the simplification was done.
+This ensures that is some other repo is making changes, they won't get
+trampled over. For example:
+
+	1291237510.141453s tag +foo +baz -bar
+	1291239999.000000s tag +bar -foo
+
+Now tags bar and baz are set.
+
 # efficient metadata lookup
 
 Looking up metadata for filtering so far requires traversing all keys in

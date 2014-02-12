@@ -45,6 +45,7 @@ import qualified Logs.Remote
 import qualified Logs.Unused
 import qualified Logs.Transfer
 import qualified Logs.Presence
+import qualified Types.MetaData
 import qualified Remote
 import qualified Types.Key
 import qualified Types.Messages
@@ -144,6 +145,8 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_hashes_stable" Utility.Hash.prop_hashes_stable
 	, testProperty "prop_schedule_roundtrips" Utility.Scheduled.prop_schedule_roundtrips
 	, testProperty "prop_duration_roundtrips" Utility.HumanTime.prop_duration_roundtrips
+	, testProperty "prop_updateMetaData_sane" Types.MetaData.prop_updateMetaData_sane
+	, testProperty "prop_metadata_serialize" Types.MetaData.prop_metadata_serialize
 	]
 
 {- These tests set up the test environment, but also test some basic parts
