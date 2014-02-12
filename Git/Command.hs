@@ -28,7 +28,7 @@ gitCommandLine params r@(Repo { location = l@(Local _ _ ) }) =
 	setdir = Param $ "--git-dir=" ++ gitdir l
 	settree = case worktree l of
 		Nothing -> []
-		Just t -> [Param $ "--work-tree=" ++ gitpath t]
+		Just t -> [Param $ "--work-tree=" ++ t]
 gitCommandLine _ repo = assertLocal repo $ error "internal"
 
 {- Runs git in the specified repo. -}
