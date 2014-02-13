@@ -12,6 +12,8 @@ module Types.MetaData (
 	MetaField,
 	MetaValue,
 	CurrentlySet(..),
+	serialize,
+	deserialize,
 	MetaSerializable,
 	toMetaField,
 	fromMetaField,
@@ -27,8 +29,9 @@ module Types.MetaData (
 	currentMetaData,
 	currentMetaDataValues,
 	getAllMetaData,
-	serialize,
-	deserialize,
+	ModMeta(..),
+	modMeta,
+	parseModMeta,
 	prop_metadata_sane,
 	prop_metadata_serialize
 ) where
@@ -179,6 +182,35 @@ removeEmptyFields (MetaData m) = MetaData $ M.filter (not . S.null) m
 {- Gets currently set values, but also values that have been unset. -}
 getAllMetaData :: MetaField -> MetaData -> S.Set MetaValue
 getAllMetaData f (MetaData m) = fromMaybe S.empty (M.lookup f m)
+
+{- Ways that existing metadata can be modified -}
+data ModMeta
+	= AddMeta MetaField MetaValue
+	| DelMeta MetaField MetaValue
+	| SetMeta MetaField MetaValue -- removes any existing values
+
+{- Applies a ModMeta, generating the new MetaData.
+ - Note that the new MetaData does not include all the 
+ - values set in the input metadata. It only contains changed values. -}
+modMeta :: MetaData -> ModMeta -> MetaData
+modMeta _ (AddMeta f v) = updateMetaData f v newMetaData
+modMeta _ (DelMeta f oldv) = updateMetaData f (unsetMetaValue oldv) newMetaData
+modMeta m (SetMeta f v) = updateMetaData f v $
+	foldr (updateMetaData f) newMetaData $
+		map unsetMetaValue $ S.toList $ currentMetaDataValues f m
+
+{- Parses field=value, field+=value, field-=value -}
+parseModMeta :: String -> Either String ModMeta
+parseModMeta p = case lastMaybe f of
+	Just '+' -> AddMeta <$> mkf f' <*> v
+	Just '-' -> DelMeta <$> mkf f' <*> v
+	_ -> SetMeta <$> mkf f <*> v
+  where
+	(f, sv) = separate (== '=') p
+	f' = beginning f
+	v = pure (toMetaValue sv)
+	mkf fld = maybe (Left $ badfield fld) Right (toMetaField fld)
+	badfield fld = "Illegal metadata field name, \"" ++ fld ++ "\""
 
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.

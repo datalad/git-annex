@@ -8,6 +8,7 @@
 module Command.MetaData where
 
 import Common.Annex
+import qualified Annex
 import Command
 import Logs.MetaData
 import Types.MetaData
@@ -15,27 +16,32 @@ import Types.MetaData
 import qualified Data.Set as S
 
 def :: [Command]
-def = [command "metadata" (paramPair paramFile (paramRepeating "FIELD[+-]=VALUE")) seek
+def = [withOptions [setOption] $ command "metadata" paramPaths seek
 	SectionUtility "sets metadata of a file"]
 
-seek :: CommandSeek
-seek = withWords start
-
-start :: [String] -> CommandStart
-start (file:settings) = ifAnnexed file
-	go
-	(error $ "not an annexed file, so cannot add metadata: " ++ file)
+setOption :: Option
+setOption = Option ['s'] ["set"] (ReqArg mkmod "field[+-]=value") "set metadata"
   where
-	go (k, _b) = do
-		showStart "metadata" file
-		next $ perform k (map parse settings)
-start _ = error "specify a file and the metadata to set"
+	mkmod p = case parseModMeta p of
+		Left e -> error e
+		Right modmeta -> Annex.changeState $
+			\s -> s { Annex.modmeta = modmeta:Annex.modmeta s }
 
-perform :: Key -> [Action] -> CommandPerform
+seek :: CommandSeek
+seek ps = do
+	modmeta <- Annex.getState Annex.modmeta
+	withFilesInGit (whenAnnexed $ start modmeta) ps
+
+start :: [ModMeta] -> FilePath -> (Key, Backend) -> CommandStart
+start ms file (k, _) = do
+	showStart "metadata" file
+	next $ perform k ms
+
+perform :: Key -> [ModMeta] -> CommandPerform
 perform k [] = next $ cleanup k
-perform k as = do
+perform k ms = do
 	oldm <- getCurrentMetaData k
-	let m = foldr (apply oldm) newMetaData as
+	let m = foldl' unionMetaData newMetaData $ map (modMeta oldm) ms
 	addMetaData k m
 	next $ cleanup k
 	
@@ -46,27 +52,3 @@ cleanup k = do
 	return True
   where
 	showmeta (f, vs) = map (\v -> fromMetaField f ++ "=" ++ fromMetaValue v) $ S.toList vs
-
-data Action
-	= AddMeta MetaField MetaValue
-	| DelMeta MetaField MetaValue
-	| SetMeta MetaField MetaValue
-
-parse :: String -> Action
-parse p = case lastMaybe f of
-	Just '+' -> AddMeta (mkf f') v
-	Just '-' -> DelMeta (mkf f') v
-	_ -> SetMeta (mkf f) v
-  where
-	(f, sv) = separate (== '=') p
-	f' = beginning f
-	v = toMetaValue sv
-	mkf fld = fromMaybe (badfield fld) (toMetaField fld)
-	badfield fld = error $ "Illegal metadata field name, \"" ++ fld ++ "\""
-
-apply :: MetaData -> Action -> MetaData -> MetaData
-apply _ (AddMeta f v) m = updateMetaData f v m
-apply _ (DelMeta f oldv) m = updateMetaData f (unsetMetaValue oldv) m
-apply oldm (SetMeta f v) m = updateMetaData f v $
-	foldr (updateMetaData f) m $
-		map unsetMetaValue $ S.toList $ currentMetaDataValues f oldm
