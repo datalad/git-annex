@@ -52,9 +52,6 @@ now! --[[Joey]]
   there.
 * Deleting a git repository from inside the webapp fails "RemoveDirectory
   permision denined ... file is being used by another process"
-* Shutting down the webapp does not stop the daemon; the ctrl-c hack
-  doesn't work. (Restarting the daemon also does not stop the old process,
-  same reason.)
 
 ## stuff needing testing
 
