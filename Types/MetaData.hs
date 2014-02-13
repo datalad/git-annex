@@ -23,7 +23,7 @@ module Types.MetaData (
 	newMetaData,
 	updateMetaData,
 	unionMetaData,
-	hasUniqueMetaData,
+	differenceMetaData,
 	currentMetaData,
 	currentMetaDataValues,
 	getAllMetaData,
@@ -154,18 +154,13 @@ unionMetaData :: MetaData -> MetaData -> MetaData
 unionMetaData (MetaData old) (MetaData new) = MetaData $
 	M.unionWith S.union new old
 
-{- Checks if m contains any fields with values that are not
- - the same in comparewith. Note that unset and set values are
- - considered to be the same, so if m sets a value and comparewith
- - unsets it, m is not unique. However, if m changes the value,
- - or adds a new value, it is unique. -}
-hasUniqueMetaData :: MetaData -> MetaData -> Bool
-hasUniqueMetaData (MetaData comparewith) (MetaData m) =
-	any uniquefield (M.toList m)
+differenceMetaData :: MetaData -> MetaData -> MetaData
+differenceMetaData (MetaData m) (MetaData excludem) = MetaData $
+	M.differenceWith diff m excludem
   where
-  	uniquefield :: (MetaField, S.Set MetaValue) -> Bool
-	uniquefield (f, v) = maybe True (uniquevalue v) (M.lookup f comparewith)
-	uniquevalue v1 v2 = not $ S.null $ S.difference v1 v2
+	diff sl sr =
+		let s = S.difference sl sr
+		in if S.null s then Nothing else Just s
 
 isSet :: MetaValue -> Bool
 isSet (MetaValue (CurrentlySet isset) _) = isset
@@ -203,9 +198,7 @@ prop_metadata_sane :: MetaData -> MetaField -> MetaValue -> Bool
 prop_metadata_sane m f v = and
 	[ S.member v $ getAllMetaData f m'
 	, not (isSet v) || S.member v (currentMetaDataValues f m')
-	, not (hasUniqueMetaData m m)
-	, hasUniqueMetaData newMetaData m'
-	, not (hasUniqueMetaData m' newMetaData)
+	, differenceMetaData m' newMetaData == m'
 	]
   where
 	m' = updateMetaData f v m

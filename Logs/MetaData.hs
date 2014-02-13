@@ -96,14 +96,16 @@ addMetaData k metadata = do
  - from the remote became available, it would be older than the simplified
  - line, and its change to bar would not take effect. That is wrong.
  -
- - Instead, simplify it to:                   (this simpliciation is optional)
+ - Instead, simplify it to:
  -
- - 100 bar +y                                 (100 foo +x bar +y)
+ - 100 bar +y
  - 200 foo -x
+ -
+ - TODO: The above simplification is not implemented yet.
  -
  - Now merging with the remote yields:
  -
- - 100 bar +y                                 (100 foo +x bar +y)
+ - 100 bar +y
  - 150 bar +z baz +w
  - 200 foo -x
  -
@@ -111,15 +113,6 @@ addMetaData k metadata = do
  -
  - 150 bar +z baz +w
  - 200 foo -x
- -
- - In practice, there is little benefit to making simplications to lines
- - that only remove some values, while leaving others on the line.
- - Since lines are kept in git, that likely increases the size of the
- - git repo (depending on compression), rather than saving any space.
- -
- - So, the only simplication that is actually done is to throw out an
- - old line when all the values in it have been overridden by lines that
- - came after.
  -}
 simplifyLog :: Log MetaData -> Log MetaData
 simplifyLog s = case S.toDescList s of
@@ -128,8 +121,9 @@ simplifyLog s = case S.toDescList s of
   where
 	go c _ [] = c
 	go c newer (l:ls)
-		| hasUniqueMetaData newer older =
-			go (l:c) (unionMetaData older newer) ls
-		| otherwise = go c newer ls
+		| unique == newMetaData = go c newer ls
+		| otherwise = go (l { value = unique } : c)
+			(unionMetaData unique newer) ls
 	  where
 		older = value l
+		unique = older `differenceMetaData` newer
