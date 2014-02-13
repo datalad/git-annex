@@ -81,6 +81,8 @@ lockPidFile pidfile = do
 	newfile = pidfile ++ ".new"
 #else
 	{- Not atomic on Windows, oh well. -}
+	unlessM (isNothing <$> checkDaemon pidfile)
+		alreadyRunning
 	pid <- getPID
 	writeFile pidfile (show pid)
 	lckfile <- winLockFile pid pidfile
