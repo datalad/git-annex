@@ -130,8 +130,23 @@ openFileBrowser = do
 #endif
 	ifM (liftIO $ inPath cmd)
 		( do
-			void $ liftIO $ forkIO $ void $
+			let run = void $ liftIO $ forkIO $ void $
 				boolSystem cmd params
+			run
+#ifdef mingw32_HOST_OS
+			{- On windows, if the file browser is not
+			 - already open, it comes up below the
+			 - web browser when started. 
+			 -
+			 - Running it a second time brings it
+			 - to the foreground.
+			 -
+			 - Seems to need a delay long enough for the file
+			 - browser to be open in order to work. Here 1
+			 - second. -}
+			liftIO $ threadDelay 1000000
+			run
+#endif
 			return True
 		, do
 			void $ redirect $ "file://" ++ path
