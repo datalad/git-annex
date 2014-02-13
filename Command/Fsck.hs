@@ -463,7 +463,9 @@ getFsckTime key = do
  -
  - To guard against time stamp damange (for example, if an annex directory
  - is copied without -a), the fsckstate file contains a time that should
- - be identical to its modification time. -}
+ - be identical to its modification time.
+ - (This is not possible to do on Windows.)
+ -}
 recordStartTime :: Annex ()
 recordStartTime = do
 	f <- fromRepo gitAnnexFsckState
@@ -471,8 +473,12 @@ recordStartTime = do
 	liftIO $ do
 		nukeFile f
 		withFile f WriteMode $ \h -> do
+#ifndef mingw32_HOST_OS
 			t <- modificationTime <$> getFileStatus f
 			hPutStr h $ showTime $ realToFrac t
+#else
+			noop
+#endif
   where
 	showTime :: POSIXTime -> String
 	showTime = show
@@ -486,10 +492,14 @@ getStartTime = do
 	f <- fromRepo gitAnnexFsckState
 	liftIO $ catchDefaultIO Nothing $ do
 		timestamp <- modificationTime <$> getFileStatus f
+#ifndef mingw32_HOST_OS
 		t <- readishTime <$> readFile f
 		return $ if Just (realToFrac timestamp) == t
 			then Just timestamp
 			else Nothing
+#else
+		return $ Just timestamp
+#endif
   where
 	readishTime :: String -> Maybe POSIXTime
 	readishTime s = utcTimeToPOSIXSeconds <$>
