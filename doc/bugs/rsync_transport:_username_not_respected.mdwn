@@ -22,7 +22,9 @@ $> ps ax | grep rsync
 ### What version of git-annex are you using? On what operating system?
 
 OS: Linux
+
 Ver: git-annex version: 5.20140210-g1e0a3ad
+
 Type: prebuilt
 
 ### Please provide any additional information below.
