@@ -33,11 +33,10 @@ now! --[[Joey]]
 
   Also needs gsasl, which is not in cygwin. 
   See <http://josefsson.org/gsasl4win/README.html>
-* Switching between local repos in webapp hangs.
-* After adding a local repo and trying to switch to it, and rebooting,
-  starting git-annex from the menu failed with `file://C:\Documents does
-  not exist`. The local repo was `C:\Documents and Settings\...\...`
-* View debug log is empty in windows -- all log must goes to console.
+* View debug log is empty in windows -- all logs go to console.
+  This messes up a few parts of UI that direct user to the debug log.
+  Should try to get rid of the console, but only once ssh passwords
+  (and possibly gpg) are not prompted there anymore.
 * Local pairing seems to fail, after acking on Linux box, it stalls.
 * rsync.net setup failed. Seems to have generated a hostname including
   the directory somehow.
@@ -51,6 +50,8 @@ now! --[[Joey]]
 * Incremental fsck sets the sticky bit to record when a file is fscked,
   and this is not done on windows, so fsck doesn't behave incrementally
   there.
+* Deleting a git repository from inside the webapp fails "RemoveDirectory
+  permision denined ... file is being used by another process"
 
 ## stuff needing testing
 

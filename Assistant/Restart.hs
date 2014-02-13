@@ -86,10 +86,13 @@ newAssistantUrl repo = do
 		threadDelay 100000 -- 1/10th of a second
 		a
 
-{- Returns once the assistant has daemonized, but possibly before it's
- - listening for web connections. -}
+{- Does not wait for assistant to be listening for web connections. 
+ -
+ - On windows, the assistant does not daemonize, which is why the forkIO is
+ - done.
+ -}
 startAssistant :: FilePath -> IO ()
-startAssistant repo = do
+startAssistant repo = void $ forkIO $ do
 	program <- readProgramFile
 	(_, _, _, pid) <- 
 		createProcess $
