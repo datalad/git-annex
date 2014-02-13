@@ -121,6 +121,12 @@ want to see.
 * Could use the .map files to get a filename, but this is somewhat
   arbitrary (.map can contain multiple filenames), and is only
   currently supported in direct mode.
+* Have a reference branch (eg master) and walk it to find filenames and
+  keys. Fine as long as it can be done efficiently. Also allows including
+  the subdirectory a file is in, potentially. cwebber points out that this
+  is essentially a form of tracking branch. Which implies it will need to
+  be updatable when the reference branch changes. Should be doable via
+  diff-tree.
 
 Note that any of these filenames can in theory conflict. May need to use
 `.variant-*` like sync does on conflict to allow 2 files with same name in
