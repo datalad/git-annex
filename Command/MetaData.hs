@@ -14,6 +14,7 @@ import Logs.MetaData
 import Types.MetaData
 
 import qualified Data.Set as S
+import Data.Time.Clock.POSIX
 
 def :: [Command]
 def = [withOptions [setOption] $ command "metadata" paramPaths seek
@@ -30,19 +31,20 @@ setOption = Option ['s'] ["set"] (ReqArg mkmod "field[+-]=value") "set metadata"
 seek :: CommandSeek
 seek ps = do
 	modmeta <- Annex.getState Annex.modmeta
-	withFilesInGit (whenAnnexed $ start modmeta) ps
+	now <- liftIO getPOSIXTime
+	withFilesInGit (whenAnnexed $ start now modmeta) ps
 
-start :: [ModMeta] -> FilePath -> (Key, Backend) -> CommandStart
-start ms file (k, _) = do
+start :: POSIXTime -> [ModMeta] -> FilePath -> (Key, Backend) -> CommandStart
+start now ms file (k, _) = do
 	showStart "metadata" file
-	next $ perform k ms
+	next $ perform now ms k
 
-perform :: Key -> [ModMeta] -> CommandPerform
-perform k [] = next $ cleanup k
-perform k ms = do
+perform :: POSIXTime -> [ModMeta] -> Key -> CommandPerform
+perform _ [] k = next $ cleanup k
+perform now ms k = do
 	oldm <- getCurrentMetaData k
 	let m = foldl' unionMetaData newMetaData $ map (modMeta oldm) ms
-	addMetaData k m
+	addMetaData' k m now
 	next $ cleanup k
 	
 cleanup :: Key -> CommandCleanup

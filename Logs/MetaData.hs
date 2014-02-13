@@ -31,6 +31,7 @@ module Logs.MetaData (
 	setMetaData,
 	unsetMetaData,
 	addMetaData,
+	addMetaData',
 	currentMetaData,
 ) where
 
@@ -70,12 +71,17 @@ setMetaData' isset k field s = addMetaData k $
 {- Adds in some metadata, which can override existing values, or unset
  - them, but otherwise leaves any existing metadata as-is. -}
 addMetaData :: Key -> MetaData -> Annex ()
-addMetaData k metadata = do
-        now <- liftIO getPOSIXTime
-	Annex.Branch.change (metaDataLogFile k) $
-		showLog . simplifyLog 
-			. S.insert (LogEntry now metadata) 
-			. parseLog
+addMetaData k metadata = addMetaData' k metadata =<< liftIO getPOSIXTime
+
+{- Reusing the same timestamp when making changes to the metadata
+ - of multiple keys is a nice optimisation. The same metadata lines
+ - will tend to be generated across the different log files, and so
+ - git will be able to pack the data more efficiently. -}
+addMetaData' :: Key -> MetaData -> POSIXTime -> Annex ()
+addMetaData' k metadata now = Annex.Branch.change (metaDataLogFile k) $
+	showLog . simplifyLog 
+		. S.insert (LogEntry now metadata) 
+		. parseLog
 
 {- Simplify a log, removing historical values that are no longer
  - needed. 
