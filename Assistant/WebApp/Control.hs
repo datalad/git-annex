@@ -24,7 +24,7 @@ import qualified Data.Text as T
 #ifndef mingw32_HOST_OS
 import System.Posix (signalProcess, sigTERM)
 #else
-import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT)
+import Utility.WinProcess
 #endif
 
 getShutdownR :: Handler Html
@@ -56,7 +56,7 @@ getShutdownConfirmedR = do
 #ifndef mingw32_HOST_OS
 		signalProcess sigTERM =<< getPID
 #else
-		generateConsoleCtrlEvent cTRL_C_EVENT =<< getPID
+		terminatePID =<< getPID
 #endif
 	redirect NotRunningR
 

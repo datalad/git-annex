@@ -13,14 +13,13 @@ import Common
 import Utility.PID
 #ifndef mingw32_HOST_OS
 import Utility.LogFile
+#else
+import Utility.WinProcess
 #endif
 
 #ifndef mingw32_HOST_OS
 import System.Posix
 import Control.Concurrent.Async
-#else
-import System.PosixCompat.Types
-import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT)
 #endif
 
 #ifndef mingw32_HOST_OS
@@ -75,7 +74,7 @@ lockPidFile file = do
 			_ <- fdWrite fd' =<< show <$> getPID
 			closeFd fd
 #else
-	writeFile newfile "-1"
+	writeFile newfile . show =<< getPID
 #endif
 	rename newfile file
   where
@@ -121,5 +120,5 @@ stopDaemon pidfile = go =<< checkDaemon pidfile
 #ifndef mingw32_HOST_OS
 		signalProcess sigTERM pid
 #else
-		generateConsoleCtrlEvent cTRL_C_EVENT pid
+		terminatePID pid
 #endif

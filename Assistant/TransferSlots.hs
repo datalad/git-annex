@@ -39,7 +39,7 @@ import qualified Control.Concurrent.MSemN as MSemN
 import System.Posix.Process (getProcessGroupIDOf)
 import System.Posix.Signals (signalProcessGroup, sigTERM, sigKILL)
 #else
-import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT, cTRL_BREAK_EVENT)
+import Utility.WinProcess
 #endif
 
 type TransferGenerator = Assistant (Maybe (Transfer, TransferInfo, Transferrer -> Assistant ()))
@@ -256,23 +256,19 @@ cancelTransfer pause t = do
 	signalthread tid
 		| pause = throwTo tid PauseTransfer
 		| otherwise = killThread tid
-	{- In order to stop helper processes like rsync,
-	 - kill the whole process group of the process
-	 - running the transfer. -}
 	killproc pid = void $ tryIO $ do
 #ifndef mingw32_HOST_OS
+		{- In order to stop helper processes like rsync,
+		 - kill the whole process group of the process
+		 - running the transfer. -}
 		g <- getProcessGroupIDOf pid
 		let signal sig = void $ tryIO $ signalProcessGroup sig g
 		signal sigTERM
-		graceperiod
+		threadDelay 50000 -- 0.05 second grace period
 		signal sigKILL
 #else
-		let signal sig = void $ tryIO $ generateConsoleCtrlEvent sig pid
-		signal cTRL_C_EVENT
-		graceperiod
-		signal cTRL_BREAK_EVENT
+		terminatePID pid
 #endif
-	graceperiod = threadDelay 50000 -- 0.05 second
 
 {- Start or resume a transfer. -}
 startTransfer :: Transfer -> Assistant ()

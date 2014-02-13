@@ -53,11 +53,12 @@ now! --[[Joey]]
 * Deleting a git repository from inside the webapp fails "RemoveDirectory
   permision denined ... file is being used by another process"
 * Shutting down the webapp does not stop the daemon; the ctrl-c hack
-  doesn't work.
+  doesn't work. (Restarting the daemon also does not stop the old process,
+  same reason.)
 
 ## stuff needing testing
 
 * test S3 and box.com setup in webapp now that they should work..
 * test that adding a repo on a removable drive works; that git is synced to
   it and files can be transferred to it and back
-
+* Does stopping in progress transfers work in the webapp?
