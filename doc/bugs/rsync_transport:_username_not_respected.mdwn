@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+I created an encrypted rsync remote with a username (user@host). The rsync command issued by git-annex doesn't contain the username. I solved the problem using .ssh/config.
+
+### What steps will reproduce the problem?
+
+
+[[!format sh """
+# Add remote like that
+git-annex initremote encrsync type=rsync rsyncurl=user@xxx.rsync.net:rsync/X keyid=0xXXX
+# Sync it
+git-annex sync --content
+
+
+# You'll see
+$> ps ax | grep rsync
+30652 pts/3    S+     0:00 /home/ganwell/bin/git-annex.linux//lib64/ld-linux-x86-64.so.2 --library-path /home/ganwell/bin/git-annex.linux//etc/ld.so.conf.d:/home/ganwell/bin/git-annex.linux//usr/lib/x86_64-linux-gnu/gconv:/home/ganwell/bin/git-annex.linux//usr/lib/x86_64-linux-gnu/libc:/home/ganwell/bin/git-annex.linux//usr/lib:/home/ganwell/bin/git-annex.linux//usr/lib/x86_64-linux-gnu:/home/ganwell/bin/git-annex.linux//lib64:/home/ganwell/bin/git-annex.linux//lib/x86_64-linux-gnu: /home/ganwell/bin/git-annex.linux/shimmed/rsync/rsync xxx.rsync.net:rsync/X/9fa/634/'GPGHMACSHA1--X/GPGHMACSHA1--X
+"""]]
+
+
+
+### What version of git-annex are you using? On what operating system?
+
+OS: Linux
+Ver: git-annex version: 5.20140210-g1e0a3ad
+Type: prebuilt
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
