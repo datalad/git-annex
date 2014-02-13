@@ -1,0 +1,23 @@
+### Please describe the problem.
+
+The difference in consequences of `Add another local repository` in the *git-annex assistant* on an existing repository versus on a new directory are unclear.
+
+### What steps will reproduce the problem?
+
+Going to the "Add another local repository" in the *git-annex assistant* will make you confused if you want to add an existing repository.
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ git annex version
+git-annex version: 5.20140210-gd99db49
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus XMPP Feeds Quvi TDFA
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
+"""]]
+
+Ubuntu 13.04
+
+### Please provide any additional information below.
+
+Ain't nobody here but us chickens.
