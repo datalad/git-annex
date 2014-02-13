@@ -53,11 +53,13 @@ newtype MetaField = MetaField String
 	deriving (Show, Eq, Ord)
 
 data MetaValue = MetaValue CurrentlySet String
-	deriving (Show, Ord)
+	deriving (Show)
 
-{- Metadata values are compared equal whether currently set or not. -}
+{- Metadata values compare and order the same whether currently set or not. -}
 instance Eq MetaValue where
 	MetaValue _ a == MetaValue _ b = a == b
+instance Ord MetaValue where
+	compare (MetaValue _ x) (MetaValue _ y) = compare x y
 
 {- MetaData is serialized to a format like:
  -
