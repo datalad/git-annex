@@ -90,7 +90,7 @@ addMetaData k metadata = do
  -
  - An unmerged remote has:
  -
- - 150 bar +z baz +w
+ - 150 bar -y baz +w
  -
  - If what we have were simplified to "200 foo -x bar +y" then when the line
  - from the remote became available, it would be older than the simplified
@@ -101,12 +101,15 @@ addMetaData k metadata = do
  - 100 bar +y
  - 200 foo -x
  -
- - TODO: The above simplification is not implemented yet.
+ - (Note that this ends up with the same number of lines as the
+ - unsimplified version, so there's really no point in updating
+ - the log to this version. Doing so would only add data to git,
+ - with little benefit.)
  -
  - Now merging with the remote yields:
  -
  - 100 bar +y
- - 150 bar +z baz +w
+ - 150 bar -y baz +w
  - 200 foo -x
  -
  - Simplifying again:
@@ -115,10 +118,16 @@ addMetaData k metadata = do
  - 200 foo -x
  -}
 simplifyLog :: Log MetaData -> Log MetaData
-simplifyLog s = case S.toDescList s of
-	(newest:rest) -> S.fromList $ go [newest] (value newest) rest
+simplifyLog s = case sl of
+	(newest:rest) -> 
+		let sl' = go [newest] (value newest) rest
+		in if length sl' < length sl
+			then S.fromList sl'
+			else s
 	_ -> s
   where
+	sl = S.toDescList s
+
 	go c _ [] = c
 	go c newer (l:ls)
 		| unique == newMetaData = go c newer ls
