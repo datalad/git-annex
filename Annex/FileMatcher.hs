@@ -83,6 +83,7 @@ parseToken checkpresent checkpreferreddir groupmap t
 			, ("inbackend", limitInBackend)
 			, ("largerthan", limitSize (>))
 			, ("smallerthan", limitSize (<))
+			, ("metadata", limitMetaData)
 			, ("inallgroup", limitInAllGroup groupmap)
 			]
   where

@@ -23,6 +23,8 @@ import Types.Key
 import Types.Group
 import Types.FileMatcher
 import Types.Limit
+import Types.MetaData
+import Logs.MetaData
 import Logs.Group
 import Logs.Unused
 import Logs.Location
@@ -261,6 +263,16 @@ limitSize vs s = case readSize dataUnits s of
 			fromIntegral . fileSize
 				<$> getFileStatus (relFile fi)
 		return $ filesize `vs` Just sz
+
+addMetaData :: String -> Annex ()
+addMetaData = addLimit . limitMetaData
+
+limitMetaData :: MkLimit
+limitMetaData s = case parseMetaData s of
+	Left e -> Left e
+	Right (f, v) -> Right $ const $ checkKey (check f v)
+  where
+  	check f v k = S.member v . metaDataValues f <$> getCurrentMetaData k
 
 addTimeLimit :: String -> Annex ()
 addTimeLimit s = do

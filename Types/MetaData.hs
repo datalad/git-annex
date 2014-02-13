@@ -28,10 +28,11 @@ module Types.MetaData (
 	differenceMetaData,
 	currentMetaData,
 	currentMetaDataValues,
-	getAllMetaData,
+	metaDataValues,
 	ModMeta(..),
 	modMeta,
 	parseModMeta,
+	parseMetaData,
 	prop_metadata_sane,
 	prop_metadata_serialize
 ) where
@@ -170,7 +171,7 @@ isSet (MetaValue (CurrentlySet isset) _) = isset
 
 {- Gets only currently set values -}
 currentMetaDataValues :: MetaField -> MetaData -> S.Set MetaValue
-currentMetaDataValues f m = S.filter isSet (getAllMetaData f m)
+currentMetaDataValues f m = S.filter isSet (metaDataValues f m)
 
 currentMetaData :: MetaData -> MetaData
 currentMetaData (MetaData m) = removeEmptyFields $ MetaData $
@@ -180,8 +181,8 @@ removeEmptyFields :: MetaData -> MetaData
 removeEmptyFields (MetaData m) = MetaData $ M.filter (not . S.null) m
 
 {- Gets currently set values, but also values that have been unset. -}
-getAllMetaData :: MetaField -> MetaData -> S.Set MetaValue
-getAllMetaData f (MetaData m) = fromMaybe S.empty (M.lookup f m)
+metaDataValues :: MetaField -> MetaData -> S.Set MetaValue
+metaDataValues f (MetaData m) = fromMaybe S.empty (M.lookup f m)
 
 {- Ways that existing metadata can be modified -}
 data ModMeta
@@ -202,15 +203,27 @@ modMeta m (SetMeta f v) = updateMetaData f v $
 {- Parses field=value, field+=value, field-=value -}
 parseModMeta :: String -> Either String ModMeta
 parseModMeta p = case lastMaybe f of
-	Just '+' -> AddMeta <$> mkf f' <*> v
-	Just '-' -> DelMeta <$> mkf f' <*> v
-	_ -> SetMeta <$> mkf f <*> v
+	Just '+' -> AddMeta <$> mkMetaField f' <*> v
+	Just '-' -> DelMeta <$> mkMetaField f' <*> v
+	_ -> SetMeta <$> mkMetaField f <*> v
   where
 	(f, sv) = separate (== '=') p
 	f' = beginning f
 	v = pure (toMetaValue sv)
-	mkf fld = maybe (Left $ badfield fld) Right (toMetaField fld)
-	badfield fld = "Illegal metadata field name, \"" ++ fld ++ "\""
+
+{- Parses field=value -}
+parseMetaData :: String -> Either String (MetaField, MetaValue)
+parseMetaData p = (,)
+	<$> mkMetaField f
+	<*> pure (toMetaValue v)
+  where
+	(f, v) = separate (== '=') p
+
+mkMetaField :: String -> Either String MetaField
+mkMetaField f = maybe (Left $ badField f) Right (toMetaField f)
+
+badField :: String -> String
+badField f = "Illegal metadata field name, \"" ++ f ++ "\""
 
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.
@@ -228,7 +241,7 @@ instance Arbitrary MetaField where
 
 prop_metadata_sane :: MetaData -> MetaField -> MetaValue -> Bool
 prop_metadata_sane m f v = and
-	[ S.member v $ getAllMetaData f m'
+	[ S.member v $ metaDataValues f m'
 	, not (isSet v) || S.member v (currentMetaDataValues f m')
 	, differenceMetaData m' newMetaData == m'
 	]

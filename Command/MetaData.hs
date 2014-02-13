@@ -21,7 +21,7 @@ def = [withOptions [setOption] $ command "metadata" paramPaths seek
 	SectionUtility "sets metadata of a file"]
 
 setOption :: Option
-setOption = Option ['s'] ["set"] (ReqArg mkmod "field[+-]=value") "set metadata"
+setOption = Option ['s'] ["set"] (ReqArg mkmod "FIELD[+-]=VALUE") "set metadata"
   where
 	mkmod p = case parseModMeta p of
 		Left e -> error e
