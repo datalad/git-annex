@@ -16,11 +16,16 @@ module Types.MetaData (
 	toMetaField,
 	fromMetaField,
 	toMetaValue,
-	toMetaValue',
+	mkMetaValue,
+	unsetMetaValue,
 	fromMetaValue,
+	fromMetaData,
 	newMetaData,
 	updateMetaData,
-	getCurrentMetaData,
+	unionMetaData,
+	hasUniqueMetaData,
+	currentMetaData,
+	currentMetaDataValues,
 	getAllMetaData,
 	serialize,
 	deserialize,
@@ -37,7 +42,7 @@ import qualified Data.Map as M
 import Data.Char
 
 newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
-	deriving (Show, Eq)
+	deriving (Show, Eq, Ord)
 
 {- A metadata value can be currently be set (True), or may have been
  - set before and we're remembering it no longer is (False). -}
@@ -118,14 +123,20 @@ legalField f
 toMetaValue :: String -> MetaValue
 toMetaValue = MetaValue (CurrentlySet True)
 
-toMetaValue' :: CurrentlySet -> String -> MetaValue
-toMetaValue' = MetaValue
+mkMetaValue :: CurrentlySet -> String -> MetaValue
+mkMetaValue = MetaValue
+
+unsetMetaValue :: MetaValue -> MetaValue
+unsetMetaValue (MetaValue _ s) = MetaValue (CurrentlySet False) s
 
 fromMetaField :: MetaField -> String
 fromMetaField (MetaField f) = f
 
 fromMetaValue :: MetaValue -> String
 fromMetaValue (MetaValue _ f) = f
+
+fromMetaData :: MetaData -> [(MetaField, S.Set MetaValue)]
+fromMetaData (MetaData m) = M.toList m
 
 newMetaData :: MetaData
 newMetaData = MetaData M.empty
@@ -136,12 +147,37 @@ updateMetaData :: MetaField -> MetaValue -> MetaData -> MetaData
 updateMetaData f v (MetaData m) = MetaData $
 	M.insertWith' S.union f (S.singleton v) m
 
-{- Gets only currently set values -}
-getCurrentMetaData :: MetaField -> MetaData -> S.Set MetaValue
-getCurrentMetaData f m = S.filter isSet (getAllMetaData f m)
+{- New metadata overrides old._-}
+unionMetaData :: MetaData -> MetaData -> MetaData
+unionMetaData (MetaData old) (MetaData new) = MetaData $
+	M.unionWith S.union new old
+
+{- Checks if m contains any fields with values that are not
+ - the same in comparewith. Note that unset and set values are
+ - considered to be the same, so if m sets a value and comparewith
+ - unsets it, m is not unique. However, if m changes the value,
+ - or adds a new value, it is unique. -}
+hasUniqueMetaData :: MetaData -> MetaData -> Bool
+hasUniqueMetaData (MetaData comparewith) (MetaData m) =
+	any uniquefield (M.toList m)
+  where
+  	uniquefield :: (MetaField, S.Set MetaValue) -> Bool
+	uniquefield (f, v) = maybe True (uniquevalue v) (M.lookup f comparewith)
+	uniquevalue v1 v2 = not $ S.null $ S.difference v1 v2
 
 isSet :: MetaValue -> Bool
 isSet (MetaValue (CurrentlySet isset) _) = isset
+
+{- Gets only currently set values -}
+currentMetaDataValues :: MetaField -> MetaData -> S.Set MetaValue
+currentMetaDataValues f m = S.filter isSet (getAllMetaData f m)
+
+currentMetaData :: MetaData -> MetaData
+currentMetaData (MetaData m) = removeEmptyFields $ MetaData $
+	M.map (S.filter isSet) m
+
+removeEmptyFields :: MetaData -> MetaData
+removeEmptyFields (MetaData m) = MetaData $ M.filter (not . S.null) m
 
 {- Gets currently set values, but also values that have been unset. -}
 getAllMetaData :: MetaField -> MetaData -> S.Set MetaValue
@@ -164,7 +200,7 @@ instance Arbitrary MetaField where
 prop_updateMetaData_sane :: MetaData -> MetaField -> MetaValue -> Bool
 prop_updateMetaData_sane m f v = and
 	[ S.member v $ getAllMetaData f m'
-	, not (isSet v) || S.member v (getCurrentMetaData f m')
+	, not (isSet v) || S.member v (currentMetaDataValues f m')
 	]
   where
 	m' = updateMetaData f v m
@@ -176,5 +212,4 @@ prop_metadata_serialize f v m = and
 	, deserialize (serialize m') == Just m'
 	]
   where
-  	m' = removeemptyfields m
-	removeemptyfields (MetaData x) = MetaData $ M.filter (not . S.null) x
+  	m' = removeEmptyFields m

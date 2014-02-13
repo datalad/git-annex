@@ -695,6 +695,23 @@ subdirectories).
 
 # UTILITY COMMANDS
 
+* `metadata file [field=value field+=value field-=value ...]`
+
+  Each file can have any number of metadata fields attached to it,
+  which each in turn have any number of values. This sets metadata
+  for a file, or if run without any values, shows its current metadata.
+
+  To set a field's value, removing any old value(s), use field=value.
+
+  To add an additional value, use field+=value.
+
+  To remove a value, use field-=value.
+
+  For example, to set some tags on a file:
+
+        	git annex metadata annexscreencast.ogv tag+=video tag+=screencast
+
+
 * `migrate [path ...]`
 
   Changes the specified annexed files to use the default key-value backend

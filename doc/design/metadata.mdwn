@@ -145,20 +145,6 @@ a tag was removed:
 	1287290991.152124s tag +baz
 	1291237510.141453s tag -bar
 
-The end result is that tags foo and baz are set. This can be simplified:
-
-	1291237510.141453s tag +foo +baz -bar
-
-Note the reuse of the most recent timestamp in the simplified version,
-rather than putting in the timestamp when the simplification was done.
-This ensures that is some other repo is making changes, they won't get
-trampled over. For example:
-
-	1291237510.141453s tag +foo +baz -bar
-	1291239999.000000s tag +bar -foo
-
-Now tags bar and baz are set.
-
 # efficient metadata lookup
 
 Looking up metadata for filtering so far requires traversing all keys in
