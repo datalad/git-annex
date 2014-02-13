@@ -32,17 +32,16 @@ start (file:settings) = ifAnnexed file
 start _ = error "specify a file and the metadata to set"
 
 perform :: Key -> [Action] -> CommandPerform
-perform k actions = do
-	m <- getCurrentMetaData k
-	if null actions
-		then next $ cleanup m
-		else do
-			let m' = foldr apply m actions
-			addMetaData k m'
-			next $ cleanup m'
+perform k [] = next $ cleanup k
+perform k as = do
+	oldm <- getCurrentMetaData k
+	let m = foldr (apply oldm) newMetaData as
+	addMetaData k m
+	next $ cleanup k
 	
-cleanup :: MetaData -> CommandCleanup
-cleanup m = do
+cleanup :: Key -> CommandCleanup
+cleanup k = do
+	m <- getCurrentMetaData k
 	showLongNote $ unlines $ concatMap showmeta $ fromMetaData $ currentMetaData m
 	return True
   where
@@ -65,9 +64,9 @@ parse p = case lastMaybe f of
 	mkf fld = fromMaybe (badfield fld) (toMetaField fld)
 	badfield fld = error $ "Illegal metadata field name, \"" ++ fld ++ "\""
 
-apply :: Action -> MetaData -> MetaData
-apply (AddMeta f v) m = updateMetaData f v m
-apply (DelMeta f oldv) m = updateMetaData f (unsetMetaValue oldv) m
-apply (SetMeta f v) m = updateMetaData f v $
+apply :: MetaData -> Action -> MetaData -> MetaData
+apply _ (AddMeta f v) m = updateMetaData f v m
+apply _ (DelMeta f oldv) m = updateMetaData f (unsetMetaValue oldv) m
+apply oldm (SetMeta f v) m = updateMetaData f v $
 	foldr (updateMetaData f) m $
-		map unsetMetaValue $ S.toList $ currentMetaDataValues f m
+		map unsetMetaValue $ S.toList $ currentMetaDataValues f oldm
