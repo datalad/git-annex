@@ -145,7 +145,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_hashes_stable" Utility.Hash.prop_hashes_stable
 	, testProperty "prop_schedule_roundtrips" Utility.Scheduled.prop_schedule_roundtrips
 	, testProperty "prop_duration_roundtrips" Utility.HumanTime.prop_duration_roundtrips
-	, testProperty "prop_updateMetaData_sane" Types.MetaData.prop_updateMetaData_sane
+	, testProperty "prop_metadata_sane" Types.MetaData.prop_metadata_sane
 	, testProperty "prop_metadata_serialize" Types.MetaData.prop_metadata_serialize
 	]
 

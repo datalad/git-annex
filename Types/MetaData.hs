@@ -29,7 +29,7 @@ module Types.MetaData (
 	getAllMetaData,
 	serialize,
 	deserialize,
-	prop_updateMetaData_sane,
+	prop_metadata_sane,
 	prop_metadata_serialize
 ) where
 
@@ -199,10 +199,13 @@ instance Arbitrary MetaValue where
 instance Arbitrary MetaField where
 	arbitrary = MetaField <$> arbitrary `suchThat` legalField 
 
-prop_updateMetaData_sane :: MetaData -> MetaField -> MetaValue -> Bool
-prop_updateMetaData_sane m f v = and
+prop_metadata_sane :: MetaData -> MetaField -> MetaValue -> Bool
+prop_metadata_sane m f v = and
 	[ S.member v $ getAllMetaData f m'
 	, not (isSet v) || S.member v (currentMetaDataValues f m')
+	, not (hasUniqueMetaData m m)
+	, hasUniqueMetaData newMetaData m'
+	, not (hasUniqueMetaData m' newMetaData)
 	]
   where
 	m' = updateMetaData f v m

@@ -119,7 +119,7 @@ addMetaData k metadata = do
  -
  - So, the only simplication that is actually done is to throw out an
  - old line when all the values in it have been overridden by lines that
- - came before
+ - came after.
  -}
 simplifyLog :: Log MetaData -> Log MetaData
 simplifyLog s = case S.toDescList s of
@@ -128,7 +128,7 @@ simplifyLog s = case S.toDescList s of
   where
 	go c _ [] = c
 	go c newer (l:ls)
-		| older `hasUniqueMetaData` newer =
+		| hasUniqueMetaData newer older =
 			go (l:c) (unionMetaData older newer) ls
 		| otherwise = go c newer ls
 	  where
