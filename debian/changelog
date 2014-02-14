@@ -6,7 +6,7 @@ git-annex (5.20140211) UNRELEASED; urgency=medium
   * Preferred content expressions can use metadata=field=value
     to limit them to acting on files that have particular metadata.
   * Add progress display for transfers to/from external special remotes.
-  * Windows webapp: Can set up box.com, Amazon S3 remotes.
+  * Windows webapp: Can set up box.com, Amazon S3, and rsync.net remotes
   * Windows webapp: Can create repos on removable drives.
   * Windows: Ensure HOME is set, as needed by bundled cygwin utilities.
 

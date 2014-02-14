@@ -31,9 +31,6 @@ now! --[[Joey]]
 
 * Local pairing seems to fail, after acking on Linux box, it stalls.
 
-* rsync.net setup fails. See
-  <http://git-annex.branchable.com/bugs/assistant_unable_to_auth___40__windows__41__/> 
-
 * gcrypt is not ported to windows (and as a shell script, may need
   to be rewritten)
 
