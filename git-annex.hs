@@ -32,16 +32,18 @@ main = do
 	run ps n
 		| isshell n = CmdLine.GitAnnexShell.run ps
 		| otherwise =
-#ifdef WITH_TESTSUITE
-			case ps of
-				("test":ps') -> Test.main ps'
-				_ -> CmdLine.GitAnnex.run ps
-#else
 #ifdef mingw32_HOST_OS
-			winEnv CmdLine.GitAnnex.run ps
+			winEnv gitannex ps
 #else
+			gitannex ps
 #endif
-			CmdLine.GitAnnex.run ps
+	gitannex ps = 
+#ifdef WITH_TESTSUITE
+		case ps of
+			("test":ps') -> Test.main ps'
+			_ -> CmdLine.GitAnnex.run ps
+#else
+		CmdLine.GitAnnex.run ps
 #endif
 	isshell n = takeFileName n == "git-annex-shell"
 
@@ -61,13 +63,14 @@ winEnv a ps = go =<< getEnv "HOME"
 	go (Just _) = a ps
 	go Nothing = do
 		home <- myHomeDir
+		putStrLn $ "** Windows hack; overrideing HOME to " ++ home
 		e <- getEnvironment
 		let eoverride =
 			[ ("HOME", home)
 			, ("CYGWIN", "nodosfilewarning")
 			]
 		cmd <- readProgramFile
-		(_, _, _, proc) <- createProcess (proc cmd ps)
+		(_, _, _, pid) <- createProcess (proc cmd ps)
 			{ env = Just $ e ++ eoverride }
-		exitWith =<< waitForProcess proc
+		exitWith =<< waitForProcess pid
 #endif
