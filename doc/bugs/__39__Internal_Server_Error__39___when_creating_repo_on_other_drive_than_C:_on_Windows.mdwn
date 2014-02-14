@@ -32,5 +32,5 @@ fatal: Not a git repository: '/annex/.git'
 error: could not lock config file /annex/.git/config: No such file or directory
 """]]
 
-> I've fixed this! Yay!! Get the fix from the hourly windows autobuilder.
+> I've fixed this! [[done]] Yay!! Get the fix from the hourly windows autobuilder.
 > --[[Joey]]
