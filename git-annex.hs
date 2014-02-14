@@ -17,18 +17,18 @@ import qualified Test
 #endif
 
 main :: IO ()
-main = run =<< getProgName
+main = do
+	ps <- getArgs
+	run ps =<< getProgName
   where
-	run n
-		| isshell n = go CmdLine.GitAnnexShell.run
-		| otherwise = go CmdLine.GitAnnex.run
-	isshell n = takeFileName n == "git-annex-shell"
-	go a = do
-		ps <- getArgs
+	run ps n
+		| isshell n = CmdLine.GitAnnexShell.run ps
+		| otherwise =
 #ifdef WITH_TESTSUITE
-		case ps of
-			("test":ps') -> Test.main ps'
-			_ -> a ps
+			case ps of
+				("test":ps') -> Test.main ps'
+				_ -> CmdLine.GitAnnex.run ps
 #else
-		a ps
+			CmdLine.GitAnnex.run ps
 #endif
+	isshell n = takeFileName n == "git-annex-shell"
