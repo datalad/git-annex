@@ -3,21 +3,11 @@ now! --[[Joey]]
 
 ## status
 
-* Does not work with Cygwin's build of git (that git does not consistently
-  support use of DOS style paths, which git-annex uses on Windows). 
-  Must use Msysgit.
-* rsync special remotes with a rsyncurl of a local directory are known
-  buggy. (git-annex tells rsync C:foo and it thinks it means a remote host
-  named C...)
-* Ssh connection caching does not work on Windows, so `git annex get`
-  has to connect twice to the remote system over ssh per file, which
-  is much slower than on systems supporting connection caching.
-* `git annex assistant` has not been tested, is probably quite incomplete
-  and/or buggy.
 * Doesn't daemonize. Maybe use
   <http://hackage.haskell.org/package/Win32-services>
   or perhaps easier,
   <http://hackage.haskell.org/package/Win32-services-wrapper>
+
 * XMPP library not yet built.
   
   This should work to install the deps, using libs from cygwin
@@ -33,23 +23,41 @@ now! --[[Joey]]
 
   Also needs gsasl, which is not in cygwin. 
   See <http://josefsson.org/gsasl4win/README.html>
+
 * View debug log is empty in windows -- all logs go to console.
   This messes up a few parts of UI that direct user to the debug log.
   Should try to get rid of the console, but only once ssh passwords
   (and possibly gpg) are not prompted there anymore.
+
 * Local pairing seems to fail, after acking on Linux box, it stalls.
+
 * rsync.net setup fails. See
   <http://git-annex.branchable.com/bugs/assistant_unable_to_auth___40__windows__41__/> 
+
 * gcrypt is not ported to windows (and as a shell script, may need
   to be rewritten)
-* webapp lets user choose to encrypt repo, and generate gpg key,
-  before checking that gcrypt is not installed
-* glacier-cli is not easily available (probably)
+
 * Incremental fsck sets the sticky bit to record when a file is fscked,
   and this is not done on windows, so fsck doesn't behave incrementally
   there.
+
 * Deleting a git repository from inside the webapp fails "RemoveDirectory
   permision denied ... file is being used by another process"
+
+## minor problems
+
+* Does not work with Cygwin's build of git (that git does not consistently
+  support use of DOS style paths, which git-annex uses on Windows). 
+  Must use Msysgit.
+* rsync special remotes with a rsyncurl of a local directory are known
+  buggy. (git-annex tells rsync C:foo and it thinks it means a remote host
+  named C...)
+* webapp lets user choose to encrypt repo, and generate gpg key,
+  before checking that gcrypt is not installed
+* Ssh connection caching does not work on Windows, so `git annex get`
+  has to connect twice to the remote system over ssh per file, which
+  is much slower than on systems supporting connection caching.
+* glacier-cli is not easily available (probably)
 
 ## stuff needing testing
 
