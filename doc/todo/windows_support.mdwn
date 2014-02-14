@@ -38,9 +38,8 @@ now! --[[Joey]]
   Should try to get rid of the console, but only once ssh passwords
   (and possibly gpg) are not prompted there anymore.
 * Local pairing seems to fail, after acking on Linux box, it stalls.
-* rsync.net setup failed. Ssh seems to not be looking for the config file
-  where git-annex puts it. Probably confusion over where the home directory
-  is.
+* rsync.net setup fails. See
+  <http://git-annex.branchable.com/bugs/assistant_unable_to_auth___40__windows__41__/> 
 * remote ssh server fails; password prompt appears but user input
   seems not connected to it.
 * gcrypt is not ported to windows (and as a shell script, may need
@@ -48,13 +47,11 @@ now! --[[Joey]]
 * webapp lets user choose to encrypt repo, and generate gpg key,
   before checking that gcrypt is not installed
 * glacier-cli is not easily available (probably)
-* When clicking on the Files at the top of the webapp, a file
-  browser *is* opened, but it has a Z-order underneath the web browser.
 * Incremental fsck sets the sticky bit to record when a file is fscked,
   and this is not done on windows, so fsck doesn't behave incrementally
   there.
 * Deleting a git repository from inside the webapp fails "RemoveDirectory
-  permision denined ... file is being used by another process"
+  permision denied ... file is being used by another process"
 
 ## stuff needing testing
 

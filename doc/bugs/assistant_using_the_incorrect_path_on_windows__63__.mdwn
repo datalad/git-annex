@@ -40,3 +40,6 @@ Start creating a remote repository.
 
 ### What version of git-annex are you using? On what operating system?
 Windows 7, git-annex version 5.20131230-g192d991
+
+> [[fixed|done]]; git-annex now ensures HOME is set when running cygwin
+> commands that require it. --[[Joey]]
