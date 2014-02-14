@@ -315,10 +315,14 @@ setSshConfig sshdata config = do
  - to allow unMangleSshHostName to work. Any unusual characters in the
  - username or directory are url encoded, except using "." rather than "%"
  - (the latter has special meaning to ssh).
+ -
+ - The mangled hostname is lower-cased because openssh 6.5p1 does not work
+ - if ssh config Host lines contain any upper-case.
  -}
 mangleSshHostName :: SshData -> String
-mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
-	++ "-" ++ escape extra
+mangleSshHostName sshdata = map toLower $ 
+	"git-annex-" ++ T.unpack (sshHostName sshdata)
+		++ "-" ++ escape extra
   where
 	extra = intercalate "_" $ map T.unpack $ catMaybes
 		[ sshUserName sshdata
