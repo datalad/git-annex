@@ -38,8 +38,11 @@ now! --[[Joey]]
   Should try to get rid of the console, but only once ssh passwords
   (and possibly gpg) are not prompted there anymore.
 * Local pairing seems to fail, after acking on Linux box, it stalls.
-* rsync.net setup failed. Seems to have generated a hostname including
-  the directory somehow.
+* rsync.net setup failed. Ssh seems to not be looking for the config file
+  where git-annex puts it. Probably confusion over where the home directory
+  is.
+* remote ssh server fails; password prompt appears but user input
+  seems not connected to it.
 * gcrypt is not ported to windows (and as a shell script, may need
   to be rewritten)
 * webapp lets user choose to encrypt repo, and generate gpg key,

@@ -8,6 +8,7 @@ git-annex (5.20140211) UNRELEASED; urgency=medium
   * Add progress display for transfers to/from external special remotes.
   * Windows webapp: Can set up box.com, Amazon S3 remotes.
   * Windows webapp: Can create repos on removable drives.
+  * Windows: Ensure HOME is set, as needed by bundled cygwin utilities.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 10 Feb 2014 21:33:03 -0400
 
