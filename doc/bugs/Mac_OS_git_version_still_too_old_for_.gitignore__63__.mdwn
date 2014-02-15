@@ -15,13 +15,12 @@ Install git-annex 5.20140209-g3a61dbe and try to use .gitignore file to exclude 
 ### Please provide any additional information below.
 
 [/Applications/git-annex.app/Contents/MacOS]# ./git annex version
+
 git-annex version: 5.20140209-g3a61dbe
 build flags: Assistant Webapp Pairing S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
 key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
 remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
 
 [/Applications/git-annex.app/Contents/MacOS]# ./git --version
-git version 1.8.3.4 (Apple Git-47)
 
-# End of transcript or log.
-"""]]
+git version 1.8.3.4 (Apple Git-47)
