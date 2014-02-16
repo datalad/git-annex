@@ -16,6 +16,8 @@ module Types.MetaData (
 	deserialize,
 	MetaSerializable,
 	toMetaField,
+	mkMetaField,
+	tagMetaField,
 	fromMetaField,
 	toMetaValue,
 	mkMetaValue,
@@ -224,6 +226,9 @@ mkMetaField f = maybe (Left $ badField f) Right (toMetaField f)
 
 badField :: String -> String
 badField f = "Illegal metadata field name, \"" ++ f ++ "\""
+
+tagMetaField :: MetaField
+tagMetaField = MetaField "tag"
 
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.
