@@ -99,11 +99,14 @@ fileViewFromReference f = base ++ concatMap (\d -> "(" ++ d ++ ")") dirs ++ conc
  -
  - Note that a file may appear multiple times in a view, when it
  - has multiple matching values for a MetaField used in the View.
+ -
+ - Of course if its MetaData does not match the View, it won't appear at
+ - all.
  -}
-fileViews :: View -> MkFileView -> FilePath -> MetaData -> Maybe [FileView]
+fileViews :: View -> MkFileView -> FilePath -> MetaData -> [FileView]
 fileViews view mkfileview file metadata
-	| any isNothing matches = Nothing
-	| otherwise = Just $ map (</> mkfileview file) $
+	| any isNothing matches = []
+	| otherwise = map (</> mkfileview file) $
 		pathProduct $ map (map fromMetaValue) $ visible matches
   where
   	matches :: [Maybe [MetaValue]]
