@@ -8,9 +8,9 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Types.MetaData (
-	MetaData,
-	MetaField,
-	MetaValue,
+	MetaData(..),
+	MetaField(..),
+	MetaValue(..),
 	CurrentlySet(..),
 	serialize,
 	deserialize,

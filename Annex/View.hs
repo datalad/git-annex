@@ -57,6 +57,17 @@ multiValue (FilterValues s) = S.size s > 1
 multiValue (FilterGlob _ _) = True
 #endif
 
+{- Each multivalued ViewFilter in a view results in another level of
+ - subdirectory nesting. When a file matches multiple ways, it will appear
+ - in multiple subdirectories. This means there is a bit of an exponential
+ - blowup with a single file appearing in a crazy number of places!
+ -
+ - Capping the view size to 5 is reasonable; why wants to dig
+ - through 5+ levels of subdirectories to find anything?
+ -}
+viewTooLarge :: View -> Bool
+viewTooLarge view = length (filter (multiValue . snd) view) > 5
+
 type FileView = FilePath
 type MkFileView = FilePath -> FileView
 
@@ -85,14 +96,23 @@ nonEmptyList s
  - in some way. However, the branch's directory structure is not relevant
  - in the view.
  -
- - So, from dir/subdir/file.foo, generate file(dir)(subdir).foo
+ - So, from dir/subdir/file.foo, generate file{dir}{subdir}.foo
+ -
+ - (To avoid collisions with a filename that already contains {foo},
+ - that is doubled to {{foo}}.)
  -}
 fileViewFromReference :: MkFileView
-fileViewFromReference f = base ++ concatMap (\d -> "(" ++ d ++ ")") dirs ++ concat extensions
+fileViewFromReference f = concat
+	[ double base
+	, concatMap (\d -> "{" ++ double d ++ "}") dirs
+	, double $ concat extensions
+	]
   where
 	(path, basefile) = splitFileName f
 	dirs = filter (/= ".") $ map dropTrailingPathSeparator (splitPath path)
 	(base, extensions) = splitShortExtensions basefile
+
+	double = replace "{" "{{" . replace "}" "}}"
 
 {- Generates views for a file from a branch, based on its metadata
  - and the filename used in the branch.
@@ -106,8 +126,8 @@ fileViewFromReference f = base ++ concatMap (\d -> "(" ++ d ++ ")") dirs ++ conc
 fileViews :: View -> MkFileView -> FilePath -> MetaData -> [FileView]
 fileViews view mkfileview file metadata
 	| any isNothing matches = []
-	| otherwise = map (</> mkfileview file) $
-		pathProduct $ map (map fromMetaValue) $ visible matches
+	| otherwise = map (</> mkfileview file) $ pathProduct $ 
+		map (map toViewPath) (visible matches)
   where
   	matches :: [Maybe [MetaValue]]
 	matches = map (uncurry $ matchFilter metadata) view
@@ -115,6 +135,37 @@ fileViews view mkfileview file metadata
 	visible = map (fromJust . snd) .
 		filter (multiValue . fst) .
 		zip (map snd view)
+
+toViewPath :: MetaValue -> FilePath
+toViewPath = concatMap escapeslash . fromMetaValue
+  where
+	escapeslash c
+		| c == '/' = [pseudoSlash]
+		| c == '\\' = [pseudoBackslash]
+		| c == pseudoSlash = [pseudoSlash, pseudoSlash]
+		| c == pseudoBackslash = [pseudoBackslash, pseudoBackslash]
+		| otherwise = [c]
+
+fromViewPath :: FilePath -> MetaValue
+fromViewPath = toMetaValue . deescapeslash []
+  where
+  	deescapeslash s [] = reverse s
+  	deescapeslash s (c:cs)
+		| c == pseudoSlash = case cs of
+			(c':cs')
+				| c' == pseudoSlash -> deescapeslash (pseudoSlash:s) cs'
+			_ -> deescapeslash ('/':s) cs
+		| c == pseudoBackslash = case cs of
+			(c':cs')
+				| c' == pseudoBackslash -> deescapeslash (pseudoBackslash:s) cs'
+			_ -> deescapeslash ('/':s) cs
+		| otherwise = deescapeslash (c:s) cs
+
+pseudoSlash :: Char
+pseudoSlash = '\8725' -- '∕' /= '/'
+
+pseudoBackslash :: Char
+pseudoBackslash = '\9586' -- '╲' /= '\'
 
 pathProduct :: [[FilePath]] -> [FilePath]
 pathProduct [] = []
@@ -130,7 +181,20 @@ fromView view f = foldr (uncurry updateMetaData) newMetaData (zip fields values)
 	visible = filter (multiValue . snd) view
 	fields = map fst visible
 	paths = splitDirectories $ dropFileName f
-	values = map toMetaValue paths
+	values = map fromViewPath paths
+
+{- Constructing a view that will match arbitrary metadata, and applying
+ - it to a file yields a set of FileViews which all contain the same
+ - MetaFields that were present in the input metadata
+ - (excluding fields that are not multivalued). -}
+prop_view_roundtrips :: FilePath -> MetaData -> Bool
+prop_view_roundtrips f metadata = null f || viewTooLarge view ||
+	all hasfields (fileViews view fileViewFromReference f metadata)
+  where
+	view = map (\(mf, mv) -> (mf, FilterValues $ S.filter (not . null . fromMetaValue) mv))
+		(fromMetaData metadata)
+	visiblefields = sort (map fst $ filter (multiValue . snd) view)
+	hasfields fv = sort (map fst (fromMetaData (fromView view fv))) == visiblefields
 
 {- Generates a git branch name for a View.
  - 

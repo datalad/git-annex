@@ -149,6 +149,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_metadata_sane" Types.MetaData.prop_metadata_sane
 	, testProperty "prop_metadata_serialize" Types.MetaData.prop_metadata_serialize
 	, testProperty "prop_branchView_legal" Annex.View.prop_branchView_legal
+	, testProperty "prop_view_roundtrips" Annex.View.prop_view_roundtrips
 	]
 
 {- These tests set up the test environment, but also test some basic parts
