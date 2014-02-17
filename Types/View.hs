@@ -21,7 +21,16 @@ import Text.Regex.TDFA
 #endif
 
 {- A view is a list of fields with filters on their allowed values. -}
-type View = [(MetaField, ViewFilter)]
+type View = [ViewComponent]
+
+data ViewComponent = ViewComponent
+	{ viewField :: MetaField
+	, viewFilter :: ViewFilter
+	}
+	deriving (Show, Eq)
+
+instance Arbitrary ViewComponent where
+	arbitrary = ViewComponent <$> arbitrary <*> arbitrary
 
 {- Only files with metadata matching the view are displayed. -}
 type FileView = FilePath

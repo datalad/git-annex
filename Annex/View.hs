@@ -46,10 +46,10 @@ data ViewChange = Unchanged | Narrowing | Widening
  -}
 refineView :: View -> MetaField -> String -> (View, ViewChange)
 refineView view field wanted
-	| field `elem` (map fst view) = 
+	| field `elem` (map viewField view) = 
 		let (view', viewchanges) = runWriter $ mapM updatefield view
 		in (view', maximum viewchanges)
-	| otherwise = ((field, viewfilter) : view, Narrowing)
+	| otherwise = (ViewComponent field viewfilter : view, Narrowing)
   where
 	viewfilter
 		| any (`elem` wanted) "*?" = 
@@ -61,12 +61,12 @@ refineView view field wanted
 			FilterGlob (Glob wanted)
 #endif
 		| otherwise = FilterValues $ S.singleton $ toMetaValue wanted
-	updatefield :: (MetaField, ViewFilter) -> Writer [ViewChange] (MetaField, ViewFilter)
-	updatefield v@(f, vf)
-		| f == field = do
-			let (newvf, viewchange) = combineViewFilter vf viewfilter
+	updatefield :: ViewComponent -> Writer [ViewChange] ViewComponent
+	updatefield v
+		| viewField v == field = do
+			let (newvf, viewchange) = combineViewFilter (viewFilter v) viewfilter
 			tell [viewchange]
-			return (f, newvf)
+			return $ v { viewFilter = newvf }
 		| otherwise = return v
 
 {- Combine old and new ViewFilters, yielding a results that matches
@@ -89,7 +89,7 @@ combineViewFilter old@(FilterValues olds) (FilterValues news)
 	| otherwise = (combined, Widening)
   where
 	combined = FilterValues (S.union olds news)
-combineViewFilter (FilterValues old) newglob@(FilterGlob _) =
+combineViewFilter (FilterValues _) newglob@(FilterGlob _) =
 	(newglob, Widening)
 combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
 	| all (matchGlob oldglob . fromMetaValue) (S.toList s) = (new, Narrowing)
@@ -113,14 +113,14 @@ multiValue (FilterGlob _) = True
  - through 5+ levels of subdirectories to find anything?
  -}
 viewTooLarge :: View -> Bool
-viewTooLarge view = length (filter (multiValue . snd) view) > 5
+viewTooLarge view = length (filter (multiValue . viewFilter) view) > 5
 
 {- Checks if metadata matches a filter, and if so returns the value,
  - or values that match. -}
-matchFilter :: MetaData -> MetaField -> ViewFilter -> Maybe [MetaValue]
-matchFilter metadata metafield (FilterValues s) = nonEmptyList $
+matchFilter :: MetaData -> ViewComponent -> Maybe [MetaValue]
+matchFilter metadata (ViewComponent metafield (FilterValues s)) = nonEmptyList $
 	S.intersection s (currentMetaDataValues metafield metadata)
-matchFilter metadata metafield (FilterGlob glob) = nonEmptyList $
+matchFilter metadata (ViewComponent metafield (FilterGlob glob)) = nonEmptyList $
 	S.filter (matchGlob glob . fromMetaValue) (currentMetaDataValues metafield metadata)
 
 nonEmptyList :: S.Set a -> Maybe [a]
@@ -170,11 +170,11 @@ fileViews view mkfileview file metadata
 		map (map toViewPath) (visible matches)
   where
   	matches :: [Maybe [MetaValue]]
-	matches = map (uncurry $ matchFilter metadata) view
+	matches = map (matchFilter metadata) view
 	visible :: [Maybe [MetaValue]] -> [[MetaValue]]
 	visible = map (fromJust . snd) .
 		filter (multiValue . fst) .
-		zip (map snd view)
+		zip (map viewFilter view)
 
 toViewPath :: MetaValue -> FilePath
 toViewPath = concatMap escapeslash . fromMetaValue
@@ -218,8 +218,8 @@ pathProduct (l:ls) = foldl combinel l ls
 fromView :: View -> FileView -> MetaData
 fromView view f = foldr (uncurry updateMetaData) newMetaData (zip fields values)
   where
-	visible = filter (multiValue . snd) view
-	fields = map fst visible
+	visible = filter (multiValue . viewFilter) view
+	fields = map viewField visible
 	paths = splitDirectories $ dropFileName f
 	values = map fromViewPath paths
 
@@ -231,9 +231,9 @@ prop_view_roundtrips :: FilePath -> MetaData -> Bool
 prop_view_roundtrips f metadata = null f || viewTooLarge view ||
 	all hasfields (fileViews view fileViewFromReference f metadata)
   where
-	view = map (\(mf, mv) -> (mf, FilterValues $ S.filter (not . null . fromMetaValue) mv))
+	view = map (\(mf, mv) -> ViewComponent mf (FilterValues $ S.filter (not . null . fromMetaValue) mv))
 		(fromMetaData metadata)
-	visiblefields = sort (map fst $ filter (multiValue . snd) view)
+	visiblefields = sort (map viewField $ filter (multiValue . viewFilter) view)
 	hasfields fv = sort (map fst (fromMetaData (fromView view fv))) == visiblefields
 
 {- Generates a git branch name for a View.
@@ -246,11 +246,11 @@ branchView view
 	| null name = Git.Ref "refs/views"
 	| otherwise = Git.Ref $ "refs/views/" ++ name
   where
-	name = intercalate "/" $ map branchbit view
-	branchbit b@(_metafield, viewfilter)
-		| multiValue viewfilter = branchbit' b
-		| otherwise = "(" ++ branchbit' b ++ ")"
-	branchbit' (metafield, viewfilter)
+	name = intercalate "/" $ map branchcomp view
+	branchcomp c
+		| multiValue (viewFilter c) = branchcomp' c
+		| otherwise = "(" ++ branchcomp' c ++ ")"
+	branchcomp' (ViewComponent metafield viewfilter)
 		| metafield == tagMetaField = branchvals viewfilter
 		| otherwise = concat
 			[ forcelegal (fromMetaField metafield)
