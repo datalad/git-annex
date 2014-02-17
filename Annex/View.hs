@@ -10,15 +10,13 @@
 module Annex.View where
 
 import Common.Annex
-import Logs.MetaData
+import Types.View
 import Types.MetaData
 import qualified Git.Types as Git
 import qualified Git.Ref
 import qualified Git.DiffTree
 import qualified Git.Branch
-import qualified Git.Index
 import Git.Sha (nullSha)
-import Utility.QuickCheck
 
 import qualified Data.Set as S
 import Data.Char
@@ -29,42 +27,6 @@ import "mtl" Control.Monad.Writer
 import Text.Regex.TDFA
 import Text.Regex.TDFA.String
 #else
-#endif
-
-type View = [(MetaField, ViewFilter)]
-
-data ViewFilter
-	= FilterValues (S.Set MetaValue)
-	| FilterGlob Glob
-
-instance Show ViewFilter where
-	show (FilterValues s) = show s
-	show (FilterGlob g) = getGlob g
-
-instance Eq ViewFilter where
-	FilterValues x == FilterValues y = x == y
-	FilterGlob x == FilterGlob y = x == y
-	_ == _ = False
-
-instance Arbitrary ViewFilter where
-	arbitrary = do
-		size <- arbitrarySizedBoundedIntegral `suchThat` (< 100)
-		FilterValues . S.fromList <$> vector size
-
-#ifdef WITH_TDFA
-data Glob = Glob String Regex
-#else
-data Glob = Glob String
-#endif
-
-instance Eq Glob where
-	a == b = getGlob a == getGlob b
-
-getGlob :: Glob -> String
-#ifdef WITH_TDFA
-getGlob (Glob g _) = g
-#else
-getGlob (Glob g) = g
 #endif
 
 matchGlob :: Glob -> String -> Bool
@@ -152,9 +114,6 @@ multiValue (FilterGlob _) = True
  -}
 viewTooLarge :: View -> Bool
 viewTooLarge view = length (filter (multiValue . snd) view) > 5
-
-type FileView = FilePath
-type MkFileView = FilePath -> FileView
 
 {- Checks if metadata matches a filter, and if so returns the value,
  - or values that match. -}
