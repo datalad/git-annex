@@ -22,12 +22,13 @@ import Utility.QuickCheck
 
 import qualified Data.Set as S
 import Data.Char
+import System.Path.WildMatch
+import "mtl" Control.Monad.Writer
 
 #ifdef WITH_TDFA
 import Text.Regex.TDFA
 import Text.Regex.TDFA.String
 #else
-import System.Path.WildMatch
 #endif
 
 type View = [(MetaField, ViewFilter)]
@@ -66,6 +67,76 @@ getGlob (Glob g _) = g
 getGlob (Glob g) = g
 #endif
 
+matchGlob :: Glob -> String -> Bool
+#ifdef WITH_TDFA
+matchGlob (Glob _ r) s = case execute r s of
+	Right (Just _) -> True
+	_ -> False
+#else
+matchGlob (Glob g) = wildCheckCase g
+#endif
+
+data ViewChange = Unchanged | Narrowing | Widening
+	deriving (Ord, Eq, Show)
+
+{- Updates a view, adding a new field to filter on (Narrowing), 
+ - or allowing a new value in an existing field (Widening).
+ -}
+refineView :: View -> MetaField -> String -> (View, ViewChange)
+refineView view field wanted
+	| field `elem` (map fst view) = 
+		let (view', viewchanges) = runWriter $ mapM updatefield view
+		in (view', maximum viewchanges)
+	| otherwise = ((field, viewfilter) : view, Narrowing)
+  where
+	viewfilter
+		| any (`elem` wanted) "*?" = 
+#ifdef WITH_TDFA
+			case compile defaultCompOpt defaultExecOpt ('^':wildToRegex wanted) of
+				Right r -> FilterGlob (Glob wanted r)
+				Left _ -> FilterValues $ S.singleton $ toMetaValue wanted
+#else
+			FilterGlob (Glob wanted)
+#endif
+		| otherwise = FilterValues $ S.singleton $ toMetaValue wanted
+	updatefield :: (MetaField, ViewFilter) -> Writer [ViewChange] (MetaField, ViewFilter)
+	updatefield v@(f, vf)
+		| f == field = do
+			let (newvf, viewchange) = combineViewFilter vf viewfilter
+			tell [viewchange]
+			return (f, newvf)
+		| otherwise = return v
+
+{- Combine old and new ViewFilters, yielding a results that matches
+ - either old+new, or only new.
+ -
+ - If we have FilterValues and change to a FilterGlob,
+ - it's always a widening change, because the glob could match other
+ - values. OTOH, going the other way, it's a Narrowing change if the old
+ - glob matches all the new FilterValues.
+ -
+ - With two globs, the old one is discarded, and the new one is used.
+ - We can tell if that's a narrowing change by checking if the old
+ - glob matches the new glob. For example, "*" matches "foo*",
+ - so that's narrowing. While "f?o" does not match "f??", so that's
+ - widening.
+ -}
+combineViewFilter :: ViewFilter -> ViewFilter -> (ViewFilter, ViewChange)
+combineViewFilter old@(FilterValues olds) (FilterValues news)
+	| combined == old = (combined, Unchanged)
+	| otherwise = (combined, Widening)
+  where
+	combined = FilterValues (S.union olds news)
+combineViewFilter (FilterValues old) newglob@(FilterGlob _) =
+	(newglob, Widening)
+combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
+	| all (matchGlob oldglob . fromMetaValue) (S.toList s) = (new, Narrowing)
+	| otherwise = (new, Widening)
+combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
+	| old == new = (newglob, Unchanged)
+	| matchGlob old (getGlob new) = (newglob, Narrowing)
+	| otherwise = (newglob, Widening)
+
 {- Can a ViewFilter match multiple different MetaValues? -}
 multiValue :: ViewFilter -> Bool
 multiValue (FilterValues s) = S.size s > 1
@@ -91,13 +162,7 @@ matchFilter :: MetaData -> MetaField -> ViewFilter -> Maybe [MetaValue]
 matchFilter metadata metafield (FilterValues s) = nonEmptyList $
 	S.intersection s (currentMetaDataValues metafield metadata)
 matchFilter metadata metafield (FilterGlob glob) = nonEmptyList $
-	S.filter (matching glob . fromMetaValue) (currentMetaDataValues metafield metadata)
-  where
-#ifdef WITH_TDFA
-	matching (Glob _ r) = either (const False) (const True) . execute r
-#else
-	matching (Glob g) = wildCheckCase g
-#endif
+	S.filter (matchGlob glob . fromMetaValue) (currentMetaDataValues metafield metadata)
 
 nonEmptyList :: S.Set a -> Maybe [a]
 nonEmptyList s
@@ -249,12 +314,12 @@ prop_branchView_legal = Git.Ref.legal False . show . branchView
 applyView :: View -> Annex Git.Branch
 applyView = applyView' fileViewFromReference
 
-{- Generates a new branch for a View, which must be a more specific
+{- Generates a new branch for a View, which must be a more narrow
  - version of the View originally used to generate the currently
  - checked out branch.
  -}
-refineView :: View -> Annex Git.Branch
-refineView = applyView' id
+narrowView :: View -> Annex Git.Branch
+narrowView = applyView' id
 
 {- Go through each file in the currently checked out branch.
  - If the file is not annexed, skip it, unless it's a dotfile in the top.
