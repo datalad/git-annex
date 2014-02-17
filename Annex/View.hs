@@ -26,23 +26,23 @@ import Data.Char
 #ifdef WITH_TDFA
 import Text.Regex.TDFA
 import Text.Regex.TDFA.String
+#else
+import System.Path.WildMatch
 #endif
 
 type View = [(MetaField, ViewFilter)]
 
 data ViewFilter
 	= FilterValues (S.Set MetaValue)
-#ifdef WITH_TDFA
-	| FilterGlob String Regex
-#endif
+	| FilterGlob Glob
 
 instance Show ViewFilter where
 	show (FilterValues s) = show s
-	show (FilterGlob s _) = s
+	show (FilterGlob g) = getGlob g
 
 instance Eq ViewFilter where
 	FilterValues x == FilterValues y = x == y
-	FilterGlob x _ == FilterGlob y _ = x == y
+	FilterGlob x == FilterGlob y = x == y
 	_ == _ = False
 
 instance Arbitrary ViewFilter where
@@ -50,12 +50,26 @@ instance Arbitrary ViewFilter where
 		size <- arbitrarySizedBoundedIntegral `suchThat` (< 100)
 		FilterValues . S.fromList <$> vector size
 
+#ifdef WITH_TDFA
+data Glob = Glob String Regex
+#else
+data Glob = Glob String
+#endif
+
+instance Eq Glob where
+	a == b = getGlob a == getGlob b
+
+getGlob :: Glob -> String
+#ifdef WITH_TDFA
+getGlob (Glob g _) = g
+#else
+getGlob (Glob g) = g
+#endif
+
 {- Can a ViewFilter match multiple different MetaValues? -}
 multiValue :: ViewFilter -> Bool
 multiValue (FilterValues s) = S.size s > 1
-#ifdef WITH_TDFA
-multiValue (FilterGlob _ _) = True
-#endif
+multiValue (FilterGlob _) = True
 
 {- Each multivalued ViewFilter in a view results in another level of
  - subdirectory nesting. When a file matches multiple ways, it will appear
@@ -76,11 +90,13 @@ type MkFileView = FilePath -> FileView
 matchFilter :: MetaData -> MetaField -> ViewFilter -> Maybe [MetaValue]
 matchFilter metadata metafield (FilterValues s) = nonEmptyList $
 	S.intersection s (currentMetaDataValues metafield metadata)
-#ifdef WITH_TDFA
-matchFilter metadata metafield (FilterGlob _ r) = nonEmptyList $
-	S.filter matching (currentMetaDataValues metafield metadata)
+matchFilter metadata metafield (FilterGlob glob) = nonEmptyList $
+	S.filter (matching glob . fromMetaValue) (currentMetaDataValues metafield metadata)
   where
-	matching = either (const False) (const True) . execute r . fromMetaValue
+#ifdef WITH_TDFA
+	matching (Glob _ r) = either (const False) (const True) . execute r
+#else
+	matching (Glob g) = wildCheckCase g
 #endif
 
 nonEmptyList :: S.Set a -> Maybe [a]
@@ -91,7 +107,7 @@ nonEmptyList s
 {- Converts a filepath used in a reference branch to the
  - filename that will be used in the view.
  -
- - No two filenames from the same branch should yeild the same result,
+ - No two filepaths from the same branch should yeild the same result,
  - so all directory structure needs to be included in the output file
  - in some way. However, the branch's directory structure is not relevant
  - in the view.
@@ -219,10 +235,7 @@ branchView view
 			]
 	branchvals (FilterValues set) = forcelegal $
 		intercalate "," $ map fromMetaValue $ S.toList set
-#ifdef WITH_TDFA
-	branchvals (FilterGlob glob _) = forcelegal $
-		replace "*" "ANY" $ replace "?" "_" glob
-#endif
+	branchvals (FilterGlob glob) = forcelegal $ getGlob glob
 	forcelegal s
 		| Git.Ref.legal True s = s
 		| otherwise = map (\c -> if isAlphaNum c then c else '_') s
