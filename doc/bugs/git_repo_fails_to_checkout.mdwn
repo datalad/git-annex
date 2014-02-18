@@ -1,0 +1,22 @@
+### Please describe the problem.
+
+Attempting to clone the git repository produces
+
+    (master) cayley:git-annex% git checkout -f HEAD
+    error: unable to create file doc/bugs/fatal:_unable_to_access___39__..__47__..__47__..__47__..__47__C:__92__Users__92____91__...__93____92__annex__92__.git__47__config__39__:_Invalid_argument___40__Windows__41__.mdwn (File name too long)
+    fatal: cannot create directory at 'doc/bugs/fatal:_unable_to_access___39__..__47__..__47__..__47__..__47__C:__92__Users__92____91__...__93____92__annex__92__.git__47__config__39__:_Invalid_argument___40__Windows__41__': File name too long
+
+### What steps will reproduce the problem?
+
+I get the above with either
+
+    git clone https://github.com/joeyh/git-annex
+
+or (after this fails) retrying with
+
+    cd git-annex
+    git checkout -f HEAD
+
+### What version of git-annex are you using? On what operating system?
+
+I am running git 1.9.0 from git (5f95c9f850b19b368c43ae399cc831b17a26a5ac in the git git repo) on Ubuntu 13.04.
