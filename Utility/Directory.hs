@@ -1,6 +1,6 @@
 {- directory manipulation
  -
- - Copyright 2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -23,6 +23,7 @@ import Utility.SafeCommand
 import Utility.Tmp
 import Utility.Exception
 import Utility.Monad
+import Utility.Applicative
 
 dirCruft :: FilePath -> Bool
 dirCruft "." = True
@@ -72,6 +73,21 @@ dirContentsRecursiveSkipping skipdir followsubdirsymlinks topdir = go [topdir]
 							, skip
 							)
 				_ -> skip
+
+{- Gets the directory tree from a point, recursively and lazily,
+ - with leaf directories **first**, skipping any whose basenames
+ - match the skipdir. Does not follow symlinks. -}
+dirTreeRecursiveSkipping :: (FilePath -> Bool) -> FilePath -> IO [FilePath]
+dirTreeRecursiveSkipping skipdir topdir = go [] [topdir]
+  where
+  	go c [] = return c
+	go c (dir:dirs)
+		| skipdir (takeFileName dir) = go c dirs
+		| otherwise = unsafeInterleaveIO $ do
+			subdirs <- go c
+				=<< filterM (isDirectory <$$> getSymbolicLinkStatus)
+				=<< catchDefaultIO [] (dirContents dir)
+			go (subdirs++[dir]) dirs
 
 {- Moves one filename to another.
  - First tries a rename, but falls back to moving across devices if needed. -}

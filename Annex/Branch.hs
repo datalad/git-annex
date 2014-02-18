@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Annex.Branch (
 	fullname,
 	name,
@@ -30,11 +28,11 @@ module Annex.Branch (
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Set as S
 import qualified Data.Map as M
-import qualified Control.Exception as E
 
 import Common.Annex
 import Annex.BranchState
 import Annex.Journal
+import Annex.Index
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
@@ -47,15 +45,12 @@ import Git.Types
 import Git.FilePath
 import Annex.CatFile
 import Annex.Perms
-import qualified Annex
-import Utility.Env
 import Logs
 import Logs.Transitions
 import Logs.Trust.Pure
 import Annex.ReplaceFile
 import qualified Annex.Queue
 import Annex.Branch.Transitions
-import Annex.Exception
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -338,32 +333,12 @@ withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
-	g <- gitRepo
-#ifdef __ANDROID__
-	{- This should not be necessary on Android, but there is some
-	 - weird getEnvironment breakage. See
-	 - https://github.com/neurocyte/ghc-android/issues/7
-	 - Use getEnv to get some key environment variables that
-	 - git expects to have. -}
-	let keyenv = words "USER PATH GIT_EXEC_PATH HOSTNAME HOME"
-	let getEnvPair k = maybe Nothing (\v -> Just (k, v)) <$> getEnv k
-	e <- liftIO $ catMaybes <$> forM keyenv getEnvPair
-	let e' = ("GIT_INDEX_FILE", f):e
-#else
-	e <- liftIO getEnvironment
-	let e' = addEntry "GIT_INDEX_FILE" f e
-#endif
-	let g' = g { gitEnv = Just e' }
-
-	r <- tryAnnex $ do
-		Annex.changeState $ \s -> s { Annex.repo = g' }
+	withIndexFile f $ do
 		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
 			createAnnexDirectory $ takeDirectory f
 			unless bootstrapping $ inRepo genIndex
 		a
-	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }
-	either E.throw return r
 
 {- Updates the branch's index to reflect the current contents of the branch.
  - Any changes staged in the index will be preserved.

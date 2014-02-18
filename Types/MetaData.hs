@@ -53,13 +53,13 @@ newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
 {- A metadata value can be currently be set (True), or may have been
  - set before and we're remembering it no longer is (False). -}
 newtype CurrentlySet = CurrentlySet Bool
-	deriving (Show, Eq, Ord, Arbitrary)
+	deriving (Read, Show, Eq, Ord, Arbitrary)
 
 newtype MetaField = MetaField String
-	deriving (Show, Eq, Ord)
+	deriving (Read, Show, Eq, Ord)
 
 data MetaValue = MetaValue CurrentlySet String
-	deriving (Show)
+	deriving (Read, Show)
 
 {- Metadata values compare and order the same whether currently set or not. -}
 instance Eq MetaValue where

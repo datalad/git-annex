@@ -5,61 +5,46 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Annex.View where
 
 import Common.Annex
 import Types.View
 import Types.MetaData
-import qualified Git.Types as Git
-import qualified Git.Ref
+import qualified Git
 import qualified Git.DiffTree
 import qualified Git.Branch
-import Git.Sha (nullSha)
+import qualified Git.LsFiles
+import Git.UpdateIndex
+import Git.Sha
+import Git.HashObject
+import qualified Backend
+import Annex.Index
+import Annex.Link
+import Logs.MetaData
+import Logs.View
 
 import qualified Data.Set as S
-import Data.Char
 import System.Path.WildMatch
 import "mtl" Control.Monad.Writer
-
-#ifdef WITH_TDFA
-import Text.Regex.TDFA
-import Text.Regex.TDFA.String
-#else
-#endif
-
-matchGlob :: Glob -> String -> Bool
-#ifdef WITH_TDFA
-matchGlob (Glob _ r) s = case execute r s of
-	Right (Just _) -> True
-	_ -> False
-#else
-matchGlob (Glob g) = wildCheckCase g
-#endif
 
 data ViewChange = Unchanged | Narrowing | Widening
 	deriving (Ord, Eq, Show)
 
+matchGlob :: String -> String -> Bool
+matchGlob glob val = wildCheckCase glob val
+
 {- Updates a view, adding a new field to filter on (Narrowing), 
- - or allowing a new value in an existing field (Widening).
- -}
+ - or allowing a new value in an existing field (Widening). -}
 refineView :: View -> MetaField -> String -> (View, ViewChange)
 refineView view field wanted
-	| field `elem` (map viewField view) = 
-		let (view', viewchanges) = runWriter $ mapM updatefield view
-		in (view', maximum viewchanges)
-	| otherwise = (ViewComponent field viewfilter : view, Narrowing)
+	| field `elem` (map viewField components) = 
+		let (components', viewchanges) = runWriter $ mapM updatefield components
+		in (view { viewComponents = components' }, maximum viewchanges)
+	| otherwise = (view { viewComponents = ViewComponent field viewfilter : components }, Narrowing)
   where
+  	components = viewComponents view
 	viewfilter
-		| any (`elem` wanted) "*?" = 
-#ifdef WITH_TDFA
-			case compile defaultCompOpt defaultExecOpt ('^':wildToRegex wanted) of
-				Right r -> FilterGlob (Glob wanted r)
-				Left _ -> FilterValues $ S.singleton $ toMetaValue wanted
-#else
-			FilterGlob (Glob wanted)
-#endif
+		| any (`elem` wanted) "*?" = FilterGlob wanted
 		| otherwise = FilterValues $ S.singleton $ toMetaValue wanted
 	updatefield :: ViewComponent -> Writer [ViewChange] ViewComponent
 	updatefield v
@@ -96,13 +81,8 @@ combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
 	| otherwise = (new, Widening)
 combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
 	| old == new = (newglob, Unchanged)
-	| matchGlob old (getGlob new) = (newglob, Narrowing)
+	| matchGlob old new = (newglob, Narrowing)
 	| otherwise = (newglob, Widening)
-
-{- Can a ViewFilter match multiple different MetaValues? -}
-multiValue :: ViewFilter -> Bool
-multiValue (FilterValues s) = S.size s > 1
-multiValue (FilterGlob _) = True
 
 {- Each multivalued ViewFilter in a view results in another level of
  - subdirectory nesting. When a file matches multiple ways, it will appear
@@ -113,7 +93,7 @@ multiValue (FilterGlob _) = True
  - through 5+ levels of subdirectories to find anything?
  -}
 viewTooLarge :: View -> Bool
-viewTooLarge view = length (filter (multiValue . viewFilter) view) > 5
+viewTooLarge view = length (filter (multiValue . viewFilter) (viewComponents view)) > 5
 
 {- Checks if metadata matches a filter, and if so returns the value,
  - or values that match. -}
@@ -166,15 +146,19 @@ fileViewFromReference f = concat
 fileViews :: View -> MkFileView -> FilePath -> MetaData -> [FileView]
 fileViews view mkfileview file metadata
 	| any isNothing matches = []
-	| otherwise = map (</> mkfileview file) $ pathProduct $ 
-		map (map toViewPath) (visible matches)
+	| otherwise =
+		let paths = pathProduct $
+			map (map toViewPath) (visible matches)
+		in if null paths
+			then [mkfileview file]
+			else map (</> mkfileview file) paths
   where
   	matches :: [Maybe [MetaValue]]
-	matches = map (matchFilter metadata) view
+	matches = map (matchFilter metadata) (viewComponents view)
 	visible :: [Maybe [MetaValue]] -> [[MetaValue]]
 	visible = map (fromJust . snd) .
 		filter (multiValue . fst) .
-		zip (map viewFilter view)
+		zip (map viewFilter (viewComponents view))
 
 toViewPath :: MetaValue -> FilePath
 toViewPath = concatMap escapeslash . fromMetaValue
@@ -218,7 +202,7 @@ pathProduct (l:ls) = foldl combinel l ls
 fromView :: View -> FileView -> MetaData
 fromView view f = foldr (uncurry updateMetaData) newMetaData (zip fields values)
   where
-	visible = filter (multiValue . viewFilter) view
+	visible = filter (multiValue . viewFilter) (viewComponents view)
 	fields = map viewField visible
 	paths = splitDirectories $ dropFileName f
 	values = map fromViewPath paths
@@ -231,47 +215,19 @@ prop_view_roundtrips :: FilePath -> MetaData -> Bool
 prop_view_roundtrips f metadata = null f || viewTooLarge view ||
 	all hasfields (fileViews view fileViewFromReference f metadata)
   where
-	view = map (\(mf, mv) -> ViewComponent mf (FilterValues $ S.filter (not . null . fromMetaValue) mv))
-		(fromMetaData metadata)
-	visiblefields = sort (map viewField $ filter (multiValue . viewFilter) view)
+	view = View (Git.Ref "master") $
+		map (\(mf, mv) -> ViewComponent mf (FilterValues $ S.filter (not . null . fromMetaValue) mv))
+			(fromMetaData metadata)
+	visiblefields = sort (map viewField $ filter (multiValue . viewFilter) (viewComponents view))
 	hasfields fv = sort (map fst (fromMetaData (fromView view fv))) == visiblefields
-
-{- Generates a git branch name for a View.
- - 
- - There is no guarantee that each view gets a unique branch name,
- - but the branch name is used to express the view as well as possible.
- -}
-branchView :: View -> Git.Branch
-branchView view
-	| null name = Git.Ref "refs/views"
-	| otherwise = Git.Ref $ "refs/views/" ++ name
-  where
-	name = intercalate "/" $ map branchcomp view
-	branchcomp c
-		| multiValue (viewFilter c) = branchcomp' c
-		| otherwise = "(" ++ branchcomp' c ++ ")"
-	branchcomp' (ViewComponent metafield viewfilter)
-		| metafield == tagMetaField = branchvals viewfilter
-		| otherwise = concat
-			[ forcelegal (fromMetaField metafield)
-			, "="
-			, branchvals viewfilter
-			]
-	branchvals (FilterValues set) = forcelegal $
-		intercalate "," $ map fromMetaValue $ S.toList set
-	branchvals (FilterGlob glob) = forcelegal $ getGlob glob
-	forcelegal s
-		| Git.Ref.legal True s = s
-		| otherwise = map (\c -> if isAlphaNum c then c else '_') s
-
-prop_branchView_legal :: View -> Bool
-prop_branchView_legal = Git.Ref.legal False . show . branchView
 
 {- Applies a view to the currently checked out branch, generating a new
  - branch for the view.
  -}
 applyView :: View -> Annex Git.Branch
-applyView = applyView' fileViewFromReference
+applyView view = do
+	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
+	applyView' fileViewFromReference view
 
 {- Generates a new branch for a View, which must be a more narrow
  - version of the View originally used to generate the currently
@@ -283,11 +239,32 @@ narrowView = applyView' id
 {- Go through each file in the currently checked out branch.
  - If the file is not annexed, skip it, unless it's a dotfile in the top.
  - Look up the metadata of annexed files, and generate any FileViews,
- - and stage them into the (temporary) index.
+ - and stage them.
+ -
+ - Currently only works in indirect mode.
  -}
 applyView' :: MkFileView -> View -> Annex Git.Branch
-applyView' mkfileview view = genViewBranch view $ do
-	error "TODO"
+applyView' mkfileview view = do
+	top <- fromRepo Git.repoPath
+	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
+	genViewBranch view $ do
+		uh <- inRepo Git.UpdateIndex.startUpdateIndex
+		hasher <- inRepo hashObjectStart
+		forM_ l $ \f ->
+			go uh hasher f =<< Backend.lookupFile f
+		liftIO $ do
+			hashObjectStop hasher
+			void $ stopUpdateIndex uh
+			void clean
+  where
+	go uh hasher f Nothing = noop -- TODO dotfiles
+	go uh hasher f (Just (k, _)) = do
+		metadata <- getCurrentMetaData k
+		forM_ (fileViews view mkfileview f metadata) $ \fv -> do
+			linktarget <- inRepo $ gitAnnexLink fv k
+			sha <- hashSymlink' hasher linktarget
+			liftIO . Git.UpdateIndex.streamUpdateIndex' uh
+				=<< inRepo (Git.UpdateIndex.stageSymlink fv sha)
 
 {- Applies a view to the reference branch, generating a new branch
  - for the View.
@@ -307,18 +284,21 @@ updateView view ref oldref = genViewBranch view $ do
 		| Git.DiffTree.dstsha diff == nullSha = error "TODO delete file"
 		| otherwise = error "TODO add file"
 
-{- Generates a branch for a view. This is done by creating a temporary
- - index file, which starts off empty. An action is run to stage the files
- - that will be in the branch. Then a commit is made, to the view branch.
- - The view branch is not checked out, but entering it will display the
- - view. -}
+{- Generates a branch for a view. This is done using a different index
+ - file. An action is run to stage the files that will be in the branch.
+ - Then a commit is made, to the view branch. The view branch is not
+ - checked out, but entering it will display the view. -}
 genViewBranch :: View -> Annex () -> Annex Git.Branch
-genViewBranch view a = withTempIndex $ do
+genViewBranch view a = withIndex $ do
 	a
 	let branch = branchView view
 	void $ inRepo $ Git.Branch.commit True (show branch) branch []
 	return branch
 
-{- -}
-withTempIndex :: Annex a -> Annex a
-withTempIndex a = error "TODO"
+{- Runs an action using the view index file.
+ - Note that the file does not necessarily exist, or can contain
+ - info staged for an old view. -}
+withIndex :: Annex a -> Annex a
+withIndex a = do
+	f <- fromRepo gitAnnexViewIndex
+	withIndexFile f a

@@ -55,6 +55,7 @@ import qualified Crypto
 import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.View
+import qualified Logs.View
 import qualified Utility.Path
 import qualified Utility.FileMode
 import qualified Build.SysConfig
@@ -148,7 +149,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_duration_roundtrips" Utility.HumanTime.prop_duration_roundtrips
 	, testProperty "prop_metadata_sane" Types.MetaData.prop_metadata_sane
 	, testProperty "prop_metadata_serialize" Types.MetaData.prop_metadata_serialize
-	, testProperty "prop_branchView_legal" Annex.View.prop_branchView_legal
+	, testProperty "prop_branchView_legal" Logs.View.prop_branchView_legal
 	, testProperty "prop_view_roundtrips" Annex.View.prop_view_roundtrips
 	]
 
