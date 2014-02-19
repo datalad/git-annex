@@ -244,7 +244,8 @@ narrowView = applyView' fileViewReuse
  - Look up the metadata of annexed files, and generate any FileViews,
  - and stage them.
  -
- - Currently only works in indirect mode.
+ - Currently only works in indirect mode. Must be run from top of
+ - repository.
  -}
 applyView' :: MkFileView -> View -> Annex Git.Branch
 applyView' mkfileview view = do

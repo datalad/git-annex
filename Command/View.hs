@@ -40,8 +40,7 @@ start params = do
 perform :: View -> CommandPerform
 perform view = do
 	showSideAction "searching"
-	branch <- applyView view
-	next $ checkoutViewBranch view branch
+	next $ checkoutViewBranch view applyView
 
 paramView :: String
 paramView = paramPair (paramRepeating "FIELD=VALUE") (paramRepeating "TAG")
@@ -63,20 +62,25 @@ mkView params = do
 	viewbranch = fromMaybe (error "not on any branch!")
 		<$> inRepo Git.Branch.current
 
-checkoutViewBranch :: View -> Git.Branch -> CommandCleanup
-checkoutViewBranch view branch = do
+checkoutViewBranch :: View -> (View -> Annex Git.Branch) -> CommandCleanup
+checkoutViewBranch view mkbranch = do
+	oldcwd <- liftIO getCurrentDirectory
+
+	{- Change to top of repository before creating view branch. -}
+	liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
+	branch <- mkbranch view
+	
 	ok <- inRepo $ Git.Command.runBool
 		[ Param "checkout"
 		, Param (show $ Git.Ref.base branch)
 		]
 	when ok $ do
 		setView view
-		top <- fromRepo Git.repoPath
-		cwd <- liftIO getCurrentDirectory
 		{- A git repo can easily have empty directories in it,
 		 - and this pollutes the view, so remove them. -}
-		liftIO $ removeemptydirs top
-		unlessM (liftIO $ doesDirectoryExist cwd) $
+		liftIO $ removeemptydirs "."
+		unlessM (liftIO $ doesDirectoryExist oldcwd) $ do
+			top <- fromRepo Git.repoPath
 			showLongNote (cwdmissing top)
 	return ok
   where

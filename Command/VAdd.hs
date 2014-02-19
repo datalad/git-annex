@@ -9,7 +9,6 @@ module Command.VAdd where
 
 import Common.Annex
 import Command
-import Types.View
 import Annex.View
 import Logs.View
 import Command.View (paramView, parseViewParam, checkoutViewBranch)
@@ -33,15 +32,11 @@ start params = do
 			Unchanged -> do
 				showNote "unchanged"
 				next $ next $ return True
+			Narrowing -> next $ next $
+				checkoutViewBranch view' narrowView
 			Widening -> error "Widening view to match more files is not currently supported."
-			Narrowing -> next $ perform view'
 
 	calc v c [] = (v, c)
 	calc v c (p:ps) =
 		let (v', c') = uncurry (refineView v) (parseViewParam p)
 		in calc v' (max c c') ps
-
-perform :: View -> CommandPerform
-perform view = do
-	branch <- narrowView view
-	next $ checkoutViewBranch view branch

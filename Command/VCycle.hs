@@ -32,14 +32,9 @@ start = go =<< currentView
 			then do
 				showNote "unchanged"
 				next $ next $ return True
-			else next $ perform v'
+			else next $ next $ checkoutViewBranch v' narrowView
 
 	vcycle rest (c:cs)
 		| multiValue (viewFilter c) = rest ++ cs ++ [c]
 		| otherwise = vcycle (c:rest) cs
 	vcycle rest c = rest ++ c
-
-perform :: View -> CommandPerform
-perform view = do
-	branch <- narrowView view
-	next $ checkoutViewBranch view branch

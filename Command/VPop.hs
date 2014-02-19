@@ -32,7 +32,7 @@ start = go =<< currentView
 			<$> recentViews
 		case vs of
 			(_v:oldv:_) -> next $ next $ 
-				checkoutViewBranch oldv (branchView oldv)
+				checkoutViewBranch oldv (return . branchView)
 			_ -> next $ next $
 				inRepo $ Git.Command.runBool
 					[ Param "checkout"
