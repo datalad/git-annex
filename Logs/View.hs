@@ -80,8 +80,8 @@ branchView view
 			, "="
 			, branchvals viewfilter
 			]
-	branchvals (FilterValues set) = forcelegal $
-		intercalate "," $ map fromMetaValue $ S.toList set
+	branchvals (FilterValues set) = intercalate "," $
+		map (forcelegal . fromMetaValue) $ S.toList set
 	branchvals (FilterGlob glob) = forcelegal glob
 	forcelegal s
 		| Git.Ref.legal True s = s
