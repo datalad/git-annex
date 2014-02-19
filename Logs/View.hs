@@ -50,14 +50,14 @@ recentViews = do
 
 {- Gets the currently checked out view, if there is one. -}
 currentView :: Annex (Maybe View)
-currentView = do
-	vs <- recentViews
-	maybe Nothing (go vs) <$> inRepo Git.Branch.current
+currentView = go =<< inRepo Git.Branch.current
   where
-  	go [] _ = Nothing
-	go (v:vs) b
-		| branchView v == b = Just v
-		| otherwise = go vs b
+	go (Just b) | branchViewPrefix `isPrefixOf` fromRef b =
+		headMaybe . filter (\v -> branchView v == b) <$> recentViews
+	go _ = return Nothing
+
+branchViewPrefix :: String
+branchViewPrefix = "refs/heads/views"
 
 {- Generates a git branch name for a View.
  - 
@@ -66,8 +66,8 @@ currentView = do
  -}
 branchView :: View -> Git.Branch
 branchView view
-	| null name = Git.Ref "refs/heads/views"
-	| otherwise = Git.Ref $ "refs/heads/views/" ++ name
+	| null name = Git.Ref branchViewPrefix
+	| otherwise = Git.Ref $ branchViewPrefix ++ "/" ++ name
   where
 	name = intercalate ";" $ map branchcomp (viewComponents view)
 	branchcomp c
