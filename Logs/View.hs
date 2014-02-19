@@ -71,9 +71,9 @@ branchView view
   where
 	name = intercalate ";" $ map branchcomp (viewComponents view)
 	branchcomp c
-		| multiValue (viewFilter c) = branchcomp' c
+		| viewVisible c = branchcomp' c
 		| otherwise = "(" ++ branchcomp' c ++ ")"
-	branchcomp' (ViewComponent metafield viewfilter)
+	branchcomp' (ViewComponent metafield viewfilter _)
 		| metafield == tagMetaField = branchvals viewfilter
 		| otherwise = concat
 			[ forcelegal (fromMetaField metafield)

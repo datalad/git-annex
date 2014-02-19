@@ -1,0 +1,120 @@
+git-annex now has support for storing arbitrary metadata about annexed
+files. For example, this can be used to tag files, to record the author 
+of a file, etc. The metadata is synced around between repositories with
+the other information git-annex keeps track of.
+
+One nice way to use the metadata is through **views**. You can ask
+git-annex to create a view of files in the currently checked out branch
+that have certian metadata. Once you're in a view, you can move and copy
+files to adjust their metadata further. Rather than the traditional
+hierarchical directory structure, views are dynamic; you can easily
+refine or reorder a view.
+
+Let's get started by setting some tags on files. No views yet, just some
+metadata:
+
+	# git annex metadata --tag todo work/2014/*
+	# git annex metadata --untag todo work/2014/done/*
+	# git annex metadata --tag urgent work/2014/presentation_for_tomorrow.odt
+	# git annex metadata --tag done work/2013/* work/2014/done/*
+	# git annex metadata --tag work work
+	# git annex metadata --tag video videos
+	# git annex metadata --tag work videos/operating_heavy_machinery.mov
+	# git annex metadata --tag done videos/old
+	# git annex metadata --tag new videos/lotsofcats.ogv
+	# git annex metadata --tag sound podcasts
+	# git annex metadata --tag done podcasts/old
+	# git annex metadata --tag new podcasts/recent
+
+So, you had a bunch of different kinds of files sorted into a directory
+structure. But that didn't really reflect how you approach the files.
+Adding some tags lets you categorize the files in different ways.
+
+Ok, metadata is in place, but how to use it? Time to change views!
+
+	# git annex view tag=*
+	view  (searching...)
+
+	Switched to branch 'views/_'
+	ok
+
+This searched for all files with any tag, and created a new git branch
+that sorts the files according to their tags.
+
+	# tree -d
+	work
+	todo
+	urgent
+	done
+	new
+	video
+	sound
+
+Notice that a single file may appear in multiple directories
+depending on its tags. For example, `lotsofcats.ogv` is in
+both `new/` and `video/`.
+
+Ah, but you're at work now, and don't want to be distracted by cat videos.
+Time to filter the view:
+
+	# git annex vfilter tag=work
+	vfilter
+	Switched to branch 'views/(work)/_'
+	ok
+
+Now only the work files are in the view, and they're otherwise categorized
+according to their other tags. So you can check the `urgent/` directory
+to see what's next, and look in `todo/` for other work related files.
+
+Now that you're in a tag based view, you can move files around between the
+directories, and when you commit your changes to git, their tags will be
+updated.
+
+	# git mv urgent/presentation_for_tomorrow_{work;2014}.odt ../done
+	# git commit -m "a good day's work"
+	metadata tag-=urgent
+	metadata tag+=done
+
+You can return to a previous view by running `git annex vpop`. If you pop
+all the way out of all views, you'll be back on the regular git branch you
+originally started from. You can also use `git checkout` to switch between
+views and other branches.
+
+Beyond simple tags, you can add whatever kinds of metadata you like, and
+use that metadata in more elaborate views. For example, let's add a year
+field.
+
+	# git checkout master
+	# git annex metadata --set year=2014 work/2014
+	# git annex metadata --set year=2013 work/2013
+	# git annex view year=* tag=*
+
+Now you're in a view with two levels of directories, first by year and then
+by tag.
+
+	# tree -d
+	2014
+	  |-- work
+          |-- todo
+	  |-- urgent
+          `-- done
+	2013
+	  |-- work
+	  `-- done
+
+Oh, did you want it the other way around? Easy!
+
+	# git annex vcycle
+	# tree -d
+	work
+	  |-- 2014
+	  `-- 2013
+	todo
+	  `-- 2014
+	urgent
+	  `-- 2014
+	done
+	  |-- 2014
+	  `-- 2013
+
+This has probably only scratched the surface of what you can do with views.

@@ -28,11 +28,12 @@ instance Arbitrary View where
 data ViewComponent = ViewComponent
 	{ viewField :: MetaField
 	, viewFilter :: ViewFilter
+	, viewVisible :: Bool
 	}
 	deriving (Eq, Read, Show)
 
 instance Arbitrary ViewComponent where
-	arbitrary = ViewComponent <$> arbitrary <*> arbitrary
+	arbitrary = ViewComponent <$> arbitrary <*> arbitrary <*> arbitrary
 
 {- Only files with metadata matching the view are displayed. -}
 type FileView = FilePath

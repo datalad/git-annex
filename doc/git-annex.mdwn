@@ -722,10 +722,10 @@ subdirectories).
   shown in the view.
   
   Multiple values for a metadata field can be specified, either by using
-  a glob (field="\*") or by listing each wanted value. The resulting view
+  a glob (`field="*"`) or by listing each wanted value. The resulting view
   will put files in subdirectories according to the value of their fields.
-  
-  Once within a view, you can make additional subdirectories, and
+
+  Once within a view, you can make additional directories, and
   copy or move files into them. When you commit, the metadata will
   be updated to correspond to your changes.
 
@@ -736,16 +736,28 @@ subdirectories).
 
   The optional number tells how many views to pop.
 
-* `vadd [field=value ...] [tag ...]`
+* `vfilter [field=value ...] [tag ...]`
 
-  Refines the currently checked out view branch, adding additional fields
-  or tags.
+  Filters the current view to only the files that have the
+  specified values and tags.
+
+* `vadd [field=glob ...]`
+
+  Changes the current view, adding an additional level of directories
+  to categorize the files.
+
+  For example, when the view is by author/tag, `vadd year=*` will 
+  change it to year/author/tag. 
+  
+  So will `vadd year=2014 year=2013`, but limiting the years in view
+  to only those two.
 
 * `vcycle`
 
   When a view involves nested subdirectories, this cycles the order.
-  For example, when the view has date/author/tag, vcycle will switch
-  it to author/tag/date.
+
+  For example, when the view is by year/author/tag, `vcycle` will switch
+  it to author/tag/year.
 
 # UTILITY COMMANDS
 

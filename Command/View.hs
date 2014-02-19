@@ -53,12 +53,9 @@ parseViewParam s = case separate (== '=') s of
 mkView :: [String] -> Annex View
 mkView params = do
 	v <- View <$> viewbranch <*> pure []
-	return $ calc v $ reverse params
+	return $ fst $ refineView v $
+		map parseViewParam $ reverse params
   where
-	calc v [] = v
-	calc v (p:ps) =
-		let (v', _) = uncurry (refineView v) (parseViewParam p)
-		in calc v' ps
 	viewbranch = fromMaybe (error "not on any branch!")
 		<$> inRepo Git.Branch.current
 

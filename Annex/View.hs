@@ -44,11 +44,7 @@ import Text.Regex.TDFA.String
 import Text.Regex
 #endif
 
-
-data ViewChange = Unchanged | Narrowing | Widening
-	deriving (Ord, Eq, Show)
-
-{- Each multivalued ViewFilter in a view results in another level of
+{- Each visible ViewFilter in a view results in another level of
  - subdirectory nesting. When a file matches multiple ways, it will appear
  - in multiple subdirectories. This means there is a bit of an exponential
  - blowup with a single file appearing in a crazy number of places!
@@ -60,16 +56,38 @@ viewTooLarge :: View -> Bool
 viewTooLarge view = visibleViewSize view > 5
 
 visibleViewSize :: View -> Int
-visibleViewSize = length . filter (multiValue . viewFilter) . viewComponents
+visibleViewSize = length . filter viewVisible . viewComponents
 
-{- Updates a view, adding a new field to filter on (Narrowing), 
- - or allowing a new value in an existing field (Widening). -}
-refineView :: View -> MetaField -> String -> (View, ViewChange)
-refineView view field wanted
+data ViewChange = Unchanged | Narrowing | Widening
+	deriving (Ord, Eq, Show)
+
+{- Updates a view, adding new fields to filter on (Narrowing), 
+ - or allowing new values in an existing field (Widening). -}
+refineView :: View -> [(MetaField, String)] -> (View, ViewChange)
+refineView = go Unchanged
+  where
+  	go c v [] = (v, c)
+	go c v ((f, s):rest) =
+		let (v', c') = refineView' v f s
+		in go (max c c') v' rest
+
+{- Adds an additional filter to a view. This can only result in narrowing
+ - the view. Multivalued filters are added in non-visible form. -}
+filterView :: View -> [(MetaField, String)] -> View
+filterView v vs = v { viewComponents = viewComponents f' ++ viewComponents v}
+  where
+	f = fst $ refineView (v {viewComponents = []}) vs
+	f' = f { viewComponents = map toinvisible (viewComponents f) }
+	toinvisible c = c { viewVisible = False }
+
+refineView' :: View -> MetaField -> String -> (View, ViewChange)
+refineView' view field wanted
 	| field `elem` (map viewField components) = 
 		let (components', viewchanges) = runWriter $ mapM updatefield components
 		in (view { viewComponents = components' }, maximum viewchanges)
-	| otherwise = let view' = view { viewComponents = ViewComponent field viewfilter : components }
+	| otherwise = 
+		let component = ViewComponent field viewfilter (multiValue viewfilter)
+		    view' = view { viewComponents = component : components }
 		in if viewTooLarge view'
 			then error $ "View is too large (" ++ show (visibleViewSize view') ++ " levels of subdirectories)"
 			else (view', Narrowing)
@@ -173,8 +191,8 @@ fileViews view =
 					else map (</> mkfileview file) paths
   where
 	visible = map (fromJust . snd) .
-		filter (multiValue . fst) .
-		zip (map viewFilter (viewComponents view))
+		filter (viewVisible . fst) .
+		zip (viewComponents view)
 
 {- Checks if metadata matches a ViewComponent filter, and if so
  - returns the value, or values that match. Self-memoizing on ViewComponent. -}
@@ -255,7 +273,7 @@ pathProduct (l:ls) = foldl combinel l ls
 fromView :: View -> FileView -> MetaData
 fromView view f = foldr (uncurry updateMetaData) newMetaData (zip fields values)
   where
-	visible = filter (multiValue . viewFilter) (viewComponents view)
+	visible = filter viewVisible (viewComponents view)
 	fields = map viewField visible
 	paths = splitDirectories $ dropFileName f
 	values = map fromViewPath paths
@@ -263,15 +281,15 @@ fromView view f = foldr (uncurry updateMetaData) newMetaData (zip fields values)
 {- Constructing a view that will match arbitrary metadata, and applying
  - it to a file yields a set of FileViews which all contain the same
  - MetaFields that were present in the input metadata
- - (excluding fields that are not multivalued). -}
-prop_view_roundtrips :: FilePath -> MetaData -> Bool
-prop_view_roundtrips f metadata = null f || viewTooLarge view ||
+ - (excluding fields that are not visible). -}
+prop_view_roundtrips :: FilePath -> MetaData -> Bool -> Bool
+prop_view_roundtrips f metadata visible = null f || viewTooLarge view ||
 	all hasfields (fileViews view fileViewFromReference f metadata)
   where
 	view = View (Git.Ref "master") $
-		map (\(mf, mv) -> ViewComponent mf (FilterValues $ S.filter (not . null . fromMetaValue) mv))
+		map (\(mf, mv) -> ViewComponent mf (FilterValues $ S.filter (not . null . fromMetaValue) mv) visible)
 			(fromMetaData metadata)
-	visiblefields = sort (map viewField $ filter (multiValue . viewFilter) (viewComponents view))
+	visiblefields = sort (map viewField $ filter viewVisible (viewComponents view))
 	hasfields fv = sort (map fst (fromMetaData (fromView view fv))) == visiblefields
 
 {- Applies a view to the currently checked out branch, generating a new
@@ -282,7 +300,8 @@ applyView view = applyView' fileViewFromReference view
 
 {- Generates a new branch for a View, which must be a more narrow
  - version of the View originally used to generate the currently
- - checked out branch.
+ - checked out branch. That is, it must match a subset of the files
+ - in view, not any others.
  -}
 narrowView :: View -> Annex Git.Branch
 narrowView = applyView' fileViewReuse
@@ -405,3 +424,6 @@ withIndex :: Annex a -> Annex a
 withIndex a = do
 	f <- fromRepo gitAnnexViewIndex
 	withIndexFile f a
+
+withCurrentView :: (View -> Annex a) -> Annex a
+withCurrentView a = maybe (error "Not in a view.") a =<< currentView

@@ -29,6 +29,7 @@ import qualified Command.ReKey
 import qualified Command.MetaData
 import qualified Command.View
 import qualified Command.VAdd
+import qualified Command.VFilter
 import qualified Command.VPop
 import qualified Command.VCycle
 import qualified Command.Reinject
@@ -142,6 +143,7 @@ cmds = concat
 	, Command.MetaData.def
 	, Command.View.def
 	, Command.VAdd.def
+	, Command.VFilter.def
 	, Command.VPop.def
 	, Command.VCycle.def
 	, Command.Fix.def

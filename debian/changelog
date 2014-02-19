@@ -7,9 +7,9 @@ git-annex (5.20140211) UNRELEASED; urgency=medium
     to limit them to acting on files that have particular metadata.
   * view: New command that creates and checks out a branch that provides
     a structured view of selected metadata.
-  * vadd, vpop, vcycle: New commands for operating within views.
-  * pre-commit: Update metadata when committing changes to annexed files
-    within a view.
+  * vfilter, vadd, vpop, vcycle: New commands for operating within views.
+  * pre-commit: Update metadata when committing changes to locations
+    of annexed files within a view.
   * Add progress display for transfers to/from external special remotes.
   * Windows webapp: Can set up box.com, Amazon S3, and rsync.net remotes
   * Windows webapp: Can create repos on removable drives.
