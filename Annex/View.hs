@@ -17,11 +17,13 @@ import qualified Git.LsFiles
 import Git.UpdateIndex
 import Git.Sha
 import Git.HashObject
+import Git.Types
 import qualified Backend
 import Annex.Index
 import Annex.Link
 import Logs.MetaData
 import Logs.View
+import Utility.FileMode
 
 import qualified Data.Set as S
 import System.Path.WildMatch
@@ -259,14 +261,27 @@ applyView' mkfileview view = do
 			void $ stopUpdateIndex uh
 			void clean
   where
-	go uh hasher f Nothing = noop -- TODO dotfiles
 	go uh hasher f (Just (k, _)) = do
 		metadata <- getCurrentMetaData k
 		forM_ (fileViews view mkfileview f metadata) $ \fv -> do
-			linktarget <- inRepo $ gitAnnexLink fv k
-			sha <- hashSymlink' hasher linktarget
-			liftIO . Git.UpdateIndex.streamUpdateIndex' uh
-				=<< inRepo (Git.UpdateIndex.stageSymlink fv sha)
+			stagesymlink uh hasher fv =<< inRepo (gitAnnexLink fv k)
+	go uh hasher f Nothing
+		| "." `isPrefixOf` f = do
+			s <- liftIO $ getSymbolicLinkStatus f
+			if isSymbolicLink s
+				then stagesymlink uh hasher f =<< liftIO (readSymbolicLink f)
+				else do
+					sha <- liftIO $ Git.HashObject.hashFile hasher f
+					let blobtype = if isExecutable (fileMode s)
+						then ExecutableBlob
+						else FileBlob
+					liftIO . Git.UpdateIndex.streamUpdateIndex' uh
+						=<< inRepo (Git.UpdateIndex.stageFile sha blobtype f)
+		| otherwise = noop
+	stagesymlink uh hasher f linktarget = do
+		sha <- hashSymlink' hasher linktarget
+		liftIO . Git.UpdateIndex.streamUpdateIndex' uh
+			=<< inRepo (Git.UpdateIndex.stageSymlink f sha)
 
 {- Applies a view to the reference branch, generating a new branch
  - for the View.
