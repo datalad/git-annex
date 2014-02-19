@@ -106,7 +106,10 @@ push = do
 			showAction "pushing new git-annex branch to origin"
 			showOutput
 			inRepo $ Git.Command.run
-				[Param "push", Param "origin", Param $ show Annex.Branch.name]
+				[ Param "push"
+				, Param "origin"
+				, Param $ Git.fromRef Annex.Branch.name
+				]
 		_ -> do
 			-- no origin exists, so just let the user
 			-- know about the new branch

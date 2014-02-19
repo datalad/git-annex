@@ -13,6 +13,7 @@ import Assistant.Common
 import Assistant.Types.NetMessager
 import Assistant.Pairing
 import Git.Sha (extractSha)
+import Git
 
 import Network.Protocol.XMPP hiding (Node)
 import Data.Text (Text)
@@ -152,7 +153,7 @@ pushMessage = gitAnnexMessage . encode
   where
 	encode (CanPush u shas) =
 		gitAnnexTag canPushAttr $ T.pack $ unwords $
-			fromUUID u : map show shas
+			fromUUID u : map fromRef shas
 	encode (PushRequest u) =
 		gitAnnexTag pushRequestAttr $ T.pack $ fromUUID u
 	encode (StartingPush u) =

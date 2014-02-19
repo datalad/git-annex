@@ -24,20 +24,11 @@ import Types.MetaData
 import qualified Git
 import qualified Git.Branch
 import qualified Git.Ref
+import Git.Types
 import Utility.Tmp
 
 import qualified Data.Set as S
 import Data.Char
-
-showLog :: View -> String
-showLog (View branch components) = show branch ++ " " ++ show components
-
-parseLog :: String -> Maybe View
-parseLog s = 
-	let (branch, components) = separate (== ' ') s
-	in View
-		<$> pure (Git.Ref branch)
-		<*> readish components
 
 setView :: View -> Annex ()
 setView v = do
@@ -47,7 +38,7 @@ setView v = do
 writeViews :: [View] -> Annex ()
 writeViews l = do
 	f <- fromRepo gitAnnexViewLog
-	liftIO $ viaTmp writeFile f $ unlines $ map showLog l
+	liftIO $ viaTmp writeFile f $ unlines $ map show l
 
 removeView :: View -> Annex ()
 removeView v = writeViews =<< filter (/= v) <$> recentViews
@@ -55,7 +46,7 @@ removeView v = writeViews =<< filter (/= v) <$> recentViews
 recentViews :: Annex [View]
 recentViews = do
 	f <- fromRepo gitAnnexViewLog
-	liftIO $ mapMaybe parseLog . lines <$> catchDefaultIO [] (readFile f)
+	liftIO $ mapMaybe readish . lines <$> catchDefaultIO [] (readFile f)
 
 {- Gets the currently checked out view, if there is one. -}
 currentView :: Annex (Maybe View)
@@ -97,4 +88,4 @@ branchView view
 		| otherwise = map (\c -> if isAlphaNum c then c else '_') s
 
 prop_branchView_legal :: View -> Bool
-prop_branchView_legal = Git.Ref.legal False . show . branchView
+prop_branchView_legal = Git.Ref.legal False . fromRef . branchView

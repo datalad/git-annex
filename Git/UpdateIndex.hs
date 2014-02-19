@@ -79,7 +79,7 @@ lsTree (Ref x) repo streamer = do
  - a given file with a given sha. -}
 updateIndexLine :: Sha -> BlobType -> TopFilePath -> String
 updateIndexLine sha filetype file =
-	show filetype ++ " blob " ++ show sha ++ "\t" ++ indexPath file
+	show filetype ++ " blob " ++ fromRef sha ++ "\t" ++ indexPath file
 
 stageFile :: Sha -> BlobType -> FilePath -> Repo -> IO Streamer
 stageFile sha filetype file repo = do
@@ -90,7 +90,7 @@ stageFile sha filetype file repo = do
 unstageFile :: FilePath -> Repo -> IO Streamer
 unstageFile file repo = do
 	p <- toTopFilePath file repo
-	return $ pureStreamer $ "0 " ++ show nullSha ++ "\t" ++ indexPath p
+	return $ pureStreamer $ "0 " ++ fromRef nullSha ++ "\t" ++ indexPath p
 
 {- A streamer that adds a symlink to the index. -}
 stageSymlink :: FilePath -> Sha -> Repo -> IO Streamer

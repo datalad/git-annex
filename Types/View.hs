@@ -20,7 +20,7 @@ data View = View
 	{ viewParentBranch :: Git.Branch
 	, viewComponents :: [ViewComponent]
 	}
-	deriving (Eq, Show)
+	deriving (Eq, Read, Show)
 
 instance Arbitrary View where
 	arbitrary = View <$> pure (Git.Ref "master") <*> arbitrary
@@ -29,7 +29,7 @@ data ViewComponent = ViewComponent
 	{ viewField :: MetaField
 	, viewFilter :: ViewFilter
 	}
-	deriving (Eq, Show, Read)
+	deriving (Eq, Read, Show)
 
 instance Arbitrary ViewComponent where
 	arbitrary = ViewComponent <$> arbitrary <*> arbitrary
@@ -41,7 +41,7 @@ type MkFileView = FilePath -> FileView
 data ViewFilter
 	= FilterValues (S.Set MetaValue)
 	| FilterGlob String
-	deriving (Eq, Show, Read)
+	deriving (Eq, Read, Show)
 
 instance Arbitrary ViewFilter where
 	arbitrary = do

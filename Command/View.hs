@@ -73,7 +73,7 @@ checkoutViewBranch view mkbranch = do
 	showOutput
 	ok <- inRepo $ Git.Command.runBool
 		[ Param "checkout"
-		, Param (show $ Git.Ref.base branch)
+		, Param (Git.fromRef $ Git.Ref.base branch)
 		]
 	when ok $ do
 		setView view

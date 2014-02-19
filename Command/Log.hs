@@ -140,7 +140,7 @@ getLog key os = do
 		[ Params "log -z --pretty=format:%ct --raw --abbrev=40"
 		, Param "--remove-empty"
 		] ++ os ++
-		[ Param $ show Annex.Branch.fullname
+		[ Param $ Git.fromRef Annex.Branch.fullname
 		, Param "--"
 		, Param logfile
 		]

@@ -177,7 +177,7 @@ gCryptSetup mu _ c = go $ M.lookup "gitrepo" c
 		void $ inRepo $ Git.Command.runBool
 			[ Param "push"
 			, Param remotename
-			, Param $ show Annex.Branch.fullname
+			, Param $ Git.fromRef Annex.Branch.fullname
 			]
 		g <- inRepo Git.Config.reRead
 		case Git.GCrypt.remoteRepoId g (Just remotename) of

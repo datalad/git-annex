@@ -192,12 +192,12 @@ pushLocal (Just branch) = do
 
 updateBranch :: Git.Ref -> Git.Repo -> IO ()
 updateBranch syncbranch g = 
-	unlessM go $ error $ "failed to update " ++ show syncbranch
+	unlessM go $ error $ "failed to update " ++ Git.fromRef syncbranch
   where
 	go = Git.Command.runBool
 		[ Param "branch"
 		, Param "-f"
-		, Param $ show $ Git.Ref.base syncbranch
+		, Param $ Git.fromRef $ Git.Ref.base syncbranch
 		] g
 
 pullRemote :: Remote -> Maybe Git.Ref -> CommandStart
@@ -283,15 +283,15 @@ pushBranch remote branch g = tryIO (directpush g) `after` syncpush g
 		, refspec branch
 		]
 	directpush = Git.Command.runQuiet $ pushparams
-		[show $ Git.Ref.base $ fromDirectBranch branch]
+		[Git.fromRef $ Git.Ref.base $ fromDirectBranch branch]
 	pushparams branches =
 		[ Param "push"
 		, Param $ Remote.name remote
 		] ++ map Param branches
 	refspec b = concat 
-		[ show $ Git.Ref.base b
+		[ Git.fromRef $ Git.Ref.base b
 		,  ":"
-		, show $ Git.Ref.base $ syncBranch b
+		, Git.fromRef $ Git.Ref.base $ syncBranch b
 		]
 
 commitAnnex :: CommandStart

@@ -24,7 +24,7 @@ check :: Annex ()
 check = do
 	b <- current_branch
 	when (b == Annex.Branch.name) $ error $
-		"cannot uninit when the " ++ show b ++ " branch is checked out"
+		"cannot uninit when the " ++ Git.fromRef b ++ " branch is checked out"
 	top <- fromRepo Git.repoPath
 	cwd <- liftIO getCurrentDirectory
 	whenM ((/=) <$> liftIO (absPath top) <*> liftIO (absPath cwd)) $
@@ -77,7 +77,7 @@ finish = do
 	-- avoid normal shutdown
 	saveState False
 	inRepo $ Git.Command.run
-		[Param "branch", Param "-D", Param $ show Annex.Branch.name]
+		[Param "branch", Param "-D", Param $ Git.fromRef Annex.Branch.name]
 	liftIO exitSuccess
 
 {- Keys that were moved out of the annex have a hard link still in the

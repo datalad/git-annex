@@ -74,7 +74,7 @@ isMissing s r = either (const True) (const False) <$> tryIO dump
   where
 	dump = runQuiet
 		[ Param "show"
-		, Param (show s)
+		, Param (fromRef s)
 		] r
 
 findShas :: Bool -> String -> [Sha]

@@ -310,7 +310,7 @@ genViewBranch :: View -> Annex () -> Annex Git.Branch
 genViewBranch view a = withIndex $ do
 	a
 	let branch = branchView view
-	void $ inRepo $ Git.Branch.commit True (show branch) branch []
+	void $ inRepo $ Git.Branch.commit True (fromRef branch) branch []
 	return branch
 
 {- Runs an action using the view index file.

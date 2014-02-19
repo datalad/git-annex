@@ -58,11 +58,11 @@ name = Git.Ref "git-annex"
 
 {- Fully qualified name of the branch. -}
 fullname :: Git.Ref
-fullname = Git.Ref $ "refs/heads/" ++ show name
+fullname = Git.Ref $ "refs/heads/" ++ fromRef name
 
 {- Branch's name in origin. -}
 originname :: Git.Ref
-originname = Git.Ref $ "origin/" ++ show name
+originname = Git.Ref $ "origin/" ++ fromRef name
 
 {- Does origin/git-annex exist? -}
 hasOrigin :: Annex Bool
@@ -87,8 +87,8 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
   where
 	go True = do
 		inRepo $ Git.Command.run
-			[Param "branch", Param $ show name, Param $ show originname]
-		fromMaybe (error $ "failed to create " ++ show name)
+			[Param "branch", Param $ fromRef name, Param $ fromRef originname]
+		fromMaybe (error $ "failed to create " ++ fromRef name)
 			<$> branchsha
 	go False = withIndex' True $
 		inRepo $ Git.Branch.commitAlways "branch created" fullname []
@@ -154,7 +154,7 @@ updateTo pairs = do
 			then "update"
 			else "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
-				" into " ++ show name
+				" into " ++ fromRef name
 		localtransitions <- parseTransitionsStrictly "local"
 			<$> getLocal transitionsLog
 		unless (null branches) $ do
@@ -291,7 +291,7 @@ files = do
 branchFiles :: Annex [FilePath]
 branchFiles = withIndex $ inRepo $ Git.Command.pipeNullSplitZombie
 	[ Params "ls-tree --name-only -r -z"
-	, Param $ show fullname
+	, Param $ fromRef fullname
 	]
 
 {- Populates the branch's index file with the current branch contents.
@@ -368,7 +368,7 @@ needUpdateIndex branchref = do
 setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
 	f <- fromRepo gitAnnexIndexStatus
-	liftIO $ writeFile f $ show ref ++ "\n"
+	liftIO $ writeFile f $ fromRef ref ++ "\n"
 	setAnnexFilePerm f
 
 {- Stages the journal into the index and returns an action that will
@@ -442,7 +442,7 @@ ignoreRefs rs = do
 	let s = S.unions [old, S.fromList rs]
 	f <- fromRepo gitAnnexIgnoredRefs
 	replaceFile f $ \tmp -> liftIO $ writeFile tmp $
-		unlines $ map show $ S.elems s
+		unlines $ map fromRef $ S.elems s
 
 getIgnoredRefs :: Annex (S.Set Git.Ref)
 getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content

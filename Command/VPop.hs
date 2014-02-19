@@ -9,6 +9,7 @@ module Command.VPop where
 
 import Common.Annex
 import Command
+import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
 import Types.View
@@ -41,7 +42,7 @@ start ps = go =<< currentView
 				showOutput
 				inRepo $ Git.Command.runBool
 					[ Param "checkout"
-					, Param $ show $ Git.Ref.base $
+					, Param $ Git.fromRef $ Git.Ref.base $
 						viewParentBranch v
 					]
 	sameparentbranch a b = viewParentBranch a == viewParentBranch b
