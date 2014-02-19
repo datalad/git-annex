@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.View where
 
 import Common.Annex
@@ -29,11 +31,16 @@ import qualified Data.Set as S
 import System.Path.WildMatch
 import "mtl" Control.Monad.Writer
 
+#ifdef WITH_TDFA
+import Text.Regex.TDFA
+import Text.Regex.TDFA.String
+#else
+import Text.Regex
+#endif
+
+
 data ViewChange = Unchanged | Narrowing | Widening
 	deriving (Ord, Eq, Show)
-
-matchGlob :: String -> String -> Bool
-matchGlob glob val = wildCheckCase glob val
 
 {- Each multivalued ViewFilter in a view results in another level of
  - subdirectory nesting. When a file matches multiple ways, it will appear
@@ -73,7 +80,7 @@ refineView view field wanted
 			return $ v { viewFilter = newvf }
 		| otherwise = return v
 
-{- Combine old and new ViewFilters, yielding a results that matches
+{- Combine old and new ViewFilters, yielding a result that matches
  - either old+new, or only new.
  -
  - If we have FilterValues and change to a FilterGlob,
@@ -96,25 +103,12 @@ combineViewFilter old@(FilterValues olds) (FilterValues news)
 combineViewFilter (FilterValues _) newglob@(FilterGlob _) =
 	(newglob, Widening)
 combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
-	| all (matchGlob oldglob . fromMetaValue) (S.toList s) = (new, Narrowing)
+	| all (matchGlob (compileGlob oldglob) . fromMetaValue) (S.toList s) = (new, Narrowing)
 	| otherwise = (new, Widening)
 combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
 	| old == new = (newglob, Unchanged)
-	| matchGlob old new = (newglob, Narrowing)
+	| matchGlob (compileGlob old) new = (newglob, Narrowing)
 	| otherwise = (newglob, Widening)
-
-{- Checks if metadata matches a filter, and if so returns the value,
- - or values that match. -}
-matchFilter :: MetaData -> ViewComponent -> Maybe [MetaValue]
-matchFilter metadata (ViewComponent metafield (FilterValues s)) = nonEmptyList $
-	S.intersection s (currentMetaDataValues metafield metadata)
-matchFilter metadata (ViewComponent metafield (FilterGlob glob)) = nonEmptyList $
-	S.filter (matchGlob glob . fromMetaValue) (currentMetaDataValues metafield metadata)
-
-nonEmptyList :: S.Set a -> Maybe [a]
-nonEmptyList s
-	| S.null s = Nothing
-	| otherwise = Just $ S.toList s
 
 {- Converts a filepath used in a reference branch to the
  - filename that will be used in the view.
@@ -153,23 +147,70 @@ fileViewReuse = takeFileName
  -
  - Of course if its MetaData does not match the View, it won't appear at
  - all.
+ -
+ - Note that for efficiency, it's useful to partially
+ - evaluate this function with the view parameter and reuse
+ - the result. The globs in the view will then be compiled and memoized.
  -}
 fileViews :: View -> MkFileView -> FilePath -> MetaData -> [FileView]
-fileViews view mkfileview file metadata
-	| any isNothing matches = []
-	| otherwise =
-		let paths = pathProduct $
-			map (map toViewPath) (visible matches)
-		in if null paths
-			then [mkfileview file]
-			else map (</> mkfileview file) paths
+fileViews view = 
+	let matchers = map viewComponentMatcher (viewComponents view)
+	in \mkfileview file metadata ->
+		let matches = map (\m -> m metadata) matchers
+		in if any isNothing matches
+			then []
+			else 
+				let paths = pathProduct $
+					map (map toViewPath) (visible matches)
+				in if null paths
+					then [mkfileview file]
+					else map (</> mkfileview file) paths
   where
-  	matches :: [Maybe [MetaValue]]
-	matches = map (matchFilter metadata) (viewComponents view)
-	visible :: [Maybe [MetaValue]] -> [[MetaValue]]
 	visible = map (fromJust . snd) .
 		filter (multiValue . fst) .
 		zip (map viewFilter (viewComponents view))
+
+{- Checks if metadata matches a ViewComponent filter, and if so
+ - returns the value, or values that match. Self-memoizing on ViewComponent. -}
+viewComponentMatcher :: ViewComponent -> (MetaData -> Maybe [MetaValue])
+viewComponentMatcher viewcomponent = \metadata -> 
+	let s = matcher (currentMetaDataValues metafield metadata)
+	in if S.null s then Nothing else Just (S.toList s)
+  where
+  	metafield = viewField viewcomponent
+	matcher = case viewFilter viewcomponent of
+		FilterValues s -> \values -> S.intersection s values
+		FilterGlob glob ->
+			let regex = compileGlob glob
+			in \values -> 
+				S.filter (matchGlob regex . fromMetaValue) values
+
+compileGlob :: String -> Regex
+compileGlob glob = 
+#ifdef WITH_TDFA
+	case compile (defaultCompOpt {caseSensitive = False}) defaultExecOpt regex of
+		Right r -> r
+		Left _ -> error $ "failed to compile regex: " ++ regex
+#else
+	mkRegexWithOpts regex False True
+#endif
+  where
+	regex = '^':wildToRegex glob
+
+matchGlob :: Regex -> String -> Bool
+matchGlob regex val = 
+#ifdef WITH_TDFA
+	case execute regex val of
+		Right (Just _) -> True
+		_ -> False
+#else
+	isJust $ matchRegex regex val
+#endif
+
+nonEmptyList :: S.Set a -> Maybe [a]
+nonEmptyList s
+	| S.null s = Nothing
+	| otherwise = Just $ S.toList s
 
 toViewPath :: MetaValue -> FilePath
 toViewPath = concatMap escapeslash . fromMetaValue
@@ -268,9 +309,10 @@ applyView' mkfileview view = do
 			void $ stopUpdateIndex uh
 			void clean
   where
+	genfileviews = fileViews view mkfileview -- enables memoization
 	go uh hasher f (Just (k, _)) = do
 		metadata <- getCurrentMetaData k
-		forM_ (fileViews view mkfileview f metadata) $ \fv -> do
+		forM_ (genfileviews f metadata) $ \fv -> do
 			stagesymlink uh hasher fv =<< inRepo (gitAnnexLink fv k)
 	go uh hasher f Nothing
 		| "." `isPrefixOf` f = do
