@@ -1,7 +1,8 @@
-git-annex now has support for storing arbitrary metadata about annexed
-files. For example, this can be used to tag files, to record the author 
-of a file, etc. The metadata is synced around between repositories with
-the other information git-annex keeps track of.
+git-annex now has support for storing 
+[[arbitrary metadata|design/metadata]] about annexed files. For example, this can be
+used to tag files, to record the author of a file, etc. The metadata is
+synced around between repositories with the other information git-annex
+keeps track of.
 
 One nice way to use the metadata is through **views**. You can ask
 git-annex to create a view of files in the currently checked out branch

@@ -13,19 +13,19 @@ of a field, and adding a new value of a field.
 
 ## automatically added metadata
 
-git annex add should automatically attach the current mtime of a file
+TODO git annex add should automatically attach the current mtime of a file
 when adding it.
 
 Could also automatically attach permissions.
 
-A git hook could be run by git annex add to gather more metadata.
+TODO A git hook could be run by git annex add to gather more metadata.
 For example, by examining MP3 metadata.
 
-Also auto adds metadata when adding files to filter branches. See below.
+Also auto add metadata when adding files to view branches. See below.
 
 ## derived metadata
 
-From the ctime, some additional 
+TODO From the ctime, some additional 
 metadata is derived, at least year=yyyy and probably also month, etc.
 
 This is probably not stored anywhere. It's computed on demand by a pure
@@ -36,65 +36,40 @@ sql queries if we want to go that far.)
 
 # filtered branches
 
-`git annex view year=2014 talk` should create a new branch
-view/year=2014/talk containing only files tagged with that, and
-have git check it out. In this example, all files appear in top level
-directory of repo; no subdirs.
+See [[tips/metadata_driven_views]]
 
-`git annex vadd haskell` switches to branch
-view/year=2014/talk/haskell with only the haskell talks.
+The reason to use specially named filtered branches is because it makes
+self-documenting how the repository is currently filtered.
 
-`git annex vadd year=2013 year=2012` switches to branch
-view/year=2012,2013,2014/talk/haskell. This has subdirectories 2012,
-2013 and 2014 with the matching talks.
-
-Patterns can be used in both the values of fields, and in matching tags.
-So, `year=20*` could be used to match years, and `foo/*` matches any
-tag in the foo namespace. Or even `*` to match *all* tags.
-
-`git annex vrm haskell` switches to
-view/year=2012,2013,2014/talk, which has all available talks in it.
-
-`git annex vadd conference=fosdem conference=icfp` switches to branch
-view/year=2012,2013,2014/talk/conference=fosdem,icfp. Now there
-are nested subdirectories. They follow the format of the branch,
-so 2013/icfp, 2014/fosdem, etc.
-
-`git annex view tag=haskell,debian` yields a branch with haskell
-and debian subdirectories.
-
-To see all tags, as subdirectories, `git annex view tag=*` !
-
-Files not matching the view can be included, by using 
-`git annex view --unmatched=other`. That puts all such files into
-the subdirectory other.
-
-Note that old filter branches can be deleted when switching to a new one.
-There is no need to retain them. Unless the user has committed non-annexed
-files to them, In which case, urk. The only reason to use specially named
-filtered branches is because it makes self-documenting how the repository
-is currently filtered.
+TODO: Files not matching the view should be able to be included.
+For example, it could make a "unsorted" directory containing files
+without a tag when viewing by tag. If also viewing by author, the unsorted
+directories nest.
 
 ## operations while on filtered branch
 
 * If files are removed and git commit called, git-annex should remove the
-  relevant metadata from the files. **possibly** It's not clear that
+  relevant metadata from the files.  
+  TODO: It's not clear that
   removing a file should nuke all the metadata used to filter it into the
   branch (especially if it's derived metadata like the year).
+  Currently, only metadata used for visible subdirs is added and removed
+  this way.
   Also, this is not usable in direct mode because deleting the
   file.. actually deletes it.
-* If a file is moved into a new subdirectory while in a filter branch,
+* If a file is moved into a new subdirectory while in a view branch,
   a tag is added with the subdir name. This allows on the fly tagging.
-* `git annex sync` should avoid pushing out the filter branch, but
+  **done**
+* `git annex sync` should avoid pushing out the view branch, but
   it should check if there are changes to the metadata pulled in, and update
   the branch to reflect them.
-* If `git annex add` adds a file, it gets all the metadata of the filter
+* TODO: If `git annex add` adds a file, it gets all the metadata of the filter
   branch it's added to. If it's in a relevent directory (like fosdem-2014),
   it gets that metadata automatically recorded as well.
 
 # other uses for metadata
 
-Uses are not limited to filter branches.
+Uses are not limited to view branches.
 
 `git annex checkoutmeta year=2014 talk` in a subdir of master could create the
 same tree of files filter would. The user can then commit that if desired.
@@ -112,7 +87,7 @@ tree, and do whatever it wants with it.
 # filenames
 
 The hard part of this is actually getting a useful filename to put in the
-filter branch, since git-annex only has a key which the user will not
+view branch, since git-annex only has a key which the user will not
 want to see.
 
 * Could use filename metadata for the key, recorded by git-annex add (which
@@ -121,16 +96,17 @@ want to see.
 * Could use the .map files to get a filename, but this is somewhat
   arbitrary (.map can contain multiple filenames), and is only
   currently supported in direct mode.
-* Have a reference branch (eg master) and walk it to find filenames and
+* Current approach: Have a reference branch (eg master) and walk it to
+  find filenames and
   keys. Fine as long as it can be done efficiently. Also allows including
   the subdirectory a file is in, potentially. cwebber points out that this
   is essentially a form of tracking branch. Which implies it will need to
   be updatable when the reference branch changes. Should be doable via
   diff-tree.
 
-Note that any of these filenames can in theory conflict. May need to use
-`.variant-*` like sync does on conflict to allow 2 files with same name in
-same filtered branch.
+Note that we have to take care to avoid generating conflicting filenames.
+The current approach is to embed the full directory structure inside the
+filename in the view branch.
 
 ## union merge properties
 
@@ -153,12 +129,16 @@ a tag was removed:
 
 # efficient metadata lookup
 
-Looking up metadata for filtering so far requires traversing all keys in
-the git-annex branch. This is slow. A fast cache is needed.
+Looking up metadata for view generation so far requires traversing all keys
+in the git-annex branch. This is slow. A fast cache is needed.
+
+TODO
 
 # direct mode issues
 
-Checking out a filter branch can result in any number of copies of a file
+TODO (direct mode is currently not supported with view branches)
+
+Checking out a view branch can result in any number of copies of a file
 appearing in different directories. No problem in indirect mode, but
 in direct mode these are real, expensive copies.
 
@@ -166,34 +146,36 @@ But, it's worth supporting direct mode!
 
 So, possible approaches:
 
-* Before checking out a filter branch, calculate how much space will
+* Before checking out a view branch, calculate how much space will
   be used by duplicates and refuse if not enough is free.
 * Only check out one file, and omit the copies. Keep track of which
   files were omitted, and make sure that when committing on the branch,
   that metadata is not removed. Has the downside that files can seem
   to randomly move around in the tree as their metadata changes.
-* Disallow filter branch checkouts that have duplicate files.
+* Disallow view branch checkouts that have duplicate files.
   This would cripple it some, but perhaps not too badly?
 
 # gotchas
 
-* Checking out a filter branch can remove the current subdir. May be worth
-  detecting when this happens and leaving behind an empty directory so the
-  user can navigate back up.
+* Checking out a view branch can remove the current subdir. May be worth
+  detecting when this happens and help the user.
+  **done**
 
 * Git has a complex set of rules for what is legal in a ref name.
-  Filter branch names will need to filter out any illegal stuff.
+  View branch names will need to filter out any illegal stuff. **done**
 
 * Filesystems that are not case sensative (including case preserving OSX)
-  will cause problems if filter branches try to use different cases for 
+  will cause problems if view branches try to use different cases for 
   2 directories representing the value of some metadata. But, users
   probably want at least case-preserving metadata values. 
   
   Solution might be to compare metadata case-insensitively, and
   pick one representation consistently, so if, for example an author
-  field uses mixed case, it will be used in the filter branch.
+  field uses mixed case, it will be used in the view branch.
 
   Alternatively, it could escape `A` to `_A` when such a filesystem
   is detected and avoid collisions that way (double `_` to escape it).
   This latter option is ugly, but so are non-posix filesystems.. and it
   also solves any similar issues with case-colliding filenames.
+
+  TODO: Check current state of this.
