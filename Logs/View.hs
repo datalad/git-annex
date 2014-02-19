@@ -12,6 +12,7 @@
 module Logs.View (
 	currentView,
 	setView,
+	removeView,
 	recentViews,
 	branchView,
 	prop_branchView_legal,
@@ -40,9 +41,16 @@ parseLog s =
 
 setView :: View -> Annex ()
 setView v = do
-	l <- take 99 . filter (/= v) <$> recentViews
+	old <- take 99 . filter (/= v) <$> recentViews
+	writeViews (v : old)
+
+writeViews :: [View] -> Annex ()
+writeViews l = do
 	f <- fromRepo gitAnnexViewLog
-	liftIO $ viaTmp writeFile f $ unlines $ map showLog (v : l)
+	liftIO $ viaTmp writeFile f $ unlines $ map showLog l
+
+removeView :: View -> Annex ()
+removeView v = writeViews =<< filter (/= v) <$> recentViews
 
 recentViews :: Annex [View]
 recentViews = do

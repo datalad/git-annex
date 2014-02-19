@@ -28,10 +28,11 @@ start = go =<< currentView
   where
 	go Nothing = error "Not in a view."
 	go (Just v) = do
-		vs <- dropWhile (/= v) . filter (sameparentbranch v)
-			<$> recentViews
+		showStart "vpop" ""
+		removeView v
+		vs <- filter (sameparentbranch v) <$> recentViews
 		case vs of
-			(_v:oldv:_) -> next $ next $ 
+			(oldv:_) -> next $ next $ do
 				checkoutViewBranch oldv (return . branchView)
 			_ -> next $ next $
 				inRepo $ Git.Command.runBool
