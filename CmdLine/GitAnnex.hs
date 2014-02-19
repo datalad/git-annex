@@ -27,6 +27,10 @@ import qualified Command.TransferKey
 import qualified Command.TransferKeys
 import qualified Command.ReKey
 import qualified Command.MetaData
+import qualified Command.View
+import qualified Command.VAdd
+import qualified Command.VPop
+import qualified Command.VCycle
 import qualified Command.Reinject
 import qualified Command.Fix
 import qualified Command.Init
@@ -136,6 +140,10 @@ cmds = concat
 	, Command.TransferKeys.def
 	, Command.ReKey.def
 	, Command.MetaData.def
+	, Command.View.def
+	, Command.VAdd.def
+	, Command.VPop.def
+	, Command.VCycle.def
 	, Command.Fix.def
 	, Command.Fsck.def
 	, Command.Repair.def

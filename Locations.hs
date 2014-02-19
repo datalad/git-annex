@@ -40,6 +40,8 @@ module Locations (
 	gitAnnexJournalLock,
 	gitAnnexIndex,
 	gitAnnexIndexStatus,
+	gitAnnexViewIndex,
+	gitAnnexViewLog,
 	gitAnnexIgnoredRefs,
 	gitAnnexPidFile,
 	gitAnnexDaemonStatusFile,
@@ -251,6 +253,14 @@ gitAnnexIndex r = gitAnnexDir r </> "index"
  - lock. -}
 gitAnnexIndexStatus :: Git.Repo -> FilePath
 gitAnnexIndexStatus r = gitAnnexDir r </> "index.lck"
+
+{- The index file used to generate a filtered branch view._-}
+gitAnnexViewIndex :: Git.Repo -> FilePath
+gitAnnexViewIndex r = gitAnnexDir r </> "viewindex"
+
+{- File containing a log of recently accessed views. -}
+gitAnnexViewLog :: Git.Repo -> FilePath
+gitAnnexViewLog r = gitAnnexDir r </> "viewlog"
 
 {- List of refs that should not be merged into the git-annex branch. -}
 gitAnnexIgnoredRefs :: Git.Repo -> FilePath

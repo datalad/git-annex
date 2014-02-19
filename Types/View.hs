@@ -5,29 +5,31 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Types.View where
 
 import Common.Annex
 import Types.MetaData
 import Utility.QuickCheck
+import qualified Git
 
 import qualified Data.Set as S
 
-#ifdef WITH_TDFA
-import Text.Regex.TDFA
-#else
-#endif
+{- A view is a list of fields with filters on their allowed values,
+ - which are applied to files in a parent git branch. -}
+data View = View
+	{ viewParentBranch :: Git.Branch
+	, viewComponents :: [ViewComponent]
+	}
+	deriving (Eq, Show)
 
-{- A view is a list of fields with filters on their allowed values. -}
-type View = [ViewComponent]
+instance Arbitrary View where
+	arbitrary = View <$> pure (Git.Ref "master") <*> arbitrary
 
 data ViewComponent = ViewComponent
 	{ viewField :: MetaField
 	, viewFilter :: ViewFilter
 	}
-	deriving (Show, Eq)
+	deriving (Eq, Show, Read)
 
 instance Arbitrary ViewComponent where
 	arbitrary = ViewComponent <$> arbitrary <*> arbitrary
@@ -38,34 +40,15 @@ type MkFileView = FilePath -> FileView
 
 data ViewFilter
 	= FilterValues (S.Set MetaValue)
-	| FilterGlob Glob
-
-instance Show ViewFilter where
-	show (FilterValues s) = show s
-	show (FilterGlob g) = getGlob g
-
-instance Eq ViewFilter where
-	FilterValues x == FilterValues y = x == y
-	FilterGlob x == FilterGlob y = x == y
-	_ == _ = False
+	| FilterGlob String
+	deriving (Eq, Show, Read)
 
 instance Arbitrary ViewFilter where
 	arbitrary = do
 		size <- arbitrarySizedBoundedIntegral `suchThat` (< 100)
 		FilterValues . S.fromList <$> vector size
 
-#ifdef WITH_TDFA
-data Glob = Glob String Regex
-#else
-data Glob = Glob String
-#endif
-
-instance Eq Glob where
-	a == b = getGlob a == getGlob b
-
-getGlob :: Glob -> String
-#ifdef WITH_TDFA
-getGlob (Glob g _) = g
-#else
-getGlob (Glob g) = g
-#endif
+{- Can a ViewFilter match multiple different MetaValues? -}
+multiValue :: ViewFilter -> Bool
+multiValue (FilterValues s) = S.size s > 1
+multiValue (FilterGlob _) = True

@@ -36,37 +36,37 @@ sql queries if we want to go that far.)
 
 # filtered branches
 
-`git annex filter year=2014 talk` should create a new branch
-filtered/year=2014/talk containing only files tagged with that, and
+`git annex view year=2014 talk` should create a new branch
+view/year=2014/talk containing only files tagged with that, and
 have git check it out. In this example, all files appear in top level
 directory of repo; no subdirs.
 
-`git annex fadd haskell` switches to branch
-filtered/year=2014/talk/haskell with only the haskell talks.
+`git annex vadd haskell` switches to branch
+view/year=2014/talk/haskell with only the haskell talks.
 
-`git annex fadd year=2013 year=2012` switches to branch
-filtered/year=2012,2013,2014/talk/haskell. This has subdirectories 2012,
+`git annex vadd year=2013 year=2012` switches to branch
+view/year=2012,2013,2014/talk/haskell. This has subdirectories 2012,
 2013 and 2014 with the matching talks.
 
 Patterns can be used in both the values of fields, and in matching tags.
 So, `year=20*` could be used to match years, and `foo/*` matches any
 tag in the foo namespace. Or even `*` to match *all* tags.
 
-`git annex frm haskell` switches to
-filtered/year=2012,2013,2014/talk, which has all available talks in it.
+`git annex vrm haskell` switches to
+view/year=2012,2013,2014/talk, which has all available talks in it.
 
-`git annex fadd conference=fosdem conference=icfp` switches to branch
-filtered/year=2012,2013,2014/talk/conference=fosdem,icfp. Now there
+`git annex vadd conference=fosdem conference=icfp` switches to branch
+view/year=2012,2013,2014/talk/conference=fosdem,icfp. Now there
 are nested subdirectories. They follow the format of the branch,
 so 2013/icfp, 2014/fosdem, etc.
 
-`git annex filter tag=haskell,debian` yields a branch with haskell
+`git annex view tag=haskell,debian` yields a branch with haskell
 and debian subdirectories.
 
-To see all tags, `git annex filter tag=*` !
+To see all tags, as subdirectories, `git annex view tag=*` !
 
-Files not matching the filter can be included, by using 
-`git annex filter --unmatched=other`. That puts all such files into
+Files not matching the view can be included, by using 
+`git annex view --unmatched=other`. That puts all such files into
 the subdirectory other.
 
 Note that old filter branches can be deleted when switching to a new one.

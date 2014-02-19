@@ -1,6 +1,6 @@
 {- git hash-object interface
  -
- - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2011-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ import Git.Sha
 import Git.Command
 import Git.Types
 import qualified Utility.CoProcess as CoProcess
+import Utility.Tmp
 
 type HashObjectHandle = CoProcess.CoProcessHandle
 
@@ -34,7 +35,18 @@ hashFile h file = CoProcess.query h send receive
 	send to = hPutStrLn to file
 	receive from = getSha "hash-object" $ hGetLine from
 
-{- Injects some content into git, returning its Sha. -}
+{- Injects a blob into git. Unfortunately, the current git-hash-object
+ - interface does not allow batch hashing without using temp files. -}
+hashBlob :: HashObjectHandle -> String -> IO Sha
+hashBlob h s = withTmpFile "hash" $ \tmp tmph -> do
+	hPutStr tmph s
+	hClose tmph
+	hashFile h tmp
+
+{- Injects some content into git, returning its Sha.
+ - 
+ - Avoids using a tmp file, but runs a new hash-object command each
+ - time called. -}
 hashObject :: ObjectType -> String -> Repo -> IO Sha
 hashObject objtype content = hashObject' objtype (flip hPutStr content)
 

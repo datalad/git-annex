@@ -313,6 +313,35 @@ subdirectories).
   from a remote computer.
   Note that this does not yet use HTTPS for security, so use with caution!
 
+* `view [field=value ...] [tag ...]`
+
+  Uses metadata to build a view branch of the files in the current branch,
+  and checks out the view branch. Only files in the current branch whose
+  metadata matches all the specified field values and tags will be
+  shown in the view.
+  
+  Multiple values for a metadata field can be specified, either by using
+  a glob (field="\*") or by listing each wanted value. 
+  
+  When multiple field values match, the view branch will have a
+  subdirectory for each value.
+
+* `vpop`
+
+  Switches from the currently active view back to the previous view.
+  Or, from the first view back to original branch.
+
+* `vadd [field=value ...] [tag ...]`
+
+  Refines the currently checked out view branch, adding additional fields
+  or tags.
+
+* `vcycle`
+
+  When a view involves nested subdirectories, this cycles the order.
+  For example, when the view has date/author/tag, vcycle will switch
+  it to author/tag/date.
+
 # REPOSITORY SETUP COMMANDS
 
 * `init [description]`
