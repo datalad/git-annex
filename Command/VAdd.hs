@@ -15,7 +15,7 @@ import Command.View (paramView, parseViewParam, checkoutViewBranch)
 
 def :: [Command]
 def = [notBareRepo $ notDirect $
-	command "vadd" paramView seek SectionUtility "refine current view"]
+	command "vadd" paramView seek SectionMetaData "refine current view"]
 
 seek :: CommandSeek
 seek = withWords start

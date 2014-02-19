@@ -18,7 +18,7 @@ import Data.Time.Clock.POSIX
 
 def :: [Command]
 def = [withOptions [setOption] $ command "metadata" paramPaths seek
-	SectionUtility "sets metadata of a file"]
+	SectionMetaData "sets metadata of a file"]
 
 setOption :: Option
 setOption = Option ['s'] ["set"] (ReqArg mkmod "FIELD[+-]=VALUE") "set metadata"

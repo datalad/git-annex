@@ -20,7 +20,7 @@ import Logs.View
 
 def :: [Command]
 def = [notBareRepo $ notDirect $
-	command "view" paramView seek SectionUtility "enter a view branch"]
+	command "view" paramView seek SectionMetaData "enter a view branch"]
 
 seek :: CommandSeek
 seek = withWords start

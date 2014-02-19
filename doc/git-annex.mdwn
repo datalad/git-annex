@@ -313,39 +313,6 @@ subdirectories).
   from a remote computer.
   Note that this does not yet use HTTPS for security, so use with caution!
 
-* `view [field=value ...] [tag ...]`
-
-  Uses metadata to build a view branch of the files in the current branch,
-  and checks out the view branch. Only files in the current branch whose
-  metadata matches all the specified field values and tags will be
-  shown in the view.
-  
-  Multiple values for a metadata field can be specified, either by using
-  a glob (field="\*") or by listing each wanted value. The resulting view
-  will put files in subdirectories according to the value of their fields.
-  
-  Once within a view, you can make additional subdirectories, and
-  copy or move files into them. When you commit, the metadata will
-  be updated to correspond to your changes.
-
-* `vpop [N]`
-
-  Switches from the currently active view back to the previous view.
-  Or, from the first view back to original branch.
-
-  The optional number tells how many views to pop.
-
-* `vadd [field=value ...] [tag ...]`
-
-  Refines the currently checked out view branch, adding additional fields
-  or tags.
-
-* `vcycle`
-
-  When a view involves nested subdirectories, this cycles the order.
-  For example, when the view has date/author/tag, vcycle will switch
-  it to author/tag/date.
-
 # REPOSITORY SETUP COMMANDS
 
 * `init [description]`
@@ -726,7 +693,7 @@ subdirectories).
   Note that this subcommand can be used to graph any git repository; it
   is not limited to git-annex repositories.
 
-# UTILITY COMMANDS
+# METADATA COMMANDS
 
 * `metadata [path ...] [-s field=value -s field+=value -s field-=value ...]`
 
@@ -744,6 +711,41 @@ subdirectories).
   For example, to set some tags on a file:
 
         	git annex metadata annexscreencast.ogv -s tag+=video -s tag+=screencast
+
+* `view [field=value ...] [tag ...]`
+
+  Uses metadata to build a view branch of the files in the current branch,
+  and checks out the view branch. Only files in the current branch whose
+  metadata matches all the specified field values and tags will be
+  shown in the view.
+  
+  Multiple values for a metadata field can be specified, either by using
+  a glob (field="\*") or by listing each wanted value. The resulting view
+  will put files in subdirectories according to the value of their fields.
+  
+  Once within a view, you can make additional subdirectories, and
+  copy or move files into them. When you commit, the metadata will
+  be updated to correspond to your changes.
+
+* `vpop [N]`
+
+  Switches from the currently active view back to the previous view.
+  Or, from the first view back to original branch.
+
+  The optional number tells how many views to pop.
+
+* `vadd [field=value ...] [tag ...]`
+
+  Refines the currently checked out view branch, adding additional fields
+  or tags.
+
+* `vcycle`
+
+  When a view involves nested subdirectories, this cycles the order.
+  For example, when the view has date/author/tag, vcycle will switch
+  it to author/tag/date.
+
+# UTILITY COMMANDS
 
 * `migrate [path ...]`
 
