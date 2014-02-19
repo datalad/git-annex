@@ -35,6 +35,20 @@ data ViewChange = Unchanged | Narrowing | Widening
 matchGlob :: String -> String -> Bool
 matchGlob glob val = wildCheckCase glob val
 
+{- Each multivalued ViewFilter in a view results in another level of
+ - subdirectory nesting. When a file matches multiple ways, it will appear
+ - in multiple subdirectories. This means there is a bit of an exponential
+ - blowup with a single file appearing in a crazy number of places!
+ -
+ - Capping the view size to 5 is reasonable; why wants to dig
+ - through 5+ levels of subdirectories to find anything?
+ -}
+viewTooLarge :: View -> Bool
+viewTooLarge view = visibleViewSize view > 5
+
+visibleViewSize :: View -> Int
+visibleViewSize = length . filter (multiValue . viewFilter) . viewComponents
+
 {- Updates a view, adding a new field to filter on (Narrowing), 
  - or allowing a new value in an existing field (Widening). -}
 refineView :: View -> MetaField -> String -> (View, ViewChange)
@@ -42,7 +56,10 @@ refineView view field wanted
 	| field `elem` (map viewField components) = 
 		let (components', viewchanges) = runWriter $ mapM updatefield components
 		in (view { viewComponents = components' }, maximum viewchanges)
-	| otherwise = (view { viewComponents = ViewComponent field viewfilter : components }, Narrowing)
+	| otherwise = let view' = view { viewComponents = ViewComponent field viewfilter : components }
+		in if viewTooLarge view'
+			then error $ "View is too large (" ++ show (visibleViewSize view') ++ " levels of subdirectories)"
+			else (view', Narrowing)
   where
   	components = viewComponents view
 	viewfilter
@@ -85,17 +102,6 @@ combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
 	| old == new = (newglob, Unchanged)
 	| matchGlob old new = (newglob, Narrowing)
 	| otherwise = (newglob, Widening)
-
-{- Each multivalued ViewFilter in a view results in another level of
- - subdirectory nesting. When a file matches multiple ways, it will appear
- - in multiple subdirectories. This means there is a bit of an exponential
- - blowup with a single file appearing in a crazy number of places!
- -
- - Capping the view size to 5 is reasonable; why wants to dig
- - through 5+ levels of subdirectories to find anything?
- -}
-viewTooLarge :: View -> Bool
-viewTooLarge view = length (filter (multiValue . viewFilter) (viewComponents view)) > 5
 
 {- Checks if metadata matches a filter, and if so returns the value,
  - or values that match. -}
