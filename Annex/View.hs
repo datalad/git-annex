@@ -116,7 +116,7 @@ nonEmptyList s
  - in some way. However, the branch's directory structure is not relevant
  - in the view.
  -
- - So, from dir/subdir/file.foo, generate file{dir}{subdir}.foo
+ - So, from dir/subdir/file.foo, generate file_{dir;subdir}.foo
  -
  - (To avoid collisions with a filename that already contains {foo},
  - that is doubled to {{foo}}.)
@@ -124,7 +124,7 @@ nonEmptyList s
 fileViewFromReference :: MkFileView
 fileViewFromReference f = concat
 	[ double base
-	, concatMap (\d -> "{" ++ double d ++ "}") dirs
+	, if null dirs then "" else "_{" ++ double (intercalate ";" dirs) ++ "}"
 	, double $ concat extensions
 	]
   where
@@ -133,6 +133,9 @@ fileViewFromReference f = concat
 	(base, extensions) = splitShortExtensions basefile
 
 	double = replace "{" "{{" . replace "}" "}}"
+
+fileViewReuse :: MkFileView
+fileViewReuse = takeFileName
 
 {- Generates views for a file from a branch, based on its metadata
  - and the filename used in the branch.
@@ -225,16 +228,14 @@ prop_view_roundtrips f metadata = null f || viewTooLarge view ||
  - branch for the view.
  -}
 applyView :: View -> Annex Git.Branch
-applyView view = do
-	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
-	applyView' fileViewFromReference view
+applyView view = applyView' fileViewFromReference view
 
 {- Generates a new branch for a View, which must be a more narrow
  - version of the View originally used to generate the currently
  - checked out branch.
  -}
 narrowView :: View -> Annex Git.Branch
-narrowView = applyView' id
+narrowView = applyView' fileViewReuse
 
 {- Go through each file in the currently checked out branch.
  - If the file is not annexed, skip it, unless it's a dotfile in the top.
@@ -247,6 +248,7 @@ applyView' :: MkFileView -> View -> Annex Git.Branch
 applyView' mkfileview view = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
+	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
 	genViewBranch view $ do
 		uh <- inRepo Git.UpdateIndex.startUpdateIndex
 		hasher <- inRepo hashObjectStart
