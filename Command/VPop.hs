@@ -17,27 +17,32 @@ import Command.View (checkoutViewBranch)
 
 def :: [Command]
 def = [notBareRepo $ notDirect $
-	command "vpop" paramNothing seek SectionUtility
+	command "vpop" (paramOptional paramNumber) seek SectionUtility
 	"switch back to previous view"]
 
 seek :: CommandSeek
-seek = withNothing start
+seek = withWords start
 
-start ::CommandStart
-start = go =<< currentView
+start :: [String] -> CommandStart
+start ps = go =<< currentView
   where
 	go Nothing = error "Not in a view."
 	go (Just v) = do
-		showStart "vpop" ""
+		showStart "vpop" (show num)
 		removeView v
-		vs <- filter (sameparentbranch v) <$> recentViews
+		vs <- drop (num - 1) . filter (sameparentbranch v)
+			<$> recentViews
 		case vs of
 			(oldv:_) -> next $ next $ do
+				showOutput
 				checkoutViewBranch oldv (return . branchView)
-			_ -> next $ next $
+			_ -> next $ next $ do
+				showOutput
 				inRepo $ Git.Command.runBool
 					[ Param "checkout"
 					, Param $ show $ Git.Ref.base $
 						viewParentBranch v
 					]
 	sameparentbranch a b = viewParentBranch a == viewParentBranch b
+
+	num = fromMaybe 1 $ readish =<< headMaybe ps 

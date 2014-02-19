@@ -70,6 +70,7 @@ checkoutViewBranch view mkbranch = do
 	liftIO . setCurrentDirectory =<< fromRepo Git.repoPath
 	branch <- mkbranch view
 	
+	showOutput
 	ok <- inRepo $ Git.Command.runBool
 		[ Param "checkout"
 		, Param (show $ Git.Ref.base branch)
