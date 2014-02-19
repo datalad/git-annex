@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+When adding files to the annex and then deciding against it in an "unusual" way, git-annex gets confused and the file left behind can't be removed from the annex...
+
+### What steps will reproduce the problem?
+
+1. Add file with "git annex add"
+2. Decide you don't need the file add all
+3. "git rm -f newfile"
+4. "git annex unused"
+5. "git annex dropunused all"
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20140210 on Debian unstable
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$ git init
+Initialized empty Git repository in /tmp/foo/.git/
+$ ls -l
+total 0
+$ cp ~/download/hub-ctrl.c .
+$ git add hub-ctrl.c
+$ git commit
+[master (root-commit) ed7eb68] A file.
+ 1 file changed, 412 insertions(+)
+ create mode 100644 hub-ctrl.c
+$ cp ~/download/hub-ctrl .
+$ ls -l
+total 28
+-rwxr-xr-x 1 tobias tobias 14130 Feb 19 00:49 hub-ctrl
+-rw-r--r-- 1 tobias tobias  9270 Feb 19 00:48 hub-ctrl.c
+$ git annex init
+init  ok
+(Recording state in git...)
+$ git annex add
+add hub-ctrl ok
+(Recording state in git...)
+$ git status
+On branch master
+Changes to be committed:
+  (use "git reset HEAD <file>..." to unstage)
+
+	new file:   hub-ctrl
+
+$ git rm hub-ctrl
+error: the following file has changes staged in the index:
+    hub-ctrl
+(use --cached to keep the file, or -f to force removal)
+$ git rm -f hub-ctrl
+rm 'hub-ctrl'
+$ git status
+On branch master
+nothing to commit, working directory clean
+$ git annex unused
+unused . (checking for unused data...) (checking HEAD...) 
+  Some annexed data is no longer used by any files:
+    NUMBER  KEY
+    1       SHA256E-s14130--d4e777ba2b99ed0a520fbabe7b93cf2165373b4945afe8dcb626231d9051f19d
+  (To see where data was previously used, try: git log --stat -S'KEY')
+  
+  To remove unwanted data: git-annex dropunused NUMBER
+  
+ok
+$ git annex dropunused all
+dropunused 1 (unsafe) 
+  Could only verify the existence of 0 out of 1 necessary copies
+
+  Rather than dropping this file, try using: git annex move
+
+  (Use --force to override this check, or adjust numcopies.)
+failed
+git-annex: dropunused: 1 failed
+$
+
+# End of transcript or log.
+"""]]
