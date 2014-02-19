@@ -207,11 +207,6 @@ matchGlob regex val =
 	isJust $ matchRegex regex val
 #endif
 
-nonEmptyList :: S.Set a -> Maybe [a]
-nonEmptyList s
-	| S.null s = Nothing
-	| otherwise = Just $ S.toList s
-
 toViewPath :: MetaValue -> FilePath
 toViewPath = concatMap escapeslash . fromMetaValue
   where
