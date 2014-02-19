@@ -30,8 +30,9 @@ start ps = go =<< currentView
 	go (Just v) = do
 		showStart "vpop" (show num)
 		removeView v
-		vs <- drop (num - 1) . filter (sameparentbranch v)
+		(oldvs, vs) <- splitAt (num - 1) . filter (sameparentbranch v)
 			<$> recentViews
+		mapM_ removeView oldvs
 		case vs of
 			(oldv:_) -> next $ next $ do
 				showOutput
