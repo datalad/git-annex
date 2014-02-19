@@ -328,13 +328,8 @@ subdirectories).
 
 * `vadd [field=value ...] [tag ...]`
 
-  Can be used when already in a view to add additional fields or tags
-  to the view.
-
-* `vrm [field=value ...] [tag ...]`
-
-  Can be used when already in a view to remove fields or tags from the
-  view.
+  Refines the currently checked out view branch, adding additional fields
+  or tags.
 
 * `vpop`
 

@@ -39,7 +39,7 @@ start params = do
 
 perform :: View -> CommandPerform
 perform view = do
-	showSideAction "calculating"
+	showSideAction "searching"
 	branch <- applyView view
 	next $ checkoutViewBranch view branch
 
