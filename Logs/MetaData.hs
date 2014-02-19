@@ -28,8 +28,6 @@
 module Logs.MetaData (
 	getCurrentMetaData,
 	getMetaData,
-	setMetaData,
-	unsetMetaData,
 	addMetaData,
 	addMetaData',
 	currentMetaData,
@@ -57,16 +55,6 @@ getCurrentMetaData :: Key -> Annex MetaData
 getCurrentMetaData = currentMetaData . collect <$$> getMetaData
   where
 	collect = foldl' unionMetaData newMetaData . map value . S.toAscList
-
-setMetaData :: Key -> MetaField -> String -> Annex ()
-setMetaData = setMetaData' True
-
-unsetMetaData :: Key -> MetaField -> String -> Annex ()
-unsetMetaData = setMetaData' False
-
-setMetaData' :: Bool -> Key -> MetaField -> String -> Annex ()
-setMetaData' isset k field s = addMetaData k $
-	updateMetaData field (mkMetaValue (CurrentlySet isset) s) newMetaData
 
 {- Adds in some metadata, which can override existing values, or unset
  - them, but otherwise leaves any existing metadata as-is. -}

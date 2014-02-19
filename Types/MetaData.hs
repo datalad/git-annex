@@ -22,12 +22,14 @@ module Types.MetaData (
 	toMetaValue,
 	mkMetaValue,
 	unsetMetaValue,
+	unsetMetaData,
 	fromMetaValue,
 	fromMetaData,
 	newMetaData,
 	updateMetaData,
 	unionMetaData,
 	differenceMetaData,
+	isSet,
 	currentMetaData,
 	currentMetaDataValues,
 	metaDataValues,
@@ -136,6 +138,10 @@ mkMetaValue = MetaValue
 
 unsetMetaValue :: MetaValue -> MetaValue
 unsetMetaValue (MetaValue _ s) = MetaValue (CurrentlySet False) s
+
+{- Marks all MetaValues as no longer currently set. -}
+unsetMetaData :: MetaData -> MetaData
+unsetMetaData (MetaData m) = MetaData $ M.map (S.map unsetMetaValue) m
 
 fromMetaField :: MetaField -> String
 fromMetaField (MetaField f) = f

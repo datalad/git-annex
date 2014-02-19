@@ -13,19 +13,25 @@ import Common.Annex
 import Types.View
 import Types.MetaData
 import qualified Git
-import qualified Git.DiffTree
+import qualified Git.DiffTree as DiffTree
 import qualified Git.Branch
 import qualified Git.LsFiles
+import qualified Git.Ref
 import Git.UpdateIndex
 import Git.Sha
 import Git.HashObject
 import Git.Types
+import Git.FilePath
 import qualified Backend
 import Annex.Index
 import Annex.Link
+import Annex.CatFile
 import Logs.MetaData
 import Logs.View
 import Utility.FileMode
+import Types.Command
+import Config
+import CmdLine.Action
 
 import qualified Data.Set as S
 import System.Path.WildMatch
@@ -337,13 +343,49 @@ applyView' mkfileview view = do
  -}
 updateView :: View -> Git.Ref -> Git.Ref -> Annex Git.Branch
 updateView view ref oldref = genViewBranch view $ do
-	(diffs, cleanup) <- inRepo $ Git.DiffTree.diffTree oldref ref
+	(diffs, cleanup) <- inRepo $ DiffTree.diffTree oldref ref
 	forM_ diffs go
 	void $ liftIO cleanup
   where
 	go diff
-		| Git.DiffTree.dstsha diff == nullSha = error "TODO delete file"
+		| DiffTree.dstsha diff == nullSha = error "TODO delete file"
 		| otherwise = error "TODO add file"
+
+{- Diff between currently checked out branch and staged changes, and
+ - update metadata to reflect the changes that are being committed to the
+ - view.
+ -
+ - Adding a file to a directory adds the metadata represented by
+ - that directory to the file, and removing a file from a directory
+ - removes the metadata.
+ -
+ - Note that removes must be handled before adds. This is so
+ - that moving a file from x/foo/ to x/bar/ adds back the metadata for x.
+ -}
+withViewChanges :: (FileView -> Key -> CommandStart) -> (FileView -> Key -> CommandStart) -> Annex ()
+withViewChanges addmeta removemeta = do
+	makeabs <- flip fromTopFilePath <$> gitRepo
+	(diffs, cleanup) <- inRepo $ DiffTree.diffIndex Git.Ref.headRef
+	forM_ diffs handleremovals
+	forM_ diffs (handleadds makeabs)
+	void $ liftIO cleanup
+  where
+	handleremovals item
+		| DiffTree.srcsha item /= nullSha =
+			handle item removemeta
+				=<< catKey (DiffTree.srcsha item) (DiffTree.srcmode item)
+		| otherwise = noop
+	handleadds makeabs item
+		| DiffTree.dstsha item /= nullSha = 
+			handle item addmeta
+				=<< ifM isDirect
+					( catKey (DiffTree.dstsha item) (DiffTree.dstmode item)
+					-- optimisation
+					, isAnnexLink $ makeabs $ DiffTree.file item
+					)
+		| otherwise = noop
+	handle item a = maybe noop
+		(void . commandAction . a (getTopFilePath $ DiffTree.file item))
 
 {- Generates a branch for a view. This is done using a different index
  - file. An action is run to stage the files that will be in the branch.

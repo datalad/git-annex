@@ -321,10 +321,12 @@ subdirectories).
   shown in the view.
   
   Multiple values for a metadata field can be specified, either by using
-  a glob (field="\*") or by listing each wanted value. 
+  a glob (field="\*") or by listing each wanted value. The resulting view
+  will put files in subdirectories according to the value of their fields.
   
-  When multiple field values match, the view branch will have a
-  subdirectory for each value.
+  Once within a view, you can make additional subdirectories, and
+  copy or move files into them. When you commit, the metadata will
+  be updated to correspond to your changes.
 
 * `vpop [N]`
 
@@ -801,7 +803,8 @@ subdirectories).
 
   Fixes up symlinks that are staged as part of a commit, to ensure they
   point to annexed content. Also handles injecting changes to unlocked
-  files into the annex.
+  files into the annex. When in a view, updates metadata to reflect changes
+  made to files in the view.
 
 * `lookupkey [file ...]`
 
