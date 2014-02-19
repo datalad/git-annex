@@ -73,13 +73,11 @@ branchView view
 	branchcomp c
 		| viewVisible c = branchcomp' c
 		| otherwise = "(" ++ branchcomp' c ++ ")"
-	branchcomp' (ViewComponent metafield viewfilter _)
-		| metafield == tagMetaField = branchvals viewfilter
-		| otherwise = concat
-			[ forcelegal (fromMetaField metafield)
-			, "="
-			, branchvals viewfilter
-			]
+	branchcomp' (ViewComponent metafield viewfilter _) =concat
+		[ forcelegal (fromMetaField metafield)
+		, "="
+		, branchvals viewfilter
+		]
 	branchvals (FilterValues set) = intercalate "," $
 		map (forcelegal . fromMetaValue) $ S.toList set
 	branchvals (FilterGlob glob) = forcelegal glob
