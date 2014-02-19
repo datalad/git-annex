@@ -17,16 +17,28 @@ import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
 def :: [Command]
-def = [withOptions [setOption] $ command "metadata" paramPaths seek
+def = [withOptions [setOption, tagOption, untagOption] $
+	command "metadata" paramPaths seek
 	SectionMetaData "sets metadata of a file"]
+
+storeModMeta :: ModMeta -> Annex ()
+storeModMeta modmeta = Annex.changeState $
+	\s -> s { Annex.modmeta = modmeta:Annex.modmeta s }
 
 setOption :: Option
 setOption = Option ['s'] ["set"] (ReqArg mkmod "FIELD[+-]=VALUE") "set metadata"
   where
-	mkmod p = case parseModMeta p of
-		Left e -> error e
-		Right modmeta -> Annex.changeState $
-			\s -> s { Annex.modmeta = modmeta:Annex.modmeta s }
+	mkmod = either error storeModMeta . parseModMeta
+
+tagOption :: Option
+tagOption = Option ['t'] ["tag"] (ReqArg mkmod "TAG") "set a tag"
+  where
+	mkmod = storeModMeta . AddMeta tagMetaField . toMetaValue
+
+untagOption :: Option
+untagOption = Option ['u'] ["untag"] (ReqArg mkmod "TAG") "remove a tag"
+  where
+	mkmod = storeModMeta . AddMeta tagMetaField . mkMetaValue (CurrentlySet False)
 
 seek :: CommandSeek
 seek ps = do

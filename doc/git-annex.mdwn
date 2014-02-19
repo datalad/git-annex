@@ -708,9 +708,11 @@ subdirectories).
 
   To remove a value, use -s field-=value.
 
-  For example, to set some tags on a file:
+  To set a tag, use -t tag, and use -u tag to remove a tag.
 
-        	git annex metadata annexscreencast.ogv -s tag+=video -s tag+=screencast
+  For example, to set some tags on a file and also its author:
+
+        	git annex metadata annexscreencast.ogv -t video -t screencast -s author+=Alice
 
 * `view [field=value ...] [tag ...]`
 
