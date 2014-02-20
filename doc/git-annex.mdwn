@@ -1625,6 +1625,15 @@ for flac files:
 
 Note that setting numcopies to 0 is very unsafe.
 
+These settings are honored by git-annex whenever it's operating on a
+matching file. However, when using --all, --unused, or --key to specify
+keys to operate on, git-annex is operating on keys and not files, so will
+not honor the settings from .gitattributes.
+
+Also note that when using views, only the toplevel .gitattributes file is
+preserved in the view, so other settings in other files won't have any
+efffect.
+
 # FILES
 
 These files are used by git-annex:

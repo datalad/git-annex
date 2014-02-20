@@ -68,7 +68,7 @@ seek ps = do
 	from <- getOptionField fsckFromOption Remote.byNameWithUUID
 	i <- getIncremental
 	withKeyOptions
-		(startKey i)
+		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
 		ps
 
@@ -162,18 +162,19 @@ performRemote key file backend numcopies remote =
 			)
 	dummymeter _ = noop
 
-startKey :: Incremental -> Key -> CommandStart
-startKey inc key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
-	Nothing -> stop
-	Just backend -> runFsck inc (key2file key) key $ performAll key backend
+startKey :: Incremental -> Key -> NumCopies -> CommandStart
+startKey inc key numcopies =
+	case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
+		Nothing -> stop
+		Just backend -> runFsck inc (key2file key) key $
+			performKey key backend numcopies
 
-{- Note that numcopies cannot be checked in --all mode, since we do not
- - have associated filenames to look up in the .gitattributes file. -}
-performAll :: Key -> Backend -> Annex Bool
-performAll key backend = check
+performKey :: Key -> Backend -> NumCopies -> Annex Bool
+performKey key backend numcopies = check
 	[ verifyLocationLog key (key2file key)
 	, checkKeySize key
 	, checkBackend backend key Nothing
+	, checkKeyNumCopies key (key2file key) numcopies
 	]
 
 check :: [Annex Bool] -> Annex Bool
@@ -357,7 +358,7 @@ checkBackendOr' bad backend key file postcheck =
 				, return True
 				)
 
-checkKeyNumCopies :: Key -> FilePath -> NumCopies -> Annex Bool
+checkKeyNumCopies :: Key -> String -> NumCopies -> Annex Bool
 checkKeyNumCopies key file numcopies = do
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< Remote.keyLocations key
 	let present = NumCopies (length safelocations)

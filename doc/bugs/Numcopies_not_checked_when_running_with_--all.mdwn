@@ -22,3 +22,19 @@ Linux (Ubuntu 13.10)
 
 # End of transcript or log.
 """]]
+
+> It's expected that --all (and --unused) make .gitattributes
+> annex.numcopies settings be ignored, because with these options git-annex
+> is operating on keys, it does not know or care what filename they're
+> associated with, and so cannot look them up in .gitattributes. I have
+> improved the documentation of .gitattributes files to mention this
+> limitation.
+> 
+> I also notice that fsck --all is not checking .git/config's
+> annex.numcopies or the new global numcopies setting. It certianly makes
+> sense for those numcopies settings to be paid attention to.
+> [[fixed|done]] --[[Joey]]
+> 
+> (--all is faster because it can quickly scan through .git/annex/objects
+> to find everything, rather than looking at the symlink target of every
+> file in the work tree.)
