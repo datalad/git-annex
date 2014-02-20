@@ -79,3 +79,8 @@ $
 
 # End of transcript or log.
 """]]
+
+> It seems to me that if you run `git annex dropunused --force`, it will
+> remove the file. This needing --force is a recent change; git-annex
+> tries to never posibly lose data unless forced. Dropping the last
+> copy of a file certianly qualifies. [[done]] --[[Joey]]
