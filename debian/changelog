@@ -20,6 +20,9 @@ git-annex (5.20140211) UNRELEASED; urgency=medium
     overridden in .git/config.
   * glacier: Do not try to run glacier value create when an existing glacier
     remote is enabled.
+  * fsck: Refuse to do anything if more than one of --incremental, --more,
+    and --incremental-schedule are given, since it's not clear which option
+    should win.
   * Windows webapp: Can set up box.com, Amazon S3, and rsync.net remotes
   * Windows webapp: Can create repos on removable drives.
   * Windows: Ensure HOME is set, as needed by bundled cygwin utilities.

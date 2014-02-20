@@ -67,6 +67,7 @@ seek :: CommandSeek
 seek ps = do
 	from <- getOptionField fsckFromOption Remote.byNameWithUUID
 	i <- getIncremental
+	liftIO $ print i
 	withKeyOptions
 		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
@@ -80,11 +81,12 @@ getIncremental = do
 	morei <- Annex.getFlag (optionName moreIncrementalOption)
 	case (i, starti, morei) of
 		(False, False, False) -> return NonIncremental
-		(False, True, _) -> startIncremental
+		(False, True, False) -> startIncremental
 		(False ,False, True) -> ContIncremental <$> getStartTime
-		(True, _, _) ->
+		(True, False, False) ->
 			maybe startIncremental (return . ContIncremental . Just)
 				=<< getStartTime
+		_ -> error "Specify only one of --incremental, --more, or --incremental-schedule"
   where
 	startIncremental = do
 		recordStartTime
@@ -408,7 +410,7 @@ badContentRemote remote key = do
 		++ Remote.name remote
 
 data Incremental = StartIncremental | ContIncremental (Maybe EpochTime) | NonIncremental
-	deriving (Eq)
+	deriving (Eq, Show)
 
 runFsck :: Incremental -> FilePath -> Key -> Annex Bool -> CommandStart
 runFsck inc file key a = ifM (needFsck inc key)
