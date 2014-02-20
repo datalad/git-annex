@@ -1,0 +1,24 @@
+#### What steps will reproduce the problem?
+
+1. Create a new repository with a directory
+2. Add files
+3. Select "Store your data in the cloud" with the "Remote server" option
+4. Enter host, user, directory
+5. Select "Use an encrypted rsync repository on the server" (Will there be an option for unencrypted later?)
+6. GPG Passphrase prompt comes up for every file
+
+#### What is the expected output? What do you see instead?
+
+I expect to enter a passphase once and then it will sync all files with the remote server.
+
+Instead, it begins syncing the files to the server but prompts for a GPG passphase for every single file.
+
+#### What version of git-annex are you using? On what operating system?
+
+3.20121017 precompiled binary on Arch Linux
+
+#### Please provide any additional information below.
+
+Not sure if I'm just missing a setting for GPG, but I would think I should only need to use the web app to configure the remote server.
+
+[[!tag /design/assistant]]

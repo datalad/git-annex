@@ -1,0 +1,22 @@
+Instead of changing the `PATH`, it should be possible to symlink the binaries to the `~/.local/bin` directory.
+
+Here is a script I put on the prebuilt package (its basename is unimportant but it must be placed along with the git-annex script):
+
+    #!/bin/sh
+    link="$(readlink "$0")"
+    base="$(cd "$(dirname "$0")"; cd "$(dirname "$link")"; echo "$PWD")"
+    name="$(basename "$0")"
+    exec "$base/$name" "$@"
+
+Symlink this script to `~/.local/bin/git-annex`, `~/.local/bin/git-annex-shell` and `~/.local/bin/git-annex-webapp`. on my system I have:
+
+    lrwxrwxrwx. 1 mildred mildred 36 Dec 13 12:12 git-annex -> ../opt/git-annex.linux/run-git-annex
+    lrwxrwxrwx. 1 mildred mildred 36 Dec 13 12:12 git-annex-shell -> ../opt/git-annex.linux/run-git-annex
+    lrwxrwxrwx. 1 mildred mildred 36 Dec 13 12:12 git-annex-webapp -> ../opt/git-annex.linux/run-git-annex
+
+The script will detect the installation directory using `readlink`. Both absolute and relative links works. Then it starts the correct script depending on the basename of the link.
+
+It should be possible to link the `git-annex`, `git-annex-webapp` and `git-annex-shell` scripts instead if they used `readlink` to find out the location of the prebuilt package.
+
+> I've made the scripts look at readlink, so [[done]]. 
+> --[[Joey]] 

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 6"
+ date="2013-05-06T15:14:06Z"
+ content="""
+It's quite possible that your router doesn't handle multicast traffic to 224.0.0.251. The best way to check is to a) see if avahi/zeroconf works, since it's sending similar traffic and b) run tcpdump on both machines and see if the packets being sent on port 55556 by one are seen by the other.
+"""]]

@@ -1,0 +1,2 @@
+Can diskreserve be done with directory special remotes?
+Where should such per directory remote setting be put?

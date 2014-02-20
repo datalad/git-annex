@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 11"
+ date="2013-05-19T21:13:41Z"
+ content="""
+You're certainly welcome.
+
+So, you did not install git-annex from the dmg? That bundles its own gpg.
+
+I'm curious about this passphrase thing.. Does gpgtools + gpg2 on the Mac cause it to ask for a passphrase better, like in a dialog window? Perhaps I can improve the gpg stuff bundled in the dmg..
+"""]]

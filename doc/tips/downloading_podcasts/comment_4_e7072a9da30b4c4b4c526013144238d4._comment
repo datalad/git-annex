@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 4"
+ date="2013-07-30T21:29:50Z"
+ content="""
+@nomeata, well, you can, but it has to download the files again.
+
+When run without --fast, `importfeed` does use content based hashes, so if you run it in a temporary directory, it will download the content redundantly, hash it and see it's the same, and add the url to that hash. You can then delete the temporary directory, and the files hpodder had downloaded will have the url attached to them now. I don't know if this really buys you anything over deleting the hpodder files and starting over though.
+"""]]

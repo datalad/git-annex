@@ -1,0 +1,53 @@
+I've noticed this to occur occassionally 
+
+<pre>
+laplace:atest jtang$ ls
+1@  2@	3@  4@	5@  readme.txt@
+laplace:atest jtang$ git annex watch -d --foreground
+watch . [2012-07-29 11:49:26 IST] read: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","show-ref","git-annex"] 
+[2012-07-29 11:49:26 IST] read: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","show-ref","--hash","refs/heads/git-annex"] 
+[2012-07-29 11:49:26 IST] read: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","log","refs/heads/git-annex..f85faa60e73efabc2e92f837b19c3918d3ab030f","--oneline","-n1"] 
+[2012-07-29 11:49:26 IST] chat: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","cat-file","--batch"] 
+(scanning...) [2012-07-29 11:49:26 IST] Assistant: all threads started
+[2012-07-29 11:49:26 IST] Merger: watching /Users/jtang/sandbox/atest/.git/refs/heads/synced
+[2012-07-29 11:49:26 IST] TransferWatcher: watching for transfers
+[2012-07-29 11:49:26 IST] read: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","symbolic-ref","HEAD"] 
+[2012-07-29 11:49:26 IST] call: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","add","--update"] 
+[2012-07-29 11:49:26 IST] Merger: merging changes into Just refs/heads/master
+[2012-07-29 11:49:26 IST] call: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","merge","--no-edit","refs/heads/synced/master"] 
+(started...) [2012-07-29 11:49:26 IST] Watcher: watching .
+[2012-07-29 11:49:26 IST] WebApp: running on port 60042
+Already up-to-date.
+[2012-07-29 11:49:26 IST] Watcher: add symlink ./1
+[2012-07-29 11:49:26 IST] chat: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","cat-file","--batch"] 
+[2012-07-29 11:49:26 IST] Watcher: add symlink ./2
+[2012-07-29 11:49:26 IST] Watcher: add symlink ./3
+[2012-07-29 11:49:26 IST] Watcher: add symlink ./4
+[2012-07-29 11:49:26 IST] Watcher: add symlink ./5
+[2012-07-29 11:49:26 IST] Watcher: add symlink ./readme.txt
+[2012-07-29 11:49:27 IST] Committer: committing 6 changes
+(Recording state in git...)
+[2012-07-29 11:49:27 IST] feed: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","update-index","-z","--index-info"] 
+[2012-07-29 11:49:27 IST] call: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","commit","--allow-empty-message","-m","","--allow-empty","--quiet"] 
+[2012-07-29 11:49:28 IST] read: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","symbolic-ref","HEAD"] 
+[2012-07-29 11:49:28 IST] Pusher: pushing to []
+[2012-07-29 11:49:28 IST] call: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","branch","-f","synced/master"] 
+[2012-07-29 11:49:28 IST] read: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","symbolic-ref","HEAD"] 
+[2012-07-29 11:49:28 IST] Merger: merging changes into Just refs/heads/master
+[2012-07-29 11:49:28 IST] call: git ["--git-dir=/Users/jtang/sandbox/atest/.git","--work-tree=/Users/jtang/sandbox/atest","merge","--no-edit","refs/heads/synced/master"] 
+Already up-to-date.
+[2012-07-29 11:49:43 IST] Watcher: file added ./.gitignore
+[2012-07-29 11:49:43 IST] read: lsof ["-F0can","+d","/Users/jtang/sandbox/atest/.git/annex/tmp/"] 
+[2012-07-29 11:49:44 IST] Committer: delaying commit of 0 changes
+[2012-07-29 11:49:45 IST] read: lsof ["-F0can","+d","/Users/jtang/sandbox/atest/.git/annex/tmp/"] 
+[2012-07-29 11:49:46 IST] Committer: delaying commit of 0 changes
+[2012-07-29 11:49:47 IST] read: lsof ["-F0can","+d","/Users/jtang/sandbox/atest/.git/annex/tmp/"] 
+[2012-07-29 11:49:48 IST] Committer: delaying commit of 0 changes
+[2012-07-29 11:49:49 IST] read: lsof ["-F0can","+d","/Users/jtang/sandbox/atest/.git/annex/tmp/"] 
+</pre>
+
+I ran " git annex watch -d --foreground" to watch what was going one, and just created a .gitignore file and the the commiter/lsof thread just loops over and over.... I only noticed as my laptop battery had drained at somepoint when git-annex was running in the background.
+
+[[!meta title="assistant: lsof/committer thread loops occassionally"]]
+
+> Closing this since it doesn't seem reproducible. [[done]] --[[Joey]]

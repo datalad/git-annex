@@ -1,0 +1,25 @@
+Having a spot of bother in setting up for windows usage.
+
+I'm attempting to have a windows box syncing to a server (over ssh) and a linux box also syncing against that*
+
+So, on each machine I do
+
+ git init
+ git annex init
+
+
+On the windows and linux desktops I then do a 
+ 
+ git remote add server serverdetails.
+
+Now the problem is that if I don't add files to the repos on the machines, they won't sync as there is no branch checked out; and if I do then the first one is fine but the second will fail as it doesn't allow fast-forwards. What am I doing wrong? I've tried making the server repo bare / not bare.
+
+I'm using the latest nightly windows build, and a build from git from today (29d5bb94b4512cfe3072c9ff840cb0ce9f2af744)
+
+
+
+
+
+
+
+*Actually I'm trying to do something a little more complex than that, but this is the simplest version I can come up with.

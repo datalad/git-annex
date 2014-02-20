@@ -1,0 +1,142 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRai_qFYPVvEgC6i1nlM1bh-C__jbhqS0"
+ nickname="Matthew"
+ subject="Replicated, I think"
+ date="2013-07-27T10:02:32Z"
+ content="""
+I think I have it replicated, I did not do _exactly_ the same thing, no renaming of the tilde-n file but I still got the ControlPath error.
+
+    # On phone - Copy folder into Git Annex... wait till done
+    # On Server with new Git Annex: git annex sync
+    fozz@markdown:~/tmp/zzz$ git annex get .
+    get Freddie_Mercury/Barcelona_[+video]/B00921KGRK_(disc_1)_01_-_Barcelona_(New_Orchestrated_Version.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KH5G_(disc_1)_02_-_La_Japonaise_(New_Orchestrated_Vers.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KHD8_(disc_1)_03_-_The_Fallen_Priest_(New_Orchestrated.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KHNS_(disc_1)_04_-_Ensueño_(New_Orchestrated_Version).mp3 (not available)
+      Try making some of these repositories available:
+            bc0525c4-cf9e-45da-a8e1-19003dee1dcb -- u0_a84@localhost:/sdcard/annex
+    failed
+    get Freddie_Mercury/Barcelona_[+video]/B00921KHY2_(disc_1)_05_-_The_Golden_Boy_(New_Orchestrated_Ve.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KI9G_(disc_1)_06_-_Guide_Me_Home_(New_Orchestrated_Ver.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KIIW_(disc_1)_07_-_How_Can_I_Go_On_(New_Orchestrated_V.mp3 ^[[A^[[A^[[A^[[A^[[A^[[A(from origin...) ^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[A^[[Aok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KITG_(disc_1)_08_-_Exercises_In_Free_Love_(New_Orchest.mp3 ^[[A^[[A^[[A^[[A^[[A^[[A(from origin...) ^[[A^[[A^[[A^[[A^[[A^[[Aok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KJ22_(disc_1)_09_-_Overture_Piccante_(New_Orchestrated.mp3 ^C
+    fozz@markdown:~/tmp/zzz$ git annex get .
+    get Freddie_Mercury/Barcelona_[+video]/B00921KHNS_(disc_1)_04_-_Ensueño_(New_Orchestrated_Version).mp3 (not available)
+      Try making some of these repositories available:
+            bc0525c4-cf9e-45da-a8e1-19003dee1dcb -- u0_a84@localhost:/sdcard/annex
+    failed
+    get Freddie_Mercury/Barcelona_[+video]/B00921KJ22_(disc_1)_09_-_Overture_Piccante_(New_Orchestrated.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KJB8_(disc_1)_10_-_How_Can_I_Go_On_(New_Orchestrated_V.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KJMW_(disc_2)_01_-_Exercises_In_Free_Love_(1987_B-Side.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KJVI_(disc_2)_02_-_Barcelona_(Early_Version__Freddie's.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KK5I_(disc_2)_03_-_La_Japonaise_(Early_Version__Freddi.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KKHQ_(disc_2)_04_-_Rachmaninov's_Revenge_(The_Fallen_P.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KKSA_(disc_2)_05_-_Ensueño_(Monsterrat's_Live_Takes).mp3 (not available)
+      Try making some of these repositories available:
+            bc0525c4-cf9e-45da-a8e1-19003dee1dcb -- u0_a84@localhost:/sdcard/annex
+    failed
+    get Freddie_Mercury/Barcelona_[+video]/B00921KL2U_(disc_2)_06_-_The_Golden_Boy_(Early_Version__Fred.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KLBQ_(disc_2)_07_-_Guide_Me_Home_(Alternative_Version).mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KLJI_(disc_2)_08_-_How_Can_I_Go_On_(Alternative_Versio.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KLUC_(disc_2)_09_-_How_Can_I_Go_On_(Alternative_Piano_.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KM3I_(disc_3)_01_-_Barcelona_(Orchestral_Version).mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KMBU_(disc_3)_02_-_La_Japonaise_(Orchestral_Version).mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KMM4_(disc_3)_03_-_The_Fallen_Priest_(Orchestral_Versi.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KMYW_(disc_3)_04_-_Ensueño_(Orchestral_Version).mp3 (not available)
+      Try making some of these repositories available:
+            bc0525c4-cf9e-45da-a8e1-19003dee1dcb -- u0_a84@localhost:/sdcard/annex
+    failed
+    get Freddie_Mercury/Barcelona_[+video]/B00921KNAK_(disc_3)_05_-_The_Golden_Boy_(Orchestral_Version).mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KNUA_(disc_3)_06_-_Guide_Me_Home_(Orchestral_Version).mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KOVI_(disc_3)_07_-_How_Can_I_Go_On_(Orchestral_Version.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KPP8_(disc_3)_08_-_Exercises_In_Free_Love_(Orchestral_.mp3 (from origin...) ok
+    get Freddie_Mercury/Barcelona_[+video]/B00921KQJ8_(disc_3)_09_-_Overture_Piccante_(Orchestral_Versi.mp3 (from origin...) ok
+    (Recording state in git...)
+    git-annex: get: 3 failed
+    
+    fozz@markdown:~/tmp/zzz$ git annex whereis Freddie_Mercury/Barcelona_\[+video\]/B00921KMYW_\(disc_3\)_04_-_Ensueño_\(Orchestral_Version\).mp3 
+    whereis Freddie_Mercury/Barcelona_[+video]/B00921KMYW_(disc_3)_04_-_Ensueño_(Orchestral_Version).mp3 (1 copy) 
+            bc0525c4-cf9e-45da-a8e1-19003dee1dcb -- u0_a84@localhost:/sdcard/annex
+    		ok
+    
+    # On phone
+    Falling back to hardcoded app location; cannot find expected files in /data/app-lib
+    git annex webapp
+    u0_a84@android:/sdcard/git-annex.home $ git annex webapp
+    
+      Detected a crippled filesystem.
+    
+      Enabling direct mode.
+    fozz@markdown.lang.speechmarks.com's password:
+    fozz@markdown.lang.speechmarks.com's password:
+    ^Z[1] + Stopped              git annex webapp
+    u0_a84@android:/sdcard/git-annex.home $ bg
+    [1] git annex webapp
+    u0_a84@android:/sdcard/git-annex.home $ cd ../annex/
+    u0_a84@android:/sdcard/annex $ ls
+    Freddie_Mercury
+    u0_a84@android:/sdcard/annex $ git remote -v
+    markdown.lang.speechmarks.com_phoneannex        ssh://fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex/~/phone-annex/ (fetch)
+    markdown.lang.speechmarks.com_phoneannex        ssh://fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex/~/phone-annex/ (push)
+    u0_a84@android:/sdcard/annex $ git annex copy . --to markdown.lang.speechmarks.com_phoneannex
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KGRK_(disc_1)_01_-_Barcelona_(New_Orchestrated_Version.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.IdWwlXHtSsjVUMcq\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KH5G_(disc_1)_02_-_La_Japonaise_(New_Orchestrated_Vers.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.WisPICyIHiMGEO3k\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KHD8_(disc_1)_03_-_The_Fallen_Priest_(New_Orchestrated.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.hYyDKddvBHgjW4AI\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KHNS_(disc_1)_04_-_Ensueo_(New_Orchestrated_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.PR2s7Btep0Vklpr1\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KHY2_(disc_1)_05_-_The_Golden_Boy_(New_Orchestrated_Ve.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.GuiE6O9sVgvAsPjv\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KI9G_(disc_1)_06_-_Guide_Me_Home_(New_Orchestrated_Ver.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.MNE7Nrd4rTe59BpR\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KIIW_(disc_1)_07_-_How_Can_I_Go_On_(New_Orchestrated_V.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.MtXCKPHds4ma0iPl\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KITG_(disc_1)_08_-_Exercises_In_Free_Love_(New_Orchest.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.6iovvzKR6HE4nZwz\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KJ22_(disc_1)_09_-_Overture_Piccante_(New_Orchestrated.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.wZy825TDcYvHhDUx\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KJB8_(disc_1)_10_-_How_Can_I_Go_On_(New_Orchestrated_V.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.RQLLAcX2MGpLvJC5\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KJMW_(disc_2)_01_-_Exercises_In_Free_Love_(1987_B-Side.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.kiQQXvKBLNSP3cRO\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KJVI_(disc_2)_02_-_Barcelona_(Early_Version__Freddie's.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.CIdY4uFDFCIboOpG\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KK5I_(disc_2)_03_-_La_Japonaise_(Early_Version__Freddi.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.sza5nEOnJ4qnh6op\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KKHQ_(disc_2)_04_-_Rachmaninov's_Revenge_(The_Fallen_P.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.PXT6QfTHojjPvlBM\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KKSA_(disc_2)_05_-_Ensueo_(Monsterrat's_Live_Takes).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.LaHS26WonwTUqBDO\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KL2U_(disc_2)_06_-_The_Golden_Boy_(Early_Version__Fred.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.rw9hP3fjehIAJc1P\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KLBQ_(disc_2)_07_-_Guide_Me_Home_(Alternative_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.aJOWNwtRBDG6pecN\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KLJI_(disc_2)_08_-_How_Can_I_Go_On_(Alternative_Versio.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.fOFCaugrRAzzHAMZ\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KLUC_(disc_2)_09_-_How_Can_I_Go_On_(Alternative_Piano_.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.onG8CR4YP9x5c3ZK\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KM3I_(disc_3)_01_-_Barcelona_(Orchestral_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.KgOqB8Rg1ZZI1fzP\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KMBU_(disc_3)_02_-_La_Japonaise_(Orchestral_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.xN1FqoX79hSxwQS7\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KMM4_(disc_3)_03_-_The_Fallen_Priest_(Orchestral_Versi.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.YpZgAo1LVawkOIBd\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KMYW_(disc_3)_04_-_Ensueo_(Orchestral_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.TDvJl5gPqOFTbqgF\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KNAK_(disc_3)_05_-_The_Golden_Boy_(Orchestral_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.CYBfRJuMZTYUgTnN\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KNUA_(disc_3)_06_-_Guide_Me_Home_(Orchestral_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.VjyVTH1bRjeRl7fE\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KOVI_(disc_3)_07_-_How_Can_I_Go_On_(Orchestral_Version.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.SfA8ZMsoaea1JqZm\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KPP8_(disc_3)_08_-_Exercises_In_Free_Love_(Orchestral_.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.uYsVLhxvYZl1F7Dj\" too long for Unix domain socket
+    ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KQJ8_(disc_3)_09_-_Overture_Piccante_(Orchestral_Versi.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ControlPath \"/data/data/ga.androidterm/tmp/fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex.NRAFY6O124W6tAdG\" too long for Unix domain socket
+    ok
+    (Recording state in git...)
+    u0_a84@android:/sdcard/annex $
+
+"""]]

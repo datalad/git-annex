@@ -1,0 +1,23 @@
+I updated haskell platform, and now
+
+<pre>
+[jtang@x00 git-annex (master)]$ make test
+
+Assistant/Threads/NetWatcher.hs:26:2:
+     warning: #warning Building without dbus support; will poll for network connection changes [-Wcpp]
+
+Assistant/Threads/MountWatcher.hs:33:2:
+     warning: #warning Building without dbus support; will use mtab polling [-Wcpp]
+
+test.hs:11:8:
+    Could not find module `Test.HUnit.Tools'
+    Perhaps you meant Test.HUnit.Text (from HUnit-1.2.5.1)
+    Use -v to see a list of the files searched for.
+** failed to build the test suite
+make: *** [test] Error 1
+</pre>
+
+Looks like a missing dep somewhere with testpack or quickcheck... I haven't had time to figure it out yet, its not git-annex specific but I thought I might log it as a reminder for myself just in case if the osxapp is more borked than usual, I probably need to flush my .cabal directory of installed userland dependancies.
+
+> The testpack library has been broken by some other library changes. I
+> made changes in git yesterday to avoid using it. [[done]] --[[Joey]]

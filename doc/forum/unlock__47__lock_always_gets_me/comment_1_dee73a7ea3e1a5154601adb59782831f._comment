@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-01-07T17:15:31Z"
+ content="""
+Well, lock could check for modifications and require --force to lose them. But the check could be expensive for large files.
+
+But `git annex lock` is just a convenient way to run `git checkout`. And running `git checkout` or `git reset --hard` will lose your uncommitted file the same way obviously. 
+
+Perhaps the best fix would be to get rid of `lock` entirely, and let the user use the underlying git commands same as they would to drop modifications to other files. It would then also make sense to remove `unlock`, leaving only `edit`.
+"""]]

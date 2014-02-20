@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkx5V3MTbzCXS3J7Mn9FEq8M9bPPYMkAHY"
+ nickname="Pedro"
+ subject="Is direct mode still using symlinks then?"
+ date="2013-11-16T16:28:39Z"
+ content="""
+Is direct mode still using symlinks? I see the bug I opened is still unclosed:
+
+http://git-annex.branchable.com/bugs/Direct_mode_repositories_still_use_symlinks_sometimes/
+
+Any opinion on this? This is still my main problem with replacing dropbox with git-annex.
+"""]]

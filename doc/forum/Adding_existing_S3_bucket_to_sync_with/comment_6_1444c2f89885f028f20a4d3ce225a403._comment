@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkjQhXk8KAh9yD0p1R6QzT-Sw7FtHE3d54"
+ nickname="Scott"
+ subject="comment 6"
+ date="2013-08-21T20:05:31Z"
+ content="""
+I tried a different approach and attempted to setup s3 at the command line.  This is what I did:
+
+zombie:annex scott$ export AWS_ACCESS_KEY_ID=\"my key\"
+zombie:annex scott$ export AWS_SECRET_ACCESS_KEY=\"my secret key\"
+zombie:annex scott$ git annex initremote S3 type=S3 encryption=shared
+[2013-08-21 13:03:42 PDT] read: git [\"--git-dir=/Network/Servers/filer004/vol/office_homes/scott/annex/.git\",\"--work-tree=/Network/Servers/filer004/vol/office_homes/scott/annex\",\"show-ref\",\"git-annex\"]
+[2013-08-21 13:03:42 PDT] read: git [\"--git-dir=/Network/Servers/filer004/vol/office_homes/scott/annex/.git\",\"--work-tree=/Network/Servers/filer004/vol/office_homes/scott/annex\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+[2013-08-21 13:03:42 PDT] read: git [\"--git-dir=/Network/Servers/filer004/vol/office_homes/scott/annex/.git\",\"--work-tree=/Network/Servers/filer004/vol/office_homes/scott/annex\",\"log\",\"refs/heads/git-annex..da801570f9ed8d28e5a0cea6cc51f1a2003317d6\",\"--oneline\",\"-n1\"]
+[2013-08-21 13:03:42 PDT] read: git [\"--git-dir=/Network/Servers/filer004/vol/office_homes/scott/annex/.git\",\"--work-tree=/Network/Servers/filer004/vol/office_homes/scott/annex\",\"log\",\"refs/heads/git-annex..8015f3fed32792b558d16008d20816fab0fc50c2\",\"--oneline\",\"-n1\"]
+[2013-08-21 13:03:42 PDT] chat: git [\"--git-dir=/Network/Servers/filer004/vol/office_homes/scott/annex/.git\",\"--work-tree=/Network/Servers/filer004/vol/office_homes/scott/annex\",\"cat-file\",\"--batch\"]
+[2013-08-21 13:03:42 PDT] read: git [\"config\",\"--null\",\"--list\"]
+initremote S3 (encryption setup) [2013-08-21 13:03:42 PDT] read: gpg [\"--quiet\",\"--trust-model\",\"always\",\"--gen-random\",\"--armor\",\"2\",\"512\"]
+(shared cipher) (checking bucket...)
+git-annex: connect: does not exist (Connection refused)
+failed
+git-annex: initremote: 1 failed
+"""]]

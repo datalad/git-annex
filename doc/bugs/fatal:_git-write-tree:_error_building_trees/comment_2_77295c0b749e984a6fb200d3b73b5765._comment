@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 2"
+ date="2014-01-06T16:14:29Z"
+ content="""
+As far as I can tell from git's code, this involves a \"cache-tree\" data structure stored in git's index file. git-annex has nothing to do with writing index files, beyond running git plumbing. So I don't see how this could be anything other than a corrupt index file (of a sort that git fsck doesn't detect), or a git bug. The best thing to do would be to send an example of a repository having this problem to the git developers for analysis.
+"""]]

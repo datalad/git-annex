@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 2"
+ date="2013-11-03T17:02:47Z"
+ content="""
+I made an Ubuntu saucy chroot, apt-get installed git-annex from universe, and ran the webapp in there. I did not reproduce this problem. 
+
+The cause of the problem, it seems, must be something local to your system. Perhaps you have an environment variable set that is messing up git. Or perhaps you have a different, broken version of git installed.
+
+Can you \"git show git-annex\" in the repository? It should show a commit made to the git-annex branch that adds the uuid.log there.
+"""]]

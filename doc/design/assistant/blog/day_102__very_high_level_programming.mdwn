@@ -1,0 +1,37 @@
+## today
+
+Came up with four groups of repositories that it makes sense to
+define standard preferred content expressions for.
+
+[[!format haskell """
+	preferredContent :: StandardGroup -> String
+	preferredContent ClientGroup = "exclude=*/archive/*"
+	preferredContent TransferGroup = "not inallgroup=client and " ++ preferredContent ClientGroup
+	preferredContent ArchiveGroup = "not copies=archive:1"
+	preferredContent BackupGroup = "" -- all content is preferred
+"""]]
+
+[[preferred_content]] has the details about these groups, but
+as I was writing those three preferred content expressions,
+I realized they are some of the highest level programming I've ever done,
+in a way.
+
+Anyway, these make for a very simple repository configuration UI:
+
+[[!img /assistant/repogroups.png alt="form with simple select box"]]
+
+## yesterday (forgot to post this)
+
+Got the assistant honoring preferred content settings. Although so far that
+only determines what it transfers. Additional work will be needed to make
+content be dropped when it stops being preferred.
+
+----
+
+Added a "configure" link next to each repository on the repository config
+page. This will go to a form to allow setting things like repository
+descriptions, groups, and preferred content settings.
+
+----
+
+Cut a release.

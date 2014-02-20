@@ -1,0 +1,21 @@
+The command `git annex dropunused` currently takes a number, as referenced in output of last `git annex unused` command.
+
+When you want to drop all, or a range, this may be annoying, as you have to specify each number on the command line. 
+
+A range argument, such as `1-1845`, possibly combined with other argument types (Cf. many print dialogues: `1,3,5-7,9`) would be great.
+
+I work around this lack as I want to drop all unused files anyway by something like this:
+       
+    git annex unused | grep -o -P "^    [0-9]+" | xargs git annex dropunused
+
+> It's designed to be used with `seq`. There's an example in the
+> [[walkthrough|walkthrough/unused_data]], and of course multiple seq calls can be used to
+> specifiy multiple ranges. So:
+
+	git annex dropunused `seq 1 9` `seq 11 1845`
+
+> I don't see adding my own range operations to be an improvement worth
+> making; it'd arguably only be a complication. --[[Joey]] [[done]]
+
+>> Actually, this did get implemented, since using seq could fall afoul 
+>> of command-line length limits in extreme cases.

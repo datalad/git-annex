@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 19"
+ date="2011-02-13T15:55:47Z"
+ content="""
+On second thought and after some messing (trying most of the options and combinations of options on OSX for).... I tried replacing cp with gnu cp from coreutils on my OSX install, and all the tests passed. *sigh* cp -a is preserving some permissions and attributes but not all, its not behaving in the same way as the gnu cp does... the closet thing that I have found on OSX that behaves in the same way as gnu \"cp -pr\" is to use \"ditto\".
+
+Just doing a \"ditto SOURCE DEST\" in the tests passes everything. I'm not sure if its a good idea to use this even though it works. Though this is just the tests, does it affect CopyFile.hs where \"cp\" is called?
+
+"""]]

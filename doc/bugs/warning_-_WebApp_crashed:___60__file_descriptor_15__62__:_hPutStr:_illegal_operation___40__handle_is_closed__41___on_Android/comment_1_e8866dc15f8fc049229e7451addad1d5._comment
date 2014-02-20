@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-30T15:57:41Z"
+ content="""
+This is an intriguing screenshot, since it shows the webapp reporting a crash of the webapp! I think what's going on is that the web server thread run by the webapp is still running, although the webapp's own thread has crashed.
+
+The log should be in `/sdcard/DCIM/.git/annex/daemon.log`. I would be interested to see it.
+
+Does the webapp continue to update and function despite saying it crashed?
+"""]]

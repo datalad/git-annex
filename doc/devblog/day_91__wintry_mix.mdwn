@@ -1,0 +1,11 @@
+Implemented read-only remotes. This may not cover every use case around
+wanting to clone a repository and use git-annex without leaking the
+existence of your clone back to it, but I think it hits most of them in a
+quite easy way, and allows for some potentially interesting stuff like
+partitioned networks of git-annex repositories.
+
+Zooko and I have been talking things over (for rather too long),
+and I think have now agreed on a how a more advanced git-annex
+Tahoe-LAFS special remote should work. This includes storing the
+tahoe file-caps in the git-annex branch. So, I really need to add that
+per-special-remote data storage feature I've been thinking about.

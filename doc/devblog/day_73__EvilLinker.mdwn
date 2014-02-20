@@ -1,0 +1,28 @@
+Android has the EvilSplicer, now Windows gets the EvilLinker. Fully
+automated, and truly horrible solution to the too long command line problem.
+
+Now when I run `git annex webapp` on windows, it almost manages to open
+the web browser.
+
+At the same time, I worked with Yuri to upgrade the Windows autobuilder to a
+newer Haskell platform, which can install Yesod. I have not quite achieved
+a successful webapp build on the autobuilder, but it seems close.
+
+----
+
+Here's a nice Haskell exercise for someone. I wrote this quick and dirty
+function in the EvilSplicer, but it's crying out for a generalized solution.
+
+[[!format haskell """
+{- Input contains something like 
+ - c:/program files/haskell platform/foo -LC:/Program Files/Haskell Platform/ -L...
+ - and the *right* spaces must be escaped with \
+ -
+ - Argh.
+ -}
+escapeDosPaths :: String -> String
+escapeDosPaths = replace "Program Files" "Program\\ Files"
+        . replace "program files" "program\\ files"
+        . replace "Haskell Platform" "Haskell\\ Platform"
+        . replace "haskell platform" "haskell\\ platform"
+"""]]

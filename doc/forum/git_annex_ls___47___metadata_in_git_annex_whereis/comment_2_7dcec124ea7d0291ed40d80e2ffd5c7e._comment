@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-11-14T22:48:03Z"
+ content="""
+It might make sense to put this functionality in git annex find. Perhaps a format string with a %s for example. 
+"""]]

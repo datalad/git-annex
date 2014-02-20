@@ -1,0 +1,52 @@
+Hi!
+
+Using bup for storing seems a good idea to save space, but I still have a problem when trying to copy files to my local git repo.
+I have two partitions:
+
+- /Data (NTFS)
+
+- / (ext4)
+
+I turned the directory /Data/Audio into a git-annex repo, and cloned it into /home/me/AudioClone.
+I added the remote bup to AudioClone by doing:
+
+    git annex initremote mybup type=bup encryption=none buprepo=
+
+But when I try to copy some files that I have previously got by "git annex get" by doing:
+
+    [~/AudioClone]$ git annex copy someartist/somealbum --to mybup
+
+it fails and tells me:
+
+    copy Order To Die/01 Morituri Te Salutant.flac (to mybup...) 
+    fatal: Cannot lock the ref 'refs/heads/WORM-s7351771-m1318841909--01 Morituri Te Salutant.flac'.
+    Traceback (most recent call last):
+      File "/usr/lib/bup/cmd/bup-split", line 170, in <module>
+        git.update_ref(refname, commit, oldref)
+      File "/usr/lib/bup/bup/git.py", line 835, in update_ref
+        _git_wait('git update-ref', p)
+      File "/usr/lib/bup/bup/git.py", line 930, in _git_wait
+        raise GitError('%s returned %d' % (cmd, rv))
+    bup.git.GitError: git update-ref returned 128
+
+for each file, **except for the album cover file**, which is a simple JPG that bup doesn't try to split. This one gets copied nicely but the big FLAC files don't.
+
+I tried to restart my session, in case bup adds my username to a group or something.
+
+(I'm using Ubuntu 11.10)
+
+> Apparently bup-split does not allow storing data using filenames with
+> spaces in them. I can reproduce the same bug using the same filename;
+> if I remove the spaces all is well.
+> 
+> Since bup-split -n uses git branches, I guess git-annex needs to avoid
+> giving it any names containing spaces, or anything else not allowed
+> in a git branch name. The rules for legal git branch names are quite complex
+> (see git-check-ref-format(1)) so it will take me some times to code
+> this up.
+> 
+> A workaround is to switch to the SHA256 backend
+> (`git annex migrate --backend=SHA256`), which avoids spaces in its keys.
+> --[[Joey]]
+
+>> Now fixed in git. [[done]] --[[Joey]] 

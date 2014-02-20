@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://mildred.pip.verisignlabs.com/"
+ subject="Thank you a lot"
+ date="2012-04-13T07:28:10Z"
+ content="""
+Thank you,
+
+I imagined it was something like that.
+I 'm just sorry I posted that on the forum and not on the bugs section (I hadn't discovered it at that time). but now, if people search for this error, they should find this.
+
+Note for Fedora users: unfortunately GHC 7.4 will not be shipped with Fedora 17 (which is still not released). The [feature page](https://fedoraproject.org/wiki/Features/GHC74) mention it for Fedora 18. I feel like I am using debian ... outdated packages the day of the release.
+
+And many thanks for this wonderful piece of software.
+
+Mildred
+"""]]

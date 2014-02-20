@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 3"
+ date="2013-11-05T18:03:26Z"
+ content="""
+Hmm well, it's true that deleting a repository does not clean out any git remotes that other repositories might have configured using it, and the uuid of the old remote is cached in there. This is only a problem if you put back another repository in the same location as the old one. `git remote remove` should clean that up for you.
+"""]]

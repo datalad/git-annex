@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://cstork.org/"
+ nickname="Chris Stork"
+ subject="comment 5"
+ date="2014-01-14T08:33:21Z"
+ content="""
+@Pedro: What Joey is refering to is that git-annex uses sym-links behind the scenes to store even such a small file.  (BTW, that can be changed with the large-file config option, IIRC.)
+
+@Joey: Even a \"full-fledged metadata storage for git\" wouldn't solve this problem since from git's POV it's still just a sym-link without permissions.
+"""]]

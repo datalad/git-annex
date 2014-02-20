@@ -1,0 +1,74 @@
+### Please describe the problem.
+
+I get the following error when building:
+
+[[!format sh """
+$ cabal install git-annex --bindir=$HOME/bin -f"-assistant -webapp -webdav -pairing -xmpp -dns"
+
+...
+
+Configuring git-annex-5.20140127...
+Building git-annex-5.20140127...
+Preprocessing executable 'git-annex' for git-annex-5.20140127...
+[  1 of 281] Compiling Utility.Dot      ( Utility/Dot.hs, dist/build/git-annex/git-annex-tmp/Utility/Dot.o )
+[  2 of 281] Compiling BuildFlags       ( BuildFlags.hs, dist/build/git-annex/git-annex-tmp/BuildFlags.o )
+[  3 of 281] Compiling Utility.Shell    ( Utility/Shell.hs, dist/build/git-annex/git-annex-tmp/Utility/Shell.o )
+
+...
+
+[111 of 281] Compiling Backend.Hash     ( Backend/Hash.hs, dist/build/git-annex/git-annex-tmp/Backend/Hash.o )
+[112 of 281] Compiling Annex.Queue      ( Annex/Queue.hs, dist/build/git-annex/git-annex-tmp/Annex/Queue.o )
+[113 of 281] Compiling RunCommand       ( RunCommand.hs, dist/build/git-annex/git-annex-tmp/RunCommand.o )
+
+RunCommand.hs:44:17:
+    Ambiguous occurrence `callCommand'
+    It could refer to either `RunCommand.callCommand',
+                             defined at RunCommand.hs:62:1
+                          or `Common.Annex.callCommand',
+                             imported from `Common.Annex' at RunCommand.hs:12:1-19
+                             (and originally defined in `System.Process')
+cabal: Error: some packages failed to install:
+git-annex-5.20140127 failed during the building phase. The exception was:
+ExitFailure 1
+"""]]
+
+### What steps will reproduce the problem?
+
+Try building the same version.
+
+### What version of git-annex are you using? On what operating system?
+
+Building git-annex-5.20140127...
+
+[[!format sh """
+$ cabal --version
+cabal-install version 0.14.0
+using version 1.14.0 of the Cabal library
+
+$ ghc --version
+The Glorious Glasgow Haskell Compilation System, version 7.4.1
+
+$ lsb_release -a 
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 12.04.3 LTS
+Release:	12.04
+Codename:	precise
+
+$ uname -a
+Linux sahnlpt0116 3.2.0-58-generic #88-Ubuntu SMP Tue Dec 3 17:37:58 UTC 2013 x86_64 x86_64 x86_64 GNU/Linux
+"""]]
+
+### Please provide any additional information below.
+
+Sorry but I don't know what else could help you.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+> fixed in git and will update cabal soon [[done]] --[[Joey]]

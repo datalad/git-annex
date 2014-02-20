@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBJ6Dv1glxzzi4qIzGFNa6F-mfHIvv9Ck"
+ nickname="Jim"
+ subject="comment 5"
+ date="2011-10-18T04:59:13Z"
+ content="""
+I think:
+
+* The first extra edge is because bucket had \"ssh://psychosis.foo.com/vid/\", while
+bacon had \"ssh://psychosis.foo.com/vid\" with no trailing slash.  That got lost in the hostname/path editing I did, sorry.
+Maybe those should be considered matching?
+* The second extra edge is because, when running \"git annex map\" from psychosis, it doesn't recognize the remote's
+remote URL as pointing back to itself.
+
+For the second case, after the \"spurious\" SSH, it could still recognize that the repositories are the same by the duplicated annex uuid, which currently shows up in `map.dot` twice.  I wonder what it would take to avoid the spurious SSH -- maybe some config that lists \"alternate\" URLs that should be considered the same as the current repository?  Or actually list URLs in uuid.log?  Fortunately, I think this only affects the map, so it's not a big problem.
+"""]]

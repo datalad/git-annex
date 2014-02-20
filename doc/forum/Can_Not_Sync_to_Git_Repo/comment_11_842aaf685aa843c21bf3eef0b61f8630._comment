@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 11"
+ date="2013-12-29T17:09:26Z"
+ content="""
+I've found a bug where a repo would for some unknown reason be in direct mode but v3, and so would not be auto-upgraded to v5. This explains at least what Chris Stork shows. But I think not what previous posters are experiencing. I've fixed that bug in git.
+"""]]

@@ -1,0 +1,18 @@
+What steps will reproduce the problem?
+
+ * Create a symlink to a directory in your annex repository, like e.g. ~/Notes -> ~/annex/Notes
+ * cd into ~/Notes
+ * execute 'git annex sync <remote>', assuming that <remote> has made some changes
+
+What is the expected output? What do you see instead?
+
+If <remote> has made a change to, say, ~/annex/Documents/test.txt, the sync unexpectedly creates the new test.txt at ~/Notes/Documents/test.txt.
+It should either magically figure out that it has to create the file relative to the repository's root (i.e. ~/annex) or throw an error instead.
+
+What version of git-annex are you using? On what operating system?
+
+git-annex version: 4.20130323
+OS: Archlinux
+Shell: zsh
+
+

@@ -1,0 +1,31 @@
+## Pick your OS
+
+[[!table format=dsv header=yes data="""
+detailed instructions             | quick install
+[[OSX]]                           | [download git-annex.app](http://downloads.kitenet.net/git-annex/OSX/current/)
+[[Android]]                       | [download git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/) **beta**
+[[Linux|linux_standalone]]        | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/current/)
+&nbsp;&nbsp;[[Debian]]            | `apt-get install git-annex`
+&nbsp;&nbsp;[[Ubuntu]]            | `apt-get install git-annex`
+&nbsp;&nbsp;[[Fedora]]            | `yum install git-annex`
+&nbsp;&nbsp;[[FreeBSD]]           | `pkg_add -r hs-git-annex`
+&nbsp;&nbsp;[[ArchLinux]]         | `yaourt -Sy git-annex`
+&nbsp;&nbsp;[[NixOS]]             | `nix-env -i git-annex`
+&nbsp;&nbsp;[[Gentoo]]            | `emerge git-annex`
+&nbsp;&nbsp;[[ScientificLinux5]]  |
+&nbsp;&nbsp;[[openSUSE]]          | 
+[[Windows]]                       | [download installer](http://downloads.kitenet.net/git-annex/windows/current/) **alpha**
+"""]]
+
+## Using cabal
+
+As a haskell package, git-annex can be installed from source pretty easily
+[[using cabal|cabal]].
+
+## Installation from scratch
+
+This is not recommended, but if you really want to, see [[fromscratch]].
+
+## See also
+
+[[autobuild overview|builds]]

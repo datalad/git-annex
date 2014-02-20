@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlEhzszkzOIy8-Rx8b2mcr75QcnIc6O_OA"
+ nickname="Rachel"
+ subject="I'm afraid I'm getting this too"
+ date="2013-09-12T12:48:04Z"
+ content="""
+Very similar setup. Initially set up on a Mac, then tried to set up the first local pairing with a Linux system. Basically seeing exactly the same thing.
+
+    bad comment in ssh public key ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDa09lpmgLeRVF1KZn2gX6tmBH4Jpcou/rkPbhwLoFNLtQsdNrbjDKuyc4pDbUhexWVvub1YCLItLK0vYRdMvoJWjNzy926sHs8CxXFVg6PMQXw3wOHousSn0NkVfwUMNn5aS+1vz/WDlStmg7WzXgiPg1Whn6CKIomxA63rUMe3I+2nVkyO6jGlOkliPApVP2utURJbyxBDYDB+Ys7zUxvEcCekhxJO263myuo2gwI4A3mfTLRJMzbz8frRZJz5iuUIcOHaIDy6n0qKFq18BDux4SDwNjQ34yti5yqveRBMwFndHQYN6YHk1k26h0kyhb2T6lXaaAirSqa3dwfZuKp rachel@celestia.local
+
+
+# Versions and Stuff:
+
+## Mac:
+
+* OS X 10.8.4
+* git-annex 4.20130909-ga29f960 (downloaded about half an hour ago!)
+* BTW I have git installed from Homebrew, version 1.8.3.4 in my shell's $PATH, but obviously /usr/bin/git from the system is intact.
+* Hostname: celestia.local
+* Username: rachel
+
+## Linux:
+* Ubuntu 13.04
+* git-annex 3.20121112ubuntu4 (from Ubuntu's own repos)
+* I note that's later than the version you said this bug was fixed in, hence the report. :-)
+* Hostname: twilight.local (mDNS domain not appended even by hostname -f but avahi is working)
+* Username: rachel
+
+IPv6 is active, but I note a comment somewhere that that's probably not relevant for git-annex.
+
+Machines are very local to each other, in the same room, connected via a gigabit switch. They can definitely see each other. :-)
+
+"""]]

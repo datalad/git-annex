@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhjlfoU21OiXKH_MXw75Uq5EsX7LJW5p0"
+ nickname="Ian"
+ subject="comment 7"
+ date="2013-01-28T19:51:06Z"
+ content="""
+I've upgraded to 3.20130124 and everything appears to be fine now.
+
+However .git/annex/daemon.log has loads of 
+<pre>
+usage: git rm [options] [--] <file>...
+
+    -n, --dry-run         dry run
+    -q, --quiet           do not list removed files
+    --cached              only remove from the index
+    -f, --force           override the up-to-date check
+    -r                    allow recursive removal
+    --ignore-unmatch      exit with a zero status even if nothing matched
+
+user error (xargs [\"-0\",\"git\",\"--git-dir=/home/ianc/Desktop/annex/.git\",\"--work-tree=/home/ianc/Desktop/annex\",\"rm\",\"--quiet\",\"-f\",\"--\"] exited 123)
+</pre>
+
+I suspect you might want xargs --no-run-if-empty?
+"""]]

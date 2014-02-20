@@ -1,0 +1,57 @@
+What steps will reproduce the problem?
+
+install from a git checkout of tag 4.20130227; error comes up at the "cabal install" stage.
+
+
+What is the expected output? What do you see instead?
+
+Expected successful install; got:
+
+
+    git-annex.branchable.com$ cabal install --bindir=$HOME/bin
+    Resolving dependencies...
+    Configuring testpack-2.1.2...
+    Building testpack-2.1.2...
+    Preprocessing library testpack-2.1.2...
+    [1 of 3] Compiling Test.QuickCheck.Instances ( src/Test/QuickCheck/Instances.hs, dist/build/Test/QuickCheck/Instances.o )
+    [2 of 3] Compiling Test.QuickCheck.Tools ( src/Test/QuickCheck/Tools.hs, dist/build/Test/QuickCheck/Tools.o )
+    
+    src/Test/QuickCheck/Tools.hs:33:9:
+        Warning: Fields of `MkResult' not initialised: abort
+        In the expression:
+          MkResult
+            {ok = Just (expected == actual), expect = True,
+             interrupted = False,
+             reason = "Result: expected "
+                      ++ show expected ++ ", got " ++ show actual,
+             stamp = [], callbacks = []}
+        In an equation for `@=?':
+            expected @=? actual
+              = MkResult
+                  {ok = Just (expected == actual), expect = True,
+                   interrupted = False,
+                   reason = "Result: expected "
+                            ++ show expected ++ ", got " ++ show actual,
+                   stamp = [], callbacks = []}
+    [3 of 3] Compiling Test.HUnit.Tools ( src/Test/HUnit/Tools.hs, dist/build/Test/HUnit/Tools.o )
+    
+    src/Test/HUnit/Tools.hs:131:57:
+        `maxDiscard' is not a (visible) constructor field name
+    
+    src/Test/HUnit/Tools.hs:177:40: Not in scope: `maxDiscard'
+    Failed to install testpack-2.1.2
+    cabal: Error: some packages failed to install:
+    git-annex-4.20130227 depends on testpack-2.1.2 which failed to install.
+    testpack-2.1.2 failed during the building phase. The exception was:
+    ExitFailure 1
+    git-annex.branchable.com$ 
+
+
+What version of git-annex are you using? On what operating system?
+
+trying to compile git checkout of 4.20130227 on OS X Lion.
+
+Please provide any additional information below.
+
+
+> removed dependency on testpack [[done]] --[[Joey]]

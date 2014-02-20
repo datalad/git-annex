@@ -1,0 +1,38 @@
+git-annex now does Windows!
+
+* First, [install git](http://git-scm.com/downloads)
+* Then, [install git-annex](https://downloads.kitenet.net/git-annex/windows/current/)
+
+This port is now in reasonably good shape for command-line use of
+git-annex. The assistant and webapp are still in an early state.
+See [[todo/windows_support]] for current status.
+
+The autobuilder is not currently able to run the test suite, so
+testing git-annex on Windows is up to you! To check that the build of
+git-annex works in your Windows system, you are encouraged to run the test
+suite before using git-annex on real data. After installation, run `git
+annex test`. There will be a lot of output; the important thing is that it
+should end with "All tests passed".
+
+## autobuilds
+
+A daily build is also available, thanks to Yury V. Zaytsev and
+[NEST](http://nest-initiative.org/).
+
+* [download](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/lastSuccessfulBuild/artifact/git-annex/git-annex-installer.exe) ([build logs](https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/))
+
+## building it yourself
+
+To build git-annex from source on Windows, you need to install
+the Haskell Platform, Mingw, and Cygwin. Use Cygwin to install:
+gcc rsync git wget ssh gnupg
+
+Once the prerequisites are installed, run:
+
+	cabal update
+	git clone git://git-annex.branchable.com/ gitannex
+	cd gitannex
+	build
+
+(To build the git-annex installer, you also need to install the NulSoft
+installer system.)

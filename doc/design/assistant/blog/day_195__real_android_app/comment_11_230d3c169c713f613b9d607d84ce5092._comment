@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="rillian"
+ ip="64.213.70.194"
+ subject="Re: no keybourd events on Galaxy Tab 10.1"
+ date="2013-02-22T18:28:11Z"
+ content="""
+KBOX has the same input problem so you didn't break anything with your changes.
+
+I was testing with the soft keyboard. Turns out the spacebar and number keys on the soft keyboard work, as well as return, just not the alphabetic keys.
+
+Trying on a hardware keyboard (Samsung docking station) is similar. Space, Enter and numbers work, but not letters. There's some additional confusion about shift state, where it gets confused and reports shifted digits from the hardware keys when the soft keyboard is in some shift states. E.g. switching the soft keyboard to numeric mode results in shift-digits (punctuation) from the hardware numeric keys.
+"""]]

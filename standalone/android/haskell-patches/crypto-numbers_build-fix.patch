@@ -1,0 +1,227 @@
+From 0cfdb30120976290068f4bcbebbf236b960afbb6 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Thu, 26 Dec 2013 20:01:30 -0400
+Subject: [PATCH] hack to build
+
+---
+ Crypto/Number/Basic.hs         |   14 --------------
+ Crypto/Number/ModArithmetic.hs |   29 -----------------------------
+ Crypto/Number/Prime.hs         |   18 ------------------
+ crypto-numbers.cabal           |    2 +-
+ 4 files changed, 1 insertion(+), 62 deletions(-)
+
+diff --git a/Crypto/Number/Basic.hs b/Crypto/Number/Basic.hs
+index 65c14b3..eaee853 100644
+--- a/Crypto/Number/Basic.hs
++++ b/Crypto/Number/Basic.hs
+@@ -20,11 +20,7 @@ module Crypto.Number.Basic
+     , areEven
+     ) where
+ 
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-import GHC.Integer.GMP.Internals
+-#else
+ import Data.Bits
+-#endif
+ 
+ -- | sqrti returns two integer (l,b) so that l <= sqrt i <= b
+ -- the implementation is quite naive, use an approximation for the first number
+@@ -63,25 +59,16 @@ sqrti i
+ -- gcde 'a' 'b' find (x,y,gcd(a,b)) where ax + by = d
+ --
+ gcde :: Integer -> Integer -> (Integer, Integer, Integer)
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-gcde a b = (s, t, g)
+-  where (# g, s #) = gcdExtInteger a b
+-        t = (g - s * a) `div` b
+-#else
+ gcde a b = if d < 0 then (-x,-y,-d) else (x,y,d) where
+     (d, x, y)                     = f (a,1,0) (b,0,1)
+     f t              (0, _, _)    = t
+     f (a', sa, ta) t@(b', sb, tb) =
+         let (q, r) = a' `divMod` b' in
+         f t (r, sa - (q * sb), ta - (q * tb))
+-#endif
+ 
+ -- | get the extended GCD of two integer using the extended binary algorithm (HAC 14.61)
+ -- get (x,y,d) where d = gcd(a,b) and x,y satisfying ax + by = d
+ gcde_binary :: Integer -> Integer -> (Integer, Integer, Integer)
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-gcde_binary = gcde
+-#else
+ gcde_binary a' b'
+     | b' == 0   = (1,0,a')
+     | a' >= b'  = compute a' b'
+@@ -105,7 +92,6 @@ gcde_binary a' b'
+              in if u2 >= v2
+                 then loop g x y (u2 - v2) v2 (a2 - c2) (b2 - d2) c2 d2
+                 else loop g x y u2 (v2 - u2) a2 b2 (c2 - a2) (d2 - b2)
+-#endif
+ 
+ -- | check if a list of integer are all even
+ areEven :: [Integer] -> Bool
+diff --git a/Crypto/Number/ModArithmetic.hs b/Crypto/Number/ModArithmetic.hs
+index 942c12f..f8cfc32 100644
+--- a/Crypto/Number/ModArithmetic.hs
++++ b/Crypto/Number/ModArithmetic.hs
+@@ -29,12 +29,8 @@ module Crypto.Number.ModArithmetic
+ import Control.Exception (throw, Exception)
+ import Data.Typeable
+ 
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-import GHC.Integer.GMP.Internals
+-#else
+ import Crypto.Number.Basic (gcde_binary)
+ import Data.Bits
+-#endif
+ 
+ -- | Raised when two numbers are supposed to be coprimes but are not.
+ data CoprimesAssertionError = CoprimesAssertionError
+@@ -55,13 +51,7 @@ expSafe :: Integer -- ^ base
+         -> Integer -- ^ exponant
+         -> Integer -- ^ modulo
+         -> Integer -- ^ result
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-expSafe b e m
+-    | odd m     = powModSecInteger b e m
+-    | otherwise = powModInteger b e m
+-#else
+ expSafe = exponentiation
+-#endif
+ 
+ -- | Compute the modular exponentiation of base^exponant using
+ -- the fastest algorithm without any consideration for
+@@ -74,11 +64,7 @@ expFast :: Integer -- ^ base
+         -> Integer -- ^ modulo
+         -> Integer -- ^ result
+ expFast =
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-    powModInteger
+-#else
+     exponentiation
+-#endif
+ 
+ -- note on exponentiation: 0^0 is treated as 1 for mimicking the standard library;
+ -- the mathematic debate is still open on whether or not this is true, but pratically
+@@ -87,22 +73,15 @@ expFast =
+ -- | exponentiation_rtl_binary computes modular exponentiation as b^e mod m
+ -- using the right-to-left binary exponentiation algorithm (HAC 14.79)
+ exponentiation_rtl_binary :: Integer -> Integer -> Integer -> Integer
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-exponentiation_rtl_binary = expSafe
+-#else
+ exponentiation_rtl_binary 0 0 m = 1 `mod` m
+ exponentiation_rtl_binary b e m = loop e b 1
+     where sq x          = (x * x) `mod` m
+           loop !0 _  !a = a `mod` m
+           loop !i !s !a = loop (i `shiftR` 1) (sq s) (if odd i then a * s else a)
+-#endif
+ 
+ -- | exponentiation computes modular exponentiation as b^e mod m
+ -- using repetitive squaring.
+ exponentiation :: Integer -> Integer -> Integer -> Integer
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-exponentiation = expSafe
+-#else
+ exponentiation b e m
+     | b == 1    = b
+     | e == 0    = 1
+@@ -110,7 +89,6 @@ exponentiation b e m
+     | even e    = let p = (exponentiation b (e `div` 2) m) `mod` m
+                    in (p^(2::Integer)) `mod` m
+     | otherwise = (b * exponentiation b (e-1) m) `mod` m
+-#endif
+ 
+ --{-# DEPRECATED exponantiation_rtl_binary "typo in API name it's called exponentiation_rtl_binary #-}
+ exponantiation_rtl_binary :: Integer -> Integer -> Integer -> Integer
+@@ -122,17 +100,10 @@ exponantiation = exponentiation
+ 
+ -- | inverse computes the modular inverse as in g^(-1) mod m
+ inverse :: Integer -> Integer -> Maybe Integer
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-inverse g m
+-    | r == 0    = Nothing
+-    | otherwise = Just r
+-  where r = recipModInteger g m
+-#else
+ inverse g m
+     | d > 1     = Nothing
+     | otherwise = Just (x `mod` m)
+   where (x,_,d) = gcde_binary g m
+-#endif
+ 
+ -- | Compute the modular inverse of 2 coprime numbers.
+ -- This is equivalent to inverse except that the result
+diff --git a/Crypto/Number/Prime.hs b/Crypto/Number/Prime.hs
+index 0cea9da..458c94d 100644
+--- a/Crypto/Number/Prime.hs
++++ b/Crypto/Number/Prime.hs
+@@ -3,9 +3,7 @@
+ #ifndef MIN_VERSION_integer_gmp
+ #define MIN_VERSION_integer_gmp(a,b,c) 0
+ #endif
+-#if MIN_VERSION_integer_gmp(0,5,1)
+ {-# LANGUAGE MagicHash #-}
+-#endif
+ -- |
+ -- Module      : Crypto.Number.Prime
+ -- License     : BSD-style
+@@ -30,12 +28,7 @@ import Crypto.Number.Generate
+ import Crypto.Number.Basic (sqrti, gcde_binary)
+ import Crypto.Number.ModArithmetic (exponantiation)
+ 
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-import GHC.Integer.GMP.Internals
+-import GHC.Base
+-#else
+ import Data.Bits
+-#endif
+ 
+ -- | returns if the number is probably prime.
+ -- first a list of small primes are implicitely tested for divisibility,
+@@ -78,21 +71,11 @@ findPrimeFromWith rng prop !n
+ -- | find a prime from a starting point with no specific property.
+ findPrimeFrom :: CPRG g => g -> Integer -> (Integer, g)
+ findPrimeFrom rng n =
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-    (nextPrimeInteger n, rng)
+-#else
+     findPrimeFromWith rng (\g _ -> (True, g)) n
+-#endif
+ 
+ -- | Miller Rabin algorithm return if the number is probably prime or composite.
+ -- the tries parameter is the number of recursion, that determines the accuracy of the test.
+ primalityTestMillerRabin :: CPRG g => g -> Int -> Integer -> (Bool, g)
+-#if MIN_VERSION_integer_gmp(0,5,1)
+-primalityTestMillerRabin rng (I# tries) !n =
+-    case testPrimeInteger n tries of
+-        0# -> (False, rng)
+-        _  -> (True, rng)
+-#else
+ primalityTestMillerRabin rng tries !n
+     | n <= 3     = error "Miller-Rabin requires tested value to be > 3"
+     | even n     = (False, rng)
+@@ -129,7 +112,6 @@ primalityTestMillerRabin rng tries !n
+                   | x2 == 1   = False
+                   | x2 /= nm1 = loop' ws ((x2*x2) `mod` n) (r+1)
+                   | otherwise = loop ws
+-#endif
+ 
+ {-
+     n < z -> witness to test
+diff --git a/crypto-numbers.cabal b/crypto-numbers.cabal
+index 9610e34..6669d78 100644
+--- a/crypto-numbers.cabal
++++ b/crypto-numbers.cabal
+@@ -15,7 +15,7 @@ Extra-Source-Files:  Tests/*.hs
+ 
+ Flag integer-gmp
+   Description: Are we using integer-gmp?
+-  Default: True
++  Default: False
+ 
+ Library
+   Build-Depends:     base >= 4 && < 5
+-- 
+1.7.10.4
+

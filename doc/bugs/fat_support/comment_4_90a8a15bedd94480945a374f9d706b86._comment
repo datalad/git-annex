@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://ethan.betacantrips.com/"
+ nickname="ethan.glasser.camp"
+ subject="no symlinks"
+ date="2011-06-08T20:59:38Z"
+ content="""
+If you try to clone a git repo that has a symlink over to a VFAT filesystem, you get (in its place) a regular file that contains the name of the symlink target.  So why can't git-annex use that?  I could still do git annex get on this file, git annex would still \"know\" that it's a symlink, and could replace it with a copy of the real file (instead of putting it in .git/annex).
+
+I know if it were that simple, someone would have done it already, so what am I missing?  I guess trying to get the file FROM the repository would fail because it wouldn't find the file in .git/annex?  Couldn't you store a reverse mapping?  You wouldn't be able to move the file around, but you already lose that once you give up symlinks.  It would also be a little harder to tell which symlinks were \"dangling\"; I don't see an easy way to get around that.  It would still be better than a bare repo..
+"""]]

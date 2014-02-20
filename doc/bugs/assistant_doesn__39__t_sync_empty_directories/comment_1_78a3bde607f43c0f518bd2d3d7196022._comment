@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-31T21:14:11Z"
+ content="""
+Git does not have a concept of an empty directory. The  typical workaround is to put a .gitignore file in the directory.
+"""]]

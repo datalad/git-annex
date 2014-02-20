@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2012-09-13T09:07:02Z"
+ content="""
+Swift has its own API but offers a S3 compatibility layer. Last I tried that layer, it did not work.
+"""]]

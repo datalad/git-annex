@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-06-10T20:30:27Z"
+ content="""
+This is the same as trying to rm a file named `-rf`
+
+In git-annex, as in git, -c sets a git configuration option. The text after the -c is supposed to be the option name and value. So -c-test is a valid command-line option.
+
+This leaves `git annex drop`, with no files specified to drop. As documented, git-annex commands default to acting on all relevant files in the current directory and subdirectories.
+
+Luckily, drop does check that numcopies other remotes have the file, so unless you also have a file named --force, you're not going to lose data doing this.
+
+I don't see any change I could make to prevent this kind of mistake. I checked and git also treats \"-c -test\" as valid input, despite \"-test\" not being a likely git config key (and no value being specified). I could make git-annex's option parser require the space between option and value (which git does require), which would perhaps reduce the set of files whose names are valid options.
+
+Fundamentally, this is a type of mistake that the design of unix command options allows to happen, if people use filenames starting with dashes -- so people generally don't do that. It's worth noting that git-annex is *very* careful itself, whenever passing a filename to a unix command, to check if it starts with a dash, and use \"./-file\" instead!
+"""]]

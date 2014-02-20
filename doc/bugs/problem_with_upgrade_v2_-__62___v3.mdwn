@@ -1,0 +1,3 @@
+On several of my repos, the upgrade to v3 seemed to take forever. A Crl-C followed by another "git annex upgrade" "solved" the problem in some cases. Sometimes, I had to also delete the .git/annex/journal dir to have the upgrade. I didn't notice anything special about the non-working repos to help diagnose the problem.
+
+[[!tag done]]

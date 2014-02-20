@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 7"
+ date="2013-07-17T18:59:03Z"
+ content="""
+I don't see any reason why squashing git-annex branch history would not work. If you squash it to the same sha in each clone, things would be very happy, but even if you squash it to different shas, the union merge should result in those  different versions of the same data automatically merging together.
+"""]]

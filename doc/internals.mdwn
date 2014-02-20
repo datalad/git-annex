@@ -1,0 +1,174 @@
+In the world of git, we're not scared about internal implementation
+details, and sometimes we like to dive in and tweak things by hand. Here's
+some documentation to that end.
+
+## `.git/annex/objects/aa/bb/*/*`
+
+This is where locally available file contents are actually stored.
+Files added to the annex get a symlink checked into git that points
+to the file content.
+
+First there are two levels of directories used for hashing, to prevent
+too many things ending up in any one directory.
+See [[hashing]] for details.
+
+Each subdirectory has the [[name_of_a_key|key_format]] in one of the
+[[key-value_backends|backends]]. The file inside also has the name of the key.
+This two-level structure is used because it allows the write bit to be removed
+from the subdirectories as well as from the files. That prevents accidentially
+deleting or changing the file contents. See [[lockdown]] for details.
+
+In [[direct_mode]], file contents are not stored in here, and instead
+are stored directly in the file. However, the same symlinks are still
+committed to git, internally.
+
+Also in [[direct_mode]], some additional data is stored in these directories.
+`.cache` files contain cached file stats used in detecting when a file has
+changed, and `.map` files contain a list of file(s) in the work directory
+that contain the key.
+
+## The git-annex branch
+
+This branch is managed by git-annex, with the contents listed below.
+
+The file `.git/annex/index` is a separate git index file it uses
+to accumulate changes for the git-annex branch.
+Also, `.git/annex/journal/` is used to record changes before they
+are added to git.
+
+This branch operates on objects exclusively. No file names will ever
+be stored in this branch.
+
+The files stored in this branch are all designed to be auto-merged
+using git's [[union merge driver|git-union-merge]]. So each line
+has a timestamp, to allow the most recent information to be identified.
+
+### `uuid.log`
+
+Records the UUIDs of known repositories, and associates them with a
+description of the repository. This allows git-annex to display something
+more useful than a UUID when it refers to a repository that does not have
+a configured git remote pointing at it.
+
+The file format is simply one line per repository, with the uuid followed by a
+space and then the description, followed by a timestamp. Example:
+
+	e605dca6-446a-11e0-8b2a-002170d25c55 laptop timestamp=1317929189.157237s
+	26339d22-446b-11e0-9101-002170d25c55 usb disk timestamp=1317929330.769997s
+
+## `numcopies.log`
+
+Records the global numcopies setting.
+
+The file format is simply a timestamp followed by a number.
+
+## `remote.log`
+
+Holds persistent configuration settings for [[special_remotes]] such as
+Amazon S3.
+
+The file format is one line per remote, starting with the uuid of the
+remote, followed by a space, and then a series of var=value pairs,
+each separated by whitespace, and finally a timestamp.
+
+Encrypted special remotes store their encryption key here,
+in the "cipher" value. It is base64 encoded, and unless shared [[encryption]]
+is used, is encrypted to one or more gpg keys. The first 256 bytes of
+the cipher is used as the HMAC SHA1 encryption key, to encrypt filenames
+stored on the special remote. The remainder of the cipher is used as a gpg
+symmetric encryption key, to encrypt the content of files stored on the special
+remote.
+
+## `trust.log`
+
+Records the [[trust]] information for repositories. Does not exist unless
+[[trust]] values are configured.
+
+The file format is one line per repository, with the uuid followed by a
+space, and then either `1` (trusted), `0` (untrusted), `?` (semi-trusted),
+`X` (dead) and finally a timestamp.
+
+Example:
+
+	e605dca6-446a-11e0-8b2a-002170d25c55 1 timestamp=1317929189.157237s
+	26339d22-446b-11e0-9101-002170d25c55 ? timestamp=1317929330.769997s
+
+Repositories not listed are semi-trusted.
+
+## `group.log`
+
+Used to group repositories together.
+
+The file format is one line per repository, with the uuid followed by a space,
+and then a space-separated list of groups this repository is part of,
+and finally a timestamp.
+
+## `preferred-content.log`
+
+Used to indicate which repositories prefer to contain which file contents.
+
+The file format is one line per repository, with the uuid followed by a space,
+then a boolean expression, and finally a timestamp.
+
+Files matching the expression are preferred to be retained in the
+repository, while files not matching it are preferred to be stored
+somewhere else.
+
+## `aaa/bbb/*.log`
+
+These log files record [[location_tracking]] information
+for file contents. These are placed in two levels of subdirectories
+for hashing. See [[hashing]] for details.
+
+The name of the key is the filename, and the content
+consists of a timestamp, either 1 (present) or 0 (not present), and
+the UUID of the repository that has or lacks the file content.
+
+Example:
+
+	1287290776.765152s 1 e605dca6-446a-11e0-8b2a-002170d25c55
+	1287290767.478634s 0 26339d22-446b-11e0-9101-002170d25c55
+
+## `aaa/bbb/*.log.web`
+
+These log files record urls used by the
+[[web_special_remote|special_remotes/web]]. Their format is similar
+to the location tracking files, but with urls rather than UUIDs.
+
+## `aaa/bbb/*.log.rmt`
+
+These log files are used by remotes that need to record their own state
+about keys. Each remote can store one line of data about a key, in
+its own format.
+
+Example:
+
+	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55 blah blah
+	1287290767.478634s 26339d22-446b-11e0-9101-002170d25c55 foo=bar
+
+## `schedule.log`
+
+Used to record scheduled events, such as periodic fscks.
+
+The file format is simply one line per repository, with the uuid followed by a
+space and then its schedule, followed by a timestamp.
+
+There can be multiple events in the schedule, separated by "; "
+
+The format of the scheduled events is the same described in
+the SCHEDULED JOBS section of the man page.
+
+Example:
+
+	42bf2035-0636-461d-a367-49e9dfd361dd fsck self 30m every day at any time; fsck 4b3ebc86-0faf-4892-83c5-ce00cbe30f0a 1h every year at any time timestamp=1385646997.053162s
+
+## `transitions.log`
+
+Used to record transitions, eg by `git annex forget`
+
+Each line of the file is a transition, followed by a timestamp.
+
+Example:
+
+	ForgetGitHistory 1387325539.685136s
+	ForgetDeadRemotes 1387325539.685136s

@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="AWS credentials"
+ date="2013-05-31T10:23:23Z"
+ content="""
+This looks very valuable - Google are offering a free 5GB up until 2013 June 30th
+
+Sign in here[1] get your credentials here[2] under the section “Interoperable Access” (Source[3])
+
+    # Set up AWS credentials
+    $ export AWS_ACCESS_KEY_ID=\"YOUR-KEY\"
+    $ export AWS_SECRET_ACCESS_KEY=\"YOUR-SECRET\"
+
+1. http://gs-signup-redirect.appspot.com/ -or- https://developers.google.com/storage/docs/signup
+2. https://storage.cloud.google.com/m
+3. http://fog.io/storage/
+"""]]

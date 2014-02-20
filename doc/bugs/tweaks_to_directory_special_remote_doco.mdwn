@@ -1,0 +1,80 @@
+### Please describe the problem.
+
+I found the discussion in [directory](/special_remotes/directory) quite confusing until I looked at it the right way. Some tweaking of the documentation might help.
+
+### What steps will reproduce the problem?
+
+Possible method - get a newbie to read the page.
+
+### What version of git-annex are you using? On what operating system?
+
+n/a
+
+### Please provide any additional information below.
+
+Below is an untested patch that I think would make the documentation more helpful to me on a first reading.
+
+      Tweaks to doc/special_remotes/directory.mdwn
+      
+        * document the 'directory' option (!)
+        * try to make it clearer what is different about this remote,
+          including giving an example of how the directory structure looks.
+        * grammar fix in opening paragraph
+      
+      ---
+       doc/special_remotes/directory.mdwn | 16 +++++++++++++++-
+       1 file changed, 15 insertions(+), 1 deletion(-)
+      
+      diff --git a/doc/special_remotes/directory.mdwn b/doc/special_remotes/directory.mdwn
+      index 4d72e8b..7f076b3 100644
+      --- a/doc/special_remotes/directory.mdwn
+      +++ b/doc/special_remotes/directory.mdwn
+      @@ -1,10 +1,12 @@
+       This special remote type stores file contents in directory.
+       
+       One use case for this would be if you have a removable drive that
+      -you want to use it to sneakernet files between systems (possibly with
+      +you want to use to sneakernet files between systems (possibly with
+       \[[encrypted|encryption]] contents). Just set up both systems to use
+       the drive's mountpoint as a directory remote.
+       
+      +Note that directory remotes have a special directory structure
+      +(by design, the same as the \[[rsync|rsync]] remote).
+       If you just want two copies of your repository with the files "visible"
+       in the tree in both, the directory special remote is not what you want.
+       Instead, you should use a regular `git clone` of your git-annex repository.
+      @@ -14,6 +16,8 @@ Instead, you should use a regular `git clone` of your git-annex repository.
+       These parameters can be passed to `git annex initremote` to configure the
+       remote:
+       
+      +* `directory` - The path to directory in which the remote resides
+      +
+       * `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+         See \[[encryption]].
+       
+      @@ -31,3 +35,13 @@ Setup example:
+       
+        # git annex initremote usbdrive type=directory directory=/media/usbdrive/ encryption=none
+        # git annex describe usbdrive "usb drive on /media/usbdrive/"
+      +
+      +Usage example:
+      + # git annex copy mycoolfile.mp4 --to usbdrive
+      + # ls -aF /media/usbdrive
+      +        ./  ../  42b/  .git/  tmp/
+      + # git annex whereis mycoolfile.mp4
+      + whereis mycoolfile.mp4 (2 copies)
+      +         320053d5-892f-46d2-89f0-d6e9d09e6398 -- here
+      +         6747a48b-fad2-41a7-9033-8d8daa35c5f8 -- usbdrive
+      + ok
+      -- 
+      1.8.5.2
+
+
+
+# End of transcript or log.
+
+> Largely applied (except example at the end). I agree these
+> changes make it much clearer, especially adding the missing documentation
+> of the directory parameter. So, [[done]]. Note that this website is a
+> wiki and users like you are welcome to edit pages directly to improve the
+> documentation. --[[Joey]]

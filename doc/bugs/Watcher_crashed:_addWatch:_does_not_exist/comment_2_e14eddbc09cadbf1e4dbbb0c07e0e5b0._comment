@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkptNW1PzrVjYlJWP_9e499uH0mjnBV6GQ"
+ nickname="Christian"
+ subject="comment 2"
+ date="2013-07-19T06:14:05Z"
+ content="""
+I see the problem always i start the assistant. Even when i don't touch the repository otherwise. But there is a funny observation: I have multiple seperate repositories: there are two old ones, that were created some months ago (upper bound: one year). Those two (seperate) repositories show the addWatch problem (on multiple machines). A newly created repository does not show the problem.
+
+So i suspect that those old repositories behave in some direction differently. Is this possible? I could also give you a clone of one repository.
+"""]]

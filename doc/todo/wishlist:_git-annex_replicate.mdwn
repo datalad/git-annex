@@ -1,0 +1,12 @@
+I'd like to be able to do something like the following:
+
+ * Create encrypted git-annex remotes on a couple of semi-trusted machines - ones that have good connectivity, but non-redundant hardware
+ * set numcopies=3
+ * run `git-annex replicate` and have git-annex run the appropriate copy commands to make sure every file is on at least 3 machines
+
+There would also likely be a `git annex rebalance` command which could be used if remotes were added or removed.  If possible, it should copy files between servers directly, rather than proxy through a potentially slow client.
+
+There might be the need to have a 'replication_priority' option for each remote that configures which machines would be preferred.  That way you could set your local server to a high priority to ensure that it is always 1 of the 3 machines used and files are distributed across 2 of the remaining remotes.  Other than priority, other options that might help:
+
+ * maxspace - A self imposed quota per remote machine.  git-annex replicate should try to replicate files first to machines with more free space. maxspace would change the free space calculation to be `min(actual_free_space, maxspace - space_used_by_git_annex)
+ * bandwidth - when replication files, copies should be done between machines with the highest available bandwidth. ( I think this option could be useful for git-annex get in general)

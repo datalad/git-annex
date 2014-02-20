@@ -1,0 +1,6 @@
+Hi,
+
+I wondered if it's possible to have a non-bare repo on a cloud remote. I want to have some sort of Dropbox-like workflow were I simply put stuff into a directory on my drive and it gets synced via SSH to a central VPS so I can also always access it via HTTP, for example.
+
+Regards,
+Lukas

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 3"
+ date="2013-07-30T20:07:09Z"
+ content="""
+Yeah, I inverted some logic. This also affects, for example, git-annex on Android. Sigh. Sorry about this.
+
+I suppose that, if you run into this bug, the best way to fix up after it is to `git-revert -n` the bad commit that sync made. Then run `git annex sync` with the fixed git-annex to commit the reversion.
+"""]]

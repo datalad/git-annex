@@ -1,0 +1,7 @@
+Short day today.
+
+* Worked on fixing a number of build failures people reported.
+* Solved the problem that was making transfer pause/resume not always work.
+  Although there is another bug where pausing a transfer sometimes lets
+  another queued transfer start running. 
+* Worked on getting the assistant to start on login on OSX.

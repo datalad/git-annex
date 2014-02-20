@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.220"
+ subject="comment 4"
+ date="2013-09-23T20:18:38Z"
+ content="""
+Other good options to supplement an offline backup drive:
+
+* A clone of the repository on another computer of yours, or on an Adroid tablet or phone.
+* An encrypted git repository stored on a remote ssh server. (Supported by recent git-annex releases, although the assistant does not yet have a UI to set this up it's not very hard to do it manually at the command line and then the assistant will use it.)
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlpOeCs7zZLR-PBGPxUgjWlg7bwAAzQZyk"
+ nickname="Seth"
+ subject="comment 3"
+ date="2013-06-30T21:36:39Z"
+ content="""
+WOO!!! Found a \"solution\" here:
+
+http://eureka.ykyuen.info/2011/10/26/mac-gnupg-installation/
+
+Basically I commented out this line:
+
+    auto-key-locate cert pka ldap hkp://keys.gnupg.net
+
+Any clue why this would solve the problem?
+"""]]

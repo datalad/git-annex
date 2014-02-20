@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="Follow-up information on my system"
+ date="2013-05-18T01:23:28Z"
+ content="""
+Sorry for the delay:  my android is stock Samsung-tuned Jelly beans.
+Android 4.1.2
+Baseband version N7000XXLSO
+
+not sure if that would be of any use :-/  nothing in the logs (aLogcat) if I filter by annex -- should there any debug output? what should be a key to search by?
+
+
+"""]]

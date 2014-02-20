@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 6"
+ date="2011-02-08T23:20:08Z"
+ content="""
+You're missing the sha1sum command, everything else is a followon error from that. Added a hint about this to [[install]],
+and in the next version configure will check for sha1sum.
+"""]]

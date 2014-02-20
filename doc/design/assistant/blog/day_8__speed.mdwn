@@ -1,0 +1,67 @@
+Since last post, I've worked on speeding up `git annex watch`'s startup time
+in a large repository.
+
+The problem was that its initial scan was naively staging every symlink in
+the repository, even though most of them are, presumably, staged correctly
+already. This was done in case the user copied or moved some symlinks
+around while `git annex watch` was not running -- we want to notice and
+commit such changes at startup.
+
+Since I already had the `stat` info for the symlink, it can look at the
+`ctime` to see if the symlink was made recently, and only stage it if so.
+This sped up startup in my big repo from longer than I cared to wait (10+
+minutes, or half an hour while profiling) to a minute or so. Of course,
+inotify events are already serviced during startup, so making it scan
+quickly is really only important so people don't think it's a resource hog.
+First impressions are important. :)
+
+But what does "made recently" mean exactly? Well, my answer is possibly
+over engineered, but most of it is really groundwork for things I'll need
+later anyway. I added a new data structure for tracking the status of the
+daemon, which is periodically written to disk by another thread (thread #6!)
+to `.git/annex/daemon.status` Currently it looks like this; I anticipate
+adding lots more info as I move into the [[syncing]] stage:
+
+	lastRunning:1339610482.47928s
+	scanComplete:True
+
+So, only symlinks made after the daemon was last running need to be
+expensively staged on startup. Although, as RichiH pointed out,
+this fails if the clock is changed. But I have been planning to have a
+cleanup thread anyway, that will handle this, and other
+potential problems, so I think that's ok.
+
+Stracing its startup scan, it's fairly tight now. There are some repeated 
+`getcwd` syscalls that could be optimised out for a minor speedup.
+
+----
+
+Added the sanity check thread. Thread #7! It currently only does one sanity
+check per day, but the sanity check is a fairly lightweight job,
+so I may make it run more frequently. OTOH, it may never ever find a
+problem, so once per day seems a good compromise. 
+
+Currently it's only checking that all files in the tree are properly staged
+in git. I might make it `git annex fsck` later, but fscking the whole tree
+once per day is a bit much. Perhaps it should only fsck a few files per
+day? TBD
+
+Currently any problems found in the sanity check are just fixed and logged.
+It would be good to do something about getting problems that might indicate
+bugs fed back to me, in a privacy-respecting way. TBD
+
+----
+
+I also refactored the code, which was getting far too large to all be in
+one module. 
+
+I have been thinking about renaming `git annex watch` to `git annex assistant`,
+but I think I'll leave the command name as-is. Some users might
+want a simple watcher and stager, without the assistant's other features
+like syncing and the webapp. So the next stage of the
+[[roadmap|design/assistant]] will be a different command that also runs
+`watch`.
+
+At this point, I feel I'm done with the first phase of [[inotify]].
+It has a couple known bugs, but it's ready for brave beta testers to try.
+I trust it enough to be running it on my live data.

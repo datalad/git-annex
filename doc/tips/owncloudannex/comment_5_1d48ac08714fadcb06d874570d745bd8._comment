@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQvRLq7nMMEGoEKuYx9oaf67IC0nZfmVI"
+ nickname="chung yan"
+ subject="comment 5"
+ date="2013-07-10T09:43:55Z"
+ content="""
+hi Tobias
+
+thanks your sharing, i am still in have a trial of git-annex, so i do not yet have real data on the server, so i just del. all and re-create both client and server repos in owncloud, i can got what you said, and see my photo. 
+
+Actually, i am studying git-annex. 1) It can syncs the data from my client computer to server. 2) i would like that other and anywhere computers through browser can view my server data which do not need to download all data into a new client. So my original goal is i can have a web to display the content of my files, and see owncloud have a nice web. 
+
+Regarding to GDoc, flickr, etc. they have space limitation, so i install owncloud as my own computer. I also see the <http://git-annex.branchable.com/design/assistant/partial_content/>, but it is not yet at roadmap. 
+
+thanks
+"""]]

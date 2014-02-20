@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="good question.."
+ date="2013-12-19T17:04:53Z"
+ content="""
+The assistant necessarily simplifies some things git-annex does, so that it can automate them, and this includes keeping files synced to everywhere by default. There are ways to configure the assistant to only keep a subset of files on a computer, including [[archive_directories|assistant/archival_walkthrough]]. Underneath, there is the quite powerful [[preferred_content]] DSL, which can be used to configure lots more interesting behavior about what goes where. So far only some common scenarios have been made easily available in the webappp, but there's potential for lots more configurability here, if a good UI for it is built.
+
+I think the assistant is probably better than dropbox at handling external removable media, used for backups or archiving. (But I have not evaluated, or actually even used dropbox myself. My goal is *not* to copy dropbox.) And it's better at encryption, and it allows using a variety of cloud services rather than only one provider.
+"""]]

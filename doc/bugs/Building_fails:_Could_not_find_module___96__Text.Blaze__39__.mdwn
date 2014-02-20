@@ -1,0 +1,105 @@
+What steps will reproduce the problem?
+
+<pre>
+dominik@Atlantis:/var/tmp$ git clone git://github.com/joeyh/git-annex.git
+Cloning into 'git-annex'...
+remote: Counting objects: 40580, done.
+remote: Compressing objects: 100% (10514/10514), done.
+remote: Total 40580 (delta 29914), reused 40502 (delta 29837)
+Receiving objects: 100% (40580/40580), 9.17 MiB | 238 KiB/s, done.
+Resolving deltas: 100% (29914/29914), done.
+dominik@Atlantis:/var/tmp$ cd git-annex/
+dominik@Atlantis:/var/tmp/git-annex$ cabal update
+Downloading the latest package list from hackage.haskell.org
+dominik@Atlantis:/var/tmp/git-annex$ cabal install --only-dependencies
+Resolving dependencies...
+All the requested packages are already installed:
+Use --reinstall if you want to reinstall anyway.
+dominik@Atlantis:/var/tmp/git-annex$ cabal configure
+Resolving dependencies...
+[ 1 of 21] Compiling Utility.FileSystemEncoding ( Utility/FileSystemEncoding.hs, dist/setup/Utility/FileSystemEncoding.o )
+[ 2 of 21] Compiling Utility.Applicative ( Utility/Applicative.hs, dist/setup/Utility/Applicative.o )
+[ 3 of 21] Compiling Utility.PartialPrelude ( Utility/PartialPrelude.hs, dist/setup/Utility/PartialPrelude.o )
+[ 4 of 21] Compiling Utility.UserInfo ( Utility/UserInfo.hs, dist/setup/Utility/UserInfo.o )
+[ 5 of 21] Compiling Utility.Monad    ( Utility/Monad.hs, dist/setup/Utility/Monad.o )
+[ 6 of 21] Compiling Utility.Path     ( Utility/Path.hs, dist/setup/Utility/Path.o )
+[ 7 of 21] Compiling Utility.OSX      ( Utility/OSX.hs, dist/setup/Utility/OSX.o )
+[ 8 of 21] Compiling Utility.Exception ( Utility/Exception.hs, dist/setup/Utility/Exception.o )
+[ 9 of 21] Compiling Utility.TempFile ( Utility/TempFile.hs, dist/setup/Utility/TempFile.o )
+[10 of 21] Compiling Utility.Misc     ( Utility/Misc.hs, dist/setup/Utility/Misc.o )
+[11 of 21] Compiling Utility.Process  ( Utility/Process.hs, dist/setup/Utility/Process.o )
+[12 of 21] Compiling Utility.FreeDesktop ( Utility/FreeDesktop.hs, dist/setup/Utility/FreeDesktop.o )
+[13 of 21] Compiling Assistant.Install.AutoStart ( Assistant/Install/AutoStart.hs, dist/setup/Assistant/Install/AutoStart.o )
+[14 of 21] Compiling Utility.SafeCommand ( Utility/SafeCommand.hs, dist/setup/Utility/SafeCommand.o )
+[15 of 21] Compiling Utility.Directory ( Utility/Directory.hs, dist/setup/Utility/Directory.o )
+[16 of 21] Compiling Common           ( Common.hs, dist/setup/Common.o )
+[17 of 21] Compiling Locations.UserConfig ( Locations/UserConfig.hs, dist/setup/Locations/UserConfig.o )
+[18 of 21] Compiling Build.TestConfig ( Build/TestConfig.hs, dist/setup/Build/TestConfig.o )
+[19 of 21] Compiling Build.Configure  ( Build/Configure.hs, dist/setup/Build/Configure.o )
+[20 of 21] Compiling Build.InstallDesktopFile ( Build/InstallDesktopFile.hs, dist/setup/Build/InstallDesktopFile.o )
+[21 of 21] Compiling Main             ( Setup.hs, dist/setup/Main.o )
+Linking ./dist/setup/setup ...
+  checking version... 3.20121018
+  checking git... yes
+  checking git version... 1.7.10.4
+  checking cp -a... yes
+  checking cp -p... yes
+  checking cp --reflink=auto... yes
+  checking uuid generator... uuidgen
+  checking xargs -0... yes
+  checking rsync... yes
+  checking curl... yes
+  checking wget... yes
+  checking bup... no
+  checking gpg... yes
+  checking lsof... yes
+  checking host... no
+  checking ssh connection caching... yes
+  checking sha1... sha1sum
+  checking sha256... sha256sum
+  checking sha512... sha512sum
+  checking sha224... sha224sum
+  checking sha384... sha384sum
+Configuring git-annex-3.20121018...
+dominik@Atlantis:/var/tmp/git-annex$ cabal build
+Building git-annex-3.20121018...
+Preprocessing executable 'git-annex' for git-annex-3.20121018...
+
+Assistant/Alert.hs:21:8:
+    Could not find module `Text.Blaze'
+    It is a member of the hidden package `blaze-markup-0.5.1.1'.
+    Perhaps you need to add `blaze-markup' to the build-depends in your .cabal file.
+    Use -v to see a list of the files searched for.
+</pre>
+
+What is the expected output? What do you see instead?
+
+I expect the latest git HEAD to build without an error message or provide me with a package I need to install. Instead the error above is shown. In fact the package requested is installed:
+
+<pre>
+dominik@Atlantis:/var/tmp/git-annex$ cabal install blaze-markup
+Resolving dependencies...
+All the requested packages are already installed:
+blaze-markup-0.5.1.1
+Use --reinstall if you want to reinstall anyway.
+</pre>
+
+What version of git-annex are you using? On what operating system?
+
+git HEAD, Ubuntu 12.10
+
+Please provide any additional information below.
+
+<pre>
+$ cabal --version
+cabal-install version 0.14.0
+using version 1.14.0 of the Cabal library 
+
+$ ghc --version
+The Glorious Glasgow Haskell Compilation System, version 7.4.2
+
+$ uname -a
+Linux Atlantis 3.5.0-17-generic #28-Ubuntu SMP Tue Oct 9 19:31:23 UTC 2012 x86_64 x86_64 x86_64 GNU/Linux
+</pre>
+
+> [[done]] --[[Joey]]

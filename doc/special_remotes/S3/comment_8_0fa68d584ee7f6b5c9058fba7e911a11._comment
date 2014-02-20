@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="68.119.100.5"
+ subject="comment 8"
+ date="2013-01-20T20:37:09Z"
+ content="""
+If encryption is not used, the files are stored in S3 as-is, and can be accessed directly. They are stored in a hashed directory structure with the names of their key used, rather than the original filename. To get back to the original filename, a copy of the git repo would also be needed.
+
+With encryption, you need the gpg key used in the encryption, or, for shared encryption, a symmetric key which is stored in the git repo.
+
+See [[future proofing]] for non-S3 specific discussion of this topic.
+"""]]

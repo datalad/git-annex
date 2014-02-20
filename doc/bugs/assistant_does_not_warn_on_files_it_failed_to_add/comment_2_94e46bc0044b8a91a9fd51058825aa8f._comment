@@ -1,0 +1,60 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 2"
+ date="2013-04-06T21:50:18Z"
+ content="""
+The sanity check never added the failed files:
+
+    daemon.log.2:add Indie Game Stand/Deadly 30/Deadly30_WINDOWS.zip (checksum...) [2013-03-24 20:44:10 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Deadly 30/Deadly30_LINUX.zip (checksum...) [2013-03-24 20:44:34 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Deadly 30/Deadly30_MAC.zip (checksum...) failed
+    daemon.log.2:add Indie Game Stand/Deadly 30/GonzoSSM_YouTube_Videos.zip (checksum...) [2013-03-24 20:51:05 GMT] Committer: Committing changes to git
+
+    daemon.log.2:[2013-03-25 14:48:01 GMT] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+
+    daemon.log.2:add Indie Game Stand/Wyv and Keep/Wyvs_Cartographer.zip (checksum...) [2013-03-25 17:46:19 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Wyv and Keep/WnK_Level_Pack.zip (checksum...) [2013-03-25 17:46:20 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Wyv and Keep/SmashBox_OST_Mp3.zip (checksum...) [2013-03-25 17:56:37 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Wyv and Keep/xnafx40_redist.msi (checksum...) failed
+    daemon.log.2:add Indie Game Stand/Wyv and Keep/WnK091_Win.zip (checksum...) [2013-03-25 18:04:53 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Wyv and Keep/wyv_and_keep_OST_MP3.zip (checksum...) [2013-03-25 18:08:20 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Wyv and Keep/SmashBox_OST_FLAC.zip (checksum...) [2013-03-25 18:08:43 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Wyv and Keep/WnK0907_OSX.zip (checksum...) [2013-03-25 18:10:25 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Wyv and Keep/dotNetFx40_Full_x86_x64.exe (checksum...) [2013-03-25 18:10:39 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Wyv and Keep/wyv_and_keep_OST_FLAC.zip (checksum...) [2013-03-25 18:45:39 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Blueberry Garden/BlueBerryGarden_Sheet_Music.zip (checksum...) [2013-03-25 19:08:04 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Blueberry Garden/dotNetFx45_Full_setup.exe (checksum...) [2013-03-25 19:08:18 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Blueberry Garden/Eriks_Prototypes.zip (checksum...) [2013-03-25 19:08:25 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Blueberry Garden/xnafx40_redist.msi (checksum...) [2013-03-25 19:09:05 GMT] Committer: Committing changes to git
+
+    daemon.log.2:add Indie Game Stand/Blueberry Garden/Blueberry_Garden_1.1.zip (checksum...) failed
+    daemon.log.2:add Indie Game Stand/Blueberry Garden/daduk_Et_Apres.zip (checksum...) [2013-03-25 19:09:53 GMT] Committer: Committing changes to git
+
+    daemon.log.2:add Indie Game Stand/Flatspace Bundle/fsmusicpack3setup.exe (checksum...) failed
+    daemon.log.2:add Indie Game Stand/Flatspace Bundle/flatspaceiifullsetup.exe (checksum...) [2013-03-25 20:45:17 GMT] Committer: Committing changes to git
+    daemon.log.2:add Indie Game Stand/Flatspace Bundle/flatspacefullsetup.exe (checksum...) [2013-03-25 20:45:24 GMT] Committer: Committing changes to git
+
+    daemon.log.2:[2013-03-26 14:48:04 GMT] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+    daemon.log.2:[2013-03-27 14:48:08 GMT] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+    daemon.log.2:[2013-03-28 14:48:12 GMT] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+    daemon.log.2:[2013-03-29 14:48:15 GMT] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+    daemon.log.2:[2013-03-30 14:48:18 GMT] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+    daemon.log.2:[2013-03-31 15:48:22 BST] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+    daemon.log.2:[2013-04-01 15:48:25 BST] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+    daemon.log.2:[2013-04-02 15:48:29 BST] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+    daemon.log.2:[2013-04-03 15:48:33 BST] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+    daemon.log.2:[2013-04-04 15:48:36 BST] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+    daemon.log.2:[2013-04-05 15:48:40 BST] SanityCheckerDaily: Running daily sanity check to make sure everything is ok.
+
+    daemon.log.1:add Indie Game Stand/Blueberry Garden/Blueberry_Garden_1.1.zip (checksum...) [2013-04-05 21:21:15 BST] Committer: Adding Deadly30_MAC.zip
+    daemon.log.1:add Indie Game Stand/Deadly 30/Deadly30_MAC.zip (checksum...) [2013-04-05 21:21:16 BST] Committer: Adding fsmusicpa..setup.exe
+    daemon.log.1:add Indie Game Stand/Flatspace Bundle/fsmusicpack3setup.exe (checksum...) [2013-04-05 21:21:16 BST] Committer: Adding xnafx40_redist.msi
+    daemon.log.1:add Indie Game Stand/Wyv and Keep/xnafx40_redist.msi (checksum...) [2013-04-05 21:21:16 BST] Committer: Committing changes to git
+
+I just managed to trigger the issue again. The file has been chmod-ed to 440 but not added to the annex. The log, once again, shows that the checksum failed.
+
+    add CG Cookie/Modeling a Female Human Head/couse_female_head_05.zip (checksum...) failed
+
+The files are being downloaded directly into the directory with the DownThemAll. This downloads the file in a temporary name ending in .dtapart, which is ignored through \".gitignore\". I would have thought that there was nothing stopping the file from being checksummed as git-annex would only see it after the rename, where the file is no longer being written to by anything.
+"""]]

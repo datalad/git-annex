@@ -1,0 +1,6 @@
+Put in a fix for `getprotobyname` apparently not returning anything for
+"tcp" on Android. This might fix all the special remotes there, but I don't
+know yet, because I have to rebuild a lot of Haskell libraries to try it.
+
+So, I spent most of today writing a script to build all the Haskell
+libraries for Android from scratch, with all my patches.

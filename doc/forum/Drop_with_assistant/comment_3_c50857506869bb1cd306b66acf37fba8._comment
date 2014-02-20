@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 3"
+ date="2013-04-11T13:18:04Z"
+ content="""
+The trivial way to do this is to set your repository to \"client\" and then when you want to drop a file, create a folder called \"archive\" and drag the file into that folder.  The assistant will drop it (if numcopies is satisfied that there are enough copies elsewhere).  If you want it back, drag it out of the archive and the assistant will re-fetch it.
+
+This is how I use git-annex: I have an ssh remote and a usb drive which are both \"backup\" and my laptop is \"client\", and my numcopies is sent to 2.
+
+Files are always copied to the ssh remote and the usb drive because they're \"backup.\"  That fulfills my numcopies=2.  At that point, anything in an \"archive\" folder on my laptop will be dropped automatically.
+
+It means my annex is littered with \"archive\" folders, but it achieves the desired effect.
+"""]]

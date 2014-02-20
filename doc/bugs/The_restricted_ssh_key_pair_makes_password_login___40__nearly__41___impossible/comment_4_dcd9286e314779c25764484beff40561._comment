@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl99Gxq3NPNvwZHp3PDufaknQH4rZb_KKY"
+ nickname="Florian"
+ subject="comment 4"
+ date="2013-04-10T12:39:49Z"
+ content="""
+OK, problem solved. I deleted the key on the server and then readded the repository. Now I have a separate git-annex key pair and the config is as you described. I don't know why an existing key pair was used in the setup before. I log into my home server frequently and don't remember that I added the public key manually (especially regarding the restriction to git-annex-shell that was applied).
+
+However, thanks for the great work so far!
+"""]]

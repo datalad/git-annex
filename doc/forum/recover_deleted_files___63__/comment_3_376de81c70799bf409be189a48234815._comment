@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="ka7"
+ ip="2001:7b8:155d:0:222:64ff:fe16:dc52"
+ subject="ok, that worked."
+ date="2012-10-25T20:15:26Z"
+ content="""
+i think of a kind of \"WORM-library\", so basically just add, not allow to remove content. (at least not for the user thru the mounted device)
+- so a script to add/commit -- but as stag-1 check for delete files and get them back. some git magic needed, but should be doable.
+- or thru \"samba\" parameters set to add but not delete/overwrite files.  (read yes, write yes, delete no) -- to be proved thats possible, but not your job :) ( annex-ing via cron every /5 or via inotify)
+so yea, will play for a while and maybe come back with new. thanks to everybody. 
+<3 git-annex <3
+"""]]

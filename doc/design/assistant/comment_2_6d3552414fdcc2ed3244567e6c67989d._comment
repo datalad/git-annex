@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 2"
+ date="2012-06-04T19:45:00Z"
+ content="""
+Jimmy, I hope to make it as easy as possible to install. I've been focusing on getting it directly into popular Linux distributions, rather than shipping my own binary. The OSX binary is static, and while I lack a OSX machine, I would like to get it easier to distribute to OSX users.
+"""]]

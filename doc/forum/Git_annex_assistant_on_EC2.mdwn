@@ -1,0 +1,5 @@
+With Amazon EC2, it is possible to take a snapshot of the virtual machine and then bring up multiple instances based on the snapshot. 
+
+If I configure git annex assistant to sync a folder to S3, will it work correctly if I spin up multiple instances, all identical git annex assistant configurations?
+
+My use case is to allow users of my forums to upload attachments with their posts. The attachments are stored locally on disk, but I'm hoping that git annex assistant can help synchroise the attachments across all forum instances (I usually run only 1 instance, but their could be as many as 3 under heavy load).

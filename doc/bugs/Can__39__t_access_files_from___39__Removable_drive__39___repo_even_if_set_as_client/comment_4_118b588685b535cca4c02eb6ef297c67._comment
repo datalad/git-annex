@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 4"
+ date="2013-02-27T12:16:45Z"
+ content="""
+@edheil:
+Yes, I have found that creating the repositories outside of the assistant (or directly on each machine through the assistant) and adding the remotes manually doesn't have this issue.. but as I am not setting this up for myself, so dropping to the command line is an issue (she's not averse to it, but also isn't a power user).
+
+It seems that the assistant/webapp is replacing dropbox functionality, while ignoring the functionality of git-annex. Perhaps I am misunderstanding the goal of it..?
+
+My intended use case in the situation where this issue comes up is:
+
+Repository on desktop has a copy of all files in indirect mode.
+Repository on netbook only has a copy of files added locally or fetched manually.
+Dropping a file in the netbook annex should cause it to be uploaded to the desktop repository (when it is available). Files should be fetchable/droppable (and unlockable) using the webapp from the desktop/netbook repository respectively.
+
+But it looks like this is (currently) unachievable as the webapp provides no method of fetching/dropping files, the assistant does not create the remote repositories correctly and requires dropping to the command line if worked around. Eep!
+
+Hope this doesn't come off as sour complaining. I was introduced to git-annex by a friend about a week ago (she only learned about it about 2-3 weeks ago and *loves* it) and it is a very nice and flexible tool which fits my own use case perfectly, meeting and exceeding every expectation.. until it came to the assistant and webapp (which makes me wonder why Joey is working on an Android port..).
+"""]]

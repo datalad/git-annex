@@ -1,0 +1,13 @@
+Since _transfer queueing_  and syncing of data works now in the assistant branch (been playing with it), there are times when I really don't want to sync the data, I would like to just sync meta-data and manually do a _get_ on files that I would want or selectively sync data in a subtree.
+
+It would be nice to have the syncing/watch feature to have the option of syncing only *meta-data* or *meta-data and data*, I think this sort of option was already planned? It would also be nice to be able to automatically sync data for only a subtree.
+
+My use case is, I have a big stash of files somewhere at home or work, and I want to keep what I am actually using on my laptop and be able to selectively just take a subtree or a set of subtree's of files. I would not always want to suck down all the data but still have the functionally to add files and push them upstream and sync meta-data.
+
+that is...
+
+> * Site A: big master annex in a server room with lots of disk (or machines), watches a directory and syncs both data and meta-data, it should always try and pull data from all it's child repos. That way I will always have a master copy of my data somewhere, it would be even nicer if I could have clones of the annex, where each annex is on a different machine which is configured to only sync a subtree of files so I can distribute my annex across different systems and disks.
+>   * Site A: machine A: syncs Folder A
+>   * Site A: machine B: syncs Folder B
+>   * and so on with selectively syncing sites and directories
+> * Laptop: has a clone of the annex, and watches a directory, syncs meta-data as usual and only uploads files to a remote (all or a designated one) but it never downloads files automatically or it should only occur inside a selected subtree.

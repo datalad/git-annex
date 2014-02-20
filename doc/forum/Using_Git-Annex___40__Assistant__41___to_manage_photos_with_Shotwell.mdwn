@@ -1,0 +1,13 @@
+Hello,
+
+I'm very excited about Git Annex and Git Annex Assistant.
+
+One big issue that I have is that I currently have all of my photos (70-80GB) on a HTPC because it has a large hard drive. I have a decent laptop/screen set-up where I would prefer to manage the photos, but the hard drive in there is a small SSD. 
+
+I use Shotwell to manage my photos (currently on the HTPC). I would be happy to keep things simple and only access them on the laptop. I have 100GB of box.com storage (and another 100GB of Mega.co.nz storage, but I don't think that is supported by GAA yet).
+
+Ideally, what I would like is for a cache of, say, 10GB of my recently-accessed photos to live on my laptop, with the remaining 70GB living on both my HTPC and box.com. If I ever needed the underlying files for non-cached files (say if I was trying to view full-quality versions of them or send them to someone), it could try to pull these from my HTPC over the local network or, if I was "on the road", box.com. As I understand it, Shotwell has its own database and a set of thumbnails etc that you can use to manage and browse your photos while very rarely accessing the underlying photos.
+
+Is this possible with the existing GAA/Shotwell, or does one or the other require changes? Could I solve the problem by using something like the sharebox Git-Annex FUSE filesystem, so that Shotwell thinks that the files are local, but runs away and grabs them if they are remote?
+
+I would appreciate any thoughts that anyone has - particularly if anyone has made this work. 

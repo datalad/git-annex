@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.3.125"
+ subject="comment 1"
+ date="2013-02-07T18:10:14Z"
+ content="""
+This has been requested a couple of times in different places.
+
+The problem with using a git attribute is it only allows basic matching on filenames. Some users would prefer to use the size of the file. So if/when this gets implemented it will probably not use a git attribute, but some other config setting.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://peter-simons.myopenid.com/"
+ ip="77.186.179.173"
+ subject="comment 1"
+ date="2012-02-09T18:53:00Z"
+ content="""
+Sorry for commmenting on my own question ... I think I just figured out that `git annex unused` *does* in fact do what I want. When I tried it, it just didn't show the obsolete versions of the files I edited because I hadn't yet synchronized all repositories, so that was why the obsolete versions were still considered used.
+"""]]

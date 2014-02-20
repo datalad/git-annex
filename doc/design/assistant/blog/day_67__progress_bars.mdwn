@@ -1,0 +1,10 @@
+Got the webapp's progress bars updating for downloads. Updated
+[[progressbars]] with all the options for ways to get progress info. For
+downloads, it currently uses the easy, and not very expensive, approach of
+periodically polling the sizes of files that are being downloaded.
+
+For uploads, something more sophisticated will be called for..
+
+---
+
+The webapp really feels alive now that it has progress bars!

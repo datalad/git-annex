@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmg8DSRA425Aik2clIuge8Jj-s7VJltsBI"
+ nickname="Tommy"
+ subject="comment 1"
+ date="2013-07-28T06:05:48Z"
+ content="""
+I found a partial answer on http://git-annex.branchable.com/forum/Add_a___34__local__34___remote :
+\"The webapp does not set up remote non-bare repositories because unless the user is comfortable with the cli, nothing is going to keep them up-to-date.\"
+
+So, clearly \"Remote server\" isn't what I want, but my \"desktop\" is headless and using jabber seems a silly complication when I have a perfectly fine ssh connection.  This isn't as trivial as I had expected.
+"""]]

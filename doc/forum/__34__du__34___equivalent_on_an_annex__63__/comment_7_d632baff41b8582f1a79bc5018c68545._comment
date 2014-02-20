@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="Also try sizes"
+ date="2013-01-02T22:05:39Z"
+ content="""
+The \"sizes\" tool on Hackage is a git-annex aware du-like utility.  Just give it the \"-A\" flag to have it interpret annex symlinks as if they were normal files, and to also ignore files inside a .git/annex.
+"""]]

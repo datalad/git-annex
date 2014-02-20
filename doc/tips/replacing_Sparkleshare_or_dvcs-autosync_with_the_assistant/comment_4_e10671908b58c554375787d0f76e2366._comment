@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 4"
+ date="2013-04-14T18:37:50Z"
+ content="""
+Like it says in the tip, `git annex add` will add the large files to git. You can add the small files with `git add`; git-annex won't do that for you. 
+
+To automatically add both sorts of files, you can use the `git annex watch` or `git annex assistant` daemons. The latter also keeps files in sync between repositories automatically.
+
+(Why did the picture show up as a new file in git? Because you hadn't committed it. This is the same as when you `git add` a file;
+it's only staged in the index; `git status` will show it is new until you `git commit`)
+"""]]

@@ -1,0 +1,69 @@
+You can use git-annex as a podcatcher, to download podcast contents.
+No additional software is required, but your git-annex must be built
+with the Feeds feature (run `git annex version` to check).
+
+All you need to do is put something like this in a cron job:
+
+`cd somerepo && git annex importfeed http://url/to/podcast http://other/podcast/url`
+
+This downloads the urls, and parses them as RSS, Atom, or RDF feeds.
+All enclosures are downloaded and added to the repository, the same as if you
+had manually run `git annex addurl` on each of them.
+
+git-annex will avoid downloading a file from a feed if its url has already
+been stored in the repository before. So once a file is downloaded,
+you can move it around, delete it, `git annex drop` its content, etc,
+and it will not be downloaded again by repeated runs of
+`git annex importfeed`. Just how a podcatcher should behave.
+
+## templates
+
+To control the filenames used for items downloaded from a feed,
+there's a --template option. The default is
+`--template='${feedtitle}/${itemtitle}${extension}'`
+
+Other available template variables:  
+feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid
+
+## catching up
+
+To catch up on a feed without downloading its contents,
+use `git annex importfeed --relaxed`, and delete the symlinks it creates.
+Next time you run `git annex addurl` it will only fetch any new items.
+
+## fast mode
+
+To add a feed without downloading its contents right now,
+use `git annex importfeed --fast`. Then you can use `git annex get` as
+usual to download the content of an item.
+
+## storing the podcast list in git
+
+You can check the list of podcast urls into git right next to the
+files it downloads. Just make a file named feeds and add one podcast url
+per line.
+
+Then you can run git-annex on all the feeds:
+
+`xargs git-annex importfeed < feeds`
+
+## distributed podcatching
+
+A nice benefit of using git-annex as a podcatcher is that you can
+run `git annex importfeed` on the same url in different clones
+of a repository, and `git annex sync` will sync it all up.
+
+## centralized podcatching
+
+You can also have a designated machine which always fetches all podcstas
+to local disk and stores them. That way, you can archive podcasts with
+time-delayed deletion of upstream content. You can also work around slow
+downloads upstream by podcatching to a server with ample bandwidth or work
+around a slow local Internet connection by podcatching to your home server
+and transferring to your laptop on demand.
+
+## youtube playlists
+
+If your git-annex is also built with quvi support, you can also use
+`git annex importfeed` on youtube playlists. It will automatically download
+the videos linked to by the playlist.

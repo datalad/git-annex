@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 4"
+ date="2011-04-09T23:45:28Z"
+ content="""
+mtime+100chars can still get collisions and a _lot_ easier than even SHA1. This introduces more problems that it solves, imo.
+"""]]

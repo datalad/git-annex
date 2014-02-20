@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 14"
+ date="2013-05-22T14:30:00Z"
+ content="""
+You do not need to use the assistant to configure the costs of remotes. Just set `remote.<name>.annex-cost` to appropriate values. See also the documentation for the `remote.<name>.annex-cost-command` which allows your own code to calculate costs.
+"""]]

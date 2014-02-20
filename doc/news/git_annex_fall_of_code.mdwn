@@ -1,0 +1,27 @@
+Thanks to my recent successful git-annex
+[crowdfunding campaign](http://campaign.joeyh.name/), $1000 has been set
+aside to award others for their contributions to git-annex by
+the end of 2013. This is not a lot of money, but I hope that the
+reward and recognition will encourage some more people to work on git-annex.
+
+You don't need to know Haskell! You could contribute some interesting and
+useful special remote hooks, or write better documentation.
+
+On the other hand, if you have learned Haskell, this might be your first
+chance to make some money with it! Some ideas for things to work on that
+would be particularly award-worthy:
+
+* Port git-annex to IOS, using [ghc-ios](https://github.com/ghc-ios).
+  I don't plan to ever do this myself, but you could make it happen.
+* Get the git-annex assistant working in Windows, building on the existing
+  port to Windows. Otherwise, this is on my roadmap for February.
+* Solve existing [[bugs]] or [[todo]] items. There are more than I can
+  keep up with.
+
+The amount of the awards will vary depending on the size of the
+contribution. Since this is getting started later than is ideal,
+I reserve the right to extend it past the end of the year if I don't get
+enough participants.
+
+If you'd like to participate in this program, just email me at
+<id@joeyh.name>. --[[Joey]]

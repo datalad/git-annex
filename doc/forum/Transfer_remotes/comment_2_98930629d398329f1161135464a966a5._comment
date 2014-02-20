@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://cyprio.net/"
+ nickname="oz"
+ subject="versions?"
+ date="2013-04-15T22:50:31Z"
+ content="""
+Well, in the screencast it seems to work alright.
+
+I only get a \"Syncing with laptop B\" on one side, nothing more happens. I'm not sure if there is a recommended version to follow this screencast, or if the versions need to match (I'm syncing between macos & linux/debian, and the mac packages are lagging behind).
+
+My guess is that the assistant is simply \"not there yet\": using git-annex manually works just fine, but the assistant... ew. :/
+"""]]

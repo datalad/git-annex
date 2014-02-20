@@ -1,0 +1,24 @@
+Went out and tried for the second time to record a screencast demoing
+setting up syncing between two computers using just Jabber and a cloud
+remote. I can't record this one at home, or viewers would think git-annex
+was crazy slow, when it's just my dialup. ;) But once again I encountered
+bugs, and so I found myself working on progress bars today, unexpectedly.
+
+Seems there was confusion in different parts of the progress bar code
+about whether an update contained the total number of bytes transferred, or
+the delta of bytes transferred since the last update. One way this bug
+showed up was progress bars that seemed to stick at 0% for a long time.
+Happened for most special remotes, although not for rsync or git remotes.
+In order to fix it comprehensively, I added a new BytesProcessed data type,
+that is explicitly a total quantity of bytes, not a delta. And checked and
+fixed all the places that used a delta as that type was knitted into
+the code.
+
+(Note that this doesn't necessarily fix every problem with progress bars.
+Particularly, buffering can now cause progress bars to seem to run ahead
+of transfers, reaching 100% when data is still being uploaded. Still,
+they should be a lot better than before.)
+
+I've just successfully run through the Jabber + Cloud remote setup process
+again, and it seems to be working great now. Maybe I'll still get the
+screencast recorded by the end of March.

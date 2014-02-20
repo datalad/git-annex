@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlq4ClC5EMN1Vq1DpWXAqP5TiDnCK1mSfk"
+ nickname="Jonas"
+ subject="comment 2"
+ date="2013-11-27T18:05:02Z"
+ content="""
+Thank you for looking into this, and sorry about the low quality of the initial bug report. I now replaced the example by a better one.
+
+As you say, this might not be a bug. I was just not aware that migrating files into git-annex would mean forsaking their permissions.
+"""]]

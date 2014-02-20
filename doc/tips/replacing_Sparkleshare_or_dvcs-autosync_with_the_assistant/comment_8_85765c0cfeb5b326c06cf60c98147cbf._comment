@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLdL4zLty4fsfaIXNtPMS5RXs4y8OAk0o"
+ nickname="Marc"
+ subject="Disappearing files"
+ date="2013-12-08T12:16:37Z"
+ content="""
+I've tried this with version 5.20131130, but my files disappear if I modify them on the remote end.
+
+My setup:
+- A local repository, direct mode, client group, annex.largefiles \"exclude=*.txt\"
+- A remote one, also direct mode, backup group, annex.largefiles \"exclude=*.txt\"
+Both are running the assistant.
+
+If I create a .txt file locally, it gets committed and pushed to the remote as described. But, if I then modify that file on the remote end, the file gets deleted from both repositories. Also, if I create a file on the remote end, it's pushed to the local one (according to the log) but it never appears in the directory.
+
+Changing the remote from 'backup' to 'client' group doesn't seem to make any difference.
+
+Is there a 'best practice' on using git-annex like SparkleShare? I mean, syncing changes on all repositories but keeping a history of changes in git.
+
+Thanks!
+"""]]

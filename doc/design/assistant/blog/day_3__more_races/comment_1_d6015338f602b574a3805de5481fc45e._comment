@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkmtR6oVColYKoU0SjBORLDGrwR10G-mKo"
+ nickname="Jo-Herman"
+ subject="Dropbox Inotify"
+ date="2012-06-06T22:03:29Z"
+ content="""
+Actually, Dropbox giver you a warning via libnotify inotify. It tends to go away too quickly to properly read though, much less actually copy down the command...
+"""]]

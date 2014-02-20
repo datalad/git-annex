@@ -1,0 +1,48 @@
+Hi all,
+
+how can I get rid of all those 'typechange' messages in `git status`
+when in direct mode?
+
+Here is an example session:
+
+    > git init
+    Initialized empty Git repository in /some/path/.git/
+    > git config user.name dtrn
+    > git config user.email drn@drn.com
+    > git annex init
+    init  ok
+    (Recording state in git...)
+    > git annex direct
+    commit
+    # On branch master
+    #
+    # Initial commit
+    #
+    nothing to commit (create/copy files and use "git add" to track)
+    ok
+    direct  ok
+    > dd if=/dev/zero of=testfile.bin count=1000
+    1000+0 records in
+    1000+0 records out
+    512000 bytes (512 kB) copied, 0.00317424 s, 161 MB/s
+    > git annex add testfile.bin
+    add testfile.bin (checksum...) ok
+    (Recording state in git...)
+    > git commit -m "annexed testfile.bin"
+    ok
+    [master (root-commit) 281e740] annexed testfile.bin
+     1 file changed, 1 insertion(+)
+     create mode 120000 testfile.bin
+    >  git status
+    # On branch master
+    # Changes not staged for commit:
+    #   (use "git add <file>..." to update what will be committed)
+    #   (use "git checkout -- <file>..." to discard changes in working directory)
+    #
+    #       typechange: testfile.bin
+    #
+    no changes added to commit (use "git add" and/or "git commit -a")
+
+
+Regards,
+Andreas

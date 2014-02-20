@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlDDW-g2WLLsLpcnCm4LykAquFY_nwbIrU"
+ nickname="Daniel"
+ subject="comment 3"
+ date="2013-01-15T15:22:43Z"
+ content="""
+Installing via the MacPorts method. I ran into this error.
+
+    \"_locale_charset\", referenced from: _localeEncoding in libHSbase-4.5.1.0.a(PrelIOUtils.o) 
+    ld: symbol(s) not found for architecture x86_64
+
+I was able to solve and get git-annex to build buy providing the --extra-lib-dirs parameter
+
+    cabal install c2hs git-annex --bindir=$HOME/bin --extra-lib-dirs=/usr/lib
+
+Cheers, [Daniel Wozniak](http://woz.io)
+"""]]

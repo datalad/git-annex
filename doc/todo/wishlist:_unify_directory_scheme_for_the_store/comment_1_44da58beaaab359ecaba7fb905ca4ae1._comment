@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.243"
+ subject="comment 1"
+ date="2013-10-04T20:50:33Z"
+ content="""
+Using the mixed case hash directory names is not desirable because people want to use git-annex on a variety of filesystems and operating systems that treat them in a variety of broken ways. However, migrating to the all lower case hash directory names would require changing every git-annex symlink in every git repository, and I do not want to inflict that on my users.
+
+It seems to me that the best solution to your problem is to install git-annex on your server, which should not be very hard. 
+"""]]

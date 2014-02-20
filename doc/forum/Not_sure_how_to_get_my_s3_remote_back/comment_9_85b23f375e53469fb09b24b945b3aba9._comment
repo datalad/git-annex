@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkZktNHFhxC1kYA9KKdKpYJO4clq9WDsjE"
+ nickname="Jason"
+ subject="comment 9"
+ date="2013-04-26T20:21:05Z"
+ content="""
+Two box lines after 15:15 merge:
+
+0490d177-78e2-421b-a004-47d88ee7a2e3 chunksize=10mb cipher=... davcreds=... embedcreds=yes highRandomQuality=false name=box.com type=webdav url=https://www.box.com/dav/annex timestamp=1366826729.945023s
+0490d177-78e2-421b-a004-47d88ee7a2e3 chunksize=10mb cipher=... davcreds=... embedcreds=yes name=box.com type=webdav url=https://www.box.com/dav/annex timestamp=1366657062.972357s
+
+After the 11:05 commit, the box line looked like this:
+
+0490d177-78e2-421b-a004-47d88ee7a2e3 chunksize=10mb cipher=... davcreds=... embedcreds=yes highRandomQuality=false name=box.com type=webdav url=https://www.box.com/dav/annex timestamp=1366826729.945023s
+
+I am curious why you want to know about box, when s3 is the one that I'm having trouble with...
+"""]]

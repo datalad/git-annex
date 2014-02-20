@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://sunny256.sunbase.org/"
+ nickname="sunny256"
+ subject="It works here"
+ date="2013-09-02T11:47:00Z"
+ content="""
+I set up a box.com remote a couple of months ago or so just for testing. Haven't used it that much, but I tested it now to see if it still works. No errors or problems. I have pasted the output from a session where I copied a file to box.com, dropped it locally, then got it back from box.com here: <https://gist.github.com/sunny256/6411972>. The computer I ran the test on is using the newest git-annex binary (v4.20130827), Ubuntu 10.04.4 LTS. Pretty old distro, but it still works.
+"""]]

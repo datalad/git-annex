@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-04-16T21:25:45Z"
+ content="""
+In a direct mode repository, until you commit changes to a file, `git annex whereis` and most other git-annex commands will operate on the version that was last committed to git.
+
+That seems to be the source of your confusion.
+
+I think this can be confusing.. It might make sense for git-annex whereis to skip over modified files in direct mode.
+"""]]

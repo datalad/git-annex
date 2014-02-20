@@ -1,0 +1,27 @@
+I'm wondering how easy the addition of hashing to the directories of the objects would be.
+
+Currently a tree directory structure becomes a flat two level tree under the .git/annex/objects directory ([[internals]]).  This, through the 555 mode on the directory prevents the accidental destruction of content, which is _good_.  However file and directory numbers soon add up in there and as such any file-systems with sub directory limitations will quickly realize the limit (certainly quicker than maybe expected).
+
+Suggestion is therefore to change from 
+
+ `.git/annex/objects/SHA1:123456789abcdef0123456789abcdef012345678/SHA1:123456789abcdef0123456789abcdef012345678`
+
+to 
+
+ `.git/annex/objects/SHA1:1/2/3456789abcdef0123456789abcdef012345678/SHA1:123456789abcdef0123456789abcdef012345678`
+
+or anything in between to a paranoid
+
+ `.git/annex/objects/SHA1:123/456/789/abc/def/012/345/678/9ab/cde/f01/234/5678/SHA1:123456789abcdef0123456789abcdef012345678`
+
+Also the use of a colon specifically breaks FAT32 ([[bugs/fat_support]]), must it be a colon or could an extra directory be used? i.e. `.git/annex/objects/SHA1/*/...`
+
+`git annex init` could also create all but the last level directory on initialization. I'm thinking `SHA1/1/1, SHA1/1/2, ..., SHA256/f/f, ..., URL/f/f, ..., WORM/f/f`
+
+> This is done now with a 2-level hash. It also hashes .git-annex/ log
+> files which were the worse problem really. Scales to hundreds of millions
+> of files with each dir having 1024 or fewer contents. Example:
+>
+> `me -> .git/annex/objects/71/9t/WORM-s3-m1300247299--me/WORM-s3-m1300247299--me`
+>
+> --[[Joey]]

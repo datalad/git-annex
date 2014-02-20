@@ -1,0 +1,8 @@
+[[!comment format=txt
+ username="https://www.google.com/accounts/o8/id?id=AItOawmz8d2M0lQDYWLSbDQSjYRHfrQkWKgPu60"
+ nickname="Alex"
+ subject="long polling in Widget form"
+ date="2014-01-16T00:08:12Z"
+ content="""
+I've been hacking around for a couple days trying to get long polling into a Yesod web app, but I haven't found a composable solution yet. It seems like a thing worthy of generalization. Can you perhaps point me to source in git-annex that would help me take a shot at building a long polling library?
+"""]]

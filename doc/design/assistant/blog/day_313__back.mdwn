@@ -1,0 +1,34 @@
+Back home. I have some 170 messages of backlog to attend to. Rather than
+digging into that on my first day back, I spent some time implementing some
+new features.
+
+`git annex import` has grown three options that help managing importing of
+duplicate files in different ways. I started work on that last week, but
+didn't have time to find a way to avoid the `--deduplicate` option
+checksumming each imported file twice. Unfortunately, I have still not
+found a way I'm happy with, so it works but is not as efficient as it could
+be.
+
+`git annex mirror` is a new command suggested to me by someone at DebConf
+(they don't seem to have filed the requested todo). It arranges for two
+repositories to contain the same set of files, as much as possible (when
+numcopies allows). So for example, `git annex mirror --to otherdrive`
+will make the otherdrive remote have the same files present and not present
+as the local repository.
+
+I am thinking about expanding `git annex sync` with an option to also sync
+data. I know some find it confusing that it only syncs the git metadata
+and not the file contents. That still seems to me to be the best and most
+flexible behavior, and not one I want to change in any case since
+it would be most unexpected if `git annex sync` downloaded a lot of stuff
+you don't want. But I can see making `git annex sync --data` download
+all the file contents it can, as well as uploading all available file
+contents to each remote it syncs with. And `git annex sync --data --auto`
+limit that to only the preferred content. Although perhaps
+these command lines are too long to be usable?
+
+----
+
+With the campaign more or less over, I only have a little over a week
+before it's time to dive into the first big item on the roadmap. Hope
+to be through the backlog by then.

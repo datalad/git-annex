@@ -1,0 +1,118 @@
+I have come up with a moderately complex solution to a particular use case that I have and am posting it here in case it is useful to someone else, and to get suggestions on how to improve it.
+
+#The problem:
+
+I have a large number of files that are accessed infrequently and stored off-line on DVD-Rs.  I need to keep track of which files are on which disc so that when I want a file I can find it.
+
+#The solution:
+
+I currently keep a text file to track which files are on which discs.  I would like to organize all the files in a proper filesystem using git annex, allowing me better organization and the ability to keep some smaller related files online near the annexed large files.
+
+#Requirements:
+
+1) Easily locate the DVD-R containing any specific offline file
+
+This is easily taken care of with git annex whereis
+
+2) Automatically de-duplicate stored files with the same contents
+
+This is taken care of with one of the hash backends (E.G. SHA256)
+
+3) The DVD-Rs still need to be usable without git or git-annex (E.G. The stored files should retain their normal human readable names)
+
+This requirement rules out dir and rsync special remotes, they store the files named according to their hash.  I have settled on making each disc a separate repo which will satisfy this requirement.
+
+
+#Future goals:
+
+4) Easily incorporate the current DVD-Rs into the new system
+
+I haven't found a way to fulfill this goal yet.  I have some convoluted ideas, but nothing so easy as mount disc, run git annex command.
+
+
+#The solution in detail
+Suppose you have the following tree:
+
+<pre>
+~/mainrepo/thing1/file1.bin
+~/mainrepo/thing1/description1.txt
+~/mainrepo/thing2/file2.bin
+~/mainrepo/thing2/description2.txt
+</pre>
+
+You want to store thing1 on disc1 and thing2 on disc2, but you'd like to keep the descriptions online because they are small and useful for figuring out which thing you want later.
+
+1) Create the main repo and annex the files:
+
+<pre>
+cd ~/mainrepo
+git init
+git annex init mainrepo
+git annex add .
+git commit -m 'added files'
+</pre>
+
+2) Create two new unrelated repos and populate them with their respective data and annex:
+
+<pre>
+cd /tmp
+mkdir disc1repo disc2repo
+cd disc1repo
+cp ~/mainrepo/thing1/* .
+git init
+git annex init disc1
+git annex add .
+git commit -m 'added files'
+cd ../disc2repo
+cp ~/mainrepo/thing2/* .
+git init
+git annex init disc2
+git annex add .
+git commit -m 'added files'
+</pre>
+
+3) This is optional, but after annexing the files in these new repos, I replace the symlinks pointing into to the .git/annex/objects/ directory with hard links.  This makes the DVD-Rs usable from operating systems that can't deal with symlinks.  (mkisofs handles hard links correctly)
+
+<pre>
+cd /tmp
+find disc1repo/ disc2repo/ -type l -execdir sh -c "mv -iv {} {}.symlink && ln -L {}.symlink {} && rm {}.symlink" \;
+</pre>
+
+4) Burn these repos onto DVD-Rs:
+
+<pre>
+cd /tmp
+#make isos
+mkisofs -volid disc1 -rational-rock -joliet -joliet-long -udf -full-iso9660-filenames -iso-level 3 -o disc1.iso disc1repo/
+mkisofs -volid disc2 -rational-rock -joliet -joliet-long -udf -full-iso9660-filenames -iso-level 3 -o disc2.iso disc2repo/
+#burn the isos (untested command)
+cdrecord -v -dao disc1.iso
+cdrecord -v -dao disc2.iso
+</pre>
+
+5) Mount the DVD-Rs and add as a remote and fetch, then drop from the mainrepo:
+
+<pre>
+cd ~/mainrepo
+#disc1
+mount /mnt/cdrom
+git remote add disc1 /mnt/cdrom
+git fetch disc1
+git annex drop thing1/thing1.bin
+umount /mnt/cdrom
+#disc2
+mount /mnt/cdrom
+git remote add disc2 /mnt/cdrom
+git fetch disc2
+git annex drop thing2/thing2.bin
+umount /mnt/cdrom
+</pre>
+
+6) Enjoy!  You can now find out what disc things are on simply using git annex whereis, and you can git annex get them or simply use them directly from the disc.
+
+
+I'd appreciate any comments and helpful suggestions.  Especially how to simplify the process or easily integrate all the things I already have stored on discs.
+
+Maybe it would be possible to create a special remote using the hooks for the DVD-Rs.
+
+Even though it is a bit tedious and complicated, the current process could be automated using a script.

@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="I think Matt is right."
+ date="2011-12-23T14:04:44Z"
+ content="""
+I got bitten by this too.  It seems that the user is expected to fetch
+remote git-annex branches themselves, but this is not documented
+anywhere.
+
+The man page says of \"git annex merge\":
+
+    Automatically merges any changes from remotes into the git-annex
+    branch.
+
+I am not a git newbie, but even so I had incorrectly assumed that git
+annex merge would take care of pulling the git-annex branch from the
+remote prior to merging, thereby ensuring all versions of the
+git-annex branch would be merged, and that the location tracking data
+would be synced across all peer repositories.
+
+My master branches do not track any specific upstream branch, because
+I am operating in a decentralized fashion.  Therefore the error
+message caused by `git pull $remote` succeeded in encouraging me to
+instead use `git pull $remote master`, and this excludes the git-annex
+branch from the fetch.  Even worse, a git newbie might realise this
+and be tempted to do `git pull $remote git-annex`.
+
+Therefore I think it needs to be explicitly documented that
+
+    git fetch $remote
+    git merge $remote/master
+
+is required when the local branch doesn't track an upstream branch.
+Or maybe a `--fetch` option could be added to `git annex merge` to
+perform the fetch from all remotes before running the merge(s).
+"""]]

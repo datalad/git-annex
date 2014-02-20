@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-09T17:29:00Z"
+ content="""
+The key pair that the assistant sets up is limited, in ~/.ssh/config to only be used when a mangled version of the hostname is used. That is, you have to \"ssh git-annex-hostname\" to use that key. So it should not be possible for this to impact your normal use of ssh to that host.
+
+(`.git/config` does not support an `IdentityFile` option TTBOMK.)
+
+You need to provide more details about the problem you have encountered.
+"""]]

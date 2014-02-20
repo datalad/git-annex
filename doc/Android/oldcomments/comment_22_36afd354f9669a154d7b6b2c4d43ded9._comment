@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.48"
+ subject="comment 22"
+ date="2013-07-17T23:25:21Z"
+ content="""
+@frioux it will automatically generate a new ssh key and configure the server to use it, once you submit the form and enter the password to let it into the server.
+"""]]

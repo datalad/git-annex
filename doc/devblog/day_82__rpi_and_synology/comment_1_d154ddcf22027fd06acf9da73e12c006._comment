@@ -1,0 +1,8 @@
+[[!comment format=txt
+ username="Attila"
+ ip="213.163.19.162"
+ subject="git-annex.org"
+ date="2013-12-27T14:14:07Z"
+ content="""
+Minor glitch on git-annex.org: the first link to http://git-annex.branchable.com is missing http:// prefix and so points to http://www.git-annex.org/git-annex.branchable.com
+"""]]

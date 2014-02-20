@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 4"
+ date="2013-07-02T20:45:29Z"
+ content="""
+I tried as you suggested.  It worked as far in so far that I was able to mark the repository dead.  However, I still see an empty line in the web app so perhaps this odd repo isn't the cause (but I'm deeply suspicious of it).  Looking at the HTML source the line in the web-app does not have any UUID at all (see the screen shot [here](http://dancingfrog.hopto.org/~matt/git-annex.png)).
+
+What causes the code to add back a previously deleted repository (I vaguely remember something about this being due to the merge algorithm...and why one can only mark repos as deleted)?  Why would it only add back to the group and trust logs and not the UUID?  The code that generates the web-app HTML must use something else or things in addition to the UUID log?
+
+The logs don't really say much - how can I help debug this further?
+"""]]

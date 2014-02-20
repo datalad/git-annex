@@ -1,0 +1,45 @@
+[git-remote-gcrypt](https://github.com/joeyh/git-remote-gcrypt/)
+adds support for encrypted remotes to git. The git-annex gcrypt special
+remote allows git-annex to also store its files in such repositories.
+Naturally, git-annex encrypts the files it stores too, so everything
+stored on the remote is encrypted.
+
+See [[tips/fully_encrypted_git_repositories_with_gcrypt]] for some examples
+of using gcrypt.
+
+## configuration
+
+These parameters can be passed to `git annex initremote` to configure
+gcrypt:
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]].
+
+* `keyid` - Specifies the gpg key to use for encryption of both the files
+  git-annex stores in the repository, as well as to encrypt the git
+  repository itself. May be repeated when multiple participants
+  should have access to the repository.
+
+* `gitrepo` - Required. The path or url to the git repository
+  for gcrypt to use. This repository should be either empty, or an existing
+  gcrypt repositry.
+
+* `shellescape` - See [[rsync]] for the details of this option.
+
+## notes
+
+For git-annex to store files in a repository on a remote server, you need
+shell access, and `rsync` must be installed. Those are the minimum
+requirements, but it's also recommended to install git-annex on the remote
+server, so that [[git-annex-shell]] can be used.
+
+While you can use git-remote-gcrypt with servers like github, git-annex
+can't store files on them. In such a case, you can just use
+git-remote-gcrypt directly.
+
+If you use encryption=hybrid, you can add more gpg keys that can access
+the files git-annex stored in the gcrypt repository. However, due to the
+way git-remote-gcrypt encrypts the git repository, you will need to somehow
+force it to re-push everything again, so that the encrypted repository can
+be decrypted by the added keys. Probably this can be done by setting
+`GCRYPT_FULL_REPACK` and doing a forced push of branches.

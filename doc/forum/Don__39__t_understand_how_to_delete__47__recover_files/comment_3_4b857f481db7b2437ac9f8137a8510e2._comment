@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.60"
+ subject="comment 3"
+ date="2012-09-16T17:08:49Z"
+ content="""
+> unused . (checking for unused data...) (checking master...) (checking synced
+/master...) (checking usbdrive/master...) ok
+
+It still considers a file's content used while some branch contains the file. So one of the branches it's checking there still has your file in it. Once you get all the branches synced up, the file will become unused.
+"""]]

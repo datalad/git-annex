@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlgyVag95OnpvSzQofjyX0WjW__MOMKsl0"
+ nickname="Sehr"
+ subject="comment 1"
+ date="2012-10-29T17:04:30Z"
+ content="""
+Ok, this is what I have come up with:
+
+Merges can only be done on checked out branches. That's why the only way to do this without breaking the whole idea of git-annex (sync) is to check out each branch and run it separately. 
+
+What would be the easiest way to do this? Considering possible unsaved changes in worktree and index?
+
+Maybe simply using git-clone /tmp locally, which uses hardlinks for .git/objects/ which should make it perform ok?
+
+
+"""]]

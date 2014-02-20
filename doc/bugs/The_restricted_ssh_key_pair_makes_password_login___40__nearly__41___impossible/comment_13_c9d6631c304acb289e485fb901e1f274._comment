@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 13"
+ date="2013-04-14T18:27:35Z"
+ content="""
+This should not be a hard problem to debug. 
+
+* You have a local client, and a remote server.
+* The remote server has a `~/.ssh/authorized_keys` file that contains a public key that git-annex set up, which is restricted to only run \"command=git-annex-shell\".
+* The local client has that key in `~/.ssh/key.git-annex-$hostname-$username`
+* The local client is configured in `~/.ssh/config` to only use that key when sshing to the special hostname \"git-annex-$hostname-$username\"
+* The problem is either on the client, or on the server.
+* If the problem is on the client, then it must be, somehow, incorrectly sending the git-annex key to the server when you \"ssh $hostname\". You can see what keys it decides to send by looking at the messages it prints with -vvv :
+ 
+<pre>
+joey@gnu:~>ssh -vvv git-annex-kitenet.net-joey
+OpenSSH_6.0p1 Debian-4, OpenSSL 1.0.1e 11 Feb 2013
+debug1: Reading configuration data /home/joey/.ssh/config
+debug1: /home/joey/.ssh/config line 3: Applying options for git-annex-kitenet.net-joey
+debug1: Reading configuration data /etc/ssh/ssh_config
+debug1: /etc/ssh/ssh_config line 19: Applying options for *
+debug2: ssh_connect: needpriv 0
+debug1: Connecting to kitenet.net [80.68.85.49] port 22.
+debug1: Connection established.
+debug3: Incorrect RSA1 identifier
+debug3: Could not load \"/home/joey/.ssh/key.git-annex-kitenet.net-joey\" as a RSA1 public key
+debug1: identity file /home/joey/.ssh/key.git-annex-kitenet.net-joey type 1
+</pre>
+
+* If the problem is on the server, then it must be for some reason deciding to run `git-annex-shell` when you ssh in,
+  despite the client not sending it the special git-annex key. If this were the case, no change you made on the client could fix   
+  the problem, but deleting `.ssh/authorized_keys` on the server probably would.
+
+"""]]

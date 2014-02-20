@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 4"
+ date="2014-01-06T15:48:36Z"
+ content="""
+@Tim, you do not seem to be having the problem that the OP described.
+
+It is completely normal for git-annex to represent a file whose content is not present in the repository as a broken symlink.
+Typically, git-annex preserves at least one copy of the file in one of your repositories. But if you `git annex add $file; git annex drop --force $file`, you will be left in exactly the situation you describe.
+
+You can use `git annex log $file` to see a log of which repositories contained a copy of the file in the past, and see what times the file was removed from each repository. This might give clues to what operation caused the last copy of the file to be lose.
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnx8kHW66N3BqmkVpgtXDlYMvr8TJ5VvfY"
+ nickname="Yaroslav"
+ subject="could it be part/reason of the problem"
+ date="2014-01-18T06:05:50Z"
+ content="""
+not sure how that happened... definitely not me consciously! ;-)  some commands are complaining that \"You cannot run this command in a bare repository\" which I thought is BS since it is not BARE! but then looked into .git/config and it does have core.bare = True ... yikes!.. 
+
+This repository is also under assistant \"control\".
+
+changing to bare=False seems to start 'get'ing things, git annex repair doesn't produce obscure errors.
+
+git annex fix though now doesn't report any problems -- only 'ok', but none of those files mentioned 'ok' has a working symlink,,,  but I guess that is a fluke after many upgrades -- just dropping everything locally and getting needed context after purging .git/annex/objects .
+
+So I guess issue is resolved by discovering that repository was set to 'bare' mode somehow although it was not and seemed like working but not quite
+"""]]

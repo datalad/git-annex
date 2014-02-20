@@ -1,0 +1,101 @@
+Source: git-annex
+Section: utils
+Priority: optional
+Build-Depends: 
+	debhelper (>= 9),
+	ghc (>= 7.4),
+	libghc-mtl-dev (>= 2.1.1),
+	libghc-missingh-dev,
+	libghc-hslogger-dev,
+	libghc-pcre-light-dev,
+	libghc-sha-dev,
+	libghc-cryptohash-dev,
+	libghc-dataenc-dev,
+	libghc-utf8-string-dev,
+	libghc-hs3-dev (>= 0.5.6),
+	libghc-quickcheck2-dev,
+	libghc-monad-control-dev (>= 0.3),
+	libghc-monadcatchio-transformers-dev,
+	libghc-unix-compat-dev,
+	libghc-dlist-dev,
+	libghc-uuid-dev,
+	libghc-json-dev,
+	libghc-aeson-dev,
+	libghc-ifelse-dev,
+	libghc-bloomfilter-dev,
+	libghc-edit-distance-dev,
+	libghc-extensible-exceptions-dev,
+	libghc-hinotify-dev [linux-any],
+	libghc-stm-dev (>= 2.3),
+	libghc-dbus-dev (>= 0.10.3) [linux-any],
+	libghc-yesod-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-yesod-static-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-yesod-default-dev [i386 amd64 kfreebsd-amd64 powerpc sparc],
+	libghc-hamlet-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-clientsession-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-warp-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-wai-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-wai-logger-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-case-insensitive-dev,
+	libghc-http-types-dev,
+	libghc-blaze-builder-dev,
+	libghc-crypto-api-dev,
+	libghc-network-multicast-dev,
+	libghc-network-info-dev [linux-any kfreebsd-any],
+	libghc-safesemaphore-dev,
+	libghc-network-protocol-xmpp-dev (>= 0.4.3-1),
+	libghc-gnutls-dev (>= 0.1.4-3~bpo70+1),
+	libghc-xml-types-dev,
+	libghc-async-dev,
+	libghc-http-dev,
+	libghc-feed-dev,
+	libghc-regex-tdfa-dev [!mipsel !s390],
+	lsof [!kfreebsd-i386 !kfreebsd-amd64],
+	ikiwiki,
+	perlmagick,
+	git (>= 1:1.8.4),
+	rsync,
+	wget,
+	curl,
+	openssh-client,
+Maintainer: Joey Hess <joeyh@debian.org>
+Standards-Version: 3.9.5
+Vcs-Git: git://git.kitenet.net/git-annex
+Homepage: http://git-annex.branchable.com/
+XS-Testsuite: autopkgtest
+
+Package: git-annex
+Architecture: any
+Section: utils
+Depends: ${misc:Depends}, ${shlibs:Depends},
+	git (>= 1:1.8.4),
+	rsync,
+	wget,
+	curl,
+	openssh-client (>= 1:5.6p1)
+Recommends: 
+	lsof,
+	gnupg,
+	bind9-host,
+	ssh-askpass,
+	quvi,
+	git-remote-gcrypt (>= 0.20130908-4),
+	nocache,
+Suggests:
+	graphviz,
+	bup,
+	tahoe-lafs,
+	libnss-mdns,
+Description: manage files with git, without checking their contents into git
+ git-annex allows managing files with git, without checking the file
+ contents into git. While that may seem paradoxical, it is useful when
+ dealing with files larger than git can currently easily handle, whether due
+ to limitations in memory, time, or disk space.
+ .
+ Even without file content tracking, being able to manage files with git,
+ move files around and delete files with versioned directory trees, and use
+ branches and distributed clones, are all very handy reasons to use git. And
+ annexed files can co-exist in the same git repository with regularly
+ versioned files, which is convenient for maintaining documents, Makefiles,
+ etc that are associated with annexed files but that benefit from full
+ revision control.

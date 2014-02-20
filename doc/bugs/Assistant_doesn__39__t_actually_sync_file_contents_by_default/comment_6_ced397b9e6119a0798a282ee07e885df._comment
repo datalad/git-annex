@@ -1,0 +1,61 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 6"
+ date="2013-05-20T16:22:18Z"
+ content="""
+Here is a simple example of setting up 2 repositories in the way the bug reporter describes here and on IRC. As you can see, the assistant syncs file content without any configuration:
+
+[[!format sh \"\"\"
+joey@gnu:~/tmp/test>mkdir 1 2
+joey@gnu:~/tmp/test>cd 1; git init; git-annex init; git annex direct; echo \"file added to 1\" > file_from_1; cd ..
+Initialized empty Git repository in /home/joey/tmp/test/1/.git/
+init  ok
+(Recording state in git...)
+commit  
+# On branch master
+#
+# Initial commit
+#
+nothing to commit (create/copy files and use \"git add\" to track)
+ok
+direct  ok
+joey@gnu:~/tmp/test>cd 2; git init; git-annex init; git annex direct; echo \"file added to 2\" > file_from_2; cd ..
+Initialized empty Git repository in /home/joey/tmp/test/2/.git/
+init  ok
+(Recording state in git...)
+commit  
+# On branch master
+#
+# Initial commit
+#
+nothing to commit (create/copy files and use \"git add\" to track)
+ok
+direct  ok
+joey@gnu:~/tmp/test>cd 1; git remote add 2 ssh://localhost/~joey/tmp/test/2; git annex assistant; cd ..
+joey@gnu:~/tmp/test>cd 2; git remote add 1 ssh://localhost/~joey/tmp/test/1; git annex assistant; cd ..
+(merging synced/git-annex into git-annex...)
+(Recording state in git...)
+joey@gnu:~/tmp/test>cd 1
+joey@gnu:~/tmp/test/1>ls
+file_from_1
+joey@gnu:~/tmp/test/1>ls
+file_from_1  file_from_2
+joey@gnu:~/tmp/test/1>cat file_from_2
+file added to 2
+joey@gnu:~/tmp/test/1>cd ..
+joey@gnu:~/tmp/test>cd 2
+joey@gnu:~/tmp/test/2>cat file_from_1
+file added to 1
+joey@gnu:~/tmp/test/2>rm file_from_2
+joey@gnu:~/tmp/test/2>cd ..
+joey@gnu:~/tmp/test>cd 1
+joey@gnu:~/tmp/test/1>ls
+file_from_1
+joey@gnu:~/tmp/test/1>date > newfile
+joey@gnu:~/tmp/test/1>cd ..
+joey@gnu:~/tmp/test>cd 2
+joey@gnu:~/tmp/test/2>cat newfile
+Mon May 20 12:20:24 JEST 2013
+\"\"\"]]
+"""]]

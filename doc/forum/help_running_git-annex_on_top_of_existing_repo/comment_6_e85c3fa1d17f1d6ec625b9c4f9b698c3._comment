@@ -1,0 +1,47 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9J51AO9t75xN5k0sJgg8taUo4y0a4hpQ"
+ nickname="Daniel"
+ subject="comment 6"
+ date="2013-06-11T22:28:52Z"
+ content="""
+This is what I ended up doing.  
+[https://gist.github.com/ifnull/5761255](https://gist.github.com/ifnull/5761255)
+
+Basically you just add the extensions of the files you want to exclude to .gitignore_large_binaries and run \"git a .\" instead of \"git add .\"
+
+    #######################
+    # Setup
+    #######################
+    mkdir annex-test
+    cd annex-test
+    git init
+    git annex init master
+
+    #######################
+    # Fab setup task
+    #######################
+    git config --local core.excludesfile ./.gitignore_large_binaries
+    git config --local alias.a '! sh ./git-add.sh'
+
+    #######################
+    # git a (git-add.sh)
+    #######################
+
+    # Generate annex include arg from .gitignore_large_binaries
+    include_str=\"--include='.lazy'\";
+
+    while read line
+    do
+        if [[ \"$line\" != *\"#\"* ]] && [[ \"$line\" != \"\" ]]; then 
+            include_str=\"$include_str --or --include=${line}\";
+        fi
+    done < \"./.gitignore_large_binaries\"
+
+    # git annex add
+    git config --local core.excludesfile ./.gitignore;
+    git annex add $1 $include_str;
+
+    # git add
+    git config --local core.excludesfile ./.gitignore_large_binaries;
+    git add $1
+"""]]

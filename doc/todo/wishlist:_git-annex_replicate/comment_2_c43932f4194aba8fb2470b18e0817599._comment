@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-04-23T16:22:07Z"
+ content="""
+Besides the cost values, annex.diskreserve was recently added. (But is not available for special remotes.)
+
+I have held off on adding high-level management stuff like this to git-annex, as it's hard to make it generic enough to cover use cases.
+
+A low-level way to accomplish this would be to have a way for `git annex get` and/or `copy` to skip files when `numcopies` is already satisfied. Then cron jobs could be used.
+"""]]

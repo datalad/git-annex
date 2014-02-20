@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="72.0.72.144"
+ subject="how about the web interface?"
+ date="2013-09-25T11:09:58Z"
+ content="""
+I understand you do not use the web interface - but what if you did? would it commit all those files into git?
+
+Could we add the git-annex files to a .gitignore file?
+"""]]

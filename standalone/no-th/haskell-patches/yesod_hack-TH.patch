@@ -1,0 +1,184 @@
+From 69398345ff1e63bcc6a23fce18e42390328b78d2 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Tue, 17 Dec 2013 18:48:56 +0000
+Subject: [PATCH] hack for TH
+
+---
+ Yesod.hs              |   19 ++++++++++++--
+ Yesod/Default/Main.hs |   23 -----------------
+ Yesod/Default/Util.hs |   69 ++-----------------------------------------------
+ 3 files changed, 19 insertions(+), 92 deletions(-)
+
+diff --git a/Yesod.hs b/Yesod.hs
+index b367144..fbe309c 100644
+--- a/Yesod.hs
++++ b/Yesod.hs
+@@ -5,9 +5,24 @@ module Yesod
+     ( -- * Re-exports from yesod-core
+       module Yesod.Core
+     , module Yesod.Form
+-    , module Yesod.Persist
++    , insertBy
++    , replace
++    , deleteBy
++    , delete
++    , insert 
++    , Key
+     ) where
+ 
+ import Yesod.Core
+ import Yesod.Form
+-import Yesod.Persist
++
++-- These symbols are usually imported from persistent,
++-- But it is not built on Android. Still export them
++-- just so that hiding them will work.
++data Key = DummyKey
++insertBy = undefined
++replace = undefined
++deleteBy = undefined
++delete = undefined
++insert = undefined
++
+diff --git a/Yesod/Default/Main.hs b/Yesod/Default/Main.hs
+index 0780539..2c73800 100644
+--- a/Yesod/Default/Main.hs
++++ b/Yesod/Default/Main.hs
+@@ -1,10 +1,8 @@
+ {-# LANGUAGE CPP                #-}
+ {-# LANGUAGE DeriveDataTypeable #-}
+ {-# LANGUAGE OverloadedStrings  #-}
+-{-# LANGUAGE TemplateHaskell    #-}
+ module Yesod.Default.Main
+     ( defaultMain
+-    , defaultMainLog
+     , defaultRunner
+     , defaultDevelApp
+     , LogFunc
+@@ -54,27 +52,6 @@ defaultMain load getApp = do
+ 
+ type LogFunc = Loc -> LogSource -> LogLevel -> LogStr -> IO ()
+ 
+--- | Same as @defaultMain@, but gets a logging function back as well as an
+--- @Application@ to install Warp exception handlers.
+---
+--- Since 1.2.5
+-defaultMainLog :: (Show env, Read env)
+-               => IO (AppConfig env extra)
+-               -> (AppConfig env extra -> IO (Application, LogFunc))
+-               -> IO ()
+-defaultMainLog load getApp = do
+-    config <- load
+-    (app, logFunc) <- getApp config
+-    runSettings defaultSettings
+-        { settingsPort = appPort config
+-        , settingsHost = appHost config
+-        , settingsOnException = const $ \e -> logFunc
+-            $(qLocation >>= liftLoc)
+-            "yesod"
+-            LevelError
+-            (toLogStr $ "Exception from Warp: " ++ show e)
+-        } app
+-
+ -- | Run your application continously, listening for SIGINT and exiting
+ --   when received
+ --
+diff --git a/Yesod/Default/Util.hs b/Yesod/Default/Util.hs
+index a10358e..0547424 100644
+--- a/Yesod/Default/Util.hs
++++ b/Yesod/Default/Util.hs
+@@ -5,10 +5,9 @@
+ module Yesod.Default.Util
+     ( addStaticContentExternal
+     , globFile
+-    , widgetFileNoReload
+-    , widgetFileReload
++    --, widgetFileNoReload
++    --, widgetFileReload
+     , TemplateLanguage (..)
+-    , defaultTemplateLanguages
+     , WidgetFileSettings
+     , wfsLanguages
+     , wfsHamletSettings
+@@ -20,9 +19,6 @@ import Yesod.Core -- purposely using complete import so that Haddock will see ad
+ import Control.Monad (when, unless)
+ import System.Directory (doesFileExist, createDirectoryIfMissing)
+ import Language.Haskell.TH.Syntax
+-import Text.Lucius (luciusFile, luciusFileReload)
+-import Text.Julius (juliusFile, juliusFileReload)
+-import Text.Cassius (cassiusFile, cassiusFileReload)
+ import Text.Hamlet (HamletSettings, defaultHamletSettings)
+ import Data.Maybe (catMaybes)
+ import Data.Default (Default (def))
+@@ -69,68 +65,7 @@ data TemplateLanguage = TemplateLanguage
+     , tlReload :: FilePath -> Q Exp
+     }
+ 
+-defaultTemplateLanguages :: HamletSettings -> [TemplateLanguage]
+-defaultTemplateLanguages hset =
+-    [ TemplateLanguage False "hamlet"  whamletFile' whamletFile'
+-    , TemplateLanguage True  "cassius" cassiusFile  cassiusFileReload
+-    , TemplateLanguage True  "julius"  juliusFile   juliusFileReload
+-    , TemplateLanguage True  "lucius"  luciusFile   luciusFileReload
+-    ]
+-  where
+-    whamletFile' = whamletFileWithSettings hset
+-
+ data WidgetFileSettings = WidgetFileSettings
+     { wfsLanguages :: HamletSettings -> [TemplateLanguage]
+     , wfsHamletSettings :: HamletSettings
+     }
+-
+-instance Default WidgetFileSettings where
+-    def = WidgetFileSettings defaultTemplateLanguages defaultHamletSettings
+-
+-widgetFileNoReload :: WidgetFileSettings -> FilePath -> Q Exp
+-widgetFileNoReload wfs x = combine "widgetFileNoReload" x False $ wfsLanguages wfs $ wfsHamletSettings wfs
+-
+-widgetFileReload :: WidgetFileSettings -> FilePath -> Q Exp
+-widgetFileReload wfs x = combine "widgetFileReload" x True $ wfsLanguages wfs $ wfsHamletSettings wfs
+-
+-combine :: String -> String -> Bool -> [TemplateLanguage] -> Q Exp
+-combine func file isReload tls = do
+-    mexps <- qmexps
+-    case catMaybes mexps of
+-        [] -> error $ concat
+-            [ "Called "
+-            , func
+-            , " on "
+-            , show file
+-            , ", but no template were found."
+-            ]
+-        exps -> return $ DoE $ map NoBindS exps
+-  where
+-    qmexps :: Q [Maybe Exp]
+-    qmexps = mapM go tls
+-
+-    go :: TemplateLanguage -> Q (Maybe Exp)
+-    go tl = whenExists file (tlRequiresToWidget tl) (tlExtension tl) ((if isReload then tlReload else tlNoReload) tl)
+-
+-whenExists :: String
+-           -> Bool -- ^ requires toWidget wrap
+-           -> String -> (FilePath -> Q Exp) -> Q (Maybe Exp)
+-whenExists = warnUnlessExists False
+-
+-warnUnlessExists :: Bool
+-                 -> String
+-                 -> Bool -- ^ requires toWidget wrap
+-                 -> String -> (FilePath -> Q Exp) -> Q (Maybe Exp)
+-warnUnlessExists shouldWarn x wrap glob f = do
+-    let fn = globFile glob x
+-    e <- qRunIO $ doesFileExist fn
+-    when (shouldWarn && not e) $ qRunIO $ putStrLn $ "widget file not found: " ++ fn
+-    if e
+-        then do
+-            ex <- f fn
+-            if wrap
+-                then do
+-                    tw <- [|toWidget|]
+-                    return $ Just $ tw `AppE` ex
+-                else return $ Just ex
+-        else return Nothing
+-- 
+1.7.10.4
+

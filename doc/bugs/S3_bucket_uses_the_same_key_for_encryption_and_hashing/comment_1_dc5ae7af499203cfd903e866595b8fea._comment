@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-03-30T14:32:34Z"
+ content="""
+S3 doesn't support encryption at all, yet.
+
+It certainly makes sense to use a different portion of the encrypted secret key for HMAC than is uses as the gpg symmetric encryption key.
+
+The two keys used in HMAC would be the secret key and the key/value key for the content being stored.
+
+There is a difficult problem with encrypting filenames in S3 buckets, and that is determining when some data in the bucket is unused for dropunused. I've considered two choices:
+
+1. gpg encrypt the filenames. This would allow dropunused to recover the original filenames, and is probably more robust encryption. But it would double the number of times gpg is run when moving content in/out, and to check for unused content, gpg would have to be run once for every item in the bucket, which just feels way excessive, even though it would not be prompting for a passphrase. Still, haven't ruled this out.
+
+2. HMAC or other hash. To determine what data was unused the same hash and secret key would have to be used to hash all filenames currently used, and then that set of hashes could be interested with the set in the bucket. But then git-annex could only say \"here are some opaque hashes of content that appears unused by anything in your current git repository, but there's no way, short of downloading it and examining it to tell what it is\". (This could be improved by keeping a local mapping between filenames and S3 keys, but maintaining and committing that would bring pain of its own.)
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="eezec"
+ ip="93.21.246.236"
+ subject="comment 3"
+ date="2013-09-11T06:12:20Z"
+ content="""
+Joey .. moving transfer didn't work .. i have the same message when doing
+
+    git annex status
+    ....
+    getFileStatus: does not exist (No such file or directory)
+    ....
+    git-annex: status: 1 failed
+"""]]

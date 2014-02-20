@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 6"
+ date="2013-08-11T03:20:37Z"
+ content="""
+with every
+
+    git annex
+    copy blah/blah/blah (to testremote...) 
+    git-annex: runInteractiveProcess: pipe: Too many open files
+    failed
+
+The number of open fd's by git-annex increases by 1.
+
+4.20130802 built with cabal on Ubuntu 13.04
+
+"""]]

@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlup4hyZo4eCjF8T85vfRXMKBxGj9bMdl0"
+ nickname="Ben"
+ subject="comment 8"
+ date="2012-07-10T13:02:37Z"
+ content="""
+On goldnerlab,
+
+    $ git annex status
+    supported backends: SHA256 SHA1 SHA512 SHA224 SHA384 SHA256E SHA1E SHA512E SHA224E SHA384E WORM URL
+    supported remote types: git S3 bup directory rsync web hook
+    trusted repositories: 0
+    semitrusted repositories: 4
+        00000000-0000-0000-0000-000000000001 -- web
+        02e4ea72-a77c-11e1-bbd7-0749b04e4b59 -- here (Data for Goldner)
+        351f3ddc-ca3e-11e1-a3fc-6338ef4724a7
+        3c1fd026-c794-11e1-8ebb-dbe8684e8a73
+    untrusted repositories: 0
+    dead repositories: 0
+    transfers in progress: none
+    available local disk space: 2 terabytes (+1 megabyte reserved)
+    local annex keys: 19101
+    local annex size: 41 gigabytes
+    known annex keys: 19122
+    known annex size: 41 gigabytes
+    bloom filter size: 16 mebibytes (3.8% full)
+    backend usage:
+            WORM: 38223
+
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="glad I could help"
+ date="2013-04-23T21:16:47Z"
+ content="""
+I'm curious if your repository is using direct mode, and is perhaps on a FAT filesystem, or other filesystem that does not support symlinks?
+
+One way this could have happened is due to a bug in `git annex sync` when used on such a filesystem. I've just fixed this bug in commit 07580dc3dfb2f4d9af9a20bc172cbc32953c49d6
+"""]]

@@ -1,0 +1,30 @@
+What steps will reproduce the problem?
+
+leave the assistant running for multiple days
+
+What is the expected output? 
+
+Glorious git-annex enlightenment
+
+What do you see instead?
+
+After ~2-3 days, there are hundreds of zombied git processes and the system is unable to fork new processes. This has occurred on 3 differently hardware configured mac's (macbooks and imacs) all running Mountain Lion 10.8.2 Build 12C3006
+In each case, once the system gets to this point, the only solution is forcing a reboot by holding down the power button as not even kill can spin up it's process.
+
+What version of git-annex are you using?
+
+    git-annex version: 3.20130122
+
+On what operating system?
+
+Mac OSX 10.8.2 Mountain Lion Build 12C3006
+
+Please provide any additional information below.
+
+I'm really not sure what to look for next. Happy to take suggestions.
+
+[!tag /design/assistant]]
+
+> [[done]], I found the zombie leak; the ConfigMonitor was 
+> leaving one zombie every time it checked a push/pull.
+> Not a fast leak, but over time they would add up. --[[Joey]]

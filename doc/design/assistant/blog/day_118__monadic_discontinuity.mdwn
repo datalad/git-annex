@@ -1,0 +1,15 @@
+Spent most of the past day moving the assistant into a monad of its own
+that encapsulates all the communications channels for its threads. This
+involved modifiying nearly every line of code in the whole assistant.
+
+Typical change:
+
+[[!format haskell """
+handleConnection threadname st dstatus scanremotes pushnotifier = do
+        reconnectRemotes threadname st dstatus scanremotes (Just pushnotifier)
+                =<< networkRemotes st
+
+handleConnection = reconnectRemotes True =<< networkRemotes
+"""]]
+
+So, it's getting more readable..

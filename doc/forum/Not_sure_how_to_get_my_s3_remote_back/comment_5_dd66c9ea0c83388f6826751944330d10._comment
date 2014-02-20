@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-04-25T02:14:18Z"
+ content="""
+Yes, when you run `git annex initremote $remotename` with no other parameters, it enables a remote from the stored configuration.
+Which does not include `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID`; you need to set those and then
+you should not get access denied.
+
+You seem to say your .git/config contains two remotes with the same name, but I don't think that's possible.
+
+I don't know how you could end up with two remotes with the same name in `git show git-annex:remote.log`, unless the two were added in separate repositories which were then synced together. Since this is not a usual situation there's not any UI to deal with it. I've just committed a change that will make `initremote` prefer remotes that have not been marked dead when there's a naming comflict.
+
+However, I'm more curious how this situation came about.  I have not been able to reproduce the problem when enabling a S3 remote using the webapp.
+"""]]

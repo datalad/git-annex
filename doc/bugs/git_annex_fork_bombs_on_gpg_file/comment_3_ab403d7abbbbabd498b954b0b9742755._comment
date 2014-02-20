@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-18T23:59:59Z"
+ content="""
+run it with `--debug`
+
+paste the whole log, not an except
+
+get a `ps lax` so we can see which programs are running which other programs and how many programs are running at the same time
+"""]]

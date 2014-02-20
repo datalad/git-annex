@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 15"
+ date="2012-07-04T13:14:00Z"
+ content="""
+git-annex will now fall back to slower pure Haskell hashing code if `sha256sum`, etc programs are not in PATH. I'd still recommend installing the coreutils, as they're probably faster.
+
+(The `shasum` command seems to come from a perl library, so I have not tried to make git-annex use that one.)
+"""]]

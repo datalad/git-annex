@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 1"
+ date="2013-07-09T07:18:09Z"
+ content="""
+Hi, glad you added the git history and branch info to the walk through.  With a 40,000 foot view some of the wording in the docs (whilst correct) may lead to the wrong impression.  For example, in the unused data section, there is a sense that it seems bad that data can accumulate and doing a \"git rm\" rather than doing a \"git annex drop\" is a naughty thing to do (I know you don't actually say this).
+
+I think it needs to made clear that \"removing\" files is more subtle than in a traditional file-system: that there is a choice of deleting from the working tree so that contents remain and can be recovered or removing the file and contents labeled together (a.k.a \"dropping\").  With dropping so pervasive in the docs its easy to think this \"right\" (and only) way.  
+
+I wonder if a \"git annex rm\" which is simply an alias for \"git rm\" might be a good idea for a UI perspective...
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="How much memory would it actually use anyway?"
+ date="2011-12-22T20:15:22Z"
+ content="""
+Another thought - an SHA1 digest is 20 bytes.  That means you can fit over 50 million keys into 1GB of RAM.  Granted you also need memory to store the values (pathnames) which in many cases will be longer, and some users may also choose more expensive backends than SHA1 ... but even so, it seems to me that you are at risk of throwing the baby out with the bath water.  
+"""]]

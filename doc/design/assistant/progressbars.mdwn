@@ -1,0 +1,43 @@
+Currently, git-annex takes a very lazy approch to displaying
+progress into. It just lets rsync or whatever display the progress
+for it, in the terminal.
+
+Something better is needed for the [[webapp]]. There needs to be a
+way for the web app to know what the current progress is of all transfers.
+
+This is one of those potentially hidden but time consuming problems.
+
+## downloads
+
+* Watch temp file as it's coming in and use its size.
+  Can either poll every .5 seconds or so to check file size, or
+  could use inotify. **done**
+* When easily available, remotes call the MeterUpdate callback as downloads
+  progress. **done**
+* S3 TODO  
+  While it has a download progress bar, `getObject` probably buffers the whole
+  download in memory before returning. Leaving the progress bar to only
+  display progress for writing the file out of memory. Fixing this would
+  involve making hS3 stream better (also avoids it wasting memory).
+
+## uploads
+
+Each individual remote type needs to implement its own support for calling
+the MeterUpdate callback as the upload progresses.
+
+* git: **done**
+* rsync: **done**
+* directory: **done**
+* web: Not applicable; does not upload 
+* webdav: **done**
+* S3: **done**
+* glacier: **done**
+* bup: TODO
+* hook: Would require the hook interface to somehow do this, which seems
+  too complicated. So skipping.
+
+## communication
+
+It may be worth using a better communication channel than files on disk for
+the transfer progress. Shared memory could be used, or http posts to the
+webapp.

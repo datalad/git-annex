@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.22"
+ subject="comment 2"
+ date="2013-10-11T17:07:24Z"
+ content="""
+However, if you strace a traditional cron, you will be sad at how it's implemented. So much statting of files, and checking of entries every second..
+
+0 polling or redundant calulcation in my code!
+"""]]

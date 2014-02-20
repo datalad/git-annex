@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnNqLKszWk9EoD4CDCqNXJRIklKFBCN1Ao"
+ nickname="maurizio"
+ subject="comment 14"
+ date="2013-12-04T08:47:15Z"
+ content="""
+I followed the procedure you suggested, please see email for how to transfer it to you. There are several points I would like to note:
+
+1. In the cloned repository created as you suggest above, the output of ```git annex status``` does not contain all the weird things that appear in the original repository (although it contains other stuff, see 3)
+2. In the original repository (~/datadir/Annex), the output of ```git annex status``` still contains the 155 nonrepositories, plus some other stuff (see 3)
+3. In the meantime, I created (always with the webapp) another annex for private stuff (~/private/Annex) on the same set of machines. Although I chose to \"keep repositories separated\", the few files that I put for testing into the new ~/private/Annex have appeared as broken symlinks in the work annex ~/datadir/Annex. The transfer repositories used for the work and private annexes are different and are not even hosted on the same machines. The jabber account on the contrary is the same for all annexes. 
+4. In the webapp (client1) in ~/private/Annex, only the correct repositories appear.
+5. In the webapp (client1) in ~/datadir/Annex the correct repositories appear, plus the private repository of client 2 and twice the transfer repository of the ~/private/Annex
+6. ```git annex status``` on client1 in ~/datadir/Annex shows the repositories of ~/private/Annex in addition to the 155 nonrepositories and its own repositories
+7. Because of 3), you will find at the end of the logs some new stuff that is in principle not related to the original bug report.
+
+In the end the situation is now the following:
+
+* 3 annexes (~/Annex for initial testing, ~/datadir/Annex for work, ~/private/Annex for private stuff), all created via webapp and handled by the assistant
+* files which were added on client 1 into ~/private/Annex also appear as broken links in ~/datadir/Annex on client 1 but nowhere in client 2
+* files which were added on client 2 into ~/private/Annex also appear as broken links in ~/datadir/Annex on client 1 and in client 2
+* The first created annex still seems to work as expected
+
+I am sorry that the situation is that messy. Is there a way to separate these repositories that have somehow become entangled? 
+
+"""]]

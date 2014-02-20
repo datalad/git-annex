@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 6"
+ date="2013-02-28T19:52:59Z"
+ content="""
+Lazlo, could you please file a proper [[bug|bugs]] report and include details like what version of git-annex you're using there when you get the zombies.
+
+I have modified the webapp to only ever show 10 queued transfers on the dashboard.
+"""]]

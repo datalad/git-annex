@@ -1,0 +1,11 @@
+Hi,
+
+I'm trying to figure out if it's possible to have a remote that allows access from _clients without git-annex_. That is a remote type that presents itself as a client repo. I'm probably missing something obvious.
+
+Ideally I'd like to use my Nokia N900 phone as a ssh remote from which I can open files on any computer when the device is connected via usb in mass storage mode. This would allow me to access my files when I'm using a computer at work or at a friends house without installing git-annex. The phone has an ext3 partition so links are possible. Naturally I'd have to ensure the files I want are on the device before I leave the house.
+
+I'd also like to be able to scp files from my ssh remote when on git-annex less devices. Unfortunately the ssh/rsync repo presents no links or normal filenames.
+
+Git annex, and the assistant is working really smoothly between my local computers and my server on the internet. Setting things up with the webapp is super simple. Great work!
+
+

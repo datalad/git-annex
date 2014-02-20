@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 3"
+ date="2013-12-12T19:33:50Z"
+ content="""
+I've made the installer now request admin rights if run by a non-admin. Hopefully good enough. However, the NSIS docs say that only works on Vista or higher. The old XP I'm using (that will be completely EOLed soon IIRC) still has the problem.
+"""]]

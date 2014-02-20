@@ -1,0 +1,40 @@
+Not sure what caused this, but I have a file that exists on two remotes, but I can only get it from one of them.  If I try to get it from the other, it fails immediately (without even connecting):
+
+    pilot:~/vid/tv/Show$ git annex whereis Show\ -\ S03E08.mp4
+    whereis Show - S03E08.mp4 (2 copies) 
+            09c0b436-f8de-11e0-842f-b7644539d57f -- psychosis
+            82814942-f8e0-11e0-b053-e70a61e98e19 -- bucket
+    ok
+
+    pilot:~/vid/tv/Show$ git annex fsck Show\ -\ S03E08.mp4
+    fsck Show - S03E08.mp4 ok
+
+    pilot:~/vid/tv/Show$ git annex get --from bucket Show\ -\ S03E08.mp4
+    get Show - S03E08.mp4 failed
+    git-annex: get: 1 failed
+
+    pilot:~/vid/tv/Show$ git annex get --debug --from bucket Show\ -\ S03E08.mp4
+    [2013-01-17 19:05:13 EST] read: git ["--git-dir=/home/jim/vid/.git","--work-tree=/home/jim/vid","show-ref","git-annex"]
+    [2013-01-17 19:05:13 EST] read: git ["--git-dir=/home/jim/vid/.git","--work-tree=/home/jim/vid","show-ref","--hash","refs/heads/git-annex"]
+    [2013-01-17 19:05:13 EST] read: git ["--git-dir=/home/jim/vid/.git","--work-tree=/home/jim/vid","log","refs/heads/git-annex..e41c3b1ee9127129f2c9fc3fa5d4771afcb5ffd7","--oneline","-n1"]
+    [2013-01-17 19:05:13 EST] read: git ["--git-dir=/home/jim/vid/.git","--work-tree=/home/jim/vid","log","refs/heads/git-annex..a7ae08bccede282f46c2073f6c3e52685a593482","--oneline","-n1"]
+    [2013-01-17 19:05:13 EST] read: git ["--git-dir=/home/jim/vid/.git","--work-tree=/home/jim/vid","log","refs/heads/git-annex..ae0f84e906423f4da465e3d3df9d46545684d3f5","--oneline","-n1"]
+    [2013-01-17 19:05:13 EST] chat: git ["--git-dir=/home/jim/vid/.git","--work-tree=/home/jim/vid","cat-file","--batch"]
+    [2013-01-17 19:05:13 EST] read: git ["--git-dir=/home/jim/vid/.git","--work-tree=/home/jim/vid","ls-files","--cached","-z","--","Show - S03E08.mp4"]
+    get Show - S03E08.mp4 failed
+    git-annex: get: 1 failed
+
+Same `git annex version` on both `pilot` and `bucket`, and I ran `git annex sync` on both.
+
+    git-annex version: 3.20130114
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3
+    upgrade supported from repository versions: 0 1 2
+
+How should I debug this?
+
+> [[done]], in c6fbed48 I had made some changes to allow transfers
+> to work from readonly filesystems, but a too broad error trapping
+> hid the "transfer already in progress" error it is supposed to display
+> in this case. --[[Joey]]

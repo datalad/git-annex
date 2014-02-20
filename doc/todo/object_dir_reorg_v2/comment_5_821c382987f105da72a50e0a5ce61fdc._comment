@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 5"
+ date="2011-03-16T15:51:30Z"
+ content="""
+Hashing & segmenting seems to be around the corner, which is nice :)
+
+Is there a chance that you will optionally add mtime to your native metadata store? If yes, I'd rather wait for v2 to start with the native system from the start. If not, I will probably set it up tonight.
+
+PS: While posting from work, my comments are held for moderation once again. I am somewhat confused as to why this happens when I can just submit directly from home. And yes, I am using the same auth provider and user in both cases.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 15"
+ date="2013-07-27T21:50:32Z"
+ content="""
+AFAICS it was failing to transfer every file, no matter what the name, due to the socket length too long problem.
+"""]]

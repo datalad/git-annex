@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://nullroute.eu.org/~grawity/"
+ nickname="Mantas"
+ subject="comment 1"
+ date="2013-10-19T15:50:47Z"
+ content="""
+The restriction on fetching over the Git protocol is, partly, for security reasons – e.g. if one accidentally pushes a commit with private data, and then `push --force`'s a cleaned-up version, Git needs to prevent anyone from downloading the old commit by just giving its SHA1 (e.g. obtained from an IRC/email push notification). So it restricts fetching to the tips of any ref. (I've been told that it could check if the given object is merely *reachable* from any ref, but it doesn't do so for performance reasons.)
+
+git 1.8 has a minor way to relax this requirement – it allows giving a SHA1 to `git fetch` (although I think the protocol already worked this way), and it allows refs to be hidden server-side but still remain fetchable, so in theory there could be a (hidden) ref for every object, for easy fetching...
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.16"
+ subject="comment 1"
+ date="2012-08-31T15:04:09Z"
+ content="""
+This is an error message from git. [Git faq](https://git.wiki.kernel.org/index.php/GitFaq#Git_commit_is_dying_telling_me_.22fatal:_empty_ident_.3Cuser.40myhost.3E_not_allowed.22.2C_what.27s_wrong.3F). I don't understand why git is doing it given the configuration shown, but I suppose it would do the same thing if you run git commit by hand.
+"""]]

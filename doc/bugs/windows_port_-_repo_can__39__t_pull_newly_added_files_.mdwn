@@ -1,0 +1,559 @@
+### Please describe the problem.
+
+Using a centralized remote repository, new files that are added to the repository after it's pulled cannot be directly accessed - instead are pulled as symlinks.
+
+The workaround is to create a new remote repository that clones from the source. That repo can pull all files correctly
+
+### What steps will reproduce the problem?
+
+The following script works fine when everything is run on a linux box. If the same script is run on the windows box, it will not show foo2.txt in the repository clone. foo.txt is still valid.
+
+a file, testrepo.sh is set up on the server to simplify the creation of the repo for testing
+
+**testrepo.sh**
+[[!format sh """
+
+rm -rf repo.git
+git init --bare repo.git
+cd repo.git
+git annex init origin
+git annex sync
+
+
+"""]]
+
+**test script**
+[[!format sh """
+
+ssh joebo@xxxxx sh testrepo.sh
+
+
+rm -rf repo
+git init repo
+cd repo
+
+git annex init
+git remote add origin ssh://joebo@xxxxx/~/repo.git
+echo hello > foo.txt
+git annex add .
+git commit -m "initial commit"
+git annex sync
+git annex copy --to origin
+git annex sync
+
+cd ..
+rm -rf repo-bak
+git init repo-bak
+cd repo-bak
+git remote add origin ssh://joebo@xxxxx/~/repo.git
+git fetch origin
+git merge origin/synced/master
+git annex sync
+git annex get .
+cat foo.txt #works just fine!
+
+cd ..
+cd repo
+echo foo2 > foo2.txt
+git annex add .
+git commit -m "another"
+git annex sync
+git annex copy --to origin
+git annex sync
+
+cd ..
+cd repo-bak
+git annex sync
+
+## throws a fastforward error:
+commit
+ok
+pull origin
+remote: Counting objects: 21, done.
+remote: Compressing objects: 100% (14/14), done.
+remote: Total 16 (delta 3), reused 0 (delta 0)
+Unpacking objects: 100% (16/16), done.
+From ssh://xxxx.com/~/repo
+   c5ed8e1..7ea5586  synced/git-annex -> origin/synced/git-annex
+   a8402ae..1a72b3d  synced/master -> origin/synced/master
+ok
+(merging origin/synced/git-annex into git-annex...)
+(Recording state in git...)
+push origin
+Counting objects: 15, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (8/8), 844 bytes, done.
+Total 8 (delta 2), reused 0 (delta 0)
+To ssh://joebo@xxxx.com/~/repo.git
+   7ea5586..5df3c85  git-annex -> synced/git-annex
+ ! [rejected]        master -> synced/master (non-fast-forward)
+error: failed to push some refs to 'ssh://joebo@xxx.com/~/repo.git'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and merge the remote changes
+hint: (e.g. 'git pull') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+failed
+git-annex: sync: 1 failed
+"""]]
+
+If I try to work around it by merging, then I get the symlink in the file after getting
+
+
+[[!format sh """
+
+C:\joe\backup\repo-bak>git merge origin/synced/master
+Updating f586b6a..fcae7bc
+Fast-forward
+ foo2.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 foo2.txt
+
+C:\joe\backup\repo-bak>git annex get foo2.txt
+get foo2.txt (from origin...)
+SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5ccd78762e80a45f0bbece05f.txt
+
+           7 100%    6.84kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 30 bytes  received 156 bytes  124.00 bytes/sec
+total size is 7  speedup is 0.04
+ok
+warning: LF will be replaced by CRLF in C:\joe\backup\repo-bak\.git\annex\journa
+l\fba_8bb_SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5ccd78762e80a45f0bb
+ece05f.txt.log.
+The file will have its original line endings in your working directory.
+(Recording state in git...)
+
+C:\joe\backup\repo-bak>cat foo2.txt
+.git/annex/objects/3V/kM/SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5ccd
+78762e80a45f0bbece05f.txt/SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5cc
+d78762e80a45f0bbece05f.txt
+
+"""]]
+
+removing the backup repository and starting over works:
+
+[[!format sh """
+
+C:\joe\backup>git init repo-bak
+Initialized empty Git repository in C:/joe/backup/repo-bak/.git/
+
+C:\joe\backup>cd repo-bak
+
+C:\joe\backup\repo-bak>git remote add origin ssh://joebo@xxxx.com/~/repo.git
+
+C:\joe\backup\repo-bak>git fetch origin
+remote: Counting objects: 57, done.
+remote: Compressing objects: 100% (48/48), done.
+remote: Total 57 (delta 20), reused 0 (delta 0)
+Unpacking objects: 100% (57/57), done.
+From ssh://xxxx.com/~/repo
+ * [new branch]      git-annex  -> origin/git-annex
+ * [new branch]      synced/git-annex -> origin/synced/git-annex
+ * [new branch]      synced/master -> origin/synced/master
+
+C:\joe\backup\repo-bak>git merge origin/synced/master
+
+C:\joe\backup\repo-bak>git annex sync
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+warning: LF will be replaced by CRLF in C:\joe\backup\repo-bak\.git\annex\journa
+l\uuid.log.
+The file will have its original line endings in your working directory.
+(merging origin/git-annex origin/synced/git-annex into git-annex...)
+(Recording state in git...)
+commit
+ok
+pull origin
+ok
+push origin
+Counting objects: 9, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 533 bytes, done.
+Total 5 (delta 3), reused 0 (delta 0)
+To ssh://joebo@xxxx.com/~/repo.git
+   5038806..67d6383  git-annex -> synced/git-annex
+ok
+
+C:\joe\backup\repo-bak>git annex get .
+get foo.txt (from origin...)
+SHA256E-s8--f873eef4f852e335da367d76ce7f1973c15b8ffebf532b064df4bc691cd51a87.txt
+
+           8 100%    7.81kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 30 bytes  received 157 bytes  124.67 bytes/sec
+total size is 8  speedup is 0.04
+ok
+get foo2.txt (from origin...)
+SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5ccd78762e80a45f0bbece05f.txt
+
+           7 100%    6.84kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 30 bytes  received 156 bytes  124.00 bytes/sec
+total size is 7  speedup is 0.04
+ok
+warning: LF will be replaced by CRLF in C:\joe\backup\repo-bak\.git\annex\journa
+l\fba_8bb_SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5ccd78762e80a45f0bb
+ece05f.txt.log.
+The file will have its original line endings in your working directory.
+warning: LF will be replaced by CRLF in C:\joe\backup\repo-bak\.git\annex\journa
+l\ae4_1e9_SHA256E-s8--f873eef4f852e335da367d76ce7f1973c15b8ffebf532b064df4bc691c
+d51a87.txt.log.
+The file will have its original line endings in your working directory.
+(Recording state in git...)
+
+C:\joe\backup\repo-bak>cat *
+hello
+foo2
+
+C:\joe\backup\repo-bak>ls -lah
+total 5.0k
+drwxr-xr-x    1 jbogner  Administ        0 Jun 15 08:44 .
+drwxr-xr-x   23 jbogner  Administ     4.0k Jun 15 08:43 ..
+drwxr-xr-x    1 jbogner  Administ     4.0k Jun 15 08:44 .git
+-rw-r--r--    1 jbogner  Administ        8 Jun 15 08:44 foo.txt
+-rw-r--r--    1 jbogner  Administ        7 Jun 15 08:44 foo2.txt
+
+C:\joe\backup\repo-bak>
+
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+Windows:
+
+	C:\joe\backup\repo-bak>git annex version
+	git-annex version: 4.20130614-g3a93e24
+	build flags: Pairing Testsuite S3 WebDAV DNS
+	local repository version: 4
+	default repository version: 3
+	supported repository versions: 3 4
+	upgrade supported from repository versions: 2
+
+
+Linux:
+
+        git-annex version: 4.20130531-g5df09b5
+	build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+C:\joe\backup>cd repo
+
+C:\joe\backup\repo>git annex init
+init
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+warning: LF will be replaced by CRLF in C:\joe\backup\repo\.git\annex\journal\uu
+id.log.
+The file will have its original line endings in your working directory.
+(Recording state in git...)
+
+C:\joe\backup\repo>git remote add origin ssh://joebo@xxxx.com/~/repo.git
+
+C:\joe\backup\repo>echo hello  1>foo.txt
+
+C:\joe\backup\repo>git annex add .
+add foo.txt (checksum...) ok
+(Recording state in git...)
+warning: LF will be replaced by CRLF in C:\joe\backup\repo\.git\annex\journal\ae
+4_1e9_SHA256E-s8--f873eef4f852e335da367d76ce7f1973c15b8ffebf532b064df4bc691cd51a
+87.txt.log.
+The file will have its original line endings in your working directory.
+
+C:\joe\backup\repo>git commit -m "initial commit"
+[master (root-commit) 47c05ea] initial commit
+ 1 file changed, 1 insertion(+)
+ create mode 120000 foo.txt
+
+C:\joe\backup\repo>git annex sync
+commit
+ok
+pull origin
+warning: no common commits
+remote: Counting objects: 5, done.
+remote: Compressing objects: 100% (3/3), done.
+remote: Total 5 (delta 1), reused 0 (delta 0)
+Unpacking objects: 100% (5/5), done.
+From ssh://xxxx.com/~/repo
+ * [new branch]      git-annex  -> origin/git-annex
+ok
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+push origin
+Counting objects: 18, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (12/12), done.
+Writing objects: 100% (16/16), 1.40 KiB, done.
+Total 16 (delta 3), reused 0 (delta 0)
+To ssh://joebo@xxxx.com/~/repo.git
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+
+C:\joe\backup\repo>git annex copy --to origin
+copy foo.txt (checking origin...) (to origin...)
+foo.txt
+           8 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 79 bytes  received 31 bytes  73.33 bytes/sec
+total size is 8  speedup is 0.07
+ok
+warning: LF will be replaced by CRLF in C:\joe\backup\repo\.git\annex\journal\ae
+4_1e9_SHA256E-s8--f873eef4f852e335da367d76ce7f1973c15b8ffebf532b064df4bc691cd51a
+87.txt.log.
+The file will have its original line endings in your working directory.
+(Recording state in git...)
+
+C:\joe\backup\repo>git annex sync
+commit
+ok
+pull origin
+ok
+push origin
+Counting objects: 9, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 450 bytes, done.
+Total 5 (delta 1), reused 0 (delta 0)
+To ssh://joebo@xxxx.com/~/repo.git
+   bd52e5f..02a0a4a  git-annex -> synced/git-annex
+ok
+
+C:\joe\backup\repo>cd ..
+
+C:\joe\backup>rm -rf repo-bak
+
+C:\joe\backup>git init repo-bak
+Initialized empty Git repository in C:/joe/backup/repo-bak/.git/
+
+C:\joe\backup>cd repo-bak
+
+C:\joe\backup\repo-bak>git remote add origin ssh://joebo@xxxx.com/~/repo.git
+
+C:\joe\backup\repo-bak>git fetch origin
+remote: Counting objects: 25, done.
+remote: Compressing objects: 100% (19/19), done.
+remote: Total 25 (delta 6), reused 0 (delta 0)
+Unpacking objects: 100% (25/25), done.
+From ssh://xxxx.com/~/repo
+ * [new branch]      git-annex  -> origin/git-annex
+ * [new branch]      synced/git-annex -> origin/synced/git-annex
+ * [new branch]      synced/master -> origin/synced/master
+
+C:\joe\backup\repo-bak>git merge origin/synced/master
+
+C:\joe\backup\repo-bak>git annex sync
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+warning: LF will be replaced by CRLF in C:\joe\backup\repo-bak\.git\annex\journa
+l\uuid.log.
+The file will have its original line endings in your working directory.
+(merging origin/git-annex origin/synced/git-annex into git-annex...)
+(Recording state in git...)
+commit
+ok
+pull origin
+ok
+push origin
+Counting objects: 9, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 610 bytes, done.
+Total 5 (delta 1), reused 0 (delta 0)
+To ssh://joebo@xxxx.com/~/repo.git
+   02a0a4a..88d19ce  git-annex -> synced/git-annex
+ok
+
+C:\joe\backup\repo-bak>git annex get .
+get foo.txt (from origin...)
+SHA256E-s8--f873eef4f852e335da367d76ce7f1973c15b8ffebf532b064df4bc691cd51a87.txt
+
+           8 100%    7.81kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 30 bytes  received 157 bytes  124.67 bytes/sec
+total size is 8  speedup is 0.04
+ok
+warning: LF will be replaced by CRLF in C:\joe\backup\repo-bak\.git\annex\journa
+l\ae4_1e9_SHA256E-s8--f873eef4f852e335da367d76ce7f1973c15b8ffebf532b064df4bc691c
+d51a87.txt.log.
+The file will have its original line endings in your working directory.
+(Recording state in git...)
+
+C:\joe\backup\repo-bak>cat foo.txt
+hello
+
+C:\joe\backup\repo-bak>cd ..
+
+C:\joe\backup>cd repo
+
+C:\joe\backup\repo>echo foo2  1>foo2.txt
+
+C:\joe\backup\repo>git annex add .
+add foo2.txt (checksum...) ok
+(Recording state in git...)
+warning: LF will be replaced by CRLF in C:\joe\backup\repo\.git\annex\journal\fb
+a_8bb_SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5ccd78762e80a45f0bbece0
+5f.txt.log.
+The file will have its original line endings in your working directory.
+
+C:\joe\backup\repo>git commit -m "another"
+[master 76a9e44] another
+ 1 file changed, 1 insertion(+)
+ create mode 120000 foo2.txt
+
+C:\joe\backup\repo>git annex sync
+commit
+ok
+pull origin
+remote: Counting objects: 9, done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 5 (delta 1), reused 0 (delta 0)
+Unpacking objects: 100% (5/5), done.
+From ssh://xxxx.com/~/repo
+   02a0a4a..88d19ce  synced/git-annex -> origin/synced/git-annex
+ok
+(merging origin/synced/git-annex into git-annex...)
+(Recording state in git...)
+push origin
+Counting objects: 16, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (10/10), done.
+Writing objects: 100% (11/11), 1.11 KiB, done.
+Total 11 (delta 2), reused 0 (delta 0)
+To ssh://joebo@xxxx.com/~/repo.git
+   88d19ce..f47091a  git-annex -> synced/git-annex
+   47c05ea..76a9e44  master -> synced/master
+ok
+
+C:\joe\backup\repo>git annex copy --to origin
+copy foo.txt (checking origin...) ok
+copy foo2.txt (checking origin...) (to origin...)
+foo2.txt
+           7 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 79 bytes  received 31 bytes  73.33 bytes/sec
+total size is 7  speedup is 0.06
+ok
+warning: LF will be replaced by CRLF in C:\joe\backup\repo\.git\annex\journal\fb
+a_8bb_SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5ccd78762e80a45f0bbece0
+5f.txt.log.
+The file will have its original line endings in your working directory.
+(Recording state in git...)
+
+C:\joe\backup\repo>git annex sync
+commit
+ok
+pull origin
+ok
+push origin
+Counting objects: 9, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 477 bytes, done.
+Total 5 (delta 1), reused 0 (delta 0)
+To ssh://joebo@xxxx.com/~/repo.git
+   f47091a..98082cb  git-annex -> synced/git-annex
+ok
+
+C:\joe\backup\repo>cd ..
+
+C:\joe\backup>cd repo-bak
+
+C:\joe\backup\repo-bak>git annex sync
+commit
+ok
+pull origin
+remote: Counting objects: 21, done.
+remote: Compressing objects: 100% (14/14), done.
+remote: Total 16 (delta 4), reused 0 (delta 0)
+Unpacking objects: 100% (16/16), done.
+From ssh://xxxx.com/~/repo
+   88d19ce..98082cb  synced/git-annex -> origin/synced/git-annex
+   47c05ea..76a9e44  synced/master -> origin/synced/master
+ok
+(merging origin/synced/git-annex into git-annex...)
+(Recording state in git...)
+push origin
+Counting objects: 15, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (7/7), done.
+Writing objects: 100% (8/8), 843 bytes, done.
+Total 8 (delta 2), reused 0 (delta 0)
+To ssh://joebo@xxxx.com/~/repo.git
+   98082cb..2537203  git-annex -> synced/git-annex
+ ! [rejected]        master -> synced/master (non-fast-forward)
+error: failed to push some refs to 'ssh://joebo@xxxx.com/~/repo.git'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and merge the remote changes
+hint: (e.g. 'git pull') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+failed
+git-annex: sync: 1 failed
+
+C:\joe\backup\repo-bak>git annex get foo2.txt
+git-annex: foo2.txt not found
+
+C:\joe\backup\repo-bak>cat foo2.txt
+cat: foo2.txt: No such file or directory
+C:\joe\backup\repo-bak>git pull origin synced/master
+From ssh://xxxx.com/~/repo
+ * branch            synced/master -> FETCH_HEAD
+Updating 47c05ea..76a9e44
+Fast-forward
+ foo2.txt | 1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 foo2.txt
+
+C:\joe\backup\repo-bak>git annex get foo2.txt
+get foo2.txt (from origin...)
+SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5ccd78762e80a45f0bbece05f.txt
+
+           7 100%    6.84kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 30 bytes  received 156 bytes  124.00 bytes/sec
+total size is 7  speedup is 0.04
+ok
+warning: LF will be replaced by CRLF in C:\joe\backup\repo-bak\.git\annex\journa
+l\fba_8bb_SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5ccd78762e80a45f0bb
+ece05f.txt.log.
+The file will have its original line endings in your working directory.
+(Recording state in git...)
+
+C:\joe\backup\repo-bak>cat foo2.txt
+.git/annex/objects/3V/kM/SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5ccd
+78762e80a45f0bbece05f.txt/SHA256E-s7--eef0e29200a3194851e5fb4ff77d0d0aec5cd3f5cc
+d78762e80a45f0bbece05f.txt
+C:\joe\backup\repo-bak>
+
+
+
+# End of transcript or log.
+"""]]
+
+> Apparently the last of the issues discussed here is fixed.
+> Closing this bug report before it grows a new issue. ;) [[done]] --[[Joey]]

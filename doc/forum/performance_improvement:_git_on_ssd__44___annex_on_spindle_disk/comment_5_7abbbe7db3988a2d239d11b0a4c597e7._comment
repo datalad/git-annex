@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="stoile"
+ ip="2a01:198:242:0:219:66ff:fef2:c021"
+ subject="Error with .git/annex as a symlink"
+ date="2013-11-16T12:20:58Z"
+ content="""
+I had my git annex directory on a ssd and .git/annex on a hdd (using a symlink). I got errors when adding files because a move failed. I forgot to copy the error message. When I had .git/annex/objects on a hdd, everything worked as expected, there were no problems.
+
+So what exactly will go wrong if I only have this one subdirectory on another filesystem?
+"""]]

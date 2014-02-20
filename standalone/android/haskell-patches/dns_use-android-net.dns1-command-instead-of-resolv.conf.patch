@@ -1,0 +1,59 @@
+From bf2126a729e87c5eae7893a48f850993498a666a Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Tue, 3 Dec 2013 13:11:15 -0400
+Subject: [PATCH] use android net.dns1 command instead of resolv.conf file
+
+Android has no /etc/resolv.conf. Some might have /system/etc/resolv.conf,
+but even that does not seem likely.
+
+This is likely a little slow, but is at least fine for git-annex's uses,
+since it only uses this library for occasional SRV lookups.
+---
+ Network/DNS/Resolver.hs | 11 +++++++----
+ dns.cabal               |  1 +
+ 2 files changed, 8 insertions(+), 4 deletions(-)
+
+diff --git a/Network/DNS/Resolver.hs b/Network/DNS/Resolver.hs
+index 9e6c951..c210763 100644
+--- a/Network/DNS/Resolver.hs
++++ b/Network/DNS/Resolver.hs
+@@ -27,6 +27,7 @@ import Network.Socket.ByteString.Lazy
+ import Prelude hiding (lookup)
+ import System.Random
+ import System.Timeout
++import System.Process
+ 
+ #if mingw32_HOST_OS == 1
+ import Network.Socket (send)
+@@ -111,10 +112,12 @@ makeResolvSeed conf = ResolvSeed <$> addr
+   where
+     addr = case resolvInfo conf of
+         RCHostName numhost -> makeAddrInfo numhost
+-        RCFilePath file -> toAddr <$> readFile file >>= makeAddrInfo
+-    toAddr cs = let l:_ = filter ("nameserver" `isPrefixOf`) $ lines cs
+-                in extract l
+-    extract = reverse . dropWhile isSpace . reverse . dropWhile isSpace . drop 11
++        RCFilePath file -> do
++		-- Android has no /etc/resolv.conf; use getprop command.
++		ls <- catch (lines <$> readProcess "getprop" ["net.dns1"] []) (const (return []) :: IOException -> IO [String])
++		makeAddrInfo $ case ls of
++			[] -> "8.8.8.8" -- google public dns as a fallback only
++			(l:_) -> l
+ 
+ makeAddrInfo :: HostName -> IO AddrInfo
+ makeAddrInfo addr = do
+diff --git a/dns.cabal b/dns.cabal
+index 0a7e6f8..06f5a90 100644
+--- a/dns.cabal
++++ b/dns.cabal
+@@ -37,6 +37,7 @@ Library
+                       , network >= 2.3
+                       , network-conduit
+                       , random
++                      , process
+   else
+     Build-Depends:      base >= 4 && < 5
+                       , attoparsec
+-- 
+1.8.4.4
+

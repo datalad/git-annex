@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmmPHsszTlpa3s3x_LEzmEYkZfEmqq7IjU"
+ nickname="Jan"
+ subject="exact version"
+ date="2012-11-05T01:34:29Z"
+ content="""
+    % git annex version
+    git-annex version: 3.20121017
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3
+    upgrade supported from repository versions: 0 1 2
+
+Also, while browsing the archive for another problem (can not add files because shasum256 is missing and I get a \"dyld: Library not loaded: /opt/local/lib/libintl.8.dylib\" for it's execution when I add the path for /Applications/git-annex.app/Contents/MacOS/bin/sha256sum) I [saw](http://git-annex.branchable.com/install/OSX/old_comments/#comment-94b0f0ba446ca2f1ebd6af44c7afd3be) that it should fall back on haskell code - which it doesn't, so maybe its an old version?
+"""]]

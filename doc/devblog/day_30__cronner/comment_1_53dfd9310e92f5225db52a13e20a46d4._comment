@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://nullroute.eu.org/~grawity/"
+ nickname="Mantas"
+ subject="comment 1"
+ date="2013-10-09T06:04:15Z"
+ content="""
+The SysV Unix *cron* learned this same thing [in 1979][1].
+
+[1]: http://en.wikipedia.org/wiki/Cron#Multi-user_capability
+"""]]

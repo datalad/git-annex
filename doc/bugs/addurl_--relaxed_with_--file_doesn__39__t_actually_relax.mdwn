@@ -1,0 +1,26 @@
+It appears like addurl --relaxed if used incombination with --file doesn't actually relax.
+
+(I'm interested in quickly adding links to an extremely large set of files (and for a large set of revisions), and the fact that addurl takes a second or so per file makes this impossible performance-wise.)
+
+What steps will reproduce the problem? (Well, this isn't the problem per see, but it illustrates that it does checking)
+
+    $ echo foo > foo
+    $ git annex add foo
+    $ git annex addurl --relaxed http://lambda.haskell.org/platform/download/2012.4.0.0/haskell-platform-2012.4.0.0.tar.gz --file foo
+    addurl foo 
+      failed to verify url: http://lambda.haskell.org/platform/download/2012.4.0.0/haskell-platform-2012.4.0.0.tar.gz
+    failed
+    git-annex: addurl: 1 failed
+
+What version of git-annex are you using? On what operating system?
+
+Debian Sid
+
+    git-annex version: 4.20130228
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS
+
+> Missed the case of adding an url to an existing file. [[done]] --[[Joey]] 

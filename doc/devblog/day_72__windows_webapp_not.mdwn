@@ -1,0 +1,22 @@
+Got the entire webapp to build on Windows.
+
+Compiling was easy. One line of code had to be #ifdefed out, and the whole
+rest of the webapp UI just built!
+
+Linking was epic. It seems that I really am runninginto a 32kb command line length
+limit, which causes the link command to fail on Windows. git-annex with all
+its bells and whistles enabled is just too big. Filed a 
+[ghc bug report](https://ghc.haskell.org/trac/ghc/ticket/8596), and got back a
+helpful response about using <http://gcc.gnu.org/wiki/Response_Files> to
+work around.
+
+6 hours of slogging through compiling dependencies and fighting with
+toolchain later, I have managed to link git-annex with the webapp!
+
+The process is not automated yet. While I was able to automate
+passing gcc a @file with its parameters, gcc then calls collect2, which
+calls ld, and both are passed too many parameters. I have not found a way
+to get gcc to generate a response file. So I did it manually. Urgh.
+
+Also, it crashes on startup with `getAddrInfo` failure. But some more
+porting is to be expected, now that the windows webapp links.. ;)

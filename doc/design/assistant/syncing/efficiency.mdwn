@@ -1,0 +1,73 @@
+Currently, the git-annex assistant syncs with remotes in a way that is
+dumb, and potentially inneficient:
+
+1. Files are transferred to each reachable remote whose
+   [[preferred_content]] setting indicates it wants the file.
+
+2. After each file transfer (upload or download), a git sync
+   is done to all the remotes, to update location log information.
+
+## unncessary transfers
+
+There are network toplogies where #1 is massively inneficient.
+For example:
+
+<pre>
+  laptopA-----laptopB-----laptopC
+      \         |             /
+       \---cloud based repo--/
+</pre>
+
+When laptopA has a new file, it will first send it to laptopB. It will then
+check if the cloud based transfer repository wants a copy. It will, because
+laptopC has not yet gotten a copy. So laptopA will proceed with a slow
+upload to the cloud, while meanwhile laptopB is sending the file over fast
+LAN to laptopC.
+
+(The more common case with no laptopC happens to work efficiently.
+So does the case where laptopA is paired with laptopC.)
+
+## unncessary syncing
+
+Less importantly, the constant git syncing after each transfer is rather a
+lot of work, and prevents collecting multiple presence changes to the git-annex 
+branch into larger commits, which would save disk space over time.
+
+In many cases, this sync is necessary. For example, when a file is uploaded
+to a transfer remote, the location change needs to be synced out so that
+other clients know to grab it.
+
+Or, when downloading a file from a drive, the sync lets other locally
+paired repositories know we got it, so they can download it from us. 
+OTOH, this is also a case where a sync is sometimes unnecessary, since
+if we're going to upload the file to them after getting it, the sync
+only perhaps lets them start downloading it before our transfer queue
+reaches a point where we'd upload it.
+
+It would be good to find a way to detect when syncing is not immediately
+necessary, and defer it.
+
+## mapping
+
+Mapping the repository network has the potential to get git-annex the
+information it needs to avoid unnecessary transfers and/or unncessary
+syncing.
+
+Mapping the network can reuse code in `git annex map`. Once the map is
+built, we want to find paths through the network that reach all nodes
+eventually, with the least cost. This is a minimum spanning tree problem,
+except with a directed graph, so really a Arborescence problem.
+
+A significant problem in mapping is that nodes are mobile, they can move
+between networks over time. This breaks LAN based paths through the
+network. Mapping would need a way to detect this. Note that individual
+git-annex assistants can tell when they've switched networks by using the
+`networkConnectedNotifier`.
+
+## P2P signaling
+
+Another approach that might help with these problems is if git-annex
+repositories have a non-git out of band signaling mechanism. This could,
+for example, be used by laptopB to tell laptopA that it's trying to send 
+a file directly to laptopC. laptopA could then defer the upload to the
+cloud for a while.

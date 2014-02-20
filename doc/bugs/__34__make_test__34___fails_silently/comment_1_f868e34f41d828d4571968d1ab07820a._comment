@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-01-03T16:54:19Z"
+ content="""
+The code is:
+
+<pre>
+@if ! $(GHCMAKE) -O0 test; then \
+                echo \"** not running test suite\" >&2; \
+else \
+</pre>
+
+The error message from the compiler, followed by the above error message does not seem \"silent\". It does exit 0 without running the test suite if it cannot be built.
+"""]]

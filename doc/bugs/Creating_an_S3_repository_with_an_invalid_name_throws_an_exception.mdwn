@@ -1,0 +1,18 @@
+What steps will reproduce the problem?
+
+Attempt to create an S3 repository called 'S3 (encrypted)' via the web app.
+
+What is the expected output? What do you see instead?
+
+Expected to either accept this input, or tell me that it's invalid. Instead, I see:
+
+Internal Server Error
+user error (openTCPConnection: host lookup failure for "S3 (encrypted)-610526e6-5ce2-11e2-997e-970cbca93f19.s3.amazonaws.com")
+
+What version of git-annex are you using? On what operating system?
+
+3.20130107 On Fedora 17 (64-bit).
+
+Please provide any additional information below.
+
+> [[done]], the name will now be sanitized. --[[Joey]]

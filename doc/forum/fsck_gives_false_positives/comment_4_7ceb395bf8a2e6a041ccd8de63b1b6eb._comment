@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="antymat"
+ ip="77.190.74.127"
+ subject="comment 4"
+ date="2012-02-15T07:13:12Z"
+ content="""
+OK, thanks. I was just wondering - since there are links in git(-annex), and a hard links too, that maybe the issue has been caused by `rsync`.
+
+I will keep my eye on that and run checks with my own checksum and `fsck` from time to time, and see what happens. I will post my results here, but the whole run (`fsck` or checksum) takes almost 2 days, so I will not do it too often... ;)
+"""]]

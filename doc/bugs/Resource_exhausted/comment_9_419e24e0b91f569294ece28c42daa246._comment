@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 9"
+ date="2013-08-24T19:10:21Z"
+ content="""
+@Michael how large a copy are you doing? And what kind of remote are you copying the files to?
+It would be helpful if you could be more specific about something I could do to reproduce the problem. Without a test case, I am unlikely to fix the bug. With a test case, I'd be surprised if it took long to fix it.
+
+If you have a process running that is experiencing the problem, you can also narrow it down a *lot* by looking at what these leaking pipe file descriptors are pipes to.  For example, if you have:
+
+lr-x------ 1 michael michael 64 Aug 10 20:14 895 -> pipe:[2251602]
+
+You can run `find /proc/ -ls 2251602` and find the process at other end of the pipe, and look its pid up in ps to see what command it is.
+"""]]

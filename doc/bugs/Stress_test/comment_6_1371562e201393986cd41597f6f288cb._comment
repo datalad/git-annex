@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 6"
+ date="2013-04-24T17:26:39Z"
+ content="""
+I put in a further change to reduce the number of alerts shown in the webapp when bulk adding files. This probably quadrupled the speed or more, even when the webapp was not running, as updating an alert every time a file was added was a lot of unnecessary work.
+
+After these changes, it adds the first 10 thousand files in 35 minutes, on my five year old netbook. It should scale linear
+(aside from git's own scalability issues with a lot of files, which I don't think are very bad under 1 million files),
+so adding all 100 thousand files should take 6 hours or so.
+
+I'm interested to see what results you get, compared with before..
+"""]]

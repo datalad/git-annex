@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="comment 1"
+ date="2013-01-10T08:49:20Z"
+ content="""
+hmm, wouldn't it make sense to do the downloads into the annex object space, just like with indirect annexes? Then when the download is complete, with indirect annexes you create a soft link and with direct annexes you move the file (or create a hardlink and remove the directory entry in the annex object space)? Actually when you started to talk about direct I first envisioned it to be exactly like indirect, only with hard links instead of soft links.
+"""]]

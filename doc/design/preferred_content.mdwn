@@ -1,0 +1,21 @@
+The [[preferred_content]] expressions didn't have a design document, but
+it's a small non-turing complete DSL for expressing which objects a
+repository prefers to contain.
+
+One thing that needs to be written down though is the stability analysis
+that must be done of preferred content expressions. 
+
+It's important that when a set of repositories all look at one-another's
+preferred content expressions, and copy/move/drop objects to satisfy them,
+they end up at a steady state. So, a given preferred content expression
+should ideally evaluate to the same answer for each key, from the
+perspective of each repository.
+
+The best way to ensure that is the case is to only use terms in preferred
+content expressions that rely on state that is shared between all
+repositories. So, state in the git-annex branch, or the master branch
+(assuming all repositories have master checked out).
+
+Since git is eventually consistent, there might be disagreements about
+which object belongs where, but once consistency is reached, things will
+settle down.

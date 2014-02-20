@@ -1,0 +1,9 @@
+git diff is not very helpful for annexed files.
+
+How about a git annex diff command that allows to compare two versions of an annexed file?
+
+Should be relatively simple, only there would have to be a way to deal with the situation where not both versions are present in the repository. Either abort with a message showing the command you need to run to get the missing version(s). Or even interactively volunteer to get it automatically, asking the user for confirmation.
+
+Of course you wouldn't want to diff two large files, but with git annex assistant, all files are annexed by default (right?), so this would be useful.
+
+There might already be a way to easily diff two versions of an annexed file which I'm missing -- in that case please point me to it! :)

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.149"
+ subject="comment 1"
+ date="2012-09-29T16:03:36Z"
+ content="""
+I'll be curious to see if the standalone tarball works on such a system.. it might need a newer libc
+than RHEL5 has.
+
+Conversely, that'd make it a good system to build the tarball on, so it's built to work with a nice old libc. :) 
+
+I have a machine where I could put chroots to do both 64 bit and 32 bit builds, but I don't know if I'll automate it there. Too lazy..
+"""]]

@@ -1,0 +1,66 @@
+TL;DNR ssh connection caching seems to cause git-annex to not work on NTFS volumes.  Setting `annex.sshcaching` to `false` seems to solve the problem.
+
+## What version of git-annex are you using? On what operating system? Please provide any additional information below.
+
+* git-annex version: 3.20120629 on Debian Testing.
+* `the-repo` is located on an NTFS volume on a USB HDD.
+* `the-remote` is on the server `example.com`.
+* `example.com` is running gitolite3 v3.2-19-gb9bbb78, git 1.7.2.5, and git-annex 3.20120629~bpo60+2
+
+
+## What steps will reproduce the problem? What is the expected output? What do you see instead?
+
+Create or clone a repo onto an NTFS volume.  
+Make sure `git annex` is initialized.  
+Run some regular git operations.  These always seem to work.  
+Try git-annex operations.  
+
+Some operations work despite the error messages:
+
+    $ git annex sync
+    Control socket connect(/media/NTFSVOL/the-repo/.git/annex/ssh/git@example.com): Connection refused
+    Failed to connect to new control master
+    Command ssh ["-S","/media/NTFSVOL/the-repo/.git/annex/ssh/git@example.com","-o","ControlMaster=auto","-o","ControlPersist=yes","git@example.com","git-annex-shell 'configlist' '/~/the-repo.git'"] failed; exit code 255
+    Control socket connect(/media/NTFSVOL/the-repo/.git/annex/ssh/git@example.com): Connection refused
+    Failed to connect to new control master
+    Command ssh ["-S","/media/NTFSVOL/the-repo/.git/annex/ssh/git@example.com","-o","ControlMaster=auto","-o","ControlPersist=yes","git@example.com","git-annex-shell 'configlist' '/~/the-repo'"] failed; exit code 255
+    commit  
+    # On branch master
+    nothing to commit (working directory clean)
+    ok
+    pull the-remote 
+    ok
+    pull origin 
+    ok
+
+Other operations fail:
+
+    $ git annex copy -t the-remote the-file.jpg
+    Control socket connect(/media/NTFSVOL/the-repo/.git/annex/ssh/git@example.com): Connection refused
+    Failed to connect to new control master
+    Command ssh ["-S","/media/NTFSVOL/the-repo/.git/annex/ssh/git@example.com","-o","ControlMaster=auto","-o","ControlPersist=yes","git@example.com","git-annex-shell 'configlist' '/~/the-repo.git'"] failed; exit code 255
+    Control socket connect(/media/NTFSVOL/the-repo/.git/annex/ssh/git@example.com): Connection refused
+    Failed to connect to new control master
+    Command ssh ["-S","/media/NTFSVOL/the-repo/.git/annex/ssh/git@example.com","-o","ControlMaster=auto","-o","ControlPersist=yes","git@example.com","git-annex-shell 'configlist' '/~/the-repo'"] failed; exit code 255
+    copy the-file.jpg (checking the-remote...) Control socket connect(/media/NTFSVOL/the-repo/.git/annex/ssh/git@example.com): Connection refused
+    Failed to connect to new control master
+    (unable to check the-remote) failed
+    git-annex: copy: 1 failed
+
+Some googling revealed the errors to be stale socket files.  
+- [Three SSH Tips](http://shallowsky.com/blog/tags/ssh/)  
+- [Improving SSH (OpenSSH) connection speed with shared connections](http://protempore.net/~calvins/howto/ssh-connection-sharing/#section-03)  
+
+It appears that SSH connection caching was implemented in response to this wishlist item:  
+[wishlist: Prevent repeated password prompts for one command](http://git-annex.branchable.com/todo/wishlist:_Prevent_repeated_password_prompts_for_one_command/)
+
+However ssh connection caching breaks things on NTFS volumes.  If I turn off connection caching, it seems to work fine
+
+    $ git config annex.sshcaching false
+
+but it would be nifty if git-annex could detect the filesystem type and do The Right Thing.
+
+Thanks for all the work on git-annex -- it's an awesome project!
+
+> [[done]], `git annex init` now probes for fifo support and disables ssh
+> connection caching if it cannot make one. --[[Joey]] 

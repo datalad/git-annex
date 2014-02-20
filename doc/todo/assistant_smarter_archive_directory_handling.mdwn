@@ -1,0 +1,31 @@
+Client repos do not want files in archive directories. This can turn
+out to be confusing to users who are using archive directories for their
+own purposes and not aware of this special case in the assistant. It can
+seem like the assistant is failing to sync their files.
+
+I thought, first, that it should have a checkbox to enable the archive
+directory behavior.
+
+However, I think I have a better idea. Change the preferred content
+expression for clients, so they want files in archive directories, *until*
+those files land in an archive.
+
+This way, only users who set up an archive repo get this behavior. And they
+asked for it by setting up that repo!
+
+Also, the new behavior will mean that files in archive directories still
+propigate around to clients. Consider this topology:
+
+	client A ---- client B ---- archive
+
+If a file is created in client A, and moved to an archive directory before
+it syncs to B, it will never get to the archive, and will continue wasting
+space on A. With the new behavior, A and B serve as effectively, transfer
+repositories for archived content.
+
+Something vaguely like this should work as the preferred content
+expression for the clients:
+
+	exclude=archive/* or (include=archive/* and (not (copies=archive:1 or copies=smallarchive:1)))
+
+> [[done]] --[[Joey]]

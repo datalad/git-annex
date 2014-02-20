@@ -1,0 +1,6 @@
+hi
+
+is it possible to have multiple repositories that share single backup directory ?
+
+for example.
+i have mp3, docs on my laptop as separate repositories. i would like to use single backup directory that is on my usb drive.

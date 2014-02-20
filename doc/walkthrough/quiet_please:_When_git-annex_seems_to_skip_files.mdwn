@@ -1,0 +1,27 @@
+One behavior of git-annex is sometimes confusing at first, but it turns out
+to be useful once you get to know it.
+
+	# git annex drop *
+	# 
+
+Why didn't git-annex seem to do anything despite being asked to drop all the
+files? Because it checked them all, and none of them are present.
+
+Most git-annex commands will behave this way when they're able to quickly
+check that nothing needs to be done about a file.
+
+Running a git-annex command without specifying any file name will
+make git-annex look for files in the current directory and its
+subdirectories. So, we can add all new files to the annex easily:
+
+	# echo hi > subdir/subsubdir/newfile
+	# git annex add
+	add subdir/subsubdir/newfile ok
+
+When doing this kind of thing, having nothing shown for files
+that it doesn't need to act on is useful because it prevents swamping
+you with output. You only see the files it finds it does need to act on.
+
+So remember: If git-annex seems to not do anything when you tell it to, it's
+not being lazy -- It's checked that nothing needs to be done to get to the
+state you asked for!

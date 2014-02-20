@@ -1,0 +1,20 @@
+Add to the [[webapp]] some configuration of git-annex.
+
+There are some basic settings that pass through to `git config`, things
+like how much disk space to leave free, how many copies to ensure are kept
+of files, etc.
+
+The meat of the configuration will be in configuration assistants that walk
+through setting up common use cases.
+
+* Create a repository (run when the web app is started without a configured
+  repository too). **done**
+* Clone this repo to a USB drive or other removable drive. **done**
+* Make a bare repo on a remote ssh server **done**
+* Clone this repo to another host. (Needs [[pairing]]) **done**
+* Set up Amazon S3. **done**
+* Set up encrypted rsync remote. **done**
+* Rsync.net special case **done**
+* Set up gpg encryption key; gpg key distribution.
+* I lost my USB drive!
+* etc -- many more possibilities

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="ckeen"
+ ip="79.249.110.228"
+ subject="Filename too long"
+ date="2013-07-30T14:39:44Z"
+ content="""
+It seems that some of my feeds get stored into keys that generate a too long filename:
+
+    podcasts/.git/annex/tmp/b1f_325_URL-s143660317--http&c%%feedproxy.google.com%~r%mixotic%~5%urTIRWQK2OQ%Mixotic__258__-__Michael__Miller__-__Galactic__Technolgies.mp3.log.web:
+    openBinaryFile: invalid argument (File name too long)
+
+Is there a way to work around this?
+"""]]

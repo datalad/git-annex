@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnpdM9F8VbtQ_H5PaPMpGSxPe_d5L1eJ6w"
+ nickname="Rafaël"
+ subject="comment 3"
+ date="2011-07-08T00:45:30Z"
+ content="""
+comment on the output of 'git-annex version' (from my last comment): now I get the right version 3.20110707. But I checked in my console that the three commands \"git checkout 3.20110707\", \"make\" and \"./git-annex version\" gave me before 3.20110702, I don't know why...
+"""]]

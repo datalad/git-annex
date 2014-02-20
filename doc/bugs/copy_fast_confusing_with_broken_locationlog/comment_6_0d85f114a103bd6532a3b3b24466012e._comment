@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 6"
+ date="2011-05-14T19:23:45Z"
+ content="""
+Well, focus on a specific file that exhibits the problem. What does `git annex whereis` say about it? Is the content actually present in annex/objects/ on the bare repository? Does that contradict whereis?
+"""]]

@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="missing configuration for flickr-checkpresent-hook"
+ date="2013-06-05T20:44:25Z"
+ content="""
+<https://github.com/TobiasTheViking/flickrannex/issues/3>
+
+9 days ago: [the annex] \"hook format a few versions ago, and this is using the new hook format\".
+
+Looks very handy. I am just starting with this, but can't seem to get it working as a remote after following the simple walkthrough. All goes well until:
+
+    $ git annex copy . --to flickr
+    copy walkthrough.sh (checking flickr...) 
+      missing configuration for flickr-checkpresent-hook
+    git-annex: checkpresent hook misconfigured
+
+my Ubuntu 12.04:
+
+    $ git annex version
+    git-annex version: 4.20130516.1
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+
+I guess my \"git-annex version is still too old\"? Any idea what version is needed? Even better if I can figure out which Linux distribution/release has the most up to date version of annex.
+
+"""]]

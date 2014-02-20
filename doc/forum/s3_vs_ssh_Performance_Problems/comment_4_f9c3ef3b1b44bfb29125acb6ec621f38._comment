@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 4"
+ date="2013-12-12T20:14:01Z"
+ content="""
+You mentioned something about high memory usage when copying. How much memory are we talking about?
+
+Have you run `git annex forget` in this repository before? It kind of sounds like you have, and it might be possible that it's repeatedly trying to forget old history for some reason.
+"""]]

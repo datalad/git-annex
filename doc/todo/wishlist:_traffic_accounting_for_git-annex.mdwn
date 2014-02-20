@@ -1,0 +1,3 @@
+As git annex keeps logs about file transfers anyway, it should be relatively easy to add traffic accounting to a repo. That would allow me to monitor how much traffic a given repo generates. As I might end up hosting git-annex repos for a few personal friends, I need/want a way to track the heavy hitters. -- RichiH
+
+PS: If you ever plan to host git-annex similar branchable, this would probably be of interest to you, as well :)

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.251.174"
+ subject="comment 2"
+ date="2013-09-07T17:08:27Z"
+ content="""
+You are going to need to make each repository have a distinct UUID. Otherwise, the assistant will get confused.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-04-30T21:51:50Z"
+ content="""
+@Alexander that DAV-0.4 problem is a bug in DAV, not git-annex. I've informed its author and it should be fixed soon, in a new version of DAV.
+"""]]

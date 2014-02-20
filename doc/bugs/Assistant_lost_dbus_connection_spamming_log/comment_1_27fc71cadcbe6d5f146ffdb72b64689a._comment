@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 1"
+ date="2014-01-05T18:26:10Z"
+ content="""
+It's not clear to me that the accept message has anything to do with dbus.
+
+Does the accept message continue being logged past this point? Does the log contain \"unable to bind to local socket\"?
+
+Are you able to open the webapp? That's the part of git-annex that would use `accept()`..
+"""]]

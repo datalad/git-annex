@@ -1,0 +1,8 @@
+Hi,
+
+I would love to have a page of "history" or "events" in the webapp. Similar to how Dropbox or Box show it.
+I've been using git-annex for my personal files for a few months now, and I feel like this is the only feature missing to start using it in a production multi-user environment.
+
+Thanks
+
+[[!tag design/assistant]]

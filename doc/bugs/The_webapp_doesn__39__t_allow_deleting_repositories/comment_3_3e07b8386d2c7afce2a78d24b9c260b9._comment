@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://piotr.ozarowski.pl/"
+ nickname="p1otr"
+ subject="Re: comment 1"
+ date="2013-01-15T09:26:21Z"
+ content="""
+How about asking the user? Something like:
+
+Do you want to...
+
+* only remove configuration from annex
+* make sure there's a copy of all files from this repository somewhere and remove it (including remote files)
+* remove remote files (and remove them from annex if there's no other copy)
+"""]]

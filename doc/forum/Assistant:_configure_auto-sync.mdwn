@@ -1,0 +1,11 @@
+I have large central repositories of data. Therefore, on each client I want to save part data(to save space of disk). In command line I do 
+
+	[...]
+	git-annex webapp
+	git-annex drop [DeleteContentDirectory]
+	[...]
+
+After this command Assistant performs automatic synchronization getting content of files from this directory(DeleteContentDirectory), but I don't want. I want it's was only symlink of file in this directory.
+
+How can I configure Assistant which files have to get content on the client?  It's possible?
+ 

@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+In a direct mode repo (crippled/uncrippled filesystem does not matter), when a symlink is marked using `git update-index --skip-worktree <FILE>` and removed, git annex sync still `git rm`s the symlink. This does not happen in indirect mode (git annex sync leaves the symlink in git intact).
+
+### What steps will reproduce the problem?
+
+[[!format  sh """
+mkdir test-repo; cd test-repo
+git init
+git annex init
+echo file1 >file1
+git annex add
+git commit -m"update"
+cd ..
+git clone test-repo test-repo2; cd test-repo2
+git annex init
+git annex direct
+git update-index --skip-worktree file1
+rm file1
+git annex sync
+"""]]
+
+Output of `git annex sync` indicates file has been removed from git. Repeating these steps without the `git annex direct` above to set the second repo to direct mode will succeed in retaining the symlink in git.
+
+### What version of git-annex are you using? On what operating system?
+
+4.20130521 using git-annex-standalone AUR build (uses Linux executable tarball) on Arch Linux
+
+### Please provide any additional information below.
+
+I'd like to use the skip-worktree scheme in order to be able to rm the symlink files (from the filesystem, not git), specifically for my Android devices. Syncing my music annex creates .mp3 symlinks that aren't actually MP3s, which gives the stock apps some fits. This would only be for clearing out symlinks; I fully understand that trying to doing this for downloaded content in a direct repo would be a Class A no-no. :-)
+
+I did a little digging in the code, and it looks like the source of this is the stageDirect step done specifically by `git annex sync` in direct repos (which makes sense, since indirect repos work). It does `git ls-files --others --exclude-standard --stage`. This list includes files marked skip-worktree, which means skip-worktree files would be treated like normal, and deleted because it's no longer there. There is an additional `-t` argument that could be added to ls-files that would provide the tag field to indicate if a file was marked skip-worktree, and they could be filtered out of processing.
+
+I wonder if this would have side effects, or if there are other places in the code where skip-worktree files would need to be handled, though. I'm particularly motivated to solve this, so let me know if it doesn't look like it would get looked at right away, and I'll have an excuse to get a Haskell dev environment setup again and shake the rust off.

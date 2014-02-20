@@ -1,0 +1,12 @@
+Some folks have built other software on top of git-annex, or that is
+designed to interoperate with it.
+
+* The [[git-annex assistant|assistant]] is included in git-annex,
+  and extends its use cases into new territory.
+* [git-annex-watcher](https://github.com/rubiojr/git-annex-watcher)
+  is a status icon for your desktop.
+* [[forum/gadu_-_git-annex_disk_usage]] is a du like utility that
+  is git-annex aware.
+* [sizes](http://hackage.haskell.org/package/sizes) is another du-like
+  utility, with a `-A` switch that enables git-annex support.
+* Emacs Org mode can auto-commit attached files to git-annex.

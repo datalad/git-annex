@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2011-04-28T07:47:38Z"
+ content="""
++1 for a generic user configurable backend that a user can put shell commands in, which has a disclaimer such that if a user hangs themselves with misconfiguration then its their own fault :P
+
+I would love to be able to quickly plugin an irods/sector set of put/get/delete/stat(get info) commands into git-annex to access my private clouds which aren't s3 compatible.
+"""]]

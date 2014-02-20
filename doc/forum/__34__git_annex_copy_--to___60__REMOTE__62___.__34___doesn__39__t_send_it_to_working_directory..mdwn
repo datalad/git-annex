@@ -1,0 +1,11 @@
+I tried to "git annex copy --to SSH-REMOTE" it says it sends it:
+copy Test (checking SSH-REMOTE...) (to SSH-REMOTE...) 
+SHA256E-s6--8283daccd02d2b2797da53446d367e39dc0fb1615bcae4274460f44455bd9822
+           6 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 146 bytes  received 31 bytes  354.00 bytes/sec
+total size is 6  speedup is 0.03
+ok
+(Recording state in git...)
+
+But I can't find it in the working directory. Can anyone help me?

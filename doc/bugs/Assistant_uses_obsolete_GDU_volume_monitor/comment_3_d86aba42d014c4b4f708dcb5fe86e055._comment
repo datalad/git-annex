@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 3"
+ date="2013-01-10T19:08:50Z"
+ content="""
+I've just committed support for using the new name. I've not been able to test it yet, as I don't have a new enough gnome here. Any testing you can do much appreciated.
+
+Leaving this bug open until it gets tested, and also because it's certainly appealing to just use poll rather than this fragile dbus stuff. And in any case, should add OSX support.
+"""]]

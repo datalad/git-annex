@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 7"
+ date="2011-02-09T00:45:31Z"
+ content="""
+That's odd, I have the md5sha1sum package installed and it still fails with pretty much the same error
+
+<pre>
+Testing 1:blackbox:0:git-annex init
+Cases: 30  Tried: 7  Errors: 0  Failures: 0chmod: -R: No such file or directory
+### Error in:   1:blackbox:0:git-annex init
+.t/repo/.git/annex/objects/SHA1:ee80d2cec57a3810db83b80e1b320df3a3721ffa/SHA1:ee80d2cec57a3810db83b80e1b320df3a3721ffa: removeLink: permission denied (Permission denied)
+Testing 1:blackbox:1:git-annex add:0
+### Error in:   1:blackbox:1:git-annex add:0
+foo: openFile: permission denied (Permission denied)
+
+< and so on >
+</pre>
+
+the configure script finds sha1sum, builds and starts to run.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 7"
+ date="2011-12-19T18:22:25Z"
+ content="""
+That seems an excellent idea, also eliminating the need for git annex fix after moving. 
+
+However, I think CVS and svn have taught us the pain associated with a version control system putting something in every subdirectory. Would this pain be worth avoiding the minor pain of needing git annex fix and sometimes being unable to follow renames?
+"""]]

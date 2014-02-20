@@ -1,0 +1,42 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 6"
+ date="2011-03-20T20:48:41Z"
+ content="""
+ok, pulling the latest master and building on OSX now does this...
+
+<pre>
+ghc -O2 -Wall -ignore-package monads-fd --make git-annex
+[ 1 of 63] Compiling Touch            ( Touch.hs, Touch.o )
+
+Touch.hsc:24:0:
+    The type signature for `touchBoth' lacks an accompanying binding
+
+Touch.hsc:27:26: Not in scope: `touchBoth'
+make: *** [git-annex] Error 1
+</pre>
+
+changing the #if 0 to 1 gives this...
+
+<pre>
+ghc -O2 -Wall -ignore-package monads-fd --make git-annex
+[ 1 of 63] Compiling Touch            ( Touch.hs, Touch.o )
+
+Touch.hsc:95:43:
+    Couldn't match expected type `CLong' against inferred type `CTime'
+    In the second argument of `(\ hsc_ptr
+                                    -> pokeByteOff hsc_ptr 0)', namely
+        `(sec :: CLong)'
+    In a stmt of a 'do' expression:
+        (\ hsc_ptr -> pokeByteOff hsc_ptr 0) ptr (sec :: CLong)
+    In the expression:
+        do { (\ hsc_ptr -> pokeByteOff hsc_ptr 0) ptr (sec :: CLong);
+             (\ hsc_ptr -> pokeByteOff hsc_ptr 4) ptr (0 :: CLong) }
+make: *** [git-annex] Error 1
+</pre>
+
+
+it seems that commit 6634b6a6b84a924f6f6059b5bea61f449d056eee has broken support for OSX.
+
+"""]]

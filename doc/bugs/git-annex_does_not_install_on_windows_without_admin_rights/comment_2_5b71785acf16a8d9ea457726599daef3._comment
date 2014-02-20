@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/bBy7WkgQicYHIiiyj.Vm0TcMbxi2quzbPFef#6f9f7"
+ nickname="Frederik Vanrenterghem"
+ subject="comment 2"
+ date="2013-11-26T21:57:28Z"
+ content="""
+Just wondering how git succeeds in installing as non-admin user. The folder it goes in is also read-only.
+"""]]

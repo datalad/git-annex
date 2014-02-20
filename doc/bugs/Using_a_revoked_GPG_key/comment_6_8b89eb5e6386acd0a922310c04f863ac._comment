@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="guilhem"
+ ip="129.16.20.209"
+ subject="comment 6"
+ date="2013-08-19T13:22:59Z"
+ content="""
+All right, what would be a nice user interface, compatible with the current commands? I was thinking of something along the lines of `git annex enableremote +encryption=newKey -encryption=oldKey`, with an alias `+encryption=encryption` to be backward compatible. It's probably not optimal though, feel free to comment :-)
+
+Of course, `git-annex` should ensure that at any point in time the passphrase is always encrypted using an OpenPGP key. (Otherwise it might be stored clear in the git repository, which would void the encryption.) Also, anyone who can decrypt the passphrase can revoke all existing keys and reencrypt it using another key; this not really a big deal since the cipher is version-controlled anyway, so loosing access to the repo is unlikely.
+
+By the way, since we're about to amend the arguments for `enableremote`, it'd be nice to take advantage of the situation to allow pure asymmetric encryption. I propose `git annex initremote ... encryption=myKey crypto={none,hybrid,pubkey}` to use respectively no-encryption, an asymmetrically encrypted passphrase (the current design, default), and OpenPGP keys only.
+"""]]

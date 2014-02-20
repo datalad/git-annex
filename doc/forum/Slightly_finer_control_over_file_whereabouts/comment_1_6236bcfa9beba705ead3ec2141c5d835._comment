@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="comment 1"
+ date="2013-09-19T17:57:22Z"
+ content="""
+That sound like it should work. I suggest you play around with `git annex drop --auto` at the command line. It will probably tell you why it is unable to drop a file if the problem is something like not enough copies located elsewhere. Or, if it doesn't try to drop the file at all, you'll know your preferred content expression makes it want to keep the file.
+"""]]

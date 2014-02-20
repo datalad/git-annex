@@ -1,0 +1,37 @@
+Slowly getting through the bugs that were opened while I was on vacation and
+then I'll try to get to all the comments. 60+ messages to go.
+
+Got git-annex working better on encfs, which does not support hard links in
+paranoid mode. Now git-annex can be used in indirect mode, it doesn't force
+direct mode when hard links are not supported.
+
+Made the Android repository setup special case generate a .gitignore file
+to ignore thumbnails. Which will only start working once the assistant
+gets .gitignore support.
+
+-----
+
+Been thinking today about encrypting XMPP traffic, particularly git push
+data. Of course, XMPP is already encrypted, but that doesn't hide it from
+those entities who have access to the XMPP server or its encryption key.
+So adding client-to-client encryption has been on the TODO list all along.
+
+OTR would be a great way to do it. But I worry that the confirmation steps
+OTR uses to authenticate the recipient would make the XMPP pairing UI harder
+to get through.
+
+Particularly when pairing your own devices over XMPP, with several devices
+involved, you'd need to do a lot of cross-confirmations. It would be better
+there, I think, to just use a shared secret for authentication. (The need
+to enter such a secret on each of your devices before pairing them would
+also provide a way to use different repositories with the same XMPP
+account, so 2birds1stone.)
+
+Maybe OTR confirmations would be ok when setting up sharing with a friend.
+If OTR was not used there, and it just did a Diffie-Hellman key exchange
+during the pairing process, it could be attacked by an active MITM spoofing
+attack. The attacker would then know the keys, and could decrypt future
+pushes. How likely is such an attack? This goes far beyond what we're
+hearing about. Might be best to put in some basic encryption now, so
+we don't have to worry about pushes being passively recorded on the
+server. Comments appreciated.

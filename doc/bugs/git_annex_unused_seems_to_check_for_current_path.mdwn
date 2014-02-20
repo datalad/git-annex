@@ -1,0 +1,39 @@
+When I run `git annex unused` from my repository's root it shows everything ok:
+
+    ~/annex$ git annex unused
+    unused  (checking for unused data...) ok
+
+But... When I run it from a subdirectory, it shows a lot:
+
+    ~/annex/Software$ git annex unused
+    unused  (checking for unused data...) 
+      Some annexed data is no longer pointed to by any files in the repository:
+        NUMBER  KEY
+        1       SHA1:########################################
+    ...
+        921     SHA1:########################################
+      (To see where data was previously used, try: git log --stat -S'KEY')
+      (To remove unwanted data: git-annex dropunused NUMBER)
+      ok
+
+Is this a bug or by design? By removing these "unused" files with `dropunused` I've just lost the only copy of 160 files.
+
+I am using git-annex version 836e71297b8e3b5bd6f89f7eb1198f59af985b0b
+
+> I'm very sorry you lost data.
+> 
+> But, git annex unused absolutely does not let the current directory
+> influence what it does. It always scans the entire repo from the top.
+> And I've tested it just now to make sure that in a subdirectory
+> it does the same thing as at the top. 
+> 
+> There are only two ways this could happen that I can think of:
+> 
+> 1. If "Software" were a separate git repository than "~/annex".
+> 2. If gitignores or something made `git ls-files`
+>    not list the files when ran in the subdir. This seems *possible*,
+>    but I don't know how to construct such an ignore.
+> 
+> --[[Joey]] 
+
+>> Closing as there is no followup. [[done]] --[[Joey]] 

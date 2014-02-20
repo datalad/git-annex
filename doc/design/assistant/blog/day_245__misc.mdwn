@@ -1,0 +1,15 @@
+Got the OSX autobuilder back running, and finally got a OSX build up for
+the 4.20130417 release. Also fixed the OSX app build machinery to handle
+rpath.
+
+Made the assistant (and `git annex sync`) sync with git remotes that have
+`annex-ignore` set. So, `annex-ignore` is only used to prevent using
+the annex of a remote, not syncing with it. The benefit of this change
+is that it'll make the assistant sync the local git repository with
+a git remote that is on a server that does not have git-annex installed.
+It can even sync to github.
+
+Worked around more breakage on misconfigured systems that don't have GECOS
+information.
+
+... And other bug fixes and bug triage.

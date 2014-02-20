@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2012-04-21T23:46:42Z"
+ content="""
+All right, I've made all the changes so it supports `core.sharedRepository`.
+"""]]

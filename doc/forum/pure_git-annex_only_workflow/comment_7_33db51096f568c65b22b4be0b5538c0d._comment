@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="comment 7"
+ date="2011-12-18T12:08:51Z"
+ content="""
+I agree on the naming suggestions, and that it does not suit everybody. Maybe I’ll think some more about it. The point is: I’m trying to make live easy for those who do not want to manually create some complicated setup, so if it needs configuration, it is already off that track. But turning the current behavior into something people have to configure is also not well received by the users.
+
+Given that \"git annex sync\" is a new command, maybe it is fine to have this as a default behavior, and offer an easy way out. The easy way out could be one of two flags that can be set for a repo (or a remote):
+
+* \"central\", which makes git annex sync only push and pull to and that repo (unless a different remote is given on the command line)
+* \"unsynced\", which makes git annex sync skip the repo.
+
+Maybe central is enough.
+"""]]

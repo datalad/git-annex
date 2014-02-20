@@ -1,0 +1,33 @@
+See [[todo/windows_support]]..
+
+## symlinks
+
+Apparently new versions of Windows have something very like symlinks.
+(Or really, 3 or so things not entirely unlike symlinks and all different.)
+Stackoverflow has some details.
+
+NTFS supports symbolic links two different ways: an [[!wikipedia NTFS symbolic link]] and an [[!wikipedia NTFS_junction_point]].  The former seems like the closest analogue to POSIX symlinks.
+
+The windows port will not use symlinks. It will only support direct mode.
+
+## POSIX
+
+Lots of ifdefs and pain to deal with POSIX calls in the code base.
+
+Or I could try to use Cygwin.
+
+## Deeper system integration
+
+[NTFS Reparse Points](http://msdn.microsoft.com/en-us/library/aa365503%28v=VS.85%29.aspx) allow a program to define how the OS will interpret a file or directory in arbitrary ways.  This requires writing a file system filter.
+
+## Developement environment
+
+Someone wrote in to say:
+
+> For Windows Development you can easily qualify
+> for Bizspark - http://www.microsoft.com/bizspark/
+> 
+> This will get you 100% free Windows OS licenses and
+> Dev tools, plus a free Azure account for cloud testing.
+> (You can also now deploy Linux VMs to Azure as well)
+> No money required at all.

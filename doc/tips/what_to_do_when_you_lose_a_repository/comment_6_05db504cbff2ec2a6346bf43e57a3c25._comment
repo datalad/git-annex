@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 6"
+ date="2013-12-17T16:11:52Z"
+ content="""
+You could use `git annex forget --drop-dead` in that situation, but what I would do is first `git annex describe lostremote \"my old drive that I lost\"` and then set up the replacement drive with whatever description you had before.
+"""]]

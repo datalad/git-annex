@@ -1,0 +1,22 @@
+### Please describe the problem.
+On Windows, I try to "annex get" from a Linux based repository, but it fails with no useful error message.
+
+### What steps will reproduce the problem?
+1. Create annex (A1) on a Linux system.
+2. clone A1 to another annex (A2) on the same file tree (on a mounted USB drive, for example)
+3. add A2 as a remote to A1.
+4. clone A1 to an annex (A3) on a Windows 7 system.
+5. attempt to "git annex get ."
+6. annex reports that it can find no repositories, and asks to make one available.
+
+
+### What version of git-annex are you using? On what operating system?
+Windows 7: 4.20140627-g8a36ec5 (from the git-annex download page)
+Debian Linux: 3.20120629 (from the package manager)
+
+### Please provide any additional information below.
+I experienced this bug several times with a plain git-annex install, and the only workaround was removing the unix-style remotes from remote repos.
+
+After other hackery to get git-annex working on Windows, I can't currently reproduce the issue.
+
+[[!tag moreinfo]]

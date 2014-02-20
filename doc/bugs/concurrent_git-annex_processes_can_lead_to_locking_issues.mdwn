@@ -1,0 +1,53 @@
+When two git-annex processes are running and both modifying the git-annex
+branch, it's possible one will fail due to git's locking. When this
+happens, git-annex has already recorded its state in the journal (so no
+data is lost), but git-annex does crash, which can be surprising.
+
+I feel that, in general, multiple git-annex processes should be able to run
+concurrently. A big lock around all commands, or even all
+repository-modifying commands is a bad idea. Also, it's probably best to
+only worry about locking conflicts editing the git-annex branch. While `git
+annex add` and a few other commands make changes to the main git repo,
+and can have similar locking issues, so can any git commands that stage
+changes (I think.. check).
+
+Probably should KISS. Just add a lock file that is taken before changes to
+the git-annex branch, and if it's locked, wait. Changes to the git-annex
+branch tend to happen quickly (unless it's committing an enormous set of
+changes, and even that is relatively fast), so waiting seems ok. --[[Joey]] 
+
+----
+
+Commit 7981eb4cb512fbe3c49a3dd165c31be14ae4bc49 is more pessimistic, 
+describes some other potential issues. 
+
+* The journal needs to be emptied (done) and kept locked (not done) during
+  a merge, since a merge operates at a level below the journal, and any
+  changes that are journaled during a merge can overwrite changes merged
+  in from another branch.
+
+* Two git-annex processes can be doing conflicting things and inconsistent
+  information be written to the journal.
+
+  - One example would be concurrent get and drop of the same key.
+    But could this really race? If the key was already present, the get
+    would do nothing, so record no changes. If the key was not yet present,
+    the drop would do nothing, and record no changes.
+
+  - Instead, consider two copys of a key to different locations. If the
+    slower copy starts first and ends last, it could cache the location 
+    info, add the  new location, and lose the other location it was copied to.
+    Tested it and the location is not cached during the whole copy (logChange
+    reads the current log immediatly before writing), so this
+    race's window is very small -- but does exist.
+
+---- 
+
+## Updated plan
+
+Make Branch.change transactional, so it takes a lock, reads a file,
+applies a function to it, and writes the changed file.
+
+Make Branch.update hold the same lock.
+
+> [[Done]].

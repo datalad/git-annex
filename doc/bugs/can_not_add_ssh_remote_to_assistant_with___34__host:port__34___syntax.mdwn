@@ -1,0 +1,30 @@
+What steps will reproduce the problem?
+
+* Start the assistant
+* try to add a remote server (ssh) which is not on port 22. E.g. using myhost:1234
+* after a rather long time the connection fails
+
+
+What is the expected output? What do you see instead?
+
+it would be nice if this syntax was supported, or if an (optional) port field was provided.
+second best solution: inform the user that "myhost:1234" is not the expected format.
+third best solution (already in place) fail with "some error message".
+
+
+
+
+What version of git-annex are you using? On what operating system?
+
+3.20121016 on Ubuntu 12.04 (in future maybe also on home nas with wheezy)
+
+
+Please provide any additional information below.
+
+Thanks for a nice program and all your work on debian!
+this is not really a bug more of a wishlist feature.
+
+
+[[!tag /design/assistant]]
+
+> Ok, it has a port field now. [[done]] --[[Joey]] 

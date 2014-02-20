@@ -1,0 +1,22 @@
+I have a git-annex repository located at ~/annex which has been set up using git-annex assistant.
+
+This repository is configured as "client".
+
+My other repository is a huge USB drive configured as "full archive".
+
+Now everything seems to work fine except there is one thing I don't understand:
+
+    alip@client:~/annex> git-annex whereis ./archive/kus.png
+    whereis archive/kus.png (1 copy) 
+        e79a4cf6-4c48-4833-93de-98ba6eb625d6 -- deniz
+    ok
+
+Fine, there is only one copy according to git-annex but the file is still present
+in **this** client repository:
+
+    alip@client:> du -hs ~/annex/archive
+    20G	/home/alip/annex/archive/
+
+How do I free this space? Am I supposed to call git-annex drop manually?
+
+git-annex version: 3.20130124

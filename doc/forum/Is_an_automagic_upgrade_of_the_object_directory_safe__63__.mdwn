@@ -1,0 +1,9 @@
+Consider the following two use cases:
+
+* I have a git-annex repo on a portable medium and carry it around between several machines. I use it on a non-important system with the most current git-annex installed, automagic upgrade happens. I am now forced to upgrade git-annex on all other machines. Bonus points if this happens in the background and I don't even notice it until it's too late.
+
+* My system crashes and I use a rescue CD to access local data, including git-annex. The rescue CD includes a newer version of git-annex and once my system is restored, I am forced to upgrade git-annex locally.
+
+My suggestion would be not to upgrade automatically, but to either ask the user if this is OK or to error out and request that they run git annex update by hand.
+
+Optionally, this could be done via a local config variable which should default to error or ask, not upgrade.

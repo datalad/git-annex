@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkaBh9VNJ-RZ26wJZ4BEhMN1IlPT-DK6JA"
+ nickname="Alex"
+ subject="Bup"
+ date="2013-04-03T05:47:41Z"
+ content="""
+I think bup will solve your use case. Make a local bup repo and backup there then clone that repo n times. If you run git annex on top of bup you can then retrieve the subset of files you need at each destination. This will work best if you don't need every file on every remote or if your network is much slower than local disk access. 
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 1"
+ date="2013-12-09T06:07:00Z"
+ content="""
+I do track my home dir using annex, but instead of one giant annex I have multiple annex repos. It is much faster than one giant annex and when used in combination with mr you can threat all repos as one. 
+"""]]

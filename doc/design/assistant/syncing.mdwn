@@ -1,0 +1,220 @@
+Once files are added (or removed or moved), need to send those changes to
+all the other git clones, at both the git level and the key/value level.
+
+## misc TODO
+
+* Test MountWatcher on LXDE.
+* Add a hook, so when there's a change to sync, a program can be run
+   and do its own signaling.
+* --debug will show often unnecessary work being done. Optimise.
+* Configurablity, including only enabling git syncing but not data transfer;
+  only uploading new files but not downloading, and only downloading
+  files in some directories and not others. See for use cases:
+  [[forum/Wishlist:_options_for_syncing_meta-data_and_data]]
+* speed up git syncing by using the cached ssh connection for it too
+  Will need to use `GIT_SSH`, which needs to point to a command to run,
+  not a shell command line. Beware that the network connection may have
+  bounced and the cached ssh connection not be usable.
+* Map the network of git repos, and use that map to calculate
+  optimal transfers to keep the data in sync. Currently a naive flood fill
+  is done instead. Maybe use XMPP as a side channel to learn about the
+  network topology?
+* Find a more efficient way for the TransferScanner to find the transfers
+  that need to be done to sync with a remote. Currently it walks the git
+  working copy and checks each file. That probably needs to be done once,
+  but further calls to the TransferScanner could eg, look at the delta
+  between the last scan and the current one in the git-annex branch.
+* [[use multiple transfer slots|todo/Slow_transfer_for_a_lot_of_small_files.]]
+* The TransferQueue's list of deferred downloads could theoretically
+  grow without bounds in memory. Limit it to a given number of entries,
+  and fall back to some other method -- either storing deferred downloads
+  on disk, or perhaps scheduling a TransferScanner run to get back into sync.
+
+## More efficient syncing
+
+See [[syncing/efficiency]]
+
+## TransferScanner efficiency
+
+The TransferScanner thread needs to find keys that need to be Uploaded
+to a remote, or Downloaded from it.
+
+How to find the keys to transfer? I'd like to avoid potentially
+expensive traversals of the whole git working copy if I can.
+(Currently, the TransferScanner does do the naive and possibly expensive
+scan of the git working copy.)
+
+One way would be to do a git diff between the (unmerged) git-annex branches
+of the git repo, and its remote. Parse that for lines that add a key to
+either, and queue transfers. That should work fairly efficiently when the
+remote is a git repository. Indeed, git-annex already does such a diff
+when it's doing a union merge of data into the git-annex branch. It
+might even be possible to have the union merge and scan use the same
+git diff data.
+
+But that approach has several problems:
+
+1. The list of keys it would generate wouldn't have associated git
+   filenames, so the UI couldn't show the user what files were being
+   transferred.
+2. Worse, without filenames, any later features to exclude
+   files/directories from being transferred wouldn't work.
+3. Looking at a git diff of the git-annex branches would find keys
+   that were added to either side while the two repos were disconnected.
+   But if the two repos' keys were not fully in sync before they
+   disconnected (which is quite possible; transfers could be incomplete),
+   the diff would not show those older out of sync keys.
+
+The remote could also be a special remote. In this case, I have to either
+traverse the git working copy, or perhaps traverse the whole git-annex
+branch (which would have the same problems with filesnames not being
+available).
+
+If a traversal is done, should check all remotes, not just
+one. Probably worth handling the case where a remote is connected
+while in the middle of such a scan, so part of the scan needs to be
+redone to check it.
+
+## done
+
+1. Can use `git annex sync`, which already handles bidirectional syncing.
+   When a change is committed, launch the part of `git annex sync` that pushes
+   out changes. **done**; changes are pushed out to all remotes in parallel
+1. Watch `.git/refs/remotes/` for changes (which would be pushed in from
+   another node via `git annex sync`), and run the part of `git annex sync`
+   that merges in received changes, and follow it by the part that pushes out
+   changes (sending them to any other remotes).
+   [The watching can be done with the existing inotify code! This avoids needing
+   any special mechanism to notify a remote that it's been synced to.]  
+   **done**
+1. Periodically retry pushes that failed.  **done** (every half an hour)
+1. Also, detect if a push failed due to not being up-to-date, pull,
+   and repush. **done**
+2. Use a git merge driver that adds both conflicting files,
+   so conflicts never break a sync. **done**
+
+* on-disk transfers in progress information files (read/write/enumerate)
+  **done**
+* locking for the files, so redundant transfer races can be detected,
+  and failed transfers noticed **done**
+* transfer info for git-annex-shell **done**
+* update files as transfers proceed. See [[progressbars]]
+  (updating for downloads is easy; for uploads is hard)
+* add Transfer queue TChan **done**
+* add TransferInfo Map to DaemonStatus for tracking transfers in progress.
+  **done**
+* Poll transfer in progress info files for changes (use inotify again!
+  wow! hammer, meet nail..), and update the TransferInfo Map **done**
+* enqueue Transfers (Uploads) as new files are added to the annex by
+  Watcher. **done**
+* enqueue Tranferrs (Downloads) as new dangling symlinks are noticed by
+  Watcher. **done**
+  (Note: Needs git-annex branch to be merged before the tree is merged,
+  so it knows where to download from. Checked and this is the case.)
+* Write basic Transfer handling thread. Multiple such threads need to be
+  able to be run at once. Each will need its own independant copy of the 
+  Annex state monad. **done**
+* Write transfer control thread, which decides when to launch transfers.
+  **done**
+* Transfer watching has a race on kqueue systems, which makes finished
+  fast transfers not be noticed by the TransferWatcher. Which in turn
+  prevents the transfer slot being freed and any further transfers
+  from happening. So, this approach is too fragile to rely on for
+  maintaining the TransferSlots. Instead, need [[todo/assistant_threaded_runtime]],
+  which would allow running something for sure when a transfer thread
+  finishes. **done**
+* Test MountWatcher on KDE, and add whatever dbus events KDE emits when
+  drives are mounted. **done**
+* It would be nice if, when a USB drive is connected, 
+  syncing starts automatically. Use dbus on Linux? **done**
+* Optimisations in 5c3e14649ee7c404f86a1b82b648d896762cbbc2 temporarily
+  broke content syncing in some situations, which need to be added back.
+  **done**
+
+  Now syncing a disconnected remote only starts a transfer scan if the
+  remote's git-annex branch has diverged, which indicates it probably has
+  new files. But that leaves open the cases where the local repo has
+  new files; and where the two repos git branches are in sync, but the
+  content transfers are lagging behind; and where the transfer scan has
+  never been run.
+
+  Need to track locally whether we're believed to be in sync with a remote.
+  This includes:
+  * All local content has been transferred to it successfully.
+  * The remote has been scanned once for data to transfer from it, and all
+    transfers initiated by that scan succeeded.
+
+  Note the complication that, if it's initiated a transfer, our queued
+  transfer will be thrown out as unnecessary. But if its transfer then
+  fails, that needs to be noticed.
+
+  If we're going to track failed transfers, we could just set a flag,
+  and use that flag later to initiate a new transfer scan. We need a flag
+  in any case, to ensure that a transfer scan is run for each new remote.
+  The flag could be `.git/annex/transfer/scanned/uuid`.
+
+  But, if failed transfers are tracked, we could also record them, in 
+  order to retry them later, without the scan. I'm thinking about a
+  directory like `.git/annex/transfer/failed/{upload,download}/uuid/`,
+  which failed transfer log files could be moved to.
+* A remote may lose content it had before, so when requeuing
+  a failed download, check the location log to see if the remote still has
+  the content, and if not, queue a download from elsewhere. (And, a remote
+  may get content we were uploading from elsewhere, so check the location
+  log when queuing a failed Upload too.) **done**
+* Fix MountWatcher to notice umounts and remounts of drives. **done**
+* Run transfer scan on startup. **done**
+* Often several remotes will be queued for full TransferScanner scans,
+  and the scan does the same thing for each .. so it would be better to
+  combine them into one scan in such a case. **done**
+* The syncing code currently doesn't run for special remotes. While
+  transfering the git info about special remotes could be a complication,
+  if we assume that's synced between existing git remotes, it should be
+  possible for them to do file transfers to/from special remotes.
+  **done**
+
+* The transfer code doesn't always manage to transfer file contents.
+
+  Besides reconnection events, there are two places where transfers get queued:
+
+  1. When the committer commits a file, it queues uploads.
+  2. When the watcher sees a broken symlink be created, it queues downloads.
+
+  Consider a doubly-linked chain of three repositories, A B and C.
+  (C and A do not directly communicate.)
+  
+  * File is added to A.
+  * A uploads its content to B.
+  * At the same time, A git syncs to B.
+  * Once B gets the git sync, it git syncs to C.
+  * When C's watcher sees the file appear, it tries to download it. But if
+    B had not finished receiving the file from A, C doesn't know B has it,
+    and cannot download it from anywhere.
+
+  Possible solution: After B receives content, it could queue uploads of it 
+  to all remotes that it doesn't know have it yet, which would include C. 
+  **done**
+  
+  In practice, this had the problem that when C receives the content,
+  it will queue uploads of it, which can send back to B (or to some other repo
+  that already has the content) and loop, until the git-annex branches catch
+  up and break the cycle.
+
+  To avoid that problem, incoming uploads should not result in a transfer
+  info file being written when the key is already present. **done**
+
+  Possible solution: C could record a deferred download. (Similar to a failed
+  download, but with an unknown source.) When C next receives a git-annex
+  branch push, it could try to queue deferred downloads. **done**
+
+  Note that this solution won't cover use cases the other does. For example,
+  connect a USB drive A; B syncs files from it, and then should pass them to C.
+  If the files are not new, C won't immediatly request them from B.
+
+* Running the assistant in a fresh clone of a repository, it sometimes
+  skips downloading a file, while successfully downloading all the rest.
+  There does not seem to be an error message. This will sometimes reproduce
+  (in a fresh clone each time) several times in a row, but then stops happening,
+  which has prevented me from debugging it.
+  This could possibly have been caused by the bug fixed in 750c4ac6c282d14d19f79e0711f858367da145e4.
+  Provisionally closed.

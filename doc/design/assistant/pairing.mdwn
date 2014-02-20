@@ -1,0 +1,83 @@
+For git-annex to be able to clone its repo to another host, it'd be good to
+have some way of pairing devices.
+
+## security
+
+Pairing uses its own network protocol, built on top of multicast UDP.
+
+It's important that pairing securely verifies that the right host is being
+paired with. This is accomplied by having a shared secret be entered on
+both the hosts that will be paired. Hopefully that secret is communicated
+securely out of band. 
+
+(In practice, the security of that communication will vary. To guard against
+interception, each pairing session pairs exactly two hosts and then forgets
+the shared secret. So an attacker who tries to reuse an intercepted secret
+will not succeed in pairing. This does not guard against an intercepted
+secret that is used before the legitimate parties finish pairing.)
+
+Each host can construct messages that the other host can verify using the
+shared secret, and so know that, for example, the ssh public key it
+received belongs to the right host and has not been altered by a man in the
+middle.
+
+The verification works like this: Take a HMAC SHA1 checksum of the message,
+using the shared secret as the HMAC key. Include this checksum after the
+message. The other host can then do the same calculation and verify the
+checksum.
+
+Additionally, a UUID is included in the message. Messages that are part of
+the same pairing session all share a UUID. And all such messages should
+be verifiable as described above. If a message has the same UUID but is
+not verifiable, then someone on the network is up to no good. Perhaps
+they are trying to brute-force the shared secret. When this is detected,
+the pairing session is shut down. (Which would still let an attacker
+DOS pairing, but that's not a very interesting attack.)
+
+The protocol used for pairing consists of 3 messages, a PairReq, and
+PairAck, and a PairDone. Let's consider what an attacker could accomplish
+by replaying these:
+
+* PairReq: This would make the webapp pop up an alert about an incoming
+  pair request. If the user thought it was real and for some reason
+  entered the right shared secret used in the real one earlier, the
+  ssh key inside the PairReq would be added to `authorized_keys`. Which
+  allows the host that originally sent the PairReq to access its git
+  repository, but doesn't seem to do the attacker any good.
+* PairAck:  If the host that originally sent
+  the PairReq is still pairing, it'll add the ssh key from the PairAck,
+  and start syncing, which again does the attacker no good.
+* PairDone: If the host that sent the PairAck is still syncing, it'll
+  add the ssh key from the PairDone, and start syncing, and stop
+  sending PairAcks. But probably, it's not syncing, because it would have
+  seen the original PairDone.. and anyway, this seems to do the attacker no
+  good.
+
+So replay attacks don't seem to be a problem.
+
+So far I've considered security from a third-party attacker, but either the
+first or second parties in pairing could also be attackers. Presumably they
+trust each other with access to their files as mediated by
+[[git-annex-shell]]. However, one could try to get shell access to the
+other's computer by sending malicious data in a pairing message. So the
+pairing code always checks every data field's content, for example the ssh
+public key is rejected if it looks at all unusual. Any control characters
+in the pairing message cause it to be rejected, to guard against console
+poisoning attacks. Furthermore, git-annex is careful not to expose data to
+the shell, and the webapp uses Yesod's type safety to ensure all user input
+is escaped before going to the browser.
+
+## TODO
+
+* pairing over IPV6 only networks does not work. Haskell's
+  `network-multicast` library complains "inet_addr: Malformed address: ff02::1"
+  .. seems it just doesn't support IPv6. The pairing code in git-annex
+  does support ipv6, apart from this, it's just broadcasting the messages
+  that fails. (Pairing over mixed networks is fine.)
+* If there are three assistants on the network, and 2 pair, the third is
+  left displaying a "Pair request from foo" alert, until it's close. 
+  Or, if the user clicks the button to pair, it'll get to the 
+  "Pairing in progress" alert, which will show forever (until canceled).
+
+  It should be possible for third parties to tell when pairing is done,
+  but it's actually rather hard since they don't necessarily share the secret.

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 5"
+ date="2011-11-22T21:01:14Z"
+ content="""
+I am surprised if it happens on 2.6.x though. Debian 3.0.0 seemed to not have the problem but perhaps my test was bad.
+"""]]

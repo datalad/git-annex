@@ -1,0 +1,1 @@
+I would like it if the webapp could support setting up [bare remotes](http://git-annex.branchable.com/tips/centralized_git_repository_tutorial/) to assist with syncing between two machines that are never online at the same time.

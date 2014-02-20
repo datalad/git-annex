@@ -1,0 +1,25 @@
+From 10da50b5eea1e615af1d3b242f422ad278c9f268 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Fri, 18 Oct 2013 23:16:41 +0000
+Subject: [PATCH] cross build
+
+---
+ entropy.cabal |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/entropy.cabal b/entropy.cabal
+index e69dec4..4fa3774 100644
+--- a/entropy.cabal
++++ b/entropy.cabal
+@@ -14,7 +14,7 @@ category:       Data, Cryptography
+ homepage:       https://github.com/TomMD/entropy
+ bug-reports:    https://github.com/TomMD/entropy/issues
+ stability:      stable
+-build-type:        Custom
++build-type:        Simple
+ cabal-version:     >=1.10
+ tested-with:    GHC == 7.6.3
+ -- data-files:
+-- 
+1.7.10.4
+

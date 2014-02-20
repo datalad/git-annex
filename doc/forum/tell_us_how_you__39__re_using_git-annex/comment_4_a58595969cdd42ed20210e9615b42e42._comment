@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZEanlyzay_QlEAL0CWpyZcRTyN7vay8U"
+ nickname="Carlo"
+ subject="Best thing since sliced bread"
+ date="2012-11-21T13:08:57Z"
+ content="""
+It's amazing how perfect git annex is for my use case.
+
+I record music, which results in a bunch of big files that don't change, and a bunch of small files which change often.
+
+I also need these files to be preserved for the long haul, and be verified now and then. They also need to be backed up three or four times, because they're original files! Keeping track of all that was a headache before git annex, and I was also constantly awake at night because it was impossible to verify if everything's still okay.
+
+Now I just dump everything into my archive annex and I know where everything is, and that it's safe, period. I even set myself up a raspberry pi with a usb drive adapter and put some spindown code in a cron job. Now I have a hard drive at rest that I can access from anywhere at any time. The whole thing gets backed up by Amazon Glacier, but if Amazon starts getting pesky I can just add another backend and sync it up. I can even version my small files if I want to by putting them directly into git. This entire thing would have been such a huge undertaking but now it's easy. I dump everything into the annex and to the actual backups whenever I get round to it. It just has a natural flow to it.
+
+Et voila. Professional grade backups, at home, independant from any specific vendor. I absolutely never have to worry about my files going anywhere, and if I get super paranoid, I can just \"git annex fsck\" and mathematically prove to myself everything's still there.
+
+It's totally sad how many creative people will be losing their life's work in a couple of years because they rely on regular filesystems on their USB drives. Stuff like DropBox and SpiderOak is better than nothing but trusting single vendor to not screw up or mess with your life's work is just plain creepy.
+
+I just have a huge, warm fuzzy feeling now. If this sounds like I'm relentlessly hyping git annex, it's because I am! It deserves it!
+
+
+"""]]

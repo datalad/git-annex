@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="Here's a Perl version"
+ date="2011-12-22T15:43:51Z"
+ content="""
+https://github.com/aspiers/git-config/blob/master/bin/git-annex-finddups
+
+but it would be better in git-annex itself ...
+"""]]

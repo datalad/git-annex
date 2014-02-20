@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 2"
+ date="2013-10-21T22:29:14Z"
+ content="""
+Kalle is right (I seem to keep saying that, Kalle!)
+
+Following the walkthrough commands will get you a non-bare git repository on a removable drive, and you can run \"git annex sync\" in there periodically and see all the files in your repository on the removable drive. The webapp does not make that kind of repository though, and in the screencast I'm showing the normal behavior of the webapp.
+"""]]

@@ -1,0 +1,136 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkUwqII7LhbatqAQY1T5ZZOdPEFcQJKG6I"
+ nickname="Rafael"
+ subject="comment 3"
+ date="2013-10-13T16:14:34Z"
+ content="""
+This code needs the bash-completion file for git by Shawn O. Pearce, I think it is distributed by default on debian. Any feed-back or improvement is welcome! I'm far from expert, use at your own risks.
+
+
+    #!bash
+    #
+    # bash completion support for git-annex
+
+    # depends on git completion file (by Shawn O. Pearce):
+    [ -n \"$__git_whitespacelist\" ] || . $BASH_COMPLETION_DIR/git
+
+
+    # almost copy of __git_aliased_command
+    # requires 2 arguments: alias and main command (after git)
+    __git_aliased_subcommand ()
+    {
+        local word cmdline=$(git --git-dir=\"$(__gitdir)\" \
+            config --get \"alias.$1\")
+        for word in $cmdline; do
+            case \"$word\" in
+                \!*)	: shell command alias ;;
+                -*)	: option ;;
+                *=*)	: setting env ;;
+                git)	: git itself ;;
+                \"$2\")   : main command
+                    local found=1 ;;
+                *)
+                    [ -n \"${found-}\" ] && echo \"$word\"
+                    return
+            esac
+        done
+    }
+
+
+    _git_annex ()
+    {
+        _get_comp_words_by_ref -n =: cur words
+        # $ git annex 2>&1 |sed '1,6d '|grep -v '^$'|grep -v 'commands:$'|cut -c1-12
+        local subcommands=\"
+            add addurl assistant copy drop edit get import importfeed lock
+            mirror move rmurl sync unlock watch webapp content dead describe
+            direct enableremote group indirect init initremote semitrust
+            trust ungroup untrust vicfg addunused dropunused fix forget fsck
+            merge unused upgrade find help list log map status version
+            whereis migrate reinject unannex uninit dropkey
+            \"
+        # plumbing (to complete?): fromkey fuzztest pre-commit rekey test
+        # transferkey transferkeys xmppgit
+        local subcommand=\"$(__git_find_on_cmdline \"$subcommands\")\"
+        if [ -z \"$subcommand\" ]; then
+            ## search for aliased subcommand
+            ## works only if the alias is invoked just after git
+            ## (simpler, cf _git function)
+            local maybesubcom maybealias=${words[1]}
+            [ -n \"$maybealias\" ] && # false with a bash alias='git annex'
+            [ \"${maybealias:0:1}\" != '-' ] &&
+            maybesubcom=$(__git_aliased_subcommand \"$maybealias\" annex)
+            for subcommand in $subcommands \"\"; do
+                [ \"$maybesubcom\" = \"$subcommand\" ] && break
+            done
+            [ -z \"$subcommand\" ] &&
+            __gitcomp \"$subcommands\" &&
+            return
+        fi
+        case \"$cur\" in
+            --from=*|--to=*|--trust=*|--semitrust=*|--untrust=*|--in=*)
+                __gitcomp \"here $(__git_remotes)\" \"\" \"${cur##*=}\"
+                ;;
+            --*)
+                __gitcomp \"
+                    --force --fast --auto --all --unused --quiet --verbose --json --debug
+                    --no-debug --from= --to= --numcopies= --time-limit= --trust= --semitrust=
+                    --untrust= --trust-glacier-inventory --backend= --format= --user-agent=
+                    --exclude= --include= --in= --copies= --inbackend= --inallgroup=
+                    --smallerthan= --largerthan= --not --and --or
+                    \"
+                ;;
+            # -*)
+            # __gitcomp \"-( -) -c\"
+            # ;;
+            *)
+                case \"$subcommand\" in
+                    # subcommands with PATH (currently outputs wrongly \"uninit\",
+                    # and not \"reinject\")
+                    # $ tr ' ' '|' <<< $(git annex 2>&1 |sed '1,6d '|grep -v '^$' | \
+                    # grep -v 'commands:$'|grep PATH |cut -c1-12)
+                    add|copy|drop|edit|get|import|lock|mirror|move|unlock|fix| \
+                        fsck|find|list|log|status|whereis|migrate|unannex| \
+                        fromkey|pre-commit|rekey|reinject)
+                        COMPREPLY=() # complete with paths
+                        ;;
+                    addurl|importfeed|rmurl) # URL commands
+                        COMPREPLY=() # at least works with file://...
+                        ;;
+                    init|uninit|unused|merge|status|map|upgrade|version|assistant| \
+                        watch|webapp|direct|indirect|vicfg|forget|help) # | plumbing...
+                        COMPREPLY= # no more args expected
+                        # is 'COMPREPLY=' correct? (seems not standard practice...)
+                        ;;
+                    describe|trust|untrust|semitrust|sync|content|dead|group|ungroup)
+                        __gitcomp \"here $(__git_remotes)\"
+                        # TODO: handle git-annex special remotes
+                        ;;
+                    initremote|enableremote)
+                        case \"$cur\" in
+                            type=*)
+                                __gitcomp \"S3 bup directory rsync gcrypt webdav\" \"\" \"${cur##type=}\"
+                                ;;
+                            encryption=*)
+                                __gitcomp \"none hybrid shared pubkey\" \"\" \"${cur##encryption=}\"
+                                ;;
+
+                            buprepo=|directory=|rsyncurl=)
+                                COMPREPLY=()
+                                # use COMPREPLY (and compgen below) directly because
+                                #  __gitcomp does not handle '*=*' pattern, only '--*=*'
+                                # Writing a __gitannexcomp function may be worth it.
+                                ;;
+                            *)
+                                local initremoteopts=\"
+                                    type= encryption= buprepo= directory= rsyncurl= \"
+                                COMPREPLY=($(compgen -W \"$initremoteopts \" -- \"$cur\"))
+                                ;;
+                        esac
+                        ;;
+                esac
+                ;;
+        esac
+    }
+
+"""]]

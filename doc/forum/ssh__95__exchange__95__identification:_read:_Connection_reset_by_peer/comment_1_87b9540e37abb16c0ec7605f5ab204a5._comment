@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Uic1ohv6"
+ ip="62.253.227.100"
+ subject="Are you using encfs?"
+ date="2014-01-09T16:30:50Z"
+ content="""
+I've seen similar error messages when the local annex was on an encfs-mounted decrypted directory. Seemingly git-annex tries to create SSH sockets in .git, and this goes wrong at least in some such situations.
+"""]]

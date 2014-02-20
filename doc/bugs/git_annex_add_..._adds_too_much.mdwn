@@ -1,0 +1,25 @@
+When a hidden file (starting with a dot) is git-annex add'ed, other non-tracked files are also added 
+
+What steps will reproduce the problem?
+
+$ touch a .b
+
+$ git annex add .b
+
+add a (checksum...) ok
+
+add .b (checksum...) ok
+
+(Recording state in git...)
+
+
+What is the expected output? What do you see instead?
+
+Only file .b should be added.
+
+What version of git-annex are you using? On what operating system?
+
+3.20120406
+(same problem with version 3.20120123) on Debian.
+
+> Thanks for reporting this bug, I've fixed it in git. [[done]] --[[Joey]] 

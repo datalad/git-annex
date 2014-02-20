@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.210"
+ subject="comment 1"
+ date="2013-02-24T21:51:19Z"
+ content="""
+You're basically right. Additionally, if you use encryption, the keys used on the remote are themselves encrypted and so even the same content will result in different keys.
+
+With this said, it's easy to use a subdirectory of a rsync or box.com remote, and I'd rather recommend doing that, rather than jumbling multiple repositories data into a single directory.
+"""]]

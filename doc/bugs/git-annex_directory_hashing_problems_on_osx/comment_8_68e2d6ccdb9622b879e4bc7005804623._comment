@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 8"
+ date="2011-03-31T19:28:02Z"
+ content="""
+I've posted about this on the git mailing list. It's possible that these bugs, which can be shown to affect things other than just git-annex, will be fixed in git.
+
+I will wait a while to see. But am considering making git-annex use all-lowercase hash dirs for the log files. Maybe it could first look for .git-annex/aaaa/bbbb/foo.log, but also look for, read, and merge in any info from 
+.git-annex/Aa/Bb/foo.log. And always write to the new style filenames. This would avoid confusing git with changes to
+mixed-case files, and avoid another massive transition.
+"""]]

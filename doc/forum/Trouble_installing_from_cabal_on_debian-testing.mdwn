@@ -1,0 +1,15 @@
+I'm having trouble install from cabal on Debian-testing since the new beta released.
+
+    % sudo aptitude remove --purge cabal-install
+    % rm -rf $HOME/.cabal
+    % sudo aptitude install cabal-install
+    % cabal update
+    % cabal install git-annex
+
+The output all follows this general syntax:
+
+    <package> depends on <anotherpackage> which failed to install
+
+On the flip side, I upgrade my Debian to sid and it installed just fine through aptitude.
+
+(Apologies for my English, and if this is simply a user error)

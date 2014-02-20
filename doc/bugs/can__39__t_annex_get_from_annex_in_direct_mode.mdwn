@@ -1,0 +1,23 @@
+### Please describe the problem.
+When trying to annex get *from* an annex on a Windows machine, over HTTP, annex get fails with 404 errors.
+
+### What steps will reproduce the problem?
+1. Create an annex on a Windows and Linux machine.
+2. annex add some content on Windows repository.
+3. Configure Windows repository for HTTP access
+4. on Linux machine, fetch updates. this succeeds.
+5. attempt to "annex get <new files>"
+6. requests for files of the format ".git/annex/objects/<3-char-hash>/<3-char-hash>/SHA<filehash>.<extension>" fail with 404 errors. the annex get fails.
+
+
+### What version of git-annex are you using? On what operating system?
+Windows 7: 4.20140627-g8a36ec5 (from the git-annex download page)
+
+Debian Linux: 3.20120629 (from the package manager)
+
+### Please provide any additional information below.
+there is no <filehash>.<extension> file in the relevant directories, there are only .map and .cache files. The Windows annex is in direct mode, and the Linux annex fails to annex get from this correctly.
+
+[[!meta title="can't use a direct mode repository as a http remote"]]
+
+> [[done]]; unsupported configuration. --[[Joey]] 

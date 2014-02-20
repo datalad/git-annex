@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 14"
+ date="2011-02-12T21:19:24Z"
+ content="""
+I've been trying to dig around the trace and code, and used google to see if the forkProcess issue was a haskell thing or an OSX thing. It seems that <http://hackage.haskell.org/trac/ghc/ticket/4493> someone may have ran into a similar issue, though I am not sure if its related.
+"""]]

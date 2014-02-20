@@ -1,0 +1,31 @@
+[[!comment format=c
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 3"
+ date="2013-02-28T08:40:46Z"
+ content="""
+Two suggestion:
+1. Possibility to restrict CPU usage (a 10-20% would be nice, or a slider)
+2. Pager on Dashboard
+
+I have a directory, it is 741MB, and contains 23381 files. 
+This directory is pretty much everything needed for my daily job.
+
+I added a copy of this directory to annex, then I created a backup dir of annex, 
+and my laptop is using almost 100%CPU al the time, it is running since 1 hour already, and 
+only 140MB was copied over to the backup directory.
+
+Don't get me wrong, this application just blows my mind, and it seems to *work* for the first time for real.
+
+The suggestion is simply a slider in resource manager (preferably inside dashboard):
+Restrict CPU usage [0---X---100]34%
+Restrict upload bandwith [0-X----800]9kB/s
+Restrict download bandwith [0-X----800]80kB/s
+
+Also the pager is musthave in dashboard, because it renders firefox unusable with that many entries (21000).
+
+Nice work, thank you for the release!
+
+Laszlo
+
+"""]]
