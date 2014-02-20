@@ -11,29 +11,6 @@ Store in git-annex branch, next to location log files.
 Storage needs to support union merging, including removing an old value
 of a field, and adding a new value of a field.
 
-## automatically added metadata
-
-TODO git annex add should automatically attach the current mtime of a file
-when adding it.
-
-Could also automatically attach permissions.
-
-TODO A git hook could be run by git annex add to gather more metadata.
-For example, by examining MP3 metadata.
-
-Also auto add metadata when adding files to view branches. See below.
-
-## derived metadata
-
-TODO From the ctime, some additional 
-metadata is derived, at least year=yyyy and probably also month, etc.
-
-This is probably not stored anywhere. It's computed on demand by a pure
-function from the other metadata.
-
-Should be a general mechanism for this. (It probably generalizes to
-sql queries if we want to go that far.)
-
 # filtered branches
 
 See [[tips/metadata_driven_views]]
@@ -66,6 +43,50 @@ directories nest.
 * TODO: If `git annex add` adds a file, it gets all the metadata of the filter
   branch it's added to. If it's in a relevent directory (like fosdem-2014),
   it gets that metadata automatically recorded as well.
+
+## automatically added metadata
+
+TODO git annex add should automatically attach the current mtime of a file
+when adding it.
+
+Could also automatically attach permissions.
+
+TODO A git hook could be run by git annex add to gather more metadata.
+For example, by examining MP3 metadata.
+
+Also auto add metadata when adding files to view branches. See below.
+
+## derived metadata
+
+This is probably not stored anywhere. It's computed on demand by a pure
+function from the other metadata. 
+(Should be a general mechanism for this. (It probably generalizes to
+sql queries if we want to go that far.))
+
+### data metadata
+
+TODO From the ctime, some additional 
+metadata is derived, at least year=yyyy and probably also month, etc.
+
+### directory hierarchy metadata
+
+TODO From the original filename used in the master branch, when
+constructing a view, generate fields. For example foo/bar/baz.mp3
+would get under:foo=bar, under:foo/bar=baz, and ext=mp3.
+
+Note that under:dir=subdir allows a view to use `under:dir=*` and only
+match one level of subdirs with the glob. So is better than dir=foo/bar
+as the metadata. (Alternatively, could do special glob matching.)
+
+This allows using whatever directory hierarchy exists to inform the view,
+without locking the view into using it. 
+
+Complication: When refining a view, it only looks at the filenames in
+the view, so it would need to map from
+those filenames to derive the same metadata, unless there is persistent
+storage. Luckily, the filenames used in the views currently include the
+subdirs (although not quite in a parseable format, would need some small
+changes).
 
 # other uses for metadata
 
