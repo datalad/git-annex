@@ -31,3 +31,5 @@ Maybe have those commands instead say "Hey, this is different than what you said
 
 ### What version of git-annex are you using? On what operating system?
 5.20140127 on Debian
+
+> [[Fixed|done]], it will now warn about this situation. --[[Joey]]

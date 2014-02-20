@@ -10,6 +10,7 @@ module Command.Trust where
 import Common.Annex
 import Command
 import qualified Remote
+import Types.TrustLevel
 import Logs.Trust
 import Logs.Group
 
@@ -34,4 +35,7 @@ trustCommand cmd level = withWords start
 		trustSet uuid level
 		when (level == DeadTrusted) $
 			groupSet uuid S.empty
+		l <- lookupTrust uuid
+		when (l /= level) $
+			warning $ "This remote's trust level is locally overridden to " ++ showTrustLevel l ++ " via git config."
 		next $ return True

@@ -16,6 +16,8 @@ git-annex (5.20140211) UNRELEASED; urgency=medium
     annex.numcopies cannot be honored since it's operating on keys
     instead of files, make it honor the global numcopies setting,
     and the annex.numcopies git config setting.
+  * trust, untrust, semitrust, dead: Warn when the trust level is
+    overridden in .git/config.
   * Windows webapp: Can set up box.com, Amazon S3, and rsync.net remotes
   * Windows webapp: Can create repos on removable drives.
   * Windows: Ensure HOME is set, as needed by bundled cygwin utilities.
