@@ -182,3 +182,7 @@ So, possible approaches:
 
 * Assistant needs to know about views, so it can update metadata when
   files are moved around inside them. TODO
+
+* What happens if git annex add or the assistant add a new file while on a
+  view? If the file is not also added to the master branch, it will be lost
+  when exiting the view. TODO
