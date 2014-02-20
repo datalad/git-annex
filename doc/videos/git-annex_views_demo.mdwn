@@ -1,5 +1,5 @@
 A quick screencast demoing an experimental new feature,
-[[metadata_driven_views]].
+[[tips/metadata_driven_views]].
 
 <video controls src="http://downloads.kitenet.net/videos/git-annex/git-annex_views_demo.ogg"></video>
 
