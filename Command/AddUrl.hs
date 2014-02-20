@@ -21,7 +21,6 @@ import qualified Annex.Url as Url
 import qualified Backend.URL
 import Annex.Content
 import Logs.Web
-import qualified Option
 import Types.Key
 import Types.KeySource
 import Config
@@ -39,19 +38,20 @@ def = [notBareRepo $ withOptions [fileOption, pathdepthOption, relaxedOption] $
 		SectionCommon "add urls to annex"]
 
 fileOption :: Option
-fileOption = Option.field [] "file" paramFile "specify what file the url is added to"
+fileOption = fieldOption [] "file" paramFile "specify what file the url is added to"
 
 pathdepthOption :: Option
-pathdepthOption = Option.field [] "pathdepth" paramNumber "path components to use in filename"
+pathdepthOption = fieldOption [] "pathdepth" paramNumber "path components to use in filename"
 
 relaxedOption :: Option
-relaxedOption = Option.flag [] "relaxed" "skip size check"
+relaxedOption = flagOption [] "relaxed" "skip size check"
 
-seek :: [CommandSeek]
-seek = [withField fileOption return $ \f ->
-	withFlag relaxedOption $ \relaxed ->
-	withField pathdepthOption (return . maybe Nothing readish) $ \d ->
-	withStrings $ start relaxed f d]
+seek :: CommandSeek
+seek ps = do
+	f <- getOptionField fileOption return
+	relaxed <- getOptionFlag relaxedOption
+	d <- getOptionField pathdepthOption (return . maybe Nothing readish)
+	withStrings (start relaxed f d) ps
 
 start :: Bool -> Maybe FilePath -> Maybe Int -> String -> CommandStart
 start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s

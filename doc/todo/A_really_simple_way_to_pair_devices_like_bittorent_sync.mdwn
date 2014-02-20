@@ -5,3 +5,5 @@ First I thought with xmpp I can sync files without ssh/rsync or other remote acc
 It would be just great to have some means to sync files without cloud just the two device. Without the ssh / rsync jut share some secret and the devices do the rest. :-o
 
 Anyway thanks for hearing. I'm looking forward to know more about git-annex. Thank you for that sw. =-<>-=
+
+> [[design/assistant/telehash]] --[[Joey]] 

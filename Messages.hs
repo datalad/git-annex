@@ -1,12 +1,13 @@
 {- git-annex output messages
  -
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 module Messages (
 	showStart,
+	showStart',
 	showNote,
 	showAction,
 	showProgress,
@@ -54,9 +55,13 @@ import Types.Key
 import qualified Annex
 import Utility.Metered
 
-showStart :: String -> String -> Annex ()
+showStart :: String -> FilePath -> Annex ()
 showStart command file = handle (JSON.start command $ Just file) $
 	flushed $ putStr $ command ++ " " ++ file ++ " "
+
+showStart' :: String -> Key -> Maybe FilePath -> Annex ()
+showStart' command key afile = showStart command $
+	fromMaybe (key2file key) afile
 
 showNote :: String -> Annex ()
 showNote s = handle (JSON.note s) $

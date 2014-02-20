@@ -18,7 +18,7 @@ Start with `marcos`, with the complete directory:
     git init
     git annex init
     git annex add .
-    git commit -m"git annex yay"
+    git commit -m "git annex yay"
 
 This will checksum all files and add them to the `git-annex` branch of the git repository. Wait for this process to complete.
 

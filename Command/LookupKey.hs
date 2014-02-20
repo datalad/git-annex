@@ -17,8 +17,8 @@ def = [notBareRepo $ noCommit $ noMessages $
 	command "lookupkey" (paramRepeating paramFile) seek
 		SectionPlumbing "looks up key used for file"]
 
-seek :: [CommandSeek]
-seek = [withStrings start]
+seek :: CommandSeek
+seek = withStrings start
 
 start :: String -> CommandStart
 start file = do

@@ -1,0 +1,18 @@
+git-annex has been using MissingH's `absNormPath` forever, but that's
+not very maintained and doesn't work on Windows. I've been
+wanting to get rid of it for some time, and finally did today, writing a
+`simplifyPath` that does the things git-annex needs and will work with all
+the Windows filename craziness, and takes advantage of the more modern
+System.FilePath to be quite a simple peice of code. A QuickCheck test found
+no important divergences from absNormPath. A good first step to making
+git-annex not depend on MissingH at all. 
+
+That fixed one last Windows bug that was disabled in the test suite:
+`git annex add ..\subdir\file` will now work.
+
+I am re-installing the Android autobuilder for 2 reasons: I noticed I had
+accidentially lost a patch to make a library use the Android SSL cert directory,
+and also a new version of GHC is very near to release and so it makes sense
+to update.
+
+Down to 38 messages in the backlog.

@@ -164,7 +164,7 @@ repoList reposelector
 		| Remote.readonly r = False
 		| onlyCloud reposelector = Git.repoIsUrl (Remote.repo r)
 			&& Remote.uuid r /= NoUUID 
-			&& not (isXMPPRemote r)
+			&& not (Remote.isXMPPRemote r)
 		| otherwise = True
 	selectedremote Nothing = False
 	selectedremote (Just (iscloud, _))

@@ -31,7 +31,7 @@ Provider|Status|Type|Notes
 [[jabber.org|http://jabber.org]]|Working|[[Isode M-Link|http://www.isode.com/products/m-link.html]]
 -|Working|[[Prosody|http://prosody.im/]]|No providers tested.
 -|Working|[[Metronome|http://www.lightwitch.org/]]|No providers tested.
--|[[Failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/]]|ejabberd|[[Authentication bug|https://support.process-one.net/browse/EJAB-1632]]: Fixed in debian unstable with version 2.1.10-5
+-|[[Failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/]]|ejabberd|[[Authentication bug|https://support.process-one.net/browse/EJAB-1632]]: Fixed in debian unstable (>= 2.1.10-5) and stable (>=2.1.10-4+deb7u1)
 -|[[Failing|http://git-annex.branchable.com/forum/XMPP_authentication_failure/#comment-4ce5aeabd12ca3016290b3d8255f6ef1]]|jabberd14|No further information
 """]]
 List of providers: [[http://xmpp.net/]]

@@ -21,7 +21,6 @@ import qualified Annex
 import Command
 import qualified Annex.Url as Url
 import Logs.Web
-import qualified Option
 import qualified Utility.Format
 import Utility.Tmp
 import Command.AddUrl (addUrlFile, relaxedOption)
@@ -39,13 +38,14 @@ def = [notBareRepo $ withOptions [templateOption, relaxedOption] $
 		SectionCommon "import files from podcast feeds"]
 
 templateOption :: Option
-templateOption = Option.field [] "template" paramFormat "template for filenames"
+templateOption = fieldOption [] "template" paramFormat "template for filenames"
 
-seek :: [CommandSeek]
-seek = [withField templateOption return $ \tmpl ->
-	withFlag relaxedOption $ \relaxed ->
-	withValue (getCache tmpl) $ \cache ->
-	withStrings $ start relaxed cache]
+seek :: CommandSeek
+seek ps = do
+	tmpl <- getOptionField templateOption return
+	relaxed <- getOptionFlag relaxedOption
+	cache <- getCache tmpl
+	withStrings (start relaxed cache) ps
 
 start :: Bool -> Cache -> URLString -> CommandStart
 start relaxed cache url = do

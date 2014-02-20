@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="comment 6"
+ date="2014-01-30T10:52:09Z"
+ content="""
+Well, according to the hackage documentation of http conduit it seems it at least supports proxies when youre code gives it the proxy host and port.
+
+But the link about the problem with environment settings helped me to get around my immediate problem by just running annex from the git bash (which is prefereably to me most of the time anyway). So I could set up my annex on my work machine and just tunnel out with ProxyCommand via our ssh gateway. Yay!
+"""]]

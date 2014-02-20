@@ -1,17 +1,17 @@
-From 08cc43788c16fb91f63bc0bd520eeccdcdab477a Mon Sep 17 00:00:00 2001
+From 5f30a68faaa379ac3fe9f0b016dd1a20969d548f Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Tue, 17 Dec 2013 17:15:33 +0000
+Date: Fri, 7 Feb 2014 23:04:06 +0000
 Subject: [PATCH] remove and expand TH
 
 ---
- Yesod/Core.hs              |  30 +++---
- Yesod/Core/Class/Yesod.hs  | 249 +++++++++++++++++++++++++++++++--------------
- Yesod/Core/Dispatch.hs     |  27 ++---
- Yesod/Core/Handler.hs      |  25 ++---
- Yesod/Core/Internal/Run.hs |   4 +-
- Yesod/Core/Internal/TH.hs  | 111 --------------------
- Yesod/Core/Widget.hs       |  32 +-----
- 7 files changed, 209 insertions(+), 269 deletions(-)
+ Yesod/Core.hs              |   30 +++---
+ Yesod/Core/Class/Yesod.hs  |  248 ++++++++++++++++++++++++++++++--------------
+ Yesod/Core/Dispatch.hs     |   37 ++-----
+ Yesod/Core/Handler.hs      |   25 ++---
+ Yesod/Core/Internal/Run.hs |    4 +-
+ Yesod/Core/Internal/TH.hs  |  111 --------------------
+ Yesod/Core/Widget.hs       |   32 +-----
+ 7 files changed, 209 insertions(+), 278 deletions(-)
 
 diff --git a/Yesod/Core.hs b/Yesod/Core.hs
 index 12e59d5..2817a69 100644
@@ -67,7 +67,7 @@ index 12e59d5..2817a69 100644
      , renderCssUrl
      ) where
 diff --git a/Yesod/Core/Class/Yesod.hs b/Yesod/Core/Class/Yesod.hs
-index a64d6eb..5dffbfa 100644
+index 140600b..6c718e2 100644
 --- a/Yesod/Core/Class/Yesod.hs
 +++ b/Yesod/Core/Class/Yesod.hs
 @@ -5,11 +5,15 @@
@@ -127,7 +127,7 @@ index a64d6eb..5dffbfa 100644
  
      -- | Override the rendering function for a particular URL. One use case for
      -- this is to offload static hosting to a different domain name to avoid
-@@ -370,45 +383,103 @@ widgetToPageContent w = do
+@@ -374,45 +387,103 @@ widgetToPageContent w = do
      -- modernizr should be at the end of the <head> http://www.modernizr.com/docs/#installing
      -- the asynchronous loader means your page doesn't have to wait for all the js to load
      let (mcomplete, asyncScripts) = asyncHelper render scripts jscript jsLoc
@@ -270,7 +270,7 @@ index a64d6eb..5dffbfa 100644
  
      return $ PageContent title headAll $
          case jsLoader master of
-@@ -438,10 +509,13 @@ defaultErrorHandler NotFound = selectRep $ do
+@@ -442,10 +513,13 @@ defaultErrorHandler NotFound = selectRep $ do
          r <- waiRequest
          let path' = TE.decodeUtf8With TEE.lenientDecode $ W.rawPathInfo r
          setTitle "Not Found"
@@ -288,7 +288,7 @@ index a64d6eb..5dffbfa 100644
      provideRep $ return $ object ["message" .= ("Not Found" :: Text)]
  
  -- For API requests.
-@@ -451,10 +525,11 @@ defaultErrorHandler NotFound = selectRep $ do
+@@ -455,10 +529,11 @@ defaultErrorHandler NotFound = selectRep $ do
  defaultErrorHandler NotAuthenticated = selectRep $ do
      provideRep $ defaultLayout $ do
          setTitle "Not logged in"
@@ -304,7 +304,7 @@ index a64d6eb..5dffbfa 100644
  
      provideRep $ do
          -- 401 *MUST* include a WWW-Authenticate header
-@@ -476,10 +551,13 @@ defaultErrorHandler NotAuthenticated = selectRep $ do
+@@ -480,10 +555,13 @@ defaultErrorHandler NotAuthenticated = selectRep $ do
  defaultErrorHandler (PermissionDenied msg) = selectRep $ do
      provideRep $ defaultLayout $ do
          setTitle "Permission Denied"
@@ -322,7 +322,7 @@ index a64d6eb..5dffbfa 100644
      provideRep $
          return $ object $ [
            "message" .= ("Permission Denied. " <> msg)
-@@ -488,30 +566,43 @@ defaultErrorHandler (PermissionDenied msg) = selectRep $ do
+@@ -492,30 +570,42 @@ defaultErrorHandler (PermissionDenied msg) = selectRep $ do
  defaultErrorHandler (InvalidArgs ia) = selectRep $ do
      provideRep $ defaultLayout $ do
          setTitle "Invalid Arguments"
@@ -377,15 +377,19 @@ index a64d6eb..5dffbfa 100644
 +                  id
 +                    ((Text.Blaze.Internal.preEscapedText . T.pack)
 +                       "</code> not supported</p>") }
-+
-     provideRep $ return $ object ["message" .= ("Bad method" :: Text), "method" .= m]
+     provideRep $ return $ object ["message" .= ("Bad method" :: Text), "method" .= TE.decodeUtf8With TEE.lenientDecode m]
  
  asyncHelper :: (url -> [x] -> Text)
 diff --git a/Yesod/Core/Dispatch.hs b/Yesod/Core/Dispatch.hs
-index df822e2..5583495 100644
+index e6f489d..3ff37c1 100644
 --- a/Yesod/Core/Dispatch.hs
 +++ b/Yesod/Core/Dispatch.hs
-@@ -6,18 +6,18 @@
+@@ -1,4 +1,3 @@
+-{-# LANGUAGE TemplateHaskell #-}
+ {-# LANGUAGE OverloadedStrings #-}
+ {-# LANGUAGE TypeFamilies #-}
+ {-# LANGUAGE FlexibleInstances #-}
+@@ -6,18 +5,18 @@
  {-# LANGUAGE CPP #-}
  module Yesod.Core.Dispatch
      ( -- * Quasi-quoted routing
@@ -414,7 +418,7 @@ index df822e2..5583495 100644
      , PathMultiPiece (..)
      , Texts
        -- * Convert to WAI
-@@ -124,13 +124,6 @@ toWaiApp site = do
+@@ -128,13 +127,6 @@ toWaiAppLogger logger site = do
                  , yreSite = site
                  , yreSessionBackend = sb
                  }
@@ -428,8 +432,31 @@ index df822e2..5583495 100644
      middleware <- mkDefaultMiddlewares logger
      return $ middleware $ toWaiAppYre yre
  
+@@ -163,13 +155,7 @@ warp port site = do
+                 ]
+             -}
+             , Network.Wai.Handler.Warp.settingsOnException = const $ \e ->
+-                messageLoggerSource
+-                    site
+-                    logger
+-                    $(qLocation >>= liftLoc)
+-                    "yesod-core"
+-                    LevelError
+-                    (toLogStr $ "Exception from Warp: " ++ show e)
++		error (show e)
+             }
+ 
+ -- | A default set of middlewares.
+@@ -194,7 +180,6 @@ mkDefaultMiddlewares logger = do
+ -- | Deprecated synonym for 'warp'.
+ warpDebug :: YesodDispatch site => Int -> site -> IO ()
+ warpDebug = warp
+-{-# DEPRECATED warpDebug "Please use warp instead" #-}
+ 
+ -- | Runs your application using default middlewares (i.e., via 'toWaiApp'). It
+ -- reads port information from the PORT environment variable, as used by tools
 diff --git a/Yesod/Core/Handler.hs b/Yesod/Core/Handler.hs
-index 3581dbc..908256e 100644
+index 7c561c5..847d475 100644
 --- a/Yesod/Core/Handler.hs
 +++ b/Yesod/Core/Handler.hs
 @@ -164,7 +164,7 @@ import           Data.Text.Encoding            (decodeUtf8With, encodeUtf8)
@@ -449,7 +476,7 @@ index 3581dbc..908256e 100644
  
  get :: MonadHandler m => m GHState
  get = liftHandlerT $ HandlerT $ I.readIORef . handlerState
-@@ -743,19 +744,15 @@ redirectToPost :: (MonadHandler m, RedirectUrl (HandlerSite m) url)
+@@ -748,19 +749,15 @@ redirectToPost :: (MonadHandler m, RedirectUrl (HandlerSite m) url)
                 -> m a
  redirectToPost url = do
      urlText <- toTextUrl url
@@ -479,10 +506,10 @@ index 3581dbc..908256e 100644
  -- | Wraps the 'Content' generated by 'hamletToContent' in a 'RepHtml'.
  hamletToRepHtml :: MonadHandler m => HtmlUrl (Route (HandlerSite m)) -> m Html
 diff --git a/Yesod/Core/Internal/Run.hs b/Yesod/Core/Internal/Run.hs
-index 25f51f1..d04d2cd 100644
+index 10871a2..6ed631e 100644
 --- a/Yesod/Core/Internal/Run.hs
 +++ b/Yesod/Core/Internal/Run.hs
-@@ -15,7 +15,7 @@ import           Control.Exception.Lifted     (catch)
+@@ -16,7 +16,7 @@ import           Control.Exception.Lifted     (catch)
  import           Control.Monad.IO.Class       (MonadIO)
  import           Control.Monad.IO.Class       (liftIO)
  import           Control.Monad.Logger         (LogLevel (LevelError), LogSource,
@@ -491,7 +518,7 @@ index 25f51f1..d04d2cd 100644
  import           Control.Monad.Trans.Resource (runResourceT, withInternalState, runInternalState, createInternalState, closeInternalState)
  import qualified Data.ByteString              as S
  import qualified Data.ByteString.Char8        as S8
-@@ -128,8 +128,6 @@ safeEh :: (Loc -> LogSource -> LogLevel -> LogStr -> IO ())
+@@ -131,8 +131,6 @@ safeEh :: (Loc -> LogSource -> LogLevel -> LogStr -> IO ())
         -> ErrorResponse
         -> YesodApp
  safeEh log' er req = do
@@ -680,5 +707,5 @@ index a972efa..156cd45 100644
  ihamletToRepHtml :: (MonadHandler m, RenderMessage (HandlerSite m) message)
                   => HtmlUrlI18n message (Route (HandlerSite m))
 -- 
-1.8.5.1
+1.7.10.4
 

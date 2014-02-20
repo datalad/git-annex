@@ -1,0 +1,7 @@
+Built the UI to manage unused files.
+
+[[!img assistant/unused.png]]
+
+Testing yesterday's work, I found several problems that prevented the
+assistant from moving unused files around, and fixed them. It seems to be
+working pretty well now.

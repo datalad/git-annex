@@ -1,0 +1,47 @@
+Hi.
+
+trying to manage my collection of digital music files using git-annex. The collection (113 gigs of flac files ripped from my CDs) should be stored on my three different machines and updated on all of them, if I add or change a file on only one of the machines.
+
+### Please describe the problem.
+
+Added a new external USB disk for sneaker transfer via web app, yesterday.
+
+Now for no apparent reason, after startup/login, git-annex would start and quickly suck up all available RAM. This is on a fairly well equipped machine (16G physical RAM, i5-2400), yet "top" tells me that there is one git process that sucks up more than 20G and climbing. It looked like this:
+
+    git --git-dir=/home/user/Sync/Audio/.git --work-tree=/home/user/Sync/Audio -c core.bare=false log refs/heads git-annex..13d365f16ffdb5a393f66362b840d3f21bb4c59c --oneline -n1
+
+The computer then slows down, grinds to halt, becomes unresponsive and it's difficult to even login on the console.
+
+Then, the OOM killer kicks in and kicks the git process, but git-annex quickly starts another which does the same.
+
+### What steps will reproduce the problem?
+
+I don't know what caused it. The symptoms remained after a reboot, "git annex watch --stop" didn't help either, since I'm a dumb web app user, I'm not sure if that's the right command to use anyway.
+
+For now, I have removed git-annex from the system.
+
+### What version of git-annex are you using? On what operating system?
+
+Last installed version: git-annex 5.20140127.1 on Ubuntu 13.10, amd64.
+
+### Please provide any additional information below.
+
+I'm fairly unsure where to look for the cause and what logs to provide you with to help fix this. Just guessing that it could be a symptom, but the daemon.log is full of entries like this:
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+("race detected",ca2cbdb84bcbd4aab895284b16fc72f693fbba90,[4a2e7c1d7d286a4da9e816b20368ce2f9b4177c4],"committing",(ca2cbdb84bcbd4aab895284b16fc72f693fbba90,[ca2cbdb84bcbd4aab895284b16fc72f693fbba90]))
+(Recording state in git...)
+("race detected",28c835634e65ced0e532c1a0e4f34dd0344193bc,[19597be0f49fb859fafa51e006459d5a95e3d005],"committing",(28c835634e65ced0e532c1a0e4f34dd0344193bc,[28c835634e65ced0e532c1a0e4f34dd0344193bc]))
+(Recording state in git...)
+("race detected",1f2b06c7001be38bd9595eb2205c91454597edaa,[398660279436246a698d6bd55eb06998999ed64f],"committing",(1f2b06c7001be38bd9595eb2205c91454597edaa,[1f2b06c7001be38bd9595eb2205c91454597edaa]))
+(Recording state in git...)
+("race detected",4c1510c3db41ff400526d5753c03bddc48f5c37e,[1989177cf24ec9151058ed99f05117e48c239001],"committing",(4c1510c3db41ff400526d5753c03bddc48f5c37e,[4c1510c3db41ff400526d5753c03bddc48f5c37e]))
+(Recording state in git...)
+("race detected",b82f41fcbf24c43fe9f1f9d6fb54ba5ef9ff8de0,[799e4434447b18be63bd097120e1fbf56eac48ce],"committing",(b82f41fcbf24c43fe9f1f9d6fb54ba5ef9ff8de0,[b82f41fcbf24c43fe9f1f9d6fb54ba5ef9ff8de0]))
+(Recording state in git...)
+
+# End of transcript or log.
+"""]]

@@ -7,7 +7,10 @@
 
 module Utility.HumanTime (
 	Duration(..),
+	durationSince,
 	durationToPOSIXTime,
+	durationToDays,
+	daysToDuration,
 	parseDuration,
 	fromDuration,
 	prop_duration_roundtrips
@@ -17,6 +20,7 @@ import Utility.PartialPrelude
 import Utility.Applicative
 import Utility.QuickCheck
 
+import Data.Time.Clock
 import Data.Time.Clock.POSIX (POSIXTime)
 import Data.Char
 import Control.Applicative
@@ -25,8 +29,19 @@ import qualified Data.Map as M
 newtype Duration = Duration { durationSeconds :: Integer }
   deriving (Eq, Ord, Read, Show)
 
+durationSince :: UTCTime -> IO Duration
+durationSince pasttime = do
+	now <- getCurrentTime
+	return $ Duration $ round $ diffUTCTime now pasttime
+
 durationToPOSIXTime :: Duration -> POSIXTime
 durationToPOSIXTime = fromIntegral . durationSeconds
+
+durationToDays :: Duration -> Integer
+durationToDays d = durationSeconds d `div` dsecs
+
+daysToDuration :: Integer -> Duration
+daysToDuration i = Duration $ i * dsecs
 
 {- Parses a human-input time duration, of the form "5h", "1m", "5h1m", etc -}
 parseDuration :: String -> Maybe Duration

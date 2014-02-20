@@ -18,7 +18,7 @@ import Utility.LogFile
 import System.Posix
 import Control.Concurrent.Async
 #else
-import System.PosixCompat
+import System.PosixCompat.Types
 #endif
 
 {- Run an action as a daemon, with all output sent to a file descriptor.
@@ -77,7 +77,7 @@ lockPidFile file = do
 #else
 	writeFile newfile "-1"
 #endif
-	renameFile newfile file
+	rename newfile file
   where
 	newfile = file ++ ".new"
 

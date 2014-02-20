@@ -29,6 +29,7 @@ import qualified Git.LsFiles as LsFiles
 import qualified Backend
 import Annex.Content
 import Annex.Wanted
+import CmdLine.Action
 
 import qualified Data.Set as S
 
@@ -156,16 +157,16 @@ expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 		syncrs <- syncDataRemotes <$> getDaemonStatus
 		locs <- liftAnnex $ loggedLocations key
 		present <- liftAnnex $ inAnnex key
-		handleDropsFrom locs syncrs
+		liftAnnex $ handleDropsFrom locs syncrs
 			"expensive scan found too many copies of object"
-			present key (Just f) Nothing
+			present key (Just f) Nothing callCommandAction
 		liftAnnex $ do
 			let slocs = S.fromList locs
 			let use a = return $ mapMaybe (a key slocs) syncrs
 			ts <- if present
-				then filterM (wantSend True (Just f) . Remote.uuid . fst)
+				then filterM (wantSend True (Just key) (Just f) . Remote.uuid . fst)
 					=<< use (genTransfer Upload False)
-				else ifM (wantGet True $ Just f)
+				else ifM (wantGet True (Just key) (Just f))
 					( use (genTransfer Download True) , return [] )
 			let unwanted' = S.difference unwanted slocs
 			return (unwanted', ts)

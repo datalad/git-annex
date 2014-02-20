@@ -1,0 +1,12 @@
+Installed stand-alone tarball amd64.
+I was able to launch webapp. (on laptop)
+Created a repository to local home directory.
+Then ceated another repository to invite local desktop pc.(this one had all the files i wanted to sync) 
+Went to dektop and accepted invitation.  But both machines never stopped synching?  and nothing really happened.
+so I removed repository on laptop to start fresh.
+But now webapp does nothing.  I removed and re-installed a few times but still nothing.
+Only as superuser will the webapp attempt to load but fails because it is super user running.
+As far as version of git-annex...  it prompted to upgrade and i think i saw a 5 in there somewhere.
+
+and since it won't load anymore i guess there is no log.
+

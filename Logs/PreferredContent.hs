@@ -38,13 +38,13 @@ import Types.StandardGroups
 
 {- Checks if a file is preferred content for the specified repository
  - (or the current repository if none is specified). -}
-isPreferredContent :: Maybe UUID -> AssumeNotPresent -> FilePath -> Bool -> Annex Bool
-isPreferredContent mu notpresent file def = do
+isPreferredContent :: Maybe UUID -> AssumeNotPresent -> Maybe Key -> AssociatedFile -> Bool -> Annex Bool
+isPreferredContent mu notpresent mkey afile def = do
 	u <- maybe getUUID return mu
 	m <- preferredContentMap
 	case M.lookup u m of
 		Nothing -> return def
-		Just matcher -> checkFileMatcher' matcher file notpresent def
+		Just matcher -> checkMatcher matcher mkey afile notpresent def
 
 {- The map is cached for speed. -}
 preferredContentMap :: Annex Annex.PreferredContentMap

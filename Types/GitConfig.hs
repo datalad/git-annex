@@ -1,6 +1,6 @@
 {- git-annex configuration
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -19,12 +19,14 @@ import Utility.DataUnits
 import Config.Cost
 import Types.Distribution
 import Types.Availability
+import Types.NumCopies
+import Utility.HumanTime
 
 {- Main git-annex settings. Each setting corresponds to a git-config key
  - such as annex.foo -}
 data GitConfig = GitConfig
 	{ annexVersion :: Maybe String
-	, annexNumCopies :: Int
+	, annexNumCopies :: Maybe NumCopies
 	, annexDiskReserve :: Integer
 	, annexDirect :: Bool
 	, annexBackends :: [String]
@@ -45,6 +47,8 @@ data GitConfig = GitConfig
 	, annexLargeFiles :: Maybe String
 	, annexFsckNudge :: Bool
 	, annexAutoUpgrade :: AutoUpgrade
+	, annexExpireUnused :: Maybe (Maybe Duration)
+	, annexSecureEraseCommand :: Maybe String
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
 	}
@@ -52,7 +56,7 @@ data GitConfig = GitConfig
 extractGitConfig :: Git.Repo -> GitConfig
 extractGitConfig r = GitConfig
 	{ annexVersion = notempty $ getmaybe (annex "version")
-	, annexNumCopies = get (annex "numcopies") 1
+	, annexNumCopies = NumCopies <$> getmayberead (annex "numcopies")
 	, annexDiskReserve = fromMaybe onemegabyte $
 		readSize dataUnits =<< getmaybe (annex "diskreserve")
 	, annexDirect = getbool (annex "direct") False
@@ -74,11 +78,13 @@ extractGitConfig r = GitConfig
 	, annexLargeFiles = getmaybe (annex "largefiles")
 	, annexFsckNudge = getbool (annex "fscknudge") True
 	, annexAutoUpgrade = toAutoUpgrade $ getmaybe (annex "autoupgrade")
+	, annexExpireUnused = maybe Nothing Just . parseDuration
+		<$> getmaybe (annex "expireunused")
+	, annexSecureEraseCommand = getmaybe (annex "secure-erase-command")
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
 	}
   where
-	get k def = fromMaybe def $ getmayberead k
 	getbool k def = fromMaybe def $ getmaybebool k
 	getmaybebool k = Git.Config.isTrue =<< getmaybe k
 	getmayberead k = readish =<< getmaybe k
@@ -103,11 +109,14 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexStartCommand :: Maybe String
 	, remoteAnnexStopCommand :: Maybe String
 	, remoteAnnexAvailability :: Maybe Availability
+	, remoteAnnexBare :: Maybe Bool
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
 	, remoteAnnexSshOptions :: [String]
 	, remoteAnnexRsyncOptions :: [String]
+	, remoteAnnexRsyncUploadOptions :: [String]
+	, remoteAnnexRsyncDownloadOptions :: [String]
 	, remoteAnnexRsyncTransport :: [String]
 	, remoteAnnexGnupgOptions :: [String]
 	, remoteAnnexRsyncUrl :: Maybe String
@@ -133,9 +142,12 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexStartCommand = notempty $ getmaybe "start-command"
 	, remoteAnnexStopCommand = notempty $ getmaybe "stop-command"
 	, remoteAnnexAvailability = getmayberead "availability"
+	, remoteAnnexBare = getmaybebool "bare"
 
 	, remoteAnnexSshOptions = getoptions "ssh-options"
 	, remoteAnnexRsyncOptions = getoptions "rsync-options"
+	, remoteAnnexRsyncDownloadOptions = getoptions "rsync-download-options"
+	, remoteAnnexRsyncUploadOptions = getoptions "rsync-upload-options"
 	, remoteAnnexRsyncTransport = getoptions "rsync-transport"
 	, remoteAnnexGnupgOptions = getoptions "gnupg-options"
 	, remoteAnnexRsyncUrl = notempty $ getmaybe "rsyncurl"

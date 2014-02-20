@@ -27,8 +27,12 @@ cabalinstall () {
 
 patched () {
 	pkg=$1
-	shift 1
-	cabal unpack $pkg
+	ver=$2
+	if [ -z "$ver" ]; then
+		cabal unpack $pkg
+	else
+		cabal unpack $pkg-$ver
+	fi
 	cd $pkg*
 	git init
 	git config user.name dummy
@@ -45,7 +49,7 @@ patched () {
 			fi
 		fi
 	done
-	cabalinstall "$@"
+	cabalinstall
 	rm -rf $pkg*
 	cd ..
 }
@@ -81,7 +85,9 @@ install_pkgs () {
 	patched profunctors
 	patched skein
 	patched lens
+	patched certificate
 	patched persistent-template
+	patched system-filepath
 	patched wai-app-static
 	patched shakespeare
 	patched shakespeare-css
@@ -95,12 +101,13 @@ install_pkgs () {
 	patched yesod
 	patched shakespeare-text
 	patched process-conduit
-	patched gnuidn
 	patched DAV
 	patched yesod-static
 	patched uuid
 	patched dns
 	patched gnutls
+	patched libxml-sax
+	patched network-protocol-xmpp
 
 	cd ..
 

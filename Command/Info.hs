@@ -14,7 +14,6 @@ import qualified Data.Map as M
 import Text.JSON
 import Data.Tuple
 import Data.Ord
-import System.PosixCompat.Files
 
 import Common.Annex
 import qualified Remote
@@ -28,6 +27,7 @@ import Annex.Content
 import Types.Key
 import Logs.UUID
 import Logs.Trust
+import Config.NumCopies
 import Remote
 import Config
 import Utility.Percentage
@@ -70,11 +70,12 @@ data StatInfo = StatInfo
 type StatState = StateT StatInfo Annex
 
 def :: [Command]
-def = [noCommit $ command "info" paramPaths seek
-	SectionQuery "shows general information about the annex"]
+def = [noCommit $ withOptions [jsonOption] $
+	command "info" paramPaths seek SectionQuery
+	"shows general information about the annex"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [FilePath] -> CommandStart
 start [] = do
@@ -310,7 +311,7 @@ getLocalStatInfo dir = do
   where
 	initial = (emptyKeyData, emptyKeyData, emptyNumCopiesStats)
 	update matcher fast key file vs@(presentdata, referenceddata, numcopiesstats) =
-		ifM (matcher $ FileInfo file file)
+		ifM (matcher $ MatchingFile $ FileInfo file file)
 			( do
 				!presentdata' <- ifM (inAnnex key)
 					( return $ addKey key presentdata

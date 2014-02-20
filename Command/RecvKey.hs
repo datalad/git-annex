@@ -7,8 +7,6 @@
 
 module Command.RecvKey where
 
-import System.PosixCompat.Files
-
 import Common.Annex
 import Command
 import CmdLine
@@ -17,7 +15,7 @@ import Annex
 import Utility.Rsync
 import Logs.Transfer
 import Command.SendKey (fieldTransfer)
-import qualified Fields
+import qualified CmdLine.GitAnnexShell.Fields as Fields
 import qualified Types.Key
 import qualified Types.Backend
 import qualified Backend
@@ -26,8 +24,8 @@ def :: [Command]
 def = [noCommit $ command "recvkey" paramKey seek
 	SectionPlumbing "runs rsync in server mode to receive content"]
 
-seek :: [CommandSeek]
-seek = [withKeys start]
+seek :: CommandSeek
+seek = withKeys start
 
 start :: Key -> CommandStart
 start key = ifM (inAnnex key)

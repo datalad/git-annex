@@ -6,13 +6,14 @@ You do not need to read this page to get started with using git-annex. The
 
 Still reading? Ok. Git's man page calls it "a stupid content
 tracker". With git-annex, git is instead "a stupid filename and metadata"
-tracker. The contents of large files are not stored in git, only the
+tracker. The contents of annexed files are not stored in git, only the
 names of the files and some other metadata remain there.
 
 The contents of the files are kept by git-annex in a distributed key/value
 store consisting of every clone of a given git repository. That's a fancy
 way to say that git-annex stores the actual file content somewhere under
-`.git/annex/`. (See [[internals]] for details.)
+`.git/annex/`. (See [[internals]] for details and note that in
+[[direct_mode]] the file contents are left in the work tree.)
 
 That was the values; what about the keys? Well, a key is calculated for a
 given file when it's first added into git-annex. Normally this uses a hash

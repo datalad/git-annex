@@ -12,10 +12,9 @@ import Command
 import qualified Remote
 import Annex.Content
 import Logs.Transfer
+import Config.NumCopies
 import Annex.Wanted
-import GitAnnex.Options
 import qualified Command.Move
-import Types.Key
 
 def :: [Command]
 def = [withOptions getOptions $ command "get" paramPaths seek
@@ -24,17 +23,18 @@ def = [withOptions getOptions $ command "get" paramPaths seek
 getOptions :: [Option]
 getOptions = fromOption : keyOptions
 
-seek :: [CommandSeek]
-seek = 
-	[ withField fromOption Remote.byNameWithUUID $ \from ->
-	  withKeyOptions (startKeys from) $
-	  withFilesInGit $ whenAnnexed $ start from
-	]
+seek :: CommandSeek
+seek ps = do
+	from <- getOptionField fromOption Remote.byNameWithUUID
+	withKeyOptions
+		(startKeys from)
+		(withFilesInGit $ whenAnnexed $ start from)
+		ps
 
 start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
 start from file (key, _) = start' expensivecheck from key (Just file)
   where
-	expensivecheck = checkAuto (numCopiesCheck file key (<) <||> wantGet False (Just file))
+	expensivecheck = checkAuto (numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file))
 
 startKeys :: Maybe Remote -> Key -> CommandStart
 startKeys from key = start' (return True) from key Nothing
@@ -49,7 +49,7 @@ start' expensivecheck from key afile = stopUnless (not <$> inAnnex key) $
 					go $ Command.Move.fromPerform src False key afile
   where
   	go a = do
-		showStart "get" (fromMaybe (key2file key) afile)
+		showStart' "get" key afile
 		next a
 
 perform :: Key -> AssociatedFile -> CommandPerform
@@ -59,7 +59,11 @@ perform key afile = stopUnless (getViaTmp key $ getKeyFile key afile) $
 {- Try to find a copy of the file in one of the remotes,
  - and copy it to here. -}
 getKeyFile :: Key -> AssociatedFile -> FilePath -> Annex Bool
-getKeyFile key afile dest = dispatch =<< Remote.keyPossibilities key
+getKeyFile key afile dest = getKeyFile' key afile dest
+	=<< Remote.keyPossibilities key
+
+getKeyFile' :: Key -> AssociatedFile -> FilePath -> [Remote] -> Annex Bool
+getKeyFile' key afile dest = dispatch
   where
 	dispatch [] = do
 		showNote "not available"

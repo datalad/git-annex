@@ -17,8 +17,8 @@ def :: [Command]
 def = [command "reinject" (paramPair "SRC" "DEST") seek
 	SectionUtility "sets content of annexed file"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [FilePath] -> CommandStart
 start (src:dest:[])

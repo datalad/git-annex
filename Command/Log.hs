@@ -24,7 +24,6 @@ import qualified Annex.Branch
 import qualified Git
 import Git.Command
 import qualified Remote
-import qualified Option
 import qualified Annex
 
 data RefChange = RefChange 
@@ -44,25 +43,26 @@ options = passthruOptions ++ [gourceOption]
 
 passthruOptions :: [Option]
 passthruOptions = map odate ["since", "after", "until", "before"] ++
-	[ Option.field ['n'] "max-count" paramNumber
+	[ fieldOption ['n'] "max-count" paramNumber
 		"limit number of logs displayed"
 	]
   where
-	odate n = Option.field [] n paramDate $ "show log " ++ n ++ " date"
+	odate n = fieldOption [] n paramDate $ "show log " ++ n ++ " date"
 
 gourceOption :: Option
-gourceOption = Option.flag [] "gource" "format output for gource"
+gourceOption = flagOption [] "gource" "format output for gource"
 
-seek :: [CommandSeek]
-seek = [withValue Remote.uuidDescriptions $ \m ->
-	withValue (liftIO getCurrentTimeZone) $ \zone ->
-	withValue (concat <$> mapM getoption passthruOptions) $ \os ->
-	withFlag gourceOption $ \gource ->
-	withFilesInGit $ whenAnnexed $ start m zone os gource]
+seek :: CommandSeek
+seek ps = do
+	m <- Remote.uuidDescriptions
+	zone <- liftIO getCurrentTimeZone
+	os <- concat <$> mapM getoption passthruOptions
+	gource <- getOptionFlag gourceOption
+	withFilesInGit (whenAnnexed $ start m zone os gource) ps
   where
 	getoption o = maybe [] (use o) <$>
-		Annex.getField (Option.name o)
-	use o v = [Param ("--" ++ Option.name o), Param v]
+		Annex.getField (optionName o)
+	use o v = [Param ("--" ++ optionName o), Param v]
 
 start :: M.Map UUID String -> TimeZone -> [CommandParam] -> Bool ->
 	FilePath -> (Key, Backend) -> CommandStart

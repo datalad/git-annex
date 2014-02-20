@@ -30,8 +30,8 @@ def :: [Command]
 def = [command "vicfg" paramNothing seek
 	SectionSetup "edit git-annex's configuration"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = do

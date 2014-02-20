@@ -33,25 +33,24 @@ import qualified Git.DiffTree as DiffTree
 import qualified Backend
 import qualified Remote
 import qualified Annex.Branch
-import qualified Option
 import Annex.CatFile
 import Types.Key
 import Git.FilePath
 
 def :: [Command]
-def = [withOptions [fromOption] $ command "unused" paramNothing seek
+def = [withOptions [unusedFromOption] $ command "unused" paramNothing seek
 	SectionMaintenance "look for unused file content"]
 
-fromOption :: Option
-fromOption = Option.field ['f'] "from" paramRemote "remote to check for unused content"
+unusedFromOption :: Option
+unusedFromOption = fieldOption ['f'] "from" paramRemote "remote to check for unused content"
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 {- Finds unused content in the annex. -} 
 start :: CommandStart
 start = do
-	from <- Annex.getField $ Option.name fromOption
+	from <- Annex.getField $ optionName unusedFromOption
 	let (name, action) = case from of
 		Nothing -> (".", checkUnused)
 		Just "." -> (".", checkUnused)
@@ -92,7 +91,7 @@ check file msg a c = do
 	l <- a
 	let unusedlist = number c l
 	unless (null l) $ showLongNote $ msg unusedlist
-	writeUnusedLog file unusedlist
+	updateUnusedLog file $ M.fromList unusedlist
 	return $ c + length l
 
 number :: Int -> [a] -> [(Int, a)]
@@ -326,19 +325,21 @@ data UnusedMaps = UnusedMaps
 	, unusedTmpMap :: UnusedMap
 	}
 
-{- Read unused logs once, and pass the maps to each start action. -}
 withUnusedMaps :: (UnusedMaps -> Int -> CommandStart) -> CommandSeek
 withUnusedMaps a params = do
-	unused <- readUnusedLog ""
-	unusedbad <- readUnusedLog "bad"
-	unusedtmp <- readUnusedLog "tmp"
+	unused <- readUnusedMap ""
+	unusedbad <- readUnusedMap "bad"
+	unusedtmp <- readUnusedMap "tmp"
 	let m = unused `M.union` unusedbad `M.union` unusedtmp
-	return $ map (a $ UnusedMaps unused unusedbad unusedtmp) $
+	let unusedmaps = UnusedMaps unused unusedbad unusedtmp
+	seekActions $ return $ map (a unusedmaps) $
 		concatMap (unusedSpec m) params
 
 unusedSpec :: UnusedMap -> String -> [Int]
 unusedSpec m spec
-	| spec == "all" = [fst (M.findMin m)..fst (M.findMax m)]
+	| spec == "all" = if M.null m
+		then []
+		else [fst (M.findMin m)..fst (M.findMax m)]
 	| "-" `isInfixOf` spec = range $ separate (== '-') spec
 	| otherwise = maybe badspec (: []) (readish spec)
   where
@@ -347,8 +348,8 @@ unusedSpec m spec
 		_ -> badspec
 	badspec = error $ "Expected number or range, not \"" ++ spec ++ "\""
 
-{- Start action for unused content. Finds the number in the maps, and
- - calls either of 3 actions, depending on the type of unused file. -}
+{- Seek action for unused content. Finds the number in the maps, and
+ - calls one of 3 actions, depending on the type of unused file. -}
 startUnused :: String
 	-> (Key -> CommandPerform)
 	-> (Key -> CommandPerform) 

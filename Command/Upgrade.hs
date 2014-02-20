@@ -16,8 +16,8 @@ def = [dontCheck repoExists $ -- because an old version may not seem to exist
 	command "upgrade" paramNothing seek
 		SectionMaintenance "upgrade repository layout"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = do

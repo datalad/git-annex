@@ -1,0 +1,41 @@
+git-annex 5.20140127 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * sync --content: New option that makes the content of annexed files be
+     transferred. Similar to the assistant, this honors any configured
+     preferred content expressions.
+   * Remove --json option from commands not supporting it.
+   * status: Support --json.
+   * list: Fix specifying of files to list.
+   * Allow --all to be mixed with matching options like --copies and --in
+     (but not --include and --exclude).
+   * numcopies: New command, sets global numcopies value that is seen by all
+     clones of a repository.
+   * The annex.numcopies git config setting is deprecated. Once the numcopies
+     command is used to set the global number of copies, any annex.numcopies
+     git configs will be ignored.
+   * assistant: Make the prefs page set the global numcopies.
+   * Add lackingcopies, approxlackingcopies, and unused to
+     preferred content expressions.
+   * Client, transfer, incremental backup, and archive repositories
+     now want to get content that does not yet have enough copies.
+   * Client, transfer, and source repositories now do not want to retain
+     unused file contents.
+   * assistant: Checks daily for unused file contents, and when possible
+     moves them to a repository (such as a backup repository) that
+     wants to retain them.
+   * assistant: annex.expireunused can be configured to cause unused
+     file contents to be deleted after some period of time.
+   * webapp: Nudge user to see if they want to expire old unused file
+     contents when a lot of them seem to be piling up in the repository.
+   * repair: Check git version at run time.
+   * assistant: Run the periodic git gc in batch mode.
+   * added annex.secure-erase-command config option.
+   * Optimise non-bare http remotes; no longer does a 404 to the wrong
+     url every time before trying the right url. Needs annex-bare to be
+     set to false, which is done when initially probing the uuid of a
+     http remote.
+   * webapp: After upgrading a git repository to git-annex, fix
+     bug that made it temporarily not be synced with.
+   * whereis: Support --all.
+   * All commands that support --all also support a --key option,
+     which limits them to acting on a single key."""]]

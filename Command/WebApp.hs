@@ -23,13 +23,12 @@ import Utility.Daemon (checkDaemon)
 #ifdef __ANDROID__
 import Utility.Env
 #endif
-import Init
+import Annex.Init
 import qualified Git
 import qualified Git.Config
 import qualified Git.CurrentRepo
 import qualified Annex
 import Config.Files
-import qualified Option
 import Upgrade
 import Annex.Version
 
@@ -45,12 +44,13 @@ def = [ withOptions [listenOption] $
 	command "webapp" paramNothing seek SectionCommon "launch webapp"]
 
 listenOption :: Option
-listenOption = Option.field [] "listen" paramAddress
+listenOption = fieldOption [] "listen" paramAddress
 	"accept connections to this address"
 
-seek :: [CommandSeek]
-seek = [withField listenOption return $ \listenhost ->
-	withNothing $ start listenhost]
+seek :: CommandSeek
+seek ps = do
+	listenhost <- getOptionField listenOption return
+	withNothing (start listenhost) ps
 
 start :: Maybe HostName -> CommandStart
 start = start' True
@@ -107,7 +107,7 @@ startNoRepo _ = do
 		(d:_) -> do
 			setCurrentDirectory d
 			state <- Annex.new =<< Git.CurrentRepo.get
-			void $ Annex.eval state $ doCommand $
+			void $ Annex.eval state $ callCommandAction $
 				start' False listenhost
 
 {- Run the webapp without a repository, which prompts the user, makes one,

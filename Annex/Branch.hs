@@ -18,6 +18,7 @@ module Annex.Branch (
 	forceUpdate,
 	updateTo,
 	get,
+	getHistorical,
 	change,
 	commit,
 	forceCommit,
@@ -197,7 +198,13 @@ getLocal file = go =<< getJournalFileStale file
 	go Nothing = getRaw file
 
 getRaw :: FilePath -> Annex String
-getRaw file = withIndex $ L.unpack <$> catFile fullname file
+getRaw = getRef fullname
+
+getHistorical :: RefDate -> FilePath -> Annex String
+getHistorical date = getRef (Git.Ref.dateRef fullname date)
+
+getRef :: Ref -> FilePath -> Annex String
+getRef ref file = withIndex $ L.unpack <$> catFile ref file
 
 {- Applies a function to modifiy the content of a file.
  -
@@ -252,8 +259,7 @@ commitIndex' jl branchref message parents = do
 	committedref <- inRepo $ Git.Branch.commitAlways message fullname parents
 	setIndexSha committedref
 	parentrefs <- commitparents <$> catObject committedref
-	when (racedetected branchref parentrefs) $ do
-		liftIO $ print ("race detected", branchref, parentrefs, "committing", (branchref, parents))
+	when (racedetected branchref parentrefs) $
 		fixrace committedref parentrefs
   where
 	-- look for "parent ref" lines and return the refs

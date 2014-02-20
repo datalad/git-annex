@@ -133,10 +133,8 @@ setSticky f = modifyFileMode f $ addModes [stickyMode]
  - as writeFile.
  -}
 writeFileProtected :: FilePath -> String -> IO ()
-writeFileProtected file content = do
-	h <- openFile file WriteMode
+writeFileProtected file content = withFile file WriteMode $ \h -> do
 	void $ tryIO $
 		modifyFileMode file $
 			removeModes [groupReadMode, otherReadMode]
 	hPutStr h content
-	hClose h

@@ -24,8 +24,8 @@ def = [command "initremote"
 	(paramPair paramName $ paramOptional $ paramRepeating paramKeyValue)
 	seek SectionSetup "creates a special (non-git) remote"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start [] = error "Specify a name for the remote."

@@ -20,8 +20,8 @@ def =
   where
 	c n = notDirect . command n paramPaths seek SectionCommon
 
-seek :: [CommandSeek]
-seek = [withFilesInGit $ whenAnnexed start]
+seek :: CommandSeek
+seek = withFilesInGit $ whenAnnexed start
 
 {- The unlock subcommand replaces the symlink with a copy of the file's
  - content. -}

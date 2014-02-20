@@ -15,16 +15,27 @@ import Remote
 import Logs.Trust
 
 def :: [Command]
-def = [noCommit $ command "whereis" paramPaths seek
-	SectionQuery "lists repositories that have file content"]
+def = [noCommit $ withOptions (jsonOption : keyOptions) $
+	command "whereis" paramPaths seek SectionQuery
+		"lists repositories that have file content"]
 
-seek :: [CommandSeek]
-seek = [withValue (remoteMap id) $ \m ->
-	withFilesInGit $ whenAnnexed $ start m]
+seek :: CommandSeek
+seek ps = do
+	m <- remoteMap id
+	withKeyOptions
+		(startKeys m)
+		(withFilesInGit $ whenAnnexed $ start m)
+		ps
 
 start :: M.Map UUID Remote -> FilePath -> (Key, Backend) -> CommandStart
-start remotemap file (key, _) = do
-	showStart "whereis" file
+start remotemap file (key, _) = start' remotemap key (Just file)
+
+startKeys :: M.Map UUID Remote -> Key -> CommandStart
+startKeys remotemap key = start' remotemap key Nothing
+
+start' :: M.Map UUID Remote -> Key -> AssociatedFile -> CommandStart
+start' remotemap key afile = do
+	showStart' "whereis" key afile
 	next $ perform remotemap key
 
 perform :: M.Map UUID Remote -> Key -> CommandPerform

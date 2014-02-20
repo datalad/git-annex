@@ -17,8 +17,8 @@ def :: [Command]
 def = [noCommit $ command "configlist" paramNothing seek
 	SectionPlumbing "outputs relevant git configuration"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = do

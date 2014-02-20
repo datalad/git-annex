@@ -322,7 +322,7 @@ pairMsgReceived urlrenderer PairReq theiruuid selfjid theirjid
 	| baseJID selfjid == baseJID theirjid = autoaccept
 	| otherwise = do
 		knownjids <- mapMaybe (parseJID . getXMPPClientID)
-			. filter isXMPPRemote . syncRemotes <$> getDaemonStatus
+			. filter Remote.isXMPPRemote . syncRemotes <$> getDaemonStatus
 		um <- liftAnnex uuidMap
 		if elem (baseJID theirjid) knownjids && M.member theiruuid um
 			then autoaccept

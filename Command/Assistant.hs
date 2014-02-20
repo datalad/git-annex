@@ -9,9 +9,8 @@ module Command.Assistant where
 
 import Common.Annex
 import Command
-import qualified Option
 import qualified Command.Watch
-import Init
+import Annex.Init
 import Config.Files
 import qualified Build.SysConfig
 import Utility.HumanTime
@@ -32,17 +31,18 @@ options =
 	]
 
 autoStartOption :: Option
-autoStartOption = Option.flag [] "autostart" "start in known repositories"
+autoStartOption = flagOption [] "autostart" "start in known repositories"
 
 startDelayOption :: Option
-startDelayOption = Option.field [] "startdelay" paramNumber "delay before running startup scan"
+startDelayOption = fieldOption [] "startdelay" paramNumber "delay before running startup scan"
 
-seek :: [CommandSeek]
-seek = [withFlag Command.Watch.stopOption $ \stopdaemon ->
-	withFlag Command.Watch.foregroundOption $ \foreground ->
-	withFlag autoStartOption $ \autostart ->
-	withField startDelayOption (pure . maybe Nothing parseDuration) $ \startdelay -> 
-	withNothing $ start foreground stopdaemon autostart startdelay]
+seek :: CommandSeek
+seek ps = do
+	stopdaemon <- getOptionFlag Command.Watch.stopOption
+	foreground <- getOptionFlag Command.Watch.foregroundOption
+	autostart <- getOptionFlag autoStartOption
+	startdelay <- getOptionField startDelayOption (pure . maybe Nothing parseDuration)
+	withNothing (start foreground stopdaemon autostart startdelay) ps
 
 start :: Bool -> Bool -> Bool -> Maybe Duration -> CommandStart
 start foreground stopdaemon autostart startdelay

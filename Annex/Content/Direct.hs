@@ -52,10 +52,12 @@ associatedFiles key = do
 associatedFilesRelative :: Key -> Annex [FilePath] 
 associatedFilesRelative key = do
 	mapping <- calcRepo $ gitAnnexMapping key
-	liftIO $ catchDefaultIO [] $ do
-		h <- openFile mapping ReadMode
+	liftIO $ catchDefaultIO [] $ withFile mapping ReadMode $ \h -> do
 		fileEncoding h
-		lines <$> hGetContents h
+		-- Read strictly to ensure the file is closed
+		-- before changeAssociatedFiles tries to write to it.
+		-- (Especially needed on Windows.)
+		lines <$> hGetContentsStrict h
 
 {- Changes the associated files information for a key, applying a
  - transformation to the list. Returns new associatedFiles value. -}
@@ -66,15 +68,10 @@ changeAssociatedFiles key transform = do
 	let files' = transform files
 	when (files /= files') $ do
 		modifyContent mapping $
-			liftIO $ viaTmp write mapping $ unlines files'
+			liftIO $ viaTmp writeFileAnyEncoding mapping $
+				unlines files'
 	top <- fromRepo Git.repoPath
 	return $ map (top </>) files'
-  where
-	write file content = do
-		h <- openFile file WriteMode
-		fileEncoding h
- 		hPutStr h content
-		hClose h
 
 {- Removes the list of associated files. -}
 removeAssociatedFiles :: Key -> Annex ()

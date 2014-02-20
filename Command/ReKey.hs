@@ -22,8 +22,8 @@ def = [notDirect $ command "rekey"
 	(paramOptional $ paramRepeating $ paramPair paramPath paramKey)
 	seek SectionPlumbing "change keys used for files"]
 
-seek :: [CommandSeek]
-seek = [withPairs start]
+seek :: CommandSeek
+seek = withPairs start
 
 start :: (FilePath, String) -> CommandStart
 start (file, keyname) = ifAnnexed file go stop

@@ -196,15 +196,21 @@ prop_HmacSha1WithCipher_sane = known_good == macWithCipher' HmacSha1 "foo" "bar"
 class LensGpgEncParams a where getGpgEncParams :: a -> [CommandParam]
 
 {- Extract the GnuPG options from a pair of a Remote Config and a Remote
- - Git Config. If the remote is configured to use public-key encryption,
- - look up the recipient keys and add them to the option list. -}
+ - Git Config. -}
 instance LensGpgEncParams (RemoteConfig, RemoteGitConfig) where
-	getGpgEncParams (c,gc) = map Param (remoteAnnexGnupgOptions gc) ++ recipients
+	getGpgEncParams (c,gc) = map Param (remoteAnnexGnupgOptions gc) ++ getGpgEncParams c
 	  where
-		recipients = case M.lookup "encryption" c of
-			Just "pubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $
-						M.lookup "cipherkeys" c
-			_ -> []
+
+{- Extract the GnuPG options from a Remote Config, ignoring any
+ - git config settings. (Which is ok if the remote is just being set up 
+ - and so doesn't have any.)
+ -
+ - If the remote is configured to use public-key encryption,
+ - look up the recipient keys and add them to the option list.-}
+instance LensGpgEncParams RemoteConfig where
+	getGpgEncParams c = case M.lookup "encryption" c of
+		Just "pubkey" -> Gpg.pkEncTo $ maybe [] (split ",") $ M.lookup "cipherkeys" c
+		_ -> []
 
 {- Extract the GnuPG options from a Remote. -}
 instance LensGpgEncParams (RemoteA a) where

@@ -7,7 +7,6 @@
 
 module Command.Indirect where
 
-import System.PosixCompat.Files
 import Control.Exception.Extensible
 
 import Common.Annex
@@ -23,7 +22,7 @@ import Annex.Content
 import Annex.Content.Direct
 import Annex.CatFile
 import Annex.Exception
-import Init
+import Annex.Init
 import qualified Command.Add
 
 def :: [Command]
@@ -31,8 +30,8 @@ def = [notBareRepo $ noDaemonRunning $
 	command "indirect" paramNothing seek
 		SectionSetup "switch repository to indirect mode"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = ifM isDirect

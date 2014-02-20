@@ -17,26 +17,27 @@ import qualified Annex
 import qualified Utility.Format
 import Utility.DataUnits
 import Types.Key
-import qualified Option
 
 def :: [Command]
-def = [noCommit $ noMessages $ withOptions [formatOption, print0Option] $
+def = [noCommit $ noMessages $ withOptions [formatOption, print0Option, jsonOption] $
 	command "find" paramPaths seek SectionQuery "lists available files"]
 
 formatOption :: Option
-formatOption = Option.field [] "format" paramFormat "control format of output"
+formatOption = fieldOption [] "format" paramFormat "control format of output"
 
-withFormat :: (Maybe Utility.Format.Format -> CommandSeek) -> CommandSeek
-withFormat = withField formatOption $ return . fmap Utility.Format.gen
+getFormat :: Annex (Maybe Utility.Format.Format)
+getFormat = getOptionField formatOption $ return . fmap Utility.Format.gen
 
 print0Option :: Option
-print0Option = Option.Option [] ["print0"] (Option.NoArg set)
+print0Option = Option [] ["print0"] (NoArg set)
 	"terminate output with null"
   where
-	set = Annex.setField (Option.name formatOption) "${file}\0"
+	set = Annex.setField (optionName formatOption) "${file}\0"
 
-seek :: [CommandSeek]
-seek = [withFormat $ \f -> withFilesInGit $ whenAnnexed $ start f]
+seek :: CommandSeek
+seek ps = do
+	format <- getFormat
+	withFilesInGit (whenAnnexed $ start format) ps
 
 start :: Maybe Utility.Format.Format -> FilePath -> (Key, Backend) -> CommandStart
 start format file (key, _) = do

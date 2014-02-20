@@ -464,7 +464,7 @@ checkChangeContent change@(Change { changeInfo = i }) =
 		Nothing -> noop
 		Just k -> whenM (scanComplete <$> getDaemonStatus) $ do
 			present <- liftAnnex $ inAnnex k
-			if present
+			void $ if present
 				then queueTransfers "new file created" Next k (Just f) Upload
 				else queueTransfers "new or renamed file wanted" Next k (Just f) Download
 			handleDrops "file renamed" present k (Just f) Nothing

@@ -21,3 +21,6 @@ I don't know where is that log
 
 # End of transcript or log.
 """]]
+
+> Wheezy was released before git-annex had the webapp. If you want it,
+> install the backport. [[done]] --[[Joey]]

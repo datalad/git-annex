@@ -29,6 +29,7 @@ import System.Posix.Types (ProcessID)
 #else
 import System.Win32.Process (ProcessId)
 import System.Win32.Process.Current (getCurrentProcessId)
+import Utility.WinLock
 #endif
 
 #ifndef mingw32_HOST_OS
@@ -147,7 +148,7 @@ runTransfer t file shouldretry a = do
 			openFd (transferLockFile tfile) ReadWrite (Just mode)
 				defaultFileFlags { trunc = True }
 		case mfd of
-			Nothing -> return (mfd, False)
+			Nothing -> return (Nothing, False)
 			Just fd -> do
 				locked <- catchMaybeIO $
 					setLock fd (WriteLock, AbsoluteSeek, 0, 0)
@@ -158,17 +159,28 @@ runTransfer t file shouldretry a = do
 						return (mfd, False)
 #else
 	prep tfile _mode info = do
-		mfd <- catchMaybeIO $ do
-			writeFile (transferLockFile tfile) ""
-			writeTransferInfoFile info tfile
-		return (mfd, False)
+		v <- catchMaybeIO $ lockExclusive (transferLockFile tfile)
+		case v of
+			Nothing -> return (Nothing, False)
+			Just Nothing -> return (Nothing, True)
+			Just (Just lockhandle) -> do
+				void $ tryIO $ writeTransferInfoFile info tfile
+				return (Just lockhandle, False)
 #endif
 	cleanup _ Nothing = noop
-	cleanup tfile (Just fd) = do
+	cleanup tfile (Just lockhandle) = do
 		void $ tryIO $ removeFile tfile
-		void $ tryIO $ removeFile $ transferLockFile tfile
 #ifndef mingw32_HOST_OS
-		closeFd fd
+		void $ tryIO $ removeFile $ transferLockFile tfile
+		closeFd lockhandle
+#else
+		{- Windows cannot delete the lockfile until the lock
+		 - is closed. So it's possible to race with another
+		 - process that takes the lock before it's removed,
+		 - so ignore failure to remove.
+		 -}
+		dropLock lockhandle
+		void $ tryIO $ removeFile $ transferLockFile tfile
 #endif
 	retry oldinfo metervar run = do
 		v <- tryAnnex run
@@ -246,11 +258,14 @@ checkTransfer t = do
 				Just (pid, _) -> liftIO $ catchDefaultIO Nothing $
 					readTransferInfoFile (Just pid) tfile
 #else
-	ifM (liftIO $ doesFileExist $ transferLockFile tfile)
-		( liftIO $ catchDefaultIO Nothing $
+	v <- liftIO $ lockShared $ transferLockFile tfile
+	liftIO $ case v of
+		Nothing -> catchDefaultIO Nothing $
 			readTransferInfoFile Nothing tfile
-		, return Nothing
-		)
+		Just lockhandle -> do
+			dropLock lockhandle
+			void $ tryIO $ removeFile $ transferLockFile tfile
+			return Nothing
 #endif
 
 {- Gets all currently running transfers. -}
@@ -325,11 +340,8 @@ parseTransferFile file
 	bits = splitDirectories file
 
 writeTransferInfoFile :: TransferInfo -> FilePath -> IO ()
-writeTransferInfoFile info tfile = do
-	h <- openFile tfile WriteMode
-	fileEncoding h
-	hPutStr h $ writeTransferInfo info
-	hClose h
+writeTransferInfoFile info tfile = writeFileAnyEncoding tfile $
+	writeTransferInfo info
 
 {- File format is a header line containing the startedTime and any
  - bytesComplete value. Followed by a newline and the associatedFile.
@@ -350,10 +362,8 @@ writeTransferInfo info = unlines
 	]
 
 readTransferInfoFile :: Maybe PID -> FilePath -> IO (Maybe TransferInfo)
-readTransferInfoFile mpid tfile = catchDefaultIO Nothing $ do
-	h <- openFile tfile ReadMode
-	fileEncoding h
-	hClose h `after` (readTransferInfo mpid <$> hGetContentsStrict h)
+readTransferInfoFile mpid tfile = catchDefaultIO Nothing $
+	readTransferInfo mpid <$> readFileStrictAnyEncoding tfile
 
 readTransferInfo :: Maybe PID -> String -> Maybe TransferInfo
 readTransferInfo mpid s = TransferInfo
@@ -370,8 +380,8 @@ readTransferInfo mpid s = TransferInfo
 	<*> pure False
   where
 #ifdef mingw32_HOST_OS
-	(firstline, rem) = separate (== '\n') s
-	(secondline, rest) = separate (== '\n') rem
+	(firstline, otherlines) = separate (== '\n') s
+	(secondline, rest) = separate (== '\n') otherlines
 	mpid' = readish secondline
 #else
 	(firstline, rest) = separate (== '\n') s

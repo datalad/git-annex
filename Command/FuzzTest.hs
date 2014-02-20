@@ -25,8 +25,8 @@ def :: [Command]
 def = [ notBareRepo $ command "fuzztest" paramNothing seek SectionPlumbing
 	"generates fuzz test files"]
 
-seek :: [CommandSeek]
-seek = [withNothing start]
+seek :: CommandSeek
+seek = withNothing start
 
 start :: CommandStart
 start = do
@@ -145,13 +145,6 @@ genFuzzFile = do
  - inotify descriptors. -}
 genFuzzDir :: IO FuzzDir
 genFuzzDir = mkFuzzDir <$> (getStdRandom (randomR (1,16)) :: IO Int)
-
-localFile :: FilePath -> Bool
-localFile f
-	| isAbsolute f = False
-	| ".." `isInfixOf` f = False
-	| ".git" `isPrefixOf` f = False
-	| otherwise = True
 
 data TimeStampedFuzzAction 
 	= Started UTCTime FuzzAction
