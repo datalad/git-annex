@@ -24,3 +24,5 @@ remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook ex
 [/Applications/git-annex.app/Contents/MacOS]# ./git --version
 
 git version 1.8.3.4 (Apple Git-47)
+
+> Really [[fixed|done]] now. --[[Joey]]
