@@ -67,7 +67,6 @@ seek :: CommandSeek
 seek ps = do
 	from <- getOptionField fsckFromOption Remote.byNameWithUUID
 	i <- getIncremental
-	liftIO $ print i
 	withKeyOptions
 		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)

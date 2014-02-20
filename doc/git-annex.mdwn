@@ -503,9 +503,10 @@ subdirectories).
   To avoid expensive checksum calculations (and expensive transfers when
   fscking a remote), specify `--fast`.
 
-  To start a new incremental fsck, specify `--incremental`. Then
-  the next time you fsck, you can specify `--more` to skip over
-  files that have already been checked, and continue where it left off.
+  To start a new incremental fsck, use the `--incremental` option. Then
+  the next time you fsck, you can instead use the `--more` option 
+  to skip over files that have already been checked, and continue
+  where it left off.
 
   The `--incremental-schedule` option makes a new incremental fsck be
   started a configurable time after the last incremental fsck was started.
