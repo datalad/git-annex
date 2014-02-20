@@ -17,3 +17,5 @@ http://git-annex.branchable.com/walkthrough/backups/
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]
