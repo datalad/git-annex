@@ -6,7 +6,7 @@
  - A line of the log will look like: "date N INFO"
  - Where N=1 when the INFO is present, and 0 otherwise.
  - 
- - Copyright 2010-2011 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -16,7 +16,8 @@ module Logs.Presence (
 	addLog,
 	readLog,
 	logNow,
-	currentLog
+	currentLog,
+	historicalLog
 ) where
 
 import Data.Time.Clock.POSIX
@@ -24,6 +25,7 @@ import Data.Time.Clock.POSIX
 import Logs.Presence.Pure as X
 import Common.Annex
 import qualified Annex.Branch
+import Git.Types (RefDate)
 
 addLog :: FilePath -> LogLine -> Annex ()
 addLog file line = Annex.Branch.change file $ \s -> 
@@ -43,3 +45,12 @@ logNow s i = do
 {- Reads a log and returns only the info that is still in effect. -}
 currentLog :: FilePath -> Annex [String]
 currentLog file = map info . filterPresent <$> readLog file
+
+{- Reads a historical version of a log and returns the info that was in
+ - effect at that time. 
+ -
+ - The date is formatted as shown in gitrevisions man page.
+ -}
+historicalLog :: RefDate -> FilePath -> Annex [String]
+historicalLog refdate file = map info . filterPresent . parseLog
+	<$> Annex.Branch.getHistorical refdate file

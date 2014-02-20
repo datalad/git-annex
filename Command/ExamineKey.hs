@@ -10,16 +10,18 @@ module Command.ExamineKey where
 import Common.Annex
 import Command
 import qualified Utility.Format
-import Command.Find (formatOption, withFormat, showFormatted, keyVars)
+import Command.Find (formatOption, getFormat, showFormatted, keyVars)
 import Types.Key
 
 def :: [Command]
-def = [noCommit $ noMessages $ withOptions [formatOption] $
+def = [noCommit $ noMessages $ withOptions [formatOption, jsonOption] $
 	command "examinekey" (paramRepeating paramKey) seek
 	SectionPlumbing "prints information from a key"]
 
-seek :: [CommandSeek]
-seek = [withFormat $ \f -> withKeys $ start f]
+seek :: CommandSeek
+seek ps = do
+	format <- getFormat
+	withKeys (start format) ps
 
 start :: Maybe Utility.Format.Format -> Key -> CommandStart
 start format key = do

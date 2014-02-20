@@ -33,12 +33,19 @@ hGetContentsStrict = hGetContents >=> \s -> length s `seq` return s
 readFileStrict :: FilePath -> IO String
 readFileStrict = readFile >=> \s -> length s `seq` return s
 
-{-  Reads a file strictly, and using the FileSystemEncofing, so it will
+{-  Reads a file strictly, and using the FileSystemEncoding, so it will
  -  never crash on a badly encoded file. -}
 readFileStrictAnyEncoding :: FilePath -> IO String
 readFileStrictAnyEncoding f = withFile f ReadMode $ \h -> do
 	fileEncoding h
 	hClose h `after` hGetContentsStrict h
+
+{- Writes a file, using the FileSystemEncoding so it will never crash
+ - on a badly encoded content string. -}
+writeFileAnyEncoding :: FilePath -> String -> IO ()
+writeFileAnyEncoding f content = withFile f WriteMode $ \h -> do
+	fileEncoding h
+	hPutStr h content
 
 {- Like break, but the item matching the condition is not included
  - in the second result list.

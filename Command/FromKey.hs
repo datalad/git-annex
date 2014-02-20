@@ -7,8 +7,6 @@
 
 module Command.FromKey where
 
-import System.PosixCompat.Files
-
 import Common.Annex
 import Command
 import qualified Annex.Queue
@@ -20,8 +18,8 @@ def = [notDirect $ notBareRepo $
 	command "fromkey" (paramPair paramKey paramPath) seek
 		SectionPlumbing "adds a file using a specific key"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start (keyname:file:[]) = do

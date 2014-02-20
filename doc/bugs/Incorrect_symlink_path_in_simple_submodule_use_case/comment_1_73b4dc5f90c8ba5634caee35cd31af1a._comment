@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="206.74.132.139"
+ subject="comment 1"
+ date="2014-02-06T16:58:54Z"
+ content="""
+Since the symlinks are committed to git, they can only point at one location, which is whereever the .git/annex directory was in the repository where they were created in the first place. You can run `git annex fix` in the submodule and it should correct the links. But then they'll point to the wrong location in the non-submodule clone of the repository.
+
+So, it seems you need to pick whether a given repository will be a submodule or not (and where it will be mounted in the parent repository if so), and stick with that choice. You can't have it both ways. 
+
+I cannot imagine any change to git-annex that could change this limitation. Except perhaps using direct mode everywhere, in which case where the symlinks point internally doesn't really matter..
+
+(<http://myrepos.branchable.com> might be a usable alternative to submodules for you, that does not have this problem.)
+"""]]

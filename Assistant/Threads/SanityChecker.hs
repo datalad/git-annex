@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Assistant.Threads.SanityChecker (
 	sanityCheckerStartupThread,
 	sanityCheckerDailyThread,
@@ -15,7 +17,10 @@ import Assistant.Common
 import Assistant.DaemonStatus
 import Assistant.Alert
 import Assistant.Repair
+import Assistant.Drop
 import Assistant.Ssh
+import Assistant.TransferQueue
+import Assistant.Types.UrlRenderer
 import qualified Annex.Branch
 import qualified Git.LsFiles
 import qualified Git.Command
@@ -27,10 +32,20 @@ import Utility.Batch
 import Utility.NotificationBroadcaster
 import Config
 import Utility.HumanTime
+import Utility.Tense
 import Git.Repair
 import Git.Index
+import Assistant.Unused
+import Logs.Unused
+import Logs.Transfer
+import Config.Files
+import qualified Annex
+#ifdef WITH_WEBAPP
+import Assistant.WebApp.Types
+#endif
 
 import Data.Time.Clock.POSIX
+import qualified Data.Text as T
 
 {- This thread runs once at startup, and most other threads wait for it
  - to finish. (However, the webapp thread does not, to prevent the UI
@@ -78,8 +93,8 @@ sanityCheckerHourlyThread = namedThread "SanityCheckerHourly" $ forever $ do
 	hourlyCheck
 
 {- This thread wakes up daily to make sure the tree is in good shape. -}
-sanityCheckerDailyThread :: NamedThread
-sanityCheckerDailyThread = namedThread "SanityCheckerDaily" $ forever $ do
+sanityCheckerDailyThread :: UrlRenderer -> NamedThread
+sanityCheckerDailyThread urlrenderer = namedThread "SanityCheckerDaily" $ forever $ do
 	waitForNextCheck
 
 	debug ["starting sanity check"]
@@ -90,7 +105,8 @@ sanityCheckerDailyThread = namedThread "SanityCheckerDaily" $ forever $ do
 		modifyDaemonStatus_ $ \s -> s { sanityCheckRunning = True }
 
 		now <- liftIO getPOSIXTime -- before check started
-		r <- either showerr return =<< (tryIO . batch) <~> dailyCheck
+		r <- either showerr return 
+			=<< (tryIO . batch) <~> dailyCheck urlrenderer
 
 		modifyDaemonStatus_ $ \s -> s
 			{ sanityCheckRunning = False
@@ -119,9 +135,10 @@ waitForNextCheck = do
 {- It's important to stay out of the Annex monad as much as possible while
  - running potentially expensive parts of this check, since remaining in it
  - will block the watcher. -}
-dailyCheck :: Assistant Bool
-dailyCheck = do
+dailyCheck :: UrlRenderer -> Assistant Bool
+dailyCheck urlrenderer = do
 	g <- liftAnnex gitRepo
+	batchmaker <- liftIO getBatchCommandMaker
 
 	-- Find old unstaged symlinks, and add them to git.
 	(unstaged, cleanup) <- liftIO $ Git.LsFiles.notInRepo False ["."] g
@@ -140,11 +157,28 @@ dailyCheck = do
 	 - to have a lot of small objects and they should not be a
 	 - significant size. -}
 	when (Git.Config.getMaybe "gc.auto" g == Just "0") $
-		liftIO $ void $ Git.Command.runBool
+		liftIO $ void $ Git.Command.runBatch batchmaker
 			[ Param "-c", Param "gc.auto=670000"
 			, Param "gc"
 			, Param "--auto"
 			] g
+
+	{- Check if the unused files found last time have been dealt with. -}
+	checkOldUnused urlrenderer
+
+	{- Run git-annex unused once per day. This is run as a separate
+	 - process to stay out of the annex monad and so it can run as a
+	 - batch job. -}
+	program <- liftIO readProgramFile
+	let (program', params') = batchmaker (program, [Param "unused"])
+	void $ liftIO $ boolSystem program' params'
+	{- Invalidate unused keys cache, and queue transfers of all unused
+	 - keys, or if no transfers are called for, drop them. -}
+	unused <- liftAnnex unusedKeys'
+	void $ liftAnnex $ setUnusedKeys unused
+	forM_ unused $ \k -> do
+		unlessM (queueTransfers "unused" Later k Nothing Upload) $
+			handleDrops "unused" True k Nothing Nothing
 
 	return True
   where
@@ -159,7 +193,8 @@ dailyCheck = do
 		insanity $ "found unstaged symlink: " ++ file
 
 hourlyCheck :: Assistant ()
-hourlyCheck = checkLogSize 0
+hourlyCheck = do
+	checkLogSize 0
 
 {- Rotate logs until log file size is < 1 mb. -}
 checkLogSize :: Int -> Assistant ()
@@ -184,3 +219,23 @@ oneHour = 60 * 60
 oneDay :: Int
 oneDay = 24 * oneHour
 
+{- If annex.expireunused is set, find any keys that have lingered unused
+ - for the specified duration, and remove them.
+ -
+ - Otherwise, check to see if unused keys are piling up, and let the user
+ - know. -}
+checkOldUnused :: UrlRenderer -> Assistant ()
+checkOldUnused urlrenderer = go =<< annexExpireUnused <$> liftAnnex Annex.getGitConfig
+  where
+	go (Just Nothing) = noop
+  	go (Just (Just expireunused)) = expireUnused (Just expireunused)
+	go Nothing = maybe noop prompt =<< describeUnusedWhenBig
+
+	prompt msg = 
+#ifdef WITH_WEBAPP
+		do
+			button <- mkAlertButton True (T.pack "Configure") urlrenderer ConfigUnusedR
+			void $ addAlert $ unusedFilesAlert [button] $ T.unpack $ renderTense Present msg
+#else
+		debug [show $ renderTense Past msg]
+#endif

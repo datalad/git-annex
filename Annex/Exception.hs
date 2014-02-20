@@ -14,6 +14,7 @@
 
 module Annex.Exception (
 	bracketIO,
+	bracketAnnex,
 	tryAnnex,
 	tryAnnexIO,
 	throwAnnex,
@@ -28,6 +29,9 @@ import Common.Annex
 {- Runs an Annex action, with setup and cleanup both in the IO monad. -}
 bracketIO :: IO v -> (v -> IO b) -> (v -> Annex a) -> Annex a
 bracketIO setup cleanup = M.bracket (liftIO setup) (liftIO . cleanup)
+
+bracketAnnex :: Annex v -> (v -> Annex b) -> (v -> Annex a) -> Annex a
+bracketAnnex = M.bracket
 
 {- try in the Annex monad -}
 tryAnnex :: Annex a -> Annex (Either SomeException a)

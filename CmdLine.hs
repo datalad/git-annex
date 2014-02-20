@@ -23,7 +23,6 @@ import System.Posix.Signals
 
 import Common.Annex
 import qualified Annex
-import qualified Annex.Queue
 import qualified Git
 import qualified Git.AutoCorrect
 import Annex.Content
@@ -41,7 +40,7 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 		Left e -> maybe (throw e) (\a -> a params) (cmdnorepo cmd)
 		Right g -> do
 			state <- Annex.new g
-			(actions, state') <- Annex.run state $ do
+			Annex.eval state $ do
 				checkEnvironment
 				checkfuzzy
 				forM_ fields $ uncurry Annex.setField
@@ -50,8 +49,9 @@ dispatch fuzzyok allargs allcmds commonoptions fields header getgitrepo = do
 				sequence_ flags
 				whenM (annexDebug <$> Annex.getGitConfig) $
 					liftIO enableDebugOutput
-				prepCommand cmd params
-		 	tryRun state' cmd $ [startup] ++ actions ++ [shutdown $ cmdnocommit cmd]
+				startup
+				performCommandAction cmd params
+				shutdown $ cmdnocommit cmd
   where
 	err msg = msg ++ "\n\n" ++ usage header allcmds
 	cmd = Prelude.head cmds
@@ -92,44 +92,19 @@ getOptCmd argv cmd commonoptions = check $
 		, commandUsage cmd
 		]
 
-{- Runs a list of Annex actions. Catches IO errors and continues
- - (but explicitly thrown errors terminate the whole command).
- -}
-tryRun :: Annex.AnnexState -> Command -> [CommandCleanup] -> IO ()
-tryRun = tryRun' 0
-tryRun' :: Integer -> Annex.AnnexState -> Command -> [CommandCleanup] -> IO ()
-tryRun' errnum _ cmd []
-	| errnum > 0 = error $ cmdname cmd ++ ": " ++ show errnum ++ " failed"
-	| otherwise = noop
-tryRun' errnum state cmd (a:as) = do
-	r <- run
-	handle $! r
-  where
-	run = tryIO $ Annex.run state $ do
-		Annex.Queue.flushWhenFull
-		a
-	handle (Left err) = showerr err >> cont False state
-	handle (Right (success, state')) = cont success state'
-	cont success s = do
-		let errnum' = if success then errnum else errnum + 1
-		(tryRun' $! errnum') s cmd as
-	showerr err = Annex.eval state $ do
-		showErr err
-		showEndFail
-
 {- Actions to perform each time ran. -}
-startup :: Annex Bool
-startup = liftIO $ do
+startup :: Annex ()
+startup =
 #ifndef mingw32_HOST_OS
-	void $ installHandler sigINT Default Nothing
+	liftIO $ void $ installHandler sigINT Default Nothing
+#else
+	return ()
 #endif
-	return True
 
 {- Cleanup actions. -}
-shutdown :: Bool -> Annex Bool
+shutdown :: Bool -> Annex ()
 shutdown nocommit = do
 	saveState nocommit
 	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
 	liftIO reapZombies -- zombies from long-running git processes
 	sshCleanup -- ssh connection caching
-	return True

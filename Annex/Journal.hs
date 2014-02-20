@@ -20,6 +20,10 @@ import Annex.Exception
 import qualified Git
 import Annex.Perms
 
+#ifdef mingw32_HOST_OS
+import Utility.WinLock
+#endif
+
 {- Records content for a file in the branch to the journal.
  -
  - Using the journal, rather than immediatly staging content to the index
@@ -116,13 +120,8 @@ lockJournal a = do
 		l <- noUmask mode $ createFile lockfile mode
 		waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
 		return l
-#else
-	lock lockfile _mode = do
-		writeFile lockfile ""
-		return lockfile
-#endif
-#ifndef mingw32_HOST_OS
 	unlock = closeFd
 #else
-	unlock = removeFile
+	lock lockfile _mode = waitToLock $ lockExclusive lockfile
+	unlock = dropLock
 #endif

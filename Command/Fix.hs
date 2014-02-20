@@ -9,8 +9,6 @@
 
 module Command.Fix where
 
-import System.PosixCompat.Files
-
 import Common.Annex
 import Command
 import qualified Annex.Queue
@@ -24,8 +22,8 @@ def :: [Command]
 def = [notDirect $ noCommit $ command "fix" paramPaths seek
 	SectionMaintenance "fix up symlinks to point to annexed content"]
 
-seek :: [CommandSeek]
-seek = [withFilesInGit $ whenAnnexed start]
+seek :: CommandSeek
+seek = withFilesInGit $ whenAnnexed start
 
 {- Fixes the symlink to an annexed file. -}
 start :: FilePath -> (Key, Backend) -> CommandStart

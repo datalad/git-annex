@@ -1,3 +1,104 @@
+git-annex (5.20140210~bpo70+2) wheezy-backports; urgency=medium
+
+  * Updating backport to newest release.
+  * Remaining differences in this backport:
+    - No webdav special remote support.
+    - Test suite is not built into git-annex as it now uses haskell-tasty,
+      which is not yet backported.
+    - No skein hash support.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 20 Feb 2014 22:56:45 +0000
+
+git-annex (5.20140210) unstable; urgency=medium
+
+  * --in can now refer to files that were located in a repository at
+    some past date. For example, --in="here@{yesterday}"
+  * Fixed direct mode annexed content locking code, which is used to
+    guard against recursive file drops.
+  * This is the first beta-level release of the Windows port with important
+    fixes (see below).
+    (The webapp and assistant are still alpha-level on Windows.)
+  * sync --content: Honor annex-ignore configuration.
+  * sync: Don't try to sync with xmpp remotes, which are only currently
+    supported when using the assistant.
+  * sync --content: Re-pull from remotes after downloading content,
+    since that can take a while and other changes may be pushed in the
+    meantime.
+  * sync --content: Reuse smart copy code from copy command, including
+    handling and repairing out of date location tracking info.
+    Closes: #737480
+  * sync --content: Drop files from remotes that don't want them after
+    getting them.
+  * sync: Fix bug in automatic merge conflict resolution code when used
+    on a filesystem not supporting symlinks, which resulted in it losing
+    track of the symlink bit of annexed files.
+  * Added ways to configure rsync options to be used only when uploading
+    or downloading from a remote. Useful to eg limit upload bandwidth.
+  * Fix initremote with encryption=pubkey to work with S3, glacier, webdav,
+    and external special remotes.
+  * Avoid building with DAV 0.6 which is badly broken (see #737902).
+  * Fix dropping of unused keys with spaces in their name.
+  * Fix build on platforms not supporting the webapp.
+  * Document in man page that sshcaching uses ssh ControlMaster.
+    Closes: #737476
+  * Windows: It's now safe to run multiple git-annex processes concurrently
+    on Windows; the lock files have been sorted out.
+  * Windows: Avoid using unix-compat's rename, which refuses to rename
+    directories.
+  * Windows: Fix deletion of repositories by test suite and webapp.
+  * Windows: Test suite 100% passes again.
+  * Windows: Fix bug in symlink calculation code.
+  * Windows: Fix handling of absolute unix-style git repository paths.
+  * Android: Avoid crashing when unable to set file mode for ssh config file
+    due to Android filesystem horribleness.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 10 Feb 2014 12:54:57 -0400
+
+git-annex (5.20140127) unstable; urgency=medium
+
+  * sync --content: New option that makes the content of annexed files be
+    transferred. Similar to the assistant, this honors any configured
+    preferred content expressions.
+  * Remove --json option from commands not supporting it.
+  * status: Support --json.
+  * list: Fix specifying of files to list.
+  * Allow --all to be mixed with matching options like --copies and --in
+    (but not --include and --exclude).
+  * numcopies: New command, sets global numcopies value that is seen by all
+    clones of a repository.
+  * The annex.numcopies git config setting is deprecated. Once the numcopies
+    command is used to set the global number of copies, any annex.numcopies
+    git configs will be ignored.
+  * assistant: Make the prefs page set the global numcopies.
+  * Add lackingcopies, approxlackingcopies, and unused to
+    preferred content expressions.
+  * Client, transfer, incremental backup, and archive repositories
+    now want to get content that does not yet have enough copies.
+  * Client, transfer, and source repositories now do not want to retain
+    unused file contents.
+  * assistant: Checks daily for unused file contents, and when possible
+    moves them to a repository (such as a backup repository) that
+    wants to retain them.
+  * assistant: annex.expireunused can be configured to cause unused
+    file contents to be deleted after some period of time.
+  * webapp: Nudge user to see if they want to expire old unused file
+    contents when a lot of them seem to be piling up in the repository.
+  * repair: Check git version at run time.
+  * assistant: Run the periodic git gc in batch mode.
+  * added annex.secure-erase-command config option.
+  * test suite: Use tasty-rerun, and expose tasty command-line options.
+  * Optimise non-bare http remotes; no longer does a 404 to the wrong
+    url every time before trying the right url. Needs annex-bare to be
+    set to false, which is done when initially probing the uuid of a
+    http remote.
+  * webapp: After upgrading a git repository to git-annex, fix
+    bug that made it temporarily not be synced with.
+  * whereis: Support --all.
+  * All commands that support --all also support a --key option,
+    which limits them to acting on a single key.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 27 Jan 2014 13:43:28 -0400
+
 git-annex (5.20140117~bpo70+2) wheezy-backports; urgency=medium
 
   * Version build-dep on haskell-gnutls, so that backport will build with

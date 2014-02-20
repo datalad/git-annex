@@ -8,5 +8,4 @@
     <pre>
       #{msg}
   <p>
-    <a .btn .btn-primary href="#">
-     Retry
+    To retry setting up the repository, reload this page.

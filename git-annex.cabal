@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 5.20140117
+Version: 5.20140210
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -93,7 +93,7 @@ Executable git-annex
    extensible-exceptions, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.9), monad-control, MonadCatchIO-transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
-   SafeSemaphore, uuid, random, dlist, unix-compat, async
+   SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3)
   CC-Options: -Wall
   GHC-Options: -Wall
   Extensions: PackageImports
@@ -114,7 +114,8 @@ Executable git-annex
     CPP-Options: -DWITH_CLIBS
 
   if flag(TestSuite)
-    Build-Depends: tasty, tasty-hunit, tasty-quickcheck
+    Build-Depends: tasty (>= 0.7), tasty-hunit, tasty-quickcheck, tasty-rerun,
+     optparse-applicative
     CPP-Options: -DWITH_TESTSUITE
 
   if flag(TDFA)
@@ -131,11 +132,11 @@ Executable git-annex
 
   -- Not yet available for backport.
   --if flag(WebDAV)
-  --  Build-Depends: DAV (>= 0.3), http-conduit, xml-conduit, http-types
+  --  Build-Depends: DAV ((>= 0.3 && < 0.6) || > 0.6),
+  --   http-conduit, xml-conduit, http-types
   --  CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
-    Build-Depends: stm (>= 2.3)
     CPP-Options: -DWITH_ASSISTANT
 
   if flag(Assistant)

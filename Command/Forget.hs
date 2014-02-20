@@ -12,7 +12,6 @@ import Command
 import qualified Annex.Branch as Branch
 import Logs.Transitions
 import qualified Annex
-import qualified Option
 
 import Data.Time.Clock.POSIX
 
@@ -24,11 +23,12 @@ forgetOptions :: [Option]
 forgetOptions = [dropDeadOption]
 
 dropDeadOption :: Option
-dropDeadOption = Option.flag [] "drop-dead" "drop references to dead repositories"
+dropDeadOption = flagOption [] "drop-dead" "drop references to dead repositories"
 
-seek :: [CommandSeek]
-seek = [withFlag dropDeadOption $ \dropdead ->
-	withNothing $ start dropdead]
+seek :: CommandSeek
+seek ps = do
+	dropdead <- getOptionFlag dropDeadOption
+	withNothing (start dropdead) ps
 
 start :: Bool -> CommandStart
 start dropdead = do

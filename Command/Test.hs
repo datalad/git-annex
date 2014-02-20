@@ -16,8 +16,8 @@ def = [ noRepo startIO $ dontCheck repoExists $
 	command "test" paramNothing seek SectionPlumbing
 		"run built-in test suite"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 {- We don't actually run the test suite here because of a dependency loop.
  - The main program notices when the command is test and runs it; this
@@ -34,5 +34,4 @@ start ps = do
 	stop
 
 startIO :: CmdParams -> IO ()
-startIO [] = warningIO "git-annex was built without its test suite; not testing"
-startIO _ = error "Cannot specify any additional parameters when running test"
+startIO _ = warningIO "git-annex was built without its test suite; not testing"

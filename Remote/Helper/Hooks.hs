@@ -17,6 +17,8 @@ import qualified Annex
 import Annex.LockPool
 #ifndef mingw32_HOST_OS
 import Annex.Perms
+#else
+import Utility.WinLock
 #endif
 
 {- Modifies a remote's access functions to first run the
@@ -73,13 +75,13 @@ runHooks r starthook stophook a = do
 		run starthook
 
 		Annex.addCleanup (remoteid ++ "-stop-command") $ runstop lck
-#ifndef mingw32_HOST_OS
 	runstop lck = do
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock
 		-- succeeds, we're the only process using this remote,
 		-- so can stop it.
 		unlockFile lck
+#ifndef mingw32_HOST_OS
 		mode <- annexFileMode
 		fd <- liftIO $ noUmask mode $
 			openFd lck ReadWrite (Just mode) defaultFileFlags
@@ -90,5 +92,10 @@ runHooks r starthook stophook a = do
 			Right _ -> run stophook
 		liftIO $ closeFd fd
 #else
-	runstop _lck = run stophook
+		v <- liftIO $ lockExclusive lck
+		case v of
+			Nothing -> noop
+			Just lockhandle -> do
+				run stophook
+				liftIO $ dropLock lockhandle
 #endif

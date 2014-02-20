@@ -11,7 +11,11 @@ import Common.Annex
 import Types.Key
 
 {- There are several varieties of log file formats. -}
-data LogVariety = UUIDBasedLog | NewUUIDBasedLog | PresenceLog Key
+data LogVariety
+	= UUIDBasedLog
+	| NewUUIDBasedLog
+	| PresenceLog Key
+	| SingleValueLog
 	deriving (Show)
 
 {- Converts a path from the git-annex branch into one of the varieties
@@ -20,6 +24,7 @@ getLogVariety :: FilePath -> Maybe LogVariety
 getLogVariety f
 	| f `elem` topLevelUUIDBasedLogs = Just UUIDBasedLog
 	| isRemoteStateLog f = Just NewUUIDBasedLog
+	| f == numcopiesLog = Just SingleValueLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
 
 {- All the uuid-based logs stored in the top of the git-annex branch. -}
@@ -42,6 +47,9 @@ presenceLogs f =
 
 uuidLog :: FilePath
 uuidLog = "uuid.log"
+
+numcopiesLog :: FilePath
+numcopiesLog = "numcopies.log"
 
 remoteLog :: FilePath
 remoteLog = "remote.log"
@@ -118,6 +126,7 @@ prop_logs_sane dummykey = all id
 	, expect isPresenceLog (getLogVariety $ locationLogFile dummykey)
 	, expect isPresenceLog (getLogVariety $ urlLogFile dummykey)
 	, expect isNewUUIDBasedLog (getLogVariety $ remoteStateLogFile dummykey)
+	, expect isSingleValueLog (getLogVariety $ numcopiesLog)
 	]
   where
   	expect = maybe False
@@ -127,3 +136,5 @@ prop_logs_sane dummykey = all id
 	isNewUUIDBasedLog _ = False
 	isPresenceLog (PresenceLog k) = k == dummykey
 	isPresenceLog _ = False
+	isSingleValueLog SingleValueLog = True
+	isSingleValueLog _ = False

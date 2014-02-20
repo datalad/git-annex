@@ -34,7 +34,6 @@ module Annex (
 
 import "mtl" Control.Monad.Reader
 import "MonadCatchIO-transformers" Control.Monad.CatchIO
-import System.Posix.Types (Fd)
 import Control.Concurrent
 
 import Common
@@ -46,6 +45,7 @@ import Git.CheckAttr
 import Git.CheckIgnore
 import Git.SharedRepository
 import qualified Git.Queue
+import Types.Key
 import Types.Backend
 import Types.GitConfig
 import qualified Types.Remote
@@ -56,6 +56,8 @@ import Types.Group
 import Types.Messages
 import Types.UUID
 import Types.FileMatcher
+import Types.NumCopies
+import Types.LockPool
 import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -75,7 +77,7 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 	)
 
 type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
-type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> FileInfo -> Annex Bool))
+type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> MatchInfo -> Annex Bool))
 
 -- internal state storage
 data AnnexState = AnnexState
@@ -94,8 +96,9 @@ data AnnexState = AnnexState
 	, checkattrhandle :: Maybe CheckAttrHandle
 	, checkignorehandle :: Maybe (Maybe CheckIgnoreHandle)
 	, forcebackend :: Maybe String
-	, forcenumcopies :: Maybe Int
-	, limit :: Matcher (FileInfo -> Annex Bool)
+	, globalnumcopies :: Maybe NumCopies
+	, forcenumcopies :: Maybe NumCopies
+	, limit :: Matcher (MatchInfo -> Annex Bool)
 	, uuidmap :: Maybe UUIDMap
 	, preferredcontentmap :: Maybe PreferredContentMap
 	, shared :: Maybe SharedRepository
@@ -103,12 +106,14 @@ data AnnexState = AnnexState
 	, trustmap :: Maybe TrustMap
 	, groupmap :: Maybe GroupMap
 	, ciphers :: M.Map StorableCipher Cipher
-	, lockpool :: M.Map FilePath Fd
+	, lockpool :: LockPool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	, cleanup :: M.Map String (Annex ())
 	, inodeschanged :: Maybe Bool
 	, useragent :: Maybe String
+	, errcounter :: Integer
+	, unusedkeys :: Maybe (S.Set Key)
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -128,6 +133,7 @@ newState c r = AnnexState
 	, checkattrhandle = Nothing
 	, checkignorehandle = Nothing
 	, forcebackend = Nothing
+	, globalnumcopies = Nothing
 	, forcenumcopies = Nothing
 	, limit = Left []
 	, uuidmap = Nothing
@@ -143,6 +149,8 @@ newState c r = AnnexState
 	, cleanup = M.empty
 	, inodeschanged = Nothing
 	, useragent = Nothing
+	, errcounter = 0
+	, unusedkeys = Nothing
 	}
 
 {- Makes an Annex state object for the specified git repo.

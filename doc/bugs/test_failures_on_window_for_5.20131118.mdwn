@@ -18,3 +18,5 @@ windows XP, NTFS = 1 FAIL
 windows 7, NTFS = 2 FAILs
 
 see attachment for full log of git annex test output
+
+> Reproduced and [[fixed|done]]. --[[Joey]]

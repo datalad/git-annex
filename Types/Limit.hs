@@ -17,4 +17,4 @@ import qualified Data.Set as S
 type MkLimit = String -> Either String MatchFiles
 
 type AssumeNotPresent = S.Set UUID
-type MatchFiles = AssumeNotPresent -> FileInfo -> Annex Bool
+type MatchFiles = AssumeNotPresent -> MatchInfo -> Annex Bool

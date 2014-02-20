@@ -1,19 +1,19 @@
-From fbd8f048c239e34625e438a24213534f6f68c3e8 Mon Sep 17 00:00:00 2001
+From 9f62992414f900fcafa00a838925e24c4365c50f Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Tue, 17 Dec 2013 18:34:25 +0000
-Subject: [PATCH] spliced TH
+Date: Fri, 7 Feb 2014 23:11:31 +0000
+Subject: [PATCH] splice TH
 
 ---
- Yesod/Form/Fields.hs    | 771 ++++++++++++++++++++++++++++++++++++------------
- Yesod/Form/Functions.hs | 239 ++++++++++++---
- Yesod/Form/Jquery.hs    | 129 ++++++--
- Yesod/Form/MassInput.hs | 233 ++++++++++++---
- Yesod/Form/Nic.hs       |  65 +++-
- yesod-form.cabal        |   1 +
+ Yesod/Form/Fields.hs    |  771 +++++++++++++++++++++++++++++++++++------------
+ Yesod/Form/Functions.hs |  239 ++++++++++++---
+ Yesod/Form/Jquery.hs    |  129 ++++++--
+ Yesod/Form/MassInput.hs |  233 +++++++++++---
+ Yesod/Form/Nic.hs       |   65 +++-
+ yesod-form.cabal        |    1 +
  6 files changed, 1127 insertions(+), 311 deletions(-)
 
 diff --git a/Yesod/Form/Fields.hs b/Yesod/Form/Fields.hs
-index b2a47c6..016c98b 100644
+index 97d0034..016c98b 100644
 --- a/Yesod/Form/Fields.hs
 +++ b/Yesod/Form/Fields.hs
 @@ -1,4 +1,3 @@
@@ -74,7 +74,7 @@ index b2a47c6..016c98b 100644
  
 -    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
 -$newline never
--<input id="#{theId}" name="#{name}" *{attrs} type="number" :isReq:required="" value="#{showVal val}">
+-<input id="#{theId}" name="#{name}" *{attrs} type="number" step=1 :isReq:required="" value="#{showVal val}">
 -|]
 +    , fieldView = \theId name attrs val isReq -> toWidget  $     \ _render_arOn
 +      -> do { id
@@ -103,7 +103,7 @@ index b2a47c6..016c98b 100644
  
 -    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
 -$newline never
--<input id="#{theId}" name="#{name}" *{attrs} type="text" :isReq:required="" value="#{showVal val}">
+-<input id="#{theId}" name="#{name}" *{attrs} type="number" step=any :isReq:required="" value="#{showVal val}">
 -|]
 +    , fieldView = \theId name attrs val isReq -> toWidget  $     \ _render_arOz
 +      -> do { id
@@ -1789,7 +1789,7 @@ index 2862678..04ddaba 100644
      }
    where
 diff --git a/yesod-form.cabal b/yesod-form.cabal
-index 9e0c710..a39f71f 100644
+index 1f6e0e1..4667861 100644
 --- a/yesod-form.cabal
 +++ b/yesod-form.cabal
 @@ -19,6 +19,7 @@ library
@@ -1798,8 +1798,8 @@ index 9e0c710..a39f71f 100644
                     , shakespeare-css       >= 1.0      && < 1.1
 +                   , shakespeare
                     , shakespeare-js        >= 1.0.2    && < 1.3
-                    , persistent            >= 1.2      && < 1.3
+                    , persistent            >= 1.2      && < 1.4
                     , template-haskell
 -- 
-1.8.5.1
+1.7.10.4
 

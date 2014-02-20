@@ -229,11 +229,11 @@ type ProtocolVersion = Int
 supportedProtocolVersions :: [ProtocolVersion]
 supportedProtocolVersions = [1]
 
-class Serializable a where
+class ExternalSerializable a where
 	serialize :: a -> String
 	deserialize :: String -> Maybe a
 
-instance Serializable Direction where
+instance ExternalSerializable Direction where
 	serialize Upload = "STORE"
 	serialize Download = "RETRIEVE"
 
@@ -241,23 +241,23 @@ instance Serializable Direction where
 	deserialize "RETRIEVE" = Just Download
 	deserialize _ = Nothing
 
-instance Serializable Key where
+instance ExternalSerializable Key where
 	serialize = key2file
 	deserialize = file2key
 
-instance Serializable [Char] where
+instance ExternalSerializable [Char] where
 	serialize = id
 	deserialize = Just
 
-instance Serializable ProtocolVersion where
+instance ExternalSerializable ProtocolVersion where
 	serialize = show
 	deserialize = readish
 
-instance Serializable Cost where
+instance ExternalSerializable Cost where
 	serialize = show
 	deserialize = readish
 
-instance Serializable Availability where
+instance ExternalSerializable Availability where
 	serialize GloballyAvailable = "GLOBAL"
 	serialize LocallyAvailable = "LOCAL"
 
@@ -265,7 +265,7 @@ instance Serializable Availability where
 	deserialize "LOCAL" = Just LocallyAvailable
 	deserialize _ = Nothing
 
-instance Serializable BytesProcessed where
+instance ExternalSerializable BytesProcessed where
 	serialize (BytesProcessed n) = show n
 	deserialize = BytesProcessed <$$> readish
 
@@ -283,15 +283,15 @@ parse0 :: a -> Parser a
 parse0 mk "" = Just mk
 parse0 _ _ = Nothing
 
-parse1 :: Serializable p1 => (p1 -> a) -> Parser a
+parse1 :: ExternalSerializable p1 => (p1 -> a) -> Parser a
 parse1 mk p1 = mk <$> deserialize p1
 
-parse2 :: (Serializable p1, Serializable p2) => (p1 -> p2 -> a) -> Parser a
+parse2 :: (ExternalSerializable p1, ExternalSerializable p2) => (p1 -> p2 -> a) -> Parser a
 parse2 mk s = mk <$> deserialize p1 <*> deserialize p2
   where
 	(p1, p2) = splitWord s
 
-parse3 :: (Serializable p1, Serializable p2, Serializable p3) => (p1 -> p2 -> p3 -> a) -> Parser a
+parse3 :: (ExternalSerializable p1, ExternalSerializable p2, ExternalSerializable p3) => (p1 -> p2 -> p3 -> a) -> Parser a
 parse3 mk s = mk <$> deserialize p1 <*> deserialize p2 <*> deserialize p3
   where
 	(p1, rest) = splitWord s

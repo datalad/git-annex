@@ -13,14 +13,16 @@ import Test.Tasty
 import Test.Tasty.Runners
 import Test.Tasty.HUnit
 import Test.Tasty.QuickCheck
-
-import System.PosixCompat.Files
-import Control.Exception.Extensible
+import Test.Tasty.Ingredients.Rerun
 import Data.Monoid
+
+import Options.Applicative hiding (command)
+import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
 import qualified Text.JSON
 import System.Path
+import qualified Data.ByteString.Lazy as L
 
 import Common
 
@@ -30,6 +32,7 @@ import qualified Annex.UUID
 import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Filename
+import qualified Git.Types
 import qualified Locations
 import qualified Types.KeySource
 import qualified Types.Backend
@@ -48,7 +51,8 @@ import qualified Types.Messages
 import qualified Config
 import qualified Config.Cost
 import qualified Crypto
-import qualified Init
+import qualified Annex.Init
+import qualified Annex.CatFile
 import qualified Utility.Path
 import qualified Utility.FileMode
 import qualified Build.SysConfig
@@ -63,8 +67,9 @@ import qualified Utility.Exception
 import qualified Utility.Hash
 import qualified Utility.Scheduled
 import qualified Utility.HumanTime
+import qualified Utility.ThreadScheduler
 #ifndef mingw32_HOST_OS
-import qualified GitAnnex
+import qualified CmdLine.GitAnnex as GitAnnex
 import qualified Remote.Helper.Encryptable
 import qualified Types.Crypto
 import qualified Utility.Gpg
@@ -72,33 +77,45 @@ import qualified Utility.Gpg
 
 type TestEnv = M.Map String String
 
-main :: IO ()
-main = do
+main :: [String] -> IO ()
+main ps = do
+	let tests = testGroup "Tests"
+		-- Test both direct and indirect mode.
+		-- Windows is only going to use direct mode,
+		-- so don't test twice.
+		[ properties
 #ifndef mingw32_HOST_OS
-	indirectenv <- prepare False
-	directenv <- prepare True
-	let tests = testGroup "Tests"
-		[ localOption (QuickCheckTests 1000) properties
-		, unitTests directenv "(direct)"
-		, unitTests indirectenv "(indirect)"
-		]
+		, withTestEnv True $ unitTests "(direct)"
+		, withTestEnv False $ unitTests "(indirect)"
 #else
-	-- Windows is only going to use direct mode, so don't test twice.
-	env <- prepare False
-	let tests = testGroup "Tests"
-		[properties, unitTests env ""]
+		, withTestEnv False $ unitTests ""
 #endif
-	let runner = tryIngredients [consoleTestReporter] mempty tests
-	ifM (maybe (error "tasty failed to return a runner!") id runner)
-		( exitSuccess
-		, do
-			putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
-			putStrLn "   with utilities, such as git, installed on this system.)"
-			exitFailure
-		)
+		]
+
+	-- Can't use tasty's defaultMain because one of the command line
+	-- parameters is "test".
+	let pinfo = info (helper <*> suiteOptionParser ingredients tests)
+		( fullDesc <> header "Builtin test suite" )
+	opts <- either (\f -> error =<< errMessage f "git-annex test") return $
+		execParserPure (prefs idm) pinfo ps
+	case tryIngredients ingredients opts tests of
+		Nothing -> error "No tests found!?"
+		Just act -> ifM act
+			( exitSuccess
+			, do
+				putStrLn "  (This could be due to a bug in git-annex, or an incompatability"
+				putStrLn "   with utilities, such as git, installed on this system.)"
+				exitFailure
+			)
+
+ingredients :: [Ingredient]
+ingredients =
+	[ rerunningTests [consoleTestReporter]
+	, listingTests
+	]
 
 properties :: TestTree
-properties = testGroup "QuickCheck"
+properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	[ testProperty "prop_idempotent_deencode_git" Git.Filename.prop_idempotent_deencode
 	, testProperty "prop_idempotent_deencode" Utility.Format.prop_idempotent_deencode
 	, testProperty "prop_idempotent_fileKey" Locations.prop_idempotent_fileKey
@@ -129,13 +146,20 @@ properties = testGroup "QuickCheck"
 	, testProperty "prop_duration_roundtrips" Utility.HumanTime.prop_duration_roundtrips
 	]
 
-unitTests :: TestEnv -> String -> TestTree
-unitTests env note = testGroup ("Unit Tests " ++ note)
-	-- test order matters, later tests may rely on state from earlier
+{- These tests set up the test environment, but also test some basic parts
+ - of git-annex. They are always run before the unitTests. -}
+initTests :: TestEnv -> TestTree
+initTests env = testGroup ("Init Tests")
 	[ check "init" test_init
 	, check "add" test_add
-	, check "add sha1dup" test_add_sha1dup
-	, check "add subdirs" test_add_subdirs
+	]
+  where
+	check desc t = testCase desc (t env)
+
+unitTests :: String -> IO TestEnv -> TestTree
+unitTests note getenv = testGroup ("Unit Tests " ++ note)
+	[ check "add sha1dup" test_add_sha1dup
+	, check "add extras" test_add_extras
 	, check "reinject" test_reinject
 	, check "unannex (no copy)" test_unannex_nocopy
 	, check "unannex (with copy)" test_unannex_withcopy
@@ -166,6 +190,7 @@ unitTests env note = testGroup ("Unit Tests " ++ note)
 	, check "union merge regression" test_union_merge_regression
 	, check "conflict resolution" test_conflict_resolution_movein_bug
 	, check "conflict_resolution (mixed directory and file)" test_mixed_conflict_resolution
+	, check "conflict_resolution (mixed directory and file) 2" test_mixed_conflict_resolution2
 	, check "map" test_map
 	, check "uninit" test_uninit
 	, check "uninit (in git-annex branch)" test_uninit_inbranch
@@ -177,14 +202,12 @@ unitTests env note = testGroup ("Unit Tests " ++ note)
 	, check "bup remote" test_bup_remote
 	, check "crypto" test_crypto
 	, check "preferred content" test_preferred_content
-	, check "global cleanup" test_global_cleanup
+	, check "add subdirs" test_add_subdirs
 	]
   where
-	check desc t = testCase desc (t env)
+	check desc t = testCase desc (getenv >>= t)
 
-test_global_cleanup :: TestEnv -> Assertion
-test_global_cleanup _env = cleanup tmpdir
-
+-- this test case create the main repo
 test_init :: TestEnv -> Assertion
 test_init env = innewrepo env $ do
 	git_annex env "init" [reponame] @? "init failed"
@@ -203,19 +226,13 @@ test_add env = inmainrepo env $ do
 	git_annex env "add" [sha1annexedfile, "--backend=SHA1"] @? "add with SHA1 failed"
 	annexed_present sha1annexedfile
 	checkbackend sha1annexedfile backendSHA1
-	writeFile wormannexedfile $ content wormannexedfile
-	git_annex env "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
-	annexed_present wormannexedfile
-	checkbackend wormannexedfile backendWORM
 	ifM (annexeval Config.isDirect)
 		( do
-			boolSystem "rm" [Params "-f", File wormannexedfile] @? "rm failed"
 			writeFile ingitfile $ content ingitfile
 			not <$> boolSystem "git" [Param "add", File ingitfile] @? "git add failed to fail in direct mode"
 			boolSystem "rm" [Params "-f", File ingitfile] @? "rm failed"
 			git_annex env "sync" [] @? "sync failed"
 		, do
-			boolSystem "git" [Params "rm --force -q", File wormannexedfile] @? "git rm failed"
 			writeFile ingitfile $ content ingitfile
 			boolSystem "git" [Param "add", File ingitfile] @? "git add failed"
 			boolSystem "git" [Params "commit -q -m commit"] @? "git commit failed"
@@ -230,18 +247,12 @@ test_add_sha1dup env = intmpclonerepo env $ do
 	annexed_present sha1annexedfiledup
 	annexed_present sha1annexedfile
 
-test_add_subdirs :: TestEnv -> Assertion
-test_add_subdirs env = intmpclonerepo env $ do
-	createDirectory "dir"
-	writeFile ("dir" </> "foo") $ content annexedfile
-	git_annex env "add" ["dir"] @? "add of subdir failed"
-	createDirectory "dir2"
-	writeFile ("dir2" </> "foo") $ content annexedfile
-#ifndef mingw32_HOST_OS
-	{- This does not work on Windows, for whatever reason. -}
-	setCurrentDirectory "dir"
-	git_annex env "add" [".." </> "dir2"] @? "add of ../subdir failed"
-#endif
+test_add_extras :: TestEnv -> Assertion
+test_add_extras env = intmpclonerepo env $ do
+	writeFile wormannexedfile $ content wormannexedfile
+	git_annex env "add" [wormannexedfile, "--backend=WORM"] @? "add with WORM failed"
+	annexed_present wormannexedfile
+	checkbackend wormannexedfile backendWORM
 
 test_reinject :: TestEnv -> Assertion
 test_reinject env = intmpclonerepoInDirect env $ do
@@ -292,6 +303,9 @@ test_drop_withremote :: TestEnv -> Assertion
 test_drop_withremote env = intmpclonerepo env $ do
 	git_annex env "get" [annexedfile] @? "get failed"
 	annexed_present annexedfile
+	git_annex env "numcopies" ["2"] @? "numcopies config failed"
+	not <$> git_annex env "drop" [annexedfile] @? "drop succeeded although numcopies is not satisfied"
+	git_annex env "numcopies" ["1"] @? "numcopies config failed"
 	git_annex env "drop" [annexedfile] @? "drop failed though origin has copy"
 	annexed_notpresent annexedfile
 	inmainrepo env $ annexed_present annexedfile
@@ -511,9 +525,9 @@ test_trust env = intmpclonerepo env $ do
 test_fsck_basic :: TestEnv -> Assertion
 test_fsck_basic env = intmpclonerepo env $ do
 	git_annex env "fsck" [] @? "fsck failed"
-	boolSystem "git" [Params "config annex.numcopies 2"] @? "git config failed"
+	git_annex env "numcopies" ["2"] @? "numcopies config failed"
 	fsck_should_fail env "numcopies unsatisfied"
-	boolSystem "git" [Params "config annex.numcopies 1"] @? "git config failed"
+	git_annex env "numcopies" ["1"] @? "numcopies config failed"
 	corrupt annexedfile
 	corrupt sha1annexedfile
   where
@@ -542,7 +556,7 @@ test_fsck_localuntrusted env = intmpclonerepo env $ do
 
 test_fsck_remoteuntrusted :: TestEnv -> Assertion
 test_fsck_remoteuntrusted env = intmpclonerepo env $ do
-	boolSystem "git" [Params "config annex.numcopies 2"] @? "git config failed"
+	git_annex env "numcopies" ["2"] @? "numcopies config failed"
 	git_annex env "get" [annexedfile] @? "get failed"
 	git_annex env "get" [sha1annexedfile] @? "get failed"
 	git_annex env "fsck" [] @? "fsck failed with numcopies=2 and 2 copies"
@@ -661,7 +675,7 @@ test_unused env = intmpclonerepoInDirect env $ do
   where
 	checkunused expectedkeys desc = do
 		git_annex env "unused" [] @? "unused failed"
-		unusedmap <- annexeval $ Logs.Unused.readUnusedLog ""
+		unusedmap <- annexeval $ Logs.Unused.readUnusedMap ""
 		let unusedkeys = M.elems unusedmap
 		assertEqual ("unused keys differ " ++ desc)
 			(sort expectedkeys) (sort unusedkeys)
@@ -758,6 +772,7 @@ test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 -> do
 		forM_ [r1, r2] $ \r -> indir env r $ do
 			{- Get all files, see check below. -}
 			git_annex env "get" [] @? "get failed"
+			disconnectOrigin
 		pair env r1 r2
 		forM_ [r1, r2] $ \r -> indir env r $ do
 			{- Set up a conflict. -}
@@ -792,39 +807,62 @@ test_mixed_conflict_resolution env = do
 	check_mixed_conflict inr1 = withtmpclonerepo env False $ \r1 ->
 		withtmpclonerepo env False $ \r2 -> do
 			indir env r1 $ do
+				disconnectOrigin
 				writeFile conflictor "conflictor"
 				git_annex env "add" [conflictor] @? "add conflicter failed"
-				git_annex env "sync" [] @? "sync failed"
+				git_annex env "sync" [] @? "sync failed in r1"
+			indir env r2 $ do
+				disconnectOrigin
+				createDirectory conflictor
+				writeFile (conflictor </> "subfile") "subfile"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed in r2"
+			pair env r1 r2
+			let l = if inr1 then [r1, r2] else [r2, r1]
+			forM_ l $ \r -> indir env r $
+				git_annex env "sync" [] @? "sync failed in mixed conflict"
+			checkmerge "r1" r1
+			checkmerge "r1" r2
+	conflictor = "conflictor"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = do
+		doesDirectoryExist (d </> conflictor) @? (d ++ " conflictor directory missing")
+		l <- getDirectoryContents d
+		any (variantprefix `isPrefixOf`) l
+			@? (what ++ " conflictor file missing in: " ++ show l )
+
+{- 
+ - During conflict resolution, one of the annexed files in git is
+ - accidentially converted from a symlink to a regular file.
+ - This only happens on crippled filesystems.
+ -
+ - This test case happens to detect the problem when it tries the next
+ - pass of conflict resolution, since it's unable to resolve a conflict
+ - between an annexed and non-annexed file.
+ -}
+test_mixed_conflict_resolution2 :: TestEnv -> Assertion
+test_mixed_conflict_resolution2 env = go >> go
+  where
+	go = withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			indir env r1 $ do
+				writeFile conflictor "conflictor"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed in r1"
 			indir env r2 $ do
 				createDirectory conflictor
 				writeFile (conflictor </> "subfile") "subfile"
 				git_annex env "add" [conflictor] @? "add conflicter failed"
-				git_annex env "sync" [] @? "sync failed"
-			pair env r1 r2
-			let r = if inr1 then r1 else r2
-			indir env r $ do
-				git_annex env "sync" [] @? "sync failed in mixed conflict"
-			checkmerge r1
-			checkmerge r2
-	  where
-		conflictor = "conflictor"
-		variantprefix = conflictor ++ ".variant"
-		checkmerge d = do
-			doesDirectoryExist (d </> conflictor) @? (d ++ " conflictor directory missing")
-			(any (variantprefix `isPrefixOf`) 
-				<$> getDirectoryContents d)
-				@? (d ++ "conflictor file missing")
+				git_annex env "sync" [] @? "sync failed in r2"
+	conflictor = "conflictor"
 
-{- Set up repos as remotes of each other;
- - remove origin since we're going to sync
- - some changes to a file. -}
+{- Set up repos as remotes of each other. -}
 pair :: TestEnv -> FilePath -> FilePath -> Assertion
 pair env r1 r2 = forM_ [r1, r2] $ \r -> indir env r $ do
 	when (r /= r1) $
 		boolSystem "git" [Params "remote add r1", File ("../../" ++ r1)] @? "remote add"
 	when (r /= r2) $
 		boolSystem "git" [Params "remote add r2", File ("../../" ++ r2)] @? "remote add"
-	boolSystem "git" [Params "remote rm origin"] @? "remote rm"
 
 test_map :: TestEnv -> Assertion
 test_map env = intmpclonerepo env $ do
@@ -925,7 +963,8 @@ test_rsync_remote env = intmpclonerepo env $ do
 	not <$> git_annex env "drop" [annexedfile, "--numcopies=2"] @? "drop failed to fail"
 	annexed_present annexedfile
 #else
-	-- this test doesn't work in Windows TODO
+	-- Rsync remotes with a rsyncurl of a directory do not currently
+	-- work on Windows.
 	noop
 #endif
 
@@ -1020,6 +1059,23 @@ test_crypto env = do
 test_crypto _env = putStrLn "gpg testing not implemented on Windows"
 #endif
 
+test_add_subdirs :: TestEnv -> Assertion
+test_add_subdirs env = intmpclonerepo env $ do
+	createDirectory "dir"
+	writeFile ("dir" </> "foo") $ "dir/" ++ content annexedfile
+	git_annex env "add" ["dir"] @? "add of subdir failed"
+
+	{- Regression test for Windows bug where symlinks were not
+	 - calculated correctly for files in subdirs. -}
+	git_annex env "sync" [] @? "sync failed"
+	l <- annexeval $ encodeW8 . L.unpack <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
+	"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
+
+	createDirectory "dir2"
+	writeFile ("dir2" </> "foo") $ content annexedfile
+	setCurrentDirectory "dir"
+	git_annex env "add" [".." </> "dir2"] @? "add of ../subdir failed"
+
 -- This is equivilant to running git-annex, but it's all run in-process
 -- (when the OS allows) so test coverage collection works.
 git_annex :: TestEnv -> String -> [String] -> IO Bool
@@ -1083,7 +1139,7 @@ intmpclonerepoInDirect env a = intmpclonerepo env $
 		)
   where
   	isdirect = annexeval $ do
-		Init.initialize Nothing
+		Annex.Init.initialize Nothing
 		Config.isDirect
 
 intmpbareclonerepo :: TestEnv -> Assertion -> Assertion
@@ -1093,6 +1149,9 @@ withtmpclonerepo :: TestEnv -> Bool -> (FilePath -> Assertion) -> Assertion
 withtmpclonerepo env bare a = do
 	dir <- tmprepodir
 	bracket (clonerepo env mainrepodir dir bare) cleanup a
+
+disconnectOrigin :: Assertion
+disconnectOrigin = boolSystem "git" [Params "remote rm origin"] @? "remote rm"
 
 withgitrepo :: TestEnv -> (FilePath -> Assertion) -> Assertion
 withgitrepo env = bracket (setuprepo env mainrepodir) return
@@ -1114,9 +1173,7 @@ setuprepo env dir = do
 	cleanup dir
 	ensuretmpdir
 	boolSystem "git" [Params "init -q", File dir] @? "git init failed"
-	indir env dir $ do
-		boolSystem "git" [Params "config user.name", Param "Test User"] @? "git config failed"
-		boolSystem "git" [Params "config user.email test@example.com"] @? "git config failed"
+	configrepo env dir
 	return dir
 
 -- clones are always done as local clones; we cannot test ssh clones
@@ -1128,10 +1185,16 @@ clonerepo env old new bare = do
 	boolSystem "git" [Params ("clone -q" ++ b), File old, File new] @? "git clone failed"
 	indir env new $
 		git_annex env "init" ["-q", new] @? "git annex init failed"
+	configrepo env new
 	when (not bare) $
 		indir env new $
 			handleforcedirect env
 	return new
+
+configrepo :: TestEnv -> FilePath -> IO ()
+configrepo env dir = indir env dir $ do
+	boolSystem "git" [Params "config user.name", Param "Test User"] @? "git config failed"
+	boolSystem "git" [Params "config user.email test@example.com"] @? "git config failed"
 
 handleforcedirect :: TestEnv -> IO ()
 handleforcedirect env = when (M.lookup "FORCEDIRECT" env == Just "1") $
@@ -1144,16 +1207,24 @@ ensuretmpdir = do
 		createDirectory tmpdir
 
 cleanup :: FilePath -> IO ()
-cleanup dir = do
-	e <- doesDirectoryExist dir
-	when e $ do
-		-- git-annex prevents annexed file content from being
-		-- removed via directory permissions; undo
-		recurseDir SystemFS dir >>=
-			filterM doesDirectoryExist >>=
-				mapM_ Utility.FileMode.allowWrite
-		-- For unknown reasons, this sometimes fails on Windows.
-		void $ tryIO $ removeDirectoryRecursive dir
+cleanup = cleanup' False
+
+cleanup' :: Bool -> FilePath -> IO ()
+cleanup' final dir = whenM (doesDirectoryExist dir) $ do
+	-- Allow all files and directories to be written to, so
+	-- they can be deleted. Both git and git-annex use file
+	-- permissions to prevent deletion.
+	recurseDir SystemFS dir >>=
+		mapM_ (void . tryIO . Utility.FileMode.allowWrite)
+	-- This sometimes fails on Windows, due to some files
+	-- being still opened by a subprocess.
+	catchIO (removeDirectoryRecursive dir) $ \e -> do
+		when final $ do
+			print e
+			putStrLn "sleeping 10 seconds and will retry directory cleanup"
+			Utility.ThreadScheduler.threadDelaySeconds (Utility.ThreadScheduler.Seconds 10)
+			whenM (doesDirectoryExist dir) $ do
+				removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
 checklink f = do
@@ -1242,8 +1313,24 @@ annexed_present = runchecks
 unannexed :: FilePath -> Assertion
 unannexed = runchecks [checkregularfile, checkcontent, checkwritable]
 
-prepare :: Bool -> IO TestEnv
-prepare forcedirect = do
+withTestEnv :: Bool -> (IO TestEnv -> TestTree) -> TestTree
+withTestEnv forcedirect = withResource prepare release
+  where
+	prepare = do
+		env <- prepareTestEnv forcedirect
+		case tryIngredients [consoleTestReporter] mempty (initTests env) of
+			Nothing -> error "No tests found!?"
+			Just act -> unlessM act $
+				error "init tests failed! cannot continue"
+		return env
+	release = releaseTestEnv
+
+releaseTestEnv :: TestEnv -> IO ()
+releaseTestEnv _env = do
+	cleanup' True tmpdir
+
+prepareTestEnv :: Bool -> IO TestEnv
+prepareTestEnv forcedirect = do
 	whenM (doesDirectoryExist tmpdir) $
 		error $ "The temporary directory " ++ tmpdir ++ " already exists; cannot run test suite."
 

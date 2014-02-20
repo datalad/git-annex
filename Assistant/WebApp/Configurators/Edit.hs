@@ -264,6 +264,7 @@ getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
 		liftAnnex $ setConfig 
 			(remoteConfig (Remote.repo rmt) "ignore")
 			(Git.Config.boolConfig False)
-		liftAssistant $ syncRemote rmt
 		liftAnnex $ void Remote.remoteListRefresh
+		liftAssistant updateSyncRemotes
+		liftAssistant $ syncRemote rmt
 		redirect DashboardR

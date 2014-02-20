@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="comment 4"
+ date="2014-01-29T08:26:19Z"
+ content="""
+Oh, just noticed in the console window of the assistant:
+
+ssh-keygen: /home/xgwsbae/.ssh/known_hosts: No such file or directory
+ssh-keygen: /home/xgwsbae/.ssh/known_hosts: No such file or directory
+
+Home directory is C:/Users/xgwsbae/ (git bash gives /c/Users/xgwsbae in $HOME) ... looks like something got confuzzled between Windows and Unix there.
+"""]]

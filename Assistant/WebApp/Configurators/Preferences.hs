@@ -17,6 +17,7 @@ import qualified Annex
 import qualified Git
 import Config
 import Config.Files
+import Config.NumCopies
 import Utility.DataUnits
 import Git.Config
 import Types.Distribution
@@ -81,7 +82,7 @@ prefsAForm def = PrefsForm
 getPrefs :: Annex PrefsForm
 getPrefs = PrefsForm
 	<$> (T.pack . roughSize storageUnits False . annexDiskReserve <$> Annex.getGitConfig)
-	<*> (annexNumCopies <$> Annex.getGitConfig)
+	<*> (fromNumCopies <$> getNumCopies)
 	<*> inAutoStartFile
 	<*> (annexAutoUpgrade <$> Annex.getGitConfig)
 	<*> (annexDebug <$> Annex.getGitConfig)
@@ -89,7 +90,8 @@ getPrefs = PrefsForm
 storePrefs :: PrefsForm -> Annex ()
 storePrefs p = do
 	setConfig (annexConfig "diskreserve") (T.unpack $ diskReserve p)
-	setConfig (annexConfig "numcopies") (show $ numCopies p)
+	setGlobalNumCopies (NumCopies $ numCopies p)
+	unsetConfig (annexConfig "numcopies") -- deprecated
 	setConfig (annexConfig "autoupgrade") (fromAutoUpgrade $ autoUpgrade p)
 	unlessM ((==) <$> pure (autoStart p) <*> inAutoStartFile) $ do
 		here <- fromRepo Git.repoPath

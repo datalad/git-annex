@@ -7,6 +7,12 @@
 
 module Types.FileMatcher where
 
+import Types.Key (Key)
+
+data MatchInfo
+	= MatchingFile FileInfo
+	| MatchingKey Key
+
 data FileInfo = FileInfo
 	{ relFile :: FilePath -- may be relative to cwd
 	, matchFile :: FilePath -- filepath to match on; may be relative to top

@@ -56,8 +56,11 @@ space and then the description, followed by a timestamp. Example:
 	e605dca6-446a-11e0-8b2a-002170d25c55 laptop timestamp=1317929189.157237s
 	26339d22-446b-11e0-9101-002170d25c55 usb disk timestamp=1317929330.769997s
 
-If there are multiple lines for the same uuid, the one with the most recent
-timestamp wins. git-annex union merges this and other files.
+## `numcopies.log`
+
+Records the global numcopies setting.
+
+The file format is simply a timestamp followed by a number.
 
 ## `remote.log`
 

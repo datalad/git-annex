@@ -13,10 +13,11 @@ import Control.Exception (bracket)
 import System.IO
 import System.Directory
 import Control.Monad.IfElse
+import System.FilePath
 
 import Utility.Exception
-import System.FilePath
 import Utility.FileSystemEncoding
+import Utility.PosixFiles
 
 type Template = String
 
@@ -30,7 +31,7 @@ viaTmp a file content = do
 	(tmpfile, handle) <- openTempFile dir (base ++ ".tmp")
 	hClose handle
 	a tmpfile content
-	renameFile tmpfile file
+	rename tmpfile file
 
 {- Runs an action with a tmp file located in the system's tmp directory
  - (or in "." if there is none) then removes the file. -}

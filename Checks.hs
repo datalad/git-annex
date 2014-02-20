@@ -12,7 +12,7 @@ module Checks where
 
 import Common.Annex
 import Types.Command
-import Init
+import Annex.Init
 import Config
 import Utility.Daemon
 import qualified Git

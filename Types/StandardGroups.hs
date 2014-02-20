@@ -75,12 +75,12 @@ associatedDirectory _ _ = Nothing
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
 preferredContent :: StandardGroup -> PreferredContentExpression
 preferredContent ClientGroup = lastResort $
-	"(exclude=*/archive/* and exclude=archive/*) or (" ++ notArchived ++ ")"
+	"((exclude=*/archive/* and exclude=archive/*) or (" ++ notArchived ++ ")) and not unused"
 preferredContent TransferGroup = lastResort $
 	"not (inallgroup=client and copies=client:2) and (" ++ preferredContent ClientGroup ++ ")"
-preferredContent BackupGroup = "include=*"
+preferredContent BackupGroup = "include=* or unused"
 preferredContent IncrementalBackupGroup = lastResort
-	"include=* and (not copies=incrementalbackup:1)"
+	"(include=* or unused) and (not copies=incrementalbackup:1)"
 preferredContent SmallArchiveGroup = lastResort $
 	"(include=*/archive/* or include=archive/*) and (" ++ preferredContent FullArchiveGroup ++ ")"
 preferredContent FullArchiveGroup = lastResort notArchived
@@ -93,6 +93,8 @@ notArchived :: String
 notArchived = "not (copies=archive:1 or copies=smallarchive:1)"
   	
 {- Most repositories want any content that is only on untrusted
- - or dead repositories. -}
+ - or dead repositories, or that otherwise does not have enough copies.
+ - Does not look at .gitattributes since that is quite a lot slower.
+ -}
 lastResort :: String -> PreferredContentExpression
-lastResort s = "(" ++ s ++ ") or (not copies=semitrusted+:1)"
+lastResort s = "(" ++ s ++ ") or approxlackingcopies=1"

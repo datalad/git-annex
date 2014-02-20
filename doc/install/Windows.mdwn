@@ -1,18 +1,18 @@
-git-annex has recently been ported to Windows!
+git-annex now does Windows!
 
 * First, [install git](http://git-scm.com/downloads)
 * Then, [install git-annex](https://downloads.kitenet.net/git-annex/windows/current/)
 
-This port is in an early state. While it works well enough to use
-git-annex, many things will not work. See [[todo/windows_support]] for
-current status.
+This port is now in reasonably good shape for command-line use of
+git-annex. The assistant and webapp are still in an early state.
+See [[todo/windows_support]] for current status.
 
 The autobuilder is not currently able to run the test suite, so
 testing git-annex on Windows is up to you! To check that the build of
 git-annex works in your Windows system, you are encouraged to run the test
 suite before using git-annex on real data. After installation, run `git
 annex test`. There will be a lot of output; the important thing is that it
-should end with "All tests ok".
+should end with "All tests passed".
 
 ## autobuilds
 

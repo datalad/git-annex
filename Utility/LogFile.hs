@@ -30,7 +30,7 @@ rotateLog logfile = go 0
 		| num > maxLogs = return ()
 		| otherwise = whenM (doesFileExist currfile) $ do
 			go (num + 1)
-			renameFile currfile nextfile
+			rename currfile nextfile
 	  where
 		currfile = filename num
 		nextfile = filename (num + 1)

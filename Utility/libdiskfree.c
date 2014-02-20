@@ -1,6 +1,6 @@
 /* disk free space checking, C mini-library
  *
- * Copyright 2012 Joey Hess <joey@kitenet.net>
+ * Copyright 2012, 2014 Joey Hess <joey@kitenet.net>
  *
  * Licensed under the GNU GPL version 3 or higher.
  */
@@ -43,16 +43,12 @@
 #include <errno.h>
 #include <stdio.h>
 
-/* Checks the amount of disk that is available to regular (non-root) users.
- * (If there's an error, or this is not supported,
- * returns 0 and sets errno to nonzero.)
- */
-unsigned long long int diskfree(const char *path) {
+unsigned long long int get(const char *path, int req) {
 #ifdef UNKNOWN
 	errno = 1;
 	return 0;
 #else
-	unsigned long long int available, blocksize;
+	unsigned long long int v, blocksize;
 	struct STATSTRUCT buf;
 
 	if (STATCALL(path, &buf) != 0)
@@ -60,10 +56,33 @@ unsigned long long int diskfree(const char *path) {
 	else
 		errno = 0;
 
-	available = buf.f_bavail;
+	switch (req) {
+		case 0:
+			v = buf.f_blocks;
+			break;
+		case 1:
+			v = buf.f_bavail;
+			break;
+		default:
+			v = 0;
+	}
+
 	blocksize = buf.f_bsize;
-	return available * blocksize;
+	return v * blocksize;
 #endif
+}
+
+/* Checks the amount of disk that is available to regular (non-root) users.
+ * (If there's an error, or this is not supported,
+ * returns 0 and sets errno to nonzero.)
+ */
+unsigned long long int diskfree(const char *path) {
+	return get(path, 1);
+}
+
+/* Gets the total size of the disk. */
+unsigned long long int disksize(const char *path) {
+	return get(path, 0);
 }
 
 /*

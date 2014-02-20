@@ -71,7 +71,7 @@ reconnectRemotes notifypushes rs = void $ do
 		mapM_ signal $ filter (`notElem` failedrs) rs'
   where
 	gitremotes = filter (notspecialremote . Remote.repo) rs
-	(xmppremotes, nonxmppremotes) = partition isXMPPRemote rs
+	(xmppremotes, nonxmppremotes) = partition Remote.isXMPPRemote rs
 	notspecialremote r
 		| Git.repoIsUrl r = True
 		| Git.repoIsLocal r = True
@@ -133,7 +133,7 @@ pushToRemotes' now notifypushes remotes = do
 			<$> gitRepo
 			<*> inRepo Git.Branch.current
 			<*> getUUID
-	let (xmppremotes, normalremotes) = partition isXMPPRemote remotes
+	let (xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
 	ret <- go True branch g u normalremotes
 	unless (null xmppremotes) $ do
 		shas <- liftAnnex $ map fst <$>
@@ -206,7 +206,7 @@ syncAction rs a
 		return failed
   where
 	visibleremotes = filter (not . Remote.readonly) $
-		filter (not . isXMPPRemote) rs
+		filter (not . Remote.isXMPPRemote) rs
 
 {- Manually pull from remotes and merge their branches. Returns any
  - remotes that it failed to pull from, and a Bool indicating
@@ -220,7 +220,7 @@ syncAction rs a
 manualPull :: Maybe Git.Ref -> [Remote] -> Assistant ([Remote], Bool)
 manualPull currentbranch remotes = do
 	g <- liftAnnex gitRepo
-	let (xmppremotes, normalremotes) = partition isXMPPRemote remotes
+	let (xmppremotes, normalremotes) = partition Remote.isXMPPRemote remotes
 	failed <- liftIO $ forM normalremotes $ \r ->
 		ifM (Git.Command.runBool [Param "fetch", Param $ Remote.name r] g)
 			( return Nothing

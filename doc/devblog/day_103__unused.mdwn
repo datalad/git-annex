@@ -1,0 +1,34 @@
+A big missing peice of the assistant is doing something about the content
+of old versions of files, and deleted files. In direct mode, editing or
+deleting a file necessarily loses its content from the local repository,
+but the content can still hang around in other repositories. So, the
+assistant needs to do something about that to avoid eating up disk space
+unnecessarily.
+
+I built on recent work, that lets preferred content expressions be matched
+against keys with no associated file. This means that I can run unused keys
+through all the machinery in the assistant that handles file transfers, and
+they'll end being moved to whatever repository wants them. To control which
+repositories do want to retain unused files, and which not, I added a
+`unused` keyword to preferred content expressions. Client repositories and
+transfer repositories do not want to retain unused files, but backup etc
+repos do.
+
+One nice thing about this `unused` preferred content implementation is that
+it doesn't slow down normal matching of preferred content expressions at
+all. Can you guess why not? See [[!commit 4b55afe9e92c045d72b78747021e15e8dfc16416]]
+
+So, the assistant will run `git annex unused` on a daily basis, and
+cause unused files to flow to repositories that want them. But what if no
+repositories do? To guard against filling up the local disk, there's
+a `annex.expireunused` configuration setting, that can cause old unused
+files to be deleted by the assistant after a number of days.
+
+I made the assistant check if there seem to be a lot of unused files piling
+up. (1000+, or 10% of disk used by them, or more space taken by unused files
+than is free.) If so, it'll pop up an alert to nudge the user to configure
+annex.expireunused.
+
+Still need to build the UI to configure that, and test all of this.
+
+Today's work was sponsored by Samuel Tardieu.

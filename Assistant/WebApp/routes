@@ -25,6 +25,7 @@
 /config/upgrade/start/#GitAnnexDistribution ConfigStartUpgradeR GET
 /config/upgrade/finish ConfigFinishUpgradeR GET
 /config/upgrade/automatically ConfigEnableAutomaticUpgradeR GET
+/config/unused ConfigUnusedR GET POST
 
 /config/addrepository AddRepositoryR GET
 /config/repository/new NewRepositoryR GET POST
@@ -117,5 +118,7 @@
 
 /repair/#UUID RepairRepositoryR GET POST
 /repair/run/#UUID RepairRepositoryRunR GET POST
+
+/unused/cleanup CleanupUnusedR GET
 
 /static StaticR Static getStatic

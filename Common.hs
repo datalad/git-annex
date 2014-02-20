@@ -15,7 +15,6 @@ import Data.String.Utils as X hiding (join)
 import System.FilePath as X
 import System.Directory as X
 import System.IO as X hiding (FilePath)
-import System.PosixCompat.Files as X
 #ifndef mingw32_HOST_OS
 import System.Posix.IO as X
 #endif
@@ -31,5 +30,6 @@ import Utility.Monad as X
 import Utility.Data as X
 import Utility.Applicative as X
 import Utility.FileSystemEncoding as X
+import Utility.PosixFiles as X
 
 import Utility.PartialPrelude as X

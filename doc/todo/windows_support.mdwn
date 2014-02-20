@@ -6,9 +6,10 @@ now! --[[Joey]]
 * Does not work with Cygwin's build of git (that git does not consistently
   support use of DOS style paths, which git-annex uses on Windows). 
   Must use Msysgit.
-* rsync special remotes are known buggy.
-* Bad file locking, it's probably not safe to run more than one git-annex
-  process at the same time on Windows.
+* rsync special remotes with a rsyncurl of a local directory are known
+			let r = if inr1 then r1 else r2
+  buggy. (git-annex tells rsync C:foo and it thinks it means a remote host
+  named C...)
 * Ssh connection caching does not work on Windows, so `git annex get`
   has to connect twice to the remote system over ssh per file, which
   is much slower than on systems supporting connection caching.

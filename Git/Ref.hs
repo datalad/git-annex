@@ -11,6 +11,7 @@ import Common
 import Git
 import Git.Command
 import Git.Sha
+import Git.Types
 
 import Data.Char (chr)
 
@@ -50,6 +51,10 @@ underBase dir r = Ref $ dir ++ "/" ++ show (base r)
  -}
 fileRef :: FilePath -> Ref
 fileRef f = Ref $ ":./" ++ f
+
+{- Converts a Ref to refer to the content of the Ref on a given date. -}
+dateRef :: Ref -> RefDate -> Ref
+dateRef (Ref r) (RefDate d) = Ref $ r ++ "@" ++ d
 
 {- A Ref that can be used to refer to a file in the repository as it
  - appears in a given Ref. -}

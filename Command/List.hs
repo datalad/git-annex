@@ -20,7 +20,6 @@ import Remote
 import Logs.Trust
 import Logs.UUID
 import Annex.UUID
-import qualified Option
 import qualified Annex
 import Git.Types (RemoteName)
 
@@ -29,16 +28,16 @@ def = [noCommit $ withOptions [allrepos] $ command "list" paramPaths seek
 	SectionQuery "show which remotes contain files"]
 
 allrepos :: Option
-allrepos = Option.flag [] "allrepos" "show all repositories, not only remotes"
+allrepos = flagOption [] "allrepos" "show all repositories, not only remotes"
 
-seek :: [CommandSeek]
-seek = 
-	[ withValue getList $ withNothing . startHeader
-	, withValue getList $ withFilesInGit . whenAnnexed . start
-	]
+seek :: CommandSeek
+seek ps = do
+	list <- getList
+	printHeader list
+	withFilesInGit (whenAnnexed $ start list) ps
 
 getList :: Annex [(UUID, RemoteName, TrustLevel)]
-getList = ifM (Annex.getFlag $ Option.name allrepos)
+getList = ifM (Annex.getFlag $ optionName allrepos)
 	( nubBy ((==) `on` fst3) <$> ((++) <$> getRemotes <*> getAll)
 	, getRemotes
 	)
@@ -58,10 +57,8 @@ getList = ifM (Annex.getFlag $ Option.name allrepos)
 		return $ sortBy (comparing snd3) $
 			filter (\t -> thd3 t /= DeadTrusted) rs3
 
-startHeader :: [(UUID, RemoteName, TrustLevel)] -> CommandStart
-startHeader l = do
-	liftIO $ putStrLn $ header $ map (\(_, n, t) -> (n, t)) l
-	stop
+printHeader :: [(UUID, RemoteName, TrustLevel)] -> Annex ()
+printHeader l = liftIO $ putStrLn $ header $ map (\(_, n, t) -> (n, t)) l
 
 start :: [(UUID, RemoteName, TrustLevel)] -> FilePath -> (Key, Backend) -> CommandStart
 start l file (key, _) = do

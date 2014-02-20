@@ -127,9 +127,13 @@ writeSshConfig f s = do
 
 {- Ensure that the ssh config file lacks any group or other write bits, 
  - since ssh is paranoid about not working if other users can write
- - to one of its config files (.ssh/config and .ssh/authorized_keys) -}
+ - to one of its config files (.ssh/config and .ssh/authorized_keys).
+ -
+ - If the chmod fails, ignore the failure, as it might be a filesystem like
+ - Android's that does not support file modes.
+ -}
 setSshConfigMode :: FilePath -> IO ()
-setSshConfigMode f = modifyFileMode f $
+setSshConfigMode f = void $ tryIO $ modifyFileMode f $
 	removeModes [groupWriteMode, otherWriteMode]
 
 sshDir :: IO FilePath

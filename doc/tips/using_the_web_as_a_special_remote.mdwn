@@ -34,7 +34,7 @@ With the result that it will hang onto files:
 	  Could only verify the existence of 0 out of 1 necessary copies
 	  Also these untrusted repositories may contain the file:
 	  	00000000-0000-0000-0000-000000000001  -- web
-	  (Use --force to override this check, or adjust annex.numcopies.)
+	  (Use --force to override this check, or adjust numcopies.)
 	failed
 
 ## attaching urls to existing files

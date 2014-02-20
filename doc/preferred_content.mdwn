@@ -3,20 +3,22 @@ data always exist, and leaves it up to you to use commands like `git annex
 get` and `git annex drop` to move the content to the repositories you want
 to contain it. But sometimes, it can be good to have more fine-grained
 control over which repositories prefer to have which content. Configuring
-this allows `git annex get --auto`, `git annex drop --auto`, etc to do
-smarter things.
+this allows the git-annex assistant as well as 
+`git annex get --auto`, `git annex drop --auto`, `git annex sync --content`,
+etc to do smarter things.
 
 Preferred content settings can be edited using `git
 annex vicfg`, or viewed and set at the command line with `git annex wanted`.
-Each repository can have its own settings, and other repositories may also
-try to honor those settings. So there's no local `.git/config` setting it.
+Each repository can have its own settings, and other repositories will
+try to honor those settings when interacting with it.
+So there's no local `.git/config` for preferred content settings.
 
 The idea is that you write an expression that files are matched against.
 If a file matches, it's preferred to have its content stored in the
 repository. If it doesn't, it's preferred to drop its content from
 the repository (if there are enough copies elsewhere).
 
-The expressions are very similar to the file matching options documented
+The expressions are very similar to the matching options documented
 on the [[git-annex]] man page. At the command line, you can use those
 options in commands like this:
 
@@ -109,9 +111,9 @@ any repository that can will back it up.)
 ### client
 
 All content is preferred, unless it's for a file in a "archive" directory,
-which has reached an archive repository.
+which has reached an archive repository, or is unused.
 
-`((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) or (not copies=semitrusted+:1)`
+`(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or roughlylackingcopies=1`
 
 ### transfer
 
@@ -138,27 +140,27 @@ will be added later.
 
 All content is preferred.
 
-`include=*`
+`include=* or unused`
 
 ### incremental backup
 
 Only prefers content that's not already backed up to another backup
 or incremental backup repository.
 
-`(include=* and (not copies=backup:1) and (not copies=incrementalbackup:1)) or (not copies=semitrusted+:1)`
+`((include=* or unused) and (not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1`
 
 ### small archive
 
 Only prefers content that's located in an "archive" directory, and
 only if it's not already been archived somewhere else.
 
-`((include=*/archive/* or include=archive/*) and not (copies=archive:1 or copies=smallarchive:1)) or (not copies=semitrusted+:1)`
+`((include=*/archive/* or include=archive/*) and not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
 
 ### full archive
 
 All content is preferred, unless it's already been archived somewhere else.
 
-`(not (copies=archive:1 or copies=smallarchive:1)) or (not copies=semitrusted+:1)`
+`(not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
 
 Note that if you want to archive multiple copies (not a bad idea!),
 you should instead configure all your archive repositories with a

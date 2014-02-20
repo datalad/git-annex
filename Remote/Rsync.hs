@@ -41,12 +41,15 @@ import Utility.Rsync
 import Utility.CopyFile
 import Utility.Metered
 import Annex.Perms
+import Logs.Transfer
 
 type RsyncUrl = String
 
 data RsyncOpts = RsyncOpts
 	{ rsyncUrl :: RsyncUrl
 	, rsyncOptions :: [CommandParam]
+	, rsyncUploadOptions :: [CommandParam]
+	, rsyncDownloadOptions :: [CommandParam]
 	, rsyncShellEscape :: Bool
 }
 
@@ -93,10 +96,16 @@ gen r u c gc = do
 			}
 
 genRsyncOpts :: RemoteConfig -> RemoteGitConfig -> [CommandParam] -> RsyncUrl -> RsyncOpts
-genRsyncOpts c gc transport url = RsyncOpts url (transport ++ opts) escape
+genRsyncOpts c gc transport url = RsyncOpts
+	{ rsyncUrl = url
+	, rsyncOptions = opts []
+	, rsyncUploadOptions = transport ++ opts (remoteAnnexRsyncUploadOptions gc)
+	, rsyncDownloadOptions = transport ++ opts (remoteAnnexRsyncDownloadOptions gc)
+	, rsyncShellEscape = M.lookup "shellescape" c /= Just "no"
+	}
   where
-	opts = map Param $ filter safe $ remoteAnnexRsyncOptions gc
-	escape = M.lookup "shellescape" c /= Just "no"
+	opts specificopts = map Param $ filter safe $
+		remoteAnnexRsyncOptions gc ++ specificopts
 	safe opt
 		-- Don't allow user to pass --delete to rsync;
 		-- that could cause it to delete other keys
@@ -257,7 +266,7 @@ withRsyncScratchDir a = do
 
 rsyncRetrieve :: RsyncOpts -> Key -> FilePath -> Maybe MeterUpdate -> Annex Bool
 rsyncRetrieve o k dest callback =
-	showResumable $ untilTrue (rsyncUrls o k) $ \u -> rsyncRemote o callback
+	showResumable $ untilTrue (rsyncUrls o k) $ \u -> rsyncRemote Download o callback
 		-- use inplace when retrieving to support resuming
 		[ Param "--inplace"
 		, Param u
@@ -272,13 +281,15 @@ showResumable a = ifM a
 		return False
 	)
 
-rsyncRemote :: RsyncOpts -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
-rsyncRemote o callback params = do
+rsyncRemote :: Direction -> RsyncOpts -> Maybe MeterUpdate -> [CommandParam] -> Annex Bool
+rsyncRemote direction o callback params = do
 	showOutput -- make way for progress bar
-	liftIO $ (maybe rsync rsyncProgress callback) ps
+	liftIO $ (maybe rsync rsyncProgress callback) $
+		opts ++ [Params "--progress"] ++ params
   where
-	defaultParams = [Params "--progress"]
-	ps = rsyncOptions o ++ defaultParams ++ params
+	opts
+		| direction == Download = rsyncDownloadOptions o
+		| otherwise = rsyncUploadOptions o
 
 {- To send a single key is slightly tricky; need to build up a temporary
  - directory structure to pass to rsync so it can create the hash
@@ -296,12 +307,12 @@ rsyncSend o callback k canrename src = withRsyncScratchDir $ \tmp -> do
 	liftIO $ createDirectoryIfMissing True $ parentDir dest
 	ok <- liftIO $ if canrename
 		then do
-			renameFile src dest
+			rename src dest
 			return True
 		else createLinkOrCopy src dest
 	ps <- sendParams
 	if ok
-		then showResumable $ rsyncRemote o (Just callback) $ ps ++
+		then showResumable $ rsyncRemote Upload o (Just callback) $ ps ++
 			[ Param "--recursive"
 			, partialParams
 			-- tmp/ to send contents of tmp dir

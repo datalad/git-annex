@@ -12,15 +12,15 @@ import Command
 import Annex.Content
 import Logs.Transfer
 import Types.Key
-import qualified Fields
+import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 
 def :: [Command]
 def = [noCommit $ command "transferinfo" paramKey seek SectionPlumbing
 	"updates sender on number of bytes of content received"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 {- Security:
  - 

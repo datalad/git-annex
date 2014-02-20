@@ -16,8 +16,6 @@ import qualified Remote
 import Annex.UUID
 import Logs.Presence
 import Logs.Transfer
-import GitAnnex.Options
-import Types.Key
 
 def :: [Command]
 def = [withOptions moveOptions $ command "move" paramPaths seek
@@ -26,13 +24,14 @@ def = [withOptions moveOptions $ command "move" paramPaths seek
 moveOptions :: [Option]
 moveOptions = fromToOptions ++ keyOptions
 
-seek :: [CommandSeek]
-seek = 
-	[ withField toOption Remote.byNameWithUUID $ \to ->
-	  withField fromOption Remote.byNameWithUUID $ \from ->
-	  withKeyOptions (startKey to from True) $
-	  withFilesInGit $ whenAnnexed $ start to from True
-	]
+seek :: CommandSeek
+seek ps = do
+	to <- getOptionField toOption Remote.byNameWithUUID
+	from <- getOptionField fromOption Remote.byNameWithUUID
+	withKeyOptions
+		(startKey to from True)
+		(withFilesInGit $ whenAnnexed $ start to from True)
+		ps
 
 start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> CommandStart
 start to from move file (key, _) = start' to from move (Just file) key
@@ -53,17 +52,14 @@ start' to from move afile key = do
 		"--auto is not supported for move"
 
 showMoveAction :: Bool -> Key -> AssociatedFile -> Annex ()
-showMoveAction True _ (Just file) = showStart "move" file
-showMoveAction False _ (Just file) = showStart "copy" file
-showMoveAction True key Nothing = showStart "move" (key2file key)
-showMoveAction False key Nothing = showStart "copy" (key2file key)
+showMoveAction move = showStart' (if move then "move" else "copy")
 
 {- Moves (or copies) the content of an annexed file to a remote.
  -
  - If the remote already has the content, it is still removed from
  - the current repository.
  -
- - Note that unlike drop, this does not honor annex.numcopies.
+ - Note that unlike drop, this does not honor numcopies.
  - A file's content can be moved even if there are insufficient copies to
  - allow it to be dropped.
  -}

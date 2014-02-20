@@ -18,7 +18,6 @@ import qualified Command.Copy
 import qualified Command.Sync
 import qualified Command.Whereis
 import qualified Command.Fsck
-import GitAnnex.Options
 
 import System.Console.GetOpt
 
@@ -26,8 +25,8 @@ def :: [Command]
 def = [noCommit $ noRepo startNoRepo $ dontCheck repoExists $
 	command "help" paramNothing seek SectionQuery "display help"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start params = do
@@ -42,7 +41,7 @@ start' ["options"] = showCommonOptions
 start' _ = showGeneralHelp
 
 showCommonOptions :: IO ()
-showCommonOptions = putStrLn $ usageInfo "Common options:" options
+showCommonOptions = putStrLn $ usageInfo "Common options:" gitAnnexOptions
 
 showGeneralHelp :: IO ()
 showGeneralHelp = putStrLn $ unlines

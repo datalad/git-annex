@@ -20,7 +20,7 @@ module Remote (
 
 	remoteTypes,
 	remoteList,
-	syncableRemote,
+	gitSyncableRemote,
 	remoteMap,
 	uuidDescriptions,
 	byName,
@@ -41,7 +41,8 @@ module Remote (
 	showLocations,
 	forceTrust,
 	logStatus,
-	checkAvailable
+	checkAvailable,
+	isXMPPRemote
 ) where
 
 import qualified Data.Map as M
@@ -60,6 +61,7 @@ import Logs.Location hiding (logStatus)
 import Remote.List
 import Config
 import Git.Types (RemoteName)
+import qualified Git
 
 {- Map from UUIDs of Remotes to a calculated value. -}
 remoteMap :: (Remote -> a) -> Annex (M.Map UUID a)
@@ -292,3 +294,9 @@ byCost = map snd . sortBy (comparing fst) . M.toList . costmap
 checkAvailable :: Bool -> Remote -> IO Bool
 checkAvailable assumenetworkavailable = 
 	maybe (return assumenetworkavailable) doesDirectoryExist . localpath
+
+{- Remotes using the XMPP transport have urls like xmpp::user@host -}
+isXMPPRemote :: Remote -> Bool
+isXMPPRemote remote = Git.repoIsUrl r && "xmpp::" `isPrefixOf` Git.repoLocation r
+  where
+	r = repo remote

@@ -1,6 +1,6 @@
 {- git-annex assistant alerts
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -253,12 +253,31 @@ upgradingAlert = activityAlert Nothing [ fromString "Upgrading git-annex" ]
 
 upgradeFinishedAlert :: Maybe AlertButton -> GitAnnexVersion -> Alert
 upgradeFinishedAlert button version =
-	baseUpgradeAlert (maybe [] (:[]) button) $ fromString $ 
+	baseUpgradeAlert (maybeToList button) $ fromString $ 
 		"Finished upgrading git-annex to version " ++ version
 
 upgradeFailedAlert :: String -> Alert
 upgradeFailedAlert msg = (errorAlert msg [])
 	{ alertHeader = Just $ fromString "Upgrade failed." }
+
+unusedFilesAlert :: [AlertButton] -> String -> Alert
+unusedFilesAlert buttons message = Alert
+	{ alertHeader = Just $ fromString $ unwords
+		[ "Old and deleted files are piling up --"
+		, message
+		]
+	, alertIcon = Just InfoIcon
+	, alertPriority = High
+	, alertButtons = buttons
+	, alertClosable = True
+	, alertClass = Message
+	, alertMessageRender = renderData
+	, alertCounter = 0
+	, alertBlockDisplay = True
+	, alertName = Just UnusedFilesAlert
+	, alertCombiner = Just $ fullCombiner $ \new _old -> new
+	, alertData = []
+	}
 
 brokenRepositoryAlert :: [AlertButton] -> Alert
 brokenRepositoryAlert = errorAlert "Serious problems have been detected with your repository. This needs your immediate attention!"
@@ -298,7 +317,7 @@ pairRequestAcknowledgedAlert who button = baseActivityAlert
 	, alertPriority = High
 	, alertName = Just $ PairAlert who
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
-	, alertButtons = maybe [] (:[]) button
+	, alertButtons = maybeToList button
 	}
 
 xmppNeededAlert :: AlertButton -> Alert

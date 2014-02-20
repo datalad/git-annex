@@ -11,7 +11,7 @@ import Common hiding (isDirectory)
 import Utility.DirWatcher.Types
 
 import System.Win32.Notify
-import qualified System.PosixCompat.Files as Files
+import qualified Utility.PosixFiles as Files
 
 watchDir :: FilePath -> (FilePath -> Bool) -> WatchHooks -> IO WatchManager
 watchDir dir ignored hooks = do

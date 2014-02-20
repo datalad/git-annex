@@ -21,8 +21,8 @@ def :: [Command]
 def = [command "schedule" (paramPair paramRemote (paramOptional paramExpression)) seek
 	SectionSetup "get or set scheduled jobs"]
 
-seek :: [CommandSeek]
-seek = [withWords start]
+seek :: CommandSeek
+seek = withWords start
 
 start :: [String] -> CommandStart
 start = parse

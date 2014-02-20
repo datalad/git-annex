@@ -14,7 +14,7 @@ import Assistant.WebApp.Gpg
 import Assistant.WebApp.MakeRemote
 import Assistant.Sync
 import Assistant.Restart
-import Init
+import Annex.Init
 import qualified Git
 import qualified Git.Construct
 import qualified Git.Config

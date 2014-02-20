@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://cstork.org/"
+ nickname="Chris Stork"
+ subject="Bug fix confirmed"
+ date="2014-01-30T15:29:56Z"
+ content="""
+Thank you, Joey!
+FYI, my repo was automatically converted to version 5 and put on the annex/direct/master branch.
+As Joey mentioned, this might only apply to my bug.
+"""]]

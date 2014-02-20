@@ -20,7 +20,7 @@ import Git
 import Git.Command
 import Git.Sha
 import Utility.Batch
-import qualified Git.BuildVersion
+import qualified Git.Version
 
 import qualified Data.Set as S
 
@@ -40,12 +40,14 @@ data FsckResults = FsckFoundMissing MissingObjects | FsckFailed
  -}
 findBroken :: Bool -> Repo -> IO FsckResults
 findBroken batchmode r = do
-	let (command, params) = ("git", fsckParams r)
+	supportsNoDangling <- (>= Git.Version.normalize "1.7.10")
+		<$> Git.Version.installed
+	let (command, params) = ("git", fsckParams supportsNoDangling r)
 	(command', params') <- if batchmode
 		then toBatchCommand (command, params)
 		else return (command, params)
 	(output, fsckok) <- processTranscript command' (toCommand params') Nothing
-	let objs = findShas output
+	let objs = findShas supportsNoDangling output
 	badobjs <- findMissing objs r
 	if S.null badobjs && not fsckok
 		then return FsckFailed
@@ -75,21 +77,18 @@ isMissing s r = either (const True) (const False) <$> tryIO dump
 		, Param (show s)
 		] r
 
-findShas :: String -> [Sha]
-findShas = catMaybes . map extractSha . concat . map words . filter wanted . lines
+findShas :: Bool -> String -> [Sha]
+findShas supportsNoDangling = catMaybes . map extractSha . concat . map words . filter wanted . lines
   where
 	wanted l
 		| supportsNoDangling = True
 		| otherwise = not ("dangling " `isPrefixOf` l)
 
-fsckParams :: Repo -> [CommandParam]
-fsckParams = gitCommandLine $ map Param $ catMaybes
+fsckParams :: Bool -> Repo -> [CommandParam]
+fsckParams supportsNoDangling = gitCommandLine $ map Param $ catMaybes
 	[ Just "fsck"
 	, if supportsNoDangling
 		then Just "--no-dangling"
 		else Nothing
 	, Just "--no-reflogs"
 	]
-
-supportsNoDangling :: Bool
-supportsNoDangling = not $ Git.BuildVersion.older "1.7.10"

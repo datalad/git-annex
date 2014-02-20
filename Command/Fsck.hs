@@ -9,8 +9,6 @@
 
 module Command.Fsck where
 
-import System.PosixCompat.Files
-
 import Common.Annex
 import Command
 import qualified Annex
@@ -25,15 +23,14 @@ import Annex.Perms
 import Annex.Link
 import Logs.Location
 import Logs.Trust
+import Config.NumCopies
 import Annex.UUID
 import Utility.DataUnits
 import Utility.FileMode
 import Config
-import qualified Option
 import Types.Key
 import Utility.HumanTime
 import Git.FilePath
-import GitAnnex.Options hiding (fromOption)
 
 #ifndef mingw32_HOST_OS
 import System.Posix.Process (getProcessID)
@@ -49,41 +46,42 @@ def :: [Command]
 def = [withOptions fsckOptions $ command "fsck" paramPaths seek
 	SectionMaintenance "check for problems"]
 
-fromOption :: Option
-fromOption = Option.field ['f'] "from" paramRemote "check remote"
+fsckFromOption :: Option
+fsckFromOption = fieldOption ['f'] "from" paramRemote "check remote"
 
 startIncrementalOption :: Option
-startIncrementalOption = Option.flag ['S'] "incremental" "start an incremental fsck"
+startIncrementalOption = flagOption ['S'] "incremental" "start an incremental fsck"
 
 moreIncrementalOption :: Option
-moreIncrementalOption = Option.flag ['m'] "more" "continue an incremental fsck"
+moreIncrementalOption = flagOption ['m'] "more" "continue an incremental fsck"
 
 incrementalScheduleOption :: Option
-incrementalScheduleOption = Option.field [] "incremental-schedule" paramTime
+incrementalScheduleOption = fieldOption [] "incremental-schedule" paramTime
 	"schedule incremental fscking"
 
 fsckOptions :: [Option]
 fsckOptions = 
-	[ fromOption
+	[ fsckFromOption
 	, startIncrementalOption
 	, moreIncrementalOption
 	, incrementalScheduleOption
 	] ++ keyOptions
 
-seek :: [CommandSeek]
-seek =
-	[ withField fromOption Remote.byNameWithUUID $ \from ->
-	  withIncremental $ \i ->
-	  withKeyOptions (startKey i) $
-	  withFilesInGit $ whenAnnexed $ start from i
-	]
+seek :: CommandSeek
+seek ps = do
+	from <- getOptionField fsckFromOption Remote.byNameWithUUID
+	i <- getIncremental
+	withKeyOptions
+		(startKey i)
+		(withFilesInGit $ whenAnnexed $ start from i)
+		ps
 
-withIncremental :: (Incremental -> CommandSeek) -> CommandSeek
-withIncremental = withValue $ do
+getIncremental :: Annex Incremental
+getIncremental = do
 	i <- maybe (return False) (checkschedule . parseDuration)
-		=<< Annex.getField (Option.name incrementalScheduleOption)
-	starti <- Annex.getFlag (Option.name startIncrementalOption)
-	morei <- Annex.getFlag (Option.name moreIncrementalOption)
+		=<< Annex.getField (optionName incrementalScheduleOption)
+	starti <- Annex.getFlag (optionName startIncrementalOption)
+	morei <- Annex.getFlag (optionName moreIncrementalOption)
 	case (i, starti, morei) of
 		(False, False, False) -> return NonIncremental
 		(False, True, _) -> startIncremental
@@ -110,14 +108,14 @@ withIncremental = withValue $ do
 
 start :: Maybe Remote -> Incremental -> FilePath -> (Key, Backend) -> CommandStart
 start from inc file (key, backend) = do
-	numcopies <- numCopies file
+	numcopies <- getFileNumCopies file
 	case from of
 		Nothing -> go $ perform key file backend numcopies
 		Just r -> go $ performRemote key file backend numcopies r
   where
 	go = runFsck inc file key
 
-perform :: Key -> FilePath -> Backend -> Maybe Int -> Annex Bool
+perform :: Key -> FilePath -> Backend -> NumCopies -> Annex Bool
 perform key file backend numcopies = check
 	-- order matters
 	[ fixLink key file
@@ -131,7 +129,7 @@ perform key file backend numcopies = check
 
 {- To fsck a remote, the content is retrieved to a tmp file,
  - and checked locally. -}
-performRemote :: Key -> FilePath -> Backend -> Maybe Int -> Remote -> Annex Bool
+performRemote :: Key -> FilePath -> Backend -> NumCopies -> Remote -> Annex Bool
 performRemote key file backend numcopies remote =
 	dispatch =<< Remote.hasKey remote key
   where
@@ -367,27 +365,26 @@ checkBackendOr' bad backend key file postcheck =
 				, return True
 				)
 
-checkKeyNumCopies :: Key -> FilePath -> Maybe Int -> Annex Bool
+checkKeyNumCopies :: Key -> FilePath -> NumCopies -> Annex Bool
 checkKeyNumCopies key file numcopies = do
-	needed <- getNumCopies numcopies
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< Remote.keyLocations key
-	let present = length safelocations
-	if present < needed
+	let present = NumCopies (length safelocations)
+	if present < numcopies
 		then do
 			ppuuids <- Remote.prettyPrintUUIDs "untrusted" untrustedlocations
-			warning $ missingNote file present needed ppuuids
+			warning $ missingNote file present numcopies ppuuids
 			return False
 		else return True
 
-missingNote :: String -> Int -> Int -> String -> String
-missingNote file 0 _ [] = 
+missingNote :: String -> NumCopies -> NumCopies -> String -> String
+missingNote file (NumCopies 0) _ [] = 
 		"** No known copies exist of " ++ file
-missingNote file 0 _ untrusted =
+missingNote file (NumCopies 0) _ untrusted =
 		"Only these untrusted locations may have copies of " ++ file ++
 		"\n" ++ untrusted ++
 		"Back it up to trusted locations with git-annex copy."
 missingNote file present needed [] =
-		"Only " ++ show present ++ " of " ++ show needed ++ 
+		"Only " ++ show (fromNumCopies present) ++ " of " ++ show (fromNumCopies needed) ++ 
 		" trustworthy copies exist of " ++ file ++
 		"\nBack it up with git-annex copy."
 missingNote file present needed untrusted = 
@@ -481,10 +478,9 @@ recordStartTime = do
 	createAnnexDirectory $ parentDir f
 	liftIO $ do
 		nukeFile f
-		h <- openFile f WriteMode
-		t <- modificationTime <$> getFileStatus f
-		hPutStr h $ showTime $ realToFrac t
-		hClose h
+		withFile f WriteMode $ \h -> do
+			t <- modificationTime <$> getFileStatus f
+			hPutStr h $ showTime $ realToFrac t
   where
 	showTime :: POSIXTime -> String
 	showTime = show
