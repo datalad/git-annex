@@ -179,3 +179,6 @@ So, possible approaches:
   also solves any similar issues with case-colliding filenames.
 
   TODO: Check current state of this.
+
+* Assistant needs to know about views, so it can update metadata when
+  files are moved around inside them. TODO
