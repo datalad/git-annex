@@ -517,7 +517,7 @@ subdirectories).
   have been fscked. And once it's done, you'd like a new fsck pass to start,
   but no more often than once a month. Then put this in a nightly cron job:
 
-        	git annex fsck --incremental --more --incremental-schedule 30d --time-limit 5h
+        	git annex fsck --incremental-schedule 30d --time-limit 5h
 
   To verify data integrity only while disregarding required number of copies,
   use `--numcopies=1`.
