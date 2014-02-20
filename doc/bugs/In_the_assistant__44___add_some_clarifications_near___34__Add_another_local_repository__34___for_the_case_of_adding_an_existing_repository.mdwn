@@ -21,3 +21,8 @@ Ubuntu 13.04
 ### Please provide any additional information below.
 
 Ain't nobody here but us chickens.
+
+> Ok, I have removed the reference to "new repository" since it can be
+> a new or an existing repository. The webapp already asks followup
+> questions if the repository exists to make sure nothing confusing
+> happens. [[done]] --[[Joey]]
