@@ -491,9 +491,11 @@ getKeysPresent = do
 
 	{- In indirect mode, look for the key. In direct mode,
 	 - the inode cache file is only present when a key's content
-	 - is present. -}
+	 - is present, so can be used as a surrogate if the content
+	 - is not located in the annex directory. -}
 	present False d = doesFileExist $ contentfile d
-	present True d = doesFileExist $ contentfile d ++ ".cache"
+	present True d = doesFileExist (contentfile d ++ ".cache")
+		<||> present False d
 	contentfile d = d </> takeFileName d
 
 {- Things to do to record changes to content when shutting down.
