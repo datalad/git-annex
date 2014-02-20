@@ -1,3 +1,14 @@
+git-annex (5.20140210~bpo70+2) wheezy-backports; urgency=medium
+
+  * Updating backport to newest release.
+  * Remaining differences in this backport:
+    - No webdav special remote support.
+    - Test suite is not built into git-annex as it now uses haskell-tasty,
+      which is not yet backported.
+    - No skein hash support.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 20 Feb 2014 22:56:45 +0000
+
 git-annex (5.20140210) unstable; urgency=medium
 
   * --in can now refer to files that were located in a repository at
