@@ -14,3 +14,5 @@ Both devices to some kind of `SHA256`. I have a feeling this is either extremely
 > interface as `sha256sum` into your `$PATH`, git-annex will automatically use
 > it. If you want to use ASIC hashing even for small files, you need to tweak
 > `Backend/Hash.hs`. --[[HelmutGrohne]]
+
+>> [[done]] --[[Joey]]
