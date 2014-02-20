@@ -1,0 +1,16 @@
+This is just an idea, and I have no idea if it would work (that's why I'm asking):
+
+**Would it be possible to use ASICs made for Bitcoin mining inside git-annex to offload the hashing of files?**
+
+I got the idea, because I have two RaspberryPis here: 
+
+- one runs my git-annex archive. It is really slow at hashing, so I resorted to using the WORM backend
+- another one runs 2 old-ish ASIC miners. They are just barely "profitable" right now, so in a few months they will be obsolete
+
+Both devices to some kind of `SHA256`. I have a feeling this is either extremely easy or extremely complicated to do… :)
+
+> git-annex uses binaries such as `sha256sum` for hashing large files (large is
+> currently hardcoded as bigger than 1MB). If you insert a binary with the same
+> interface as `sha256sum` into your `$PATH`, git-annex will automatically use
+> it. If you want to use ASIC hashing even for small files, you need to tweak
+> `Backend/Hash.hs`. --[[HelmutGrohne]]
