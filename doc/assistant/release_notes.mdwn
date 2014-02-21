@@ -1,3 +1,10 @@
+## version 5.20140221
+
+The Windows port of the assistant and webapp is now considered to be beta
+quality. There are important missing features (notably Jabber), documented
+on [[todo/windows_support]], but the webapp is broadly usable on Windows
+now.
+
 ## version 5.20131221
 
 There is now a arm [[install/linux_standalone]] build of git-annex,
