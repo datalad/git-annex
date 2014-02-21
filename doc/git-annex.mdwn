@@ -1136,7 +1136,8 @@ file contents are present at either of two repositories.
 * `--metadata field=glob`
 
   Matches only files that have a metadata field attached with a value that
-  matches the glob.
+  matches the glob. The values of metadata fields are matched case
+  insensitively.
 
 * `--want-get`
 
