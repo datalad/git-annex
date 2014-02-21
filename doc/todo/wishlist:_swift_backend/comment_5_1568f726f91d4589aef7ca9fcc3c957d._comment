@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ subject="comment 5"
+ date="2014-02-11T13:38:53Z"
+ content="""
+FYI, I just published a [special remote for hubiC](https://github.com/Schnouki/git-annex-remote-hubic) that uses the OAuth API for authentication and the SWIFT API for data transfers. Parts of it are specific for hubiC (mostly auth.py), but it should be possible to adapt it to other SWIFT providers as well.
+"""]]

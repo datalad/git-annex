@@ -16,6 +16,7 @@ import Data.Int
 
 import Common.Annex
 import Types.Remote
+import Types.Creds
 import qualified Git
 import Config.Cost
 import Config
@@ -67,8 +68,8 @@ gen r u c gc = do
   where
 	dir = fromMaybe (error "missing directory") $ remoteAnnexDirectory gc
 
-directorySetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-directorySetup mu c = do
+directorySetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+directorySetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let dir = fromMaybe (error "Specify directory=") $

@@ -184,7 +184,7 @@ mergeDirectCleanup d oldsha newsha = do
 			tryAnnex . maybe (araw f item) (\k -> void $ a k f)
 				=<< catKey (getsha item) (getmode item)
 
-	moveout k f = removeDirect k f
+	moveout = removeDirect
 
 	{- Files deleted by the merge are removed from the work tree.
 	 - Empty work tree directories are removed, per git behavior. -}
@@ -286,18 +286,18 @@ setDirect wantdirect = do
  - this way things that show HEAD (eg shell prompts) will
  - hopefully show just "master". -}
 directBranch :: Ref -> Ref
-directBranch orighead = case split "/" $ show orighead of
+directBranch orighead = case split "/" $ fromRef orighead of
 	("refs":"heads":"annex":"direct":_) -> orighead
 	("refs":"heads":rest) ->
 		Ref $ "refs/heads/annex/direct/" ++ intercalate "/" rest
-	_ -> Ref $ "refs/heads/" ++ show (Git.Ref.base orighead)
+	_ -> Ref $ "refs/heads/" ++ fromRef (Git.Ref.base orighead)
 
 {- Converts a directBranch back to the original branch.
  -
  - Any other ref is left unchanged.
  -}
 fromDirectBranch :: Ref -> Ref
-fromDirectBranch directhead = case split "/" $ show directhead of
+fromDirectBranch directhead = case split "/" $ fromRef directhead of
 	("refs":"heads":"annex":"direct":rest) -> 
 		Ref $ "refs/heads/" ++ intercalate "/" rest
 	_ -> directhead

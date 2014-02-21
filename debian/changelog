@@ -1,9 +1,50 @@
-git-annex (5.20140128) UNRELEASED; urgency=medium
+git-annex (5.20140222) UNRELEASED; urgency=medium
+
+  * Fix handling of rsync remote urls containing a username,
+    including rsync.net.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 13:03:04 -0400
+
+git-annex (5.20140221) unstable; urgency=medium
+
+  * metadata: New command that can attach metadata to files.
+  * --metadata can be used to limit commands to acting on files
+    that have particular metadata.
+  * Preferred content expressions can use metadata=field=value
+    to limit them to acting on files that have particular metadata.
+  * view: New command that creates and checks out a branch that provides
+    a structured view of selected metadata.
+  * vfilter, vadd, vpop, vcycle: New commands for operating within views.
+  * pre-commit: Update metadata when committing changes to locations
+    of annexed files within a view.
+  * Add progress display for transfers to/from external special remotes.
+  * unused: Fix to actually detect unused keys when in direct mode.
+  * fsck: When run with --all or --unused, while .gitattributes
+    annex.numcopies cannot be honored since it's operating on keys
+    instead of files, make it honor the global numcopies setting,
+    and the annex.numcopies git config setting.
+  * trust, untrust, semitrust, dead: Warn when the trust level is
+    overridden in .git/config.
+  * glacier: Do not try to run glacier value create when an existing glacier
+    remote is enabled.
+  * fsck: Refuse to do anything if more than one of --incremental, --more,
+    and --incremental-schedule are given, since it's not clear which option
+    should win.
+  * Windows webapp: Can set up box.com, Amazon S3, and rsync.net remotes
+  * Windows webapp: Can create repos on removable drives.
+  * Windows: Ensure HOME is set, as needed by bundled cygwin utilities.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 11:23:59 -0400
+
+git-annex (5.20140210) unstable; urgency=medium
 
   * --in can now refer to files that were located in a repository at
     some past date. For example, --in="here@{yesterday}"
   * Fixed direct mode annexed content locking code, which is used to
     guard against recursive file drops.
+  * This is the first beta-level release of the Windows port with important
+    fixes (see below).
+    (The webapp and assistant are still alpha-level on Windows.)
   * sync --content: Honor annex-ignore configuration.
   * sync: Don't try to sync with xmpp remotes, which are only currently
     supported when using the assistant.
@@ -13,13 +54,18 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
   * sync --content: Reuse smart copy code from copy command, including
     handling and repairing out of date location tracking info.
     Closes: #737480
-  * sync --content: Drop files from remotes that don't have them after
+  * sync --content: Drop files from remotes that don't want them after
     getting them.
   * sync: Fix bug in automatic merge conflict resolution code when used
     on a filesystem not supporting symlinks, which resulted in it losing
     track of the symlink bit of annexed files.
   * Added ways to configure rsync options to be used only when uploading
     or downloading from a remote. Useful to eg limit upload bandwidth.
+  * Fix initremote with encryption=pubkey to work with S3, glacier, webdav,
+    and external special remotes.
+  * Avoid building with DAV 0.6 which is badly broken (see #737902).
+  * Fix dropping of unused keys with spaces in their name.
+  * Fix build on platforms not supporting the webapp.
   * Document in man page that sshcaching uses ssh ControlMaster.
     Closes: #737476
   * Windows: It's now safe to run multiple git-annex processes concurrently
@@ -29,13 +75,11 @@ git-annex (5.20140128) UNRELEASED; urgency=medium
   * Windows: Fix deletion of repositories by test suite and webapp.
   * Windows: Test suite 100% passes again.
   * Windows: Fix bug in symlink calculation code.
-  * Fix initremote with encryption=pubkey to work with S3, glacier, webdav,
-    and external special remotes.
+  * Windows: Fix handling of absolute unix-style git repository paths.
   * Android: Avoid crashing when unable to set file mode for ssh config file
     due to Android filesystem horribleness.
-  * Avoid building with DAV 0.6 which is badly broken (see #737902).
 
- -- Joey Hess <joeyh@debian.org>  Tue, 28 Jan 2014 13:57:19 -0400
+ -- Joey Hess <joeyh@debian.org>  Mon, 10 Feb 2014 12:54:57 -0400
 
 git-annex (5.20140127) unstable; urgency=medium
 

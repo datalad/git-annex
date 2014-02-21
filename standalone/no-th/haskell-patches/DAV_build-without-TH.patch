@@ -1,27 +1,22 @@
-From 67e5fc4eb21fe801f7ab4c01b98c02912c5cb43f Mon Sep 17 00:00:00 2001
-From: Joey Hess <joey@kitenet.net>
-Date: Wed, 18 Dec 2013 05:44:10 +0000
+From a908cec3ae1644d72d04ccc7657433d8335665bc Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Sat, 8 Feb 2014 17:11:05 +0000
 Subject: [PATCH] expand TH
 
-plus manual fixups
 ---
- DAV.cabal                       |  22 +---
- Network/Protocol/HTTP/DAV.hs    |  96 +++++++++++++----
- Network/Protocol/HTTP/DAV/TH.hs | 232 +++++++++++++++++++++++++++++++++++++++-
- 3 files changed, 307 insertions(+), 43 deletions(-)
+ DAV.cabal                       |   24 +---
+ Network/Protocol/HTTP/DAV.hs    |   96 ++++++++++++----
+ Network/Protocol/HTTP/DAV/TH.hs |  232 ++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 307 insertions(+), 45 deletions(-)
 
 diff --git a/DAV.cabal b/DAV.cabal
-index 1f1eb1f..ea117ff 100644
+index 3a755bb..748b0e1 100644
 --- a/DAV.cabal
 +++ b/DAV.cabal
-@@ -36,27 +36,7 @@ library
-                      , lifted-base >= 0.1
-                      , monad-control
-                      , mtl >= 2.1
--                     , transformers >= 0.3
--                     , transformers-base
--                     , xml-conduit >= 1.0          && <= 1.2
--                     , xml-hamlet >= 0.4           && <= 0.5
+@@ -42,29 +42,7 @@ library
+                      , transformers-base
+                      , xml-conduit >= 1.0          && <= 1.2
+                      , xml-hamlet >= 0.4           && <= 0.5
 -executable hdav
 -  main-is:           hdav.hs
 -  ghc-options:       -Wall
@@ -30,24 +25,30 @@ index 1f1eb1f..ea117ff 100644
 -                     , bytestring
 -                     , case-insensitive >= 0.4
 -                     , containers
+-                     , either >= 4.1
+-                     , errors
 -                     , http-client >= 0.2
 -                     , http-client-tls >= 0.2
 -                     , http-types >= 0.7
 -                     , lens >= 3.0
 -                     , lifted-base >= 0.1
--                     , monad-control
+-                     , monad-control >= 0.3.2
 -                     , mtl >= 2.1
 -                     , network >= 2.3
--                     , optparse-applicative
+-                     , optparse-applicative >= 0.5.0
+-                     , transformers >= 0.3
+-                     , transformers-base
+-                     , xml-conduit >= 1.0          && <= 1.2
+-                     , xml-hamlet >= 0.4           && <= 0.5
 +                     , text
-                      , transformers >= 0.3
-                      , transformers-base
-                      , xml-conduit >= 1.0          && <= 1.2
+ 
+ source-repository head
+   type:     git
 diff --git a/Network/Protocol/HTTP/DAV.hs b/Network/Protocol/HTTP/DAV.hs
-index 9d8c070..5993fca 100644
+index 94d21bc..c48618f 100644
 --- a/Network/Protocol/HTTP/DAV.hs
 +++ b/Network/Protocol/HTTP/DAV.hs
-@@ -77,7 +77,7 @@ import Network.HTTP.Types (hContentType, Method, Status, RequestHeaders, unautho
+@@ -78,7 +78,7 @@ import Network.HTTP.Types (hContentType, Method, Status, RequestHeaders, unautho
  
  import qualified Text.XML as XML
  import Text.XML.Cursor (($/), (&/), element, node, fromDocument, checkName)
@@ -56,7 +57,7 @@ index 9d8c070..5993fca 100644
  
  import Data.CaseInsensitive (mk)
  
-@@ -335,28 +335,84 @@ makeCollection url username password = choke $ evalDAVT url $ do
+@@ -336,28 +336,84 @@ makeCollection url username password = choke $ evalDAVT url $ do
  propname :: XML.Document
  propname = XML.Document (XML.Prologue [] Nothing []) root []
      where
@@ -410,5 +411,5 @@ index b072116..5a01bf9 100644
 +     Data.Functor.<$> (_f_a2R5 __userAgent'_a2Re))
 +{-# INLINE userAgent #-}
 -- 
-1.8.5.1
+1.7.10.4
 

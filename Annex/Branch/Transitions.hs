@@ -41,7 +41,7 @@ dropDead f content trustmap = case getLogVariety f of
 		in if null newlog
 			then RemoveFile
 			else ChangeFile $ Presence.showLog newlog
-	Just SingleValueLog -> PreserveFile
+	Just OtherLog -> PreserveFile
 	Nothing -> PreserveFile
 
 dropDeadFromUUIDBasedLog :: TrustMap -> UUIDBased.Log String -> UUIDBased.Log String

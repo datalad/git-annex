@@ -9,11 +9,6 @@
 
 module Limit where
 
-import Data.Time.Clock.POSIX
-import qualified Data.Set as S
-import qualified Data.Map as M
-import System.Path.WildMatch
-
 import Common.Annex
 import qualified Annex
 import qualified Utility.Matcher
@@ -28,6 +23,8 @@ import Types.Key
 import Types.Group
 import Types.FileMatcher
 import Types.Limit
+import Types.MetaData
+import Logs.MetaData
 import Logs.Group
 import Logs.Unused
 import Logs.Location
@@ -35,14 +32,14 @@ import Git.Types (RefDate(..))
 import Utility.HumanTime
 import Utility.DataUnits
 
+import Data.Time.Clock.POSIX
+import qualified Data.Set as S
+import qualified Data.Map as M
+import System.Path.WildMatch
+
 #ifdef WITH_TDFA
 import Text.Regex.TDFA
 import Text.Regex.TDFA.String
-#else
-#ifndef mingw32_HOST_OS
-import System.Path.WildMatch
-import Types.FileMatcher
-#endif
 #endif
 
 {- Checks if there are user-specified limits. -}
@@ -156,7 +153,7 @@ limitPresent u _ = Right $ const $ checkKey $ \key -> do
 limitInDir :: FilePath -> MkLimit
 limitInDir dir = const $ Right $ const go
   where
-	go (MatchingFile fi) = return $ any (== dir) $ splitPath $ takeDirectory $ matchFile fi
+	go (MatchingFile fi) = return $ elem dir $ splitPath $ takeDirectory $ matchFile fi
 	go (MatchingKey _) = return False
 
 {- Adds a limit to skip files not believed to have the specified number
@@ -266,6 +263,16 @@ limitSize vs s = case readSize dataUnits s of
 			fromIntegral . fileSize
 				<$> getFileStatus (relFile fi)
 		return $ filesize `vs` Just sz
+
+addMetaData :: String -> Annex ()
+addMetaData = addLimit . limitMetaData
+
+limitMetaData :: MkLimit
+limitMetaData s = case parseMetaData s of
+	Left e -> Left e
+	Right (f, v) -> Right $ const $ checkKey (check f v)
+  where
+  	check f v k = S.member v . metaDataValues f <$> getCurrentMetaData k
 
 addTimeLimit :: String -> Annex ()
 addTimeLimit s = do

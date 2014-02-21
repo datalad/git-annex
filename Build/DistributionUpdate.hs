@@ -21,11 +21,16 @@ main = do
 
 makeinfos :: Annex ()
 makeinfos = do
+	void $ inRepo $ runBool 
+		[ Param "commit"
+		, Param "-m"
+		, Param $ "publishing git-annex " ++ version
+		]
 	basedir <- liftIO getRepoDir
 	version <- liftIO getChangelogVersion
 	now <- liftIO getCurrentTime
 	liftIO $ putStrLn $ "building info files for version " ++ version ++ " in " ++ basedir
-	fs <- liftIO $ dirContentsRecursiveSkipping (== "info") True (basedir </> "git-annex")
+	fs <- liftIO $ dirContentsRecursiveSkipping (const False) True (basedir </> "git-annex")
 	forM_ fs $ \f -> do
 		v <- lookupFile f
 		case v of
@@ -44,7 +49,7 @@ makeinfos = do
 	void $ inRepo $ runBool 
 		[ Param "commit"
 		, Param "-m"
-		, Param $ "publishing git-annex " ++ version
+		, Param $ "updated info files for git-annex " ++ version
 		]
 	void $ inRepo $ runBool
 		[ Param "annex"
@@ -54,6 +59,19 @@ makeinfos = do
 		[ Param "annex"
 		, Params "sync"
 		]
+	
+	{- Check for out of date info files. -}
+	infos <- liftIO $ filter (".info" `isSuffixOf`)
+		<$> dirContentsRecursive (basedir </> "git-annex")
+	ds <- liftIO $ forM infos (readish <$$> readFile)
+	let dis = zip infos ds
+	let ood = filter (outofdate version) dis
+	unless (null ood) $
+		error $ "Some info files are out of date: " ++ show (map fst ood)
+  where
+	outofdate version (_, md) = case md of
+		Nothing -> True
+		Just d -> distributionVersion d /= version
 
 getRepoDir :: IO FilePath
 getRepoDir = do

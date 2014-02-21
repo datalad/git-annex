@@ -9,6 +9,7 @@ module CmdLine.GitAnnexShell.Fields where
 
 import Common.Annex
 import qualified Annex
+import Git.FilePath
 
 import Data.Char
 
@@ -29,7 +30,7 @@ remoteUUID = Field "remoteuuid" $
 associatedFile :: Field
 associatedFile = Field "associatedfile" $ \f ->
 	-- is the file a safe relative filename?
-	not (isAbsolute f) && not ("../" `isPrefixOf` f)
+	not (absoluteGitPath f) && not ("../" `isPrefixOf` f)
 
 direct :: Field
 direct = Field "direct" $ \f -> f == "1"

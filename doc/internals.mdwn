@@ -146,6 +146,27 @@ Example:
 	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55 blah blah
 	1287290767.478634s 26339d22-446b-11e0-9101-002170d25c55 foo=bar
 
+## `aaa/bbb/*.log.met`
+
+These log files are used to store arbitrary [[design/metadata]] about keys.
+Each key can have any number of metadata fields. Each field has a set of
+values.
+
+Lines are timestamped, and record when values are added (`field +value`),
+but also when values are removed (`field -value`). Removed values
+are retained in the log so that when merging an old line that sets a value
+that was later unset, the value is not accidentially added back.
+
+For example:
+
+	1287290776.765152s tag +foo +bar author +joey
+	1291237510.141453s tag -bar +baz
+
+The value can be completely arbitrary data, although it's typically
+reasonably short. If the value contains any whitespace
+(including \r or \r), it will be base64 encoded. Base64 encoded values
+are indicated by prefixing them with "!" 
+
 ## `schedule.log`
 
 Used to record scheduled events, such as periodic fscks.

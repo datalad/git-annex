@@ -1,13 +1,13 @@
 {- WebDAV remotes.
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
 {-# LANGUAGE ScopedTypeVariables, CPP #-}
 
-module Remote.WebDAV (remote, davCreds, setCredsEnv, configUrl) where
+module Remote.WebDAV (remote, davCreds, configUrl) where
 
 import Network.Protocol.HTTP.DAV
 import qualified Data.Map as M
@@ -76,8 +76,8 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			remotetype = remote
 		}
 
-webdavSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-webdavSetup mu c = do
+webdavSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+webdavSetup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
 	let url = fromMaybe (error "Specify url=") $
 		M.lookup "url" c
@@ -85,7 +85,7 @@ webdavSetup mu c = do
 	creds <- getCreds c' u
 	testDav url creds
 	gitConfigSpecialRemote u c' "webdav" "true"
-	c'' <- setRemoteCredPair c' (davCreds u)
+	c'' <- setRemoteCredPair c' (davCreds u) mcreds
 	return (c'', u)
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
@@ -354,6 +354,3 @@ davCreds u = CredPairStorage
 	, credPairEnvironment = ("WEBDAV_USERNAME", "WEBDAV_PASSWORD")
 	, credPairRemoteKey = Just "davcreds"
 	}
-
-setCredsEnv :: (String, String) -> IO ()
-setCredsEnv creds = setEnvCredPair creds $ davCreds undefined

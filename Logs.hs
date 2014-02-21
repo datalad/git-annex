@@ -1,6 +1,6 @@
 {- git-annex log file names
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -15,7 +15,7 @@ data LogVariety
 	= UUIDBasedLog
 	| NewUUIDBasedLog
 	| PresenceLog Key
-	| SingleValueLog
+	| OtherLog
 	deriving (Show)
 
 {- Converts a path from the git-annex branch into one of the varieties
@@ -24,7 +24,7 @@ getLogVariety :: FilePath -> Maybe LogVariety
 getLogVariety f
 	| f `elem` topLevelUUIDBasedLogs = Just UUIDBasedLog
 	| isRemoteStateLog f = Just NewUUIDBasedLog
-	| f == numcopiesLog = Just SingleValueLog
+	| isMetaDataLog f || f == numcopiesLog = Just OtherLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
 
 {- All the uuid-based logs stored in the top of the git-annex branch. -}
@@ -119,14 +119,25 @@ remoteStateLogExt = ".log.rmt"
 isRemoteStateLog :: FilePath -> Bool
 isRemoteStateLog path = remoteStateLogExt `isSuffixOf` path
 
+{- The filename of the metadata log for a given key. -}
+metaDataLogFile :: Key -> FilePath
+metaDataLogFile key = hashDirLower key </> keyFile key ++ metaDataLogExt
+
+metaDataLogExt :: String
+metaDataLogExt = ".log.met"
+
+isMetaDataLog :: FilePath -> Bool
+isMetaDataLog path = metaDataLogExt `isSuffixOf` path
+
 prop_logs_sane :: Key -> Bool
-prop_logs_sane dummykey = all id
+prop_logs_sane dummykey = and
 	[ isNothing (getLogVariety "unknown")
 	, expect isUUIDBasedLog (getLogVariety uuidLog)
 	, expect isPresenceLog (getLogVariety $ locationLogFile dummykey)
 	, expect isPresenceLog (getLogVariety $ urlLogFile dummykey)
 	, expect isNewUUIDBasedLog (getLogVariety $ remoteStateLogFile dummykey)
-	, expect isSingleValueLog (getLogVariety $ numcopiesLog)
+	, expect isOtherLog (getLogVariety $ metaDataLogFile dummykey)
+	, expect isOtherLog (getLogVariety $ numcopiesLog)
 	]
   where
   	expect = maybe False
@@ -136,5 +147,5 @@ prop_logs_sane dummykey = all id
 	isNewUUIDBasedLog _ = False
 	isPresenceLog (PresenceLog k) = k == dummykey
 	isPresenceLog _ = False
-	isSingleValueLog SingleValueLog = True
-	isSingleValueLog _ = False
+	isOtherLog OtherLog = True
+	isOtherLog _ = False

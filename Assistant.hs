@@ -93,7 +93,8 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 			start (Utility.Daemon.daemonize logfd (Just pidfile) False) Nothing
 #else
 	-- Windows is always foreground, and has no log file.
-	start id $
+	liftIO $ Utility.Daemon.lockPidFile pidfile
+	start id $ do
 		case startbrowser of
 			Nothing -> Nothing
 			Just a -> Just $ a Nothing Nothing

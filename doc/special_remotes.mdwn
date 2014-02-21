@@ -38,6 +38,7 @@ for using git-annex with various services:
 * [[IMAP|forum/special_remote_for_IMAP]]
 * [[Usenet|forum/nntp__47__usenet special remote]]
 * [chef-vault](https://github.com/3ofcoins/knife-annex/)
+* [hubiC](https://github.com/Schnouki/git-annex-remote-hubic)
 
 Want to add support for something else? [[Write your own!|external]]
 

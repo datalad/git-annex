@@ -20,11 +20,14 @@ module Git.FilePath (
 	asTopFilePath,
 	InternalGitPath,
 	toInternalGitPath,
-	fromInternalGitPath
+	fromInternalGitPath,
+	absoluteGitPath
 ) where
 
 import Common
 import Git
+
+import qualified System.FilePath.Posix
 
 {- A FilePath, relative to the top of the git repository. -}
 newtype TopFilePath = TopFilePath { getTopFilePath :: FilePath }
@@ -48,8 +51,7 @@ asTopFilePath file = TopFilePath file
  - it internally. 
  -
  - On Windows, git uses '/' to separate paths stored in the repository,
- - despite Windows using '\'. Also, git on windows dislikes paths starting
- - with "./" or ".\".
+ - despite Windows using '\'.
  -
  -}
 type InternalGitPath = String
@@ -58,11 +60,7 @@ toInternalGitPath :: FilePath -> InternalGitPath
 #ifndef mingw32_HOST_OS
 toInternalGitPath = id
 #else
-toInternalGitPath p =
-	let p' = replace "\\" "/" p
-	in if "./" `isPrefixOf` p'
-		then dropWhile (== '/') (drop 1 p')
-		else p'
+toInternalGitPath = replace "\\" "/"
 #endif
 
 fromInternalGitPath :: InternalGitPath -> FilePath
@@ -71,3 +69,10 @@ fromInternalGitPath = id
 #else
 fromInternalGitPath = replace "/" "\\"
 #endif
+
+{- isAbsolute on Windows does not think "/foo" or "\foo" is absolute,
+ - so try posix paths.
+ -}
+absoluteGitPath :: FilePath -> Bool
+absoluteGitPath p = isAbsolute p ||
+	System.FilePath.Posix.isAbsolute (toInternalGitPath p)

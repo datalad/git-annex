@@ -37,3 +37,19 @@ in my opinion, the messages should at least contain
 
 >> Closing as this is literally impossible to do without making
 >> git-annex worse. [[done]] --[[Joey]] 
+
+> I'm not sure that the requested feature is that far off. There are two
+> aspects, that can be solved relatively easy:
+>
+>  * Recording the name of the remote the commit was issued on. This
+>    information is simply constant per remote.
+>
+>  * While it is true that there is no 1 on 1 correspondence between commands
+>    and git-annex commits, it would be entirely possible to add a "message
+>    journal". Every command issued would start out with writing its
+>    invocation to the message journal. At the time the journal ends up being
+>    committed to the git-annex branch, the message journal is used as the
+>    body of the commit message and truncated.
+>
+> It is true that these suggestions do not address every aspect of the
+> original report, but they would solve about 90%. --[[HelmutGrohne]]

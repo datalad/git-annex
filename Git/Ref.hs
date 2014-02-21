@@ -20,12 +20,12 @@ headRef = Ref "HEAD"
 
 {- Converts a fully qualified git ref into a user-visible string. -}
 describe :: Ref -> String
-describe = show . base
+describe = fromRef . base
 
 {- Often git refs are fully qualified (eg: refs/heads/master).
  - Converts such a fully qualified ref into a base ref (eg: master). -}
 base :: Ref -> Ref
-base = Ref . remove "refs/heads/" . remove "refs/remotes/" . show
+base = Ref . remove "refs/heads/" . remove "refs/remotes/" . fromRef
   where
 	remove prefix s
 		| prefix `isPrefixOf` s = drop (length prefix) s
@@ -35,13 +35,13 @@ base = Ref . remove "refs/heads/" . remove "refs/remotes/" . show
  - it under the directory. -}
 under :: String -> Ref -> Ref
 under dir r = Ref $ dir ++ "/" ++
-	(reverse $ takeWhile (/= '/') $ reverse $ show r)
+	(reverse $ takeWhile (/= '/') $ reverse $ fromRef r)
 
 {- Given a directory such as "refs/remotes/origin", and a ref such as
  - refs/heads/master, yields a version of that ref under the directory,
  - such as refs/remotes/origin/master. -}
 underBase :: String -> Ref -> Ref
-underBase dir r = Ref $ dir ++ "/" ++ show (base r)
+underBase dir r = Ref $ dir ++ "/" ++ fromRef (base r)
 
 {- A Ref that can be used to refer to a file in the repository, as staged
  - in the index.
@@ -64,12 +64,12 @@ fileFromRef (Ref r) f = let (Ref fr) = fileRef f in Ref (r ++ fr)
 {- Checks if a ref exists. -}
 exists :: Ref -> Repo -> IO Bool
 exists ref = runBool
-	[Param "show-ref", Param "--verify", Param "-q", Param $ show ref]
+	[Param "show-ref", Param "--verify", Param "-q", Param $ fromRef ref]
 
 {- The file used to record a ref. (Git also stores some refs in a
  - packed-refs file.) -}
 file :: Ref -> Repo -> FilePath
-file ref repo = localGitDir repo </> show ref
+file ref repo = localGitDir repo </> fromRef ref
 
 {- Checks if HEAD exists. It generally will, except for in a repository
  - that was just created. -}
@@ -84,17 +84,17 @@ sha branch repo = process <$> showref repo
   where
 	showref = pipeReadStrict [Param "show-ref",
 		Param "--hash", -- get the hash
-		Param $ show branch]
+		Param $ fromRef branch]
 	process [] = Nothing
 	process s = Just $ Ref $ firstLine s
 
 {- List of (shas, branches) matching a given ref or refs. -}
 matching :: [Ref] -> Repo -> IO [(Sha, Branch)]
-matching refs repo =  matching' (map show refs) repo
+matching refs repo =  matching' (map fromRef refs) repo
 
 {- Includes HEAD in the output, if asked for it. -}
 matchingWithHEAD :: [Ref] -> Repo -> IO [(Sha, Branch)]
-matchingWithHEAD refs repo = matching' ("--head" : map show refs) repo
+matchingWithHEAD refs repo = matching' ("--head" : map fromRef refs) repo
 
 {- List of (shas, branches) matching a given ref or refs. -}
 matching' :: [String] -> Repo -> IO [(Sha, Branch)]
@@ -114,7 +114,7 @@ matchingUniq refs repo = nubBy uniqref <$> matching refs repo
 {- Gets the sha of the tree a ref uses. -}
 tree :: Ref -> Repo -> IO (Maybe Sha)
 tree ref = extractSha <$$> pipeReadStrict
-	[ Param "rev-parse", Param (show ref ++ ":") ]
+	[ Param "rev-parse", Param (fromRef ref ++ ":") ]
 
 {- Checks if a String is a legal git ref name.
  -

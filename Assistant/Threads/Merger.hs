@@ -80,8 +80,8 @@ onChange file
 	mergecurrent (Just current)
 		| equivBranches changedbranch current = do
 			debug
-				[ "merging", show changedbranch
-				, "into", show current
+				[ "merging", Git.fromRef changedbranch
+				, "into", Git.fromRef current
 				]
 			void $ liftAnnex  $ Command.Sync.mergeFrom changedbranch
 	mergecurrent _ = noop
@@ -105,12 +105,12 @@ onChange file
 equivBranches :: Git.Ref -> Git.Ref -> Bool
 equivBranches x y = base x == base y
   where
-	base = takeFileName . show
+	base = takeFileName . Git.fromRef
 
 isAnnexBranch :: FilePath -> Bool
 isAnnexBranch f = n `isSuffixOf` f
   where
-	n = '/' : show Annex.Branch.name
+	n = '/' : Git.fromRef Annex.Branch.name
 
 fileToBranch :: FilePath -> Git.Ref
 fileToBranch f = Git.Ref $ "refs" </> base

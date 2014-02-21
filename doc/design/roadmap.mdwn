@@ -9,10 +9,10 @@ Now in the
 * Month 3 user-driven features and polishing [[todo/direct_mode_guard]] [[assistant/upgrading]]
 * Month 4 [[Windows_webapp|assistant/Windows]], Linux arm, [[todo/support_for_writing_external_special_remotes]]
 * Month 5 user-driven features and polishing
-* **Month 6 get [[assistant/Android]] and Windows out of beta**
+* **Month 6 get Windows out of beta, [[metadata and views|design/metadata]]**
 * Month 7 user-driven features and polishing
 * Month 8 [[!traillink assistant/telehash]]
 * Month 9 [[!traillink assistant/gpgkeys]] [[!traillink assistant/sshpassword]]
-* Month 10 user-driven features and polishing
+* Month 10 get [[assistant/Android]] out of beta
 * Month 11 [[!traillink assistant/chunks]] [[!traillink assistant/deltas]]
 * Month 12 user-driven features and polishing

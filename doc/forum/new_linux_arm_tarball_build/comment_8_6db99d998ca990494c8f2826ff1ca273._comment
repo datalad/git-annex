@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://renaud.casenave.fr/"
+ ip="126.10.66.235"
+ subject="comment 8"
+ date="2014-02-17T13:15:24Z"
+ content="""
+Hi,
+
+You might be happy to know git-annex works well on sailfishOS, even the webapp.
+It does segfault when trying to setup a xmpp account, though.
+"""]]

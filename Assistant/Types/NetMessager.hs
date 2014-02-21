@@ -32,7 +32,7 @@ data NetMessage
 	| PairingNotification PairStage ClientID UUID
 	-- used for git push over the network messager
 	| Pushing ClientID PushStage
-	deriving (Show, Eq, Ord)
+	deriving (Eq, Ord, Show)
 
 {- Something used to identify the client, or clients to send the message to. -}
 type ClientID = Text
@@ -50,7 +50,7 @@ data PushStage
 	| SendPackOutput SequenceNum ByteString
 	-- sent when git receive-pack exits, with its exit code
 	| ReceivePackDone ExitCode
-	deriving (Show, Eq, Ord)
+	deriving (Eq, Ord, Show)
 
 {- A sequence number. Incremented by one per packet in a sequence,
  - starting with 1 for the first packet. 0 means sequence numbers are

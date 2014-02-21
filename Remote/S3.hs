@@ -73,12 +73,12 @@ gen r u c gc = new <$> remoteCost gc expensiveRemoteCost
 			remotetype = remote
 		}
 
-s3Setup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-s3Setup mu c = do
+s3Setup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+s3Setup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
-	s3Setup' u c
-s3Setup' :: UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-s3Setup' u c = if isIA c then archiveorg else defaulthost
+	s3Setup' u mcreds c
+s3Setup' :: UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+s3Setup' u mcreds c = if isIA c then archiveorg else defaulthost
   where
 	remotename = fromJust (M.lookup "name" c)
 	defbucket = remotename ++ "-" ++ fromUUID u
@@ -92,7 +92,7 @@ s3Setup' u c = if isIA c then archiveorg else defaulthost
 		
 	use fullconfig = do
 		gitConfigSpecialRemote u fullconfig "s3" "true"
-		c' <- setRemoteCredPair fullconfig (AWS.creds u)
+		c' <- setRemoteCredPair fullconfig (AWS.creds u) mcreds
 		return (c', u)
 
 	defaulthost = do

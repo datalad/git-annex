@@ -28,7 +28,7 @@ current r = do
 	case v of
 		Nothing -> return Nothing
 		Just branch -> 
-			ifM (null <$> pipeReadStrict [Param "show-ref", Param $ show branch] r)
+			ifM (null <$> pipeReadStrict [Param "show-ref", Param $ fromRef branch] r)
 				( return Nothing
 				, return v
 				)
@@ -36,7 +36,7 @@ current r = do
 {- The current branch, which may not really exist yet. -}
 currentUnsafe :: Repo -> IO (Maybe Git.Ref)
 currentUnsafe r = parse . firstLine
-	<$> pipeReadStrict [Param "symbolic-ref", Param $ show Git.Ref.headRef] r
+	<$> pipeReadStrict [Param "symbolic-ref", Param $ fromRef Git.Ref.headRef] r
   where
 	parse l
 		| null l = Nothing
@@ -51,7 +51,7 @@ changed origbranch newbranch repo
   where
 	diffs = pipeReadStrict
 		[ Param "log"
-		, Param (show origbranch ++ ".." ++ show newbranch)
+		, Param (fromRef origbranch ++ ".." ++ fromRef newbranch)
 		, Params "--oneline -n1"
 		] repo
 
@@ -74,7 +74,7 @@ fastForward branch (first:rest) repo =
   where
 	no_ff = return False
 	do_ff to = do
-		run [Param "update-ref", Param $ show branch, Param $ show to] repo
+		run [Param "update-ref", Param $ fromRef branch, Param $ fromRef to] repo
 		return True
 	findbest c [] = return $ Just c
 	findbest c (r:rs)
@@ -104,14 +104,14 @@ commit allowempty message branch parentrefs repo = do
 	ifM (cancommit tree)
 		( do
 			sha <- getSha "commit-tree" $ pipeWriteRead
-				(map Param $ ["commit-tree", show tree] ++ ps)
+				(map Param $ ["commit-tree", fromRef tree] ++ ps)
 				(Just $ flip hPutStr message) repo
 			update branch sha repo
 			return $ Just sha
 		, return Nothing
 		)
   where
-	ps = concatMap (\r -> ["-p", show r]) parentrefs
+	ps = concatMap (\r -> ["-p", fromRef r]) parentrefs
 	cancommit tree
 		| allowempty = return True
 		| otherwise = case parentrefs of
@@ -130,8 +130,8 @@ forcePush b = "+" ++ b
 update :: Branch -> Sha -> Repo -> IO ()
 update branch sha = run 
 	[ Param "update-ref"
-	, Param $ show branch
-	, Param $ show sha
+	, Param $ fromRef branch
+	, Param $ fromRef sha
 	]
 
 {- Checks out a branch, creating it if necessary. -}
@@ -140,7 +140,7 @@ checkout branch = run
 	[ Param "checkout"
 	, Param "-q"
 	, Param "-B"
-	, Param $ show $ Git.Ref.base branch
+	, Param $ fromRef $ Git.Ref.base branch
 	]
 
 {- Removes a branch. -}
@@ -149,5 +149,5 @@ delete branch = run
 	[ Param "branch"
 	, Param "-q"
 	, Param "-D"
-	, Param $ show $ Git.Ref.base branch
+	, Param $ fromRef $ Git.Ref.base branch
 	]

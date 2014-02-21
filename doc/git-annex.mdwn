@@ -503,9 +503,10 @@ subdirectories).
   To avoid expensive checksum calculations (and expensive transfers when
   fscking a remote), specify `--fast`.
 
-  To start a new incremental fsck, specify `--incremental`. Then
-  the next time you fsck, you can specify `--more` to skip over
-  files that have already been checked, and continue where it left off.
+  To start a new incremental fsck, use the `--incremental` option. Then
+  the next time you fsck, you can instead use the `--more` option 
+  to skip over files that have already been checked, and continue
+  where it left off.
 
   The `--incremental-schedule` option makes a new incremental fsck be
   started a configurable time after the last incremental fsck was started.
@@ -693,6 +694,72 @@ subdirectories).
   Note that this subcommand can be used to graph any git repository; it
   is not limited to git-annex repositories.
 
+# METADATA COMMANDS
+
+* `metadata [path ...] [-s field=value -s field+=value -s field-=value ...]`
+
+  Each file can have any number of metadata fields attached to it,
+  which each in turn have any number of values. This sets metadata
+  for the specified file or files, or if run without any values, shows
+  the current metadata.
+
+  To set a field's value, removing any old value(s), use -s field=value.
+
+  To add an additional value, use -s field+=value.
+
+  To remove a value, use -s field-=value.
+
+  To set a tag, use -t tag, and use -u tag to remove a tag.
+
+  For example, to set some tags on a file and also its author:
+
+        	git annex metadata annexscreencast.ogv -t video -t screencast -s author+=Alice
+
+* `view [field=value ...] [tag ...]`
+
+  Uses metadata to build a view branch of the files in the current branch,
+  and checks out the view branch. Only files in the current branch whose
+  metadata matches all the specified field values and tags will be
+  shown in the view.
+  
+  Multiple values for a metadata field can be specified, either by using
+  a glob (`field="*"`) or by listing each wanted value. The resulting view
+  will put files in subdirectories according to the value of their fields.
+
+  Once within a view, you can make additional directories, and
+  copy or move files into them. When you commit, the metadata will
+  be updated to correspond to your changes.
+
+* `vpop [N]`
+
+  Switches from the currently active view back to the previous view.
+  Or, from the first view back to original branch.
+
+  The optional number tells how many views to pop.
+
+* `vfilter [field=value ...] [tag ...]`
+
+  Filters the current view to only the files that have the
+  specified values and tags.
+
+* `vadd [field=glob ...]`
+
+  Changes the current view, adding an additional level of directories
+  to categorize the files.
+
+  For example, when the view is by author/tag, `vadd year=*` will 
+  change it to year/author/tag. 
+  
+  So will `vadd year=2014 year=2013`, but limiting the years in view
+  to only those two.
+
+* `vcycle`
+
+  When a view involves nested subdirectories, this cycles the order.
+
+  For example, when the view is by year/author/tag, `vcycle` will switch
+  it to author/tag/year.
+
 # UTILITY COMMANDS
 
 * `migrate [path ...]`
@@ -753,7 +820,8 @@ subdirectories).
 
   Fixes up symlinks that are staged as part of a commit, to ensure they
   point to annexed content. Also handles injecting changes to unlocked
-  files into the annex.
+  files into the annex. When in a view, updates metadata to reflect changes
+  made to files in the view.
 
 * `lookupkey [file ...]`
 
@@ -791,10 +859,6 @@ subdirectories).
 
   This can be used to drop content for arbitrary keys, which do not need
   to have a file in the git repository pointing at them.
-
-  Example:
-
-        	git annex dropkey SHA1-s10-7da006579dd64330eb2456001fd01948430572f2
 
 * `transferkey`
 
@@ -1068,6 +1132,11 @@ file contents are present at either of two repositories.
 
   The size can be specified with any commonly used units, for example,
   "0.5 gb" or "100 KiloBytes"
+
+* `--metadata field=value`
+
+  Matches only files that have a metadata field attached with the specified
+  value.
 
 * `--want-get`
 
@@ -1556,6 +1625,15 @@ for flac files:
 	*.flac annex.numcopies=3
 
 Note that setting numcopies to 0 is very unsafe.
+
+These settings are honored by git-annex whenever it's operating on a
+matching file. However, when using --all, --unused, or --key to specify
+keys to operate on, git-annex is operating on keys and not files, so will
+not honor the settings from .gitattributes.
+
+Also note that when using views, only the toplevel .gitattributes file is
+preserved in the view, so other settings in other files won't have any
+efffect.
 
 # FILES
 

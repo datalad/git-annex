@@ -15,7 +15,7 @@ import Git.BuildVersion
 {- Avoids recent git's interactive merge. -}
 mergeNonInteractive :: Ref -> Repo -> IO Bool
 mergeNonInteractive branch
-	| older "1.7.7.6" = merge [Param $ show branch]
-	| otherwise = merge [Param "--no-edit", Param $ show branch]
+	| older "1.7.7.6" = merge [Param $ fromRef branch]
+	| otherwise = merge [Param "--no-edit", Param $ fromRef branch]
   where
 	merge ps = runBool $ Param "merge" : ps

@@ -17,26 +17,16 @@ import Types.Key
 import Utility.Metered
 import Utility.Percentage
 import Utility.QuickCheck
+import Utility.PID
+#ifdef mingw32_HOST_OS
+import Utility.WinLock
+#endif
 
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import Control.Concurrent
-
-#ifndef mingw32_HOST_OS
-import System.Posix.Types (ProcessID)
-#else
-import System.Win32.Process (ProcessId)
-import System.Win32.Process.Current (getCurrentProcessId)
-import Utility.WinLock
-#endif
-
-#ifndef mingw32_HOST_OS
-type PID = ProcessID
-#else
-type PID = ProcessId
-#endif
 
 {- Enough information to uniquely identify a transfer, used as the filename
  - of the transfer information file. -}
@@ -231,7 +221,7 @@ startTransferInfo file = TransferInfo
 #ifndef mingw32_HOST_OS
 	<*> pure Nothing -- pid not stored in file, so omitted for speed
 #else
-	<*> (Just <$> getCurrentProcessId)
+	<*> (Just <$> getPID)
 #endif
 	<*> pure Nothing -- tid ditto
 	<*> pure Nothing -- not 0; transfer may be resuming

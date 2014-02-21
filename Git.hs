@@ -13,6 +13,7 @@
 module Git (
 	Repo(..),
 	Ref(..),
+	fromRef,
 	Branch,
 	Sha,
 	Tag,

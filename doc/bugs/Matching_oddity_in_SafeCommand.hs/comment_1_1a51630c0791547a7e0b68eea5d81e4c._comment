@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 1"
+ date="2014-02-12T16:27:10Z"
+ content="""
+You're right that line only matches empty filenames. I think that the Hurd actually does support empty filenames. It seems that the command being run would otherwise complain that it was given an empty parameter. So I do not think it's worth throwing an error here. Also, I prefer to keep toCommand a total function. 
+"""]]

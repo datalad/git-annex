@@ -1,5 +1,14 @@
-I would like to attach metadata to annexed files (objects) without cluttering the workdir with files containing this metadata. A common use case would be to add titles to my photo collection that could than end up in a generated photo album.
+I would like to attach metadata to annexed files (objects) without
+cluttering the workdir with files containing this metadata. A common use
+case would be to add titles to my photo collection that could than end up
+in a generated photo album.
 
 Depending on the implementation it might also be possible to use the metadata facility for a threaded commenting system.
 
-The first question is whether the metadata is attached to the objects and thus shared by all paths pointing to the same data object or to paths in the worktree. I've no preference here at this point.
+The first question is whether the metadata is attached to the objects and
+thus shared by all paths pointing to the same data object or to paths in
+the worktree. I've no preference here at this point.
+
+> This is [[done]]; see [[design/metadata]].
+> The metadata is attached to objects, not to files.
+> --[[Joey]] 

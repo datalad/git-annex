@@ -58,6 +58,7 @@ import Types.UUID
 import Types.FileMatcher
 import Types.NumCopies
 import Types.LockPool
+import Types.MetaData
 import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -109,6 +110,7 @@ data AnnexState = AnnexState
 	, lockpool :: LockPool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
+	, modmeta :: [ModMeta]
 	, cleanup :: M.Map String (Annex ())
 	, inodeschanged :: Maybe Bool
 	, useragent :: Maybe String
@@ -146,6 +148,7 @@ newState c r = AnnexState
 	, lockpool = M.empty
 	, flags = M.empty
 	, fields = M.empty
+	, modmeta = []
 	, cleanup = M.empty
 	, inodeschanged = Nothing
 	, useragent = Nothing

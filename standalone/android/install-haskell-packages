@@ -28,7 +28,6 @@ cabalinstall () {
 patched () {
 	pkg=$1
 	ver=$2
-	shift 1
 	if [ -z "$ver" ]; then
 		cabal unpack $pkg
 	else
@@ -50,7 +49,7 @@ patched () {
 			fi
 		fi
 	done
-	cabalinstall "$@"
+	cabalinstall
 	rm -rf $pkg*
 	cd ..
 }
@@ -73,7 +72,6 @@ install_pkgs () {
 	patched zlib
 	patched MissingH
 	patched bloomfilter
-	patched SafeSemaphore
 	patched distributive
 	patched comonad
 	patched iproute
@@ -87,6 +85,7 @@ install_pkgs () {
 	patched skein
 	patched lens
 	patched certificate
+	patched x509-system
 	patched persistent-template
 	patched system-filepath
 	patched wai-app-static
@@ -102,12 +101,13 @@ install_pkgs () {
 	patched yesod
 	patched shakespeare-text
 	patched process-conduit
-	patched gnuidn
-	patched DAV 0.5.1
+	patched DAV
 	patched yesod-static
 	patched uuid
 	patched dns
 	patched gnutls
+	patched libxml-sax
+	patched network-protocol-xmpp
 
 	cd ..
 

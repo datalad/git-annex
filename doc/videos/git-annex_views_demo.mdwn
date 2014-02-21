@@ -1,0 +1,11 @@
+A quick screencast demoing an experimental new feature,
+[[tips/metadata_driven_views]].
+
+<video controls src="https://downloads.kitenet.net/videos/git-annex/git-annex_views_demo.ogg"></video>
+
+[video](https://downloads.kitenet.net/videos/git-annex/git-annex_views_demo.ogg)
+
+Credits: 
+
+* RichiH for <https://github.com/RichiH/conference_proceedings>
+* Michi for keyboard cat cameo

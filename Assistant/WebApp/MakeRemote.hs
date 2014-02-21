@@ -28,8 +28,8 @@ import Utility.Yesod
  - and finishes setting it up, then starts syncing with it,
  - and finishes by displaying the page to edit it. -}
 setupCloudRemote :: StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
-setupCloudRemote defaultgroup mcost maker = do
-	r <- liftAnnex $ addRemote maker
+setupCloudRemote defaultgroup mcost name = do
+	r <- liftAnnex $ addRemote name
 	liftAnnex $ do
 		setStandardGroup (Remote.uuid r) defaultgroup
 		maybe noop (Config.setRemoteCost (Remote.repo r)) mcost

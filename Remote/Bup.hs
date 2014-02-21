@@ -15,6 +15,7 @@ import Data.ByteString.Lazy.UTF8 (fromString)
 import Common.Annex
 import Types.Remote
 import Types.Key
+import Types.Creds
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
@@ -82,8 +83,8 @@ gen r u c gc = do
   where
 	buprepo = fromMaybe (error "missing buprepo") $ remoteAnnexBupRepo gc
 
-bupSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-bupSetup mu c = do
+bupSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+bupSetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 
 	-- verify configuration is sane

@@ -300,7 +300,6 @@ getGenKeyForDriveR drive = withNewSecretKey $ \keyid ->
 getFinishAddDriveR :: RemovableDrive -> RepoKey -> Handler Html
 getFinishAddDriveR drive = go
   where
-  	{- Set up new gcrypt special remote. -}
 	go (RepoKey keyid) = whenGcryptInstalled $ makewith $ const $ do
 		r <- liftAnnex $ addRemote $
 			makeGCryptRemote remotename dir keyid
@@ -314,7 +313,7 @@ getFinishAddDriveR drive = go
 		remotename' <- liftAnnex $ getGCryptRemoteName u dir
 		makewith $ const $ do
 			r <- liftAnnex $ addRemote $
-				enableSpecialRemote remotename' GCrypt.remote $ M.fromList
+				enableSpecialRemote remotename' GCrypt.remote Nothing $ M.fromList
 					[("gitrepo", dir)]
 			return (u, r)
 	{- Making a new unencrypted repo, or combining with an existing one. -}

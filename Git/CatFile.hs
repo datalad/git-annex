@@ -50,7 +50,7 @@ catFileStop (CatFileHandle p _) = CoProcess.stop p
 {- Reads a file from a specified branch. -}
 catFile :: CatFileHandle -> Branch -> FilePath -> IO L.ByteString
 catFile h branch file = catObject h $ Ref $
-	show branch ++ ":" ++ toInternalGitPath file
+	fromRef branch ++ ":" ++ toInternalGitPath file
 
 {- Uses a running git cat-file read the content of an object.
  - Objects that do not exist will have "" returned. -}
@@ -60,7 +60,7 @@ catObject h object = maybe L.empty fst3 <$> catObjectDetails h object
 catObjectDetails :: CatFileHandle -> Ref -> IO (Maybe (L.ByteString, Sha, ObjectType))
 catObjectDetails (CatFileHandle hdl _) object = CoProcess.query hdl send receive
   where
-	query = show object
+	query = fromRef object
 	send to = hPutStrLn to query
 	receive from = do
 		header <- hGetLine from
@@ -72,8 +72,8 @@ catObjectDetails (CatFileHandle hdl _) object = CoProcess.query hdl send receive
 						_ -> dne
 				| otherwise -> dne
 			_
-				| header == show object ++ " missing" -> dne
-				| otherwise -> error $ "unknown response from git cat-file " ++ show (header, object)
+				| header == fromRef object ++ " missing" -> dne
+				| otherwise -> error $ "unknown response from git cat-file " ++ show (header, query)
 	readcontent objtype bytes from sha = do
 		content <- S.hGet from bytes
 		eatchar '\n' from

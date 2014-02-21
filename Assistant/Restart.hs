@@ -16,6 +16,7 @@ import Assistant.NamedThread
 import Utility.ThreadScheduler
 import Utility.NotificationBroadcaster
 import Utility.Url
+import Utility.PID
 import qualified Git.Construct
 import qualified Git.Config
 import Config.Files
@@ -25,10 +26,9 @@ import qualified Git
 import Control.Concurrent
 import System.Process (cwd)
 #ifndef mingw32_HOST_OS
-import System.Posix (getProcessID, signalProcess, sigTERM)
+import System.Posix (signalProcess, sigTERM)
 #else
-import System.Win32.Process.Current (getCurrentProcessId)
-import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT)
+import Utility.WinProcess
 #endif
 
 {- Before the assistant can be restarted, have to remove our 
@@ -53,9 +53,9 @@ postRestart url = do
 	void $ liftIO $ forkIO $ do
 		threadDelaySeconds (Seconds 120)
 #ifndef mingw32_HOST_OS
-		signalProcess sigTERM =<< getProcessID
+		signalProcess sigTERM =<< getPID
 #else
-		generateConsoleCtrlEvent cTRL_C_EVENT =<< getCurrentProcessId
+		terminatePID =<< getPID
 #endif
 
 runRestart :: Assistant URLString
@@ -86,10 +86,13 @@ newAssistantUrl repo = do
 		threadDelay 100000 -- 1/10th of a second
 		a
 
-{- Returns once the assistant has daemonized, but possibly before it's
- - listening for web connections. -}
+{- Does not wait for assistant to be listening for web connections. 
+ -
+ - On windows, the assistant does not daemonize, which is why the forkIO is
+ - done.
+ -}
 startAssistant :: FilePath -> IO ()
-startAssistant repo = do
+startAssistant repo = void $ forkIO $ do
 	program <- readProgramFile
 	(_, _, _, pid) <- 
 		createProcess $

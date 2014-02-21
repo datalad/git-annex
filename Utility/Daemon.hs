@@ -1,6 +1,6 @@
 {- daemon support
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,17 +10,20 @@
 module Utility.Daemon where
 
 import Common
+import Utility.PID
 #ifndef mingw32_HOST_OS
 import Utility.LogFile
+#else
+import Utility.WinProcess
+import Utility.WinLock
 #endif
 
 #ifndef mingw32_HOST_OS
 import System.Posix
 import Control.Concurrent.Async
-#else
-import System.PosixCompat.Types
 #endif
 
+#ifndef mingw32_HOST_OS
 {- Run an action as a daemon, with all output sent to a file descriptor.
  -
  - Can write its pid to a file, to guard against multiple instances
@@ -28,7 +31,6 @@ import System.PosixCompat.Types
  -
  - When successful, does not return. -}
 daemonize :: Fd -> Maybe FilePath -> Bool -> IO () -> IO ()
-#ifndef mingw32_HOST_OS
 daemonize logfd pidfile changedirectory a = do
 	maybe noop checkalreadyrunning pidfile
 	_ <- forkProcess child1
@@ -52,18 +54,18 @@ daemonize logfd pidfile changedirectory a = do
 		wait =<< asyncWithUnmask (\unmask -> unmask a)
 		out
 	out = exitImmediately ExitSuccess
-#else
-daemonize = error "daemonize is not implemented on Windows" -- TODO
 #endif
 
-{- Locks the pid file, with an exclusive, non-blocking lock.
+{- Locks the pid file, with an exclusive, non-blocking lock,
+ - and leaves it locked on return.
+ -
  - Writes the pid to the file, fully atomically.
  - Fails if the pid file is already locked by another process. -}
 lockPidFile :: FilePath -> IO ()
-lockPidFile file = do
-	createDirectoryIfMissing True (parentDir file)
+lockPidFile pidfile = do
+	createDirectoryIfMissing True (parentDir pidfile)
 #ifndef mingw32_HOST_OS
-	fd <- openFd file ReadWrite (Just stdFileMode) defaultFileFlags
+	fd <- openFd pidfile ReadWrite (Just stdFileMode) defaultFileFlags
 	locked <- catchMaybeIO $ setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 	fd' <- openFd newfile ReadWrite (Just stdFileMode) defaultFileFlags
 		{ trunc = True }
@@ -72,14 +74,21 @@ lockPidFile file = do
 		(Nothing, _) -> alreadyRunning
 		(_, Nothing) -> alreadyRunning
 		_ -> do
-			_ <- fdWrite fd' =<< show <$> getProcessID
+			_ <- fdWrite fd' =<< show <$> getPID
 			closeFd fd
-#else
-	writeFile newfile "-1"
-#endif
-	rename newfile file
+	rename newfile pidfile
   where
-	newfile = file ++ ".new"
+	newfile = pidfile ++ ".new"
+#else
+	{- Not atomic on Windows, oh well. -}
+	unlessM (isNothing <$> checkDaemon pidfile)
+		alreadyRunning
+	pid <- getPID
+	writeFile pidfile (show pid)
+	lckfile <- winLockFile pid pidfile
+	writeFile lckfile ""
+	void $ lockExclusive lckfile
+#endif
 
 alreadyRunning :: IO ()
 alreadyRunning = error "Daemon is already running."
@@ -88,7 +97,7 @@ alreadyRunning = error "Daemon is already running."
  - is locked by the same process that is listed in the pid file.
  -
  - If it's running, returns its pid. -}
-checkDaemon :: FilePath -> IO (Maybe ProcessID)
+checkDaemon :: FilePath -> IO (Maybe PID)
 #ifndef mingw32_HOST_OS
 checkDaemon pidfile = do
 	v <- catchMaybeIO $
@@ -109,16 +118,44 @@ checkDaemon pidfile = do
 			" (got " ++ show pid' ++ 
 			"; expected " ++ show pid ++ " )"
 #else
-checkDaemon pidfile = maybe Nothing readish <$> catchMaybeIO (readFile pidfile)
+checkDaemon pidfile = maybe (return Nothing) (check . readish)
+	=<< catchMaybeIO (readFile pidfile)
+  where
+	check Nothing = return Nothing
+	check (Just pid) = do
+		v <- lockShared =<< winLockFile pid pidfile
+		case v of
+			Just h -> do
+				dropLock h
+				return Nothing
+			Nothing -> return (Just pid)
 #endif
 
 {- Stops the daemon, safely. -}
 stopDaemon :: FilePath -> IO ()
-#ifndef mingw32_HOST_OS
 stopDaemon pidfile = go =<< checkDaemon pidfile
   where
 	go Nothing = noop
-	go (Just pid) = signalProcess sigTERM pid
+	go (Just pid) =
+#ifndef mingw32_HOST_OS
+		signalProcess sigTERM pid
 #else
-stopDaemon = error "stopDaemon is not implemented on Windows" -- TODO
+		terminatePID pid
+#endif
+
+{- Windows locks a lock file that corresponds with the pid of the process.
+ - This allows changing the process in the pid file and taking a new lock
+ - when eg, restarting the daemon.
+ -}
+#ifdef mingw32_HOST_OS
+winLockFile :: PID -> FilePath -> IO FilePath
+winLockFile pid pidfile = do
+	cleanstale
+	return $ prefix ++ show pid ++ suffix
+  where
+  	prefix = pidfile ++ "."
+	suffix = ".lck"
+	cleanstale = mapM_ (void . tryIO . removeFile) =<<
+		(filter iswinlockfile <$> dirContents (parentDir pidfile))
+	iswinlockfile f = suffix `isSuffixOf` f && prefix `isPrefixOf` f
 #endif

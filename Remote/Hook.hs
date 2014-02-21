@@ -13,6 +13,7 @@ import qualified Data.Map as M
 import Common.Annex
 import Types.Remote
 import Types.Key
+import Types.Creds
 import qualified Git
 import Config
 import Config.Cost
@@ -65,8 +66,8 @@ gen r u c gc = do
   where
 	hooktype = fromMaybe (error "missing hooktype") $ remoteAnnexHookType gc
 
-hookSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-hookSetup mu c = do
+hookSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+hookSetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 	let hooktype = fromMaybe (error "Specify hooktype=") $
 		M.lookup "hooktype" c

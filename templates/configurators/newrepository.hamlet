@@ -7,6 +7,6 @@
     <a .btn .btn-primary href="@{AddDriveR}">
       Make a repository on a Removable Drive
   <p>
-    Where do you want to put this new repository?
+    Repository location:
     <form method="post" .form-inline enctype=#{enctype}>
       ^{form}

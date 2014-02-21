@@ -16,15 +16,15 @@ import Assistant.TransferSlots
 import Assistant.Restart
 import Utility.LogFile
 import Utility.NotificationBroadcaster
+import Utility.PID
 
 import Control.Concurrent
 import qualified Data.Map as M
 import qualified Data.Text as T
 #ifndef mingw32_HOST_OS
-import System.Posix (getProcessID, signalProcess, sigTERM)
+import System.Posix (signalProcess, sigTERM)
 #else
-import System.Win32.Process.Current (getCurrentProcessId)
-import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT)
+import Utility.WinProcess
 #endif
 
 getShutdownR :: Handler Html
@@ -54,9 +54,9 @@ getShutdownConfirmedR = do
 	void $ liftIO $ forkIO $ do
 		threadDelay 2000000
 #ifndef mingw32_HOST_OS
-		signalProcess sigTERM =<< getProcessID
+		signalProcess sigTERM =<< getPID
 #else
-		generateConsoleCtrlEvent cTRL_C_EVENT =<< getCurrentProcessId
+		terminatePID =<< getPID
 #endif
 	redirect NotRunningR
 

@@ -146,13 +146,6 @@ genFuzzFile = do
 genFuzzDir :: IO FuzzDir
 genFuzzDir = mkFuzzDir <$> (getStdRandom (randomR (1,16)) :: IO Int)
 
-localFile :: FilePath -> Bool
-localFile f
-	| isAbsolute f = False
-	| ".." `isInfixOf` f = False
-	| ".git" `isPrefixOf` f = False
-	| otherwise = True
-
 data TimeStampedFuzzAction 
 	= Started UTCTime FuzzAction
 	| Finished UTCTime Bool
