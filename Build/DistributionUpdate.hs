@@ -21,6 +21,11 @@ main = do
 
 makeinfos :: Annex ()
 makeinfos = do
+	void $ inRepo $ runBool 
+		[ Param "commit"
+		, Param "-m"
+		, Param $ "publishing git-annex " ++ version
+		]
 	basedir <- liftIO getRepoDir
 	version <- liftIO getChangelogVersion
 	now <- liftIO getCurrentTime
@@ -44,7 +49,7 @@ makeinfos = do
 	void $ inRepo $ runBool 
 		[ Param "commit"
 		, Param "-m"
-		, Param $ "publishing git-annex " ++ version
+		, Param $ "updated info files for git-annex " ++ version
 		]
 	void $ inRepo $ runBool
 		[ Param "annex"
