@@ -2,4 +2,4 @@ Sometimes I start off a large file transfer to a new remote (a la "git-annex cop
 
 I believe all of the special remotes transfer the files one at a time, which is good, and provides a sensible place to interrupt a copy/move operation.
 
-Wish: When I press ctrl+c in the terminal, git-annex will catch that and finish it's current transfer and then exit. For the case where the file currently being transfered also needs to be killed (ie: it's a big .iso) then subsequent ctrl+c's can do that.
+Wish: When I press ctrl+c in the terminal, git-annex will catch that and finish it's current transfer and then exit cleanly (ie: no odd backtraces in the special remote code). For the case where the file currently being transfered also needs to be killed (ie: it's a big .iso) then subsequent ctrl+c's can do that.
