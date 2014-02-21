@@ -112,26 +112,26 @@ genRsyncOpts c gc transport url = RsyncOpts
 		| otherwise = True
 
 rsyncTransport :: RemoteGitConfig -> RsyncUrl -> Annex ([CommandParam], RsyncUrl)
-rsyncTransport gc rawurl
-	| rsyncUrlIsShell rawurl =
-		(\rsh -> return (rsyncShell rsh, resturl)) =<<
+rsyncTransport gc url
+	| rsyncUrlIsShell url =
+		(\rsh -> return (rsyncShell rsh, url)) =<<
 		case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
 			"ssh":sshopts -> do
 				let (port, sshopts') = sshReadPort sshopts
-				    host = takeWhile (/=':') resturl
+				    userhost = takeWhile (/=':') url
 				-- Connection caching
 				(Param "ssh":) <$> sshCachingOptions
-					(host, port)
+					(userhost, port)
 					(map Param $ loginopt ++ sshopts')
 			"rsh":rshopts -> return $ map Param $ "rsh" :
 				loginopt ++ rshopts
 			rsh -> error $ "Unknown Rsync transport: "
 				++ unwords rsh
-	| otherwise = return ([], rawurl)
+	| otherwise = return ([], url)
   where
-	(login,resturl) = case separate (=='@') rawurl of
-		(h, "") -> (Nothing, h)
-		(l, h)  -> (Just l, h)
+	login = case separate (=='@') url of
+		(_h, "") -> Nothing
+		(l, _)  -> Just l
 	loginopt = maybe [] (\l -> ["-l",l]) login
 	fromNull as xs = if null xs then as else xs
 

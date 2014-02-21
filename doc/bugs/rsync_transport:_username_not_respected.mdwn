@@ -36,3 +36,8 @@ Type: prebuilt
 
 # End of transcript or log.
 """]]
+
+> Argh! How did that break? I know it used to work.
+> I have fixed it, unfortunately the fix was too late for today's release,
+> but it will be available in autobuilds shortly.
+> [[fixed|done]] --[[Joey]] 

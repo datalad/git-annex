@@ -1,3 +1,10 @@
+git-annex (5.20140222) UNRELEASED; urgency=medium
+
+  * Fix handling of rsync remote urls containing a username,
+    including rsync.net.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 13:03:04 -0400
+
 git-annex (5.20140221) unstable; urgency=medium
 
   * metadata: New command that can attach metadata to files.
