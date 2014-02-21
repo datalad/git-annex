@@ -1133,10 +1133,10 @@ file contents are present at either of two repositories.
   The size can be specified with any commonly used units, for example,
   "0.5 gb" or "100 KiloBytes"
 
-* `--metadata field=value`
+* `--metadata field=glob`
 
-  Matches only files that have a metadata field attached with the specified
-  value.
+  Matches only files that have a metadata field attached with a value that
+  matches the glob.
 
 * `--want-get`
 

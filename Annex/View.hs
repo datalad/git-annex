@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Annex.View where
 
 import Common.Annex
@@ -28,21 +26,14 @@ import Annex.Link
 import Annex.CatFile
 import Logs.MetaData
 import Logs.View
+import Utility.Glob
 import Utility.FileMode
 import Types.Command
 import Config
 import CmdLine.Action
 
 import qualified Data.Set as S
-import System.Path.WildMatch
 import "mtl" Control.Monad.Writer
-
-#ifdef WITH_TDFA
-import Text.Regex.TDFA
-import Text.Regex.TDFA.String
-#else
-import Text.Regex
-#endif
 
 {- Each visible ViewFilter in a view results in another level of
  - subdirectory nesting. When a file matches multiple ways, it will appear
@@ -127,11 +118,11 @@ combineViewFilter old@(FilterValues olds) (FilterValues news)
 combineViewFilter (FilterValues _) newglob@(FilterGlob _) =
 	(newglob, Widening)
 combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
-	| all (matchGlob (compileGlob oldglob) . fromMetaValue) (S.toList s) = (new, Narrowing)
+	| all (matchGlob (compileGlob oldglob CaseInsensative) . fromMetaValue) (S.toList s) = (new, Narrowing)
 	| otherwise = (new, Widening)
 combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
 	| old == new = (newglob, Unchanged)
-	| matchGlob (compileGlob old) new = (newglob, Narrowing)
+	| matchGlob (compileGlob old CaseInsensative) new = (newglob, Narrowing)
 	| otherwise = (newglob, Widening)
 
 {- Converts a filepath used in a reference branch to the
@@ -205,31 +196,9 @@ viewComponentMatcher viewcomponent = \metadata ->
 	matcher = case viewFilter viewcomponent of
 		FilterValues s -> \values -> S.intersection s values
 		FilterGlob glob ->
-			let regex = compileGlob glob
+			let cglob = compileGlob glob CaseInsensative
 			in \values -> 
-				S.filter (matchGlob regex . fromMetaValue) values
-
-compileGlob :: String -> Regex
-compileGlob glob = 
-#ifdef WITH_TDFA
-	case compile (defaultCompOpt {caseSensitive = False}) defaultExecOpt regex of
-		Right r -> r
-		Left _ -> error $ "failed to compile regex: " ++ regex
-#else
-	mkRegexWithOpts regex False True
-#endif
-  where
-	regex = '^':wildToRegex glob
-
-matchGlob :: Regex -> String -> Bool
-matchGlob regex val = 
-#ifdef WITH_TDFA
-	case execute regex val of
-		Right (Just _) -> True
-		_ -> False
-#else
-	isJust $ matchRegex regex val
-#endif
+				S.filter (matchGlob cglob . fromMetaValue) values
 
 toViewPath :: MetaValue -> FilePath
 toViewPath = concatMap escapeslash . fromMetaValue
