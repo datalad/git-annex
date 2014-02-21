@@ -253,7 +253,7 @@ hdevtools:
 distributionupdate:
 	git pull
 	cabal configure
-	ghc --make Build/DistributionUpdate
+	ghc --make Build/DistributionUpdate -XPackageImports
 	./Build/DistributionUpdate
 
 .PHONY: git-annex git-union-merge git-recover-repository tags build-stamp
