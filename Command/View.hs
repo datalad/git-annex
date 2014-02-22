@@ -45,10 +45,17 @@ perform view = do
 paramView :: String
 paramView = paramPair (paramRepeating "TAG") (paramRepeating "FIELD=VALUE")
 
+{- Parse field=value
+ -
+ - Note that the field may not be a legal metadata field name,
+ - but it's let through anywa (using MetaField rather than mkMetaField).
+ - This is useful when matching on directory names with spaces,
+ - which are not legal MetaFields.
+ -}
 parseViewParam :: String -> (MetaField, String)
 parseViewParam s = case separate (== '=') s of
 	(tag, []) -> (tagMetaField, tag)
-	(field, wanted) -> either error (\f -> (f, wanted)) (mkMetaField field)
+	(field, wanted) -> (MetaField field, wanted)
 
 mkView :: [String] -> Annex View
 mkView params = do
