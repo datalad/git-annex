@@ -211,14 +211,19 @@ pathProduct (l:ls) = foldl combinel l ls
 	combinel xs ys = [combine x y | x <- xs, y <- ys]
 
 {- Extracts the metadata from a ViewedFile, based on the view that was used
- - to construct it. -}
+ - to construct it.
+ -
+ - Derived metadata is excluded.
+ -}
 fromView :: View -> ViewedFile -> MetaData
-fromView view f = foldr (uncurry updateMetaData) newMetaData (zip fields values)
+fromView view f = MetaData $
+	M.fromList (zip fields values) `M.difference` derived
   where
 	visible = filter viewVisible (viewComponents view)
 	fields = map viewField visible
-	paths = splitDirectories $ dropFileName f
-	values = map fromViewPath paths
+	paths = splitDirectories (dropFileName f)
+	values = map (S.singleton . fromViewPath) paths
+	MetaData derived = getViewedFileMetaData f
 
 {- Constructing a view that will match arbitrary metadata, and applying
  - it to a file yields a set of ViewedFile which all contain the same
