@@ -15,29 +15,6 @@ module Annex.View.ViewedFile (
 ) where
 
 import Common.Annex
-import Types.View
-import Types.MetaData
-import qualified Git
-import qualified Git.DiffTree as DiffTree
-import qualified Git.Branch
-import qualified Git.LsFiles
-import qualified Git.Ref
-import Git.UpdateIndex
-import Git.Sha
-import Git.HashObject
-import Git.Types
-import Git.FilePath
-import qualified Backend
-import Annex.Index
-import Annex.Link
-import Annex.CatFile
-import Logs.MetaData
-import Logs.View
-import Utility.Glob
-import Utility.FileMode
-import Types.Command
-import Config
-import CmdLine.Action
 
 type FileName = String
 type ViewedFile = FileName
