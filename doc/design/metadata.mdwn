@@ -70,7 +70,7 @@ metadata is derived, at least year=yyyy and probably also month, etc.
 
 ### directory hierarchy metadata
 
-TODO From the original filename used in the master branch, when
+From the original filename used in the master branch, when
 constructing a view, generate fields. For example foo/bar/baz.mp3
 would get /=foo, foo/=bar, foo/bar/=baz, and .=mp3.
 
@@ -82,11 +82,12 @@ This allows using whatever directory hierarchy exists to inform the view,
 without locking the view into using it. 
 
 Complication: When refining a view, it only looks at the filenames in
-the view, so it would need to map from
+the view, so it has to map from
 those filenames to derive the same metadata, unless there is persistent
 storage. Luckily, the filenames used in the views currently include the
-subdirs (although not quite in a parseable format, would need some small
-changes).
+subdirs.
+
+**done**!
 
 # other uses for metadata
 

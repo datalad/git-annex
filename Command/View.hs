@@ -43,7 +43,7 @@ perform view = do
 	next $ checkoutViewBranch view applyView
 
 paramView :: String
-paramView = paramPair (paramRepeating "FIELD=VALUE") (paramRepeating "TAG")
+paramView = paramPair (paramRepeating "TAG") (paramRepeating "FIELD=VALUE")
 
 parseViewParam :: String -> (MetaField, String)
 parseViewParam s = case separate (== '=') s of

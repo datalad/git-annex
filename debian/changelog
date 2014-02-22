@@ -4,6 +4,11 @@ git-annex (5.20140222) UNRELEASED; urgency=medium
     including rsync.net.
   * --metadata field=value can now use globs to match, and matches
     case insensatively, the same as git annex view field=value does.
+  * When constructing views, metadata is available about the location of the
+    file in the view's reference branch. Allows incorporating parts of the
+    directory hierarchy in a view.
+    For example `git annex view tag=* podcasts/=*` makes a view in the form
+    tag/showname.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 13:03:04 -0400
 

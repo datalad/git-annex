@@ -48,6 +48,8 @@ viewedFileFromReference f = concat
 	escape :: String -> String
 	escape = replace "%" "\\%" . replace "\\" "\\\\"
 
+{- For use when operating already within a view, so whatever filepath
+ - is present in the work tree is already a ViewedFile. -}
 viewedFileReuse :: MkViewedFile
 viewedFileReuse = takeFileName
 

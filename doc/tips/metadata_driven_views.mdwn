@@ -24,8 +24,8 @@ metadata:
 	# git annex metadata --tag done videos/old
 	# git annex metadata --tag new videos/lotsofcats.ogv
 	# git annex metadata --tag sound podcasts
-	# git annex metadata --tag done podcasts/old
-	# git annex metadata --tag new podcasts/recent
+	# git annex metadata --tag done podcasts/*/old
+	# git annex metadata --tag new podcasts/*/recent
 
 So, you had a bunch of different kinds of files sorted into a directory
 structure. But that didn't really reflect how you approach the files.
@@ -81,9 +81,11 @@ all the way out of all views, you'll be back on the regular git branch you
 originally started from. You can also use `git checkout` to switch between
 views and other branches.
 
-Beyond simple tags, you can add whatever kinds of metadata you like, and
-use that metadata in more elaborate views. For example, let's add a year
-field.
+## fields
+
+Beyond simple tags and directories, you can add whatever kinds of metadata
+you like, and use that metadata in more elaborate views. For example, let's
+add a year field.
 
 	# git checkout master
 	# git annex metadata --set year=2014 work/2014
@@ -117,5 +119,26 @@ Oh, did you want it the other way around? Easy!
 	done
 	  |-- 2014
 	  `-- 2013
+
+## location fields
+
+Let's switch to a view containing only new podcasts. And since the
+podcasts are organized into one subdirectory per show, let's
+include those subdirectories in the view.
+
+	# git checkout master
+	# git annex view tag=new podcasts/=*
+	# tree -d
+	This_Developers_Life
+	Escape_Pod
+	GitMinutes
+	The_Haskell_Cast
+	StarShipSofa
+
+That's an example of using part of the directory layout of the original
+branch to inform the view. Every file gets fields automatically set up
+corresponding to the directory it's in. So a file"foo/bar/baz/file" has
+fields "/=foo", "foo/=bar", and "foo/bar/=baz". These location fields
+can be used the same as other metadata to construct the view.
 
 This has probably only scratched the surface of what you can do with views.

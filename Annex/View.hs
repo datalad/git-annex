@@ -34,6 +34,7 @@ import Config
 import CmdLine.Action
 
 import qualified Data.Set as S
+import qualified Data.Map as M
 import "mtl" Control.Monad.Writer
 
 {- Each visible ViewFilter in a view results in another level of
@@ -233,11 +234,32 @@ prop_view_roundtrips f metadata visible = null f || viewTooLarge view ||
 	visiblefields = sort (map viewField $ filter viewVisible (viewComponents view))
 	hasfields fv = sort (map fst (fromMetaData (fromView view fv))) == visiblefields
 
+{- A directory foo/bar/baz/ is turned into metadata fields
+ - /=foo, foo/=bar, foo/bar/=baz.
+ -
+ - Note that this may generate MetaFields that legalField rejects.
+ - This is necessary to have a 1:1 mapping between directory names and
+ - fields. So this MetaData cannot safely be serialized. -}
+getDirMetaData :: FilePath -> MetaData
+getDirMetaData d = MetaData $ M.fromList $ zip fields values
+  where
+	dirs = splitDirectories d
+	fields = map (MetaField . addTrailingPathSeparator . joinPath)
+		(inits dirs)
+	values = map (S.singleton . toMetaValue . fromMaybe "" . headMaybe)
+		(tails dirs)
+
+getWorkTreeMetaData :: FilePath -> MetaData
+getWorkTreeMetaData = getDirMetaData . dropFileName
+
+getViewedFileMetaData :: FilePath -> MetaData
+getViewedFileMetaData = getDirMetaData . dirFromViewedFile . takeFileName
+
 {- Applies a view to the currently checked out branch, generating a new
  - branch for the view.
  -}
 applyView :: View -> Annex Git.Branch
-applyView view = applyView' viewedFileFromReference view
+applyView view = applyView' viewedFileFromReference getWorkTreeMetaData view
 
 {- Generates a new branch for a View, which must be a more narrow
  - version of the View originally used to generate the currently
@@ -245,7 +267,7 @@ applyView view = applyView' viewedFileFromReference view
  - in view, not any others.
  -}
 narrowView :: View -> Annex Git.Branch
-narrowView = applyView' viewedFileReuse
+narrowView = applyView' viewedFileReuse getViewedFileMetaData
 
 {- Go through each file in the currently checked out branch.
  - If the file is not annexed, skip it, unless it's a dotfile in the top.
@@ -255,8 +277,8 @@ narrowView = applyView' viewedFileReuse
  - Currently only works in indirect mode. Must be run from top of
  - repository.
  -}
-applyView' :: MkViewedFile -> View -> Annex Git.Branch
-applyView' mkviewedfile view = do
+applyView' :: MkViewedFile -> (FilePath -> MetaData) -> View -> Annex Git.Branch
+applyView' mkviewedfile getfilemetadata view = do
 	top <- fromRepo Git.repoPath
 	(l, clean) <- inRepo $ Git.LsFiles.inRepo [top]
 	liftIO . nukeFile =<< fromRepo gitAnnexViewIndex
@@ -273,7 +295,9 @@ applyView' mkviewedfile view = do
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
 	go uh hasher f (Just (k, _)) = do
 		metadata <- getCurrentMetaData k
-		forM_ (genviewedfiles f metadata) $ \fv -> do
+		let dirmetadata = getfilemetadata f
+		let metadata' = unionMetaData dirmetadata metadata
+		forM_ (genviewedfiles f metadata') $ \fv -> do
 			stagesymlink uh hasher fv =<< inRepo (gitAnnexLink fv k)
 	go uh hasher f Nothing
 		| "." `isPrefixOf` f = do
