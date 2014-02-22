@@ -14,6 +14,7 @@ import qualified Command.Add
 import qualified Command.Fix
 import Annex.Direct
 import Annex.View
+import Annex.View.ViewedFile
 import Logs.View
 import Logs.MetaData
 import Types.View
@@ -52,12 +53,12 @@ startIndirect f = next $ do
 startDirect :: [String] -> CommandStart
 startDirect _ = next $ next $ preCommitDirect
 
-addViewMetaData :: View -> FileView -> Key -> CommandStart
+addViewMetaData :: View -> ViewedFile -> Key -> CommandStart
 addViewMetaData v f k = do
 	showStart "metadata" f
 	next $ next $ changeMetaData k $ fromView v f
 
-removeViewMetaData :: View -> FileView -> Key -> CommandStart
+removeViewMetaData :: View -> ViewedFile -> Key -> CommandStart
 removeViewMetaData v f k = do
 	showStart "metadata" f
 	next $ next $ changeMetaData k $ unsetMetaData $ fromView v f
