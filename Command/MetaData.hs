@@ -18,7 +18,7 @@ import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
 def :: [Command]
-def = [withOptions [setOption, tagOption, untagOption] $
+def = [withOptions [setOption, tagOption, untagOption, jsonOption] $
 	command "metadata" paramPaths seek
 	SectionMetaData "sets metadata of a file"]
 
@@ -62,8 +62,10 @@ perform now ms k = do
 	
 cleanup :: Key -> CommandCleanup
 cleanup k = do
-	m <- getCurrentMetaData k
-	showLongNote $ unlines $ concatMap showmeta $ fromMetaData $ currentMetaData m
+	l <- map unwrapmeta . fromMetaData <$> getCurrentMetaData k
+	maybeShowJSON l
+	showLongNote $ unlines $ concatMap showmeta l
 	return True
   where
-	showmeta (f, vs) = map (\v -> fromMetaField f ++ "=" ++ fromMetaValue v) $ S.toList vs
+	unwrapmeta (f, v) = (fromMetaField f, map fromMetaValue (S.toList v))
+	showmeta (f, vs) = map ((f ++ "=") ++) vs

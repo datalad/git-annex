@@ -951,7 +951,7 @@ subdirectories).
   Rather than the normal output, generate JSON. This is intended to be
   parsed by programs that use git-annex. Each line of output is a JSON
   object. Note that JSON output is only usable with some git-annex commands,
-  like info, find, and whereis.
+  like info, find, whereis, and metadata.
 
 * `--debug`
 
