@@ -1279,6 +1279,12 @@ Here are all the supported configuration settings.
 
   Note that setting numcopies to 0 is very unsafe.
 
+* `annex.genmetadata`
+
+  Set this to `true` to make git-annex automatically generate some metadata
+  when adding files to the repository. In particular, it stores
+  year and month metadata, from the file's modification date.
+
 * `annex.queuesize`
 
   git-annex builds a queue of git commands, in order to combine similar

@@ -10,6 +10,7 @@ module Command.MetaData where
 import Common.Annex
 import qualified Annex
 import Command
+import Annex.MetaData
 import Logs.MetaData
 import Types.MetaData
 
@@ -55,7 +56,7 @@ perform :: POSIXTime -> [ModMeta] -> Key -> CommandPerform
 perform _ [] k = next $ cleanup k
 perform now ms k = do
 	oldm <- getCurrentMetaData k
-	let m = foldl' unionMetaData newMetaData $ map (modMeta oldm) ms
+	let m = foldl' unionMetaData emptyMetaData $ map (modMeta oldm) ms
 	addMetaData' k m now
 	next $ cleanup k
 	

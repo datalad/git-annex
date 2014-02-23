@@ -29,7 +29,7 @@ directories nest.
   relevant metadata from the files.  
   TODO: It's not clear that
   removing a file should nuke all the metadata used to filter it into the
-  branch (especially if it's derived metadata like the year).
+  branch
   Currently, only metadata used for visible subdirs is added and removed
   this way.
   Also, this is not usable in direct mode because deleting the
@@ -56,19 +56,7 @@ For example, by examining MP3 metadata.
 
 Also auto add metadata when adding files to view branches. See below.
 
-## derived metadata
-
-This is probably not stored anywhere. It's computed on demand by a pure
-function from the other metadata. 
-(Should be a general mechanism for this. (It probably generalizes to
-sql queries if we want to go that far.))
-
-### data metadata
-
-TODO From the ctime, some additional 
-metadata is derived, at least year=yyyy and probably also month, etc.
-
-### directory hierarchy metadata
+## directory hierarchy metadata
 
 From the original filename used in the master branch, when
 constructing a view, generate fields. For example foo/bar/baz.mp3
@@ -86,8 +74,6 @@ the view, so it has to map from
 those filenames to derive the same metadata, unless there is persistent
 storage. Luckily, the filenames used in the views currently include the
 subdirs.
-
-**done**!
 
 # other uses for metadata
 

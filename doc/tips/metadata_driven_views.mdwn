@@ -1,5 +1,5 @@
 git-annex now has support for storing 
-[[arbitrary metadata|design/metadata]] about annexed files. For example, this can be
+[[arbitrary metadata|metadata]] about annexed files. For example, this can be
 used to tag files, to record the author of a file, etc. The metadata is
 synced around between repositories with the other information git-annex
 keeps track of.

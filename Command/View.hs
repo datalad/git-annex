@@ -14,6 +14,7 @@ import qualified Git.Command
 import qualified Git.Ref
 import qualified Git.Branch
 import Types.MetaData
+import Annex.MetaData
 import Types.View
 import Annex.View
 import Logs.View

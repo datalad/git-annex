@@ -55,7 +55,7 @@ getMetaData = readLog . metaDataLogFile
 getCurrentMetaData :: Key -> Annex MetaData
 getCurrentMetaData = currentMetaData . collect <$$> getMetaData
   where
-	collect = foldl' unionMetaData newMetaData . map value . S.toAscList
+	collect = foldl' unionMetaData emptyMetaData . map value . S.toAscList
 
 {- Adds in some metadata, which can override existing values, or unset
  - them, but otherwise leaves any existing metadata as-is. -}
@@ -129,7 +129,7 @@ simplifyLog s = case sl of
 
 	go c _ [] = c
 	go c newer (l:ls)
-		| unique == newMetaData = go c newer ls
+		| unique == emptyMetaData = go c newer ls
 		| otherwise = go (l { value = unique } : c)
 			(unionMetaData unique newer) ls
 	  where

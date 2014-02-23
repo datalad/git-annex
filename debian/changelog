@@ -9,6 +9,8 @@ git-annex (5.20140222) UNRELEASED; urgency=medium
     directory hierarchy in a view.
     For example `git annex view tag=* podcasts/=*` makes a view in the form
     tag/showname.
+  * annex.genmetadata can be set to make git-annex automatically set
+    metadata (year and month) when adding files.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 13:03:04 -0400
 

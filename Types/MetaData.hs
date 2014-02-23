@@ -17,7 +17,6 @@ module Types.MetaData (
 	MetaSerializable,
 	toMetaField,
 	mkMetaField,
-	tagMetaField,
 	fromMetaField,
 	toMetaValue,
 	mkMetaValue,
@@ -25,7 +24,7 @@ module Types.MetaData (
 	unsetMetaData,
 	fromMetaValue,
 	fromMetaData,
-	newMetaData,
+	emptyMetaData,
 	updateMetaData,
 	unionMetaData,
 	differenceMetaData,
@@ -81,7 +80,7 @@ instance MetaSerializable MetaData where
 	serialize (MetaData m) = unwords $ concatMap go $ M.toList m
 	  where
 		go (f, vs) = serialize f : map serialize (S.toList vs)
-	deserialize = Just . getfield newMetaData . words
+	deserialize = Just . getfield emptyMetaData . words
 	  where
 		getfield m [] = m
 		getfield m (w:ws) = maybe m (getvalues m ws) (deserialize w)
@@ -152,8 +151,8 @@ fromMetaValue (MetaValue _ f) = f
 fromMetaData :: MetaData -> [(MetaField, S.Set MetaValue)]
 fromMetaData (MetaData m) = M.toList m
 
-newMetaData :: MetaData
-newMetaData = MetaData M.empty
+emptyMetaData :: MetaData
+emptyMetaData = MetaData M.empty
 
 {- Can be used to set a value, or to unset it, depending on whether
  - the MetaValue has CurrentlySet or not. -}
@@ -202,10 +201,10 @@ data ModMeta
  - Note that the new MetaData does not include all the 
  - values set in the input metadata. It only contains changed values. -}
 modMeta :: MetaData -> ModMeta -> MetaData
-modMeta _ (AddMeta f v) = updateMetaData f v newMetaData
-modMeta _ (DelMeta f oldv) = updateMetaData f (unsetMetaValue oldv) newMetaData
+modMeta _ (AddMeta f v) = updateMetaData f v emptyMetaData
+modMeta _ (DelMeta f oldv) = updateMetaData f (unsetMetaValue oldv) emptyMetaData
 modMeta m (SetMeta f v) = updateMetaData f v $
-	foldr (updateMetaData f) newMetaData $
+	foldr (updateMetaData f) emptyMetaData $
 		map unsetMetaValue $ S.toList $ currentMetaDataValues f m
 
 {- Parses field=value, field+=value, field-=value -}
@@ -233,9 +232,6 @@ mkMetaField f = maybe (Left $ badField f) Right (toMetaField f)
 badField :: String -> String
 badField f = "Illegal metadata field name, \"" ++ f ++ "\""
 
-tagMetaField :: MetaField
-tagMetaField = MetaField "tag"
-
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.
  - It's unlikely that more than 100 fields of metadata will be used. -}
@@ -254,7 +250,7 @@ prop_metadata_sane :: MetaData -> MetaField -> MetaValue -> Bool
 prop_metadata_sane m f v = and
 	[ S.member v $ metaDataValues f m'
 	, not (isSet v) || S.member v (currentMetaDataValues f m')
-	, differenceMetaData m' newMetaData == m'
+	, differenceMetaData m' emptyMetaData == m'
 	]
   where
 	m' = updateMetaData f v m

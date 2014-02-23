@@ -300,8 +300,7 @@ applyView' mkviewedfile getfilemetadata view = do
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
 	go uh hasher f (Just (k, _)) = do
 		metadata <- getCurrentMetaData k
-		let dirmetadata = getfilemetadata f
-		let metadata' = unionMetaData dirmetadata metadata
+		let metadata' = getfilemetadata f `unionMetaData` metadata
 		forM_ (genviewedfiles f metadata') $ \fv -> do
 			stagesymlink uh hasher fv =<< inRepo (gitAnnexLink fv k)
 	go uh hasher f Nothing
