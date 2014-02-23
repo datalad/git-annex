@@ -198,3 +198,7 @@ So, possible approaches:
 * The filename mangling can result in a filename in a view
   that is too long for its containing filesystem. Should detect and do
   something reasonable to avoid. TODO
+
+* When a file is edited and the new version committed, the new key
+  does not inherit the metadata of the old key. Which may be right
+  sometimes, but more generally violates least surprise.
