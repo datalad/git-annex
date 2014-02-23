@@ -14,6 +14,12 @@ refine or reorder a view.
 Let's get started by setting some tags on files. No views yet, just some
 metadata:
 
+[[!template id=note text="""
+To avoid needing to manually tag files with the year (and month),
+run `annex.genmetadata true`, and git-annex will do it for you
+when adding files.
+"""]]
+
 	# git annex metadata --tag todo work/2014/*
 	# git annex metadata --untag todo work/2014/done/*
 	# git annex metadata --tag urgent work/2014/presentation_for_tomorrow.odt
