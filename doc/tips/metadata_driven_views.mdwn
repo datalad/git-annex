@@ -45,6 +45,12 @@ Ok, metadata is in place, but how to use it? Time to change views!
 	Switched to branch 'views/_'
 	ok
 
+[[!template id=note text="""
+Notice that a single file may appear in multiple directories
+depending on its tags. For example, `lotsofcats.ogv` is in
+both `new/` and `video/`.
+"""]]
+
 This searched for all files with any tag, and created a new git branch
 that sorts the files according to their tags.
 
@@ -56,10 +62,6 @@ that sorts the files according to their tags.
 	new
 	video
 	sound
-
-Notice that a single file may appear in multiple directories
-depending on its tags. For example, `lotsofcats.ogv` is in
-both `new/` and `video/`.
 
 Ah, but you're at work now, and don't want to be distracted by cat videos.
 Time to filter the view:
