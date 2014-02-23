@@ -115,19 +115,29 @@ instance MetaSerializable CurrentlySet where
 	deserialize "-" = Just (CurrentlySet False)
 	deserialize _ = Nothing
 
-{- Fields cannot be empty, contain whitespace, or start with "+-" as
- - that would break the serialization. -}
 toMetaField :: String -> Maybe MetaField
 toMetaField f
 	| legalField f = Just $ MetaField f
 	| otherwise = Nothing
 
+{- Fields cannot be empty, contain whitespace, or start with "+-" as
+ - that would break the serialization.
+ -
+ - Additionally, fields should not contain any form of path separator, as
+ - that would break views.
+ -
+ - So, require they have an alphanumeric first letter, with the remainder
+ - being either alphanumeric or a small set of shitelisted common punctuation.
+ -}
 legalField :: String -> Bool
-legalField f
-	| null f = False
-	| any isSpace f = False
-	| any (`isPrefixOf` f) ["+", "-"] = False
-	| otherwise = True
+legalField [] = False
+legalField (c1:cs)
+	| not (isAlphaNum c1) = False
+	| otherwise = all legalchars cs
+  where
+	legalchars c
+		| isAlphaNum c = True
+		| otherwise = c `elem` "_-."
 
 toMetaValue :: String -> MetaValue
 toMetaValue = MetaValue (CurrentlySet True)
