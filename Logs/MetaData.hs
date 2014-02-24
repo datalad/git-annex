@@ -28,10 +28,10 @@
 
 module Logs.MetaData (
 	getCurrentMetaData,
-	getMetaData,
 	addMetaData,
 	addMetaData',
 	currentMetaData,
+	copyMetaData,
 ) where
 
 import Common.Annex
@@ -135,3 +135,20 @@ simplifyLog s = case sl of
 	  where
 		older = value l
 		unique = older `differenceMetaData` newer
+
+{- Copies the metadata from the old key to the new key.
+ -
+ - The exact content of the metadata file is copied, so that the timestamps
+ - remain the same, and because this is more space-efficient in the git
+ - repository.
+ - 
+ - Any metadata already attached to the new key is not preserved.
+ -}
+copyMetaData :: Key -> Key -> Annex ()
+copyMetaData oldkey newkey
+	| oldkey == newkey = noop
+	| otherwise = do
+		l <- getMetaData oldkey
+		unless (S.null l) $
+			Annex.Branch.change (metaDataLogFile newkey) $
+				const $ showLog l

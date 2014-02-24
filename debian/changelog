@@ -11,6 +11,7 @@ git-annex (5.20140222) UNRELEASED; urgency=medium
     tag/showname.
   * annex.genmetadata can be set to make git-annex automatically set
     metadata (year and month) when adding files.
+  * Preserve metadata when staging a new version of an annexed file.
   * metadata: Field names limited to alphanumerics and a few whitelisted
     punctuation characters to avoid issues with views, etc.
   * metadata: Support --json

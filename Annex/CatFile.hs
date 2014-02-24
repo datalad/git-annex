@@ -87,8 +87,7 @@ catKey' modeguaranteed ref mode
 		| modeguaranteed = catObject ref
 		| otherwise = L.take 8192 <$> catObject ref
 
-{- Looks up the file mode corresponding to the Ref using the running
- - cat-file.
+{- Looks up the key corresponding to the Ref using the running cat-file.
  -
  - Currently this always has to look in HEAD, because cat-file --batch
  - does not offer a way to specify that we want to look up a tree object
