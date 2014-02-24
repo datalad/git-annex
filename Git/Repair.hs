@@ -75,24 +75,35 @@ removeLoose r s = do
 			return True
 		else return False
 
+{- Explodes all pack files, and deletes them.
+ -
+ - First moves all pack files to a temp dir, before unpacking them each in
+ - turn.
+ -
+ - This is because unpack-objects will not unpack a pack file if it's in the
+ - git repo.
+ -
+ - Also, this prevents unpack-objects from possibly looking at corrupt
+ - pack files to see if they contain an object, while unpacking a
+ - non-corrupt pack file.
+ -}
 explodePacks :: Repo -> IO Bool
-explodePacks r = do
-	packs <- listPackFiles r
-	if null packs
-		then return False
-		else do
-			putStrLn "Unpacking all pack files."
-			mapM_ go packs
-			return True
+explodePacks r = go =<< listPackFiles r
   where
-	go packfile = withTmpFileIn (localGitDir r) "pack" $ \tmp _ -> do
-		moveFile packfile tmp
-		nukeFile $ packIdxFile packfile
-		allowRead tmp
-		-- May fail, if pack file is corrupt.
-		void $ tryIO $
-			pipeWrite [Param "unpack-objects", Param "-r"] r $ \h ->
+	go [] = return False
+	go packs = withTmpDir "packs" $ \tmpdir -> do
+		putStrLn "Unpacking all pack files."
+		forM_ packs $ \packfile -> do
+			moveFile packfile (tmpdir </> takeFileName packfile)
+			nukeFile $ packIdxFile packfile
+		forM_ packs $ \packfile -> do
+			let tmp = tmpdir </> takeFileName packfile
+			allowRead tmp
+			-- May fail, if pack file is corrupt.
+			void $ tryIO $
+				pipeWrite [Param "unpack-objects", Param "-r"] r $ \h ->
 				L.hPut h =<< L.readFile tmp
+		return True
 
 {- Try to retrieve a set of missing objects, from the remotes of a
  - repository. Returns any that could not be retreived.

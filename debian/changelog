@@ -20,6 +20,8 @@ git-annex (5.20140222) UNRELEASED; urgency=medium
   * webdav: When built with DAV 0.6.0, use the new DAV monad to avoid
     locking files, which is not needed by git-annex's use of webdav, and
     does not work on Box.com.
+  * repair: Optimise unpacking of pack files, and avoid repeated error
+    messages about corrupt pack files.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 13:03:04 -0400
 
