@@ -172,14 +172,15 @@ So, possible approaches:
 * Git has a complex set of rules for what is legal in a ref name.
   View branch names will need to filter out any illegal stuff. **done**
 
+* Metadata should be copied to the new key when adding a modified version
+  of a file. **done**
+
 * Filesystems that are not case sensative (including case preserving OSX)
   will cause problems if view branches try to use different cases for 
-  2 directories representing the value of some metadata. But, users
-  probably want at least case-preserving metadata values. 
+  2 directories representing a metadata field.
   
-  Solution might be to compare metadata case-insensitively, and
-  pick one representation consistently, so if, for example an author
-  field uses mixed case, it will be used in the view branch.
+  Solution might be to compare fields names case-insensitively, and
+  pick one representation consistently.
 
   Alternatively, it could escape `A` to `_A` when such a filesystem
   is detected and avoid collisions that way (double `_` to escape it).
@@ -198,7 +199,3 @@ So, possible approaches:
 * The filename mangling can result in a filename in a view
   that is too long for its containing filesystem. Should detect and do
   something reasonable to avoid. TODO
-
-* When a file is edited and the new version committed, the new key
-  does not inherit the metadata of the old key. Which may be right
-  sometimes, but more generally violates least surprise.
