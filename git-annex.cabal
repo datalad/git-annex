@@ -133,7 +133,7 @@ Executable git-annex
 
   if flag(WebDAV)
     Build-Depends: DAV ((>= 0.3 && < 0.6) || > 0.6),
-     http-conduit, xml-conduit, http-types
+     http-conduit, xml-conduit, http-types, lifted-base
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)

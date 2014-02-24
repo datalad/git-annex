@@ -16,6 +16,7 @@ import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified Data.ByteString.Lazy as L
 import Network.URI (normalizePathSegments)
 import qualified Control.Exception as E
+import qualified Control.Exception.Lifted as EL
 import Network.HTTP.Conduit (HttpException(..))
 import Network.HTTP.Types
 import System.IO.Error
@@ -105,7 +106,7 @@ storeEncrypted r (cipher, enck) k p = metered (Just p) k $ \meterupdate ->
 
 storeHelper :: Remote -> Key -> DavUrl -> DavUser -> DavPass -> L.ByteString -> IO Bool
 storeHelper r k baseurl user pass b = catchBoolIO $ do
-	davMkdir tmpurl user pass
+	mkdirRecursiveDAV tmpurl user pass
 	storeChunks k tmpurl keyurl chunksize storer recorder finalizer
   where
 	tmpurl = tmpLocation baseurl k
@@ -114,11 +115,10 @@ storeHelper r k baseurl user pass b = catchBoolIO $ do
 	storer urls = storeChunked chunksize urls storehttp b
 	recorder url s = storehttp url (L8.fromString s)
 	finalizer srcurl desturl = do
-		void $ catchMaybeHttp (deleteContent desturl user pass)
-		davMkdir (urlParent desturl) user pass
-		moveContent srcurl (B8.fromString desturl) user pass
-	storehttp url v = putContent url user pass
-		(contentType, v)
+		void $ tryNonAsync (deleteDAV desturl user pass)
+		mkdirRecursiveDAV (urlParent desturl) user pass
+		moveDAV srcurl desturl user pass
+	storehttp url = putDAV url user pass
 
 retrieveCheap :: Remote -> Key -> FilePath -> Annex Bool
 retrieveCheap _ _ _ = return False
@@ -128,7 +128,7 @@ retrieve r k _f d p = metered (Just p) k $ \meterupdate ->
 	davAction r False $ \(baseurl, user, pass) -> liftIO $ catchBoolIO $
 		withStoredFiles r k baseurl user pass onerr $ \urls -> do
 			meteredWriteFileChunks meterupdate d urls $ \url -> do
-				mb <- davGetUrlContent url user pass
+				mb <- getDAV url user pass
 				case mb of
 					Nothing -> throwIO "download failed"
 					Just b -> return b
@@ -148,7 +148,7 @@ retrieveEncrypted r (cipher, enck) k d p = metered (Just p) k $ \meterupdate ->
 
 	feeder _ _ [] _ = noop
 	feeder user pass (url:urls) h = do
-		mb <- davGetUrlContent url user pass
+		mb <- getDAV url user pass
 		case mb of
 			Nothing -> throwIO "download failed"
 			Just b -> do
@@ -160,7 +160,7 @@ remove r k = davAction r False $ \(baseurl, user, pass) -> liftIO $ do
 	-- Delete the key's whole directory, including any chunked
 	-- files, etc, in a single action.
 	let url = davLocation baseurl k
-	isJust <$> catchMaybeHttp (deleteContent url user pass)
+	isJust . eitherToMaybe <$> tryNonAsync (deleteDAV url user pass)
 
 checkPresent :: Remote -> Key -> Annex (Either String Bool)
 checkPresent r k = davAction r noconn go
@@ -173,7 +173,7 @@ checkPresent r k = davAction r noconn go
 	  where
 		check [] = return $ Right True
 		check (url:urls) = do
-			v <- davUrlExists url user pass
+			v <- existsDAV url user pass
 			if v == Right True
 				then check urls
 				else return v
@@ -182,7 +182,7 @@ checkPresent r k = davAction r noconn go
 		 - or if there's a problem accessing it,
 		 - or perhaps this was an intermittent error. -}
 		onerr url = do
-			v <- davUrlExists url user pass
+			v <- existsDAV url user pass
 			return $ if v == Right True
 				then Left $ "failed to read " ++ url
 				else v
@@ -199,11 +199,11 @@ withStoredFiles
 withStoredFiles r k baseurl user pass onerr a
 	| isJust $ chunkSize $ config r = do
 		let chunkcount = keyurl ++ chunkCount
-		v <- davGetUrlContent chunkcount user pass
+		v <- getDAV chunkcount user pass
 		case v of
 			Just s -> a $ listChunks keyurl $ L8.toString s
 			Nothing -> do
-				chunks <- probeChunks keyurl $ \u -> (== Right True) <$> davUrlExists u user pass
+				chunks <- probeChunks keyurl $ \u -> (== Right True) <$> existsDAV u user pass
 				if null chunks
 					then onerr chunkcount
 					else a chunks
@@ -244,33 +244,12 @@ tmpLocation baseurl k = addTrailingPathSeparator $
 davUrl :: DavUrl -> FilePath -> DavUrl
 davUrl baseurl file = baseurl </> file
 
-davUrlExists :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
-davUrlExists url user pass = decode <$> catchHttp get
-  where
-	decode (Right _) = Right True
-#if ! MIN_VERSION_http_conduit(1,9,0)
-	decode (Left (Left (StatusCodeException status _)))
-#else
-	decode (Left (Left (StatusCodeException status _ _)))
-#endif
-		| statusCode status == statusCode notFound404 = Right False
-	decode (Left e) = Left $ showEitherException e
-#if ! MIN_VERSION_DAV(0,4,0)
-	get = getProps url user pass
-#else
-	get = getProps url user pass Nothing
-#endif
-
-davGetUrlContent :: DavUrl -> DavUser -> DavPass -> IO  (Maybe L.ByteString)
-davGetUrlContent url user pass = fmap (snd . snd) <$>
-	catchMaybeHttp (getPropsAndContent url user pass)
-
 {- Creates a directory in WebDAV, if not already present; also creating
  - any missing parent directories. -}
-davMkdir :: DavUrl -> DavUser -> DavPass -> IO ()
-davMkdir url user pass = go url
+mkdirRecursiveDAV :: DavUrl -> DavUser -> DavPass -> IO ()
+mkdirRecursiveDAV url user pass = go url
   where
-	make u = makeCollection u user pass
+	make u = mkdirDAV u user pass
 
 	go u = do
 		r <- E.try (make u) :: IO (Either E.SomeException Bool)
@@ -287,35 +266,6 @@ davMkdir url user pass = go url
 			 - to use this directory will fail. -}
 			Left _ -> return ()
 
-{- Catches HTTP and IO exceptions. -}
-catchMaybeHttp :: IO a -> IO (Maybe a)
-catchMaybeHttp a = (Just <$> a) `E.catches`
-	[ E.Handler $ \(_e :: HttpException) -> return Nothing
-	, E.Handler $ \(_e :: E.IOException) -> return Nothing
-	]
-
-{- Catches HTTP and IO exceptions -}
-catchHttp :: IO a -> IO (Either EitherException a)
-catchHttp a = (Right <$> a) `E.catches`
-	[ E.Handler $ \(e :: HttpException) -> return $ Left $ Left e
-	, E.Handler $ \(e :: E.IOException) -> return $ Left $ Right e
-	]
-
-type EitherException = Either HttpException E.IOException
-
-showEitherException :: EitherException -> String
-#if ! MIN_VERSION_http_conduit(1,9,0)
-showEitherException (Left (StatusCodeException status _)) =
-#else
-showEitherException (Left (StatusCodeException status _ _)) =
-#endif
-	show $ statusMessage status
-showEitherException (Left httpexception) = show httpexception
-showEitherException (Right ioexception) = show ioexception
-
-throwIO :: String -> IO a
-throwIO msg = ioError $ mkIOError userErrorType msg Nothing Nothing
-
 urlParent :: DavUrl -> DavUrl
 urlParent url = dropTrailingPathSeparator $
 	normalizePathSegments (dropTrailingPathSeparator url ++ "/..")
@@ -326,24 +276,19 @@ urlParent url = dropTrailingPathSeparator $
 testDav :: String -> Maybe CredPair -> Annex ()
 testDav baseurl (Just (u, p)) = do
 	showSideAction "testing WebDAV server"
-	test "make directory" $ davMkdir baseurl user pass
-	test "write file" $ putContent testurl user pass
-		(contentType, L.empty)
-	test "delete file" $ deleteContent testurl user pass
+	test "make directory" $ mkdirRecursiveDAV baseurl user pass
+	test "write file" $ putDAV testurl user pass L.empty
+	test "delete file" $ deleteDAV testurl user pass
   where
 	test desc a = liftIO $
-		either (\e -> throwIO $ "WebDAV failed to " ++ desc ++ ": " ++ showEitherException e)
+		either (\e -> throwIO $ "WebDAV failed to " ++ desc ++ ": " ++ show e)
 			(const noop)
-			=<< catchHttp a
+			=<< tryNonAsync a
 
 	user = toDavUser u
 	pass = toDavPass p
 	testurl = davUrl baseurl "git-annex-test"
 testDav _ Nothing = error "Need to configure webdav username and password."
-
-{- Content-Type to use for files uploaded to WebDAV. -}
-contentType :: Maybe B8.ByteString
-contentType = Just $ B8.fromString "application/octet-stream"
 
 getCreds :: RemoteConfig -> UUID -> Annex (Maybe CredPair)
 getCreds c u = getRemoteCredPairFor "webdav" c (davCreds u)
@@ -354,3 +299,110 @@ davCreds u = CredPairStorage
 	, credPairEnvironment = ("WEBDAV_USERNAME", "WEBDAV_PASSWORD")
 	, credPairRemoteKey = Just "davcreds"
 	}
+
+{- Content-Type to use for files uploaded to WebDAV. -}
+contentType :: Maybe B8.ByteString
+contentType = Just $ B8.fromString "application/octet-stream"
+
+throwIO :: String -> IO a
+throwIO msg = ioError $ mkIOError userErrorType msg Nothing Nothing
+
+{---------------------------------------------------------------------
+ - Low-level DAV operations, using the new DAV monad when available.
+ ---------------------------------------------------------------------}
+
+putDAV :: DavUrl -> DavUser -> DavPass -> L.ByteString -> IO ()
+putDAV url user pass b =
+#if MIN_VERSION_DAV(0,6,0)
+	goDAV url user pass $ putContentM (contentType, b)
+#else
+	putContent url user pass (contentType, b)
+#endif
+
+getDAV :: DavUrl -> DavUser -> DavPass -> IO (Maybe L.ByteString)
+getDAV url user pass = eitherToMaybe <$> tryNonAsync go
+  where
+#if MIN_VERSION_DAV(0,6,0)
+	go = goDAV url user pass $ snd <$> getContentM
+#else
+	go = snd . snd <$> getPropsAndContent url user pass
+#endif
+
+deleteDAV :: DavUrl -> DavUser -> DavPass -> IO ()
+deleteDAV url user pass = 
+#if MIN_VERSION_DAV(0,6,0)
+	goDAV url user pass delContentM
+#else
+	deleteContent url user pass
+#endif
+
+moveDAV :: DavUrl -> DavUrl -> DavUser -> DavPass -> IO ()
+moveDAV url newurl user pass =
+#if MIN_VERSION_DAV(0,6,0)
+	goDAV url user pass $ moveContentM newurl'
+#else
+	moveContent url newurl' user pass
+#endif
+  where
+	newurl' = B8.fromString newurl
+
+mkdirDAV :: DavUrl -> DavUser -> DavPass -> IO Bool
+mkdirDAV url user pass = 
+#if MIN_VERSION_DAV(0,6,0)
+	goDAV url user pass mkCol
+#else
+	makeCollection url user pass
+#endif
+
+existsDAV :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
+existsDAV url user pass = either onerr id <$> tryNonAsync check
+  where
+#if MIN_VERSION_DAV(0,6,0)
+	check = goDAV url user pass $ do
+		setDepth Nothing
+		EL.catchJust
+			(matchStatusCodeException notFound404)
+			(getPropsM >> ispresent True)
+			(const $ ispresent False)
+#else
+	check = E.catchJust
+		(matchStatusCodeException notFound404)
+#if ! MIN_VERSION_DAV(0,4,0)
+		(getProps url user pass >> ispresent True)
+#else
+		(getProps url user pass Nothing >> ispresent True)
+#endif
+		(const $ ispresent False)
+#endif
+	ispresent = return . Right
+	{- This is a horrible hack, it seems that the type of the
+	 - HttpException gets screwed up with DAV 0.6.x, and so 
+	 - I'm reduced to string matching. :( -}
+	onerr e
+		| "StatusCodeException" `isInfixOf` show e
+			&& "statusCode = 404" `isInfixOf` show e = Right False
+		| otherwise = Left (show e)
+
+matchStatusCodeException :: Status -> HttpException -> Maybe ()
+#if ! MIN_VERSION_http_conduit(1,9,0)
+matchStatusCodeException want (StatusCodeException s _)
+#else
+matchStatusCodeException want (StatusCodeException s _ _)
+#endif
+	| s == want = Just ()
+	| otherwise = Nothing
+matchStatusCodeException _ _ = Nothing
+
+#if MIN_VERSION_DAV(0,6,0)
+goDAV :: DavUrl -> DavUser -> DavPass -> DAVT IO a -> IO a
+goDAV url user pass a = choke $ evalDAVT url $ do
+	setCreds user pass
+	a
+  where
+	choke :: IO (Either String a) -> IO a
+	choke f = do
+		x <- f
+		case x of
+			Left e -> error e
+			Right r -> return r
+#endif

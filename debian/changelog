@@ -17,6 +17,9 @@ git-annex (5.20140222) UNRELEASED; urgency=medium
   * metadata: Support --json
   * webapp: Fix creation of box.com and Amazon S3 and Glacier
     repositories, broken in 5.20140221.
+  * webdav: When built with DAV 0.6.0, use the new DAV monad to avoid
+    locking files, which is not needed by git-annex's use of webdav, and
+    does not work on Box.com.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 13:03:04 -0400
 
