@@ -82,10 +82,10 @@ webdavSetup mu mcreds c = do
 	let url = fromMaybe (error "Specify url=") $
 		M.lookup "url" c
 	c' <- encryptionSetup c
-	creds <- getCreds c' u
+	creds <- maybe (getCreds c' u) (return . Just) mcreds
 	testDav url creds
 	gitConfigSpecialRemote u c' "webdav" "true"
-	c'' <- setRemoteCredPair c' (davCreds u) mcreds
+	c'' <- setRemoteCredPair c' (davCreds u) creds
 	return (c'', u)
 
 store :: Remote -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool

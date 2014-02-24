@@ -15,6 +15,8 @@ git-annex (5.20140222) UNRELEASED; urgency=medium
   * metadata: Field names limited to alphanumerics and a few whitelisted
     punctuation characters to avoid issues with views, etc.
   * metadata: Support --json
+  * webapp: Fix creation of box.com and Amazon S3 and Glacier
+    repositories, broken in 5.20140221.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 13:03:04 -0400
 
