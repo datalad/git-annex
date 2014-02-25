@@ -17,7 +17,11 @@ import qualified Data.ByteString.Lazy as L
 import Network.URI (normalizePathSegments)
 import qualified Control.Exception as E
 import qualified Control.Exception.Lifted as EL
+#if MIN_VERSION_DAV(0,6,0)
+import Network.HTTP.Client (HttpException(..))
+#else
 import Network.HTTP.Conduit (HttpException(..))
+#endif
 import Network.HTTP.Types
 import System.IO.Error
 
@@ -355,8 +359,9 @@ mkdirDAV url user pass =
 #endif
 
 existsDAV :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
-existsDAV url user pass = either onerr id <$> tryNonAsync check
+existsDAV url user pass = either (Left . show) id <$> tryNonAsync check
   where
+	ispresent = return . Right
 #if MIN_VERSION_DAV(0,6,0)
 	check = goDAV url user pass $ do
 		setDepth Nothing
@@ -374,20 +379,12 @@ existsDAV url user pass = either onerr id <$> tryNonAsync check
 #endif
 		(const $ ispresent False)
 #endif
-	ispresent = return . Right
-	{- This is a horrible hack, it seems that the type of the
-	 - HttpException gets screwed up with DAV 0.6.x, and so 
-	 - I'm reduced to string matching. :( -}
-	onerr e
-		| "StatusCodeException" `isInfixOf` show e
-			&& "statusCode = 404" `isInfixOf` show e = Right False
-		| otherwise = Left (show e)
 
 matchStatusCodeException :: Status -> HttpException -> Maybe ()
-#if ! MIN_VERSION_http_conduit(1,9,0)
-matchStatusCodeException want (StatusCodeException s _)
-#else
+#if MIN_VERSION_DAV(0,6,0)
 matchStatusCodeException want (StatusCodeException s _ _)
+#else
+matchStatusCodeException want (StatusCodeException s _)
 #endif
 	| s == want = Just ()
 	| otherwise = Nothing
