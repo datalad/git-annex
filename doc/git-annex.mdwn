@@ -1525,8 +1525,7 @@ Here are all the supported configuration settings.
 
 * `annex.web-options`
 
-  Options to use when using wget or curl to download a file from the web.
-  (wget is always used in preference to curl if available.)
+  Options to pass when running wget or curl.
   For example, to force ipv4 only, set it to "-4"
 
 * `annex.quvi-options`
