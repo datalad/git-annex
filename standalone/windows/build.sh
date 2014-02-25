@@ -35,6 +35,8 @@ UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-anne
 # for haskell libraries to link them with the cygwin library.
 cabal update || true
 
+cabal install DAV
+
 cabal install --only-dependencies || true
 
 # Detect when the last build was an incremental build and failed, 
