@@ -1,3 +1,7 @@
-on a Mac OSX 10.9.1 client I would like to try out git-annex.  I download the latest Mavericks build, extract from the .dmg and it just does not run.  I open the program, one "bounce" on the dock and it is gone, nothing happens.  I sadly do not have another OSX client to try it on.  But nothing shows in the Console.app or anything.
+on a Mac OSX 10.9.1 client I would like to try out git-annex.  
+
+I download the latest Mavericks build, extract from the .dmg and it just does not run.  I open the program, one "bounce" on the dock and it is gone, nothing happens.  
+
+I sadly do not have another OSX client to try it on.  But nothing shows in the Console.app or anything.
 
 Am I missing something?
