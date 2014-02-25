@@ -715,20 +715,29 @@ subdirectories).
 
         	git annex metadata annexscreencast.ogv -t video -t screencast -s author+=Alice
 
-* `view [field=value ...] [tag ...]`
+* `view [tag ...] [field=value ...] [location/=value]`
 
   Uses metadata to build a view branch of the files in the current branch,
   and checks out the view branch. Only files in the current branch whose
   metadata matches all the specified field values and tags will be
   shown in the view.
+
+  Once within a view, you can make additional directories, and
+  copy or move files into them. When you commit, the metadata will
+  be updated to correspond to your changes.
   
   Multiple values for a metadata field can be specified, either by using
   a glob (`field="*"`) or by listing each wanted value. The resulting view
   will put files in subdirectories according to the value of their fields.
 
-  Once within a view, you can make additional directories, and
-  copy or move files into them. When you commit, the metadata will
-  be updated to correspond to your changes.
+  There are fields corresponding to the path to the file. So a file
+  "foo/bar/baz/file" has fields "/=foo", "foo/=bar", and "foo/bar/=baz".
+  These location fields can be used the same as other metadata to construct
+  the view.
+
+  For example, `/=podcasts` will only include files from the podcasts
+  directory in the view, while `podcasts/=*` will preserve the
+  subdirectories of the podcasts directory in the view.
 
 * `vpop [N]`
 
@@ -737,12 +746,12 @@ subdirectories).
 
   The optional number tells how many views to pop.
 
-* `vfilter [field=value ...] [tag ...]`
+* `vfilter [tag ...] [field=value ...] [location/=value]`
 
   Filters the current view to only the files that have the
-  specified values and tags.
+  specified field values, tags, and locations.
 
-* `vadd [field=glob ...]`
+* `vadd [field=glob ...] [location/=glob]`
 
   Changes the current view, adding an additional level of directories
   to categorize the files.
@@ -942,7 +951,7 @@ subdirectories).
   Rather than the normal output, generate JSON. This is intended to be
   parsed by programs that use git-annex. Each line of output is a JSON
   object. Note that JSON output is only usable with some git-annex commands,
-  like info, find, and whereis.
+  like info, find, whereis, and metadata.
 
 * `--debug`
 
@@ -1133,10 +1142,11 @@ file contents are present at either of two repositories.
   The size can be specified with any commonly used units, for example,
   "0.5 gb" or "100 KiloBytes"
 
-* `--metadata field=value`
+* `--metadata field=glob`
 
-  Matches only files that have a metadata field attached with the specified
-  value.
+  Matches only files that have a metadata field attached with a value that
+  matches the glob. The values of metadata fields are matched case
+  insensitively.
 
 * `--want-get`
 
@@ -1268,6 +1278,12 @@ Here are all the supported configuration settings.
   never been configured.
 
   Note that setting numcopies to 0 is very unsafe.
+
+* `annex.genmetadata`
+
+  Set this to `true` to make git-annex automatically generate some metadata
+  when adding files to the repository. In particular, it stores
+  year and month metadata, from the file's modification date.
 
 * `annex.queuesize`
 

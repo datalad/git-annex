@@ -6,6 +6,7 @@ Build-Depends:
 	ghc (>= 7.4),
 	libghc-mtl-dev (>= 2.1.1),
 	libghc-missingh-dev,
+	libghc-data-default-dev,
 	libghc-hslogger-dev,
 	libghc-pcre-light-dev,
 	libghc-sha-dev,

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 5"
+ date="2014-02-24T19:07:33Z"
+ content="""
+That looks all-right, although initremote will ask you to tell it what encryption to use, and you'll need to specify `encryption=none`
+
+One thing I forgot to mention is that the UUID of the new rsync repository won't be the same, so git-annex won't know about the files in there. This can be fixed by `git annex fsck --fast --from myrsync`. Which doesn't re-download all the files, but you still may want to run it on a repository close to or on the server for speed.
+
+You can re-use the name you're currently using for the git remote for the new rsync special remote if you like.
+"""]]

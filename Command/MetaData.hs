@@ -10,6 +10,7 @@ module Command.MetaData where
 import Common.Annex
 import qualified Annex
 import Command
+import Annex.MetaData
 import Logs.MetaData
 import Types.MetaData
 
@@ -17,7 +18,7 @@ import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
 def :: [Command]
-def = [withOptions [setOption, tagOption, untagOption] $
+def = [withOptions [setOption, tagOption, untagOption, jsonOption] $
 	command "metadata" paramPaths seek
 	SectionMetaData "sets metadata of a file"]
 
@@ -55,14 +56,16 @@ perform :: POSIXTime -> [ModMeta] -> Key -> CommandPerform
 perform _ [] k = next $ cleanup k
 perform now ms k = do
 	oldm <- getCurrentMetaData k
-	let m = foldl' unionMetaData newMetaData $ map (modMeta oldm) ms
+	let m = foldl' unionMetaData emptyMetaData $ map (modMeta oldm) ms
 	addMetaData' k m now
 	next $ cleanup k
 	
 cleanup :: Key -> CommandCleanup
 cleanup k = do
-	m <- getCurrentMetaData k
-	showLongNote $ unlines $ concatMap showmeta $ fromMetaData $ currentMetaData m
+	l <- map unwrapmeta . fromMetaData <$> getCurrentMetaData k
+	maybeShowJSON l
+	showLongNote $ unlines $ concatMap showmeta l
 	return True
   where
-	showmeta (f, vs) = map (\v -> fromMetaField f ++ "=" ++ fromMetaValue v) $ S.toList vs
+	unwrapmeta (f, v) = (fromMetaField f, map fromMetaValue (S.toList v))
+	showmeta (f, vs) = map ((f ++ "=") ++) vs

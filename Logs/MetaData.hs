@@ -28,10 +28,10 @@
 
 module Logs.MetaData (
 	getCurrentMetaData,
-	getMetaData,
 	addMetaData,
 	addMetaData',
 	currentMetaData,
+	copyMetaData,
 ) where
 
 import Common.Annex
@@ -55,7 +55,7 @@ getMetaData = readLog . metaDataLogFile
 getCurrentMetaData :: Key -> Annex MetaData
 getCurrentMetaData = currentMetaData . collect <$$> getMetaData
   where
-	collect = foldl' unionMetaData newMetaData . map value . S.toAscList
+	collect = foldl' unionMetaData emptyMetaData . map value . S.toAscList
 
 {- Adds in some metadata, which can override existing values, or unset
  - them, but otherwise leaves any existing metadata as-is. -}
@@ -129,9 +129,26 @@ simplifyLog s = case sl of
 
 	go c _ [] = c
 	go c newer (l:ls)
-		| unique == newMetaData = go c newer ls
+		| unique == emptyMetaData = go c newer ls
 		| otherwise = go (l { value = unique } : c)
 			(unionMetaData unique newer) ls
 	  where
 		older = value l
 		unique = older `differenceMetaData` newer
+
+{- Copies the metadata from the old key to the new key.
+ -
+ - The exact content of the metadata file is copied, so that the timestamps
+ - remain the same, and because this is more space-efficient in the git
+ - repository.
+ - 
+ - Any metadata already attached to the new key is not preserved.
+ -}
+copyMetaData :: Key -> Key -> Annex ()
+copyMetaData oldkey newkey
+	| oldkey == newkey = noop
+	| otherwise = do
+		l <- getMetaData oldkey
+		unless (S.null l) $
+			Annex.Branch.change (metaDataLogFile newkey) $
+				const $ showLog l

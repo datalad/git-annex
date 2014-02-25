@@ -35,10 +35,6 @@ data ViewComponent = ViewComponent
 instance Arbitrary ViewComponent where
 	arbitrary = ViewComponent <$> arbitrary <*> arbitrary <*> arbitrary
 
-{- Only files with metadata matching the view are displayed. -}
-type FileView = FilePath
-type MkFileView = FilePath -> FileView
-
 data ViewFilter
 	= FilterValues (S.Set MetaValue)
 	| FilterGlob String

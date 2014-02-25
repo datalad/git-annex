@@ -19,6 +19,7 @@ import Annex.Content
 import Annex.Content.Direct
 import Annex.Perms
 import Annex.Link
+import Annex.MetaData
 import qualified Annex
 import qualified Annex.Queue
 #ifdef WITH_CLIBS
@@ -145,26 +146,32 @@ ingest Nothing = return (Nothing, Nothing)
 ingest (Just source) = do
 	backend <- chooseBackend $ keyFilename source
 	k <- genKey source backend
-	cache <- liftIO $ genInodeCache $ contentLocation source
-	case (cache, inodeCache source) of
-		(_, Nothing) -> go k cache
-		(Just newc, Just c) | compareStrong c newc -> go k cache
+	ms <- liftIO $ catchMaybeIO $ getFileStatus $ contentLocation source
+	let mcache = toInodeCache =<< ms
+	case (mcache, inodeCache source) of
+		(_, Nothing) -> go k mcache ms
+		(Just newc, Just c) | compareStrong c newc -> go k mcache ms
 		_ -> failure "changed while it was being added"
   where
-	go k cache = ifM isDirect ( godirect k cache , goindirect k cache )
+	go k mcache ms = ifM isDirect
+		( godirect k mcache ms
+		, goindirect k mcache ms
+		)
 
-	goindirect (Just (key, _)) mcache = do
+	goindirect (Just (key, _)) mcache ms = do
 		catchAnnex (moveAnnex key $ contentLocation source)
 			(undo (keyFilename source) key)
+		maybe noop (genMetaData key (keyFilename source)) ms
 		liftIO $ nukeFile $ keyFilename source
 		return $ (Just key, mcache)
-	goindirect Nothing _ = failure "failed to generate a key"
+	goindirect _ _ _ = failure "failed to generate a key"
 
-	godirect (Just (key, _)) (Just cache) = do
+	godirect (Just (key, _)) (Just cache) ms = do
 		addInodeCache key cache
+		maybe noop (genMetaData key (keyFilename source)) ms
 		finishIngestDirect key source
 		return $ (Just key, Just cache)
-	godirect _ _ = failure "failed to generate a key"
+	godirect _ _ _ = failure "failed to generate a key"
 
 	failure msg = do
 		warning $ keyFilename source ++ " " ++ msg

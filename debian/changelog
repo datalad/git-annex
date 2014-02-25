@@ -2,6 +2,27 @@ git-annex (5.20140222) UNRELEASED; urgency=medium
 
   * Fix handling of rsync remote urls containing a username,
     including rsync.net.
+  * --metadata field=value can now use globs to match, and matches
+    case insensatively, the same as git annex view field=value does.
+  * When constructing views, metadata is available about the location of the
+    file in the view's reference branch. Allows incorporating parts of the
+    directory hierarchy in a view.
+    For example `git annex view tag=* podcasts/=*` makes a view in the form
+    tag/showname.
+  * annex.genmetadata can be set to make git-annex automatically set
+    metadata (year and month) when adding files.
+  * Preserve metadata when staging a new version of an annexed file.
+  * metadata: Field names limited to alphanumerics and a few whitelisted
+    punctuation characters to avoid issues with views, etc.
+  * metadata: Support --json
+  * webapp: Fix creation of box.com and Amazon S3 and Glacier
+    repositories, broken in 5.20140221.
+  * webdav: When built with DAV 0.6.0, use the new DAV monad to avoid
+    locking files, which is not needed by git-annex's use of webdav, and
+    does not work on Box.com.
+  * repair: Optimise unpacking of pack files, and avoid repeated error
+    messages about corrupt pack files.
+  * Make annex.web-options be used in several places that call curl.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 13:03:04 -0400
 

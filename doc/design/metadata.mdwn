@@ -29,7 +29,7 @@ directories nest.
   relevant metadata from the files.  
   TODO: It's not clear that
   removing a file should nuke all the metadata used to filter it into the
-  branch (especially if it's derived metadata like the year).
+  branch
   Currently, only metadata used for visible subdirs is added and removed
   this way.
   Also, this is not usable in direct mode because deleting the
@@ -56,21 +56,9 @@ For example, by examining MP3 metadata.
 
 Also auto add metadata when adding files to view branches. See below.
 
-## derived metadata
+## directory hierarchy metadata
 
-This is probably not stored anywhere. It's computed on demand by a pure
-function from the other metadata. 
-(Should be a general mechanism for this. (It probably generalizes to
-sql queries if we want to go that far.))
-
-### data metadata
-
-TODO From the ctime, some additional 
-metadata is derived, at least year=yyyy and probably also month, etc.
-
-### directory hierarchy metadata
-
-TODO From the original filename used in the master branch, when
+From the original filename used in the master branch, when
 constructing a view, generate fields. For example foo/bar/baz.mp3
 would get /=foo, foo/=bar, foo/bar/=baz, and .=mp3.
 
@@ -82,11 +70,10 @@ This allows using whatever directory hierarchy exists to inform the view,
 without locking the view into using it. 
 
 Complication: When refining a view, it only looks at the filenames in
-the view, so it would need to map from
+the view, so it has to map from
 those filenames to derive the same metadata, unless there is persistent
 storage. Luckily, the filenames used in the views currently include the
-subdirs (although not quite in a parseable format, would need some small
-changes).
+subdirs.
 
 # other uses for metadata
 
@@ -185,14 +172,15 @@ So, possible approaches:
 * Git has a complex set of rules for what is legal in a ref name.
   View branch names will need to filter out any illegal stuff. **done**
 
+* Metadata should be copied to the new key when adding a modified version
+  of a file. **done**
+
 * Filesystems that are not case sensative (including case preserving OSX)
   will cause problems if view branches try to use different cases for 
-  2 directories representing the value of some metadata. But, users
-  probably want at least case-preserving metadata values. 
+  2 directories representing a metadata field.
   
-  Solution might be to compare metadata case-insensitively, and
-  pick one representation consistently, so if, for example an author
-  field uses mixed case, it will be used in the view branch.
+  Solution might be to compare fields names case-insensitively, and
+  pick one representation consistently.
 
   Alternatively, it could escape `A` to `_A` when such a filesystem
   is detected and avoid collisions that way (double `_` to escape it).
@@ -207,3 +195,7 @@ So, possible approaches:
 * What happens if git annex add or the assistant add a new file while on a
   view? If the file is not also added to the master branch, it will be lost
   when exiting the view. TODO
+
+* The filename mangling can result in a filename in a view
+  that is too long for its containing filesystem. Should detect and do
+  something reasonable to avoid. TODO

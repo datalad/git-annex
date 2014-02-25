@@ -1,0 +1,5 @@
+Is there any way to find all files that do not have a certain field assigned in metadata. E.g. I want to find all files that do not have an author field set and
+
+    git-annex find --not --metadata "author=*"
+
+doesn't give any results.

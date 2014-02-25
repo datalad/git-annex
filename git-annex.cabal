@@ -93,7 +93,8 @@ Executable git-annex
    extensible-exceptions, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.9), monad-control, MonadCatchIO-transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
-   SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3)
+   SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
+   data-default
   CC-Options: -Wall
   GHC-Options: -Wall
   Extensions: PackageImports
@@ -133,7 +134,7 @@ Executable git-annex
 
   if flag(WebDAV)
     Build-Depends: DAV ((>= 0.3 && < 0.6) || > 0.6),
-     http-conduit, xml-conduit, http-types
+     http-client, http-conduit, http-types, lifted-base
     CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)

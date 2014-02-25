@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://grossmeier.net/"
+ nickname="greg"
+ subject="very remote specific"
+ date="2014-02-21T22:11:16Z"
+ content="""
+Yeah, this is very remote specific and probably means adding the functionality there as well (eg: in the glacier.py code, not only in git-annex haskell). Maybe I should file bugs there accordingly :)
+"""]]

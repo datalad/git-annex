@@ -55,6 +55,7 @@ import qualified Crypto
 import qualified Annex.Init
 import qualified Annex.CatFile
 import qualified Annex.View
+import qualified Annex.View.ViewedFile
 import qualified Logs.View
 import qualified Utility.Path
 import qualified Utility.FileMode
@@ -151,6 +152,7 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_metadata_serialize" Types.MetaData.prop_metadata_serialize
 	, testProperty "prop_branchView_legal" Logs.View.prop_branchView_legal
 	, testProperty "prop_view_roundtrips" Annex.View.prop_view_roundtrips
+	, testProperty "prop_viewedFile_rountrips" Annex.View.ViewedFile.prop_viewedFile_roundtrips
 	]
 
 {- These tests set up the test environment, but also test some basic parts

@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Limit where
 
 import Common.Annex
@@ -29,18 +27,13 @@ import Logs.Group
 import Logs.Unused
 import Logs.Location
 import Git.Types (RefDate(..))
+import Utility.Glob
 import Utility.HumanTime
 import Utility.DataUnits
 
 import Data.Time.Clock.POSIX
 import qualified Data.Set as S
 import qualified Data.Map as M
-import System.Path.WildMatch
-
-#ifdef WITH_TDFA
-import Text.Regex.TDFA
-import Text.Regex.TDFA.String
-#endif
 
 {- Checks if there are user-specified limits. -}
 limited :: Annex Bool
@@ -82,33 +75,21 @@ addInclude :: String -> Annex ()
 addInclude = addLimit . limitInclude
 
 limitInclude :: MkLimit
-limitInclude glob = Right $ const $ return . matchglob glob
+limitInclude glob = Right $ const $ return . matchGlobFile glob
 
 {- Add a limit to skip files that match the glob. -}
 addExclude :: String -> Annex ()
 addExclude = addLimit . limitExclude
 
 limitExclude :: MkLimit
-limitExclude glob = Right $ const $ return . not . matchglob glob
+limitExclude glob = Right $ const $ return . not . matchGlobFile glob
 
-{- Could just use wildCheckCase, but this way the regex is only compiled
- - once. Also, we use regex-TDFA when available, because it's less buggy
- - in its support of non-unicode characters. -}
-matchglob :: String -> MatchInfo -> Bool
-matchglob glob (MatchingFile fi) =
-#ifdef WITH_TDFA
-	case cregex of
-		Right r -> case execute r (matchFile fi) of
-			Right (Just _) -> True
-			_ -> False
-		Left _ -> error $ "failed to compile regex: " ++ regex
-  where
-	cregex = compile defaultCompOpt defaultExecOpt regex
-	regex = '^':wildToRegex glob
-#else
-	wildCheckCase glob (matchFile fi)
-#endif
-matchglob _ (MatchingKey _) = False
+matchGlobFile :: String -> (MatchInfo -> Bool)
+matchGlobFile glob = go
+	where
+		cglob = compileGlob glob CaseSensative -- memoized
+		go (MatchingKey _) = False
+		go (MatchingFile fi) = matchGlob cglob (matchFile fi)
 
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. Optionally on a prior date. -}
@@ -270,9 +251,13 @@ addMetaData = addLimit . limitMetaData
 limitMetaData :: MkLimit
 limitMetaData s = case parseMetaData s of
 	Left e -> Left e
-	Right (f, v) -> Right $ const $ checkKey (check f v)
+	Right (f, v) ->
+		let cglob = compileGlob (fromMetaValue v) CaseInsensative
+		in Right $ const $ checkKey (check f cglob)
   where
-  	check f v k = S.member v . metaDataValues f <$> getCurrentMetaData k
+  	check f cglob k = not . S.null 
+		. S.filter (matchGlob cglob . fromMetaValue) 
+		. metaDataValues f <$> getCurrentMetaData k
 
 addTimeLimit :: String -> Annex ()
 addTimeLimit s = do

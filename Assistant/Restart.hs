@@ -30,6 +30,7 @@ import System.Posix (signalProcess, sigTERM)
 #else
 import Utility.WinProcess
 #endif
+import Data.Default
 
 {- Before the assistant can be restarted, have to remove our 
  - gitAnnexUrlFile and our gitAnnexPidFile. Pausing the watcher is also
@@ -81,7 +82,7 @@ newAssistantUrl repo = do
 				( return url
 				, delayed $ waiturl urlfile
 				)
-	listening url = catchBoolIO $ fst <$> exists url [] Nothing
+	listening url = catchBoolIO $ fst <$> exists url def
 	delayed a = do
 		threadDelay 100000 -- 1/10th of a second
 		a

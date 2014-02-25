@@ -18,3 +18,5 @@ show these then running,
     git annex dropunused 1-3 --force
 
 reports ok for each drop operation but rerunning git annex unused --from cloud still shows these three files as unused. I am using git-annex on mac os x (current dmg) on a direct repo. I have similar problems dropping files on the current repo even though I drop unused they still show up as unused.
+
+> [[fixed|done]] --[[Joey]]
