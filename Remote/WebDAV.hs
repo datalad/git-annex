@@ -23,6 +23,7 @@ import Network.HTTP.Client (HttpException(..))
 import Network.HTTP.Conduit (HttpException(..))
 #endif
 import Network.HTTP.Types
+import System.Log.Logger (debugM)
 import System.IO.Error
 import System.FilePath.Posix ((</>), addTrailingPathSeparator)
 
@@ -312,12 +313,16 @@ contentType = Just $ B8.fromString "application/octet-stream"
 throwIO :: String -> IO a
 throwIO msg = ioError $ mkIOError userErrorType msg Nothing Nothing
 
+debugDAV :: DavUrl -> String -> IO ()
+debugDAV msg url = debugM "DAV" $ msg ++ " " ++ url
+
 {---------------------------------------------------------------------
  - Low-level DAV operations, using the new DAV monad when available.
  ---------------------------------------------------------------------}
 
 putDAV :: DavUrl -> DavUser -> DavPass -> L.ByteString -> IO ()
-putDAV url user pass b =
+putDAV url user pass b = do
+	debugDAV "PUT" url
 #if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass $ putContentM (contentType, b)
 #else
@@ -325,7 +330,9 @@ putDAV url user pass b =
 #endif
 
 getDAV :: DavUrl -> DavUser -> DavPass -> IO (Maybe L.ByteString)
-getDAV url user pass = eitherToMaybe <$> tryNonAsync go
+getDAV url user pass = do
+	debugDAV "GET" url
+	eitherToMaybe <$> tryNonAsync go
   where
 #if MIN_VERSION_DAV(0,6,0)
 	go = goDAV url user pass $ snd <$> getContentM
@@ -334,7 +341,8 @@ getDAV url user pass = eitherToMaybe <$> tryNonAsync go
 #endif
 
 deleteDAV :: DavUrl -> DavUser -> DavPass -> IO ()
-deleteDAV url user pass = 
+deleteDAV url user pass = do
+	debugDAV "DELETE" url
 #if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass delContentM
 #else
@@ -342,7 +350,8 @@ deleteDAV url user pass =
 #endif
 
 moveDAV :: DavUrl -> DavUrl -> DavUser -> DavPass -> IO ()
-moveDAV url newurl user pass =
+moveDAV url newurl user pass = do
+	debugDAV ("MOVE to " ++ newurl ++ " from ") url
 #if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass $ moveContentM newurl'
 #else
@@ -352,7 +361,8 @@ moveDAV url newurl user pass =
 	newurl' = B8.fromString newurl
 
 mkdirDAV :: DavUrl -> DavUser -> DavPass -> IO Bool
-mkdirDAV url user pass = 
+mkdirDAV url user pass = do
+	debugDAV "MKDIR" url
 #if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass mkCol
 #else
@@ -360,7 +370,9 @@ mkdirDAV url user pass =
 #endif
 
 existsDAV :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
-existsDAV url user pass = either (Left . show) id <$> tryNonAsync check
+existsDAV url user pass = do
+	debugDAV "EXISTS" url
+	either (Left . show) id <$> tryNonAsync check
   where
 	ispresent = return . Right
 #if MIN_VERSION_DAV(0,6,0)
