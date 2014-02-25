@@ -14,7 +14,6 @@ import qualified Data.Map as M
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified Data.ByteString.Lazy as L
-import Network.URI (normalizePathSegments)
 import qualified Control.Exception as E
 import qualified Control.Exception.Lifted as EL
 #if MIN_VERSION_DAV(0,6,0)
@@ -25,9 +24,8 @@ import Network.HTTP.Conduit (HttpException(..))
 import Network.HTTP.Types
 import System.Log.Logger (debugM)
 import System.IO.Error
-import System.FilePath.Posix ((</>), addTrailingPathSeparator)
 
-import Common.Annex hiding ((</>), addTrailingPathSeparator)
+import Common.Annex
 import Types.Remote
 import qualified Git
 import Config
@@ -40,8 +38,8 @@ import Creds
 import Utility.Metered
 import Annex.Content
 import Annex.UUID
+import Remote.WebDAV.DavUrl
 
-type DavUrl = String
 type DavUser = B8.ByteString
 type DavPass = B8.ByteString
 
@@ -237,19 +235,6 @@ toDavUser = B8.fromString
 toDavPass :: String -> DavPass
 toDavPass = B8.fromString
 
-{- The directory where files(s) for a key are stored. -}
-davLocation :: DavUrl -> Key -> DavUrl
-davLocation baseurl k = addTrailingPathSeparator $
-	davUrl baseurl $ hashDirLower k </> keyFile k
-
-{- Where we store temporary data for a key as it's being uploaded. -}
-tmpLocation :: DavUrl -> Key -> DavUrl
-tmpLocation baseurl k = addTrailingPathSeparator $
-	davUrl baseurl $ "tmp" </> keyFile k
-
-davUrl :: DavUrl -> FilePath -> DavUrl
-davUrl baseurl file = baseurl </> file
-
 {- Creates a directory in WebDAV, if not already present; also creating
  - any missing parent directories. -}
 mkdirRecursiveDAV :: DavUrl -> DavUser -> DavPass -> IO ()
@@ -271,11 +256,6 @@ mkdirRecursiveDAV url user pass = go url
 			 - occurred. In the latter case, whatever wanted
 			 - to use this directory will fail. -}
 			Left _ -> return ()
-
-urlParent :: DavUrl -> DavUrl
-urlParent url = dropTrailingPathSeparator $
-	normalizePathSegments (dropTrailingPathSeparator url ++ "/..")
-  where
 
 {- Test if a WebDAV store is usable, by writing to a test file, and then
  - deleting the file. Exits with an IO error if not. -}
