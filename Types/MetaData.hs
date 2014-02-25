@@ -17,6 +17,7 @@ module Types.MetaData (
 	MetaSerializable,
 	toMetaField,
 	mkMetaField,
+	mkMetaFieldUnchecked,
 	fromMetaField,
 	toMetaValue,
 	mkMetaValue,
@@ -47,6 +48,7 @@ import Utility.QuickCheck
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Char
+import qualified Data.CaseInsensitive as CI
 
 newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
 	deriving (Show, Eq, Ord)
@@ -56,7 +58,8 @@ newtype MetaData = MetaData (M.Map MetaField (S.Set MetaValue))
 newtype CurrentlySet = CurrentlySet Bool
 	deriving (Read, Show, Eq, Ord, Arbitrary)
 
-newtype MetaField = MetaField String
+{- Fields are case insensitive. -}
+newtype MetaField = MetaField (CI.CI String)
 	deriving (Read, Show, Eq, Ord)
 
 data MetaValue = MetaValue CurrentlySet String
@@ -90,8 +93,8 @@ instance MetaSerializable MetaData where
 			Nothing -> getfield m l
 
 instance MetaSerializable MetaField where
-	serialize (MetaField f) = f
-	deserialize = Just . MetaField
+	serialize (MetaField f) = CI.original f
+	deserialize = Just . mkMetaFieldUnchecked
 
 {- Base64 problimatic values. -}
 instance MetaSerializable MetaValue where
@@ -115,9 +118,19 @@ instance MetaSerializable CurrentlySet where
 	deserialize "-" = Just (CurrentlySet False)
 	deserialize _ = Nothing
 
+mkMetaField :: String -> Either String MetaField
+mkMetaField f = maybe (Left $ badField f) Right (toMetaField f)
+
+badField :: String -> String
+badField f = "Illegal metadata field name, \"" ++ f ++ "\""
+
+{- Does not check that the field name is valid. Use with caution. -}
+mkMetaFieldUnchecked :: String -> MetaField
+mkMetaFieldUnchecked = MetaField . CI.mk
+
 toMetaField :: String -> Maybe MetaField
 toMetaField f
-	| legalField f = Just $ MetaField f
+	| legalField f = Just $ MetaField $ CI.mk f
 	| otherwise = Nothing
 
 {- Fields cannot be empty, contain whitespace, or start with "+-" as
@@ -153,7 +166,7 @@ unsetMetaData :: MetaData -> MetaData
 unsetMetaData (MetaData m) = MetaData $ M.map (S.map unsetMetaValue) m
 
 fromMetaField :: MetaField -> String
-fromMetaField (MetaField f) = f
+fromMetaField (MetaField f) = CI.original f
 
 fromMetaValue :: MetaValue -> String
 fromMetaValue (MetaValue _ f) = f
@@ -236,12 +249,6 @@ parseMetaData p = (,)
   where
 	(f, v) = separate (== '=') p
 
-mkMetaField :: String -> Either String MetaField
-mkMetaField f = maybe (Left $ badField f) Right (toMetaField f)
-
-badField :: String -> String
-badField f = "Illegal metadata field name, \"" ++ f ++ "\""
-
 {- Avoid putting too many fields in the map; extremely large maps make
  - the seriaization test slow due to the sheer amount of data.
  - It's unlikely that more than 100 fields of metadata will be used. -}
@@ -254,7 +261,7 @@ instance Arbitrary MetaValue where
 	arbitrary = MetaValue <$> arbitrary <*> arbitrary
 
 instance Arbitrary MetaField where
-	arbitrary = MetaField <$> arbitrary `suchThat` legalField 
+	arbitrary = MetaField . CI.mk <$> arbitrary `suchThat` legalField 
 
 prop_metadata_sane :: MetaData -> MetaField -> MetaValue -> Bool
 prop_metadata_sane m f v = and

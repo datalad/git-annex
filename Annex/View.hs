@@ -249,7 +249,7 @@ getDirMetaData :: FilePath -> MetaData
 getDirMetaData d = MetaData $ M.fromList $ zip fields values
   where
 	dirs = splitDirectories d
-	fields = map (MetaField . addTrailingPathSeparator . joinPath)
+	fields = map (mkMetaFieldUnchecked . addTrailingPathSeparator . joinPath)
 		(inits dirs)
 	values = map (S.singleton . toMetaValue . fromMaybe "" . headMaybe)
 		(tails dirs)

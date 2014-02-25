@@ -180,14 +180,7 @@ So, possible approaches:
   2 directories representing a metadata field.
   
   Solution might be to compare fields names case-insensitively, and
-  pick one representation consistently.
-
-  Alternatively, it could escape `A` to `_A` when such a filesystem
-  is detected and avoid collisions that way (double `_` to escape it).
-  This latter option is ugly, but so are non-posix filesystems.. and it
-  also solves any similar issues with case-colliding filenames.
-
-  TODO: Check current state of this.
+  pick one representation consistently. **done**
 
 * Assistant needs to know about views, so it can update metadata when
   files are moved around inside them. TODO

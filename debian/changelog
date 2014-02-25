@@ -2,6 +2,7 @@ git-annex (5.20140222) UNRELEASED; urgency=medium
 
   * metadata: Field names limited to alphanumerics and a few whitelisted
     punctuation characters to avoid issues with views, etc.
+  * metadata: FIeld names are now case insensative.
   * When constructing views, metadata is available about the location of the
     file in the view's reference branch. Allows incorporating parts of the
     directory hierarchy in a view.

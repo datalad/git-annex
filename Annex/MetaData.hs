@@ -20,13 +20,13 @@ import Data.Time.Clock
 import Data.Time.Clock.POSIX
 
 tagMetaField :: MetaField
-tagMetaField = MetaField "tag"
+tagMetaField = mkMetaFieldUnchecked "tag"
 
 yearMetaField :: MetaField
-yearMetaField = MetaField "year"
+yearMetaField = mkMetaFieldUnchecked "year"
 
 monthMetaField :: MetaField
-monthMetaField = MetaField "month"
+monthMetaField = mkMetaFieldUnchecked "month"
 
 {- Adds metadata for a file that has just been ingested into the
  - annex, but has not yet been committed to git.

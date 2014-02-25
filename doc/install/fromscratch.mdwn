@@ -26,6 +26,7 @@ quite a lot.
   * [extensible-exceptions](http://hackage.haskell.org/package/extensible-exceptions)
   * [feed](http://hackage.haskell.org/package/feed)
   * [async](http://hackage.haskell.org/package/async)
+  * [case-insensitive](http://hackage.haskell.org/package/case-insensitive)
   * [stm](http://hackage.haskell.org/package/stm)
     (version 2.3 or newer)
 * Optional haskell stuff, used by the [[assistant]] and its webapp
@@ -36,7 +37,6 @@ quite a lot.
   * [yesod-static](http://hackage.haskell.org/package/yesod-static)
   * [yesod-default](http://hackage.haskell.org/package/yesod-default)
   * [data-default](http://hackage.haskell.org/package/data-default)
-  * [case-insensitive](http://hackage.haskell.org/package/case-insensitive)
   * [http-types](http://hackage.haskell.org/package/http-types)
   * [wai](http://hackage.haskell.org/package/wai)
   * [wai-logger](http://hackage.haskell.org/package/wai-logger)
