@@ -23,7 +23,6 @@ import Assistant.Types.Changes
 import Assistant.Alert
 import Utility.DirWatcher
 import Utility.DirWatcher.Types
-import qualified Utility.Lsof as Lsof
 import qualified Annex
 import qualified Annex.Queue
 import qualified Git
@@ -40,6 +39,9 @@ import Annex.ReplaceFile
 import Git.Types
 import Config
 import Utility.ThreadScheduler
+#ifndef mingw32_HOST_OS
+import qualified Utility.Lsof as Lsof
+#endif
 
 import Data.Bits.Utils
 import Data.Typeable

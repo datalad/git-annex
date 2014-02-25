@@ -23,7 +23,6 @@ import Network.HTTP.Types
 import System.Log.Logger
 import qualified Data.CaseInsensitive as CI
 import Network.Socket
-import Control.Exception
 import "crypto-api" Crypto.Random
 import qualified Web.ClientSession as CS
 import qualified Data.ByteString.Lazy as L
@@ -38,6 +37,10 @@ import Control.Arrow ((***))
 import Control.Concurrent
 #ifdef __ANDROID__
 import Data.Endian
+#endif
+#if defined(__ANDROID__) || defined (mingw32_HOST_OS)
+#else
+import Control.Exception (bracketOnError)
 #endif
 
 localhost :: HostName

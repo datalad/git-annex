@@ -18,7 +18,6 @@ import Data.Char
 import Control.Applicative
 
 #ifdef mingw32_HOST_OS
-import Data.Char
 import qualified System.FilePath.Posix as Posix
 #else
 import System.Posix.Files

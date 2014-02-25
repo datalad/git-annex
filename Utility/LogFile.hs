@@ -11,7 +11,9 @@ module Utility.LogFile where
 
 import Common
 
+#ifndef mingw32_HOST_OS
 import System.Posix.Types
+#endif
 
 #ifndef mingw32_HOST_OS
 openLog :: FilePath -> IO Fd
