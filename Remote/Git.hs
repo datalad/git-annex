@@ -285,7 +285,7 @@ keyUrls r key = map tourl locs'
 #ifndef mingw32_HOST_OS
 	locs' = locs
 #else
-	locs' = map (replace "\\" "/") (annexLocations key)
+	locs' = map (replace "\\" "/") locs
 #endif
 
 dropKey :: Remote -> Key -> Annex Bool
