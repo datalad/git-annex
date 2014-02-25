@@ -68,8 +68,8 @@ dirFromViewedFile = joinPath . drop 1 . sep [] ""
 
 prop_viewedFile_roundtrips :: FilePath -> Bool
 prop_viewedFile_roundtrips f
-	| isAbsolute f = True -- Only relative paths are encoded.
-	| any (isPathSeparator) (end f) = True -- Filenames wanted, not directories.
+	-- Relative filenames wanted, not directories.
+	| any (isPathSeparator) (end f ++ beginning f) = True
 	| otherwise = dir == dirFromViewedFile (viewedFileFromReference f)
   where
 	dir = joinPath $ beginning $ splitDirectories f
