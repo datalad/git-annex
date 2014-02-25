@@ -45,10 +45,6 @@ now! --[[Joey]]
 
 ## minor problems
 
-* Does not work with Cygwin's build of git (that git does not consistently
-  support use of DOS style paths, which git-annex uses on Windows). 
-  Must use Msysgit. (Actually, this may no longer be the case; git-annex's
-  handling of paths has improved significantly on windows..)
 * rsync special remotes with a rsyncurl of a local directory are known
   buggy. (git-annex tells rsync C:foo and it thinks it means a remote host
   named C...)
