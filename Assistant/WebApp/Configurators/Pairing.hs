@@ -31,10 +31,8 @@ import Network.Protocol.XMPP
 import Assistant.Types.NetMessager
 import Assistant.NetMessager
 import Assistant.WebApp.RepoList
-import Assistant.WebApp.Configurators.XMPP
-#endif
-#if defined(WITH_PAIRING) || defined(WITH_XMP) 
 import Assistant.WebApp.Configurators
+import Assistant.WebApp.Configurators.XMPP
 #endif
 import Utility.UserInfo
 import Git

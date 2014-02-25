@@ -148,7 +148,7 @@ runAction :: Repo -> Action -> IO ()
 runAction repo (UpdateIndexAction streamers) =
 	-- list is stored in reverse order
 	Git.UpdateIndex.streamUpdateIndex repo $ reverse streamers
-runAction repo action@(CommandAction {}) = 
+runAction repo action@(CommandAction {}) = do
 #ifndef mingw32_HOST_OS
 	let p = (proc "xargs" $ "-0":"git":toCommand gitparams) { env = gitEnv repo }
 	withHandle StdinHandle createProcessSuccess p $ \h -> do
