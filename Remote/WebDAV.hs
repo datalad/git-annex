@@ -14,7 +14,6 @@ import qualified Data.Map as M
 import qualified Data.ByteString.UTF8 as B8
 import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified Data.ByteString.Lazy as L
-import Network.URI (normalizePathSegments)
 import qualified Control.Exception as E
 import qualified Control.Exception.Lifted as EL
 #if MIN_VERSION_DAV(0,6,0)
@@ -23,6 +22,7 @@ import Network.HTTP.Client (HttpException(..))
 import Network.HTTP.Conduit (HttpException(..))
 #endif
 import Network.HTTP.Types
+import System.Log.Logger (debugM)
 import System.IO.Error
 
 import Common.Annex
@@ -38,8 +38,8 @@ import Creds
 import Utility.Metered
 import Annex.Content
 import Annex.UUID
+import Remote.WebDAV.DavUrl
 
-type DavUrl = String
 type DavUser = B8.ByteString
 type DavPass = B8.ByteString
 
@@ -235,19 +235,6 @@ toDavUser = B8.fromString
 toDavPass :: String -> DavPass
 toDavPass = B8.fromString
 
-{- The directory where files(s) for a key are stored. -}
-davLocation :: DavUrl -> Key -> DavUrl
-davLocation baseurl k = addTrailingPathSeparator $
-	davUrl baseurl $ hashDirLower k </> keyFile k
-
-{- Where we store temporary data for a key as it's being uploaded. -}
-tmpLocation :: DavUrl -> Key -> DavUrl
-tmpLocation baseurl k = addTrailingPathSeparator $
-	davUrl baseurl $ "tmp" </> keyFile k
-
-davUrl :: DavUrl -> FilePath -> DavUrl
-davUrl baseurl file = baseurl </> file
-
 {- Creates a directory in WebDAV, if not already present; also creating
  - any missing parent directories. -}
 mkdirRecursiveDAV :: DavUrl -> DavUser -> DavPass -> IO ()
@@ -269,11 +256,6 @@ mkdirRecursiveDAV url user pass = go url
 			 - occurred. In the latter case, whatever wanted
 			 - to use this directory will fail. -}
 			Left _ -> return ()
-
-urlParent :: DavUrl -> DavUrl
-urlParent url = dropTrailingPathSeparator $
-	normalizePathSegments (dropTrailingPathSeparator url ++ "/..")
-  where
 
 {- Test if a WebDAV store is usable, by writing to a test file, and then
  - deleting the file. Exits with an IO error if not. -}
@@ -311,12 +293,16 @@ contentType = Just $ B8.fromString "application/octet-stream"
 throwIO :: String -> IO a
 throwIO msg = ioError $ mkIOError userErrorType msg Nothing Nothing
 
+debugDAV :: DavUrl -> String -> IO ()
+debugDAV msg url = debugM "DAV" $ msg ++ " " ++ url
+
 {---------------------------------------------------------------------
  - Low-level DAV operations, using the new DAV monad when available.
  ---------------------------------------------------------------------}
 
 putDAV :: DavUrl -> DavUser -> DavPass -> L.ByteString -> IO ()
-putDAV url user pass b =
+putDAV url user pass b = do
+	debugDAV "PUT" url
 #if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass $ putContentM (contentType, b)
 #else
@@ -324,7 +310,9 @@ putDAV url user pass b =
 #endif
 
 getDAV :: DavUrl -> DavUser -> DavPass -> IO (Maybe L.ByteString)
-getDAV url user pass = eitherToMaybe <$> tryNonAsync go
+getDAV url user pass = do
+	debugDAV "GET" url
+	eitherToMaybe <$> tryNonAsync go
   where
 #if MIN_VERSION_DAV(0,6,0)
 	go = goDAV url user pass $ snd <$> getContentM
@@ -333,7 +321,8 @@ getDAV url user pass = eitherToMaybe <$> tryNonAsync go
 #endif
 
 deleteDAV :: DavUrl -> DavUser -> DavPass -> IO ()
-deleteDAV url user pass = 
+deleteDAV url user pass = do
+	debugDAV "DELETE" url
 #if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass delContentM
 #else
@@ -341,7 +330,8 @@ deleteDAV url user pass =
 #endif
 
 moveDAV :: DavUrl -> DavUrl -> DavUser -> DavPass -> IO ()
-moveDAV url newurl user pass =
+moveDAV url newurl user pass = do
+	debugDAV ("MOVE to " ++ newurl ++ " from ") url
 #if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass $ moveContentM newurl'
 #else
@@ -351,7 +341,8 @@ moveDAV url newurl user pass =
 	newurl' = B8.fromString newurl
 
 mkdirDAV :: DavUrl -> DavUser -> DavPass -> IO Bool
-mkdirDAV url user pass = 
+mkdirDAV url user pass = do
+	debugDAV "MKDIR" url
 #if MIN_VERSION_DAV(0,6,0)
 	goDAV url user pass mkCol
 #else
@@ -359,7 +350,9 @@ mkdirDAV url user pass =
 #endif
 
 existsDAV :: DavUrl -> DavUser -> DavPass -> IO (Either String Bool)
-existsDAV url user pass = either (Left . show) id <$> tryNonAsync check
+existsDAV url user pass = do
+	debugDAV "EXISTS" url
+	either (Left . show) id <$> tryNonAsync check
   where
 	ispresent = return . Right
 #if MIN_VERSION_DAV(0,6,0)

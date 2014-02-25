@@ -24,7 +24,9 @@ import DBus
 import Data.Word (Word32)
 import Assistant.NetMessager
 #else
+#ifdef linux_HOST_OS
 #warning Building without dbus support; will poll for network connection changes
+#endif
 #endif
 
 netWatcherThread :: NamedThread

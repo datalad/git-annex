@@ -27,7 +27,6 @@ import qualified Git.Command
 import qualified Git.Config
 import Utility.ThreadScheduler
 import qualified Assistant.Threads.Watcher as Watcher
-import Utility.LogFile
 import Utility.Batch
 import Utility.NotificationBroadcaster
 import Config
@@ -42,6 +41,9 @@ import Config.Files
 import qualified Annex
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
+#endif
+#ifndef mingw32_HOST_OS
+import Utility.LogFile
 #endif
 
 import Data.Time.Clock.POSIX
@@ -214,10 +216,10 @@ checkLogSize n = do
 			checkLogSize $ n + 1
   where
 	filesize f = fromIntegral . fileSize <$> liftIO (getFileStatus f)
-#endif
 
-oneMegabyte :: Int
-oneMegabyte = 1000000
+	oneMegabyte :: Int
+	oneMegabyte = 1000000
+#endif
 
 oneHour :: Int
 oneHour = 60 * 60

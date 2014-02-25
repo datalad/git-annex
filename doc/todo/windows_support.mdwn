@@ -30,6 +30,8 @@ now! --[[Joey]]
   (and possibly gpg) are not prompted there anymore.
 
 * Local pairing seems to fail, after acking on Linux box, it stalls.
+  (Also, of course, the Windows box is unlikely to have a ssh server,
+  so only pairing with a !Windows box will work.)
 
 * gcrypt is not ported to windows (and as a shell script, may need
   to be rewritten)
@@ -43,9 +45,6 @@ now! --[[Joey]]
 
 ## minor problems
 
-* Does not work with Cygwin's build of git (that git does not consistently
-  support use of DOS style paths, which git-annex uses on Windows). 
-  Must use Msysgit.
 * rsync special remotes with a rsyncurl of a local directory are known
   buggy. (git-annex tells rsync C:foo and it thinks it means a remote host
   named C...)
@@ -58,7 +57,6 @@ now! --[[Joey]]
 
 ## stuff needing testing
 
-* test S3 and box.com setup in webapp now that they should work..
 * test that adding a repo on a removable drive works; that git is synced to
   it and files can be transferred to it and back
 * Does stopping in progress transfers work in the webapp?

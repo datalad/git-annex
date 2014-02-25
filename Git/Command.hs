@@ -15,9 +15,6 @@ import Common
 import Git
 import Git.Types
 import qualified Utility.CoProcess as CoProcess
-#ifdef mingw32_HOST_OS
-import Git.FilePath
-#endif
 import Utility.Batch
 
 {- Constructs a git command line operating on the specified repo. -}

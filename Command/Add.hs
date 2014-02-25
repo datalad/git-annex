@@ -218,15 +218,15 @@ link file key mcache = flip catchAnnex (undo file key) $ do
 	l <- inRepo $ gitAnnexLink file key
 	replaceFile file $ makeAnnexLink l
 
-#ifdef WITH_CLIBS
-#ifndef __ANDROID__
 	-- touch symlink to have same time as the original file,
 	-- as provided in the InodeCache
 	case mcache of
+#if defined(WITH_CLIBS) && ! defined(__ANDROID__)
 		Just c -> liftIO $ touch file (TimeSpec $ inodeCacheToMtime c) False
+#else
+		Just _ -> noop
+#endif
 		Nothing -> noop
-#endif
-#endif
 
 	return l
 

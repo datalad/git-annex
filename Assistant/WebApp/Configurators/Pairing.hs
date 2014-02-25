@@ -12,7 +12,6 @@ module Assistant.WebApp.Configurators.Pairing where
 
 import Assistant.Pairing
 import Assistant.WebApp.Common
-import Assistant.WebApp.Configurators
 import Assistant.Types.Buddies
 import Annex.UUID
 #ifdef WITH_PAIRING
@@ -32,6 +31,7 @@ import Network.Protocol.XMPP
 import Assistant.Types.NetMessager
 import Assistant.NetMessager
 import Assistant.WebApp.RepoList
+import Assistant.WebApp.Configurators
 import Assistant.WebApp.Configurators.XMPP
 #endif
 import Utility.UserInfo

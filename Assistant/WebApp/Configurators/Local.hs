@@ -114,9 +114,9 @@ checkRepositoryPath p = do
  - browsed to a directory with git-annex and run it from there. -}
 defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
-	cwd <- liftIO getCurrentDirectory
-	home <- myHomeDir
 #ifndef mingw32_HOST_OS
+	home <- myHomeDir
+	cwd <- liftIO getCurrentDirectory
 	if home == cwd && firstrun
 		then inhome
 		else ifM (legit cwd <&&> canWrite cwd)
@@ -127,7 +127,7 @@ defaultRepositoryPath firstrun = do
 	-- On Windows, always default to ~/Desktop/annex or ~/annex,
 	-- no cwd handling because the user might be able to write
 	-- to the entire drive.
-	inhome
+	if firstrun then inhome else inhome
 #endif
   where
 	inhome = do
@@ -136,9 +136,11 @@ defaultRepositoryPath firstrun = do
 			( relHome $ desktop </> gitAnnexAssistantDefaultDir
 			, return $ "~" </> gitAnnexAssistantDefaultDir
 			)
+#ifndef mingw32_HOST_OS
 	-- Avoid using eg, standalone build's git-annex.linux/ directory
 	-- when run from there.
 	legit d = not <$> doesFileExist (d </> "git-annex")
+#endif
 
 newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
 newRepositoryForm defpath msg = do
