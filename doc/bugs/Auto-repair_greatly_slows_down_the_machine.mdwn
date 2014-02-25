@@ -1,0 +1,19 @@
+### Please describe the problem.
+
+The assistant regulary ends up trying to perform repair (I don't know why, it happens fairly often, once a week or so). When it does so, it ends up creating a huge (2.4G) .git/objects directory, and a git prune-packed process uses so much I/O the machine really slows down.
+
+### What steps will reproduce the problem?
+
+I don't have any reliable way to reproduce it. The repository ends up being attempted to be repaired around once a week. This week the repair (and the slowdown) also happened on a second computer.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20140221-gbdfc8e1 (using the standalone 64bit builds)
+
+This is on an up-to-date Arch Linux. It also happened on Fedora 20.
+
+### Please provide any additional information below.
+
+The daemon.log is fairly long, but not particulary interesting: [[https://ssl.zerodogg.org/~zerodogg/private/tmp/daemon.log-2014-02-25.1]]
+
+The «resource vanished (Broken pipe)» at the end is the result of me killing the prune-packed in order to be able to use the machine again.
