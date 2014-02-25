@@ -5,6 +5,7 @@ quite a lot.
   * [The Haskell Platform](http://haskell.org/platform/) (GHC 7.4 or newer)
   * [mtl](http://hackage.haskell.org.package/mtl) (2.1.1 or newer)
   * [MissingH](http://github.com/jgoerzen/missingh/wiki)
+  * [data-default](http://hackage.haskell.org/package/data-default)
   * [utf8-string](http://hackage.haskell.org/package/utf8-string)
   * [SHA](http://hackage.haskell.org/package/SHA)
   * [cryptohash](http://hackage.haskell.org/package/cryptohash) (optional but recommended)

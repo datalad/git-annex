@@ -514,9 +514,8 @@ saveState nocommit = doSideAction $ do
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
 downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   where
-  	go Nothing = do
-		(headers, options) <- getHttpHeadersOptions
-		anyM (\u -> Url.withUserAgent $ Url.download u headers options file) urls
+  	go Nothing = Url.withUrlOptions $ \uo ->
+		anyM (\u -> Url.download u file uo) urls
 	go (Just basecmd) = liftIO $ anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =
 		boolSystem "sh" [Param "-c", Param $ gencmd url basecmd]

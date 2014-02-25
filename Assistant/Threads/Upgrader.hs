@@ -89,10 +89,10 @@ canUpgrade urgency urlrenderer d = ifM autoUpgradeEnabled
 
 getDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
 getDistributionInfo = do
-	ua <- liftAnnex Url.getUserAgent
+	uo <- liftAnnex Url.getUrlOptions
 	liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 		hClose h
-		ifM (Url.downloadQuiet distributionInfoUrl [] [] tmpfile ua)
+		ifM (Url.downloadQuiet distributionInfoUrl tmpfile uo)
 			( readish <$> readFileStrict tmpfile
 			, return Nothing
 			)

@@ -184,11 +184,10 @@ tryGitConfigRead r
 			Left l -> return $ Left l
 
 	geturlconfig = do
-		(headers, options) <- getHttpHeadersOptions
-		ua <- Url.getUserAgent
+		uo <- Url.getUrlOptions
 		v <- liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			hClose h
-			ifM (Url.downloadQuiet (Git.repoLocation r ++ "/config") headers options tmpfile ua)
+			ifM (Url.downloadQuiet (Git.repoLocation r ++ "/config") tmpfile uo)
 				( pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 				, return $ Left undefined
 				)
@@ -261,8 +260,7 @@ inAnnex rmt key
   	r = repo rmt
 	checkhttp = do
 		showChecking r
-		(headers, options) <- getHttpHeadersOptions
-		ifM (anyM (\u -> Url.withUserAgent $ Url.checkBoth u headers options (keySize key)) (keyUrls rmt key))
+		ifM (Url.withUrlOptions $ \uo -> anyM (\u -> Url.checkBoth u (keySize key) uo) (keyUrls rmt key))
 			( return $ Right True
 			, return $ Left "not found"
 			)

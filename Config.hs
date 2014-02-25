@@ -79,14 +79,3 @@ setCrippledFileSystem :: Bool -> Annex ()
 setCrippledFileSystem b = do
 	setConfig (annexConfig "crippledfilesystem") (Git.Config.boolConfig b)
 	Annex.changeGitConfig $ \c -> c { annexCrippledFileSystem = b }
-
-{- Gets the http headers to use, and any configured command-line options. -}
-getHttpHeadersOptions :: Annex ([String], [CommandParam])
-getHttpHeadersOptions = (,) <$> headers <*> options
-  where
-	headers = do
-		v <- annexHttpHeadersCommand <$> Annex.getGitConfig
-		case v of
-			Just cmd -> lines <$> liftIO (readProcess "sh" ["-c", cmd])
-			Nothing -> annexHttpHeaders <$> Annex.getGitConfig
-	options = map Param . annexWebOptions <$> Annex.getGitConfig

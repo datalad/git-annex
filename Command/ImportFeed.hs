@@ -121,10 +121,10 @@ findDownloads u = go =<< downloadFeed u
 downloadFeed :: URLString -> Annex (Maybe Feed)
 downloadFeed url = do
 	showOutput
-	ua <- Url.getUserAgent
+	uo <- Url.getUrlOptions
 	liftIO $ withTmpFile "feed" $ \f h -> do
 		fileEncoding h
-		ifM (Url.download url [] [] f ua)
+		ifM (Url.download url f uo)
 			( parseFeedString <$> hGetContentsStrict h
 			, return Nothing
 			)
