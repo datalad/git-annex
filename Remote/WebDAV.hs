@@ -24,8 +24,9 @@ import Network.HTTP.Conduit (HttpException(..))
 #endif
 import Network.HTTP.Types
 import System.IO.Error
+import System.FilePath.Posix ((</>), addTrailingPathSeparator)
 
-import Common.Annex
+import Common.Annex hiding ((</>), addTrailingPathSeparator)
 import Types.Remote
 import qualified Git
 import Config

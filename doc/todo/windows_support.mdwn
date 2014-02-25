@@ -30,6 +30,8 @@ now! --[[Joey]]
   (and possibly gpg) are not prompted there anymore.
 
 * Local pairing seems to fail, after acking on Linux box, it stalls.
+  (Also, of course, the Windows box is unlikely to have a ssh server,
+  so only pairing with a !Windows box will work.)
 
 * gcrypt is not ported to windows (and as a shell script, may need
   to be rewritten)
