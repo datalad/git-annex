@@ -117,9 +117,9 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 			return $ Left "quvi support needed for this url"
 #endif
 		DefaultDownloader -> do
-			headers <- getHttpHeaders
+			(headers, options) <- getHttpHeadersOptions
 			Url.withUserAgent $ catchMsgIO .
-				Url.checkBoth u' headers (keySize key)
+				Url.checkBoth u' headers options (keySize key)
   where
   	firsthit [] miss _ = return miss
 	firsthit (u:rest) _ a = do

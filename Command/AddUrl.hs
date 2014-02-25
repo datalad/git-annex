@@ -134,8 +134,8 @@ perform relaxed url file = ifAnnexed file addurl geturl
 			setUrlPresent key url
 			next $ return True
 		| otherwise = do
-			headers <- getHttpHeaders
-			(exists, samesize) <- Url.withUserAgent $ Url.check url headers $ keySize key
+			(headers, options) <- getHttpHeadersOptions
+			(exists, samesize) <- Url.withUserAgent $ Url.check url headers options (keySize key)
 			if exists && samesize
 				then do
 					setUrlPresent key url
@@ -192,8 +192,8 @@ download url file = do
  -}
 addSizeUrlKey :: URLString -> Key -> Annex Key
 addSizeUrlKey url key = do
-	headers <- getHttpHeaders
-	size <- snd <$> Url.withUserAgent (Url.exists url headers)
+	(headers, options) <- getHttpHeadersOptions
+	size <- snd <$> Url.withUserAgent (Url.exists url headers options)
 	return $ key { keySize = size }
 
 cleanup :: URLString -> FilePath -> Key -> Maybe FilePath -> Annex Bool
@@ -212,10 +212,10 @@ cleanup url file key mtmp = do
 
 nodownload :: Bool -> URLString -> FilePath -> Annex Bool
 nodownload relaxed url file = do
-	headers <- getHttpHeaders
+	(headers, options) <- getHttpHeadersOptions
 	(exists, size) <- if relaxed
 		then pure (True, Nothing)
-		else Url.withUserAgent $ Url.exists url headers
+		else Url.withUserAgent $ Url.exists url headers options
 	if exists
 		then do
 			key <- Backend.URL.fromUrl url size

@@ -81,7 +81,7 @@ newAssistantUrl repo = do
 				( return url
 				, delayed $ waiturl urlfile
 				)
-	listening url = catchBoolIO $ fst <$> exists url [] Nothing
+	listening url = catchBoolIO $ fst <$> exists url [] [] Nothing
 	delayed a = do
 		threadDelay 100000 -- 1/10th of a second
 		a

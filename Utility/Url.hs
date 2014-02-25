@@ -34,12 +34,12 @@ type UserAgent = String
 
 {- Checks that an url exists and could be successfully downloaded,
  - also checking that its size, if available, matches a specified size. -}
-checkBoth :: URLString -> Headers -> Maybe Integer -> Maybe UserAgent -> IO Bool
-checkBoth url headers expected_size ua = do
-	v <- check url headers expected_size ua
+checkBoth :: URLString -> Headers -> [CommandParam] -> Maybe Integer -> Maybe UserAgent -> IO Bool
+checkBoth url headers options expected_size ua = do
+	v <- check url headers options expected_size ua
 	return (fst v && snd v)
-check :: URLString -> Headers -> Maybe Integer -> Maybe UserAgent -> IO (Bool, Bool)
-check url headers expected_size = handle <$$> exists url headers
+check :: URLString -> Headers -> [CommandParam] -> Maybe Integer -> Maybe UserAgent -> IO (Bool, Bool)
+check url headers options expected_size = handle <$$> exists url headers options
   where
 	handle (False, _) = (False, False)
 	handle (True, Nothing) = (True, True)
@@ -55,8 +55,8 @@ check url headers expected_size = handle <$$> exists url headers
  - Uses curl otherwise, when available, since curl handles https better
  - than does Haskell's Network.Browser.
  -}
-exists :: URLString -> Headers -> Maybe UserAgent -> IO (Bool, Maybe Integer)
-exists url headers ua = case parseURIRelaxed url of
+exists :: URLString -> Headers -> [CommandParam] -> Maybe UserAgent -> IO (Bool, Maybe Integer)
+exists url headers options ua = case parseURIRelaxed url of
 	Just u
 		| uriScheme u == "file:" -> do
 			s <- catchMaybeIO $ getFileStatus (unEscapeString $ uriPath u)
@@ -83,7 +83,7 @@ exists url headers ua = case parseURIRelaxed url of
 		, Param "--head"
 		, Param "-L", Param url
 		, Param "-w", Param "%{http_code}"
-		] ++ concatMap (\h -> [Param "-H", Param h]) headers
+		] ++ concatMap (\h -> [Param "-H", Param h]) headers ++ options
 
 	extractsize s = case lastMaybe $ filter ("Content-Length:" `isPrefixOf`) (lines s) of
 		Just l -> case lastMaybe $ words l of

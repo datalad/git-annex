@@ -158,9 +158,7 @@ tryGitConfigRead r
 				| haveconfig r' -> return r'
 				| otherwise -> configlist_failed
 			Left _ -> configlist_failed
-	| Git.repoIsHttp r = do
-		headers <- getHttpHeaders
-		store $ geturlconfig headers
+	| Git.repoIsHttp r = store geturlconfig
 	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ safely $ onLocal r $ do 
@@ -185,11 +183,12 @@ tryGitConfigRead r
 				return $ Right r'
 			Left l -> return $ Left l
 
-	geturlconfig headers = do
+	geturlconfig = do
+		(headers, options) <- getHttpHeadersOptions
 		ua <- Url.getUserAgent
 		v <- liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
 			hClose h
-			ifM (Url.downloadQuiet (Git.repoLocation r ++ "/config") headers [] tmpfile ua)
+			ifM (Url.downloadQuiet (Git.repoLocation r ++ "/config") headers options tmpfile ua)
 				( pipedconfig "git" [Param "config", Param "--null", Param "--list", Param "--file", File tmpfile]
 				, return $ Left undefined
 				)
@@ -255,14 +254,15 @@ tryGitConfigRead r
  -}
 inAnnex :: Remote -> Key -> Annex (Either String Bool)
 inAnnex rmt key
-	| Git.repoIsHttp r = checkhttp =<< getHttpHeaders
+	| Git.repoIsHttp r = checkhttp
 	| Git.repoIsUrl r = checkremote
 	| otherwise = checklocal
   where
   	r = repo rmt
-	checkhttp headers = do
+	checkhttp = do
 		showChecking r
-		ifM (anyM (\u -> Url.withUserAgent $ Url.checkBoth u headers (keySize key)) (keyUrls rmt key))
+		(headers, options) <- getHttpHeadersOptions
+		ifM (anyM (\u -> Url.withUserAgent $ Url.checkBoth u headers options (keySize key)) (keyUrls rmt key))
 			( return $ Right True
 			, return $ Left "not found"
 			)
