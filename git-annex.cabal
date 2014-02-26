@@ -123,6 +123,8 @@ Executable git-annex
   if flag(TDFA)
     Build-Depends: regex-tdfa
     CPP-Options: -DWITH_TDFA
+  else
+    Build-Depends: regex-compat
   
   if flag(CryptoHash)
     Build-Depends: cryptohash (>= 0.10.0)

@@ -52,6 +52,7 @@ Build-Depends:
 	libghc-http-dev,
 	libghc-feed-dev,
 	libghc-regex-tdfa-dev [!mipsel !s390],
+	libghc-regex-compat-dev [mipsel s390],
 	libghc-tasty-dev (>= 0.7) [!mipsel !sparc],
 	libghc-tasty-hunit-dev [!mipsel !sparc],
 	libghc-tasty-quickcheck-dev [!mipsel !sparc],
