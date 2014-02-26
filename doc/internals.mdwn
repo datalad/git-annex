@@ -27,6 +27,42 @@ Also in [[direct_mode]], some additional data is stored in these directories.
 changed, and `.map` files contain a list of file(s) in the work directory
 that contain the key.
 
+# `.git/annex/tmp/`
+
+This directory contains partially transferred objects.
+
+# `.git/annex/misctmp/`
+
+This is a temp directory for miscellaneous other temp files.
+
+While .git/annex/objects and .git/annex/tmp can be put on different
+filesystems if desired, .git/annex/misctmp 
+has to be on the same filesystem as the work tree and git repository.
+
+# `.git/annex/bad/`
+
+git-annex fsck puts any bad objects it finds in here.
+
+# `.git/annex/transfers/`
+
+Contains information files for uploads and downloads that are in progress,
+as well as any that have failed. Used especially by the assistant.
+It is safe to delete these files.
+
+# `.git/annex/ssh/`
+
+ssh connection caching files are written in here.
+
+# `.git/annex/index`
+
+This is a git index file which git-annex uses for commits to the git-annex
+branch.
+
+# `.git/annex/journal/`
+
+git-annex uses this to journal changes to the git-annex branch,
+before committing a set of changes.
+
 ## The git-annex branch
 
 This branch is managed by git-annex, with the contents listed below.
