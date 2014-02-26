@@ -12,14 +12,25 @@ now! --[[Joey]]
   
   This should work to install the deps, using libs from cygwin
 
-	cabal install libxml-sax --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\libxml2
-	cabal install gnuidn --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\
-	cabal install gnutls --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\
+<pre>
+cabal install libxml-sax --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\libxml2
+cabal install gnuidn --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\
+cabal install gnutls --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\
+</pre>
 
   While the 1st line works, the rest fail oddly. Looks like lack of
-  quoting when cabal runs c2hs and gcc, as "Haskell Platform" is
-  taken as 2 filenames. Needs investigation why this happens here
-  and not other times..
+  quoting when cabal runs c2hs. This can be worked around by
+  unpacking the tarball, manually running c2hs, and deleting the .chs
+  files. 
+  
+  However, then it fails:
+
+<pre>
+Building gnuidn-0.2.1...
+Preprocessing library gnuidn-0.2.1...
+[1 of 4] Compiling Data.Text.IDN.Internal ( lib\Data\Text\IDN\Internal.hs, dist\build\Data\Text\IDN\Internal.o )
+C:/Program Files/Haskell Platform/2013.2.0.0/mingw/bin/../lib/libmingw32.a(main.o):main.c:(.text+0xd2): undefined reference to `WinMain@16'
+</pre>
 
   Also needs gsasl, which is not in cygwin. 
   See <http://josefsson.org/gsasl4win/README.html>
