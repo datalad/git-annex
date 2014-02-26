@@ -201,7 +201,7 @@ known_annex_size = stat "size of annexed files in working tree" $ json id $
 	showSizeKeys <$> cachedReferencedData
 
 tmp_size :: Stat
-tmp_size = staleSize "temporary directory size" gitAnnexTmpDir
+tmp_size = staleSize "temporary object directory size" gitAnnexTmpObjectDir
 
 bad_data_size :: Stat
 bad_data_size = staleSize "bad keys size" gitAnnexBadDir

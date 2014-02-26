@@ -221,7 +221,7 @@ getViaTmpChecked check key action =
  -}
 prepGetViaTmpChecked :: Key -> Annex Bool -> Annex Bool
 prepGetViaTmpChecked key getkey = do
-	tmp <- fromRepo $ gitAnnexTmpLocation key
+	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 
 	e <- liftIO $ doesFileExist tmp
 	alreadythere <- if e
@@ -250,7 +250,7 @@ finishGetViaTmp check key action = do
 
 prepTmp :: Key -> Annex FilePath
 prepTmp key = do
-	tmp <- fromRepo $ gitAnnexTmpLocation key
+	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 	createAnnexDirectory (parentDir tmp)
 	return tmp
 

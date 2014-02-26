@@ -120,7 +120,7 @@ probeCrippledFileSystem = do
 #ifdef mingw32_HOST_OS
 	return True
 #else
-	tmp <- fromRepo gitAnnexTmpDir
+	tmp <- fromRepo gitAnnexTmpMiscDir
 	let f = tmp </> "gaprobe"
 	createAnnexDirectory tmp
 	liftIO $ writeFile f ""
@@ -157,7 +157,7 @@ probeFifoSupport = do
 #ifdef mingw32_HOST_OS
 	return False
 #else
-	tmp <- fromRepo gitAnnexTmpDir
+	tmp <- fromRepo gitAnnexTmpMiscDir
 	let f = tmp </> "gaprobe"
 	createAnnexDirectory tmp
 	liftIO $ do

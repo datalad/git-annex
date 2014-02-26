@@ -28,6 +28,8 @@ git-annex (5.20140222) UNRELEASED; urgency=medium
   * Add build dep on regex-compat to fix build on mipsel, which lacks
     regex-tdfa.
   * Disable test suite on sparc, which is missing optparse-applicative.
+  * Put non-object tmp files in .git/annex/misctmp, leaving .git/annex/tmp
+    for only partially transferred objects.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 13:03:04 -0400
 

@@ -247,7 +247,7 @@ sendParams = ifM crippledFileSystem
 withRsyncScratchDir :: (FilePath -> Annex a) -> Annex a
 withRsyncScratchDir a = do
 	p <- liftIO getPID
-	t <- fromRepo gitAnnexTmpDir
+	t <- fromRepo gitAnnexTmpObjectDir
 	createAnnexDirectory t
 	let tmp = t </> "rsynctmp" </> show p
 	nuke tmp

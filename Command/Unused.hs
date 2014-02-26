@@ -63,7 +63,7 @@ checkUnused :: CommandPerform
 checkUnused = chain 0
 	[ check "" unusedMsg $ findunused =<< Annex.getState Annex.fast
 	, check "bad" staleBadMsg $ staleKeysPrune gitAnnexBadDir False
-	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpDir True
+	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpObjectDir True
 	]
   where
 	findunused True = do

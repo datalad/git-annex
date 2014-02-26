@@ -186,7 +186,7 @@ runTransfer t file shouldretry a = do
 		| transferDirection t == Upload =
 			liftIO $ readMVar metervar
 		| otherwise = do
-			f <- fromRepo $ gitAnnexTmpLocation (transferKey t)
+			f <- fromRepo $ gitAnnexTmpObjectLocation (transferKey t)
 			liftIO $ catchDefaultIO 0 $
 				fromIntegral . fileSize <$> getFileStatus f
 

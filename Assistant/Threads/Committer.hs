@@ -448,7 +448,7 @@ safeToAdd havelsof delayadd pending inprocess = do
 			let segments = segmentXargs $ map keyFilename keysources
 			concat <$> forM segments (\fs -> Lsof.query $ "--" : fs)
 		, do
-			tmpdir <- fromRepo gitAnnexTmpDir
+			tmpdir <- fromRepo gitAnnexTmpMiscDir
 			liftIO $ Lsof.queryDir tmpdir
 		)
 

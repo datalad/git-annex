@@ -23,8 +23,9 @@ module Locations (
 	annexLocation,
 	gitAnnexDir,
 	gitAnnexObjectDir,
-	gitAnnexTmpDir,
-	gitAnnexTmpLocation,
+	gitAnnexTmpMiscDir,
+	gitAnnexTmpObjectDir,
+	gitAnnexTmpObjectLocation,
 	gitAnnexBadDir,
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
@@ -180,13 +181,17 @@ gitAnnexDir r = addTrailingPathSeparator $ Git.localGitDir r </> annexDir
 gitAnnexObjectDir :: Git.Repo -> FilePath
 gitAnnexObjectDir r = addTrailingPathSeparator $ Git.localGitDir r </> objectDir
 
-{- .git/annex/tmp/ is used for temp files -}
-gitAnnexTmpDir :: Git.Repo -> FilePath
-gitAnnexTmpDir r = addTrailingPathSeparator $ gitAnnexDir r </> "tmp"
+{- .git/annex/misctmp/ is used for random temp files -}
+gitAnnexTmpMiscDir :: Git.Repo -> FilePath
+gitAnnexTmpMiscDir r = addTrailingPathSeparator $ gitAnnexDir r </> "misctmp"
+
+{- .git/annex/tmp/ is used for temp files for key's contents -}
+gitAnnexTmpObjectDir :: Git.Repo -> FilePath
+gitAnnexTmpObjectDir r = addTrailingPathSeparator $ gitAnnexDir r </> "tmp"
 
 {- The temp file to use for a given key's content. -}
-gitAnnexTmpLocation :: Key -> Git.Repo -> FilePath
-gitAnnexTmpLocation key r = gitAnnexTmpDir r </> keyFile key
+gitAnnexTmpObjectLocation :: Key -> Git.Repo -> FilePath
+gitAnnexTmpObjectLocation key r = gitAnnexTmpObjectDir r </> keyFile key
 
 {- .git/annex/bad/ is used for bad files found during fsck -}
 gitAnnexBadDir :: Git.Repo -> FilePath

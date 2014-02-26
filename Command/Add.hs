@@ -96,7 +96,7 @@ lockDown :: FilePath -> Annex (Maybe KeySource)
 lockDown file = ifM crippledFileSystem
 	( liftIO $ catchMaybeIO nohardlink
 	, do
-		tmp <- fromRepo gitAnnexTmpDir
+		tmp <- fromRepo gitAnnexTmpMiscDir
 		createAnnexDirectory tmp
 		eitherToMaybe <$> tryAnnexIO (go tmp)
 	)

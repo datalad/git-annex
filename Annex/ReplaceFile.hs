@@ -24,7 +24,7 @@ import Annex.Exception
  -}
 replaceFile :: FilePath -> (FilePath -> Annex ()) -> Annex ()
 replaceFile file a = do
-	tmpdir <- fromRepo gitAnnexTmpDir
+	tmpdir <- fromRepo gitAnnexTmpMiscDir
 	void $ createAnnexDirectory tmpdir
 	bracketIO (setup tmpdir) nukeFile $ \tmpfile -> do
 		a tmpfile
@@ -36,4 +36,4 @@ replaceFile file a = do
 		return tmpfile
 	fallback tmpfile _ = do
 		createDirectoryIfMissing True $ parentDir file
-		rename tmpfile file
+		moveFile tmpfile file

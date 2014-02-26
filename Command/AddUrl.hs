@@ -114,7 +114,7 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 			 - it later. -}
 			sizedkey <- addSizeUrlKey videourl key
 			prepGetViaTmpChecked sizedkey $ do
-				tmp <- fromRepo $ gitAnnexTmpLocation key
+				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 				showOutput
 				ok <- Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
 					liftIO $ createDirectoryIfMissing True (parentDir tmp)
@@ -162,7 +162,7 @@ download url file = do
 	 - downloads, as the dummy key for a given url is stable. -}
 	dummykey <- addSizeUrlKey url =<< Backend.URL.fromUrl url Nothing
 	prepGetViaTmpChecked dummykey $ do
-		tmp <- fromRepo $ gitAnnexTmpLocation dummykey
+		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
 		showOutput
 		ifM (runtransfer dummykey tmp)
 			( do
