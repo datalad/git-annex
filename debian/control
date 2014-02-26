@@ -57,7 +57,7 @@ Build-Depends:
 	libghc-tasty-hunit-dev [!mipsel !sparc],
 	libghc-tasty-quickcheck-dev [!mipsel !sparc],
 	libghc-tasty-rerun-dev [!mipsel !sparc],
-	libghc-optparse-applicative-dev,
+	libghc-optparse-applicative-dev [!sparc],
 	lsof [!kfreebsd-i386 !kfreebsd-amd64],
 	ikiwiki,
 	perlmagick,
