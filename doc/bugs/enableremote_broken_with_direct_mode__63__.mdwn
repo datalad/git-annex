@@ -37,3 +37,5 @@ But in fact it hasn't actually copied the creds to use it.
 
 # End of transcript or log.
 """]]
+
+> Should be fixed in 5.20140227. [[done]] --[[Joey]]
