@@ -49,57 +49,15 @@ now! --[[Joey]]
 
 ## trying to build XMPP
 
-  Trying to install the deps, using libs from cygwin. Cabal can be used
-  with some hacking:
+1. gnutls-$LATEST.zip from <http://josefsson.org/gnutls4win/>
+2. pkg-config from
+   <http://sourceforge.net/projects/pkgconfiglite/files/latest/download?source=files>
+3. libxml2 from mingw:
+   <http://sourceforge.net/projects/mingw/files/MSYS/Extension/libxml2/libxml2-2.7.6-1/>
+   both the -dll and the -dev
+3. gsasl from <ftp://alpha.gnu.org/gnu/gsasl/>
+3. gnuidn from <ftp://ftp.gnu.org/gnu/libidn/libidn-1.28-win32.zip>
+3. Extract all the above into the Haskell platform's mingw directory. Note
+   that pkg-config needs to be moved out of a named subdirectory.
+4. Run in DOS prompt (not cygwin!): cabal install gnutls libxml-sax gsasl gnuidn network-protocol-xmpp
 
-	cabal unpack libxml-sax
-	cd libxml-sax-*
-	cabal configure --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\libxml2
-	cabal build || true
-	cabal copy
-	cabal register
-	
-	cabal unpack gnutls
-	cd gnutls-*
-	cabal configure --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\
-	cabal build || true
-	cabal copy
-	cabal register
-
-	# get mingw x86 gasal zip from <ftp://alpha.gnu.org/gnu/gsasl/> and unpack
-	# into the Haskell platform's mingw directory.
-	cabal unpack gsasl
-	cd gsasl-*
-	cabal configure --extra-lib-dirs=C:\\cygwin\\lib --extra-include-dirs=C:\\cygwin\\usr\\include\\
-	cabal build || true
-	cabal copy
-	cabal register --gen-pkg-config
-	grep -v /home/jas gsasl*.conf > hacked.conf
-	ghc-pkg update hacked.conf --global --user --force
-
-  Cannot get haskell gnuidn binding to link. Workaround: It's not hard to hack
-  network-client-xmpp to not use gnuidn.
-
-  dlls don't get found when building git-annex,
-  at TH link time. Worked around by copying /usr/bin/cyggnutls-28.dll to
-  ./gnutls.dll, and the same for several others. Note that gsasl has
-  to be copied from where it was installed in ming2/bin/libgsasl-7.dll
-  to gsasl.dll (the libgsasl.dll from cygwin won't work).
-
-	Loading package gnutls-0.1.5 ... linking ... done.
-	Loading package gsasl-0.3.5 ... linking ... ghc.exe: unable to load package `gsasl-0.3.5'
-	ghc.exe: C:\Documents and Settings\me\Application Data\cabal\gsasl-0.3.5\ghc-7.6.3\HSgsasl-0.3.5.o: unknown symbol `_gsasl_client_start'
-
-  Current problem:
-
-	GHCi runtime linker: fatal error: I found a duplicate definition for symbol
-	   _adler32
-	whilst processing object file
-	   C:\cygwin\lib\libz.a
-
-  I think this means I can't use the cygwin libs, and need to get mingw
-  builds of gnutls and libxml2 instead. 
-  
-  TODO: Try <http://josefsson.org/gnutls4win/>, and libxml2 from mingw,
-  and pkg-config from <http://www.gtk.org/download/win32.php> or
-  <http://sourceforge.net/projects/pkgconfiglite/files/latest/download?source=files>
