@@ -74,5 +74,13 @@ Loading package gnutls-0.1.5 ... ghc.exe: internal error: Misaligned section: 18
 <https://ghc.haskell.org/trac/ghc/ticket/8830>
 
 Note: This only happens in the TH link stage. So building w/o the webapp
-works with XMPP. One possible approach would be to make a helper program
-with the XMPP support in it, that does not use TH.
+works with XMPP.
+
+Options:
+
+1. Use EvilSplicer, building first without XMPP library, but with its UI,
+   and a second time without TH, but with the XMPP library. Partially done
+   on the `winsplicehack` branch, but requires building patched versions
+   of lots of yesod dependency chain to export modules referenced by TH
+   splices, like had to be done on Android. Horrible pain. Ugly as hell.
+2. Make a helper program with the XMPP support in it, that does not use TH.
