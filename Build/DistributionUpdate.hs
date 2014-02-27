@@ -21,13 +21,14 @@ main = do
 
 makeinfos :: Annex ()
 makeinfos = do
+	version <- liftIO getChangelogVersion
 	void $ inRepo $ runBool 
 		[ Param "commit"
+		, Param "-a"
 		, Param "-m"
 		, Param $ "publishing git-annex " ++ version
 		]
 	basedir <- liftIO getRepoDir
-	version <- liftIO getChangelogVersion
 	now <- liftIO getCurrentTime
 	liftIO $ putStrLn $ "building info files for version " ++ version ++ " in " ++ basedir
 	fs <- liftIO $ dirContentsRecursiveSkipping (const False) True (basedir </> "git-annex")
