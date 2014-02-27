@@ -1,4 +1,4 @@
-git-annex (5.20140222) UNRELEASED; urgency=medium
+git-annex (5.20140227) unstable; urgency=medium
 
   * metadata: Field names limited to alphanumerics and a few whitelisted
     punctuation characters to avoid issues with views, etc.
@@ -31,7 +31,7 @@ git-annex (5.20140222) UNRELEASED; urgency=medium
   * Put non-object tmp files in .git/annex/misctmp, leaving .git/annex/tmp
     for only partially transferred objects.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 13:03:04 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 27 Feb 2014 11:34:19 -0400
 
 git-annex (5.20140221) unstable; urgency=medium
 
