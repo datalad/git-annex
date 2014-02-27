@@ -101,4 +101,5 @@ now! --[[Joey]]
   builds of gnutls and libxml2 instead. 
   
   TODO: Try <http://josefsson.org/gnutls4win/>, and libxml2 from mingw,
-  and pkg-config from <http://www.gtk.org/download/win32.php>.
+  and pkg-config from <http://www.gtk.org/download/win32.php> or
+  <http://sourceforge.net/projects/pkgconfiglite/files/latest/download?source=files>
