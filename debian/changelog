@@ -1,3 +1,9 @@
+git-annex (5.20140228) UNRELEASED; urgency=medium
+
+  * Probe for quvi version at run time.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 28 Feb 2014 14:52:15 -0400
+
 git-annex (5.20140227) unstable; urgency=medium
 
   * metadata: Field names limited to alphanumerics and a few whitelisted

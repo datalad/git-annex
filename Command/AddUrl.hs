@@ -64,7 +64,7 @@ start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 		QuviDownloader -> usequvi
 		DefaultDownloader -> 
 #ifdef WITH_QUVI
-			ifM (liftIO $ Quvi.supported s')
+			ifM (quviSupported s')
 				( usequvi
 				, regulardownload url
 				)

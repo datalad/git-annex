@@ -62,6 +62,7 @@ import Types.MetaData
 import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
+import Utility.Quvi (QuviVersion)
 
 {- git-annex's monad is a ReaderT around an AnnexState stored in a MVar.
  - This allows modifying the state in an exception-safe fashion.
@@ -116,6 +117,7 @@ data AnnexState = AnnexState
 	, useragent :: Maybe String
 	, errcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
+	, quviversion :: Maybe QuviVersion
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -154,6 +156,7 @@ newState c r = AnnexState
 	, useragent = Nothing
 	, errcounter = 0
 	, unusedkeys = Nothing
+	, quviversion = Nothing
 	}
 
 {- Makes an Annex state object for the specified git repo.

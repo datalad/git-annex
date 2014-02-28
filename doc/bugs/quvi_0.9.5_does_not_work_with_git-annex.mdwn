@@ -83,3 +83,5 @@ It does however output some status messages to STDERR (which it removes later) t
 [0 zerodogg@browncoats Dokumentar]$ cat -v stderr 
 status: o--- resolve <url> ...                                                 ^M                                                                               ^Mstatus: -o-- fetch <url> ...                                                   ^M                                                                               ^M%               [0 zerodogg@browncoats Dokumentar]$              
 """ ]]
+
+> quvi version now probed at runtime. [[done]] --[[Joey]]

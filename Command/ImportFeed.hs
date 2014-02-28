@@ -108,7 +108,7 @@ findDownloads u = go =<< downloadFeed u
 		Nothing -> mkquvi f i
 #ifdef WITH_QUVI
 	mkquvi f i = case getItemLink i of
-		Just link -> ifM (liftIO $ Quvi.supported link)
+		Just link -> ifM (quviSupported link)
 			( return $ Just $ ToDownload f u i $ QuviLink link
 			, return Nothing
 			)
