@@ -107,8 +107,11 @@ startNoRepo _ = do
 		(d:_) -> do
 			setCurrentDirectory d
 			state <- Annex.new =<< Git.CurrentRepo.get
-			void $ Annex.eval state $ callCommandAction $
-				start' False listenhost
+			void $ Annex.eval state $ do
+				whenM (fromRepo Git.repoIsLocalBare) $
+					error $ d ++ " is a bare git repository, cannot run the webapp in it"
+				callCommandAction $
+					start' False listenhost
 
 {- Run the webapp without a repository, which prompts the user, makes one,
  - changes to it, starts the regular assistant, and redirects the

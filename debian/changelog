@@ -4,6 +4,7 @@ git-annex (5.20140228) UNRELEASED; urgency=medium
   * webapp: Filter out from Switch Repository list any
     repositories listed in autostart file that don't have a
     git directory anymore.
+  * webapp: Refuse to start in a bare git repository.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 28 Feb 2014 14:52:15 -0400
 
