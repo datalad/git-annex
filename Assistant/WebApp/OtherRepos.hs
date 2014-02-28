@@ -25,10 +25,12 @@ listOtherRepos :: IO [(String, String)]
 listOtherRepos = do
 	dirs <- readAutoStartFile
 	pwd <- getCurrentDirectory
-	gooddirs <- filterM doesDirectoryExist $
+	gooddirs <- filterM isrepo $
 		filter (\d -> not $ d `dirContains` pwd) dirs
 	names <- mapM relHome gooddirs
 	return $ sort $ zip names gooddirs
+  where
+	isrepo d = doesDirectoryExist (d </> ".git")
 
 getSwitchToRepositoryR :: FilePath -> Handler Html
 getSwitchToRepositoryR repo = do
