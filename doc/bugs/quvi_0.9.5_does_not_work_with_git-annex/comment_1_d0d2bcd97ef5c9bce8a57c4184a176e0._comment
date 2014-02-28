@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 1"
+ date="2014-02-28T17:52:07Z"
+ content="""
+git-annex supports quvi 0.9.4 since 5.20131127. Unless the syntax has changed in some breaking way between 0.9.4 and 0.9.5, it seems most likely to me that your system is using a git-annex compiled with support for the old quvi, and it just needs to be recompiled to use the new one.
+
+I could do run-time quvi version detection, but there's an obvious performance penalty.
+"""]]
