@@ -124,7 +124,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 		notice ["starting", desc, "version", SysConfig.packageversion]
 		urlrenderer <- liftIO newUrlRenderer
 #ifdef WITH_WEBAPP
-		let webappthread = [ assist $ webAppThread d urlrenderer False cannotrun listenhost Nothing webappwaiter ]
+		let webappthread = [ assist $ webAppThread d urlrenderer False cannotrun Nothing listenhost webappwaiter ]
 #else
 		let webappthread = []
 #endif

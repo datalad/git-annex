@@ -1,6 +1,6 @@
 {- git-annex assistant webapp thread
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -41,6 +41,7 @@ import Utility.WebApp
 import Utility.Tmp
 import Utility.FileMode
 import Git
+import qualified Annex
 
 import Yesod
 import Network.Socket (SockAddr, HostName)
@@ -56,13 +57,17 @@ webAppThread
 	-> UrlRenderer
 	-> Bool
 	-> Maybe String
-	-> Maybe HostName
 	-> Maybe (IO Url)
+	-> Maybe HostName
 	-> Maybe (Url -> FilePath -> IO ())
 	-> NamedThread
-webAppThread assistantdata urlrenderer noannex cannotrun listenhost postfirstrun onstartup = thread $ liftIO $ do
+webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost onstartup = thread $ liftIO $ do
+	listenhost' <- if isJust listenhost
+		then pure listenhost
+		else getAnnex $ annexListen <$> Annex.getGitConfig
+	tlssettings <- getAnnex getTlsSettings
 #ifdef __ANDROID__
-	when (isJust listenhost) $
+	when (isJust listenhost') $
 		-- See Utility.WebApp
 		error "Sorry, --listen is not currently supported on Android"
 #endif
@@ -74,22 +79,20 @@ webAppThread assistantdata urlrenderer noannex cannotrun listenhost postfirstrun
 		<*> pure postfirstrun
 		<*> pure cannotrun
 		<*> pure noannex
-		<*> pure listenhost
+		<*> pure listenhost'
 	setUrlRenderer urlrenderer $ yesodRender webapp (pack "")
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
 		( return $ httpDebugLogger app
 		, return app
 		)
-	tlssettings <- runThreadState (threadState assistantdata) getTlsSettings
-	runWebApp tlssettings listenhost app' $ \addr -> if noannex
+	runWebApp tlssettings listenhost' app' $ \addr -> if noannex
 		then withTmpFile "webapp.html" $ \tmpfile h -> do
 			hClose h
 			go tlssettings addr webapp tmpfile Nothing
 		else do
-			let st = threadState assistantdata
-			htmlshim <- runThreadState st $ fromRepo gitAnnexHtmlShim
-			urlfile <- runThreadState st $ fromRepo gitAnnexUrlFile
+			htmlshim <- getAnnex' $ fromRepo gitAnnexHtmlShim
+			urlfile <- getAnnex' $ fromRepo gitAnnexUrlFile
 			go tlssettings addr webapp htmlshim (Just urlfile)
   where
   	-- The webapp thread does not wait for the startupSanityCheckThread
@@ -100,12 +103,17 @@ webAppThread assistantdata urlrenderer noannex cannotrun listenhost postfirstrun
 		| noannex = return Nothing
 		| otherwise = Just <$>
 			(relHome =<< absPath
-				=<< runThreadState (threadState assistantdata) (fromRepo repoPath))
+				=<< getAnnex' (fromRepo repoPath))
 	go tlssettings addr webapp htmlshim urlfile = do
 		let url = myUrl tlssettings webapp addr
 		maybe noop (`writeFileProtected` url) urlfile
 		writeHtmlShim "Starting webapp..." url htmlshim
 		maybe noop (\a -> a url htmlshim) onstartup
+
+	getAnnex a
+		| noannex = pure Nothing
+		| otherwise = getAnnex' a
+	getAnnex' = runThreadState (threadState assistantdata)
 
 myUrl :: Maybe TLS.TLSSettings -> WebApp -> SockAddr -> Url
 myUrl tlssettings webapp addr = unpack $ yesodRender webapp urlbase DashboardR []

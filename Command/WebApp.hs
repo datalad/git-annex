@@ -68,18 +68,24 @@ start' allowauto listenhost = do
 		cannotrun <- needsUpgrade . fromMaybe (error "no version") =<< getVersion
 		browser <- fromRepo webBrowser
 		f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
+		listenhost' <- if isJust listenhost
+			then pure listenhost
+			else annexListen <$> Annex.getGitConfig
 		ifM (checkpid <&&> checkshim f)
 			( if isJust listenhost
 				then error "The assistant is already running, so --listen cannot be used."
 				else do
 					url <- liftIO . readFile
 						=<< fromRepo gitAnnexUrlFile
-					liftIO $ openBrowser browser f url Nothing Nothing
-			, startDaemon True True Nothing cannotrun listenhost $ Just $ 
-				\origout origerr url htmlshim ->
-					if isJust listenhost
-						then maybe noop (`hPutStrLn` url) origout
-						else openBrowser browser htmlshim url origout origerr
+					liftIO $ if isJust listenhost'
+						then putStrLn url
+						else liftIO $ openBrowser browser f url Nothing Nothing
+			, do
+				startDaemon True True Nothing cannotrun listenhost' $ Just $ 
+					\origout origerr url htmlshim ->
+						if isJust listenhost'
+							then maybe noop (`hPutStrLn` url) origout
+							else openBrowser browser htmlshim url origout origerr
 			)
 	auto
 		| allowauto = liftIO $ startNoRepo []
@@ -142,8 +148,9 @@ firstRun listenhost = do
 	let callback a = Just $ a v
 	runAssistant d $ do
 		startNamedThread urlrenderer $
-			webAppThread d urlrenderer True Nothing listenhost
+			webAppThread d urlrenderer True Nothing
 				(callback signaler)
+				listenhost
 				(callback mainthread)
 		waitNamedThreads
   where

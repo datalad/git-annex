@@ -308,7 +308,8 @@ subdirectories).
   it opens a browser window.
 
   To use the webapp on a remote computer, use the `--listen=address`
-  option to specify the address the web server should listen on.
+  option to specify the address the web server should listen on
+  (or set annex.listen).
   This disables running a local web browser, and outputs the url you
   can use to open the webapp.
 
@@ -1375,6 +1376,12 @@ Here are all the supported configuration settings.
 
   Set to false to prevent the git-annex assistant from automatically
   committing changes to files in the repository.
+
+* `annex.listen`
+
+  Configures which address the webapp listens on. The default is localhost.
+  Can be either an IP address, or a hostname that resolves to the desired
+  address.
 
 * `annex.debug`
 

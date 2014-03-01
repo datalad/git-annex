@@ -4,7 +4,13 @@ web browser.
 
 Sure, no problem! It can even be done securely!
 
-First, you need to generate a private key and a certificate for HTTPS.
+Let's start by making the git-annex repository on the remote server.
+
+	git init annex
+	cd annex
+	git annex init
+
+Now, you need to generate a private key and a certificate for HTTPS.
 These files are stored in `.git/annex/privkey.pem` and 
 `.git/annex/certificate.pem` inside the git repository. Here's
 one way to generate those files, using a self-signed certificate:
@@ -17,22 +23,28 @@ With those files in place, git-annex will automatically only accept HTTPS
 connections. That's good, since HTTP connections are not secure over the
 big bad internet.
 
-All that remains is to start the webapp listening on the external interface
+All that remains is to make the webapp listen on the external interface
 of the server. Normally, for security, git-annex only listens on localhost.
+Tell it what hostname to listen on:
 
-	git annex webapp --listen=host.example.com
+	git config annex.listen host.example.com
 
 (If your hostname doesn't work, its IP address certianly will..)
 
-When you run the webapp like that, it'll print out the URL to use to open
-it. You can paste that into your web browser.
+When you run the webapp configured like that, it'll print out the
+URL to use to open it. You can paste that into your web browser.
 
-Notice that the URL has a big jumble of letters at the end -- this is a secret
-token that the webapp uses to verify you're you. So random attackers can't find
-your webapp and do bad things with it.
+	git annex webapp
+	http://host.example.com:42232/?auth=ea7857ad...
 
-The webapp also writes its url to `.git/annex/url`, so you can use that
-file to automate opening the url. For example, you could make your server
-start the webapp on boot, and then to open it, run:
+Notice that the URL has a big jumble of letters at the end -- this is a
+secret token that the webapp uses to verify you're you. So random attackers
+can't find your webapp and do bad things with it.
 
-	xdg-open "$(ssh host.example.com cat annex/.git/annex/url)"
+If you like, you can make the server run `git annex assistant --autostart`
+on boot.
+
+To automate opening the remote server's webapp in your local browser,
+just run this:
+
+	firefox "$(ssh host.example.com git annex webapp)"
