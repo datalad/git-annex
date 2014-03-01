@@ -1,0 +1,38 @@
+Here's the scenario: You have a remote server you can ssh into,
+and you want to use the git-annex webapp there, displaying back on your local
+web browser.
+
+Sure, no problem! It can even be done securely!
+
+First, you need to generate a private key and a certificate for HTTPS.
+These files are stored in `.git/annex/privkey.pem` and 
+`.git/annex/certificate.pem` inside the git repository. Here's
+one way to generate those files, using a self-signed certificate:
+
+	openssl genrsa -out .git/annex/privkey.pem 4096
+	chmod 400 .git/annex/privkey.pem
+	openssl req -new -x509 -key .git/annex/privkey.pem > .git/annex/certificate.pem
+
+With those files in place, git-annex will automatically only accept HTTPS
+connections. That's good, since HTTP connections are not secure over the
+big bad internet.
+
+All that remains is to start the webapp listening on the external interface
+of the server. Normally, for security, git-annex only listens on localhost.
+
+	git annex webapp --listen=host.example.com
+
+(If your hostname doesn't work, its IP address certianly will..)
+
+When you run the webapp like that, it'll print out the URL to use to open
+it. You can paste that into your web browser.
+
+Notice that the URL has a big jumble of letters at the end -- this is a secret
+token that the webapp uses to verify you're you. So random attackers can't find
+your webapp and do bad things with it.
+
+The webapp also writes its url to `.git/annex/url`, so you can use that
+file to automate opening the url. For example, you could make your server
+start the webapp on boot, and then to open it, run:
+
+	xdg-open "$(ssh host.example.com cat annex/.git/annex/url)"
