@@ -17,6 +17,7 @@ import Utility.Hash
 import qualified Yesod
 import qualified Network.Wai as Wai
 import Network.Wai.Handler.Warp
+import Network.Wai.Handler.WarpTLS
 import Network.Wai.Logger
 import Control.Monad.IO.Class
 import Network.HTTP.Types
@@ -70,10 +71,12 @@ browserProc url = proc "xdg-open" [url]
  - An IO action can also be run, to do something with the address,
  - such as start a web browser to view the webapp.
  -}
-runWebApp :: Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
-runWebApp h app observer = withSocketsDo $ do
+runWebApp :: Maybe TLSSettings -> Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
+runWebApp tlssettings h app observer = withSocketsDo $ do
 	sock <- getSocket h
-	void $ forkIO $ runSettingsSocket webAppSettings sock app
+	void $ forkIO $ 
+		(maybe runSettingsSocket (\ts -> runTLSSocket ts) tlssettings)
+			webAppSettings sock app	
 	sockaddr <- fixSockAddr <$> getSocketName sock
 	observer sockaddr
 

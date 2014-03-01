@@ -45,6 +45,7 @@ import Git
 import Yesod
 import Network.Socket (SockAddr, HostName)
 import Data.Text (pack, unpack)
+import qualified Network.Wai.Handler.WarpTLS as TLS
 
 mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
@@ -80,15 +81,16 @@ webAppThread assistantdata urlrenderer noannex cannotrun listenhost postfirstrun
 		( return $ httpDebugLogger app
 		, return app
 		)
-	runWebApp listenhost app' $ \addr -> if noannex
+	tlssettings <- runThreadState (threadState assistantdata) getTlsSettings
+	runWebApp tlssettings listenhost app' $ \addr -> if noannex
 		then withTmpFile "webapp.html" $ \tmpfile h -> do
 			hClose h
-			go addr webapp tmpfile Nothing
+			go tlssettings addr webapp tmpfile Nothing
 		else do
 			let st = threadState assistantdata
 			htmlshim <- runThreadState st $ fromRepo gitAnnexHtmlShim
 			urlfile <- runThreadState st $ fromRepo gitAnnexUrlFile
-			go addr webapp htmlshim (Just urlfile)
+			go tlssettings addr webapp htmlshim (Just urlfile)
   where
   	-- The webapp thread does not wait for the startupSanityCheckThread
 	-- to finish, so that the user interface remains responsive while
@@ -99,13 +101,25 @@ webAppThread assistantdata urlrenderer noannex cannotrun listenhost postfirstrun
 		| otherwise = Just <$>
 			(relHome =<< absPath
 				=<< runThreadState (threadState assistantdata) (fromRepo repoPath))
-	go addr webapp htmlshim urlfile = do
-		let url = myUrl webapp addr
+	go tlssettings addr webapp htmlshim urlfile = do
+		let url = myUrl tlssettings webapp addr
 		maybe noop (`writeFileProtected` url) urlfile
 		writeHtmlShim "Starting webapp..." url htmlshim
 		maybe noop (\a -> a url htmlshim) onstartup
 
-myUrl :: WebApp -> SockAddr -> Url
-myUrl webapp addr = unpack $ yesodRender webapp urlbase DashboardR []
+myUrl :: Maybe TLS.TLSSettings -> WebApp -> SockAddr -> Url
+myUrl tlssettings webapp addr = unpack $ yesodRender webapp urlbase DashboardR []
   where
-	urlbase = pack $ "http://" ++ show addr
+	urlbase = pack $ proto ++ "://" ++ show addr
+	proto
+		| isJust tlssettings = "https"
+		| otherwise = "http"
+
+getTlsSettings :: Annex (Maybe TLS.TLSSettings)
+getTlsSettings = do
+	cert <- fromRepo gitAnnexWebCertificate
+	privkey <- fromRepo gitAnnexWebPrivKey
+	ifM (liftIO $ allM doesFileExist [cert, privkey])
+		( return $ Just $ TLS.tlsSettings cert privkey
+		, return Nothing
+		)

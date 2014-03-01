@@ -34,6 +34,8 @@ module Locations (
 	gitAnnexScheduleState,
 	gitAnnexTransferDir,
 	gitAnnexCredsDir,
+	gitAnnexWebCertificate,
+	gitAnnexWebPrivKey,
 	gitAnnexFeedStateDir,
 	gitAnnexFeedState,
 	gitAnnexMergeDir,
@@ -222,6 +224,13 @@ gitAnnexScheduleState r = gitAnnexDir r </> "schedulestate"
  - remotes. -}
 gitAnnexCredsDir :: Git.Repo -> FilePath
 gitAnnexCredsDir r = addTrailingPathSeparator $ gitAnnexDir r </> "creds"
+
+{- .git/annex/certificate.pem and .git/annex/key.pem are used by the webapp
+ - when HTTPS is enabled -}
+gitAnnexWebCertificate :: Git.Repo -> FilePath
+gitAnnexWebCertificate r = gitAnnexDir r </> "certificate.pem"
+gitAnnexWebPrivKey :: Git.Repo -> FilePath
+gitAnnexWebPrivKey r = gitAnnexDir r </> "privkey.pem"
 
 {- .git/annex/feeds/ is used to record per-key (url) state by importfeeds -}
 gitAnnexFeedStateDir :: Git.Repo -> FilePath
