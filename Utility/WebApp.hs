@@ -115,13 +115,13 @@ getSocket h = do
 	use sock
   where
 #else
-	addrs <- getAddrInfo (Just hints) (Just hostname) port
+	addrs <- getAddrInfo (Just hints) (Just hostname) Nothing
 	case (partition (\a -> addrFamily a == AF_INET) addrs) of
 		(v4addr:_, _) -> go v4addr
 		(_, v6addr:_) -> go v6addr
 		_ -> error "unable to bind to a local socket"
   where
-	(hostname, port) = maybe (localhost, Nothing) splitHostPort h
+	hostname = fromMaybe localhost h
 	hints = defaultHints { addrSocketType = Stream }
 	{- Repeated attempts because bind sometimes fails for an
 	 - unknown reason on OSX. -} 
@@ -141,18 +141,6 @@ getSocket h = do
 	use sock = do
 		listen sock maxListenQueue
 		return sock
-
-{- Splits address:port. For IPv6, use [address]:port. The port is optional. -}
-splitHostPort :: String -> (HostName, Maybe ServiceName)
-splitHostPort s
-	| "[" `isPrefixOf` s = let (h, p) = break (== ']') (drop 1 s)
-		in if "]:" `isPrefixOf` p
-			then (h, Just $ drop 2 p)
-			else (h, Nothing)
-	| otherwise = let (h, p) = separate (== ':') s
-		in if null p
-			then (h, Nothing)
-			else (h, Just p)
 
 {- Checks if debugging is actually enabled. -}
 debugEnabled :: IO Bool
