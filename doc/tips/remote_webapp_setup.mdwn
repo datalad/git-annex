@@ -15,8 +15,7 @@ These files are stored in `.git/annex/privkey.pem` and
 `.git/annex/certificate.pem` inside the git repository. Here's
 one way to generate those files, using a self-signed certificate:
 
-	openssl genrsa -out .git/annex/privkey.pem 4096
-	chmod 400 .git/annex/privkey.pem
+	(umask 077 ; openssl genrsa -out .git/annex/privkey.pem 4096)
 	openssl req -new -x509 -key .git/annex/privkey.pem > .git/annex/certificate.pem
 
 With those files in place, git-annex will automatically only accept HTTPS
