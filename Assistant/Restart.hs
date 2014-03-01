@@ -31,6 +31,7 @@ import System.Posix (signalProcess, sigTERM)
 import Utility.WinProcess
 #endif
 import Data.Default
+import Network.URI
 
 {- Before the assistant can be restarted, have to remove our 
  - gitAnnexUrlFile and our gitAnnexPidFile. Pausing the watcher is also
@@ -78,14 +79,27 @@ newAssistantUrl repo = do
 		v <- tryIO $ readFile urlfile
 		case v of
 			Left _ -> delayed $ waiturl urlfile
-			Right url -> ifM (listening url)
+			Right url -> ifM (assistantListening url)
 				( return url
 				, delayed $ waiturl urlfile
 				)
-	listening url = catchBoolIO $ fst <$> exists url def
 	delayed a = do
 		threadDelay 100000 -- 1/10th of a second
 		a
+
+{- Checks if the assistant is listening on an url.
+ -
+ - Always checks http, because https with self-signed cert is problimatic.
+ - warp-tls listens to http, in order to show an error page, so this works.
+ -}
+assistantListening :: URLString -> IO Bool
+assistantListening url = catchBoolIO $ fst <$> exists url' def
+  where
+	url' = case parseURI url of
+		Nothing -> url
+		Just uri -> show $ uri
+			{ uriScheme = "http:"
+			}
 
 {- Does not wait for assistant to be listening for web connections. 
  -
