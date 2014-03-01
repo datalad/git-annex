@@ -41,6 +41,7 @@ quite a lot.
   * [wai](http://hackage.haskell.org/package/wai)
   * [wai-logger](http://hackage.haskell.org/package/wai-logger)
   * [warp](http://hackage.haskell.org/package/warp)
+  * [warp-tls](http://hackage.haskell.org/package/warp-tls)
   * [blaze-builder](http://hackage.haskell.org/package/blaze-builder)
   * [crypto-api](http://hackage.haskell.org/package/crypto-api)
   * [hamlet](http://hackage.haskell.org/package/hamlet)
