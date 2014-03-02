@@ -155,7 +155,7 @@ combineViewFilter old@(ExcludeValues olds) (ExcludeValues news)
 	| combined == old = (combined, Unchanged)
 	| otherwise = (combined, Narrowing)
   where
-	combined = FilterValues (S.union olds news)
+	combined = ExcludeValues (S.union olds news)
 combineViewFilter (FilterValues _) newglob@(FilterGlob _) =
 	(newglob, Widening)
 combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
