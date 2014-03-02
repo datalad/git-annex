@@ -18,10 +18,23 @@ See [[tips/metadata_driven_views]]
 The reason to use specially named filtered branches is because it makes
 self-documenting how the repository is currently filtered.
 
-TODO: Files not matching the view should be able to be included.
-For example, it could make a "unsorted" directory containing files
-without a tag when viewing by tag. If also viewing by author, the unsorted
-directories nest.
+## unmatched files in filtered branches
+
+TODO Files not matching the view should be able to be included in
+the filtered branch, in a special location, an "other" directory.
+
+For example, it could make a "other" directory containing files
+without a tag when viewing by tag.
+
+It might be nice, if in a two level view, for the other directories
+to nest. For example, `other/2014/file`. However, that leads to a
+performance problem: When adding a level to a view, it has to look at each
+file in the "other" directory and generate a view for it too. With a lot
+of files, that'd be slow.
+
+Instead, why not replicate the parent branch's directory structure inside
+the "other" directory? Then the directory tree only has to be constructed
+once, and can be left alone when refining a view.
 
 ## operations while on filtered branch
 
@@ -43,13 +56,14 @@ directories nest.
 When annex.genmetadata is set, git annex add automatically attaches
 some metadata to a file. Currently year and month fields, from its mtime.
 
-TODO: Could also automatically attach permissions.
-
 TODO A git hook could be run by git annex add to gather more metadata.
-For example, by examining MP3 metadata. Alternatively, this could be a
+For example, by examining file permisions or MP3 metadata.
+Alternatively, this could be a
 regular post-commit hook, that examines the files committed, and runs git
 annex metadata to add metadata. No extra git-annex support is needed
 to do that!
+However, in direct mode, or when using the assistant, git-annex does its
+own committing, not using git commit, so bypassing the commit hooks.
 
 ## directory hierarchy metadata
 
