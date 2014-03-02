@@ -26,35 +26,30 @@ directories nest.
 ## operations while on filtered branch
 
 * If files are removed and git commit called, git-annex should remove the
-  relevant metadata from the files.  
-  TODO: It's not clear that
-  removing a file should nuke all the metadata used to filter it into the
-  branch
-  Currently, only metadata used for visible subdirs is added and removed
-  this way.
-  Also, this is not usable in direct mode because deleting the
-  file.. actually deletes it.
+  relevant metadata from the files. **done**  
+  (Currently, only metadata used for visible subdirs is added and removed
+  this way.)
+  (Also, this is not usable in direct mode because deleting the
+  file.. actually deletes it...)
 * If a file is moved into a new subdirectory while in a view branch,
   a tag is added with the subdir name. This allows on the fly tagging.
   **done**
 * `git annex sync` should avoid pushing out the view branch, but
   it should check if there are changes to the metadata pulled in, and update
   the branch to reflect them.
-* TODO: If `git annex add` adds a file, it gets all the metadata of the filter
-  branch it's added to. If it's in a relevent directory (like fosdem-2014),
-  it gets that metadata automatically recorded as well.
 
 ## automatically added metadata
 
-TODO git annex add should automatically attach the current mtime of a file
-when adding it.
+When annex.genmetadata is set, git annex add automatically attaches
+some metadata to a file. Currently year and month fields, from its mtime.
 
-Could also automatically attach permissions.
+TODO: Could also automatically attach permissions.
 
 TODO A git hook could be run by git annex add to gather more metadata.
-For example, by examining MP3 metadata.
-
-Also auto add metadata when adding files to view branches. See below.
+For example, by examining MP3 metadata. Alternatively, this could be a
+regular post-commit hook, that examines the files committed, and runs git
+annex metadata to add metadata. No extra git-annex support is needed
+to do that!
 
 ## directory hierarchy metadata
 
