@@ -729,14 +729,14 @@ subdirectories).
   and checks out the view branch. Only files in the current branch whose
   metadata matches all the specified field values and tags will be
   shown in the view.
-
-  Once within a view, you can make additional directories, and
-  copy or move files into them. When you commit, the metadata will
-  be updated to correspond to your changes.
   
   Multiple values for a metadata field can be specified, either by using
   a glob (`field="*"`) or by listing each wanted value. The resulting view
   will put files in subdirectories according to the value of their fields.
+
+  Once within such a view, you can make additional directories, and
+  copy or move files into them. When you commit, the metadata will
+  be updated to correspond to your changes.
 
   There are fields corresponding to the path to the file. So a file
   "foo/bar/baz/file" has fields "/=foo", "foo/=bar", and "foo/bar/=baz".
@@ -759,7 +759,7 @@ subdirectories).
   Filters the current view to only the files that have the
   specified field values and tags.
 
-* `vadd [field=glob ...] [field=value ...]`
+* `vadd [field=glob ...] [field=value ...] [tag ...]`
 
   Changes the current view, adding an additional level of directories
   to categorize the files.

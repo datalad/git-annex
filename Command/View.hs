@@ -34,7 +34,7 @@ start params = do
 	go view Nothing = next $ perform view
 	go view (Just v)
 		| v == view = stop
-		| otherwise = error "Already in a view. Use 'git annex vadd' to further refine this view."
+		| otherwise = error "Already in a view. Use the vfilter and vadd commands to further refine this view."
 
 perform :: View -> CommandPerform
 perform view = do
