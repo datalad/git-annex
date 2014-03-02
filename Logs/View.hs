@@ -75,12 +75,14 @@ branchView view
 		| otherwise = "(" ++ branchcomp' c ++ ")"
 	branchcomp' (ViewComponent metafield viewfilter _) =concat
 		[ forcelegal (fromMetaField metafield)
-		, "="
 		, branchvals viewfilter
 		]
-	branchvals (FilterValues set) = intercalate "," $
-		map (forcelegal . fromMetaValue) $ S.toList set
-	branchvals (FilterGlob glob) = forcelegal glob
+	branchvals (FilterValues set) = '=' : branchset set
+	branchvals (FilterGlob glob) = '=' : forcelegal glob
+	branchvals (ExcludeValues set) = "!=" ++ branchset set
+	branchset = intercalate ","
+		. map (forcelegal . fromMetaValue)
+		. S.toList
 	forcelegal s
 		| Git.Ref.legal True s = s
 		| otherwise = map (\c -> if isAlphaNum c then c else '_') s

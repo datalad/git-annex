@@ -38,14 +38,20 @@ instance Arbitrary ViewComponent where
 data ViewFilter
 	= FilterValues (S.Set MetaValue)
 	| FilterGlob String
+	| ExcludeValues (S.Set MetaValue)
 	deriving (Eq, Read, Show)
 
 instance Arbitrary ViewFilter where
 	arbitrary = do
 		size <- arbitrarySizedBoundedIntegral `suchThat` (< 100)
-		FilterValues . S.fromList <$> vector size
+		s <- S.fromList <$> vector size
+		ifM arbitrary
+			( return (FilterValues s)
+			, return (ExcludeValues s)
+			)
 
 {- Can a ViewFilter match multiple different MetaValues? -}
 multiValue :: ViewFilter -> Bool
 multiValue (FilterValues s) = S.size s > 1
 multiValue (FilterGlob _) = True
+multiValue (ExcludeValues _) = False

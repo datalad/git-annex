@@ -12,6 +12,8 @@ git-annex (5.20140228) UNRELEASED; urgency=medium
   * assistant --autostart: Refuse to start in a bare git repository.
   * webapp: Don't list the public repository group when editing a
     git repository; it only makes sense for special remotes.
+  * view, vfilter: Add support for filtering tags and values out of a view,
+    using !tag and field!=value.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 28 Feb 2014 14:52:15 -0400
 

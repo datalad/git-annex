@@ -11,6 +11,7 @@ import Common.Annex
 import Annex.View.ViewedFile
 import Types.View
 import Types.MetaData
+import Annex.MetaData
 import qualified Git
 import qualified Git.DiffTree as DiffTree
 import qualified Git.Branch
@@ -51,48 +52,77 @@ viewTooLarge view = visibleViewSize view > 5
 visibleViewSize :: View -> Int
 visibleViewSize = length . filter viewVisible . viewComponents
 
+{- Parses field=value, field!=value, tag, and !tag
+ -
+ - Note that the field may not be a legal metadata field name,
+ - but it's let through anyway.
+ - This is useful when matching on directory names with spaces,
+ - which are not legal MetaFields.
+ -}
+parseViewParam :: String -> (MetaField, ViewFilter)
+parseViewParam s = case separate (== '=') s of
+	('!':tag, []) | not (null tag) ->
+		( tagMetaField
+		, mkExcludeValues tag
+		)
+	(tag, []) ->
+		( tagMetaField
+		, mkFilterValues tag
+		)
+	(field, wanted)
+		| end field == "!" ->
+			( mkMetaFieldUnchecked (beginning field)
+			, mkExcludeValues wanted
+			)
+		| otherwise ->
+			( mkMetaFieldUnchecked field
+			, mkFilterValues wanted
+			)
+  where
+	mkFilterValues v
+		| any (`elem` v) "*?" = FilterGlob v
+		| otherwise = FilterValues $ S.singleton $ toMetaValue v
+	mkExcludeValues = ExcludeValues . S.singleton . toMetaValue
+
 data ViewChange = Unchanged | Narrowing | Widening
 	deriving (Ord, Eq, Show)
 
 {- Updates a view, adding new fields to filter on (Narrowing), 
  - or allowing new values in an existing field (Widening). -}
-refineView :: View -> [(MetaField, String)] -> (View, ViewChange)
+refineView :: View -> [(MetaField, ViewFilter)] -> (View, ViewChange)
 refineView = go Unchanged
   where
   	go c v [] = (v, c)
-	go c v ((f, s):rest) =
-		let (v', c') = refineView' v f s
+	go c v ((f, vf):rest) =
+		let (v', c') = refineView' v f vf
 		in go (max c c') v' rest
 
 {- Adds an additional filter to a view. This can only result in narrowing
  - the view. Multivalued filters are added in non-visible form. -}
-filterView :: View -> [(MetaField, String)] -> View
+filterView :: View -> [(MetaField, ViewFilter)] -> View
 filterView v vs = v { viewComponents = viewComponents f' ++ viewComponents v}
   where
 	f = fst $ refineView (v {viewComponents = []}) vs
 	f' = f { viewComponents = map toinvisible (viewComponents f) }
 	toinvisible c = c { viewVisible = False }
 
-refineView' :: View -> MetaField -> String -> (View, ViewChange)
-refineView' view field wanted
+refineView' :: View -> MetaField -> ViewFilter -> (View, ViewChange)
+refineView' view field vf
 	| field `elem` (map viewField components) = 
 		let (components', viewchanges) = runWriter $ mapM updatefield components
 		in (view { viewComponents = components' }, maximum viewchanges)
 	| otherwise = 
-		let component = ViewComponent field viewfilter (multiValue viewfilter)
+		let component = ViewComponent field vf (multiValue vf)
 		    view' = view { viewComponents = component : components }
 		in if viewTooLarge view'
 			then error $ "View is too large (" ++ show (visibleViewSize view') ++ " levels of subdirectories)"
 			else (view', Narrowing)
   where
   	components = viewComponents view
-	viewfilter
-		| any (`elem` wanted) "*?" = FilterGlob wanted
-		| otherwise = FilterValues $ S.singleton $ toMetaValue wanted
 	updatefield :: ViewComponent -> Writer [ViewChange] ViewComponent
 	updatefield v
 		| viewField v == field = do
-			let (newvf, viewchange) = combineViewFilter (viewFilter v) viewfilter
+			let (newvf, viewchange) = combineViewFilter (viewFilter v) vf
 			tell [viewchange]
 			return $ v { viewFilter = newvf }
 		| otherwise = return v
@@ -117,6 +147,11 @@ combineViewFilter old@(FilterValues olds) (FilterValues news)
 	| otherwise = (combined, Widening)
   where
 	combined = FilterValues (S.union olds news)
+combineViewFilter old@(ExcludeValues olds) (ExcludeValues news)
+	| combined == old = (combined, Unchanged)
+	| otherwise = (combined, Narrowing)
+  where
+	combined = FilterValues (S.union olds news)
 combineViewFilter (FilterValues _) newglob@(FilterGlob _) =
 	(newglob, Widening)
 combineViewFilter (FilterGlob oldglob) new@(FilterValues s)
@@ -126,6 +161,10 @@ combineViewFilter (FilterGlob old) newglob@(FilterGlob new)
 	| old == new = (newglob, Unchanged)
 	| matchGlob (compileGlob old CaseInsensative) new = (newglob, Narrowing)
 	| otherwise = (newglob, Widening)
+combineViewFilter (FilterGlob _) new@(ExcludeValues _) = (new, Narrowing)
+combineViewFilter (ExcludeValues _) new@(FilterGlob _) = (new, Widening)
+combineViewFilter (FilterValues _) new@(ExcludeValues _) = (new, Narrowing)
+combineViewFilter (ExcludeValues _) new@(FilterValues _) = (new, Widening)
 
 {- Generates views for a file from a branch, based on its metadata
  - and the filename used in the branch.
@@ -162,16 +201,23 @@ viewedFiles view =
  - returns the value, or values that match. Self-memoizing on ViewComponent. -}
 viewComponentMatcher :: ViewComponent -> (MetaData -> Maybe [MetaValue])
 viewComponentMatcher viewcomponent = \metadata -> 
-	let s = matcher (currentMetaDataValues metafield metadata)
-	in if S.null s then Nothing else Just (S.toList s)
+	matcher (currentMetaDataValues metafield metadata)
   where
   	metafield = viewField viewcomponent
 	matcher = case viewFilter viewcomponent of
-		FilterValues s -> \values -> S.intersection s values
+		FilterValues s -> \values -> setmatches $
+			S.intersection s values
 		FilterGlob glob ->
 			let cglob = compileGlob glob CaseInsensative
-			in \values -> 
+			in \values -> setmatches $
 				S.filter (matchGlob cglob . fromMetaValue) values
+		ExcludeValues excludes -> \values -> 
+			if S.null (S.intersection values excludes)
+				then Just []
+				else Nothing
+	setmatches s
+		| S.null s = Nothing
+		| otherwise = Just (S.toList s)
 
 toViewPath :: MetaValue -> FilePath
 toViewPath = concatMap escapeslash . fromMetaValue

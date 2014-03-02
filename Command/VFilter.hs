@@ -10,7 +10,7 @@ module Command.VFilter where
 import Common.Annex
 import Command
 import Annex.View
-import Command.View (paramView, parseViewParam, checkoutViewBranch)
+import Command.View (paramView, checkoutViewBranch)
 
 def :: [Command]
 def = [notBareRepo $ notDirect $

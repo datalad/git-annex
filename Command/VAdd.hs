@@ -10,7 +10,7 @@ module Command.VAdd where
 import Common.Annex
 import Command
 import Annex.View
-import Command.View (parseViewParam, checkoutViewBranch)
+import Command.View (checkoutViewBranch)
 
 def :: [Command]
 def = [notBareRepo $ notDirect $ command "vadd" (paramRepeating "FIELD=GLOB")
