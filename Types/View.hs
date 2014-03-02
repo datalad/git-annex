@@ -50,6 +50,9 @@ instance Arbitrary ViewFilter where
 			, return (ExcludeValues s)
 			)
 
+mkViewComponent :: MetaField -> ViewFilter -> ViewComponent
+mkViewComponent f vf = ViewComponent f vf (multiValue vf)
+
 {- Can a ViewFilter match multiple different MetaValues? -}
 multiValue :: ViewFilter -> Bool
 multiValue (FilterValues s) = S.size s > 1

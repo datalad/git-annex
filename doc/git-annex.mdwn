@@ -759,7 +759,7 @@ subdirectories).
   Filters the current view to only the files that have the
   specified field values and tags.
 
-* `vadd [field=glob ...]`
+* `vadd [field=glob ...] [field=value ...]`
 
   Changes the current view, adding an additional level of directories
   to categorize the files.

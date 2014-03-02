@@ -36,6 +36,6 @@ start = go =<< currentView
 			else next $ next $ checkoutViewBranch v' narrowView
 
 	vcycle rest (c:cs)
-		| multiValue (viewFilter c) = rest ++ cs ++ [c]
+		| viewVisible c = rest ++ cs ++ [c]
 		| otherwise = vcycle (c:rest) cs
 	vcycle rest c = rest ++ c

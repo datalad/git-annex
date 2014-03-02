@@ -90,12 +90,37 @@ data ViewChange = Unchanged | Narrowing | Widening
 {- Updates a view, adding new fields to filter on (Narrowing), 
  - or allowing new values in an existing field (Widening). -}
 refineView :: View -> [(MetaField, ViewFilter)] -> (View, ViewChange)
-refineView = go Unchanged
+refineView origview = checksize . calc Unchanged origview
   where
-  	go c v [] = (v, c)
-	go c v ((f, vf):rest) =
-		let (v', c') = refineView' v f vf
-		in go (max c c') v' rest
+	calc c v [] = (v, c)
+	calc c v ((f, vf):rest) =
+		let (v', c') = refine v f vf
+		in calc (max c c') v' rest
+
+	refine view field vf
+		| field `elem` map viewField (viewComponents view) =
+			let (components', viewchanges) = runWriter $
+				mapM (\c -> updateViewComponent c field vf) (viewComponents view)
+			    viewchange = if field `elem` map viewField (viewComponents origview)
+			    	then maximum viewchanges
+				else Narrowing
+			in (view { viewComponents = components' }, viewchange)
+		| otherwise = 
+			let component = mkViewComponent field vf
+			    view' = view { viewComponents = component : viewComponents view }
+			in (view', Narrowing)
+	
+	checksize r@(v, _)
+		| viewTooLarge v = error $ "View is too large (" ++ show (visibleViewSize v) ++ " levels of subdirectories)"
+		| otherwise = r
+
+updateViewComponent :: ViewComponent -> MetaField -> ViewFilter -> Writer [ViewChange] ViewComponent
+updateViewComponent c field vf
+	| viewField c == field = do
+		let (newvf, viewchange) = combineViewFilter (viewFilter c) vf
+		tell [viewchange]
+		return $ mkViewComponent field newvf
+	| otherwise = return c
 
 {- Adds an additional filter to a view. This can only result in narrowing
  - the view. Multivalued filters are added in non-visible form. -}
@@ -105,27 +130,6 @@ filterView v vs = v { viewComponents = viewComponents f' ++ viewComponents v}
 	f = fst $ refineView (v {viewComponents = []}) vs
 	f' = f { viewComponents = map toinvisible (viewComponents f) }
 	toinvisible c = c { viewVisible = False }
-
-refineView' :: View -> MetaField -> ViewFilter -> (View, ViewChange)
-refineView' view field vf
-	| field `elem` (map viewField components) = 
-		let (components', viewchanges) = runWriter $ mapM updatefield components
-		in (view { viewComponents = components' }, maximum viewchanges)
-	| otherwise = 
-		let component = ViewComponent field vf (multiValue vf)
-		    view' = view { viewComponents = component : components }
-		in if viewTooLarge view'
-			then error $ "View is too large (" ++ show (visibleViewSize view') ++ " levels of subdirectories)"
-			else (view', Narrowing)
-  where
-  	components = viewComponents view
-	updatefield :: ViewComponent -> Writer [ViewChange] ViewComponent
-	updatefield v
-		| viewField v == field = do
-			let (newvf, viewchange) = combineViewFilter (viewFilter v) vf
-			tell [viewchange]
-			return $ v { viewFilter = newvf }
-		| otherwise = return v
 
 {- Combine old and new ViewFilters, yielding a result that matches
  - either old+new, or only new.
