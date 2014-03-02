@@ -56,14 +56,7 @@ once, and can be left alone when refining a view.
 When annex.genmetadata is set, git annex add automatically attaches
 some metadata to a file. Currently year and month fields, from its mtime.
 
-TODO A git hook could be run by git annex add to gather more metadata.
-For example, by examining file permisions or MP3 metadata.
-Alternatively, this could be a
-regular post-commit hook, that examines the files committed, and runs git
-annex metadata to add metadata. No extra git-annex support is needed
-to do that!
-However, in direct mode, or when using the assistant, git-annex does its
-own committing, not using git commit, so bypassing the commit hooks.
+There's also a post-commit-annex hook script.
 
 ## directory hierarchy metadata
 

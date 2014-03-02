@@ -18,6 +18,7 @@ import qualified Types.Remote as Remote
 import Annex.Direct
 import Annex.CatFile
 import Annex.Link
+import Annex.Hook
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.Merge
@@ -156,6 +157,7 @@ commitStaged commitmessage = go =<< inRepo Git.Branch.currentUnsafe
   where
 	go Nothing = return False
 	go (Just branch) = do
+		runAnnexHook preCommitAnnexHook
 		parent <- inRepo $ Git.Ref.sha branch
 		void $ inRepo $ Git.Branch.commit False commitmessage branch
 			(maybeToList parent)

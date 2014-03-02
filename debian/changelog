@@ -16,6 +16,9 @@ git-annex (5.20140228) UNRELEASED; urgency=medium
     using !tag and field!=value.
   * vadd: Allow listing multiple desired values for a field.
   * view: Refuse to enter a view when no branch is currently checked out.
+  * metadata: To only set a field when it's not already got a value, use
+    -s field?=value
+  * Run .git/hooks/pre-commit-annex whenever a commit is made.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 28 Feb 2014 14:52:15 -0400
 

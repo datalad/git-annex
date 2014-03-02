@@ -30,7 +30,8 @@ Here are some recommended metadata fields to use:
   being.
   
 To make git-annex automatically set the year and month when adding files,
-run `git config annex.genmetadata true`
+run `git config annex.genmetadata true`. Also, see
+[[tips/automatically_adding_metadata]].
 
 git-annex's metadata can be updated in a distributed fashion. For example,
 two users, each with their own clone of a repository, can set and unset

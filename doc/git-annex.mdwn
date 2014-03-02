@@ -717,6 +717,9 @@ subdirectories).
 
   To remove a value, use -s field-=value.
 
+  To set a value, only if the field does not already have a value,
+  use -s field?=value
+
   To set a tag, use -t tag, and use -u tag to remove a tag.
 
   For example, to set some tags on a file and also its author:
@@ -1677,6 +1680,10 @@ used by git-annex.
 
 `~/.config/git-annex/autostart` is a list of git repositories
 to start the git-annex assistant in.
+
+`.git/hooks/pre-commit-annex` in your git repsitory will be run whenever
+a commit is made, either by git commit, git-annex sync, or the git-annex
+assistant.
 
 # SEE ALSO
 

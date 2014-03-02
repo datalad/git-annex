@@ -219,6 +219,7 @@ data ModMeta
 	= AddMeta MetaField MetaValue
 	| DelMeta MetaField MetaValue
 	| SetMeta MetaField MetaValue -- removes any existing values
+	| MaybeSetMeta MetaField MetaValue -- when field has no existing value
 
 {- Applies a ModMeta, generating the new MetaData.
  - Note that the new MetaData does not include all the 
@@ -229,12 +230,16 @@ modMeta _ (DelMeta f oldv) = updateMetaData f (unsetMetaValue oldv) emptyMetaDat
 modMeta m (SetMeta f v) = updateMetaData f v $
 	foldr (updateMetaData f) emptyMetaData $
 		map unsetMetaValue $ S.toList $ currentMetaDataValues f m
+modMeta m (MaybeSetMeta f v)
+	| S.null (currentMetaDataValues f m) = updateMetaData f v emptyMetaData
+	| otherwise = emptyMetaData
 
-{- Parses field=value, field+=value, field-=value -}
+{- Parses field=value, field+=value, field-=value, field?=value -}
 parseModMeta :: String -> Either String ModMeta
 parseModMeta p = case lastMaybe f of
 	Just '+' -> AddMeta <$> mkMetaField f' <*> v
 	Just '-' -> DelMeta <$> mkMetaField f' <*> v
+	Just '?' -> MaybeSetMeta <$> mkMetaField f' <*> v
 	_ -> SetMeta <$> mkMetaField f <*> v
   where
 	(f, sv) = separate (== '=') p

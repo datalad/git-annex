@@ -13,6 +13,7 @@ import Config
 import qualified Command.Add
 import qualified Command.Fix
 import Annex.Direct
+import Annex.Hook
 import Annex.View
 import Annex.View.ViewedFile
 import Logs.View
@@ -28,13 +29,16 @@ def = [command "pre-commit" paramPaths seek SectionPlumbing
 
 seek :: CommandSeek
 seek ps = ifM isDirect
-	-- update direct mode mappings for committed files
-	( withWords startDirect ps
+	( do
+		-- update direct mode mappings for committed files
+		withWords startDirect ps
+		runAnnexHook preCommitAnnexHook
 	, do
 		-- fix symlinks to files being committed
 		withFilesToBeCommitted (whenAnnexed Command.Fix.start) ps
 		-- inject unlocked files into the annex
 		withFilesUnlockedToBeCommitted startIndirect ps
+		runAnnexHook preCommitAnnexHook
 		-- committing changes to a view updates metadata
 		mv <- currentView
 		case mv of
@@ -43,6 +47,7 @@ seek ps = ifM isDirect
 				(addViewMetaData v)
 				(removeViewMetaData v)
 	)
+	
 
 startIndirect :: FilePath -> CommandStart
 startIndirect f = next $ do

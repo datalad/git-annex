@@ -44,6 +44,7 @@ import Git.CatFile
 import Git.CheckAttr
 import Git.CheckIgnore
 import Git.SharedRepository
+import qualified Git.Hook
 import qualified Git.Queue
 import Types.Key
 import Types.Backend
@@ -118,6 +119,7 @@ data AnnexState = AnnexState
 	, errcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
 	, quviversion :: Maybe QuviVersion
+	, existinghooks :: M.Map Git.Hook.Hook Bool
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -157,6 +159,7 @@ newState c r = AnnexState
 	, errcounter = 0
 	, unusedkeys = Nothing
 	, quviversion = Nothing
+	, existinghooks = M.empty
 	}
 
 {- Makes an Annex state object for the specified git repo.

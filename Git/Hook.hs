@@ -15,6 +15,10 @@ data Hook = Hook
 	{ hookName :: FilePath
 	, hookScript :: String
 	}
+	deriving (Ord)
+
+instance Eq Hook where
+	a == b = hookName a == hookName b
 
 hookFile :: Hook -> Repo -> FilePath
 hookFile h r = localGitDir r </> "hooks" </> hookName h
