@@ -45,13 +45,11 @@ paramView :: String
 paramView = paramPair (paramRepeating "TAG") (paramRepeating "FIELD=VALUE")
 
 mkView :: [String] -> Annex View
-mkView params = do
-	v <- View <$> viewbranch <*> pure []
-	return $ fst $ refineView v $
-		map parseViewParam $ reverse params
+mkView params = go =<< inRepo Git.Branch.current
   where
-	viewbranch = fromMaybe (error "not on any branch!")
-		<$> inRepo Git.Branch.current
+	go Nothing = error "not on any branch!"
+	go (Just b) = return $ fst $ refineView (View b []) $
+		map parseViewParam $ reverse params
 
 checkoutViewBranch :: View -> (View -> Annex Git.Branch) -> CommandCleanup
 checkoutViewBranch view mkbranch = do
