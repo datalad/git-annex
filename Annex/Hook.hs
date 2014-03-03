@@ -65,6 +65,7 @@ runAnnexHook hook = do
 			when exists $
 				run cmd
   where
-	hookexists f = liftIO $ isExecutable . fileMode <$> getFileStatus f
+	hookexists f = liftIO $ catchBoolIO $
+		isExecutable . fileMode <$> getFileStatus f
 	run cmd = unlessM (liftIO $ boolSystem cmd []) $
 		warning $ cmd ++ " failed"
