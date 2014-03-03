@@ -1,0 +1,3 @@
+Direct mode merge handles the case where there's a conflict between local and remote files, that are checked into git.
+
+However, the the local file is not checked into git, the merge will overwrite it with the remote file from git.
