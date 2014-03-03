@@ -314,21 +314,17 @@ mergeFrom branch = do
 		, go
 		)
   where
-	go = runmerge $ inRepo $ Git.Merge.mergeNonInteractive branch
+	go = inRepo (Git.Merge.mergeNonInteractive branch) <||> resolveMerge
 	godirect currbranch = do
 		old <- inRepo $ Git.Ref.sha currbranch
 		d <- fromRepo gitAnnexMergeDir
-		r <- runmerge $ inRepo $ mergeDirect d branch
+		r <- inRepo (mergeDirect d branch) <||> resolveMerge
 		new <- inRepo $ Git.Ref.sha currbranch
 		case (old, new) of
 			(Just oldsha, Just newsha) ->
 				mergeDirectCleanup d oldsha newsha
 			_ -> noop
 		return r
-	runmerge a = ifM a
-		( return True
-		, resolveMerge
-		)
 
 {- Resolves a conflicted merge. It's important that any conflicts be
  - resolved in a way that itself avoids later merge conflicts, since
