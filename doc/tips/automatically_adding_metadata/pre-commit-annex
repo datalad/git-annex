@@ -23,10 +23,6 @@ case "$(git config --bool metadata.overwrite || true)" in
 	;;
 esac
 
-# By default, any existing metadata git-annex has stored is not overwritten
-# with metadata taken from files. Uncomment this to enable.
-#overwrite_metadata=1
-
 addmeta () {
 	file="$1"
 	field="$2"
