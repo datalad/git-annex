@@ -33,6 +33,7 @@ import Utility.CopyFile
 import Annex.Perms
 import Annex.ReplaceFile
 import Annex.Exception
+import Annex.VariantFile
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -142,9 +143,6 @@ addDirect file cache = do
 {- In direct mode, git merge would usually refuse to do anything, since it
  - sees present direct mode files as type changed files. To avoid this,
  - merge is run with the work tree set to a temp directory.
- -
- - This should only be used once any changes to the real working tree have
- - already been committed, because it overwrites files in the working tree.
  -}
 mergeDirect :: FilePath -> Git.Ref -> Git.Repo -> IO Bool
 mergeDirect d branch g = do
@@ -193,18 +191,42 @@ mergeDirectCleanup d oldsha newsha = do
 		void $ tryIO $ removeDirectory $ parentDir f
 	
 	{- If the file is already present, with the right content for the
-	 - key, it's left alone. Otherwise, create the symlink and then
-	 - if possible, replace it with the content. -}
+	 - key, it's left alone. 
+	 -
+	 - If the file is already present, and does not exist in the
+	 - oldsha branch, preserve this local file.
+	 -
+	 - Otherwise, create the symlink and then if possible, replace it
+	 - with the content. -}
 	movein k f = unlessM (goodContent k f) $ do
+		preserveUnannexed f
 		l <- inRepo $ gitAnnexLink f k
 		replaceFile f $ makeAnnexLink l
 		toDirect k f
 	
 	{- Any new, modified, or renamed files were written to the temp
 	 - directory by the merge, and are moved to the real work tree. -}
-	movein_raw f item = liftIO $ do
-		createDirectoryIfMissing True $ parentDir f
-		void $ tryIO $ rename (d </> getTopFilePath (DiffTree.file item)) f
+	movein_raw f item = do
+		preserveUnannexed f
+		liftIO $ do
+			createDirectoryIfMissing True $ parentDir f
+			void $ tryIO $ rename (d </> getTopFilePath (DiffTree.file item)) f
+
+	{- If the file is present in the work tree, but did not exist in
+	 - the oldsha branch, preserve this local, unannexed file. -}
+	preserveUnannexed f = whenM (liftIO $ exists f) $
+		whenM (isNothing <$> catFileDetails oldsha f) $
+			liftIO $ findnewname (0 :: Int)
+	  where
+		exists = isJust <$$> catchMaybeIO . getSymbolicLinkStatus
+		findnewname n = do
+			let localf = mkVariant f 
+				("local" ++ if n > 0 then show n else "")
+			ifM (exists localf)
+				( findnewname (n+1)
+				, rename f localf
+					`catchIO` const (findnewname (n+1))
+				)
 
 {- If possible, converts a symlink in the working tree into a direct
  - mode file. If the content is not available, leaves the symlink

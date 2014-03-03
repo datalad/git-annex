@@ -11,6 +11,7 @@ module Git.CatFile (
 	catFileStart',
 	catFileStop,
 	catFile,
+	catFileDetails,
 	catTree,
 	catObject,
 	catObjectDetails,
@@ -50,6 +51,10 @@ catFileStop (CatFileHandle p _) = CoProcess.stop p
 {- Reads a file from a specified branch. -}
 catFile :: CatFileHandle -> Branch -> FilePath -> IO L.ByteString
 catFile h branch file = catObject h $ Ref $
+	fromRef branch ++ ":" ++ toInternalGitPath file
+
+catFileDetails :: CatFileHandle -> Branch -> FilePath -> IO (Maybe (L.ByteString, Sha, ObjectType))
+catFileDetails h branch file = catObjectDetails h $ Ref $
 	fromRef branch ++ ":" ++ toInternalGitPath file
 
 {- Uses a running git cat-file read the content of an object.

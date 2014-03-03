@@ -28,7 +28,6 @@ import qualified Git
 import Git.Types (BlobType(..))
 import qualified Types.Remote
 import qualified Remote.Git
-import Types.Key
 import Config
 import Annex.ReplaceFile
 import Git.FileMode
@@ -39,9 +38,9 @@ import qualified Command.Move
 import Logs.Location
 import Annex.Drop
 import Annex.UUID
+import Annex.VariantFile
 
 import qualified Data.Set as S
-import Data.Hash.MD5
 import Control.Concurrent.MVar
 
 def :: [Command]
@@ -415,7 +414,7 @@ resolveMerge' u
 	file = LsFiles.unmergedFile u
 	issymlink select = select (LsFiles.unmergedBlobType u) `elem` [Just SymlinkBlob, Nothing]
 	makelink key = do
-		let dest = mergeFile file key
+		let dest = variantFile file key
 		l <- inRepo $ gitAnnexLink dest key
 		replaceFile dest $ makeAnnexLink l
 		stageSymlink dest =<< hashSymlink l
@@ -477,34 +476,6 @@ cleanConflictCruft resolvedfs top = do
 	s = S.fromList resolvedfs
 	matchesresolved f = S.member (base f) s
 	base f = reverse $ drop 1 $ dropWhile (/= '~') $ reverse f
-
-{- The filename to use when resolving a conflicted merge of a file,
- - that points to a key.
- -
- - Something derived from the key needs to be included in the filename,
- - but rather than exposing the whole key to the user, a very weak hash
- - is used. There is a very real, although still unlikely, chance of
- - conflicts using this hash.
- -
- - In the event that there is a conflict with the filename generated
- - for some other key, that conflict will itself be handled by the
- - conflicted merge resolution code. That case is detected, and the full
- - key is used in the filename.
- -}
-mergeFile :: FilePath -> Key -> FilePath
-mergeFile file key
-	| doubleconflict = go $ key2file key
-	| otherwise = go $ shortHash $ key2file key
-  where
-	varmarker = ".variant-"
-	doubleconflict = varmarker `isInfixOf` file
-	go v = takeDirectory file
-		</> dropExtension (takeFileName file)
-		++ varmarker ++ v
-		++ takeExtension file
-		
-shortHash :: String -> String
-shortHash = take 4 . md5s . md5FilePath
 
 changed :: Remote -> Git.Ref -> Annex Bool
 changed remote b = do
