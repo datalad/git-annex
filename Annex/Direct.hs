@@ -214,11 +214,15 @@ mergeDirectCleanup d oldsha newsha = do
 
 	{- If the file is present in the work tree, but did not exist in
 	 - the oldsha branch, preserve this local, unannexed file. -}
-	preserveUnannexed f = whenM (liftIO $ exists f) $
+	preserveUnannexed f = whenM unannexed $
 		whenM (isNothing <$> catFileDetails oldsha f) $
 			liftIO $ findnewname (0 :: Int)
 	  where
 		exists = isJust <$$> catchMaybeIO . getSymbolicLinkStatus
+
+		unannexed = liftIO (exists f)
+			<&&> (isNothing <$> isAnnexLink f)
+
 		findnewname n = do
 			let localf = mkVariant f 
 				("local" ++ if n > 0 then show n else "")
