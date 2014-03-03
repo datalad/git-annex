@@ -373,7 +373,7 @@ resolveMerge = do
 
 resolveMerge' :: LsFiles.Unmerged -> Annex (Maybe FilePath)
 resolveMerge' u
-	| issymlink LsFiles.valUs && issymlink LsFiles.valThem = do
+	| mergeable LsFiles.valUs && mergeable LsFiles.valThem = do
 		kus <- getKey LsFiles.valUs
 		kthem <- getKey LsFiles.valThem
 		case (kus, kthem) of
@@ -408,7 +408,8 @@ resolveMerge' u
 	| otherwise = return Nothing
   where
 	file = LsFiles.unmergedFile u
-	issymlink select = select (LsFiles.unmergedBlobType u) `elem` [Just SymlinkBlob, Nothing]
+	mergeable select = select (LsFiles.unmergedBlobType u)
+		`elem` [Just SymlinkBlob, Nothing]
 	makelink key = do
 		let dest = variantFile file key
 		l <- inRepo $ gitAnnexLink dest key
