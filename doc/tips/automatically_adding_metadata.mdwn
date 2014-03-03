@@ -7,12 +7,12 @@ run `git config annex.genmetadata true`.
 A git commit hook can be set up to extract lots of metadata from files
 like photos, mp3s, etc.
 
-* Install the `extract` utility, from <http://www.gnu.org/software/libextractor/>  
-  `apt-get install extract`
-* Download [[pre-commit-annex]] and install it in your git-annex repository
-  as `.git/hooks/pre-commit-annex`.  
-  Remember to make the script executable!
-* Run: `git config metadata.extract "artist album title camera_make video_dimensions"`
+1. Install the `extract` utility, from <http://www.gnu.org/software/libextractor/>  
+   `apt-get install extract`
+2. Download [[pre-commit-annex]] and install it in your git-annex repository
+   as `.git/hooks/pre-commit-annex`.  
+   Remember to make the script executable!
+3. Run: `git config metadata.extract "artist album title camera_make video_dimensions"`
 
 Now any fields you list in metadata.extract to will be extracted and
 stored when files are committed.
