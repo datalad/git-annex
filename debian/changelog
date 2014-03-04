@@ -1,8 +1,8 @@
 git-annex (5.20140228) UNRELEASED; urgency=medium
 
-  * sync: Fix bug in direct mode that caused a file not checked into git
-    to be deleted when merging with a remote that added a file by the same
-    name.
+  * sync: Fix bug in direct mode that caused a file that was not
+    checked into git to be deleted when there was a conflicting
+    merge with a remote.
   * webapp: Now supports HTTPS.
   * webapp: No longer supports a port specified after --listen, since
     it was buggy, and that use case is better supported by setting up HTTPS.

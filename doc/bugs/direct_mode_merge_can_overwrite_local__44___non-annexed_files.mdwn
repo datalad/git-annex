@@ -10,3 +10,5 @@ is not checked into git, the merge will overwrite it with the remote file from g
 New problem: If the merge pulls in a directory, and a file exists with
 the name of the directory, locally, not annexed, the file is left alone,
 but the directory is thus not checked out, and will be deleted on commit.
+
+> [[fixed|done]]; regression test in place. --[[Joey]]

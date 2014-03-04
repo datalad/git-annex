@@ -345,6 +345,12 @@ mergeFrom branch = do
  - It's also possible that one side has foo as an annexed file, and
  - the other as a directory or non-annexed file. The annexed file
  - is renamed to resolve the merge, and the other object is preserved as-is.
+ -
+ - In indirect mode, the merge is resolved in the work tree and files
+ - staged, to clean up from a conflicted merge that was run in the work
+ - tree. In direct mode, the work tree is not touched here; files are 
+ - staged to the index, and written to the gitAnnexMergeDir, and later
+ - mergeDirectCleanup handles updating the work tree.
  -}
 resolveMerge :: Annex Bool
 resolveMerge = do
@@ -354,10 +360,11 @@ resolveMerge = do
 	let merged = not (null mergedfs)
 	void $ liftIO cleanup
 
-	(deleted, cleanup2) <- inRepo (LsFiles.deleted [top])
-	unless (null deleted) $
-		Annex.Queue.addCommand "rm" [Params "--quiet -f --"] deleted
-	void $ liftIO cleanup2
+	unlessM isDirect $ do
+		(deleted, cleanup2) <- inRepo (LsFiles.deleted [top])
+		unless (null deleted) $
+			Annex.Queue.addCommand "rm" [Params "--quiet -f --"] deleted
+		void $ liftIO cleanup2
 
 	when merged $ do
 		unlessM isDirect $
@@ -379,7 +386,7 @@ resolveMerge' u
 		case (kus, kthem) of
 			-- Both sides of conflict are annexed files
 			(Just keyUs, Just keyThem) -> do
-				removeoldfile keyUs
+				unstageoldfile
 				if keyUs == keyThem
 					then makelink keyUs
 					else do
@@ -388,20 +395,15 @@ resolveMerge' u
 				return $ Just file
 			-- Our side is annexed, other side is not.
 			(Just keyUs, Nothing) -> do
-				ifM isDirect
-					( do
-						removeoldfile keyUs
-						makelink keyUs
-						movefromdirectmerge file
-					, do
-						unstageoldfile
-						makelink keyUs
-					)
+				unstageoldfile
+				whenM isDirect $
+					stagefromdirectmergedir file
+				makelink keyUs
 				return $ Just file
 			-- Our side is not annexed, other side is.
 			(Nothing, Just keyThem) -> do
-				makelink keyThem
 				unstageoldfile
+				makelink keyThem
 				return $ Just file
 			-- Neither side is annexed; cannot resolve.
 			(Nothing, Nothing) -> return Nothing
@@ -413,45 +415,34 @@ resolveMerge' u
 	makelink key = do
 		let dest = variantFile file key
 		l <- inRepo $ gitAnnexLink dest key
-		replaceFile dest $ makeAnnexLink l
-		stageSymlink dest =<< hashSymlink l
-		whenM isDirect $
-			toDirect key dest
-	removeoldfile keyUs = do
 		ifM isDirect
-			( removeDirect keyUs file
-			, liftIO $ nukeFile file
+			( do
+				d <- fromRepo gitAnnexMergeDir
+				replaceFile (d </> dest) $ makeAnnexLink l
+			, replaceFile dest $ makeAnnexLink l
 			)
-		Annex.Queue.addCommand "rm" [Params "--quiet -f --"] [file]
-	unstageoldfile = Annex.Queue.addCommand "rm" [Params "--quiet -f --cached --"] [file]
+		stageSymlink dest =<< hashSymlink l
 	getKey select = case select (LsFiles.unmergedSha u) of
 		Nothing -> return Nothing
 		Just sha -> catKey sha symLinkMode
-	
-	{- Move something out of the direct mode merge directory and into
-	 - the git work tree.
-	 -
-	 - On a filesystem not supporting symlinks, this is complicated
-	 - because a directory may contain annex links, but just
-	 - moving them into the work tree will not let git know they are
-	 - symlinks.
-	 -
-	 - Also, if the content of the file is available, make it available
-	 - in direct mode.
-	 -}
-	movefromdirectmerge item = do
+
+	-- removing the conflicted file from cache clears the conflict
+	unstageoldfile = Annex.Queue.addCommand "rm" [Params "--quiet -f --cached --"] [file]
+
+	{- stage an item from the direct mode merge directory -}
+	stagefromdirectmergedir item = do
 		d <- fromRepo gitAnnexMergeDir
-		liftIO $ rename (d </> item) item
-		mapM_ setuplink =<< liftIO (dirContentsRecursive item)
-	setuplink f = do
-		v <- getAnnexLinkTarget f
-		case v of
-			Nothing -> noop
-			Just target -> do
-				unlessM (coreSymlinks <$> Annex.getGitConfig) $
-					addAnnexLink target f
-				maybe noop (`toDirect` f) 
-					(fileKey (takeFileName target))
+		l <- liftIO $ dirContentsRecursive (d </> item)
+		if null l
+			then go (d </> item)
+			else mapM_ go l
+	  where
+	  	go f = do
+			v <- getAnnexLinkTarget f
+			case v of
+				Just target -> stageSymlink f
+					=<< hashSymlink target
+				Nothing -> noop
 
 {- git-merge moves conflicting files away to files
  - named something like f~HEAD or f~branch, but the
