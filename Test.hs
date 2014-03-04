@@ -1392,7 +1392,8 @@ prepareTestEnv forcedirect = do
 	cwd <- getCurrentDirectory
 	p <- Utility.Env.getEnvDefault "PATH" ""
 
-	let env =
+	env <- Utility.Env.getEnvironment
+	let newenv =
 		-- Ensure that the just-built git annex is used.
 		[ ("PATH", cwd ++ [searchPathSeparator] ++ p)
 		, ("TOPDIR", cwd)
@@ -1408,7 +1409,7 @@ prepareTestEnv forcedirect = do
 		, ("FORCEDIRECT", if forcedirect then "1" else "")
 		]
 
-	return $ M.fromList env
+	return $ M.fromList newenv `M.union` M.fromList env
 
 changeToTmpDir :: TestEnv -> FilePath -> IO ()
 changeToTmpDir env t = do
