@@ -21,6 +21,7 @@ import Annex.Link
 import Annex.Hook
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
+import qualified Git.UpdateIndex as UpdateIndex
 import qualified Git.Merge
 import qualified Git.Branch
 import qualified Git.Ref
@@ -314,11 +315,11 @@ mergeFrom branch = do
 		, go
 		)
   where
-	go = inRepo (Git.Merge.mergeNonInteractive branch) <||> resolveMerge
+	go = inRepo (Git.Merge.mergeNonInteractive branch) <||> resolveMerge branch
 	godirect currbranch = do
 		old <- inRepo $ Git.Ref.sha currbranch
 		d <- fromRepo gitAnnexMergeDir
-		r <- inRepo (mergeDirect d branch) <||> resolveMerge
+		r <- inRepo (mergeDirect d branch) <||> resolveMerge branch
 		new <- inRepo $ Git.Ref.sha currbranch
 		case (old, new) of
 			(Just oldsha, Just newsha) ->
@@ -352,11 +353,11 @@ mergeFrom branch = do
  - staged to the index, and written to the gitAnnexMergeDir, and later
  - mergeDirectCleanup handles updating the work tree.
  -}
-resolveMerge :: Annex Bool
-resolveMerge = do
+resolveMerge :: Git.Ref -> Annex Bool
+resolveMerge branch = do
 	top <- fromRepo Git.repoPath
 	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
-	mergedfs <- catMaybes <$> mapM resolveMerge' fs
+	mergedfs <- catMaybes <$> mapM (resolveMerge' branch) fs
 	let merged = not (null mergedfs)
 	void $ liftIO cleanup
 
@@ -378,8 +379,8 @@ resolveMerge = do
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
 
-resolveMerge' :: LsFiles.Unmerged -> Annex (Maybe FilePath)
-resolveMerge' u
+resolveMerge' :: Git.Ref -> LsFiles.Unmerged -> Annex (Maybe FilePath)
+resolveMerge' branch u
 	| mergeable LsFiles.valUs && mergeable LsFiles.valThem = do
 		kus <- getKey LsFiles.valUs
 		kthem <- getKey LsFiles.valThem
@@ -429,21 +430,10 @@ resolveMerge' u
 	-- removing the conflicted file from cache clears the conflict
 	unstageoldfile = Annex.Queue.addCommand "rm" [Params "--quiet -f --cached --"] [file]
 
-	{- stage an item from the direct mode merge directory -}
-	stagefromdirectmergedir item = do
-		d <- fromRepo gitAnnexMergeDir
-		l <- liftIO $ dirContentsRecursive (d </> item)
-		if null l
-			then go d (d </> item)
-			else mapM_ (go d) l
-	  where
-	  	go d f = do
-			v <- getAnnexLinkTarget f
-			let worktreef = makeRelative d f
-			case v of
-				Just target -> stageSymlink worktreef
-					=<< hashSymlink target
-				Nothing -> noop
+	{- stage an item from the direct mode merge directory, which may
+	 - be a directory with arbitrary contents -}
+	stagefromdirectmergedir item = Annex.Queue.addUpdateIndex
+		=<< fromRepo (UpdateIndex.lsSubTree branch item)
 
 {- git-merge moves conflicting files away to files
  - named something like f~HEAD or f~branch, but the

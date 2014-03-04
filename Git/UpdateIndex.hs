@@ -15,6 +15,7 @@ module Git.UpdateIndex (
 	startUpdateIndex,
 	stopUpdateIndex,
 	lsTree,
+	lsSubTree,
 	updateIndexLine,
 	stageFile,
 	unstageFile,
@@ -74,6 +75,13 @@ lsTree (Ref x) repo streamer = do
 	void $ cleanup
   where
 	params = map Param ["ls-tree", "-z", "-r", "--full-tree", x]
+lsSubTree :: Ref -> FilePath -> Repo -> Streamer
+lsSubTree (Ref x) p repo streamer = do
+	(s, cleanup) <- pipeNullSplit params repo
+	mapM_ streamer s
+	void $ cleanup
+  where
+	params = map Param ["ls-tree", "-z", "-r", "--full-tree", x, p]
 
 {- Generates a line suitable to be fed into update-index, to add
  - a given file with a given sha. -}
