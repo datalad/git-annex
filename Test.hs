@@ -925,8 +925,8 @@ test_nonannexed_conflict_resolution env = do
 					when switchdirect $
 						git_annex env "direct" [] @? "failed switching to direct mode"
 					git_annex env "sync" [] @? "sync failed"
-				checkmerge "r1" r1
-				checkmerge "r2" r2
+				checkmerge ("r1" ++ show switchdirect) r1
+				checkmerge ("r2" ++ show switchdirect) r2
 	conflictor = "conflictor"
 	nonannexed_content = "nonannexed"
 	variantprefix = conflictor ++ ".variant"
@@ -936,8 +936,9 @@ test_nonannexed_conflict_resolution env = do
 		not (null v)
 			@? (what ++ " conflictor variant file missing in: " ++ show l )
 		conflictor `elem` l @? (what ++ " conflictor file missing in: " ++ show l)
-		s <- readFile (d </> conflictor)
-		s == nonannexed_content @? (what ++ " wrong content for nonannexed file: " ++ s)
+		s <- catchMaybeIO (readFile (d </> conflictor))
+		s == Just nonannexed_content
+			@? (what ++ " wrong content for nonannexed file: " ++ show s)
 
 {- Check merge conflict resolution when there is a local file,
  - that is not staged or committed, that conflicts with what's being added

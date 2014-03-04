@@ -16,8 +16,8 @@ import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.UpdateIndex as UpdateIndex
 import qualified Git.Merge
-import qualified Git.Branch
 import qualified Git.Ref
+import qualified Git.Sha
 import qualified Git
 import Git.Types (BlobType(..))
 import Config
@@ -27,37 +27,36 @@ import Annex.VariantFile
 
 import qualified Data.Set as S
 
-{- Merges from a branch into the current branch, with automatic merge
- - conflict resolution. -}
-autoMergeFrom :: Git.Ref -> Annex Bool
-autoMergeFrom branch = do
+{- Merges from a branch into the current branch
+ - (which may not exist yet),
+ - with automatic merge conflict resolution. -}
+autoMergeFrom :: Git.Ref -> (Maybe Git.Ref) -> Annex Bool
+autoMergeFrom branch currbranch = do
 	showOutput
-	ifM isDirect
-		( maybe go godirect =<< inRepo Git.Branch.current
-		, go
-		)
+	case currbranch of
+		Nothing -> go Nothing
+		Just b -> go =<< inRepo (Git.Ref.sha b)
   where
-	go = inRepo (Git.Merge.mergeNonInteractive branch) <||> resolveMerge branch
-	godirect currbranch = do
-		old <- inRepo $ Git.Ref.sha currbranch
-		d <- fromRepo gitAnnexMergeDir
-		r <- inRepo (mergeDirect d branch) <||> resolveMerge branch
-		new <- inRepo $ Git.Ref.sha currbranch
-		case (old, new) of
-			(Just oldsha, Just newsha) ->
-				mergeDirectCleanup d oldsha newsha
-			_ -> noop
-		return r
+	go old = ifM isDirect
+		( do
+			d <- fromRepo gitAnnexMergeDir
+			r <- inRepo (mergeDirect d branch)
+				<||> resolveMerge old branch
+			mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree old) Git.Ref.headRef
+			return r
+		, inRepo (Git.Merge.mergeNonInteractive branch)
+			<||> resolveMerge old branch
+		)
 
 {- Resolves a conflicted merge. It's important that any conflicts be
  - resolved in a way that itself avoids later merge conflicts, since
  - multiple repositories may be doing this concurrently.
  -
- - Only annexed files are resolved; other files are left for the user to
- - handle.
+ - Only merge conflicts where at least one side is an annexed file
+ - is resolved.
  -
  - This uses the Keys pointed to by the files to construct new
- - filenames. So when both sides modified file foo, 
+ - filenames. So when both sides modified annexed file foo, 
  - it will be deleted, and replaced with files foo.variant-A and
  - foo.variant-B.
  -
@@ -75,11 +74,11 @@ autoMergeFrom branch = do
  - staged to the index, and written to the gitAnnexMergeDir, and later
  - mergeDirectCleanup handles updating the work tree.
  -}
-resolveMerge :: Git.Ref -> Annex Bool
-resolveMerge branch = do
+resolveMerge :: Maybe Git.Ref -> Git.Ref -> Annex Bool
+resolveMerge us them = do
 	top <- fromRepo Git.repoPath
 	(fs, cleanup) <- inRepo (LsFiles.unmerged [top])
-	mergedfs <- catMaybes <$> mapM (resolveMerge' branch) fs
+	mergedfs <- catMaybes <$> mapM (resolveMerge' us them) fs
 	let merged = not (null mergedfs)
 	void $ liftIO cleanup
 
@@ -93,48 +92,50 @@ resolveMerge branch = do
 		unlessM isDirect $
 			cleanConflictCruft mergedfs top
 		Annex.Queue.flush
+		whenM isDirect $
+			void preCommitDirect
 		void $ inRepo $ Git.Command.runBool
 			[ Param "commit"
+			, Param "--no-verify"
 			, Param "-m"
 			, Param "git-annex automatic merge conflict fix"
 			]
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
 
-resolveMerge' :: Git.Ref -> LsFiles.Unmerged -> Annex (Maybe FilePath)
-resolveMerge' branch u
-	| mergeable LsFiles.valUs && mergeable LsFiles.valThem = do
-		kus <- getKey LsFiles.valUs
-		kthem <- getKey LsFiles.valThem
-		case (kus, kthem) of
-			-- Both sides of conflict are annexed files
-			(Just keyUs, Just keyThem) -> do
-				unstageoldfile
-				if keyUs == keyThem
-					then makelink keyUs
-					else do
-						makelink keyUs
-						makelink keyThem
-				return $ Just file
-			-- Our side is annexed, other side is not.
-			(Just keyUs, Nothing) -> do
-				unstageoldfile
-				whenM isDirect $
-					stagefromdirectmergedir file
-				makelink keyUs
-				return $ Just file
-			-- Our side is not annexed, other side is.
-			(Nothing, Just keyThem) -> do
-				unstageoldfile
-				makelink keyThem
-				return $ Just file
-			-- Neither side is annexed; cannot resolve.
-			(Nothing, Nothing) -> return Nothing
-	| otherwise = return Nothing
+resolveMerge' :: Maybe Git.Ref -> Git.Ref -> LsFiles.Unmerged -> Annex (Maybe FilePath)
+resolveMerge' Nothing _ _ = return Nothing
+resolveMerge' (Just us) them u = do
+	kus <- getkey LsFiles.valUs LsFiles.valUs 
+	kthem <- getkey LsFiles.valThem LsFiles.valThem
+	case (kus, kthem) of
+		-- Both sides of conflict are annexed files
+		(Just keyUs, Just keyThem) -> resolveby $
+			if keyUs == keyThem
+				then makelink keyUs
+				else do
+					makelink keyUs
+					makelink keyThem
+		-- Our side is annexed file, other side is not.
+		(Just keyUs, Nothing) -> resolveby $ do
+			graftin them file
+			makelink keyUs
+		-- Our side is not annexed file, other side is.
+		(Nothing, Just keyThem) -> resolveby $ do
+			graftin us file
+			makelink keyThem
+		-- Neither side is annexed file; cannot resolve.
+		(Nothing, Nothing) -> return Nothing
   where
 	file = LsFiles.unmergedFile u
-	mergeable select = select (LsFiles.unmergedBlobType u)
-		`elem` [Just SymlinkBlob, Nothing]
+
+	getkey select select'
+		| select (LsFiles.unmergedBlobType u) == Just SymlinkBlob =
+			case select' (LsFiles.unmergedSha u) of
+				Nothing -> return Nothing
+				Just sha -> catKey sha symLinkMode
+		| otherwise = return Nothing
+	
 	makelink key = do
 		let dest = variantFile file key
 		l <- inRepo $ gitAnnexLink dest key
@@ -145,17 +146,16 @@ resolveMerge' branch u
 			, replaceFile dest $ makeAnnexLink l
 			)
 		stageSymlink dest =<< hashSymlink l
-	getKey select = case select (LsFiles.unmergedSha u) of
-		Nothing -> return Nothing
-		Just sha -> catKey sha symLinkMode
 
-	-- removing the conflicted file from cache clears the conflict
-	unstageoldfile = Annex.Queue.addCommand "rm" [Params "--quiet -f --cached --"] [file]
-
-	{- stage an item from the direct mode merge directory, which may
-	 - be a directory with arbitrary contents -}
-	stagefromdirectmergedir item = Annex.Queue.addUpdateIndex
-		=<< fromRepo (UpdateIndex.lsSubTree branch item)
+	{- stage a graft of a directory or file from a branch -}
+	graftin b item = Annex.Queue.addUpdateIndex
+		=<< fromRepo (UpdateIndex.lsSubTree b item)
+		
+	resolveby a = do
+		{- Remove conflicted file from index so merge can be resolved. -}
+		Annex.Queue.addCommand "rm" [Params "--quiet -f --cached --"] [file]
+		void a
+		return (Just file)
 
 {- git-merge moves conflicting files away to files
  - named something like f~HEAD or f~branch, but the

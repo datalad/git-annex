@@ -169,7 +169,7 @@ mergeLocal (Just branch) = go =<< needmerge
 	go False = stop
 	go True = do
 		showStart "merge" $ Git.Ref.describe syncbranch
-		next $ next $ autoMergeFrom syncbranch
+		next $ next $ autoMergeFrom syncbranch (Just branch)
 
 pushLocal :: Maybe Git.Ref -> CommandStart
 pushLocal Nothing = stop
@@ -213,10 +213,11 @@ mergeRemote :: Remote -> Maybe Git.Ref -> CommandCleanup
 mergeRemote remote b = case b of
 	Nothing -> do
 		branch <- inRepo Git.Branch.currentUnsafe
-		and <$> mapM merge (branchlist branch)
-	Just _ -> and <$> (mapM merge =<< tomerge (branchlist b))
+		and <$> mapM (merge Nothing) (branchlist branch)
+	Just thisbranch ->
+		and <$> (mapM (merge (Just thisbranch)) =<< tomerge (branchlist b))
   where
-	merge = autoMergeFrom . remoteBranch remote
+	merge thisbranch = flip autoMergeFrom thisbranch . remoteBranch remote
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]
