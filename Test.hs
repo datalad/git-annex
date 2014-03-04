@@ -198,8 +198,9 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	, check "sync" test_sync
 	, check "union merge regression" test_union_merge_regression
 	, check "conflict resolution" test_conflict_resolution_movein_bug
-	, check "conflict_resolution (mixed directory and file)" test_mixed_conflict_resolution
-	, check "conflict_resolution (mixed directory and file) 2" test_mixed_conflict_resolution2
+	, check "conflict resolution (mixed directory and file)" test_mixed_conflict_resolution
+	, check "conflict resolution (mixed directory and file) 2" test_mixed_conflict_resolution2
+	, check "conflict resolution (uncommitted local file)" test_uncommitted_conflict_resolution
 	, check "map" test_map
 	, check "uninit" test_uninit
 	, check "uninit (in git-annex branch)" test_uninit_inbranch
@@ -839,6 +840,53 @@ test_mixed_conflict_resolution env = do
 		l <- getDirectoryContents d
 		any (variantprefix `isPrefixOf`) l
 			@? (what ++ " conflictor file missing in: " ++ show l )
+
+{- Check merge conflict resolution when there is a local file,
+ - that is not staged or committed, that conflicts with what's being added
+ - from the remmote.
+ -
+ - Case 1: Remote adds file named conflictor; local has a file named
+ - conflictor.
+ -
+ - Case 2: Remote adds conflictor/file; local has a file named conflictor.
+ -}
+test_uncommitted_conflict_resolution :: TestEnv -> Assertion
+test_uncommitted_conflict_resolution env = do
+	check conflictor
+	check (conflictor </> "file")
+  where
+	check remoteconflictor = withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			indir env r1 $ do
+				disconnectOrigin
+				createDirectoryIfMissing True (parentDir remoteconflictor)
+				writeFile remoteconflictor annexedcontent
+				git_annex env "add" [conflictor] @? "add remoteconflicter failed"
+				git_annex env "sync" [] @? "sync failed in r1"
+			indir env r2 $ do
+				disconnectOrigin
+				writeFile conflictor localcontent
+			pair env r1 r2
+			indir env r2 $ ifM (annexeval Config.isDirect)
+				( do
+					git_annex env "sync" [] @? "sync failed"
+					let local = conflictor ++ localprefix
+					doesFileExist local @? (local ++ " missing after merge")
+					s <- readFile local
+					s == localcontent @? (local ++ " has wrong content: " ++ s)
+					git_annex env "get" [conflictor] @? "get failed"
+					doesFileExist remoteconflictor @? (remoteconflictor ++ " missing after merge")
+					s' <- readFile remoteconflictor
+					s' == annexedcontent @? (remoteconflictor ++ " has wrong content: " ++ s)
+				-- this case is intentionally not handled
+				-- in indirect mode, since the user
+				-- can recover on their own easily
+				, not <$> git_annex env "sync" [] @? "sync failed to fail"
+				)
+	conflictor = "conflictor"
+	localprefix = ".variant-local"
+	localcontent = "local"
+	annexedcontent = "annexed"
 
 {- 
  - During conflict resolution, one of the annexed files in git is
