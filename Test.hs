@@ -32,6 +32,7 @@ import qualified Annex.UUID
 import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Filename
+import qualified Git.Construct
 import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
@@ -205,6 +206,7 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	, check "conflict resolution symlinks" test_conflict_resolution_symlinks
 	, check "conflict resolution (uncommitted local file)" test_uncommitted_conflict_resolution
 	, check "conflict resolution (removed file)" test_remove_conflict_resolution
+	, check "conflict resolution (nonannexed)" test_nonannexed_conflict_resolution
 	, check "map" test_map
 	, check "uninit" test_uninit
 	, check "uninit (in git-annex branch)" test_uninit_inbranch
@@ -851,7 +853,7 @@ test_mixed_conflict_resolution env = do
 			git_annex_expectoutput env "find" [conflictor] [Git.FilePath.toInternalGitPath subfile]
 			git_annex_expectoutput env "find" v v
 
-{- Check merge confalict resolution when both repos start with an annexed
+{- Check merge conflict resolution when both repos start with an annexed
  - file; one modifies it, and the other deletes it. -}
 test_remove_conflict_resolution :: TestEnv -> Assertion
 test_remove_conflict_resolution env = do
@@ -890,6 +892,52 @@ test_remove_conflict_resolution env = do
 		let v = filter (variantprefix `isPrefixOf`) l
 		not (null v)
 			@? (what ++ " conflictor file missing in: " ++ show l )
+
+{- Check merge confalict resolution when a file is annexed in one repo,
+ - and checked directly into git in the other repo.
+ -
+ - This test requires indirect mode to set it up, but tests both direct and
+ - indirect mode.
+ -}
+test_nonannexed_conflict_resolution :: TestEnv -> Assertion
+test_nonannexed_conflict_resolution env = do
+	check True False
+	check False False
+	check True True
+	check False True
+  where
+	check inr1 switchdirect = withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			whenM (isInDirect r1 <&&> isInDirect r2) $ do
+				indir env r1 $ do
+					disconnectOrigin
+					writeFile conflictor "conflictor"
+					git_annex env "add" [conflictor] @? "add conflicter failed"
+					git_annex env "sync" [] @? "sync failed in r1"
+				indir env r2 $ do
+					disconnectOrigin
+					writeFile conflictor nonannexed_content
+					boolSystem "git" [Params "add", File conflictor] @? "git add conflictor failed"
+					git_annex env "sync" [] @? "sync failed in r2"
+				pair env r1 r2
+				let l = if inr1 then [r1, r2] else [r2, r1]
+				forM_ l $ \r -> indir env r $ do
+					when switchdirect $
+						git_annex env "direct" [] @? "failed switching to direct mode"
+					git_annex env "sync" [] @? "sync failed"
+				checkmerge "r1" r1
+				checkmerge "r2" r2
+	conflictor = "conflictor"
+	nonannexed_content = "nonannexed"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = do
+		l <- getDirectoryContents d
+		let v = filter (variantprefix `isPrefixOf`) l
+		not (null v)
+			@? (what ++ " conflictor variant file missing in: " ++ show l )
+		conflictor `elem` l @? (what ++ " conflictor file missing in: " ++ show l)
+		s <- readFile (d </> conflictor)
+		s == nonannexed_content @? (what ++ " wrong content for nonannexed file: " ++ s)
 
 {- Check merge conflict resolution when there is a local file,
  - that is not staged or committed, that conflicts with what's being added
@@ -1255,6 +1303,11 @@ intmpclonerepoInDirect env a = intmpclonerepo env $
   	isdirect = annexeval $ do
 		Annex.Init.initialize Nothing
 		Config.isDirect
+
+isInDirect :: FilePath -> IO Bool
+isInDirect d = do
+	s <- Annex.new =<< Git.Construct.fromPath d
+	not <$> Annex.eval s Config.isDirect
 
 intmpbareclonerepo :: TestEnv -> Assertion -> Assertion
 intmpbareclonerepo env a = withtmpclonerepo env True $ \r -> indir env r a
