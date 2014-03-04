@@ -1,0 +1,7 @@
+We have preferred content, which is advisory, and numcopies, which is
+enforced (except by `git annex move`). What is missing is an expression
+like preferred content, which is enforced. So, required content.
+
+For example, I might want a repository that is required to contain
+`*.jpeg`. This would make get --auto get it (it's implicitly part of the
+preferred content), and would make drop refuse to drop it.
