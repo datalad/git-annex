@@ -17,7 +17,7 @@ import Utility.DirWatcher.Types
 import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
-import qualified Command.Sync
+import Annex.AutoMerge
 import Annex.TaggedPush
 import Remote (remoteFromUUID)
 
@@ -83,7 +83,7 @@ onChange file
 				[ "merging", Git.fromRef changedbranch
 				, "into", Git.fromRef current
 				]
-			void $ liftAnnex  $ Command.Sync.mergeFrom changedbranch
+			void $ liftAnnex  $ autoMergeFrom changedbranch
 	mergecurrent _ = noop
 
 	handleDesynced = case fromTaggedBranch changedbranch of
