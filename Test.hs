@@ -199,7 +199,7 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	, check "union merge regression" test_union_merge_regression
 	, check "conflict resolution" test_conflict_resolution_movein_bug
 	, check "conflict resolution (mixed directory and file)" test_mixed_conflict_resolution
-	, check "conflict resolution (mixed directory and file) 2" test_mixed_conflict_resolution2
+	, check "conflict resolution push" test_conflict_resolution_push
 	, check "conflict resolution (uncommitted local file)" test_uncommitted_conflict_resolution
 	, check "map" test_map
 	, check "uninit" test_uninit
@@ -824,7 +824,7 @@ test_mixed_conflict_resolution env = do
 			indir env r2 $ do
 				disconnectOrigin
 				createDirectory conflictor
-				writeFile (conflictor </> "subfile") "subfile"
+				writeFile subfile "subfile"
 				git_annex env "add" [conflictor] @? "add conflicter failed"
 				git_annex env "sync" [] @? "sync failed in r2"
 			pair env r1 r2
@@ -834,12 +834,21 @@ test_mixed_conflict_resolution env = do
 			checkmerge "r1" r1
 			checkmerge "r1" r2
 	conflictor = "conflictor"
+	subfile = conflictor </> "subfile"
 	variantprefix = conflictor ++ ".variant"
 	checkmerge what d = do
 		doesDirectoryExist (d </> conflictor) @? (d ++ " conflictor directory missing")
 		l <- getDirectoryContents d
-		any (variantprefix `isPrefixOf`) l
+		let v = filter (variantprefix `isPrefixOf`) l
+		not (null v)
 			@? (what ++ " conflictor file missing in: " ++ show l )
+		-- Make sure that files after conflict resolution are
+		-- annexed, particularly on filesystems without symlinks,
+		-- it's possible to lose track.
+		indir env d $ do
+			git_annex env "get" (conflictor:v) @? ("get failed in " ++ what)
+			git_annex_expectoutput env "find" [conflictor] [subfile]
+			git_annex_expectoutput env "find" v v
 
 {- Check merge conflict resolution when there is a local file,
  - that is not staged or committed, that conflicts with what's being added
@@ -888,17 +897,12 @@ test_uncommitted_conflict_resolution env = do
 	localcontent = "local"
 	annexedcontent = "annexed"
 
-{- 
- - During conflict resolution, one of the annexed files in git is
- - accidentially converted from a symlink to a regular file.
- - This only happens on crippled filesystems.
- -
- - This test case happens to detect the problem when it tries the next
- - pass of conflict resolution, since it's unable to resolve a conflict
- - between an annexed and non-annexed file.
+{- A push failure that sometimes happens after conflict resolution
+ - on Windows/FAT. Note that something nondeterministic seems to be
+ - involved in the bug.
  -}
-test_mixed_conflict_resolution2 :: TestEnv -> Assertion
-test_mixed_conflict_resolution2 env = go >> go
+test_conflict_resolution_push :: TestEnv -> Assertion
+test_conflict_resolution_push env = go >> go
   where
 	go = withtmpclonerepo env False $ \r1 ->
 		withtmpclonerepo env False $ \r2 -> do
