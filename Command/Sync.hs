@@ -434,13 +434,14 @@ resolveMerge' u
 		d <- fromRepo gitAnnexMergeDir
 		l <- liftIO $ dirContentsRecursive (d </> item)
 		if null l
-			then go (d </> item)
-			else mapM_ go l
+			then go d (d </> item)
+			else mapM_ (go d) l
 	  where
-	  	go f = do
+	  	go d f = do
 			v <- getAnnexLinkTarget f
+			let worktreef = makeRelative d f
 			case v of
-				Just target -> stageSymlink f
+				Just target -> stageSymlink worktreef
 					=<< hashSymlink target
 				Nothing -> noop
 

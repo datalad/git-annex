@@ -33,6 +33,8 @@ import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Filename
 import qualified Git.Types
+import qualified Git.Ref
+import qualified Git.LsTree
 import qualified Locations
 import qualified Types.KeySource
 import qualified Types.Backend
@@ -199,7 +201,7 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	, check "union merge regression" test_union_merge_regression
 	, check "conflict resolution" test_conflict_resolution_movein_bug
 	, check "conflict resolution (mixed directory and file)" test_mixed_conflict_resolution
-	, check "conflict resolution push" test_conflict_resolution_push
+	, check "conflict resolution symlinks" test_conflict_resolution_symlinks
 	, check "conflict resolution (uncommitted local file)" test_uncommitted_conflict_resolution
 	, check "map" test_map
 	, check "uninit" test_uninit
@@ -897,25 +899,37 @@ test_uncommitted_conflict_resolution env = do
 	localcontent = "local"
 	annexedcontent = "annexed"
 
-{- A push failure that sometimes happens after conflict resolution
- - on Windows/FAT. Note that something nondeterministic seems to be
- - involved in the bug.
+{- On Windows/FAT, repeated conflict resolution sometimes 
+ - lost track of whether a file was a symlink. 
  -}
-test_conflict_resolution_push :: TestEnv -> Assertion
-test_conflict_resolution_push env = go >> go
-  where
-	go = withtmpclonerepo env False $ \r1 ->
+test_conflict_resolution_symlinks :: TestEnv -> Assertion
+test_conflict_resolution_symlinks env = do
+	withtmpclonerepo env False $ \r1 ->
 		withtmpclonerepo env False $ \r2 -> do
-			indir env r1 $ do
-				writeFile conflictor "conflictor"
-				git_annex env "add" [conflictor] @? "add conflicter failed"
-				git_annex env "sync" [] @? "sync failed in r1"
-			indir env r2 $ do
-				createDirectory conflictor
-				writeFile (conflictor </> "subfile") "subfile"
-				git_annex env "add" [conflictor] @? "add conflicter failed"
-				git_annex env "sync" [] @? "sync failed in r2"
+			withtmpclonerepo env False $ \r3 -> do
+				indir env r1 $ do
+					writeFile conflictor "conflictor"
+					git_annex env "add" [conflictor] @? "add conflicter failed"
+					git_annex env "sync" [] @? "sync failed in r1"
+					check_is_link conflictor "r1"
+				indir env r2 $ do
+					createDirectory conflictor
+					writeFile (conflictor </> "subfile") "subfile"
+					git_annex env "add" [conflictor] @? "add conflicter failed"
+					git_annex env "sync" [] @? "sync failed in r2"
+					check_is_link (conflictor </> "subfile") "r2"
+				indir env r3 $ do
+					writeFile conflictor "conflictor"
+					git_annex env "add" [conflictor] @? "add conflicter failed"
+					git_annex env "sync" [] @? "sync failed in r1"
+					check_is_link (conflictor </> "subfile") "r3"
+  where
 	conflictor = "conflictor"
+	check_is_link f what = do
+		git_annex_expectoutput env "find" ["--include=*", f] [f]
+		l <- annexeval $ Annex.inRepo $ Git.LsTree.lsTreeFiles Git.Ref.headRef [f]
+		all (\i -> Git.Types.toBlobType (Git.LsTree.mode i) == Just Git.Types.SymlinkBlob) l
+			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
 
 {- Set up repos as remotes of each other. -}
 pair :: TestEnv -> FilePath -> FilePath -> Assertion
