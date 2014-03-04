@@ -200,10 +200,11 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	, check "version" test_version
 	, check "sync" test_sync
 	, check "union merge regression" test_union_merge_regression
-	, check "conflict resolution" test_conflict_resolution_movein_bug
+	, check "conflict resolution movein regression" test_conflict_resolution_movein_regression
 	, check "conflict resolution (mixed directory and file)" test_mixed_conflict_resolution
 	, check "conflict resolution symlinks" test_conflict_resolution_symlinks
 	, check "conflict resolution (uncommitted local file)" test_uncommitted_conflict_resolution
+	, check "conflict resolution (removed file)" test_remove_conflict_resolution
 	, check "map" test_map
 	, check "uninit" test_uninit
 	, check "uninit (in git-annex branch)" test_uninit_inbranch
@@ -778,8 +779,8 @@ test_union_merge_regression env =
 
 {- Regression test for the automatic conflict resolution bug fixed
  - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
-test_conflict_resolution_movein_bug :: TestEnv -> Assertion
-test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 -> 
+test_conflict_resolution_movein_regression :: TestEnv -> Assertion
+test_conflict_resolution_movein_regression env = withtmpclonerepo env False $ \r1 -> 
 	withtmpclonerepo env False $ \r2 -> do
 		let rname r = if r == r1 then "r1" else "r2"
 		forM_ [r1, r2] $ \r -> indir env r $ do
@@ -814,10 +815,10 @@ test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 ->
  - file, and the other is a directory. -}
 test_mixed_conflict_resolution :: TestEnv -> Assertion
 test_mixed_conflict_resolution env = do
-	check_mixed_conflict True
-	check_mixed_conflict False
+	check True
+	check False
   where
-	check_mixed_conflict inr1 = withtmpclonerepo env False $ \r1 ->
+	check inr1 = withtmpclonerepo env False $ \r1 ->
 		withtmpclonerepo env False $ \r2 -> do
 			indir env r1 $ do
 				disconnectOrigin
@@ -835,7 +836,7 @@ test_mixed_conflict_resolution env = do
 			forM_ l $ \r -> indir env r $
 				git_annex env "sync" [] @? "sync failed in mixed conflict"
 			checkmerge "r1" r1
-			checkmerge "r1" r2
+			checkmerge "r2" r2
 	conflictor = "conflictor"
 	subfile = conflictor </> "subfile"
 	variantprefix = conflictor ++ ".variant"
@@ -845,13 +846,50 @@ test_mixed_conflict_resolution env = do
 		let v = filter (variantprefix `isPrefixOf`) l
 		not (null v)
 			@? (what ++ " conflictor file missing in: " ++ show l )
-		-- Make sure that files after conflict resolution are
-		-- annexed, particularly on filesystems without symlinks,
-		-- it's possible to lose track.
 		indir env d $ do
 			git_annex env "get" (conflictor:v) @? ("get failed in " ++ what)
 			git_annex_expectoutput env "find" [conflictor] [Git.FilePath.toInternalGitPath subfile]
 			git_annex_expectoutput env "find" v v
+
+{- Check merge confalict resolution when both repos start with an annexed
+ - file; one modifies it, and the other deletes it. -}
+test_remove_conflict_resolution :: TestEnv -> Assertion
+test_remove_conflict_resolution env = do
+	check True
+	check False
+  where
+	check inr1 = withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			indir env r1 $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed in r1"
+			indir env r2 $
+				disconnectOrigin
+			pair env r1 r2
+			indir env r2 $ do
+				git_annex env "sync" [] @? "sync failed in r2"
+				git_annex env "get" [conflictor]
+					@? "get conflictor failed"
+				unlessM (annexeval Config.isDirect) $ do
+					git_annex env "unlock" [conflictor]
+						@? "unlock conflictor failed"
+				writeFile conflictor "newconflictor"
+			indir env r1 $
+				nukeFile conflictor
+			let l = if inr1 then [r1, r2, r1] else [r2, r1, r2]
+			forM_ l $ \r -> indir env r $
+				git_annex env "sync" [] @? "sync failed"
+			checkmerge "r1" r1
+			checkmerge "r2" r2
+	conflictor = "conflictor"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = do
+		l <- getDirectoryContents d
+		let v = filter (variantprefix `isPrefixOf`) l
+		not (null v)
+			@? (what ++ " conflictor file missing in: " ++ show l )
 
 {- Check merge conflict resolution when there is a local file,
  - that is not staged or committed, that conflicts with what's being added
