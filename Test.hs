@@ -35,6 +35,7 @@ import qualified Git.Filename
 import qualified Git.Types
 import qualified Git.Ref
 import qualified Git.LsTree
+import qualified Git.FilePath
 import qualified Locations
 import qualified Types.KeySource
 import qualified Types.Backend
@@ -849,7 +850,7 @@ test_mixed_conflict_resolution env = do
 		-- it's possible to lose track.
 		indir env d $ do
 			git_annex env "get" (conflictor:v) @? ("get failed in " ++ what)
-			git_annex_expectoutput env "find" [conflictor] [subfile]
+			git_annex_expectoutput env "find" [conflictor] [Git.FilePath.toInternalGitPath subfile]
 			git_annex_expectoutput env "find" v v
 
 {- Check merge conflict resolution when there is a local file,
@@ -926,7 +927,7 @@ test_conflict_resolution_symlinks env = do
   where
 	conflictor = "conflictor"
 	check_is_link f what = do
-		git_annex_expectoutput env "find" ["--include=*", f] [f]
+		git_annex_expectoutput env "find" ["--include=*", f] [Git.FilePath.toInternalGitPath f]
 		l <- annexeval $ Annex.inRepo $ Git.LsTree.lsTreeFiles Git.Ref.headRef [f]
 		all (\i -> Git.Types.toBlobType (Git.LsTree.mode i) == Just Git.Types.SymlinkBlob) l
 			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
