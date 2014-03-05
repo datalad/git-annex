@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 3"
+ date="2014-03-05T16:56:14Z"
+ content="""
+Older versions of git-annex did not preserve more than the very end of the extension when using SHA*E backends, so I guess you added the respective files using two different versions.
+"""]]
