@@ -1,0 +1,61 @@
+### Please describe the problem.
+
+I have a large git-annex repository created using the assistant. It has thousands of files in it and is about 50GB in size.
+Yesterday I added a number of new files, and I also created a new "removable drive" repository for it to sync to.
+
+During these operations I could see a large amount of data being added to the git-annex log files.
+I left my computer on overnight to finish the sync.
+
+Today I went to check the log files but there was no useful information in them.
+
+Looking at the source I suspect I had a single log file > 1 Megabyte in size, which caused the rotation to occur repeatedly until it rolled off the end.
+However, I would have preferred if this large logfile had been kept for more than a couple of hours.
+
+See file contents below
+
+### What steps will reproduce the problem?
+
+See above
+
+### What version of git-annex are you using? On what operating system?
+
+Debian Wheezy, git-annex version: 5.20140210~bpo70+2 from wheezy-backports
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+When I look at the log files now, I see the following:
+-rw-r--r--    1 pgl users     443 Mar  5 21:48 daemon.log
+-rw-r--r--    1 pgl users     443 Mar  5 21:47 daemon.log.1
+-rw-r--r--    1 pgl users      81 Mar  5 01:16 daemon.log.10
+-rw-r--r--    1 pgl users      69 Mar  5 07:29 daemon.log.2
+-rw-r--r--    1 pgl users      81 Mar  5 01:16 daemon.log.3
+-rw-r--r--    1 pgl users      81 Mar  5 01:16 daemon.log.4
+-rw-r--r--    1 pgl users      81 Mar  5 01:16 daemon.log.5
+-rw-r--r--    1 pgl users      81 Mar  5 01:16 daemon.log.6
+-rw-r--r--    1 pgl users      81 Mar  5 01:16 daemon.log.7
+-rw-r--r--    1 pgl users      81 Mar  5 01:16 daemon.log.8
+-rw-r--r--    1 pgl users      81 Mar  5 01:16 daemon.log.9
+
+Looking at some of these log files.
+
+pgl@....:/....../.git/annex$ cat daemon.log.3
+[2014-03-05 01:16:15 GMT] SanityCheckerHourly: Rotated logs due to size: 1026416
+pgl@....:/....../.git/annex$ cat daemon.log.4
+[2014-03-05 01:16:15 GMT] SanityCheckerHourly: Rotated logs due to size: 1026416
+pgl@....:/....../.git/annex$ cat daemon.log.5
+[2014-03-05 01:16:15 GMT] SanityCheckerHourly: Rotated logs due to size: 1026416
+pgl@....:/....../.git/annex$ cat daemon.log.6
+[2014-03-05 01:16:15 GMT] SanityCheckerHourly: Rotated logs due to size: 1026416
+pgl@....:/....../.git/annex$ cat daemon.log.7
+[2014-03-05 01:16:15 GMT] SanityCheckerHourly: Rotated logs due to size: 1026416
+pgl@....:/....../.git/annex$ cat daemon.log.8
+[2014-03-05 01:16:15 GMT] SanityCheckerHourly: Rotated logs due to size: 1026416
+pgl@....:/....../.git/annex$ cat daemon.log.9
+[2014-03-05 01:16:15 GMT] SanityCheckerHourly: Rotated logs due to size: 1026416
+
+# End of transcript or log.
+"""]]
