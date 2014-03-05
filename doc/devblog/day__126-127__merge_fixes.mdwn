@@ -8,7 +8,7 @@ Understanding the bug was easy. Fixing it turned out to be hard, because
 the automatic merge conflict resolution code was quite a mess. In
 particular, it wrote files to the work tree, which made it difficult for a
 later stage to detect and handle the abovementioned case. Also, the
-automatic merge resolution code had weird asymetric structure that I never
+automatic merge resolution code had weird asymmetric structure that I never
 fully understood, and generally needed to be stared at for an hour to begin
 to understand it.
 
@@ -27,7 +27,7 @@ Finally this evening, I added support for automatically handling merge
 conflicts where one side is an annexed file, and the other side has the
 same filename committed to git in the normal way. This is not an important
 case, but it's worth it for completeness. There was an unexpected benefit
-to doing it; it turned out that the weird asymetric part of the code went
+to doing it; it turned out that the weird asymmetric part of the code went
 away.
 
 The final core of the automatic merge conflict resolver has morphed from
