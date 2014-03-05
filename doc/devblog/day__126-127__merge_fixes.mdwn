@@ -1,0 +1,61 @@
+Yesterday I learned of a nasty bug in handling of merges in direct mode. It
+turns out that if the remote repository has added a file, and there is a
+conflicting file in the local work tree, which has not been added to git, the
+local file was overwritten when git-annex did a merge. That's really bad, I'm
+very unhappy this bug lurked undetected for so long.
+
+Understanding the bug was easy. Fixing it turned out to be hard, because
+the automatic merge conflict resolution code was quite a mess. In
+particular, it wrote files to the work tree, which made it difficult for a
+later stage to detect and handle the abovementioned case. Also, the
+automatic merge resolution code had weird asymetric structure that I never
+fully understood, and generally needed to be stared at for an hour to begin
+to understand it.
+
+In the process of cleaning that up, I wrote several more tests,
+to ensure that every case was handled correctly. Coverage was about 50%
+of the cases, and should now be 100%.
+
+To add to the fun, a while ago I had dealt with a bug on FAT/Windows where
+it sometimes lost the symlink bit during automatic merge resolution. Except
+it turned out my test case for it had a heisenbug, and I had not actually
+fixed it (I think). In any case, my old fix for it was a large part
+of the ugliness I was cleaning up, and had to be rewritten.
+Fully tracking down and dealing with that took a large part of today.
+
+Finally this evening, I added support for automatically handling merge
+conflicts where one side is an annexed file, and the other side has the
+same filename committed to git in the normal way. This is not an important
+case, but it's worth it for completeness. There was an unexpected benefit
+to doing it; it turned out that the weird asymetric part of the code went
+away.
+
+The final core of the automatic merge conflict resolver has morphed from
+a mess I'd not want to paste here to a quite consise and easy to follow
+bit of code.
+
+[[!format haskell """
+        case (kus, kthem) of
+                -- Both sides of conflict are annexed files
+                (Just keyUs, Just keyThem) -> resolveby $
+                        if keyUs == keyThem
+                                then makelink keyUs
+                                else do
+                                        makelink keyUs
+                                        makelink keyThem
+                -- Our side is annexed file, other side is not.
+                (Just keyUs, Nothing) -> resolveby $ do
+                        graftin them file
+                        makelink keyUs
+                -- Our side is not annexed file, other side is.
+                (Nothing, Just keyThem) -> resolveby $ do
+                        graftin us file
+                        makelink keyThem
+                -- Neither side is annexed file; cannot resolve.
+                (Nothing, Nothing) -> return Nothing
+"""]]
+
+Since the bug that started all this is so bad, I want to make a release
+pretty soon.. But I will probably let it soak and whale on the test suite
+a bit more first. (This bug is also probably worth backporting to old
+versions of git-annex in eg Debian stable.)
