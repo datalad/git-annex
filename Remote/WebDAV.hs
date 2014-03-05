@@ -386,6 +386,7 @@ matchStatusCodeException _ _ = Nothing
 #if MIN_VERSION_DAV(0,6,0)
 goDAV :: DavUrl -> DavUser -> DavPass -> DAVT IO a -> IO a
 goDAV url user pass a = choke $ evalDAVT url $ do
+	setResponseTimeout Nothing -- disable default (5 second!) timeout
 	setCreds user pass
 	a
   where

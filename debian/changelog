@@ -25,6 +25,8 @@ git-annex (5.20140228) UNRELEASED; urgency=medium
   * sync: Automatically resolve merge conflict between and annexed file
     and a regular git file.
   * glacier: Pass --region to glacier checkpresent.
+  * webdav: When built with a new enough haskell DAV (0.6), disable
+    the http response timeout, which was only 5 seconds.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 28 Feb 2014 14:52:15 -0400
 
