@@ -36,3 +36,6 @@ remote types: git gcrypt S3 bup directory rsync web webdav glacier hook external
 """]]
 
 -- [[clacke]]
+
+> [[done]] The autobuilds are now running debian unstable, and SKEIN is included
+> now. --[[Joey]] 
