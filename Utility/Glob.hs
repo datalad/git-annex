@@ -24,6 +24,7 @@ import Text.Regex.TDFA
 import Text.Regex.TDFA.String
 #else
 import Text.Regex
+import Data.Maybe
 #endif
 
 newtype Glob = Glob Regex
