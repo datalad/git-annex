@@ -59,3 +59,11 @@ pgl@....:/....../.git/annex$ cat daemon.log.9
 
 # End of transcript or log.
 """]]
+
+> Changed log rotation to only rotate 1 log per hour max,
+> unless the total size of the log files is larger than the 
+> free disk space on the filesystem containing them.
+> 
+> This way, runaway log growth will still be contained,
+> but logs will generally rotate slowly enough to give plenty of time
+> to see what's in them. [[done]] --[[Joey]] 

@@ -38,6 +38,7 @@ import Assistant.Unused
 import Logs.Unused
 import Logs.Transfer
 import Config.Files
+import Utility.DiskFree
 import qualified Annex
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
@@ -203,17 +204,27 @@ hourlyCheck = do
 #endif
 
 #ifndef mingw32_HOST_OS
-{- Rotate logs until log file size is < 1 mb. -}
+{- Rotate logs once when total log file size is > 2 mb.
+ -
+ - If total log size is larger than the amount of free disk space,
+ - continue rotating logs until size is < 2 mb, even if this
+ - results in immediately losing the just logged data.
+ -}
 checkLogSize :: Int -> Assistant ()
 checkLogSize n = do
 	f <- liftAnnex $ fromRepo gitAnnexLogFile
 	logs <- liftIO $ listLogs f
 	totalsize <- liftIO $ sum <$> mapM filesize logs
-	when (totalsize > oneMegabyte) $ do
+	when (totalsize > 2 * oneMegabyte) $ do
 		notice ["Rotated logs due to size:", show totalsize]
 		liftIO $ openLog f >>= redirLog
-		when (n < maxLogs + 1) $
-			checkLogSize $ n + 1
+		when (n < maxLogs + 1) $ do
+			df <- liftIO $ getDiskFree $ takeDirectory f
+			case df of
+				Just free
+					| free < fromIntegral totalsize ->
+						checkLogSize (n + 1)
+				_ -> noop
   where
 	filesize f = fromIntegral . fileSize <$> liftIO (getFileStatus f)
 
