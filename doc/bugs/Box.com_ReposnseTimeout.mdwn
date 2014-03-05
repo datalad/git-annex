@@ -8,3 +8,5 @@ I created a new clean repository and configured Box.com (everything from the web
     git-annex: copy: 1 failed
 
 When I got back to the first computer I saw the same behavior, uploading files wasn't working any more.
+
+> [[duplicate|done]] --[[Joey]]
