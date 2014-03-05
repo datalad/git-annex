@@ -1,8 +1,5 @@
 Preparing for a release (probably tomorrow or Friday).
 
-Last night, did more work on the test suite, including even more checking
-of merge conflict resolution.
-
 Part of that was updating the autobuilders. Had to deal with the gnutls
 security hole fix, and upgrading that on the OSX autobuilder turned out to
 be quite complicated due to library version skew. Also, I switched the
@@ -21,6 +18,9 @@ Perhaps the most interesting change is a new `annex.startupscan` setting,
 which can be disabled to prevent the assistant from doing the expensive
 startup scan. This means it misses noticing any files that changed since it
 last run, but this should be useful for those really big repositories.
+
+(Last night, did more work on the test suite, including even more checking
+of merge conflict resolution.)
 
 ----
 
