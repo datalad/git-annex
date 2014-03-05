@@ -163,7 +163,8 @@ firstRun listenhost = do
 			hFlush stdout
 			go
 		| otherwise = do
-			browser <- maybe Nothing webBrowser <$> Git.Config.global
+			browser <- maybe Nothing webBrowser
+				<$> catchDefaultIO Nothing Git.Config.global
 			openBrowser browser htmlshim url Nothing Nothing
 			go
 	  where

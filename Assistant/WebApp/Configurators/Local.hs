@@ -160,6 +160,8 @@ getFirstRepositoryR :: Handler Html
 getFirstRepositoryR = postFirstRepositoryR
 postFirstRepositoryR :: Handler Html
 postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
+	unlessM (liftIO $ inPath "git") $
+		error "You need to install git in order to use git-annex!"
 #ifdef __ANDROID__
 	androidspecial <- liftIO $ doesDirectoryExist "/sdcard/DCIM"
 	let path = "/sdcard/annex"
