@@ -73,3 +73,9 @@ was git annex unused somewhere before)
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
+
+> Tagged moreinfo since I have a workable theory about how this happened,
+> which would make it user configuration error and not a bug, but 
+> that has not been confirmed. --[[Joey]]
