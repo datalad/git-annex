@@ -110,12 +110,12 @@ resolveMerge' (Just us) them u = do
 	kthem <- getkey LsFiles.valThem LsFiles.valThem
 	case (kus, kthem) of
 		-- Both sides of conflict are annexed files
-		(Just keyUs, Just keyThem) -> resolveby $
-			if keyUs == keyThem
-				then makelink keyUs
-				else do
-					makelink keyUs
-					makelink keyThem
+		(Just keyUs, Just keyThem)
+			| keyUs /= keyThem -> resolveby $ do
+				makelink keyUs
+				makelink keyThem
+			| otherwise -> resolveby $
+				makelink keyUs
 		-- Our side is annexed file, other side is not.
 		(Just keyUs, Nothing) -> resolveby $ do
 			graftin them file
