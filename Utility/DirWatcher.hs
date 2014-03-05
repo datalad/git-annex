@@ -104,33 +104,33 @@ modifyTracked = undefined
  - to shutdown later. -}
 #if WITH_INOTIFY
 type DirWatcherHandle = INotify.INotify
-watchDir :: FilePath -> Pruner -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
-watchDir dir prune hooks runstartup = do
+watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
+watchDir dir prune scanevents hooks runstartup = do
 	i <- INotify.initINotify
-	runstartup $ INotify.watchDir i dir prune hooks
+	runstartup $ INotify.watchDir i dir prune scanevents hooks
 	return i
 #else
 #if WITH_KQUEUE
 type DirWatcherHandle = ThreadId
-watchDir :: FilePath -> Pruner -> WatchHooks -> (IO Kqueue.Kqueue -> IO Kqueue.Kqueue) -> IO DirWatcherHandle
-watchDir dir prune hooks runstartup = do
+watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO Kqueue.Kqueue -> IO Kqueue.Kqueue) -> IO DirWatcherHandle
+watchDir dir prune _scanevents hooks runstartup = do
 	kq <- runstartup $ Kqueue.initKqueue dir prune
 	forkIO $ Kqueue.runHooks kq hooks
 #else
 #if WITH_FSEVENTS
 type DirWatcherHandle = FSEvents.EventStream
-watchDir :: FilePath -> Pruner -> WatchHooks -> (IO FSEvents.EventStream -> IO FSEvents.EventStream) -> IO DirWatcherHandle
-watchDir dir prune hooks runstartup =
-	runstartup $ FSEvents.watchDir dir prune hooks
+watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO FSEvents.EventStream -> IO FSEvents.EventStream) -> IO DirWatcherHandle
+watchDir dir prune scanevents hooks runstartup =
+	runstartup $ FSEvents.watchDir dir prune scanevents hooks
 #else
 #if WITH_WIN32NOTIFY
 type DirWatcherHandle = Win32Notify.WatchManager
-watchDir :: FilePath -> Pruner -> WatchHooks -> (IO Win32Notify.WatchManager -> IO Win32Notify.WatchManager) -> IO DirWatcherHandle
-watchDir dir prune hooks runstartup =
-	runstartup $ Win32Notify.watchDir dir prune hooks
+watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO Win32Notify.WatchManager -> IO Win32Notify.WatchManager) -> IO DirWatcherHandle
+watchDir dir prune scanevents hooks runstartup =
+	runstartup $ Win32Notify.watchDir dir prune scanevents hooks
 #else
 type DirWatcherHandle = ()
-watchDir :: FilePath -> Pruner -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
+watchDir :: FilePath -> Pruner -> Bool -> WatchHooks -> (IO () -> IO ()) -> IO DirWatcherHandle
 watchDir = undefined
 #endif
 #endif

@@ -14,8 +14,8 @@ import System.OSX.FSEvents
 import qualified System.Posix.Files as Files
 import Data.Bits ((.&.))
 
-watchDir :: FilePath -> (FilePath -> Bool) -> WatchHooks -> IO EventStream
-watchDir dir ignored hooks = do
+watchDir :: FilePath -> (FilePath -> Bool) -> Bool -> WatchHooks -> IO EventStream
+watchDir dir ignored scanevents hooks = do
 	unlessM fileLevelEventsSupported $
 		error "Need at least OSX 10.7.0 for file-level FSEvents"
 	scan dir
@@ -79,9 +79,11 @@ watchDir dir ignored hooks = do
 					Nothing -> noop
 					Just s
 						| Files.isSymbolicLink s ->
-							runhook addSymlinkHook ms
+							when scanevents $
+								runhook addSymlinkHook ms
 						| Files.isRegularFile s ->
-							runhook addHook ms
+							when scanevents $
+								runhook addHook ms
 						| otherwise ->
 							noop
 		  where

@@ -39,7 +39,7 @@ mergeThread = namedThread "Merger" $ do
 		, modifyHook = changehook
 		, errHook = errhook
 		}
-	void $ liftIO $ watchDir dir (const False) hooks id
+	void $ liftIO $ watchDir dir (const False) True hooks id
 	debug ["watching", dir]
 
 type Handler = FilePath -> Assistant ()

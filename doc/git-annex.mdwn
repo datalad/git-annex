@@ -1380,6 +1380,13 @@ Here are all the supported configuration settings.
   Set to false to prevent the git-annex assistant from automatically
   committing changes to files in the repository.
 
+* `annex.startupscan`
+
+  Set to false to prevent the git-annex assistant from scanning the
+  repository for new and changed files on startup. This will prevent it
+  from noticing changes that were made while it was not running, but can be
+  a useful performance tweak for a large repository.
+
 * `annex.listen`
 
   Configures which address the webapp listens on. The default is localhost.

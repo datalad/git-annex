@@ -46,8 +46,8 @@ import Control.Exception (throw)
  - So this will fail if there are too many subdirectories. The
  - errHook is called when this happens.
  -}
-watchDir :: INotify -> FilePath -> (FilePath -> Bool) -> WatchHooks -> IO ()
-watchDir i dir ignored hooks
+watchDir :: INotify -> FilePath -> (FilePath -> Bool) -> Bool -> WatchHooks -> IO ()
+watchDir i dir ignored scanevents hooks
 	| ignored dir = noop
 	| otherwise = do
 		-- Use a lock to make sure events generated during initial
@@ -61,7 +61,7 @@ watchDir i dir ignored hooks
 				mapM_ scan =<< filter (not . dirCruft) <$>
 					getDirectoryContents dir
   where
-	recurse d = watchDir i d ignored hooks
+	recurse d = watchDir i d ignored scanevents hooks
 
 	-- Select only inotify events required by the enabled
 	-- hooks, but always include Create so new directories can
@@ -85,9 +85,11 @@ watchDir i dir ignored hooks
 				| Files.isDirectory s ->
 					recurse $ indir f
 				| Files.isSymbolicLink s ->
-					runhook addSymlinkHook f ms
+					when scanevents $
+						runhook addSymlinkHook f ms
 				| Files.isRegularFile s ->
-					runhook addHook f ms
+					when scanevents $
+						runhook addHook f ms
 				| otherwise ->
 					noop
 

@@ -50,8 +50,9 @@ upgradeWatcherThread urlrenderer = namedThread "UpgradeWatcher" $ do
 		let dir = parentDir flagfile
 		let depth = length (splitPath dir) + 1
 		let nosubdirs f = length (splitPath f) == depth
-		void $ liftIO $ watchDir dir nosubdirs hooks (startup mvar)
+		void $ liftIO $ watchDir dir nosubdirs False hooks (startup mvar)
   	-- Ignore bogus events generated during the startup scan.
+	-- We ask the watcher to not generate them, but just to be safe..
   	startup mvar scanner = do
 		r <- scanner
 		void $ swapMVar mvar Started

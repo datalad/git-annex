@@ -102,7 +102,8 @@ runWatcher = do
 		, delDirHook = deldirhook
 		, errHook = errhook
 		}
-	handle <- liftIO $ watchDir "." ignored hooks startup
+	scanevents <- liftAnnex $ annexStartupScan <$> Annex.getGitConfig
+	handle <- liftIO $ watchDir "." ignored scanevents hooks startup
 	debug [ "watching", "."]
 	
 	{- Let the DirWatcher thread run until signalled to pause it,
