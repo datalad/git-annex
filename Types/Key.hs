@@ -97,4 +97,12 @@ prop_idempotent_key_encode :: Key -> Bool
 prop_idempotent_key_encode k = Just k == (file2key . key2file) k
 
 prop_idempotent_key_decode :: FilePath -> Bool
-prop_idempotent_key_decode f = maybe True (\k -> key2file k == f) (file2key f)
+prop_idempotent_key_decode f
+	| normalfieldorder = maybe True (\k -> key2file k == f) (file2key f)
+	| otherwise = True
+  where
+  	-- file2key will accept the fields in any order, so don't
+	-- try the test unless the fields are in the normal order
+	normalfieldorder = fields `isPrefixOf` "sm"
+	fields = map (f !!) $ filter (< length f) $ map succ $
+		elemIndices fieldSep f
