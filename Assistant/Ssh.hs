@@ -143,6 +143,8 @@ addAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO Bool
 addAuthorizedKeys gitannexshellonly dir pubkey = boolSystem "sh"
 	[ Param "-c" , Param $ addAuthorizedKeysCommand gitannexshellonly dir pubkey ]
 
+{- Should only be used within the same process that added the line;
+ - the layout of the line is not kepy stable across versions. -}
 removeAuthorizedKeys :: Bool -> FilePath -> SshPubKey -> IO ()
 removeAuthorizedKeys gitannexshellonly dir pubkey = do
 	let keyline = authorizedKeysLine gitannexshellonly dir pubkey
@@ -195,7 +197,7 @@ authorizedKeysLine gitannexshellonly dir pubkey
 	 - long perl script. -}
 	| otherwise = pubkey
   where
-	limitcommand = "command=\"GIT_ANNEX_SHELL_DIRECTORY="++shellEscape dir++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding "
+	limitcommand = "command=\"GIT_ANNEX_SHELL_DIRECTORY="++shellEscape dir++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty "
 
 {- Generates a ssh key pair. -}
 genSshKeyPair :: IO SshKeyPair

@@ -27,6 +27,7 @@ git-annex (5.20140228) UNRELEASED; urgency=medium
   * glacier: Pass --region to glacier checkpresent.
   * webdav: When built with a new enough haskell DAV (0.6), disable
     the http response timeout, which was only 5 seconds.
+  * webapp: Include no-pty in ssh authorized_keys lines.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 28 Feb 2014 14:52:15 -0400
 
