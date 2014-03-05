@@ -201,6 +201,7 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	, check "version" test_version
 	, check "sync" test_sync
 	, check "union merge regression" test_union_merge_regression
+	, check "conflict resolution" test_conflict_resolution
 	, check "conflict resolution movein regression" test_conflict_resolution_movein_regression
 	, check "conflict resolution (mixed directory and file)" test_mixed_conflict_resolution
 	, check "conflict resolution symlinks" test_conflict_resolution_symlinks
@@ -813,6 +814,40 @@ test_conflict_resolution_movein_regression env = withtmpclonerepo env False $ \r
 		forM_ [r1, r2] $ \r -> indir env r $ do
 		 	git_annex env "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
 
+{- Simple case of conflict resolution; 2 different versions of annexed
+ - file. -}
+test_conflict_resolution :: TestEnv -> Assertion
+test_conflict_resolution env = 
+	withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			indir env r1 $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor1"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed in r1"
+			indir env r2 $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor2"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed in r2"
+			pair env r1 r2
+			forM_ [r1,r2,r1] $ \r -> indir env r $
+				git_annex env "sync" [] @? "sync failed"
+			checkmerge "r1" r1
+			checkmerge "r2" r2
+  where
+	conflictor = "conflictor"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = do
+		l <- getDirectoryContents d
+		let v = filter (variantprefix `isPrefixOf`) l
+		length v == 2
+			@? (what ++ " not exactly 2 variant files in: " ++ show l)
+		indir env d $ do
+			git_annex env "get" v @? "get failed"
+			git_annex_expectoutput env "find" v v
+
+
 {- Check merge conflict resolution when one side is an annexed
  - file, and the other is a directory. -}
 test_mixed_conflict_resolution :: TestEnv -> Assertion
@@ -847,7 +882,9 @@ test_mixed_conflict_resolution env = do
 		l <- getDirectoryContents d
 		let v = filter (variantprefix `isPrefixOf`) l
 		not (null v)
-			@? (what ++ " conflictor file missing in: " ++ show l )
+			@? (what ++ " conflictor variant file missing in: " ++ show l )
+		length v == 1
+			@? (what ++ " too many variant files in: " ++ show v)
 		indir env d $ do
 			git_annex env "get" (conflictor:v) @? ("get failed in " ++ what)
 			git_annex_expectoutput env "find" [conflictor] [Git.FilePath.toInternalGitPath subfile]
@@ -891,7 +928,9 @@ test_remove_conflict_resolution env = do
 		l <- getDirectoryContents d
 		let v = filter (variantprefix `isPrefixOf`) l
 		not (null v)
-			@? (what ++ " conflictor file missing in: " ++ show l )
+			@? (what ++ " conflictor variant file missing in: " ++ show l )
+		length v == 1
+			@? (what ++ " too many variant files in: " ++ show v)
 
 {- Check merge confalict resolution when a file is annexed in one repo,
  - and checked directly into git in the other repo.
@@ -935,6 +974,8 @@ test_nonannexed_conflict_resolution env = do
 		let v = filter (variantprefix `isPrefixOf`) l
 		not (null v)
 			@? (what ++ " conflictor variant file missing in: " ++ show l )
+		length v == 1
+			@? (what ++ " too many variant files in: " ++ show v)
 		conflictor `elem` l @? (what ++ " conflictor file missing in: " ++ show l)
 		s <- catchMaybeIO (readFile (d </> conflictor))
 		s == Just nonannexed_content
