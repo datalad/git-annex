@@ -196,7 +196,7 @@ checkPresent r k = do
 					else return $ Right False
 			Left err -> return $ Left err
 
-	params =
+	params = glacierParams (config r)
 		[ Param "archive"
 		, Param "checkpresent"
 		, Param $ getVault $ config r

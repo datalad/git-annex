@@ -33,3 +33,6 @@ boto.glacier.exceptions.UnexpectedHTTPResponseError: Expected 200, got (404, cod
 (user error (glacier ["archive","checkpresent","myvault","--quiet","SHA256E-s1111111--aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.JPG"] exited 1)) failed
 git-annex: copy: 1 failed
 """]]
+
+> [[fixed|done]]; made it use the same glacierParams as everything else.
+> --[[Joey]]
