@@ -78,8 +78,12 @@ file2key s
 	findfields _ v = v
 
 	addbackend k v = Just k { keyBackendName = v }
-	addfield 's' k v = Just k { keySize = readish v }
-	addfield 'm' k v = Just k { keyMtime = readish v }
+	addfield 's' k v = do
+		sz <- readish v
+		return $ k { keySize = Just sz }
+	addfield 'm' k v = do
+		mtime <- readish v
+		return $ k { keyMtime = Just mtime }
 	addfield _ _ _ = Nothing
 
 instance Arbitrary Key where
