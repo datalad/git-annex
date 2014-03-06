@@ -1,4 +1,4 @@
-git-annex (5.20140228) UNRELEASED; urgency=medium
+git-annex (5.20140306) unstable; urgency=high
 
   * sync: Fix bug in direct mode that caused a file that was not
     checked into git to be deleted when there was a conflicting
@@ -33,7 +33,7 @@ git-annex (5.20140228) UNRELEASED; urgency=medium
   * assistant: Smarter log file rotation, which takes free disk space
     into account.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 28 Feb 2014 14:52:15 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 12:28:04 -0400
 
 git-annex (5.20140227) unstable; urgency=medium
 
