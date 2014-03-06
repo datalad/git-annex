@@ -31,6 +31,7 @@ import qualified Data.Map as M
 import qualified Data.Set as S
 import qualified Data.Text as T
 import Data.Function
+import Control.Concurrent
 
 type RepoList = [(RepoDesc, RepoId, Actions)]
 
@@ -238,3 +239,15 @@ reorderCosts remote rs = zip rs'' (insertCostAfter costs i)
 	costs = map Remote.cost rs'
 	rs'' = (\(x, y) -> x ++ [remote] ++ y) $ splitAt (i + 1) rs'
 
+getSyncNowRepositoryR :: UUID -> Handler ()
+getSyncNowRepositoryR uuid = do
+	u <- liftAnnex getUUID
+	if u == uuid
+		then do
+			thread <- liftAssistant $ asIO $
+				reconnectRemotes True
+					=<< (syncRemotes <$> getDaemonStatus)
+			void $ liftIO $ forkIO thread
+		else maybe noop (liftAssistant . syncRemote)
+			=<< liftAnnex (Remote.remoteFromUUID uuid)
+	redirectBack
