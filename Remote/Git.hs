@@ -144,7 +144,7 @@ repoAvail r
 				else return True
 	| Git.repoIsUrl r = return True
 	| Git.repoIsLocalUnknown r = return False
-	| otherwise = liftIO $ catchBoolIO $ onLocal r $ return True
+	| otherwise = liftIO $ isJust <$> catchMaybeIO (Git.Config.read r)
 
 {- Tries to read the config for a specified remote, updates state, and
  - returns the updated repo. -}
@@ -161,9 +161,12 @@ tryGitConfigRead r
 	| Git.repoIsHttp r = store geturlconfig
 	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
 	| Git.repoIsUrl r = return r
-	| otherwise = store $ safely $ onLocal r $ do 
-		ensureInitialized
-		Annex.getState Annex.repo
+	| otherwise = store $ safely $ do
+		s <- Annex.new r
+		Annex.eval s $ do
+			Annex.BranchState.disableUpdate
+			ensureInitialized
+			Annex.getState Annex.repo
   where
 	haveconfig = not . M.null . Git.config
 
@@ -267,8 +270,8 @@ inAnnex rmt key
 	checkremote = Ssh.inAnnex r key
 	checklocal = guardUsable r (cantCheck r) $ dispatch <$> check
 	  where
-		check = liftIO $ catchMsgIO $ onLocal r $
-			Annex.Content.inAnnexSafe key
+		check = either (Left . show) Right 
+			<$> tryAnnex (onLocal rmt $ Annex.Content.inAnnexSafe key)
 		dispatch (Left e) = Left e
 		dispatch (Right (Just b)) = Right b
 		dispatch (Right Nothing) = cantCheck r
@@ -291,7 +294,7 @@ keyUrls r key = map tourl locs'
 dropKey :: Remote -> Key -> Annex Bool
 dropKey r key
 	| not $ Git.repoIsUrl (repo r) =
-		guardUsable (repo r) False $ commitOnCleanup r $ liftIO $ onLocal (repo r) $ do
+		guardUsable (repo r) False $ commitOnCleanup r $ onLocal r $ do
 			ensureInitialized
 			whenM (Annex.Content.inAnnex key) $ do
 				Annex.Content.lockContent key $
@@ -311,7 +314,7 @@ copyFromRemote' r key file dest
 		let params = Ssh.rsyncParams r Download
 		u <- getUUID
 		-- run copy from perspective of remote
-		liftIO $ onLocal (repo r) $ do
+		onLocal r $ do
 			ensureInitialized
 			v <- Annex.Content.prepSendAnnex key
 			case v of
@@ -410,7 +413,7 @@ copyToRemote r key file p
 		let params = Ssh.rsyncParams r Upload
 		u <- getUUID
 		-- run copy from perspective of remote
-		liftIO $ onLocal (repo r) $ ifM (Annex.Content.inAnnex key)
+		onLocal r $ ifM (Annex.Content.inAnnex key)
 			( return True
 			, do
 				ensureInitialized
@@ -439,18 +442,39 @@ fsckOnRemote r params
 
 {- The passed repair action is run in the Annex monad of the remote. -}
 repairRemote :: Git.Repo -> Annex Bool -> Annex (IO Bool)
-repairRemote r a = return $ Remote.Git.onLocal r a
-
-{- Runs an action on a local repository inexpensively, by making an annex
- - monad using that repository. -}
-onLocal :: Git.Repo -> Annex a -> IO a
-onLocal r a = do
+repairRemote r a = return $ do
 	s <- Annex.new r
 	Annex.eval s $ do
-		-- No need to update the branch; its data is not used
-		-- for anything onLocal is used to do.
 		Annex.BranchState.disableUpdate
+		ensureInitialized
 		a
+
+{- Runs an action from the perspective of a local remote.
+ -
+ - The AnnexState is cached for speed and to avoid resource leaks.
+ -
+ - The repository's git-annex branch is not updated, as an optimisation.
+ - No caller of onLocal can query data from the branch and be ensured
+ - it gets a current value. Caller of onLocal can make changes to
+ - the branch, however.
+ -}
+onLocal :: Remote -> Annex a -> Annex a
+onLocal r a = do
+	m <- Annex.getState Annex.remoteannexstate
+	case M.lookup (uuid r) m of
+		Nothing -> do
+			st <- liftIO $ Annex.new (repo r)
+			go st $ do
+				Annex.BranchState.disableUpdate	
+				a
+		Just st -> go st a
+  where
+	cache st = Annex.changeState $ \s -> s
+		{ Annex.remoteannexstate = M.insert (uuid r) st (Annex.remoteannexstate s) }
+	go st a' = do
+		(ret, st') <- liftIO $ Annex.run st a'
+		cache st'
+		return ret
 
 {- Copys a file with rsync unless both locations are on the same
  - filesystem. Then cp could be faster. -}
@@ -488,7 +512,7 @@ commitOnCleanup r a = go `after` a
   where
 	go = Annex.addCleanup (Git.repoLocation $ repo r) cleanup
 	cleanup
-		| not $ Git.repoIsUrl (repo r) = liftIO $ onLocal (repo r) $
+		| not $ Git.repoIsUrl (repo r) = onLocal r $
 			doQuietSideAction $
 				Annex.Branch.commit "update"
 		| otherwise = void $ do

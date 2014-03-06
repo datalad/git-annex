@@ -1,3 +1,10 @@
+git-annex (5.20140307) UNRELEASED; urgency=medium
+
+  * Fix zombie leak and general inneficiency when copying files to a
+    local git repo.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
+
 git-annex (5.20140306) unstable; urgency=high
 
   * sync: Fix bug in direct mode that caused a file that was not

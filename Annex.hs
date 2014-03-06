@@ -88,6 +88,7 @@ data AnnexState = AnnexState
 	, gitconfig :: GitConfig
 	, backends :: [BackendA Annex]
 	, remotes :: [Types.Remote.RemoteA Annex]
+	, remoteannexstate :: M.Map UUID AnnexState
 	, output :: MessageState
 	, force :: Bool
 	, fast :: Bool
@@ -128,6 +129,7 @@ newState c r = AnnexState
 	, gitconfig = c
 	, backends = []
 	, remotes = []
+	, remoteannexstate = M.empty
 	, output = defaultMessageState
 	, force = False
 	, fast = False
