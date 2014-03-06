@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnR6E5iUghMWdUGlbA9CCs8DKaoigMjJXw"
+ nickname="Efraim"
+ subject="comment 2"
+ date="2014-03-06T10:06:02Z"
+ content="""
+I've noticed that fdroidserver is available in the main debian repos, and not having really looked at it too much yet, if it shares similar code to wannabuild then it should be possible to continue everything as you're already doing it, just in addition rsync or git push the code base to a local fdroidserver instance and also copy the binary over once it's set up.
+(if I understood wannabuild correctly, if you upload new source and a prebuilt binary it will mark that architecture as built.)
+"""]]
