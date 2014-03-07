@@ -63,3 +63,5 @@ New lines in .git/annex/daemon.log when I add another new file:
 """]]
 
 [[!meta title="local pairing git-annex-shell issue when using standalone tarball"]]
+
+[[!tag moreinfo]]
