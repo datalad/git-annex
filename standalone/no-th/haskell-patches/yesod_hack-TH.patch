@@ -1,13 +1,13 @@
-From 69398345ff1e63bcc6a23fce18e42390328b78d2 Mon Sep 17 00:00:00 2001
+From 369c99b9de0c82578f5221fdabc42ea9ba59ddea Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Tue, 17 Dec 2013 18:48:56 +0000
-Subject: [PATCH] hack for TH
+Date: Fri, 7 Mar 2014 04:10:02 +0000
+Subject: [PATCH] hack to TH
 
 ---
- Yesod.hs              |   19 ++++++++++++--
- Yesod/Default/Main.hs |   23 -----------------
- Yesod/Default/Util.hs |   69 ++-----------------------------------------------
- 3 files changed, 19 insertions(+), 92 deletions(-)
+ Yesod.hs              | 19 ++++++++++++--
+ Yesod/Default/Main.hs | 25 +------------------
+ Yesod/Default/Util.hs | 69 ++-------------------------------------------------
+ 3 files changed, 20 insertions(+), 93 deletions(-)
 
 diff --git a/Yesod.hs b/Yesod.hs
 index b367144..fbe309c 100644
@@ -41,7 +41,7 @@ index b367144..fbe309c 100644
 +insert = undefined
 +
 diff --git a/Yesod/Default/Main.hs b/Yesod/Default/Main.hs
-index 0780539..2c73800 100644
+index 0780539..ad99ccd 100644
 --- a/Yesod/Default/Main.hs
 +++ b/Yesod/Default/Main.hs
 @@ -1,10 +1,8 @@
@@ -55,6 +55,15 @@ index 0780539..2c73800 100644
      , defaultRunner
      , defaultDevelApp
      , LogFunc
+@@ -22,7 +20,7 @@ import Control.Monad (when)
+ import System.Environment (getEnvironment)
+ import Data.Maybe (fromMaybe)
+ import Safe (readMay)
+-import Control.Monad.Logger (Loc, LogSource, LogLevel (LevelError), liftLoc)
++import Control.Monad.Logger (Loc, LogSource, LogLevel (LevelError))
+ import System.Log.FastLogger (LogStr, toLogStr)
+ import Language.Haskell.TH.Syntax (qLocation)
+ 
 @@ -54,27 +52,6 @@ defaultMain load getApp = do
  
  type LogFunc = Loc -> LogSource -> LogLevel -> LogStr -> IO ()
@@ -180,5 +189,5 @@ index a10358e..0547424 100644
 -                else return $ Just ex
 -        else return Nothing
 -- 
-1.7.10.4
+1.9.0
 

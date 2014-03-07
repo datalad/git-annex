@@ -1,17 +1,17 @@
-From 4ea1e94794b59ba4eb0dab7384c4195a224f468d Mon Sep 17 00:00:00 2001
-From: androidbuilder <androidbuilder@example.com>
-Date: Fri, 27 Dec 2013 00:28:51 -0400
+From 885cc873196f535de7cd1ac2ccfa217d10308d1f Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Fri, 7 Mar 2014 02:28:34 +0000
 Subject: [PATCH] avoid building with jsmin
 
 jsmin needs language-javascript, which fails to build for android due to
 a problem or incompatability with happy.
 
 This also avoids all the TH code.
-
 ---
- Yesod/EmbeddedStatic/Generators.hs |    3 +--
- yesod-static.cabal                 |    7 -------
- 2 files changed, 1 insertion(+), 9 deletions(-)
+ Yesod/EmbeddedStatic/Generators.hs |  3 +--
+ Yesod/Static.hs                    | 29 ++++++++++++++++++-----------
+ yesod-static.cabal                 |  7 -------
+ 3 files changed, 19 insertions(+), 20 deletions(-)
 
 diff --git a/Yesod/EmbeddedStatic/Generators.hs b/Yesod/EmbeddedStatic/Generators.hs
 index e83785d..6b1c10e 100644
@@ -34,8 +34,132 @@ index e83785d..6b1c10e 100644
  
  -- | Use <https://github.com/mishoo/UglifyJS2 UglifyJS2> to compress javascript.
  -- Assumes @uglifyjs@ is located in the path and uses options @[\"-m\", \"-c\"]@
+diff --git a/Yesod/Static.hs b/Yesod/Static.hs
+index dd21791..37f7e00 100644
+--- a/Yesod/Static.hs
++++ b/Yesod/Static.hs
+@@ -37,8 +37,8 @@ module Yesod.Static
+     , staticDevel
+       -- * Combining CSS/JS
+       -- $combining
+-    , combineStylesheets'
+-    , combineScripts'
++    --, combineStylesheets'
++    --, combineScripts'
+       -- ** Settings
+     , CombineSettings
+     , csStaticDir
+@@ -48,13 +48,13 @@ module Yesod.Static
+     , csJsPreProcess
+     , csCombinedFolder
+       -- * Template Haskell helpers
+-    , staticFiles
+-    , staticFilesList
+-    , publicFiles
++    --, staticFiles
++    --, staticFilesList
++    --, publicFiles
+       -- * Hashing
+     , base64md5
+       -- * Embed
+-    , embed
++    --, embed
+ #ifdef TEST_EXPORT
+     , getFileListPieces
+ #endif
+@@ -64,7 +64,7 @@ import Prelude hiding (FilePath)
+ import qualified Prelude
+ import System.Directory
+ import Control.Monad
+-import Data.FileEmbed (embedDir)
++import Data.FileEmbed
+ 
+ import Yesod.Core
+ import Yesod.Core.Types
+@@ -135,6 +135,7 @@ staticDevel dir = do
+     hashLookup <- cachedETagLookupDevel dir
+     return $ Static $ webAppSettingsWithLookup (F.decodeString dir) hashLookup
+ 
++{-
+ -- | Produce a 'Static' based on embedding all of the static files' contents in the
+ -- executable at compile time.
+ --
+@@ -149,6 +150,7 @@ staticDevel dir = do
+ -- This will cause yesod to embed those assets into the generated HTML file itself.
+ embed :: Prelude.FilePath -> Q Exp
+ embed fp = [|Static (embeddedSettings $(embedDir fp))|]
++-}
+ 
+ instance RenderRoute Static where
+     -- | A route on the static subsite (see also 'staticFiles').
+@@ -214,6 +216,7 @@ getFileListPieces = flip evalStateT M.empty . flip go id
+                 put $ M.insert s s m
+                 return s
+ 
++{-
+ -- | Template Haskell function that automatically creates routes
+ -- for all of your static files.
+ --
+@@ -266,7 +269,7 @@ staticFilesList dir fs =
+ -- see if their copy is up-to-date.
+ publicFiles :: Prelude.FilePath -> Q [Dec]
+ publicFiles dir = mkStaticFiles' dir "StaticRoute" False
+-
++-}
+ 
+ mkHashMap :: Prelude.FilePath -> IO (M.Map F.FilePath S8.ByteString)
+ mkHashMap dir = do
+@@ -309,6 +312,7 @@ cachedETagLookup dir = do
+     etags <- mkHashMap dir
+     return $ (\f -> return $ M.lookup f etags)
+ 
++{-
+ mkStaticFiles :: Prelude.FilePath -> Q [Dec]
+ mkStaticFiles fp = mkStaticFiles' fp "StaticRoute" True
+ 
+@@ -356,6 +360,7 @@ mkStaticFilesList fp fs routeConName makeHash = do
+                 [ Clause [] (NormalB $ (ConE route) `AppE` f' `AppE` qs) []
+                 ]
+             ]
++-}
+ 
+ base64md5File :: Prelude.FilePath -> IO String
+ base64md5File = fmap (base64 . encode) . hashFile
+@@ -394,7 +399,7 @@ base64 = map tr
+ -- single static file at compile time.
+ 
+ data CombineType = JS | CSS
+-
++{-
+ combineStatics' :: CombineType
+                 -> CombineSettings
+                 -> [Route Static] -- ^ files to combine
+@@ -428,7 +433,7 @@ combineStatics' combineType CombineSettings {..} routes = do
+         case combineType of
+             JS -> "js"
+             CSS -> "css"
+-
++-}
+ -- | Data type for holding all settings for combining files.
+ --
+ -- This data type is a settings type. For more information, see:
+@@ -504,6 +509,7 @@ instance Default CombineSettings where
+ errorIntro :: [FilePath] -> [Char] -> [Char]
+ errorIntro fps s = "Error minifying " ++ show fps ++ ": " ++ s
+ 
++{-
+ liftRoutes :: [Route Static] -> Q Exp
+ liftRoutes =
+     fmap ListE . mapM go
+@@ -550,4 +556,5 @@ combineScripts' :: Bool -- ^ development? if so, perform no combining
+                 -> Q Exp
+ combineScripts' development cs con routes
+     | development = [| mapM_ (addScript . $(return $ ConE con)) $(liftRoutes routes) |]
+-    | otherwise = [| addScript $ $(return $ ConE con) $(combineStatics' JS cs routes) |]
++    | otherwise = [| addScript $ $(return $ ConE con) $(combineStatics' JS cs routes) |]a
++-}
 diff --git a/yesod-static.cabal b/yesod-static.cabal
-index df05ecf..31abe1a 100644
+index 3423149..416aae6 100644
 --- a/yesod-static.cabal
 +++ b/yesod-static.cabal
 @@ -48,18 +48,12 @@ library
@@ -66,5 +190,5 @@ index df05ecf..31abe1a 100644
                     , filepath
                     , resourcet
 -- 
-1.7.10.4
+1.9.0
 
