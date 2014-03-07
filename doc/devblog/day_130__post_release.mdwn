@@ -1,0 +1,17 @@
+Release made yesterday, but only finished up the armel build today. 
+And it turns out the OSX build was missing the webapp, so it's also been
+updated today.
+
+Post release bug triage including:
+
+Added a nice peice of UI to the webapp on user request: A "Sync now" menu
+item in the repository for each repo. (The one for the current repo syncs with
+all its remotes.)
+
+Copying files to a git repository on the same computer turns out to have
+had a resource leak issue, that caused 1 zombie process per file. With
+some tricky monad state caching, fixed that, and also eliminated 8% of the work
+done by git-annex in this case.
+
+Fixed `git annex unused` in direct mode to not think that files that were
+deleted out of the work tree by the user still existed and were unused.
