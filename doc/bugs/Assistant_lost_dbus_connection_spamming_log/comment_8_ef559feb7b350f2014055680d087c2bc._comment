@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 8"
+ date="2014-03-07T17:16:41Z"
+ content="""
+greg has confirmed that he can connect to the webapp, but it never replies to http requests. So, this could be the port being bound, but the accept failing.
+
+I don't know why it would retry the accept once per second, but this could be something in warp or the network library.
+"""]]
