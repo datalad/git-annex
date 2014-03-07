@@ -22,3 +22,6 @@ This is a problem because unless I manually disable the remote repo, it will con
 The remote transfer wasn't even necessary to begin with, because it already had a direct connection to the local paired repo.  But even so, it should at least abort the remote transfer when the local transfer finishes.
 
 Thanks for your work on git-annex assistant.
+
+> From a re-read of the comments, this was resolved satisfactorily,
+> and I don't need to make any changes. [[done]] --[[Joey]]
