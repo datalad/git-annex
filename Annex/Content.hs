@@ -24,6 +24,7 @@ module Annex.Content (
 	removeAnnex,
 	fromAnnex,
 	moveBad,
+	KeyLocation(..),
 	getKeysPresent,
 	saveState,
 	downloadUrl,
@@ -466,22 +467,33 @@ moveBad key = do
 	logStatus key InfoMissing
 	return dest
 
-{- List of keys whose content exists in the annex. -}
-getKeysPresent :: Annex [Key]
-getKeysPresent = do
+data KeyLocation = InAnnex | InRepository
+
+{- List of keys whose content exists in the specified location.
+ 
+ - InAnnex only lists keys under .git/annex/objects,
+ - while InRepository, in direct mode, also finds keys located in the
+ - work tree.
+ -
+ - Note that InRepository has to check whether direct mode files
+ - have goodContent.
+ -}
+getKeysPresent :: KeyLocation -> Annex [Key]
+getKeysPresent keyloc = do
 	direct <- isDirect
 	dir <- fromRepo gitAnnexObjectDir
-	liftIO $ traverse direct (2 :: Int) dir
+	s <- getstate direct
+	liftIO $ traverse s direct (2 :: Int) dir
   where
-	traverse direct depth dir = do
+	traverse s direct depth dir = do
 		contents <- catchDefaultIO [] (dirContents dir)
 		if depth == 0
 			then do
-				contents' <- filterM (present direct) contents
+				contents' <- filterM (present s direct) contents
 				let keys = mapMaybe (fileKey . takeFileName) contents'
 				continue keys []
 			else do
-				let deeper = traverse direct (depth - 1)
+				let deeper = traverse s direct (depth - 1)
 				continue [] (map deeper contents)
 	continue keys [] = return keys
 	continue keys (a:as) = do
@@ -489,14 +501,30 @@ getKeysPresent = do
 		morekeys <- unsafeInterleaveIO a
 		continue (morekeys++keys) as
 
-	{- In indirect mode, look for the key. In direct mode,
-	 - the inode cache file is only present when a key's content
-	 - is present, so can be used as a surrogate if the content
-	 - is not located in the annex directory. -}
-	present False d = doesFileExist $ contentfile d
-	present True d = doesFileExist (contentfile d ++ ".cache")
-		<||> present False d
+	present _ False d = presentInAnnex d
+	present s True d = presentDirect s d <||> presentInAnnex d
+
+	presentInAnnex = doesFileExist . contentfile
 	contentfile d = d </> takeFileName d
+
+	presentDirect s d = case keyloc of
+		InAnnex -> return False
+		InRepository -> case fileKey (takeFileName d) of
+			Nothing -> return False
+			Just k -> Annex.eval s $ 
+				anyM (goodContent k) =<< associatedFiles k
+
+	{- In order to run Annex monad actions within unsafeInterleaveIO,
+	 - the current state is taken and reused. No changes made to this
+	 - state will be preserved. 
+	 -
+	 - As an optimsation, call inodesChanged to prime the state with
+	 - a cached value that will be used in the call to goodContent.
+	 -}
+	getstate direct = do
+		when direct $
+			void $ inodesChanged
+		Annex.getState id
 
 {- Things to do to record changes to content when shutting down.
  -

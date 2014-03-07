@@ -53,7 +53,7 @@ finish :: Annex ()
 finish = do
 	annexdir <- fromRepo gitAnnexDir
 	annexobjectdir <- fromRepo gitAnnexObjectDir
-	leftovers <- removeUnannexed =<< getKeysPresent
+	leftovers <- removeUnannexed =<< getKeysPresent InAnnex
 	if null leftovers
 		then liftIO $ removeDirectoryRecursive annexdir
 		else error $ unlines
