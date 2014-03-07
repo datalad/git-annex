@@ -9,3 +9,5 @@ lrwxrwxrwx 1 jkt jkt 343 Mar  3 02:08 2011-02-05 Svatba Maruška Pavel/jkt/cam1/
 """]]
 
 I don't know what determines the `P4/F7/` vs `38/pG/` directory names, but I would prefer if these duplicates were not created.
+
+> I guess I'm going to close this as not a bug. [[done]] --[[Joey]] 
