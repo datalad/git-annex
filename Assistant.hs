@@ -45,7 +45,6 @@ import Assistant.Threads.XMPPClient
 import Assistant.Threads.XMPPPusher
 #endif
 #else
-#warning Building without the webapp. You probably need to install Yesod..
 import Assistant.Types.UrlRenderer
 #endif
 import qualified Utility.Daemon
