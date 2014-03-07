@@ -72,11 +72,12 @@ install_pkgs () {
 	patched yesod-core
 	patched persistent
 	patched persistent-template
-	patched yesod
+	patched file-embed
+	patched shakespeare-text
 	patched process-conduit
 	patched yesod-static
+	patched yesod-persistent
 	patched yesod-form
-	patched file-embed
 	patched yesod-auth
 	patched yesod
 	patched generic-deriving
@@ -84,7 +85,6 @@ install_pkgs () {
 	patched reflection
 	patched lens
 	patched xml-hamlet
-	patched shakespeare-text
 	patched DAV
 
 	cd ..
