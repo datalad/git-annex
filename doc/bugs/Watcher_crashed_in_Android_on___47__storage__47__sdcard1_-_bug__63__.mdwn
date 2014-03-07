@@ -41,3 +41,5 @@ Android 4.1.1 Huawei Y300 Annex.apk v1.0.52 version 4.20130723
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
