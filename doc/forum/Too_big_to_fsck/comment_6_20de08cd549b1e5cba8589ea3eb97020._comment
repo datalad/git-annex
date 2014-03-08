@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnFjuvfPpi1kf6l54bxfFUm0Aw_Gf_IO0o"
+ nickname="Aaron"
+ subject="Progress"
+ date="2014-03-08T00:05:17Z"
+ content="""
+That seemed to do something:
+
+    $ git fsck --no-reflogs |wc
+    Checking object directories: 100% (256/256), done.
+    error: refs/gcrypt/gitception+ does not point to a valid object!
+    error: refs/remotes/Beta/git-annex does not point to a valid object!
+    error: refs/remotes/Beta/master does not point to a valid object!
+    Checking connectivity: 128728, done.
+     369082 1165340 20898546
+
+Though now I get:
+
+    $ git-annex webapp
+    error: refs/gcrypt/gitception+ does not point to a valid object!
+    error: refs/remotes/Beta/git-annex does not point to a valid object!
+    error: refs/remotes/Beta/master does not point to a valid object!
+    fatal: unable to read tree 656e7db5be172f01c0b6994d01f1a08d1273af12
+    git-annex: git [Param \"checkout\",Param \"-q\",Param \"-B\",Param \"annex/direct/master\"] failed
+
+Thanks again for all of your help!
+"""]]
