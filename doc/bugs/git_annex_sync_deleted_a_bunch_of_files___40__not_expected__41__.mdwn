@@ -12,6 +12,10 @@ Obviously, I'm not sure really because I don't plug this usb drive every day to 
 
 Anyway, the big mistake I did was syncing the laptop as well, naively thinking it would correct the usb drive; but instead it also deleted the files on the laptop. I had a back up of most of it so it was okay.
 
+---
+
+So now I git reset --hard to a commit before I synced, so I still have my files. But how can I fix this situation?
+
 ### What version of git-annex are you using? On what operating system?
 
 Arch Linux
