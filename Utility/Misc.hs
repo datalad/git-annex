@@ -109,18 +109,6 @@ massReplace vs = go [] vs
 			go (replacement:acc) vs (drop (length val) s)
 		| otherwise = go acc rest s
 
-{- Given two orderings, returns the second if the first is EQ and returns
- - the first otherwise.
- -
- - Example use:
- -
- - compare lname1 lname2 `thenOrd` compare fname1 fname2
- -}
-thenOrd :: Ordering -> Ordering -> Ordering
-thenOrd EQ x = x
-thenOrd x _ = x
-{-# INLINE thenOrd #-}
-
 {- Wrapper around hGetBufSome that returns a String.
  -
  - The null string is returned on eof, otherwise returns whatever
