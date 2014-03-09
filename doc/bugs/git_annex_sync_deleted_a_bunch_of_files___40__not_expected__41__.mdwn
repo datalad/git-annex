@@ -4,7 +4,13 @@ I plugged in a usb drive, did git annex sync and it git fast-forward and deleted
 
 ### What steps will reproduce the problem?
 
-Obviously, I'm not sure really because I don't plug this usb drive every day to sync so I don't remember what I did last time. But I suppose I just finished with git annex sync and unplugged it. The usb drive as in direct mode whereas the laptop was in indirect mode at the time. Anyway, the big mistake I did was syncing the laptop as well, naively thinking it would correct the usb drive; but instead it also deleted the files on the laptop. I had a back up of most of it so it was okay.
+Obviously, I'm not sure really because I don't plug this usb drive every day to sync so I don't remember what I did last time. But I suppose I just finished with git annex sync and unplugged it. When the accident occured:
+
+ 1. The usb drive was in direct mode whereas the laptop was in indirect mode at the time. 
+ 2. I git annex sync the usb drive
+ 3. I git annex sync the laptop
+
+Anyway, the big mistake I did was syncing the laptop as well, naively thinking it would correct the usb drive; but instead it also deleted the files on the laptop. I had a back up of most of it so it was okay.
 
 ### What version of git-annex are you using? On what operating system?
 
