@@ -61,6 +61,7 @@ install_pkgs () {
 	mkdir tmp
 	cd tmp
 
+	patched network
 	patched wai-app-static
 	patched shakespeare
 	patched shakespeare-css
