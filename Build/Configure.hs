@@ -3,20 +3,14 @@
 module Build.Configure where
 
 import System.Directory
-import Data.List
-import System.Process
 import Control.Applicative
-import System.FilePath
 import System.Environment (getArgs)
-import Data.Maybe
 import Control.Monad.IfElse
 import Control.Monad
-import Data.Char
 
 import Build.TestConfig
 import Build.Version
 import Utility.SafeCommand
-import Utility.Monad
 import Utility.ExternalSHA
 import Utility.Env
 import qualified Git.Version

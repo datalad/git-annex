@@ -7,8 +7,6 @@ import Utility.Monad
 import Utility.SafeCommand
 
 import System.IO
-import System.Cmd
-import System.Exit
 import System.FilePath
 import System.Directory
 
