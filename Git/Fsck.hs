@@ -23,6 +23,7 @@ import Utility.Batch
 import qualified Git.Version
 
 import qualified Data.Set as S
+import System.Process (std_out, std_err)
 
 type MissingObjects = S.Set Sha
 
@@ -46,9 +47,17 @@ findBroken batchmode r = do
 	(command', params') <- if batchmode
 		then toBatchCommand (command, params)
 		else return (command, params)
-	(output, fsckok) <- processTranscript command' (toCommand params') Nothing
-	let objs = findShas supportsNoDangling output
-	badobjs <- findMissing objs r
+	
+	p@(_, _, _, pid) <- createProcess $
+		(proc command' (toCommand params'))
+			{ std_out = CreatePipe
+			, std_err = CreatePipe
+			}
+	bad1 <- readMissingObjs r supportsNoDangling (stdoutHandle p)
+	bad2 <- readMissingObjs r supportsNoDangling (stderrHandle p)
+	fsckok <- checkSuccessProcess pid
+	let badobjs = S.union bad1 bad2
+
 	if S.null badobjs && not fsckok
 		then return FsckFailed
 		else return $ FsckFoundMissing badobjs
@@ -68,6 +77,11 @@ knownMissing (FsckFoundMissing s) = s
  -}
 findMissing :: [Sha] -> Repo -> IO MissingObjects
 findMissing objs r = S.fromList <$> filterM (`isMissing` r) objs
+
+readMissingObjs :: Repo -> Bool -> Handle -> IO MissingObjects
+readMissingObjs r supportsNoDangling h = do
+	objs <- findShas supportsNoDangling <$> hGetContents h
+	findMissing objs r
 
 isMissing :: Sha -> Repo -> IO Bool
 isMissing s r = either (const True) (const False) <$> tryIO dump

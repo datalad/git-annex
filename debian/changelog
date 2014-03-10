@@ -5,6 +5,8 @@ git-annex (5.20140307) UNRELEASED; urgency=medium
   * webapp: Added a "Sync now" item to each repository's menu.
   * unused: In direct mode, files that are deleted from the work tree
     are no longer incorrectly detected as unused.
+  * repair: Improve memory usage when git fsck finds a great many broken
+    objects.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
 
