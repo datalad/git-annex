@@ -1,0 +1,72 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawno-jcsScu4CK6k2QLZqxMros1PQHf1NQY"
+ nickname="Hugo"
+ subject="Sync messed up"
+ date="2014-03-09T12:16:32Z"
+ content="""
+So, I have now reseted to a previous commit all the branches: git-annex, master, synced/git-annex and synced/master in other usb drives. i can git pull and git push, etc. But every time I try a git annex sync, it's deleting files again.
+
+For instance:
+
+```````````````
+(merging laptop/git-annex laptop/synced/git-annex into git-annex...)
+(Recording state in git...)
+commit  ok
+pull wdrouge 
+Depuis /run/media/hrd/WD-rouge/annex/hrd
+ * [nouvelle branche] git-annex  -> wdrouge/git-annex
+   e5894a1..f5af709  master     -> wdrouge/master
+ * [nouvelle branche] synced/git-annex -> wdrouge/synced/git-annex
+ * [nouvelle branche] synced/master -> wdrouge/synced/master
+ok
+pull origin 
+Depuis /home/hrd
+ + 93d883b...f5af709 git-annex  -> origin/git-annex  (mise à jour forcée)
+   e5894a1..f5af709  master     -> origin/master
+ + c8c2481...f5af709 synced/git-annex -> origin/synced/git-annex  (mise à jour forcée)
+   1d2a028..ac708e3  synced/master -> origin/synced/master
+ * [nouvelle étiquette] should-be-fine-here -> should-be-fine-here
+
+Mise à jour f5af709..ac708e3
+Fast-forward
+
+→ a bunch of files
+ 621 files changed, 22 insertions(+), 599 deletions(-)
+ delete mode 120000 → the bunch of files……………
+ …
+ delete mode 120000 org/gtd.org_archive
+ok
+pull laptop 
+Depuis /home/hrd
+ + 93d883b...f5af709 git-annex  -> laptop/git-annex  (mise à jour forcée)
+ + c8c2481...f5af709 synced/git-annex -> laptop/synced/git-annex  (mise à jour forcée)
+   1d2a028..ac708e3  synced/master -> laptop/synced/master
+
+Already up-to-date.
+ok
+push wdrouge 
+Counting objects: 6609, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (3057/3057), done.
+Writing objects: 100% (3331/3331), 511.27 KiB | 0 bytes/s, done.
+Total 3331 (delta 2091), reused 0 (delta 0)
+To /run/media/hrd/WD-rouge/annex/hrd
+   f5af709..16f17bf  git-annex -> synced/git-annex
+   f5af709..ac708e3  master -> synced/master
+ok
+push origin 
+Counting objects: 6569, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (3056/3056), done.
+Writing objects: 100% (3330/3330), 511.05 KiB | 0 bytes/s, done.
+Total 3330 (delta 2091), reused 0 (delta 0)
+To /home/hrd/
+   f5af709..16f17bf  git-annex -> synced/git-annex
+ok
+push laptop 
+Everything up-to-date
+ok
+git annex sync  14.33s user 1.87s system 74% cpu 21.696 total
+``````````````````
+
+"""]]

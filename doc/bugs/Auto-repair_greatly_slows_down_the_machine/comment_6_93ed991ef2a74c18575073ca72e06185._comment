@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnX1msQxnLoSeu7q-i-c9BWghonsN7Qmns"
+ nickname="Jan Ulrich"
+ subject="comment 6"
+ date="2014-03-10T14:14:06Z"
+ content="""
+I manually ran git fsck without problems but git-annex still wants to repair something.
+"""]]

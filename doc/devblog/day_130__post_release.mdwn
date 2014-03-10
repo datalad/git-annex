@@ -4,7 +4,7 @@ updated today.
 
 Post release bug triage including:
 
-Added a nice peice of UI to the webapp on user request: A "Sync now" menu
+Added a nice piece of UI to the webapp on user request: A "Sync now" menu
 item in the repository for each repo. (The one for the current repo syncs with
 all its remotes.)
 
