@@ -45,35 +45,18 @@ import qualified Data.ByteString.Lazy as L
 import Data.Tuple.Utils
 
 {- Given a set of bad objects found by git fsck, which may not
- - be complete, finds and removes all corrupt objects,
- - and returns missing objects.
- -}
-cleanCorruptObjects :: FsckResults -> Repo -> IO FsckResults
+ - be complete, finds and removes all corrupt objects. -}
+cleanCorruptObjects :: FsckResults -> Repo -> IO ()
 cleanCorruptObjects fsckresults r = do
 	void $ explodePacks r
-	objs <- listLooseObjectShas r
-	mapM_ (tryIO . allowRead . looseObjectFile r) objs
-	bad <- findMissing objs r
-	void $ removeLoose r $ S.union bad (knownMissing fsckresults)
-	-- Rather than returning the loose objects that were removed, re-run
-	-- fsck. Other missing objects may have been in the packs,
-	-- and this way fsck will find them.
-	findBroken False r
-
-removeLoose :: Repo -> MissingObjects -> IO Bool
-removeLoose r s = do
-	fs <- filterM doesFileExist (map (looseObjectFile r) (S.toList s))
-	let count = length fs
-	if count > 0
-		then do
-			putStrLn $ unwords
-				[ "Removing"
-				, show count
-				, "corrupt loose objects."
-				]
-			mapM_ nukeFile fs
-			return True
-		else return False
+	mapM_ removeLoose (S.toList $ knownMissing fsckresults)
+	mapM_ removeBad =<< listLooseObjectShas r
+  where
+	removeLoose s = nukeFile (looseObjectFile r s)
+	removeBad s = do
+		void $ tryIO $ allowRead $  looseObjectFile r s
+		whenM (isMissing s r) $
+			removeLoose s
 
 {- Explodes all pack files, and deletes them.
  -
@@ -465,7 +448,8 @@ runRepairOf fsckresult removablebranch forced referencerepo g = do
 
 runRepair' :: (Ref -> Bool) -> FsckResults -> Bool -> Maybe FilePath -> Repo -> IO (Bool, [Branch])
 runRepair' removablebranch fsckresult forced referencerepo g = do
-	missing <- cleanCorruptObjects fsckresult g
+	cleanCorruptObjects fsckresult g
+	missing <- findBroken False g
 	stillmissing <- retrieveMissingObjects missing referencerepo g
 	case stillmissing of
 		FsckFoundMissing s
@@ -493,7 +477,8 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 		FsckFailed
 			| forced -> ifM (pure (repoIsLocalBare g) <||> checkIndex g)
 				( do
-					missing' <- cleanCorruptObjects FsckFailed g
+					cleanCorruptObjects FsckFailed g
+					missing' <- findBroken False g
 					case missing' of
 						FsckFailed -> return (False, [])
 						FsckFoundMissing stillmissing' ->
