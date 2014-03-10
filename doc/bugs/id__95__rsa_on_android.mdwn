@@ -29,3 +29,4 @@ This private key will be ignored.
 bad permissions: ignore key: /sdcard/git-annex.home/.ssh/id_rsa
 
 
+> [[fixed|done]]; daily build is updated. --[[Joey]]
