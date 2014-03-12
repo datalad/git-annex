@@ -189,8 +189,7 @@ prettyUUID u = concat <$> prettyListUUIDs [u]
 remoteFromUUID :: UUID -> Annex (Maybe Remote)
 remoteFromUUID u = ifM ((==) u <$> getUUID)
 	( return Nothing
-	, do
-		maybe tryharder (return . Just) =<< findinmap
+	, maybe tryharder (return . Just) =<< findinmap
 	)
   where
 	findinmap = M.lookup u <$> remoteMap id

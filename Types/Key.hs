@@ -78,8 +78,12 @@ file2key s
 	findfields _ v = v
 
 	addbackend k v = Just k { keyBackendName = v }
-	addfield 's' k v = Just k { keySize = readish v }
-	addfield 'm' k v = Just k { keyMtime = readish v }
+	addfield 's' k v = do
+		sz <- readish v
+		return $ k { keySize = Just sz }
+	addfield 'm' k v = do
+		mtime <- readish v
+		return $ k { keyMtime = Just mtime }
 	addfield _ _ _ = Nothing
 
 instance Arbitrary Key where
@@ -93,4 +97,12 @@ prop_idempotent_key_encode :: Key -> Bool
 prop_idempotent_key_encode k = Just k == (file2key . key2file) k
 
 prop_idempotent_key_decode :: FilePath -> Bool
-prop_idempotent_key_decode f = maybe True (\k -> key2file k == f) (file2key f)
+prop_idempotent_key_decode f
+	| normalfieldorder = maybe True (\k -> key2file k == f) (file2key f)
+	| otherwise = True
+  where
+  	-- file2key will accept the fields in any order, so don't
+	-- try the test unless the fields are in the normal order
+	normalfieldorder = fields `isPrefixOf` "sm"
+	fields = map (f !!) $ filter (< length f) $ map succ $
+		elemIndices fieldSep f

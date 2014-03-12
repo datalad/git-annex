@@ -1,6 +1,6 @@
 {- QuickCheck with additional instances
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -17,10 +17,14 @@ import Test.QuickCheck as X
 import Data.Time.Clock.POSIX
 import System.Posix.Types
 import qualified Data.Map as M
+import qualified Data.Set as S
 import Control.Applicative
 
 instance (Arbitrary k, Arbitrary v, Eq k, Ord k) => Arbitrary (M.Map k v) where
 	arbitrary = M.fromList <$> arbitrary
+
+instance (Arbitrary v, Eq v, Ord v) => Arbitrary (S.Set v) where
+	arbitrary = S.fromList <$> arbitrary
 
 {- Times before the epoch are excluded. -}
 instance Arbitrary POSIXTime where

@@ -16,6 +16,7 @@ import Assistant.NamedThread
 import Utility.ThreadScheduler
 import Utility.NotificationBroadcaster
 import Utility.Url
+import Utility.PID
 import qualified Git.Construct
 import qualified Git.Config
 import Config.Files
@@ -25,11 +26,12 @@ import qualified Git
 import Control.Concurrent
 import System.Process (cwd)
 #ifndef mingw32_HOST_OS
-import System.Posix (getProcessID, signalProcess, sigTERM)
+import System.Posix (signalProcess, sigTERM)
 #else
-import System.Win32.Process.Current (getCurrentProcessId)
-import System.Win32.Console (generateConsoleCtrlEvent, cTRL_C_EVENT)
+import Utility.WinProcess
 #endif
+import Data.Default
+import Network.URI
 
 {- Before the assistant can be restarted, have to remove our 
  - gitAnnexUrlFile and our gitAnnexPidFile. Pausing the watcher is also
@@ -53,9 +55,9 @@ postRestart url = do
 	void $ liftIO $ forkIO $ do
 		threadDelaySeconds (Seconds 120)
 #ifndef mingw32_HOST_OS
-		signalProcess sigTERM =<< getProcessID
+		signalProcess sigTERM =<< getPID
 #else
-		generateConsoleCtrlEvent cTRL_C_EVENT =<< getCurrentProcessId
+		terminatePID =<< getPID
 #endif
 
 runRestart :: Assistant URLString
@@ -77,19 +79,35 @@ newAssistantUrl repo = do
 		v <- tryIO $ readFile urlfile
 		case v of
 			Left _ -> delayed $ waiturl urlfile
-			Right url -> ifM (listening url)
+			Right url -> ifM (assistantListening url)
 				( return url
 				, delayed $ waiturl urlfile
 				)
-	listening url = catchBoolIO $ fst <$> exists url [] Nothing
 	delayed a = do
 		threadDelay 100000 -- 1/10th of a second
 		a
 
-{- Returns once the assistant has daemonized, but possibly before it's
- - listening for web connections. -}
+{- Checks if the assistant is listening on an url.
+ -
+ - Always checks http, because https with self-signed cert is problimatic.
+ - warp-tls listens to http, in order to show an error page, so this works.
+ -}
+assistantListening :: URLString -> IO Bool
+assistantListening url = catchBoolIO $ fst <$> exists url' def
+  where
+	url' = case parseURI url of
+		Nothing -> url
+		Just uri -> show $ uri
+			{ uriScheme = "http:"
+			}
+
+{- Does not wait for assistant to be listening for web connections. 
+ -
+ - On windows, the assistant does not daemonize, which is why the forkIO is
+ - done.
+ -}
 startAssistant :: FilePath -> IO ()
-startAssistant repo = do
+startAssistant repo = void $ forkIO $ do
 	program <- readProgramFile
 	(_, _, _, pid) <- 
 		createProcess $

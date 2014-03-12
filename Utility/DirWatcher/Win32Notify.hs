@@ -13,8 +13,8 @@ import Utility.DirWatcher.Types
 import System.Win32.Notify
 import qualified Utility.PosixFiles as Files
 
-watchDir :: FilePath -> (FilePath -> Bool) -> WatchHooks -> IO WatchManager
-watchDir dir ignored hooks = do
+watchDir :: FilePath -> (FilePath -> Bool) -> Bool -> WatchHooks -> IO WatchManager
+watchDir dir ignored scanevents hooks = do
 	scan dir
 	wm <- initWatchManager
 	void $ watchDirectory wm dir True [Create, Delete, Modify, Move] handle
@@ -52,7 +52,8 @@ watchDir dir ignored hooks = do
 					Nothing -> noop
 					Just s
 						| Files.isRegularFile s ->
-							runhook addHook ms
+							when scanevents $
+								runhook addHook ms
 						| otherwise ->
 							noop
 		  where

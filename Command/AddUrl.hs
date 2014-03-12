@@ -64,7 +64,7 @@ start relaxed optfile pathdepth s = go $ fromMaybe bad $ parseURI s
 		QuviDownloader -> usequvi
 		DefaultDownloader -> 
 #ifdef WITH_QUVI
-			ifM (liftIO $ Quvi.supported s')
+			ifM (quviSupported s')
 				( usequvi
 				, regulardownload url
 				)
@@ -114,7 +114,7 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 			 - it later. -}
 			sizedkey <- addSizeUrlKey videourl key
 			prepGetViaTmpChecked sizedkey $ do
-				tmp <- fromRepo $ gitAnnexTmpLocation key
+				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 				showOutput
 				ok <- Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
 					liftIO $ createDirectoryIfMissing True (parentDir tmp)
@@ -134,8 +134,7 @@ perform relaxed url file = ifAnnexed file addurl geturl
 			setUrlPresent key url
 			next $ return True
 		| otherwise = do
-			headers <- getHttpHeaders
-			(exists, samesize) <- Url.withUserAgent $ Url.check url headers $ keySize key
+			(exists, samesize) <- Url.withUrlOptions $ Url.check url (keySize key)
 			if exists && samesize
 				then do
 					setUrlPresent key url
@@ -163,7 +162,7 @@ download url file = do
 	 - downloads, as the dummy key for a given url is stable. -}
 	dummykey <- addSizeUrlKey url =<< Backend.URL.fromUrl url Nothing
 	prepGetViaTmpChecked dummykey $ do
-		tmp <- fromRepo $ gitAnnexTmpLocation dummykey
+		tmp <- fromRepo $ gitAnnexTmpObjectLocation dummykey
 		showOutput
 		ifM (runtransfer dummykey tmp)
 			( do
@@ -192,8 +191,7 @@ download url file = do
  -}
 addSizeUrlKey :: URLString -> Key -> Annex Key
 addSizeUrlKey url key = do
-	headers <- getHttpHeaders
-	size <- snd <$> Url.withUserAgent (Url.exists url headers)
+	size <- snd <$> Url.withUrlOptions (Url.exists url)
 	return $ key { keySize = size }
 
 cleanup :: URLString -> FilePath -> Key -> Maybe FilePath -> Annex Bool
@@ -212,10 +210,9 @@ cleanup url file key mtmp = do
 
 nodownload :: Bool -> URLString -> FilePath -> Annex Bool
 nodownload relaxed url file = do
-	headers <- getHttpHeaders
 	(exists, size) <- if relaxed
 		then pure (True, Nothing)
-		else Url.withUserAgent $ Url.exists url headers
+		else Url.withUrlOptions (Url.exists url)
 	if exists
 		then do
 			key <- Backend.URL.fromUrl url size

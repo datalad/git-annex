@@ -1,3 +1,5 @@
+[[!meta title="debian system runs assistant in tight loop, rather than using select"]]
+
 ### Please describe the problem.
 
 After running for a while, the assistant maxes my CPU. I have evidence

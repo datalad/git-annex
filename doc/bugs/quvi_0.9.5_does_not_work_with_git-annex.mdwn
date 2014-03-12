@@ -1,0 +1,87 @@
+### Please describe the problem.
+The syntax of quvi has changed somewhat, breaking use in git-annex.
+
+quvi now requires one of four «commands» to be supplied: dump, get, info, scan
+
+### What steps will reproduce the problem?
+Install quvi 0.9.5, attempt to download a video.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 5.20140227-gd872677
+
+On ArchLinux up-to-date as of 28th of February 2014
+
+### Please provide any additional information below.
+
+[[!format text """
+[0 zerodogg@browncoats Dokumentar]$ git annex addurl 'quvi:https://www.youtube.com/watch?v=de20gulo78g' --debug  
+[2014-02-28 09:33:22 CET] read: quvi ["--verbosity","quiet","-c","http","https://www.youtube.com/watch?v=de20gulo78g"]
+error: `--verbosity' is not a quvi command. See 'quvi help'.
+git-annex: quvi failed
+[1 zerodogg@browncoats Dokumentar]$ quvi --version
+quvi v0.9.5
+  built on 2013-11-12 17:02:06 +0000 for x86_64-unknown-linux-gnu
+    with gcc, -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector --param=ssp-buffer-size=4
+  configuration: --prefix=/usr
+libquvi v0.9.4
+  built on 2013-12-17 11:27:41 +0000 for x86_64-unknown-linux-gnu
+    with gcc, -march=x86-64 -mtune=generic -O2 -pipe -fstack-protector --param=ssp-buffer-size=4
+  configuration: --prefix=/usr
+libquvi-scripts v0.9.20131130
+  configuration: --prefix=/usr --with-nsfw --with-geoblocked
+
+Copyright (C) 2012,2013  Toni Gundogdu <legatvs@gmail.com>
+quvi comes with ABSOLUTELY NO WARRANTY.  You may redistribute copies of
+quvi under the terms of the GNU Affero General Public License version 3
+or later. For more information, see <http://www.gnu.org/licenses/agpl.html>.
+
+To contact the developers, please mail to <quvi-devel@lists.sourceforge.net>
+[0 zerodogg@browncoats Dokumentar]$  quvi
+Usage: quvi [--version] [--help] COMMAND [ARGS]
+
+quvi commands are:
+  dump    Query and print the property values
+  get     Save media stream to a file
+  info    Inspect the configuration and the script properties
+  scan    Scan and print the found embedded media URLs
+
+See 'quvi help COMMAND' for more information on a specific command.
+[0 zerodogg@browncoats Dokumentar]$ git annex version
+git-annex version: 5.20140227-gd872677
+build flags: Assistant Webapp Pairing S3 Inotify DBus XMPP Feeds Quvi TDFA
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+remote types: git gcrypt S3 bup directory rsync web tahoe glacier hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+"""]]
+
+quvi dump is probably something you could use
+
+[[!format text """
+[0 zerodogg@browncoats Dokumentar]$ quvi dump 'https://www.youtube.com/watch?v=de20gulo78g'
+QUVI_MEDIA_PROPERTY_THUMBNAIL_URL=https://i1.ytimg.com/vi/de20gulo78g/default.jpg                                                                                        
+QUVI_MEDIA_PROPERTY_TITLE=[Linux.conf.au 2013] - Git-annex
+QUVI_MEDIA_PROPERTY_ID=de20gulo78g
+QUVI_MEDIA_PROPERTY_START_TIME_MS=0
+QUVI_MEDIA_PROPERTY_DURATION_MS=2328000
+QUVI_MEDIA_STREAM_PROPERTY_VIDEO_ENCODING=vp8.0
+QUVI_MEDIA_STREAM_PROPERTY_AUDIO_ENCODING=vorbis
+QUVI_MEDIA_STREAM_PROPERTY_CONTAINER=webm
+QUVI_MEDIA_STREAM_PROPERTY_URL=[Long googlevideo.com URL]
+QUVI_MEDIA_STREAM_PROPERTY_ID=medium_webm_i43_360p
+QUVI_MEDIA_STREAM_PROPERTY_VIDEO_BITRATE_KBIT_S=0
+QUVI_MEDIA_STREAM_PROPERTY_AUDIO_BITRATE_KBIT_S=0
+QUVI_MEDIA_STREAM_PROPERTY_VIDEO_HEIGHT=360
+QUVI_MEDIA_STREAM_PROPERTY_VIDEO_WIDTH=640
+"""]]
+
+It does however output some status messages to STDERR (which it removes later) that doesn't look to be possible to suppress.
+
+[[!format text """
+[0 zerodogg@browncoats Dokumentar]$ quvi dump 'https://www.youtube.com/watch?v=de20gulo78g' >/dev/null 2>stderr
+[0 zerodogg@browncoats Dokumentar]$ cat -v stderr 
+status: o--- resolve <url> ...                                                 ^M                                                                               ^Mstatus: -o-- fetch <url> ...                                                   ^M                                                                               ^M%               [0 zerodogg@browncoats Dokumentar]$              
+""" ]]
+
+> quvi version now probed at runtime. [[done]] --[[Joey]]

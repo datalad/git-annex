@@ -23,8 +23,9 @@ module Locations (
 	annexLocation,
 	gitAnnexDir,
 	gitAnnexObjectDir,
-	gitAnnexTmpDir,
-	gitAnnexTmpLocation,
+	gitAnnexTmpMiscDir,
+	gitAnnexTmpObjectDir,
+	gitAnnexTmpObjectLocation,
 	gitAnnexBadDir,
 	gitAnnexBadLocation,
 	gitAnnexUnusedLog,
@@ -33,6 +34,8 @@ module Locations (
 	gitAnnexScheduleState,
 	gitAnnexTransferDir,
 	gitAnnexCredsDir,
+	gitAnnexWebCertificate,
+	gitAnnexWebPrivKey,
 	gitAnnexFeedStateDir,
 	gitAnnexFeedState,
 	gitAnnexMergeDir,
@@ -40,6 +43,8 @@ module Locations (
 	gitAnnexJournalLock,
 	gitAnnexIndex,
 	gitAnnexIndexStatus,
+	gitAnnexViewIndex,
+	gitAnnexViewLog,
 	gitAnnexIgnoredRefs,
 	gitAnnexPidFile,
 	gitAnnexDaemonStatusFile,
@@ -178,13 +183,17 @@ gitAnnexDir r = addTrailingPathSeparator $ Git.localGitDir r </> annexDir
 gitAnnexObjectDir :: Git.Repo -> FilePath
 gitAnnexObjectDir r = addTrailingPathSeparator $ Git.localGitDir r </> objectDir
 
-{- .git/annex/tmp/ is used for temp files -}
-gitAnnexTmpDir :: Git.Repo -> FilePath
-gitAnnexTmpDir r = addTrailingPathSeparator $ gitAnnexDir r </> "tmp"
+{- .git/annex/misctmp/ is used for random temp files -}
+gitAnnexTmpMiscDir :: Git.Repo -> FilePath
+gitAnnexTmpMiscDir r = addTrailingPathSeparator $ gitAnnexDir r </> "misctmp"
+
+{- .git/annex/tmp/ is used for temp files for key's contents -}
+gitAnnexTmpObjectDir :: Git.Repo -> FilePath
+gitAnnexTmpObjectDir r = addTrailingPathSeparator $ gitAnnexDir r </> "tmp"
 
 {- The temp file to use for a given key's content. -}
-gitAnnexTmpLocation :: Key -> Git.Repo -> FilePath
-gitAnnexTmpLocation key r = gitAnnexTmpDir r </> keyFile key
+gitAnnexTmpObjectLocation :: Key -> Git.Repo -> FilePath
+gitAnnexTmpObjectLocation key r = gitAnnexTmpObjectDir r </> keyFile key
 
 {- .git/annex/bad/ is used for bad files found during fsck -}
 gitAnnexBadDir :: Git.Repo -> FilePath
@@ -215,6 +224,13 @@ gitAnnexScheduleState r = gitAnnexDir r </> "schedulestate"
  - remotes. -}
 gitAnnexCredsDir :: Git.Repo -> FilePath
 gitAnnexCredsDir r = addTrailingPathSeparator $ gitAnnexDir r </> "creds"
+
+{- .git/annex/certificate.pem and .git/annex/key.pem are used by the webapp
+ - when HTTPS is enabled -}
+gitAnnexWebCertificate :: Git.Repo -> FilePath
+gitAnnexWebCertificate r = gitAnnexDir r </> "certificate.pem"
+gitAnnexWebPrivKey :: Git.Repo -> FilePath
+gitAnnexWebPrivKey r = gitAnnexDir r </> "privkey.pem"
 
 {- .git/annex/feeds/ is used to record per-key (url) state by importfeeds -}
 gitAnnexFeedStateDir :: Git.Repo -> FilePath
@@ -251,6 +267,14 @@ gitAnnexIndex r = gitAnnexDir r </> "index"
  - lock. -}
 gitAnnexIndexStatus :: Git.Repo -> FilePath
 gitAnnexIndexStatus r = gitAnnexDir r </> "index.lck"
+
+{- The index file used to generate a filtered branch view._-}
+gitAnnexViewIndex :: Git.Repo -> FilePath
+gitAnnexViewIndex r = gitAnnexDir r </> "viewindex"
+
+{- File containing a log of recently accessed views. -}
+gitAnnexViewLog :: Git.Repo -> FilePath
+gitAnnexViewLog r = gitAnnexDir r </> "viewlog"
 
 {- List of refs that should not be merged into the git-annex branch. -}
 gitAnnexIgnoredRefs :: Git.Repo -> FilePath
@@ -330,7 +354,7 @@ preSanitizeKeyName = concatMap escape
 		-- other characters. By itself, it is escaped to 
 		-- doubled form.
 		| c == ',' = ",,"
-		| otherwise = ',' : show(ord(c))
+		| otherwise = ',' : show (ord c)
 
 {- Converts a key into a filename fragment without any directory.
  -

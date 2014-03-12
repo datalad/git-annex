@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmUJBh1lYmvfCCiGr3yrdx-QhuLCSRnU5c"
+ nickname="Justin"
+ subject="comment 9"
+ date="2014-03-01T19:13:16Z"
+ content="""
+This seems to work great for me on Raspbian, except I get many errors of the form
+
+    ERROR: ld.so: object '/usr/lib/arm-linux-gnueabihf/libcofi_rpi.so' from /etc/ld.so.preload cannot be preloaded: ignored.
+
+I've tried, but I haven't been able to figure out why ld doesn't like this particular lib.  I can keep ignoring the error, but help would certainly be appreciated!
+"""]]

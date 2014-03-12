@@ -28,7 +28,7 @@ UPGRADE_LOCATION=http://downloads.kitenet.net/git-annex/windows/current/git-anne
 
 # Don't allow build artifact from a past successful build to be extracted
 # if we fail.
-#rm -f git-annex-installer.exe
+rm -f git-annex-installer.exe
 
 # Install haskell dependencies.
 # cabal install is not run in cygwin, because we don't want configure scripts

@@ -35,11 +35,11 @@ toTaggedBranch u info b = Git.Ref $ intercalate "/" $ catMaybes
 	[ Just "refs/synced"
 	, Just $ fromUUID u
 	, toB64 <$> info
-	, Just $ show $ Git.Ref.base b
+	, Just $ Git.fromRef $ Git.Ref.base b
 	]
 
 fromTaggedBranch :: Git.Branch -> Maybe (UUID, Maybe String)
-fromTaggedBranch b = case split "/" $ show b of
+fromTaggedBranch b = case split "/" $ Git.fromRef b of
 	("refs":"synced":u:info:_base) ->
 		Just (toUUID u, fromB64Maybe info)
 	("refs":"synced":u:_base) ->
@@ -58,4 +58,4 @@ taggedPush u info branch remote = Git.Command.runBool
         , Param $ refspec branch
         ]
   where
-	refspec b = show b ++ ":" ++ show (toTaggedBranch u info b)
+	refspec b = Git.fromRef b ++ ":" ++ Git.fromRef (toTaggedBranch u info b)

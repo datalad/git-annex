@@ -4,7 +4,7 @@ option can now be told to match files that were in a repository at some
 point in the past. For example, `git annex get --in=here@{yesterday}` will
 get any files that have been dropped over the past day.
 
-While git-annex's location tracking info is stored in git and so versioned,
+While git-annex's location tracking info is stored in git and thus versioned,
 very little of it makes use of past versions of the location tracking info
 (only `git annex log`). I'm happy to have finally found a use for it!
 

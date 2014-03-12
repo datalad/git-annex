@@ -32,4 +32,4 @@ listLooseObjectShas r = catchDefaultIO [] $
 looseObjectFile :: Repo -> Sha -> FilePath
 looseObjectFile r sha = objectsDir r </> prefix </> rest
   where
-	(prefix, rest) = splitAt 2 (show sha)
+	(prefix, rest) = splitAt 2 (fromRef sha)

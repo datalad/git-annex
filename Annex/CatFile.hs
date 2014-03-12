@@ -7,6 +7,7 @@
 
 module Annex.CatFile (
 	catFile,
+	catFileDetails,
 	catObject,
 	catTree,
 	catObjectDetails,
@@ -33,6 +34,11 @@ catFile :: Git.Branch -> FilePath -> Annex L.ByteString
 catFile branch file = do
 	h <- catFileHandle
 	liftIO $ Git.CatFile.catFile h branch file
+
+catFileDetails :: Git.Branch -> FilePath -> Annex (Maybe (L.ByteString, Sha, ObjectType))
+catFileDetails branch file = do
+	h <- catFileHandle
+	liftIO $ Git.CatFile.catFileDetails h branch file
 
 catObject :: Git.Ref -> Annex L.ByteString
 catObject ref = do
@@ -87,8 +93,7 @@ catKey' modeguaranteed ref mode
 		| modeguaranteed = catObject ref
 		| otherwise = L.take 8192 <$> catObject ref
 
-{- Looks up the file mode corresponding to the Ref using the running
- - cat-file.
+{- Looks up the key corresponding to the Ref using the running cat-file.
  -
  - Currently this always has to look in HEAD, because cat-file --batch
  - does not offer a way to specify that we want to look up a tree object

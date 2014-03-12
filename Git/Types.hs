@@ -47,10 +47,10 @@ type RemoteName = String
 
 {- A git ref. Can be a sha1, or a branch or tag name. -}
 newtype Ref = Ref String
-	deriving (Eq, Ord)
+	deriving (Eq, Ord, Read, Show)
 
-instance Show Ref where
-	show (Ref v) = v
+fromRef :: Ref -> String
+fromRef (Ref s) = s
 
 {- Aliases for Ref. -}
 type Branch = Ref

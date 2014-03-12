@@ -75,24 +75,35 @@ removeLoose r s = do
 			return True
 		else return False
 
+{- Explodes all pack files, and deletes them.
+ -
+ - First moves all pack files to a temp dir, before unpacking them each in
+ - turn.
+ -
+ - This is because unpack-objects will not unpack a pack file if it's in the
+ - git repo.
+ -
+ - Also, this prevents unpack-objects from possibly looking at corrupt
+ - pack files to see if they contain an object, while unpacking a
+ - non-corrupt pack file.
+ -}
 explodePacks :: Repo -> IO Bool
-explodePacks r = do
-	packs <- listPackFiles r
-	if null packs
-		then return False
-		else do
-			putStrLn "Unpacking all pack files."
-			mapM_ go packs
-			return True
+explodePacks r = go =<< listPackFiles r
   where
-	go packfile = withTmpFileIn (localGitDir r) "pack" $ \tmp _ -> do
-		moveFile packfile tmp
-		nukeFile $ packIdxFile packfile
-		allowRead tmp
-		-- May fail, if pack file is corrupt.
-		void $ tryIO $
-			pipeWrite [Param "unpack-objects", Param "-r"] r $ \h ->
+	go [] = return False
+	go packs = withTmpDir "packs" $ \tmpdir -> do
+		putStrLn "Unpacking all pack files."
+		forM_ packs $ \packfile -> do
+			moveFile packfile (tmpdir </> takeFileName packfile)
+			nukeFile $ packIdxFile packfile
+		forM_ packs $ \packfile -> do
+			let tmp = tmpdir </> takeFileName packfile
+			allowRead tmp
+			-- May fail, if pack file is corrupt.
+			void $ tryIO $
+				pipeWrite [Param "unpack-objects", Param "-r"] r $ \h ->
 				L.hPut h =<< L.readFile tmp
+		return True
 
 {- Try to retrieve a set of missing objects, from the remotes of a
  - repository. Returns any that could not be retreived.
@@ -168,7 +179,7 @@ resetLocalBranches :: MissingObjects -> GoodCommits -> Repo -> IO ([Branch], [Br
 resetLocalBranches missing goodcommits r =
 	go [] [] goodcommits =<< filter islocalbranch <$> getAllRefs r
   where
-	islocalbranch b = "refs/heads/" `isPrefixOf` show b
+	islocalbranch b = "refs/heads/" `isPrefixOf` fromRef b
 	go changed deleted gcs [] = return (changed, deleted, gcs)
 	go changed deleted gcs (b:bs) = do
 		(mc, gcs') <- findUncorruptedCommit missing gcs b r
@@ -185,12 +196,12 @@ resetLocalBranches missing goodcommits r =
 		nukeBranchRef b	r
 		void $ runBool
 			[ Param "branch"
-			, Param (show $ Ref.base b)
-			, Param (show c)
+			, Param (fromRef $ Ref.base b)
+			, Param (fromRef c)
 			] r
 
 isTrackingBranch :: Ref -> Bool
-isTrackingBranch b = "refs/remotes/" `isPrefixOf` show b
+isTrackingBranch b = "refs/remotes/" `isPrefixOf` fromRef b
 
 {- To deal with missing objects that cannot be recovered, removes
  - any branches (filtered by a predicate) that reference them
@@ -231,10 +242,10 @@ explodePackedRefsFile r = do
 		nukeFile f
   where
 	makeref (sha, ref) = do
-		let dest = localGitDir r </> show ref
+		let dest = localGitDir r </> fromRef ref
 		createDirectoryIfMissing True (parentDir dest)
 		unlessM (doesFileExist dest) $
-			writeFile dest (show sha)
+			writeFile dest (fromRef sha)
 
 packedRefsFile :: Repo -> FilePath
 packedRefsFile r = localGitDir r </> "packed-refs"
@@ -249,7 +260,7 @@ parsePacked l = case words l of
 {- git-branch -d cannot be used to remove a branch that is directly
  - pointing to a corrupt commit. -}
 nukeBranchRef :: Branch -> Repo -> IO ()
-nukeBranchRef b r = nukeFile $ localGitDir r </> show b
+nukeBranchRef b r = nukeFile $ localGitDir r </> fromRef b
 
 {- Finds the most recent commit to a branch that does not need any
  - of the missing objects. If the input branch is good as-is, returns it.
@@ -268,7 +279,7 @@ findUncorruptedCommit missing goodcommits branch r = do
 				[ Param "log"
 				, Param "-z"
 				, Param "--format=%H"
-				, Param (show branch)
+				, Param (fromRef branch)
 				] r
 			let branchshas = catMaybes $ map extractSha ls
 			reflogshas <- RefLog.get branch r
@@ -297,7 +308,7 @@ verifyCommit missing goodcommits commit r
 			[ Param "log"
 			, Param "-z"
 			, Param "--format=%H %T"
-			, Param (show commit)
+			, Param (fromRef commit)
 			] r
 		let committrees = map parse ls
 		if any isNothing committrees || null committrees
@@ -501,9 +512,9 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 				, "remote tracking branches that referred to missing objects."
 				]
 		(resetbranches, deletedbranches, _) <- resetLocalBranches stillmissing goodcommits g
-		displayList (map show resetbranches)
+		displayList (map fromRef resetbranches)
 			"Reset these local branches to old versions before the missing objects were committed:"
-		displayList (map show deletedbranches)
+		displayList (map fromRef deletedbranches)
 			"Deleted these local branches, which could not be recovered due to missing objects:"
 		deindexedfiles <- rewriteIndex g
 		displayList deindexedfiles
@@ -519,7 +530,7 @@ runRepair' removablebranch fsckresult forced referencerepo g = do
 						Just curr -> when (any (== curr) modifiedbranches) $ do
 							putStrLn $ unwords
 								[ "You currently have"
-								, show curr
+								, fromRef curr
 								, "checked out. You may have staged changes in the index that can be committed to recover the lost state of this branch!"
 								]
 				putStrLn "Successfully recovered repository!"

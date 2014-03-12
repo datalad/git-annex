@@ -24,7 +24,7 @@ repository use the same Glacier remote is easy:
 
         # cd /media/usb/annex
         # git pull laptop
-        # git annex initremote glacier
+        # git annex enableremote glacier
         initremote glacier (gpg) ok
 
 Now the remote can be used like any other remote.

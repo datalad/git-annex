@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 5"
+ date="2014-02-20T21:14:21Z"
+ content="""
+You don't need to delete them from the history, just from the branch you're running `git annex fsck` in.
+"""]]

@@ -1,5 +1,5 @@
 Name: git-annex
-Version: 5.20140210
+Version: 5.20140306
 Cabal-Version: >= 1.8
 License: GPL-3
 Maintainer: Joey Hess <joey@kitenet.net>
@@ -93,7 +93,8 @@ Executable git-annex
    extensible-exceptions, dataenc, SHA, process, json,
    base (>= 4.5 && < 4.9), monad-control, MonadCatchIO-transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
-   SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3)
+   SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
+   data-default, case-insensitive
   CC-Options: -Wall
   GHC-Options: -Wall
   Extensions: PackageImports
@@ -105,6 +106,7 @@ Executable git-annex
 
   if (os(windows))
     Build-Depends: Win32, Win32-extras
+    C-Sources: Utility/winprocess.c
   else
     Build-Depends: unix
     -- Need to list these because they're generated from .hsc files.
@@ -121,6 +123,8 @@ Executable git-annex
   if flag(TDFA)
     Build-Depends: regex-tdfa
     CPP-Options: -DWITH_TDFA
+  else
+    Build-Depends: regex-compat
   
   if flag(CryptoHash)
     Build-Depends: cryptohash (>= 0.10.0)
@@ -133,7 +137,7 @@ Executable git-annex
   -- Not yet available for backport.
   --if flag(WebDAV)
   --  Build-Depends: DAV ((>= 0.3 && < 0.6) || > 0.6),
-  --   http-conduit, xml-conduit, http-types
+  --   http-client, http-conduit, http-types, lifted-base
   --  CPP-Options: -DWITH_WEBDAV
 
   if flag(Assistant) && ! os(solaris)
@@ -173,7 +177,7 @@ Executable git-annex
   if flag(Webapp)
     Build-Depends:
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
-     case-insensitive, http-types, transformers, wai, wai-logger, warp,
+     http-types, transformers, wai, wai-logger, warp, warp-tls,
      blaze-builder, crypto-api, hamlet, clientsession,
      template-haskell, data-default, aeson, network-conduit
     CPP-Options: -DWITH_WEBAPP

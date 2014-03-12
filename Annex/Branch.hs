@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Annex.Branch (
 	fullname,
 	name,
@@ -30,11 +28,11 @@ module Annex.Branch (
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Set as S
 import qualified Data.Map as M
-import qualified Control.Exception as E
 
 import Common.Annex
 import Annex.BranchState
 import Annex.Journal
+import Annex.Index
 import qualified Git
 import qualified Git.Command
 import qualified Git.Ref
@@ -47,15 +45,12 @@ import Git.Types
 import Git.FilePath
 import Annex.CatFile
 import Annex.Perms
-import qualified Annex
-import Utility.Env
 import Logs
 import Logs.Transitions
 import Logs.Trust.Pure
 import Annex.ReplaceFile
 import qualified Annex.Queue
 import Annex.Branch.Transitions
-import Annex.Exception
 
 {- Name of the branch that is used to store git-annex's information. -}
 name :: Git.Ref
@@ -63,11 +58,11 @@ name = Git.Ref "git-annex"
 
 {- Fully qualified name of the branch. -}
 fullname :: Git.Ref
-fullname = Git.Ref $ "refs/heads/" ++ show name
+fullname = Git.Ref $ "refs/heads/" ++ fromRef name
 
 {- Branch's name in origin. -}
 originname :: Git.Ref
-originname = Git.Ref $ "origin/" ++ show name
+originname = Git.Ref $ "origin/" ++ fromRef name
 
 {- Does origin/git-annex exist? -}
 hasOrigin :: Annex Bool
@@ -92,8 +87,8 @@ getBranch = maybe (hasOrigin >>= go >>= use) return =<< branchsha
   where
 	go True = do
 		inRepo $ Git.Command.run
-			[Param "branch", Param $ show name, Param $ show originname]
-		fromMaybe (error $ "failed to create " ++ show name)
+			[Param "branch", Param $ fromRef name, Param $ fromRef originname]
+		fromMaybe (error $ "failed to create " ++ fromRef name)
 			<$> branchsha
 	go False = withIndex' True $
 		inRepo $ Git.Branch.commitAlways "branch created" fullname []
@@ -159,7 +154,7 @@ updateTo pairs = do
 			then "update"
 			else "merging " ++
 				unwords (map Git.Ref.describe branches) ++ 
-				" into " ++ show name
+				" into " ++ fromRef name
 		localtransitions <- parseTransitionsStrictly "local"
 			<$> getLocal transitionsLog
 		unless (null branches) $ do
@@ -296,7 +291,7 @@ files = do
 branchFiles :: Annex [FilePath]
 branchFiles = withIndex $ inRepo $ Git.Command.pipeNullSplitZombie
 	[ Params "ls-tree --name-only -r -z"
-	, Param $ show fullname
+	, Param $ fromRef fullname
 	]
 
 {- Populates the branch's index file with the current branch contents.
@@ -338,32 +333,12 @@ withIndex = withIndex' False
 withIndex' :: Bool -> Annex a -> Annex a
 withIndex' bootstrapping a = do
 	f <- fromRepo gitAnnexIndex
-	g <- gitRepo
-#ifdef __ANDROID__
-	{- This should not be necessary on Android, but there is some
-	 - weird getEnvironment breakage. See
-	 - https://github.com/neurocyte/ghc-android/issues/7
-	 - Use getEnv to get some key environment variables that
-	 - git expects to have. -}
-	let keyenv = words "USER PATH GIT_EXEC_PATH HOSTNAME HOME"
-	let getEnvPair k = maybe Nothing (\v -> Just (k, v)) <$> getEnv k
-	e <- liftIO $ catMaybes <$> forM keyenv getEnvPair
-	let e' = ("GIT_INDEX_FILE", f):e
-#else
-	e <- liftIO getEnvironment
-	let e' = addEntry "GIT_INDEX_FILE" f e
-#endif
-	let g' = g { gitEnv = Just e' }
-
-	r <- tryAnnex $ do
-		Annex.changeState $ \s -> s { Annex.repo = g' }
+	withIndexFile f $ do
 		checkIndexOnce $ unlessM (liftIO $ doesFileExist f) $ do
 			unless bootstrapping create
 			createAnnexDirectory $ takeDirectory f
 			unless bootstrapping $ inRepo genIndex
 		a
-	Annex.changeState $ \s -> s { Annex.repo = (Annex.repo s) { gitEnv = gitEnv g} }
-	either E.throw return r
 
 {- Updates the branch's index to reflect the current contents of the branch.
  - Any changes staged in the index will be preserved.
@@ -393,7 +368,7 @@ needUpdateIndex branchref = do
 setIndexSha :: Git.Ref -> Annex ()
 setIndexSha ref = do
 	f <- fromRepo gitAnnexIndexStatus
-	liftIO $ writeFile f $ show ref ++ "\n"
+	liftIO $ writeFile f $ fromRef ref ++ "\n"
 	setAnnexFilePerm f
 
 {- Stages the journal into the index and returns an action that will
@@ -467,7 +442,7 @@ ignoreRefs rs = do
 	let s = S.unions [old, S.fromList rs]
 	f <- fromRepo gitAnnexIgnoredRefs
 	replaceFile f $ \tmp -> liftIO $ writeFile tmp $
-		unlines $ map show $ S.elems s
+		unlines $ map fromRef $ S.elems s
 
 getIgnoredRefs :: Annex (S.Set Git.Ref)
 getIgnoredRefs = S.fromList . mapMaybe Git.Sha.extractSha . lines <$> content

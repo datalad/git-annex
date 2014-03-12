@@ -27,6 +27,42 @@ Also in [[direct_mode]], some additional data is stored in these directories.
 changed, and `.map` files contain a list of file(s) in the work directory
 that contain the key.
 
+# `.git/annex/tmp/`
+
+This directory contains partially transferred objects.
+
+# `.git/annex/misctmp/`
+
+This is a temp directory for miscellaneous other temp files.
+
+While .git/annex/objects and .git/annex/tmp can be put on different
+filesystems if desired, .git/annex/misctmp 
+has to be on the same filesystem as the work tree and git repository.
+
+# `.git/annex/bad/`
+
+git-annex fsck puts any bad objects it finds in here.
+
+# `.git/annex/transfers/`
+
+Contains information files for uploads and downloads that are in progress,
+as well as any that have failed. Used especially by the assistant.
+It is safe to delete these files.
+
+# `.git/annex/ssh/`
+
+ssh connection caching files are written in here.
+
+# `.git/annex/index`
+
+This is a git index file which git-annex uses for commits to the git-annex
+branch.
+
+# `.git/annex/journal/`
+
+git-annex uses this to journal changes to the git-annex branch,
+before committing a set of changes.
+
 ## The git-annex branch
 
 This branch is managed by git-annex, with the contents listed below.
@@ -145,6 +181,27 @@ Example:
 
 	1287290776.765152s e605dca6-446a-11e0-8b2a-002170d25c55 blah blah
 	1287290767.478634s 26339d22-446b-11e0-9101-002170d25c55 foo=bar
+
+## `aaa/bbb/*.log.met`
+
+These log files are used to store arbitrary [[design/metadata]] about keys.
+Each key can have any number of metadata fields. Each field has a set of
+values.
+
+Lines are timestamped, and record when values are added (`field +value`),
+but also when values are removed (`field -value`). Removed values
+are retained in the log so that when merging an old line that sets a value
+that was later unset, the value is not accidentially added back.
+
+For example:
+
+	1287290776.765152s tag +foo +bar author +joey
+	1291237510.141453s tag -bar +baz
+
+The value can be completely arbitrary data, although it's typically
+reasonably short. If the value contains any whitespace
+(including \r or \r), it will be base64 encoded. Base64 encoded values
+are indicated by prefixing them with "!" 
 
 ## `schedule.log`
 

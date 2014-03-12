@@ -21,6 +21,7 @@ import Common.Annex
 import Types.Remote
 import Types.GitConfig
 import Types.Crypto
+import Types.Creds
 import qualified Git
 import qualified Git.Command
 import qualified Git.Config
@@ -149,8 +150,8 @@ noCrypto = error "cannot use gcrypt remote without encryption enabled"
 unsupportedUrl :: Annex a
 unsupportedUrl = error "using non-ssh remote repo url with gcrypt is not supported"
 
-gCryptSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-gCryptSetup mu c = go $ M.lookup "gitrepo" c
+gCryptSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+gCryptSetup mu _ c = go $ M.lookup "gitrepo" c
   where
 	remotename = fromJust (M.lookup "name" c)
   	go Nothing = error "Specify gitrepo="
@@ -176,7 +177,7 @@ gCryptSetup mu c = go $ M.lookup "gitrepo" c
 		void $ inRepo $ Git.Command.runBool
 			[ Param "push"
 			, Param remotename
-			, Param $ show Annex.Branch.fullname
+			, Param $ Git.fromRef Annex.Branch.fullname
 			]
 		g <- inRepo Git.Config.reRead
 		case Git.GCrypt.remoteRepoId g (Just remotename) of

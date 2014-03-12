@@ -66,7 +66,7 @@ changeAssociatedFiles key transform = do
 	mapping <- calcRepo $ gitAnnexMapping key
 	files <- associatedFilesRelative key
 	let files' = transform files
-	when (files /= files') $ do
+	when (files /= files') $
 		modifyContent mapping $
 			liftIO $ viaTmp writeFileAnyEncoding mapping $
 				unlines files'

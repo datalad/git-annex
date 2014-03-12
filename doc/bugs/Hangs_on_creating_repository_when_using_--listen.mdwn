@@ -44,3 +44,6 @@ WebApp crashed: unable to bind to local socket
 > to use when something else is already listening there. --[[Joey]] 
 
 [[!tag /design/assistant]]
+
+>> --listen no longer accepts a port. Use the new HTTPS support instead.
+>> [[done]] --[[Joey]] 

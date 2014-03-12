@@ -81,4 +81,4 @@ trackingOrSyncBranch :: Ref -> Bool
 trackingOrSyncBranch b = Git.Repair.isTrackingBranch b || isAnnexSyncBranch b
 
 isAnnexSyncBranch :: Ref -> Bool
-isAnnexSyncBranch b = "refs/synced/" `isPrefixOf` show b
+isAnnexSyncBranch b = "refs/synced/" `isPrefixOf` fromRef b

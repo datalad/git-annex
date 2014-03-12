@@ -73,8 +73,8 @@ gen r u c gc = do
   where
 	externaltype = fromMaybe (error "missing externaltype") (remoteAnnexExternalType gc)
 
-externalSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-externalSetup mu c = do
+externalSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+externalSetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 	let externaltype = fromMaybe (error "Specify externaltype=") $
 		M.lookup "externaltype" c
@@ -92,16 +92,18 @@ externalSetup mu c = do
 
 store :: External -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store external k _f p = sendAnnex k rollback $ \f ->
-	storeHelper external k f p
+	metered (Just p) k $
+		storeHelper external k f
   where
 	rollback = void $ remove external k
 
 storeEncrypted :: External -> [CommandParam] -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted external gpgOpts (cipher, enck) k p = withTmp enck $ \tmp ->
 	sendAnnex k rollback $ \src -> do
-		liftIO $ encrypt gpgOpts cipher (feedFile src) $
-			readBytes $ L.writeFile tmp
-		storeHelper external enck tmp p
+		metered (Just p) k $ \meterupdate -> do
+			liftIO $ encrypt gpgOpts cipher (feedFile src) $
+				readBytes $ L.writeFile tmp
+			storeHelper external enck tmp meterupdate
   where
 	rollback = void $ remove external enck
 
@@ -118,17 +120,19 @@ storeHelper external k f p = safely $
 			_ -> Nothing
 
 retrieve :: External -> Key -> AssociatedFile -> FilePath -> MeterUpdate -> Annex Bool
-retrieve external k _f d p = retrieveHelper external k d p
+retrieve external k _f d p = metered (Just p) k $
+	retrieveHelper external k d
 
 retrieveEncrypted :: External -> (Cipher, Key) -> Key -> FilePath -> MeterUpdate -> Annex Bool
-retrieveEncrypted external (cipher, enck) _ f p = withTmp enck $ \tmp ->
-	ifM (retrieveHelper external enck tmp p)
-		( liftIO $ catchBoolIO $ do
-			decrypt cipher (feedFile tmp) $
-				readBytes $ L.writeFile f
-			return True
-		, return False
-		)
+retrieveEncrypted external (cipher, enck) k f p = withTmp enck $ \tmp ->
+	metered (Just p) k $ \meterupdate -> 
+		ifM (retrieveHelper external enck tmp meterupdate)
+			( liftIO $ catchBoolIO $ do
+				decrypt cipher (feedFile tmp) $
+					readBytes $ L.writeFile f
+				return True
+			, return False
+			)
 
 retrieveHelper :: External -> Key -> FilePath -> MeterUpdate -> Annex Bool
 retrieveHelper external k d p = safely $
@@ -221,8 +225,8 @@ handleRequest' lck external req mp responsehandler
 		send $ VALUE value
 	handleRemoteRequest (SETCREDS setting login password) = do
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external
-		c' <- setRemoteCredPair' c (credstorage setting)
-			(login, password)
+		c' <- setRemoteCredPair c (credstorage setting) $
+			Just (login, password)
 		void $ liftIO $ atomically $ swapTMVar (externalConfig external) c'
 	handleRemoteRequest (GETCREDS setting) = do
 		c <- liftIO $ atomically $ readTMVar $ externalConfig external

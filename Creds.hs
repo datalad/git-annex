@@ -1,28 +1,33 @@
 {- Credentials storage
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
-module Creds where
+module Creds (
+	module Types.Creds,
+	CredPairStorage(..),
+	setRemoteCredPair,
+	getRemoteCredPairFor,
+	getRemoteCredPair,
+	getEnvCredPair,
+	writeCacheCreds,
+	readCacheCreds,
+) where
 
 import Common.Annex
+import Types.Creds
 import Annex.Perms
 import Utility.FileMode
 import Crypto
 import Types.Remote (RemoteConfig, RemoteConfigKey)
 import Remote.Helper.Encryptable (remoteCipher, embedCreds)
-import Utility.Env (setEnv, getEnv)
+import Utility.Env (getEnv)
 
 import qualified Data.ByteString.Lazy.Char8 as L
 import qualified Data.Map as M
 import Utility.Base64
-
-type Creds = String -- can be any data
-type CredPair = (String, String) -- login, password
 
 {- A CredPair can be stored in a file, or in the environment, or perhaps
  - in a remote's configuration. -}
@@ -33,14 +38,13 @@ data CredPairStorage = CredPairStorage
 	}
 
 {- Stores creds in a remote's configuration, if the remote allows
- - that. Otherwise, caches them locally. -}
-setRemoteCredPair :: RemoteConfig -> CredPairStorage -> Annex RemoteConfig
-setRemoteCredPair c storage = 
-	maybe (return c) (setRemoteCredPair' c storage)
+ - that. Otherwise, caches them locally.
+ - The creds are found in storage if not provided. -}
+setRemoteCredPair :: RemoteConfig -> CredPairStorage -> Maybe CredPair -> Annex RemoteConfig
+setRemoteCredPair c storage Nothing = 
+	maybe (return c) (setRemoteCredPair c storage . Just)
 		=<< getRemoteCredPair c storage
-
-setRemoteCredPair' :: RemoteConfig -> CredPairStorage -> CredPair -> Annex RemoteConfig
-setRemoteCredPair' c storage creds
+setRemoteCredPair c storage (Just creds)
 	| embedCreds c = case credPairRemoteKey storage of
 		Nothing -> localcache
 		Just key -> storeconfig key =<< remoteCipher c
@@ -104,19 +108,6 @@ getEnvCredPair storage = liftM2 (,)
 	<*> getEnv penv
   where
 	(uenv, penv) = credPairEnvironment storage
-
-{- Stores a CredPair in the environment. -}
-setEnvCredPair :: CredPair -> CredPairStorage -> IO ()
-#ifndef mingw32_HOST_OS
-setEnvCredPair (l, p) storage = do
-	set uenv l
-	set penv p
-  where
-	(uenv, penv) = credPairEnvironment storage
-	set var val = void $ setEnv var val True
-#else
-setEnvCredPair _ _ = error "setEnvCredPair TODO"
-#endif
 
 writeCacheCredPair :: CredPair -> CredPairStorage -> Annex ()
 writeCacheCredPair credpair storage =

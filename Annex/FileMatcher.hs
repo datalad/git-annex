@@ -43,7 +43,7 @@ checkMatcher matcher mkey afile notpresent def
 fileMatchInfo :: FilePath -> Annex MatchInfo
 fileMatchInfo file = do
 	matchfile <- getTopFilePath <$> inRepo (toTopFilePath file)
-	return $ MatchingFile $ FileInfo
+	return $ MatchingFile FileInfo
 		{ matchFile = matchfile
 		, relFile = file
 		}
@@ -83,6 +83,7 @@ parseToken checkpresent checkpreferreddir groupmap t
 			, ("inbackend", limitInBackend)
 			, ("largerthan", limitSize (>))
 			, ("smallerthan", limitSize (<))
+			, ("metadata", limitMetaData)
 			, ("inallgroup", limitInAllGroup groupmap)
 			]
   where

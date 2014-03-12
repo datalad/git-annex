@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 5"
+ date="2014-03-05T18:02:08Z"
+ content="""
+Well, the easy way, assuming that you don't need the extension in the key at all, is to run `git annex migrate --backend=SHA512 *.cam` in both repositories.
+
+You can also play tricks with `git annex rekey`. I don't know if I'd recommend doing so.
+"""]]

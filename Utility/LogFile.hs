@@ -11,16 +11,16 @@ module Utility.LogFile where
 
 import Common
 
-import System.Posix.Types
-
-openLog :: FilePath -> IO Fd
 #ifndef mingw32_HOST_OS
+import System.Posix.Types
+#endif
+
+#ifndef mingw32_HOST_OS
+openLog :: FilePath -> IO Fd
 openLog logfile = do
 	rotateLog logfile
 	openFd logfile WriteOnly (Just stdFileMode)
 		defaultFileFlags { append = True }
-#else
-openLog = error "openLog TODO"
 #endif
 
 rotateLog :: FilePath -> IO ()
@@ -49,20 +49,14 @@ listLogs logfile = filterM doesFileExist $ reverse $
 maxLogs :: Int
 maxLogs = 9
 
-redirLog :: Fd -> IO ()
 #ifndef mingw32_HOST_OS
+redirLog :: Fd -> IO ()
 redirLog logfd = do
 	mapM_ (redir logfd) [stdOutput, stdError]
 	closeFd logfd
-#else
-redirLog _ = error "redirLog TODO"
-#endif
 
 redir :: Fd -> Fd -> IO ()
-#ifndef mingw32_HOST_OS
 redir newh h = do
 	closeFd h
 	void $ dupTo newh h
-#else
-redir _ _ = error "redir TODO"
 #endif

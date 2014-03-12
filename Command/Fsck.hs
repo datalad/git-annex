@@ -31,12 +31,8 @@ import Config
 import Types.Key
 import Utility.HumanTime
 import Git.FilePath
+import Utility.PID
 
-#ifndef mingw32_HOST_OS
-import System.Posix.Process (getProcessID)
-#else
-import System.Win32.Process.Current (getCurrentProcessId)
-#endif
 import Data.Time.Clock.POSIX
 import Data.Time
 import System.Posix.Types (EpochTime)
@@ -72,7 +68,7 @@ seek ps = do
 	from <- getOptionField fsckFromOption Remote.byNameWithUUID
 	i <- getIncremental
 	withKeyOptions
-		(startKey i)
+		(\k -> startKey i k =<< getNumCopies)
 		(withFilesInGit $ whenAnnexed $ start from i)
 		ps
 
@@ -84,11 +80,12 @@ getIncremental = do
 	morei <- Annex.getFlag (optionName moreIncrementalOption)
 	case (i, starti, morei) of
 		(False, False, False) -> return NonIncremental
-		(False, True, _) -> startIncremental
+		(False, True, False) -> startIncremental
 		(False ,False, True) -> ContIncremental <$> getStartTime
-		(True, _, _) ->
+		(True, False, False) ->
 			maybe startIncremental (return . ContIncremental . Just)
 				=<< getStartTime
+		_ -> error "Specify only one of --incremental, --more, or --incremental-schedule"
   where
 	startIncremental = do
 		recordStartTime
@@ -149,14 +146,10 @@ performRemote key file backend numcopies remote =
 		, checkKeyNumCopies key file numcopies
 		]
 	withtmp a = do
-#ifndef mingw32_HOST_OS
-		v <- liftIO getProcessID
-#else
-		v <- liftIO getCurrentProcessId
-#endif
-		t <- fromRepo gitAnnexTmpDir
+		pid <- liftIO getPID
+		t <- fromRepo gitAnnexTmpObjectDir
 		createAnnexDirectory t
-		let tmp = t </> "fsck" ++ show v ++ "." ++ keyFile key
+		let tmp = t </> "fsck" ++ show pid ++ "." ++ keyFile key
 		let cleanup = liftIO $ catchIO (removeFile tmp) (const noop)
 		cleanup
 		cleanup `after` a tmp
@@ -170,18 +163,19 @@ performRemote key file backend numcopies remote =
 			)
 	dummymeter _ = noop
 
-startKey :: Incremental -> Key -> CommandStart
-startKey inc key = case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
-	Nothing -> stop
-	Just backend -> runFsck inc (key2file key) key $ performAll key backend
+startKey :: Incremental -> Key -> NumCopies -> CommandStart
+startKey inc key numcopies =
+	case Backend.maybeLookupBackendName (Types.Key.keyBackendName key) of
+		Nothing -> stop
+		Just backend -> runFsck inc (key2file key) key $
+			performKey key backend numcopies
 
-{- Note that numcopies cannot be checked in --all mode, since we do not
- - have associated filenames to look up in the .gitattributes file. -}
-performAll :: Key -> Backend -> Annex Bool
-performAll key backend = check
+performKey :: Key -> Backend -> NumCopies -> Annex Bool
+performKey key backend numcopies = check
 	[ verifyLocationLog key (key2file key)
 	, checkKeySize key
 	, checkBackend backend key Nothing
+	, checkKeyNumCopies key (key2file key) numcopies
 	]
 
 check :: [Annex Bool] -> Annex Bool
@@ -365,7 +359,7 @@ checkBackendOr' bad backend key file postcheck =
 				, return True
 				)
 
-checkKeyNumCopies :: Key -> FilePath -> NumCopies -> Annex Bool
+checkKeyNumCopies :: Key -> String -> NumCopies -> Annex Bool
 checkKeyNumCopies key file numcopies = do
 	(untrustedlocations, safelocations) <- trustPartition UnTrusted =<< Remote.keyLocations key
 	let present = NumCopies (length safelocations)
@@ -415,7 +409,7 @@ badContentRemote remote key = do
 		++ Remote.name remote
 
 data Incremental = StartIncremental | ContIncremental (Maybe EpochTime) | NonIncremental
-	deriving (Eq)
+	deriving (Eq, Show)
 
 runFsck :: Incremental -> FilePath -> Key -> Annex Bool -> CommandStart
 runFsck inc file key a = ifM (needFsck inc key)
@@ -471,7 +465,10 @@ getFsckTime key = do
  -
  - To guard against time stamp damange (for example, if an annex directory
  - is copied without -a), the fsckstate file contains a time that should
- - be identical to its modification time. -}
+ - be identical to its modification time.
+ - (This is not possible to do on Windows, and so the timestamp in
+ - the file will only be equal or greater than the modification time.)
+ -}
 recordStartTime :: Annex ()
 recordStartTime = do
 	f <- fromRepo gitAnnexFsckState
@@ -479,7 +476,11 @@ recordStartTime = do
 	liftIO $ do
 		nukeFile f
 		withFile f WriteMode $ \h -> do
+#ifndef mingw32_HOST_OS
 			t <- modificationTime <$> getFileStatus f
+#else
+			t <- getPOSIXTime
+#endif
 			hPutStr h $ showTime $ realToFrac t
   where
 	showTime :: POSIXTime -> String
@@ -494,11 +495,18 @@ getStartTime = do
 	f <- fromRepo gitAnnexFsckState
 	liftIO $ catchDefaultIO Nothing $ do
 		timestamp <- modificationTime <$> getFileStatus f
-		t <- readishTime <$> readFile f
-		return $ if Just (realToFrac timestamp) == t
+		let fromstatus = Just (realToFrac timestamp)
+		fromfile <- readishTime <$> readFile f
+		return $ if matchingtimestamp fromfile fromstatus
 			then Just timestamp
 			else Nothing
   where
 	readishTime :: String -> Maybe POSIXTime
 	readishTime s = utcTimeToPOSIXSeconds <$>
 		parseTime defaultTimeLocale "%s%Qs" s
+	matchingtimestamp fromfile fromstatus =
+#ifndef mingw32_HOST_OS
+		fromfile == fromstatus
+#else
+		fromfile >= fromstatus
+#endif

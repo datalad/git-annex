@@ -37,3 +37,7 @@ shaSize = 40
 
 nullSha :: Ref		
 nullSha = Ref $ replicate shaSize '0'
+
+{- Git's magic empty tree. -}
+emptyTree :: Ref
+emptyTree = Ref "4b825dc642cb6eb9a060e54bf8d69288fbee4904"

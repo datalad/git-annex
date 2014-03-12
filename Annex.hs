@@ -44,6 +44,7 @@ import Git.CatFile
 import Git.CheckAttr
 import Git.CheckIgnore
 import Git.SharedRepository
+import qualified Git.Hook
 import qualified Git.Queue
 import Types.Key
 import Types.Backend
@@ -58,9 +59,11 @@ import Types.UUID
 import Types.FileMatcher
 import Types.NumCopies
 import Types.LockPool
+import Types.MetaData
 import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
+import Utility.Quvi (QuviVersion)
 
 {- git-annex's monad is a ReaderT around an AnnexState stored in a MVar.
  - This allows modifying the state in an exception-safe fashion.
@@ -109,11 +112,14 @@ data AnnexState = AnnexState
 	, lockpool :: LockPool
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
+	, modmeta :: [ModMeta]
 	, cleanup :: M.Map String (Annex ())
 	, inodeschanged :: Maybe Bool
 	, useragent :: Maybe String
 	, errcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
+	, quviversion :: Maybe QuviVersion
+	, existinghooks :: M.Map Git.Hook.Hook Bool
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -146,11 +152,14 @@ newState c r = AnnexState
 	, lockpool = M.empty
 	, flags = M.empty
 	, fields = M.empty
+	, modmeta = []
 	, cleanup = M.empty
 	, inodeschanged = Nothing
 	, useragent = Nothing
 	, errcounter = 0
 	, unusedkeys = Nothing
+	, quviversion = Nothing
+	, existinghooks = M.empty
 	}
 
 {- Makes an Annex state object for the specified git repo.

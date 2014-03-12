@@ -1,0 +1,73 @@
+### Please describe the problem.
+When my android phone tries to decode files downloaded from a ssh remote using shared encryption, gpg errors occur.
+
+### What steps will reproduce the problem?
+Setup is very similar to my other bug report in <https://git-annex.branchable.com/bugs/problems_with_android_and_xmpp/>.
+Only difference is the location of the annex on the android side.
+I have put it on the /data mount which uses ext4 to avoid the /sdcard fuse mount, which does not handle symlinks.
+
+1) setup git annex via webapp on laptop:
+
+* local annex
+
+* remote annex via ssh with shared encryption (tried two different servers, one with and one without git-annex installed)
+
+* share with my devices using jabber.me account
+
+2) setup git annex via webapp on android:
+
+* local annex in /data/data/ga.androidterm/annex (ext filesystem)
+
+* share with my devices using jabber.me account
+
+* ssh remote is automatically added via XMPP
+
+3) add file to annex on linux, which gets uploaded to the ssh remote
+
+4) symlink for file is created on phone and data downloaded, but never decrypted (see logs below)
+
+### What version of git-annex are you using? On what operating system?
+Ubunut Linux 12.04 with git-annex version:
+
+* 5.20140127.1 (from PPA)
+
+Android 4.2 (rooted) with git-annex version:
+
+* 5.20140211-g556cfeb (from autobuilds)
+
+### Please provide any additional information below.
+full logs:
+
+* linux: <http://pastebin.ca/2639929>
+
+* android: <http://pastebin.ca/2639945>
+
+most interesting parts:
+[[!format sh """
+#
+# android:
+#
+gpg: can't open `/usr/local/share/gnupg/options.skel': No such file or directory
+gpg: DBG: locking for `/sdcard/git-annex.home/.gnupg/secring.gpg.lock' done via O_EXCL
+gpg: DBG: locking for `/sdcard/git-annex.home/.gnupg/pubring.gpg.lock' done via O_EXCL
+gpg: decryption failed: bad key
+
+# followed by just the last line for all further attemps
+gpg: decryption failed: bad key
+
+# gpg it self seems to be fine
+root@android:/data/data/ga.androidterm # ./bin/gpg --version -v                
+gpg (GnuPG) 1.4.15
+Copyright (C) 2013 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Home: ~/.gnupg
+Supported algorithms:
+Pubkey: RSA, RSA-E, RSA-S, ELG-E, DSA
+Cipher: IDEA, 3DES, CAST5, BLOWFISH, AES, AES192, AES256, TWOFISH,
+        CAMELLIA128, CAMELLIA192, CAMELLIA256
+Hash: MD5, SHA1, RIPEMD160, SHA256, SHA384, SHA512, SHA224
+Compression: Uncompressed, ZIP, ZLIB
+"""]]

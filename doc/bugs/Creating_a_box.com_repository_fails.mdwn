@@ -35,3 +35,7 @@ ubuntu 13.10 (saucy), i686
 > Seems that [DAV-0.6 is badly broken](http://bugs.debian.org/737902).
 > I have adjusted the cabal file to refuse to build with that broken
 > version.
+> 
+>> Update: Had to work around additional breakage in DAV-0.6. It's
+>> fully tested and working now, although not yet uploaded to Debian
+>> unstable. [[done]] --[[Joey]]

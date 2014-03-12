@@ -70,18 +70,19 @@ gen r u c gc = new <$> remoteCost gc veryExpensiveRemoteCost
 			remotetype = remote
 		}
 
-glacierSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-glacierSetup mu c = do
+glacierSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+glacierSetup mu mcreds c = do
 	u <- maybe (liftIO genUUID) return mu
-	glacierSetup' u c
-glacierSetup' :: UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-glacierSetup' u c = do
+	c' <- setRemoteCredPair c (AWS.creds u) mcreds
+	glacierSetup' (isJust mu) u c'
+glacierSetup' :: Bool -> UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
+glacierSetup' enabling u c = do
 	c' <- encryptionSetup c
 	let fullconfig = c' `M.union` defaults
-	genVault fullconfig u
+	unless enabling $
+		genVault fullconfig u
 	gitConfigSpecialRemote u fullconfig "glacier" "true"
-	c'' <- setRemoteCredPair fullconfig (AWS.creds u)
-	return (c'', u)
+	return (c', u)
   where
 	remotename = fromJust (M.lookup "name" c)
 	defvault = remotename ++ "-" ++ fromUUID u
@@ -195,7 +196,7 @@ checkPresent r k = do
 					else return $ Right False
 			Left err -> return $ Left err
 
-	params =
+	params = glacierParams (config r)
 		[ Param "archive"
 		, Param "checkpresent"
 		, Param $ getVault $ config r
@@ -245,7 +246,6 @@ archive r k = fileprefix ++ key2file k
   where
 	fileprefix = M.findWithDefault "" "fileprefix" $ config r
 
--- glacier vault create will succeed even if the vault already exists.
 genVault :: RemoteConfig -> UUID -> Annex ()
 genVault c u = unlessM (runGlacier c u params) $
 	error "Failed creating glacier vault."

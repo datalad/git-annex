@@ -66,6 +66,7 @@ data CommandSection
 	| SectionSetup
 	| SectionMaintenance
 	| SectionQuery
+	| SectionMetaData
 	| SectionUtility
 	| SectionPlumbing
 	deriving (Eq, Ord, Enum, Bounded)
@@ -75,5 +76,6 @@ descSection SectionCommon = "Commonly used commands"
 descSection SectionSetup = "Repository setup commands"
 descSection SectionMaintenance = "Repository maintenance commands"
 descSection SectionQuery = "Query commands"
+descSection SectionMetaData = "Metadata commands"
 descSection SectionUtility = "Utility commands"
 descSection SectionPlumbing = "Plumbing commands"

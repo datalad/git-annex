@@ -63,7 +63,7 @@ checkUnused :: CommandPerform
 checkUnused = chain 0
 	[ check "" unusedMsg $ findunused =<< Annex.getState Annex.fast
 	, check "bad" staleBadMsg $ staleKeysPrune gitAnnexBadDir False
-	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpDir True
+	, check "tmp" staleTmpMsg $ staleKeysPrune gitAnnexTmpObjectDir True
 	]
   where
 	findunused True = do
@@ -266,7 +266,7 @@ withKeysReferencedInGit a = do
 		map (separate (== ' ')) .
 		lines
 	nubRefs = map (Git.Ref . snd) . nubBy (\(x, _) (y, _) -> x == y)
-	ourbranchend = '/' : show Annex.Branch.name
+	ourbranchend = '/' : Git.fromRef Annex.Branch.name
 	ourbranches (_, b) = not (ourbranchend `isSuffixOf` b)
 		&& not ("refs/synced/" `isPrefixOf` b)
 	addHead headRef refs = case headRef of

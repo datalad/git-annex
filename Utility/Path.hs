@@ -18,7 +18,6 @@ import Data.Char
 import Control.Applicative
 
 #ifdef mingw32_HOST_OS
-import Data.Char
 import qualified System.FilePath.Posix as Posix
 #else
 import System.Posix.Files
@@ -277,3 +276,18 @@ sanitizeFilePath = map sanitize
 		| c == '.' = c
 		| isSpace c || isPunctuation c || isSymbol c || isControl c || c == '/' = '_'
 		| otherwise = c
+
+{- Similar to splitExtensions, but knows that some things in FilePaths
+ - after a dot are too long to be extensions. -}
+splitShortExtensions :: FilePath -> (FilePath, [String])
+splitShortExtensions = splitShortExtensions' 5 -- enough for ".jpeg"
+splitShortExtensions' :: Int -> FilePath -> (FilePath, [String])
+splitShortExtensions' maxextension = go []
+  where
+	go c f
+		| len > 0 && len <= maxextension && not (null base) = 
+			go (ext:c) base
+		| otherwise = (f, c)
+	  where
+		(base, ext) = splitExtension f
+		len = length ext

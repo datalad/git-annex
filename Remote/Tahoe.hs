@@ -29,6 +29,7 @@ import Control.Concurrent.STM
 
 import Common.Annex
 import Types.Remote
+import Types.Creds
 import qualified Git
 import Config
 import Config.Cost
@@ -85,8 +86,8 @@ gen r u c gc = do
 		remotetype = remote
 	}
 
-tahoeSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-tahoeSetup mu c = do
+tahoeSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+tahoeSetup mu _ c = do
 	furl <- fromMaybe (fromMaybe missingfurl $ M.lookup furlk c)
 		<$> liftIO (getEnv "TAHOE_FURL")
 	u <- maybe (liftIO genUUID) return mu

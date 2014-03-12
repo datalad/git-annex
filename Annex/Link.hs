@@ -94,6 +94,10 @@ hashSymlink :: LinkTarget -> Annex Sha
 hashSymlink linktarget = inRepo $ Git.HashObject.hashObject BlobObject $ 
 	toInternalGitPath linktarget
 
+hashSymlink' :: Git.HashObject.HashObjectHandle -> LinkTarget -> Annex Sha
+hashSymlink' h linktarget = liftIO $ Git.HashObject.hashBlob h $
+	toInternalGitPath linktarget
+
 {- Stages a symlink to the annex, using a Sha of its target. -}
 stageSymlink :: FilePath -> Sha -> Annex ()
 stageSymlink file sha =

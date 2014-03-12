@@ -1,5 +1,4 @@
-git-annex is available in recent versions of Fedora. Although it is
-not currently a very recent version, it should work ok.
+git-annex is available in recent versions of Fedora.
 [status](http://koji.fedoraproject.org/koji/packageinfo?packageID=14145)
 
 Should be as simple as: `yum install git-annex`

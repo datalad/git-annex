@@ -33,6 +33,7 @@ import Utility.CopyFile
 import Annex.Perms
 import Annex.ReplaceFile
 import Annex.Exception
+import Annex.VariantFile
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -142,9 +143,6 @@ addDirect file cache = do
 {- In direct mode, git merge would usually refuse to do anything, since it
  - sees present direct mode files as type changed files. To avoid this,
  - merge is run with the work tree set to a temp directory.
- -
- - This should only be used once any changes to the real working tree have
- - already been committed, because it overwrites files in the working tree.
  -}
 mergeDirect :: FilePath -> Git.Ref -> Git.Repo -> IO Bool
 mergeDirect d branch g = do
@@ -172,39 +170,88 @@ mergeDirectCleanup d oldsha newsha = do
 	makeabs <- flip fromTopFilePath <$> gitRepo
 	let fsitems = zip (map (makeabs . DiffTree.file) items) items
 	forM_ fsitems $
-		go DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
+		go makeabs DiffTree.srcsha DiffTree.srcmode moveout moveout_raw
 	forM_ fsitems $
-		go DiffTree.dstsha DiffTree.dstmode movein movein_raw
+		go makeabs DiffTree.dstsha DiffTree.dstmode movein movein_raw
 	void $ liftIO cleanup
 	liftIO $ removeDirectoryRecursive d
   where
-	go getsha getmode a araw (f, item)
+	go makeabs getsha getmode a araw (f, item)
 		| getsha item == nullSha = noop
 		| otherwise = void $
-			tryAnnex . maybe (araw f item) (\k -> void $ a k f)
+			tryAnnex . maybe (araw item makeabs f) (\k -> void $ a item makeabs k f)
 				=<< catKey (getsha item) (getmode item)
 
-	moveout k f = removeDirect k f
+	moveout _ _ = removeDirect
 
 	{- Files deleted by the merge are removed from the work tree.
 	 - Empty work tree directories are removed, per git behavior. -}
-	moveout_raw f _item = liftIO $ do
+	moveout_raw _ _ f = liftIO $ do
 		nukeFile f
 		void $ tryIO $ removeDirectory $ parentDir f
 	
 	{- If the file is already present, with the right content for the
-	 - key, it's left alone. Otherwise, create the symlink and then
-	 - if possible, replace it with the content. -}
-	movein k f = unlessM (goodContent k f) $ do
+	 - key, it's left alone. 
+	 -
+	 - If the file is already present, and does not exist in the
+	 - oldsha branch, preserve this local file.
+	 -
+	 - Otherwise, create the symlink and then if possible, replace it
+	 - with the content. -}
+	movein item makeabs k f = unlessM (goodContent k f) $ do
+		preserveUnannexed item makeabs f oldsha
 		l <- inRepo $ gitAnnexLink f k
 		replaceFile f $ makeAnnexLink l
 		toDirect k f
 	
 	{- Any new, modified, or renamed files were written to the temp
 	 - directory by the merge, and are moved to the real work tree. -}
-	movein_raw f item = liftIO $ do
-		createDirectoryIfMissing True $ parentDir f
-		void $ tryIO $ rename (d </> getTopFilePath (DiffTree.file item)) f
+	movein_raw item makeabs f = do
+		preserveUnannexed item makeabs f oldsha
+		liftIO $ do
+			createDirectoryIfMissing True $ parentDir f
+			void $ tryIO $ rename (d </> getTopFilePath (DiffTree.file item)) f
+
+{- If the file that's being moved in is already present in the work
+ - tree, but did not exist in the oldsha branch, preserve this
+ - local, unannexed file (or directory), as "variant-local".
+ -
+ - It's also possible that the file that's being moved in
+ - is in a directory that collides with an exsting, non-annexed
+ - file (not a directory), which should be preserved.
+ -}
+preserveUnannexed :: DiffTree.DiffTreeItem -> (TopFilePath -> FilePath) -> FilePath -> Ref -> Annex ()
+preserveUnannexed item makeabs absf oldsha = do
+	whenM (liftIO (collidingitem absf) <&&> unannexed absf) $
+		liftIO $ findnewname absf 0
+	checkdirs (DiffTree.file item)
+  where
+	checkdirs from = do
+		let p = parentDir (getTopFilePath from)
+		let d = asTopFilePath p
+		unless (null p) $ do
+			let absd = makeabs d
+			whenM (liftIO (colliding_nondir absd) <&&> unannexed absd) $
+				liftIO $ findnewname absd 0
+			checkdirs d
+			
+	collidingitem f = isJust
+		<$> catchMaybeIO (getSymbolicLinkStatus f)
+	colliding_nondir f = maybe False (not . isDirectory)
+		<$> catchMaybeIO (getSymbolicLinkStatus f)
+
+	unannexed f = (isNothing <$> isAnnexLink f)
+		<&&> (isNothing <$> catFileDetails oldsha f)
+
+	findnewname :: FilePath -> Int -> IO ()
+	findnewname f n = do
+		let localf = mkVariant f 
+			("local" ++ if n > 0 then show n else "")
+		ifM (collidingitem localf)
+			( findnewname f (n+1)
+			, rename f localf
+				`catchIO` const (findnewname f (n+1))
+			)
 
 {- If possible, converts a symlink in the working tree into a direct
  - mode file. If the content is not available, leaves the symlink
@@ -286,18 +333,18 @@ setDirect wantdirect = do
  - this way things that show HEAD (eg shell prompts) will
  - hopefully show just "master". -}
 directBranch :: Ref -> Ref
-directBranch orighead = case split "/" $ show orighead of
+directBranch orighead = case split "/" $ fromRef orighead of
 	("refs":"heads":"annex":"direct":_) -> orighead
 	("refs":"heads":rest) ->
 		Ref $ "refs/heads/annex/direct/" ++ intercalate "/" rest
-	_ -> Ref $ "refs/heads/" ++ show (Git.Ref.base orighead)
+	_ -> Ref $ "refs/heads/" ++ fromRef (Git.Ref.base orighead)
 
 {- Converts a directBranch back to the original branch.
  -
  - Any other ref is left unchanged.
  -}
 fromDirectBranch :: Ref -> Ref
-fromDirectBranch directhead = case split "/" $ show directhead of
+fromDirectBranch directhead = case split "/" $ fromRef directhead of
 	("refs":"heads":"annex":"direct":rest) -> 
 		Ref $ "refs/heads/" ++ intercalate "/" rest
 	_ -> directhead

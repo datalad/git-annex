@@ -1,3 +1,112 @@
+git-annex (5.20140306~bpo70+1) wheezy-backports; urgency=high
+
+  * Updating backport to newest release.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 20 Feb 2014 22:56:45 +0000
+
+git-annex (5.20140306) unstable; urgency=high
+
+  * sync: Fix bug in direct mode that caused a file that was not
+    checked into git to be deleted when there was a conflicting
+    merge with a remote.
+  * webapp: Now supports HTTPS.
+  * webapp: No longer supports a port specified after --listen, since
+    it was buggy, and that use case is better supported by setting up HTTPS.
+  * annex.listen can be configured, instead of using --listen
+  * annex.startupscan can be set to false to disable the assistant's startup
+    scan.
+  * Probe for quvi version at run time.
+  * webapp: Filter out from Switch Repository list any
+    repositories listed in autostart file that don't have a
+    git directory anymore. (Or are bare)
+  * webapp: Refuse to start in a bare git repository.
+  * assistant --autostart: Refuse to start in a bare git repository.
+  * webapp: Don't list the public repository group when editing a
+    git repository; it only makes sense for special remotes.
+  * view, vfilter: Add support for filtering tags and values out of a view,
+    using !tag and field!=value.
+  * vadd: Allow listing multiple desired values for a field.
+  * view: Refuse to enter a view when no branch is currently checked out.
+  * metadata: To only set a field when it's not already got a value, use
+    -s field?=value
+  * Run .git/hooks/pre-commit-annex whenever a commit is made.
+  * sync: Automatically resolve merge conflict between and annexed file
+    and a regular git file.
+  * glacier: Pass --region to glacier checkpresent.
+  * webdav: When built with a new enough haskell DAV (0.6), disable
+    the http response timeout, which was only 5 seconds.
+  * webapp: Include no-pty in ssh authorized_keys lines.
+  * assistant: Smarter log file rotation, which takes free disk space
+    into account.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 12:28:04 -0400
+
+git-annex (5.20140227) unstable; urgency=medium
+
+  * metadata: Field names limited to alphanumerics and a few whitelisted
+    punctuation characters to avoid issues with views, etc.
+  * metadata: Field names are now case insensative.
+  * When constructing views, metadata is available about the location of the
+    file in the view's reference branch. Allows incorporating parts of the
+    directory hierarchy in a view.
+    For example `git annex view tag=* podcasts/=*` makes a view in the form
+    tag/showname.
+  * --metadata field=value can now use globs to match, and matches
+    case insensatively, the same as git annex view field=value does.
+  * annex.genmetadata can be set to make git-annex automatically set
+    metadata (year and month) when adding files.
+  * Make annex.web-options be used in several places that call curl.
+  * Fix handling of rsync remote urls containing a username,
+    including rsync.net.
+  * Preserve metadata when staging a new version of an annexed file.
+  * metadata: Support --json
+  * webapp: Fix creation of box.com and Amazon S3 and Glacier
+    repositories, broken in 5.20140221.
+  * webdav: When built with DAV 0.6.0, use the new DAV monad to avoid
+    locking files, which is not needed by git-annex's use of webdav, and
+    does not work on Box.com.
+  * webdav: Fix path separator bug when used on Windows.
+  * repair: Optimise unpacking of pack files, and avoid repeated error
+    messages about corrupt pack files.
+  * Add build dep on regex-compat to fix build on mipsel, which lacks
+    regex-tdfa.
+  * Disable test suite on sparc, which is missing optparse-applicative.
+  * Put non-object tmp files in .git/annex/misctmp, leaving .git/annex/tmp
+    for only partially transferred objects.
+
+ -- Joey Hess <joeyh@debian.org>  Thu, 27 Feb 2014 11:34:19 -0400
+
+git-annex (5.20140221) unstable; urgency=medium
+
+  * metadata: New command that can attach metadata to files.
+  * --metadata can be used to limit commands to acting on files
+    that have particular metadata.
+  * Preferred content expressions can use metadata=field=value
+    to limit them to acting on files that have particular metadata.
+  * view: New command that creates and checks out a branch that provides
+    a structured view of selected metadata.
+  * vfilter, vadd, vpop, vcycle: New commands for operating within views.
+  * pre-commit: Update metadata when committing changes to locations
+    of annexed files within a view.
+  * Add progress display for transfers to/from external special remotes.
+  * unused: Fix to actually detect unused keys when in direct mode.
+  * fsck: When run with --all or --unused, while .gitattributes
+    annex.numcopies cannot be honored since it's operating on keys
+    instead of files, make it honor the global numcopies setting,
+    and the annex.numcopies git config setting.
+  * trust, untrust, semitrust, dead: Warn when the trust level is
+    overridden in .git/config.
+  * glacier: Do not try to run glacier value create when an existing glacier
+    remote is enabled.
+  * fsck: Refuse to do anything if more than one of --incremental, --more,
+    and --incremental-schedule are given, since it's not clear which option
+    should win.
+  * Windows webapp: Can set up box.com, Amazon S3, and rsync.net remotes
+  * Windows webapp: Can create repos on removable drives.
+  * Windows: Ensure HOME is set, as needed by bundled cygwin utilities.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 21 Feb 2014 11:23:59 -0400
+
 git-annex (5.20140210~bpo70+2) wheezy-backports; urgency=medium
 
   * Updating backport to newest release.

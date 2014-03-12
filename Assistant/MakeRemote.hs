@@ -48,9 +48,10 @@ makeRsyncRemote :: RemoteName -> String -> Annex String
 makeRsyncRemote name location = makeRemote name location $ const $ void $
 	go =<< Command.InitRemote.findExisting name
   where
-  	go Nothing = setupSpecialRemote name Rsync.remote config
+  	go Nothing = setupSpecialRemote name Rsync.remote config Nothing
 		(Nothing, Command.InitRemote.newConfig name)
-	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config (Just u, c)
+	go (Just (u, c)) = setupSpecialRemote name Rsync.remote config Nothing
+		(Just u, c)
 	config = M.fromList
 		[ ("encryption", "shared")
 		, ("rsyncurl", location)
@@ -60,44 +61,44 @@ makeRsyncRemote name location = makeRemote name location $ const $ void $
 {- Inits a gcrypt special remote, and returns its name. -}
 makeGCryptRemote :: RemoteName -> String -> KeyId -> Annex RemoteName
 makeGCryptRemote remotename location keyid = 
-	initSpecialRemote remotename GCrypt.remote $ M.fromList
+	initSpecialRemote remotename GCrypt.remote Nothing $ M.fromList
 		[ ("type", "gcrypt")
 		, ("gitrepo", location)
 		, configureEncryption HybridEncryption
 		, ("keyid", keyid)
 		]
 
-type SpecialRemoteMaker = RemoteName -> RemoteType -> R.RemoteConfig -> Annex RemoteName
+type SpecialRemoteMaker = RemoteName -> RemoteType -> Maybe CredPair -> R.RemoteConfig -> Annex RemoteName
 
 {- Inits a new special remote. The name is used as a suggestion, but
  - will be changed if there is already a special remote with that name. -}
 initSpecialRemote :: SpecialRemoteMaker
-initSpecialRemote name remotetype config = go 0
+initSpecialRemote name remotetype mcreds config = go 0
   where
 	go :: Int -> Annex RemoteName
 	go n = do
 		let fullname = if n == 0  then name else name ++ show n
 		r <- Command.InitRemote.findExisting fullname
 		case r of
-			Nothing -> setupSpecialRemote fullname remotetype config
+			Nothing -> setupSpecialRemote fullname remotetype config mcreds
 				(Nothing, Command.InitRemote.newConfig fullname)
 			Just _ -> go (n + 1)
 
 {- Enables an existing special remote. -}
 enableSpecialRemote :: SpecialRemoteMaker
-enableSpecialRemote name remotetype config = do
+enableSpecialRemote name remotetype mcreds config = do
 	r <- Command.InitRemote.findExisting name
 	case r of
 		Nothing -> error $ "Cannot find a special remote named " ++ name
-		Just (u, c) -> setupSpecialRemote name remotetype config (Just u, c)
+		Just (u, c) -> setupSpecialRemote name remotetype config mcreds (Just u, c)
 
-setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> (Maybe UUID, R.RemoteConfig) -> Annex RemoteName
-setupSpecialRemote name remotetype config (mu, c) = do
+setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.RemoteConfig) -> Annex RemoteName
+setupSpecialRemote name remotetype config mcreds (mu, c) = do
 	{- Currently, only 'weak' ciphers can be generated from the
 	 - assistant, because otherwise GnuPG may block once the entropy
 	 - pool is drained, and as of now there's no way to tell the user
 	 - to perform IO actions to refill the pool. -}
-	(c', u) <- R.setup remotetype mu $
+	(c', u) <- R.setup remotetype mu mcreds $
 		M.insert "highRandomQuality" "false" $ M.union config c
 	describeUUID u name
 	configSet u c'

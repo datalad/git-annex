@@ -190,8 +190,8 @@ escapeHeader = escapeURIString (\c -> isUnescapedInURI c && c /= ' ')
 
 getRepoInfo :: RemoteConfig -> Widget
 getRepoInfo c = do
-	ua <- liftAnnex Url.getUserAgent
-	exists <- liftIO $ catchDefaultIO False $ fst <$> Url.exists url [] ua
+	uo <- liftAnnex Url.getUrlOptions
+	exists <- liftIO $ catchDefaultIO False $ fst <$> Url.exists url uo
 	[whamlet|
 <a href="#{url}">
   Internet Archive item

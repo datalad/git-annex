@@ -14,7 +14,6 @@ import Types.Remote
 import qualified Git
 import qualified Git.Construct
 import Annex.Content
-import Config
 import Config.Cost
 import Logs.Web
 import Types.Key
@@ -117,9 +116,8 @@ checkKey' key us = firsthit us (Right False) $ \u -> do
 			return $ Left "quvi support needed for this url"
 #endif
 		DefaultDownloader -> do
-			headers <- getHttpHeaders
-			Url.withUserAgent $ catchMsgIO .
-				Url.checkBoth u' headers (keySize key)
+			Url.withUrlOptions $ catchMsgIO .
+				Url.checkBoth u' (keySize key)
   where
   	firsthit [] miss _ = return miss
 	firsthit (u:rest) _ a = do

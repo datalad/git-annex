@@ -35,11 +35,11 @@ import Utility.WinLock
  -}
 setJournalFile :: JournalLocked -> FilePath -> String -> Annex ()
 setJournalFile _jl file content = do
+	tmp <- fromRepo gitAnnexTmpMiscDir
 	createAnnexDirectory =<< fromRepo gitAnnexJournalDir
-	createAnnexDirectory =<< fromRepo gitAnnexTmpDir
+	createAnnexDirectory tmp
 	-- journal file is written atomically
 	jfile <- fromRepo $ journalFile file
-	tmp <- fromRepo gitAnnexTmpDir
 	let tmpfile = tmp </> takeFileName jfile
 	liftIO $ do
 		writeBinaryFile tmpfile content

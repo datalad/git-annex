@@ -30,6 +30,7 @@ import Logs.PreferredContent
 import Logs.Remote
 import Types.StandardGroups
 import qualified Git
+import qualified Git.Types as Git
 import qualified Git.Command
 import qualified Git.Config
 import qualified Annex
@@ -137,8 +138,8 @@ setRepoConfig uuid mremote oldc newc = do
 
 	legalName = makeLegalName . T.unpack . repoName
 
-editRepositoryAForm :: Bool -> RepoConfig -> MkAForm RepoConfig
-editRepositoryAForm ishere def = RepoConfig
+editRepositoryAForm :: Maybe Remote -> RepoConfig -> MkAForm RepoConfig
+editRepositoryAForm mremote def = RepoConfig
 	<$> areq (if ishere then readonlyTextField else textField)
 		"Name" (Just $ repoName def)
 	<*> aopt textField "Description" (Just $ repoDescription def)
@@ -146,10 +147,16 @@ editRepositoryAForm ishere def = RepoConfig
 	<*> associateddirectory
 	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable def)
   where
+	ishere = isNothing mremote
+	isspecial = fromMaybe False $
+		(== Git.Unknown) . Git.location . Remote.repo <$> mremote
 	groups = customgroups ++ standardgroups
 	standardgroups :: [(Text, RepoGroup)]
-	standardgroups = map (\g -> (T.pack $ descStandardGroup g , RepoGroupStandard g))
-		[minBound :: StandardGroup .. maxBound :: StandardGroup]
+	standardgroups = map (\g -> (T.pack $ descStandardGroup g , RepoGroupStandard g)) $
+		filter sanegroup [minBound..maxBound]
+	sanegroup
+		| isspecial = const True
+		| otherwise = not . specialRemoteOnly
 	customgroups :: [(Text, RepoGroup)]
 	customgroups = case repoGroup def of
 		RepoGroupCustom s -> [(T.pack s, RepoGroupCustom s)]
@@ -187,7 +194,7 @@ editForm new (RepoUUID uuid) = page "Edit repository" (Just Configuration) $ do
 	curr <- liftAnnex $ getRepoConfig uuid mremote
 	liftAnnex $ checkAssociatedDirectory curr mremote
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ editRepositoryAForm (isNothing mremote) curr
+		runFormPostNoToken $ renderBootstrap $ editRepositoryAForm mremote curr
 	case result of
 		FormSuccess input -> liftH $ do
 			setRepoConfig uuid mremote curr input

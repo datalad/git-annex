@@ -17,7 +17,7 @@ import Utility.DirWatcher.Types
 import qualified Annex.Branch
 import qualified Git
 import qualified Git.Branch
-import qualified Command.Sync
+import Annex.AutoMerge
 import Annex.TaggedPush
 import Remote (remoteFromUUID)
 
@@ -39,7 +39,7 @@ mergeThread = namedThread "Merger" $ do
 		, modifyHook = changehook
 		, errHook = errhook
 		}
-	void $ liftIO $ watchDir dir (const False) hooks id
+	void $ liftIO $ watchDir dir (const False) True hooks id
 	debug ["watching", dir]
 
 type Handler = FilePath -> Assistant ()
@@ -80,10 +80,10 @@ onChange file
 	mergecurrent (Just current)
 		| equivBranches changedbranch current = do
 			debug
-				[ "merging", show changedbranch
-				, "into", show current
+				[ "merging", Git.fromRef changedbranch
+				, "into", Git.fromRef current
 				]
-			void $ liftAnnex  $ Command.Sync.mergeFrom changedbranch
+			void $ liftAnnex  $ autoMergeFrom changedbranch (Just current)
 	mergecurrent _ = noop
 
 	handleDesynced = case fromTaggedBranch changedbranch of
@@ -105,12 +105,12 @@ onChange file
 equivBranches :: Git.Ref -> Git.Ref -> Bool
 equivBranches x y = base x == base y
   where
-	base = takeFileName . show
+	base = takeFileName . Git.fromRef
 
 isAnnexBranch :: FilePath -> Bool
 isAnnexBranch f = n `isSuffixOf` f
   where
-	n = '/' : show Annex.Branch.name
+	n = '/' : Git.fromRef Annex.Branch.name
 
 fileToBranch :: FilePath -> Git.Ref
 fileToBranch f = Git.Ref $ "refs" </> base

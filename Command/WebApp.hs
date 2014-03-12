@@ -68,18 +68,24 @@ start' allowauto listenhost = do
 		cannotrun <- needsUpgrade . fromMaybe (error "no version") =<< getVersion
 		browser <- fromRepo webBrowser
 		f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
+		listenhost' <- if isJust listenhost
+			then pure listenhost
+			else annexListen <$> Annex.getGitConfig
 		ifM (checkpid <&&> checkshim f)
 			( if isJust listenhost
 				then error "The assistant is already running, so --listen cannot be used."
 				else do
 					url <- liftIO . readFile
 						=<< fromRepo gitAnnexUrlFile
-					liftIO $ openBrowser browser f url Nothing Nothing
-			, startDaemon True True Nothing cannotrun listenhost $ Just $ 
-				\origout origerr url htmlshim ->
-					if isJust listenhost
-						then maybe noop (`hPutStrLn` url) origout
-						else openBrowser browser htmlshim url origout origerr
+					liftIO $ if isJust listenhost'
+						then putStrLn url
+						else liftIO $ openBrowser browser f url Nothing Nothing
+			, do
+				startDaemon True True Nothing cannotrun listenhost' $ Just $ 
+					\origout origerr url htmlshim ->
+						if isJust listenhost'
+							then maybe noop (`hPutStrLn` url) origout
+							else openBrowser browser htmlshim url origout origerr
 			)
 	auto
 		| allowauto = liftIO $ startNoRepo []
@@ -107,8 +113,11 @@ startNoRepo _ = do
 		(d:_) -> do
 			setCurrentDirectory d
 			state <- Annex.new =<< Git.CurrentRepo.get
-			void $ Annex.eval state $ callCommandAction $
-				start' False listenhost
+			void $ Annex.eval state $ do
+				whenM (fromRepo Git.repoIsLocalBare) $
+					error $ d ++ " is a bare git repository, cannot run the webapp in it"
+				callCommandAction $
+					start' False listenhost
 
 {- Run the webapp without a repository, which prompts the user, makes one,
  - changes to it, starts the regular assistant, and redirects the
@@ -139,8 +148,9 @@ firstRun listenhost = do
 	let callback a = Just $ a v
 	runAssistant d $ do
 		startNamedThread urlrenderer $
-			webAppThread d urlrenderer True Nothing listenhost
+			webAppThread d urlrenderer True Nothing
 				(callback signaler)
+				listenhost
 				(callback mainthread)
 		waitNamedThreads
   where
@@ -153,7 +163,8 @@ firstRun listenhost = do
 			hFlush stdout
 			go
 		| otherwise = do
-			browser <- maybe Nothing webBrowser <$> Git.Config.global
+			browser <- maybe Nothing webBrowser
+				<$> catchDefaultIO Nothing Git.Config.global
 			openBrowser browser htmlshim url Nothing Nothing
 			go
 	  where

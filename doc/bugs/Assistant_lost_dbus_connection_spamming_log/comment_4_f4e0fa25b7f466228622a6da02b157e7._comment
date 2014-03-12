@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ subject="comment 4"
+ date="2014-03-06T00:10:09Z"
+ content="""
+Same issue here: Arch chroot on a Synology DS413j NAS. Kernel 2.6.32.12 (by Synology), glibc 2.18-12.1, git-annex 5.20140227 (standalone armel). DBus is running as root, but not for the git-annex user.
+
+Ran it through strace, here is a hopefully relevant trace:
+
+    socket(PF_INET, SOCK_STREAM, IPPROTO_TCP) = 11
+    fcntl64(11, F_GETFL)              = 0x2 (flags O_RDWR)
+    fcntl64(11, F_SETFL, O_RDWR|O_NONBLOCK) = 0
+    setsockopt(11, SOL_SOCKET, SO_REUSEADDR, [1], 4) = 0
+    bind(11, {sa_family=AF_INET, sin_port=htons(0), sin_addr=inet_addr(\"127.0.0.1\")}, 16) = 0
+    listen(11, 128)                   = 0
+    getsockname(11, {sa_family=AF_INET, sin_port=htons(50664), sin_addr=inet_addr(\"127.0.0.1\")}, [16]) = 0
+    ...
+    accept4(11, 0x40b7d3e0, [16], SOCK_NONBLOCK) = -1 ENOSYS (Function not implemented)
+
+According to `man accept`, `accept4()` is available since Linux 2.6.28 and glibc 2.10.
+
+And I can't connect to the webapp (neither to localhost using a SSH tunnel, nor to the LAN IP when using --listen=...).
+"""]]

@@ -19,7 +19,7 @@ import System.Environment
 
 def :: [Command]
 def = [noRepo checkAutoStart $ dontCheck repoExists $ withOptions options $
-	command "assistant" paramNothing seek SectionCommon
+	notBareRepo $ command "assistant" paramNothing seek SectionCommon
 		"automatically handle changes"]
 
 options :: [Option]

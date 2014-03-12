@@ -18,14 +18,6 @@ module Remote.Rsync (
 	RsyncOpts
 ) where
 
-import qualified Data.ByteString.Lazy as L
-import qualified Data.Map as M
-#ifndef mingw32_HOST_OS
-import System.Posix.Process (getProcessID)
-#else
-import System.Win32.Process.Current (getCurrentProcessId)
-#endif
-
 import Common.Annex
 import Types.Remote
 import qualified Git
@@ -40,8 +32,13 @@ import Crypto
 import Utility.Rsync
 import Utility.CopyFile
 import Utility.Metered
+import Utility.PID
 import Annex.Perms
 import Logs.Transfer
+import Types.Creds
+
+import qualified Data.ByteString.Lazy as L
+import qualified Data.Map as M
 
 type RsyncUrl = String
 
@@ -115,31 +112,31 @@ genRsyncOpts c gc transport url = RsyncOpts
 		| otherwise = True
 
 rsyncTransport :: RemoteGitConfig -> RsyncUrl -> Annex ([CommandParam], RsyncUrl)
-rsyncTransport gc rawurl
-	| rsyncUrlIsShell rawurl =
-		(\rsh -> return (rsyncShell rsh, resturl)) =<<
+rsyncTransport gc url
+	| rsyncUrlIsShell url =
+		(\rsh -> return (rsyncShell rsh, url)) =<<
 		case fromNull ["ssh"] (remoteAnnexRsyncTransport gc) of
 			"ssh":sshopts -> do
 				let (port, sshopts') = sshReadPort sshopts
-				    host = takeWhile (/=':') resturl
+				    userhost = takeWhile (/=':') url
 				-- Connection caching
 				(Param "ssh":) <$> sshCachingOptions
-					(host, port)
+					(userhost, port)
 					(map Param $ loginopt ++ sshopts')
 			"rsh":rshopts -> return $ map Param $ "rsh" :
 				loginopt ++ rshopts
 			rsh -> error $ "Unknown Rsync transport: "
 				++ unwords rsh
-	| otherwise = return ([], rawurl)
+	| otherwise = return ([], url)
   where
-	(login,resturl) = case separate (=='@') rawurl of
-		(h, "") -> (Nothing, h)
-		(l, h)  -> (Just l, h)
+	login = case separate (=='@') url of
+		(_h, "") -> Nothing
+		(l, _)  -> Just l
 	loginopt = maybe [] (\l -> ["-l",l]) login
 	fromNull as xs = if null xs then as else xs
 
-rsyncSetup :: Maybe UUID -> RemoteConfig -> Annex (RemoteConfig, UUID)
-rsyncSetup mu c = do
+rsyncSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+rsyncSetup mu _ c = do
 	u <- maybe (liftIO genUUID) return mu
 	-- verify configuration is sane
 	let url = fromMaybe (error "Specify rsyncurl=") $
@@ -249,14 +246,10 @@ sendParams = ifM crippledFileSystem
  - up trees for rsync. -}
 withRsyncScratchDir :: (FilePath -> Annex a) -> Annex a
 withRsyncScratchDir a = do
-#ifndef mingw32_HOST_OS
-	v <- liftIO getProcessID
-#else
-	v <- liftIO getCurrentProcessId
-#endif
-	t <- fromRepo gitAnnexTmpDir
+	p <- liftIO getPID
+	t <- fromRepo gitAnnexTmpObjectDir
 	createAnnexDirectory t
-	let tmp = t </> "rsynctmp" </> show v
+	let tmp = t </> "rsynctmp" </> show p
 	nuke tmp
 	liftIO $ createDirectoryIfMissing True tmp
 	nuke tmp `after` a tmp

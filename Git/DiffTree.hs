@@ -36,12 +36,12 @@ data DiffTreeItem = DiffTreeItem
 {- Diffs two tree Refs. -}
 diffTree :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffTree src dst = getdiff (Param "diff-tree")
-	[Param (show src), Param (show dst)]
+	[Param (fromRef src), Param (fromRef dst)]
 
 {- Diffs two tree Refs, recursing into sub-trees -}
 diffTreeRecursive :: Ref -> Ref -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffTreeRecursive src dst = getdiff (Param "diff-tree")
-	[Param "-r", Param (show src), Param (show dst)]
+	[Param "-r", Param (fromRef src), Param (fromRef dst)]
 
 {- Diffs between a tree and the index. Does nothing if there is not yet a
  - commit in the repository. -}
@@ -61,7 +61,7 @@ diffIndex' :: Ref -> [CommandParam] -> Repo -> IO ([DiffTreeItem], IO Bool)
 diffIndex' ref params repo =
 	ifM (Git.Ref.headExists repo)
 		( getdiff (Param "diff-index")
-			( params ++ [Param $ show ref] )
+			( params ++ [Param $ fromRef ref] )
 			repo
 		, return ([], return True)
 		)

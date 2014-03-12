@@ -81,3 +81,5 @@ Options:
   -q       --quiet         avoid verbose output
 etc
 """]]
+
+> [[fixed|done]]; both for regular remote ssh servers, and for rsync.net --[[Joey]] 

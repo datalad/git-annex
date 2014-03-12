@@ -72,6 +72,10 @@ associatedDirectory (Just c) PublicGroup = Just $
 associatedDirectory Nothing PublicGroup = Just "public"
 associatedDirectory _ _ = Nothing
 
+specialRemoteOnly :: StandardGroup -> Bool
+specialRemoteOnly PublicGroup = True
+specialRemoteOnly _ = False
+
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
 preferredContent :: StandardGroup -> PreferredContentExpression
 preferredContent ClientGroup = lastResort $

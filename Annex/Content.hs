@@ -221,7 +221,7 @@ getViaTmpChecked check key action =
  -}
 prepGetViaTmpChecked :: Key -> Annex Bool -> Annex Bool
 prepGetViaTmpChecked key getkey = do
-	tmp <- fromRepo $ gitAnnexTmpLocation key
+	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 
 	e <- liftIO $ doesFileExist tmp
 	alreadythere <- if e
@@ -243,15 +243,14 @@ finishGetViaTmp check key action = do
 			moveAnnex key tmpfile
 			logStatus key InfoPresent
 			return True
-		, do
-			-- the tmp file is left behind, in case caller wants
-			-- to resume its transfer
-			return False
+		-- the tmp file is left behind, in case caller wants
+		-- to resume its transfer
+		, return False
 		)
 
 prepTmp :: Key -> Annex FilePath
 prepTmp key = do
-	tmp <- fromRepo $ gitAnnexTmpLocation key
+	tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 	createAnnexDirectory (parentDir tmp)
 	return tmp
 
@@ -492,9 +491,11 @@ getKeysPresent = do
 
 	{- In indirect mode, look for the key. In direct mode,
 	 - the inode cache file is only present when a key's content
-	 - is present. -}
+	 - is present, so can be used as a surrogate if the content
+	 - is not located in the annex directory. -}
 	present False d = doesFileExist $ contentfile d
-	present True d = doesFileExist $ contentfile d ++ ".cache"
+	present True d = doesFileExist (contentfile d ++ ".cache")
+		<||> present False d
 	contentfile d = d </> takeFileName d
 
 {- Things to do to record changes to content when shutting down.
@@ -513,10 +514,8 @@ saveState nocommit = doSideAction $ do
 downloadUrl :: [Url.URLString] -> FilePath -> Annex Bool
 downloadUrl urls file = go =<< annexWebDownloadCommand <$> Annex.getGitConfig
   where
-  	go Nothing = do
-		opts <- map Param . annexWebOptions <$> Annex.getGitConfig
-		headers <- getHttpHeaders
-		anyM (\u -> Url.withUserAgent $ Url.download u headers opts file) urls
+  	go Nothing = Url.withUrlOptions $ \uo ->
+		anyM (\u -> Url.download u file uo) urls
 	go (Just basecmd) = liftIO $ anyM (downloadcmd basecmd) urls
 	downloadcmd basecmd url =
 		boolSystem "sh" [Param "-c", Param $ gencmd url basecmd]

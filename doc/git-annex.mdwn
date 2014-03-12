@@ -307,11 +307,19 @@ subdirectories).
   By default, the webapp can only be accessed from localhost, and running
   it opens a browser window.
 
-  With the `--listen=address[:port]` option, the webapp can be made to listen
-  for connections on the specified address. This disables running a
-  local web browser, and outputs the url you can use to open the webapp
-  from a remote computer.
-  Note that this does not yet use HTTPS for security, so use with caution!
+  To use the webapp on a remote computer, use the `--listen=address`
+  option to specify the address the web server should listen on
+  (or set annex.listen).
+  This disables running a local web browser, and outputs the url you
+  can use to open the webapp.
+
+  When using the webapp on a remote computer, you'll almost certianly
+  want to enable HTTPS. The webapp will use HTTPS if it finds
+  a .git/annex/privkey.pem and .git/annex/certificate.pem. Here's
+  one way to generate those files, using a self-signed certificate:
+
+    openssl genrsa -out .git/annex/privkey.pem 4096
+    openssl req -new -x509 -key .git/annex/privkey.pem > .git/annex/certificate.pem
 
 # REPOSITORY SETUP COMMANDS
 
@@ -503,9 +511,10 @@ subdirectories).
   To avoid expensive checksum calculations (and expensive transfers when
   fscking a remote), specify `--fast`.
 
-  To start a new incremental fsck, specify `--incremental`. Then
-  the next time you fsck, you can specify `--more` to skip over
-  files that have already been checked, and continue where it left off.
+  To start a new incremental fsck, use the `--incremental` option. Then
+  the next time you fsck, you can instead use the `--more` option 
+  to skip over files that have already been checked, and continue
+  where it left off.
 
   The `--incremental-schedule` option makes a new incremental fsck be
   started a configurable time after the last incremental fsck was started.
@@ -693,6 +702,84 @@ subdirectories).
   Note that this subcommand can be used to graph any git repository; it
   is not limited to git-annex repositories.
 
+# METADATA COMMANDS
+
+* `metadata [path ...] [-s field=value -s field+=value -s field-=value ...]`
+
+  Each file can have any number of metadata fields attached to it,
+  which each in turn have any number of values. This sets metadata
+  for the specified file or files, or if run without any values, shows
+  the current metadata.
+
+  To set a field's value, removing any old value(s), use -s field=value.
+
+  To add an additional value, use -s field+=value.
+
+  To remove a value, use -s field-=value.
+
+  To set a value, only if the field does not already have a value,
+  use -s field?=value
+
+  To set a tag, use -t tag, and use -u tag to remove a tag.
+
+  For example, to set some tags on a file and also its author:
+
+        	git annex metadata annexscreencast.ogv -t video -t screencast -s author+=Alice
+
+* `view [tag ...] [field=value ...] [field=glob ...] [!tag ...] [field!=value ...]`
+
+  Uses metadata to build a view branch of the files in the current branch,
+  and checks out the view branch. Only files in the current branch whose
+  metadata matches all the specified field values and tags will be
+  shown in the view.
+  
+  Multiple values for a metadata field can be specified, either by using
+  a glob (`field="*"`) or by listing each wanted value. The resulting view
+  will put files in subdirectories according to the value of their fields.
+
+  Once within such a view, you can make additional directories, and
+  copy or move files into them. When you commit, the metadata will
+  be updated to correspond to your changes.
+
+  There are fields corresponding to the path to the file. So a file
+  "foo/bar/baz/file" has fields "/=foo", "foo/=bar", and "foo/bar/=baz".
+  These location fields can be used the same as other metadata to construct
+  the view.
+
+  For example, `/=podcasts` will only include files from the podcasts
+  directory in the view, while `podcasts/=*` will preserve the
+  subdirectories of the podcasts directory in the view.
+
+* `vpop [N]`
+
+  Switches from the currently active view back to the previous view.
+  Or, from the first view back to original branch.
+
+  The optional number tells how many views to pop.
+
+* `vfilter [tag ...] [field=value ...] [!tag ...] [field!=value ...]`
+
+  Filters the current view to only the files that have the
+  specified field values and tags.
+
+* `vadd [field=glob ...] [field=value ...] [tag ...]`
+
+  Changes the current view, adding an additional level of directories
+  to categorize the files.
+
+  For example, when the view is by author/tag, `vadd year=*` will 
+  change it to year/author/tag. 
+  
+  So will `vadd year=2014 year=2013`, but limiting the years in view
+  to only those two.
+
+* `vcycle`
+
+  When a view involves nested subdirectories, this cycles the order.
+
+  For example, when the view is by year/author/tag, `vcycle` will switch
+  it to author/tag/year.
+
 # UTILITY COMMANDS
 
 * `migrate [path ...]`
@@ -753,7 +840,8 @@ subdirectories).
 
   Fixes up symlinks that are staged as part of a commit, to ensure they
   point to annexed content. Also handles injecting changes to unlocked
-  files into the annex.
+  files into the annex. When in a view, updates metadata to reflect changes
+  made to files in the view.
 
 * `lookupkey [file ...]`
 
@@ -874,7 +962,7 @@ subdirectories).
   Rather than the normal output, generate JSON. This is intended to be
   parsed by programs that use git-annex. Each line of output is a JSON
   object. Note that JSON output is only usable with some git-annex commands,
-  like info, find, and whereis.
+  like info, find, whereis, and metadata.
 
 * `--debug`
 
@@ -1065,6 +1153,12 @@ file contents are present at either of two repositories.
   The size can be specified with any commonly used units, for example,
   "0.5 gb" or "100 KiloBytes"
 
+* `--metadata field=glob`
+
+  Matches only files that have a metadata field attached with a value that
+  matches the glob. The values of metadata fields are matched case
+  insensitively.
+
 * `--want-get`
 
   Matches files that the preferred content settings for the repository
@@ -1196,6 +1290,12 @@ Here are all the supported configuration settings.
 
   Note that setting numcopies to 0 is very unsafe.
 
+* `annex.genmetadata`
+
+  Set this to `true` to make git-annex automatically generate some metadata
+  when adding files to the repository. In particular, it stores
+  year and month metadata, from the file's modification date.
+
 * `annex.queuesize`
 
   git-annex builds a queue of git commands, in order to combine similar
@@ -1279,6 +1379,19 @@ Here are all the supported configuration settings.
 
   Set to false to prevent the git-annex assistant from automatically
   committing changes to files in the repository.
+
+* `annex.startupscan`
+
+  Set to false to prevent the git-annex assistant from scanning the
+  repository for new and changed files on startup. This will prevent it
+  from noticing changes that were made while it was not running, but can be
+  a useful performance tweak for a large repository.
+
+* `annex.listen`
+
+  Configures which address the webapp listens on. The default is localhost.
+  Can be either an IP address, or a hostname that resolves to the desired
+  address.
 
 * `annex.debug`
 
@@ -1436,8 +1549,7 @@ Here are all the supported configuration settings.
 
 * `annex.web-options`
 
-  Options to use when using wget or curl to download a file from the web.
-  (wget is always used in preference to curl if available.)
+  Options to pass when running wget or curl.
   For example, to force ipv4 only, set it to "-4"
 
 * `annex.quvi-options`
@@ -1553,6 +1665,15 @@ for flac files:
 
 Note that setting numcopies to 0 is very unsafe.
 
+These settings are honored by git-annex whenever it's operating on a
+matching file. However, when using --all, --unused, or --key to specify
+keys to operate on, git-annex is operating on keys and not files, so will
+not honor the settings from .gitattributes.
+
+Also note that when using views, only the toplevel .gitattributes file is
+preserved in the view, so other settings in other files won't have any
+efffect.
+
 # FILES
 
 These files are used by git-annex:
@@ -1566,6 +1687,10 @@ used by git-annex.
 
 `~/.config/git-annex/autostart` is a list of git repositories
 to start the git-annex assistant in.
+
+`.git/hooks/pre-commit-annex` in your git repsitory will be run whenever
+a commit is made, either by git commit, git-annex sync, or the git-annex
+assistant.
 
 # SEE ALSO
 

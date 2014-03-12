@@ -49,11 +49,13 @@ import Assistant.Threads.XMPPPusher
 import Assistant.Types.UrlRenderer
 #endif
 import qualified Utility.Daemon
-import Utility.LogFile
 import Utility.ThreadScheduler
 import Utility.HumanTime
-import Annex.Perms
 import qualified Build.SysConfig as SysConfig
+#ifndef mingw32_HOST_OS
+import Utility.LogFile
+import Annex.Perms
+#endif
 
 import System.Log.Logger
 import Network.Socket (HostName)
@@ -70,8 +72,8 @@ startDaemon :: Bool -> Bool -> Maybe Duration -> Maybe String -> Maybe HostName 
 startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = do
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	pidfile <- fromRepo gitAnnexPidFile
-	logfile <- fromRepo gitAnnexLogFile
 #ifndef mingw32_HOST_OS
+	logfile <- fromRepo gitAnnexLogFile
 	createAnnexDirectory (parentDir logfile)
 	logfd <- liftIO $ openLog logfile
 	if foreground
@@ -93,10 +95,12 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 			start (Utility.Daemon.daemonize logfd (Just pidfile) False) Nothing
 #else
 	-- Windows is always foreground, and has no log file.
-	start id $
-		case startbrowser of
-			Nothing -> Nothing
-			Just a -> Just $ a Nothing Nothing
+	when (foreground || not foreground) $ do
+		liftIO $ Utility.Daemon.lockPidFile pidfile
+		start id $ do
+			case startbrowser of
+				Nothing -> Nothing
+				Just a -> Just $ a Nothing Nothing
 #endif
   where
   	desc
@@ -120,7 +124,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 		notice ["starting", desc, "version", SysConfig.packageversion]
 		urlrenderer <- liftIO newUrlRenderer
 #ifdef WITH_WEBAPP
-		let webappthread = [ assist $ webAppThread d urlrenderer False cannotrun listenhost Nothing webappwaiter ]
+		let webappthread = [ assist $ webAppThread d urlrenderer False cannotrun Nothing listenhost webappwaiter ]
 #else
 		let webappthread = []
 #endif

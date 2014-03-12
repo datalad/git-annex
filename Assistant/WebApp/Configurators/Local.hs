@@ -114,9 +114,9 @@ checkRepositoryPath p = do
  - browsed to a directory with git-annex and run it from there. -}
 defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
-	cwd <- liftIO getCurrentDirectory
-	home <- myHomeDir
 #ifndef mingw32_HOST_OS
+	home <- myHomeDir
+	cwd <- liftIO getCurrentDirectory
 	if home == cwd && firstrun
 		then inhome
 		else ifM (legit cwd <&&> canWrite cwd)
@@ -127,7 +127,7 @@ defaultRepositoryPath firstrun = do
 	-- On Windows, always default to ~/Desktop/annex or ~/annex,
 	-- no cwd handling because the user might be able to write
 	-- to the entire drive.
-	inhome
+	if firstrun then inhome else inhome
 #endif
   where
 	inhome = do
@@ -136,9 +136,11 @@ defaultRepositoryPath firstrun = do
 			( relHome $ desktop </> gitAnnexAssistantDefaultDir
 			, return $ "~" </> gitAnnexAssistantDefaultDir
 			)
+#ifndef mingw32_HOST_OS
 	-- Avoid using eg, standalone build's git-annex.linux/ directory
 	-- when run from there.
 	legit d = not <$> doesFileExist (d </> "git-annex")
+#endif
 
 newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
 newRepositoryForm defpath msg = do
@@ -158,6 +160,8 @@ getFirstRepositoryR :: Handler Html
 getFirstRepositoryR = postFirstRepositoryR
 postFirstRepositoryR :: Handler Html
 postFirstRepositoryR = page "Getting started" (Just Configuration) $ do
+	unlessM (liftIO $ inPath "git") $
+		error "You need to install git in order to use git-annex!"
 #ifdef __ANDROID__
 	androidspecial <- liftIO $ doesDirectoryExist "/sdcard/DCIM"
 	let path = "/sdcard/annex"
@@ -300,7 +304,6 @@ getGenKeyForDriveR drive = withNewSecretKey $ \keyid ->
 getFinishAddDriveR :: RemovableDrive -> RepoKey -> Handler Html
 getFinishAddDriveR drive = go
   where
-  	{- Set up new gcrypt special remote. -}
 	go (RepoKey keyid) = whenGcryptInstalled $ makewith $ const $ do
 		r <- liftAnnex $ addRemote $
 			makeGCryptRemote remotename dir keyid
@@ -314,7 +317,7 @@ getFinishAddDriveR drive = go
 		remotename' <- liftAnnex $ getGCryptRemoteName u dir
 		makewith $ const $ do
 			r <- liftAnnex $ addRemote $
-				enableSpecialRemote remotename' GCrypt.remote $ M.fromList
+				enableSpecialRemote remotename' GCrypt.remote Nothing $ M.fromList
 					[("gitrepo", dir)]
 			return (u, r)
 	{- Making a new unencrypted repo, or combining with an existing one. -}

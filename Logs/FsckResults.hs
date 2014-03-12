@@ -31,7 +31,7 @@ writeFsckResults u fsckresults = do
   	store s logfile = do 
 		createDirectoryIfMissing True (parentDir logfile)
 		liftIO $ viaTmp writeFile logfile $ serialize s
-	serialize = unlines . map show . S.toList
+	serialize = unlines . map fromRef . S.toList
 
 readFsckResults :: UUID -> Annex FsckResults
 readFsckResults u = do

@@ -17,15 +17,16 @@ module Git.Queue (
 	flush,
 ) where
 
-import qualified Data.Map as M
-import System.IO
-import System.Process
-
 import Utility.SafeCommand
 import Common
 import Git
 import Git.Command
 import qualified Git.UpdateIndex
+
+import qualified Data.Map as M
+#ifndef mingw32_HOST_OS
+import System.Process
+#endif
 
 {- Queable actions that can be performed in a git repository.
  -}
@@ -147,8 +148,9 @@ runAction :: Repo -> Action -> IO ()
 runAction repo (UpdateIndexAction streamers) =
 	-- list is stored in reverse order
 	Git.UpdateIndex.streamUpdateIndex repo $ reverse streamers
-runAction repo action@(CommandAction {}) = 
+runAction repo action@(CommandAction {}) = do
 #ifndef mingw32_HOST_OS
+	let p = (proc "xargs" $ "-0":"git":toCommand gitparams) { env = gitEnv repo }
 	withHandle StdinHandle createProcessSuccess p $ \h -> do
 		fileEncoding h
 		hPutStr h $ intercalate "\0" $ toCommand $ getFiles action
@@ -162,6 +164,5 @@ runAction repo action@(CommandAction {}) =
 			void $ boolSystem "git" (gitparams ++ [f])
 #endif
   where
-	p = (proc "xargs" $ "-0":"git":toCommand gitparams) { env = gitEnv repo }
 	gitparams = gitCommandLine
 		(Param (getSubcommand action):getParams action) repo

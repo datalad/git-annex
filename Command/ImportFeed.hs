@@ -108,7 +108,7 @@ findDownloads u = go =<< downloadFeed u
 		Nothing -> mkquvi f i
 #ifdef WITH_QUVI
 	mkquvi f i = case getItemLink i of
-		Just link -> ifM (liftIO $ Quvi.supported link)
+		Just link -> ifM (quviSupported link)
 			( return $ Just $ ToDownload f u i $ QuviLink link
 			, return Nothing
 			)
@@ -121,10 +121,10 @@ findDownloads u = go =<< downloadFeed u
 downloadFeed :: URLString -> Annex (Maybe Feed)
 downloadFeed url = do
 	showOutput
-	ua <- Url.getUserAgent
+	uo <- Url.getUrlOptions
 	liftIO $ withTmpFile "feed" $ \f h -> do
 		fileEncoding h
-		ifM (Url.download url [] [] f ua)
+		ifM (Url.download url f uo)
 			( parseFeedString <$> hGetContentsStrict h
 			, return Nothing
 			)

@@ -1,0 +1,7 @@
+I have configured git-annex on my Nexus 5. Even though it works fantastic, it shows some warning messages.
+
+1: 'git-annex sync' :  WARNING: linker: git-annex has text relocations. This is wasting memory and is a security risk. Please fix.
+
+2: 'git log': error: cannot run less. No such file or directory.
+
+Both the commands will work has expected with these warnings. What could be the issue here.

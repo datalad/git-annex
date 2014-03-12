@@ -72,7 +72,6 @@ install_pkgs () {
 	patched zlib
 	patched MissingH
 	patched bloomfilter
-	patched SafeSemaphore
 	patched distributive
 	patched comonad
 	patched iproute
@@ -86,6 +85,7 @@ install_pkgs () {
 	patched skein
 	patched lens
 	patched certificate
+	patched x509-system
 	patched persistent-template
 	patched system-filepath
 	patched wai-app-static

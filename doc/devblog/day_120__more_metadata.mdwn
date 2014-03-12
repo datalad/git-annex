@@ -1,0 +1,17 @@
+When generating a view, there's now a way to reuse part of the directory
+hierarchy of the parent branch. For example, `git annex view tag=* podcasts/=*`
+makes a view where the first level is the tags, and the second level is
+whatever `podcasts/*` directories the files were in.
+
+Also, year and month metadata can be automatically recorded when
+adding files to the annex. I made this only be done when annex.genmetadata
+is turned on, to avoid polluting repositories that don't want to use metadata.
+
+It would be nice if there was a way to add a hook script that's run
+when files are added, to collect their metadata. I am not sure yet if
+I am going to add that to git-annex though. It's already possible to do via
+the regular git `post-commit` hook. Just make it look at the commit to see
+what files were added, and then run `git annex metadata` to set their
+metadata appropriately. It would be good to at least have an example of
+such a script to eg, extract EXIF or ID3 metadata. Perhaps someone can
+contribute one?

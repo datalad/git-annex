@@ -18,5 +18,5 @@ get b = mapMaybe extractSha . lines <$$> pipeReadStrict
 	[ Param "log"
 	, Param "-g"
 	, Param "--format=%H"
-	, Param (show b)
+	, Param (fromRef b)
 	]

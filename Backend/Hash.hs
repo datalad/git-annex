@@ -101,6 +101,7 @@ checkKeyChecksum hash key file = do
 	case (mstat, fast) of
 		(Just stat, False) -> do
 			let filesize = fromIntegral $ fileSize stat
+			showSideAction "checksum"
 			check <$> hashFile hash file filesize
 		_ -> return True
   where

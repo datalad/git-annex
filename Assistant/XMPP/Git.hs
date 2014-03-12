@@ -187,7 +187,7 @@ xmppPush cid gitpush = do
 		v <- liftIO $ getEnv "GIT_ANNEX_TMP_DIR"
 		case v of
 			Nothing -> do
-				tmp <- liftAnnex $ fromRepo gitAnnexTmpDir
+				tmp <- liftAnnex $ fromRepo gitAnnexTmpMiscDir
 				return $ tmp </> "xmppgit"
 			Just d -> return $ d </> "xmppgit"
 

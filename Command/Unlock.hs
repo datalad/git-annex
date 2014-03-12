@@ -36,7 +36,7 @@ perform dest key = do
 	unlessM (checkDiskSpace Nothing key 0) $ error "cannot unlock"
 
 	src <- calcRepo $ gitAnnexLocation key
-	tmpdest <- fromRepo $ gitAnnexTmpLocation key
+	tmpdest <- fromRepo $ gitAnnexTmpObjectLocation key
 	liftIO $ createDirectoryIfMissing True (parentDir tmpdest)
 	showAction "copying"
 	ifM (liftIO $ copyFileExternal src tmpdest)

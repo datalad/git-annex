@@ -25,6 +25,11 @@ import qualified Remote.GCrypt as GCrypt
 import Annex.UUID
 import Logs.UUID
 
+#ifdef mingw32_HOST_OS
+import Utility.Tmp
+import Utility.Rsync
+#endif
+
 import qualified Data.Text as T
 import qualified Data.Map as M
 import Network.Socket
@@ -354,7 +359,7 @@ checkExistingGCrypt sshdata nope = checkGCryptRepoEncryption repourl nope nope $
 enableGCrypt :: SshData -> RemoteName -> Handler Html
 enableGCrypt sshdata reponame = 
 	setupCloudRemote TransferGroup Nothing $ 
-		enableSpecialRemote reponame GCrypt.remote $ M.fromList
+		enableSpecialRemote reponame GCrypt.remote Nothing $ M.fromList
 			[("gitrepo", genSshUrl sshdata)]
 
 {- Combining with a gcrypt repository that may not be
@@ -468,8 +473,18 @@ enableRsyncNetGCrypt sshinput reponame =
 	notencrypted = error "Unexpectedly found a non-encrypted git repository, instead of the expected encrypted git repository."
 	notinstalled = error "internal"
 
-{- Prepares rsync.net ssh key, and if successful, runs an action with
- - its SshData. -}
+{- Prepares rsync.net ssh key and creates the directory that will be 
+ - used on rsync.net. If successful, runs an action with its SshData.
+ -
+ - To append the ssh key to rsync.net's authorized_keys, their
+ - documentation recommends a dd methodd, where the line is fed
+ - in to ssh over stdin.
+ -
+ - On Windows, ssh password prompting happens on stdin, so cannot
+ - feed the key in that way. Instead, first rsync down any current
+ - authorized_keys file, then modifiy it, and then rsync it back up.
+ - This means 2 password prompts rather than one for Windows.
+ -}
 prepRsyncNet :: SshInput -> String -> (SshData -> Handler Html) -> Handler Html
 prepRsyncNet sshinput reponame a = do
 	knownhost <- liftIO $ maybe (return False) knownHost (inputHostname sshinput)
@@ -480,25 +495,37 @@ prepRsyncNet sshinput reponame a = do
 			, needsPubKey = True
 			, sshCapabilities = [RsyncCapable]
 			}
+	let sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
+	let torsyncnet cmd = filter (not . null)
+		[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
+		, sshhost
+		, cmd
+		]
+#ifndef mingw32_HOST_OS
 	{- I'd prefer to separate commands with && , but
-	 - rsync.net's shell does not support that.
-	 -
-	 - The dd method of appending to the authorized_keys file is the
-	 - one recommended by rsync.net documentation. I touch the file first
-	 - to not need to use a different method to create it.
-	 -}
+	 - rsync.net's shell does not support that. -}
 	let remotecommand = intercalate ";"
 		[ "mkdir -p .ssh"
 		, "touch .ssh/authorized_keys"
 		, "dd of=.ssh/authorized_keys oflag=append conv=notrunc"
 		, "mkdir -p " ++ T.unpack (sshDirectory sshdata)
 		]
-	let sshopts = filter (not . null)
-		[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
-		, genSshHost (sshHostName sshdata) (sshUserName sshdata)
-		, remotecommand
-		]
-	sshSetup sshopts (Just $ sshPubKey keypair) $ a sshdata
+	sshSetup (torsyncnet remotecommand) (Just $ sshPubKey keypair) (a sshdata)
+#else
+	liftIO $ withTmpDir "rsyncnet" $ \tmpdir -> do
+		createDirectory $ tmpdir </> ".ssh"
+		(oldkeys, _) <- sshTranscript (torsyncnet "cat .ssh/authorized_keys") Nothing
+		writeFile (tmpdir </> ".ssh" </> "authorized_keys")
+			(sshPubKey keypair ++ "\n" ++ oldkeys)
+		liftIO $ putStrLn "May need to prompt for your rsync.net password one more time..."
+		void $ rsync
+			[ Param "-r"
+			, File $ tmpdir </> ".ssh/"
+			, Param $ sshhost ++ ":.ssh/"
+			]
+	let remotecommand = "mkdir -p " ++ T.unpack (sshDirectory sshdata)
+	sshSetup (torsyncnet remotecommand) Nothing (a sshdata)
+#endif
 
 isRsyncNet :: Maybe Text -> Bool
 isRsyncNet Nothing = False

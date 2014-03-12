@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkI9pq1WH6MWeExXHVQVEsniT3DdFv4AB8"
+ nickname="Roberto"
+ subject="fix confirmed"
+ date="2014-02-12T12:05:42Z"
+ content="""
+I can confirm the problem is now fixed.
+
+Unfortunately a new problem has emerged with gpg that might be related to other open issues. I will try to investigate it further before opening a new ticket.
+
+By the way thank you very much for your great work. I'm eager to see the new metadata framework in place. It sounds extremely interesting!
+"""]]

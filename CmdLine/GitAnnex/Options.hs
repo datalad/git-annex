@@ -54,6 +54,8 @@ gitAnnexOptions = commonOptions ++
 		"match files larger than a size"
 	, Option [] ["smallerthan"] (ReqArg Limit.addSmallerThan paramSize)
 		"match files smaller than a size"
+	, Option [] ["metadata"] (ReqArg Limit.addMetaData "FIELD=VALUE")
+		"match files with attached metadata"
 	, Option [] ["want-get"] (NoArg Limit.Wanted.addWantGet)
 		"match files the repository wants to get"
 	, Option [] ["want-drop"] (NoArg Limit.Wanted.addWantDrop)

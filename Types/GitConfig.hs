@@ -49,6 +49,9 @@ data GitConfig = GitConfig
 	, annexAutoUpgrade :: AutoUpgrade
 	, annexExpireUnused :: Maybe (Maybe Duration)
 	, annexSecureEraseCommand :: Maybe String
+	, annexGenMetaData :: Bool
+	, annexListen :: Maybe String
+	, annexStartupScan :: Bool
 	, coreSymlinks :: Bool
 	, gcryptId :: Maybe String
 	}
@@ -81,6 +84,9 @@ extractGitConfig r = GitConfig
 	, annexExpireUnused = maybe Nothing Just . parseDuration
 		<$> getmaybe (annex "expireunused")
 	, annexSecureEraseCommand = getmaybe (annex "secure-erase-command")
+	, annexGenMetaData = getbool (annex "genmetadata") False
+	, annexListen = getmaybe (annex "listen")
+	, annexStartupScan = getbool (annex "startupscan") True
 	, coreSymlinks = getbool "core.symlinks" True
 	, gcryptId = getmaybe "core.gcrypt-id"
 	}

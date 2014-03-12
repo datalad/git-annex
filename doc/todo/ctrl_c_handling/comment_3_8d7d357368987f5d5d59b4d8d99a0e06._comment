@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.172"
+ subject="comment 3"
+ date="2014-02-21T22:34:14Z"
+ content="""
+Hmm, I forget if it's possible for git-annex to mask SIGINT when it runs glacier or rsync, so that the child process does not receive it, but the parent git-annex does.
+"""]]

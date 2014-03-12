@@ -32,7 +32,11 @@ import qualified Annex.UUID
 import qualified Backend
 import qualified Git.CurrentRepo
 import qualified Git.Filename
+import qualified Git.Construct
 import qualified Git.Types
+import qualified Git.Ref
+import qualified Git.LsTree
+import qualified Git.FilePath
 import qualified Locations
 import qualified Types.KeySource
 import qualified Types.Backend
@@ -45,6 +49,7 @@ import qualified Logs.Remote
 import qualified Logs.Unused
 import qualified Logs.Transfer
 import qualified Logs.Presence
+import qualified Types.MetaData
 import qualified Remote
 import qualified Types.Key
 import qualified Types.Messages
@@ -53,6 +58,9 @@ import qualified Config.Cost
 import qualified Crypto
 import qualified Annex.Init
 import qualified Annex.CatFile
+import qualified Annex.View
+import qualified Annex.View.ViewedFile
+import qualified Logs.View
 import qualified Utility.Path
 import qualified Utility.FileMode
 import qualified Build.SysConfig
@@ -144,12 +152,17 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_hashes_stable" Utility.Hash.prop_hashes_stable
 	, testProperty "prop_schedule_roundtrips" Utility.Scheduled.prop_schedule_roundtrips
 	, testProperty "prop_duration_roundtrips" Utility.HumanTime.prop_duration_roundtrips
+	, testProperty "prop_metadata_sane" Types.MetaData.prop_metadata_sane
+	, testProperty "prop_metadata_serialize" Types.MetaData.prop_metadata_serialize
+	, testProperty "prop_branchView_legal" Logs.View.prop_branchView_legal
+	, testProperty "prop_view_roundtrips" Annex.View.prop_view_roundtrips
+	, testProperty "prop_viewedFile_rountrips" Annex.View.ViewedFile.prop_viewedFile_roundtrips
 	]
 
 {- These tests set up the test environment, but also test some basic parts
  - of git-annex. They are always run before the unitTests. -}
 initTests :: TestEnv -> TestTree
-initTests env = testGroup ("Init Tests")
+initTests env = testGroup "Init Tests"
 	[ check "init" test_init
 	, check "add" test_add
 	]
@@ -188,9 +201,13 @@ unitTests note getenv = testGroup ("Unit Tests " ++ note)
 	, check "version" test_version
 	, check "sync" test_sync
 	, check "union merge regression" test_union_merge_regression
-	, check "conflict resolution" test_conflict_resolution_movein_bug
-	, check "conflict_resolution (mixed directory and file)" test_mixed_conflict_resolution
-	, check "conflict_resolution (mixed directory and file) 2" test_mixed_conflict_resolution2
+	, check "conflict resolution" test_conflict_resolution
+	, check "conflict resolution movein regression" test_conflict_resolution_movein_regression
+	, check "conflict resolution (mixed directory and file)" test_mixed_conflict_resolution
+	, check "conflict resolution symlinks" test_conflict_resolution_symlinks
+	, check "conflict resolution (uncommitted local file)" test_uncommitted_conflict_resolution
+	, check "conflict resolution (removed file)" test_remove_conflict_resolution
+	, check "conflict resolution (nonannexed)" test_nonannexed_conflict_resolution
 	, check "map" test_map
 	, check "uninit" test_uninit
 	, check "uninit (in git-annex branch)" test_uninit_inbranch
@@ -230,7 +247,7 @@ test_add env = inmainrepo env $ do
 		( do
 			writeFile ingitfile $ content ingitfile
 			not <$> boolSystem "git" [Param "add", File ingitfile] @? "git add failed to fail in direct mode"
-			boolSystem "rm" [Params "-f", File ingitfile] @? "rm failed"
+			nukeFile ingitfile
 			git_annex env "sync" [] @? "sync failed"
 		, do
 			writeFile ingitfile $ content ingitfile
@@ -258,7 +275,7 @@ test_reinject :: TestEnv -> Assertion
 test_reinject env = intmpclonerepoInDirect env $ do
 	git_annex env "drop" ["--force", sha1annexedfile] @? "drop failed"
 	writeFile tmp $ content sha1annexedfile
-	r <- annexeval $ Types.Backend.getKey backendSHA1 $
+	r <- annexeval $ Types.Backend.getKey backendSHA1
 		Types.KeySource.KeySource { Types.KeySource.keyFilename = tmp, Types.KeySource.contentLocation = tmp, Types.KeySource.inodeCache = Nothing }
 	let key = Types.Key.key2file $ fromJust r
 	git_annex env "reinject" [tmp, sha1annexedfile] @? "reinject failed"
@@ -542,7 +559,7 @@ test_fsck_basic env = intmpclonerepo env $ do
 		git_annex env "fsck" [] @? "fsck unexpectedly failed again; previous one did not fix problem with " ++ f
 
 test_fsck_bare :: TestEnv -> Assertion
-test_fsck_bare env = intmpbareclonerepo env $ do
+test_fsck_bare env = intmpbareclonerepo env $
 	git_annex env "fsck" [] @? "fsck failed"
 
 test_fsck_localuntrusted :: TestEnv -> Assertion
@@ -585,7 +602,7 @@ test_migrate' usegitattributes env = intmpclonerepoInDirect env $ do
 	annexed_present sha1annexedfile
 	if usegitattributes
 		then do
-			writeFile ".gitattributes" $ "* annex.backend=SHA1"
+			writeFile ".gitattributes" "* annex.backend=SHA1"
 			git_annex env "migrate" [sha1annexedfile]
 				@? "migrate sha1annexedfile failed"
 			git_annex env "migrate" [annexedfile]
@@ -601,7 +618,7 @@ test_migrate' usegitattributes env = intmpclonerepoInDirect env $ do
 	checkbackend sha1annexedfile backendSHA1
 
 	-- check that reversing a migration works
-	writeFile ".gitattributes" $ "* annex.backend=SHA256"
+	writeFile ".gitattributes" "* annex.backend=SHA256"
 	git_annex env "migrate" [sha1annexedfile]
 		@? "migrate sha1annexedfile failed"
 	git_annex env "migrate" [annexedfile]
@@ -712,7 +729,7 @@ test_find env = intmpclonerepo env $ do
 	git_annex_expectoutput env "find" ["--exclude", "*"] []
 
 test_merge :: TestEnv -> Assertion
-test_merge env = intmpclonerepo env $ do
+test_merge env = intmpclonerepo env $
 	git_annex env "merge" [] @? "merge failed"
 
 test_info :: TestEnv -> Assertion
@@ -723,7 +740,7 @@ test_info env = intmpclonerepo env $ do
 		Text.JSON.Error e -> assertFailure e
 
 test_version :: TestEnv -> Assertion
-test_version env = intmpclonerepo env $ do
+test_version env = intmpclonerepo env $
 	git_annex env "version" [] @? "version failed"
 
 test_sync :: TestEnv -> Assertion
@@ -739,8 +756,8 @@ test_sync env = intmpclonerepo env $ do
 test_union_merge_regression :: TestEnv -> Assertion
 test_union_merge_regression env =
 	{- We need 3 repos to see this bug. -}
-	withtmpclonerepo env False $ \r1 -> do
-		withtmpclonerepo env False $ \r2 -> do
+	withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 ->
 			withtmpclonerepo env False $ \r3 -> do
 				forM_ [r1, r2, r3] $ \r -> indir env r $ do
 					when (r /= r1) $
@@ -765,8 +782,8 @@ test_union_merge_regression env =
 
 {- Regression test for the automatic conflict resolution bug fixed
  - in f4ba19f2b8a76a1676da7bb5850baa40d9c388e2. -}
-test_conflict_resolution_movein_bug :: TestEnv -> Assertion
-test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 -> do
+test_conflict_resolution_movein_regression :: TestEnv -> Assertion
+test_conflict_resolution_movein_regression env = withtmpclonerepo env False $ \r1 -> 
 	withtmpclonerepo env False $ \r2 -> do
 		let rname r = if r == r1 then "r1" else "r2"
 		forM_ [r1, r2] $ \r -> indir env r $ do
@@ -785,7 +802,7 @@ test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 -> do
 				)
 		{- Sync twice in r1 so it gets the conflict resolution
 		 - update from r2 -}
-		forM_ [r1, r2, r1] $ \r -> indir env r $ do
+		forM_ [r1, r2, r1] $ \r -> indir env r $
 			git_annex env "sync" ["--force"] @? "sync failed in " ++ rname r
 		{- After the sync, it should be possible to get all
 		 - files. This includes both sides of the conflict,
@@ -797,14 +814,48 @@ test_conflict_resolution_movein_bug env = withtmpclonerepo env False $ \r1 -> do
 		forM_ [r1, r2] $ \r -> indir env r $ do
 		 	git_annex env "get" [] @? "unable to get all files after merge conflict resolution in " ++ rname r
 
+{- Simple case of conflict resolution; 2 different versions of annexed
+ - file. -}
+test_conflict_resolution :: TestEnv -> Assertion
+test_conflict_resolution env = 
+	withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			indir env r1 $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor1"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed in r1"
+			indir env r2 $ do
+				disconnectOrigin
+				writeFile conflictor "conflictor2"
+				git_annex env "add" [conflictor] @? "add conflicter failed"
+				git_annex env "sync" [] @? "sync failed in r2"
+			pair env r1 r2
+			forM_ [r1,r2,r1] $ \r -> indir env r $
+				git_annex env "sync" [] @? "sync failed"
+			checkmerge "r1" r1
+			checkmerge "r2" r2
+  where
+	conflictor = "conflictor"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = do
+		l <- getDirectoryContents d
+		let v = filter (variantprefix `isPrefixOf`) l
+		length v == 2
+			@? (what ++ " not exactly 2 variant files in: " ++ show l)
+		indir env d $ do
+			git_annex env "get" v @? "get failed"
+			git_annex_expectoutput env "find" v v
+
+
 {- Check merge conflict resolution when one side is an annexed
  - file, and the other is a directory. -}
 test_mixed_conflict_resolution :: TestEnv -> Assertion
 test_mixed_conflict_resolution env = do
-	check_mixed_conflict True
-	check_mixed_conflict False
+	check True
+	check False
   where
-	check_mixed_conflict inr1 = withtmpclonerepo env False $ \r1 ->
+	check inr1 = withtmpclonerepo env False $ \r1 ->
 		withtmpclonerepo env False $ \r2 -> do
 			indir env r1 $ do
 				disconnectOrigin
@@ -814,7 +865,7 @@ test_mixed_conflict_resolution env = do
 			indir env r2 $ do
 				disconnectOrigin
 				createDirectory conflictor
-				writeFile (conflictor </> "subfile") "subfile"
+				writeFile subfile "subfile"
 				git_annex env "add" [conflictor] @? "add conflicter failed"
 				git_annex env "sync" [] @? "sync failed in r2"
 			pair env r1 r2
@@ -822,39 +873,192 @@ test_mixed_conflict_resolution env = do
 			forM_ l $ \r -> indir env r $
 				git_annex env "sync" [] @? "sync failed in mixed conflict"
 			checkmerge "r1" r1
-			checkmerge "r1" r2
+			checkmerge "r2" r2
 	conflictor = "conflictor"
+	subfile = conflictor </> "subfile"
 	variantprefix = conflictor ++ ".variant"
 	checkmerge what d = do
 		doesDirectoryExist (d </> conflictor) @? (d ++ " conflictor directory missing")
 		l <- getDirectoryContents d
-		any (variantprefix `isPrefixOf`) l
-			@? (what ++ " conflictor file missing in: " ++ show l )
+		let v = filter (variantprefix `isPrefixOf`) l
+		not (null v)
+			@? (what ++ " conflictor variant file missing in: " ++ show l )
+		length v == 1
+			@? (what ++ " too many variant files in: " ++ show v)
+		indir env d $ do
+			git_annex env "get" (conflictor:v) @? ("get failed in " ++ what)
+			git_annex_expectoutput env "find" [conflictor] [Git.FilePath.toInternalGitPath subfile]
+			git_annex_expectoutput env "find" v v
 
-{- 
- - During conflict resolution, one of the annexed files in git is
- - accidentially converted from a symlink to a regular file.
- - This only happens on crippled filesystems.
- -
- - This test case happens to detect the problem when it tries the next
- - pass of conflict resolution, since it's unable to resolve a conflict
- - between an annexed and non-annexed file.
- -}
-test_mixed_conflict_resolution2 :: TestEnv -> Assertion
-test_mixed_conflict_resolution2 env = go >> go
+{- Check merge conflict resolution when both repos start with an annexed
+ - file; one modifies it, and the other deletes it. -}
+test_remove_conflict_resolution :: TestEnv -> Assertion
+test_remove_conflict_resolution env = do
+	check True
+	check False
   where
-	go = withtmpclonerepo env False $ \r1 ->
+	check inr1 = withtmpclonerepo env False $ \r1 ->
 		withtmpclonerepo env False $ \r2 -> do
 			indir env r1 $ do
+				disconnectOrigin
 				writeFile conflictor "conflictor"
 				git_annex env "add" [conflictor] @? "add conflicter failed"
 				git_annex env "sync" [] @? "sync failed in r1"
+			indir env r2 $
+				disconnectOrigin
+			pair env r1 r2
 			indir env r2 $ do
-				createDirectory conflictor
-				writeFile (conflictor </> "subfile") "subfile"
-				git_annex env "add" [conflictor] @? "add conflicter failed"
 				git_annex env "sync" [] @? "sync failed in r2"
+				git_annex env "get" [conflictor]
+					@? "get conflictor failed"
+				unlessM (annexeval Config.isDirect) $ do
+					git_annex env "unlock" [conflictor]
+						@? "unlock conflictor failed"
+				writeFile conflictor "newconflictor"
+			indir env r1 $
+				nukeFile conflictor
+			let l = if inr1 then [r1, r2, r1] else [r2, r1, r2]
+			forM_ l $ \r -> indir env r $
+				git_annex env "sync" [] @? "sync failed"
+			checkmerge "r1" r1
+			checkmerge "r2" r2
 	conflictor = "conflictor"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = do
+		l <- getDirectoryContents d
+		let v = filter (variantprefix `isPrefixOf`) l
+		not (null v)
+			@? (what ++ " conflictor variant file missing in: " ++ show l )
+		length v == 1
+			@? (what ++ " too many variant files in: " ++ show v)
+
+{- Check merge confalict resolution when a file is annexed in one repo,
+ - and checked directly into git in the other repo.
+ -
+ - This test requires indirect mode to set it up, but tests both direct and
+ - indirect mode.
+ -}
+test_nonannexed_conflict_resolution :: TestEnv -> Assertion
+test_nonannexed_conflict_resolution env = do
+	check True False
+	check False False
+	check True True
+	check False True
+  where
+	check inr1 switchdirect = withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			whenM (isInDirect r1 <&&> isInDirect r2) $ do
+				indir env r1 $ do
+					disconnectOrigin
+					writeFile conflictor "conflictor"
+					git_annex env "add" [conflictor] @? "add conflicter failed"
+					git_annex env "sync" [] @? "sync failed in r1"
+				indir env r2 $ do
+					disconnectOrigin
+					writeFile conflictor nonannexed_content
+					boolSystem "git" [Params "add", File conflictor] @? "git add conflictor failed"
+					git_annex env "sync" [] @? "sync failed in r2"
+				pair env r1 r2
+				let l = if inr1 then [r1, r2] else [r2, r1]
+				forM_ l $ \r -> indir env r $ do
+					when switchdirect $
+						git_annex env "direct" [] @? "failed switching to direct mode"
+					git_annex env "sync" [] @? "sync failed"
+				checkmerge ("r1" ++ show switchdirect) r1
+				checkmerge ("r2" ++ show switchdirect) r2
+	conflictor = "conflictor"
+	nonannexed_content = "nonannexed"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = do
+		l <- getDirectoryContents d
+		let v = filter (variantprefix `isPrefixOf`) l
+		not (null v)
+			@? (what ++ " conflictor variant file missing in: " ++ show l )
+		length v == 1
+			@? (what ++ " too many variant files in: " ++ show v)
+		conflictor `elem` l @? (what ++ " conflictor file missing in: " ++ show l)
+		s <- catchMaybeIO (readFile (d </> conflictor))
+		s == Just nonannexed_content
+			@? (what ++ " wrong content for nonannexed file: " ++ show s)
+
+{- Check merge conflict resolution when there is a local file,
+ - that is not staged or committed, that conflicts with what's being added
+ - from the remmote.
+ -
+ - Case 1: Remote adds file named conflictor; local has a file named
+ - conflictor.
+ -
+ - Case 2: Remote adds conflictor/file; local has a file named conflictor.
+ -}
+test_uncommitted_conflict_resolution :: TestEnv -> Assertion
+test_uncommitted_conflict_resolution env = do
+	check conflictor
+	check (conflictor </> "file")
+  where
+	check remoteconflictor = withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			indir env r1 $ do
+				disconnectOrigin
+				createDirectoryIfMissing True (parentDir remoteconflictor)
+				writeFile remoteconflictor annexedcontent
+				git_annex env "add" [conflictor] @? "add remoteconflicter failed"
+				git_annex env "sync" [] @? "sync failed in r1"
+			indir env r2 $ do
+				disconnectOrigin
+				writeFile conflictor localcontent
+			pair env r1 r2
+			indir env r2 $ ifM (annexeval Config.isDirect)
+				( do
+					git_annex env "sync" [] @? "sync failed"
+					let local = conflictor ++ localprefix
+					doesFileExist local @? (local ++ " missing after merge")
+					s <- readFile local
+					s == localcontent @? (local ++ " has wrong content: " ++ s)
+					git_annex env "get" [conflictor] @? "get failed"
+					doesFileExist remoteconflictor @? (remoteconflictor ++ " missing after merge")
+					s' <- readFile remoteconflictor
+					s' == annexedcontent @? (remoteconflictor ++ " has wrong content: " ++ s)
+				-- this case is intentionally not handled
+				-- in indirect mode, since the user
+				-- can recover on their own easily
+				, not <$> git_annex env "sync" [] @? "sync failed to fail"
+				)
+	conflictor = "conflictor"
+	localprefix = ".variant-local"
+	localcontent = "local"
+	annexedcontent = "annexed"
+
+{- On Windows/FAT, repeated conflict resolution sometimes 
+ - lost track of whether a file was a symlink. 
+ -}
+test_conflict_resolution_symlinks :: TestEnv -> Assertion
+test_conflict_resolution_symlinks env = do
+	withtmpclonerepo env False $ \r1 ->
+		withtmpclonerepo env False $ \r2 -> do
+			withtmpclonerepo env False $ \r3 -> do
+				indir env r1 $ do
+					writeFile conflictor "conflictor"
+					git_annex env "add" [conflictor] @? "add conflicter failed"
+					git_annex env "sync" [] @? "sync failed in r1"
+					check_is_link conflictor "r1"
+				indir env r2 $ do
+					createDirectory conflictor
+					writeFile (conflictor </> "subfile") "subfile"
+					git_annex env "add" [conflictor] @? "add conflicter failed"
+					git_annex env "sync" [] @? "sync failed in r2"
+					check_is_link (conflictor </> "subfile") "r2"
+				indir env r3 $ do
+					writeFile conflictor "conflictor"
+					git_annex env "add" [conflictor] @? "add conflicter failed"
+					git_annex env "sync" [] @? "sync failed in r1"
+					check_is_link (conflictor </> "subfile") "r3"
+  where
+	conflictor = "conflictor"
+	check_is_link f what = do
+		git_annex_expectoutput env "find" ["--include=*", f] [Git.FilePath.toInternalGitPath f]
+		l <- annexeval $ Annex.inRepo $ Git.LsTree.lsTreeFiles Git.Ref.headRef [f]
+		all (\i -> Git.Types.toBlobType (Git.LsTree.mode i) == Just Git.Types.SymlinkBlob) l
+			@? (what ++ " " ++ f ++ " lost symlink bit after merge: " ++ show l)
 
 {- Set up repos as remotes of each other. -}
 pair :: TestEnv -> FilePath -> FilePath -> Assertion
@@ -935,7 +1139,7 @@ test_hook_remote env = intmpclonerepo env $ do
 test_directory_remote :: TestEnv -> Assertion
 test_directory_remote env = intmpclonerepo env $ do
 	createDirectory "dir"
-	git_annex env "initremote" (words $ "foo type=directory encryption=none directory=dir") @? "initremote failed"
+	git_annex env "initremote" (words "foo type=directory encryption=none directory=dir") @? "initremote failed"
 	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to directory remote failed"
@@ -951,7 +1155,7 @@ test_rsync_remote :: TestEnv -> Assertion
 test_rsync_remote env = intmpclonerepo env $ do
 #ifndef mingw32_HOST_OS
 	createDirectory "dir"
-	git_annex env "initremote" (words $ "foo type=rsync encryption=none rsyncurl=dir") @? "initremote failed"
+	git_annex env "initremote" (words "foo type=rsync encryption=none rsyncurl=dir") @? "initremote failed"
 	git_annex env "get" [annexedfile] @? "get of file failed"
 	annexed_present annexedfile
 	git_annex env "copy" [annexedfile, "--to", "foo"] @? "copy --to rsync remote failed"
@@ -1085,7 +1289,7 @@ git_annex env command params = do
 		Utility.Env.setEnv var val True
 
 	-- catch all errors, including normally fatal errors
-	r <- try (run)::IO (Either SomeException ())
+	r <- try run::IO (Either SomeException ())
 	case r of
 		Right _ -> return True
 		Left _ -> return False
@@ -1126,7 +1330,7 @@ innewrepo :: TestEnv -> Assertion -> Assertion
 innewrepo env a = withgitrepo env $ \r -> indir env r a
 
 inmainrepo :: TestEnv -> Assertion -> Assertion
-inmainrepo env a = indir env mainrepodir a
+inmainrepo env = indir env mainrepodir
 
 intmpclonerepo :: TestEnv -> Assertion -> Assertion
 intmpclonerepo env a = withtmpclonerepo env False $ \r -> indir env r a
@@ -1141,6 +1345,11 @@ intmpclonerepoInDirect env a = intmpclonerepo env $
   	isdirect = annexeval $ do
 		Annex.Init.initialize Nothing
 		Config.isDirect
+
+isInDirect :: FilePath -> IO Bool
+isInDirect d = do
+	s <- Annex.new =<< Git.Construct.fromPath d
+	not <$> Annex.eval s Config.isDirect
 
 intmpbareclonerepo :: TestEnv -> Assertion -> Assertion
 intmpbareclonerepo env a = withtmpclonerepo env True $ \r -> indir env r a
@@ -1163,7 +1372,7 @@ indir env dir a = do
 	-- any type of error and change back to cwd before
 	-- rethrowing.
 	r <- bracket_ (changeToTmpDir env dir) (setCurrentDirectory cwd)
-		(try (a)::IO (Either SomeException ()))
+		(try a::IO (Either SomeException ()))
 	case r of
 		Right () -> return ()
 		Left e -> throw e
@@ -1186,7 +1395,7 @@ clonerepo env old new bare = do
 	indir env new $
 		git_annex env "init" ["-q", new] @? "git annex init failed"
 	configrepo env new
-	when (not bare) $
+	unless bare $
 		indir env new $
 			handleforcedirect env
 	return new
@@ -1218,12 +1427,12 @@ cleanup' final dir = whenM (doesDirectoryExist dir) $ do
 		mapM_ (void . tryIO . Utility.FileMode.allowWrite)
 	-- This sometimes fails on Windows, due to some files
 	-- being still opened by a subprocess.
-	catchIO (removeDirectoryRecursive dir) $ \e -> do
+	catchIO (removeDirectoryRecursive dir) $ \e ->
 		when final $ do
 			print e
 			putStrLn "sleeping 10 seconds and will retry directory cleanup"
 			Utility.ThreadScheduler.threadDelaySeconds (Utility.ThreadScheduler.Seconds 10)
-			whenM (doesDirectoryExist dir) $ do
+			whenM (doesDirectoryExist dir) $
 				removeDirectoryRecursive dir
 	
 checklink :: FilePath -> Assertion
@@ -1252,9 +1461,8 @@ checkunwritable f = unlessM (annexeval Config.isDirect) $ do
 	-- modified despite permissions.
 	s <- getFileStatus f
 	let mode = fileMode s
-	if (mode == mode `unionFileModes` ownerWriteMode)
-		then assertFailure $ "able to modify annexed file's " ++ f ++ " content"
-		else return ()
+	when (mode == mode `unionFileModes` ownerWriteMode) $
+		assertFailure $ "able to modify annexed file's " ++ f ++ " content"
 
 checkwritable :: FilePath -> Assertion
 checkwritable f = do
@@ -1280,7 +1488,7 @@ checklocationlog f expected = do
 	case r of
 		Just (k, _) -> do
 			uuids <- annexeval $ Remote.keyLocations k
-			assertEqual ("bad content in location log for " ++ f ++ " key " ++ (Types.Key.key2file k) ++ " uuid " ++ show thisuuid)
+			assertEqual ("bad content in location log for " ++ f ++ " key " ++ Types.Key.key2file k ++ " uuid " ++ show thisuuid)
 				expected (thisuuid `elem` uuids)
 		_ -> assertFailure $ f ++ " failed to look up key"
 
@@ -1326,8 +1534,7 @@ withTestEnv forcedirect = withResource prepare release
 	release = releaseTestEnv
 
 releaseTestEnv :: TestEnv -> IO ()
-releaseTestEnv _env = do
-	cleanup' True tmpdir
+releaseTestEnv _env = cleanup' True tmpdir
 
 prepareTestEnv :: Bool -> IO TestEnv
 prepareTestEnv forcedirect = do
@@ -1337,7 +1544,8 @@ prepareTestEnv forcedirect = do
 	cwd <- getCurrentDirectory
 	p <- Utility.Env.getEnvDefault "PATH" ""
 
-	let env =
+	env <- Utility.Env.getEnvironment
+	let newenv =
 		-- Ensure that the just-built git annex is used.
 		[ ("PATH", cwd ++ [searchPathSeparator] ++ p)
 		, ("TOPDIR", cwd)
@@ -1353,7 +1561,7 @@ prepareTestEnv forcedirect = do
 		, ("FORCEDIRECT", if forcedirect then "1" else "")
 		]
 
-	return $ M.fromList env
+	return $ M.fromList newenv `M.union` M.fromList env
 
 changeToTmpDir :: TestEnv -> FilePath -> IO ()
 changeToTmpDir env t = do
@@ -1404,7 +1612,7 @@ changecontent :: FilePath -> IO ()
 changecontent f = writeFile f $ changedcontent f
 
 changedcontent :: FilePath -> String
-changedcontent f = (content f) ++ " (modified)"
+changedcontent f = content f ++ " (modified)"
 
 backendSHA1 :: Types.Backend
 backendSHA1 = backend_ "SHA1"
@@ -1416,4 +1624,4 @@ backendWORM :: Types.Backend
 backendWORM = backend_ "WORM"
 
 backend_ :: String -> Types.Backend
-backend_ name = Backend.lookupBackendName name
+backend_ = Backend.lookupBackendName

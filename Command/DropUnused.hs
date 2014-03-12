@@ -27,7 +27,7 @@ seek ps = do
 	withUnusedMaps (start numcopies) ps
 
 start :: NumCopies -> UnusedMaps -> Int -> CommandStart
-start numcopies = startUnused "dropunused" (perform numcopies) (performOther gitAnnexBadLocation) (performOther gitAnnexTmpLocation)
+start numcopies = startUnused "dropunused" (perform numcopies) (performOther gitAnnexBadLocation) (performOther gitAnnexTmpObjectLocation)
 
 perform :: NumCopies -> Key -> CommandPerform
 perform numcopies key = maybe droplocal dropremote =<< Remote.byNameWithUUID =<< from
