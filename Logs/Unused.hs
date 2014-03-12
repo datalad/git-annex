@@ -99,7 +99,6 @@ dateUnusedLog prefix = do
 	f <- fromRepo $ gitAnnexUnusedLog prefix
 	liftIO $ catchMaybeIO $ getModificationTime f
 #else
-#warning foo
 -- old ghc's getModificationTime returned a ClockTime
 dateUnusedLog _prefix = return Nothing
 #endif
