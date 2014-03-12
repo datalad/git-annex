@@ -28,7 +28,12 @@ import Control.Concurrent.Async
 
 type MissingObjects = S.Set Sha
 
-data FsckResults = FsckFoundMissing MissingObjects | FsckFailed
+data FsckResults 
+	= FsckFoundMissing
+		{ missingObjects :: MissingObjects
+		, missingObjectsTruncated :: Bool
+		}
+	| FsckFailed
 	deriving (Show)
 
 {- Runs fsck to find some of the broken objects in the repository.
@@ -55,22 +60,25 @@ findBroken batchmode r = do
 			, std_err = CreatePipe
 			}
 	(bad1, bad2) <- concurrently
-		(readMissingObjs r supportsNoDangling (stdoutHandle p))
-		(readMissingObjs r supportsNoDangling (stderrHandle p))
+		(readMissingObjs maxobjs r supportsNoDangling (stdoutHandle p))
+		(readMissingObjs maxobjs r supportsNoDangling (stderrHandle p))
 	fsckok <- checkSuccessProcess pid
+	let truncated = S.size bad1 == maxobjs || S.size bad1 == maxobjs
 	let badobjs = S.union bad1 bad2
 
 	if S.null badobjs && not fsckok
 		then return FsckFailed
-		else return $ FsckFoundMissing badobjs
+		else return $ FsckFoundMissing badobjs truncated
+  where
+	maxobjs = 10000
 
 foundBroken :: FsckResults -> Bool
 foundBroken FsckFailed = True
-foundBroken (FsckFoundMissing s) = not (S.null s)
+foundBroken (FsckFoundMissing s _) = not (S.null s)
 
 knownMissing :: FsckResults -> MissingObjects
 knownMissing FsckFailed = S.empty
-knownMissing (FsckFoundMissing s) = s
+knownMissing (FsckFoundMissing s _) = s
 
 {- Finds objects that are missing from the git repsitory, or are corrupt.
  -
@@ -80,9 +88,9 @@ knownMissing (FsckFoundMissing s) = s
 findMissing :: [Sha] -> Repo -> IO MissingObjects
 findMissing objs r = S.fromList <$> filterM (`isMissing` r) objs
 
-readMissingObjs :: Repo -> Bool -> Handle -> IO MissingObjects
-readMissingObjs r supportsNoDangling h = do
-	objs <- findShas supportsNoDangling <$> hGetContents h
+readMissingObjs :: Int -> Repo -> Bool -> Handle -> IO MissingObjects
+readMissingObjs maxobjs r supportsNoDangling h = do
+	objs <- take maxobjs . findShas supportsNoDangling <$> hGetContents h
 	findMissing objs r
 
 isMissing :: Sha -> Repo -> IO Bool
