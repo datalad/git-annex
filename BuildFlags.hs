@@ -22,6 +22,9 @@ buildFlags = filter (not . null)
 #else
 #warning Building without the webapp. You probably need to install Yesod..
 #endif
+#ifdef WITH_WEBAPP_HTTPS
+	, "Webapp-https"
+#endif
 #ifdef WITH_PAIRING
 	, "Pairing"
 #else
