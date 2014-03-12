@@ -74,11 +74,15 @@ browserProc url = proc "xdg-open" [url]
 runWebApp :: Maybe TLSSettings -> Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
 runWebApp tlssettings h app observer = withSocketsDo $ do
 	sock <- getSocket h
-	void $ forkIO $ 
-		(maybe runSettingsSocket (\ts -> runTLSSocket ts) tlssettings)
-			webAppSettings sock app	
+	void $ forkIO $ run webAppSettings sock app	
 	sockaddr <- fixSockAddr <$> getSocketName sock
 	observer sockaddr
+  where
+#ifdef WITH_WEBAPP_HTTPS
+	run = (maybe runSettingsSocket (\ts -> runTLSSocket ts) tlssettings)
+#else
+	run = runSettingsSocket
+#endif
 
 fixSockAddr :: SockAddr -> SockAddr
 #ifdef __ANDROID__

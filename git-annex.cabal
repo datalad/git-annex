@@ -43,6 +43,9 @@ Flag Assistant
 Flag Webapp
   Description: Enable git-annex webapp
 
+Flag Webapp-https
+  Description: Enable git-annex webapp https
+
 Flag Pairing
   Description: Enable pairing
 
@@ -180,6 +183,9 @@ Executable git-annex
      blaze-builder, crypto-api, hamlet, clientsession,
      template-haskell, data-default, aeson, network-conduit
     CPP-Options: -DWITH_WEBAPP
+  if flag(Webapp) && flag (Webapp-https)
+    Build-Depends: warp-tls (>= 1.4)
+    CPP-Options: -DWITH_WEBAPP_HTTPS
 
   if flag(Pairing)
     Build-Depends: network-multicast, network-info
