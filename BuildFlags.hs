@@ -18,6 +18,9 @@ buildFlags = filter (not . null)
 #ifdef WITH_WEBAPP
 	, "Webapp"
 #endif
+#ifdef WITH_WEBAPP_HTTPS
+	, "Webapp-https"
+#endif
 #ifdef WITH_PAIRING
 	, "Pairing"
 #endif
