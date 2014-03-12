@@ -366,3 +366,5 @@ Here is the crash report osx creates
 
 # End of transcript or log.
 """]]
+
+> Apparently this is [[fixed|done]] in the latest release. --[[Joey]]
