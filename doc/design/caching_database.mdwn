@@ -1,0 +1,99 @@
+* [[metadata]] for views
+* [direct mode mappings scale badly with thousands of identical files](/bugs/__34__Adding_4923_files__34___is_really_slow)
+* [[bugs/incremental_fsck_should_not_use_sticky_bit]]
+
+What do all these have in common? They could all be improved by
+using some kind of database to locally store the information in an
+efficient way.
+
+The database should only function as a cache. It should be able to be
+generated and updated by looking at the git repository.
+
+* Metadata can be updated by looking at the git-annex branch,
+  either its current state, or the diff between the old and new versions
+* Direct mode mappings can be updated by looking at the current branch,
+  to see which files map to which key. Or the diff between the old
+  and new versions of the branch.
+* Incremental fsck information is not stored in git, but can be
+  "regenerated" by running fsck again.  
+  (Perhaps doesn't quite fit, but let it slide..)
+
+## case study: persistent with sqllite
+
+Here's a non-normalized database schema in persistent's syntax.
+
+<pre>
+CachedKey
+  key Key
+  associatedFiles [FilePath]
+  lastFscked Int Maybe
+  KeyIndex key
+
+CachedMetaData
+  key Key
+  metaDataField MetaDataField
+  metaDataValue MetaDataValue
+</pre>
+
+Using the above database schema and persistent with sqlite, I made
+a database containing 30k Cache records. This took 5 seconds to create
+and was 7 mb on disk. (Would be rather smaller, if a more packed Key
+show/read instance were used.)
+
+Running 1000 separate queries to get 1000 CachedKeys took 0.688s with warm
+cache. This was more than halved when all 1000 queries were done inside the
+same `runSqlite` call. (Which could be done using a separate thread and some
+MVars.)
+
+(Note that if the database is a cache, there is no need to perform migrations
+when querying it. My benchmarks skip `runMigration`. Instead, if the query
+fails, the database doesn't exist, or uses an incompatable schema, and the
+cache can be rebuilt then. This avoids the problem that persistent's migrations
+can sometimes fail.)
+
+Doubling the db to 60k scaled linearly in disk and cpu and did not affect
+query time.
+
+----
+
+Here's a normalized schema:
+
+<pre>
+CachedKey
+  key Key
+  KeyIndex key
+  deriving Show
+
+AssociatedFiles
+  keyId CachedKeyId Eq
+  associatedFile FilePath
+  deriving Show
+
+CachedMetaField
+  field MetaField
+  FieldIndex field
+
+CachedMetaData
+  keyId CachedKeyId Eq
+  fieldId CachedMetaFieldId Eq
+  metaValue String
+
+LastFscked
+  keyId CachedKeyId Eq
+  localFscked Int Maybe
+</pre>
+
+With this, running 1000 joins to get the associated files of 1000
+Keys took 5.6s with warm cache. (When done in the same `runSqlite` call.) Ouch!
+
+Compare the above with 1000 calls to `associatedFiles`, which is approximately
+as fast as just opening and reading 1000 files, so will take well under
+0.05s with a **cold** cache.
+
+So, we're looking at nearly an order of magnitude slowdown using sqlite and
+persistent for associated files. OTOH, the normalized schema should
+perform better when adding an associated file to a key that already has many.
+
+For metadata, the story is much nicer. Querying for 30000 keys that all
+have a particular tag in their metadata takes 0.65s. So fast enough to be
+used in views.
