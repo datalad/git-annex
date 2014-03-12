@@ -302,7 +302,8 @@ subdirectories).
 * `webapp`
 
   Opens a web app, that allows easy setup of a git-annex repository,
-  and control of the git-annex assistant.
+  and control of the git-annex assistant. If the assistant is not
+  already running, it will be started.
 
   By default, the webapp can only be accessed from localhost, and running
   it opens a browser window.
