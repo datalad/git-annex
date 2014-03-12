@@ -125,7 +125,7 @@ USB drive used in a sneakernet.
 The preferred content expression for these causes them to get and retain
 data until all clients have a copy.
 
-`(not (inallgroup=client and copies=client:2) and ($client)`
+`not (inallgroup=client and copies=client:2) and ($client)`
 
 (Where $client is a copy of the preferred content expression used for
 clients.)
