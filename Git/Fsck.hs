@@ -24,6 +24,7 @@ import qualified Git.Version
 
 import qualified Data.Set as S
 import System.Process (std_out, std_err)
+import Control.Concurrent.Async
 
 type MissingObjects = S.Set Sha
 
@@ -53,8 +54,9 @@ findBroken batchmode r = do
 			{ std_out = CreatePipe
 			, std_err = CreatePipe
 			}
-	bad1 <- readMissingObjs r supportsNoDangling (stdoutHandle p)
-	bad2 <- readMissingObjs r supportsNoDangling (stderrHandle p)
+	(bad1, bad2) <- concurrently
+		(readMissingObjs r supportsNoDangling (stdoutHandle p))
+		(readMissingObjs r supportsNoDangling (stderrHandle p))
 	fsckok <- checkSuccessProcess pid
 	let badobjs = S.union bad1 bad2
 
