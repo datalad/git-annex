@@ -8,3 +8,5 @@ git annex version for OS X,
     remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
 
 whereas on my Linux box build flags include webapp. On os x when I run git annex webapp it does nothing, just prints the help info.
+
+> [[fixed|done]] --[[Joey]] 
