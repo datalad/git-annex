@@ -10,6 +10,10 @@ git-annex (5.20140307) UNRELEASED; urgency=medium
   * webapp: Use securemem for constant time auth token comparisons.
   * copy --fast --to remote: Avoid printing anything for files that
     are already believed to be present on the remote.
+  * Commands that allow specifying which repository to act on using
+    the repository's description will now fail when multiple repositories
+    match, rather than picking a repository at random.
+    (So will --in=)
 
  -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
 
