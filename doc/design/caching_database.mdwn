@@ -21,6 +21,15 @@ generated and updated by looking at the git repository.
 Store in the database the Ref of the branch that was used to construct it.
 (Update in same transaction as cached data.)
 
+## implementation plan
+
+1. Implement for metadata, on a branch, with sqlite.
+2. Make sure that builds on all platforms.
+3. Add associated file mappings support. This is needed to fully
+   use the caching database to construct views.
+4. Store incremental fsck info in db.
+5. Replace .map files with 3. for direct mode.
+
 ## case study: persistent with sqllite
 
 Here's a non-normalized database schema in persistent's syntax.
