@@ -60,6 +60,7 @@ import Types.FileMatcher
 import Types.NumCopies
 import Types.LockPool
 import Types.MetaData
+import Types.CleanupActions
 import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
@@ -114,7 +115,7 @@ data AnnexState = AnnexState
 	, flags :: M.Map String Bool
 	, fields :: M.Map String String
 	, modmeta :: [ModMeta]
-	, cleanup :: M.Map String (Annex ())
+	, cleanup :: M.Map CleanupAction (Annex ())
 	, inodeschanged :: Maybe Bool
 	, useragent :: Maybe String
 	, errcounter :: Integer
@@ -210,9 +211,9 @@ setField field value = changeState $ \s ->
 	s { fields = M.insertWith' const field value $ fields s }
 
 {- Adds a cleanup action to perform. -}
-addCleanup :: String -> Annex () -> Annex ()
-addCleanup uid a = changeState $ \s ->
-	s { cleanup = M.insertWith' const uid a $ cleanup s }
+addCleanup :: CleanupAction -> Annex () -> Annex ()
+addCleanup k a = changeState $ \s ->
+	s { cleanup = M.insertWith' const k a $ cleanup s }
 
 {- Sets the type of output to emit. -}
 setOutput :: OutputType -> Annex ()

@@ -36,6 +36,7 @@ import Config
 import Config.Cost
 import Annex.Init
 import Types.Key
+import Types.CleanupActions
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Logs.Location
 import Utility.Metered
@@ -510,7 +511,7 @@ rsyncOrCopyFile rsyncparams src dest p =
 commitOnCleanup :: Remote -> Annex a -> Annex a
 commitOnCleanup r a = go `after` a
   where
-	go = Annex.addCleanup (Git.repoLocation $ repo r) cleanup
+	go = Annex.addCleanup (RemoteCleanup $ uuid r) cleanup
 	cleanup
 		| not $ Git.repoIsUrl (repo r) = onLocal r $
 			doQuietSideAction $
