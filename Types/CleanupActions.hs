@@ -13,4 +13,5 @@ data CleanupAction
 	= RemoteCleanup UUID
 	| StopHook UUID
 	| FsckCleanup
+	| SshCachingCleanup
 	deriving (Eq, Ord)
