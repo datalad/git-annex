@@ -8,6 +8,8 @@ git-annex (5.20140307) UNRELEASED; urgency=medium
   * repair: Improve memory usage when git fsck finds a great many broken
     objects.
   * webapp: Use securemem for constant time auth token comparisons.
+  * copy --fast --to remote: Avoid printing anything for files that
+    are already believed to be present on the remote.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
 
