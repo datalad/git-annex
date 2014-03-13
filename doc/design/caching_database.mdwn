@@ -67,6 +67,7 @@ CachedKey
 AssociatedFiles
   keyId CachedKeyId Eq
   associatedFile FilePath
+  KeyIdIndex keyId associatedFile
   deriving Show
 
 CachedMetaField
@@ -85,6 +86,12 @@ LastFscked
 
 With this, running 1000 joins to get the associated files of 1000
 Keys took 5.6s with warm cache. (When done in the same `runSqlite` call.) Ouch!
+
+Update: This performance was fixed by adding `KeyIdOutdex keyId associatedFile`,
+which adds a uniqueness constraint on the tuple of key and associatedFile.
+With this, 1000 queries takes 0.406s. Note that persistent is probably not
+actually doing a join at the SQL level, so this could be sped up using
+eg, esquelito.
 
 Compare the above with 1000 calls to `associatedFiles`, which is approximately
 as fast as just opening and reading 1000 files, so will take well under
