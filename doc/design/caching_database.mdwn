@@ -18,6 +18,9 @@ generated and updated by looking at the git repository.
   "regenerated" by running fsck again.  
   (Perhaps doesn't quite fit, but let it slide..)
 
+Store in the database the Ref of the branch that was used to construct it.
+(Update in same transaction as cached data.)
+
 ## case study: persistent with sqllite
 
 Here's a non-normalized database schema in persistent's syntax.
@@ -92,6 +95,10 @@ which adds a uniqueness constraint on the tuple of key and associatedFile.
 With this, 1000 queries takes 0.406s. Note that persistent is probably not
 actually doing a join at the SQL level, so this could be sped up using
 eg, esquelito.
+
+Update2: Using esquelito to do a join got this down to 0.250s.
+
+Code: <http://lpaste.net/101141> <http://lpaste.net/101142>
 
 Compare the above with 1000 calls to `associatedFiles`, which is approximately
 as fast as just opening and reading 1000 files, so will take well under
