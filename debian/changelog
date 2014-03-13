@@ -7,6 +7,7 @@ git-annex (5.20140307) UNRELEASED; urgency=medium
     are no longer incorrectly detected as unused.
   * repair: Improve memory usage when git fsck finds a great many broken
     objects.
+  * webapp: Use securemem for constant time auth token comparisons.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
 

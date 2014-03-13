@@ -43,8 +43,8 @@ Flag Assistant
 Flag Webapp
   Description: Enable git-annex webapp
 
-Flag Webapp-https
-  Description: Enable git-annex webapp https
+Flag Webapp-secure
+  Description: Secure webapp
 
 Flag Pairing
   Description: Enable pairing
@@ -181,11 +181,12 @@ Executable git-annex
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      http-types, transformers, wai, wai-logger, warp, warp-tls,
      blaze-builder, crypto-api, hamlet, clientsession,
-     template-haskell, data-default, aeson, network-conduit
+     template-haskell, data-default, aeson, network-conduit,
+     byteable
     CPP-Options: -DWITH_WEBAPP
-  if flag(Webapp) && flag (Webapp-https)
-    Build-Depends: warp-tls (>= 1.4)
-    CPP-Options: -DWITH_WEBAPP_HTTPS
+  if flag(Webapp) && flag (Webapp-secure)
+    Build-Depends: warp-tls (>= 1.4), securemem
+    CPP-Options: -DWITH_WEBAPP_SECURE
 
   if flag(Pairing)
     Build-Depends: network-multicast, network-info
