@@ -146,7 +146,7 @@ sshCleanup = go =<< sshCacheDir
 			withQuietOutput createProcessSuccess $
 				(proc "ssh" $ toCommand $
 					[ Params "-O stop"
-					] ++ params ++ [Param "any"])
+					] ++ params ++ [Param "localhost"])
 					{ cwd = Just dir }
 		liftIO $ nukeFile socketfile
 		-- Cannot remove the lock file; other processes may
