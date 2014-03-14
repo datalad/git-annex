@@ -1,0 +1,59 @@
+### Please describe the problem.
+
+When pairing two machines with git-annex assistant, the assistant kept asking for the ssh password.  Checking the git-annex daemon logs, I saw that ssh was refusing to use the key the assistant had created because it was group readable (see below for the log extract).
+
+### What steps will reproduce the problem?
+
+The assistant was installed from the ubuntu precise ppa backport on an up-to-date copy of ubuntu precise.
+It was started using "git-annex webapp --listen=XYZ".
+This was done on two machines on the same network.
+Created a repository using the web-app, the same on both machines.
+Did a pair request.  This initially worked fine, until it got to the point of using ssh, when it started asking for the password many many  times.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20140306
+build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus XMPP Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+
+Ubuntu 12.04.4 LTS
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+(started...) Generating public/private rsa key pair.
+Your identification has been saved in /tmp/git-annex-keygen.0/key.
+Your public key has been saved in /tmp/git-annex-keygen.0/key.pub.
+The key fingerprint is:
+2b:f4:28:35:72:2c:9e:5b:d3:1d:d1:a1:b7:c7:a5:34 ABC@XYZ
+The key's randomart image is:
++--[ RSA 2048]----+
+|            .    |
+|           o .   |
+|          o o E .|
+|     .     o + + |
+|    o * S . . +  |
+|   . B = o . .   |
+|    + = + .      |
+|     + o         |
+|    .            |
++-----------------+
+[2014-03-14 13:35:45 GMT] main: Pairing in progress
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+@         WARNING: UNPROTECTED PRIVATE KEY FILE!          @
+@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
+Permissions 0620 for 'ABC/.ssh/git-annex/key.git-annex-XYZ_annex' are too open.
+It is required that your private key files are NOT accessible by others.
+This private key will be ignored.
+bad permissions: ignore key: ABC/.ssh/git-annex/key.git-annex-XYZ_annex
+(merging XYZ_annex/git-annex into git-annex...)
+
+# End of transcript or log.
+"""]]
