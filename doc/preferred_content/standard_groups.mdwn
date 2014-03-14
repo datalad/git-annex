@@ -1,0 +1,115 @@
+git-annex comes with some pre-defined [[preferred_content]] settings, that can
+be used with repositories that are in special groups. To make a
+repository use one of these, just set its preferred content expression
+to "standard", and put it in one of these groups.
+
+(Note that most of these standard expressions also make the repository
+prefer any content that is only currently available on untrusted and
+dead repositories. So if an untrusted repository gets connected,
+any repository that can will back it up.)
+
+### client
+
+All content is preferred, unless it's for a file in a "archive" directory,
+which has reached an archive repository, or is unused.
+
+`(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or roughlylackingcopies=1`
+
+### transfer
+
+Use for repositories that are used to transfer data between other
+repositories, but do not need to retain data themselves. For
+example, a repository on a server, or in the cloud, or a small
+USB drive used in a sneakernet.
+
+The preferred content expression for these causes them to get and retain
+data until all clients have a copy.
+
+`not (inallgroup=client and copies=client:2) and ($client)`
+
+(Where $client is a copy of the preferred content expression used for
+clients.)
+
+The "copies=client:2" part of the above handles the case where
+there is only one client repository. It makes a transfer repository
+speculatively  prefer content in this case, even though it as of yet
+has nowhere to transfer it to. Presumably, another client repository
+will be added later.
+
+### backup
+
+All content is preferred.
+
+`include=* or unused`
+
+### incremental backup
+
+Only prefers content that's not already backed up to another backup
+or incremental backup repository.
+
+`((include=* or unused) and (not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1`
+
+### small archive
+
+Only prefers content that's located in an "archive" directory, and
+only if it's not already been archived somewhere else.
+
+`((include=*/archive/* or include=archive/*) and not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
+
+### full archive
+
+All content is preferred, unless it's already been archived somewhere else.
+
+`(not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
+
+Note that if you want to archive multiple copies (not a bad idea!),
+you should instead configure all your archive repositories with a
+version of the above preferred content expression with a larger
+number of copies.
+
+### source
+
+Use for repositories where files are often added, but that do not need to
+retain files for local use. For example, a repository on a camera, where
+it's desirable to remove photos as soon as they're transferred elsewhere.
+
+The preferred content expression for these causes them to only retain
+data until a copy has been sent to some other repository.
+
+`not (copies=1)`
+
+### manual
+
+This gives you nearly full manual control over what content is stored in the
+repository. This allows using the [[assistant]] without it trying to keep a
+local copy of every file. Instead, you can manually run `git annex get`,
+`git annex drop`, etc to manage content. Only content that is present
+is preferred.
+
+The exception to this manual control is that content that a client
+repository would not want is not preferred. So, files in archive
+directories are not preferred once their content has 
+reached an archive repository.
+
+`present and ($client)`
+
+(Where $client is a copy of the preferred content expression used for
+clients.)
+
+### public
+
+This is used for publishing information to a repository that can be
+publically accessed. Only files in a directory with a particular name
+will be published. (The directory can be located anywhere in the
+repository.)
+
+The name of the directory can be configured using
+`git annex enableremote $remote preferreddir=$dirname`
+
+### unwanted
+
+Use for repositories that you don't want to exist. This will result
+in any content on them being moved away to other repositories. (Works
+best when the unwanted repository is also marked as untrusted or dead.)
+
+`exclude=*`

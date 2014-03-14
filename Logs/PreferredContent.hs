@@ -67,29 +67,25 @@ preferredContentMapLoad = do
  - versions of git-annex may add new features. Instead, parse errors
  - result in a Matcher that will always succeed. -}
 makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> PreferredContentExpression -> FileMatcher
-makeMatcher groupmap configmap u expr
-	| expr == "standard" = standardMatcher groupmap configmap u
-	| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
-	| otherwise = matchAll
+makeMatcher groupmap configmap u = go True
   where
-	tokens = exprParser groupmap configmap (Just u) expr
-
-{- Standard matchers are pre-defined for some groups. If none is defined,
- - or a repository is in multiple groups with standard matchers, match all. -}
-standardMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> FileMatcher
-standardMatcher groupmap configmap u = 
-	maybe matchAll (makeMatcher groupmap configmap u . preferredContent) $
-		getStandardGroup =<< u `M.lookup` groupsByUUID groupmap
+	go expandstandard expr
+		| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
+		| otherwise = matchAll
+	  where
+		tokens = exprParser matchstandard groupmap configmap (Just u) expr
+		matchstandard
+			| expandstandard = maybe matchAll (go False . preferredContent) $
+				getStandardGroup =<< u `M.lookup` groupsByUUID groupmap
+			| otherwise = matchAll
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: PreferredContentExpression -> Maybe String
-checkPreferredContentExpression expr
-	| expr == "standard" = Nothing
-	| otherwise = case parsedToMatcher tokens of
-		Left e -> Just e
-		Right _ -> Nothing
+checkPreferredContentExpression expr = case parsedToMatcher tokens of
+	Left e -> Just e
+	Right _ -> Nothing
   where
-	tokens = exprParser emptyGroupMap M.empty Nothing expr
+	tokens = exprParser matchAll emptyGroupMap M.empty Nothing expr
 
 {- Puts a UUID in a standard group, and sets its preferred content to use
  - the standard expression for that group, unless something is already set. -}
