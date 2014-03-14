@@ -18,7 +18,9 @@ So there's no local `.git/config` for preferred content settings.
 
 Rather than writing your own preferred content expression, you can use
 several canned ones included in git-annex that are tuned to cover different
-common use cases. You do this by putting a repository in a group,
+common use cases.
+
+You do this by putting a repository in a group,
 and simply setting its preferred content to "standard" to match whatever
 is standard for that group. See [[standard_groups]] for a list.
 """]]
