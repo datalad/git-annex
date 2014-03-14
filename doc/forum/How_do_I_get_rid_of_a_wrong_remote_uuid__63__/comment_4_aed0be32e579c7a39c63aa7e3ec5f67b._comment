@@ -10,7 +10,7 @@ The only way I can think of that this could happen is if you had set up a reposi
 
 The fix is just as evil as the cause -- you can edit .git/config to add a new, dummy git remote that has annex-uuid set to the problem uuid, and then `git-annex dead` can be used to kill the uuid via that remote. For example:
 
-[[!format shell \"\"\"
+[[!format sh \"\"\"
 joey@darkstar:~/tmp/x>git annex whereis eep
 whereis eep (1 copy) 
   	00000a6d-e770-4ab9-a640-7d6272e9ffff
