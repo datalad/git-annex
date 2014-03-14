@@ -16,6 +16,7 @@ git-annex (5.20140307) UNRELEASED; urgency=medium
     (So will --in=)
   * Fix ssh connection caching stop method to work with openssh 6.5p1,
     which broke the old method.
+  * Better workaround for problem umasks when eg, setting up ssh keys.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
 

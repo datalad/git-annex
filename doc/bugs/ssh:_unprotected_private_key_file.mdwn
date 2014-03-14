@@ -57,3 +57,6 @@ bad permissions: ignore key: ABC/.ssh/git-annex/key.git-annex-XYZ_annex
 
 # End of transcript or log.
 """]]
+
+> [[Fixed|done]]; the code made sure the file did not have any group or
+> world read bits, but did not clear write bits. --[[Joey]]
