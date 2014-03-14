@@ -13,16 +13,20 @@ Each repository can have its own settings, and other repositories will
 try to honor those settings when interacting with it.
 So there's no local `.git/config` for preferred content settings.
 
-The idea is that you write an expression that files are matched against.
-If a file matches, it's preferred to have its content stored in the
-repository. If it doesn't, it's preferred to drop its content from
-the repository (if there are enough copies elsewhere).
+[[!template id=note text="""
+### [[canned preferred content|standard_groups]]
 
 Rather than writing your own preferred content expression, you can use
 several canned ones included in git-annex that are tuned to cover different
 common use cases. You do this by putting a repository in a group,
 and simply setting its preferred content to "standard" to match whatever
-is standard for that group. See [[standard_groups]].
+is standard for that group. See [[standard_groups]] for a list.
+"""]]
+
+The idea is that you write an expression that files are matched against.
+If a file matches, it's preferred to have its content stored in the
+repository. If it doesn't, it's preferred to drop its content from
+the repository (if there are enough copies elsewhere).
 
 To check at the command line which files are matched by preferred content
 settings, you can use the --want-get and --want-drop options.
