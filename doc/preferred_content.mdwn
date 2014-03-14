@@ -14,7 +14,7 @@ try to honor those settings when interacting with it.
 So there's no local `.git/config` for preferred content settings.
 
 [[!template id=note text="""
-### [[canned preferred content|standard_groups]]
+### [[quickstart|standard_groups]]
 
 Rather than writing your own preferred content expression, you can use
 several canned ones included in git-annex that are tuned to cover different
