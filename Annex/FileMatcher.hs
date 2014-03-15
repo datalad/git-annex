@@ -56,23 +56,24 @@ parsedToMatcher parsed = case partitionEithers parsed of
 	([], vs) -> Right $ generate vs
 	(es, _) -> Left $ unwords $ map ("Parse failure: " ++) es
 
-exprParser :: FileMatcher -> GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [Either String (Token MatchFiles)]
-exprParser matchstandard groupmap configmap mu expr =
+exprParser :: FileMatcher -> FileMatcher -> GroupMap -> M.Map UUID RemoteConfig -> Maybe UUID -> String -> [Either String (Token MatchFiles)]
+exprParser matchstandard matchgroupwanted groupmap configmap mu expr =
 	map parse $ tokenizeMatcher expr
   where
 	parse = parseToken
 		matchstandard
+		matchgroupwanted
 		(limitPresent mu)
 		(limitInDir preferreddir)
 		groupmap
 	preferreddir = fromMaybe "public" $
 		M.lookup "preferreddir" =<< (`M.lookup` configmap) =<< mu
 
-parseToken :: FileMatcher -> MkLimit -> MkLimit -> GroupMap -> String -> Either String (Token MatchFiles)
-parseToken matchstandard checkpresent checkpreferreddir groupmap t
+parseToken :: FileMatcher -> FileMatcher -> MkLimit -> MkLimit -> GroupMap -> String -> Either String (Token MatchFiles)
+parseToken matchstandard matchgroupwanted checkpresent checkpreferreddir groupmap t
 	| t `elem` tokens = Right $ token t
-	| t == "standard" = Right $ Operation $ \notpresent mi ->
-		matchMrun matchstandard $ \a -> a notpresent mi
+	| t == "standard" = call matchstandard
+	| t == "groupwanted" = call matchgroupwanted
 	| t == "present" = use checkpresent
 	| t == "inpreferreddir" = use checkpreferreddir
 	| t == "unused" = Right $ Operation limitUnused
@@ -92,6 +93,8 @@ parseToken matchstandard checkpresent checkpreferreddir groupmap t
   where
 	(k, v) = separate (== '=') t
 	use a = Operation <$> a v
+	call sub = Right $ Operation $ \notpresent mi ->
+		matchMrun sub $ \a -> a notpresent mi
 
 {- This is really dumb tokenization; there's no support for quoted values.
  - Open and close parens are always treated as standalone tokens;
@@ -112,5 +115,5 @@ largeFilesMatcher = go =<< annexLargeFiles <$> Annex.getGitConfig
 		rc <- readRemoteLog
 		u <- getUUID
 		either badexpr return $
-			parsedToMatcher $ exprParser matchAll gm rc (Just u) expr
+			parsedToMatcher $ exprParser matchAll matchAll gm rc (Just u) expr
 	badexpr e = error $ "bad annex.largefiles configuration: " ++ e

@@ -58,8 +58,9 @@ preferredContentMapLoad :: Annex Annex.PreferredContentMap
 preferredContentMapLoad = do
 	groupmap <- groupMap
 	configmap <- readRemoteLog
+	groupwantedmap <- groupPreferredContentMapRaw
 	m <- simpleMap
-		. parseLogWithUUID ((Just .) . makeMatcher groupmap configmap)
+		. parseLogWithUUID ((Just .) . makeMatcher groupmap configmap groupwantedmap)
 		<$> Annex.Branch.get preferredContentLog
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Just m }
 	return m
@@ -68,18 +69,26 @@ preferredContentMapLoad = do
  - because the configuration is shared among repositories and newer
  - versions of git-annex may add new features. Instead, parse errors
  - result in a Matcher that will always succeed. -}
-makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> PreferredContentExpression -> FileMatcher
-makeMatcher groupmap configmap u = go True
+makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> M.Map Group PreferredContentExpression -> UUID -> PreferredContentExpression -> FileMatcher
+makeMatcher groupmap configmap groupwantedmap u = go True True
   where
-	go expandstandard expr
+	go expandstandard expandgroupwanted expr
 		| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
 		| otherwise = matchAll
 	  where
-		tokens = exprParser matchstandard groupmap configmap (Just u) expr
+		tokens = exprParser matchstandard matchgroupwanted groupmap configmap (Just u) expr
 		matchstandard
-			| expandstandard = maybe matchAll (go False . preferredContent) $
-				getStandardGroup =<< u `M.lookup` groupsByUUID groupmap
+			| expandstandard = maybe matchAll (go False False)
+				(standardPreferredContent <$> getStandardGroup mygroups)
 			| otherwise = matchAll
+		matchgroupwanted
+			| expandgroupwanted = maybe matchAll (go True False)
+				(groupwanted mygroups)
+			| otherwise = matchAll
+		mygroups = fromMaybe S.empty (u `M.lookup` groupsByUUID groupmap)
+		groupwanted s = case M.elems $ M.filterWithKey (\k _ -> S.member k s) groupwantedmap of
+			[pc] -> Just pc
+			_ -> Nothing
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: PreferredContentExpression -> Maybe String
@@ -87,7 +96,7 @@ checkPreferredContentExpression expr = case parsedToMatcher tokens of
 	Left e -> Just e
 	Right _ -> Nothing
   where
-	tokens = exprParser matchAll emptyGroupMap M.empty Nothing expr
+	tokens = exprParser matchAll matchAll emptyGroupMap M.empty Nothing expr
 
 {- Puts a UUID in a standard group, and sets its preferred content to use
  - the standard expression for that group, unless something is already set. -}

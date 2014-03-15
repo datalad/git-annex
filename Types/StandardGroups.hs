@@ -78,21 +78,21 @@ specialRemoteOnly PublicGroup = True
 specialRemoteOnly _ = False
 
 {- See doc/preferred_content.mdwn for explanations of these expressions. -}
-preferredContent :: StandardGroup -> PreferredContentExpression
-preferredContent ClientGroup = lastResort $
+standardPreferredContent :: StandardGroup -> PreferredContentExpression
+standardPreferredContent ClientGroup = lastResort $
 	"((exclude=*/archive/* and exclude=archive/*) or (" ++ notArchived ++ ")) and not unused"
-preferredContent TransferGroup = lastResort $
-	"not (inallgroup=client and copies=client:2) and (" ++ preferredContent ClientGroup ++ ")"
-preferredContent BackupGroup = "include=* or unused"
-preferredContent IncrementalBackupGroup = lastResort
+standardPreferredContent TransferGroup = lastResort $
+	"not (inallgroup=client and copies=client:2) and (" ++ standardPreferredContent ClientGroup ++ ")"
+standardPreferredContent BackupGroup = "include=* or unused"
+standardPreferredContent IncrementalBackupGroup = lastResort
 	"(include=* or unused) and (not copies=incrementalbackup:1)"
-preferredContent SmallArchiveGroup = lastResort $
-	"(include=*/archive/* or include=archive/*) and (" ++ preferredContent FullArchiveGroup ++ ")"
-preferredContent FullArchiveGroup = lastResort notArchived
-preferredContent SourceGroup = "not (copies=1)"
-preferredContent ManualGroup = "present and (" ++ preferredContent ClientGroup ++ ")"
-preferredContent PublicGroup = "inpreferreddir"
-preferredContent UnwantedGroup = "exclude=*"
+standardPreferredContent SmallArchiveGroup = lastResort $
+	"(include=*/archive/* or include=archive/*) and (" ++ standardPreferredContent FullArchiveGroup ++ ")"
+standardPreferredContent FullArchiveGroup = lastResort notArchived
+standardPreferredContent SourceGroup = "not (copies=1)"
+standardPreferredContent ManualGroup = "present and (" ++ standardPreferredContent ClientGroup ++ ")"
+standardPreferredContent PublicGroup = "inpreferreddir"
+standardPreferredContent UnwantedGroup = "exclude=*"
 
 notArchived :: String
 notArchived = "not (copies=archive:1 or copies=smallarchive:1)"

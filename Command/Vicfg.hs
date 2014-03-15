@@ -158,7 +158,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 	  where
 		gline g = com $ unwords
 			[ "standard"
-			, fromStandardGroup g, "=", preferredContent g
+			, fromStandardGroup g, "=", standardPreferredContent g
 			]
 	
 	schedule = settings cfg descs cfgScheduleMap
