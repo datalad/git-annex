@@ -19,6 +19,7 @@ git-annex (5.20140307) UNRELEASED; urgency=medium
   * Better workaround for problem umasks when eg, setting up ssh keys.
   * "standard" can now be used as a first-class keyword in preferred content
     expressions. For example "standard or (include=otherdir/*)"
+  * Avoid encoding errors when using the unused log file.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
 
