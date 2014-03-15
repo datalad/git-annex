@@ -477,8 +477,8 @@ subdirectories).
 * `vicfg`
 
   Opens EDITOR on a temp file containing most of the above configuration
-  settings, and when it exits, stores any changes made back to the git-annex
-  branch.
+  settings, as well as a few others, and when it exits, stores any changes
+  made back to the git-annex branch.
 
 * `direct`
 

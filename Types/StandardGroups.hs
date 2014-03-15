@@ -8,6 +8,7 @@
 module Types.StandardGroups where
 
 import Types.Remote (RemoteConfig)
+import Types.Group
 
 import qualified Data.Map as M
 import Data.Maybe
@@ -27,7 +28,7 @@ data StandardGroup
 	| UnwantedGroup
 	deriving (Eq, Ord, Enum, Bounded, Show)
 
-fromStandardGroup :: StandardGroup -> String
+fromStandardGroup :: StandardGroup -> Group
 fromStandardGroup ClientGroup = "client"
 fromStandardGroup TransferGroup = "transfer"
 fromStandardGroup BackupGroup = "backup"
@@ -39,7 +40,7 @@ fromStandardGroup ManualGroup = "manual"
 fromStandardGroup PublicGroup = "public"
 fromStandardGroup UnwantedGroup = "unwanted"
 
-toStandardGroup :: String -> Maybe StandardGroup
+toStandardGroup :: Group -> Maybe StandardGroup
 toStandardGroup "client" = Just ClientGroup
 toStandardGroup "transfer" = Just TransferGroup
 toStandardGroup "backup" = Just BackupGroup

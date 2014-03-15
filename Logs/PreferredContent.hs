@@ -1,6 +1,6 @@
 {- git-annex preferred content matcher configuration
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,10 +8,12 @@
 module Logs.PreferredContent (
 	preferredContentLog,
 	preferredContentSet,
+	groupPreferredContentSet,
 	isPreferredContent,
 	preferredContentMap,
 	preferredContentMapLoad,
 	preferredContentMapRaw,
+	groupPreferredContentMapRaw,
 	checkPreferredContentExpression,
 	setStandardGroup,
 ) where
