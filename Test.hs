@@ -43,7 +43,7 @@ import qualified Types.Backend
 import qualified Types.TrustLevel
 import qualified Types
 import qualified Logs
-import qualified Logs.UUIDBased
+import qualified Logs.MapLog
 import qualified Logs.Trust
 import qualified Logs.Remote
 import qualified Logs.Unused
@@ -140,8 +140,8 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_cost_sane" Config.Cost.prop_cost_sane
 	, testProperty "prop_matcher_sane" Utility.Matcher.prop_matcher_sane
 	, testProperty "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane
-	, testProperty "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
-	, testProperty "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
+	, testProperty "prop_TimeStamp_sane" Logs.MapLog.prop_TimeStamp_sane
+	, testProperty "prop_addMapLog_sane" Logs.MapLog.prop_addMapLog_sane
 	, testProperty "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
 	, testProperty "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
 	, testProperty "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
