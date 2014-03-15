@@ -7,14 +7,14 @@ Not sure I'm ready to dive into that yet, so instead spent the rest of the
 day working on small bugfixes and improvemnts. Only two significant ones..
 
 Made the webapp use a constant time string comparison (from `securemem`)
-to check its auth token is valid. Could avoid a potential timing attack to
-guess the auth token, although that is theoretical. Just best practice to
-do this.
+to check if its auth token is valid. This could help avoid a potential
+timing attack to guess the auth token, although that is theoretical.
+Just best practice to do this.
 
 Seems that openssh 6.5p1 had another hidden surprise (in addition to
 its now-fixed bug in handing hostnames in `.ssh/config`) -- it broke
 the method git-annex was using for stopping a cached ssh connection,
-which led to some timeouts for failing DNS lookups. If you see git-annex
-seeming to stall for a few seconds at startup/shutdown, that's maybe why
-(--debug will tell for sure). Seem to have found a workaround that avoids
-the problem.
+which led to some timeouts for failing DNS lookups. If git-annex seems
+to stall for a few seconds at startup/shutdown, that may be why
+(--debug will say for sure). I seem to have found a workaround that
+avoids this problem.
