@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="bremner"
- ip="198.164.160.48"
- subject="How to read metadata conveniently?"
- date="2014-03-15T20:48:52Z"
- content="""
-Is there a more convenient way to read metadata than to parse the output of \"git annex metadata foo\"?
-"""]]
