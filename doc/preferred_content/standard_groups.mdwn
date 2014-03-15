@@ -1,16 +1,16 @@
-git-annex comes with some pre-defined [[preferred_content]] settings, that can
+git-annex comes with some built-in [[preferred_content]] settings, that can
 be used with repositories that are in special groups. To make a
 repository use one of these, just set its preferred content expression
 to "standard", and put it in one of these groups.
 
 (Note that most of these standard expressions also make the repository
-prefer any content that is only currently available on untrusted and
+want to get any content that is only currently available on untrusted and
 dead repositories. So if an untrusted repository gets connected,
 any repository that can will back it up.)
 
 ### client
 
-All content is preferred, unless it's for a file in a "archive" directory,
+All content is wanted, unless it's for a file in a "archive" directory,
 which has reached an archive repository, or is unused.
 
 `(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or roughlylackingcopies=1`
@@ -38,34 +38,36 @@ will be added later.
 
 ### backup
 
-All content is preferred.
+All content is wanted. Even content of old/deleted files.
 
 `include=* or unused`
 
 ### incremental backup
 
-Only prefers content that's not already backed up to another backup
+Only wants content that's not already backed up to another backup
 or incremental backup repository.
 
 `((include=* or unused) and (not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1`
 
 ### small archive
 
-Only prefers content that's located in an "archive" directory, and
+Only wants content that's located in an "archive" directory, and
 only if it's not already been archived somewhere else.
 
 `((include=*/archive/* or include=archive/*) and not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
 
 ### full archive
 
-All content is preferred, unless it's already been archived somewhere else.
+All content is wanted, unless it's already been archived somewhere else.
 
 `(not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
 
 Note that if you want to archive multiple copies (not a bad idea!),
-you should instead configure all your archive repositories with a
-version of the above preferred content expression with a larger
-number of copies.
+you can set `groupwanted archive` to a version of 
+the above preferred content expression with a larger number of copies
+than 1. Then make the archive repositories have a preferred
+content expression of "groupwanted" in order to use your modified
+version.
 
 ### source
 
@@ -83,12 +85,12 @@ data until a copy has been sent to some other repository.
 This gives you nearly full manual control over what content is stored in the
 repository. This allows using the [[assistant]] without it trying to keep a
 local copy of every file. Instead, you can manually run `git annex get`,
-`git annex drop`, etc to manage content. Only content that is present
-is preferred.
+`git annex drop`, etc to manage content. Only content that is already
+present is wanted.
 
 The exception to this manual control is that content that a client
-repository would not want is not preferred. So, files in archive
-directories are not preferred once their content has 
+repository would not want is not wanted. So, files in archive
+directories are not wanted once their content has 
 reached an archive repository.
 
 `present and ($client)`

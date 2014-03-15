@@ -2,7 +2,7 @@ git-annex tries to ensure that the configured number of [[copies]] of your
 data always exist, and leaves it up to you to use commands like `git annex
 get` and `git annex drop` to move the content to the repositories you want
 to contain it. But sometimes, it can be good to have more fine-grained
-control over which repositories prefer to have which content. Configuring
+control over which content is wanted by which repositories. Configuring
 this allows the git-annex assistant as well as 
 `git annex get --auto`, `git annex drop --auto`, `git annex sync --content`,
 etc to do smarter things.
@@ -11,13 +11,13 @@ Preferred content settings can be edited using `git
 annex vicfg`, or viewed and set at the command line with `git annex wanted`.
 Each repository can have its own settings, and other repositories will
 try to honor those settings when interacting with it.
-So there's no local `.git/config` for preferred content settings.
+(So there's no local `.git/config` for preferred content settings.)
 
 [[!template id=note text="""
 ### [[quickstart|standard_groups]]
 
 Rather than writing your own preferred content expression, you can use
-several canned ones included in git-annex that are tuned to cover different
+several standard ones included in git-annex that are tuned to cover different
 common use cases.
 
 You do this by putting a repository in a group,
@@ -26,9 +26,9 @@ is standard for that group. See [[standard_groups]] for a list.
 """]]
 
 The idea is that you write an expression that files are matched against.
-If a file matches, it's preferred to have its content stored in the
-repository. If it doesn't, it's preferred to drop its content from
-the repository (if there are enough copies elsewhere).
+If a file matches, the repository wants to store its content.
+If it doesn't, the repository wants to drop its content
+(if there are enough copies elsewhere to allow removing it).
 
 To check at the command line which files are matched by preferred content
 settings, you can use the --want-get and --want-drop options.
@@ -74,7 +74,7 @@ and use "copies=transfer:1"
 
 To decide if content should be dropped, git-annex evaluates the preferred
 content expression under the assumption that the content has *already* been
-dropped. If the content would not be preferred then, the drop can be done.
+dropped. If the content would not be wanted then, the drop can be done.
 So, for example, `copies=2` in a preferred content expression lets
 content be dropped only when there are currently 3 copies of it, including
 the repo it's being dropped from. This is different than running `git annex
@@ -83,7 +83,7 @@ drop --copies=2`, which will drop files that currently have 2 copies.
 ### difference: "present"
 
 There's a special "present" keyword you can use in a preferred content
-expression. This means that content is preferred if it's present,
+expression. This means that content is wanted if it's present,
 and not otherwise. This leaves it up to you to use git-annex manually
 to move content around. You can use this to avoid preferred content
 settings from affecting a subdirectory. For example:
@@ -91,7 +91,7 @@ settings from affecting a subdirectory. For example:
 	auto/* or (include=ad-hoc/* and present)
 
 Note that `not present` is a very bad thing to put in a preferred content 
-expression. It'll make it prefer to get content that's not present, and
+expression. It'll make it want to get content that's not present, and
 drop content that is present! Don't go there..
 
 ### difference: "inpreferreddir"
@@ -108,15 +108,38 @@ The name of the directory can be configured using
 
 ### difference: "standard"
 
-git-annex comes with some standard preferred content expressions, that
-can be used with repositories that are in some pre-defined groups,
-as listed in [[standard_groups]].
+git-annex comes with some built-in preferred content expressions, that
+can be used with repositories that are in some [[standard_groups]].
 
 When a repository is in exactly one such group, you can use the "standard"
 keyword in its preferred content expression, to match whatever content
-the group preferrs to have. (If a repository is put into multiple standard
+the group's expression matches.
+(If a repository is put into multiple standard
 groups, "standard" will match anything.. so don't do that!)
 
 Most often, the whole preferred content expression is simply "standard".
 But, you can do more complicated things, for example:
 "`standard or include=otherdir/*`"
+
+### difference: "groupwanted"
+
+The "groupwanted" keyword can be used to refer to a preferred content
+expression that is associated with a group. This is like the "standard"
+keyword, but you can set up groupwanted preferred content expressions
+using `git annex vicfg`.
+
+Note that when writing a groupwanted preferred content expression,
+you can use all of the keywords listed above, including "standard".
+(But not "groupwanted".)
+
+For example, to make a variant of the standard client preferred content
+expression that does not want files in the "out" directory, you
+could set `groupwanted client = standard and exclude=out/*`.
+Then repositories that are in the client group and have their preferred
+content expression set to "groupwanted" will use that, while
+other client repositories that have their preferred content expression
+set to "standard" will use the standard expression.
+
+Or, you could make a new group, with your own custom preferred content
+expression tuned for your needs, and every repository you put in this
+group and make its preferred content be "groupwanted" will use it.
