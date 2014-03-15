@@ -22,6 +22,7 @@ git-annex (5.20140307) UNRELEASED; urgency=medium
   * Avoid encoding errors when using the unused log file.
   * vicfg: Allows editing preferred content expressions for groups.
   * groupwanted can be used in preferred content expressions.
+  * metadata: Add --get
 
  -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
 

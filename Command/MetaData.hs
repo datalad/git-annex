@@ -18,7 +18,7 @@ import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
 def :: [Command]
-def = [withOptions [setOption, tagOption, untagOption, jsonOption] $
+def = [withOptions [setOption, tagOption, untagOption, getOption, jsonOption] $
 	command "metadata" paramPaths seek
 	SectionMetaData "sets metadata of a file"]
 
@@ -30,6 +30,9 @@ setOption :: Option
 setOption = Option ['s'] ["set"] (ReqArg mkmod "FIELD[+-]=VALUE") "set metadata"
   where
 	mkmod = either error storeModMeta . parseModMeta
+
+getOption :: Option
+getOption = fieldOption ['g'] "get" paramField "get single metadata field"
 
 tagOption :: Option
 tagOption = Option ['t'] ["tag"] (ReqArg mkmod "TAG") "set a tag"
@@ -44,13 +47,20 @@ untagOption = Option ['u'] ["untag"] (ReqArg mkmod "TAG") "remove a tag"
 seek :: CommandSeek
 seek ps = do
 	modmeta <- Annex.getState Annex.modmeta
+	getfield <- getOptionField getOption $ \ms ->
+		return $ either error id . mkMetaField <$> ms
 	now <- liftIO getPOSIXTime
-	withFilesInGit (whenAnnexed $ start now modmeta) ps
+	withFilesInGit (whenAnnexed $ start now getfield modmeta) ps
 
-start :: POSIXTime -> [ModMeta] -> FilePath -> (Key, Backend) -> CommandStart
-start now ms file (k, _) = do
+start :: POSIXTime -> Maybe MetaField -> [ModMeta] -> FilePath -> (Key, Backend) -> CommandStart
+start now Nothing ms file (k, _) = do
 	showStart "metadata" file
 	next $ perform now ms k
+start _ (Just f) _ _ (k, _) = do
+	l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
+	liftIO $ forM_ l $
+		putStrLn . fromMetaValue
+	stop
 
 perform :: POSIXTime -> [ModMeta] -> Key -> CommandPerform
 perform _ [] k = next $ cleanup k
