@@ -16,3 +16,5 @@ Bug Report doesn't work
 
 # End of transcript or log.
 """]]
+
+[[fixed]] --[[Joey]]
