@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.154"
- subject="comment 5"
- date="2014-03-17T19:28:46Z"
- content="""
-You need to find the remote that it's failing on. You should be able to do so using strace if nothing else.
-"""]]
