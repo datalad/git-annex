@@ -18,9 +18,18 @@ import qualified Data.Set as S
 import Data.Time.Clock.POSIX
 
 def :: [Command]
-def = [withOptions [setOption, tagOption, untagOption, getOption, jsonOption] $
+def = [withOptions metaDataOptions $
 	command "metadata" paramPaths seek
 	SectionMetaData "sets metadata of a file"]
+
+metaDataOptions :: [Option]
+metaDataOptions =
+	[ setOption
+	, tagOption
+	, untagOption
+	, getOption
+	, jsonOption
+	] ++ keyOptions
 
 storeModMeta :: ModMeta -> Annex ()
 storeModMeta modmeta = Annex.changeState $
@@ -50,13 +59,22 @@ seek ps = do
 	getfield <- getOptionField getOption $ \ms ->
 		return $ either error id . mkMetaField <$> ms
 	now <- liftIO getPOSIXTime
-	withFilesInGit (whenAnnexed $ start now getfield modmeta) ps
+	withKeyOptions
+		(startKeys now getfield modmeta)
+		(withFilesInGit (whenAnnexed $ start now getfield modmeta))
+		ps
 
 start :: POSIXTime -> Maybe MetaField -> [ModMeta] -> FilePath -> (Key, Backend) -> CommandStart
-start now Nothing ms file (k, _) = do
-	showStart "metadata" file
+start now f ms file (k, _) = start' (Just file) now f ms k
+
+startKeys :: POSIXTime -> Maybe MetaField -> [ModMeta] -> Key -> CommandStart
+startKeys = start' Nothing
+
+start' :: AssociatedFile -> POSIXTime -> Maybe MetaField -> [ModMeta] -> Key -> CommandStart
+start' afile now Nothing ms k = do
+	showStart' "metadata" k afile
 	next $ perform now ms k
-start _ (Just f) _ _ (k, _) = do
+start' _ _ (Just f) _ k = do
 	l <- S.toList . currentMetaDataValues f <$> getCurrentMetaData k
 	liftIO $ forM_ l $
 		putStrLn . fromMetaValue
