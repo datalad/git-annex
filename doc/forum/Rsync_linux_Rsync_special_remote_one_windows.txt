@@ -1,3 +1,0 @@
-I tested today to access a rsync special remote on a linux machine from git annex in windows.
-Launching in debug mode, I noticed that the path on the remote server is a mix between correct linux and incorrect windows path. The path to the storage directory is correctly in linux style, but the path in the hash are in windows style, style that rsync doesn't accept.
-Is it possible to force a style for path separator for a given remote?
