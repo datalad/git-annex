@@ -33,3 +33,5 @@ git-annex: user error (git ["config","--null","--list"] exited 126)
 failed
 git-annex: map: 1 failed
 """]]
+
+> [[fixed|done]] --[[Joey]]
