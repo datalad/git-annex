@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 3"
+ date="2014-03-18T19:49:09Z"
+ content="""
+The new [[special_remotes/external]] special remote's protocol has GETSTATE and SETSTATE commands that can be used to store per-remote values in the git-annex branch.
+
+So, please go make these special remotes using it!
+"""]]

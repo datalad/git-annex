@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkBEmz5XoJVzN0u-0nOtpn7BBBDHsiLmxY"
- nickname="Eric"
- subject="comment 6"
- date="2014-03-17T20:12:31Z"
- content="""
-oh, so basically what i must have done was to delete the remote via git but it still existed in git annex?
-"""]]
