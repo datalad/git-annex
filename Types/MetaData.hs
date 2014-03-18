@@ -141,7 +141,7 @@ toMetaField f
  - that would break views.
  -
  - So, require they have an alphanumeric first letter, with the remainder
- - being either alphanumeric or a small set of shitelisted common punctuation.
+ - being either alphanumeric or a small set of whitelisted common punctuation.
  -}
 legalField :: String -> Bool
 legalField [] = False
