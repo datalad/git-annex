@@ -75,11 +75,9 @@ getCurrentMetaData k = do
 	-- Makes each field have the timestamp as its value.
 	genlastchanged l =
 		let MetaData m = value l
-		    ts = S.singleton $ toMetaValue $ 
-		    	formatTime defaultTimeLocale "%s" $
-				posixSecondsToUTCTime $
-					changed l
+		    ts = S.singleton $ toMetaValue $ showts $ changed l
 		in M.map (const ts) m
+	showts = formatTime defaultTimeLocale "%F@%H-%M-%S" . posixSecondsToUTCTime
 
 {- Adds in some metadata, which can override existing values, or unset
  - them, but otherwise leaves any existing metadata as-is. -}

@@ -29,8 +29,8 @@ Here are some metadata fields that git-annex has special support for:
 * `year`, `month` - When this particular version of the file came into
   being.
 * `$field-lastchanged` - This is automatically maintained for each
-  field that's set, and gives the time stamp (since the Unix epoch)
-  of the most recent change to the field. It cannot be modified directly.
+  field that's set, and gives the date and time of the most recent
+  change to the field. It cannot be modified directly.
 
 To make git-annex automatically set the year and month when adding files,
 run `git config annex.genmetadata true`. Also, see
