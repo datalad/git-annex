@@ -1,1 +1,3 @@
 One Problem I am having is that I could never get the xmpp pairing to work so whenever I switch machines I have to manually run sync once on the command line to get the changes. Is it possible to have a sync now button of some sort that will trigger a sync on the repos?
+
+> moved from forum; [[done]] --[[Joey]] 
