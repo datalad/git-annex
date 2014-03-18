@@ -1,0 +1,20 @@
+Currently looking at the metadata and views.
+
+One of the things I would like to do is have a view that shows files by metadata metadata.. for example, "when the file last had tags changed".
+
+Something along the lines of
+
+    $ git annex view metadata-tag-mtime=YYYYMMDD
+    view  (searching...)
+    
+    Switched to branch 'views/metadata/tag/mtime/YYYYMMDD'
+    ok
+    
+    $ ls
+    20130816
+    20130921
+    20131015
+
+This would allow me to review files that haven't had any tag changes applied for a while and thus, may need the tags updating.
+
+I've done this in every tagging system I've used by (ab)using mtime, but that requires an additional step (of touching the file).
