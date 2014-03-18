@@ -36,26 +36,50 @@ module Logs.MetaData (
 
 import Common.Annex
 import Types.MetaData
+import Annex.MetaData.StandardFields
 import qualified Annex.Branch
 import Logs
 import Logs.SingleValue
 
 import qualified Data.Set as S
+import qualified Data.Map as M
 import Data.Time.Clock.POSIX
+import Data.Time.Format
+import System.Locale
 
 instance SingleValueSerializable MetaData where
 	serialize = Types.MetaData.serialize
 	deserialize = Types.MetaData.deserialize
 
-getMetaData :: Key -> Annex (Log MetaData)
-getMetaData = readLog . metaDataLogFile
+getMetaDataLog :: Key -> Annex (Log MetaData)
+getMetaDataLog = readLog . metaDataLogFile
 
 {- Go through the log from oldest to newest, and combine it all
- - into a single MetaData representing the current state. -}
+ - into a single MetaData representing the current state.
+ -
+ - Automatically generates a lastchanged metadata for each field that's
+ - currently set, based on timestamps in the log.
+ -}
 getCurrentMetaData :: Key -> Annex MetaData
-getCurrentMetaData = currentMetaData . collect <$$> getMetaData
+getCurrentMetaData k = do
+	ls <- S.toAscList <$> getMetaDataLog k
+	let loggedmeta = currentMetaData $ combineMetaData $ map value ls
+	return $ currentMetaData $ unionMetaData loggedmeta
+		(lastchanged ls loggedmeta)
   where
-	collect = foldl' unionMetaData emptyMetaData . map value . S.toAscList
+	lastchanged ls (MetaData wanted) =
+		let m = foldl' (flip M.union) M.empty (map genlastchanged ls)
+		in MetaData $ M.mapKeys lastChangedField $
+			-- Only include fields that are currently set.
+			m `M.intersection` wanted
+	-- Makes each field have the timestamp as its value.
+	genlastchanged l =
+		let MetaData m = value l
+		    ts = S.singleton $ toMetaValue $ 
+		    	formatTime defaultTimeLocale "%s" $
+				posixSecondsToUTCTime $
+					changed l
+		in M.map (const ts) m
 
 {- Adds in some metadata, which can override existing values, or unset
  - them, but otherwise leaves any existing metadata as-is. -}
@@ -67,10 +91,12 @@ addMetaData k metadata = addMetaData' k metadata =<< liftIO getPOSIXTime
  - will tend to be generated across the different log files, and so
  - git will be able to pack the data more efficiently. -}
 addMetaData' :: Key -> MetaData -> POSIXTime -> Annex ()
-addMetaData' k metadata now = Annex.Branch.change (metaDataLogFile k) $
+addMetaData' k (MetaData m) now = Annex.Branch.change (metaDataLogFile k) $
 	showLog . simplifyLog 
-		. S.insert (LogEntry now metadata) 
+		. S.insert (LogEntry now metadata)
 		. parseLog
+  where
+	metadata = MetaData $ M.filterWithKey (\f _ -> not (isLastChangedField f)) m
 
 {- Simplify a log, removing historical values that are no longer
  - needed. 
@@ -148,7 +174,7 @@ copyMetaData :: Key -> Key -> Annex ()
 copyMetaData oldkey newkey
 	| oldkey == newkey = noop
 	| otherwise = do
-		l <- getMetaData oldkey
+		l <- getMetaDataLog oldkey
 		unless (S.null l) $
 			Annex.Branch.change (metaDataLogFile newkey) $
 				const $ showLog l

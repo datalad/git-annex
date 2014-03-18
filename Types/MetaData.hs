@@ -28,6 +28,7 @@ module Types.MetaData (
 	emptyMetaData,
 	updateMetaData,
 	unionMetaData,
+	combineMetaData,
 	differenceMetaData,
 	isSet,
 	currentMetaData,
@@ -187,6 +188,9 @@ updateMetaData f v (MetaData m) = MetaData $
 unionMetaData :: MetaData -> MetaData -> MetaData
 unionMetaData (MetaData old) (MetaData new) = MetaData $
 	M.unionWith S.union new old
+
+combineMetaData :: [MetaData] -> MetaData
+combineMetaData = foldl' unionMetaData emptyMetaData
 
 differenceMetaData :: MetaData -> MetaData -> MetaData
 differenceMetaData (MetaData m) (MetaData excludem) = MetaData $
