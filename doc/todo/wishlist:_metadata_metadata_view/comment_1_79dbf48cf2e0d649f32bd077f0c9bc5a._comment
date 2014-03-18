@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 1"
+ date="2014-03-18T17:09:55Z"
+ content="""
+I think this would be pretty easy to do actually. No need to trawl through git history to find when a field changed; the metadata log file format includes the timestamp when a line was changed, so it would only need to find the newest timestamp for the field in the current version of the file.
+"""]]
