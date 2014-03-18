@@ -28,6 +28,7 @@ import Annex.UUID
 import Annex.Ssh
 import Remote.Helper.Special
 import Remote.Helper.Encryptable
+import Remote.Rsync.RsyncUrl
 import Crypto
 import Utility.Rsync
 import Utility.CopyFile
@@ -39,16 +40,6 @@ import Types.Creds
 
 import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
-
-type RsyncUrl = String
-
-data RsyncOpts = RsyncOpts
-	{ rsyncUrl :: RsyncUrl
-	, rsyncOptions :: [CommandParam]
-	, rsyncUploadOptions :: [CommandParam]
-	, rsyncDownloadOptions :: [CommandParam]
-	, rsyncShellEscape :: Bool
-}
 
 remote :: RemoteType
 remote = RemoteType {
@@ -147,17 +138,6 @@ rsyncSetup mu _ c = do
 	-- persistant state, so it can vary between hosts.
 	gitConfigSpecialRemote u c' "rsyncurl" url
 	return (c', u)
-
-rsyncEscape :: RsyncOpts -> String -> String
-rsyncEscape o s
-	| rsyncShellEscape o && rsyncUrlIsShell (rsyncUrl o) = shellEscape s
-	| otherwise = s
-
-rsyncUrls :: RsyncOpts -> Key -> [String]
-rsyncUrls o k = map use annexHashes
-  where
-	use h = rsyncUrl o </> h k </> rsyncEscape o (f </> f)
-	f = keyFile k
 
 store :: RsyncOpts -> Key -> AssociatedFile -> MeterUpdate -> Annex Bool
 store o k _f p = sendAnnex k (void $ remove o k) $ rsyncSend o p k False

@@ -23,3 +23,5 @@ ygdrive/c/Users/pablo/Desktop/Nouveau dossier/InnerResult/.git/annex/tmp/SHA256E
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]
