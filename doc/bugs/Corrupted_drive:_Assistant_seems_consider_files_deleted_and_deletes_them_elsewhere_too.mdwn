@@ -31,3 +31,6 @@ I noticed the problem yesterday afternoon (Thu 24 Oct).
 
 # End of transcript or log.
 """]]
+
+> [[moreinfo]]; either I don't have enough information to work on this,
+> or it might have just been user error. --[[Joey]]
