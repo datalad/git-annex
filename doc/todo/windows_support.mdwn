@@ -29,6 +29,42 @@ now! --[[Joey]]
 * Deleting a git repository from inside the webapp fails "RemoveDirectory
   permision denied ... file is being used by another process"
 
+## potential encoding problems
+
+[[bugs/Unicode_file_names_ignored_on_Windows]] is fixed, but some potential
+problems remain, since the FileSystemEncoding that git-annex relies on
+seems unreliable/broken on Windows.
+
+* When git-annex displays a filename that it's acting on, there
+  can be mojibake on Windows. For example, "háčky.txt" displays
+  the accented characters as instead the pairs of bytes making
+  up the utf-8. Tried doing various things to the stdout handle
+  to avoid this, but only ended up with encoding crashes, or worse
+  mojibake than this.
+
+* `md5FilePath` still uses the filesystem encoding, and so may produce the
+  wrong value on Windows. This would impact keys that contain problem characters
+  (probably coming from the filename extension), and might cause
+  interoperability problems when git-annex generates the hash directories of a
+  remote, for example a rsync remote.
+
+* `encodeW8` is used in Git.UnionMerge, and while I fixed the other calls to
+  encodeW8, which all involved ByteStrings reading from git and so can just
+  treat it as utf-8 on Windows (via `decodeBS`), in the union merge case,
+  the ByteString has no defined encoding. It may have been written on Unix
+  and contain keys with invalid unicode in them. On windows, the union
+  merge code should probably check if it's valid utf-8, and if not,
+  abort the merge.
+
+* If interoperating with a git-annex repository from a unix system, it's
+  possible for a key to contain some invalid utf-8, which means its filename
+  cannot even be represented on Windows, so who knows what will happen in that
+  case -- probably it will fail in some way when adding the object file
+  to the Windows repo. 
+
+* If data from the git repo does not have a unicode encoding, it will be
+  mangled in various places on Windows, which can lead to undefined behavior.
+
 ## minor problems
 
 * rsync special remotes with a rsyncurl of a local directory are known

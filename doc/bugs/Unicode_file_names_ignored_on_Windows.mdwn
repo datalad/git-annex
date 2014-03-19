@@ -35,3 +35,7 @@ According to https://github.com/msysgit/msysgit/wiki/Git-for-Windows-Unicode-Sup
     [2014-03-18 14:28:03 Central Europe Standard Time] read: git ["--git-dir=D:\\anntest\\.git","--work-tree=D:\\anntest","-c","core.bare=false","ls-files","--modified","-z","--","h\225\269ky.txt"]
 
 I can provide additional information, just tell me what you need.
+
+> [[fixed|done]], although this is not the end of encoding issues
+> on Windows. Updating [[windows_support]] to discuss some other ones.
+> --[[Joey]]

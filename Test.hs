@@ -22,7 +22,6 @@ import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
 import qualified Text.JSON
 import System.Path
-import qualified Data.ByteString.Lazy as L
 
 import Common
 
@@ -1272,7 +1271,7 @@ test_add_subdirs env = intmpclonerepo env $ do
 	{- Regression test for Windows bug where symlinks were not
 	 - calculated correctly for files in subdirs. -}
 	git_annex env "sync" [] @? "sync failed"
-	l <- annexeval $ encodeW8 . L.unpack <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
+	l <- annexeval $ decodeBS <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
 	"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
 
 	createDirectory "dir2"

@@ -1,14 +1,17 @@
 {- GHC File system encoding handling.
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Utility.FileSystemEncoding (
 	fileEncoding,
 	withFilePath,
 	md5FilePath,
+	decodeBS,
 	decodeW8,
 	encodeW8,
 	truncateFilePath,
@@ -22,13 +25,24 @@ import System.IO.Unsafe
 import qualified Data.Hash.MD5 as MD5
 import Data.Word
 import Data.Bits.Utils
+import qualified Data.ByteString.Lazy as L
+#ifdef mingw32_HOST_OS
+import qualified Data.ByteString.Lazy.UTF8 as L8
+#endif
 
 {- Sets a Handle to use the filesystem encoding. This causes data
  - written or read from it to be encoded/decoded the same
  - as ghc 7.4 does to filenames etc. This special encoding
- - allows "arbitrary undecodable bytes to be round-tripped through it". -}
+ - allows "arbitrary undecodable bytes to be round-tripped through it".
+ -}
 fileEncoding :: Handle -> IO ()
+#ifndef mingw32_HOST_OS
 fileEncoding h = hSetEncoding h =<< Encoding.getFileSystemEncoding
+#else
+{- The file system encoding does not work well on Windows,
+ - and Windows only has utf FilePaths anyway. -}
+fileEncoding h = hSetEncoding h Encoding.utf8
+#endif
 
 {- Marshal a Haskell FilePath into a NUL terminated C string using temporary
  - storage. The FilePath is encoded using the filesystem encoding,
@@ -60,6 +74,16 @@ _encodeFilePath fp = unsafePerformIO $ do
 md5FilePath :: FilePath -> MD5.Str
 md5FilePath = MD5.Str . _encodeFilePath
 
+{- Decodes a ByteString into a FilePath, applying the filesystem encoding. -}
+decodeBS :: L.ByteString -> FilePath
+#ifndef mingw32_HOST_OS
+decodeBS = encodeW8 . L.unpack
+#else
+{- On Windows, we assume that the ByteString is utf-8, since Windows
+ - only uses unicode for filenames. -}
+decodeBS = L8.toString
+#endif
+
 {- Converts a [Word8] to a FilePath, encoding using the filesystem encoding.
  -
  - w82c produces a String, which may contain Chars that are invalid
@@ -84,6 +108,7 @@ decodeW8 = s2w8 . _encodeFilePath
  - cost of efficiency when running on a large FilePath.
  -}
 truncateFilePath :: Int -> FilePath -> FilePath
+#ifndef mingw32_HOST_OS
 truncateFilePath n = go . reverse
   where
   	go f =
@@ -91,3 +116,17 @@ truncateFilePath n = go . reverse
 		in if length bytes <= n
 			then reverse f
 			else go (drop 1 f)
+#else
+{- On Windows, count the number of bytes used by each utf8 character. -}
+truncateFilePath n = reverse . go [] n . L8.fromString
+  where
+	go coll cnt bs
+		| cnt <= 0 = coll
+		| otherwise = case L8.decode bs of
+			Just (c, x) | c /= L8.replacement_char ->
+				let x' = fromIntegral x
+				in if cnt - x' < 0
+					then coll
+					else go (c:coll) (cnt - x') (L8.drop 1 bs)
+			_ -> coll
+#endif

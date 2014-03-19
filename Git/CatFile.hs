@@ -108,6 +108,6 @@ catTree h treeref = go <$> catObjectDetails h treeref
 	dropsha = L.drop 21
 
 	parsemodefile b = 
-		let (modestr, file) = separate (== ' ') (encodeW8 $ L.unpack b)
+		let (modestr, file) = separate (== ' ') (decodeBS b)
 		in (file, readmode modestr)
 	readmode = fst . fromMaybe (0, undefined) . headMaybe . readOct

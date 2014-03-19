@@ -80,7 +80,7 @@ catKey = catKey' True
 catKey' :: Bool -> Ref -> FileMode -> Annex (Maybe Key)
 catKey' modeguaranteed ref mode
 	| isSymLink mode = do
-		l <- fromInternalGitPath . encodeW8 . L.unpack <$> get
+		l <- fromInternalGitPath . decodeBS <$> get
 		return $ if isLinkToAnnex l
 			then fileKey $ takeFileName l
 			else Nothing

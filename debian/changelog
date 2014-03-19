@@ -30,6 +30,7 @@ git-annex (5.20140307) UNRELEASED; urgency=medium
   * Each for each metadata field, there's now an automatically maintained
     "$field-lastchanged" that gives the timestamp of the last change to that
     field.
+  * Windows: Fix some filename encoding bugs.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
 
