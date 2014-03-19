@@ -143,3 +143,23 @@ set to "standard" will use the standard expression.
 Or, you could make a new group, with your own custom preferred content
 expression tuned for your needs, and every repository you put in this
 group and make its preferred content be "groupwanted" will use it.
+
+## upgrades
+
+It's important that all clones of a repository can understand one-another's
+preferred content expressions, especially when using the git-annex
+assistant. So using newly added keywords can cause a problem if
+an older version of git-annex is in use elsewhere. When an old version
+of git-annex sees a keyword it does not understand, it assumes that keyword
+will match *all* files.
+
+Here are recent changes to preferred content expressions, and the version
+they were added in.
+
+* "standard" 5.20140314  
+  (only when used in a more complicated expression; "standard" by
+  itself has been supported for a long time)
+* "groupwanted=" 5.20140314
+* "metadata=" 5.20140221
+* "lackingcopies=", "approxlackingcopies=", "unused=" 5.20140127
+* "inpreferreddir=" 4.20130501
