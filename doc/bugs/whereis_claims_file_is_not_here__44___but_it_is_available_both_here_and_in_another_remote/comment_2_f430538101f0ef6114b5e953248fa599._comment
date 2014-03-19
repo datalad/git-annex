@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.102"
+ subject="ping?"
+ date="2014-03-19T20:24:23Z"
+ content="""
+Have you tried running git-annex fsck?
+"""]]
