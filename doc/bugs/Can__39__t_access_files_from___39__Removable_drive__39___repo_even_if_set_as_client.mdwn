@@ -19,3 +19,4 @@ I'm using 9e57edff287ac53fc4b1cefef7271e9ed17f2285 (Fri Feb 22 15:19:25 2013 +00
 Ubuntu 12.10 x86_64
 
 [[!tag /design/assistant]]
+[[!meta title="assistant should set up non-bare repos on removable drives, and update them when syncing with them"]]
