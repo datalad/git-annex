@@ -82,3 +82,6 @@ I guess I could provide the full output of git annex unused but I would rather n
 
 # End of transcript or log.
 """]]
+
+> [[closing|done]], would still be nice to have verification my fix worked.
+> --[[Joey]]
