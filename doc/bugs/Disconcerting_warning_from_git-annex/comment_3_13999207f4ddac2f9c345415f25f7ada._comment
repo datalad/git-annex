@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.102"
+ subject="moreinfo"
+ date="2014-03-19T20:49:47Z"
+ content="""
+What I don't understand about this is, how does `open` fail due to a file being locked? This is Linux, it doesn't have mandatory locking that I know of, and git-annex certianly doesn't use such a thing.
+
+I really need a way to reproduce this and/or a strace. As it is, I've never seen this reported by anyone else and don't understand the failure mode at all.
+
+The relevant part of the code seems to be here:
+
+[[!format haskell \"\"\"
+setJournalFile :: JournalLocked -> FilePath -> String -> Annex ()
+setJournalFile _jl file content = do
+        tmp <- fromRepo gitAnnexTmpMiscDir
+        createAnnexDirectory =<< fromRepo gitAnnexJournalDir
+        createAnnexDirectory tmp
+        -- journal file is written atomically
+        jfile <- fromRepo $ journalFile file
+        let tmpfile = tmp </> takeFileName jfile
+        liftIO $ do
+                writeBinaryFile tmpfile content
+                moveFile tmpfile jfile
+\"\"\"]]
+
+While there is some ctnl locking going on, it locks a special sentinal file, not the file it's writing to.
+"""]]
