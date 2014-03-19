@@ -37,5 +37,5 @@ According to https://github.com/msysgit/msysgit/wiki/Git-for-Windows-Unicode-Sup
 I can provide additional information, just tell me what you need.
 
 > [[fixed|done]], although this is not the end of encoding issues
-> on Windows. Updating [[windows_support]] to discuss some other ones.
+> on Windows. Updating [[todo/windows_support]] to discuss some other ones.
 > --[[Joey]]
