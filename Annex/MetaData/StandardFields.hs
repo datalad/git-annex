@@ -10,6 +10,7 @@ module Annex.MetaData.StandardFields (
 	yearMetaField,
 	monthMetaField,
 	lastChangedField,
+	mkLastChangedField,
 	isLastChangedField
 ) where
 
@@ -26,13 +27,21 @@ yearMetaField = mkMetaFieldUnchecked "year"
 monthMetaField :: MetaField
 monthMetaField = mkMetaFieldUnchecked "month"
 
-lastChangedField :: MetaField -> MetaField
-lastChangedField f = mkMetaFieldUnchecked (fromMetaField f ++ lastchanged)
+lastChangedField :: MetaField
+lastChangedField = mkMetaFieldUnchecked lastchanged
+
+mkLastChangedField :: MetaField -> MetaField
+mkLastChangedField f = mkMetaFieldUnchecked (fromMetaField f ++ lastchangedSuffix)
 
 isLastChangedField :: MetaField -> Bool
-isLastChangedField f = lastchanged `isSuffixOf` s && s /= lastchanged
+isLastChangedField f
+	| f == lastChangedField = True
+	| otherwise = lastchanged `isSuffixOf` s && s /= lastchangedSuffix
   where
 	s = fromMetaField f
 
 lastchanged :: String
-lastchanged = "-lastchanged"
+lastchanged = "lastchanged"
+
+lastchangedSuffix :: String
+lastchangedSuffix = "-lastchanged"

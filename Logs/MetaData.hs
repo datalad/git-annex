@@ -67,16 +67,22 @@ getCurrentMetaData k = do
 	return $ currentMetaData $ unionMetaData loggedmeta
 		(lastchanged ls loggedmeta)
   where
-	lastchanged ls (MetaData wanted) =
+  	lastchanged [] _ = emptyMetaData
+	lastchanged ls (MetaData currentlyset) =
 		let m = foldl' (flip M.union) M.empty (map genlastchanged ls)
-		in MetaData $ M.mapKeys lastChangedField $
+		in MetaData $
+			-- Add a overall lastchanged using the oldest log
+			-- item (log is in ascending order).
+			M.insert lastChangedField (lastchangedval $ Prelude.last ls) $
+			M.mapKeys mkLastChangedField $
 			-- Only include fields that are currently set.
-			m `M.intersection` wanted
+			m `M.intersection` currentlyset
 	-- Makes each field have the timestamp as its value.
 	genlastchanged l =
 		let MetaData m = value l
-		    ts = S.singleton $ toMetaValue $ showts $ changed l
+		    ts = lastchangedval l
 		in M.map (const ts) m
+	lastchangedval l = S.singleton $ toMetaValue $ showts $ changed l
 	showts = formatTime defaultTimeLocale "%F@%H-%M-%S" . posixSecondsToUTCTime
 
 {- Adds in some metadata, which can override existing values, or unset

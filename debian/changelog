@@ -27,9 +27,10 @@ git-annex (5.20140307) UNRELEASED; urgency=medium
   * map: Fix crash when one of the remotes of a repo is a local directory
     that does not exist, or is not a git repo.
   * rsync special remote: Fix slashes when used on Windows.
-  * Each for each metadata field, there's now an automatically maintained
-    "$field-lastchanged" that gives the timestamp of the last change to that
-    field.
+  * For each metadata field, there's now an automatically maintained
+    "$field-lastchanged" that gives the date of the last change to that
+    field. Also the "lastchanged" field for the date of the last change
+    to any of a file's metadata.
   * Windows: Fix some filename encoding bugs.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
