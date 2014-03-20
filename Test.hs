@@ -17,6 +17,9 @@ import Test.Tasty.Ingredients.Rerun
 import Data.Monoid
 
 import Options.Applicative hiding (command)
+#if MIN_VERSION_optparse_applicative(0,8,0)
+import qualified Options.Applicative.Types as Opt
+#endif
 import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
@@ -103,8 +106,7 @@ main ps = do
 	-- parameters is "test".
 	let pinfo = info (helper <*> suiteOptionParser ingredients tests)
 		( fullDesc <> header "Builtin test suite" )
-	opts <- either (\f -> error =<< errMessage f "git-annex test") return $
-		execParserPure (prefs idm) pinfo ps
+	opts <- parseOpts (prefs idm) pinfo ps
 	case tryIngredients ingredients opts tests of
 		Nothing -> error "No tests found!?"
 		Just act -> ifM act
@@ -114,6 +116,18 @@ main ps = do
 				putStrLn "   with utilities, such as git, installed on this system.)"
 				exitFailure
 			)
+  where
+  	progdesc = "git-annex test"
+	parseOpts pprefs pinfo args =
+#if MIN_VERSION_optparse_applicative(0,8,0)
+		pure $ case execParserPure pprefs pinfo args of
+			Opt.Success v -> v
+			Opt.Failure f -> error $ fst $ Opt.execFailure f progdesc
+			Opt.CompletionInvoked _ -> error "completion not supported"
+#else
+		either (error <=< flip errMessage progdesc) return $
+			execParserPure pprefs pinfo args
+#endif
 
 ingredients :: [Ingredient]
 ingredients =
