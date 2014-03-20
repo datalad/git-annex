@@ -11,3 +11,4 @@ designed to interoperate with it.
   utility, with a `-A` switch that enables git-annex support.
 * Emacs Org mode can auto-commit attached files to git-annex.
 * [git annex darktable integration](https://github.com/xxv/darktable-git-annex)
+* [Nautilus file manager ingegration](https://gist.github.com/ion1/9660286)
