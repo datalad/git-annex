@@ -37,6 +37,7 @@ import Types.Remote (RemoteConfig)
 import Logs.Group
 import Logs.Remote
 import Types.StandardGroups
+import Limit
 
 {- Checks if a file is preferred content for the specified repository
  - (or the current repository if none is specified). -}
@@ -67,28 +68,44 @@ preferredContentMapLoad = do
 
 {- This intentionally never fails, even on unparsable expressions,
  - because the configuration is shared among repositories and newer
- - versions of git-annex may add new features. Instead, parse errors
- - result in a Matcher that will always succeed. -}
-makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> M.Map Group PreferredContentExpression -> UUID -> PreferredContentExpression -> FileMatcher
+ - versions of git-annex may add new features. -}
+makeMatcher
+	:: GroupMap
+	-> M.Map UUID RemoteConfig
+	-> M.Map Group PreferredContentExpression
+	-> UUID
+	-> PreferredContentExpression
+	-> FileMatcher
 makeMatcher groupmap configmap groupwantedmap u = go True True
   where
 	go expandstandard expandgroupwanted expr
 		| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
-		| otherwise = matchAll
+		| otherwise = unknownMatcher u
 	  where
 		tokens = exprParser matchstandard matchgroupwanted groupmap configmap (Just u) expr
 		matchstandard
-			| expandstandard = maybe matchAll (go False False)
+			| expandstandard = maybe (unknownMatcher u) (go False False)
 				(standardPreferredContent <$> getStandardGroup mygroups)
-			| otherwise = matchAll
+			| otherwise = unknownMatcher u
 		matchgroupwanted
-			| expandgroupwanted = maybe matchAll (go True False)
+			| expandgroupwanted = maybe (unknownMatcher u) (go True False)
 				(groupwanted mygroups)
-			| otherwise = matchAll
+			| otherwise = unknownMatcher u
 		mygroups = fromMaybe S.empty (u `M.lookup` groupsByUUID groupmap)
 		groupwanted s = case M.elems $ M.filterWithKey (\k _ -> S.member k s) groupwantedmap of
 			[pc] -> Just pc
 			_ -> Nothing
+
+{- When a preferred content expression cannot be parsed, but is already
+ - in the log (eg, put there by a newer version of git-annex),
+ - the fallback behavior is to match only files that are currently present.
+ -
+ - This avoid unwanted/expensive changes to the content, until the problem
+ - is resolved. -}
+unknownMatcher :: UUID -> FileMatcher
+unknownMatcher u = Utility.Matcher.generate [present]
+  where
+	present = Utility.Matcher.Operation $ matchPresent (Just u)
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: PreferredContentExpression -> Maybe String

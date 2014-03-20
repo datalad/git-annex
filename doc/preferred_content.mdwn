@@ -149,9 +149,13 @@ group and make its preferred content be "groupwanted" will use it.
 It's important that all clones of a repository can understand one-another's
 preferred content expressions, especially when using the git-annex
 assistant. So using newly added keywords can cause a problem if
-an older version of git-annex is in use elsewhere. When an old version
-of git-annex sees a keyword it does not understand, it assumes that keyword
-will match *all* files.
+an older version of git-annex is in use elsewhere.
+
+Before git-annex version 5.20140320, when git-annex saw a keyword it
+did not understand, it defaulted to assuming *all* files were
+preferred content. From version 5.20140320, git-annex has a nicer fallback
+behavior: When it is unable to parse a preferred content expression,
+it assumes all files that are currently present are preferred content.
 
 Here are recent changes to preferred content expressions, and the version
 they were added in.

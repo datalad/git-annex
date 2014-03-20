@@ -120,7 +120,10 @@ addIn s = addLimit =<< mk
 
 {- Limit to content that is currently present on a uuid. -}
 limitPresent :: Maybe UUID -> MkLimit
-limitPresent u _ = Right $ const $ checkKey $ \key -> do
+limitPresent u _ = Right $ matchPresent u
+
+matchPresent :: Maybe UUID -> MatchFiles
+matchPresent u _ = checkKey $ \key -> do
 	hereu <- getUUID
 	if u == Just hereu || isNothing u
 		then inAnnex key
