@@ -127,3 +127,5 @@ Options:
    of lots of yesod dependency chain to export modules referenced by TH
    splices, like had to be done on Android. Horrible pain. Ugly as hell.
 2. Make a helper program with the XMPP support in it, that does not use TH.
+3. Swich to a different XMPP client library, like
+   <http://hackage.haskell.org/package/pontarius-xmpp>
