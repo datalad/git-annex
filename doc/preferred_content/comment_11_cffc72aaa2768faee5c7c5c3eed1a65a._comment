@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawn3p4i4lk_zMilvjnJ9sS6g2nerpgz0Fjc"
- nickname="Matthias"
- subject="intelligent sync"
- date="2014-03-21T11:58:58Z"
- content="""
-Is it intended that \"git annex sync --content\" gets something when the wanted content expression is set to \"present\"? This happens for me (version 5.20140320). My wish is to get nothing automatically, but send to all remotes what they want.
-"""]]
