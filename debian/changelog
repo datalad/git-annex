@@ -2,6 +2,11 @@ git-annex (5.20140321) UNRELEASED; urgency=medium
 
   * unannex, uninit: Avoid committing after every file is unannexed,
     for massive speedup.
+  * --notify-finish switch will cause desktop notifications after each 
+    file upload/download compltes 
+    (using the dbus Desktop Notifications Specification)
+  * --notify-start switch will show desktop notifications when each
+    file upload/download starts.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Mar 2014 14:08:41 -0400
 

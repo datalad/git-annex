@@ -12,7 +12,7 @@ import Command
 import Annex.Content
 import Annex
 import Utility.Rsync
-import Logs.Transfer
+import Annex.Transfer
 import qualified CmdLine.GitAnnexShell.Fields as Fields
 import Utility.Metered
 

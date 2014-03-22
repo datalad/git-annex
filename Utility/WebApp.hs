@@ -33,7 +33,6 @@ import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
 import Blaze.ByteString.Builder.Char.Utf8 (fromText)
 import Blaze.ByteString.Builder (Builder)
-import Data.Monoid
 import Control.Arrow ((***))
 import Control.Concurrent
 #ifdef WITH_WEBAPP_SECURE

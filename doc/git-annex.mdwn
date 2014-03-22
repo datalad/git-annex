@@ -1053,6 +1053,19 @@ subdirectories).
 
   Overrides the User-Agent to use when downloading files from the web.
 
+* `--notify-finish`
+
+  Caused a desktop notification to be displayed after each successful
+  file download and upload.
+
+  (Only supported on some platforms, eg Linux with dbus. A no-op when
+  not supported.)
+
+* `--notify-start`
+
+  Caused a desktop notification to be displayed when a file upload
+  or download has started.
+
 * `-c name=value`
 
   Overrides git configuration settings. May be specified multiple times.

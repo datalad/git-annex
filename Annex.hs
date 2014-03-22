@@ -60,6 +60,7 @@ import Types.FileMatcher
 import Types.NumCopies
 import Types.LockPool
 import Types.MetaData
+import Types.DesktopNotify
 import Types.CleanupActions
 import qualified Utility.Matcher
 import qualified Data.Map as M
@@ -122,6 +123,7 @@ data AnnexState = AnnexState
 	, unusedkeys :: Maybe (S.Set Key)
 	, quviversion :: Maybe QuviVersion
 	, existinghooks :: M.Map Git.Hook.Hook Bool
+	, desktopnotify :: DesktopNotify
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -163,6 +165,7 @@ newState c r = AnnexState
 	, unusedkeys = Nothing
 	, quviversion = Nothing
 	, existinghooks = M.empty
+	, desktopnotify = mempty
 	}
 
 {- Makes an Annex state object for the specified git repo.

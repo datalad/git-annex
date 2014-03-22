@@ -85,6 +85,9 @@ Flag Tahoe
 Flag CryptoHash
   Description: Enable use of cryptohash for checksumming
 
+Flag DesktopNotify
+  Description: Enable desktop environment notifications
+
 Flag EKG
   Description: Enable use of EKG to monitor git-annex as it runs (at http://localhost:4242/)
   Default: False
@@ -167,10 +170,15 @@ Executable git-annex
               CPP-Options: -DWITH_KQUEUE
               C-Sources: Utility/libkqueue.c
 
-  if os(linux) && flag(Dbus)
+  if flag(Dbus)
     Build-Depends: dbus (>= 0.10.3)
     CPP-Options: -DWITH_DBUS
   
+  if flag(DesktopNotify)
+    if flag(Dbus)
+      Build-Depends: dbus (>= 0.10.3), fdo-notify (>= 0.3)
+      CPP-Options: -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
+
   if flag(Android)
     Build-Depends: data-endian
     CPP-Options: -D__ANDROID__ -DANDROID_SPLICES -D__NO_TH__

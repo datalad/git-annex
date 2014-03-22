@@ -26,7 +26,7 @@ import Types.KeySource
 import Config
 import Annex.Content.Direct
 import Logs.Location
-import qualified Logs.Transfer as Transfer
+import qualified Annex.Transfer as Transfer
 #ifdef WITH_QUVI
 import Annex.Quvi
 import qualified Utility.Quvi as Quvi
@@ -116,9 +116,10 @@ addUrlFileQuvi relaxed quviurl videourl file = do
 			prepGetViaTmpChecked sizedkey $ do
 				tmp <- fromRepo $ gitAnnexTmpObjectLocation key
 				showOutput
-				ok <- Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
-					liftIO $ createDirectoryIfMissing True (parentDir tmp)
-					downloadUrl [videourl] tmp
+				ok <- Transfer.notifyTransfer Transfer.Download (Just file) $
+					Transfer.download webUUID key (Just file) Transfer.forwardRetry $ const $ do
+						liftIO $ createDirectoryIfMissing True (parentDir tmp)
+						downloadUrl [videourl] tmp
 				if ok
 					then cleanup quviurl file key (Just tmp)
 					else return False
@@ -179,7 +180,7 @@ download url file = do
 			, return False
 			)
   where
-  	runtransfer dummykey tmp = 
+  	runtransfer dummykey tmp =  Transfer.notifyTransfer Transfer.Download (Just file) $
 		Transfer.download webUUID dummykey (Just file) Transfer.forwardRetry $ const $ do
 			liftIO $ createDirectoryIfMissing True (parentDir tmp)
 			downloadUrl [url] tmp
