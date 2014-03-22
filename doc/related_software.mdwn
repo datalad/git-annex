@@ -11,3 +11,5 @@ designed to interoperate with it.
   utility, with a `-A` switch that enables git-annex support.
 * Emacs Org mode can auto-commit attached files to git-annex.
 * [git annex darktable integration](https://github.com/xxv/darktable-git-annex)
+* Emacs's [Magit mode](http://www.emacswiki.org/emacs/Magit) has
+  [magit integration](http://melpa.milkbox.net/?utm_source=dlvr.it&utm_medium=twitter#/magit-annex)
