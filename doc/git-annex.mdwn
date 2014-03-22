@@ -1064,7 +1064,7 @@ subdirectories).
 * `--notify-start`
 
   Caused a desktop notification to be displayed when a file upload
-  or download has started.
+  or download has started, or when a file is dropped.
 
 * `-c name=value`
 

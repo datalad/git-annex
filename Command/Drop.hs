@@ -17,6 +17,7 @@ import Logs.Trust
 import Config.NumCopies
 import Annex.Content
 import Annex.Wanted
+import Annex.Notification
 
 def :: [Command]
 def = [withOptions [dropFromOption] $ command "drop" paramPaths seek
@@ -44,24 +45,30 @@ start from file (key, _) = checkDropAuto from file key $ \numcopies ->
 startLocal :: AssociatedFile -> NumCopies -> Key -> Maybe Remote -> CommandStart
 startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ do
 	showStart' "drop" key afile
-	next $ performLocal key numcopies knownpresentremote
+	next $ performLocal key afile numcopies knownpresentremote
 
 startRemote :: AssociatedFile -> NumCopies -> Key -> Remote -> CommandStart
 startRemote afile numcopies key remote = do
 	showStart' ("drop " ++ Remote.name remote) key afile
 	next $ performRemote key numcopies remote
 
-performLocal :: Key -> NumCopies -> Maybe Remote -> CommandPerform
-performLocal key numcopies knownpresentremote = lockContent key $ do
+performLocal :: Key -> AssociatedFile -> NumCopies -> Maybe Remote -> CommandPerform
+performLocal key afile numcopies knownpresentremote = lockContent key $ do
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
 	let trusteduuids' = case knownpresentremote of
 		Nothing -> trusteduuids
 		Just r -> nub (Remote.uuid r:trusteduuids)
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids'++untrusteduuids)
-	stopUnless (canDropKey key numcopies trusteduuids' tocheck []) $ do
-		removeAnnex key
-		next $ cleanupLocal key
+	ifM (canDropKey key numcopies trusteduuids' tocheck [])
+		( do
+			removeAnnex key
+			notifyDrop afile True
+			next $ cleanupLocal key
+		, do
+			notifyDrop afile False
+			stop
+		)
 
 performRemote :: Key -> NumCopies -> Remote -> CommandPerform
 performRemote key numcopies remote = lockContent key $ do

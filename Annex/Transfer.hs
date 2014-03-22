@@ -12,23 +12,16 @@ module Annex.Transfer (
 	upload,
 	download,
 	runTransfer,
-	notifyTransfer,	
-	NotifyWitness,
 	noRetry,
 	forwardRetry,
 ) where
 
-import qualified Annex
+import Common.Annex
 import Logs.Transfer as X
+import Annex.Notification as X
 import Annex.Perms
 import Annex.Exception
 import Utility.Metered
-#ifdef WITH_DBUS_NOTIFICATIONS
-import Common.Annex
-import Types.DesktopNotify
-import qualified DBus.Notify as Notify
-import qualified DBus.Client
-#endif
 #ifdef mingw32_HOST_OS
 import Utility.WinLock
 #endif
@@ -136,45 +129,3 @@ noRetry _ _ = False
  - to send some data. -}
 forwardRetry :: RetryDecider
 forwardRetry old new = bytesComplete old < bytesComplete new
-
--- Witness that notification has happened.
-data NotifyWitness = NotifyWitness
-
-{- Wrap around an action that performs a transfer, which may run multiple
- - attempts, and displays notification when supported. -}
-notifyTransfer :: Direction -> Maybe FilePath -> (NotifyWitness -> Annex Bool) -> Annex Bool
-notifyTransfer _ Nothing a = a NotifyWitness
-notifyTransfer direction (Just f) a = do
-#ifdef WITH_DBUS_NOTIFICATIONS
-	wanted <- Annex.getState Annex.desktopnotify
-	let action = if direction == Upload then "uploading" else "downloading"
-	let basedesc = action ++ " " ++ f
-	let startdesc = "started " ++ basedesc
-	let enddesc ok = if ok
-		then "finished " ++ basedesc
-		else basedesc ++ " failed"
-	if (notifyStart wanted || notifyFinish wanted)
-		then do
-			client <- liftIO DBus.Client.connectSession
-			let mknote desc = Notify.blankNote
-				{ Notify.appName = "git-annex"
-				, Notify.body = Just $ Notify.Text desc
-				, Notify.hints =
-					[ Notify.Category Notify.Transfer
-					, Notify.Urgency Notify.Low
-					, Notify.SuppressSound True
-					]
-				}
-			startnotification <- liftIO $ if notifyStart wanted
-				then Just <$> Notify.notify client (mknote startdesc)
-				else pure Nothing
-			ok <- a NotifyWitness
-			when (notifyFinish wanted) $ liftIO $ void $ maybe 
-				(Notify.notify client $ mknote $ enddesc ok)
-				(\n -> Notify.replace client n $ mknote $ enddesc ok)
-				startnotification
-			return ok
-		else a NotifyWitness
-#else
-	a NotifyWitness
-#endif
