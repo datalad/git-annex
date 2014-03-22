@@ -1,0 +1,31 @@
+Integrating git-annex and your file manager provides an easy way to select
+annexed files to get or drop.
+
+## nautilus
+
+Recent git-annex comes with built-in nautilus integration. Just pick the
+action from the menu.
+
+[[!img assistant/nautilusmenu.png]]
+
+[[!img assistant/downloadnotification.png]]
+
+This is set up by making simple scripts in
+`~/.local/share/nautilus/scripts`, with names like "git-annex get"
+
+## your file manager here
+
+Edit this page and add instructions!
+
+## general
+
+If your file manager can run a command on a file, it should be easy to
+integrate git-annex with it. A simple script will suffice:
+
+	#!/bun/sh
+	git-annex get --notify-start --notify-finish "$@"
+
+The --notify-start and --notify-stop options make git-annex display a
+desktop notification. This is useful to give the user an indication that
+their action took effect. Desktop notifications are currently only
+implenented for Linux.

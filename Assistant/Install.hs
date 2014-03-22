@@ -35,11 +35,14 @@ standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
  -
  - Note that this is done every time it's started, so if the user moves
  - it around, the paths this sets up won't break.
+ -
+ - Nautilus hook script installation is done even for packaged apps,
+ - since it has to go into the user's home directory.
  -}
 ensureInstalled :: IO ()
 ensureInstalled = go =<< standaloneAppBase
   where
-	go Nothing = noop
+	go Nothing = installNautilus "git-annex"
 	go (Just base) = do
 		let program = base </> "git-annex"
 		programfile <- programFile
@@ -77,6 +80,32 @@ ensureInstalled = go =<< standaloneAppBase
 			createDirectoryIfMissing True (parentDir shim)
 			viaTmp writeFile shim content
 			modifyFileMode shim $ addModes [ownerExecuteMode]
+
+		installNautilus program
+
+installNautilus :: FilePath -> IO ()
+#ifdef linux_HOST_OS
+installNautilus program = do
+	scriptdir <- (\d -> d </> "nautilus" </> "scripts") <$> userDataDir
+	genscript scriptdir "get"
+	genscript scriptdir "drop"
+  where
+	genscript scriptdir action =
+		installscript (scriptdir </> scriptname action) $ unlines
+			[ "#!/bin/sh"
+			, autoaddedcomment
+			, program ++ " " ++ action ++ " --notify-start --notify-finish \"$@\""
+			]
+	scriptname action = "git-annex " ++ action
+	installscript f c = whenM (safetoinstallscript f) $ do
+		writeFile f c
+		modifyFileMode f $ addModes [ownerExecuteMode]
+	safetoinstallscript f = catchDefaultIO True $
+		elem autoaddedcomment . lines <$> readFileStrict f
+	autoaddedcomment = "# Automatically added by git-annex, do not edit. (To disable, chmod 600 this file.)"
+#else
+installNautilus _ = noop
+#endif
 
 {- Returns a cleaned up environment that lacks settings used to make the
  - standalone builds use their bundled libraries and programs.
