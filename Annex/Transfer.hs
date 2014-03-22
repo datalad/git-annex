@@ -150,7 +150,9 @@ notifyTransfer direction (Just f) a = do
 	let action = if direction == Upload then "uploading" else "downloading"
 	let basedesc = action ++ " " ++ f
 	let startdesc = "started " ++ basedesc
-	let enddesc = "finished " ++ basedesc
+	let enddesc ok = if ok
+		then "finished " ++ basedesc
+		else basedesc ++ " failed"
 	if (notifyStart wanted || notifyFinish wanted)
 		then do
 			client <- liftIO DBus.Client.connectSession
@@ -166,12 +168,12 @@ notifyTransfer direction (Just f) a = do
 			startnotification <- liftIO $ if notifyStart wanted
 				then Just <$> Notify.notify client (mknote startdesc)
 				else pure Nothing
-			r <- a NotifyWitness
+			ok <- a NotifyWitness
 			when (notifyFinish wanted) $ liftIO $ void $ maybe 
-				(Notify.notify client $ mknote enddesc)
-				(\n -> Notify.replace client n $ mknote enddesc)
+				(Notify.notify client $ mknote $ enddesc ok)
+				(\n -> Notify.replace client n $ mknote $ enddesc ok)
 				startnotification
-			return r
+			return ok
 		else a NotifyWitness
 #else
 	a NotifyWitness
