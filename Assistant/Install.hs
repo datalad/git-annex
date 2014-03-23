@@ -92,7 +92,7 @@ installNautilus program = do
   where
 	genscript scriptdir action =
 		installscript (scriptdir </> scriptname action) $ unlines
-			[ "#!/bin/sh"
+			[ shebang_local
 			, autoaddedcomment
 			, "exec " ++ program ++ " " ++ action ++ " --notify-start --notify-finish -- \"$@\""
 			]
