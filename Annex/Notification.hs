@@ -9,10 +9,10 @@
 
 module Annex.Notification where
 
+import Common.Annex
 import qualified Annex
 import Logs.Transfer
 #ifdef WITH_DBUS_NOTIFICATIONS
-import Common.Annex
 import Types.DesktopNotify
 import qualified DBus.Notify as Notify
 import qualified DBus.Client
