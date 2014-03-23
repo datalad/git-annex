@@ -94,7 +94,7 @@ installNautilus program = do
 		installscript (scriptdir </> scriptname action) $ unlines
 			[ "#!/bin/sh"
 			, autoaddedcomment
-			, program ++ " " ++ action ++ " --notify-start --notify-finish \"$@\""
+			, "exec " ++ program ++ " " ++ action ++ " --notify-start --notify-finish -- \"$@\""
 			]
 	scriptname action = "git-annex " ++ action
 	installscript f c = whenM (safetoinstallscript f) $ do
