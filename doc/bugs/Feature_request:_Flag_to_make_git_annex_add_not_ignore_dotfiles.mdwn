@@ -1,0 +1,7 @@
+When using git annex as part of an automated backup system, it's sometimes important that we archive all files, including dotfiles.
+
+AFAICT there's no way to tell git annex add to add all dotfiles in a given directory; the only way to do it is to list every dotfile individually.  (git annex add --force doesn't seem to do it.)
+
+This can be worked around with find and xargs, but this is more work than it should be, I think.
+
+It might also be nice if git annex add displayed a warning when adding a directory with dotfiles; something like "Warning, N files ignored; pass --whatever to add them."
