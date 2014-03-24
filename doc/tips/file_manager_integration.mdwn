@@ -13,6 +13,30 @@ action from the menu.
 This is set up by making simple scripts in
 `~/.local/share/nautilus/scripts`, with names like "git-annex get"
 
+## KDE (Dolphin/Konqueror)
+
+Create a file `~/.kde4/share/kde4/services/ServiceMenus/git-annex.desktop` with the following contents:
+
+        [Desktop Entry]
+        Type=Service
+        ServiceTypes=all/allfiles
+        MimeType=all/all;
+        Actions=GitAnnexGet;GitAnnexDrop;
+        X-KDE-Priority=TopLevel
+        X-KDE-Submenu=Git-Annex
+        X-KDE-Icon=git-annex
+        X-KDE-ServiceTypes=KonqPopupMenu/Plugin
+
+        [Desktop Action GitAnnexGet]
+        Name=Get
+        Icon=git-annex
+        Exec=git-annex get --notify-start --notify-finish %U
+
+        [Desktop Action GitAnnexDrop]
+        Name=Drop
+        Icon=git-annex
+        Exec=git-annex drop --notify-start --notify-finish %U
+
 ## your file manager here
 
 Edit this page and add instructions!
