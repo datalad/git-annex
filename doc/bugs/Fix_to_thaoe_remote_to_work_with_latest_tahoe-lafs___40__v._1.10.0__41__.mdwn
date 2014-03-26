@@ -1,0 +1,45 @@
+### Please describe the problem.
+Just a small patch to Tahoe.hs which fixes "initremote repo
+type=thaoe" when using the latest tahoe-lafs release available for
+download.
+
+I'm trying to add an attachment here but the UI says "prohibited by 
+allowed_attachments (user is not an admin)" so please have a look also 
+here: <https://github.com/joeyh/git-annex/pull/21>
+
+### What steps will reproduce the problem?
+
+1. Install latest tahoe-lafs
+2. run "TAHOE_FURL=... git annex initremote repo type=tahoe"
+
+### What version of git-annex are you using? On what operating system?
+
+OS: Debian Sid updated to latest packages
+git-annex: version 5.20140306 
+
+### Please provide any additional information below.
+
+I would like to add few things if i'm able (it's my first time for
+haskell, and I'm a bit lost as now):
+
+1. add an optional parameter or envvar for a root dir cap and switch
+from storing anonymous files to saving a tree of dirs and files
+(much like the webdav back-end) so that i can later renew the
+leases on the files to prevent tahoe's garbage collection process
+expiration (for details see
+<https://tahoe-lafs.org/trac/tahoe-lafs/browser/docs/garbage-collection.rst#client-side-renewal>)
+
+The poor man way to that without touching git-annex is to in some
+way collect the caps of the files from annex metadatas and to link
+them to a directory, which where i can then run "tahoe deep-check
+--add-lease" on;
+
+2. add convergence as an optional parameter. As of now many of the
+files that i'm willing to manage with git-annex are already on my
+grid, mostly because i've used tahoe's backup command to upload
+them in the past. By using the same convergence value that i've
+already setup on my other tahoe client installation i would be able
+to save much time and space by avoiding duplicates.
+
+Do you have any good pointers to pieces code of git-annex that i can
+read and hack to try to implement this or any other suggestion?
