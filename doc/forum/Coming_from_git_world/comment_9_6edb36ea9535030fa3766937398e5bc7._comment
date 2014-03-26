@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 9"
+ date="2013-07-10T16:57:29Z"
+ content="""
+AFAIK Gerrit relies on jgit implementation of git in java; allowing it to execute helper programs like git-annex-shell may be tricky.
+"""]]

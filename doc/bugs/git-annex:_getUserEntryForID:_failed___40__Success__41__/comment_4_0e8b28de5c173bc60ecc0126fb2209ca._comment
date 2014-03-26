@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="comment 4"
+ date="2012-10-26T05:49:47Z"
+ content="""
+I think you mean the environment variables with \"use USER, and HOME\"? So I checked them I they are correct.
+Reading man(3) getpwent says \"from the password database (e.g., the local password file /etc/passwd, NIS, and LDAP)\", so it should be no problem with the LDAP backend I'm using to log-in...
+One other special thing: The home directory is on a NFS share.
+"""]]

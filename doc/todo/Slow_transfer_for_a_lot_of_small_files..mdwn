@@ -1,0 +1,20 @@
+What steps will reproduce the problem?
+Sync a lot of small files.
+
+What is the expected output? What do you see instead?
+The expected output is hopefully a fast transfer.
+
+But currently it seems like git-annex is only using one thread to transfer(per host or total?)
+
+An option to select number of transfer threads to use(possibly per host) would be very nice.
+
+> Opening a lot of connections to a single host is probably not desirable.
+> 
+> I do want to do something to allow slow hosts to not hold up transfers to
+> other hosts, which might involve running multiple queued transfers at
+> once. The webapp already allows the user to force a given transfer to
+> happen immediately. --[[Joey]] 
+
+And maybe also an option to limit how long a queue the browser should show, it can become quite resource intensive with a long queue.
+
+> The queue is limited to 20 items for this reason. --[[Joey]]

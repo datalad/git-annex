@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmi5n3M8NMWsDYth_TGGRuJ4_CM2tPQfwg"
+ nickname="Aditya"
+ subject="comment 2"
+ date="2014-01-07T04:54:40Z"
+ content="""
+Wow, I did not realize how horribly out-of-date the Arch AUR package for this was - I've fixed it: https://aur.archlinux.org/packages/git-annex-bin/
+
+Thanks for the help - it seems to be working now.
+"""]]

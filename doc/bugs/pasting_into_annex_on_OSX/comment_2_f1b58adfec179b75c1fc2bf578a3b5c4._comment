@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://www.davidhaslem.com/"
+ nickname="David"
+ subject="comment 2"
+ date="2012-09-18T22:49:09Z"
+ content="""
+Exact error message is: \"The operation can’t be completed because you don’t have permission to access some of the items.\" Looks like it starts symlinking and committing before the file is fully copied over.
+"""]]

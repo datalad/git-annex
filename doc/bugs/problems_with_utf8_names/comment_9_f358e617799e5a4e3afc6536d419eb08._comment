@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="Still a problem"
+ date="2014-01-09T18:20:55Z"
+ content="""
+I can confirm that this is still a problem.  My iTunes Music folder contains songs with Unicode in the file names, and git-annex fails to sync it properly between Mac, ZFS and Linux.
+
+I realize that supporting every filesystem encoding is impossible, but if you used something like `system-filepath` and expected UTF8, it might be better than the current state of affairs.
+"""]]

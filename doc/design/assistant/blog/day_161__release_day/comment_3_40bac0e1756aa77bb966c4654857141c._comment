@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 3"
+ date="2013-01-03T22:23:36Z"
+ content="""
+>> I added a new directory (empty)
+
+> Sounds like you set up the repository yourself, rather than letting the assistant do it. 
+> If so, it won't be in direct mode. You can git annex assistant--stop, 
+> and then git annex direct to enable direct mode.
+
+I added like this:
+0. no git-annex or git-annex-assistant is running
+1. create directory (/mnt/dxd/annex)
+2. launch git-annex-assistant
+3. add repository via the webbrowser
+4. copy a file over this(/mnt/dxd/annex) directory (via command line or nautilus)
+
+The file is replaced with symlink.
+
+This fix the issue:
+0. stop git-annex-assistant
+1. Go in the shell to that directory (cd /mnt/dxd/annex)
+2. switch to direct mode (/home/looser/Desktop/download/git-annex.linux/git-annex direct)
+3. start git-annex-assistant
+4. create a new repository(/mnt/dxd/annex2) via the webbrowser (add repository in top right corner)
+5. Now:
+/mnt/dxd/annex - NOT in direct mode (symlinks created instantly)
+/mnt/dxd/annex2 - in direct mode
+
+Im really happy I have finally direct mode running. 
+I will surely stress-test git-annex in the coming weeks.
+
+> Restart/shutdown in the UI coming soon, I think.
+
+Awesome.
+
+> The entire git-annex configuration, include that of the assistant, 
+> is stored in the .git/config of your reposository, and on its git-annex branch. 
+> Deleting the repository is thus all that's needed to start over.
+
+Thank you for the answer.
+"""]]

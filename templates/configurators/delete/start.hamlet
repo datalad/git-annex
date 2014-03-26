@@ -1,0 +1,11 @@
+<div .span9 .hero-unit>
+  <h2>
+    Delete repository #
+    <small>
+      #{reponame}
+  <p>
+    Before this repository can be deleted, all data must be moved #
+    off it, to other repositories.
+  <p>
+   <a .btn .btn-primary href="@{StartDeleteRepositoryR uuid}">
+     <i .icon-minus></i> Start deletion process

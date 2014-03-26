@@ -1,0 +1,16 @@
+Hello,
+
+I am just starting to learn git-annex so forgive me if this is a naive question.
+
+I have the following repositories:
+
+1. Home (laptop)
+2. Work (mac mini)
+3. S3 bucket
+4. USB drive, full backup, attached to Home laptop.
+
+I want to sync files between Home and Work via the S3 bucket.  It is not clear to me how to accomplish this through the git-annex assistant.  Is this possible? Are there instructions online?
+
+Thanks in advance!
+
+Scott

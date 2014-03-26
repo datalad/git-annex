@@ -1,0 +1,54 @@
+I'm trying to transfer 3 files to my rsync.net remote. It was set up a few months ago with encryption=shared.
+
+Here's what I get:
+
+    % LC_ALL=C git annex copy --to rsn 2012-11-26*
+    copy 2012-11-26 1.jpg (gpg) (checking rsn...) (to rsn...) gpg: no valid OpenPGP data found.
+    gpg: decrypt_message failed: Unknown system error
+    failed
+    copy 2012-11-26 2.jpg (checking rsn...) (to rsn...) gpg: no valid OpenPGP data found.
+    gpg: decrypt_message failed: Unknown system error
+    failed
+    copy 2012-11-26 3.jpg (checking rsn...) (to rsn...) gpg: no valid OpenPGP data found.
+    gpg: decrypt_message failed: Unknown system error
+    failed
+    git-annex: copy: 3 failed
+
+
+Here's the output with `--debug`:
+
+    % LC_ALL=C git annex --debug copy --to rsn 2012-11-26*
+    [2012-11-27 18:28:22 CET] read: git ["--git-dir=/home/schnouki/Photos/.git","--work-tree=/home/schnouki/Photos","show-ref","git-annex"]
+    [2012-11-27 18:28:22 CET] read: git ["--git-dir=/home/schnouki/Photos/.git","--work-tree=/home/schnouki/Photos","show-ref","--hash","refs/heads/git-annex"]
+    [2012-11-27 18:28:22 CET] read: git ["--git-dir=/home/schnouki/Photos/.git","--work-tree=/home/schnouki/Photos","log","refs/heads/git-annex..0164d6150fcd56e035926c72c9a519114735d2a1","--oneline","-n1"]
+    [2012-11-27 18:28:22 CET] read: git ["--git-dir=/home/schnouki/Photos/.git","--work-tree=/home/schnouki/Photos","log","refs/heads/git-annex..04bb9b87872200d5712b17463fc81d4de27b9acf","--oneline","-n1"]
+    [2012-11-27 18:28:22 CET] read: git ["--git-dir=/home/schnouki/Photos/.git","--work-tree=/home/schnouki/Photos","log","refs/heads/git-annex..59c38c176971cd6323817e568f4c32305ba708b0","--oneline","-n1"]
+    [2012-11-27 18:28:22 CET] chat: git ["--git-dir=/home/schnouki/Photos/.git","--work-tree=/home/schnouki/Photos","cat-file","--batch"]
+    [2012-11-27 18:28:22 CET] read: git ["--git-dir=/home/schnouki/Photos/.git","--work-tree=/home/schnouki/Photos","ls-files","--cached","-z","--","2012-11-26 1.jpg","2012-11-26 2.jpg","2012-11-26 3.jpg"]
+    copy 2012-11-26 1.jpg (gpg) (checking rsn...) [2012-11-27 18:28:22 CET] read: rsync ["rsn:photos/123/3a1/GPGHMACSHA1--4f4b2440da1f41aa42a590dc558fbfff39e44b5e/GPGHMACSHA1--4f4b2440da1f41aa42a590dc558fbfff39e44b5e"]
+    [2012-11-27 18:28:22 CET] read: rsync ["rsn:photos/jg/8p/GPGHMACSHA1--4f4b2440da1f41aa42a590dc558fbfff39e44b5e/GPGHMACSHA1--4f4b2440da1f41aa42a590dc558fbfff39e44b5e"]
+    (to rsn...) [2012-11-27 18:28:22 CET] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--passphrase-fd","11","--decrypt"]
+    gpg: no valid OpenPGP data found.
+    gpg: decrypt_message failed: Unknown system error
+    failed
+    copy 2012-11-26 2.jpg (checking rsn...) [2012-11-27 18:28:22 CET] read: rsync ["rsn:photos/61b/da7/GPGHMACSHA1--9c17b4b7414b830a0e7b86cbe08afd1e0878bdbd/GPGHMACSHA1--9c17b4b7414b830a0e7b86cbe08afd1e0878bdbd"]
+    [2012-11-27 18:28:23 CET] read: rsync ["rsn:photos/Z1/9V/GPGHMACSHA1--9c17b4b7414b830a0e7b86cbe08afd1e0878bdbd/GPGHMACSHA1--9c17b4b7414b830a0e7b86cbe08afd1e0878bdbd"]
+    (to rsn...) [2012-11-27 18:28:23 CET] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--passphrase-fd","10","--decrypt"]
+    gpg: no valid OpenPGP data found.
+    gpg: decrypt_message failed: Unknown system error
+    failed
+    copy 2012-11-26 3.jpg (checking rsn...) [2012-11-27 18:28:23 CET] read: rsync ["rsn:photos/340/2ec/GPGHMACSHA1--ce18f116ae33176c8387cecf9d62b0e694501a6e/GPGHMACSHA1--ce18f116ae33176c8387cecf9d62b0e694501a6e"]
+    [2012-11-27 18:28:23 CET] read: rsync ["rsn:photos/8f/V0/GPGHMACSHA1--ce18f116ae33176c8387cecf9d62b0e694501a6e/GPGHMACSHA1--ce18f116ae33176c8387cecf9d62b0e694501a6e"]
+    (to rsn...) [2012-11-27 18:28:23 CET] chat: gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--passphrase-fd","12","--decrypt"]
+    gpg: no valid OpenPGP data found.
+    gpg: decrypt_message failed: Unknown system error
+    failed
+    git-annex: copy: 3 failed
+
+I'm using git-annex 3.20121127. I think I was able to transfer files to that remote with the previous release.
+
+Any idea how to fix this? Am I doing something wrong?
+
+> Damn. This was a completely stupid bug, calling "decrypt" where it was
+> supposed to call "encrypt". [[done]] in git; I'll have to
+> make a new release to fix this. --[[Joey]]

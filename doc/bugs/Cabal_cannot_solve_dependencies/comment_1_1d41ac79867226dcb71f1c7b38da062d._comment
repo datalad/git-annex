@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-24T14:21:03Z"
+ content="""
+Since I tested this release in a clean system, I suspect you have a ~/.ghc and ~/.cabal with something installed that is causing this dependency problem for you. 
+
+<pre>
+# rm -rf .ghc .cabal
+# cabal update
+Config file path source is default config file.
+Config file /root/.cabal/config not found.
+Writing default configuration to /root/.cabal/config
+Downloading the latest package list from hackage.haskell.org
+# cabal install git-annex
+Resolving dependencies...
+Downloading HUnit-1.2.5.2...
+Configuring HUnit-1.2.5.2...
+</pre>
+"""]]

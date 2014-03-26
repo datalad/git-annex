@@ -1,0 +1,4 @@
+Got WebDAV enabled in the Android build. Had to deal with some system calls
+not available in Android's libc.
+
+New poll: [[polls/Android_default_directory]]

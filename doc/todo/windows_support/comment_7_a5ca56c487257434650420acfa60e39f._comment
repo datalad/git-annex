@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlpSOjMH7Iaz56v6Pr9KCFSpbvMXvg-y9o"
+ nickname="Dominik"
+ subject="So close :-)"
+ date="2013-06-30T12:46:40Z"
+ content="""
+I was fighting my way forward until I read here that special remote with ssh+rsync and encryption doesn't work. Interestingly I got everything working so far, ssh login is keybased, gpg -k works and the remote setup also correctly cooperated with gpg... but it just didn't sync. Any ideas how complex it is to get this last missing piece moving?
+"""]]

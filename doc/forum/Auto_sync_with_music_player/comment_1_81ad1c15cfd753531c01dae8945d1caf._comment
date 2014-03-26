@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 1"
+ date="2014-03-05T20:40:50Z"
+ content="""
+This is probably done via intents or a similar interface. git-annex is not yet able to use such android api's, but if there is a command line way to send the message that a file has changed, which there probably is, I could look into making git-annex use it.
+"""]]

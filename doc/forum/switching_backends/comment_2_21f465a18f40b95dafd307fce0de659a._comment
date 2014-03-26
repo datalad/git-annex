@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 2"
+ date="2013-01-28T06:28:28Z"
+ content="""
+It won't show as unused as long as there are git refs that still refer to the file. That could be branches, or more likely you have not synced everything to the local repo yet.
+"""]]

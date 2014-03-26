@@ -1,0 +1,1 @@
+Since all the annexed (in indirect mode) files are symlinks to topdir/.git/annex/...   moving files among directories at different levels is not that straightforward since symlinks would get broken.  And since there is not 'annex mv' command -- what is the best way?  (unlock is not the resolution since it copies the file, which might be prohibitively large and inefficient)

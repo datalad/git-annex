@@ -1,0 +1,3 @@
+Spent most of today catching up with a weeks's worth of traffic.
+
+Fixed 2 bugs. Message backlog is 23 messages.

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-31T18:06:15Z"
+ content="""
+Are you using direct mode?
+
+Before the direct mode guard was put in place, it was not uncommon for users to mistakenly run some command like \"git commit -a\" in a direct mode repository. This happily checks the full large files into git.
+
+It sounds to me like you've done that. But, you have not provided enough information to make anything more than a vague guess.
+"""]]

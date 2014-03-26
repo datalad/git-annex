@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="165.98.113.100"
+ subject="comment 12"
+ date="2012-07-11T23:23:04Z"
+ content="""
+Looking at this a leetle more closely, you had:
+
+<pre>
+lrwxrwxrwx 1 ben ben 77 Jul  6 14:01 plot.py -> ../.git/annex/objects/WORM:1301941019:720:plot.py/WORM:1301941019:720:plot.py
+</pre>
+
+Well, that is not how a git-annex symlink currently looks, so it ignores it.
+
+Apparenly this repository was created with an old version of git-annex, possibly version 1, and you've dropped in the current version, but the normal upgrade machinery failed. This could happen if you made a new clone of a version 1 bare repository.
+
+I suggest you first find out what version of git-annex was originally used to create this repository (ie, version 0, 1, or 2 ... probably 1). Then make a clone, and \"git config annex.version $N\" where N=the version used). Then \"git annex upgrade\" and you should be good to go. Remember to push or sync the upgrade back to the bare repo so you don't need to do this again.
+"""]]

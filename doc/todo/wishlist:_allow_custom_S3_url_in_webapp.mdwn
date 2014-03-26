@@ -1,0 +1,3 @@
+It is now relatively easy to build your own S3-compatible storage system with software such as Ceph radosgw or Openstack Swift.
+
+So a way for users to specify their own S3 url would come pretty handy in the webapp's "add S3 remote" page.

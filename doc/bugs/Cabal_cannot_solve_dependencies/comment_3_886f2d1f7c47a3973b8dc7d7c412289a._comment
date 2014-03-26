@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-05-24T15:05:13Z"
+ content="""
+bin-package-db is shipped with ghc, so this may be down to your version of ghc. FWIW, I have tested .2 on OSX with ghc 7.4.2 & it works.
+
+(I can only support users cabal hell problems so far. Cabal is, unfortunately, basically buggy, and this is a large part of why I provide autobuilds.)
+"""]]

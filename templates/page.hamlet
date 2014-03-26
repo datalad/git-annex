@@ -1,0 +1,24 @@
+<div .navbar .navbar-fixed-top>
+  <div .navbar-inner>
+    <div .container>
+      <a .brand>
+        git-annex
+      <ul .nav>
+        $forall (name, route, isactive) <- navbar
+          <li :isactive:.active>
+            <a href="@{route}">
+              #{name}
+      $maybe reldir <- relDir webapp
+        <ul .nav .pull-right>
+          $if hasFileBrowser
+            <li>
+              ^{actionButton FileBrowserR (Just "Files") (Just "Click to open a file browser") "" "icon-folder-open icon-white"}
+          <li .dropdown #menu1>
+            <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
+              Repository: #{reldir}
+              <b .caret></b>
+            ^{controlMenu}
+      $nothing
+<div .container-fluid>
+  <div .row-fluid>
+    ^{content}

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://mey.vn/"
+ ip="46.65.14.106"
+ subject="git annex status output on connected nodes"
+ date="2013-07-25T16:42:04Z"
+ content="""
+i have now updated the git-annex package to the latest 4.20130723:amd64 still on Debian testing (linux 3.9.8-1) - i see the same issue (while files keep synchronising fine across the various connected nodes).
+
+i have noticed that the same output appears when i issue ```git annex status``` on the other nodes (an Ubuntu 13.04 with kernel 3.9.7 amd64 and a Debian stable with 3.10.1-1 amd64, all with latest Debian 4.20130723:amd64 package).
+"""]]

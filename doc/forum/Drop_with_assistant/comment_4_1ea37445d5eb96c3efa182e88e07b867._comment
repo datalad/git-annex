@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmU_2tE75oyG0h2ZPN4lcroIKEMC8G-otE"
+ nickname="Michael"
+ subject="comment 4"
+ date="2013-04-11T13:39:13Z"
+ content="""
+A nice feature would be, to  be able to put a .annex-manual file into a subfolder and from that point the files would require manual git-annex management.
+"""]]

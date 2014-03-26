@@ -1,0 +1,7 @@
+Hello,
+
+A mode of operation that I find comfortable, and from various online posts it seems that so do some others, is putting whole git repositories in dropbox.
+
+It seems that currently this mode of operations if not supported in a simple manner. (i.e. just add and let assistant do the work). Is there any workaround or possibility to do this?
+
+Thanks!

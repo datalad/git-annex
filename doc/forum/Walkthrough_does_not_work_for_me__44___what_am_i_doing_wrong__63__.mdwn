@@ -1,0 +1,16 @@
+I'm trying to use git-annex as a dropbox-replacement, but I'm hitting unexpected things although I'm doing exactly what I see in the walkthrough screencast and/or the walkthrough commands. I'm using Ubuntu 13.10, installed git-annex with apt-get. It is version 4.20130815.
+
+1) I launch the webapp and create an ~/annex folder as my initial repo. I copy some small text files in it, I see in webapp that they are added. 
+2) I add a new "Removable Storage" repo, in my usb drive. I do not touch any other settings, leave it as is. (ie in transfer group for example). It is successfully added to the repo list and I see sync complete and files synced on the webapp.
+3) When I check the contents of the usb disk annex folder, I see the following, while I was expecting to see the files I synced instead.
+
+emre@emrenb:~$ ls /media/emre/348B-78F0/annex/
+annex  branches  config  description  HEAD  hooks  info  objects  refs
+
+However, I expect the below which is the content of my ~/annex folder:
+emre@emrenb:~$ ls annex/
+unison-sync.log  unison-1.log  unison-2.log  unison.log
+
+In the walkthrough video, when Joey adds a USB storage, the filenames & thir contents sync to the usb drive. Why doesn't it work for me? 
+
+Note that I tried also android app and also the zipped tarball build. Same result, I never see actual files. 

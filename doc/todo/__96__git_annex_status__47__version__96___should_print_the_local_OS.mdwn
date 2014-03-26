@@ -1,0 +1,6 @@
+That would make assessing weird reports like [[bugs/Should_UUID__39__s_for_Remotes_be_case_sensitive__63__/]] easier and quicker.
+
+> No, if people want to file a bug report, it's up to them to tell me
+> relevant details about their OS. I'm not going down the rathole
+> of making git-annex muck about trying to gather such information.
+> [[done]] --[[Joey]]

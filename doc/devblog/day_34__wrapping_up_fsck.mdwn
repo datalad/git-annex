@@ -1,0 +1,7 @@
+Fixed a lot of bugs in the assistant's fsck handling today, and merged
+it into master. There are some enhancments that could be added to it, 
+including fscking ssh remotes via git-annex-shell and adding the ability to
+schedule events to run every 30 days instead of on a specific day of the
+month. But enough on this feature for now.
+
+Today's work was sponsored by Daniel Brockman.

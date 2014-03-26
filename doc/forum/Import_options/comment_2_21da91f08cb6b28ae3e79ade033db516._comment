@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkeJKC5Sy0stmcTWyePOLEVv0G-x1yaT_w"
+ nickname="Josef"
+ subject="Additional Comments"
+ date="2013-09-30T21:33:31Z"
+ content="""
+Imported several thousand files to annex and would like to add the following comments:
+
+- it would be great to have an option to exclude hidden dot files from import,
+
+- empty directories should be deleted when files located in the directories are deleted,
+
+- \"git annex add\" seems to process directories and files alphabetically, unfortunately import processes files in a different order, which makes it hard to predict which files are deleted when deduplicating,
+
+Cheers,
+
+"""]]

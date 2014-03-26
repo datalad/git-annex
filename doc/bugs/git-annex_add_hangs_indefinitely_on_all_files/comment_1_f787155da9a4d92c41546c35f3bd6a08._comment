@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 1"
+ date="2014-01-07T03:40:01Z"
+ content="""
+3.20121127 is over a year out of date. You need to upgrade to a current version. I'd not be surprised if this is some incompatability with such an old git-annex and the rather new version of git you have installed.
+
+Assuming a current version of git-annex still has the problem (which seems unlikely), run the command again with --debug and paste the full output.
+
+
+"""]]

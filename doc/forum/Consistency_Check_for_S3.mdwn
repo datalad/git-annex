@@ -1,0 +1,1 @@
+Wepapp only allows me to setup consistency checks for the local repo. Non of my computers has full copy of repos. How can I setup annex so that every night for one hour it checks consistency of s3 data?

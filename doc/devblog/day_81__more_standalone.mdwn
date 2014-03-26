@@ -1,0 +1,15 @@
+Made the Linux standalone builds more self-contained, now they include
+their own linker and glibc, and ugly hacks to make them be used when
+running the included programs. This should make them more portable
+to older systems.
+
+Set up an arm autobuilder. 
+This autobuilder runs in an Debian armel chroot, using
+qemu-user-static (with a patch to make it support some syscalls ghc uses).
+No webapp yet; waiting on feedback of how well it works. I *hope* this
+build will be usable on eg, Synology NAS and Raspberry PI.
+
+Also worked on improving the assistant's batching of commits during the
+startup scan. And some other followups and bug triage.
+
+Today's work was sponsored by Hamish Coleman.

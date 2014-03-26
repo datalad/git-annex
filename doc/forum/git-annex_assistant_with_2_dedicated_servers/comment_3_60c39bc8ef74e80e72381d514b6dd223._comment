@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 3"
+ date="2013-11-16T22:18:20Z"
+ content="""
+It seems to me that you probably told git-annex to log into server2 as a user that does not have write access to sever2:/media/mail. Check the username field in the remote repository form.
+"""]]

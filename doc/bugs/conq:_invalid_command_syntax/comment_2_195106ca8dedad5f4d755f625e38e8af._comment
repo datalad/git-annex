@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2012-01-03T00:41:08Z"
+ content="""
+A google search <http://www.google.com/search?hl=en&sclient=psy-ab&q=conq%3A+invalid+command+syntax&btnG=>
+finds other examples of this error message related to ssh, mercurial, and bitbucket. What that has to do with git is anyone's guess, but I'm pretty sure git-annex is not related to it at all.
+"""]]

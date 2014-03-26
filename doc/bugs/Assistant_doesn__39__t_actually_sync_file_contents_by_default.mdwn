@@ -1,0 +1,16 @@
+### Please describe the problem.
+
+I'm trying to use the assistant to replicate the basic dropbox functionality of having a synced folder between two machines. Instead of actually syncing file contents by default the assistant just creates broken symlinks.
+
+### What steps will reproduce the problem?
+
+I've setup two repositories with each other as ssh remotes and ran the assistant on each after setting them in direct mode. I can create files on each of the repositories and have them show up on the other but all that shows up is a broken link. Actual contents don't get transferred. If I do a "git annex get" I can get the contents just fine. I tried setting annex.numcopies to 2 and that didn't work either.
+
+What I'm missing here is some setting to tell the assistant "sync the contents of every new file". What it's doing instead is unacceptable. If I have the file in both repositories and change it in one, the other repository gets it's previous version of the file replaced by a broken symlink. From my point of view for the assistant to be a dropbox replacement it should never, under any circumstances, create a broken symlink in the sync folder. I had understood that that's what direct mode was, but it's not behaving that way right now at least.
+
+### What version of git-annex are you using? On what operating system?
+
+My basic setup for testing is two Ubuntu 12.04 LTS machines running git-annex 4.20130501
+
+> [[done]], broken ~/.config/git-annex/program file, which is now detected
+> and worked around. --[[Joey]]

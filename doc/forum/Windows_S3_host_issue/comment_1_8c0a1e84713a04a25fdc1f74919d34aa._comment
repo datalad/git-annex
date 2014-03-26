@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 1"
+ date="2013-12-12T17:38:21Z"
+ content="""
+No, you cannot quote part of a parameter like that. git-annex thinks you are trying to use a host that includes the quote marks you put around it. 
+
+Since you're using Windows, I can't give any advice on how to use quoting at the shell/cmd prompt. However, I don't see any need for quoting here anyway.
+"""]]

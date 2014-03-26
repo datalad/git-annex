@@ -1,0 +1,71 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 15"
+ date="2011-02-13T02:45:51Z"
+ content="""
+It may be possible that OSX has some low resource limits, for user processes (266 per user I think) doing a 
+
+    sudo sysctl -w kern.maxproc=2048
+    sudo sysctl -w kern.maxprocperuid=1024
+    sudo echo \"limit maxfiles 1024 unlimited\" >> /etc/launchd.conf
+    sudo echo \"limit maxproc 1024 2048\" >> /etc/launchd.conf
+
+seems to change the behaviour of the tests abit...
+
+<pre>
+Testing 1:blackbox:3:git-annex unannex:1:with content                         
+### Failure in: 1:blackbox:3:git-annex unannex:1:with content
+foo is not a symlink
+Testing 1:blackbox:4:git-annex drop:0:no remotes                              
+### Failure in: 1:blackbox:4:git-annex drop:0:no remotes
+drop wrongly succeeded with no known copy of file
+Testing 1:blackbox:4:git-annex drop:1:with remote                             
+Testing 1:blackbox:4:git-annex drop:2:untrusted remote                        
+Testing 1:blackbox:5:git-annex get                                            
+Testing 1:blackbox:6:git-annex move                                           
+Testing 1:blackbox:7:git-annex copy                                           
+Testing 1:blackbox:8:git-annex unlock/lock                                    
+Testing 1:blackbox:9:git-annex edit/commit:0                                  
+Cases: 30  Tried: 20  Errors: 0  Failures: 2add foo ok
+ok
+Testing 1:blackbox:9:git-annex edit/commit:1                                  
+Testing 1:blackbox:10:git-annex fix                                           
+Testing 1:blackbox:11:git-annex trust/untrust/semitrust                       
+Testing 1:blackbox:12:git-annex fsck:0                                        
+Cases: 30  Tried: 24  Errors: 0  Failures: 2  Only 1 of 2 trustworthy copies of foo exist.
+  Back it up with git-annex copy.
+  Only 1 of 2 trustworthy copies of sha1foo exist.
+  Back it up with git-annex copy.
+  Bad file size; moved to /Users/jtang/develop/git-annex/.t/tmprepo/.git/annex/bad/WORM:1297565141:20:foo
+  Bad file content; moved to /Users/jtang/develop/git-annex/.t/tmprepo/.git/annex/bad/SHA1:ee80d2cec57a3810db83b80e1b320df3a3721ffa
+Testing 1:blackbox:12:git-annex fsck:1                                        
+### Failure in: 1:blackbox:12:git-annex fsck:1
+fsck failed to fail with content only available in untrusted (current) repository
+Testing 1:blackbox:12:git-annex fsck:2                                        
+Cases: 30  Tried: 26  Errors: 0  Failures: 3  Only 1 of 2 trustworthy copies of foo exist.
+  Back it up with git-annex copy.
+  The following untrusted locations may also have copies: 
+  	58e831c2-371b-11e0-bc1f-47d738dc52ee  -- test repo
+  Only 1 of 2 trustworthy copies of sha1foo exist.
+  Back it up with git-annex copy.
+  The following untrusted locations may also have copies: 
+  	58e831c2-371b-11e0-bc1f-47d738dc52ee  -- test repo
+Testing 1:blackbox:13:git-annex migrate:0                                     
+Cases: 30  Tried: 27  Errors: 0  Failures: 3  git-annex: user error (Error in fork: forkProcess: resource exhausted (Resource temporarily unavailable))
+### Failure in: 1:blackbox:13:git-annex migrate:0
+migrate annexedfile failed
+Testing 1:blackbox:13:git-annex migrate:1                                     
+### Error in:   1:blackbox:13:git-annex migrate:1
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Testing 1:blackbox:14:git-annex unused/dropunused                             
+### Error in:   1:blackbox:14:git-annex unused/dropunused
+forkProcess: resource exhausted (Resource temporarily unavailable)
+Cases: 30  Tried: 30  Errors: 2  Failures: 4
+test: failed
+</pre>
+
+
+the number of failures vary as I change the values of the maxprocs, I think I  have narrowed it down to OSX just being stupid with limits thus causing the tests to fail.
+
+"""]]

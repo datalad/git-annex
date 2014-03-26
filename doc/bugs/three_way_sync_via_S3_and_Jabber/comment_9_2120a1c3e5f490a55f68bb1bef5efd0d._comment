@@ -1,0 +1,183 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhjlfoU21OiXKH_MXw75Uq5EsX7LJW5p0"
+ nickname="Ian"
+ subject="comment 9"
+ date="2013-02-07T21:11:39Z"
+ content="""
+It seems I may have spoken to soon, currently zakaz (the work machine) is out of sync with the other two again.
+
+daemon.log has a bunch of these:
+<pre>
+    [2013-02-07 19:42:56 GMT] NetWatcherFallback: Syncing with ian.james.campbell DesktopAnnex web 
+    fatal: Unable to find remote helper for 'xmpp'
+</pre>
+on zakaz and dagon.
+
+hastur does not have these messages in daemon.log but I just had to restart the assistant because it seems to have crashed. daemon.log.1 ends:
+<pre>
+    [2013-02-03 14:07:51 GMT] NetWatcherFallback: Syncing with ian.james.campbell DesktopAnnex web 
+    fatal: Unable to find remote helper for 'xmpp'
+    git-annex: <socket: 99>: hPutBuf: resource vanished (Broken pipe)
+    git-annex: forkProcess: interrupted
+</pre>
+
+zakaz is stuck at commit 81768b7, dagon and hastur have 8240e2b, with a few commits in between:
+<pre>
+$ git log --oneline 81768b74892ee5ec7f5a9ae15fb65d81c8a4d29d^..master
+8240e2b Merge commit 'refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/master'
+e6ae87e Merge commit 'refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/master'
+7bee777 
+3871031 
+c86bed3 
+81768b7 
+</pre>
+
+Before all the \"cannot find remote helper messages\" in zakaz's daemon.log I see:
+<pre>
+[2013-01-30 14:54:29 GMT] Pusher: Syncing with ian.james.campbell
+(Recording state in git...)
+
+Already up-to-date.
+To xmpp::ian.james.campbell@gmail.com
+   871b9c0..4585d72  git-annex -> refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/git-annex
+   6dadc6d..81768b7  master -> refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/master
+To xmpp::ian.james.campbell@gmail.com
+   871b9c0..4585d72  git-annex -> refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/git-annex
+   6dadc6d..81768b7  master -> refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/master
+(merging refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/git-annex into git-annex...)
+
+Already up-to-date.
+(merging refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/git-annex into git-annex...)
+[2013-01-30 15:48:10 GMT] NetWatcherFallback: Syncing with ian.james.campbell DesktopAnnex web 
+fatal: Unable to find remote helper for 'xmpp'
+fatal: The remote end hung up unexpectedly
+To xmpp::ian.james.campbell@gmail.com
+   4585d72..7d0d48f  git-annex -> refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/git-annex
+error: failed to push some refs to 'xmpp::ian.james.campbell@gmail.com'
+[2013-01-30 16:48:10 GMT] NetWatcherFallback: Syncing with ian.james.campbell DesktopAnnex web 
+fatal: Unable to find remote helper for 'xmpp'
+Everything up-to-date
+</pre>
+
+The last 3 lines are repeated, interspersed with the daily sanity checks (no errors).
+
+On hastur I see:
+<pre>
+[2013-01-30 15:33:44 GMT] NetWatcherFallback: Syncing with ian.james.campbell DesktopAnnex web 
+fatal: Unable to find remote helper for 'xmpp'
+To xmpp::ian.james.campbell@gmail.com
+   cec23e5..4585d72  git-annex -> refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/git-annex
+To xmpp::ian.james.campbell@gmail.com
+   871b9c0..4585d72  git-annex -> refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/git-annex
+   6dadc6d..81768b7  master -> refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/master
+fatal: The remote end hung up unexpectedly
+[2013-01-31 10:46:18 GMT] NetWatcherFallback: Syncing with ian.james.campbell DesktopAnnex web 
+fatal: Unable to find remote helper for 'xmpp'
+[2013-01-31 10:46:25 GMT] NetWatcher: Syncing with ian.james.campbell DesktopAnnex web 
+fatal: Unable to find remote helper for 'xmpp'
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+
+(merging refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/git-annex into git-annex...)
+
+git-annex: <socket: 52>: hWaitForInput: resource vanished (Connection reset by peer)
+</pre>
+
+and on dagon
+<pre>
+[2013-01-30 14:28:41 GMT] NetWatcherFallback: Syncing with ian.james.campbell DesktopAnnex web 
+fatal: Unable to find remote helper for 'xmpp'
+Everything up-to-date
+fatal: The remote end hung up unexpectedly
+Updating 6dadc6d..81768b7
+Fast-forward
+ 2013-02-fosdem-evolving-xen-paravirtualisation.txt |    1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 2013-02-fosdem-evolving-xen-paravirtualisation.txt
+[2013-01-30 14:56:34 GMT] Committer: Committing changes to git
+# On branch master
+nothing to commit (working directory clean)
+[2013-01-30 14:56:36 GMT] Pusher: Syncing with ian.james.campbell
+[2013-01-30 14:56:36 GMT] Transferr: Downloaded 2013-02-f..ation.txt
+[2013-01-30 14:56:38 GMT] Pusher: Syncing with ian.james.campbell
+fatal: Unable to create '/home/ijc/Desktop/annex/.git/refs/heads/synced/master.lock': File exists.
+
+If no other git process is currently running, this probably means a
+git process crashed in this repository earlier. Make sure no other git
+process is running and remove the file manually to continue.
+(merging refs/synced/552d29fe-4a86-11e2-819a-9f61585ee7a2/git-annex into git-annex...)
+
+(Recording state in git...)
+(Recording state in git...)
+git-annex: failed to update refs/heads/synced/master
+fatal: Unable to create '/home/ijc/Desktop/annex/.git/refs/heads/synced/master.lock': File exists.
+If no other git process is currently running, this probably means a
+git process crashed in this repository earlier. Make sure no other git
+process is running and remove the file manually to continue.
+fatal: Unable to create '/home/ijc/Desktop/annex/.git/refs/heads/synced/master.lock': File exists.
+
+If no other git process is currently running, this probably means a
+git process crashed in this repository earlier. Make sure no other git
+process is running and remove the file manually to continue.
+git-annex: failed to update refs/heads/synced/master
+git-annex: failed to update refs/heads/synced/master
+Already up-to-date.
+To xmpp::ian.james.campbell@gmail.com
+   871b9c0..8b8b935  git-annex -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/git-annex
+   6dadc6d..81768b7  master -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/master
+
+drop DesktopAnnex ./2013-02-fosdem-evolving-xen-paravirtualisation.txt (gpg) [2013-01-30 15:28:41 GMT] NetWatcherFallback: Syncing with ian.james.campbell DesktopAnnex web 
+fatal: Unable to find remote helper for 'xmpp'
+To xmpp::ian.james.campbell@gmail.com
+   8b8b935..7d0d48f  git-annex -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/git-annex
+Already up-to-date.
+</pre>
+
+It seems like something was up here but it recovered? All 3 managed to sync on 81768b7.
+
+Next on hastur I see:
+<pre>
+[2013-02-01 10:43:18 GMT] Committer: Committing changes to git
+[2013-02-01 10:43:18 GMT] Pusher: Syncing with ian.james.campbell
+Already up-to-date.
+[2013-02-01 10:43:19 GMT] Committer: Committing changes to git
+To xmpp::ian.james.campbell@gmail.com
+   81768b7..3871031  master -> refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/master
+[2013-02-01 10:43:20 GMT] Pusher: Syncing with ian.james.campbell
+Already up-to-date.
+To xmpp::ian.james.campbell@gmail.com
+   3871031..7bee777  master -> refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/master
+Updating 7bee777..8240e2b
+Fast-forward
+ Xen at FOSDEM.docx |    1 +
+ 1 file changed, 1 insertion(+)
+ create mode 120000 Xen at FOSDEM.docx
+</pre>
+
+And on dagon
+<pre>
+[2013-02-01 10:45:52 GMT] Committer: Committing changes to git
+(Recording state in git...)
+# On branch master
+nothing to commit (working directory clean)
+[2013-02-01 10:45:53 GMT] Pusher: Syncing with ian.james.campbell
+To xmpp::ian.james.campbell@gmail.com
+   fc4ad88..70a6877  git-annex -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/git-annex
+   5e83708..8240e2b  master -> refs/synced/54f6febc-4791-11e2-952f-13bd7a1c79f1/master
+
+Already up-to-date.
+Everything up-to-date
+(merging refs/synced/1167ef76-4791-11e2-9bfe-4319f44b8a5f/git-annex into git-annex...)
+
+Already up-to-date.
+
+</pre>
+(5e83708 is 81768b7~2)
+
+However there is nothing in the logs on zakaz about moving on from 81768b7. The last interesting message is the \"[2013-01-30 15:48:10 GMT\" one above.
+
+is the XMPP peering supposed to be fully connected (i.e. each node is talking to both the others) or would it be expected that one of the nodes would be in the middle of the other two acting as a relay?
+
+I'm wondering about that because hastur is frequently suspended. I can't quite remember but I think when I set this up I peered dagon<->hastur at home and then while I was at work I peered zakaz<->hastur.  That would seem to suggest that hastur would have ended up as the man in the middle. TBH I can't quite recall what the setup process involves, so maybe I'm talking nonsense. I think I went into the \"Share with a friend\" page and shared with myself.
+"""]]

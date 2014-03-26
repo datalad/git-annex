@@ -1,0 +1,17 @@
+Finished up the automatic recovery from stale lock files. Turns out git
+has quite a few lock files; the assistant handles them all.
+
+Improved URL and WORM keys so the filenames used for them
+will always work on FAT (which has a crazy assortmeny of illegal
+characters). This is a tricky thing to deal with without breaking backwards
+compatability, so it's only dealt with when creating new URL or WORM keys.
+
+-----
+
+I think my next step in this disaster recovery themed month will be adding
+periodic incremental fsck to the assistant. `git annex fsck` can already
+do an incremental fsck, so this should mostly involve adding a user
+interface to the webapp to configure when it should fsck. For example, you
+might choose to run it for up 1 hour every night, with a goal of checking
+all your files once per month. Also will need to make the assistant do
+something useful when fsck finds a bad file (ie, queue a re-download).

@@ -1,0 +1,5 @@
+is it worth sharing back git annex test failures occourring on some windows setup ?
+i'm having 3 failures, what kind of report can i produce shall it be of any use ?
+is it enough a test log coming from git annex test > test.log 2>&1 ?
+thanks again
+

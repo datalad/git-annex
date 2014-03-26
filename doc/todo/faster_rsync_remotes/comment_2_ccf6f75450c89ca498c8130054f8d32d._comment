@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln4uCaqZRd5_nRQ-iLcJyGctIdw8ebUiM"
+ nickname="Edward"
+ subject="Just put multiple source files"
+ date="2013-08-01T16:29:04Z"
+ content="""
+It seems like you can just put multiple source files on the command line:
+
+    ed@ed-Ubu64 /tmp$ touch a b c d
+    ed@ed-Ubu64 /tmp$ mkdir test
+    ed@ed-Ubu64 /tmp$ rsync -avz a b c d test
+    sending incremental file list
+    a
+    b
+    c
+    d
+    
+    sent 197 bytes  received 88 bytes  570.00 bytes/sec
+    total size is 0  speedup is 0.00
+    ed@ed-Ubu64 /tmp$ ls test
+    a  b  c  d
+
+It also appears to work with remote transfers too.
+"""]]

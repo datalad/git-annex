@@ -1,0 +1,28 @@
+Pushed out a release yesterday mostly for a bug fix. I have to build
+git-annex 5 times now when releasing. Am wondering if I could get rid of
+the Linux 64 bit standalone build. The 32 bit build should run ok on 64 bit
+Linux systems, since it has all its own 32 bit libraries. What I really
+need to do is set up autobuilders for Linux and Android, like we have for OSX.
+
+Today, dealt with all code that creates or looks at symlinks. Audited every
+bit of it, and converted all relevant parts to use a new abstraction layer
+that handles the pseudolink files git uses when core.symlinks=false.
+This is untested, but I'm quite happy with how it turned out.
+
+----
+
+Where next for Android? I want to spend a while testing command-line
+git-annex. After I'm sure it's really solid, I should try to get the webapp
+working, if possible.
+
+I've heard rumors that Ubuntu's version of ghc somehow supports template
+haskell on arm, so I need to investigate that. If I am unable to get
+template haskell on arm, I would need to either wait for further
+developments, or try to expand yesod's template haskell to regular haskell
+and then build it on arm, or I could of course switch away from hamlet
+(using blaze-html instead is appealing in some ways) and
+use yesod in non-template-haskell mode entirely. One of these will work,
+for sure, only question is how much pain.
+
+After getting the webapp working, there's still the issue of bundling it
+all up in an Android app that regular users can install.

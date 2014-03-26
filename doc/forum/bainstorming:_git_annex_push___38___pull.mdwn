@@ -1,0 +1,28 @@
+Wouldn't it make sense to offer
+
+    git annex pull
+
+which would basically do
+
+    git pull
+    git annex get
+
+and
+
+    git annex push
+
+which would do
+
+    git annex commit .
+    git annex put # (the proposed "send to default annex" command)
+    git commit -a -m "$HOST $(date +%F-%H-%M-%S)" # or similar
+    git push
+
+Resulting in commands that are totally analogous to git push & pull: Sync all data from/to a remote.
+
+> Update:
+
+This is useful:
+
+    git config [--global] alias.annex-push '!git pull && git annex add . && git annex copy . --to $REMOTE --fast --quiet && git commit -a -m "$HOST $(date +%F--%H-%M-%S-%Z)" && git push'
+

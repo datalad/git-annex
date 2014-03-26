@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-04-03T16:49:01Z"
+ content="""
+How remote is REMOTE? If it's a directory on the same computer, then git-annex copy --to is actually quickly checking that each file is present on the remote, and when it is, skipping copying it again.
+
+If the remote is ssh, git-annex copy talks to the remote to see if it has the file. This makes copy --to slow, as Rich [[complained_before|forum/batch_check_on_remote_when_using_copy]]. :)
+
+So, copy --to does not trust location tracking information (unless --fast is specified), which means that it should be doing exactly what you want it to do in your situation -- transferring every file that is really not present in the destination repository already.
+
+Neither does copy --from, by the way. It always checks if each file is present in the current repository's annex before trying to download it.
+"""]]

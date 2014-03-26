@@ -1,0 +1,19 @@
+
+So much time gone by after the kickstarter and now I wanted to give it a kick finally.
+I set up everything on my linux desktop with no problems at all.
+
+I configured a ssh remote with shared encryption key.
+
+Then I tried to use this to share files with a windows Desktop. This is where problems started.
+
+1. Since there is no jabber sync I need to exchange keys manually. But although I read and googled for hours I just found that it would be there in the git repo somewhere in plain text. I didnt find a command to actually display it on the command line.
+2. I need to setup the (existing) ssh remote on windows manually, because I could not make the webapp recognize the ssh-keys from pageant. Also, unfortunately, all examples refer to s3. I didnt even find out which type I had to specify. There seems to be no comprehensive list of repository types for the cmdline and their required arguments respectively at all. The man page says "type=..." for the three-line description of shared encryption setups which appeared like a mockery to me. Since the remote does not have git metadata I also can not use git clone.
+3. The docs say initremote would only be used on fresh remotes, not existing ones. But enableremote only enables remotes that are already configured. So what am I to do here?
+
+Could someone tell me please
+
+1. How to find the shared key
+2. How to add the ssh remote properly
+3. Where 1 and 2 are documented
+
+Thank you!

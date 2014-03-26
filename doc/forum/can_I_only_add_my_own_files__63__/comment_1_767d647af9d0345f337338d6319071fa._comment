@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.220"
+ subject="comment 1"
+ date="2013-09-25T18:42:00Z"
+ content="""
+git-annex needs to be able to lock down files to ensure that nobody can write to them, and to do this it needs to remove the write bit, and you can't remove the write bit from a file you don't own.
+
+Note that if you configure git's core.sharedRepository when making a repository (git init --shared), then all files in both git and git-annex will be group writable. Put you and the other person you wanted to be able to write to the file in a group, and you can both access the repository. So that's the right way to do it.
+"""]]

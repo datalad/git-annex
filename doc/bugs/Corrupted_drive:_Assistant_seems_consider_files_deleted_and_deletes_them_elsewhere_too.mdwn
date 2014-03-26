@@ -1,0 +1,36 @@
+### Please describe the problem.
+
+On my raspberry pi, an SSH remote was in /var/lib/store (symlinked with /home/carlo/store), which contained a LVM volume spanning several USB drives. One of the drives got corrupted, which lead to this:
+
+$ cd /home/carlo/store
+$ ls
+Input/Output Error
+
+On my desktop machine, I then had a lot of transfers. After transfer, the file was turned into a symlink.
+
+### What steps will reproduce the problem?
+
+* Create an annex and a remote ssh server.
+* [Simulate a corrupted drive](http://stackoverflow.com/questions/1361518/how-can-i-simulate-a-failed-disk-during-testing) for the remote, creating an input output error.
+* Wait until the annex starts syncing on the desktop machine. If there were no further unidentified causes on my side, the assistant will start transfers that revert files to symlinks.
+
+### What version of git-annex are you using? On what operating system?
+
+Ubuntu 12.04 64bit
+git annex 3.20121017 ([from Ubuntu PPA](https://launchpad.net/~rubiojr/+archive/git-annex))
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+Please see [all my daemon.log](http://capocasa.name/daemon.tgz) files.
+
+I noticed the problem yesterday afternoon (Thu 24 Oct).
+
+# End of transcript or log.
+"""]]
+
+> [[moreinfo]]; either I don't have enough information to work on this,
+> or it might have just been user error. --[[Joey]]

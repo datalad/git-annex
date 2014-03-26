@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmVE2R20dyfPQIzdi6urVUUAXtD6eeBsr0"
+ nickname="Benoît"
+ subject="comment 2"
+ date="2013-10-19T15:43:36Z"
+ content="""
+ Not necessarily. I have a systemd instance handling my userland services. See [archlinux wiki systemd/User](https://wiki.archlinux.org/index.php/Systemd/User).
+"""]]

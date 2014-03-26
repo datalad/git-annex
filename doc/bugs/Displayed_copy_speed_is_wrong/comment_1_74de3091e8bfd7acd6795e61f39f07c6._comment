@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-04-03T01:37:29Z"
+ content="""
+That is displayed by rsync. It's not unheard of for rsync to resume a transfer and display extremely high speeds.
+"""]]

@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 9"
+ date="2013-07-27T17:37:11Z"
+ content="""
+Here's an excerpt of the first commit where uuid.log got garbage into it. It seems that some other log files got garbage put in them before this point, and it will be interesting to see if every time new garbage gets in it's doing a \"(recovery from race)\" commit. If so, that would point pretty strongly at that code as a culprit.
+
+(Of course, it's intriguing that the race recovery commit itself seemed to encounter a race and this repeated dozens of times. An exceptionally unlikely thing to happen if everything is behaving correctly.)
+
+<pre>
+commit 8c2d3ff75431873d99c512bcae007d68ff0b565e 
+Author: REDACTED AUTHOR
+Date:   Mon Jul 22 16:57:19 2013 +0100
+
+    merging 10.4.10.106__mnt_annex_00_annex/git-annex into git-annex (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race)
+
+diff --git a/uuid.log b/uuid.log
+index 7e7e0f9..0423e02 100644
+--- a/uuid.log
++++ b/uuid.log
+@@ -1,4 +1,6 @@
++
+ 00511808-8d7c-11e2-a252-43e07a9aaa3c client timestamp=1363357452.108251s
++12527a3a-a21d-4cc7-a7ea-074e8fd0260f pi@pi0:/mnt/annex/00/annex timestamp=1374508625.460693s
+ 12527a3a-a21d-4cc7-a7ea-074e8fd0260f transfer timestamp=1374508627.731088s
+ 12a7b66c-e681-4dcc-bf75-b995512e5e76 client timestamp=1363469702.545491s
+ 1359159154.357141s 1 2ce1be52-6745-11e2-83e5-e7d111798afd
+@@ -28,6 +30,13 @@
+ 8d243fde-0c4c-4a19-8bce-ac1beb48eef0 unwanted timestamp=1374506712.447376s
+ 8d243fde-0c4c-4a19-8bce-ac1beb48eef0 unwanted timestamp=1374508303.426075s
+ 92aa538c-8d7b-11e2-9ae1-3fd2531928c1 client timestamp=1363357265.665495s
++author REDACTED AUTHOR 1374508635 +0100
++committer REDACTED AUTHOR 1374508635 +0100
+ d83e4134-8d7a-11e2-8822-7f2218f2cc42 client timestamp=1363356952.865265s
+ e08336a0-6742-11e2-8a53-17c5ab00507f backup timestamp=1359154795.94703s
+ f7969bd0-d5dc-11e2-b362-cbb323f72415 transfer timestamp=1371315580.420388s
++merging 10.4.10.106__mnt_annex_00_annex/git-annex into git-annex (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race)
++merging 10.4.10.106__mnt_annex_00_annex/git-annex into git-annex (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race)
++parent 059104588cc3c45a762586843e8ae375473993af
++parent 21a14d1ed6ea5afa11eb07c7f16fb2dd03f5d64c
++tree c4ebf18a3d1d7862484b1378124c8cb7d2c704da
+</pre>
+
+Looks a lot like a whole git commit object was union merged into the file, doesn't it?
+"""]]

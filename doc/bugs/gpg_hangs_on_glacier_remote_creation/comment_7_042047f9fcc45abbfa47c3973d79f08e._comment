@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkiAsTXFXZbLE8iyy6yDtvz4MPFbzsk3c0"
+ nickname="Tony"
+ subject="thanks!"
+ date="2013-07-27T05:33:34Z"
+ content="""
+thanks it works now (i installed the latest github version using cabal).
+
+btw i created a temporary fake gpg key for the strace i posted, as it seemed likely something would leak from posting it.
+"""]]

@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 2"
+ date="2012-06-04T19:46:03Z"
+ content="""
+I think it's already on the list: \"configurable option to only annex files meeting certian size or filename criteria\" -- files not meeting those criteria would just be git added.
+"""]]

@@ -1,0 +1,7 @@
+What directory should the Android webapp default to creating an annex in?
+
+Same as the desktop webapp, users will be able to enter a directory they
+want the first time they run it, but to save typing on android, anything
+that gets enough votes will be included in a list of choices as well.
+
+[[!poll open=yes expandable=yes 66 "/sdcard/annex" 6 "Whole /sdcard" 6 "DCIM directory (photos and videos only)" 1 "Same as for regular git-annex. ~/annex/"]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-27T19:05:59Z"
+ content="""
+I don't recommend using git-annex that way.
+
+.git directories cannot be checked into git, so will just be skipped. A hg repository will be checked in, but you can get into all kinds of bad situations if making commits to the \"same\" hg repository in two different locations. You will end up having to manually resolve conflicted merges to the files used by your distributed version control system, which defeats the point of using distributed version control.
+"""]]

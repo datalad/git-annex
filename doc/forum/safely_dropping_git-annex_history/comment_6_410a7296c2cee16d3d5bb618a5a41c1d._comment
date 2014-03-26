@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 6"
+ date="2013-07-17T18:57:12Z"
+ content="""
+You can use `git annex fsck --from remote` to verify that every file location tracking thinks is on the remote still is. It's innefficient though -- it has to download the whole file to check the special remote still has the right content! That transfer can be avoided by adding --fast.
+
+This is documented in the man page. :)
+"""]]

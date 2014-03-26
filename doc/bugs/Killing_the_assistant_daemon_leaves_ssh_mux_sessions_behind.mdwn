@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+If the assistant daemon is killed, ssh mux sessions are left behind. Incidentally there may be a better way to stop the assistant daemon besides "killall git-annex" but I haven't found it in the docs.
+
+### What steps will reproduce the problem?
+
+[[!format sh """
+$ ps aux | grep mux
+$ git-annex assistant
+$ date > fromwintermute # Just causing a change that needs to be pushed, any will do
+$ ps aux | grep mux
+pedrocr  32665  0.0  0.0   6396   948 ?        Ss   11:06   0:00 ssh: /home/pedrocr/testsync/.git/annex/ssh/golias.git-annex [mux]
+$ killall git-annex
+$ ps aux | grep mux
+pedrocr  32665  0.0  0.0   6396   948 ?        Ss   11:06   0:00 ssh: /home/pedrocr/testsync/.git/annex/ssh/golias.git-annex [mux]
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ git annex version
+git-annex version: 4.20130516.1
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+local repository version: 4
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 12.04.2 LTS
+Release:	12.04
+Codename:	precise
+"""]]
+
+
+
+> [[done]] --[[Joey]]

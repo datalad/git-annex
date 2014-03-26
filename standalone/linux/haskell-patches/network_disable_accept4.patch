@@ -1,0 +1,26 @@
+From f89652f762cf40e4c737fc1b9d6f395eb8df1959 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Mon, 10 Mar 2014 13:28:25 -0400
+Subject: [PATCH] disable use of accept4, for compatability with older systems
+
+See http://git-annex.branchable.com/bugs/Assistant_lost_dbus_connection_spamming_log/
+---
+ Network/Socket.hsc | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Network/Socket.hsc b/Network/Socket.hsc
+index 6d304bb..d7fe733 100644
+--- a/Network/Socket.hsc
++++ b/Network/Socket.hsc
+@@ -510,7 +510,7 @@ accept sock@(MkSocket s family stype protocol status) = do
+                 return new_sock
+ #else
+      with (fromIntegral sz) $ \ ptr_len -> do
+-# ifdef HAVE_ACCEPT4
++# if 0
+      new_sock <- throwSocketErrorIfMinus1RetryMayBlock "accept"
+                         (threadWaitRead (fromIntegral s))
+                         (c_accept4 s sockaddr ptr_len (#const SOCK_NONBLOCK))
+-- 
+1.9.0
+

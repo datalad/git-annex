@@ -1,0 +1,46 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnaH44G3QbxBAYyDwy0PbvL0ls60XoaR3Y"
+ nickname="Nigel"
+ subject="git annex get failed"
+ date="2013-08-02T14:29:30Z"
+ content="""
+Hi, I am coming back to this and testing Flickr as a repository for moving files about and have run into what may be my very basic misunderstanding with vanilla annex.
+
+I copied one file to Flickr and dropped it elsewhere (--force).  I assumed that the file was on Flickr ok but that the numcopies setting required the force because of the semi-trust level of the Flickr remote.
+
+Then I find I can't get the file back, even though there is a record of it from whereis.
+
+Can you help enlighten me as to what am I missing?  I assumed whereis would only report files that exist and can be copied back.  If not my error, I can raise bug or search for logs.  Thanks in advance for any help.
+
+[[!format  perl \"\"\"
+
+
+nrb@nrb-ThinkPad-T61:~/tmp$ git annex whereis
+whereis libpeerconnection.log (3 copies) 
+  	31124688-0792-4214-9e00-7ed115aa6b8e -- flickr (the flickr library)
+   	3e3d40d7-de8f-4591-a4ab-747d74a3b278 -- origin (my laptop)
+   	ec2d64fc-30d6-48b4-99bf-7b1bc22d420d -- portable USB drive
+ok
+whereis test.cgi (1 copy) 
+  	31124688-0792-4214-9e00-7ed115aa6b8e -- flickr (the flickr library)
+ok
+whereis walkthrough.sh (3 copies) 
+  	31124688-0792-4214-9e00-7ed115aa6b8e -- flickr (the flickr library)
+   	3e3d40d7-de8f-4591-a4ab-747d74a3b278 -- origin (my laptop)
+   	ec2d64fc-30d6-48b4-99bf-7b1bc22d420d -- portable USB drive
+ok
+whereis walkthrough.sh~ (3 copies) 
+  	31124688-0792-4214-9e00-7ed115aa6b8e -- flickr (the flickr library)
+   	3e3d40d7-de8f-4591-a4ab-747d74a3b278 -- origin (my laptop)
+   	ec2d64fc-30d6-48b4-99bf-7b1bc22d420d -- portable USB drive
+ok
+nrb@nrb-ThinkPad-T61:~/tmp$ git annex get test.cgi
+get test.cgi (from flickr...) 
+
+git-annex: /home/nrb/tmp/.git/annex/tmp/SHA256E-s48--a01eedbee949120aeda41e566f9ae8faef1c2bacaa6d7bb8e45050fb8df6d09d.cgi: rename: does not exist (No such file or directory)
+failed
+git-annex: get: 1 failed
+nrb@nrb-ThinkPad-T61:~/tmp$ 
+
+\"\"\"]]
+"""]]

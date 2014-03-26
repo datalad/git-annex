@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkI9AR8BqG4RPw_Ov2lnDCJWMuM6WMRobQ"
+ nickname="Dav"
+ subject="Use case for not syncing to all remotes"
+ date="2013-12-08T19:20:26Z"
+ content="""
+Just in case you haven't considered such a scenario - maybe you have suggestions for how to collaborate more effectively with git annex (and avoid warning messages):
+
+I'm trying to teach beginning scientist programmers (mostly graduate students), and a common scenario is to fork some scientific code. I'd like forking on github to be mundane, and not trigger warnings, and generally have as little for folks to explicitly keep track of as possible (this seems to be a common concern we share, which leads you to prefer syncing to all remotes without the option to configure the default behavior!).
+
+However, I am currently working with students on forking and fixing up scientific code where the upstream maintainer doesn't want to allow pushes upstream, except via pull request. So, part of our approach is to set up some common shared datasets in git annex (and these just end up in our fork). If we have an \"upstream\" remote, git annex will try to sync with it, and report an error.
+
+So - that's why I'd like to be able to configure the deactivation of syncing to a defined branch (e.g., \"upstream\"). However, if you have other suggestions to smooth the workflow, I would also like to hear those!
+"""]]

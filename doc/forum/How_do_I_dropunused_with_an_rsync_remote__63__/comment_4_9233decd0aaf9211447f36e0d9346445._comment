@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 4"
+ date="2013-05-13T18:59:08Z"
+ content="""
+You might be using an older version. Here's the output of that command in the current version:
+
+<pre>
+Usage: git-annex dropunused NUM|RANGE ... [option ...]
+  -f REMOTE  --from=REMOTE  drop content from a remote
+
+To see additional options common to all commands, run: git annex help options
+</pre>
+"""]]

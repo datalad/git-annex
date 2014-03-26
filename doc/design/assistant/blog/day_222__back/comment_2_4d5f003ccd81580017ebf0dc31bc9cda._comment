@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-03-28T15:50:47Z"
+ content="""
+That's an interesting thought. I think it would be hard to find a clear condition when it was done and could shut down. While there is easy visibility into the transfer queue to tell when file transfers are done, it's harder to tell when it's actively syncing git repositories or scanning for transfers to do, or finding new files to commit. Each thread knows what it's doing, but none of the other threads do. Maybe active threads could hold a lock to indicate they're busy, and this combined with visibility into the various work queues could do the job.
+"""]]

@@ -1,0 +1,36 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-02-22T18:44:28Z"
+ content="""
+I see the following problems with this scheme:
+
+- Disallows removal of files when disconnected. It's currently safe to force that, as long as
+  git-annex tells you enough other repos are belived to have the file. Just as long as you
+  only force on one machine (say your laptop). With your scheme, if you drop a file while 
+  disconnected, any other host could see that the counter is still at N, because your
+  laptop had the file last time it was online, and can decide to drop the file, and lose the last 
+version.
+
+- pushing a changed counter commit to other repos is tricky, because they're not bare, and 
+  the network topology to get the commit pulled into the other repo could vary.
+
+- Merging counter files issues.  If the counter file doesn't automerge, two repos dropping the same file will conflict. But, if it does automerge, it breaks the counter conflict detection.
+
+- Needing to revert commits is going to be annoying. An actual git revert
+  could probably not reliably be done. It's need to construct a revert
+  and commit it as a new commit. And then try to push that to remotes, and
+  what if *that* push conflicts?
+
+- I do like the pre-removal dropping somewhat as an alternative to
+  trust checking. I think that can be done with current git-annex though,
+  just remove the files from the location log, but keep them in-annex.
+  Dropping a file only looks at repos that the location log says have a
+  file; so other repos can have retained a copy of a file secretly like
+  this, and can safely remove it at any time. I'd need to look into this a bit more to be 100% sure it's safe, but have started [[todo/hidden_files]]. 
+
+- I don't see any reduced round trips. It still has to contact N other
+  repos on drop. Now, rather than checking that they have a file, it needs
+  to push a change to them.
+"""]]

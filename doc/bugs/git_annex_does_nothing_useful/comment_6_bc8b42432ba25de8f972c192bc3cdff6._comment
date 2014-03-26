@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlup4hyZo4eCjF8T85vfRXMKBxGj9bMdl0"
+ nickname="Ben"
+ subject="comment 6"
+ date="2012-07-10T03:26:35Z"
+ content="""
+I can easily reproduce the issue as follows,                                                                                                              
+                                                                                                                                                          
+    $ git clone goldnerlab:data                                                                                                                           
+    Cloning into 'data'...                                                                                                                                
+    remote: Counting objects: 61902, done.                                                                                                                
+    remote: Compressing objects: 100% (61354/61354), done.                                                                                                
+    remote: Total 61902 (delta 356), reused 61902 (delta 356)                                                                                             
+    Receiving objects: 100% (61902/61902), 5.50 MiB | 894 KiB/s, done.                                                                                    
+    Resolving deltas: 100% (356/356), done.                                                                                                               
+    $ cd data                                                                                                                                             
+    $ git annex sync                                                                                                                                      
+    (merging origin/git-annex into git-annex...)                                                                                                          
+    commit                                                                                                                                                
+    (Recording state in git...)                                                                                                                           
+    # On branch master                                                                                                                                    
+    nothing to commit (working directory clean)                                                                                                           
+    ok                                                                                                                                                    
+    pull origin                                                                                                                                           
+    ok                                                                                                                                                    
+    push origin                                                                                                                                           
+    Counting objects: 8, done.                                                                                                                            
+    Delta compression using up to 2 threads.                                                                                                              
+    Compressing objects: 100% (5/5), done.                                                                                                                
+    Writing objects: 100% (6/6), 726 bytes, done.                                                                                                         
+    Total 6 (delta 1), reused 1 (delta 0)                                                                                                                 
+    Auto packing the repository for optimum performance.                                                                                                  
+    warning: There are too many unreachable loose objects; run 'git prune' to remove them.                                                                
+    To goldnerlab:data                                                                                                                                    
+       d5582e0..aaddf3c  git-annex -> git-annex                                                                                                           
+    ok                                                                                                                                                    
+                                                                                                                                                          
+Everything looks good so far. I verify that alex/plot.py doesn't exist. Now let's try getting it,                                                         
+                                                                                                                                                          
+    $ git annex get alex/plot.py -d                                                                                                                       
+    git [\"--git-dir=/home/ben/data/.git\",\"--work-tree=/home/ben/data\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"alex/plot.py\"]                                     
+                                                                                                                                                          
+Uh oh. ls confirms that get was unsucessful.            
+"""]]

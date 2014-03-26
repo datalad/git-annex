@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.252.11.120"
+ subject="comment 1"
+ date="2012-11-17T20:21:12Z"
+ content="""
+This looks rather like a bug in Yesod. I've made a change in git (b0a76592c313b4c8f51918d6469c40d1fd16a2b1) that *may* avoid the problem.
+"""]]

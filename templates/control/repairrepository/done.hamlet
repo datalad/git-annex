@@ -1,0 +1,13 @@
+<div .span9 .hero-unit>
+  <p>
+    Good news: Your repository has successfully been repaired!
+  <p>
+    This problem could have had a variety of causes. If your computer #
+    lost power, or the drive containing this repository #
+    was disconnected, it would explain this type of problem.
+  <p>
+    On the other hand, it's possible that you have a hardware problem.
+  <p>
+    Remember: Lots of copies keep stuff safe! The more repositories you #
+    have, the less likely you are to lose data no matter what goes wrong.
+  ^{repolist}

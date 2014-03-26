@@ -1,0 +1,13 @@
+Taught the assistant to stop reusing an existing `git annex transferkeys`
+process after it detects a network connection change. I don't think this is
+a complete solution to what to do about long-duration network connections
+in remotes. For one thing a remote could take a long time to time out
+when the network is disconnected, and block other transfers (eg to
+local drives) in the meantime. But at least if a remote loses its network
+connection and does not try to reconnect on its own, and so is continually
+failing, this will get it back into a working state eventually.
+
+Also, fixed a problem with the OSX Mavericks build, it seems that the
+versions of wget and coreutils stuff that I was including in it were built
+by homebrew with full optimisations turned on, so didn't work on some CPUs.
+Replaced those with portable builds.

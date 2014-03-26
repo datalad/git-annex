@@ -1,0 +1,24 @@
+New user? Can't figure out the basics? Add it here - what you wanted, what you tried.
+
+#### I wanted to keep track of some files I had all organized in a directory outside of my ~/annex:
+
+    $ cd ~/annex
+    $ git annex add /path/to/some/photos
+    fatal: '/path/to/some/photos' is outside repository
+
+ But git-annex doesn't work that way. I had to do this instead
+
+    $ rsync -a /path/to/some/photos
+    $ git annex add photos
+    (Recording state in git...)
+    $ git annex status
+    ... lots of helpful info...
+
+#### I just have the OS/X app, can I do commandline stuff?
+
+yes
+
+    $ /Applications/git-annex.app/Contents/MacOS/git-annex add photos/
+    (Recording state in git...)
+
+but perhaps there is a better way.

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://john-millikin.com/"
+ nickname="John Millikin"
+ subject="comment 11"
+ date="2013-07-22T01:52:41Z"
+ content="""
+(I'm the author of the XMPP library git-annex uses)
+
+The biggest issue I can think of with continuing in the absence of a &lt;features&gt; element is authentication. Without &lt;features&gt; the client library is not able to know which SASL mechanisms are supported, so it can't authenticate.
+
+It is possible to modify the XMPP library such that it can work around the problems exibited by this server software (adding a timeout to receipt, hardcoding a fallback SASL list), but I very much do not want to do that because it would almost certainly cause unexpected behavior when used with properly working servers.
+
+According to <a href=\"http://www.mail-archive.com/jdev@jabber.org/msg10598.html\">http://www.mail-archive.com/jdev@jabber.org/msg10598.html</a> , jabberd-1.4.3 was released in 2003. Since its release, there have been multiple severe security issues discovered, including a remote crash (see <a href=\"http://mail.jabber.org/pipermail/jabberd/2004-September/002004.html\">http://mail.jabber.org/pipermail/jabberd/2004-September/002004.html</a> and <a href=\"http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2004-1378\">http://cve.mitre.org/cgi-bin/cvename.cgi?name=CVE-2004-1378</a>).
+
+In my opinion, the best course of action is for Daniel to switch to a different Jabber server software, preferably one that is still actively maintained.
+
+"""]]

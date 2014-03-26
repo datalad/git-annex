@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 7"
+ date="2013-06-26T18:30:39Z"
+ content="""
+@nicolas, I suspect you are using `git annex initremote` with the same name that you used for the now dead-and-buried remote. That causes it to be reanimated, which is not what you want.
+
+Since git-annex version 4.20130501, `git annex initremote` is reserved for creating new remotes, not enabling old ones, so it will refuse to do this. That's to avoid exactly this confusion.
+
+Using `git annex initremote` with a different remote name, and the same directory should work just fine.
+"""]]

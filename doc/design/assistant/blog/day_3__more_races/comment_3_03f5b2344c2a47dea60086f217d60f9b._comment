@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBJ6Dv1glxzzi4qIzGFNa6F-mfHIvv9Ck"
+ nickname="Jim"
+ subject="Wording"
+ date="2012-06-07T03:43:19Z"
+ content="""
+For the unfamiliar, it's hard to tell if a command like that would persist.  I'd suggest being as clear as possible, e.g.:
+
+    Increase the limit for now by running:
+      sudo sysctl fs.inotify.max_user_watches=81920
+    Increase the limit now and automatically at every boot by running:
+      echo fs.inotify.max_user_watches=81920 | sudo tee -a /etc/sysctl.conf; sudo sysctl -p
+
+"""]]

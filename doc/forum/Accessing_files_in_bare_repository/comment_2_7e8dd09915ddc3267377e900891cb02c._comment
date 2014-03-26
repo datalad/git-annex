@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/bBy7WkgQicYHIiiyj.Vm0TcMbxi2quzbPFef#6f9f7"
+ nickname="Frederik Vanrenterghem"
+ subject="comment 2"
+ date="2013-05-10T03:21:57Z"
+ content="""
+I have git-annex on the VPS. The bare repository is in the directory \"annex\"
+
+From the user's root directory, I execute:
+
+git clone annex/ Documents
+Cloning into 'Documents'...
+done.
+warning: remote HEAD refers to nonexistent ref, unable to checkout.
+
+cd Documents/
+~/Documents$ git annex init 'Documents on VPS'
+init Documents on VPS ok
+(Recording state in git...)
+
+Still, when I try to get a file now, or do a git annex find, nothing shows up.
+
+
+"""]]

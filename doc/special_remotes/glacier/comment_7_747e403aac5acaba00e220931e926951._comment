@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlq4ClC5EMN1Vq1DpWXAqP5TiDnCK1mSfk"
+ nickname="Jonas"
+ subject="Expected cost for a repository"
+ date="2013-11-24T22:32:16Z"
+ content="""
+Is there a way to estimate the cost of storing a repo on glacier?
+
+I'm especially worried because of the cost of STORE and RETRIEVE requests; there are hundreds of thousands of small files in my annex repo, so that request cost could easily dominate storage cost. Does the glacier remote do anything to minimize the number of objects stored in glacier?
+"""]]

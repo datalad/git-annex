@@ -1,0 +1,24 @@
+What steps will reproduce the problem?
+
+running the assistant on my setup, which is a central 'client' repo, and two 'backup' repos on a USB drive and an ssh connection to another server.  Both of those backup repos are non-bare, and I occasionally manually run 'git annex sync' on them to keep them up to date.  I have 'numcopies' set to 2.
+
+
+What is the expected output? What do you see instead?
+
+I expect everything to be copied to the 'backup' repos and content in the 'archive' subdirectories of the 'client' repo to be dropped.
+
+What happened instead: This morning, I started up the assistant without the USB drive present.  I added one file to my client repo.  The assistant began copying it to the SSH backup repo.  I then plugged in the USB drive, and it began copying it to the USB repo; however, it *also* queued up large amounts of content in 'archive' subdirectories and started copying it down onto my client repo, which is unacceptable because there is not actually enough disk space on the client machine to hold everything in the 'archive' subdirectories!  I stopped the assistant and started it up again.  It started doing the same thing (queueing up archive content to transfer to client), and in addition started dropping content from my USB drive.  This seems very similar to the bug in the previous version, where the globbing was broken.  It's acting as if my usb remote preferred no content at all, and it transfers everything away from it and drops it -- and at the same time, brings in content which is not supposed to be there on my client machine.  Strangely it's not doing the same thing on the ssh remote -- the ssh remote is fine.  No anomalies there -- it has not been trying to drop content from there.
+
+This is just happening this morning -- I compiled 4.20130227 last night and ran the assistant and it behaved correctly, with no bugs at all.  Now when I run it, it's going crazy.
+
+What version of git-annex are you using? On what operating system?
+
+4.20130227 on OS X.
+
+
+Please provide any additional information below.
+
+One thing that would be incredibly helpful with the kinds of bugs I've seen in the assistant is if the daemon.log contained info about *why* it is dropping or transferring content.  "transferring content because there was only 1 copy and we need to fulfill numcopies" "transferring content because it matches such-and-such a preferred content expresson" "dropping content because it does not match this preferred content expression" -- that would remove a lot of mystery about the way the assistant is working.
+
+> The several bugs mentioned here seem to be fixed, so closing this report.
+> [[done]] --[[Joey]]

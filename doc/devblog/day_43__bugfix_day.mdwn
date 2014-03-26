@@ -1,0 +1,26 @@
+Got well caught up on bug fixes and traffic. Backlog is down to 40.
+
+Made the assistant wait for a few seconds before doing the startup
+scan when it's autostarted, since the desktop is often busy starting
+up at that same time.
+
+Fixed an ugly bug with chunked webdav and directory special remotes
+that caused it to not write a "chunkcount" file when storing data,
+so it didn't think the data was present later. I was able to make it
+recover nicely from that mistake, by probing for what chunks are actually
+present.
+
+Several people turn out to have had problems with `git annex sync` not
+working because receive.denyNonFastForwards is enabled. I made the webapp
+not enable it when setting up a ssh repository, and I made `git annex sync`
+print out a hint about this when it's failed to push. (I don't think this
+problem affects the assistant's own syncing.)
+
+Made the assistant try to repair a damaged git repository without
+prompting. It will only prompt when it fails to fetch all the lost
+objects from remotes.
+
+Glad to see that others have managed to 
+[get git-annex to build on Max OS X 10.9](http://git-annex.branchable.com/bugs/git_annex_doesn__39__t_work_in_Max_OS_X_10.9/#comment-8e8ee5e50506a6fde029d236f4809df8). 
+Now I just need someone to offer up a ssh account on that OS, and I could
+set up an autobuilder for it.

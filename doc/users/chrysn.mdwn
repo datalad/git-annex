@@ -1,0 +1,11 @@
+* **name**: chrysn
+* **website**: <http://christian.amsuess.com/>
+* **uses git-annex for** managing the family's photos (and possibly videos and music in the future).
+* **likes git-annex because** it adds a layer of commit semantics over a regular file system without keeping everything in duplicate locally.
+* **would like git-annex not to** be required any more at all when
+  * git itself learns to use cow filesystems to avoid abundant disk usage, and
+  * git gets better with shallow clones.
+
+    git-annex might then still be a simpler tool that watches over what can be safely dropped from a particular shallow clone
+
+    (the issues with shallow clones seem to relate primarily to shallow history; i haven't read anything about what would happen if all commits were checked out, but not all trees and blobs)

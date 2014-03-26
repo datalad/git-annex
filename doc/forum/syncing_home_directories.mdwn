@@ -1,0 +1,7 @@
+Hi,
+
+I synchronize home directories on a couple of machines using unison.  Is there a recommended way to do the equivalent using git-annex? 
+
+Thanks,
+
+John

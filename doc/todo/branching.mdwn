@@ -1,0 +1,159 @@
+[[done]] !!!
+
+The use of `.git-annex` to store logs means that if a repo has branches 
+and the user switched between them, git-annex will see different logs in
+the different branches, and so may miss info about what remotes have which
+files (though it can re-learn). 
+
+An alternative would be to store the log data directly in the git repo
+as `pristine-tar` does. Problem with that approach is that git won't merge
+conflicting changes to log files if they are not in the currently checked
+out branch.
+
+It would be possible to use a branch with a tree like this, to avoid
+conflicts:
+
+key/uuid/time/status
+
+As long as new files are only added, and old timestamped files deleted,
+there would be no conflicts.
+
+A related problem though is the size of the tree objects git needs to
+commit. Having the logs in a separate branch doesn't help with that.
+As more keys are added, the tree object size will increase, and git will
+take longer and longer to commit, and use more space. One way to deal with
+this is simply by splitting the logs among subdirectories. Git then can
+reuse trees for most directories. (Check: Does it still have to build
+dup trees in memory?)
+
+Another approach would be to have git-annex *delete* old logs. Keep logs
+for the currently available files, or something like that. If other log
+info is needed, look back through history to find the first occurance of a
+log. Maybe even look at other branches -- so if the logs were on master,
+a new empty branch could be made and git-annex would still know where to
+get keys in that branch. 
+
+Would have to be careful about conflicts when deleting and bringing back
+files with the same name. And would need to avoid expensive searching thru
+all history to try to find an old log file.
+
+## fleshed out proposal
+
+Let's use one branch per uuid, named git-annex/$UUID.
+
+- I came to realize this would be a good idea when thinking about how
+  to upgrade. Each individual annex will be upgraded independantly,
+  so each will want to make a branch, and if the branches aren't distinct,
+  they will merge conflict for sure.
+- TODO: What will need to be done to git to make it push/pull these new
+  branches?
+- A given repo only ever writes to its UUID branch. So no conflicts.
+  - **problem**: git annex move needs to update log info for other repos!
+    (possibly solvable by having git-annex-shell update the log info
+    when content is moved using it)
+- (BTW, UUIDs probably don't compress well, and this reduces the bloat of having
+  them repeated lots of times in the tree.)
+- Per UUID branches mean that if it wants to find a file's location
+  among configured remotes, it can examine only their branches, if
+  desired.
+- It's important that the per-repo branches propigate beyond immediate
+  remotes. If there is a central bare repo, that means push --all. Without
+  one, it means that when repo B pulls from A, and then C pulls from B,
+  C needs to get A's branch -- which means that B should have a tracking
+  branch for A's branch.
+
+In the branch, only one file is needed. Call it locationlog. git-annex
+can cache location log changes and write them all to locationlog in
+a single git operation on shutdown.
+
+- TODO: what if it's ctrl-c'd with changes pending? Perhaps it should
+  collect them to .git/annex/locationlog, and inject that file on shutdown?
+- This will be less overhead than the current staging of all the log files.
+
+The log is not appended to, so in git we have a series of commits each of
+which replaces the log's entire contens.
+
+To find locations of a key, all (or all relevant) branches need to be
+examined, looking backward through the history of each until a log
+with a indication of the presense/absense of the key is found.
+
+- This will be less expensive for files that have recently been added
+  or transfered.
+- It could get pretty slow when digging deeper.
+- Only 3 places in git-annex will be affected by any slowdown: move --from,
+  get and drop. (Update: Now also unused, whereis, fsck) 
+
+## alternate
+
+As above, but use a single git-annex branch, and keep the per-UUID
+info in their own log files. Hope that git can auto-merge as long as
+each observing repo only writes to its own files. (Well, it can, but for
+non-fast-forward merges, the git-annex branch would need to be checked out,
+which is problimatic.)
+
+Use filenames like:
+
+	<observing uuid>/<location uuid>
+
+That allows one repo to record another's state when doing a
+`move`.
+
+## outside the box approach
+
+If the problem is limited to only that the `.git-annex/` files make
+branching difficult (and not to the related problem that commits to them
+and having them in the tree are sorta annoying), then a simple approach
+would be to have git-annex look in other branches for location log info
+too.
+
+The problem would then be that any locationlog lookup would need to look in
+all other branches (any branch could have more current info after all),
+which could get expensive.
+
+## way outside the box approach
+
+Another approach I have been mulling over is keeping the log file
+branch checked out in .git/annex/logs/ -- this would be a checkout of a git
+repository inside a git repository, using "git fake bare" techniques. This
+would solve the merge problem, since git auto merge could be used. It would
+still mean all the log files are on-disk, which annoys some. It would
+require some tighter integration with git, so that after a pull, the log
+repo is updated with the data pulled. --[[Joey]] 
+
+> Seems I can't use git fake bare exactly. Instead, the best option
+> seems to be `git clone --shared` to make a clone that uses
+> `.git/annex/logs/.git` to hold its index etc, but (mostly) uses
+> objects from the main repo. There would be some bloat,
+> as commits to the logs made in there would not be shared with the main
+> repo. Using `GIT_OBJECT_DIRECTORY` might be a way to avoid that bloat.
+
+## notes
+
+Another approach could be to use git-notes. It supports merging branches
+of notes, with union merge strategy (a hook would have to do this after
+a pull, it's not done automatically). 
+
+Problem: Notes are usually attached to git
+objects, and there are no git objects corresponding to git-annex keys.
+
+Problem: Notes are not normally copied when cloning.
+
+------
+
+## elminating the merge problem
+
+Most of the above options are complicated by the problem of how to merge
+changes from remotes. It should be possible to deal with the merge
+problem generically. Something like this:
+
+* We have a local branch `B`.
+* For remotes, there are also `origin/B`, `otherremote/B`, etc.
+* To merge two branches `B` and `foo/B`, construct a merge commit that
+  makes each file have all lines that were in either version of the file,
+  with duplicates removed (probably). Do this without checking out a tree.
+  -- now implemented as git-union-merge
+* As a `post-merge` hook, merge `*/B` into `B`. This will ensure `B`
+  is always up-to-date after a pull from a remote.
+* When pushing to a remote, nothing need to be done, except ensure
+  `B` is either successfully pushed, or the push fails (and a pull needs to
+  be done to get the remote's changes merged into `B`).

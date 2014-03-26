@@ -1,0 +1,170 @@
+From 8ba08c0efc035486a65f2fd33916a5da7e5210e7 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Thu, 26 Dec 2013 19:32:55 -0400
+Subject: [PATCH] remove TH
+
+---
+ Yesod/Routes/Parse.hs    |   40 +++++-----------------------------------
+ Yesod/Routes/TH.hs       |   16 ++++++++--------
+ Yesod/Routes/TH/Types.hs |   16 ----------------
+ yesod-routes.cabal       |    4 ----
+ 4 files changed, 13 insertions(+), 63 deletions(-)
+
+diff --git a/Yesod/Routes/Parse.hs b/Yesod/Routes/Parse.hs
+index 232982d..7df7750 100644
+--- a/Yesod/Routes/Parse.hs
++++ b/Yesod/Routes/Parse.hs
+@@ -2,11 +2,11 @@
+ {-# LANGUAGE DeriveDataTypeable #-}
+ {-# OPTIONS_GHC -fno-warn-missing-fields #-} -- QuasiQuoter
+ module Yesod.Routes.Parse
+-    ( parseRoutes
+-    , parseRoutesFile
+-    , parseRoutesNoCheck
+-    , parseRoutesFileNoCheck
+-    , parseType
++    --( parseRoutes
++    --, parseRoutesFile
++    --, parseRoutesNoCheck
++    --, parseRoutesFileNoCheck
++    ( parseType
+     , parseTypeTree
+     , TypeTree (..)
+     ) where
+@@ -19,42 +19,12 @@ import Yesod.Routes.TH
+ import Yesod.Routes.Overlap (findOverlapNames)
+ import Data.List (foldl')
+ 
+--- | A quasi-quoter to parse a string into a list of 'Resource's. Checks for
+--- overlapping routes, failing if present; use 'parseRoutesNoCheck' to skip the
+--- checking. See documentation site for details on syntax.
+-parseRoutes :: QuasiQuoter
+-parseRoutes = QuasiQuoter { quoteExp = x }
+-  where
+-    x s = do
+-        let res = resourcesFromString s
+-        case findOverlapNames res of
+-            [] -> lift res
+-            z -> error $ unlines $ "Overlapping routes: " : map show z
+-
+-parseRoutesFile :: FilePath -> Q Exp
+-parseRoutesFile = parseRoutesFileWith parseRoutes
+-
+-parseRoutesFileNoCheck :: FilePath -> Q Exp
+-parseRoutesFileNoCheck = parseRoutesFileWith parseRoutesNoCheck
+-
+-parseRoutesFileWith :: QuasiQuoter -> FilePath -> Q Exp
+-parseRoutesFileWith qq fp = do
+-    qAddDependentFile fp
+-    s <- qRunIO $ readUtf8File fp
+-    quoteExp qq s
+-
+ readUtf8File :: FilePath -> IO String
+ readUtf8File fp = do
+     h <- SIO.openFile fp SIO.ReadMode
+     SIO.hSetEncoding h SIO.utf8_bom
+     SIO.hGetContents h
+ 
+--- | Same as 'parseRoutes', but performs no overlap checking.
+-parseRoutesNoCheck :: QuasiQuoter
+-parseRoutesNoCheck = QuasiQuoter
+-    { quoteExp = lift . resourcesFromString
+-    }
+-
+ -- | Convert a multi-line string to a set of resources. See documentation for
+ -- the format of this string. This is a partial function which calls 'error' on
+ -- invalid input.
+diff --git a/Yesod/Routes/TH.hs b/Yesod/Routes/TH.hs
+index 7b2e50b..b05fc57 100644
+--- a/Yesod/Routes/TH.hs
++++ b/Yesod/Routes/TH.hs
+@@ -2,15 +2,15 @@
+ module Yesod.Routes.TH
+     ( module Yesod.Routes.TH.Types
+       -- * Functions
+-    , module Yesod.Routes.TH.RenderRoute
+-    , module Yesod.Routes.TH.ParseRoute
+-    , module Yesod.Routes.TH.RouteAttrs
++    -- , module Yesod.Routes.TH.RenderRoute
++    -- , module Yesod.Routes.TH.ParseRoute
++    -- , module Yesod.Routes.TH.RouteAttrs
+       -- ** Dispatch
+-    , module Yesod.Routes.TH.Dispatch
++    -- , module Yesod.Routes.TH.Dispatch
+     ) where
+ 
+ import Yesod.Routes.TH.Types
+-import Yesod.Routes.TH.RenderRoute
+-import Yesod.Routes.TH.ParseRoute
+-import Yesod.Routes.TH.RouteAttrs
+-import Yesod.Routes.TH.Dispatch
++--import Yesod.Routes.TH.RenderRoute
++--import Yesod.Routes.TH.ParseRoute
++--import Yesod.Routes.TH.RouteAttrs
++--import Yesod.Routes.TH.Dispatch
+diff --git a/Yesod/Routes/TH/Types.hs b/Yesod/Routes/TH/Types.hs
+index d0a0405..3232e99 100644
+--- a/Yesod/Routes/TH/Types.hs
++++ b/Yesod/Routes/TH/Types.hs
+@@ -31,10 +31,6 @@ instance Functor ResourceTree where
+     fmap f (ResourceLeaf r) = ResourceLeaf (fmap f r)
+     fmap f (ResourceParent a b c) = ResourceParent a (map (second $ fmap f) b) $ map (fmap f) c
+ 
+-instance Lift t => Lift (ResourceTree t) where
+-    lift (ResourceLeaf r) = [|ResourceLeaf $(lift r)|]
+-    lift (ResourceParent a b c) = [|ResourceParent $(lift a) $(lift b) $(lift c)|]
+-
+ data Resource typ = Resource
+     { resourceName :: String
+     , resourcePieces :: [(CheckOverlap, Piece typ)]
+@@ -48,9 +44,6 @@ type CheckOverlap = Bool
+ instance Functor Resource where
+     fmap f (Resource a b c d) = Resource a (map (second $ fmap f) b) (fmap f c) d
+ 
+-instance Lift t => Lift (Resource t) where
+-    lift (Resource a b c d) = [|Resource a b c d|]
+-
+ data Piece typ = Static String | Dynamic typ
+     deriving Show
+ 
+@@ -58,10 +51,6 @@ instance Functor Piece where
+     fmap _ (Static s) = (Static s)
+     fmap f (Dynamic t) = Dynamic (f t)
+ 
+-instance Lift t => Lift (Piece t) where
+-    lift (Static s) = [|Static $(lift s)|]
+-    lift (Dynamic t) = [|Dynamic $(lift t)|]
+-
+ data Dispatch typ =
+     Methods
+         { methodsMulti :: Maybe typ -- ^ type of the multi piece at the end
+@@ -77,11 +66,6 @@ instance Functor Dispatch where
+     fmap f (Methods a b) = Methods (fmap f a) b
+     fmap f (Subsite a b) = Subsite (f a) b
+ 
+-instance Lift t => Lift (Dispatch t) where
+-    lift (Methods Nothing b) = [|Methods Nothing $(lift b)|]
+-    lift (Methods (Just t) b) = [|Methods (Just $(lift t)) $(lift b)|]
+-    lift (Subsite t b) = [|Subsite $(lift t) $(lift b)|]
+-
+ resourceMulti :: Resource typ -> Maybe typ
+ resourceMulti Resource { resourceDispatch = Methods (Just t) _ } = Just t
+ resourceMulti _ = Nothing
+diff --git a/yesod-routes.cabal b/yesod-routes.cabal
+index 61980d1..33d2380 100644
+--- a/yesod-routes.cabal
++++ b/yesod-routes.cabal
+@@ -27,10 +27,6 @@ library
+                      Yesod.Routes.Class
+                      Yesod.Routes.Parse
+                      Yesod.Routes.Overlap
+-    other-modules:   Yesod.Routes.TH.Dispatch
+-                     Yesod.Routes.TH.RenderRoute
+-                     Yesod.Routes.TH.ParseRoute
+-                     Yesod.Routes.TH.RouteAttrs
+                      Yesod.Routes.TH.Types
+     ghc-options:     -Wall
+ 
+-- 
+1.7.10.4
+

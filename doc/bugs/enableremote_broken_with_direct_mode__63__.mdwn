@@ -1,0 +1,41 @@
+### Please describe the problem.
+I have 2 regular annex locations plus one on glacier. I recently cloned one location, converted it to direct mode, then tried to enableremote glacier.
+
+When I ran the webapp everything seemed to be ok, it showed file transfers to glacier which appeared to be completing very quickly. When I looked in the log file however, I saw the files weren't actually transferring and I was getting lots of errors:
+
+  Set both AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY to use glacier
+
+In order to get glacier working I had to manually copy the creds file to the new repo. The transfer errors should also made obvious in the webapp.
+
+### What steps will reproduce the problem?
+[[!format sh """
+git clone server:/location
+git annex init "laptop"
+git remote add "server" server:/location
+git annex direct
+
+Then I ran:
+git annex enableremote glacier
+Which prints:
+(merging origin/git-annex origin/synced/git-annex into git-annex...)
+(Recording state in git...)
+enableremote glacier (gpg) ok
+(Recording state in git...)
+"""]]
+But in fact it hasn't actually copied the creds to use it.
+
+
+### What version of git-annex are you using? On what operating system?
+5.20140221, debian.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+> Should be fixed in 5.20140227. [[done]] --[[Joey]]

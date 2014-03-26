@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="ckeen"
+ ip="79.249.110.228"
+ subject="Maybe related to this bug?"
+ date="2013-07-30T14:50:35Z"
+ content="""
+I have noticed similar behaviour with the importfeed command: [[tips/downloading_podcasts/#comment-3e448e43830be7e6dbe59fff6bc81e75]]
+
+After the import fails, the symlinks are created and subsequent get command return with no ouput and error code 0.
+
+Or is this a different bug?
+"""]]

@@ -1,0 +1,23 @@
+Turns out that in the last release I broke making box.com, Amazon S3 and
+Glacier remotes from the webapp. Fixed that.
+
+Also, dealt with changes in the haskell DAV library that broke support for
+box.com, and worked around an exception handling bug in the library.
+
+I think I should try to enhance the test suite so it can run live tests
+on special remotes, which would at least have caught the some of these
+recent problems...
+
+----
+
+Since metadata is tied to a particular key, editing an annexed file,
+which causes the key to change, made the metadata seem to get lost.
+
+I've now fixed this; it copies the metadata from the old version to the new
+one. (Taking care to copy the log file identically, so git can reuse its
+blob.) 
+
+That meant that `git annex add` has to check every file it adds to see if
+there's an old version. Happily, that check is fairly fast; I benchmarked my
+laptop running 2500 such checks a second. So it's not going to slow things
+down appreciably.

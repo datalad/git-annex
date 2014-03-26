@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+
+### What steps will reproduce the problem?
+
+git annex sync --content
+
+
+### What version of git-annex are you using? On what operating system?
+
+Mac OSX Maverics
+
+git-annex version: 5.20140127
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+
+### Please provide any additional information below.
+
+[[!format sh """
+copy Books/Paperless - Agile Bits Edition/Paperless Video/5-4 PDFpen for iPad.m4v (to origin...)
+FATAL: suspicious characters loitering about 'git-annex-shell 'recvkey' '/~/users/akraut/annex-home' 'SHA256E-s98445427--5fb5fd6e082eec4a805261764ef982aa8f12d76e07e86a6abb05e7675762ac49.m4v' '--' 'remoteuuid=03ac7aa9-d14c-4b60-adae-02e4a5ec0fa8' 'direct=' 'associatedfile=Books/Paperless - Agile Bits Edition/Paperless Video/5-4 PDFpen for iPad.m4v' '--' dummy rsync --server -v --inplace .'
+rsync: connection unexpectedly closed (0 bytes received so far) [sender]
+rsync error: the --max-delete limit stopped deletions (code 25) at /SourceCache/rsync/rsync-42/rsync/io.c(452) [sender=2.6.9]
+
+  rsync failed -- run git annex again to resume file transfer
+failed
+"""]]
+
+> From the error message, I can see that your origin repository
+> has an annex.uuid set (to "03ac7aa9-d14c-4b60-adae-02e4a5ec0fa8").
+> So, I assume that, if you don't want git-annex sync to use it,
+> you must have remote.origin.annex-ignore set to true. So, I think I fixed
+> this a day or two ago when I made sync --content honor the annex-ignore
+> setting. [[done]] --[[Joey]] 

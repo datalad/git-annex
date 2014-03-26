@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 8"
+ date="2013-07-20T23:07:17Z"
+ content="""
+Ok, it is in fact relevant that the file is a tarball of a git-annex repository, because git-annex add turns out to be looking at the beginning of the file, and seeing that it contains a git-annex link.
+
+I thought that code was only supposed to fire in repos on FAT filesystems that don't have symlinks. So, several issues to fix here, it seems..
+"""]]

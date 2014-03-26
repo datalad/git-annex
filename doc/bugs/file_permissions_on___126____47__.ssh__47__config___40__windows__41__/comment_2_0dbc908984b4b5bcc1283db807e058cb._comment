@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 2"
+ date="2014-01-01T21:03:31Z"
+ content="""
+Did you say you're using cygwin? That would suggest that you have a ~/.ssh/config that might have been set up before you started using git-annex.
+
+When I run the git-annex webapp at the DOS prompt, it sets up a .ssh/config with permissions that ssh doesn't dislike.
+"""]]

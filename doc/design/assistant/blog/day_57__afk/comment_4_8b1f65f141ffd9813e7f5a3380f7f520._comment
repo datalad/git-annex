@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="http://claimid.com/strager"
+ ip="173.228.13.253"
+ subject="comment 4"
+ date="2012-08-11T16:08:47Z"
+ content="""
+> How to cancel download?  Depends on its implementation ....  So it's an abstraction layer violation problem.
+
+Precisely why I suggested returning something as generic as `IO ()`:
+
+    -- Current
+    download :: URLString -> Headers -> [CommandParam] -> FilePath -> IO Bool
+
+    -- Suggestion
+    data Transfer a = Transfer { run :: IO a, cancel :: IO () }
+    download :: URLString -> Headers -> [CommandParam] -> FilePath -> Transfer
+
+    transfer <- download ...
+    -- You can pass `cancel transfer` to another thread
+    -- which you want to be able to cancel the transfer.
+    run transfer  -- blocking
+
+I realized while writing this that you may not get any result from e.g. a download while it is occurring (because the function is blocking).  Maybe that's where a misunderstanding occurred.  I separated the concepts of creating a transfer and starting/canceling it.
+
+(My idea is starting to feel a bit object-oriented...  ;P)
+
+"""]]

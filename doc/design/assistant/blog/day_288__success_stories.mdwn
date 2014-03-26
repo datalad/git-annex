@@ -1,0 +1,32 @@
+Got caught up on a big queue of messages today. Mostly I hear from people
+when git-annex is not working for them, or they have a question about using
+it. From time to time someone does mention that it's working for them.
+
+> We have 4 or so machines all synching with each other via the local
+> network thing. I'm always amazed when it doesn't just explode :)
+
+Due to the nature of git-annex, a lot of people can be using it without
+anyone knowing about it. Which is great. But these little success stories
+can make all the difference. It motivates me to keep pounding out the
+development hours, it encourages other people to try it, and it'd be a good
+thing to be able to point at if I tried to raise more funding now that I'm
+out of Kickstarter money.
+
+I'm posting my own success story to my main blog:
+[git annex and my mom](http://joeyh.name/blog/entry/git_annex_and_my_mom)
+
+If you have a success story to share, why not blog about it, microblog it,
+or just post a comment here, or even send me a private message. Just a
+quick note is fine. Thanks!
+
+----
+
+Going through the bug reports and questions today, I ended up fixing
+three separate bugs that could break setting up a repo on a remote ssh
+server from the webapp.
+
+Also developed a minimal test case for some gnucash behavior that prevents
+the watcher from seeing files it writes out. I understand the problem,
+but don't have a fix for that yet. Will have to think about it. (A year ago
+today, my blog featured the
+[[first_release_of_the_watcher|day_16__more_robust_syncing]].)

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-06-14T16:21:54Z"
+ content="""
+We need to first understand why it's not finishing the process. Does the box.com repository still contain files? You can find out by running the command: `git annex find --in box.com` (substitute the name of your remote for box.com as needed).
+"""]]

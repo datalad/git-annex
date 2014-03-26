@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 4"
+ date="2013-11-02T22:52:31Z"
+ content="""
+I did indeed try to pair from both systems.  What happened was, after I started the pair request, I went to the other system, and there was no pair request listed.  So I misunderstood the directions and thought I was supposed to go ahead and enter the same password into the other system.  (It says that pairing will complete as soon as the password is entered on the other system, so it seems reasonable to try that.)  Then both systems were constantly issuing pair requests, but neither system was responding to the requests, even though it was receiving them.
+
+Both systems were always on the network and always able to communicate over it.  The bug went away when I upgraded to the 1 Nov release...but then I had some very confusing issues with partially-paired repos from different git-annex versions...I ended up having to start git-annex over from scratch on both systems with the 1 Nov build.
+
+So I'm not sure where to go from here with this bug.  Thanks for your help.
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmKKg3Vmzk7KwRGRKjHVdtyoj1JfxLX6NM"
+ nickname="Tom"
+ subject="comment 3"
+ date="2013-10-01T18:33:05Z"
+ content="""
+I've got the same issue on Xubuntu 13.04. I installed using this script: https://github.com/zerodogg/scriptbucket/blob/master/gitannex-install
+
+`git-annex version` makes no mention of DNS or ADNS
+
+`host` command is installed on my machine. any suggestions on how best to fix for this setup?
+"""]]

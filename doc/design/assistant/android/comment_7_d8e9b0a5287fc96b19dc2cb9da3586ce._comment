@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 7"
+ date="2012-10-30T08:51:17Z"
+ content="""
+Actually, this is something that would be ideal for a poll:
+
+Should FAT-based Android repos be implemented:
+
+* Immediately
+* After the initial release of the Android app is working
+* Before the kickstarter ends
+* Not at all
+
+Also, as another data point, the FAT-based SD card can be mounted as USB storage by any computer an Android device is connected to whereas the EXT4-based root FS can only be accessed via MTP.
+"""]]

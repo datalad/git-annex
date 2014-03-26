@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-29T20:16:43Z"
+ content="""
+Such S3 clones are supported if you make the repository at the command line. See [[S3_special_remote_documentation|special_remotes/S3]].
+
+I think the question comes down to, is it worth adding UI in the webapp for this, or is it likely that someone who is using a S3 clone knows the endpoint url to use? Similarly, the webapp only offers box.com as a WebDAV remote, although there are many other DAV servers. What I'm trying to do with the UI is guide the user through finding a place to store their data, and covering every step as easily as possible.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="99.54.57.201"
+ subject="comment 5"
+ date="2013-02-25T16:02:44Z"
+ content="""
+Downgrading to 3.20130207 and testing.... this seems to have been a regression since 3.20130207.  3.20130207 seems right now to be behaving normally, not trying to drop things it shouldn't.  Is it possible something went terribly wrong with preferred content settings since 3.20130207?  
+
+Still testing, but things look good so far.
+"""]]

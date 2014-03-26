@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-04-19T20:13:10Z"
+ content="""
+Let's see..
+
+* -v is already an alias for --verbose
+
+* I don't find --source and --destination as easy to type or as clear as --from or --to.
+
+* -F is fast, so it cannot be used for --force. And I have no desire to make it easy to mistype a short option and enable --force; it can lose data. 
+
+@richard while it would be possible to support some syntax like \"git annex copy . remote\"; what is it supposed to do if there are local files named foo and bar, and a remotes named foo and bar? Does \"git annex copy foo bar\" copy file foo to remote bar, or file bar from remote foo? I chose to use --from/--to to specify remotes independant of files to avoid such
+ambiguity, which plain old `cp` doesn't have since it's operating entirely on filesystem objects, not both filesystem objects and abstract remotes.
+
+Seems like nothing to do here. [[done]] --[[Joey]]
+"""]]

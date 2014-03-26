@@ -1,0 +1,68 @@
+### Please describe the problem.
+
+The .dmg the OSX build is distributed in  is unnecessarily large (fixed size) and is externally compressed.
+
+I did a quick survey of .dmg images used for distributing other pieces of software which I had downloaded to my Mac, and most of them seem to be the UDBZ or the (older) UDZO formats which are internally compressed with bzip2 or zlib.  According to "man hdiutil", the UDBZ format is supported since 10.4 (Tiger).
+
+Below are a pair of patches: first to enable "make clean" to work on OSX, second to build the .dmg in the UDBZ format and without an explicit size (it seems to infer a correct size).  When I tested building it, it results in a .dmg which is slightly smaller than the old .dmg.bz2
+
+(This will also require a change to remove the .bz2 from the download links elsewhere in the wiki.)
+
+<pre>
+From 251e23bbe66cc63e98089554f91b2528a097e818 Mon Sep 17 00:00:00 2001
+From: Mike Magin <git@mike.magin.org>
+Date: Sun, 17 Nov 2013 08:11:05 -0800
+Subject: [PATCH 1/2] Add explicit path to find invocation in "make clean" target.
+
+---
+ Makefile | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 3f3ed35..5a0cebb 100644
+--- a/Makefile
++++ b/Makefile
+@@ -83,8 +83,8 @@ clean:
+ 		Setup Build/InstallDesktopFile Build/EvilSplicer \
+ 		Build/Standalone Build/OSXMkLibs \
+ 		git-union-merge git-recover-repository
+-	find -name \*.o -exec rm {} \;
+-	find -name \*.hi -exec rm {} \;
++	find . -name \*.o -exec rm {} \;
++	find . -name \*.hi -exec rm {} \;
+ 
+ Build/InstallDesktopFile: Build/InstallDesktopFile.hs
+ 	$(GHC) --make $@
+-- 
+1.8.4.3
+
+From e66f767893b5ef70cbf69d420cb589071f88c784 Mon Sep 17 00:00:00 2001
+From: Mike Magin <git@mike.magin.org>
+Date: Sun, 17 Nov 2013 08:40:07 -0800
+Subject: [PATCH 2/2] Change .dmg build to include compression and not be fixed size.
+
+---
+ Makefile | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 5a0cebb..b6ac549 100644
+--- a/Makefile
++++ b/Makefile
+@@ -162,10 +162,9 @@ osxapp: Build/Standalone Build/OSXMkLibs
+ 
+ 	./Build/OSXMkLibs $(OSXAPP_BASE)
+ 	rm -f tmp/git-annex.dmg
+-	hdiutil create -size 640m -format UDRW -srcfolder tmp/build-dmg \
++	hdiutil create -format UDBZ -srcfolder tmp/build-dmg \
+ 		-volname git-annex -o tmp/git-annex.dmg
+ 	rm -f tmp/git-annex.dmg.bz2
+-	bzip2 --fast tmp/git-annex.dmg
+ 
+ ANDROID_FLAGS?=-f-XMPP
+ # Cross compile for Android.
+-- 
+1.8.4.3
+</pre>
+
+> Ah, that never seemed optimal. [[done]] --[[Joey]]

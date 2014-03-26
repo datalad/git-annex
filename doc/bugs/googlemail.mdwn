@@ -1,0 +1,16 @@
+### Please describe the problem.
+Git-Annex crashes when configuring jabber account with foo.bar@googlemail.com
+
+### What steps will reproduce the problem?
+Configure the Jabber Account with foo.bar@googlemail.com instead of foo.bar@gmail.com. The domain googlemail was used for a long time in germany because of a license issue. 
+
+### What version of git-annex are you using? On what operating system?
+Mac OS X - 10.8.3 Mountain Lion
+
+Version: 4.20130709-g18e5f43 
+
+Build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
+
+
+[[!meta title="xmpp fails to work with googlemail domain"]]
+[[!tag design/assistant]]

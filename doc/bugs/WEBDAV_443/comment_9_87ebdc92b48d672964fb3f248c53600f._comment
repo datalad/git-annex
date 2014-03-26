@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 9"
+ date="2013-03-18T15:04:00Z"
+ content="""
+I think what you need to do is try installing the [Linux standalone tarball](http://downloads.kitenet.net/git-annex/linux/current/) and see if it works with WebDAV. We need to rule out this being a bad build on the Arch side. The Linux standalone tarball works with box.com for me.
+
+"""]]

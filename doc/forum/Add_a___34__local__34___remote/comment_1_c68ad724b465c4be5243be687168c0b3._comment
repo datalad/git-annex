@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-08T19:11:33Z"
+ content="""
+1. If you want to use the cli for managing the repository, why not `git clone` it using the cli as well? Set up a remote in your existing repository pointing at the repository you cloned, and the assistant will push changes to it. This is all that the webapp would do when creating the repository. The webapp does not set up remote non-bare repositories because unless the user is comfortable with the cli, nothing is going to keep them up-to-date.
+
+2. Setting up the assistant on a headless box is something I need to support better, indeed. I've just now made `git annex webapp --listen=IP` listen on the specified IP address, and output the URL you can connect to from the remote side. Note that this does not yet use HTTPS, so use with caution.
+
+3. It uses the `xdg-open` program to open a file manager. If `xdg-open` was not in your PATH, it would instead point the web browser at a file:/// URI as a fallback. If it seems to do nothing, this probably means `xdg-open` is in PATH but not working for some reason. Try running `xdg-open /path/to/your/repository`
+"""]]

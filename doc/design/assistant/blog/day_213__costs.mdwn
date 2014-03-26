@@ -1,0 +1,34 @@
+Got the assistant to check again, just before starting a transfer, if
+the remote still wants the object. This should be all that's needed to
+handle the case where there is a transfer remote on the internet somewhere,
+and a locally paired client on the LAN. As long as the paired repository
+has a lower cost value, it will be sent any new file first, and if that
+is the only client, the file will not be sent to the transfer remote at
+all.
+
+But.. locally paired repos did not have a lower cost set, at all.
+So I made their cost be set to 175 when they're created. Anyone
+who already did local pairing should make sure the Repositories
+list shows locally paired repositories above transfer remotes.
+
+Which brought me to needing an easy way to reorder that list of remotes,
+which I plan to do by letting the user drag and drop remotes around,
+which will change their cost accordingly. Implementing that has two
+pain points:
+
+1. Often a lot of remotes will have the same default cost value.
+   So how to insert a remote in between two that have cost 100?
+   This would be easy if git-annex didn't have these cost numbers,
+   and instead just had an ordered list of remotes.. but it doesn't.
+   Instead, dragging remotes in the list will sometimes need to change
+   the costs of others, to make room to insert them in. It's BASIC
+   renumbering all over again. So I wrote some code to do this with as
+   little bother as possible.
+
+2. Drag and drop means javascript. I got the basics going quickly with
+   jquery-ui, only to get stuck for over an hour on some CSS issue
+   that made lines from the list display all weird while being dragged.
+   It is always something like this with javascript..
+
+So I've got these 2 peices working, and even have the AJAX call
+firing, but it's not quite wired up just yet. Tomorrow.

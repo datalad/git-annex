@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-27T19:35:15Z"
+ content="""
+Are either the USB drive or the ssh remote configured to be in the archive or smallarchive group?
+
+If not, there was a recent change to how archive directories are handled, which would explain this behavior:
+
+<pre>
+  * Adjust preferred content expressions so that content in archive
+    directories is preferred until it has reached an archive or smallarchive
+    repository.
+</pre>
+
+The solution would be to make the USB drive be in the archive group, probably..
+"""]]

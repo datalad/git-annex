@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://pradermecker.myopenid.com/"
+ ip="81.244.190.181"
+ subject="comment 4"
+ date="2013-04-14T09:01:27Z"
+ content="""
+Thanks !
+
+Before trying the CLI, I will install have a go with installing git-annex on the plug computer.
+
+Do you know by any chance if version 3.20120629~bpo60+2 (the available version on squeeze-backport) will be compatible with the current latest release (4.20130405) ?
+
+I guess I am asking if version 3 is compatible with version 4.
+
+
+"""]]

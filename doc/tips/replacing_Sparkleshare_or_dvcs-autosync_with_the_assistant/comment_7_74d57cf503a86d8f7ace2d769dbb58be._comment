@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.105"
+ subject="comment 7"
+ date="2013-09-19T18:03:29Z"
+ content="""
+annex.largefiles does not support mime types. I agree it would be a useful addition.
+
+annex.largefiles can be used with direct mode. I would only recommending using it this way using the assistant, which will keep straight which files are which and commit them appropriately. 
+"""]]

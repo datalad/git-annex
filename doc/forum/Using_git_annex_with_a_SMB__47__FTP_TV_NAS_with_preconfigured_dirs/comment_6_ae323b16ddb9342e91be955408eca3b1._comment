@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 6"
+ date="2013-08-24T15:58:28Z"
+ content="""
+You can run any of these operations in any order and it will work. Ie, this is far more complicated and detailed than it needs to be. Just run git-annex commands in any order to do what you want to do. If they don't, file a (detailed) bug report.
+"""]]

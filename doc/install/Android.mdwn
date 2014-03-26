@@ -1,0 +1,37 @@
+Now git-annex can be used on Android!
+
+[[Documentation for using git-annex on Android|/android]]
+
+## Android app
+
+First, ensure your Android device is configured to allow installation
+of the app. Go to Setup -&gt; Security, and enable "Unknown Sources".
+
+Then download the git-annex.apk for your version of Android, and 
+open it to install.
+
+* [Android 4.4 and 4.3 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/4.3/git-annex.apk)
+* [Android 4.0 to 4.2 git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/4.0/git-annex.apk)
+
+## autobuilds
+
+A daily build is also available, thanks to Mesar Hameed and the University
+of Bath CS department.
+
+* [Android 4.4 and 4.3 git-annex.apk](http://downloads.kitenet.net/git-annex/autobuild/android/4.3/git-annex.apk)
+* [Android 4.0 to 4.2 git-annex.apk](http://downloads.kitenet.net/git-annex/autobuild/android/4.0/git-annex.apk)
+* [build logs](http://downloads.kitenet.net/git-annex/autobuild/android/)
+
+## building it yourself
+
+git-annex can be built from source for Android.
+
+1. Run `standalone/android/buildchroot` as root (requires debootstrap).
+   This builds a chroot with an `androidbuilder` user.
+   The rest of the build will run in this chroot as that user.
+2. Then run `standalone/android/install-haskell-packages`
+   Note that this will break from time to time as new versions of packages
+   are released, and the patches it applies have to be updated when
+   this happens.
+3. Finally, once the chroot is set up, you can build an Android binary
+   with `make android`, and `make androidapp` will build the complete APK.

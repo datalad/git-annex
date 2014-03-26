@@ -1,0 +1,7 @@
+I have a git installation on my web server (web faction hosting). It allows me to run repositories from my hosting account. 
+
+What I want is to use git-annex as a dropbox replacement. Specifically, the central repository being my web server and then using local installations on my 2 mac laptops (primarily), access through browser on windows, and access on android as well (browser or some other method). 
+
+I'm looking at the install instructions, walkthrough, etc. What I'm initially not clear on is whether I need to install git-annex on my (linux centOS) webserver and any machine through which I'm accessing the repo? Seems like that would be the case of course, but I wanted to validate. 
+
+Am I going to run into issues that folks might already be able to warn me about? Anything I need to know? 

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.43"
+ subject="comment 10"
+ date="2014-01-13T19:20:29Z"
+ content="""
+No, you're wrong: Git-annex supports every filepath encoding. This bug report has been fixed, and closed for 2 years now. git-annex treats filepaths as bytestrings (essentially).
+
+Whatever problem you are having must have some other cause.
+"""]]

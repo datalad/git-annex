@@ -1,0 +1,48 @@
+What steps will reproduce the problem?
+
+Using the assistant, create an SSH remote.  Try to use an alias as the name
+of the remote (e.g. I have a server which I have aliased to "homeworld" in
+my .ssh/config.  When I'm at home, that is an alias for 192.168.1.253.
+When I'm not at home, I edit .ssh/config so that "homeworld" becomes an
+alias for a hostname at no-ip.com.)  Despite the fact that "homeworld" is a
+viable ssh target because of the alias, the assistant doesn't recognize it
+as a valid host to ssh to.
+
+I had trouble with an ip address the first time I tried it but just tried
+it again and it worked fine, so please disregard that part of the title of
+this bug report.
+
+
+What is the expected output? What do you see instead?
+
+expected output = move to the "create a repository -- rsync or regular" page.
+observed output = "cannot resolve host name"
+
+
+What version of git-annex are you using? On what operating system?
+
+ Version: 3.20130102 OS X Lion
+
+
+Please provide any additional information below.
+
+I realize this is kind of a power user whine.  Using an ssh alias which
+does not correspond to an actual resolvable hostname (and cannot, because
+it's supposed to be a layer of indirection over the hostname) is not an
+everyday problem for an average user.
+
+> The assistant tries to resolve the hostname explicitly
+> to catch user's typos, and also expands it to a FQDN, to make
+> it more likely to be able to reach the host when roaming to other
+> networks.
+> 
+> Also, the assistant sets up it *own* .ssh/config hostname alias,
+> in order to make it use the special ssh key that it generates for the host.
+> So that is not compatable with using a ssh host alias you've set up.
+> Even if it knew about your alias, it would set up a new hostname alias, and
+> whatever machinery you have to update the alias would not work.
+>  
+> You can, of course, add git remotes using any ssh alias you like, by
+> hand, and restart the assistant and it will use them. --[[Joey]]
+
+[[!tag /design/assistant]]

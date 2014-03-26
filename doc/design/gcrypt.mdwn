@@ -1,0 +1,8 @@
+To integrate with git-remote-gcrypt, a key thing is to have a way to map
+from the gcrypt-id of an encrypted repository to a git-annex repository
+uuid.
+
+To do this, we'll make a v5 UUID, feeding in the gcrypt-id.
+The namespace used is itself a v5 UUID, generated using the URL
+namespace and the URL of this page at the time this scheme was
+developed: "http://git-annex.branchable.com/design/gcrypt/"

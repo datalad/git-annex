@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm78jq1Uo-ZbyOPG3diJUWVvEiM0kyAcvk"
+ nickname="Dorian"
+ subject="comment 4"
+ date="2014-03-03T14:05:35Z"
+ content="""
+Is it correct, that the shared key is transfered through the git repo, meaning in this case XMPP?
+
+Then I guess this might simply be the problem of unreliable XMPP.
+Same problem as here: <http://git-annex.branchable.com/bugs/problems_with_android_and_xmpp/>
+
+"""]]

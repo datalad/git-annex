@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmkBwMWvNKZZCge_YqobCSILPMeK6xbFw8"
+ nickname="develop"
+ subject="comment 8"
+ date="2013-06-29T09:34:02Z"
+ content="""
+I haven't been able to replicate this on two of my computers with the latest git-annex(as of this message).
+
+It seemed to happen more on my Mac OS X Lion though. And nightlies haven't been build for some time.
+
+So i'm waiting for a updated package for OS X. If you would rather clean up feel free to close this, I can just open it again if i hit it again.
+
+"""]]

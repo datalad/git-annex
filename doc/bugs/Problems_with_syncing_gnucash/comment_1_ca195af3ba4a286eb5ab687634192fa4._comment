@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 1"
+ date="2013-06-25T17:30:05Z"
+ content="""
+First of all, are you sure that git-annex is even the right tool for this job? gnucash files tend to be pretty small, and are easy to check into git directly. What happens if two machines make conflicting edits, and the git-annex assistant automatically resolves the merge conflict by moving files around and making .variant copies of gnucash log files?
+"""]]

@@ -1,0 +1,4 @@
+This page is a place to document tips and techniques for using git-annex.
+
+[[!inline pages="tips/* and !tips/*/*" archive="yes"
+rootpage="tips" postformtext="Add a new tip about:" show=0]]

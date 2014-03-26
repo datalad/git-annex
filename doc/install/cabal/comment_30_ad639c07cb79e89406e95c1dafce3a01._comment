@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="robohack"
+ ip="24.67.98.78"
+ subject="hmmm... ok, the PCRE problem was odd, but now this:"
+ date="2013-11-21T20:30:54Z"
+ content="""
+The PCRE problem is solved trivially in my case with a couple more cabal install options, though the need for these seems oddly dissatisfying given the reams of other stuff that was successfully built and installed without these options.
+
+Now however I seem to have encountered a deeper problem:
+
+	$ cabal install git-annex --bindir=$HOME/bin --extra-include-dirs=/sw/include --extra-lib-dirs=/sw/lib               
+	Resolving dependencies...
+	[1 of 1] Compiling Main             ( /var/folders/7h/7hWHR5m8HPKOnUEvQU7HU++++TI/-Tmp-/git-annex-3.20120230-84797/git-annex-3.20120230/Setup.hs, /var/folders/7h/7hWHR5m8HPKOnUEvQU7HU++++TI/-Tmp-/git-annex-3.20120230-84797/git-annex-3.20120230/dist/setup/Main.o )
+	Linking /var/folders/7h/7hWHR5m8HPKOnUEvQU7HU++++TI/-Tmp-/git-annex-3.20120230-84797/git-annex-3.20120230/dist/setup/setup ...
+	hsc2hs Utility/StatFS.hsc
+	perl -i -pe 's/^{-# INCLUDE.*//' Utility/StatFS.hs
+	ghc -O2 -Wall -ignore-package monads-fd --make configure
+	
+	Utility/StatFS.hsc:54:8:
+	    Could not find module `GHC.Foreign':
+	      Use -v to see a list of the files searched for.
+	make: *** [Build/SysConfig.hs] Error 1
+	Configuring git-annex-3.20120230...
+	Building git-annex-3.20120230...
+	Preprocessing executable 'git-annex' for git-annex-3.20120230...
+	
+	Git/Version.hs:11:18:
+	    Could not find module `Build.SysConfig':
+	      Use -v to see a list of the files searched for.
+	Failed to install git-annex-3.20120230
+	cabal: Error: some packages failed to install:
+	git-annex-3.20120230 failed during the building phase. The exception was:
+	ExitFailure 1
+
+"""]]

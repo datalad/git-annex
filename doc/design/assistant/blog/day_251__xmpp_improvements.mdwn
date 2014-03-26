@@ -1,0 +1,34 @@
+Took 2 days in a row off, because I noticed I have forgotten to do that
+since February, or possibly earlier, not counting trips. Whoops!
+
+Also, I was feeling overwhelmed with the complexity of fixing XMPP to not
+be buggy when there are multiple separate repos using the same XMPP
+account. Let my subconscious work on that, and last night it served up the
+solution, in detail. Built it today.
+
+It's only a partial solution, really. If you want to use the same XMPP
+account for multiple separate repositories, you cannot use the "Share with
+your other devices" option to pair your devices. That's because XMPP
+pairing assumes all your devices are using the same XMPP account, in order
+to avoid needing to confirm on every device each time you add a new device.
+The UI is clear about that, and it avoids complexity, so I'm ok with that.
+
+But, if you want to instead use "Share with a friend", you now can use the
+same XMPP account for as many separate repositories as you like. The
+assistant now ignores pushes from repositories it doesn't know about.
+Before, it would merge them all together without warning.
+
+----
+
+While I was testing that, I think I found out the real reason why XMPP
+pushes have seemed a little unreliable. It turns out to not be an XMPP
+issue at all! Instead, the merger was simply not always
+noticing when `git receive-pack` updated a ref, and not merging it into
+master. That was easily fixed.
+
+----
+
+Adam Spiers has been getting a `.gitignore` query interface suitable for
+the assistant to use into `git`, and he tells me it's landed in `next`.
+I should soon check that out and get the assistant using it. But first,
+Android app!

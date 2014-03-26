@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 20"
+ date="2013-04-19T18:01:44Z"
+ content="""
+You can turn off automatic commits in the webapp by pausing syncing for the local repository. 
+"""]]

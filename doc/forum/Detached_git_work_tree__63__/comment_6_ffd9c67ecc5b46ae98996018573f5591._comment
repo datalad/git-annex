@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlRThEwuPnr8_bcuuCTQ0rQd3w6AfeMiLY"
+ nickname="Alex"
+ subject="comment 6"
+ date="2013-02-23T21:23:18Z"
+ content="""
+Cool, thanks! The caveat shouldn't be much of a problem for my use case - with vcsh, the workdir is always $HOME, and I'm using the recommended mr-based workflow so the gitdir will always be ~/.config/vcsh/repo.d/$name.git in each clone.
+
+EDIT: fix erroneous path
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://phil.0x539.de/"
+ nickname="Philipp Kern"
+ subject="comment 7"
+ date="2013-03-07T15:21:55Z"
+ content="""
+For the default git-annex will pass plenty of key bytes to make this unnecessary. True, one could adjust <code>$HOME/.gnupg/gpg.conf</code> to select another s2k algorithm and another cipher for the data (the two relevant options being <code>s2k-digest-algo</code> and <code>cipher-algo</code>). To be honest, I'd also like a per-repository gpg options setting for the symmetric cipher. For instance I know that I always want compression with gpg unless I use it with annexed data (at least in certain repositories).
+"""]]

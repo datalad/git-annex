@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 2"
+ date="2013-07-25T18:42:59Z"
+ content="""
+I believe that the world has enough (or too many) file managers, and do not want to build another one just for git-annex. In any case \"git annex get\" or any GUI wrapping around it is not going to help with the described use case, because the problem is that the files are archived away in my offline drive, while you want to access them in your repository, which does not have access to that drive.
+
+The way to handle this situation is to copy or move the files you want out of the archive directory, and back to the parent directory. This move of the file will be synced from your repository to all the other repositories. When the repository that does have access to the archive notices this, it will get the files that have been moved out of the archive. Normal assistant syncing will then arrange to get them transferred back to the repository of the user who had wanted them.
+
+Of course, if the archive is on an offline drive, this won't happen until that drive is plugged back in.
+"""]]

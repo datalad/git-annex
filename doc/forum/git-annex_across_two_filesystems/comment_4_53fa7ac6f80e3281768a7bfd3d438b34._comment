@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmp1ThsNNAbSn46ju-gwFELfStlhl8usJo"
+ nickname="Marek"
+ subject="Another correction"
+ date="2013-04-30T20:11:57Z"
+ content="""
+sync just syncs the meta data but not the objects itself right? I have to do an explicit git-annex copy -to or copy -from?
+
+
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://adamspiers.myopenid.com/"
+ nickname="Adam"
+ subject="re-annexing previously annexed files"
+ date="2012-03-29T21:41:54Z"
+ content="""
+Here's another handy command-line which annexes all files in repo B which have already been annexed in repo A:
+
+    git status --porcelain | sed -n '/^ T /{s///;p}' | xargs git annex add
+
+The 'T' outputted by git status for these files indicates a type change: it's a symlink to the annex in repo A, but a normal file in repo B.
+
+"""]]

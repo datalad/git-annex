@@ -1,0 +1,37 @@
+Most of git-annex is designed to be fast no matter how many other files are
+in the annex. Things like add/get/drop/move/fsck have good locality;
+they will only operate on as many files as you need them to. 
+
+(git commit can get a little slow with a great deal of files,
+but that's out of scope -- and recent git-annex versions use queuing
+to save git add from piling up too much in the index.)
+
+But currently two git-annex commands are quite slow when annexes become large
+in quantity of files. These are unused and status.
+(Both have --fast versions that don't do as much).
+> (Update: status has become acceptably fast; most of its slowdown was due to using a bad data structure; scanning the tree is not particularly slow and it no longer looks at the git-annex branch.)
+
+unused is slow because it needs two pieces of information that are not
+quick to look up, and require examining the whole repo, very seekily:
+
+1. The keys present in the annex. Found by looking thru .git/annex/objects
+2. The keys referenced by files in git. Found by finding every file
+   in git, and looking at its symlink.
+
+Of these, the first is less expensive (typically, an annex does not have every
+key in it). It could be optimized fairly simply, by adding a database
+of keys present in the annex that is optimised to list them all. The
+database would be updated by the few functions that move content in and
+out.
+
+The second is harder to optimise, because the user can delete, revert,
+copy, add, etc files in git at will, and git-annex does not have a good way
+to watch that and maintain a database of what keys are being referenced.
+
+It could use a post-commit hook and examine files changed by commits, etc.
+But then staged files would be left out. It might be sufficient to 
+make --fast trust the database... except unused will suggest *deleting*
+data if nothing references it. Or maybe it could be required to have a
+clean tree with nothing staged before running git-annex unused.
+
+Anyway, this is a semi-longterm item for me. --[[Joey]] 

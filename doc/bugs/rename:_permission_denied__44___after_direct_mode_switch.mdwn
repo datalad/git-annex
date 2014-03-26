@@ -1,0 +1,81 @@
+### Please describe the problem.
+
+On Mac OS X, I tried to switch a repository to direct mode, but there was a
+problem in the middle of the switch (permission denied) and the switch
+aborted, leaving the repository in a half switched state.
+
+I tried different manipulations, one of which was a checkout (oops), switch
+back to indirect, then direct again, and now I have the repository in direct
+mode except one file which caused the permission denied error.
+
+### What steps will reproduce the problem?
+
+Do not know exactly why this file is special. I still have the repository, and
+each time I try to get this file, it fails with the same error message.
+
+### What version of git-annex are you using? On what operating system?
+
+On Umba, git-annex version: 4.20130723, on Mac OS X 10.6.8.
+
+### Please provide any additional information below.
+
+Umba is the Mac OS X, camaar and riva are Debian machines.
+
+[[!format sh """
+Umba$ git annex version
+git-annex version: 4.20130723
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS
+Umba$
+
+Umba$ git annex get --from riva --not --in here
+get 2013-07-31/2013-07-31_180411.jpg (from riva...) 
+Password: 
+SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c
+     2819887 100%  943.08kB/s    0:00:02 (xfer#1, to-check=0/1)
+
+sent 42 bytes  received 2820397 bytes  433913.69 bytes/sec
+total size is 2819887  speedup is 1.00
+failed
+git-annex: get: 1 failed
+Umba$ find . -name SHA256-s2819887-\*
+./.git/annex/objects/wq/3j/SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c
+./.git/annex/objects/wq/3j/SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c/SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c.cache
+./.git/annex/objects/wq/3j/SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c/SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c.map
+./.git/annex/transfer/failed/download/13fd5d5a-ed97-11e2-9178-574d3b1c0618/SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c
+./.git/annex/transfer/failed/download/95443f2e-ed96-11e2-9d3f-8ffa5b1aae7a/SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c
+Umba$ git annex fsck
+fsck 2013-07-31/2013-07-31_180411.jpg ok
+(Recording state in git...)
+Umba$ git annex drop 2013-07-31/2013-07-31_180411.jpg 
+Umba$ git annex get --from riva --not --in here
+get 2013-07-31/2013-07-31_180411.jpg (from riva...) 
+Password: 
+SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c
+     2819887 100%  949.58kB/s    0:00:02 (xfer#1, to-check=0/1)
+
+sent 42 bytes  received 2820397 bytes  512807.09 bytes/sec
+total size is 2819887  speedup is 1.00
+failed
+git-annex: get: 1 failed
+Umba$
+
+camaar% git annex copy --to umba --not --in umba
+copy 2013-07-31/2013-07-31_180411.jpg (checking umba...) (to umba...)
+SHA256-s2819887--987f9811d7b5c7a287a74b7adbb852be4d18eeda61c3507f4e08c534d2356f4c
+     2819887 100%    4.19MB/s    0:00:00 (xfer#1, to-check=0/1)
+git-annex: //Users/nicolas/Pictures/Petites Boutes/.git/annex/tmp/2013-07-31_18041141700.jpg: rename: permission denied (Operation not permitted)
+git-annex-shell: recvkey: 1 failed
+
+sent 2820393 bytes  received 42 bytes  1128174.00 bytes/sec
+total size is 2819887  speedup is 1.00
+rsync error: syntax or usage error (code 1) at main.c(1070) [sender=3.0.9]
+  
+  rsync failed -- run git annex again to resume file transfer
+failed
+git-annex: copy: 1 failed
+camaar%
+"""]]
+
+> Put in a fix that works, although perhaps not ideal as I do not
+> understand how the repo got into the original problem state. [[done]]
+> --[[Joey]]

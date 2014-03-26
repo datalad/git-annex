@@ -1,0 +1,24 @@
+In short: is it safe to rsync .git/annex/objects/ to other clones?
+
+I'm in the process of migrating a lot of my files to a new backend.  Most them
+still use the old non-file-size-tracking SHA1 backend from when WORM was the
+default.  I have multiple clones that each use about 460 GB of their 500 GB
+drives.
+
+I've noticed that git-annex creates hardlinks to migrated content in
+.git/annex/objects, so I'm able to migrate all content despite only having 40
+GB of free space.  Excellent.
+
+Now I'm planning to `rsync -a --hard-links .git/annex/objects/
+${CLONE}/.git/annex/objects/` to recreate the hardlinks and save space on the
+clones as well.  If I `fsck` afterwards, this should be fine, right?
+
+I've tried this with a test repository and it works but I'd like to be extra
+sure that I'm not missing something crucial.
+
+The alternatives that I'm aware of are:
+
+ * making space first: `git annex dropunused "1-20000"` and `git annex get .`
+ * running `git annex migrate` in each clone.
+
+I expect rsync to be safer and faster than these alternatives.

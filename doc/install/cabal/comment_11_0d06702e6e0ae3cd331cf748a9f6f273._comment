@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlXEIT2PEAuHuInLP4UYVzWE0lceMYd2lA"
+ nickname="Gregor"
+ subject="Installation on tonidoplug"
+ date="2013-08-03T07:19:54Z"
+ content="""
+I tried various ways to install git-annex on my [TonidoPlug](http://www.tonidoplug.com/).
+
+System Info:
+
+	root@TonidoPlug2:~# uname -a
+	Linux TonidoPlug2 2.6.31.8-topkick1281p2-001-004-20101214 #1 Thu Jun 16 10:06:20 CST 2011 armv5tel GNU/Linux
+
+`apt-get` didn't work.
+
+	root@TonidoPlug2:~# apt-get install git-annex
+	Reading package lists... Done
+	Building dependency tree       
+	Reading state information... Done
+	E: Unable to locate package git-annex
+
+The Linux standalone installation results in an error message like this, when calling `git-annex` (or `git annex`)
+
+	~$ git-annex.linux/git-annex
+	/home/gitolite/git-annex.linux/bin/git-annex: 1: Syntax error: \")\" unexpected
+
+(git-annex.linux/bin/git-annex is a binary file and works fine on other distros)
+
+When installing with cabal, I get the error message (tried as root and gitolite user)
+
+	~$ cabal install git-annex --bindir=$HOME/bin -f\"-assistant -webapp -webdav -pairing -xmpp -dns\"
+	Resolving dependencies...
+	cabal: cannot configure git-annex-4.20130802. It requires base >=4.5 && <4.8
+	For the dependency on base >=4.5 && <4.8 there are these packages:
+	base-4.5.0.0, base-4.5.1.0, base-4.6.0.0 and base-4.6.0.1. However none of
+	them are available.
+	base-4.5.0.0 was excluded because of the top level dependency base -any
+	base-4.5.1.0 was excluded because of the top level dependency base -any
+	base-4.6.0.0 was excluded because of the top level dependency base -any
+	base-4.6.0.1 was excluded because of the top level dependency base -any
+
+Any help is appreciated.
+Thanks for providing git-annex. I started cleaning up my backups with it yesterday and really like it.
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 11"
+ date="2013-05-29T17:01:55Z"
+ content="""
+Today's autobuild of git-annex for Android has a workaround for this problem. You can select \"Open WebApp\" from the menu in the terminal emulator app, and it should work. Would appreciate confirmation from someone who has seen this problem. If that menu item works, I may later be able to make it open automatically.
+"""]]

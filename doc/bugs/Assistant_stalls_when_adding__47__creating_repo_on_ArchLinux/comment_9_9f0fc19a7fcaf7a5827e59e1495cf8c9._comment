@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="comment 9"
+ date="2013-10-23T03:03:30Z"
+ content="""
+Strike that. It actually works. I could create the ~/annex store, and adding a remote also seems to work (I'm on a hotel Wi-Fi at the moment, so I fear the ssh connection will fail, but nothing to do with git-annex).
+"""]]

@@ -1,0 +1,62 @@
+### Please describe the problem.
+
+Installing via Cabal fails due to dependency conflicts with yesod. If I build without the webapp flag, the problem disappears.
+
+### What steps will reproduce the problem?
+Running `cabal install c2hs git-annex --bindir=$HOME/bin`.
+
+### What version of git-annex are you using? On what operating system?
+I was attempting to install 4.20130521 from Hackage. My operating system is Mac OS X 10.6.8. Cabal-install is at 0.14.0.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/debug.log
+Resolving dependencies...
+cabal: Could not resolve dependencies:
+trying: git-annex-4.20130521 (user goal)
+trying: git-annex-4.20130521:+webapp
+trying: yesod-default-1.2.0 (dependency of git-annex-4.20130521:+webapp)
+trying: yesod-core-1.2.1 (dependency of yesod-default-1.2.0)
+trying: cookie-0.4.0.1/installed-9d9... (dependency of yesod-core-1.2.1)
+next goal: yesod (dependency of git-annex-4.20130521:+webapp)
+rejecting: yesod-1.2.0.1, 1.2.0 (conflict: git-annex-4.20130521:webapp =>
+yesod(<1.2))
+rejecting: yesod-1.1.9.3, 1.1.9.2, 1.1.9.1, 1.1.9, 1.1.8.2, 1.1.8.1, 1.1.8,
+1.1.7.2, 1.1.7.1, 1.1.7, 1.1.6, 1.1.5, 1.1.4.1, 1.1.4 (conflict:
+yesod-core==1.2.1, yesod => yesod-core>=1.1.5 && <1.2)
+rejecting: yesod-1.1.3.1, 1.1.3, 1.1.2, 1.1.1.2, 1.1.1, 1.1.0.3, 1.1.0.2,
+1.1.0.1, 1.1.0 (conflict: yesod-core==1.2.1, yesod => yesod-core>=1.1 && <1.2)
+rejecting: yesod-1.0.1.6, 1.0.1.5, 1.0.1.4, 1.0.1.3, 1.0.1.2, 1.0.1.1, 1.0.1,
+1.0.0.2, 1.0.0.1, 1.0.0 (conflict: yesod-core==1.2.1, yesod => yesod-core>=1.0
+&& <1.1)
+rejecting: yesod-0.10.2, 0.10.1.4, 0.10.1.3, 0.10.1.2, 0.10.1.1, 0.10.1
+(conflict: yesod-core==1.2.1, yesod => yesod-core>=0.10.1 && <0.11)
+rejecting: yesod-0.9.4.1, 0.9.4, 0.9.3.4, 0.9.3.3, 0.9.3.2 (conflict:
+yesod-core==1.2.1, yesod => yesod-core>=0.9.3.4 && <0.10)
+rejecting: yesod-0.9.3.1, 0.9.3, 0.9.2.2, 0.9.2.1, 0.9.2, 0.9.1.1 (conflict:
+yesod-core==1.2.1, yesod => yesod-core>=0.9.1.1 && <0.10)
+rejecting: yesod-0.9.1 (conflict: yesod-core==1.2.1, yesod => yesod-core>=0.9
+&& <0.10)
+rejecting: yesod-0.8.2.1, 0.8.2, 0.8.1 (conflict: yesod-core==1.2.1, yesod =>
+yesod-core>=0.8.1 && <0.9)
+rejecting: yesod-0.8.0 (conflict: yesod-core==1.2.1, yesod => yesod-core>=0.8
+&& <0.9)
+rejecting: yesod-0.7.3, 0.7.2 (conflict: yesod-core==1.2.1, yesod =>
+yesod-core>=0.7.0.2 && <0.8)
+rejecting: yesod-0.7.1 (conflict: yesod-core==1.2.1, yesod =>
+yesod-core>=0.7.0.1 && <0.8)
+rejecting: yesod-0.7.0 (conflict: yesod-core==1.2.1, yesod => yesod-core>=0.7
+&& <0.8)
+rejecting: yesod-0.6.7, 0.6.6, 0.6.5, 0.6.4, 0.6.3, 0.6.2, 0.6.1.2, 0.6.1.1,
+0.6.1, 0.6.0.2, 0.6.0.1, 0.6.0, 0.5.4.2, 0.5.4.1, 0.5.4, 0.5.3, 0.5.2, 0.5.1,
+0.5.0.3, 0.5.0.2, 0.5.0.1, 0.5.0, 0.4.1, 0.4.0.3, 0.4.0.2, 0.4.0.1, 0.4.0
+(conflict: cookie => time==1.4/installed-d61..., yesod => time>=1.1.4 && <1.3)
+rejecting: yesod-0.3.1.1, 0.3.1, 0.3.0, 0.2.0, 0.0.0.2, 0.0.0.1, 0.0.0
+(conflict: cookie => time==1.4/installed-d61..., yesod => time>=1.1.3 && <1.2)
+# End of transcript or log.
+"""]]
+
+> Not OSX specific. I have added a version hint that makes cabal work and uploaded
+> a point release with this fix. [[done]] --[[Joey]]

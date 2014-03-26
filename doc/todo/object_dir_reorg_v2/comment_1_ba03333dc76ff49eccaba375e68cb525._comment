@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 1"
+ date="2011-03-16T01:16:48Z"
+ content="""
+If you support generic meta-data, keep in mind that you will need to do conflict resolution. Timestamps may not be synched across all systems, so keeping a log of old metadata could be used, sorting by history and using the latest. Which leaves the situation of two incompatible changes. This would probably mean manual conflict resolution. You will probably have thought of this already, but I still wanted to make sure this is recorded. -- RichiH
+"""]]

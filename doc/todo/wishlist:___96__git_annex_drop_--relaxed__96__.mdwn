@@ -1,0 +1,5 @@
+Also suggested during the first Gitify BoF during DebConf13:
+
+`git annex drop` deletes immediately. In some situations a mechanism to tell git-annex "I would like to hold onto this data if possible, but if you need the space, please delete it" could be nice.
+
+An obvious question would be how to do cleanups. With the assistant, that's easy. On CLI, at the very least `git annex fsck` should list, and optionally delete, that data.

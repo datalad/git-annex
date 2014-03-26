@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 1"
+ date="2013-11-15T20:53:17Z"
+ content="""
+Yes, it's fine to file a bug about test failures. Be sure you try with a current autobuild.
+
+The redirection you show would work on linux, I don't know about windows. But capturing a transcript of the test output is certainly what I need.
+"""]]

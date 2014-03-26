@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 4"
+ date="2013-12-12T20:17:26Z"
+ content="""
+It looks like the symlink may have some form of immutable attribute set on it. I assume that the \"uchg\" in the ls output means something like \"unchangable\".
+"""]]

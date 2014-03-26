@@ -1,0 +1,131 @@
+The git-annex Windows port is not ready for prime time. But it does exist
+now! --[[Joey]] 
+
+## status
+
+* Doesn't daemonize. Maybe use
+  <http://hackage.haskell.org/package/Win32-services>
+  or perhaps easier,
+  <http://hackage.haskell.org/package/Win32-services-wrapper>
+
+* XMPP library not yet built. (See below.)
+
+* View debug log is empty in windows -- all logs go to console.
+  This messes up a few parts of UI that direct user to the debug log.
+  Should try to get rid of the console, but only once ssh passwords
+  (and possibly gpg) are not prompted there anymore.
+
+* Local pairing seems to fail, after acking on Linux box, it stalls.
+  (Also, of course, the Windows box is unlikely to have a ssh server,
+  so only pairing with a !Windows box will work.)
+
+* gcrypt is not ported to windows (and as a shell script, may need
+  to be rewritten)
+
+* Incremental fsck sets the sticky bit to record when a file is fscked,
+  and this is not done on windows, so fsck doesn't behave incrementally
+  there.
+
+* Deleting a git repository from inside the webapp fails "RemoveDirectory
+  permision denied ... file is being used by another process"
+
+## potential encoding problems
+
+[[bugs/Unicode_file_names_ignored_on_Windows]] is fixed, but some potential
+problems remain, since the FileSystemEncoding that git-annex relies on
+seems unreliable/broken on Windows.
+
+* When git-annex displays a filename that it's acting on, there
+  can be mojibake on Windows. For example, "háčky.txt" displays
+  the accented characters as instead the pairs of bytes making
+  up the utf-8. Tried doing various things to the stdout handle
+  to avoid this, but only ended up with encoding crashes, or worse
+  mojibake than this.
+
+* `md5FilePath` still uses the filesystem encoding, and so may produce the
+  wrong value on Windows. This would impact keys that contain problem characters
+  (probably coming from the filename extension), and might cause
+  interoperability problems when git-annex generates the hash directories of a
+  remote, for example a rsync remote.
+
+* `encodeW8` is used in Git.UnionMerge, and while I fixed the other calls to
+  encodeW8, which all involved ByteStrings reading from git and so can just
+  treat it as utf-8 on Windows (via `decodeBS`), in the union merge case,
+  the ByteString has no defined encoding. It may have been written on Unix
+  and contain keys with invalid unicode in them. On windows, the union
+  merge code should probably check if it's valid utf-8, and if not,
+  abort the merge.
+
+* If interoperating with a git-annex repository from a unix system, it's
+  possible for a key to contain some invalid utf-8, which means its filename
+  cannot even be represented on Windows, so who knows what will happen in that
+  case -- probably it will fail in some way when adding the object file
+  to the Windows repo. 
+
+* If data from the git repo does not have a unicode encoding, it will be
+  mangled in various places on Windows, which can lead to undefined behavior.
+
+## minor problems
+
+* rsync special remotes with a rsyncurl of a local directory are known
+  buggy. (git-annex tells rsync C:foo and it thinks it means a remote host
+  named C...)
+* webapp lets user choose to encrypt repo, and generate gpg key,
+  before checking that gcrypt is not installed
+* Ssh connection caching does not work on Windows, so `git annex get`
+  has to connect twice to the remote system over ssh per file, which
+  is much slower than on systems supporting connection caching.
+* glacier-cli is not easily available (probably)
+* user feedback: "Git on windows installer provides openssh 4.6. git-annex installer
+  provides openssh 6.2 . This seems to create problems regarding how
+  `known_hosts` file path is setup. Setting `GIT_SSH=` to the git-annex
+  openssh version fixes the problem."  
+  However, I don't know how to determine what that location is after
+  it's been installed. Maybe look for ssh.exe in same directory as
+  git-annex.exe? --[[Joey]]
+
+## stuff needing testing
+
+* test that adding a repo on a removable drive works; that git is synced to
+  it and files can be transferred to it and back
+* Does stopping in progress transfers work in the webapp?
+
+## trying to build XMPP
+
+Lots of library deps:
+
+1. gsasl-$LATEST.zip from <http://josefsson.org/gnutls4win/> (includes
+   gnuidn and gnutls)
+2. pkg-config from
+   <http://sourceforge.net/projects/pkgconfiglite/files/latest/download?source=files>
+3. libxml2 from mingw:
+   <http://sourceforge.net/projects/mingw/files/MSYS/Extension/libxml2/libxml2-2.7.6-1/>
+   both the -dll and the -dev
+3. Extract all the above into the Haskell platform's mingw directory. Note
+   that pkg-config needs to be moved out of a named subdirectory.
+4. Run in DOS prompt (not cygwin!): cabal install network-protocol-xmpp
+
+Current FAIL:
+
+<pre>
+Loading package gnutls-0.1.5 ... ghc.exe: internal error: Misaligned section: 18206e5b
+    (GHC version 7.6.3 for i386_unknown_mingw32)
+        Please report this as a GHC bug:
+	http://www.haskell.org/ghc/reportabug
+</pre>
+
+<https://ghc.haskell.org/trac/ghc/ticket/8830>
+
+Note: This only happens in the TH link stage. So building w/o the webapp
+works with XMPP.
+
+Options:
+
+1. Use EvilSplicer, building first without XMPP library, but with its UI,
+   and a second time without TH, but with the XMPP library. Partially done
+   on the `winsplicehack` branch, but requires building patched versions
+   of lots of yesod dependency chain to export modules referenced by TH
+   splices, like had to be done on Android. Horrible pain. Ugly as hell.
+2. Make a helper program with the XMPP support in it, that does not use TH.
+3. Swich to a different XMPP client library, like
+   <http://hackage.haskell.org/package/pontarius-xmpp>

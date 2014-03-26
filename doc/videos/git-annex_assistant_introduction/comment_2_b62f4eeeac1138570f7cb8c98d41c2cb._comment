@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-03-16T16:04:30Z"
+ content="""
+@modules: Yes, you're only given the option to use a git repository on the server if it has both git and git-annex installed. You can install any version of git-annex there. For example, Debian stable ships with one that will work.
+I plan to make that screen clearer when the git repository option is not available.
+
+I'm not sure what'd going on with your rsync transfers not running. I can say that if the \"play\" icon is visible, the transfer has been paused. While a transfer is running, the \"pause\" icon is visible instead, to let you pause it. 
+This may be as simple as you having misunderstood the icons and paused the currently running transfer, which prevents any transfers from running. If not, suggest you enable debug logs in the Preferences page, and consider filing a [[bug_report|bugs]].
+"""]]

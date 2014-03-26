@@ -1,0 +1,92 @@
+[Telehash](http://telehash.org/) for secure P2P communication between
+git-annex (assistant) repositories.
+
+## telehash implementation status
+
+* node.js version seems almost complete
+* C version currently lacks channel support and seems buggy (13 Jan 2014)
+* No pure haskell implementation of telehash v2. There was one of
+  telehash v1 (even that seems incomplete). I have pinged its author
+  to see if he anticipates updating it.
+* Rapid development, situation may change in a month or 2.
+* Is it secure? A security review should be done by competant people
+  (not Joey). See <https://github.com/telehash/telehash.org/issues/23>
+
+## implementation basics
+
+* Add a telehash.log that maps between uuid and telehash address.
+* On startup, assistant creates a new telehash keypair if not already
+  present; stores this locally and generates a telehash address from it,
+  stored in telehash.log.
+* Use telehash for notifications of changes to the repository
+* Do git push over telehash. (Pretty easy, may need rate limiting in
+  situations involving relays.)
+* Remove git push over XMPP (which has several problems including
+  XMPP being an unreliable transport, requiring a separate XMPP account per
+  repo, and XMPP not being end-to-end encrypted)
+
+## telehash address discovery
+
+* Easy way is any set of repos that are already connected can communicate
+  them via telehash.log.
+* Local pairing can be used for telehash address discovery. Could be made
+  to work without ssh (with content transfer over telehash discussed
+  below).
+* XMPP pairing can also be used for telehash address discovery. (Note that
+  MITM attacks are possible.) Is it worth keeping XMPP in git-annex just
+  for this?
+* Telehash addresses of repositories can be communicated out of band (eg,
+  via an OTR session or gpg signed mail), and pasted into the webapp to
+  initiate a repository pairing that then proceeds entirely over telehash.
+  Once both sides do this, the pairing can proceed automatically.
+
+## content transfer over telehash
+
+* In some circumstances, it would be ok to do annexed content transfer
+  over telehash.  
+  Need to check if there are MTU problems with large data bodies in
+  telehash messages.  
+  Probably not when a bridge is being used, due to required rate
+  limiting in bridging over telehash. Cloud transfer remotes still needed for
+  those situations.
+* On a LAN, telehash can be used to determine the current local IP address
+  of another computer on the LAN. The 2 could then determine if either uses
+  ssh and if so use regular git-annex-shell for transfers. Or could do
+  annexed content transfer directly over telehash.
+
+## generic git-remote-telehash
+
+This might turn out to be easy to split off from git-annex, so `git pull`
+and `git push` can be used at the command line to access telehash remotes.
+Allows using general git entirely decentralized and with end-to-end
+encryption.
+
+## separate daemon?
+
+A `gathd` could contain all the telehash specific code, and git-annex
+communicate with it via a local socket.
+
+Advantages:
+
+* `git annex sync` could also use the running daemon
+* `git-remote-telehash` could use the running daemon
+* c-telehash might end up linked to openssl, which has licence combination
+  problems with git-annex. A separate process not using git-annex's code
+  would avoid this.
+* Allows the daemon to be written in some other language if necessary
+  (for example, if c-telehash development stalls and the nodejs version is
+  already usable)
+* Potentially could be generalized to handle other similar protocols.
+  Or even the xmpp code moved into it. There could even be git-annex native
+  exchange protocols implemented in such a daemon to allow SSH-less
+  transfers.
+* Security holes in telehash would not need to compromise the entire
+  git-annex. gathd could be sandboxed in one way or another.
+
+Disadvantages:
+
+* Adds a memcopy when large files are being transferred through telehash.
+  Unlikely to be a bottleneck.
+* Adds some complexity.
+* What IPC to use on Windows? Might have to make git-annex communicate
+  with it over its stdin/stdout there.

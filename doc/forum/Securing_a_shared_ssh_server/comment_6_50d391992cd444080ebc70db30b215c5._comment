@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkwjBDXkP9HAQKhjTgThGOxUa1B99y_WRA"
+ nickname="Franck"
+ subject="comment 6"
+ date="2013-05-29T17:41:25Z"
+ content="""
+OK, I understand now why it is complicated to secure rsync, the best I can hope is to chroot it on a restricted account. Thanks! And the \"currently\" regarding ˋGIT_ANNEX_SHELL_DIRECTORYˋ gives me hope about a future change.  :-)
+Cheers, Franck
+"""]]

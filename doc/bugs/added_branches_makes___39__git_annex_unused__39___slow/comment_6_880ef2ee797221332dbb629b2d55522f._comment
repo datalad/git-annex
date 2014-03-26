@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 6"
+ date="2013-08-12T04:14:18Z"
+ content="""
+The memory usage is probably lower because `sort` and `comm` and bash's `<(command)` all have particularly well tuned memory usage with 37 years of history behind them. Particularly GNU `sort` will transparently use a temp file rather than storing too much data in memory, and does rather sophisticated stuff to make that work efficiently. It's rather harder to get that kind of behavior when not using the unix tools and instead using stock programming language primatives like sort() and hashes.
+
+I still suspect that `git cat-file` is slower than a direct readlink(2) of the symlink, when that can be done.
+"""]]

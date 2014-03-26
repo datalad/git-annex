@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.90"
+ subject="comment 1"
+ date="2013-07-16T18:16:52Z"
+ content="""
+Wow, that's a lot of NULs!
+
+Can you drop to a shell and run `git fsck` in the repository?
+
+I'm guessing that `git annex fsck` is going to fail with some of the same type errors, but you could also try it.
+
+It seems pretty clear there's damage somewhere. Like something (perhaps a compact flash glitch?) inserted a ton of NULs into the git repository, or corrupted a filename's length field or something.
+
+---
+
+Probably the best thing to do, to get back to a working repository is to move the current repo out of the way, re-setup the assistant on your Android from one of your other repositories (assuming you have another one). Or if this is your only clone of this git repository, you may be able to run `git annex uninit` in it.
+
+Then if necessary the contents of files can be rescued from `.git/annex/objects/` in the corrupt repository, by running `git annex import` in the new repository and passing it that directory. And finish up with a `git annex fsck`.
+"""]]

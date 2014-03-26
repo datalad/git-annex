@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 10"
+ date="2013-11-26T21:48:11Z"
+ content="""
+Hmm. Seems to me that `git commit` is trying to download the whole big file from the SMB share. Perhaps just to compare it with the symlink it expects to be there?
+
+When I try this, in a large direct mode repository with some video from *my* family, `git commit` does not open the file (verified with strace), let alone read it, and so finishes in well under 1 second. 
+
+Aha, I was able to reproduce `git commit` doing that with a repo on a FAT filesystem. git opens the file, and mmaps it, and I guess it proceeds to try to diff it against the symlink standin file it expected to be there.
+
+This is particularly unfortunate, since `git commit` is only, I think, doing this so that it can print out a \"Changes not staged for commit\" message. Which git-annex sync throws away. There seems to be no git commit option that disables this behavior.
+
+I think that this calls for making `git annex sync` not use `git commit` any longer, and instead manually build the commit using `git-write-tree` and `git-commit-tree`. Since I don't know if I will get to this before the thanksgiving holiday, I am creating a bug: [[bugs/direct_mode_sync_should_avoid_git_commit]]
+"""]]

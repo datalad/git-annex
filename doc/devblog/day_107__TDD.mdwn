@@ -1,0 +1,10 @@
+A more test driven day than usual. Yesterday I noticed a test case was
+failing on Windows in a way not related to what it was intended to test,
+and fixed the test case to not fail.. But knew I'd need to get to the
+bottom of what broke it eventually.
+
+Digging into that today, I eventually (after rather a long time stuck)
+determined the bug involved automatic conflict resolution, but only
+happened on systems without symlink support. This let me reproduce it on
+FAT outside Windows and do some fast TDD iterations in a much less
+unwieldly environment and fix the bug.

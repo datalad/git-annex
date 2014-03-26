@@ -1,0 +1,1 @@
+Is there a good way to use a ext4 formated external sdcard on a rooted android with symlinks. If android mounts it (with the sdcard command i think) symlinks don't work. If i mount it with mount the permissions are a problem because every app has a different user.

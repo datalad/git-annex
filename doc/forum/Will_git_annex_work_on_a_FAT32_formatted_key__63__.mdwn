@@ -1,0 +1,3 @@
+FAT32 does not support symlinks, so I wonder if there's going to be a problem with that.
+
+Generally speaking, I am wondering about portability of git annex on windows and on android...

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnWvnTWY6LrcPB4BzYEBn5mRTpNhg5EtEg"
+ nickname="Bence"
+ subject="Metadata for the win! "
+ date="2014-02-26T07:03:32Z"
+ content="""
+Awesome. Finally one can store the public url of a file which is in a special remote. Think about Google Drive: a file uploaded there can be shared from the command line if it's public url is known (and stored in metadata when uploaded). The flickr special remote could also make benefit of this: a file doesn't have to be searched to locate in flickr if the ids are stored in metadata. 
+"""]]

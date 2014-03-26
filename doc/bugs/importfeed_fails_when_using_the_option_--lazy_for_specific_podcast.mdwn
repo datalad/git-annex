@@ -1,0 +1,77 @@
+### Please describe the problem.
+
+importfeed responds with "failed" when using the option --lazy for specific podcast and no symbolic links get created. However when I don't use the --fast option the podcast enclosures do download and links get created as expected.
+
+### What steps will reproduce the problem?
+
+git-annex importfeed --fast http://schoolsucksproject.com/category/podcast/feed/
+
+### What version of git-annex are you using? On what operating system?
+
+    Ubuntu
+    git-annex version: 4.20130802-g1452ac3
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+
+### Please provide any additional information below.
+
+    git-annex importfeed --fast http://schoolsucksproject.com/category/podcast/feed/
+    (checking known urls...)
+    (Recording state in git...)
+    importfeed http://schoolsucksproject.com/category/podcast/feed/ 
+    --2013-09-28 00:27:25--  http://schoolsucksproject.com/category/podcast/feed/
+    Resolving schoolsucksproject.com (schoolsucksproject.com)... 108.162.199.17, 108.162.198.17
+    Connecting to schoolsucksproject.com (schoolsucksproject.com)|108.162.199.17|:80... connected.
+    HTTP request sent, awaiting response... 200 OK
+    Length: unspecified [text/xml]
+    Saving to: `/tmp/feed16555'
+
+    2013-09-28 00:27:28 (217 KB/s) - `/tmp/feed16555' saved [423071]
+
+    addurl School_Sucks_Project___Podcasts/238f__Presence_and_Productivity__6___Tools_For_A_Freed_Mind_and_A_Voluntary_Life_mp3 
+      unable to access url: http://schoolsucks.podomatic.com/enclosure/2013-09-21T08_21_33-07_00.mp3
+    failed
+    addurl School_Sucks_Project___Podcasts/238e__Presence_and_Productivity__5___Habit_Change_mp3 
+      unable to access url: http://schoolsucks.podomatic.com/enclosure/2013-09-18T20_40_40-07_00.mp3
+    failed
+    addurl School_Sucks_Project___Podcasts/238d__Presence_and_Productivity__4___Next_Actions__Projects__and_Procrastination_mp3 
+      unable to access url: http://schoolsucks.podomatic.com/enclosure/2013-09-16T10_10_06-07_00.mp3
+    failed 
+    ...
+
+> (There is no --lazy option. You seem to mean --fast.)
+> 
+> This fine web server rejects the User-Agent used by curl:
+
+<pre> 
+joey@darkstar:~>curl http://schoolsucks.podomatic.com/enclosure/2013-09-18T20_40_40-07_00.mp3
+Forbidden
+joey@darkstar:~>wget http://schoolsucks.podomatic.com/enclosure/2013-09-18T20_40_40-07_00.mp3
+--2013-09-28 11:18:36--  http://schoolsucks.podomatic.com/enclosure/2013-09-18T20_40_40-07_00.mp3
+Resolving schoolsucks.podomatic.com (schoolsucks.podomatic.com)... 38.99.42.46, 38.110.155.212
+Connecting to schoolsucks.podomatic.com (schoolsucks.podomatic.com)|38.99.42.46|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+<pre>
+
+> git-annex always uses curl for checking file sizes. So the workaround
+> is to use `git annex addurl --relaxed` on this url, which will skip
+> the size check. However, if you only had curl installed, `git-annex get`
+> would again try to use curl to get the file, and would still fail.
+> It only happens to successfully download because git-annex chose
+> to use wget and this site has apparently forgotten to block that.
+> 
+> I don't know if it makes sense for git-annex to vary the user-agent
+> to get around such (incredibly stupid) blocking. It could retry
+> with a random user-agent, but that could be construed as abusive
+> behavior; this site has asked us to go away. The only choices
+> that seem really defensible would be to add a --user-agent
+> switch, and/or to make git-annex set a default user agent header
+> of "git-annex", rather than relying on the curl/wget defaults.
+> --[[Joey]] 
+
+> I've [[done]] what's discussed above, and verified it fixes
+> behavior for this specific server too.
+> --[[Joey]] 

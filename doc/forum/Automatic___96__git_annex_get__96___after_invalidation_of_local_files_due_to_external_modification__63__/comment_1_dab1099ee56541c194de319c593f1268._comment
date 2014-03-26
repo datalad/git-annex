@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ subject="comment 1"
+ date="2012-06-04T19:56:05Z"
+ content="""
+Personally, I deal with this problem by having a directory, or directories where I put files that I want to have on my partial checkout laptop, and run `git annex get` in that directory. 
+
+It's not a perfect solution, but I don't know that a perfect solution exists.
+"""]]

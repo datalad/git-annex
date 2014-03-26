@@ -1,0 +1,18 @@
+# What steps will reproduce the problem?
+
+1. Get a removable device and create a filesystem with a label containing a space, e.g.:
+    # mkfs.ext4 -L "Backup Home" /dev/sdb1
+2. Open the webapp and add a new repository on a removabledevice
+3. Select the devices mountpoint, e.g. /media/Backup\ Home
+
+# What is the expected output? What do you see instead?
+
+The configurator should remove spaces for branch names, but it actually seems to call git remote add with "Backup Home" as argument which is invalid.
+
+The assistant produces an internal server error and subsequently crashes completely.
+
+# What version of git-annex are you using? On what operating system?
+
+git-annex 3.20120924 from the Debian package in sid on Debian wheezy, amd64.
+
+> Thanks for reporting this, I've fixed it in git. [[done]] --[[Joey]] 

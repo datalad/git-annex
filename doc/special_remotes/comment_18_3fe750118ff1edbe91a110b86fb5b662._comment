@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 18"
+ date="2013-05-23T23:25:02Z"
+ content="""
+All special remotes store files compressed when you enable encryption. Not otherwise, though.
+
+As far as the web special remote and pre-compressed files, files are downloaded from the web using `wget` or (of wget is not available) `curl`. So if you can make it work with those commands, it should work.
+"""]]

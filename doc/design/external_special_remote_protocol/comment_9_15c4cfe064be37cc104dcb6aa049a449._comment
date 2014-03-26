@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 9"
+ date="2014-01-02T00:15:28Z"
+ content="""
+Tobias made some good points:
+
+* git-annex may not be in PATH depending on installation method
+* It would in theory be bad if a special remote ran some git-annex command that used the special remote and ran some git-annex command [...].
+* git-annex would need to tell the special remote what git repo it was being used with.
+
+So, added GETWANTED and SETWANTED. However, if I find myself recapitulating a lot of git-annex's command-line plumbing stuff in this protocol, I will need to revisit this decision and find a better way. Particularly, I narrowly escaped an intractable dependency loop in [[!commit 8e3032df2d5c6ddf07e43de4b3bb89cb578ae048]].
+"""]]

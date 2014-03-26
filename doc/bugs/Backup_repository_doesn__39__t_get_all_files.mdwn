@@ -1,0 +1,40 @@
+[[!meta title="assistant should try sending old/deleted versions of files to backup repositories"]]
+
+### Please describe the problem.
+Backup group repositories don't download all "unused" files when running the webapp.
+
+
+### What steps will reproduce the problem?
+Run the webapp, set up two local repositories:
+
+1 - Use this for testing, set to manual type
+
+2 - Use for backups, set to full backup type
+
+Create some files, change them, etc.  See that files and history get transferred from #1 --> #2
+
+Change #2 to being "don't sync".  For example, you are running out of disk space, or are off the network.
+
+Edit a file in #1 a couple of times.  Now change #2 to synchronise.
+
+Now, #2 will reflect #1 in the current state.
+
+Stop the annex assistant.
+
+Change #2 to being indirect mode.  Try to checkout a previous revision. There will be broken symlinks.  git annex get will fail with "no copies of this file" type errors.
+
+
+My expectation (incorrectly?) was that all the "history" of my files would be automatically transferred to the backup group repos.  It seems only the git commits are transferred, but the "unused" file content isn't.
+
+--- 
+
+What this tells me is that any changes that occur whilst I am not networked are entirely localised to my machine.  If this is the design expectation, can we squash commits before sending them?  There seems to be no point in having commits pointing to file content that has no chance of being accessed.
+
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 5.20131130-gc25be33
+
+
+> This was fixed in 5.20140127; the assistant now does a daily sweep of
+> unused files to move them to backup repositories when possible. [[done]]
+> --[[Joey]]

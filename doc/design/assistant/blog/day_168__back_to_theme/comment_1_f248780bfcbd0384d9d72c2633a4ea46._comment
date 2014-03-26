@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://jasonwoof.com/"
+ nickname="JasonWoof"
+ subject="phrase suggestion"
+ date="2013-01-11T00:24:39Z"
+ content="""
+I suggest using the term \"repository\" not \"remote\". Two reasons: 1: it's a noun in *English. 2: it works for both local and remote repositories.
+
+Both get +1 because they match git terminology. (I have a secret dream that the assistant might bring people to git, maybe that's silly.)
+
+\* OK, so \"remote\" is also a noun in English, but it means the widget with buttons that controls the tv/whatever.
+"""]]

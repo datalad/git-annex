@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 5"
+ date="2011-03-16T15:47:17Z"
+ content="""
+If you can't segment the names retroactively, it's better to start with segmenting, imo.
+
+As subdirectories are cheap, going with ab/cd/rest or even ab/cd/ef/rest by default wouldn't hurt.
+
+Your point about git not needing to create as many tree objects is a kicker indeed. If I were you, I would default to segmentation.
+"""]]

@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 1"
+ date="2013-07-30T19:14:25Z"
+ content="""
+I think that you're conflating two different features.
+
+First, there's the question of determining which remotes should store a file. The [[preferred_content]] expressions are a way to let the user define this in a way that makes sense for their setup. There's also the annex.diskreserve setting, to allow a remote to reject a file if it doesn't have space. The git-annex assistant can automatically apply those, and arrange to transfer files to all remotes that want a copy. Or you can do it on the command line using --auto. Perhaps it would be nice to have a `git annex copy --auto --to any`, to avoid needing to run copy multiple times to send to different remotes.
+
+Second, there's the concept of expiring files. I don't think relatime would prevent using atime for this (git-annex could just set the atime to 0 when it first gets a file to work around relatime), and I don't like the idea of inotify watching all files just to work around noatime. I suppose that the preferred content expressions could have an atime check operation added to them. Although I guess you could just as well use `find`..
+
+(Finally, I don't think there's a good way to block processes that are trying to open files that are not there, without using FuSE. And I don't know that a system that could block any program indefinitely waiting on some large files being pulled down from wherever would be one I'd want to use. This has prevented me from going down that path so far.)
+"""]]

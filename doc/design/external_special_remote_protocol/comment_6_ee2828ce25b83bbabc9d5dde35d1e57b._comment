@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 6"
+ date="2013-12-31T17:56:34Z"
+ content="""
+I suppose you're talking about preferred content settings.
+
+I think that it makes sense for hooks to use existing git-annex plumbing etc when it's available. So a hook could just run `git annex wanted` to manage its preferred content.
+
+The only problem is that a hook does not currently have a way to discover the UUID of the repository! So I've added a GETUUID to cover this and other use cases.
+"""]]

@@ -1,0 +1,21 @@
+Worked to get git-remote-gcrypt included in every git-annex autobuild
+bundle.
+(Except Windows; running a shell script there may need some work later..)
+
+Next I want to work on making the assistant easily able to create encrypted
+git repositories on removable drives. Which will involve a UI to select
+which gpg key to use, or creating (and backing up!) a gpg key.
+
+But, I got distracted chasing down some bugs on Windows. These were
+quite ugly; more direct mode mapping breakage which resulted in 
+files not being accessible. Also fsck on Windows failed to detect and fix
+the problem. All fixed now. (If you use git-annex on Windows, you should
+certainly upgrade and run `git annex fsck`.)
+
+As with most bugs in the Windows port, the underlying cause turned out to
+be stupid: `isSymlink` always returned False on Windows. Which makes sense
+from the perspective of Windows not quite having anything entirely like
+symlinks. But failed when that was being used to detect when files in the
+git tree being merged into the repository had the symlink bit set..
+
+Did bug triage. Backlog down to 32 (mostly messages from August).

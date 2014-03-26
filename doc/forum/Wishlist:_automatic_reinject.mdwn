@@ -1,0 +1,14 @@
+I think it would be useful to supplement the `reinject` command with an automatic
+mode which calculates the checksum of the source file and injects the file if it
+is known to the repository (without the need to provide a destination filename).
+In addition, this could be done recursively if the user provides a directory to
+inject. All this can probably be done already with some plumbing, but a simple
+`reinject --auto` (or `scour`, or `scavenge`, if you like) would be a nice addition.
+Of course this would only work for the checksum backends.
+
+Example use cases would be:
+
+* Recovering data from lost+found easily
+* Making use of old (pre-git-annex) archival volumes with useful files
+  scattered among non-useful files
+* Sneaker-netting files between disconnected git-annex repositories

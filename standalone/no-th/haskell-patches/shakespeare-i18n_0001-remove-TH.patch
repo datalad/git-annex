@@ -1,0 +1,215 @@
+From 57ad7d1512a3144fd0b00f9796d5fd9e0ea86852 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Tue, 17 Dec 2013 16:30:59 +0000
+Subject: [PATCH] remove TH
+
+---
+ Text/Shakespeare/I18N.hs | 178 ++---------------------------------------------
+ 1 file changed, 4 insertions(+), 174 deletions(-)
+
+diff --git a/Text/Shakespeare/I18N.hs b/Text/Shakespeare/I18N.hs
+index 2077914..2289214 100644
+--- a/Text/Shakespeare/I18N.hs
++++ b/Text/Shakespeare/I18N.hs
+@@ -51,10 +51,10 @@
+ --
+ -- You can also adapt those instructions for use with other systems.
+ module Text.Shakespeare.I18N
+-    ( mkMessage
+-    , mkMessageFor
+-    , mkMessageVariant
+-    , RenderMessage (..)
++    --( mkMessage
++    --, mkMessageFor
++    ---, mkMessageVariant
++    ( RenderMessage (..)
+     , ToMessage (..)
+     , SomeMessage (..)
+     , Lang
+@@ -105,143 +105,6 @@ instance RenderMessage master Text where
+ -- | an RFC1766 / ISO 639-1 language code (eg, @fr@, @en-GB@, etc).
+ type Lang = Text
+ 
+--- |generate translations from translation files
+---
+--- This function will:
+---
+---  1. look in the supplied subdirectory for files ending in @.msg@
+---
+---  2. generate a type based on the constructors found
+---
+---  3. create a 'RenderMessage' instance
+---
+-mkMessage :: String   -- ^ base name to use for translation type
+-          -> FilePath -- ^ subdirectory which contains the translation files
+-          -> Lang     -- ^ default translation language
+-          -> Q [Dec]
+-mkMessage dt folder lang =
+-    mkMessageCommon True "Msg" "Message" dt dt folder lang
+-
+-
+--- | create 'RenderMessage' instance for an existing data-type
+-mkMessageFor :: String     -- ^ master translation data type
+-             -> String     -- ^ existing type to add translations for
+-             -> FilePath   -- ^ path to translation folder
+-             -> Lang       -- ^ default language
+-             -> Q [Dec]
+-mkMessageFor master dt folder lang = mkMessageCommon False "" "" master dt folder lang
+-
+--- | create an additional set of translations for a type created by `mkMessage`
+-mkMessageVariant :: String     -- ^ master translation data type
+-                 -> String     -- ^ existing type to add translations for
+-                 -> FilePath   -- ^ path to translation folder
+-                 -> Lang       -- ^ default language
+-                 -> Q [Dec]
+-mkMessageVariant master dt folder lang = mkMessageCommon False "Msg" "Message" master dt folder lang
+-
+--- |used by 'mkMessage' and 'mkMessageFor' to generate a 'RenderMessage' and possibly a message data type
+-mkMessageCommon :: Bool      -- ^ generate a new datatype from the constructors found in the .msg files
+-                -> String    -- ^ string to append to constructor names
+-                -> String    -- ^ string to append to datatype name
+-                -> String    -- ^ base name of master datatype
+-                -> String    -- ^ base name of translation datatype
+-                -> FilePath  -- ^ path to translation folder
+-                -> Lang      -- ^ default lang
+-                -> Q [Dec]
+-mkMessageCommon genType prefix postfix master dt folder lang = do
+-    files <- qRunIO $ getDirectoryContents folder
+-    (_files', contents) <- qRunIO $ fmap (unzip . catMaybes) $ mapM (loadLang folder) files
+-#ifdef GHC_7_4
+-    mapM_ qAddDependentFile _files'
+-#endif
+-    sdef <-
+-        case lookup lang contents of
+-            Nothing -> error $ "Did not find main language file: " ++ unpack lang
+-            Just def -> toSDefs def
+-    mapM_ (checkDef sdef) $ map snd contents
+-    let mname = mkName $ dt ++ postfix
+-    c1 <- fmap concat $ mapM (toClauses prefix dt) contents
+-    c2 <- mapM (sToClause prefix dt) sdef
+-    c3 <- defClause
+-    return $
+-     ( if genType 
+-       then ((DataD [] mname [] (map (toCon dt) sdef) []) :)
+-       else id)
+-        [ InstanceD
+-            []
+-            (ConT ''RenderMessage `AppT` (ConT $ mkName master) `AppT` ConT mname)
+-            [ FunD (mkName "renderMessage") $ c1 ++ c2 ++ [c3]
+-            ]
+-        ]
+-
+-toClauses :: String -> String -> (Lang, [Def]) -> Q [Clause]
+-toClauses prefix dt (lang, defs) =
+-    mapM go defs
+-  where
+-    go def = do
+-        a <- newName "lang"
+-        (pat, bod) <- mkBody dt (prefix ++ constr def) (map fst $ vars def) (content def)
+-        guard <- fmap NormalG [|$(return $ VarE a) == pack $(lift $ unpack lang)|]
+-        return $ Clause
+-            [WildP, ConP (mkName ":") [VarP a, WildP], pat]
+-            (GuardedB [(guard, bod)])
+-            []
+-
+-mkBody :: String -- ^ datatype
+-       -> String -- ^ constructor
+-       -> [String] -- ^ variable names
+-       -> [Content]
+-       -> Q (Pat, Exp)
+-mkBody dt cs vs ct = do
+-    vp <- mapM go vs
+-    let pat = RecP (mkName cs) (map (varName dt *** VarP) vp)
+-    let ct' = map (fixVars vp) ct
+-    pack' <- [|Data.Text.pack|]
+-    tomsg <- [|toMessage|]
+-    let ct'' = map (toH pack' tomsg) ct'
+-    mapp <- [|mappend|]
+-    let app a b = InfixE (Just a) mapp (Just b)
+-    e <-
+-        case ct'' of
+-            [] -> [|mempty|]
+-            [x] -> return x
+-            (x:xs) -> return $ foldl' app x xs
+-    return (pat, e)
+-  where
+-    toH pack' _ (Raw s) = pack' `AppE` SigE (LitE (StringL s)) (ConT ''String)
+-    toH _ tomsg (Var d) = tomsg `AppE` derefToExp [] d
+-    go x = do
+-        let y = mkName $ '_' : x
+-        return (x, y)
+-    fixVars vp (Var d) = Var $ fixDeref vp d
+-    fixVars _ (Raw s) = Raw s
+-    fixDeref vp (DerefIdent (Ident i)) = DerefIdent $ Ident $ fixIdent vp i
+-    fixDeref vp (DerefBranch a b) = DerefBranch (fixDeref vp a) (fixDeref vp b)
+-    fixDeref _ d = d
+-    fixIdent vp i =
+-        case lookup i vp of
+-            Nothing -> i
+-            Just y -> nameBase y
+-
+-sToClause :: String -> String -> SDef -> Q Clause
+-sToClause prefix dt sdef = do
+-    (pat, bod) <- mkBody dt (prefix ++ sconstr sdef) (map fst $ svars sdef) (scontent sdef)
+-    return $ Clause
+-        [WildP, ConP (mkName "[]") [], pat]
+-        (NormalB bod)
+-        []
+-
+-defClause :: Q Clause
+-defClause = do
+-    a <- newName "sub"
+-    c <- newName "langs"
+-    d <- newName "msg"
+-    rm <- [|renderMessage|]
+-    return $ Clause
+-        [VarP a, ConP (mkName ":") [WildP, VarP c], VarP d]
+-        (NormalB $ rm `AppE` VarE a `AppE` VarE c `AppE` VarE d)
+-        []
+-
+ toCon :: String -> SDef -> Con
+ toCon dt (SDef c vs _) =
+     RecC (mkName $ "Msg" ++ c) $ map go vs
+@@ -257,39 +120,6 @@ varName a y =
+     upper (x:xs) = toUpper x : xs
+     upper [] = []
+ 
+-checkDef :: [SDef] -> [Def] -> Q ()
+-checkDef x y =
+-    go (sortBy (comparing sconstr) x) (sortBy (comparing constr) y)
+-  where
+-    go _ [] = return ()
+-    go [] (b:_) = error $ "Extra message constructor: " ++ constr b
+-    go (a:as) (b:bs)
+-        | sconstr a < constr b = go as (b:bs)
+-        | sconstr a > constr b = error $ "Extra message constructor: " ++ constr b
+-        | otherwise = do
+-            go' (svars a) (vars b)
+-            go as bs
+-    go' ((an, at):as) ((bn, mbt):bs)
+-        | an /= bn = error "Mismatched variable names"
+-        | otherwise =
+-            case mbt of
+-                Nothing -> go' as bs
+-                Just bt
+-                    | at == bt -> go' as bs
+-                    | otherwise -> error "Mismatched variable types"
+-    go' [] [] = return ()
+-    go' _ _ = error "Mistmached variable count"
+-
+-toSDefs :: [Def] -> Q [SDef]
+-toSDefs = mapM toSDef
+-
+-toSDef :: Def -> Q SDef
+-toSDef d = do
+-    vars' <- mapM go $ vars d
+-    return $ SDef (constr d) vars' (content d)
+-  where
+-    go (a, Just b) = return (a, b)
+-    go (a, Nothing) = error $ "Main language missing type for " ++ show (constr d, a)
+ 
+ data SDef = SDef
+     { sconstr :: String
+-- 
+1.8.5.1
+

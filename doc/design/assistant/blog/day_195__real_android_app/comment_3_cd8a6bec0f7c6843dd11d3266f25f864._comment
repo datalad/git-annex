@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBJ6Dv1glxzzi4qIzGFNa6F-mfHIvv9Ck"
+ nickname="Jim"
+ subject="Installs and runs"
+ date="2013-02-22T00:17:30Z"
+ content="""
+No problem installing on a Galaxy Nexus with 4.2.2
+
+    1|u0_a162@android:/sdcard $ git clone https://git.jim.sh/jim/annex.git
+    Cloning into 'annex'...
+    fatal: Unable to find remote helper for 'https'
+
+Too much to hope for at this stage, I suppose :)
+
+    128|u0_a162@android:/sdcard $ git annex assistant
+    git-annex: Not in a git repository.
+    1|u0_a162@android:/sdcard $ git init test
+    Initialized empty Git repository in /storage/emulated/legacy/test/.git/
+    u0_a162@android:/sdcard $ cd test
+    u0_a162@android:/sdcard/test $ git annex init
+    init
+      Detected a crippled filesystem.
+    
+      Enabling direct mode.
+    
+    *** Please tell me who you are.
+    
+    Run
+    
+      git config --global user.email \"you@example.com\"
+      git config --global user.name \"Your Name\"
+    
+    to set your account's default identity.
+    Omit --global to set the identity only in this repository.
+    
+    fatal: unable to auto-detect email address (got 'u0_a162@localhost.(none)')
+    
+    git-annex: user error (git [\"--git-dir=/storage/emulated/legacy/test/.git\",\"--work-tree=/storage/emulated/legacy/test\",\"commit-tree\",\"4b825dc642cb6eb9a060e54bf8d69288fbee4904\"] exited 128)
+    failed
+    git-annex: init: 1 failed
+    1|u0_a162@android:/sdcard/test $
+
+However, I get the same error even after setting `user.email` and `user.name` (which seems to work fine)
+"""]]

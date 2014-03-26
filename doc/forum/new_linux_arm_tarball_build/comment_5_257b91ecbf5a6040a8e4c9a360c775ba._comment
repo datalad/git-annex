@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://julien.lefrique.name/"
+ nickname="jlefrique"
+ subject="QNAP kernel"
+ date="2013-12-17T16:27:21Z"
+ content="""
+It's kernel 2.6.33.2 (see uname in my previous message).
+A new version with kernel 3.4.x is available, I will try to update when the data on my NAS will be (more) safely backup-ed.
+"""]]

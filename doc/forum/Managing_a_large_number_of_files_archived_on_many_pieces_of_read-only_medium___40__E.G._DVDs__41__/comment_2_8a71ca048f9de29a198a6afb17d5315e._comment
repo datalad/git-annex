@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="Steve"
+ ip="92.104.175.136"
+ subject="&quot;free-form&quot; special remote / dar utility"
+ date="2012-10-20T22:11:23Z"
+ content="""
+dar looks familiar, I'm sure I have run across it in the past.  However, it is not suitable in this case; see requirement #3 above that the DVD-Rs be usable without git or git-annex.
+
+What would work we be some sort of special remote that allows free-form data.  Imagine that you create the DVD-R with the files on it, then you mount it and add the mount directory as a free-form special remote.  git-annex checksums all the files under the specified directory and stores the relative path to each file somewhere.  Then, when you want to fetch a specific hash from the remote it looks up the relative path, adds it to the base directory and transfers it into the local .git/annex/objects/ store.
+
+"""]]

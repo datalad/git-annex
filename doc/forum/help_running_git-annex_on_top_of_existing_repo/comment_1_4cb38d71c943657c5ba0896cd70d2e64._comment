@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn7gQ1zZDdWhXy9H51W2krZYShNmKL3qfM"
+ nickname="Karsten"
+ subject="comment 1"
+ date="2013-06-01T09:21:54Z"
+ content="""
+Mixing files controlled by git directly and files controlled by git annex is possible, simply 'git annex add' the large files and 'git add' the rest. You will not be able to use direct mode and you should not run the git annex assisstant, as it will add all files to the annex. 
+"""]]

@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2011-03-26T10:57:41Z"
+ content="""
+After some thought, perhaps the default fsck output should be at least machine readable and copy and pasteable i.e.
+
+<pre>
+$ git annex fsck
+Files with errors
+
+    file1
+    file2
+
+</pre>
+
+so I can then copy the list of borked files and then just paste it into a for loop in my shell to recover the files. it's just an idea.
+"""]]

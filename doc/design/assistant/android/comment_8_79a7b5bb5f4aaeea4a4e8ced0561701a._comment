@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZEanlyzay_QlEAL0CWpyZcRTyN7vay8U"
+ nickname="Carlo"
+ subject="Terminal IDE"
+ date="2012-11-21T21:46:19Z"
+ content="""
+I use Terminal IDE on android, which is 'sort of a shell environment'.
+
+It has bash, git, dropbear ssh, and vim. It is a bit limited, but it does feel like a linux shell.
+
+"""]]

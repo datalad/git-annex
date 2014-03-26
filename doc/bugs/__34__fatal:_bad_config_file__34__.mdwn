@@ -1,0 +1,14 @@
+### Please describe the problem.
+
+When running a command like `git annex copy --not --in bucket --to bucket`, I got:
+
+`fatal: bad config file line 1 in /home/jim/tmp/git-annex14898.tmp`
+
+I caught `git-annex14898.tmp` before it was deleted and it contained an HTML error page.
+I have a remote `https://git.example.com/jim/annex.git`, and it appears that git-annex
+is requesting `https://git.example.com/jim/annex.git/config`.  My server returns a 401 
+Forbidden and an error page for that URL, but git-annex tries to use the response as a config file anyway.
+
+Jim
+
+> [[fixed|done]] --[[Joey]] 

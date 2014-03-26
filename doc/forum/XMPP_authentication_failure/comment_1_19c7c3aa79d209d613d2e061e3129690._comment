@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-09T18:31:01Z"
+ content="""
+I installed ejabberd and was able to trivially reproduce this bug. Pidgin works, git-annex fails, and I just created the user with `ejabberdctl register`. Filed an upstream bug report against the haskell network-protocol-xmpp library, by email, since there's no upstream BTS:
+"""]]

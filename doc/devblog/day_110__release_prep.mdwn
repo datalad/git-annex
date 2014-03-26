@@ -1,0 +1,25 @@
+Last night I tracked down and fixed a bug in the DAV library that has been
+affecting WebDAV remotes. I've been deploying the fix for that today,
+including to the android and arm autobuilders. While I finished a clean
+reinstall of the android autobuilder, I ran into problems getting a clean
+reinstall of the arm autobuilder (some type mismatch error building
+yesod-core), so manually fixed its DAV for now.
+
+The WebDAV fix and other recent fixes makes me want to make a release soon,
+probably Monday.
+
+ObWindows: Fixed git-annex to not crash when run on Windows
+in a git repository that has a remote with a unix-style path 
+like "/foo/bar". Seems that not everything aggrees on whether such a path
+is absolute; even sometimes different parts of the same library disagree!
+
+[[!format haskell """
+import System.FilePath.Windows
+
+prop_windows_is_sane :: Bool
+prop_windows_is_sane = isAbsolute upath || ("C:\\STUFF" </> upath /= upath)
+  where upath = "/foo/bar"
+"""]]
+
+Perhaps more interestingly, I've been helping dxtrish port git-annex to
+OpenBSD and it seems most of the way there.

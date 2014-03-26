@@ -1,0 +1,34 @@
+I've switched over to mostly working on Windows porting in the evenings
+when bored, with days spent on other git-annex stuff. So, getting back to
+the planned [[design/roadmap]] for this month..
+
+Set up a [tip4commit for git-annex](http://tip4commit.com/projects/152).
+Anyone who gets a commit merged in will receive a currently small amount of
+bitcoin. This would almost be a good way to encourage more committers
+other than me, by putting say, half the money I have earmarked for that into
+the tip jar. The problem is, I make too many commits myself, so most of the
+money would be quickly tipped back out to me! I have gotten in touch with the
+tip4commit people, and hope they will give me a way to blacklist
+myself from being tipped.
+
+Designed a [[design/external_special_remote_protocol]] that seems pretty
+good for first-class special remotes implemented outside git-annex.
+It's moderately complicated on the git-annex side to make it simple and
+flexible on the special remote side, but I estimate only a few days to build
+it once I have the design finalized.
+
+# windows
+
+Tested the autobuilt windows webapp. It works! Sorted out some issues with
+the bundled libraries.
+
+Reworked how `git annex transferkeys` communicates, to make it easier to
+port it to Windows. Narrowly managed to avoid needing to write Haskell
+bindings to Windows's equivilant of `pipe(2)`. I think the Windows
+assistant can transfer keys now. and the webapp UI may even be able to be
+used to stop transfers. Needs testing.
+
+Investigated what I'll need to get XMPP working on Windows. Most of the
+libs are available in cygwin, but gsasl would need to be built from source.
+Also some kind of space-in-path problem is preventing cabal installing some
+of the necessary dependencies.

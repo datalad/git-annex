@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 8"
+ date="2013-01-11T17:20:19Z"
+ content="""
+Aha! Yes, encryption includes compression. 
+
+So, only remaining question is why your USB drive seems to be using 2x the uncompressed file size. One possibility would be it could have old versions of files, or deleted files still stored in it. You could try running \"git annex unused\" in its repository to find them. Other than that, I'm not sure what it could be. You can look around in its .git/annex directory, and compare to your laptop's repository, and perhaps see what's using the space.
+"""]]

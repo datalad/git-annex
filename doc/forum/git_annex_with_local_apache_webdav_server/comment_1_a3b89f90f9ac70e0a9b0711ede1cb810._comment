@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 1"
+ date="2014-02-26T19:40:18Z"
+ content="""
+The webdav library that git-annex uses does some webdav file locking. When deleting a file, it first locks it. It sounds like your webdav server does not like to delete a file that has been locked. Whether this is in spec I don't know.
+
+I do know that got rid of all the webdav locking stuff in a revamp of git-annex's webdav support 2 days ago! git-annex does not need locking the way it uses webdav.
+
+However, the daily builds are still built with an old version of the DAV library, which still does the locking ... and will probably remain like that for some time. To get the new version without locking, you need to build git-annex from its git master on a system with http://hackage.haskell.org/package/DAV version 0.6.1. Building from source with cabal is one way to do it. I'll be releasing a build for Debian unstable in the next day or two.
+"""]]

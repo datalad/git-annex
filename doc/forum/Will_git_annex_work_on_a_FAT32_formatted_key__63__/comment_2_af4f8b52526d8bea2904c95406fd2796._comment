@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-03-19T15:37:22Z"
+ content="""
+Now it's fully supported, so long as you put a bare git repo on your key.
+"""]]

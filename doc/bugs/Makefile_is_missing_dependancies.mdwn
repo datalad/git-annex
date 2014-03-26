@@ -1,0 +1,47 @@
+<pre>
+From e45c73e66fc18d27bdf5797876fbeb07786a4af1 Mon Sep 17 00:00:00 2001
+From: Jimmy Tang <jtang@tchpc.tcd.ie>
+Date: Tue, 22 Mar 2011 22:24:07 +0000
+Subject: [PATCH] Touch up Makefile to depend on StatFS.hs
+
+---
+ Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/Makefile b/Makefile
+index 08e2f59..4ae8392 100644
+--- a/Makefile
++++ b/Makefile
+@@ -15,7 +15,7 @@ SysConfig.hs: configure.hs TestConfig.hs
+        hsc2hs $<
+        perl -i -pe 's/^{-# INCLUDE.*//' $@
+ 
+-$(bins): SysConfig.hs Touch.hs
++$(bins): SysConfig.hs Touch.hs StatFS.hs
+        $(GHCMAKE) $@
+ 
+ git-annex.1: doc/git-annex.mdwn
+-- 
+1.7.4.1
+
+</pre>
+
+
+StatFS.hs never gets depended on and compiled, the makefile was just missing something
+
+> Thanks, [[done]]! Interested to hear if StatFS.hs works on OSX (no warning) or
+> is a no-op (with warning). --[[Joey]] 
+
+>> 
+>> for now it gives a warning, it looks like it should be easy enough to add OSX
+>> support, I guess it's a case of just digging around documentation to find the equivalent
+>> calls/headers. I'll give it a go at making this feature work on OSX and get back to you.
+>> 
+
+<pre>
+jtang@exia:~/develop/git-annex $ make
+hsc2hs StatFS.hsc
+StatFS.hsc:85:2: warning: #warning free space checking code not available for this OS
+StatFS.hsc:85:2: warning: #warning free space checking code not available for this OS
+StatFS.hsc:85:2: warning: #warning free space checking code not available for this OS
+</pre>

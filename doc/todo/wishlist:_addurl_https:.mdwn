@@ -1,0 +1,11 @@
+It would be nice if "git annex addurl" allowed https: urls, rather than just http:.
+To give an example, here is a PDF file:
+
+ https://www.fbo.gov/utils/view?id=59ba4c8aa59101a09827ab7b9a787b05
+
+If you switch the https: to http: it redirects you back to https:.
+
+As more sites provide https: for non-secret traffic, this becomes more of an issue.
+
+> I've gotten rid of the use of the HTTP library, now it just uses curl.
+> [[done]] --[[Joey]]

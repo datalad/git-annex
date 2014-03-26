@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-06-17T17:34:04Z"
+ content="""
+In that case, I'd expect the assistant will notice it can remove the remote on the next full scan, and prompt you to finish the removal. Full scans are run in a few situations, but the only guaranteed way to run one is to stop and restart the assistant.
+
+You could also enable debug mode when starting it, I'm sure the log would be useful if it somehow doesn't behave how it should.
+"""]]

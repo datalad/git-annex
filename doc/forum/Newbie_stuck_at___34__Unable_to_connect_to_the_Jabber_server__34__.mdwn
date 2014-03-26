@@ -1,0 +1,5 @@
+I'm brand new to git-annex and am having trouble getting going.  I've got an annex and I get messages like "Ran daily sanity check" and "Synced with web", but I can't get connected to a Jabber account.  I've been using my Gmail account, which works fine for logging into this forum but gives me the message "Unable to connect to the Jabber server. Maybe you entered the wrong password?" when I try to configure the Jabber account.
+
+I'm using version 3.20121112ubuntu2.  I think a later version might exist but I don't know how to reach it; I've done the standard install for Ubuntu-style OSs (I'm running Kubuntu right now), and that's the git-annex version that arrives.
+
+Any suggestions?  Sorry for the simplistic startup question, but it looks like this will be a great tool once I get it running.

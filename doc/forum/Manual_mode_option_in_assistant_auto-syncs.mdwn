@@ -1,0 +1,11 @@
+Hi,
+
+I've recently set-up a server which uses Southpaw's Tactic DAM system and I've initialised a git-annex directory using the assistant which will manage any files which Tactic puts into the git-annex. I plan to make some remote repositories to Amazon S3, friends and some local machines on my home network. The server is running Ubuntu 64-bit and so I've written an upstart job which runs 'git-annex assistant --autostart' as the user 'git-annex' as this user doesn't log-in and run the xdg autostart .desktop at all.
+
+I saw that you can set the purpose of each repository which it will sync to and noticed 'Manual Mode.' From the description, it seems it will only work if I do explicit git-annex commands to it which would be perfect for me as I'd like to write tools which run git-annex add/get/drop/etc. manually on some remotes like ones to friends as I don't want them to sync to everything or any files that they produce, only files which they request with a special tool that I'll write and have Tactic marshal the file changes/names/etc.
+
+I've set those remotes to manual-mode via the assistant and tried copying a file to the remote's directory, but it auto-synced the file anyway. Maybe I'm getting confused at how manual mode works but I'd like to only explicitly set which files to add to the repo by a command and not just 'any' file which gets placed into that directory. If this is more of a wishlist request I guess just move this post into there and I'll reword it as a wish request.
+
+I don't need to use the assistant if that makes more sense, but I would like to be able to still monitor things as the webapp makes for a great GUI to check for that stuff. I can't wait for the https version  of webapp too, I currently run git-annex webapp --listen=<ip>:<port> and then run the link it outputs on my desktop machine to manage it from the server.
+
+Thanks, and this is such a great bit of software, especially as my Internet connection is really bad for 2013 standards, and having the option for friends/remote servers to sync up via an encrypted S3 or box.com account is great!

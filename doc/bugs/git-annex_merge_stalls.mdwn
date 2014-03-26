@@ -1,0 +1,16 @@
+### Please describe the problem.
+
+Running git-annex merge shows the output "git-annex merge ", followed by a blinking cursor. The command never seems to end.
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+4.20130827-gd04d9bb on MacOS X Mountain Lion
+
+### Please provide any additional information below.
+
+dtruss output at https://www.dropbox.com/s/4b3yqn7ajfz5el2/annex-merge.log
+
+[[!meta title="no indication when git-annex is stuck waiting for a lock"]]

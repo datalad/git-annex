@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm78jq1Uo-ZbyOPG3diJUWVvEiM0kyAcvk"
+ nickname="Dorian"
+ subject="further information"
+ date="2014-02-13T13:33:49Z"
+ content="""
+I just tried moving the annex on the android phone to a different location, because I wasn't sure how git annex handles the /sdcard's fuse file system without symlinks...
+So with the annex on the /data mount using ext I got a little further (and discovered a different problem <https://git-annex.branchable.com/bugs/problems_with_android_and_gpg/>).
+
+
+"""]]

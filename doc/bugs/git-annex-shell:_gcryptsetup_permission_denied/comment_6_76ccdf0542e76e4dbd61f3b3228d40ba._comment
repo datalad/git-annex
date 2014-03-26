@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 6"
+ date="2013-11-04T17:12:05Z"
+ content="""
+It's entirely normal for `git annex get --from remote` to skip files that it does not think are present on the remote. 
+
+What does `git annex whereis` say?
+"""]]

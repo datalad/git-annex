@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.46"
+ subject="comment 1"
+ date="2014-01-26T18:08:21Z"
+ content="""
+I'd rather that people not lose the content of annexed files that are in either their current local branch, or the current branch of any other clones of the repository that they might be working on. This is why `unused` looks at the remote tracking branches, and the various sync branches. 
+"""]]

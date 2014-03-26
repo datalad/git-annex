@@ -1,0 +1,13 @@
+After (probably, doesn't hepl anymore) adding the same file into multiple clones and syncing them back, I get a couple of these `.variant-` files. The target of these symlinks is different, but the actual file contents of the real data is the same.
+
+[[!format txt """
+jkt@svist /mnt/storage5/fotky[master] $ ls -al 2011-02-05\ Svatba\ Maruška\ Pavel/jkt/cam1/IMG_8962*variant*
+lrwxrwxrwx 1 jkt jkt 335 Mar  3 02:08 2011-02-05 Svatba Maruška Pavel/jkt/cam1/IMG_8962.JPG.variant-847f.cam ->
+../../../.git/annex/objects/P4/F7/SHA512E-s5534099--bf29fad838adb755b98351477e9a57c456b66ca393652f3b5df2093fc5448b3eeb0235420a715bfb84fb0cccfbbcea4514d4558467b64a39dc7daaf43c045672.cam/SHA512E-s5534099--bf29fad838adb755b98351477e9a57c456b66ca393652f3b5df2093fc5448b3eeb0235420a715bfb84fb0cccfbbcea4514d4558467b64a39dc7daaf43c045672.cam
+lrwxrwxrwx 1 jkt jkt 343 Mar  3 02:08 2011-02-05 Svatba Maruška Pavel/jkt/cam1/IMG_8962.JPG.variant-c8d0.cam ->
+../../../.git/annex/objects/38/pG/SHA512E-s5534099--bf29fad838adb755b98351477e9a57c456b66ca393652f3b5df2093fc5448b3eeb0235420a715bfb84fb0cccfbbcea4514d4558467b64a39dc7daaf43c045672.JPG.cam/SHA512E-s5534099--bf29fad838adb755b98351477e9a57c456b66ca393652f3b5df2093fc5448b3eeb0235420a715bfb84fb0cccfbbcea4514d4558467b64a39dc7daaf43c045672.JPG.cam
+"""]]
+
+I don't know what determines the `P4/F7/` vs `38/pG/` directory names, but I would prefer if these duplicates were not created.
+
+> I guess I'm going to close this as not a bug. [[done]] --[[Joey]] 

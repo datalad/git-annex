@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 3"
+ date="2013-11-02T17:36:23Z"
+ content="""
+You can use `git annex unused` and `git annex dropunused` to remove old versions of files.
+"""]]

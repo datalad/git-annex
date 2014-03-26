@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-12-23T18:43:05Z"
+ content="""
+Since subtitle files are typically pretty small, a workaround is to simply check them into git directly, and only use git-annex for the movies. (Or `git annex unannex` the ones you've already annexed.)
+"""]]

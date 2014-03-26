@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2011-04-03T08:55:18Z"
+ content="""
+Given that the softlinks contain all needed information (if the object exists, locally), an emergency way to get files \"out\" of git-annex would be nice. I am aware that one can script it, but a canonical way is always better, especially when things go south.
+"""]]

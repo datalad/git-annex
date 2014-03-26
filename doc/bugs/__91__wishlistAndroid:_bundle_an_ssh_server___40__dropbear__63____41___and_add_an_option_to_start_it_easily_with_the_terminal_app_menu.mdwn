@@ -1,0 +1,23 @@
+### Please describe the problem.
+
+quite often is desired to fetch/navigate through the git annex installation under git annex user, e.g. to fetch the log to be provided here for the "additional information".
+Given already big size of the app bundling some lightweight ssh server should not be a major size hit, but would ease troubleshooting and bug reporting
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+Android from Nov 18
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+> Not a direction I want to go in with the Android app. [[done]] --[[Joey]] 

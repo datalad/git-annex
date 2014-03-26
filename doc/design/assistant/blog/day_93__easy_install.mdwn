@@ -1,0 +1,34 @@
+I hear that people want the git-annex assistant to be easy to install
+without messing about building it from source..
+
+## on OSX
+
+So Jimmy and I have been working all week on making an easily installed OSX
+app of the assistant. This is a .dmz file that bundles all the dependencies
+(git, etc) in, so it can be installed with one click.
+
+It seems to basically work. You can get it [[here|install/OSX]].
+
+Unfortunatly, the [[bugs/pasting_into_annex_on_OSX]] bug resurfaced while
+testing this.. So I can't really recommend using it on real data yet.
+
+Still, any testing you can do is gonna be really helpful. I'm squashing OSX
+bugs right and left.
+
+## on Linux
+
+First of all, the git-annex assistant is now available in Debian unstable,
+and in Arch Linux's AUR. Proper packages.
+
+For all the other Linux distributions, I have a workaround. It's
+a big hack, but it seems to work.. at least on Debian stable.
+
+I've just put up a [[install/linux_standalone]] tarball, which has **no
+library dependencies** apart from glibc, and doesn't even need git to be
+installed on your system.
+
+## on FreeBSD
+
+The FreeBSD port has been updated to include the git-annex assistant too..
+
+[[!meta title="day 94 easy install"]]

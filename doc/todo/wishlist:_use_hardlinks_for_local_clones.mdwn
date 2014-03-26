@@ -1,0 +1,9 @@
+as far as I know, if you `git clone` locally a git-annex enabled repository, it will not have all the files available. you would need to use `git annex get` and all files would be copied over, wasting a significant amount of space.
+
+`git-clone` has this `--local` flags which hardlinks objects in `.git/objects`, but also, maybe more interestingly, has a `--shared` option to simply tell git to look in another repo for objects. it seems to me git-annex could leverage those functionalities to avoid file duplication when using local repositories.
+
+this would be especially useful for [ikiwiki](http://ikiwiki.info/forum/ikiwiki_and_big_files).
+
+This is a [[wishlist]], but I would also welcome implementation pointers to do this myself, thanks! --[[anarcat]]
+
+> [[dup|done]]

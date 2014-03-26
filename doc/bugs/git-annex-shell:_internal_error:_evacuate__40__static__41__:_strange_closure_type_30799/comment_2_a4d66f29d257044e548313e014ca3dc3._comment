@@ -1,0 +1,66 @@
+[[!comment format=mdwn
+ username="http://fraggod.pip.verisignlabs.com.pip.verisignlabs.com/"
+ subject="Bisect results"
+ date="2011-04-03T06:22:15Z"
+ content="""
+Completed git-bisect twice, getting roughly the same results:
+
+    828a84ba3341d4b7a84292d8b9002a8095dd2382 is the first bad commit
+    commit 828a84ba3341d4b7a84292d8b9002a8095dd2382
+    Author: Joey Hess <joey@kitenet.net>
+    Date:   Sat Mar 19 14:33:24 2011 -0400
+
+        Add version command to show git-annex version as well as repository version information.
+
+    :040000 040000 ed849b7b6e9b177d6887ecebd6a0f146357824f3 1c98699dfd3fc3a3e2ce6b55150c4ef917de96e9 M      Command
+    :100644 100644 b9c22bdfb403b0bdb1999411ccfd34e934f45f5c adf07e5b3e6260b296c982a01a73116b8a9a023c M      GitAnnex.hs
+    :100644 100644 76dd156f83f3d757e1c20c80d689d24d0c533e16 d201cc73edb31f833b6d00edcbe4cf3f48eaecb0 M      Upgrade.hs
+    :100644 100644 5f414e93b84589473af5b093381694090c278e50 d4a58d77a29a6a02daf13cec0df08b5aab74f65e M      Version.hs
+    :100644 100644 f5c2956488a7afafd20374873d79579fb09b1677 f8cd577e992d38c7ec1438ce5c141eb0eb410243 M      configure.hs
+    :040000 040000 f9b7295e997c0a5b1dda352f151417564458bd6e a30008475c1889f4fd8d60d4d9c982563380a692 M      debian
+    :040000 040000 9d87a5d8b9b9fe7b722df303252ffd5760d66f75 08834f61a10d36651b3cdcc38389f45991acdf5e M      doc
+
+contents of final refs/bisect:
+
+    bad (828a84ba3341d4b7a84292d8b9002a8095dd2382)
+    good-33cb114be5135ce02671d8ce80440d40e97ca824
+    good-942480c47f69e13cf053b8f50c98c2ce4eaa256e
+    good-ca48255495e1b8ef4bda5f7f019c482d2a59b431
+
+\"roughly\" because second bisect gave two commits as a result, failing to build one of them (missing .o file on link, guess it's because of -j4 and bad deps in that version's build system):
+
+    There are only 'skip'ped commits left to test.
+    The first bad commit could be any of:
+    828a84ba3341d4b7a84292d8b9002a8095dd2382
+    5022a69e45a073046a2b14b6a4e798910c920ee9
+    We cannot bisect more!
+
+Also noticed that \"git-annex-shell ...\" command succeeds if ran as root user, while failing from unprivileged one.
+There are no permission/access errors in \"strace -f git-annex-shell ...\", so I guess it could be some bug in the GHC indeed.
+
+JIC, logged a whole second bisect operation.
+Resulting log: [http://fraggod.net/static/share/git-annex-bisect.log](http://fraggod.net/static/share/git-annex-bisect.log)
+
+Bisect script I've used (git-annex-shell dies with error code 134 - SIGABRT on GHC error):
+
+    res=
+    while true; do
+      if [[ -n \"$res\" ]]; then
+        cd /var/tmp/paludis/build/dev-scm-git-annex-scm.bak/work/git-annex-scm
+        echo \"---=== BISECT ($res) ===---\"; git bisect \"$res\" 2>&1; echo '---=== /BISECT ===---'
+        cd
+        rm -Rf /var/tmp/paludis/build/dev-scm-git-annex-scm
+        cp -a --reflink=auto /var/tmp/paludis/build/dev-scm-git-annex-scm{.bak,}
+        chown -R paludisbuild: /var/tmp/paludis/build/dev-scm-git-annex-scm
+      fi
+      res=
+      cave resolve -zx1 git-annex --skip-until-phase configure || res=skip
+      if [[ -z \"$res\" ]]; then
+        cd /remote/path
+        sudo -u user git-annex-shell 'sendkey' '/remote/path' 'SHA1-s6654080--abd8edec20648ade69351d68ae1c64c8074a6f0b' '--' rsync --server --sender -vpe.Lsf --inplace . ''
+        if [[ $? -eq 134 ]]; then res=bad; else res=good; fi
+        cd
+      fi
+    done 2>&1 | tee ~/git-annex-bisect.log
+
+"""]]

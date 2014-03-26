@@ -1,0 +1,29 @@
+### Use case 1
+
+I have a big repo using a SHA256E back-end. Along comes a new shiny SKEIN512E back-end and I would like to transition to using that, because it's faster and moves from ridiculously to ludicrously low risk of collisions.
+
+I can set `.gitattributes` to use the new back-end for any new files added, but then I when I import some arbitrary mix of existing and new files to the repo it will not deduplicate any more, it will add all the files under the new hash scheme.
+
+### Use case 2
+
+I have a big repo of files I have added using `addurl --fast`. I download the files, and they are in the repo.
+
+ - I cannot verify later that none of them have been damaged.
+ - If I come across an offline collection of some of the files, I cannot easily get them into the annex by a simple import.
+
+### Workaround
+
+In both these cases, what I can do is <del>unlock (maybe?) or unannex (definitely) all of the files, and then re-add them using the new hash</del> <em>use `migrate` to relink the files using the new scheme</em>. In both use cases this means I now risk having duplicates in various clones of the repo, and would have to clean them up with `drop-unused` -- after first having re-copied them from a repo that has them under the new hash <em>or `migrate`d them in each clone using the pre-migration commit; Either way is problematic for special remotes, in particular glacier</em>. I also lose the continuity of the history of that object.
+
+<del>In use case 2 I also lose the URLs of the files and would have to re-add them using `addurl`.</del> <em>This is probably not true when using `migrate`.</em>
+
+... which brings me to the proposed feature.
+
+### addhash
+
+Symmetrical to `addurl`, which in one form can take an existing hashed (or URL-sourced) file and add an URL source to it, `addhash` can take an existing URL-sourced (or hashed) file and add a hash reference to it (given that the file is in the annex so that the hash may be calculated) -- an alias under which it may also be identified, in addition to the existing URL or hash.
+
+ - Any file added to the annex after `addhash` will use the symlink name of the original hash if their hash matches the `addhash`ed one.
+ - An `fsck` run will use one of the available hashes to verify the integrity of the file, maybe according to some internal order of preference, or possibly a configurable one.
+
+> [[done]] --[[Joey]]

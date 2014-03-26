@@ -1,0 +1,9 @@
+I have a repository on my laptop with a single remote on a USB drive. Both were created without the assistant.
+
+The remote holds all the content. My understanding is that this would be a "backup" repository, using the group definitions.
+
+The local repository generally holds no content. When I want a file, I make sure the remote is available, and then I `git annex get` it.
+
+This works fine in git annex, but I'm now experimenting with the assistant. As soon as I fire up the assistant, it starts downloading all of the data from the remote. I don't ever want it to automatically get any content from the remote. If it sees new content in the repository, I would like it to push that out to the remote. But never get anything from the remote, and never drop anything that is in the repository.
+
+How can I setup this behaviour in the assistant? I have set the remote's repository group to "backup". The local repository is not in any group, since none of the groups fit my model for this repo.

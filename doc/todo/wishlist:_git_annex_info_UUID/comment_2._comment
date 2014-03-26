@@ -1,0 +1,8 @@
+One piece of information that's sometimes useful, but not always, is to get a count of keys present in another remote plus the size of the remote.
+
+Thus, I could verify that some repos are empty, archive repos have every single file, etc etc.
+
+I still think that info is best suited for `git annex info name/UUID` as it's more volatile than what `git annex vicfg` displays.
+
+
+Richard

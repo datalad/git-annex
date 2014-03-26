@@ -1,0 +1,36 @@
+When using the [[/assistant]] on some of my repositories, I would like to
+retain manual control over the granularity and contents of the commit
+history.  Some motivating reasons:
+
+* manually specified commit messages makes the history easier to follow
+* make a series of minor changes to a file over a period of a few hours would result in a single commit rather than capturing intermediate incomplete edits
+
+* manual choice of which files to annex (based on predicted usage) could be useful, e.g. a repo might contain a 4MB PDF which you want available in *every* remote even without `git annex get`, and also some 2MB images which are only required in some remotes
+
+> This particular case is now catered to by the "manual" repository group
+> in preferred content settings. --[[Joey]]
+
+Obviously this needs to be configurable at least per repository, and
+ideally perhaps even per remote, since usage habits can vary from machine
+to machine (e.g. I could choose to commit manually from my desktop machine
+which has a nice comfy keyboard and large screen, but this would be too
+much pain to do from my tiny netbook).
+
+In fact, this is vaguely related to [[design/assistant/partial_content]],
+since the usefulness of the commit history depends on the context of the
+data being manipulated, which in turn depends on which subdirectories are
+being touched.  So any mechanism for disabling sync per directory could
+potentially be reused for disabling auto-commit per directory.
+
+According to Joey, it should be easy to arrange for the watcher thread not
+to run, but would need some more work for the assistant to notice manual
+commits in order to sync them; however the assistant already does some
+crazy inotify watching of git refs, in order to detect incoming pushes, so
+detecting manual commits wouldn't be a stretch.
+
+[[!tag design/assistant]]
+
+> You can do this now by pausing committing via the webapp,
+> or setting `annex.autocommit=false`.
+> 
+> The assistant probably doesn't push such commits yet.

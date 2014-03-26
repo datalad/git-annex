@@ -1,0 +1,14 @@
+Hello,
+
+I want to be safe and have two copies of my files on two different backend. Currently I only have a SSH backend, that stores all my data. I have full(root) access to that machine/backend. On my laptop I have only a few bytes of data, because all is moved/copied to that SSH backend. Now, I want to duplicate the data on the SSH backend to a Google Drive account (or any other). How could I do that (without downloading all data from the SSH backend)??? Encryption is not a must.
+
+I looked into the annex/objects folder on the SSH backend, but there are 3 char length directories compared to what I see on a test Google Drive backend, where only 2 char length directory names are.
+
+Example SSH backend: [git-annex root]/annex/objects/c10/90a/SHA256E-s445227--14c3f85d6dd3464f116f6a5bbd411012781d36794549d136b18d1914c4158820.jpg/SHA256E-s445227--14c3f85d6dd3464f116f6a5bbd411012781d36794549d136b18d1914c4158820.jpg
+
+Example Google Drive: [Google Drive root]/annex/W7/xQ/SHA256E-s913904--29f9800b0dd34d4200c4e9ee152b79c3556a9a473848720be7cf83d20eff65a4.JPG
+
+Is there a way to convert these directory names and do a simpe copy??? 
+
+Thank you,
+Bence

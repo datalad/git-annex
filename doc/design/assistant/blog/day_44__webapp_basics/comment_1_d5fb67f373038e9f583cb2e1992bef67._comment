@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://jasonwoof.com/"
+ nickname="JasonWoof"
+ subject="Your security solution is fine"
+ date="2012-07-27T06:37:03Z"
+ content="""
+I think making the html file redirect is just fine. desktopcouch does something like this. They talk about it being there to help you find the port number, but it contains the security token too.
+
+They also have some javascript to delay the redirect for a while so you can bookmark the redirect file. You can click to set a cookie to skip the delay in future.
+
+It's been a while since I used desktopcouch, but I found an old redirect file laying around. Here it is:
+
+http://jasonwoof.com/downloads/desktopcouch-redirect.txt
+
+The code is pretty short, you might find something useful there.
+
+      - Jason
+"""]]

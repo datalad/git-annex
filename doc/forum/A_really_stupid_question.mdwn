@@ -1,0 +1,3 @@
+Sorry, but all this wiki and the manpage seem to gloss over the most obvious question:
+
+What happens when you commit conflicting edits in different repositories?

@@ -1,0 +1,49 @@
+I was copying files to a directory remote with `git annex copy`.  Out of 114 files, 9 of them failed with no message, just:
+
+    copy data/foo.dat (to usbdrive...) failed
+    copy data/bar.dat (to usbdrive...) failed
+
+According to strace:
+
+    31338 mkdir("/media/annex/Zp/9v/SHA256-s1362999320--d650297c8cf8c2dc0575110a52d0c5cc0ff266f294a0599f85796a6b44b23492", 0777) = -1 ENOENT (No such file or directory)
+    31338 mkdir("/media/annex/Zp/9v", 0777) = -1 ENOENT (No such file or directory)
+    31338 mkdir("/media/annex/Zp", 0777)    = -1 EEXIST (File exists)
+    31338 stat("/media/annex/Zp", 0x7f8449f170d0) = -1 ENOENT (No such file or directory)
+
+The filesystem is FAT32 and has weird case semantics.  This was mounted by udisks with its default options:
+
+    /dev/sdb1 on /media/annex type vfat (rw,nosuid,nodev,uhelper=udisks,uid=1000,gid=1000,shortname=mixed,dmask=0077,utf8=1,showexec)
+
+I wonder if the directory remote should use hashDirLower instead of hashDirMixed?
+
+> git-annex intentionally uses the same layout for directory and rsync
+> special remotes as it does for the .git/annex directory. As far
+> as I know it works ok on (truely) case-insensative filesystems.
+> 
+> Based on your strace, if you `ls /media/annex/Zp`, you will see
+> "No such file or directory", but if you `mkdir /media/annex/Zp` it will
+> fail with "File exists". Doesn't make much sense to me.
+> 
+> The (default) VFAT mount option shortname=mixed causes this behavior.
+> With shortname=lower it works ok. --[[Joey]]
+> 
+>> So, the options for fixing this bug seem to be to fix Linux (which would
+>> be a good idea IMHO but I don't really want to go there), or generally
+>> convert git-annex to using lowercase for its hashing (which would be a
+>> large amount of pain to rewrite all the symlinks in every git repo),
+>> or some special hack around this problem. 
+>> 
+>> I've put in a workaround for the problem in the directory special
+>> remote; it will use mixed case but fall-back to lowercase as necessary.
+>> 
+>> That does leave the case of a bare git repository with annexed content
+>> stored on VFAT. More special casing could fix it, but that is, I
+>> think, an unusual configuration. Leaving the bug open for that case,
+>> and for the even more unlikely configuration of a rsync special remote
+>> stored on VFAT. --[[Joey]] 
+
+>>> Bare repositories now use lowercase. rsync is the only remaining
+>>> unsupported possibility. --[[Joey]]
+>>>> Everything now uses lowercase, with the exception of non-bare
+>>>> repos, which cannot be on FAT anyway due to using symlinks. [[done]]
+>>>> --[[Joey]] 

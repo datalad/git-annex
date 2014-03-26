@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.8.117"
+ subject="comment 1"
+ date="2012-12-17T16:21:36Z"
+ content="""
+For importing your photos, you can use `git annex import /path/to/some/photos` .. this will move them from the given location into the current directory, and add them to the annex. It preserves subdirectory structure too.
+
+For using the OSX app at the command line, the only thing that is guaranteed to work properly is to run `/Applications/git-annex.app/Contents/MacOS/runshell`, which will modify your PATH and other environment appropriately.
+"""]]

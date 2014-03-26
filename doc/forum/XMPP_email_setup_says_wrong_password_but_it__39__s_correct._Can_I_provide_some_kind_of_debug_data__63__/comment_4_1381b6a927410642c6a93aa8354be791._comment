@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZEanlyzay_QlEAL0CWpyZcRTyN7vay8U"
+ nickname="Carlo"
+ subject="Now Works! For jabber.org, gmail, but NOT google apps"
+ date="2012-11-27T11:40:43Z"
+ content="""
+Hi again!
+
+With the latest version, 3.20121126, pairing works for both something@gmail.com and something@jabber.org! Yay!
+
+What still fails is my google apps address, something@somedomain.com, seems to behave same as before. the assistant says
+
+  Unable to connect to the Jabber server. Maybe you entered the wrong password? (Error message: connect: timeout (Connection timed out))
+
+If you would like a google apps address on my domain, so you don't have to set up your own, just let me know.
+
+"""]]

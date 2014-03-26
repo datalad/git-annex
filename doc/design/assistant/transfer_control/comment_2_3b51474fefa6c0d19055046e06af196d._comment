@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRRUUZo3W7pAoRoST8P_l0PtUBhvYuzDg"
+ nickname="Lyle"
+ subject="exactly this use case: cloud remotes too small"
+ date="2014-01-06T00:31:34Z"
+ content="""
+I want to store a lot of scientific data in git-annex and have only a specific subset of my often used data in a box.com account so it is quickly synced between computers (my home internet has a limited upload speed). My home server will store all the files as it has effectively unlimited space. 
+
+I basically want the opposite of archive for git-annex-assistant, I'd like to mark the box.com special remote to store every *except* a certain special directory called less used files or whatever, or vise-versa, only store a folder of often used files, the local clients would store everything and my home server would also store everything. 
+
+It seems like transfer control and the groups.log can do this but I'm just not sure how to actually set it up?
+
+Thanks!
+"""]]

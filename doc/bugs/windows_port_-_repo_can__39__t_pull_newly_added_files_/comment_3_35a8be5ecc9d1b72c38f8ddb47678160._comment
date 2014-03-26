@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhfodZquCI_EEl-f3h7HkROTszlsQL6yA"
+ nickname="Joe"
+ subject="comment 3"
+ date="2013-06-16T13:27:36Z"
+ content="""
+Making some progress. It looks like it needs a .map file for the newly added file when I pull in the backup repo.  I'm tracing the various places addAssociatedFile gets called. It looks like sync should do it. I think that's what sets up the map. If I copy the map file from another repo, I'm able to call get annex get foo2.txt. So the key is getting that map file created.
+"""]]

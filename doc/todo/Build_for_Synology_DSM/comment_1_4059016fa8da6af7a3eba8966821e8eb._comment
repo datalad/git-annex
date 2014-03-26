@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-05-24T15:55:42Z"
+ content="""
+There are already git-annex builds for arm available from eg, Debian. There's a good chance that, assuming you match up the arm variant (armel, armhf, etc) and that the NAS uses glibc and does not have too old a version, that the binary could just be copied in, possibly with some other libraries, and work. This is what's done for the existing Linux standalone builds.
+
+So, I look at this bug report as \"please add a standalone build for arm\", not as a request to support a specific NAS which I don't have ;)
+"""]]

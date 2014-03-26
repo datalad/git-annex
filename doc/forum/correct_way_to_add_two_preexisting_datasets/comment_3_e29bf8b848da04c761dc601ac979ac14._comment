@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmTNrhkVQ26GBLaLD5-zNuEiR8syTj4mI8"
+ nickname="Juan"
+ subject="comment 3"
+ date="2013-08-25T13:00:04Z"
+ content="""
+Thanks. It is very clear now. I think I got it running. I have 2 direct mode copies in my ubuntu box and in the USB drive and one indirect in my ultrabook (small SSD).
+What I meant is that even in direct mode, after sync ended, the set I indexed first ended with the contents of a folder in the .git dir using symlinks. But it might have been a leftover of previous attempts.
+I think I got confused by the great amount of flexibility it provides.
+Thanks.
+"""]]

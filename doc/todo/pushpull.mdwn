@@ -1,0 +1,4 @@
+--push/--pull should take a reponame and files, and push those files
+  to that repo; dropping them from the current repo
+
+[[done]] (move --from/--to)

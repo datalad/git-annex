@@ -1,0 +1,5 @@
+Hi,
+
+In normal maven release procedure, it re-clones the gitrepo from the tag to do the release from either git or local file, But as git-annex uses symlinks when the repo is clones by maven, it misses the files. Any recommendations how i can make this work ? 
+
+Also would love some data on who is using git-annex in production environment would be good.
