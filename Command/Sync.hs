@@ -376,5 +376,5 @@ syncFile rs f (k, _) = do
 	put dest = do
 		ok <- commandAction $ do
 			showStart "copy" f
-			next $ Command.Move.toPerform dest False k (Just f)
+			Command.Move.toStart' dest False (Just f) k
 		return (ok, if ok then Just (Remote.uuid dest) else Nothing)

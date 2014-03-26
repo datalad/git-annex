@@ -21,7 +21,7 @@ installMenu command menufile iconsrcdir icondir = do
 	writeDesktopMenuFile (fdoDesktopMenu command) menufile
 	installIcon (iconsrcdir </> "logo.svg") $
 		iconFilePath (iconBaseName ++ ".svg") "scalable" icondir
-	installIcon (iconsrcdir </> "favicon.png") $
+	installIcon (iconsrcdir </> "logo_16x16.png") $
 		iconFilePath (iconBaseName ++ ".png") "16x16" icondir
 #endif
 

@@ -42,3 +42,5 @@ so annex tries to sync with the "bad" remote, even though the command tells it t
 ### What version of git-annex are you using? On what operating system?
 git-annex version: 5.20131221
 Debian Sid
+
+> Behaving as intended. [[done]] --[[Joey]]

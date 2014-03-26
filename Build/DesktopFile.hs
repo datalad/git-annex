@@ -24,9 +24,7 @@ import System.Directory
 import System.Environment
 #ifndef mingw32_HOST_OS
 import System.Posix.User
-import System.Posix.Files
 #endif
-import System.FilePath
 import Data.Maybe
 
 systemwideInstall :: IO Bool

@@ -158,7 +158,8 @@ absRepo reference r
 	| Git.repoIsUrl r = return r
 	| otherwise = liftIO $ do
 		r' <- Git.Construct.fromAbsPath =<< absPath (Git.repoPath r)
-		flip Annex.eval Annex.gitRepo =<< Annex.new r'
+		r'' <- safely $ flip Annex.eval Annex.gitRepo =<< Annex.new r'
+		return (fromMaybe r' r'')
 
 {- Checks if two repos are the same. -}
 same :: Git.Repo -> Git.Repo -> Bool
@@ -192,14 +193,9 @@ tryScan :: Git.Repo -> Annex (Maybe Git.Repo)
 tryScan r
 	| Git.repoIsSsh r = sshscan
 	| Git.repoIsUrl r = return Nothing
-	| otherwise = safely $ Git.Config.read r
+	| otherwise = liftIO $ safely $ Git.Config.read r
   where
-	safely a = do
-		result <- liftIO (try a :: IO (Either SomeException Git.Repo))
-		case result of
-			Left _ -> return Nothing
-			Right r' -> return $ Just r'
-	pipedconfig cmd params = safely $
+	pipedconfig cmd params = liftIO $ safely $
 		withHandle StdoutHandle createProcessSuccess p $
 			Git.Config.hRead r
 	  where
@@ -247,3 +243,10 @@ combineSame = map snd . nubBy sameuuid . map pair
   where
 	sameuuid (u1, _) (u2, _) = u1 == u2 && u1 /= NoUUID
 	pair r = (getUncachedUUID r, r)
+
+safely :: IO Git.Repo -> IO (Maybe Git.Repo)
+safely a = do
+	result <- try a :: IO (Either SomeException Git.Repo)
+	case result of
+		Left _ -> return Nothing
+		Right r' -> return $ Just r'

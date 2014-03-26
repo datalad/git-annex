@@ -11,6 +11,7 @@ import Remote.External.Types
 import qualified Annex
 import Common.Annex
 import Types.Remote
+import Types.CleanupActions
 import qualified Git
 import Config
 import Remote.Helper.Special
@@ -43,7 +44,7 @@ remote = RemoteType {
 gen :: Git.Repo -> UUID -> RemoteConfig -> RemoteGitConfig -> Annex (Maybe Remote)
 gen r u c gc = do
 	external <- newExternal externaltype u c
-	Annex.addCleanup (fromUUID u) $ stopExternal external
+	Annex.addCleanup (RemoteCleanup u) $ stopExternal external
 	cst <- getCost external r gc
 	avail <- getAvailability external r gc
 	return $ Just $ encryptableRemote c

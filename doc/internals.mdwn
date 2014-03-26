@@ -150,6 +150,15 @@ Files matching the expression are preferred to be retained in the
 repository, while files not matching it are preferred to be stored
 somewhere else.
 
+## `group-preferred-content.log`
+
+Contains standard preferred content settings for groups. (Overriding or
+supplimenting the ones built into git-annex.)
+
+The file format is one line per group, staring with a timestamp, then a
+space, then the group name followed by a space and then the preferred
+content expression.
+
 ## `aaa/bbb/*.log`
 
 These log files record [[location_tracking]] information

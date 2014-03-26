@@ -37,3 +37,6 @@ OS: up-to-date ARCH system
 
 # End of transcript or log.
 """]]
+
+> [[done]]; I have enabled the haskell dns library on all the autobuilds.
+> --[[Joey]]

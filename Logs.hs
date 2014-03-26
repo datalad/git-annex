@@ -24,7 +24,7 @@ getLogVariety :: FilePath -> Maybe LogVariety
 getLogVariety f
 	| f `elem` topLevelUUIDBasedLogs = Just UUIDBasedLog
 	| isRemoteStateLog f = Just NewUUIDBasedLog
-	| isMetaDataLog f || f == numcopiesLog = Just OtherLog
+	| isMetaDataLog f || f `elem` otherLogs = Just OtherLog
 	| otherwise = PresenceLog <$> firstJust (presenceLogs f)
 
 {- All the uuid-based logs stored in the top of the git-annex branch. -}
@@ -45,6 +45,13 @@ presenceLogs f =
 	, locationLogFileKey f
 	]
 
+{- Logs that are neither UUID based nor presence logs. -}
+otherLogs :: [FilePath]
+otherLogs =
+	[ numcopiesLog
+	, groupPreferredContentLog
+	]
+
 uuidLog :: FilePath
 uuidLog = "uuid.log"
 
@@ -62,6 +69,9 @@ groupLog = "group.log"
 
 preferredContentLog :: FilePath
 preferredContentLog = "preferred-content.log"
+
+groupPreferredContentLog :: FilePath
+groupPreferredContentLog = "group-preferred-content.log"
 
 scheduleLog :: FilePath
 scheduleLog = "schedule.log"

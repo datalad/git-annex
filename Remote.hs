@@ -37,6 +37,7 @@ module Remote (
 	keyPossibilities,
 	keyPossibilitiesTrusted,
 	nameToUUID,
+	nameToUUID',
 	showTriedRemotes,
 	showLocations,
 	forceTrust,
@@ -48,7 +49,6 @@ module Remote (
 import qualified Data.Map as M
 import Text.JSON
 import Text.JSON.Generic
-import Data.Tuple
 import Data.Ord
 
 import Common.Annex
@@ -121,23 +121,25 @@ noRemoteUUIDMsg r = "cannot determine uuid for " ++ name r
  - and returns its UUID. Finds even repositories that are not
  - configured in .git/config. -}
 nameToUUID :: RemoteName -> Annex UUID
-nameToUUID "." = getUUID -- special case for current repo
-nameToUUID "here" = getUUID
-nameToUUID "" = error "no remote specified"
-nameToUUID n = byName' n >>= go
+nameToUUID = either error return <=< nameToUUID'
+
+nameToUUID' :: RemoteName -> Annex (Either String UUID)
+nameToUUID' "." = Right <$> getUUID -- special case for current repo
+nameToUUID' "here" = Right <$> getUUID
+nameToUUID' n = byName' n >>= go
   where
-	go (Right r) = case uuid r of
-		NoUUID -> error $ noRemoteUUIDMsg r
-		u -> return u
-	go (Left e) = fromMaybe (error e) <$> bydescription
-	bydescription = do
+	go (Right r) = return $ case uuid r of
+		NoUUID -> Left $ noRemoteUUIDMsg r
+		u -> Right u
+	go (Left e) = do
 		m <- uuidMap
-		case M.lookup n $ transform swap m of
-			Just u -> return $ Just u
-			Nothing -> return $ byuuid m
-	byuuid m = M.lookup (toUUID n) $ transform double m
-	transform a = M.fromList . map a . M.toList
-	double (a, _) = (a, a)
+		return $ case M.keys (M.filter (== n) m) of
+			[u] -> Right u
+			[] -> let u = toUUID n
+				in case M.keys (M.filterWithKey (\k _ -> k == u) m) of
+					[] -> Left e
+					_ -> Right u
+			_us -> Left "Found multiple repositories with that description"
 
 {- Pretty-prints a list of UUIDs of remotes, for human display.
  -

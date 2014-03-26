@@ -13,6 +13,7 @@ import qualified Data.Map as M
 
 import Common.Annex
 import Types.Remote
+import Types.CleanupActions
 import qualified Annex
 import Annex.LockPool
 #ifndef mingw32_HOST_OS
@@ -74,7 +75,7 @@ runHooks r starthook stophook a = do
 		-- So, requiring idempotency is the right approach.
 		run starthook
 
-		Annex.addCleanup (remoteid ++ "-stop-command") $ runstop lck
+		Annex.addCleanup (StopHook $ uuid r) $ runstop lck
 	runstop lck = do
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock

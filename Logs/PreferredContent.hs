@@ -1,6 +1,6 @@
 {- git-annex preferred content matcher configuration
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -8,10 +8,12 @@
 module Logs.PreferredContent (
 	preferredContentLog,
 	preferredContentSet,
+	groupPreferredContentSet,
 	isPreferredContent,
 	preferredContentMap,
 	preferredContentMapLoad,
 	preferredContentMapRaw,
+	groupPreferredContentMapRaw,
 	checkPreferredContentExpression,
 	setStandardGroup,
 ) where
@@ -35,6 +37,7 @@ import Types.Remote (RemoteConfig)
 import Logs.Group
 import Logs.Remote
 import Types.StandardGroups
+import Limit
 
 {- Checks if a file is preferred content for the specified repository
  - (or the current repository if none is specified). -}
@@ -56,40 +59,61 @@ preferredContentMapLoad :: Annex Annex.PreferredContentMap
 preferredContentMapLoad = do
 	groupmap <- groupMap
 	configmap <- readRemoteLog
+	groupwantedmap <- groupPreferredContentMapRaw
 	m <- simpleMap
-		. parseLogWithUUID ((Just .) . makeMatcher groupmap configmap)
+		. parseLogWithUUID ((Just .) . makeMatcher groupmap configmap groupwantedmap)
 		<$> Annex.Branch.get preferredContentLog
 	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Just m }
 	return m
 
 {- This intentionally never fails, even on unparsable expressions,
  - because the configuration is shared among repositories and newer
- - versions of git-annex may add new features. Instead, parse errors
- - result in a Matcher that will always succeed. -}
-makeMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> PreferredContentExpression -> FileMatcher
-makeMatcher groupmap configmap u expr
-	| expr == "standard" = standardMatcher groupmap configmap u
-	| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
-	| otherwise = matchAll
+ - versions of git-annex may add new features. -}
+makeMatcher
+	:: GroupMap
+	-> M.Map UUID RemoteConfig
+	-> M.Map Group PreferredContentExpression
+	-> UUID
+	-> PreferredContentExpression
+	-> FileMatcher
+makeMatcher groupmap configmap groupwantedmap u = go True True
   where
-	tokens = exprParser groupmap configmap (Just u) expr
+	go expandstandard expandgroupwanted expr
+		| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
+		| otherwise = unknownMatcher u
+	  where
+		tokens = exprParser matchstandard matchgroupwanted groupmap configmap (Just u) expr
+		matchstandard
+			| expandstandard = maybe (unknownMatcher u) (go False False)
+				(standardPreferredContent <$> getStandardGroup mygroups)
+			| otherwise = unknownMatcher u
+		matchgroupwanted
+			| expandgroupwanted = maybe (unknownMatcher u) (go True False)
+				(groupwanted mygroups)
+			| otherwise = unknownMatcher u
+		mygroups = fromMaybe S.empty (u `M.lookup` groupsByUUID groupmap)
+		groupwanted s = case M.elems $ M.filterWithKey (\k _ -> S.member k s) groupwantedmap of
+			[pc] -> Just pc
+			_ -> Nothing
 
-{- Standard matchers are pre-defined for some groups. If none is defined,
- - or a repository is in multiple groups with standard matchers, match all. -}
-standardMatcher :: GroupMap -> M.Map UUID RemoteConfig -> UUID -> FileMatcher
-standardMatcher groupmap configmap u = 
-	maybe matchAll (makeMatcher groupmap configmap u . preferredContent) $
-		getStandardGroup =<< u `M.lookup` groupsByUUID groupmap
+{- When a preferred content expression cannot be parsed, but is already
+ - in the log (eg, put there by a newer version of git-annex),
+ - the fallback behavior is to match only files that are currently present.
+ -
+ - This avoid unwanted/expensive changes to the content, until the problem
+ - is resolved. -}
+unknownMatcher :: UUID -> FileMatcher
+unknownMatcher u = Utility.Matcher.generate [present]
+  where
+	present = Utility.Matcher.Operation $ matchPresent (Just u)
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: PreferredContentExpression -> Maybe String
-checkPreferredContentExpression expr
-	| expr == "standard" = Nothing
-	| otherwise = case parsedToMatcher tokens of
-		Left e -> Just e
-		Right _ -> Nothing
+checkPreferredContentExpression expr = case parsedToMatcher tokens of
+	Left e -> Just e
+	Right _ -> Nothing
   where
-	tokens = exprParser emptyGroupMap M.empty Nothing expr
+	tokens = exprParser matchAll matchAll emptyGroupMap M.empty Nothing expr
 
 {- Puts a UUID in a standard group, and sets its preferred content to use
  - the standard expression for that group, unless something is already set. -}

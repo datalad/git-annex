@@ -93,12 +93,15 @@ start file = ifAnnexed file addpresent add
  - Lockdown can fail if a file gets deleted, and Nothing will be returned.
  -}
 lockDown :: FilePath -> Annex (Maybe KeySource)
-lockDown file = ifM crippledFileSystem
-	( liftIO $ catchMaybeIO nohardlink
-	, do
+lockDown = either (\e -> showErr e >> return Nothing) (return . Just) <=< lockDown'
+
+lockDown' :: FilePath -> Annex (Either IOException KeySource)
+lockDown' file = ifM crippledFileSystem
+	( liftIO $ tryIO nohardlink
+	, tryAnnexIO $ do
 		tmp <- fromRepo gitAnnexTmpMiscDir
 		createAnnexDirectory tmp
-		eitherToMaybe <$> tryAnnexIO (go tmp)
+		go tmp
 	)
   where
 	{- In indirect mode, the write bit is removed from the file as part

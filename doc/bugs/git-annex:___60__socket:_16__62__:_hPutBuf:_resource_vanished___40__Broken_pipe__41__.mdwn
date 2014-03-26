@@ -12,3 +12,5 @@ git-annex version: 4.20130521-g20710d4 (And multiple prior versions)
 .git/annex/daemon.log upload: http://paste.ubuntu.com/5694813/
 
 I could find no debug.log?
+
+> [[moreinfo]] until it's reproduced with a current version.. --[[Joey]] 

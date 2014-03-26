@@ -29,6 +29,18 @@ index 6623e0f..dd10253 100644
  		comparehome = 1;
  
  	/* check the open file to avoid races */
+diff --git a/authfile.c b/authfile.c
+index 7dd4496..00462e9 100644
+--- a/authfile.c
++++ b/authfile.c
+@@ -613,6 +613,7 @@ int
+ key_perm_ok(int fd, const char *filename)
+ {
+ 	struct stat st;
++	return 1; /* check doesn't make sense on android */
+ 
+ 	if (fstat(fd, &st) < 0)
+ 		return 0;
 diff --git a/misc.c b/misc.c
 index 0bf2db6..4327d03 100644
 --- a/misc.c

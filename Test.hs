@@ -17,12 +17,14 @@ import Test.Tasty.Ingredients.Rerun
 import Data.Monoid
 
 import Options.Applicative hiding (command)
+#if MIN_VERSION_optparse_applicative(0,8,0)
+import qualified Options.Applicative.Types as Opt
+#endif
 import Control.Exception.Extensible
 import qualified Data.Map as M
 import System.IO.HVFS (SystemFS(..))
 import qualified Text.JSON
 import System.Path
-import qualified Data.ByteString.Lazy as L
 
 import Common
 
@@ -43,7 +45,7 @@ import qualified Types.Backend
 import qualified Types.TrustLevel
 import qualified Types
 import qualified Logs
-import qualified Logs.UUIDBased
+import qualified Logs.MapLog
 import qualified Logs.Trust
 import qualified Logs.Remote
 import qualified Logs.Unused
@@ -104,8 +106,7 @@ main ps = do
 	-- parameters is "test".
 	let pinfo = info (helper <*> suiteOptionParser ingredients tests)
 		( fullDesc <> header "Builtin test suite" )
-	opts <- either (\f -> error =<< errMessage f "git-annex test") return $
-		execParserPure (prefs idm) pinfo ps
+	opts <- parseOpts (prefs idm) pinfo ps
 	case tryIngredients ingredients opts tests of
 		Nothing -> error "No tests found!?"
 		Just act -> ifM act
@@ -115,6 +116,18 @@ main ps = do
 				putStrLn "   with utilities, such as git, installed on this system.)"
 				exitFailure
 			)
+  where
+  	progdesc = "git-annex test"
+	parseOpts pprefs pinfo args =
+#if MIN_VERSION_optparse_applicative(0,8,0)
+		pure $ case execParserPure pprefs pinfo args of
+			Opt.Success v -> v
+			Opt.Failure f -> error $ fst $ Opt.execFailure f progdesc
+			Opt.CompletionInvoked _ -> error "completion not supported"
+#else
+		either (error <=< flip errMessage progdesc) return $
+			execParserPure pprefs pinfo args
+#endif
 
 ingredients :: [Ingredient]
 ingredients =
@@ -140,8 +153,8 @@ properties = localOption (QuickCheckTests 1000) $ testGroup "QuickCheck"
 	, testProperty "prop_cost_sane" Config.Cost.prop_cost_sane
 	, testProperty "prop_matcher_sane" Utility.Matcher.prop_matcher_sane
 	, testProperty "prop_HmacSha1WithCipher_sane" Crypto.prop_HmacSha1WithCipher_sane
-	, testProperty "prop_TimeStamp_sane" Logs.UUIDBased.prop_TimeStamp_sane
-	, testProperty "prop_addLog_sane" Logs.UUIDBased.prop_addLog_sane
+	, testProperty "prop_TimeStamp_sane" Logs.MapLog.prop_TimeStamp_sane
+	, testProperty "prop_addMapLog_sane" Logs.MapLog.prop_addMapLog_sane
 	, testProperty "prop_verifiable_sane" Utility.Verifiable.prop_verifiable_sane
 	, testProperty "prop_segment_regressionTest" Utility.Misc.prop_segment_regressionTest
 	, testProperty "prop_read_write_transferinfo" Logs.Transfer.prop_read_write_transferinfo
@@ -1272,7 +1285,7 @@ test_add_subdirs env = intmpclonerepo env $ do
 	{- Regression test for Windows bug where symlinks were not
 	 - calculated correctly for files in subdirs. -}
 	git_annex env "sync" [] @? "sync failed"
-	l <- annexeval $ encodeW8 . L.unpack <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
+	l <- annexeval $ decodeBS <$> Annex.CatFile.catObject (Git.Types.Ref "HEAD:dir/foo")
 	"../.git/annex/" `isPrefixOf` l @? ("symlink from subdir to .git/annex is wrong: " ++ l)
 
 	createDirectory "dir2"

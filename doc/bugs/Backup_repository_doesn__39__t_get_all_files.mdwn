@@ -35,3 +35,6 @@ What this tells me is that any changes that occur whilst I am not networked are 
 git-annex version: 5.20131130-gc25be33
 
 
+> This was fixed in 5.20140127; the assistant now does a daily sweep of
+> unused files to move them to backup repositories when possible. [[done]]
+> --[[Joey]]

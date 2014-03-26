@@ -34,7 +34,7 @@ patched () {
 	git config user.email dummy@example.com
 	git add .
 	git commit -m "pre-patched state of $pkg"
-	for patch in ../../../no-th/haskell-patches/${pkg}_*; do
+	for patch in ../../haskell-patches/${pkg}_* ../../../no-th/haskell-patches/${pkg}_*; do
 		if [ -e "$patch" ]; then
 			echo trying $patch
 			if ! patch -p1 < $patch; then
@@ -61,6 +61,7 @@ install_pkgs () {
 	mkdir tmp
 	cd tmp
 
+	patched network
 	patched wai-app-static
 	patched shakespeare
 	patched shakespeare-css
@@ -72,11 +73,12 @@ install_pkgs () {
 	patched yesod-core
 	patched persistent
 	patched persistent-template
-	patched yesod
+	patched file-embed
+	patched shakespeare-text
 	patched process-conduit
 	patched yesod-static
+	patched yesod-persistent
 	patched yesod-form
-	patched file-embed
 	patched yesod-auth
 	patched yesod
 	patched generic-deriving
@@ -84,7 +86,6 @@ install_pkgs () {
 	patched reflection
 	patched lens
 	patched xml-hamlet
-	patched shakespeare-text
 	patched DAV
 
 	cd ..

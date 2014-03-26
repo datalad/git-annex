@@ -99,13 +99,20 @@ noUmask :: FileMode -> IO a -> IO a
 #ifndef mingw32_HOST_OS
 noUmask mode a
 	| mode == stdFileMode = a
-	| otherwise = bracket setup cleanup go
+	| otherwise = withUmask nullFileMode a
+#else
+noUmask _ a = a
+#endif
+
+withUmask :: FileMode -> IO a -> IO a
+#ifndef mingw32_HOST_OS
+withUmask umask a = bracket setup cleanup go
   where
-	setup = setFileCreationMask nullFileMode
+	setup = setFileCreationMask umask
 	cleanup = setFileCreationMask
 	go _ = a
 #else
-noUmask _ a = a
+withUmask _ a = a
 #endif
 
 combineModes :: [FileMode] -> FileMode
@@ -127,14 +134,20 @@ setSticky f = modifyFileMode f $ addModes [stickyMode]
 #endif
 
 {- Writes a file, ensuring that its modes do not allow it to be read
- - by anyone other than the current user, before any content is written.
+ - or written by anyone other than the current user,
+ - before any content is written.
+ -
+ - When possible, this is done using the umask.
  -
  - On a filesystem that does not support file permissions, this is the same
  - as writeFile.
  -}
 writeFileProtected :: FilePath -> String -> IO ()
-writeFileProtected file content = withFile file WriteMode $ \h -> do
-	void $ tryIO $
-		modifyFileMode file $
-			removeModes [groupReadMode, otherReadMode]
-	hPutStr h content
+writeFileProtected file content = withUmask 0o0077 $
+	withFile file WriteMode $ \h -> do
+		void $ tryIO $ modifyFileMode file $
+			removeModes
+				[ groupReadMode, otherReadMode
+				, groupWriteMode, otherWriteMode
+				]
+		hPutStr h content

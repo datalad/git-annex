@@ -1,20 +1,21 @@
-From b9b3cd52735f9ede1a83960968dc1f0e91e061d6 Mon Sep 17 00:00:00 2001
+From 66fdbc0cb69036b61552a3bce7e995ea2a7f76c1 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 7 Feb 2014 21:49:11 +0000
-Subject: [PATCH] avoid TH
+Date: Fri, 7 Mar 2014 05:43:33 +0000
+Subject: [PATCH] TH
 
 ---
- lens.cabal                              |   14 +-------------
- src/Control/Lens.hs                     |    6 ++----
- src/Control/Lens/Cons.hs                |    2 --
- src/Control/Lens/Internal/Fold.hs       |    2 --
- src/Control/Lens/Internal/Reflection.hs |    2 --
- src/Control/Lens/Prism.hs               |    2 --
- src/Control/Monad/Primitive/Lens.hs     |    1 -
- 7 files changed, 3 insertions(+), 26 deletions(-)
+ lens.cabal                              | 19 +------------------
+ src/Control/Lens.hs                     |  8 ++------
+ src/Control/Lens/Cons.hs                |  2 --
+ src/Control/Lens/Internal/Fold.hs       |  2 --
+ src/Control/Lens/Internal/Reflection.hs |  2 --
+ src/Control/Lens/Operators.hs           |  2 +-
+ src/Control/Lens/Prism.hs               |  2 --
+ src/Control/Monad/Primitive/Lens.hs     |  1 -
+ 8 files changed, 4 insertions(+), 34 deletions(-)
 
 diff --git a/lens.cabal b/lens.cabal
-index cee2da7..1e467c4 100644
+index 790a9d7..7cd3ff9 100644
 --- a/lens.cabal
 +++ b/lens.cabal
 @@ -10,7 +10,7 @@ stability:     provisional
@@ -26,7 +27,15 @@ index cee2da7..1e467c4 100644
  -- build-tools:   cpphs
  tested-with:   GHC == 7.6.3
  synopsis:      Lenses, Folds and Traversals
-@@ -216,7 +216,6 @@ library
+@@ -177,7 +177,6 @@ flag lib-Werror
+ 
+ library
+   build-depends:
+-    aeson                     >= 0.7      && < 0.8,
+     array                     >= 0.3.0.2  && < 0.6,
+     base                      >= 4.3      && < 5,
+     bifunctors                >= 4        && < 5,
+@@ -216,7 +215,6 @@ library
      Control.Exception.Lens
      Control.Lens
      Control.Lens.Action
@@ -34,7 +43,12 @@ index cee2da7..1e467c4 100644
      Control.Lens.Combinators
      Control.Lens.Cons
      Control.Lens.Each
-@@ -256,17 +255,14 @@ library
+@@ -251,22 +249,18 @@ library
+     Control.Lens.Level
+     Control.Lens.Loupe
+     Control.Lens.Operators
+-    Control.Lens.Plated
+     Control.Lens.Prism
      Control.Lens.Reified
      Control.Lens.Review
      Control.Lens.Setter
@@ -52,7 +66,7 @@ index cee2da7..1e467c4 100644
      Data.Array.Lens
      Data.Bits.Lens
      Data.ByteString.Lens
-@@ -289,12 +285,8 @@ library
+@@ -289,17 +283,10 @@ library
      Data.Typeable.Lens
      Data.Vector.Lens
      Data.Vector.Generic.Lens
@@ -64,8 +78,13 @@ index cee2da7..1e467c4 100644
 -    Language.Haskell.TH.Lens
      Numeric.Lens
  
-   other-modules:
-@@ -394,7 +386,6 @@ test-suite doctests
+-  other-modules:
+-    Control.Lens.Internal.TupleIxedTH
+-
+   if flag(safe)
+     cpp-options: -DSAFE=1
+ 
+@@ -396,7 +383,6 @@ test-suite doctests
        deepseq,
        doctest        >= 0.9.1,
        filepath,
@@ -73,7 +92,7 @@ index cee2da7..1e467c4 100644
        mtl,
        nats,
        parallel,
-@@ -432,7 +423,6 @@ benchmark plated
+@@ -434,7 +420,6 @@ benchmark plated
      comonad,
      criterion,
      deepseq,
@@ -81,7 +100,7 @@ index cee2da7..1e467c4 100644
      lens,
      transformers
  
-@@ -467,7 +457,6 @@ benchmark unsafe
+@@ -469,7 +454,6 @@ benchmark unsafe
      comonads-fd,
      criterion,
      deepseq,
@@ -89,7 +108,7 @@ index cee2da7..1e467c4 100644
      lens,
      transformers
  
-@@ -484,6 +473,5 @@ benchmark zipper
+@@ -486,6 +470,5 @@ benchmark zipper
      comonads-fd,
      criterion,
      deepseq,
@@ -97,7 +116,7 @@ index cee2da7..1e467c4 100644
      lens,
      transformers
 diff --git a/src/Control/Lens.hs b/src/Control/Lens.hs
-index 7e15267..bb4d87b 100644
+index 7e15267..433f1fc 100644
 --- a/src/Control/Lens.hs
 +++ b/src/Control/Lens.hs
 @@ -41,7 +41,6 @@
@@ -108,7 +127,12 @@ index 7e15267..bb4d87b 100644
    , module Control.Lens.Cons
    , module Control.Lens.Each
    , module Control.Lens.Empty
-@@ -58,7 +57,7 @@ module Control.Lens
+@@ -53,12 +52,11 @@ module Control.Lens
+   , module Control.Lens.Lens
+   , module Control.Lens.Level
+   , module Control.Lens.Loupe
+-  , module Control.Lens.Plated
+   , module Control.Lens.Prism
    , module Control.Lens.Reified
    , module Control.Lens.Review
    , module Control.Lens.Setter
@@ -117,7 +141,7 @@ index 7e15267..bb4d87b 100644
    , module Control.Lens.TH
  #endif
    , module Control.Lens.Traversal
-@@ -69,7 +68,6 @@ module Control.Lens
+@@ -69,7 +67,6 @@ module Control.Lens
    ) where
  
  import Control.Lens.Action
@@ -125,7 +149,12 @@ index 7e15267..bb4d87b 100644
  import Control.Lens.Cons
  import Control.Lens.Each
  import Control.Lens.Empty
-@@ -86,7 +84,7 @@ import Control.Lens.Prism
+@@ -81,12 +78,11 @@ import Control.Lens.Iso
+ import Control.Lens.Lens
+ import Control.Lens.Level
+ import Control.Lens.Loupe
+-import Control.Lens.Plated
+ import Control.Lens.Prism
  import Control.Lens.Reified
  import Control.Lens.Review
  import Control.Lens.Setter
@@ -148,7 +177,7 @@ index a80e9c8..7d27b80 100644
  -- >>> :set -XNoOverloadedStrings
  -- >>> import Control.Lens
 diff --git a/src/Control/Lens/Internal/Fold.hs b/src/Control/Lens/Internal/Fold.hs
-index 00e4b66..03c9cd2 100644
+index ab09c6b..43aa905 100644
 --- a/src/Control/Lens/Internal/Fold.hs
 +++ b/src/Control/Lens/Internal/Fold.hs
 @@ -37,8 +37,6 @@ import Data.Maybe
@@ -173,6 +202,19 @@ index bf09f2c..c9e112f 100644
  class Typeable s => B s where
    reflectByte :: proxy s -> IntPtr
  
+diff --git a/src/Control/Lens/Operators.hs b/src/Control/Lens/Operators.hs
+index 3e14c55..989eb92 100644
+--- a/src/Control/Lens/Operators.hs
++++ b/src/Control/Lens/Operators.hs
+@@ -110,7 +110,7 @@ module Control.Lens.Operators
+   , (<#~)
+   , (<#=)
+   -- * "Control.Lens.Plated"
+-  , (...)
++  --, (...)
+   -- * "Control.Lens.Review"
+   , ( # )
+   -- * "Control.Lens.Setter"
 diff --git a/src/Control/Lens/Prism.hs b/src/Control/Lens/Prism.hs
 index 9e0bec7..0cf6737 100644
 --- a/src/Control/Lens/Prism.hs
@@ -199,5 +241,5 @@ index ee942c6..2f37134 100644
  prim :: (PrimMonad m) => Iso' (m a) (State# (PrimState m) -> (# State# (PrimState m), a #))
  prim = iso internal primitive
 -- 
-1.7.10.4
+1.9.0
 

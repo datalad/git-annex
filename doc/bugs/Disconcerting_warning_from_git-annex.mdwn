@@ -4,3 +4,5 @@ I did a "git annex add" of a bunch of files on a storage server with low IOPS, a
 failed
 
 How is that even possible, when the server is doing nothing else?
+
+[[!tag moreinfo]]

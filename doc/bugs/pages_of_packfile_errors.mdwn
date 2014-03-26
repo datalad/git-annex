@@ -28,3 +28,5 @@ Auto-updated latest, I thought, but the about page says: Version: 5.20131230-g9a
 
 # End of transcript or log.
 """]]
+
+> I think I've fixed this bug. Followup if not.. [[done]] --[[Joey]] 

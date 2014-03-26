@@ -302,7 +302,8 @@ subdirectories).
 * `webapp`
 
   Opens a web app, that allows easy setup of a git-annex repository,
-  and control of the git-annex assistant.
+  and control of the git-annex assistant. If the assistant is not
+  already running, it will be started.
 
   By default, the webapp can only be accessed from localhost, and running
   it opens a browser window.
@@ -476,8 +477,8 @@ subdirectories).
 * `vicfg`
 
   Opens EDITOR on a temp file containing most of the above configuration
-  settings, and when it exits, stores any changes made back to the git-annex
-  branch.
+  settings, as well as a few others, and when it exits, stores any changes
+  made back to the git-annex branch.
 
 * `direct`
 
@@ -704,12 +705,20 @@ subdirectories).
 
 # METADATA COMMANDS
 
-* `metadata [path ...] [-s field=value -s field+=value -s field-=value ...]`
+* `metadata [path ...] [-s field=value -s field+=value -s field-=value ...] [-g field]`
 
   Each file can have any number of metadata fields attached to it,
-  which each in turn have any number of values. This sets metadata
-  for the specified file or files, or if run without any values, shows
-  the current metadata.
+  which each in turn have any number of values. 
+  
+  This command can be used to set metadata, or show the currently set
+  metadata.
+  
+  To show current metadata, run without any -s parameters. The --json
+  option will enable json output.
+
+  To only get the value(s) of a single field, use -g field.
+  The values will be output one per line, with no other output, so
+  this is suitable for use in a script.
 
   To set a field's value, removing any old value(s), use -s field=value.
 

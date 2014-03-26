@@ -26,7 +26,6 @@ import qualified Annex
 import qualified Git
 import qualified Git.AutoCorrect
 import Annex.Content
-import Annex.Ssh
 import Annex.Environment
 import Command
 import Types.Messages
@@ -107,4 +106,3 @@ shutdown nocommit = do
 	saveState nocommit
 	sequence_ =<< M.elems <$> Annex.getState Annex.cleanup
 	liftIO reapZombies -- zombies from long-running git processes
-	sshCleanup -- ssh connection caching

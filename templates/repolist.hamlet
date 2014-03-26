@@ -39,13 +39,15 @@
             $else
               <span .dropdown #menu-#{show repoid}>
                 <a .dropdown-toggle data-toggle="dropdown" href="#menu-#{show repoid}">
-                  <i .icon-cog></i> settings
+                  <i .icon-cog></i> actions
                   <b .caret></b>
                 <ul .dropdown-menu>
                   <li>
                     <a href="@{setupRepoLink actions}">
                       <i .icon-pencil></i> Edit
                     $if not (lacksUUID repoid)
+                      <a href="@{SyncNowRepositoryR $ asUUID repoid}">
+                        <i .icon-refresh></i> Sync now
                       <a href="@{DisableRepositoryR $ asUUID repoid}">
                         <i .icon-minus></i> Disable
                       <a href="@{DeleteRepositoryR $ asUUID repoid}">
