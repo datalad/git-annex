@@ -40,7 +40,6 @@ Build-Depends:
 	libghc-wai-logger-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
 	libghc-securemem-dev,
 	libghc-byteable-dev,
-	libghc-dns-dev,
 	libghc-case-insensitive-dev,
 	libghc-http-types-dev,
 	libghc-blaze-builder-dev,
