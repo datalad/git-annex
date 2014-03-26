@@ -16,14 +16,13 @@ import System.Directory
 import qualified Build.DesktopFile as DesktopFile
 import qualified Build.Configure as Configure
 
+main :: IO ()
 main = defaultMainWithHooks simpleUserHooks
-	{ preConf = configure
+	{ preConf = \_ _ -> do
+		Configure.run Configure.tests
+		return (Nothing, [])	
 	, postInst = myPostInst
 	}
-
-configure _ _ = do
-	Configure.run Configure.tests
-	return (Nothing, [])
 
 myPostInst :: Args -> InstallFlags -> PackageDescription -> LocalBuildInfo -> IO ()
 myPostInst _ (InstallFlags { installVerbosity }) pkg lbi = do
@@ -57,7 +56,7 @@ installManpages copyDest verbosity pkg lbi =
 	manpages    = ["git-annex.1", "git-annex-shell.1"]
 
 installDesktopFile :: CopyDest -> Verbosity -> PackageDescription -> LocalBuildInfo -> IO ()
-installDesktopFile copyDest verbosity pkg lbi =
+installDesktopFile copyDest _verbosity pkg lbi =
 	DesktopFile.install $ dstBinDir </> "git-annex"
   where
 	dstBinDir = bindir $ absoluteInstallDirs pkg lbi copyDest

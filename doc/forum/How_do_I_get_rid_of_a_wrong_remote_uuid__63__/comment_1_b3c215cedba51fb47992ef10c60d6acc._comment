@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://alan.petitepomme.net/"
+ nickname="Alan Schmitt"
+ subject="comment 1"
+ date="2014-03-08T06:42:29Z"
+ content="""
+If it helps, I had a look at \"git annex vicfg\", and there is no mention of the extra UUID there.
+"""]]

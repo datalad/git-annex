@@ -5,11 +5,15 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Annex.MetaData where
+module Annex.MetaData (
+	genMetaData,
+	module X
+) where
 
 import Common.Annex
 import qualified Annex
-import Types.MetaData
+import Types.MetaData as X
+import Annex.MetaData.StandardFields as X
 import Logs.MetaData
 import Annex.CatFile
 
@@ -18,15 +22,6 @@ import qualified Data.Map as M
 import Data.Time.Calendar
 import Data.Time.Clock
 import Data.Time.Clock.POSIX
-
-tagMetaField :: MetaField
-tagMetaField = mkMetaFieldUnchecked "tag"
-
-yearMetaField :: MetaField
-yearMetaField = mkMetaFieldUnchecked "year"
-
-monthMetaField :: MetaField
-monthMetaField = mkMetaFieldUnchecked "month"
 
 {- Adds metadata for a file that has just been ingested into the
  - annex, but has not yet been committed to git.

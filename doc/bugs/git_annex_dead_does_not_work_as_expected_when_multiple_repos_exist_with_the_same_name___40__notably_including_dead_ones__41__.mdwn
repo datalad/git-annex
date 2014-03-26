@@ -40,3 +40,5 @@ Now, git annex dead somecopy will randomly (based on the order of the UUIDs?) ch
 ### What version of git-annex are you using? On what operating system?
 
 git-annex 4.20131024 on linux. Also occurs on OSX.
+
+> [[fixed|done]] --[[Joey]]

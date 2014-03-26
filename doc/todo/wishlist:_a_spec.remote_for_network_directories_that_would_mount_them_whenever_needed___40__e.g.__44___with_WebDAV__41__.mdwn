@@ -23,3 +23,7 @@ whenever I wanted to update the revisions of the textbooks (or to download them 
 So, this differs from [[tips/using box.com as a special remote]] in that the tip for WebDAV suggest to handle the mounting manually, and git-annex knows nothing about the WebDAV URL where the content comes from.
 
 So here's my wish: a [[special remote|special remotes]] to track the WebDAV URLs in the repo, and mount the remote directory automatically under the hood, whenever one wants to get a file from there. (Then I assume it should also unmount it immediately in order to clean up after itself, despite possible inefficiencies).
+
+> I think the hooks are enough.. If not, you can use a hook special remote
+> or the external special remote protocol to make your own custom special
+> remote. So, [[done]] --[[Joey]]

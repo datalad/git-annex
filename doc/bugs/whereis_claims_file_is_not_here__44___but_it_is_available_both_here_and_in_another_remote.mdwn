@@ -26,3 +26,5 @@ lrwxrwxrwx 1 jkt jkt 329 Mar  3 02:08 2011-08-13 Svatba Anička Fellnerová a v�
 The directory names are valid UTF-8. These are very common on my machine and there is a ton of directories with these funny names here -- all working without any real trouble.
 
 As far as I know, the file which the links point to is absolutely correct and not corrupted. Looking at the files in the directory chronologically, it also appears that the symlinks point to a correct file.
+
+[[!tag moreinfo]]

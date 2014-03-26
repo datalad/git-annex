@@ -281,7 +281,7 @@ cachedPresentData = do
 	case presentData s of
 		Just v -> return v
 		Nothing -> do
-			v <- foldKeys <$> lift getKeysPresent
+			v <- foldKeys <$> lift (getKeysPresent InRepository)
 			put s { presentData = Just v }
 			return v
 

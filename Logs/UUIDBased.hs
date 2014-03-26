@@ -26,9 +26,6 @@ module Logs.UUIDBased (
 	changeLog,
 	addLog,
 	simpleMap,
-
-	prop_TimeStamp_sane,
-	prop_addLog_sane,
 ) where
 
 import qualified Data.Map as M
@@ -38,35 +35,17 @@ import System.Locale
 
 import Common
 import Types.UUID
+import Logs.MapLog
 
-data TimeStamp = Unknown | Date POSIXTime
-	deriving (Eq, Ord, Show)
+type Log v = MapLog UUID v
 
-data LogEntry a = LogEntry
-	{ changed :: TimeStamp
-	, value :: a
-	} deriving (Eq, Show)
-
-type Log a = M.Map UUID (LogEntry a)
-
-tskey :: String
-tskey = "timestamp="
-
-showLog :: (a -> String) -> Log a -> String
+showLog :: (v -> String) -> Log v -> String
 showLog shower = unlines . map showpair . M.toList
   where
 	showpair (k, LogEntry (Date p) v) =
 		unwords [fromUUID k, shower v, tskey ++ show p]
 	showpair (k, LogEntry Unknown v) =
 		unwords [fromUUID k, shower v]
-
-showLogNew :: (a -> String) -> Log a -> String
-showLogNew shower = unlines . map showpair . M.toList
-  where
-	showpair (k, LogEntry (Date p) v) =
-		unwords [show p, fromUUID k, shower v]
-	showpair (k, LogEntry Unknown v) =
-		unwords ["0", fromUUID k, shower v]
 
 parseLog :: (String -> Maybe a) -> String -> Log a
 parseLog = parseLogWithUUID . const
@@ -98,45 +77,17 @@ parseLogWithUUID parser = M.fromListWith best . mapMaybe parse . lines
 			Nothing -> Unknown
 			Just d -> Date $ utcTimeToPOSIXSeconds d
 
-parseLogNew :: (String -> Maybe a) -> String -> Log a
-parseLogNew parser = M.fromListWith best . mapMaybe parse . lines
-  where
-	parse line = do
-		let (ts, rest) = splitword line
-		    (u, v) = splitword rest
-		date <- Date . utcTimeToPOSIXSeconds <$> parseTime defaultTimeLocale "%s%Qs" ts
-		val <- parser v
-		Just (toUUID u, LogEntry date val)
-	splitword = separate (== ' ')
+showLogNew :: (v -> String) -> Log v -> String
+showLogNew = showMapLog fromUUID
 
-changeLog :: POSIXTime -> UUID -> a -> Log a -> Log a
-changeLog t u v = M.insert u $ LogEntry (Date t) v
+parseLogNew :: (String -> Maybe v) -> String -> Log v
+parseLogNew = parseMapLog (Just . toUUID)
 
-{- Only add an LogEntry if it's newer (or at least as new as) than any
- - existing LogEntry for a UUID. -}
-addLog :: UUID -> LogEntry a -> Log a -> Log a
-addLog = M.insertWith' best
+changeLog :: POSIXTime -> UUID -> v -> Log v -> Log v
+changeLog = changeMapLog
 
-{- Converts a Log into a simple Map without the timestamp information.
- - This is a one-way trip, but useful for code that never needs to change
- - the log. -}
-simpleMap :: Log a -> M.Map UUID a
-simpleMap = M.map value
+addLog :: UUID -> LogEntry v -> Log v -> Log v
+addLog = addMapLog
 
-best :: LogEntry a -> LogEntry a -> LogEntry a
-best new old
-	| changed old > changed new = old
-	| otherwise = new
-
--- Unknown is oldest.
-prop_TimeStamp_sane :: Bool
-prop_TimeStamp_sane = Unknown < Date 1
-
-prop_addLog_sane :: Bool
-prop_addLog_sane = newWins && newestWins
-  where
-	newWins = addLog (UUID "foo") (LogEntry (Date 1) "new") l == l2
-	newestWins = addLog (UUID "foo") (LogEntry (Date 1) "newest") l2 /= l2
-
-	l = M.fromList [(UUID "foo", LogEntry (Date 0) "old")]
-	l2 = M.fromList [(UUID "foo", LogEntry (Date 1) "new")]
+tskey :: String
+tskey = "timestamp="

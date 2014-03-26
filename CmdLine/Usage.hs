@@ -73,6 +73,8 @@ paramNumRange :: String
 paramNumRange = "NUM|RANGE"
 paramRemote :: String
 paramRemote = "REMOTE"
+paramField :: String
+paramField = "FIELD"
 paramGlob :: String
 paramGlob = "GLOB"
 paramName :: String

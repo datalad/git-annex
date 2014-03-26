@@ -119,7 +119,7 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	strip "$(LINUXSTANDALONE_DEST)/bin/git-annex"
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
-	cp doc/favicon.png doc/logo.svg $(LINUXSTANDALONE_DEST)
+	cp doc/logo_16x16.png doc/logo.svg $(LINUXSTANDALONE_DEST)
 
 	./Build/Standalone "$(LINUXSTANDALONE_DEST)"
 	

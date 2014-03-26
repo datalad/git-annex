@@ -68,3 +68,5 @@ Mac OS X Mountain Lion. git-annex files are from within the downloadable git-ann
 
 
 Thanks for your help :)
+
+> This is a duplicate of [[Git_annexed_files_symlink_are_wrong_when_submodule_is_not_in_the_same_path]] [[done]] --[[Joey]]   

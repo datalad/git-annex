@@ -10,3 +10,4 @@ As far as version of git-annex...  it prompted to upgrade and i think i saw a 5 
 
 and since it won't load anymore i guess there is no log.
 
+[[!tag moreinfo]]

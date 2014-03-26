@@ -14,3 +14,5 @@ Delete origin/master and origin/synced/master --> Content is now reported as unu
 ### What version of git-annex are you using? On what operating system?
 
 5.20131230
+
+> Behaving as designed; [[done]] --[[Joey]]

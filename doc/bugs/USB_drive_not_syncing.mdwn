@@ -514,3 +514,6 @@ tyc20@im1:/media/A-DATA UFD/annex$
 
 # End of transcript or log.
 """]]
+
+> [[done]]; seems to be some badly set up repository. Happy to help with
+> fixing it, if you reply.. --[[Joey]]

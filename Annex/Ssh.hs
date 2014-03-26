@@ -9,7 +9,6 @@
 
 module Annex.Ssh (
 	sshCachingOptions,
-	sshCleanup,
 	sshCacheDir,
 	sshReadPort,
 ) where
@@ -24,6 +23,7 @@ import qualified Build.SysConfig as SysConfig
 import qualified Annex
 import Config
 import Utility.Env
+import Types.CleanupActions
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 #endif
@@ -31,7 +31,9 @@ import Annex.Perms
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port, with connection caching. -}
 sshCachingOptions :: (String, Maybe Integer) -> [CommandParam] -> Annex [CommandParam]
-sshCachingOptions (host, port) opts = go =<< sshInfo (host, port)
+sshCachingOptions (host, port) opts = do
+	Annex.addCleanup SshCachingCleanup sshCleanup
+	go =<< sshInfo (host, port)
   where
 	go (Nothing, params) = ret params
 	go (Just socketfile, params) = do
@@ -144,8 +146,9 @@ sshCleanup = go =<< sshCacheDir
 			withQuietOutput createProcessSuccess $
 				(proc "ssh" $ toCommand $
 					[ Params "-O stop"
-					] ++ params ++ [Param "any"])
+					] ++ params ++ [Param "localhost"])
 					{ cwd = Just dir }
+		liftIO $ nukeFile socketfile
 		-- Cannot remove the lock file; other processes may
 		-- be waiting on our exclusive lock to use it.
 

@@ -82,6 +82,7 @@
 
 /config/repository/reorder RepositoriesReorderR GET
 
+/config/repository/syncnow/#UUID SyncNowRepositoryR GET
 /config/repository/disable/#UUID DisableRepositoryR GET
 
 /config/repository/delete/confirm/#UUID DeleteRepositoryR GET

@@ -62,3 +62,6 @@ My .gitconfig is as follows:
 > to a more recent version of git. done --[[Joey]] 
 >> Reopened, because the Linux autobuilds have been downgraded to Debian
 >> stable and have this problem again. --[[Joey]]
+
+>>> Closing again! Autobuilders all run unstable and will have a current
+>>> git. [[done]] --[[Joey]] 

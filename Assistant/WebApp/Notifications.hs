@@ -22,6 +22,7 @@ import Assistant.DaemonStatus
 import Assistant.Types.Buddies
 import Utility.NotificationBroadcaster
 import Utility.Yesod
+import Utility.WebApp
 
 import Data.Text (Text)
 import qualified Data.Text as T
@@ -64,7 +65,7 @@ notifierUrl route broadcaster = do
 		[ "/"
 		, T.intercalate "/" urlbits
 		, "?auth="
-		, secretToken webapp
+		, fromAuthToken (authToken webapp)
 		]
 
 getNotifierTransfersR :: Handler RepPlain

@@ -198,7 +198,7 @@ enableDirectMode = unlessM isDirect $ do
  -}
 fixBadBare :: Annex ()
 fixBadBare = whenM checkBadBare $ do
-	ks <- getKeysPresent
+	ks <- getKeysPresent InAnnex
 	liftIO $ debugM "Init" $ unwords
 		[ "Detected bad bare repository with"
 		, show (length ks)

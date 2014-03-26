@@ -11,3 +11,6 @@ In order to handle the fact that the directory where pictures are saved is not c
 In the log, there are many "too many open files" errors like these :
 
 git:createProcess: runInteractiveProcess: pipe: resource exhausted (Too many open files)
+
+[[!tag moreinfo]]
+[[!meta title="too many open files on android"]]

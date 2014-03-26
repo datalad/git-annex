@@ -29,6 +29,7 @@ import Utility.DataUnits
 import Utility.FileMode
 import Config
 import Types.Key
+import Types.CleanupActions
 import Utility.HumanTime
 import Git.FilePath
 import Utility.PID
@@ -93,7 +94,7 @@ getIncremental = do
 
 	checkschedule Nothing = error "bad --incremental-schedule value"
 	checkschedule (Just delta) = do
-		Annex.addCleanup "" $ do
+		Annex.addCleanup FsckCleanup $ do
 			v <- getStartTime
 			case v of
 				Nothing -> noop

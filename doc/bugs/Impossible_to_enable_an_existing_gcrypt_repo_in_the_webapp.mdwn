@@ -19,3 +19,5 @@ This is with git-annex installed on the remote server; without it the process ge
 
 ### What version of git-annex are you using? On what operating system?
 Latest nightly build on ubuntu 13.10
+
+[[!tag moreinfo]]

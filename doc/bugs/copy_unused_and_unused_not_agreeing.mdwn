@@ -46,3 +46,5 @@ copy SHA256E-s293288--30f1367fc326f7b053012818863151206f9e3ddeab3c3fc5b5c1c573d1
 copy SHA256E-s3672986--be960f6dc247df2496f634f7d788bd4a180fe556230e2dafc23ebc8fc1f10af3.JPG (checking synology...) ok
 $
 """]]
+
+> [[fixed|done]] per my comment --[[Joey]] 

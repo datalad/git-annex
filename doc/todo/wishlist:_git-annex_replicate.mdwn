@@ -10,3 +10,13 @@ There might be the need to have a 'replication_priority' option for each remote 
 
  * maxspace - A self imposed quota per remote machine.  git-annex replicate should try to replicate files first to machines with more free space. maxspace would change the free space calculation to be `min(actual_free_space, maxspace - space_used_by_git_annex)
  * bandwidth - when replication files, copies should be done between machines with the highest available bandwidth. ( I think this option could be useful for git-annex get in general)
+
+> `git annex sync --content` handles this now. [[done]]
+> 
+> You do need to run it, or the assistant, on each node that needs
+> to copy files to spread them through the network. 
+>
+> A `git annex rebalance`
+> is essentially the same as sshing to the remote and running `git annex
+> sync --content` there. Assuming the remote repository itself has enough
+> remotes set up that git-annex is able to copy files around. --[[Joey]]

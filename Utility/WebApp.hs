@@ -1,6 +1,6 @@
 {- Yesod webapp
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -36,6 +36,10 @@ import Blaze.ByteString.Builder (Builder)
 import Data.Monoid
 import Control.Arrow ((***))
 import Control.Concurrent
+#ifdef WITH_WEBAPP_SECURE
+import Data.SecureMem
+import Data.Byteable
+#endif
 #ifdef __ANDROID__
 import Data.Endian
 #endif
@@ -74,14 +78,14 @@ browserProc url = proc "xdg-open" [url]
 runWebApp :: Maybe TLSSettings -> Maybe HostName -> Wai.Application -> (SockAddr -> IO ()) -> IO ()
 runWebApp tlssettings h app observer = withSocketsDo $ do
 	sock <- getSocket h
-	void $ forkIO $ run webAppSettings sock app	
+	void $ forkIO $ go webAppSettings sock app	
 	sockaddr <- fixSockAddr <$> getSocketName sock
 	observer sockaddr
   where
-#ifdef WITH_WEBAPP_HTTPS
-	run = (maybe runSettingsSocket (\ts -> runTLSSocket ts) tlssettings)
+#ifdef WITH_WEBAPP_SECURE
+	go = (maybe runSettingsSocket (\ts -> runTLSSocket ts) tlssettings)
 #else
-	run = runSettingsSocket
+	go = runSettingsSocket
 #endif
 
 fixSockAddr :: SockAddr -> SockAddr
@@ -208,15 +212,35 @@ webAppSessionBackend _ = do
 #endif
 #endif
 
-{- Generates a random sha512 string, suitable to be used for an
- - authentication secret. -}
-genRandomToken :: IO String
-genRandomToken = do
+#ifdef WITH_WEBAPP_SECURE
+type AuthToken = SecureMem
+#else
+type AuthToken = T.Text
+#endif
+
+toAuthToken :: T.Text -> AuthToken
+#ifdef WITH_WEBAPP_SECURE
+toAuthToken = secureMemFromByteString . TE.encodeUtf8
+#else
+toAuthToken = id
+#endif
+
+fromAuthToken :: AuthToken -> T.Text
+#ifdef WITH_WEBAPP_SECURE
+fromAuthToken = TE.decodeLatin1 . toBytes
+#else
+fromAuthToken = id
+#endif
+
+{- Generates a random sha512 string, encapsulated in a SecureMem,
+ - suitable to be used for an authentication secret. -}
+genAuthToken :: IO AuthToken
+genAuthToken = do
 	g <- newGenIO :: IO SystemRandom
 	return $
 		case genBytes 512 g of
-			Left e -> error $ "failed to generate secret token: " ++ show e
-			Right (s, _) -> show $ sha512 $ L.fromChunks [s]
+			Left e -> error $ "failed to generate auth token: " ++ show e
+			Right (s, _) -> toAuthToken $ T.pack $ show $ sha512 $ L.fromChunks [s]
 
 {- A Yesod isAuthorized method, which checks the auth cgi parameter
  - against a token extracted from the Yesod application.
@@ -225,15 +249,15 @@ genRandomToken = do
  - possibly leaking the auth token in urls on that page!
  -}
 #if MIN_VERSION_yesod(1,2,0)
-checkAuthToken :: (Monad m, Yesod.MonadHandler m) => (Yesod.HandlerSite m -> T.Text) -> m Yesod.AuthResult
+checkAuthToken :: (Monad m, Yesod.MonadHandler m) => (Yesod.HandlerSite m -> AuthToken) -> m Yesod.AuthResult
 #else
-checkAuthToken :: forall t sub. (t -> T.Text) -> Yesod.GHandler sub t Yesod.AuthResult
+checkAuthToken :: forall t sub. (t -> AuthToken) -> Yesod.GHandler sub t Yesod.AuthResult
 #endif
-checkAuthToken extractToken = do
+checkAuthToken extractAuthToken = do
 	webapp <- Yesod.getYesod
 	req <- Yesod.getRequest
 	let params = Yesod.reqGetParams req
-	if lookup "auth" params == Just (extractToken webapp)
+	if (toAuthToken <$> lookup "auth" params) == Just (extractAuthToken webapp)
 		then return Yesod.Authorized
 		else Yesod.sendResponseStatus unauthorized401 ()
 
@@ -243,21 +267,21 @@ checkAuthToken extractToken = do
  - 
  - A typical predicate would exclude files under /static.
  -}
-insertAuthToken :: forall y. (y -> T.Text)
+insertAuthToken :: forall y. (y -> AuthToken)
 	-> ([T.Text] -> Bool)
 	-> y
 	-> T.Text
 	-> [T.Text]
 	-> [(T.Text, T.Text)]
 	-> Builder
-insertAuthToken extractToken predicate webapp root pathbits params =
+insertAuthToken extractAuthToken predicate webapp root pathbits params =
 	fromText root `mappend` encodePath pathbits' encodedparams
   where
 	pathbits' = if null pathbits then [T.empty] else pathbits
 	encodedparams = map (TE.encodeUtf8 *** go) params'
 	go "" = Nothing
 	go x = Just $ TE.encodeUtf8 x
-	authparam = (T.pack "auth", extractToken webapp)
+	authparam = (T.pack "auth", fromAuthToken (extractAuthToken webapp))
 	params'
 		| predicate pathbits = authparam:params
 		| otherwise = params

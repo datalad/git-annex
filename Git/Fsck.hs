@@ -23,10 +23,17 @@ import Utility.Batch
 import qualified Git.Version
 
 import qualified Data.Set as S
+import System.Process (std_out, std_err)
+import Control.Concurrent.Async
 
 type MissingObjects = S.Set Sha
 
-data FsckResults = FsckFoundMissing MissingObjects | FsckFailed
+data FsckResults 
+	= FsckFoundMissing
+		{ missingObjects :: MissingObjects
+		, missingObjectsTruncated :: Bool
+		}
+	| FsckFailed
 	deriving (Show)
 
 {- Runs fsck to find some of the broken objects in the repository.
@@ -46,20 +53,32 @@ findBroken batchmode r = do
 	(command', params') <- if batchmode
 		then toBatchCommand (command, params)
 		else return (command, params)
-	(output, fsckok) <- processTranscript command' (toCommand params') Nothing
-	let objs = findShas supportsNoDangling output
-	badobjs <- findMissing objs r
+	
+	p@(_, _, _, pid) <- createProcess $
+		(proc command' (toCommand params'))
+			{ std_out = CreatePipe
+			, std_err = CreatePipe
+			}
+	(bad1, bad2) <- concurrently
+		(readMissingObjs maxobjs r supportsNoDangling (stdoutHandle p))
+		(readMissingObjs maxobjs r supportsNoDangling (stderrHandle p))
+	fsckok <- checkSuccessProcess pid
+	let truncated = S.size bad1 == maxobjs || S.size bad1 == maxobjs
+	let badobjs = S.union bad1 bad2
+
 	if S.null badobjs && not fsckok
 		then return FsckFailed
-		else return $ FsckFoundMissing badobjs
+		else return $ FsckFoundMissing badobjs truncated
+  where
+	maxobjs = 10000
 
 foundBroken :: FsckResults -> Bool
 foundBroken FsckFailed = True
-foundBroken (FsckFoundMissing s) = not (S.null s)
+foundBroken (FsckFoundMissing s _) = not (S.null s)
 
 knownMissing :: FsckResults -> MissingObjects
 knownMissing FsckFailed = S.empty
-knownMissing (FsckFoundMissing s) = s
+knownMissing (FsckFoundMissing s _) = s
 
 {- Finds objects that are missing from the git repsitory, or are corrupt.
  -
@@ -68,6 +87,11 @@ knownMissing (FsckFoundMissing s) = s
  -}
 findMissing :: [Sha] -> Repo -> IO MissingObjects
 findMissing objs r = S.fromList <$> filterM (`isMissing` r) objs
+
+readMissingObjs :: Int -> Repo -> Bool -> Handle -> IO MissingObjects
+readMissingObjs maxobjs r supportsNoDangling h = do
+	objs <- take maxobjs . findShas supportsNoDangling <$> hGetContents h
+	findMissing objs r
 
 isMissing :: Sha -> Repo -> IO Bool
 isMissing s r = either (const True) (const False) <$> tryIO dump

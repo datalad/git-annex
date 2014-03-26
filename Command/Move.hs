@@ -69,20 +69,29 @@ toStart dest move afile key = do
 	ishere <- inAnnex key
 	if not ishere || u == Remote.uuid dest
 		then stop -- not here, so nothing to do
-		else do
-			showMoveAction move key afile
-			next $ toPerform dest move key afile
-toPerform :: Remote -> Bool -> Key -> AssociatedFile -> CommandPerform
-toPerform dest move key afile = moveLock move key $ do
-	-- Checking the remote is expensive, so not done in the start step.
-	-- In fast mode, location tracking is assumed to be correct,
-	-- and an explicit check is not done, when copying. When moving,
-	-- it has to be done, to avoid inaverdent data loss.
+		else toStart' dest move afile key
+
+toStart' :: Remote -> Bool -> AssociatedFile -> Key -> CommandStart
+toStart' dest move afile key = do
 	fast <- Annex.getState Annex.fast
-	let fastcheck = fast && not move && not (Remote.hasKeyCheap dest)
-	isthere <- if fastcheck
-		then Right <$> expectedpresent
-		else Remote.hasKey dest key
+	if fast && not move && not (Remote.hasKeyCheap dest)
+		then ifM (expectedPresent dest key)
+			( stop
+			, go True (pure $ Right False)
+			)
+		else go False (Remote.hasKey dest key)
+  where
+	go fastcheck isthere = do
+		showMoveAction move key afile
+		next $ toPerform dest move key afile fastcheck =<< isthere
+
+expectedPresent :: Remote -> Key -> Annex Bool
+expectedPresent dest key = do
+	remotes <- Remote.keyPossibilities key
+	return $ dest `elem` remotes
+
+toPerform :: Remote -> Bool -> Key -> AssociatedFile -> Bool -> Either String Bool -> CommandPerform
+toPerform dest move key afile fastcheck isthere = moveLock move key $
 	case isthere of
 		Left err -> do
 			showNote err
@@ -100,7 +109,7 @@ toPerform dest move key afile = moveLock move key $ do
 						warning "This could have failed because --fast is enabled."
 					stop
 		Right True -> do
-			unlessM expectedpresent $
+			unlessM (expectedPresent dest key) $
 				Remote.logStatus dest key InfoPresent
 			finish
   where
@@ -109,9 +118,6 @@ toPerform dest move key afile = moveLock move key $ do
 			removeAnnex key
 			next $ Command.Drop.cleanupLocal key
 		| otherwise = next $ return True
-	expectedpresent = do
-		remotes <- Remote.keyPossibilities key
-		return $ dest `elem` remotes
 
 {- Moves (or copies) the content of an annexed file from a remote
  - to the current repository.

@@ -28,6 +28,7 @@ module Types.MetaData (
 	emptyMetaData,
 	updateMetaData,
 	unionMetaData,
+	combineMetaData,
 	differenceMetaData,
 	isSet,
 	currentMetaData,
@@ -140,7 +141,7 @@ toMetaField f
  - that would break views.
  -
  - So, require they have an alphanumeric first letter, with the remainder
- - being either alphanumeric or a small set of shitelisted common punctuation.
+ - being either alphanumeric or a small set of whitelisted common punctuation.
  -}
 legalField :: String -> Bool
 legalField [] = False
@@ -187,6 +188,9 @@ updateMetaData f v (MetaData m) = MetaData $
 unionMetaData :: MetaData -> MetaData -> MetaData
 unionMetaData (MetaData old) (MetaData new) = MetaData $
 	M.unionWith S.union new old
+
+combineMetaData :: [MetaData] -> MetaData
+combineMetaData = foldl' unionMetaData emptyMetaData
 
 differenceMetaData :: MetaData -> MetaData -> MetaData
 differenceMetaData (MetaData m) (MetaData excludem) = MetaData $

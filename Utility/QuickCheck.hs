@@ -28,10 +28,10 @@ instance (Arbitrary v, Eq v, Ord v) => Arbitrary (S.Set v) where
 
 {- Times before the epoch are excluded. -}
 instance Arbitrary POSIXTime where
-	arbitrary = nonNegative arbitrarySizedIntegral
+	arbitrary = fromInteger <$> nonNegative arbitrarySizedIntegral
 
 instance Arbitrary EpochTime where
-	arbitrary = nonNegative arbitrarySizedIntegral
+	arbitrary = fromInteger <$> nonNegative arbitrarySizedIntegral
 
 {- Pids are never negative, or 0. -}
 instance Arbitrary ProcessID where

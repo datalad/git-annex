@@ -1,0 +1,16 @@
+Hello,
+
+I had some trouble adding a remote (the files would not appear when I was copying them to the remote), so I started over and cloned an existing repository.
+
+Of course, as I started over, I had a duplicate uuid for the remote, which would cause problems when trying to copy (I would have an error "git-annex-shell: expected repository UUID 70582c7b-0b57-4087-a9d1-77b5f5f3c75e but found UUID 335699ea-d5b8-49ff-b207-1571b5969afe").
+
+I finally managed to find the wrong uuid in the .git/config file (there was a duplicated entry for the remote) and I'm now able to copy things to the remote repository, and "git annex sync" works well. However I still see a mention of this repository when I do a "git annex whereis":
+
+    cody:games schmitta$ git annex whereis
+    whereis dungeon_keeper_1.1.0.11.dmg (3 copies) 
+      	1cdfb490-0660-41fb-b7ce-74b89abb9aac -- top
+       	335699ea-d5b8-49ff-b207-1571b5969afe -- here (cody)
+       	70582c7b-0b57-4087-a9d1-77b5f5f3c75e
+
+
+Where can I find where this last line come from, and how can I get rid of it? I tried saying that this uuid is dead, but git annex tells me it's not a remote name.

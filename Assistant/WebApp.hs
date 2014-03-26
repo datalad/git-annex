@@ -14,6 +14,7 @@ import Assistant.WebApp.Types
 import Assistant.Common
 import Utility.NotificationBroadcaster
 import Utility.Yesod
+import Utility.WebApp
 
 import Data.Text (Text)
 import Control.Concurrent
@@ -36,7 +37,7 @@ newNotifier getbroadcaster = liftAssistant $ do
 webAppFormAuthToken :: Widget
 webAppFormAuthToken = do
 	webapp <- liftH getYesod
-	[whamlet|<input type="hidden" name="auth" value="#{secretToken webapp}">|]
+	[whamlet|<input type="hidden" name="auth" value="#{fromAuthToken (authToken webapp)}">|]
 
 {- A button with an icon, and maybe label or tooltip, that can be
  - clicked to perform some action.

@@ -94,18 +94,16 @@ matchGlobFile glob = go
 {- Adds a limit to skip files not believed to be present
  - in a specfied repository. Optionally on a prior date. -}
 addIn :: String -> Annex ()
-addIn = addLimit . limitIn
-
-limitIn :: MkLimit
-limitIn s = Right $ \notpresent -> checkKey $ \key ->
-	if name == "."
-		then if null date
-			then inhere notpresent key
-			else inuuid notpresent key =<< getUUID
-		else inuuid notpresent key =<< Remote.nameToUUID name
+addIn s = addLimit =<< mk
   where
 	(name, date) = separate (== '@') s
-	inuuid notpresent key u
+	mk
+		| name == "." = if null date
+			then use inhere
+			else use . inuuid =<< getUUID
+		| otherwise = use . inuuid =<< Remote.nameToUUID name
+	use a = return $ Right $ \notpresent -> checkKey (a notpresent)
+	inuuid u notpresent key
 		| null date = do
 			us <- Remote.keyLocations key
 			return $ u `elem` us && u `S.notMember` notpresent
@@ -122,7 +120,10 @@ limitIn s = Right $ \notpresent -> checkKey $ \key ->
 
 {- Limit to content that is currently present on a uuid. -}
 limitPresent :: Maybe UUID -> MkLimit
-limitPresent u _ = Right $ const $ checkKey $ \key -> do
+limitPresent u _ = Right $ matchPresent u
+
+matchPresent :: Maybe UUID -> MatchFiles
+matchPresent u _ = checkKey $ \key -> do
 	hereu <- getUUID
 	if u == Just hereu || isNothing u
 		then inAnnex key

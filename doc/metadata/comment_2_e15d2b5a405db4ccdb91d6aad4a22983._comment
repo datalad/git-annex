@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.154"
+ subject="comment 2"
+ date="2014-03-17T19:32:39Z"
+ content="""
+I've made `git annex metadata --key` work.
+
+I'll wait and see what you come up with your special remote and add something to the protocol later if it makes sense.
+"""]]
