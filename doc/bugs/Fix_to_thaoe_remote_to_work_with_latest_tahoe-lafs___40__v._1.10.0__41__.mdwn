@@ -17,6 +17,8 @@ here: <https://github.com/joeyh/git-annex/pull/21>
 OS: Debian Sid updated to latest packages
 git-annex: version 5.20140306 
 
+> Thanks, I've fixed this. [[done]] --[[Joey]]
+
 ### Please provide any additional information below.
 
 I would like to add few things if i'm able (it's my first time for
@@ -43,3 +45,6 @@ to save much time and space by avoiding duplicates.
 
 Do you have any good pointers to pieces code of git-annex that i can
 read and hack to try to implement this or any other suggestion?
+
+> You sent me a email with these same questions and I'd rather not try to
+> respond in 2 places. --[[Joey]]
