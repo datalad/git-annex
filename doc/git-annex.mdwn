@@ -62,10 +62,14 @@ subdirectories).
 
 * `add [path ...]`
 
-  Adds files in the path to the annex. Files that are already checked into
-  git, or that git has been configured to ignore will be silently skipped.
-  (Use `--force` to add ignored files.) Dotfiles are skipped unless explicitly
-  listed.
+  Adds files in the path to the annex. If no path is specified, adds
+  files from the current directory and below.
+  
+  Files that are already checked into git, or that git has been configured
+  to ignore will be silently skipped. (Use `--force` to add ignored files.)
+
+  Dotfiles are skipped unless explicitly listed, or the --include-dotfiles
+  option is used.
 
 * `get [path ...]`
 

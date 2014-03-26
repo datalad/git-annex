@@ -19,6 +19,7 @@ git-annex (5.20140321) UNRELEASED; urgency=medium
     a remote git repository, as long as a git-annex branch has
     been pushed to it, to simplify setup of remote git repositories,
     including via gitolite.
+  * add --include-dotfiles: New option, perhaps useful for backups.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Mar 2014 14:08:41 -0400
 
