@@ -62,3 +62,6 @@ e s tDse.t
 
 # End of transcript or log.
 """]]
+
+> A sort of windows-specific bug in the test suite. I've fixed it. [[done]]
+> --[[Joey]]
