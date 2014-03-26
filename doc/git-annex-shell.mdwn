@@ -26,7 +26,12 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
 * configlist directory
 
   This outputs a subset of the git configuration, in the same form as
-  `git config --list`
+  `git config --list`. This is used to get the annex.uuid of the remote
+  repository.
+
+  When run in a repository that does not yet have an annex.uuid, one
+  will be created, as long as a git-annex branch has already been pushed to
+  the repository.
 
 * inannex directory [key ...]
 
