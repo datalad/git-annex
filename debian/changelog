@@ -1,3 +1,9 @@
+git-annex (5.20140320~bpo70+1) wheezy-backports; urgency=medium
+
+  * Updating backport to newest release.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 26 Mar 2014 15:16:09 -0400
+
 git-annex (5.20140320) unstable; urgency=medium
 
   * Fix zombie leak and general inneficiency when copying files to a
