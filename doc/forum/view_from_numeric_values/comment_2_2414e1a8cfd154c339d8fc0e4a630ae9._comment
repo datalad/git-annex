@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.41"
+ subject="comment 2"
+ date="2014-03-26T17:53:28Z"
+ content="""
+I'm a little bit worried about the potential to reinvent SQL, badly. ;)
+
+As shown in your example, once you have ranges, it's natural to also want disjunctions, and then probably parenthesized expressions, and suddenly things are very complicated.
+
+Also, it's important that views remain reversable, so that committing a moved file in a view can unambiguously calculate the new metadata for it. I think that quickly becomes hard when adding these complications.
+"""]]
