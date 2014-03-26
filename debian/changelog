@@ -1,6 +1,11 @@
 git-annex (5.20140320~bpo70+1) wheezy-backports; urgency=medium
 
   * Updating backport to newest release.
+  * Note that this backport does not feature constant time webapp auth token
+    comparisons. It's not recommended to use the webapp on multiuser systems,
+    since another use may be able to use a timing attack to guess its auth 
+    token. If you need that, it should not be hard to backport
+    haskell-securemem.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 26 Mar 2014 15:16:09 -0400
 
