@@ -711,8 +711,9 @@ subdirectories).
 
 * `metadata [path ...] [-s field=value -s field+=value -s field-=value ...] [-g field]`
 
-  Each file can have any number of metadata fields attached to it,
-  which each in turn have any number of values. 
+  The content of a file can have any number of metadata fields 
+  attached to it to describe it. Each metadata field can in turn
+  have any number of values. 
   
   This command can be used to set metadata, or show the currently set
   metadata.

@@ -1,7 +1,7 @@
-git-annex allows you to store arbitrary metadata about files stored in the
-git-annex repository. The metadata is stored in the `git-annex` branch, and
-so is automatically kept in sync with the rest of git-annex's state, such
-as [[location_tracking]] information.
+git-annex allows you to store arbitrary metadata about the content of files
+stored in the git-annex repository. The metadata is stored in the
+`git-annex` branch, and so is automatically kept in sync with the rest of
+git-annex's state, such as [[location_tracking]] information.
 
 Some of the things you can do with metadata include:
 
