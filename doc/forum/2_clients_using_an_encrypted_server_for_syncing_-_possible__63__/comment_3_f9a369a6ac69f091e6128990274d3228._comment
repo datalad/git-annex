@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.41"
+ subject="comment 3"
+ date="2014-03-26T21:10:39Z"
+ content="""
+What kind of encrypted remote are you using? An encrypted rsync special remote does not include the git repository, but only the content of the files, so cannot be used in this way.
+
+If you set up a [[gcrypt special remote|special_remotes/gcrypt]], it will be encrypted and includes the full git repository, as well as the content of the files, so can be used like this.
+"""]]
