@@ -12,6 +12,9 @@ git-annex (5.20140321) UNRELEASED; urgency=medium
   * tahoe: Pass -d parameter before subcommand; putting it after
     the subcommand no longer works with tahoe-lafs version 1.10.
     (Thanks, Alberto Berti)
+  * forget --drop-dead: Avoid removing the dead remote from the trust.log,
+    so that if git remotes for it still exist anywhere, git annex info
+    will still know it's dead and not show it.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Mar 2014 14:08:41 -0400
 
