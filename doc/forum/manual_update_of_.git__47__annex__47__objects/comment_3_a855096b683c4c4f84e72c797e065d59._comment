@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.41"
+ subject="comment 3"
+ date="2014-03-26T19:09:07Z"
+ content="""
+1. This followup question seems to have nothing to do with the original question. (The aswer to the original question was `git annex fsck --fast`.)
+2. I find it hard to believe that a crashing terminal emulator will create a lot of folders.
+3. You show 36k subdirectories in .git/annex/objects. If I make a *tiny* 100 mb ext2 filesystem, it has 26k inodes. A 200 mb filesystem has 50k. So we're talking about a number of directories that is only large when using hardware from 1996.
+
+I'm not convinced yet that anything is wrong, or that there's anything you can do to improve matters. In any case, see [[todo/wishlist:_pack_metadata_in_direct_mode]].
+"""]]
