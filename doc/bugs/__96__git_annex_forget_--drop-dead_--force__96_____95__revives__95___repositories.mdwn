@@ -84,5 +84,3 @@ Debian GNU/Linux 7 \n \l
 
 richih@apu (git)-[master] /srv/video/video.debian.net % 
 """]]
-
-> [[fixed|done]] via not removing from trust.log --[[Joey]] 
