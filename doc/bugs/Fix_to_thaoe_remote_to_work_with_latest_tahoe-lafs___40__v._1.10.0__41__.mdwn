@@ -36,6 +36,17 @@ way collect the caps of the files from annex metadatas and to link
 them to a directory, which where i can then run "tahoe deep-check
 --add-lease" on;
 
+> When I talked this over with Zooko before, he 
+> thought it was better for git-annex to not use tahoe's directories,
+> which is why it doesn't. See [[todo/tahoe_lfs_for_reals]].
+> 
+> This is the first I have heard about tahoe garbage collection. 
+> It sounds like it's an optional process.
+> 
+> It would certainly be possible to pull the caps for files out of
+> git-annex's remote state log.
+> --[[Joey]]
+
 2. add convergence as an optional parameter. As of now many of the
 files that i'm willing to manage with git-annex are already on my
 grid, mostly because i've used tahoe's backup command to upload
@@ -46,5 +57,6 @@ to save much time and space by avoiding duplicates.
 Do you have any good pointers to pieces code of git-annex that i can
 read and hack to try to implement this or any other suggestion?
 
-> You sent me a email with these same questions and I'd rather not try to
-> respond in 2 places. --[[Joey]]
+> It was not documented, but you can already pass
+> `shared-convergence-secret=xxx` to `initremote`.
+> I have documented it. --[[Joey]]
