@@ -7,3 +7,7 @@ I talked to TobiasTheViking in the past and he hinted at a reasonably clean way 
 
 Thanks,
 Richard
+
+> This is not feaisble given git-annex's design. If I wanted to
+>  make something completely unlike git-annex, I suppose it could be done,
+>  but it's off topic here. [[wontfix|done]] --[[Joey]]
