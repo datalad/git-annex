@@ -39,3 +39,27 @@ user: "Andrew Mark Kraut <akraut@gmail.com>"
 
 # End of transcript or log.
 """]]
+
+> This was a bug introduced last month, it forgot to receord the
+> datacenter and vault used when initializing the glacier repository.
+> 
+> I've fixed the bug, but this does not fix repositories created with
+> the broken version. I considered just making it use the default
+> datacenter and vault for such a repository, but 
+> a) those may change in the future
+> and I don't want to have to worry about breaking such a repository
+> going forward and b) someone may have overridden it to use another
+> datacenter or vault name and so it shouldn't blindly assume the defaults.
+> 
+> Instead, there's a manual fix up step you need to do. Luckily quite easy.
+> For example: 
+> 
+>	git annex enableremote myglacier datacenter=us-east-1 vault=myglacier-fae9be57-8eb4-47af-932f-136b9b40e669
+> 
+> The default datacenter is us-east-1, and the default vault name is
+> "$remotename-$uuid". So you just have to tell it these values
+> once with an enableremote command, and it will then work. 
+
+> You don't even need to get the fixed version of git-annex to work
+> around the bug this way.. Although it does have better error messages
+> too. [[fixed|done]] --[[Joey]] 

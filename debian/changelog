@@ -20,6 +20,13 @@ git-annex (5.20140321) UNRELEASED; urgency=medium
     been pushed to it, to simplify setup of remote git repositories,
     including via gitolite.
   * add --include-dotfiles: New option, perhaps useful for backups.
+  * Version 5.20140227 broke creation of glacier repositories,
+    not including the datacenter and vault in their configuration.
+    This bug is fixed, but glacier repositories set up with the broken
+    version of git-annex need to have the datacenter and vault set
+    in order to be usable. This can be done using git annex enableremote
+    to add the missing settings. For details, see
+    http://git-annex.branchable.com/bugs/problems_with_glacier/
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Mar 2014 14:08:41 -0400
 
