@@ -28,14 +28,14 @@ import qualified Annex.Branch
 import qualified Annex
 import Logs
 import Logs.UUIDBased
-import qualified Utility.Matcher
+import Utility.Matcher hiding (tokens)
 import Annex.FileMatcher
 import Annex.UUID
-import Types.Limit
 import Types.Group
 import Types.Remote (RemoteConfig)
 import Logs.Group
 import Logs.Remote
+import Types.FileMatcher
 import Types.StandardGroups
 import Limit
 
@@ -50,12 +50,12 @@ isPreferredContent mu notpresent mkey afile def = do
 		Just matcher -> checkMatcher matcher mkey afile notpresent def
 
 {- The map is cached for speed. -}
-preferredContentMap :: Annex Annex.PreferredContentMap
+preferredContentMap :: Annex (FileMatcherMap Annex)
 preferredContentMap = maybe preferredContentMapLoad return
 	=<< Annex.getState Annex.preferredcontentmap
 
 {- Loads the map, updating the cache. -}
-preferredContentMapLoad :: Annex Annex.PreferredContentMap
+preferredContentMapLoad :: Annex (FileMatcherMap Annex)
 preferredContentMapLoad = do
 	groupmap <- groupMap
 	configmap <- readRemoteLog
@@ -75,11 +75,11 @@ makeMatcher
 	-> M.Map Group PreferredContentExpression
 	-> UUID
 	-> PreferredContentExpression
-	-> FileMatcher
+	-> FileMatcher Annex
 makeMatcher groupmap configmap groupwantedmap u = go True True
   where
 	go expandstandard expandgroupwanted expr
-		| null (lefts tokens) = Utility.Matcher.generate $ rights tokens
+		| null (lefts tokens) = generate $ rights tokens
 		| otherwise = unknownMatcher u
 	  where
 		tokens = exprParser matchstandard matchgroupwanted groupmap configmap (Just u) expr
@@ -102,10 +102,10 @@ makeMatcher groupmap configmap groupwantedmap u = go True True
  -
  - This avoid unwanted/expensive changes to the content, until the problem
  - is resolved. -}
-unknownMatcher :: UUID -> FileMatcher
-unknownMatcher u = Utility.Matcher.generate [present]
+unknownMatcher :: UUID -> FileMatcher Annex
+unknownMatcher u = generate [present]
   where
-	present = Utility.Matcher.Operation $ matchPresent (Just u)
+	present = Operation $ matchPresent (Just u)
 
 {- Checks if an expression can be parsed, if not returns Just error -}
 checkPreferredContentExpression :: PreferredContentExpression -> Maybe String

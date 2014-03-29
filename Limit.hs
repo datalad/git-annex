@@ -20,7 +20,6 @@ import Types.TrustLevel
 import Types.Key
 import Types.Group
 import Types.FileMatcher
-import Types.Limit
 import Types.MetaData
 import Logs.MetaData
 import Logs.Group
@@ -45,21 +44,20 @@ getMatcher :: Annex (MatchInfo -> Annex Bool)
 getMatcher = Utility.Matcher.matchM <$> getMatcher'
 
 getMatcher' :: Annex (Utility.Matcher.Matcher (MatchInfo -> Annex Bool))
-getMatcher' = do
-	m <- Annex.getState Annex.limit
-	case m of
-		Right r -> return r
-		Left l -> do
-			let matcher = Utility.Matcher.generate (reverse l)
-			Annex.changeState $ \s ->
-				s { Annex.limit = Right matcher }
-			return matcher
+getMatcher' = go =<< Annex.getState Annex.limit
+  where
+	go (CompleteMatcher matcher) = return matcher
+	go (BuildingMatcher l) = do
+		let matcher = Utility.Matcher.generate (reverse l)
+		Annex.changeState $ \s ->
+			s { Annex.limit = CompleteMatcher matcher }
+		return matcher
 
 {- Adds something to the limit list, which is built up reversed. -}
 add :: Utility.Matcher.Token (MatchInfo -> Annex Bool) -> Annex ()
 add l = Annex.changeState $ \s -> s { Annex.limit = prepend $ Annex.limit s }
   where
-	prepend (Left ls) = Left $ l:ls
+	prepend (BuildingMatcher ls) = BuildingMatcher $ l:ls
 	prepend _ = error "internal"
 
 {- Adds a new token. -}
@@ -67,21 +65,21 @@ addToken :: String -> Annex ()
 addToken = add . Utility.Matcher.token
 
 {- Adds a new limit. -}
-addLimit :: Either String MatchFiles -> Annex ()
+addLimit :: Either String (MatchFiles Annex) -> Annex ()
 addLimit = either error (\l -> add $ Utility.Matcher.Operation $ l S.empty)
 
 {- Add a limit to skip files that do not match the glob. -}
 addInclude :: String -> Annex ()
 addInclude = addLimit . limitInclude
 
-limitInclude :: MkLimit
+limitInclude :: MkLimit Annex
 limitInclude glob = Right $ const $ return . matchGlobFile glob
 
 {- Add a limit to skip files that match the glob. -}
 addExclude :: String -> Annex ()
 addExclude = addLimit . limitExclude
 
-limitExclude :: MkLimit
+limitExclude :: MkLimit Annex
 limitExclude glob = Right $ const $ return . not . matchGlobFile glob
 
 matchGlobFile :: String -> (MatchInfo -> Bool)
@@ -119,10 +117,10 @@ addIn s = addLimit =<< mk
 				else inAnnex key
 
 {- Limit to content that is currently present on a uuid. -}
-limitPresent :: Maybe UUID -> MkLimit
+limitPresent :: Maybe UUID -> MkLimit Annex
 limitPresent u _ = Right $ matchPresent u
 
-matchPresent :: Maybe UUID -> MatchFiles
+matchPresent :: Maybe UUID -> MatchFiles Annex
 matchPresent u _ = checkKey $ \key -> do
 	hereu <- getUUID
 	if u == Just hereu || isNothing u
@@ -132,7 +130,7 @@ matchPresent u _ = checkKey $ \key -> do
 			return $ maybe False (`elem` us) u
 
 {- Limit to content that is in a directory, anywhere in the repository tree -}
-limitInDir :: FilePath -> MkLimit
+limitInDir :: FilePath -> MkLimit Annex
 limitInDir dir = const $ Right $ const go
   where
 	go (MatchingFile fi) = return $ elem dir $ splitPath $ takeDirectory $ matchFile fi
@@ -143,7 +141,7 @@ limitInDir dir = const $ Right $ const go
 addCopies :: String -> Annex ()
 addCopies = addLimit . limitCopies
 
-limitCopies :: MkLimit
+limitCopies :: MkLimit Annex
 limitCopies want = case split ":" want of
 	[v, n] -> case parsetrustspec v of
 		Just checker -> go n $ checktrust checker
@@ -169,7 +167,7 @@ limitCopies want = case split ":" want of
 addLackingCopies :: Bool -> String -> Annex ()
 addLackingCopies approx = addLimit . limitLackingCopies approx
 
-limitLackingCopies :: Bool -> MkLimit
+limitLackingCopies :: Bool -> MkLimit Annex
 limitLackingCopies approx want = case readish want of
 	Just needed -> Right $ \notpresent mi -> flip checkKey mi $
 		handle mi needed notpresent
@@ -191,7 +189,7 @@ limitLackingCopies approx want = case readish want of
  - This has a nice optimisation: When a file exists,
  - its key is obviously not unused.
  -}
-limitUnused :: MatchFiles
+limitUnused :: MatchFiles Annex
 limitUnused _ (MatchingFile _) = return False
 limitUnused _ (MatchingKey k) = S.member k <$> unusedKeys
 
@@ -202,7 +200,7 @@ addInAllGroup groupname = do
 	m <- groupMap
 	addLimit $ limitInAllGroup m groupname
 
-limitInAllGroup :: GroupMap -> MkLimit
+limitInAllGroup :: GroupMap -> MkLimit Annex
 limitInAllGroup m groupname
 	| S.null want = Right $ const $ const $ return True
 	| otherwise = Right $ \notpresent -> checkKey $ check notpresent
@@ -219,7 +217,7 @@ limitInAllGroup m groupname
 addInBackend :: String -> Annex ()
 addInBackend = addLimit . limitInBackend
 
-limitInBackend :: MkLimit
+limitInBackend :: MkLimit Annex
 limitInBackend name = Right $ const $ checkKey check
   where
 	check key = pure $ keyBackendName key == name
@@ -231,7 +229,7 @@ addLargerThan = addLimit . limitSize (>)
 addSmallerThan :: String -> Annex ()
 addSmallerThan = addLimit . limitSize (<)
 
-limitSize :: (Maybe Integer -> Maybe Integer -> Bool) -> MkLimit
+limitSize :: (Maybe Integer -> Maybe Integer -> Bool) -> MkLimit Annex
 limitSize vs s = case readSize dataUnits s of
 	Nothing -> Left "bad size"
 	Just sz -> Right $ go sz
@@ -249,7 +247,7 @@ limitSize vs s = case readSize dataUnits s of
 addMetaData :: String -> Annex ()
 addMetaData = addLimit . limitMetaData
 
-limitMetaData :: MkLimit
+limitMetaData :: MkLimit Annex
 limitMetaData s = case parseMetaData s of
 	Left e -> Left e
 	Right (f, v) ->
