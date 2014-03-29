@@ -1,7 +1,7 @@
 git-annex tries to ensure that the configured number of [[copies]] of your
 data always exist, and leaves it up to you to use commands like `git annex
 get` and `git annex drop` to move the content to the repositories you want
-to contain it. But sometimes, it can be good to have more fine-grained
+to contain it. But often, it can be good to have more fine-grained
 control over which content is wanted by which repositories. Configuring
 this allows the git-annex assistant as well as 
 `git annex get --auto`, `git annex drop --auto`, `git annex sync --content`,
