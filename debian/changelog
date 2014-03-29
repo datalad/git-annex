@@ -27,6 +27,7 @@ git-annex (5.20140321) UNRELEASED; urgency=medium
     in order to be usable. This can be done using git annex enableremote
     to add the missing settings. For details, see
     http://git-annex.branchable.com/bugs/problems_with_glacier/
+  * Added required content configuration.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Mar 2014 14:08:41 -0400
 

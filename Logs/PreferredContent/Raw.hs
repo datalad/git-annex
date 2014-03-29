@@ -21,14 +21,23 @@ import Types.Group
 
 {- Changes the preferred content configuration of a remote. -}
 preferredContentSet :: UUID -> PreferredContentExpression -> Annex ()
-preferredContentSet uuid@(UUID _) val = do
+preferredContentSet = setLog preferredContentLog
+
+requiredContentSet :: UUID -> PreferredContentExpression -> Annex ()
+requiredContentSet = setLog requiredContentLog
+
+setLog :: FilePath -> UUID -> PreferredContentExpression -> Annex ()
+setLog logfile uuid@(UUID _) val = do
 	ts <- liftIO getPOSIXTime
-	Annex.Branch.change preferredContentLog $
+	Annex.Branch.change logfile $
 		showLog id
 		. changeLog ts uuid val
 		. parseLog Just
-	Annex.changeState $ \s -> s { Annex.preferredcontentmap = Nothing }
-preferredContentSet NoUUID _ = error "unknown UUID; cannot modify"
+	Annex.changeState $ \s -> s 
+		{ Annex.preferredcontentmap = Nothing
+		, Annex.requiredcontentmap = Nothing
+		}
+setLog _ NoUUID _ = error "unknown UUID; cannot modify"
 
 {- Changes the preferred content configuration of a group. -}
 groupPreferredContentSet :: Group -> PreferredContentExpression -> Annex ()
@@ -43,6 +52,10 @@ groupPreferredContentSet g val = do
 preferredContentMapRaw :: Annex (M.Map UUID PreferredContentExpression)
 preferredContentMapRaw = simpleMap . parseLog Just
 	<$> Annex.Branch.get preferredContentLog
+
+requiredContentMapRaw :: Annex (M.Map UUID PreferredContentExpression)
+requiredContentMapRaw = simpleMap . parseLog Just
+	<$> Annex.Branch.get requiredContentLog
 
 groupPreferredContentMapRaw :: Annex (M.Map Group PreferredContentExpression)
 groupPreferredContentMapRaw = simpleMap . parseMapLog Just Just

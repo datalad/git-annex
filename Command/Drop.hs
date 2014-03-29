@@ -14,10 +14,13 @@ import qualified Annex
 import Annex.UUID
 import Logs.Location
 import Logs.Trust
+import Logs.PreferredContent
 import Config.NumCopies
 import Annex.Content
 import Annex.Wanted
 import Annex.Notification
+
+import qualified Data.Set as S
 
 def :: [Command]
 def = [withOptions [dropFromOption] $ command "drop" paramPaths seek
@@ -50,7 +53,7 @@ startLocal afile numcopies key knownpresentremote = stopUnless (inAnnex key) $ d
 startRemote :: AssociatedFile -> NumCopies -> Key -> Remote -> CommandStart
 startRemote afile numcopies key remote = do
 	showStart' ("drop " ++ Remote.name remote) key afile
-	next $ performRemote key numcopies remote
+	next $ performRemote key afile numcopies remote
 
 performLocal :: Key -> AssociatedFile -> NumCopies -> Maybe Remote -> CommandPerform
 performLocal key afile numcopies knownpresentremote = lockContent key $ do
@@ -60,7 +63,8 @@ performLocal key afile numcopies knownpresentremote = lockContent key $ do
 		Just r -> nub (Remote.uuid r:trusteduuids)
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = Remote.remotesWithoutUUID remotes (trusteduuids'++untrusteduuids)
-	ifM (canDropKey key numcopies trusteduuids' tocheck [])
+	u <- getUUID
+	ifM (canDrop u key afile numcopies trusteduuids' tocheck [])
 		( do
 			removeAnnex key
 			notifyDrop afile True
@@ -70,8 +74,8 @@ performLocal key afile numcopies knownpresentremote = lockContent key $ do
 			stop
 		)
 
-performRemote :: Key -> NumCopies -> Remote -> CommandPerform
-performRemote key numcopies remote = lockContent key $ do
+performRemote :: Key -> AssociatedFile -> NumCopies -> Remote -> CommandPerform
+performRemote key afile numcopies remote = lockContent key $ do
 	-- Filter the remote it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
 	-- When the local repo has the key, that's one additional copy.
@@ -83,7 +87,7 @@ performRemote key numcopies remote = lockContent key $ do
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = filter (/= remote) $
 		Remote.remotesWithoutUUID remotes (have++untrusteduuids)
-	stopUnless (canDropKey key numcopies have tocheck [uuid]) $ do
+	stopUnless (canDrop uuid key afile numcopies have tocheck [uuid]) $ do
 		ok <- Remote.removeKey remote key
 		next $ cleanupRemote key remote ok
   where
@@ -102,13 +106,19 @@ cleanupRemote key remote ok = do
 
 {- Checks specified remotes to verify that enough copies of a key exist to
  - allow it to be safely removed (with no data loss). Can be provided with
- - some locations where the key is known/assumed to be present. -}
-canDropKey :: Key -> NumCopies -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
-canDropKey key numcopies have check skip = do
-	force <- Annex.getState Annex.force
-	if force || numcopies == NumCopies 0
-		then return True
-		else findCopies key numcopies skip have check
+ - some locations where the key is known/assumed to be present.
+ -
+ - Also checks if it's required content, and refuses to drop if so.
+ -
+ - --force overrides and always allows dropping.
+ -}
+canDrop :: UUID -> Key -> AssociatedFile -> NumCopies -> [UUID] -> [Remote] -> [UUID] -> Annex Bool
+canDrop dropfrom key afile numcopies have check skip = ifM (Annex.getState Annex.force)
+	( return True
+	, checkRequiredContent dropfrom key afile
+		<&&>
+	  findCopies key numcopies skip have check
+	)
 
 findCopies :: Key -> NumCopies -> [UUID] -> [UUID] -> [Remote] -> Annex Bool
 findCopies key need skip = helper [] []
@@ -143,6 +153,19 @@ notEnoughCopies key need have skip bad = do
   where
 	unsafe = showNote "unsafe"
 	hint = showLongNote "(Use --force to override this check, or adjust numcopies.)"
+
+checkRequiredContent :: UUID -> Key -> AssociatedFile -> Annex Bool
+checkRequiredContent u k afile =
+	ifM (isRequiredContent (Just u) S.empty (Just k) afile False)
+		( requiredContent
+		, return True
+		)
+
+requiredContent :: Annex Bool
+requiredContent = do
+	showLongNote "That file is required content, it cannot be dropped!"
+	showLongNote "(Use --force to override this check, or adjust required content configuration.)"
+	return False
 
 {- In auto mode, only runs the action if there are enough
  - copies on other semitrusted repositories. -}
