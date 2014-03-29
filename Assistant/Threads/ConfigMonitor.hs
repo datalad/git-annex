@@ -65,6 +65,7 @@ configFilesActions =
 	-- Preferred content settings depend on most of the other configs,
 	-- so will be reloaded whenever any configs change.
 	, (preferredContentLog, noop)
+	, (groupPreferredContentLog, noop)
 	]
 
 reloadConfigs :: Configs -> Assistant ()
