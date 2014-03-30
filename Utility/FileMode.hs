@@ -9,14 +9,16 @@
 
 module Utility.FileMode where
 
-import Common
-
+import System.IO
+import Control.Monad
 import Control.Exception (bracket)
 import System.PosixCompat.Types
 #ifndef mingw32_HOST_OS
 import System.Posix.Files
 #endif
 import Foreign (complement)
+
+import Utility.Exception
 
 {- Applies a conversion function to a file's mode. -}
 modifyFileMode :: FilePath -> (FileMode -> FileMode) -> IO ()
