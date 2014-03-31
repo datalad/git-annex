@@ -3,7 +3,7 @@ annexed files to get or drop.
 
 [[!toc]]
 
-## nautilus
+## GNOME (nautilus)
 
 Recent git-annex comes with built-in nautilus integration. Just pick the
 action from the menu.
@@ -39,7 +39,7 @@ Create a file `~/.kde4/share/kde4/services/ServiceMenus/git-annex.desktop` with 
         Icon=git-annex
         Exec=git-annex drop --notify-start --notify-finish %U
 
-## thunar / XFCE
+## XFCE (Thunar)
 
 XFCE uses the Thunar file manager, which can also be easily configured to allow for custom actions. Just go to the "Configure custom actions..." item in the "Edit" menu, and create a custom action for get and drop with the following commands:
 
