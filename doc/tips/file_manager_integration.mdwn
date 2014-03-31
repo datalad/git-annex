@@ -1,6 +1,8 @@
 Integrating git-annex and your file manager provides an easy way to select
 annexed files to get or drop.
 
+[[!toc]]
+
 ## nautilus
 
 Recent git-annex comes with built-in nautilus integration. Just pick the
@@ -36,6 +38,49 @@ Create a file `~/.kde4/share/kde4/services/ServiceMenus/git-annex.desktop` with 
         Name=Drop
         Icon=git-annex
         Exec=git-annex drop --notify-start --notify-finish %U
+
+## thunar / XFCE
+
+XFCE uses the Thunar file manager, which can also be easily configured to allow for custom actions. Just go to the "Configure custom actions..." item in the "Edit" menu, and create a custom action for get and drop with the following commands:
+
+    git-annex drop --notify-start --notify-finish %F
+
+for drop, and for get:
+
+    git-annex drop --notify-start --notify-finish %F
+
+This gives me the resulting config on disk, in `.config/Thunar/uca.xml`:
+
+    <action>
+        <icon>git-annex</icon>
+        <name>git-annex get</name>
+        <unique-id>1396278104182858-3</unique-id>
+        <command>git-annex get --notify-start --notify-finish %F</command>
+        <description>get the files from a remote git annex repository</description>
+        <patterns>*</patterns>
+        <directories/>
+        <audio-files/>
+        <image-files/>
+        <other-files/>
+        <text-files/>
+        <video-files/>
+    </action>
+    <action>
+        <icon>git-annex</icon>
+        <name>git-annex drop</name>
+        <unique-id>1396278093174843-2</unique-id>
+        <command>git-annex drop --notify-start --notify-finish %F</command>
+        <description>drop the files from the local repository</description>
+        <patterns>*</patterns>
+        <directories/>
+        <audio-files/>
+        <image-files/>
+        <other-files/>
+        <text-files/>
+        <video-files/>
+    </action>
+
+The complete instructions on how to setup actions is [in the XFCE documentation](http://docs.xfce.org/xfce/thunar/custom-actions).
 
 ## your file manager here
 
