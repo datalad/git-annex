@@ -11,3 +11,5 @@ In fact, I'm not even sure what the right thing would be here, I guess that's th
 How would that work? Would I need to do some [subtree merging](http://git-scm.com/book/ch6-7.html) magic? or `git subtree`? or submodules? or should i just use myrepos and pretend I never brought up this idea?
 
 thanks! -- [[anarcat]]
+
+related: [[tips/migrating_two_seperate_disconnected_directories_to_git_annex/]] - but that creates a merged repo...
