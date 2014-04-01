@@ -1715,7 +1715,7 @@ used by git-annex.
 `~/.config/git-annex/autostart` is a list of git repositories
 to start the git-annex assistant in.
 
-`.git/hooks/pre-commit-annex` in your git repsitory will be run whenever
+`.git/hooks/pre-commit-annex` in your git repository will be run whenever
 a commit is made, either by git commit, git-annex sync, or the git-annex
 assistant.
 
