@@ -32,22 +32,22 @@ Create a file `~/.kde4/share/kde4/services/ServiceMenus/git-annex.desktop` with 
         [Desktop Action GitAnnexGet]
         Name=Get
         Icon=git-annex
-        Exec=git-annex get --notify-start --notify-finish %U
+        Exec=git-annex get --notify-start --notify-finish -- %U
 
         [Desktop Action GitAnnexDrop]
         Name=Drop
         Icon=git-annex
-        Exec=git-annex drop --notify-start --notify-finish %U
+        Exec=git-annex drop --notify-start --notify-finish -- %U
 
 ## XFCE (Thunar)
 
 XFCE uses the Thunar file manager, which can also be easily configured to allow for custom actions. Just go to the "Configure custom actions..." item in the "Edit" menu, and create a custom action for get and drop with the following commands:
 
-    git-annex drop --notify-start --notify-finish %F
+    git-annex drop --notify-start --notify-finish -- %F
 
 for drop, and for get:
 
-    git-annex drop --notify-start --notify-finish %F
+    git-annex drop --notify-start --notify-finish -- %F
 
 This gives me the resulting config on disk, in `.config/Thunar/uca.xml`:
 
@@ -55,7 +55,7 @@ This gives me the resulting config on disk, in `.config/Thunar/uca.xml`:
         <icon>git-annex</icon>
         <name>git-annex get</name>
         <unique-id>1396278104182858-3</unique-id>
-        <command>git-annex get --notify-start --notify-finish %F</command>
+        <command>git-annex get --notify-start --notify-finish -- %F</command>
         <description>get the files from a remote git annex repository</description>
         <patterns>*</patterns>
         <directories/>
@@ -69,7 +69,7 @@ This gives me the resulting config on disk, in `.config/Thunar/uca.xml`:
         <icon>git-annex</icon>
         <name>git-annex drop</name>
         <unique-id>1396278093174843-2</unique-id>
-        <command>git-annex drop --notify-start --notify-finish %F</command>
+        <command>git-annex drop --notify-start --notify-finish -- %F</command>
         <description>drop the files from the local repository</description>
         <patterns>*</patterns>
         <directories/>
@@ -92,7 +92,7 @@ If your file manager can run a command on a file, it should be easy to
 integrate git-annex with it. A simple script will suffice:
 
 	#!/bun/sh
-	git-annex get --notify-start --notify-finish "$@"
+	git-annex get --notify-start --notify-finish -- "$@"
 
 The --notify-start and --notify-stop options make git-annex display a
 desktop notification. This is useful to give the user an indication that
