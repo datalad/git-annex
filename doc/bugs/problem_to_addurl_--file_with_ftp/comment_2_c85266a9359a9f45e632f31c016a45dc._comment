@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmdbVIGiDH8KarAGAy8y2FHJD_F990JzXI"
+ nickname="François"
+ subject="comment 2"
+ date="2014-04-01T08:55:29Z"
+ content="""
+Ok, it works when adding option --relaxed. For some reason there seems to be a problem when checking file size.
+"""]]
