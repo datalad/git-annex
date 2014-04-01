@@ -29,6 +29,8 @@ Another thing, this would be completely trackerless. You just use remote groups 
 
 This was originally posted [[as a forum post|forum/Wishlist:_Bittorrent-like_transfers]] by [[users/GLITTAH]].
 
+Update: note how [[design/assistant/telehash/]] may be able to answer this specific use case.
+
 Using an external client (addurl torrent support)
 =================================================
 
