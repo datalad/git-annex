@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmdbVIGiDH8KarAGAy8y2FHJD_F990JzXI"
- nickname="François"
- subject="comment 2"
- date="2014-03-27T20:03:46Z"
- content="""
-So do you have an idea where the problem could be? I have tried 2 other ftp servers on a different system and a different network with consistent results, `git annex addurl ftp://...` always works and `git annex addurl ftp://... --file` always returns the same error.
-"""]]
