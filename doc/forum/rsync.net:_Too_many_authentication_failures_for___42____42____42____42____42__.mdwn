@@ -9,3 +9,5 @@ Any ideas? Is the problem sitting in front of the computer? Is it a bug?
 
 Thanks.
 David
+
+This is happening on Mavericks (10.9)
