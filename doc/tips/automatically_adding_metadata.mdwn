@@ -17,7 +17,7 @@ like photos, mp3s, etc.
 Now any fields you list in metadata.extract to will be extracted and
 stored when files are committed.
 
-To get a list of all possible fields, run: `extract -L | sed ' ' _`
+To get a list of all possible fields, run: `extract -L | sed ' '`
 
 By default, if a git-annex already has a metadata field for a file,
 its value will not be overwritten with metadata taken from files.
