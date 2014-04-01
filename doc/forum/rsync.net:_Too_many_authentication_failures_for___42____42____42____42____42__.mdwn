@@ -1,0 +1,11 @@
+When trying to setup an rsync.net repo I always get the following error:
+
+Permission denied, please try again.
+Permission denied, please try again.
+Received disconnect from 114.xxx.xxx.xxx: 2: Too many authentication failures for 2*****
+
+I can ssh into the account without any problems and couldn't find anything, which would have helped me any further.
+Any ideas? Is the problem sitting in front of the computer? Is it a bug?
+
+Thanks.
+David
