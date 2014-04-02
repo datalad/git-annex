@@ -170,14 +170,15 @@ Executable git-annex
               CPP-Options: -DWITH_KQUEUE
               C-Sources: Utility/libkqueue.c
 
-  if flag(Dbus)
-    Build-Depends: dbus (>= 0.10.3)
-    CPP-Options: -DWITH_DBUS
-  
-  if flag(DesktopNotify)
+  if (os(linux))
     if flag(Dbus)
-      Build-Depends: dbus (>= 0.10.3), fdo-notify (>= 0.3)
-      CPP-Options: -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
+      Build-Depends: dbus (>= 0.10.3)
+      CPP-Options: -DWITH_DBUS
+  
+    if flag(DesktopNotify)
+      if flag(Dbus)
+        Build-Depends: dbus (>= 0.10.3), fdo-notify (>= 0.3)
+        CPP-Options: -DWITH_DESKTOP_NOTIFY -DWITH_DBUS_NOTIFICATIONS
 
   if flag(Android)
     Build-Depends: data-endian
