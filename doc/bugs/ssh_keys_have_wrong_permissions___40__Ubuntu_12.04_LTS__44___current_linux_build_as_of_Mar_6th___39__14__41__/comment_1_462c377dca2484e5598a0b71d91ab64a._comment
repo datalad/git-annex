@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 1"
+ date="2014-04-02T19:53:04Z"
+ content="""
+This is a duplicate of [[bugs/ssh:_unprotected_private_key_file]], which was fixed on March 14th.
+"""]]
