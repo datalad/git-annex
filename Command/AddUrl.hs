@@ -134,17 +134,20 @@ perform relaxed url file = ifAnnexed file addurl geturl
 		| relaxed = do
 			setUrlPresent key url
 			next $ return True
-		| otherwise = do
-			(exists, samesize) <- Url.withUrlOptions $ Url.check url (keySize key)
-			if exists && samesize
-				then do
-					setUrlPresent key url
-					next $ return True
-				else do
-					warning $ if exists
-						then "url does not have expected file size (use --relaxed to bypass this check) " ++ url
-						else "failed to verify url exists: " ++ url
-					stop
+		| otherwise = ifM (elem url <$> getUrls key)
+			( stop
+			, do
+				(exists, samesize) <- Url.withUrlOptions $ Url.check url (keySize key)
+				if exists && samesize
+					then do
+						setUrlPresent key url
+						next $ return True
+					else do
+						warning $ "while adding a new url to an already annexed file, " ++ if exists
+							then "url does not have expected file size (use --relaxed to bypass this check) " ++ url
+							else "failed to verify url exists: " ++ url
+						stop
+			)
 
 addUrlFile :: Bool -> URLString -> FilePath -> Annex Bool
 addUrlFile relaxed url file = do
