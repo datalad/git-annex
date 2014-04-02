@@ -6,3 +6,5 @@ Creating a SSH remote using the git annex webapp.
 
 ### What version of git-annex are you using? On what operating system?
 'current linux build for amd64', downloaded Mar 6th 2014, on Ubuntu 12.04.4 LTS.
+
+> [[done]]
