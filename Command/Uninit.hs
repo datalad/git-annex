@@ -36,7 +36,7 @@ check = do
 
 seek :: CommandSeek
 seek ps = do
-	withFilesNotInGit (whenAnnexed startCheckIncomplete) ps
+	withFilesNotInGit False (whenAnnexed startCheckIncomplete) ps
 	withFilesInGit (whenAnnexed Command.Unannex.start) ps
 	finish
 

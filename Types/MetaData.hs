@@ -264,7 +264,9 @@ parseMetaData p = (,)
 instance Arbitrary MetaData where
 	arbitrary = do
 		size <- arbitrarySizedBoundedIntegral `suchThat` (< 500)
-		MetaData . M.fromList <$> vector size
+		MetaData . M.filterWithKey legal . M.fromList <$> vector size
+	  where
+		legal k _v = legalField $ fromMetaField k
 
 instance Arbitrary MetaValue where
 	arbitrary = MetaValue <$> arbitrary <*> arbitrary

@@ -30,6 +30,7 @@ Build-Depends:
 	libghc-hinotify-dev [linux-any],
 	libghc-stm-dev (>= 2.3),
 	libghc-dbus-dev (>= 0.10.3) [linux-any],
+	libghc-fdo-notify-dev (>= 0.3) [linux-any],
 	libghc-yesod-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
 	libghc-yesod-static-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
 	libghc-yesod-default-dev [i386 amd64 kfreebsd-amd64 powerpc sparc],

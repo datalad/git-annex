@@ -24,7 +24,7 @@ import qualified Git.Command
 import qualified Git.GCrypt
 import qualified Annex
 import Logs.Presence
-import Logs.Transfer
+import Annex.Transfer
 import Annex.UUID
 import Annex.Exception
 import qualified Annex.Content
@@ -321,7 +321,7 @@ copyFromRemote' r key file dest
 			case v of
 				Nothing -> return False
 				Just (object, checksuccess) ->
-					upload u key file noRetry
+					runTransfer (Transfer Download u key) file noRetry
 						(rsyncOrCopyFile params object dest)
 						<&&> checksuccess
 	| Git.repoIsSsh (repo r) = feedprogressback $ \feeder -> do
@@ -418,7 +418,7 @@ copyToRemote r key file p
 			( return True
 			, do
 				ensureInitialized
-				download u key file noRetry $ const $
+				runTransfer (Transfer Download u key) file noRetry $ const $
 					Annex.Content.saveState True `after`
 						Annex.Content.getViaTmpChecked (liftIO checksuccessio) key
 							(\d -> rsyncOrCopyFile params object d p)

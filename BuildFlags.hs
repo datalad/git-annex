@@ -57,6 +57,9 @@ buildFlags = filter (not . null)
 #ifdef WITH_DBUS
 	, "DBus"
 #endif
+#ifdef WITH_DESKTOP_NOTIFY
+	, "DesktopNotify"
+#endif
 #ifdef WITH_XMPP
 	, "XMPP"
 #else

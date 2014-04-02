@@ -30,14 +30,15 @@ withFilesInGit :: (FilePath -> CommandStart) -> CommandSeek
 withFilesInGit a params = seekActions $ prepFiltered a $
 	seekHelper LsFiles.inRepo params
 
-withFilesNotInGit :: (FilePath -> CommandStart) -> CommandSeek
-withFilesNotInGit a params = do
-	{- dotfiles are not acted on unless explicitly listed -}
-	files <- filter (not . dotfile) <$>
-		seekunless (null ps && not (null params)) ps
-	dotfiles <- seekunless (null dotps) dotps
-	seekActions $ prepFiltered a $
-		return $ concat $ segmentPaths params (files++dotfiles)
+withFilesNotInGit :: Bool -> (FilePath -> CommandStart) -> CommandSeek
+withFilesNotInGit skipdotfiles a params
+	| skipdotfiles = do
+		{- dotfiles are not acted on unless explicitly listed -}
+		files <- filter (not . dotfile) <$>
+			seekunless (null ps && not (null params)) ps
+		dotfiles <- seekunless (null dotps) dotps
+		go (files++dotfiles)
+	| otherwise = go =<< seekunless False params
   where
 	(dotps, ps) = partition dotfile params
 	seekunless True _ = return []
@@ -45,6 +46,8 @@ withFilesNotInGit a params = do
 		force <- Annex.getState Annex.force
 		g <- gitRepo
 		liftIO $ Git.Command.leaveZombie <$> LsFiles.notInRepo force l g
+	go l = seekActions $ prepFiltered a $
+		return $ concat $ segmentPaths params l
 
 withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
 withPathContents a params = seekActions $ 

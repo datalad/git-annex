@@ -77,7 +77,8 @@ exists url uo = case parseURIRelaxed url of
 				Nothing -> dne
 		| otherwise -> if Build.SysConfig.curl
 			then do
-				output <- readProcess "curl" $ toCommand curlparams
+				output <- catchDefaultIO "" $
+					readProcess "curl" $ toCommand curlparams
 				case lastMaybe (lines output) of
 					Just ('2':_:_) -> return (True, extractsize output)
 					_ -> dne

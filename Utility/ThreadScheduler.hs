@@ -10,9 +10,12 @@
 
 module Utility.ThreadScheduler where
 
-import Common
-
+import Control.Monad
 import Control.Concurrent
+#ifndef mingw32_HOST_OS
+import Control.Monad.IfElse
+import System.Posix.IO
+#endif
 #ifndef mingw32_HOST_OS
 import System.Posix.Signals
 #ifndef __ANDROID__

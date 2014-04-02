@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Command.PreCommit where
 
 import Common.Annex
@@ -16,10 +18,16 @@ import Annex.Direct
 import Annex.Hook
 import Annex.View
 import Annex.View.ViewedFile
+import Annex.Perms
+import Annex.Exception
 import Logs.View
 import Logs.MetaData
 import Types.View
 import Types.MetaData
+
+#ifdef mingw32_HOST_OS
+import Utility.WinLock
+#endif
 
 import qualified Data.Set as S
 
@@ -28,7 +36,7 @@ def = [command "pre-commit" paramPaths seek SectionPlumbing
 	"run by git pre-commit hook"]
 
 seek :: CommandSeek
-seek ps = ifM isDirect
+seek ps = lockPreCommitHook $ ifM isDirect
 	( do
 		-- update direct mode mappings for committed files
 		withWords startDirect ps
@@ -82,3 +90,22 @@ showMetaDataChange = showLongNote . unlines . concatMap showmeta . fromMetaData
 	showset v
 		| isSet v = "+"
 		| otherwise = "-"
+
+{- Takes exclusive lock; blocks until available. -}
+lockPreCommitHook :: Annex a -> Annex a
+lockPreCommitHook a = do
+	lockfile <- fromRepo gitAnnexPreCommitLock
+	createAnnexDirectory $ takeDirectory lockfile
+	mode <- annexFileMode
+	bracketIO (lock lockfile mode) unlock (const a)
+  where
+#ifndef mingw32_HOST_OS
+	lock lockfile mode = do
+		l <- liftIO $ noUmask mode $ createFile lockfile mode
+		liftIO $ waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
+		return l
+	unlock = closeFd
+#else
+	lock lockfile _mode = liftIO $ waitToLock $  lockExclusive lockfile
+	unlock = dropLock
+#endif

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.41"
+ subject="comment 1"
+ date="2014-03-26T20:50:55Z"
+ content="""
+That's a fairly old version of git-annex, so you could try upgrading.
+
+This might happen if your shell environment you're using to run git-annex does not have either USERPROFILE or HOME envorironment variable set, or does not have one of USERNAME, USER, and LOGNAME set.
+"""]]

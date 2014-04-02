@@ -5,3 +5,19 @@ like preferred content, which is enforced. So, required content.
 For example, I might want a repository that is required to contain
 `*.jpeg`. This would make get --auto get it (it's implicitly part of the
 preferred content), and would make drop refuse to drop it.
+
+> I've implemented the basic required content. Currently only configurable
+> via `vicfg`, because I don't think a lot of people are going to want to
+> use it.
+> 
+> Note that I did not yet add the active verification discussed below.
+> So if required content is set to `not inallgroup=backup`, or
+> `not copies=10`, trying to drop a file will not go off and prove
+> that there are 10 copies or that the file is in every repository in 
+> the backup group. It will assume that the location log is accurate
+> and go by that.
+> 
+> I think this is enough to cover Richard's case, at least.
+> In his example, A B and C are in group anchor and have required
+> content set to `include=*`, and D E F have it set to
+> `not inallgroup=anchor`. --[[Joey]]

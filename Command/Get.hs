@@ -11,7 +11,7 @@ import Common.Annex
 import Command
 import qualified Remote
 import Annex.Content
-import Logs.Transfer
+import Annex.Transfer
 import Config.NumCopies
 import Annex.Wanted
 import qualified Command.Move
@@ -69,15 +69,15 @@ getKeyFile' key afile dest = dispatch
 		showNote "not available"
 		showlocs
 		return False
-	dispatch remotes = trycopy remotes remotes
-	trycopy full [] = do
+	dispatch remotes = notifyTransfer Download afile $ trycopy remotes remotes
+	trycopy full [] _ = do
 		Remote.showTriedRemotes full
 		showlocs
 		return False
-	trycopy full (r:rs) =
+	trycopy full (r:rs) witness =
 		ifM (probablyPresent r)
-			( docopy r (trycopy full rs)
-			, trycopy full rs
+			( docopy r witness <||> trycopy full rs witness
+			, trycopy full rs witness
 			)
 	showlocs = Remote.showLocations key []
 		"No other repository is known to contain the file."
@@ -87,8 +87,6 @@ getKeyFile' key afile dest = dispatch
 		| Remote.hasKeyCheap r =
 			either (const False) id <$> Remote.hasKey r key
 		| otherwise = return True
-	docopy r continue = do
-		ok <- download (Remote.uuid r) key afile noRetry $ \p -> do
-			showAction $ "from " ++ Remote.name r
-			Remote.retrieveKeyFile r key afile dest p
-		if ok then return ok else continue
+	docopy r = download (Remote.uuid r) key afile noRetry $ \p -> do
+		showAction $ "from " ++ Remote.name r
+		Remote.retrieveKeyFile r key afile dest p

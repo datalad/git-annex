@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqWbWVRH2k9spSMqKfIXBP1G3ekkj9Igg"
+ nickname="Rado"
+ subject="I solved it installing dependencies....but dont know hot to start it..."
+ date="2014-03-29T07:45:19Z"
+ content="""
+cabal install gsasl
+cabal install happy
+cabal install language-javascript
+cabal install alex
+cabal install c2hs
+
+after installing writing in terminal: git-annex, git-annex webapp does nothing...
+can you help how to start git-annex?
+"""]]

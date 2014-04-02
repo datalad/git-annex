@@ -108,6 +108,7 @@ install_pkgs () {
 	patched gnutls
 	patched libxml-sax
 	patched network-protocol-xmpp
+	patched unbounded-delays
 
 	cd ..
 

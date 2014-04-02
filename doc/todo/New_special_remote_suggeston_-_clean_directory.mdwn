@@ -13,3 +13,11 @@ This special remote could be thought of as the 'least common denominator of spec
 First and foremost, this can't be (really really shouldn't be) a trusted remote; my wife could accidentally delete all files on the NAS while I am away. So my local git-annex shouldn't assume the NAS counts towards numcopies (unless I'm a real masochist).
 
 Secondly, what to do when files change/are added/removed on the special remote? Probably the same thing that the assistant does with everything. The only thing special is that new/modified files will need to be copied locally from this special remote before being added to the annex (to get hash and such).
+
+> This is not feaisble given git-annex's design. If I wanted to
+> make something completely unlike git-annex, I suppose it could be done,
+> but it's off topic here. [[wontfix|done]]. 
+>
+> If you want to use git-annex on a Synology NAS, the arm standalone build
+> will work, and then you can use the command-line, or the assistant
+> to maintain a git repository that contains your files as desired. --[[Joey]]

@@ -1,0 +1,23 @@
+### Please describe the problem.
+The watcher crashes.
+
+I only need to restart the thread in the pop-up to get everything to work again, but I'm reporting just in case that this issue has any other implications.
+
+
+### What steps will reproduce the problem?
+I open the webapp and in the minutes before it starts syncing (syncing is enabled) I disable it (clicking in the 'syncing enabled' text).
+
+This produces a crash every time.
+
+
+### What version of git-annex are you using? On what operating system?
+5.20140320 in Debian sid and testing
+
+
+### Please provide any additional information below.
+This is all I can see in the logs
+
+[[!format sh """
+Watcher crashed: PauseWatcher
+[2014-03-26 08:54:57 CET] Watcher: warning Watcher crashed: PauseWatcher
+"""]]

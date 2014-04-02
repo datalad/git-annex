@@ -10,7 +10,6 @@
 module Annex (
 	Annex,
 	AnnexState(..),
-	PreferredContentMap,
 	new,
 	run,
 	eval,
@@ -60,8 +59,8 @@ import Types.FileMatcher
 import Types.NumCopies
 import Types.LockPool
 import Types.MetaData
+import Types.DesktopNotify
 import Types.CleanupActions
-import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
 import Utility.Quvi (QuviVersion)
@@ -79,9 +78,6 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 		Functor,
 		Applicative
 	)
-
-type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
-type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> MatchInfo -> Annex Bool))
 
 -- internal state storage
 data AnnexState = AnnexState
@@ -103,9 +99,10 @@ data AnnexState = AnnexState
 	, forcebackend :: Maybe String
 	, globalnumcopies :: Maybe NumCopies
 	, forcenumcopies :: Maybe NumCopies
-	, limit :: Matcher (MatchInfo -> Annex Bool)
+	, limit :: ExpandableMatcher Annex
 	, uuidmap :: Maybe UUIDMap
-	, preferredcontentmap :: Maybe PreferredContentMap
+	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
+	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
 	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
@@ -122,6 +119,7 @@ data AnnexState = AnnexState
 	, unusedkeys :: Maybe (S.Set Key)
 	, quviversion :: Maybe QuviVersion
 	, existinghooks :: M.Map Git.Hook.Hook Bool
+	, desktopnotify :: DesktopNotify
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -144,9 +142,10 @@ newState c r = AnnexState
 	, forcebackend = Nothing
 	, globalnumcopies = Nothing
 	, forcenumcopies = Nothing
-	, limit = Left []
+	, limit = BuildingMatcher []
 	, uuidmap = Nothing
 	, preferredcontentmap = Nothing
+	, requiredcontentmap = Nothing
 	, shared = Nothing
 	, forcetrust = M.empty
 	, trustmap = Nothing
@@ -163,6 +162,7 @@ newState c r = AnnexState
 	, unusedkeys = Nothing
 	, quviversion = Nothing
 	, existinghooks = M.empty
+	, desktopnotify = mempty
 	}
 
 {- Makes an Annex state object for the specified git repo.

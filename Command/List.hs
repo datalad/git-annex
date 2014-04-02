@@ -38,7 +38,7 @@ seek ps = do
 
 getList :: Annex [(UUID, RemoteName, TrustLevel)]
 getList = ifM (Annex.getFlag $ optionName allrepos)
-	( nubBy ((==) `on` fst3) <$> ((++) <$> getRemotes <*> getAll)
+	( nubBy ((==) `on` fst3) <$> ((++) <$> getRemotes <*> getAllUUIDs)
 	, getRemotes
 	)
   where
@@ -48,7 +48,7 @@ getList = ifM (Annex.getFlag $ optionName allrepos)
 		hereu <- getUUID
 		heretrust <- lookupTrust hereu
 		return $ (hereu, "here", heretrust) : zip3 (map uuid rs) (map name rs) ts
-	getAll = do
+	getAllUUIDs = do
 		rs <- M.toList <$> uuidMap
 		rs3 <- forM rs $ \(u, n) -> (,,)
 			<$> pure u

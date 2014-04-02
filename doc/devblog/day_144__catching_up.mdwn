@@ -1,0 +1,12 @@
+Got caught up on all recent bugs and questions, although I still have a
+backlog of 27 older things that I really should find time for.
+
+Fixed a couple of bugs. One was that the assistant set up ssh
+`authorized_keys` that didn't work with the fish shell.
+
+Also got caught up on the current state of telehash-c. Have not quite
+gotten it to work, but it seems pretty close to being able to see it do
+something useful for the first time.
+
+Pushing out a release this evening with a good number of changes left over
+from March.

@@ -1,0 +1,67 @@
+### Please describe the problem.
+I want to addurl using ftp protocol.
+`git annex addurl ftp://...` works fine, but `git annex addurl --file` fails with an error "failed to verify url exists".
+
+### What steps will reproduce the problem?
+
+setting up a new repo
+
+    % alias ga  
+    ga=/home/applis/git-annex.linux/git-annex  
+    % ga init  
+    init  ok  
+    (Recording state in git...)  
+
+addurl --file works with http
+
+    % wget http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz  
+    [...]  
+    2014-03-27 15:25:06 (10,1 MB/s) - ‘git-annex-standalone-amd64.tar.gz’ saved [30689438/30689438]  
+    % ga add git-annex-standalone-amd64.tar.gz  
+    add git-annex-standalone-amd64.tar.gz ok  
+    (Recording state in git...)  
+    % ga addurl http://downloads.kitenet.net/git-annex/linux/current/git-annex-standalone-amd64.tar.gz --file git-annex-standalone-amd64.tar.gz  
+    addurl git-annex-standalone-amd64.tar.gz ok  
+    (Recording state in git...)  
+
+addurl works with ftp:
+
+    % ga addurl ftp://ftp.belnet.be/debian-cd/7.4.0-live/i386/iso-hybrid/debian-live-7.4-i386-lxde-desktop.iso.log  
+    addurl ftp.belnet.be_debian_cd_7.4.0_live_i386_iso_hybrid_debian_live_7.4_i386_lxde_desktop.iso.log (downloading ftp://ftp.belnet.be/debian-cd/7.4.0-live/i386/iso-hybrid/debian-live-7.4-i386-lxde-desktop.iso.log ...)  
+    [...]  
+    2014-03-27 15:27:47 (11,1 MB/s) - ‘/data/annex/.git/annex/tmp/URL--ftp&c%%ftp.belnet.be%debian-cd%7.4.0-live%i386%iso-hybrid%debian-live-7.4-i386-lxde-desktop.iso.log’ saved [1235181]  
+    ok  
+    (Recording state in git...)  
+
+addurl --file doesn't work with ftp
+
+    % wget ftp://ftp.belnet.be/debian-cd/7.4.0-live/i386/iso-hybrid/debian-live-7.4-i386-standard.iso.zsync  
+    [...]  
+    2014-03-27 15:29:32 (19,4 MB/s) - ‘debian-live-7.4-i386-standard.iso.zsync’ saved [1932014]  
+    % ga add debian-live-7.4-i386-standard.iso.zsync  
+    add debian-live-7.4-i386-standard.iso.zsync ok  
+    (Recording state in git...)  
+    % ga addurl ftp://ftp.belnet.be/debian-cd/7.4.0-live/i386/iso-hybrid/debian-live-7.4-i386-standard.iso.zsync --file debian-live-7.4-i386-standard.iso.zsync   
+    addurl debian-live-7.4-i386-standard.iso.zsync   
+      failed to verify url exists: ftp://ftp.belnet.be/debian-cd/7.4.0-live/i386/iso-hybrid/debian-live-7.4-i386-standard.iso.zsync  
+    failed  
+    git-annex: addurl: 1 failed  
+
+### What version of git-annex are you using? On what operating system?
+
+I am using current git-annex binary linux version on Fedora 19.
+
+    % which git ; git --version  
+    /usr/bin/git  
+    git version 1.8.3.1  
+    % which ga ; ga version  
+    ga=/home/applis/git-annex.linux/git-annex  
+    git-annex version: 5.20140320-g63535e3  
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS Feeds Quvi TDFA CryptoHash  
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL  
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external  
+    local repository version: 5  
+    supported repository version: 5  
+    upgrade supported from repository versions: 0 1 2 4  
+
+> [[done]] --[[Joey]]

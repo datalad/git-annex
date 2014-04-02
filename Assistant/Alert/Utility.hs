@@ -14,7 +14,6 @@ import Utility.Tense
 import qualified Data.Text as T
 import Data.Text (Text)
 import qualified Data.Map as M
-import Data.Monoid
 
 {- This is as many alerts as it makes sense to display at a time.
  - A display might be smaller, or larger, the point is to not overwhelm the

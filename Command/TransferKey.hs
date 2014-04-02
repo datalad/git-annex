@@ -11,7 +11,7 @@ import Common.Annex
 import Command
 import Annex.Content
 import Logs.Location
-import Logs.Transfer
+import Annex.Transfer
 import qualified Remote
 import Types.Remote
 
@@ -41,7 +41,7 @@ start to from file key =
 		_ -> error "specify either --from or --to"
 
 toPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
-toPerform remote key file = go $
+toPerform remote key file = go Upload file $
 	upload (uuid remote) key file forwardRetry $ \p -> do
 		ok <- Remote.storeKey remote key file p
 		when ok $
@@ -49,9 +49,9 @@ toPerform remote key file = go $
 		return ok
 
 fromPerform :: Remote -> Key -> AssociatedFile -> CommandPerform
-fromPerform remote key file = go $
+fromPerform remote key file = go Upload file $
 	download (uuid remote) key file forwardRetry $ \p ->
 		getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
 
-go :: Annex Bool -> CommandPerform
-go a = a >>= liftIO . exitBool
+go :: Direction -> AssociatedFile -> (NotifyWitness -> Annex Bool) -> CommandPerform
+go direction file a = notifyTransfer direction file a >>= liftIO . exitBool
