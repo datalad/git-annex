@@ -1,0 +1,14 @@
+Long, long day coding up the direct mode guard today. About 90% of the fun
+is dealing with `receive.denyCurrentBranch` not preventing pushes that
+change the current branch, now that core.bare is set in direct mode.
+My current solution to this involves using a special branch when using
+direct mode, which nothing will ever push to (hopefully). A much nicer
+solution would be to use a `update` hook to deny pushes of the current
+branch -- but there are filesystems where repos cannot have git hooks.
+
+The test suite is falling over, but the `directguard` branch otherwise
+seems usable.
+
+----
+
+Today's work was sponsored by Carlo Matteo Capocasa.

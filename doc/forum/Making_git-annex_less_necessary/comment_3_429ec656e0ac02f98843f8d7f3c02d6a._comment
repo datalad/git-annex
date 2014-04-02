@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/IAg3idYGk.joxsJb2WCxl20gig.0.8hS#d5165"
+ nickname="Kelly"
+ subject="comment 2"
+ date="2012-05-09T01:22:13Z"
+ content="""
+What were the ideas to avoid parameterisation? What were the problems of parameterisation, other than just the current hardcoded assumptions?
+
+Speaking of hash insecurity, http://static.usenix.org/events/hotos03/tech/full_papers/henson/henson_html/node8.html says compare-by-hash is a bad idea. As I understand, git doesn't have an option of verifying content matches when the hash matches when adding data to the object store (like zfs's \"dedup=verify\" option, which you can use even when using sha256), because the assumption is that the risk of collision (or at least just the risk of accidental collision) is negligible. Would it be worthwhile to add this option to git-annex?
+
+"""]]

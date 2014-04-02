@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-04-03T01:48:57Z"
+ content="""
+For future reference, git can recover from a corrupted index file with `rm .git/index; git reset --mixed`.
+
+Of course, you lose any staged changes that were in the old index file, and may need to re-stage some files.
+"""]]

@@ -1,0 +1,8 @@
+I'm trying to use git-annex to archive scientific data. I'm often dealing with large numbers of files, sometimes 10k or more. When I try to git-annex add these files I get this error:
+
+
+    Stack space overflow: current size 8388608 bytes.
+    Use `+RTS -Ksize' to increase it.
+
+
+This is with the latest version of git-annex and a current version of git on OS 10.6.7. After this error occurs, I am unable to un-annex the files and I'm forced to recover from a backup. 

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnxlx1UrzVhdy6_gFjzmF42x6QXxBUxg00"
+ nickname="Jakukyo"
+ subject="size of repo"
+ date="2013-09-21T09:32:03Z"
+ content="""
+    $ git ls-tree -r git-annex | wc -l
+    29273
+"""]]

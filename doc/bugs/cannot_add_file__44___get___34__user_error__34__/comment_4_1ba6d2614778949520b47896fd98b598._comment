@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawla3gLc6_rHuggFfy7o7eGMPvPztFZTrUQ"
+ nickname="Florian"
+ subject="comment 4"
+ date="2013-03-19T21:18:19Z"
+ content="""
+Using runshell solved the problem, but for my usecases I'm not happy with that. I guess I'll try with a clean cabal again.
+"""]]

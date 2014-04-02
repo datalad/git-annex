@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://bigasterisk.com/"
+ nickname="Drew Perttula"
+ subject="comment 5"
+ date="2013-07-25T05:14:12Z"
+ content="""
+BTW \"go enter it into the computer you want to pair with\" is a very frustrating instruction to read. Every time I try to do a pairing and I encounter that, it's telling me \"now it's time for you to guess what to do, so this is probably where you'll screw things up.\" I have no idea where to enter that secret phrase. I would also like to know if 'asdfasdf' is a good secret phrase or not, presuming the two computers are both on my internal network. Does the secret matter later or is it just used for a minute?
+
+So far, I keep getting blank repo names with the NoUUID edit url, or I fail to accomplish a pairing at all.
+"""]]

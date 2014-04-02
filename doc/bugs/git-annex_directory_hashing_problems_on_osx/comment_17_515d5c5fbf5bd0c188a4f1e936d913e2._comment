@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 17"
+ date="2011-04-03T16:53:51Z"
+ content="""
+@gernot step 0 is to upgrade git-annex to current git, on all systems where you use it, in case that wasn't clear.
+
+"""]]

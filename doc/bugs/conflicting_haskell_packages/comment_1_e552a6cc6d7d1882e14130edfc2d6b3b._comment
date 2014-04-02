@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://ertai.myopenid.com/"
+ nickname="npouillard"
+ subject="how to reproduce the package conflict issue"
+ date="2011-02-07T14:12:43Z"
+ content="""
+If you install the monads-fd package (with cabal install for instance), then you can no longer build git-annex:
+
+<pre>
+./configure
+  checking cp -a... yes
+  checking cp -p... yes
+  checking cp --reflink=auto... yes
+  checking uuid generator... uuid
+  checking xargs -0... yes
+  checking rsync... yes
+ghc -O2 -Wall --make git-annex
+
+Annex.hs:22:7:
+    Ambiguous module name `Control.Monad.State':
+      it was found in multiple packages: monads-fd-0.2.0.0 mtl-2.0.1.0
+make: *** [git-annex] Error 1
+</pre>
+"""]]

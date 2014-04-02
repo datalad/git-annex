@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.41"
+ subject="comment 1"
+ date="2014-03-27T17:27:58Z"
+ content="""
+--file does not change git-annex addurl's network communication in any way. I think this ftp server is sometimes working, and other times failing. It seems to be returning a 350 result code. The FTP spec is not clear what that means, but it does not seem to indicate success.
+"""]]

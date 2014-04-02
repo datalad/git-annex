@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkx5V3MTbzCXS3J7Mn9FEq8M9bPPYMkAHY"
+ nickname="Pedro"
+ subject="comment 2"
+ date="2013-05-29T18:08:51Z"
+ content="""
+I see the --stop option in the manpage now, it's under watch and not assistant, so that's why I missed it. I had a problem with the mux sessions not being cleaned up when I changed the remote's hostname. Only after killing old mux's and restarting the assistant did I get it to sync properly.
+"""]]

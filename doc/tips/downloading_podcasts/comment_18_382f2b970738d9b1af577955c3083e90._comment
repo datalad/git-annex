@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="--fast and --relaxed"
+ date="2013-08-16T07:27:59Z"
+ content="""
+Hi,
+
+the explanations to --fast and --relaxed on this page could be extended a bit. I looked it up in the man page, but it is not yet clear to me when I would use one or the other with feeds. Also, does “Next time you run git annex addurl it will only fetch any new items.” really only apply to --relaxed, and not --fast?
+
+Furthermore, it would be good if there were a template variable `itemnum` that I can use to ensure that `ls` prints the casts in the right order, even when the titles of the items are not helpful.
+
+Greetings,
+Joachim
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnSenxKyE_2Z6Wb-EBMO8FciyRywjx1ZiQ"
+ nickname="Walter"
+ subject="comment 7"
+ date="2013-04-17T20:50:34Z"
+ content="""
+So looking in .git/annex/objects, it is obvious that the difference between New1 and New1.txt is the extension.
+
+So, I think that explains all the things I was seeing. I guess the main point of confusion (though I can't think of a better way) is the distinction between data stored in .git/annex/objects, and files in the working folder.
+If I thought in terms of hashes, that is all that would need to be shown in git annex whereis is which hashes are where (and then it would be obvious if several files have the same hash, that once one of them is present somewhere then all of them are).
+
+"""]]

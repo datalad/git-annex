@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ subject="comment 6"
+ date="2014-03-07T08:52:12Z"
+ content="""
+Agreed, the dbus and accept messages are probably unrelated. I just commented here because it's the same bug I'm encountering.
+
+The dbus message only appears once in the log (shortly after startup). The accept messages appears every second.
+"""]]

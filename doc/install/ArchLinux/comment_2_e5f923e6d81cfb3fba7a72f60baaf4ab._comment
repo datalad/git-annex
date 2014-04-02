@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="Stalling when creating repository in assistant"
+ date="2013-09-13T05:09:49Z"
+ content="""
+I am experiencing a weird issue with any install I've had on this one (and only) ArchLinux machine: all of aur/git-annex 4.20130516-1, aur/git-annex-bin-4.20130909-1, aur/git-annex-standalone-4.20130909-1 and a Cabal install just stall when trying to create the initial Git annex repo in the webapp.
+
+When started, it offers me to create the annex in ~/annex/ or ~/Desktop/annex/, where ~ gets turned into /home/USER when I press “Make repository”, but nothing else happens. This is regardless of if that repo exists when I try to create it or start the webapp.
+
+If I start the webapp from an existing annex (now in ~/annex), it seems to work a bit better, but any other remote (SSH) server that I try to add fails. I just get a fleeting Bootstrap message box when I click “Check this server”, and nothing in the logs of eithr git annex webapp or the ssh logs of the server.
+
+Any idea? Where should I look for more debug information?
+.
+
+"""]]

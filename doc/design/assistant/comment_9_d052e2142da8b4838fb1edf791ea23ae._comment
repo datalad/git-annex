@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://wiggy.net/"
+ nickname="Wichert"
+ subject="macports"
+ date="2012-06-12T13:00:34Z"
+ content="""
+The average OSX user has a) no idea what macports is, and b) will not be able to install it. Anything that requires a user to do anything with a commandline (or really anything other than using a GUI installer) is effectively a dealbreaker. For our use cases OSX is definitely a requirement, but it must only use standard OSX installation methods in order to be usable. Being in the appstore would be ideal, but standard dmg/pkg installers are still common enough that they are also acceptable.
+
+FWIW this is the same reason many git GUIs were not usable for our OSX users: they required separate installation of the git commandline tools.
+"""]]

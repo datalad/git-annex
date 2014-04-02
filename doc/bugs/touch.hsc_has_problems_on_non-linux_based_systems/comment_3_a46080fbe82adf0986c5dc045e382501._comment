@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 3"
+ date="2011-03-16T17:46:40Z"
+ content="""
+Alright, I've added #idefs and the symlink timestamp mirroring feature will be unavailable on OSX until I get a version that works there.
+"""]]

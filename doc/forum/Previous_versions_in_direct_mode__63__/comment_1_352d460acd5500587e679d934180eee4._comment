@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-24T20:56:00Z"
+ content="""
+git-annex for windows is targeting being used with msysgit, and msysgit does not seem to support symlinks. That's one good reason. Since cywin's git does support symlinks, it might be possible to get git-annex to use it and support indirect mode.
+
+Doing anything about this is probably \"patches accepted\" territory for me. I'm mostly interested in porting git-annex to Windows so it can be used on computers owned by non-technical users, to interoperate with git-annex on more capable operating systems.
+"""]]

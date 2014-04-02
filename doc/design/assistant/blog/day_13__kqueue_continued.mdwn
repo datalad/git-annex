@@ -1,0 +1,34 @@
+Good news! My beta testers report that the new kqueue code works on OSX.
+At least "works" as well as it does on Debian kFreeBSD. My crazy
+development strategy of developing on Debian kFreeBSD while targeting Mac
+OSX is vindicated. ;-)
+
+So, I've been beating the kqueue code into shape for the last 12 hours,
+minus a few hours sleep.
+
+First, I noticed it was seeming to starve the other threads. I'm using
+Haskell's non-threaded runtime, which does cooperative multitasking between
+threads, and my C code was never returning to let the other threads run.
+Changed that around, so the C code runs until SIGALARMed, and then that
+thread calls `yield` before looping back into the C code. Wow, cooperative
+multitasking.. I last dealt with that when programming for Windows 3.1!
+(Should try to use Haskell's -threaded runtime sometime, but git-annex
+doesn't work under it, and I have not tried to figure out why not.)
+
+Then I made a [single commit](http://source.git-annex.branchable.com/?p=source.git;a=commitdiff;h=2bfcc0b09c5dd37c5e0ab65cb089232bfcc31934),
+with no testing, in which I made the kqueue code maintain a cache of what
+it expects in the directory tree, and use that to determine what files
+changed how when a change is detected. Serious code. It worked on the
+first go. If you were wondering why I'm writing in Haskell ... yeah,
+that's why.
+
+And I've continued to hammer on the kqueue code, making lots of little
+fixes, and at this point it seems *almost* able to handle the changes I
+throw at it. It does have one big remaining problem; kqueue doesn't tell me
+when a writer closes a file, so it will sometimes miss adding files. To fix
+this, I'm going to need to make it maintain a queue of new files, and
+periodically check them, with `lsof`, to see when they're done being
+written to, and add them to the annex. So while a file is being written
+to, `git annex watch` will have to wake up every second or so, and run
+`lsof` ... and it'll take it at least 1 second to notice a file's complete.
+Not ideal, but the best that can be managed with kqueue.

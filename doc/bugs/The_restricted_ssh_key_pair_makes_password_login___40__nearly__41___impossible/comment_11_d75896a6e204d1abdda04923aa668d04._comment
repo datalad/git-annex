@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 11"
+ date="2013-04-14T02:58:05Z"
+ content="""
+Thanks for that.. It's not verbose enough for me to see it choose the key to use. Can you add one more `v`? ssh -vvv , 3 v's..
+"""]]

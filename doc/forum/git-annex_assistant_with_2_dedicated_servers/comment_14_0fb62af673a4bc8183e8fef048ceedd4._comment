@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="comment 14"
+ date="2013-12-16T20:36:14Z"
+ content="""
+I see the assistant spike up to around 150 mb when adding a lot of files, then drop back down once it finishes one batch (limited to around 5000 files) and moves on to the next. 
+
+You might need to file a bug report with some more details so I can reproduce the problem.
+"""]]

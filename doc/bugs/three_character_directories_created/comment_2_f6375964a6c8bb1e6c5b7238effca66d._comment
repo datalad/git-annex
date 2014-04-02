@@ -1,0 +1,62 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmmPHsszTlpa3s3x_LEzmEYkZfEmqq7IjU"
+ nickname="Jan"
+ subject="happened again"
+ date="2012-11-12T15:57:20Z"
+ content="""
+It just happened again to me, on another computer:
+
+<pre>
+    % git annex sync
+    (merging synced/git-annex into git-annex...)
+    commit  
+    add PATH/FILE (checksum...) ok
+    ok
+    add PATH/SUBPATH/FILE (checksum...) ok
+    ok
+    (Recording state in git...)
+    [master 93c4526] git-annex automatic sync
+    2 files changed, 2 insertions(+), 2 deletions(-)
+    ok
+    merge synced/master 
+    CONFLICT (modify/delete): PATH/FILE deleted in refs/heads/synced/master and modified in HEAD. Version HEAD of PATH/FILE left in tree.
+    Automatic merge failed; fix conflicts and then commit the result.
+    failed
+    pull origin 
+    remote: Counting objects: 71, done.
+    remote: Compressing objects: 100% (51/51), done.
+    remote: Total 64 (delta 25), reused 52 (delta 13)
+    Unpacking objects: 100% (64/64), done.
+    From host:git/repo
+      03d4b1f..c800e83  master     -> origin/master
+      61239fb..6d8ae6b  git-annex  -> origin/git-annex
+      69914b0..61239fb  synced/git-annex -> origin/synced/git-annex
+      03d4b1f..2137ab9  synced/master -> origin/synced/master
+
+    error: 'merge' is not possible because you have unmerged files.
+    hint: Fix them up in the work tree,
+    hint: and then use 'git add/rm <file>' as
+    hint: appropriate to mark resolution and make a commit,
+    hint: or use 'git commit -a'.
+    fatal: Exiting because of an unresolved conflict.
+    failed
+    push origin 
+    Counting objects: 26, done.
+    Delta compression using up to 4 threads.
+    Compressing objects: 100% (14/14), done.
+    Writing objects: 100% (17/17), 1.47 KiB, done.
+    Total 17 (delta 5), reused 0 (delta 0)
+    To host:git/repo.git
+      6d8ae6b..37eb875  git-annex -> git-annex
+    ! [rejected]        master -> synced/master (non-fast-forward)
+    error: failed to push some refs to 'host:git/repo.git'
+    To prevent you from losing history, non-fast-forward updates were rejected
+    Merge the remote changes (e.g. 'git pull') before pushing again.  See the
+    'Note about fast-forwards' section of 'git push --help' for details.
+    failed
+    git-annex: sync: 3 failed
+</pre>
+
+git status was showing all the 3 character directories and new files. I commited to git the path I actually wanted to commit, ran a git annex sync again and now my status is clean, but the directories are there. Am I doing something wrong this way?
+
+"""]]

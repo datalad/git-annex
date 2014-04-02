@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkQrsXK-icnYXg6kJNd-jDjMgOixnhwE34"
+ nickname="x"
+ subject="Comment3"
+ date="2013-09-10T15:36:57Z"
+ content="""
+In addition, because the file is actually symlink direct to the data stored in Amazon S3
+How could I get the URL, given the symlink for git annex. For example:
+foo.nc -> ../../.git/annex/objects/jK/v7/WORM-s16009120-m1337754158--foo.nc/WORM-s16009120-m1337754158--foo.nc
+Thank you.
+"""]]

@@ -1,0 +1,15 @@
+Hello,
+
+I have a Samsung ARM Chromebook running Ubuntu with crouton (chroot in chromeos). I want to use git-annex, and add the chromebook as a second "device" to my already set up git-annex repo on my main pc. That repo is one folder set up with the assistant, and it has one encrypted ssh(rsync) remote.
+
+I've read that the webapp is not available on ARM, and I've also found a topic with a simple script to replicate git-annex-assistant steps: http://git-annex.branchable.com/forum/Running_assistant_steps_manually/. So, I've used the `cabal` steps to install git-annex manually, which is working.
+
+I want to use git-annex in a dropbox-like fashion, folder and file sync between these two devices (and maybe later on another encrypted ssh remote). However I'm in need of some guidance regarding the command line usage and such.
+
+My questions are:
+
+- How do I "add" the chromebook repo to the existing git-annex setup?
+- The machines are not on at the same time. One is my main workstation and the chromebook is my "mobile friend". The encrypted ssh remote is on a VPS, that is always on.
+  - How do I configure the syncing between the main machine, the chromebook and the encrypted ssh remote on the vps? If possible, bi-directional.
+
+If it is possible, both explanation and command line examples would help a lot. 

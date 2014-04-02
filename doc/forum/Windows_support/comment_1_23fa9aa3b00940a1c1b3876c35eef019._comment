@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2012-03-12T06:43:02Z"
+ content="""
+[[todo/windows_support]] has everything I know about making a windows port. This badly needs someone who understand Windows to dive into it. The question of how to create a symbolic link (or the relevant Windows equivilant) from haskell on Windows
+is a good starting point..
+"""]]

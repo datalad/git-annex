@@ -1,0 +1,20 @@
+### Please describe the problem.
+
+After submitting the form in the webapp for adding a box.com remote, I get:
+
+   Internal Server Error - WEBDAV failed to write file: "Unauthorized": user error
+
+### What steps will reproduce the problem?
+
+Fill in the box.com add remote form. Username=username, password=password, "share..."=checked, directory=annex, Encryption="Encrypt all data" and hit the "Add repository" button.
+
+### What version of git-annex are you using? On what operating system?
+
+  git-annex version 4.20130513-g5185533 on Android 4.2.2
+
+### Please provide any additional information below.
+
+Didn't find a .git/annex/debug.log
+
+> This error seems entirely consistent with you entering the wrong password.
+> [[done]] --[[Joey]]

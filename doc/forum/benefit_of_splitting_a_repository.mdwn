@@ -1,0 +1,10 @@
+I am evaluating the best strategy to use git-annex to manage my media library. It consists of about 300.000 files totaling 1 TB of data.
+
+My question is, wheither it would be of advantage to split the repo into several smaller ones (Like Photos, Videos, Musik, Books, ...)?
+
+Would this affect performance of certain operations? I.e. Operations that have superlinear (O(n^a) with a > 1) complexity?
+
+I am thinking about "git annex unused", which takes 22 minutes on my machine performed on the full repo. 
+
+
+Do you have more interesting information on using git-annex in this scale?

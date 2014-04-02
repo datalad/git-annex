@@ -1,0 +1,31 @@
+The assistant performs a flood fill, sending every file to every remote
+that will have it. This is naive, but it's a good way to ensure the file
+gets to every corner of the repo network that it possibly can.
+
+However, this means that locally paired computers will still upload files
+to a transfer repo, even when they're next to each other and that
+is a massive waste of bandwidth.
+
+It occurred to me this morning that there is a simple change that can avoid
+this.
+
+1. Ensure that locally paired computers have a lower cost than network
+   transfer remotes. (done)
+2. When queuing uploads, queue transfers to the lowest cost remotes first.
+   (already done)
+3. Just before starting a transfer, re-check if the transfer is still wanted.
+   (done)
+
+> [[done]]
+
+Now, unnecessary transfers to tranfer repos are avoided if it can send
+the file locally instead.
+
+It doesn't solve it for all network topologies of course. If there
+are three computers paired in a line "A --- B --- C", and all 3 share
+a transfer repo, A will still send to both B and the transfer repo
+even though B can reach C via a faster route.
+
+See also: [[assistant does not always use repo cost info when queueing downloads]]
+
+[[!tag /design/assistant]]

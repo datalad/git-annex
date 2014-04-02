@@ -1,0 +1,45 @@
+### Please describe the problem.
+
+The assistant does not sync file permissions so if you set something as executable it won't be set the same on the other repositories.
+
+### What steps will reproduce the problem?
+
+On the first host:
+
+[[!format sh """
+$ echo -e '#!/bin/sh\necho "Hello World!"' > testscript
+$ chmod ugo+x testscript 
+$ ./testscript 
+Hello World!
+$ ls -l
+total 4
+-rwxr-xr-x 1 pedrocr pedrocr 30 May 31 20:00 testscript
+"""]]
+
+And on the second host:
+
+[[!format sh """
+$ ls -l
+total 4
+-rw-r--r-- 1 pedrocr pedrocr 30 May 31 20:00 testscript
+$ ./testscript
+bash: ./testscript: Permission denied
+"""]]
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ git annex version
+git-annex version: 4.20130516.1
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+local repository version: 4
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 12.04.2 LTS
+Release:	12.04
+Codename:	precise
+"""]]

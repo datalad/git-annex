@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 5"
+ date="2013-04-24T15:30:04Z"
+ content="""
+I found a bug in the webapp thanks to this stress test. When inotify goes over limit, it displays a message about how to fix it..
+But it displays that message over and over for each file. The result is a constantly updating very large web page. 
+
+Unless you tell me differently, I'm going to assume that's what the GUI crash you referred to was, since it can make a web browser very slow.
+
+I've fixed this problem. Now when it goes over limit, the webapp will just display this:
+
+[[/assistant/inotify_max_limit_alert.png]]
+"""]]

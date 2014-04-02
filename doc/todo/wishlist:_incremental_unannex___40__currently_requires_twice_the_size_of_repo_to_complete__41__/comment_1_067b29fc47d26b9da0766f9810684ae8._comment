@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="GLITTAH"
+ ip="78.108.63.46"
+ subject="comment 1"
+ date="2013-11-19T18:15:15Z"
+ content="""
+Perhaps when unannex is invoked, it could check to see if there is enough disk space before it begins copying files.  Maybe even warn the user of too little disk space and remind them of --fast.
+
+(Sorry for the dupe!)
+"""]]

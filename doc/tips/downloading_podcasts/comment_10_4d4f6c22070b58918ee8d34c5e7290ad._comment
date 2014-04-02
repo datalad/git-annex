@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 10"
+ date="2013-08-05T16:47:30Z"
+ content="""
+`cabal install feed` should get the necessary library installed so that git-annex will build with feeds support.
+"""]]

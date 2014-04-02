@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="206.74.132.139"
+ subject="comment 1"
+ date="2014-02-06T17:26:58Z"
+ content="""
+I would be quite happy if someone took care of adding git-annex to openwrt.
+
+I don't have time to personally handle packaging for different linux distributions myself. What I could do is add mips builds of git-annex to the existing standalone linux builds. These would need to be built the same way the arm builds are done, using a Debian chroot and qemu to run tools from it. This is rather a lot of work for me to set up, and I don't know if I'd have to do it for both little and big endian mips.
+
+Also, it seems that Debian does not currently have a working haskell toolchain for mips. Which may well mean that ghc is not in a working state on mips at all.
+"""]]

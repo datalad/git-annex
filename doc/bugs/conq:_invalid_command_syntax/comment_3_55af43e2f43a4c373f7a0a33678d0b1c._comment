@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="203.45.2.230"
+ subject="comment 3"
+ date="2012-01-03T00:49:41Z"
+ content="""
+Yeah,  I saw those google links myself, but couldn't see why the bitbucket/ssh would be relevant.
+
+The strange thing is that I *only* get this message when running git-annex.
+
+I also don't have a conq in my path so I don't know where it is running from.
+ 
+
+Oh well, if I ever sort it out I'll post back here.
+"""]]

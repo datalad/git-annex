@@ -1,0 +1,5 @@
+<video controls width=400>
+<source src="https://downloads.kitenet.net/videos/git-annex/git-annex-assistant-archiving.ogv">
+</video><br>
+A <a href="https://downloads.kitenet.net/videos/git-annex/git-annex-assistant-archiving.ogv">9 minute screencast</a>
+covering archiving your files with the [[git-annex assistant|/assistant]]</a>.

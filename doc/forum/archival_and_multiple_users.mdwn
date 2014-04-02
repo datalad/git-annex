@@ -1,0 +1,8 @@
+The assistant archival walk-through describes how files get removed from local repo if moved into archive repos.
+What if the files in question aren't needed immediately (and can be archived) for one user of a shared repo, but needed by someone else on their own machine?
+git-annex directory arrangement propagation wouldn't work for this case, it seems.  Could assistant handle this case?
+
+It looks like having a browser of the directory tree in git-annex assistant webpage with say right-click menu with "get" and "drop" would be the most flexible.
+
+Or maybe it could be more about integration with Linux etc file browsers (but then it's system specific, unlike with webapp).
+

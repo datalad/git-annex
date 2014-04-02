@@ -1,0 +1,35 @@
+While merging the git-annex branch, annex-merge does not end up in a fast-forward even when it would be possible.
+But as sometimes annex-merge takes time, it would probably be worth it
+(but maybe I miss something with my workflow...).
+
+> I don't think a fast-forward will make things much faster.
+> 
+> git-annex needs its index file to be updated to reflect the merge.
+> With the union merge it does now, this can be accomplished by using
+> `git-diff-index` to efficiently get a list of files that have changed,
+> and only merge those changes into the index with `git-update-index`.
+> Then the index gets committed, generating the merge.
+> 
+> To fast-forward, it would just reset the git-annex branch to the new
+> head of the remote it's merging to. But then the index needs to be
+> updated to reflect this new head too. To do that needs the same method
+> described above, essentially (with the difference that it can replace
+> files in the index with the version from the git-annex branch, rather
+> than merging in the changes... but only if the index is known to be
+> already committed and have no other changes, which would require both
+> an attempt to commit it first, and
+> locking). 
+> 
+> So will take basically the same amount of time, except
+> it would not need to commit the index at the end of the merge. The
+> most expensive work is the `git-diff-index` and `git-update-index`,
+> which are not avoided.
+> 
+> Although, perhaps fast-forward merge would use slightly
+> less space. --[[Joey]]
+
+>> To avoid the ladder-merge between two repositories described at
+>> <http://sprunge.us/LOMU>, seems a fast-forward should be detected and
+>> written to git, even if the index is still updated the current way.
+>> [[done]]
+>> --[[Joey]]

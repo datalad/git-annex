@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="spwhitton"
+ ip="82.36.235.9"
+ subject="Impossible?"
+ date="2013-06-24T17:48:02Z"
+ content="""
+I have now investigated this further and believe that what I am trying to do is impossible.  Suppose we have a file `song.mp3` in both `music/` and `old/` and the special remote's preferred content expression is set-up to prefer `music/` and not to prefer `old/`.  So initially, git-annex won't try to upload the content when it scans `old/song.mp3`, but it will when it scans `music/song.mp3`.  Fine.  Now consider a later scan.  On scanning the filename `music/song.mp3` git-annex will suppose the file was dropped from the remote, and then see it would be preferred again so won't drop it.  But then when it gets to scanning the filename `old/song.mp3` it will see that it wouldn't be preferred and will drop the content.  So we get the loop.
+
+In order to stop the unwanted drop here, the preferred content expression must prefer \"files in old/* that is also in music/*\" but since preferred content expressions concern filenames without reference to their contents, this is impossible to express.  The expression `include=music/* and include=old/*` will never match anything.
+"""]]

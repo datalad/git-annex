@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawla7u6eLKNYZ09Z7xwBffqLaXquMQC07fU"
+ nickname="Matthias"
+ subject="squeeze-backports update?"
+ date="2011-08-17T12:34:46Z"
+ content="""
+Is there going to be an update of git-annex in debian squeeze-backports to a version that supports repository version 3?
+Thx
+"""]]

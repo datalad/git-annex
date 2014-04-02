@@ -1,0 +1,16 @@
+git-annex has nice repository cost tracking, but the assistant doesn't
+always use this when queuing downloads.
+
+For example, if a network comes up, it'll queue a lot of downloads from a
+remote, perhaps expensive server. If a removable drive is then attached,
+which has a lower cost, it'll queue downloads from there, but
+only once it works through all the ones it's already queued from the
+network.
+
+There is a workaround: Since the webapp allows disabling syncing to a
+remote, the user can go in and disable syncing to the network remote
+temporarily.
+
+[[!tag /design/assistant]]
+
+--[[Joey]] 

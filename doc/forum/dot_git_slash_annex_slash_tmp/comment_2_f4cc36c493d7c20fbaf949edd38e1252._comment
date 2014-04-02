@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 2"
+ date="2012-11-29T19:53:33Z"
+ content="""
+that's odd... these files are on my client machine, and shouldn't be downloaded from anywhere, just uploaded to other places.  There are lots and lots of them.
+
+git-annex unused only found two files, and there are dozens and dozens of these files in my .git/annex/tmp directory.  
+
+Would it be safe to delete them by hand?
+
+(The only thing I can think of that might e relevant is, some of these have definitely been moved from place to place within my repo.  I use \"git mv\" when I do that.  Maybe I messed that up somehow, and git-annex thought they had disappeared and needed to be re-downloaded from a remote repo?)
+
+"""]]

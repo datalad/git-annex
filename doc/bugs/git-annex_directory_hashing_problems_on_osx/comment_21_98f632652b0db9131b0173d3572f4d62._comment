@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 21"
+ date="2011-06-10T16:46:03Z"
+ content="""
+@seqq git-annex always uses the same case when creating and accessing the files pointed to by the symlinks. So it will not matter if it's used on a case-insensative, or case-insensative but preserving system like OSX.
+
+You need to fix up the cases of the files in .git/annex/objects to what it expects. I'm not sure what would be the best way to do that. The method described in [[walkthrough/recover_data_from_lost+found]] might work well.
+"""]]

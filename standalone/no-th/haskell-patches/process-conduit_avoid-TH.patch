@@ -1,0 +1,24 @@
+From c9f40fae5f7f44c7c28b243bf924606ef4f26700 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Wed, 18 Dec 2013 04:17:59 +0000
+Subject: [PATCH] avoid TH
+
+---
+ process-conduit.cabal | 1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/process-conduit.cabal b/process-conduit.cabal
+index c917d90..4410e2c 100644
+--- a/process-conduit.cabal
++++ b/process-conduit.cabal
+@@ -24,7 +24,6 @@ source-repository head
+ 
+ library
+   exposed-modules:     Data.Conduit.Process
+-                       System.Process.QQ
+   
+   build-depends:       base             == 4.*
+                      , template-haskell >= 2.4
+-- 
+1.8.5.1
+

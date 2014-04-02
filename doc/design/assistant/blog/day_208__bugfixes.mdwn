@@ -1,0 +1,17 @@
+Fixed the last XMPP bug I know of. Turns out it was not specific to XMPP at
+all; the assistant could forget to sync with any repository on startup
+under certain conditions.
+
+Also fixed bugs in `git annex add` and in the glob matching, and some more.
+
+I've been working on some screencasts. More on them later.. But while doing
+them I found a perfect way to reliably reproduce the webapp hang that
+I've been chasing for half a year, and last saw at my presentation in
+Australia. Seems the old joke about bugs only reproducible during
+presentations is literally true here!
+
+I have given this bug its [[own page|bugs/webapp_hang]] at last, and have a
+tcpdump of it happening and everything. Am working on an hypotheses that it
+might be caused by Warp's [slowloris](http://ha.ckers.org/slowloris/)
+attack prevention code being falsely triggered by the repeated hits the web
+browser makes as the webapp's display is updated.

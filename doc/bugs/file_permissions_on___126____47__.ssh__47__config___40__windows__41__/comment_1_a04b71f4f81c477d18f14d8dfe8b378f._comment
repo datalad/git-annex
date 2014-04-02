@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5WyknJirJJridJjiPNgrlYxGG9xrZBvA"
+ nickname="Daniel"
+ subject="comment 1"
+ date="2014-01-01T09:50:27Z"
+ content="""
+So I can get around this by manually changing the permissions on this directory and it's files (using the windows permissions editor) so that only the user has access to it, and no other groups do (including Administrators). This seems like something the assistant should handle.
+"""]]

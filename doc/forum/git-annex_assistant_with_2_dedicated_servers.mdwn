@@ -1,0 +1,11 @@
+Hello,
+
+I am looking for a solution to replicate lots of files between 2 servers (with dedicated IP address) over WAN. (I already looked at GlusterFS, DRBD, Bittorent-Sync and ownCloud, but comments are welcome). Now I am evaluating git-annex but it is (kind of) hard to get the concepts as I am not familiar with git.
+
+I could already connect the servers by following the steps of "remote sharing walkthrough" but I feel that using a 3rd special node (as "transfer repository" / rsync or ssh) is an overhead and should not be needed. But no matter how hard I tried, I couldn't make the 2 servers do a sync without a special node. 
+
+Could you please give me a hint how to do it? Or even better, some detailed steps. :)
+
+Thanks,
+
+David

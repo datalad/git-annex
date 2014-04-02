@@ -1,0 +1,24 @@
+Actually spread out over several days..
+
+I think I have finally comprehensively dealt with all the wacky system
+misconfigurations that can make `git commit` complain and refuse to commit.
+The last of these is [a system with a FQDN that doesn't have a dot in it](http://git-annex.branchable.com/bugs/view_logs_fails:_Internal_Server_Error__internal_liftAnnex/). 
+I personally think git should just use the hostname as-is in the email
+address for commits here -- it's better to be robust. Indeed, I think it
+would make more sense if `git commit` never failed, unless it ran out of
+disk or the repo is corrupt. But anyway, `git-annex
+init` will now detect when the commit fails because of this and put a
+workaround in place.
+
+Fixed a bug in `git annex addurl --pathdepth` when the url's path was
+shorter than the amount requested to remove from it.
+
+Tracked down a bug that prevents git-annex from working on a system with an
+old linux kernel. Probably the root cause is that the kernel was built
+without EVENTFD support. Found a workaround to get a usable git-annex on
+such a system is to build it without the webapp, since that disables the
+threaded runtime which triggered the problem.
+
+Dealt with a lot of Windows bugs. Very happy that it's working well enough
+that some users are reporting bugs on it in Windows, and with enough detail
+that I have not needed to boot Windows to fix them so far. ;)

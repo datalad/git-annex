@@ -1,0 +1,384 @@
+### Please describe the problem.
+I try to share some files between a windows machine and a linux machine in direct mode, with a remote repository between the two. I can't seem to reproduce the problem in indirect mode...
+
+I add a file on the windows machine then copy it to the remote repository. I then get it on the linux machine and edit it there. If I `git annex sync` and copy the file's data to the remote repository, a `git annex sync` on windows will fail like this:
+
+[[!format sh """
+$ git annex sync
+commit
+ok
+pull origin
+remote: Counting objects: 41, done.
+remote: Compressing objects: 100% (24/24), done.
+remote: Total 31 (delta 9), reused 0 (delta 0)
+Unpacking objects: 100% (31/31), done.
+From ssh://192.168.1.29:/home/raz/work/test
+   b23cb44..9073cc3  git-annex  -> origin/git-annex
+   7d4f0e2..87438fc  master     -> origin/master
+   57a661c..b33b025  synced/git-annex -> origin/synced/git-annex
+   7d4f0e2..87438fc  synced/master -> origin/synced/master
+ok
+(merging origin/git-annex origin/synced/git-annex into git-annex...)
+(Recording state in git...)
+push origin
+Counting objects: 17, done.
+Delta compression using up to 8 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 565 bytes | 0 bytes/s, done.
+Total 5 (delta 2), reused 0 (delta 0)
+To ssh://192.168.1.29:/home/raz/work/test.git
+   b33b025..dcfaf23  git-annex -> synced/git-annex
+ ! [rejected]        master -> synced/master (non-fast-forward)
+error: failed to push some refs to 'ssh://192.168.1.29:/home/raz/work/test.git'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and merge the remote changes
+hint: (e.g. 'git pull') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+failed
+git-annex: sync: 1 failed
+"""]]
+
+A `git log` tells me the master branch is not properly merged so I assume the pull failed silently (I paste the log in the transcript).
+
+I can then try to manually fix the windows working copy and sometimes it kind of work, but sometimes I have a hard time recovering and I am better off cloning a new version and moving data's around...
+
+### What steps will reproduce the problem?
+Create a repository on a windows.
+
+Add a file.
+
+`git clone --bare` the repository and put it on a remote machine.
+
+Clone the remote repository to a linux machine.
+
+Get the file's data.
+
+Edit the file on linux.
+
+Commit it and copy the data's to the remote machine.
+
+`git clone sync` on the windows machine --> Error.
+
+### What version of git-annex are you using? On what operating system?
+On Windows:
+[[!format sh """
+git-annex version: 4.20130827-g4f18612
+build flags: Pairing Testsuite S3 WebDAV DNS
+local repository version: 4
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 2
+"""]]
+
+On Linux
+[[!format sh """
+git-annex version: 4.20130815
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+local repository version: 4
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+"""]]
+
+### Please provide any additional information below.
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+### On Windows
+
+$ mkdir test_windows
+
+$ cd test_windows/
+
+$ git init
+Initialized empty Git repository in c:/Users/raz/test_windows/.git/
+
+$ git annex init windows
+init windows
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+ok
+(Recording state in git...)
+
+$ echo "test 1" > test.txt
+
+$ git annex add test.txt
+add test.txt (checksum...) ok
+(Recording state in git...)
+
+$ git annex sync
+commit
+ok
+git-annex: no branch is checked out
+
+$ cd ..
+
+$ git clone --bare test_windows/ test.git
+Cloning into bare repository 'test.git'...
+done.
+
+$ scp -r test.git 192.168.1.29:/home/raz/work/
+config                                        100%  183     0.2KB/s   00:00
+description                                   100%   73     0.1KB/s   00:00
+HEAD                                          100%   23     0.0KB/s   00:00
+applypatch-msg.sample                         100%  452     0.4KB/s   00:00
+commit-msg.sample                             100%  896     0.9KB/s   00:00
+post-commit.sample                            100%  160     0.2KB/s   00:00
+post-receive.sample                           100%  552     0.5KB/s   00:00
+post-update.sample                            100%  189     0.2KB/s   00:00
+pre-applypatch.sample                         100%  398     0.4KB/s   00:00
+pre-commit.sample                             100% 1704     1.7KB/s   00:00
+pre-push.sample                               100% 1348     1.3KB/s   00:00
+pre-rebase.sample                             100% 4951     4.8KB/s   00:00
+prepare-commit-msg.sample                     100% 1239     1.2KB/s   00:00
+update.sample                                 100% 3611     3.5KB/s   00:00
+exclude                                       100%  240     0.2KB/s   00:00
+825dc642cb6eb9a060e54bf8d69288fbee4904        100%   15     0.0KB/s   00:00
+a31b7a55380d79248658d3fffff6d2dc41a726        100%  116     0.1KB/s   00:00
+dcabbf728abe62b6e2bcc06b8306eb3aa9a497        100%  176     0.2KB/s   00:00
+332ecbfe923879df51a7a3f9bb86ebdfb64273        100%   45     0.0KB/s   00:00
+4f0e20d38d6dc757340a8c569270b5a857fc67        100%  160     0.2KB/s   00:00
+62956bcf45c63b24a637b22a742db0d9458248        100%   86     0.1KB/s   00:00
+7ec519eb1b257a85ae8f9373d0835dea9ddc04        100%   82     0.1KB/s   00:00
+1d1559a050b4a2df2e653b1e7ac15bdf7d56b1        100%   51     0.1KB/s   00:00
+b74dbedfac4d6a0a90580cff2088a5d61f6675        100%  130     0.1KB/s   00:00
+0ca042f439ef997f04a25a449aa1f539b93cf4        100%   53     0.1KB/s   00:00
+bbce5e51e5a90ffd26900de3546fc4f9704181        100%  151     0.2KB/s   00:00
+18bd66316298fcc5c06af9865c30a2fe4d2476        100%  176     0.2KB/s   00:00
+edf8b5cc207e16ca0173785a2ba569c5d4208c        100%   71     0.1KB/s   00:00
+packed-refs                                   100%  160     0.2KB/s   00:00
+
+$ cd test_windows/
+
+$ git remote add origin ssh://192.168.1.29:/home/raz/work/test.git
+
+$ git annex copy --to origin
+copy test.txt (checking origin...) (to origin...)
+test.txt
+           7 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 79 bytes  received 31 bytes  220.00 bytes/sec
+total size is 7  speedup is 0.06
+ok
+(Recording state in git...)
+
+$ git annex sync
+commit
+ok
+pull origin
+remote: Counting objects: 11, done.
+remote: Compressing objects: 100% (5/5), done.
+remote: Total 6 (delta 1), reused 0 (delta 0)
+Unpacking objects: 100% (6/6), done.
+From ssh://192.168.1.29:/home/raz/work/test
+ * [new branch]      git-annex  -> origin/git-annex
+ * [new branch]      master     -> origin/master
+ok
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+push origin
+Counting objects: 18, done.
+Delta compression using up to 8 threads.
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (10/10), 874 bytes | 0 bytes/s, done.
+Total 10 (delta 4), reused 0 (delta 0)
+To ssh://192.168.1.29:/home/raz/work/test.git
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+ok
+
+### On Linux
+
+$ git clone test.git test_linux
+Cloning into 'test_linux'...
+done.
+
+$ cd test_linux 
+
+$ git annex init linux
+init linux ok
+(Recording state in git...)
+
+$ git annex sync
+(merging origin/git-annex origin/synced/git-annex into git-annex...)
+(Recording state in git...)
+commit  
+ok
+pull origin 
+ok
+push origin 
+Counting objects: 11, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (6/6), done.
+Writing objects: 100% (8/8), 775 bytes | 0 bytes/s, done.
+Total 8 (delta 3), reused 0 (delta 0)
+To /home/raz/work/test.git
+   0b4f175..41fba1d  git-annex -> synced/git-annex
+ok
+
+$ git annex get
+get test.txt (from origin...) ok
+(Recording state in git...)
+
+$ git annex direct
+commit  
+# On branch master
+nothing to commit, working directory clean
+ok
+direct test.txt ok
+direct  ok
+
+$ git annex sync
+commit  
+ok
+pull origin 
+ok
+push origin 
+Counting objects: 9, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 492 bytes | 0 bytes/s, done.
+Total 5 (delta 1), reused 0 (delta 0)
+To /home/raz/work/test.git
+   41fba1d..57a661c  git-annex -> synced/git-annex
+ok
+
+$ cat test.txt  
+test 1
+
+$ echo "test 2" > test.txt
+
+$ git annex sync
+add test.txt (checksum...) ok
+(Recording state in git...)
+commit  
+(Recording state in git...)
+ok
+pull origin 
+ok
+push origin 
+Counting objects: 22, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (12/12), done.
+Writing objects: 100% (16/16), 1.40 KiB | 0 bytes/s, done.
+Total 16 (delta 4), reused 0 (delta 0)
+To /home/raz/work/test.git
+   57a661c..4883cad  git-annex -> synced/git-annex
+   7d4f0e2..87438fc  master -> synced/master
+ok
+
+$ git annex copy --to origin
+copy test.txt (to origin...) ok
+(Recording state in git...)
+
+$ git annex sync            
+commit  
+ok
+pull origin 
+remote: Counting objects: 6, done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 5 (delta 0), reused 0 (delta 0)
+Unpacking objects: 100% (5/5), done.
+From /home/raz/work/test
+   b23cb44..9073cc3  git-annex  -> origin/git-annex
+ok
+(merging origin/git-annex into git-annex...)
+(Recording state in git...)
+push origin 
+Counting objects: 18, done.
+Delta compression using up to 4 threads.
+Compressing objects: 100% (8/8), done.
+Writing objects: 100% (10/10), 924 bytes | 0 bytes/s, done.
+Total 10 (delta 3), reused 0 (delta 0)
+To /home/raz/work/test.git
+   4883cad..b33b025  git-annex -> synced/git-annex
+ok
+
+$ 
+
+
+### On Windows
+
+$ git annex sync
+commit
+ok
+pull origin
+remote: Counting objects: 41, done.
+remote: Compressing objects: 100% (24/24), done.
+remote: Total 31 (delta 9), reused 0 (delta 0)
+Unpacking objects: 100% (31/31), done.
+From ssh://192.168.1.29:/home/raz/work/test
+   b23cb44..9073cc3  git-annex  -> origin/git-annex
+   7d4f0e2..87438fc  master     -> origin/master
+   57a661c..b33b025  synced/git-annex -> origin/synced/git-annex
+   7d4f0e2..87438fc  synced/master -> origin/synced/master
+ok
+(merging origin/git-annex origin/synced/git-annex into git-annex...)
+(Recording state in git...)
+push origin
+Counting objects: 17, done.
+Delta compression using up to 8 threads.
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (5/5), 565 bytes | 0 bytes/s, done.
+Total 5 (delta 2), reused 0 (delta 0)
+To ssh://192.168.1.29:/home/raz/work/test.git
+   b33b025..dcfaf23  git-annex -> synced/git-annex
+ ! [rejected]        master -> synced/master (non-fast-forward)
+error: failed to push some refs to 'ssh://192.168.1.29:/home/raz/work/test.git'
+hint: Updates were rejected because a pushed branch tip is behind its remote
+hint: counterpart. Check out this branch and merge the remote changes
+hint: (e.g. 'git pull') before pushing again.
+hint: See the 'Note about fast-forwards' in 'git push --help' for details.
+failed
+git-annex: sync: 1 failed
+
+$ git log --graph --oneline --decorate --all
+* 87438fc (origin/synced/master, origin/master) git-annex automatic sync
+* 7d4f0e2 (HEAD, synced/master, master) git-annex automatic sync
+*-.   dcfaf23 (origin/synced/git-annex, git-annex) merging origin/git-annex orig
+|\ \
+| | *   b33b025 merging origin/git-annex into git-annex
+| | |\
+| | |/
+| |/|
+| * | 9073cc3 (origin/git-annex) update
+| | * 73518bc update
+| | * 4883cad update
+| | * 1b447f5 update
+| |/
+|/|
+* | 57a661c update
+| |
+|  \
+*-. \   41fba1d merging origin/git-annex origin/synced/git-annex into git-annex
+|\ \ \
+| | |/
+| |/|
+| | *   0b4f175 merging origin/git-annex into git-annex
+| | |\
+| | |/
+| |/|
+| * | b23cb44 update
+| | * b5755a2 update
+| |/
+| * 6adcabb update
+| * df18bd6 update
+| * dcbbce5 branch created
+* 0d138eb update
+* fe6bccc branch created
+
+$
+
+# End of transcript or log.
+"""]]
+
+> Apparently `test.git` had `receive.denyNonFastForwards`
+> set to true, which prevents the forced pushing `git annex sync`
+> needs to do. I have made it print out a hint about this setting
+> when a push failes. [[done]] --[[Joey]]

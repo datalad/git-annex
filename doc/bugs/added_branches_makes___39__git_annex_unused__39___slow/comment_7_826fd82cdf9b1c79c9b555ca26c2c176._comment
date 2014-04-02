@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="arand"
+ ip="130.243.226.21"
+ subject="comment 7"
+ date="2013-08-12T18:07:44Z"
+ content="""
+Hmm, probably, do you think this way of getting everything and then doing the filtering could work reasonably in git-annex? Assuming \"git cat-file --batch\" is the main bottleneck, reducing the amount of runs for it would still likely be an improvement?
+"""]]

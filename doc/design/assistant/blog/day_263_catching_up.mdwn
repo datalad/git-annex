@@ -1,0 +1,11 @@
+Spent some time today to get caught up on bug reports and website traffic.
+Fixed a few things.
+
+Did end up working on Windows for a while too. I got `git annex drop`
+working. But nothing that moves content quite works yet..
+
+I've run into a stumbling block with `rsync`. It thinks that
+`C:\repo` is a path on a ssh server named "C". Seems I will need to translate
+native windows paths to unix-style paths when running rsync.
+
+[[!meta date="13 May 2013"]]

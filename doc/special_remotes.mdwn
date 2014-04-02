@@ -1,0 +1,81 @@
+git-annex can transfer data to and from configured git remotes.
+Normally those remotes are normal git repositories (bare and non-bare;
+local and remote), that store the file contents in their own git-annex
+directory.
+
+But, git-annex also extends git's concept of remotes, with these special
+types of remotes. These can be used just like any normal remote by git-annex.
+They cannot be used by other git commands though.
+
+* [[S3]] (Amazon S3, and other compatible services)
+* [[Amazon_Glacier|glacier]]
+* [[bup]]
+* [[gcrypt]] (encrypted git repositories!)
+* [[directory]]
+* [[rsync]]
+* [[webdav]]
+* [[tahoe]]
+* [[web]]
+* [[xmpp]]
+* [[hook]]
+
+The above special remotes are built into git-annex, and can be used
+to tie git-annex into many cloud services.
+
+Here are specific instructions
+for using git-annex with various services:
+
+* [[Amazon_S3|tips/using_Amazon_S3]]
+* [[Amazon_Glacier|tips/using_Amazon_Glacier]]
+* [[tips/Internet_Archive_via_S3]]
+* [[Box.com|tips/using_box.com_as_a_special_remote]]
+* [[Google drive|tips/googledriveannex]]
+* [[Google Cloud Storage|tips/using_Google_Cloud_Storage]]
+* [[Mega.co.nz|tips/megaannex]]
+* [[SkyDrive|tips/skydriveannex]]
+* [[OwnCloud|tips/owncloudannex]]
+* [[Flickr|tips/flickrannex]]
+* [[IMAP|forum/special_remote_for_IMAP]]
+* [[Usenet|forum/nntp__47__usenet special remote]]
+* [chef-vault](https://github.com/3ofcoins/knife-annex/)
+* [hubiC](https://github.com/Schnouki/git-annex-remote-hubic)
+
+Want to add support for something else? [[Write your own!|external]]
+
+## Ways to use special remotes
+
+There are many use cases for a special remote. You could use it as a
+backup. You could use it to archive files offline in a drive with
+encryption enabled so if the drive is stolen your data is not. You could
+git annex move --to specialremote large files when your local drive is
+getting full, and then git annex move the files back when free space is
+again available. You could have one repository copy files to a special
+remote, and then git annex get them on another repository, to transfer the
+files between computers that do not communicate directly. 
+
+The git-annex assistant makes it easy to set up rsync remotes using this
+last scenario, which is referred to as a transfer repository, and arranges
+to drop files from the transfer repository once they have been transferred
+to all known clients.
+
+None of these use cases are particular to particular special remote types.
+Most special remotes can all be used in these and other ways. It largely
+doesn't matter for your use what underlying transport the special remote
+uses.
+
+## Unused content on special remotes
+
+Over time, special remotes can accumulate file content that is no longer
+referred to by files in git. Normally, unused content in the current
+repository is found by running `git annex unused`. To detect unused content
+on special remotes, instead use `git annex unused --from`. Example:
+
+	$ git annex unused --from mys3
+	unused mys3 (checking for unused data...) 
+	  Some annexed data on mys3 is not used by any files in this repository.
+	    NUMBER  KEY
+	    1       WORM-s3-m1301674316--foo
+	  (To see where data was previously used, try: git log --stat -S'KEY')
+	  (To remove unwanted data: git-annex dropunused --from mys3 NUMBER)
+	$ git annex dropunused --from mys3 1
+	dropunused 12948 (from mys3...) ok

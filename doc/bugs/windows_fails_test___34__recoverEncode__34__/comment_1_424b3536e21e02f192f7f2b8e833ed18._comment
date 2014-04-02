@@ -1,0 +1,67 @@
+[[!comment format=mdwn
+ username="gary"
+ ip="82.112.140.250"
+ subject="Thanks for the fix"
+ date="2013-09-12T07:20:12Z"
+ content="""
+Hi the fix works fine, all the tests pass now.  However I am having issues when trying to sync two directories.  I have had this working in direct mode in fedora but not in the previously mentioned windows install
+
+2 directories d1 and d2.
+
+SETUP:
+
+cd d1
+
+mkdir annex
+
+cd annex
+
+cp someFile . (as get branch issue if empty)
+
+git init
+
+git annex init d1
+
+cp someFile . (as get branch issue if empty)
+
+git annex add .
+
+git annex sync
+
+cd ..\..\d2
+
+git clone ..\..\d1\annex
+
+cd annex
+
+git annex init d2
+
+git remote add d1 ..\..\d1\annex
+
+cd ..\..\d1\annex
+
+git remote add d2 ..\..\d2\annex
+
+
+SYNCING
+
+cd d1\annex
+
+cp someFiles .
+
+git annex add .
+
+git annex sync
+
+cd ..\..\d2\annex
+
+git annex sync
+
+git annex mirror --from d1
+
+It looks like the files copy across but when I look at them in explorer they are still just the place holders.
+
+any ideas on what may be going on.  Does the work flow look correct?
+
+(ps typo on all slashes but 
+"""]]

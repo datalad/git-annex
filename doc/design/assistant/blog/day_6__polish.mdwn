@@ -1,0 +1,50 @@
+Since my last blog, I've been polishing the `git annex watch` command.
+
+First, I fixed the double commits problem. There's still some extra
+committing going on in the `git-annex` branch that I don't understand. It
+seems like a shutdown event is somehow being triggered whenever
+a git command is run by the commit thread.
+
+I also made `git annex watch` run as a proper daemon, with locking to
+prevent multiple copies running, and a pid file, and everything.
+I made `git annex watch --stop` stop it.
+
+---
+
+Then I managed to greatly increase its startup speed. At startup, it
+generates "add" events for every symlink in the tree. This is necessary
+because it doesn't really know if a symlink is already added, or was
+manually added before it starter, or indeed was added while it started up.
+Problem was that these events were causing a lot of work staging the
+symlinks -- most of which were already correctly staged.
+
+You'd think it could just check if the same symlink was in the index.
+But it can't, because the index is in a constant state of flux. The
+symlinks might have just been deleted and re-added, or changed, and
+the index still have the old value.
+
+Instead, I got creative. :) We can't trust what the index says about the
+symlink, but if the index happens to contain a symlink that looks right,
+we can trust that the SHA1 of its blob is the right SHA1, and reuse it
+when re-staging the symlink. Wham! Massive speedup!
+
+---
+
+Then I started running `git annex watch` on my own real git annex repos,
+and noticed some problems.. Like it turns normal files already checked into
+git into symlinks. And it leaks memory scanning a big tree. Oops..
+
+---
+
+I put together a quick screencast demoing `git annex watch`.
+
+<video controls src="http://joeyh.name/screencasts/git-annex-watch.ogg"></video>
+
+While making the screencast, I noticed that `git-annex watch` was spinning
+in strace, which is bad news for powertop and battery usage. This seems to
+be a [GHC bug](http://bugs.debian.org/677096) also affecting Xmonad. I
+tried switching to GHC's threaded runtime, which solves that problem, but
+causes git-annex to hang under heavy load. Tried to debug that for quite a
+while, but didn't get far. Will need to investigate this further.. 
+Am seeing indications that this problem only affects ghc 7.4.1; in
+particular 7.4.2 does not seem to have the problem.

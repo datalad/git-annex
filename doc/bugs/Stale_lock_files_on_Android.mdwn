@@ -1,0 +1,44 @@
+### Please describe the problem.
+
+Both my Android devices where not processing git-annex updates due to stale lock files. While the lock files are different, I've reported them both together as they are related. 
+
+### What steps will reproduce the problem?
+
+Unknown, perhaps the assistant crashed, or the battery ran flat on them.
+
+To resolve the issue I had to manually remove the lock files.
+
+### What version of git-annex are you using? On what operating system?
+
+On my Android phone, daily build 4.20130614-g221aea4
+On my Android tablet, daily build 4.20130621-g36258de
+
+### Please provide any additional information below.
+
+It seems to me that it'd be useful to have the assistant check to see if the lock files are still valid and remove them if they're stale.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+My phone:
+
+From ssh://git-annex-flick-andrewannex_phonecamera/~/phone-camera
+   987dc25..682cdd1  git-annex  -> flick_phonecamera/git-annex
+fatal: Unable to create '/storage/emulated/legacy/DCIM/.git/refs/remotes/flick_phonecamera/synced/git-annex.lock': File exists.
+
+My tablet:
+
+Committer: Adding Coleman-C..eedom.pdf
+Committer: Committing changes to git
+fatal: Unable to create '/mnt/sdcard/reference/.git/index.lock': File exists.
+
+# End of transcript or log.
+"""]]
+
+> The '/mnt/sdcard/reference/.git/index.lock' lock file will now be
+> automatically dealt with. Have not done anything about the refs/remotes
+> lock files yet. --[[Joey]]
+> 
+> Now the assistant deals with all stale git lock files on startup. 
+> [[done]] --[[Joey]]

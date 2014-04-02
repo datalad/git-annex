@@ -1,0 +1,76 @@
+[[!comment format=mdwn
+ username="http://bigasterisk.com/"
+ nickname="Drew Perttula"
+ subject="debug log"
+ date="2013-07-16T04:02:40Z"
+ content="""
+receiver side logs again, with --debug mode on. I don't see anything weird. 
+
+
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"git-annex\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"log\",\"refs/heads/git-annex..a7cb1b3f2a3f2a7d24827e10f9f3ac5848fd11d9\",\"--oneline\",\"-n1\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"log\",\"refs/heads/git-annex..4a2771e15cb5c7a0a8d70443e76b65c12115a8cd\",\"--oneline\",\"-n1\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"log\",\"refs/heads/git-annex..ddf6aa74d771521b11657edfae558858b60e8368\",\"--oneline\",\"-n1\"]
+    (merging synced/git-annex into git-annex...)
+    [2013-07-15 20:53:02 PDT] feed: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"4a2771e15cb5c7a0a8d70443e76b65c12115a8cd\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"log\",\"4a2771e15cb5c7a0a8d70443e76b65c12115a8cd..refs/heads/git-annex\",\"--oneline\",\"-n1\"]
+    [2013-07-15 20:53:02 PDT] call: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"update-ref\",\"refs/heads/git-annex\",\"4a2771e15cb5c7a0a8d70443e76b65c12115a8cd\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"symbolic-ref\",\"HEAD\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"refs/heads/master\"]
+    [2013-07-15 20:53:02 PDT] Merger: merging refs/heads/synced/master into refs/heads/master
+
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"symbolic-ref\",\"HEAD\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"refs/heads/master\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-07-15 20:53:02 PDT] call: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex/.git/annex/merge/\",\"merge\",\"--no-edit\",\"refs/heads/synced/master\"]
+    Updating 6f8cbe0..18cea18
+    Fast-forward
+     test-2013-07-15e |    1 +
+     1 file changed, 1 insertion(+)
+     create mode 120000 test-2013-07-15e
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"diff-tree\",\"-z\",\"--raw\",\"--no-renames\",\"-l0\",\"-r\",\"6f8cbe0a34d70e70a6365385bbd4338d97047d4b\",\"18cea18855143095a872a463eb0a7cf5dd81de4c\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"git-annex\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"log\",\"refs/heads/git-annex..4a2771e15cb5c7a0a8d70443e76b65c12115a8cd\",\"--oneline\",\"-n1\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"log\",\"refs/heads/git-annex..ddf6aa74d771521b11657edfae558858b60e8368\",\"--oneline\",\"-n1\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"log\",\"refs/heads/git-annex..a7cb1b3f2a3f2a7d24827e10f9f3ac5848fd11d9\",\"--oneline\",\"-n1\"]
+    [2013-07-15 20:53:02 PDT] feed: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"refs/heads/git-annex\"]
+    [2013-07-15 20:53:02 PDT] Watcher: add symlink test-2013-07-15e
+    [2013-07-15 20:53:02 PDT] chat: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\",\"--no-filters\"]
+    [2013-07-15 20:53:02 PDT] Committer: committing 1 changes
+    [2013-07-15 20:53:02 PDT] Committer: Committing changes to git
+    (Recording state in git...)
+    [2013-07-15 20:53:02 PDT] feed: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"commit\",\"--allow-empty-message\",\"--no-edit\",\"-m\",\"\",\"--quiet\",\"--no-verify\"]
+    [2013-07-15 20:53:02 PDT] Pusher: Syncing with host1.local_annex 
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"symbolic-ref\",\"HEAD\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"refs/heads/master\"]
+    [2013-07-15 20:53:02 PDT] Pusher: pushing to [Remote { name =\"host1.local_annex\" }]
+    [2013-07-15 20:53:02 PDT] call: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"branch\",\"-f\",\"synced/master\"]
+    [2013-07-15 20:53:02 PDT] call: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"push\",\"host1.local_annex\",\"git-annex:synced/git-annex\",\"master:synced/master\"]
+    To ssh://drewp@git-annex-host1.local-drewp_annex/~/annex/
+       a7cb1b3..4a2771e  git-annex -> synced/git-annex
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"git-annex\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"push\",\"host1.local_annex\",\"git-annex:synced/git-annex\",\"master\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"log\",\"refs/heads/git-annex..4a2771e15cb5c7a0a8d70443e76b65c12115a8cd\",\"--oneline\",\"-n1\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"log\",\"refs/heads/git-annex..ddf6aa74d771521b11657edfae558858b60e8368\",\"--oneline\",\"-n1\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"symbolic-ref\",\"HEAD\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"refs/heads/master\"]
+    [2013-07-15 20:53:02 PDT] Merger: merging refs/remotes/host1.local_annex/synced/master into refs/heads/master
+
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"symbolic-ref\",\"HEAD\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"refs/heads/master\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-07-15 20:53:02 PDT] call: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex/.git/annex/merge/\",\"merge\",\"--no-edit\",\"refs/remotes/host1.local_annex/synced/master\"]
+    Already up-to-date.
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-07-15 20:53:02 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"diff-tree\",\"-z\",\"--raw\",\"--no-renames\",\"-l0\",\"-r\",\"18cea18855143095a872a463eb0a7cf5dd81de4c\",\"18cea18855143095a872a463eb0a7cf5dd81de4c\"]
+    [2013-07-15 20:53:28 PDT] read: git [\"--git-dir=/home/drewp/annex/.git\",\"--work-tree=/home/drewp/annex\",\"ls-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"preferred-content.log\"]
+
+I also noticed on host1 where the file was made, there is a git node in gitk that says 'Local uncommitted changes, not checked in to index' and this node appears to have all my file contents as diffs. So the problem is maybe not the transfer, but the failure of the originating side to commit the file contents properly?
+"""]]

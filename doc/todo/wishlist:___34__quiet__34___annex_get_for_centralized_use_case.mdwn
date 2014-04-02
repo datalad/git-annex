@@ -1,0 +1,14 @@
+We're using git-annex to manage large files as part of a team.
+
+We have a central repository of large files that everyone grabs from.
+
+We would like to be able to get the files without updating the `git-annex` branch.  This way it doesn't pollute the history with essentially always unreachable locations.
+
+I think the easiest way would be to just add an option to not update the `git-annex` branch when `annex get` is executed.
+
+Thoughts?
+
+> See [[untracked_remotes]] for a todo item that will probably
+> be useful in this sitation. Since that describes better what
+> this bug report seems to be asking for, I am closing this one.
+> [[closed|done]] --[[Joey]]

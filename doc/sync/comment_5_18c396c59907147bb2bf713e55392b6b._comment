@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://elmimmo.myopenid.com/"
+ nickname="chocolate.camera"
+ subject="How to sync content with git-annex, not assistant"
+ date="2013-10-11T09:58:12Z"
+ content="""
+Sure assistant can sync git-annex data across remotes. But how do I tell a repo to sync git-annex data, but not so manually as to having to know what exactly needs to be copied from/to where?
+"""]]

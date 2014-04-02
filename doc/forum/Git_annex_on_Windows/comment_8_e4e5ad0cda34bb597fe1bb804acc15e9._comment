@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.102"
+ subject="comment 8"
+ date="2014-03-20T19:50:26Z"
+ content="""
+I upgraded to msysgit 1.9.0 and git annex works in cmd. 
+
+Did you tell the msysgit installer to \"Run git from the windows command prompt\"? This is the default. If you chose \"Use git bash only\" then git-annex will only work from within git bash.
+"""]]

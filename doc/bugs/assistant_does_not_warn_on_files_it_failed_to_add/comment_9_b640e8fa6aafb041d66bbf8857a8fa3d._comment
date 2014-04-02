@@ -1,0 +1,44 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 9"
+ date="2013-05-12T23:34:51Z"
+ content="""
+Whoops. Upgraded to 4.20130501-g4a5bfb3 and reproduced it again. Looks like the file is being changed between the file being closed and git-annex trying to add it.
+
+Though I'm using DownThemAll, I have it set to \"1 segment\" so the file should only have 1 writer.
+Looks like the file gets retried immediately and is being added okay though.
+
+Would it be worth me trying to log filesystem accesses with a passthrough FUSE filesystem to try and figure out what it going on?
+
+      O'Reilly/Mind Performance Hacks/urn_x-domain_oreilly.com_product_9780596153113.EBOOK-{711cd6ac-12b9-4d4e-92d6-66caa9825cf4}.dtapart still has writers, not adding
+    [2013-05-13 00:18:29 BST] read: git [\"--git-dir=/home/xyem/annex/.git\",\"--work-tree=/home/xyem/annex\",\"ls-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"preferred-content.log\"]
+    [2013-05-13 00:18:33 BST] Watcher: file deleted O'Reilly/Mind Performance Hacks/urn_x-domain_oreilly.com_product_9780596153113.EBOOK-{711cd6ac-12b9-4d4e-92d6-66caa9825cf4}.dtapart
+    [2013-05-13 00:18:33 BST] read: git [\"--git-dir=/home/xyem/annex/.git\",\"--work-tree=/home/xyem/annex\",\"ls-files\",\"--others\",\"--exclude-standard\",\"-z\",\"--\",\"O'Reilly/Mind Performance Hacks/urn_x-domain_oreilly.com_product_9780596153113.EBOOK-{711cd6ac-12b9-4d4e-92d6-66caa9825cf4}.dtapart\",\"O'Reilly/Mind Performance Hacks/Mind_Performance_Hacks.mobi\"]
+    [2013-05-13 00:18:33 BST] read: lsof [\"-F0can\",\"+d\",\"/home/xyem/annex/.git/annex/tmp/\"]
+    [2013-05-13 00:18:33 BST] Committer: Adding Mind_Perf..acks.mobi
+    add O'Reilly/Mind Performance Hacks/Mind_Performance_Hacks.mobi (checksum...) [2013-05-13 00:18:33 BST] read: sha256sum [\"/home/xyem/annex/.git/annex/tmp/Mind_Performance_Hacks13351.mobi\"]
+
+      O'Reilly/Mind Performance Hacks/Mind_Performance_Hacks.mobi changed while it was being added
+    [2013-05-13 00:18:33 BST] Committer: delaying commit of 1 changes
+    failed
+    [2013-05-13 00:18:33 BST] Committer: committing 1 changes
+    [2013-05-13 00:18:33 BST] Committer: Committing changes to git
+    (Recording state in git...)
+    [2013-05-13 00:18:33 BST] feed: git [\"--git-dir=/home/xyem/annex/.git\",\"--work-tree=/home/xyem/annex\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-05-13 00:18:33 BST] read: git [\"--git-dir=/home/xyem/annex/.git\",\"--work-tree=/home/xyem/annex\",\"commit\",\"--allow-empty-message\",\"--no-edit\",\"-m\",\"\",\"--quiet\",\"--no-verify\"]
+    [2013-05-13 00:18:33 BST] read: git [\"--git-dir=/home/xyem/annex/.git\",\"--work-tree=/home/xyem/annex\",\"symbolic-ref\",\"HEAD\"]
+    [2013-05-13 00:18:33 BST] read: git [\"--git-dir=/home/xyem/annex/.git\",\"--work-tree=/home/xyem/annex\",\"show-ref\",\"refs/heads/master\"]
+    [2013-05-13 00:18:34 BST] read: git [\"--git-dir=/home/xyem/annex/.git\",\"--work-tree=/home/xyem/annex\",\"ls-files\",\"--others\",\"--exclude-standard\",\"-z\",\"--\",\"O'Reilly/Mind Performance Hacks/Mind_Performance_Hacks.mobi\"]
+    [2013-05-13 00:18:34 BST] read: lsof [\"-F0can\",\"+d\",\"/home/xyem/annex/.git/annex/tmp/\"]
+    [2013-05-13 00:18:34 BST] Committer: Adding Mind_Perf..acks.mobi
+    add O'Reilly/Mind Performance Hacks/Mind_Performance_Hacks.mobi (checksum...) [2013-05-13 00:18:34 BST] read: sha256sum [\"/home/xyem/annex/.git/annex/tmp/Mind_Performance_Hacks13351.mobi\"]
+    [2013ok
+    -05-13 00:18:34 BST] Watcher: file deleted O'Reilly/Mind Performance Hacks/Mind_Performance_Hacks.mobi
+    [2013-05-13 00:18:34 BST] Watcher: add symlink O'Reilly/Mind Performance Hacks/Mind_Performance_Hacks.mobi
+    [2013-05-13 00:18:34 BST] Committer: committing 2 changes
+    [2013-05-13 00:18:34 BST] chat: git [\"--git-dir=/home/xyem/annex/.git\",\"--work-tree=/home/xyem/annex\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\"]
+    [2013-05-13 00:18:34 BST] Committer: Committing changes to git
+    (Recording state in git...)
+
+"""]]

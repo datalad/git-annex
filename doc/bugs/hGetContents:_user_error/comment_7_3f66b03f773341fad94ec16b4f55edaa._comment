@@ -1,0 +1,32 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.254.222"
+ subject="comment 7"
+ date="2013-07-07T02:48:05Z"
+ content="""
+Thanks for providing me an account.
+
+I was able to reproduce the problem:
+
+<pre>
+$ git-annex-shell recvkey `pwd`
+git-annex-shell: fd:6: hGetContents: user error (Pattern match failure in do expression at libraries/base/GHC/Event/Thread.hs:90:3-10)
+</pre>
+
+Here's another one:
+
+<pre>
+$ git annex init
+
+git-annex: eventfd: unsupported operation (Function not implemented)
+failed
+init  
+git-annex: fd:10: hGetContents: user error (Pattern match failure in do expression at libraries/base/GHC/Event/Thread.hs:90:3-10)
+failed
+</pre>
+
+Aha! I found a more relevant bug in GHC's bug tracker. This has the same error message including the eventfd problem. <http://ghc.haskell.org/trac/ghc/ticket/7926>
+
+After some more digging around, it's definitely a kernel/glibc incompatability. I have filed a bug on glibc: <http://bugs.debian.org/715212>
+
+"""]]

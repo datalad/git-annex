@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 2"
+ date="2013-09-13T15:59:29Z"
+ content="""
+I did not create tags or branches, running returns,
+
+    git branch -a  
+
+      git-annex
+    * master
+      synced/git-annex
+      synced/master
+      remotes/origin/HEAD -> origin/master
+      remotes/origin/git-annex
+      remotes/origin/master
+      remotes/origin/synced/master
+
+"""]]

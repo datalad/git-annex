@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-11-01T16:35:47Z"
+ content="""
+Yes, you can certainly edit .git/config in any way you like and the assistant will use the new values when started back up.
+
+It shouldn't be using a hardcoded IP address normally, unless you manually entered an IP address when setting up that ssh remote. Using DNS is better..
+"""]]

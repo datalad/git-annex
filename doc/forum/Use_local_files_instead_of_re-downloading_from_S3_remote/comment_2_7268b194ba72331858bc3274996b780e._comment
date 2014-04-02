@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 2"
+ date="2013-05-27T18:47:17Z"
+ content="""
+You can also use `git annex reinject` to feed in contents of specific files, without needing to directly touch the files in the repository.
+
+Or, you can check all the local files into a temporary directory. Either the assistant or a manual `git annex add` will 
+notice if these files have the same content as files already in the repository. The files will then be available in two locations, the temp directory and wherever it was checked into your repository before. You can then delete the temp directory.
+"""]]

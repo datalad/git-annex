@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="2001:4978:f:21a::2"
+ subject="comment 2"
+ date="2013-07-26T16:44:35Z"
+ content="""
+Note that you don't need to shut down the assistant; you can run multiple git-annex commands simulantaneously safely.
+You will probably want to set that repository to be in the manual group in the assistant though.
+
+Another way to do it is to make rsync.net a small archive, and move or copy your important files into `archive` directories.
+
+You can also set up multiple remotes using the same rsync.net account. So you could have a transfer remote that's used to ship files between clients, as well as your archive remote.
+"""]]

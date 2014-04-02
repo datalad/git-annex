@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 1"
+ date="2013-11-23T19:03:58Z"
+ content="""
+It's not clear to me what you are requesting here.
+
+You seem to say that running git-annex inside a mountpoint is slow. Ok. So, what possible changes to git-annex could make it fast, given that the bottleneck is the SMB/USB?
+"""]]

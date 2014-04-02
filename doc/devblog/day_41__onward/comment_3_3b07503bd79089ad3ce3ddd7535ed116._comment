@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://jasonwoof.com/"
+ nickname="JasonWoof"
+ subject="Please check if it needs help from the user first"
+ date="2013-10-23T23:30:10Z"
+ content="""
+Awesome that you're working on recovery, and recovery automation!
+
+Please only bother the user if there is a serious problem _and_ it can't be fixed without their help. Otherwise I fear people will learn to ignore your dialog boxes, like they do most dialog boxes. If you want to notify your user that some hard drive corruption happened (and it's been fixed already) then put a little yellow/orange line across somewhere with a warning message.
+
+When I read to the part about how it can (probably) be fixed automatically, I got a flash of annoyance and thought \"well, then fix it automatically, why are you bothering me?\"
+
+Please (if you aren't already) check if it can be automatically fixed without help from the user before telling the user about it. Then you can say \"The data to fix this could not be reached, please plug in another repo or something.\"
+"""]]

@@ -1,0 +1,34 @@
+### Please describe the problem.
+git-annex refuses to use revoked GPG keys. This may be understandable for the initial remote setup, but it hit me when I tried to add a new key to a remote. The previous key has been revoked (because it has been superseded by the new one), and git-annex refused to reinvoke the shared key with both keys because one of them was revoked.
+
+Given the encryption model does not allow key replacement, it should not refuse to reencrypt using a revoked key. Maybe using `--expert` would help.
+
+### What steps will reproduce the problem?
+Encrypt a special remote with a key K1. Revoke key K1. Try to add key K2 with enableremote. git-annex will refuse to encrypt the shared key with the revoked one.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 4.20130802-g1452ac3
+
+### Please provide any additional information below.
+
+[[!format sh """
+% git annex enableremote zoidberg-crypted encryption=42B8F7C2 
+enableremote zoidberg-crypted (encryption update) 
+You need a passphrase to unlock the secret key for
+user: "Samuel Tardieu <sam@rfc1149.net>"
+2048-bit ELG key, ID F0D70BAF, created 2002-05-31 (main key ID 1B80ADE6)
+
+gpg: NOTE: key has been revoked
+gpg: reason for revocation: Key is superseded
+gpg: revocation comment: Key superseded by 42B8F7C2
+gpg: revocation comment: (fingerprint 1D36 D924 8B33 DCAB 7BA5  BA44 7A30 BCF4 42B8 F7C2)
+gpg: F13322411B80ADE6: skipped: Unusable public key
+gpg: [stdin]: encryption failed: Unusable public key
+
+git-annex: user error (gpg ["--quiet","--trust-model","always","--encrypt","--no-encrypt-to","--no-default-recipient","--recipient","7A30BCF442B8F7C2","--recipient","F13322411B80ADE6"] exited 2)
+failed
+git-annex: enableremote: 1 failed
+"""]]
+
+> [[done]]; can now use: `git annex enableremote foo keyid-=REVOKEDKEY
+> keyid+=NEWKEY` to remove it, and add a new key. --[[Joey]]  

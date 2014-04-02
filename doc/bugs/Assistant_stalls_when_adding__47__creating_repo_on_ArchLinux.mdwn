@@ -1,0 +1,75 @@
+### Please describe the problem.
+
+I am experiencing a weird issue with any install I've had on this one (and only) ArchLinux machine: all of aur/git-annex 4.20130516-1, aur/git-annex-bin-4.20130909-1, aur/git-annex-standalone-4.20130909-1 and a Cabal install just stall when trying to create the initial Git annex repo in the webapp.
+
+When started, it offers me to create the annex in ~/annex/ or ~/Desktop/annex/, where ~ gets turned into /home/USER when I press “Make repository”, but nothing else happens. This is regardless of if that repo exists when I try to create it or start the webapp.
+
+If I start the webapp from an existing annex (now in ~/annex), it seems to work a bit better, but any other remote (SSH) server that I try to add fails. I just get a fleeting Bootstrap message box when I click “Check this server”, and nothing in the logs of eithr git annex webapp or the ssh logs of the server.
+
+If an annex exists, but I start the webapp from another directory, it just behaves as if none were found.
+
+Calls to git annex assistant --autostart complain that "Nothing listed in /home/omehani/.config/git-annex/autostart". I have checked the permissions on that directory, and tried deleting it to let git-annex recreate it, which it did, to no avail.
+
+
+### What steps will reproduce the problem?
+
+Install any of the git-annex packages available from AUR
+
+### What version of git-annex are you using? On what operating system?
+
+* up-to-date ArchLinux, Linux cancey 3.10.10-1-ARCH #1 SMP PREEMPT Fri Aug 30 11:30:06 CEST 2013 x86_64 GNU/Linux
+* aur/git-annex 4.20130516-1, aur/git-annex-bin-4.20130909-1, aur/git-annex-standalone-4.20130909-1 or through Cabal (on 2013-09-12)
+
+### Please provide any additional information below.
+
+The following is the output of webapp --debug. Nothing actually appears when trying to add/edit a repo.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+~/annex (master)$ git annex webapp --debug
+[2013-09-16 10:26:55 EST] read: git ["--git-dir=/home/omehani/annex/.git","--work-tree=/home/omehani/annex","show-ref","git-annex"]
+[2013-09-16 10:26:55 EST] read: git ["--git-dir=/home/omehani/annex/.git","--work-tree=/home/omehani/annex","show-ref","--hash","refs/heads/git-annex"]
+[2013-09-16 10:26:55 EST] read: git ["--git-dir=/home/omehani/annex/.git","--work-tree=/home/omehani/annex","log","refs/heads/git-annex..27c891f84f6ea7a10c68c0dd696ab84d88ef0cec","--oneline","-n1"]
+[2013-09-16 10:26:55 EST] read: git ["--git-dir=/home/omehani/annex/.git","--work-tree=/home/omehani/annex","log","refs/heads/git-annex..d0a1cb518045af01b443694aa2cd9af6386de38a","--oneline","-n1"]
+[2013-09-16 10:26:55 EST] read: git ["--git-dir=/home/omehani/annex/.git","--work-tree=/home/omehani/annex","log","refs/heads/git-annex..3ff23e23d74ace008b03143120e84f07e52ed8ee","--oneline","-n1"]
+[2013-09-16 10:26:55 EST] chat: git ["--git-dir=/home/omehani/annex/.git","--work-tree=/home/omehani/annex","cat-file","--batch"]
+[2013-09-16 10:26:55 EST] logging to /home/omehani/annex/.git/annex/daemon.log
+[2013-09-16 10:26:55 EST] logging to /home/omehani/annex/.git/annex/daemon.log
+Launching web browser on file:///home/omehani/annex/.git/annex/webapp.html
+START /usr/lib/firefox/firefox "/home/omehani/annex/.git/annex/webapp.html"
+
+(process:2699): GLib-CRITICAL **: g_slice_set_config: assertion `sys_page_size == 0' failed
+
+
+# End of transcript or log.
+"""]]
+
+Running git annex from a different directory.
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+~$ git annex webapp --debug
+Launching web browser on file:///tmp/webapp3934.html
+START /usr/lib/firefox/firefox "/tmp/webapp3934.html"
+
+(process:4008): GLib-CRITICAL **: g_slice_set_config: assertion `sys_page_size == 0' failed
+
+# End of transcript or log.
+"""]]
+
+Trying the autostart:
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+~$ git annex assistant --autostart --debug
+git-annex: Nothing listed in /home/omehani/.config/git-annex/autostart
+
+
+# End of transcript or log.
+"""]]
+
+> workaround is in place [[done]] --[[Joey]]

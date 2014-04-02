@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 1"
+ date="2013-10-21T22:41:44Z"
+ content="""
+You can use `git annex drop foo --from remote` to drop the file from the remote. Of course, the remote has to be accessible. You can't drop files from an offline drive that's stored in a safe.. 
+
+What you might be looking for is `git annex drop foo; rm foo`, followed by a git commit, and then later you can run `git annex unused` on a remote and it will let you then easily drop the files you've removed from the repository. This approach of just deleting files when you're done with them also works when using the assistant.
+
+The assistant isn't really about only keeping a subset of files on your laptop. It would like to get them all, except for ones in \"archive\" directories.
+You can configure the assistant to use manual mode, and then it doesn't download any files on its own (so you have to manually `git annex get` them), but it will still handle all the other stuff the assistant does, like automatically committing and syncing changes.
+
+An archive repository wants one copy of every file that is not already stored in some other archive repository. So an archive repository could certainly be used instead of a transfer repository. (But not a small archive repository; those only want files that are moved to \"archive\" directories.) A better choice might be to make that server be a backup repository. That makes it want *every* file, no matter what, and it follows that it would archive everything, and have everything the client wants available for transferring to it.
+"""]]

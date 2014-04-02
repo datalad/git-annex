@@ -1,0 +1,125 @@
+/ DashboardR GET HEAD
+
+/noscript NoScriptR GET
+/noscript/auto NoScriptAutoR GET
+
+/about AboutR GET
+/about/license LicenseR GET
+/about/repogroups RepoGroupR GET
+
+/shutdown ShutdownR GET
+/shutdown/confirm ShutdownConfirmedR GET
+/shutdown/complete NotRunningR GET
+/restart RestartR GET
+/restart/thread/#ThreadName RestartThreadR GET
+/log LogR GET
+
+/config ConfigurationR GET
+/config/preferences PreferencesR GET POST
+/config/xmpp XMPPConfigR GET POST
+/config/xmpp/for/self XMPPConfigForPairSelfR GET POST
+/config/xmpp/for/frield XMPPConfigForPairFriendR GET POST
+/config/xmpp/needcloudrepo/#UUID NeedCloudRepoR GET
+/config/fsck ConfigFsckR GET POST
+/config/fsck/preferences ConfigFsckPreferencesR POST
+/config/upgrade/start/#GitAnnexDistribution ConfigStartUpgradeR GET
+/config/upgrade/finish ConfigFinishUpgradeR GET
+/config/upgrade/automatically ConfigEnableAutomaticUpgradeR GET
+/config/unused ConfigUnusedR GET POST
+
+/config/addrepository AddRepositoryR GET
+/config/repository/new NewRepositoryR GET POST
+/config/repository/new/first FirstRepositoryR GET POST
+/config/repository/new/androidcamera AndroidCameraRepositoryR GET
+/config/repository/switcher RepositorySwitcherR GET
+/config/repository/switchto/#FilePath SwitchToRepositoryR GET
+/config/repository/combine/#FilePath/#UUID CombineRepositoryR GET
+/config/repository/edit/#RepoId EditRepositoryR GET POST
+/config/repository/edit/new/#UUID EditNewRepositoryR GET POST
+/config/repository/edit/new/cloud/#UUID EditNewCloudRepositoryR GET POST
+/config/repository/sync/disable/#RepoId DisableSyncR GET
+/config/repository/sync/enable/#RepoId EnableSyncR GET
+/config/repository/upgrade/#RepoId UpgradeRepositoryR GET
+
+/config/repository/add/drive AddDriveR GET POST
+/config/repository/add/drive/confirm/#RemovableDrive ConfirmAddDriveR GET
+/config/repository/add/drive/genkey/#RemovableDrive GenKeyForDriveR GET
+/config/repository/add/drive/finish/#RemovableDrive/#RepoKey FinishAddDriveR GET
+/config/repository/add/ssh AddSshR GET POST
+/config/repository/add/ssh/confirm/#SshData/#UUID ConfirmSshR GET
+/config/repository/add/ssh/retry/#SshData RetrySshR GET
+/config/repository/add/ssh/make/git/#SshData MakeSshGitR GET
+/config/repository/add/ssh/make/rsync/#SshData MakeSshRsyncR GET
+/config/repository/add/ssh/make/gcrypt/#SshData/#RepoKey MakeSshGCryptR GET
+/config/repository/add/ssh/combine/#SshData CombineSshR GET
+/config/repository/add/cloud/rsync.net AddRsyncNetR GET POST
+/config/repository/add/cloud/rsync.net/shared/#SshData MakeRsyncNetSharedR GET
+/config/repository/add/cloud/rsync.net/gcrypt/#SshData/#RepoKey MakeRsyncNetGCryptR GET
+/config/repository/add/cloud/S3 AddS3R GET POST
+/config/repository/add/cloud/IA AddIAR GET POST
+/config/repository/add/cloud/glacier AddGlacierR GET POST
+/config/repository/add/cloud/box.com AddBoxComR GET POST
+
+/config/repository/pair/local/start StartLocalPairR GET POST
+/config/repository/pair/local/running/#SecretReminder RunningLocalPairR GET
+/config/repository/pair/local/finish/#PairMsg FinishLocalPairR GET POST
+
+/config/repository/pair/xmpp/self/start StartXMPPPairSelfR GET
+/config/repository/pair/xmpp/self/running RunningXMPPPairSelfR GET
+
+/config/repository/pair/xmpp/friend/start StartXMPPPairFriendR GET
+/config/repository/pair/xmpp/friend/running/#BuddyKey RunningXMPPPairFriendR GET
+/config/repository/pair/xmpp/friend/accept/#PairKey ConfirmXMPPPairFriendR GET
+/config/repository/pair/xmpp/friend/finish/#PairKey FinishXMPPPairFriendR GET
+
+/config/repository/enable/rsync/#UUID EnableRsyncR GET POST
+/config/repository/enable/gcrypt/#UUID EnableSshGCryptR GET POST
+/config/repository/enable/directory/#UUID EnableDirectoryR GET
+/config/repository/enable/S3/#UUID EnableS3R GET POST
+/config/repository/enable/IA/#UUID EnableIAR GET POST
+/config/repository/enable/glacier/#UUID EnableGlacierR GET POST
+/config/repository/enable/webdav/#UUID EnableWebDAVR GET POST
+
+/config/repository/reorder RepositoriesReorderR GET
+
+/config/repository/syncnow/#UUID SyncNowRepositoryR GET
+/config/repository/disable/#UUID DisableRepositoryR GET
+
+/config/repository/delete/confirm/#UUID DeleteRepositoryR GET
+/config/repository/delete/start/#UUID StartDeleteRepositoryR GET
+/config/repository/delete/finish/#UUID FinishDeleteRepositoryR GET
+/config/repository/delete/here DeleteCurrentRepositoryR GET POST
+
+/config/activity/add/#UUID AddActivityR GET POST
+/config/activity/change/#UUID/#ScheduledActivity ChangeActivityR GET POST
+/config/activity/remove/#UUID/#ScheduledActivity RemoveActivityR GET
+
+/transfers/#NotificationId TransfersR GET
+/notifier/transfers NotifierTransfersR GET
+
+/sidebar/#NotificationId SideBarR GET
+/notifier/sidebar NotifierSideBarR GET
+
+/buddylist/#NotificationId BuddyListR GET
+/notifier/buddylist NotifierBuddyListR GET
+
+/repolist/#NotificationId/#RepoSelector RepoListR GET
+/notifier/repolist/#RepoSelector NotifierRepoListR GET
+
+/globalredir/#NotificationId GlobalRedirR GET
+/notifier/globalredir NotifierGlobalRedirR GET
+
+/alert/close/#AlertId CloseAlert GET
+/alert/click/#AlertId/#Int ClickAlert GET
+/filebrowser FileBrowserR GET POST
+
+/transfer/pause/#Transfer PauseTransferR GET POST
+/transfer/start/#Transfer StartTransferR GET POST
+/transfer/cancel/#Transfer CancelTransferR GET POST
+
+/repair/#UUID RepairRepositoryR GET POST
+/repair/run/#UUID RepairRepositoryRunR GET POST
+
+/unused/cleanup CleanupUnusedR GET
+
+/static StaticR Static getStatic

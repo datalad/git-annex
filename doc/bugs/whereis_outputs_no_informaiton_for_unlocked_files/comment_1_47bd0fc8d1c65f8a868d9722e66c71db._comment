@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.102"
+ subject="comment 1"
+ date="2014-03-19T20:52:08Z"
+ content="""
+The reason this doesn't work is that, in indirect mode, git-annex looks at the current state of the symlink in the work tree to know what key is associated with a file. And an unlocked file has no symlink.
+
+Direct mode avoids this problem, but at the expense of being less flexible and well, doing more work.
+"""]]

@@ -1,0 +1,13 @@
+`git annex fsck --from remote`
+
+Basically, this needs to receive each file in turn from the remote, to a
+temp file, and then run the existing fsck code on it. Could be quite
+expensive, but sometimes you really want to check.
+
+An unencrypted directory special remote could be optimised, by not actually
+copying the file, just dropping a symlink, etc.
+
+The WORM backend doesn't care about file content, so it would be nice to
+avoid transferring the content at all, and only send the size.
+
+> [[done]] --[[Joey]] 

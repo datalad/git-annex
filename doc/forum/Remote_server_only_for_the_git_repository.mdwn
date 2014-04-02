@@ -1,0 +1,3 @@
+Hi, I'm using git-annex 5.2014012 with the webapp and I've added two repositories: a remote server and a box.com account. When I add a file it is uploaded properly to both remotes as you would expect.
+
+The problem is that I would like the files to only be uploaded to box.com, and the remote server only store the git repository. Is there any way of saying to git-annex to not sync files to a remote server?

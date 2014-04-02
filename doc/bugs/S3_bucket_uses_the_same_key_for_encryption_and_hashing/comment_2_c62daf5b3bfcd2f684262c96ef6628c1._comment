@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2011-03-30T17:01:40Z"
+ content="""
+After mulling this over, I think actually encrypting the filenames is preferable.
+
+Did you consider encrypting the symmetric key with an asymmetric one? That's what TrueCrypt etc are using to allow different people access to a shared volume. This has the added benefit that you could, potentially, add new keys for data that new people should have access to while making access to old data impossible. Or keys per subdirectory, or, or, or.
+
+As an aside, could the same mechanism be extended to transparently encrypt data for a remote annex repo? A friend of mine is interested to host his data with me, but he wants to encrypt his data for obvious reasons.
+"""]]

@@ -1,0 +1,53 @@
+git-annex is now available for Android. This includes the 
+[[git-annex assistant|/assistant]], for easy syncing between your Android
+and other devices. You do not need to root your Android to use git-annex.
+
+[[Android installation instructions|/install/android]]
+
+When you run the git-annex Android app, two windows will open. The first is
+a terminal window, and the second is a web browser showing the git-annex
+webapp.
+
+[[!img apps.png alt="two windows"]]
+
+[[!toc ]]
+
+## closing and reopening the webapp
+
+The webapp does not need to be left open after you've set up your
+repository. As long as the terminal window is left open, git-annex will
+remain running and sync your files. To re-open the webapp after closing it,
+use the [[!img newwindow.png alt="New Window"]] icon in the terminal window.
+
+## starting git-annex
+
+The app is not currently automatically started on boot, so you will need to
+manually open it to keep your files in sync. You do not need to leave the
+app running all the time, though. It will sync back up automatically when
+started.
+
+## stopping git-annex
+
+Simply close the terminal window to stop git-annex from running.
+
+## using the command line
+
+[[!img terminal.png alt="Android terminal"]]
+
+If you prefer to use `git-annex` at the command line, you can do so using the
+terminal. A fairly full set of tools is provided, including `git`, `ssh`,
+`rsync`, and `gpg`.
+
+To prevent the webapp from being automatically started
+when a terminal window opens, go into the terminal preferences, to "Inital
+Command", and clear out the default `git annex webapp` setting.
+
+Or, if you'd like to run the assistant automatically, but not open the
+webapp, change the "Initial Command" to: `git annex assistant --autostart`
+
+## using from adb shell
+
+To set up the git-annex environment from within `adb shell`, run:
+`/data/data/ga.androidterm/runshell`
+
+This will launch a shell that has git-annex, git, etc in PATH.

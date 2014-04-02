@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.2.134"
+ subject="comment 3"
+ date="2013-09-13T16:17:39Z"
+ content="""
+Depending on your git configuration, `git annex sync` might not be updating certian of these branches, such as remotes/origin/HEAD. You can check the branches out and see which still contains your deleted files.
+"""]]

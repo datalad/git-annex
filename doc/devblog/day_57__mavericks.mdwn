@@ -1,0 +1,14 @@
+The user survey is producing some interesting and useful results!  
+Added two more polls: [using with](http://git-annex-survey.branchable.com/polls/2013/using_with/) and [blocking problems](http://git-annex-survey.branchable.com/polls/2013/blocking_problems/)  
+(There were some load issues so if you were unable to vote yesterday, try
+again..)
+
+Worked on getting the autobuilder for OS X Mavericks set up. Eventually
+succeeded, after patching a few packages to work around a cpp that thinks
+it should parse haskell files as if they're C code.
+Also, Jimmy has resuscitated the OS X Lion autobuilder.
+
+A not too bad bug in automatic merge conflict resolution has been reported,
+so I will need to dig into that tomorrow. Didn't feel up to it today, so
+instead have been spending the remaining time finishing up a branch that
+switches the test suite to use the tasty test framework.

@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://lot-of-stuff.info/"
+ nickname="__DL__"
+ subject="Another solution."
+ date="2013-08-13T16:39:17Z"
+ content="""
+calibre store all the metadata for safekeeping of the metadata
+(author, title...).
+
+If like me you do not like much direct mode (because of its not so
+cool interaction with plain git), you could use the largfiles config
+to let those files in plain git. You will then also need something for
+the database. See [[tips/Git_annex_and_Calibre]] for a full solution.
+
+"""]]

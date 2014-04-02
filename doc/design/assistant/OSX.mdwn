@@ -1,0 +1,13 @@
+Misc OSX porting things:
+
+* autostart the assistant on OSX, using launchd **done**
+* icon to start webapp **done**
+* use FSEvents to detect file changes (better than kqueue) **done**
+* Use OSX's "network reachability functionality" to detect when on a network
+  <http://developer.apple.com/library/mac/#documentation/Networking/Conceptual/SystemConfigFrameworks/SC_Intro/SC_Intro.html#//apple_ref/doc/uid/TP40001065>
+* Switch from gpg to <https://gpgtools.org/>. According to a user,
+  this is better because it can show a dialog window for password prompts.
+
+Bugs:
+
+[[!inline pages="tagged(design/assistant/OSX) and !link(bugs/done)" show=0 archive=yes]]

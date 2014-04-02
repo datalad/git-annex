@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 1"
+ date="2013-01-10T18:36:04Z"
+ content="""
+What does it say when you run:
+
+  git annex copy --to $rsyncremote
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniayrgSdVLUc3c6bf93VbO-_HT4hzxmyo"
+ nickname="Tobias"
+ subject="comment 3"
+ date="2013-08-08T12:22:28Z"
+ content="""
+I also see `unfinished repository` in the assistant, but only at git remotes which don't have git-annex installed (f.e. gitlab). annex-ignore is set to true: `git config remote.gitlab.annex-ignore true`.
+
+Clicking on `check status` says `Setting up this repository seems to have stalled! Make sure the remote system is available and retry`
+
+git-annex version: 4.20130802-g1452ac3
+"""]]

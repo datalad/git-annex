@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="http://bigasterisk.com/"
+ nickname="Drew Perttula"
+ subject="comment 12"
+ date="2013-07-28T05:36:39Z"
+ content="""
+Thanks for finding that. I added git-annex-shell to my path and ran again. The repo lists look good now. 
+
+For the record, here's what I am getting in authorized_keys on dash:
+
+    command=\"GIT_ANNEX_SHELL_DIRECTORY='/home/drewp/annex2' ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB3NzaC1y.......0c2ilnh drewp@bang
+
+
+When I went to the settings on each box, all 4 repository group select boxes were blank. I set them all to 'client'.
+
+How do we make this long ticket worth your time by improving the code so people don't hit the same trap in the future? I think I would have looked in the right direction if, instead of saying nothing and not having a uuid to make the links work, the web ui said something like this:
+
+    'command not found: git-annex-shell' on remote host. Sync disabled with this host.
+
+
+--------
+
+Next, I ran \"date > annex2/file1\" on bang. The web consoles said they synced, but no file appeared on dash. There was a ~/annex2/.git/annex/objects/../../SHA256.../SHA256... file on dash with the right contents, but no symlink showed up in dash:~/annex2. 
+
+I ran \"date > annex2/file2\" on dash, and then I got both file1 and file2 on both boxes.
+
+In the new logs at http://bigasterisk.com/post/git-annex/logs2/, the surprise is at [2013-07-27 22:10:49 PDT] where I thought dash would make a symlink called 'file1' but instead it reports no attempt or error. Later at [2013-07-27 22:12:08 PDT], while dealing with the upload of file2, dash finally makes the symlink for file1. 
+
+"""]]

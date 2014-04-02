@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLB39PC89rfGaA8SwrsnB6tbumezj-aC0"
+ nickname="Tobias"
+ subject="gpg encryption on ssh remotes"
+ date="2012-09-01T08:25:17Z"
+ content="""
+I've been playing around with the Assistant in the last few days.
+
+And besides for gpg encryption it works great.
+
+But whenever i set up a special remote(done it manually since you hadn't made this yet) it will break, bad.
+
+Some files will transfer fine, but at some point it will still(the stdout from git-annex webapp shows gpg being stupid).
+
+I get a huge amount of [git] <defunct> in my ps auxw. And two git-annex transferkey <key> --to host --file <some file>
+
+It seems to consistently fall on a 9mb file i have. I have found no way to recover from this(killing and restarting git-annex will say 'transfer already in progress'. Deleting the file was to no avail, it still tries to transfer).
+
+I have done a lot of testing and i've only seen this on special remotes when gpg encryption is enabled(i haven't tried encryption=shared)
+
+Besides for this issue, the Assistant is looking great.
+
+"""]]

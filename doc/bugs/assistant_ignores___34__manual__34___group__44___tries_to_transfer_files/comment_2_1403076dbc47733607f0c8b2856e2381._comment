@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="Xyem"
+ ip="87.194.19.134"
+ subject="comment 2"
+ date="2013-04-13T20:50:16Z"
+ content="""
+Ah I see. Bit of a misunderstanding on my end about what the groups did, by the looks of it. I was under the impression they controlled how files moved around, if at all (as described in the webapp), and the preferred-content was just fine-tuning controls.
+
+I just went to set this back up to see if setting it to \"standard\" in vicfg works how I want it to and now I've hit a different problem. The webapp/assistant isn't populating the git commit messages on it's own, it is launching $EDITOR (vi if unset on my system) in the background to prompt me for it (where I can't see it).
+
+    ├─xterm
+    │   └─bash
+    │       └─git annex webapp
+    │           └─git-annex webapp
+    │               ├─git --git-dir=/home/xyem/tmp/annex/.git --work-tree=/home/xyem/tmp/annex cat-file --batch
+    │               ├─git --git-dir=/home/xyem/tmp/annex/.git --work-tree=/home/xyem/tmp/annex cat-file --batch
+    │               ├─git --git-dir=/home/xyem/tmp/annex/.git --work-tree=/home/xyem/tmp/annex check-attr -z --stdin annex.backend annex.numcopies --
+    │               ├─git --git-dir=/home/xyem/tmp/annex/.git --work-tree=/home/xyem/tmp/annex commit --allow-empty-message -m  --quiet --no-verify
+    │               │   └─nano .git/COMMIT_EDITMSG
+    │               └─6*[{git-annex}]
+
+If I do the steps manually, it seems to work fine:
+
+    $ echo \"testfile\" > testfile.txt
+    $ git annex add testfile.txt
+
+    add testfile.txt (checksum...) ok
+    (Recording state in git...)
+
+    $ git --git-dir=/home/xyem/tmp/annex/.git --work-tree=/home/xyem/tmp/annex commit --allow-empty-message -m  --quiet --no-verify
+
+    [master 636605f] --quiet
+     1 file changed, 1 insertion(+)
+     create mode 120000 testfile.txt
+
+This, to me, implies it is a bug with the assistant/webapp but I don't know how to isolate it any more than that (--debug doesn't output anything else). Should I report this as another bug?
+"""]]

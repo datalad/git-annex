@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 2"
+ date="2014-01-01T22:30:07Z"
+ content="""
+3. doesn't work because there could be a special remote or another repository that an untracked repo communicates with (forming their own little subnet hidden from the main network), and so it needs to use remote.log and location tracking for that in the usual way.
+
+It might suffice to make `git annex sync` not push any branches from an untracked repo to its remotes. Its git-annex branch would thus diverge locally, but still contain the global state. There is probably a way to make git refuse to push a branch (at least when naively running `git push` -- I never completely understand how git tracking branches work). Or a pre-push hook could be installed to block an accidential push.
+
+The uuid of an untracked repo would also leak out in the remoteuuid parameter passed to git-annex-shell. That may not matter (as long as it's not used to update the location log, which it doesn't seem to be; the remoteuuid is only used for displaying transfers AFAICS).
+
+----
+
+I'm still be worried about handling numcopies though. Suppose an untracked repo runs `git annex drop --from publicrepo`. We don't want to end up with the numcopies satisfied by the untracked repo and the other remotes that only it can access, because this would seem to make a file vanish from the public network's perspective. `git annex move` is even worse a problem, and even setting the untracked repo to untrusted or dead wouldn't help if the only copies of files are moved to it. 
+
+It seems that an untracked repo should refuse to remove content from the repositories it's \"hiding\" from, and if it's never going to git push to it, there is also no point in uploading annexed objects to it either. So, perhaps make `git.<remote>.annex-read-only = true` be used to configure a remote as read-only, and refuse to push any git branches to a read-only remote, as well as prohibit storekey and removekey being used with any read-only remote (which might be a special remote).
+"""]]

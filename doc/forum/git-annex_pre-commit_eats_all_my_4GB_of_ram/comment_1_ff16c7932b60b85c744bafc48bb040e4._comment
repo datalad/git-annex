@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 1"
+ date="2013-09-18T07:19:49Z"
+ content="""
+AFAIK in direct mode you are not supposed to commit you just run
+
+    git annex sync
+
+and it will commit if files are changed. you only add new files annexed files are handled by sync
+
+"""]]

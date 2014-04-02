@@ -1,0 +1,45 @@
+Once you have multiple repositories, and have perhaps configured numcopies,
+any given file can have many more copies than is needed, or perhaps fewer
+than you would like. How to manage this?
+
+The whereis subcommand can be used to see how many copies of a file are known,
+but then you have to decide what to get or drop. In this example, there
+are perhaps not enough copies of the first file, and too many of the second
+file.
+
+	# cd /media/usbdrive
+	# git annex whereis
+	whereis my_cool_big_file (1 copy)
+		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
+	whereis other_file (3 copies)
+		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
+		62b39bbe-4149-11e0-af01-bb89245a1e61  -- here (usb drive)
+		7570b02e-15e9-11e0-adf0-9f3f94cb2eaa  -- backup drive
+
+What would be handy is some automated versions of get and drop, that only
+gets a file if there are not yet enough copies of it, or only drops a file
+if there are too many copies. Well, these exist, just use the --auto option.
+
+	# git annex get --auto --numcopies=2
+	get my_cool_big_file (from laptop...) ok
+	# git annex drop --auto --numcopies=2
+	drop other_file ok
+
+With two quick commands, git-annex was able to decide for you how to
+work toward having two copies of your files.
+
+	# git annex whereis
+	whereis my_cool_big_file (2 copies)
+		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
+		62b39bbe-4149-11e0-af01-bb89245a1e61  -- here (usb drive)
+	whereis other_file (2 copies)
+		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
+		7570b02e-15e9-11e0-adf0-9f3f94cb2eaa  -- backup drive
+
+The --auto option can also be used with the copy command,
+again this lets git-annex decide whether to actually copy content.
+
+The above shows how to use --auto to manage content based on the number
+of copies. It's also possible to configure, on a per-repository basis,
+which content is desired. Then --auto also takes that into account
+see [[preferred_content]] for details.

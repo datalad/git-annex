@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-01T18:33:37Z"
+ content="""
+I'm afraid that this looks like a partially corrupted git repository to me. Something seems to have gone wrong with `.git/refs/heads/git-annex`. Also, git object d768b20f76ce40157214a713fb0ccb9cfc9134c2 seems to have been present before, and be gone now. 
+
+I would run `git fsck`, then look at what's happened in `.git/refs/heads`, and if the repository does seem to be damanged, re-clone it. (You can copy over `.git/config` and `.git/annex/` to keep your annexed data in the new clone.) You should probably also run `git annex fsck`, as it could have lost some location log changes.
+"""]]

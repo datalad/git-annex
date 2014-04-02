@@ -1,0 +1,22 @@
+What steps will reproduce the problem?
+
+Mount USB drive formatted as FAT
+Make directory for repository in it.
+Set up another repository and choose to sync it with the existing one.
+
+What is the expected output? What do you see instead?
+The files should transfer from the main repository to the directory on the USB drive.
+This happens, but afterwards a new sync happens from the USB drive repository back to the other existing repositories, because the file date of all the files on the USB drive has been set to today.
+Further, git seemed to keep the USB key locked so umount was impossible until after killing it.
+
+What version of git-annex are you using? On what operating system?
+4.20130405
+Linux
+
+Please provide any additional information below.
+
+
+> Reproduced the core bug, which is that the assistant saw symlink standin
+> files as new files, and annexed them. Now it doesn't, and I have
+> it running on FAT with no trouble; can even rename symlink standin files
+> and it commits symlink changes. Calling this [[done]]. --[[Joey]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk5cj-itfFHq_yhJHdzk3QOPp-PNW_MjPU"
+ nickname="Michael"
+ subject="+1 Cygwin"
+ date="2012-05-23T19:30:21Z"
+ content="""
+Windows support is a must. In my experience, binary file means proprietary editor, which means Windows.
+
+Unfortunately, there's not much overlap between people who use graphical editors in Windows all day vs. people who are willing to tolerate Cygwin's setup.exe, compile a Haskell program, learn git and git-annex's 90-odd subcommands, and use a mintty terminal to manage their repository, especially now that there's a sexy GitHub app for Windows.
+
+That aside, I think Windows-based content producers are still *the* audience for git-annex. First Windows support, then a GUI, then the world.
+"""]]

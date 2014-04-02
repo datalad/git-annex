@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 1"
+ date="2013-08-23T03:06:00Z"
+ content="""
+Wait, I think this comes from a backend switch.  I changed my .gitattributes file at one point to read:
+
+* annex.backend=SHA512E annex.numcopies=2
+
+I thought this would just affect new files, not existing annexed content.  Could this do it?
+"""]]

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 11"
+ date="2011-04-02T17:53:58Z"
+ content="""
+I have pushed out a preliminary fix. The old mixed-case directories will be left where they are, and still read from by git-annex. New data will be written to new, lower-case directories. I think that once git stops seeing changes being made
+to mixed-case, colliding directories, the bugs you ran into won't manifest any more.
+
+You will need to find a way to get your git repository out of the state where it complains about uncommitted files (and won't let you commit them). I have not found a reliable way to do that; git reset --hard worked in one case but not in another. May need to clone a fresh git repository.
+
+Let me know how it works out.
+"""]]

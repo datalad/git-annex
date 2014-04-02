@@ -1,0 +1,11 @@
+<div .span9 .hero-unit>
+  <h2>
+    Pair request received from #{name}
+  <p>
+    Pairing with #{name} will combine your two git annex #
+    repositories into one, allowing you to share files.
+  <p>
+    <a .btn .btn-primary .btn-large href="@{FinishXMPPPairFriendR pairkey}">
+      Accept pair request
+    <a .btn .btn-large href="@{DashboardR}">
+      No thanks

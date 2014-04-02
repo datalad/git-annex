@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://fraggod.pip.verisignlabs.com.pip.verisignlabs.com/"
+ subject="Bisect it is, then"
+ date="2011-04-03T04:45:49Z"
+ content="""
+Hm, if path's ok, guess there's no way around git-bisect indeed. Wonder if there's some kind of ccache for haskell...
+
+OS is linux, amd64 on \"host1\" and i386 on \"host2\" where git-annex-shell is crashing.
+I'll try to come up with a commit, thanks for clarifications.
+"""]]

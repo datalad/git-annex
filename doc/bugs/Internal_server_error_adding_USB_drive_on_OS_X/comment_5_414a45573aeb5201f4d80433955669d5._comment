@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="arafel"
+ ip="94.174.218.177"
+ subject="comment 5"
+ date="2013-01-14T23:22:19Z"
+ content="""
+Hm. After removing the directory, I can't get the problem to happen. I've tried both running the webapp from the CLI, and the git-annex app from Spotlight, and it works.
+
+A thought - does annex check for the existence of .git in the target folder, or does it just assume (if the folder exists) that it's been set up with git? That's the only thing I can think of. From this experience it seems that would be a worthwhile check if it doesn't already do it.
+
+Other than that we may just have to close the bug as unreproducible. I'm not sure what happened there; I'm not aware of doing anything differently the other times. Apologies for wasting your time!
+"""]]

@@ -1,0 +1,519 @@
+### Please describe the problem.
+A USB drive could not be synced, whether as a client or transfer repository. The misbehaving part appears to be at this point in the logs:
+
+error: Ref refs/heads/synced/git-annex is at ff94266684335f9b152282fe620ef086e067afba but expected 0000000000000000000000000000000000000000
+
+"git annex get" also fails as shown in the (full) log message pasted below.
+
+### What steps will reproduce the problem?
+Not sure. Re-inserting the same drive gives the same problem. As the very first time using git annex (and not knowing git that well too), I need guidance in narrowing down this problem. If this bug has been fixed in the mean time, that is also fine.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 4.20131106~bpo70+1
+build flags: Assistant Webapp Pairing Testsuite S3 Inotify DBus XMPP Feeds Quvi TDFA
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+remote types: git gcrypt S3 bup directory rsync web glacier hook
+local repository version: 3
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+
+
+apg-get installed from Debian wheezy backports. uname -a gives:
+
+Linux im1 3.2.0-4-686-pae #1 SMP Debian 3.2.51-1 i686 GNU/Linux
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+[2014-01-05 21:01:40 CST] main: starting assistant version 4.20131106~bpo70+1
+[2014-01-05 21:01:40 CST] Cronner: You should enable consistency checking to protect your data. 
+(Recording state in git...)
+(scanning...) [2014-01-05 21:01:40 CST] Watcher: Performing startup scan
+(started...) [2014-01-05 21:03:56 CST] Committer: Adding README.txt cassandra-env.sh cassandra..roperties cassandra..roperties cassandra.yaml
+
+add conf/README.txt (checksum...) ok
+add conf/README.txt (checksum...) ok
+add conf/cassandra-env.sh (checksum...) ok
+add conf/cassandra-env.sh (checksum...) ok
+add conf/cassandra-rackdc.properties (checksum...) ok
+add conf/cassandra-rackdc.properties (checksum...) ok
+add conf/cassandra-topology.properties (checksum...) ok
+add conf/cassandra-topology.properties (checksum...) ok
+add conf/cassandra.yaml (checksum...) ok
+add conf/cassandra.yaml (checksum...) [2014-01-05 21:03:57 CST] Committer: Adding commitlog..roperties cqlshrc.sample log4j-ser..roperties log4j-too..roperties
+ok
+add conf/commitlog_archiving.properties (checksum...) ok
+add conf/commitlog_archiving.properties (checksum...) ok
+add conf/cqlshrc.sample (checksum...) ok
+add conf/cqlshrc.sample (checksum...) ok
+add conf/log4j-server.properties (checksum...) ok
+add conf/log4j-server.properties (checksum...) ok
+add conf/log4j-tools.properties (checksum...) ok
+add conf/log4j-tools.properties (checksum...) [2014-01-05 21:03:58 CST] Committer: Committing changes to git
+[2014-01-05 21:09:46 CST] Committer: Committing changes to git
+ok
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+Launching web browser on file:///home/tyc20/Desktop/annex/.git/annex/webapp.html
+[2014-01-05 21:11:46 CST] main: starting assistant version 4.20131106~bpo70+1
+[2014-01-05 21:11:46 CST] Cronner: You should enable consistency checking to protect your data. 
+(scanning...) [2014-01-05 21:11:46 CST] Watcher: Performing startup scan
+(started...) 
+(scanning...) [2014-01-05 21:13:17 CST] Watcher: Performing startup scan
+[2014-01-05 21:13:17 CST] Committer: Committing changes to git
+(Recording state in git...)
+(started...) [2014-01-05 21:13:18 CST] Committer: Committing changes to git
+[2014-01-05 21:16:19 CST] Committer: Adding cassandra.thrift
+
+(Recording state in git...)
+add conf/cassandra.thrift (checksum...) [2014-01-05 21:16:19 CST] Committer: Committing changes to git
+[2014-01-05 21:16:20 CST] Committer: Adding cassandra.thrift
+ok
+(Recording state in git...)
+(Recording state in git...)
+add conf/cassandra.thrift (checksum...) [2014-01-05 21:16:20 CST] Committer: Committing changes to git
+[2014-01-05 21:16:29 CST] Committer: Committing changes to git
+[2014-01-05 21:16:40 CST] Committer: Committing changes to git
+[2014-01-05 21:17:56 CST] Committer: Adding new-name.properties
+[2014-01-05 21:17:56 CST] Committer: Committing changes to git
+ok
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+ok
+(Recording state in git...)
+(Recording state in git...)
+
+  conf/Smalltalk-80 The language and its implementation (Bluebook).pdf still has writers, not adding
+
+  conf/Smalltalk-80 The language and its implementation (Bluebook).pdf still has writers, not adding
+[2014-01-05 21:27:34 CST] Committer: Committing changes to git
+[2014-01-05 21:28:09 CST] Committer: Adding The Essen..tions.pdf
+(Recording state in git...)
+(Recording state in git...)
+add conf/The Essence of Compiling with Continuations.pdf (checksum...) ok
+add conf/The Essence of Compiling with Continuations.pdf (checksum...) [2014-01-05 21:28:09 CST] Committer: Committing changes to git
+[2014-01-05 21:28:49 CST] Committer: Committing changes to git
+gpg: new configuration file \`/home/tyc20/.gnupg/gpg.conf\' created
+gpg: WARNING: options in \`/home/tyc20/.gnupg/gpg.conf\' are not yet active during this run
+ok
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+
+  Detected a crippled filesystem.
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+[2014-01-05 21:35:09 CST] main: Syncing with ADATAUFD 
+warning: no common commits
+From /media/A-DATA UFD/annex
+ * [new branch]      git-annex  -> ADATAUFD/git-annex
+[2014-01-05 21:35:09 CST] Pusher: Syncing with ADATAUFD 
+Already up-to-date.
+error: Ref refs/heads/synced/git-annex is at ff94266684335f9b152282fe620ef086e067afba but expected 0000000000000000000000000000000000000000
+error: Ref refs/heads/synced/master is at 745c01118e8684b4826f2fb53368faf0568fcafc but expected 0000000000000000000000000000000000000000
+remote: error: failed to lock refs/heads/synced/git-annex        
+To /media/A-DATA UFD/annex
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+remote: error: failed to lock refs/heads/synced/master        
+To /media/A-DATA UFD/annex
+ ! [remote rejected] git-annex -> synced/git-annex (failed to lock)
+ ! [remote rejected] master -> synced/master (failed to lock)
+error: failed to push some refs to '/media/A-DATA UFD/annex'
+Already up-to-date.
+Everything up-to-date
+
+cassandra-rackdc.properties
+
+        1199 100%    0.00kB/s    0:00:00  
+        1199 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 1290 bytes  received 31 bytes  2642.00 bytes/sec
+total size is 1199  speedup is 0.91
+[2014-01-05 21:35:13 CST] Transferrer: Uploaded cassandra..roperties
+[2014-01-05 21:35:13 CST] Pusher: Syncing with ADATAUFD 
+
+cassandra-topology.properties
+
+        1358 100%    0.00kB/s    0:00:00  
+        1358 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 1451 bytes  received 31 bytes  2964.00 bytes/sec
+total size is 1358  speedup is 0.92
+[2014-01-05 21:35:13 CST] Transferrer: Uploaded cassandra..roperties
+
+cassandra.thrift
+
+       32768  93%    0.00kB/s    0:00:00  
+       35216 100%    2.33MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 35300 bytes  received 31 bytes  70662.00 bytes/sec
+total size is 35216  speedup is 1.00
+[2014-01-05 21:35:14 CST] Transferrer: Uploaded cassandra.thrift
+
+commitlog_archiving.properties
+
+        2328 100%    0.00kB/s    0:00:00  
+        2328 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 2422 bytes  received 31 bytes  4906.00 bytes/sec
+total size is 2328  speedup is 0.95
+[2014-01-05 21:35:15 CST] Transferrer: Uploaded commitlog..roperties
+
+cqlshrc.sample
+
+        1324 100%    0.00kB/s    0:00:00  
+        1324 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 1402 bytes  received 31 bytes  2866.00 bytes/sec
+total size is 1324  speedup is 0.92
+[2014-01-05 21:35:15 CST] Transferrer: Uploaded cqlshrc.sample
+
+new-name.properties
+
+        1850 100%    0.00kB/s    0:00:00  
+        1850 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 1933 bytes  received 31 bytes  3928.00 bytes/sec
+total size is 1850  speedup is 0.94
+[2014-01-05 21:35:16 CST] Transferrer: Uploaded new-name.properties
+To /media/A-DATA UFD/annex
+   ff94266..d2dcc21  git-annex -> synced/git-annex
+[2014-01-05 21:35:19 CST] Pusher: Syncing with ADATAUFD 
+To /media/A-DATA UFD/annex
+   d2dcc21..c9f93f8  git-annex -> synced/git-annex
+[2014-01-05 21:42:39 CST] Committer: Adding Smalltalk..book).pdf
+(Recording state in git...)
+(merging ADATAUFD/git-annex into git-annex...)
+(Recording state in git...)
+
+
+(Recording state in git...)
+(Recording state in git...)
+add Smalltalk-80 The language and its implementation (Bluebook).pdf (checksum...) [2014-01-05 21:42:40 CST] Committer: Committing changes to git
+[2014-01-05 21:42:40 CST] Pusher: Syncing with ADATAUFD 
+
+Smalltalk-80 The language and its implementation (Bluebook).pdf
+
+       32768   0%    0.00kB/s    0:00:00  Already up-to-date.
+
+     8847360  26%    8.39MB/s    0:00:02  
+    21037056  62%   10.01MB/s    0:00:01  To /media/A-DATA UFD/annex
+   c9f93f8..1f1bfe9  git-annex -> synced/git-annex
+   745c011..6c6149b  master -> synced/master
+Already up-to-date.
+
+    31129600  92%    9.88MB/s    0:00:00  
+    33558574 100%    9.85MB/s    0:00:03 (xfer#1, to-check=0/1)
+[2014-01-05 21:42:45 CST] Pusher: Syncing with ADATAUFD 
+Everything up-to-date
+
+sent 33562798 bytes  received 31 bytes  3196459.90 bytes/sec
+total size is 33558574  speedup is 1.00
+[2014-01-05 21:42:51 CST] Transferrer: Uploaded Smalltalk..book).pdf
+[2014-01-05 21:42:51 CST] Pusher: Syncing with ADATAUFD 
+To /media/A-DATA UFD/annex
+   1f1bfe9..07ac8cf  git-annex -> synced/git-annex
+[2014-01-05 21:46:18 CST] main: Syncing with annex2 
+warning: no common commits
+From /home/tyc20/Desktop/annex2
+ * [new branch]      git-annex  -> annex2/git-annex
+ * [new branch]      master     -> annex2/master
+Already up-to-date!
+Merge made by the 'recursive' strategy.
+[2014-01-05 21:46:19 CST] Pusher: Syncing with annex2, ADATAUFD 
+Already up-to-date.
+To /home/tyc20/Desktop/annex2
+ * [new branch]      git-annex -> synced/git-annex
+ * [new branch]      master -> synced/master
+error: Ref refs/heads/synced/git-annex is at cf8e5160f57d8279770613851ee75fb6b7c1d381 but expected 0000000000000000000000000000000000000000
+remote: error: failed to lock refs/heads/synced/git-annex        
+error: Ref refs/heads/synced/master is at 8de8929c1e6712613f9e81faba88c2e464c809a7 but expected 0000000000000000000000000000000000000000
+remote: error: failed to lock refs/heads/synced/master        
+To /home/tyc20/Desktop/annex2
+ ! [remote rejected] git-annex -> synced/git-annex (failed to lock)
+ ! [remote rejected] master -> synced/master (failed to lock)
+error: failed to push some refs to '/home/tyc20/Desktop/annex2'
+Already up-to-date.
+[2014-01-05 21:46:20 CST] Transferrer: Uploaded Smalltalk..book).pdf
+ok
+(Recording state in git...)
+(Recording state in git...)
+
+
+(Recording state in git...)
+(Recording state in git...)
+(merging annex2/git-annex into git-annex...)
+(Recording state in git...)
+
+
+
+drop ADATAUFD Smalltalk-80 The language and its implementation (Bluebook).pdf [2014-01-05 21:46:20 CST] Transferrer: Uploaded cassandra..roperties
+ok
+drop ADATAUFD conf/cassandra-rackdc.properties [2014-01-05 21:46:21 CST] Transferrer: Uploaded cassandra..roperties
+ok
+drop ADATAUFD conf/cassandra-topology.properties To /media/A-DATA UFD/annex
+   07ac8cf..cf8e516  git-annex -> synced/git-annex
+   6c6149b..8de8929  master -> synced/master
+From /home/tyc20/Desktop/annex2
+   0f740b9..47ed905  git-annex  -> annex2/git-annex
+[2014-01-05 21:46:23 CST] Transferrer: Uploaded cassandra.thrift
+Already up-to-date.
+ok
+
+(merging annex2/git-annex into git-annex...)
+(Recording state in git...)
+drop ADATAUFD conf/cassandra.thrift To /home/tyc20/Desktop/annex2
+   cf8e516..859a06b  git-annex -> synced/git-annex
+[2014-01-05 21:46:25 CST] Transferrer: Uploaded commitlog..roperties
+ok
+drop ADATAUFD conf/commitlog_archiving.properties [2014-01-05 21:46:25 CST] Transferrer: Uploaded cqlshrc.sample
+ok
+drop ADATAUFD conf/cqlshrc.sample [2014-01-05 21:46:26 CST] Transferrer: Uploaded new-name.properties
+ok
+drop ADATAUFD conf/new-name.properties [2014-01-05 21:46:27 CST] Pusher: Syncing with annex2, ADATAUFD 
+To /home/tyc20/Desktop/annex2
+   859a06b..da020f9  git-annex -> synced/git-annex
+To /media/A-DATA UFD/annex
+   cf8e516..da020f9  git-annex -> synced/git-annex
+Updating 8de8929..2bfeaab
+Fast-forward
+ conf/{new-name.properties => new-name2.properties} | 0
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+ rename conf/{new-name.properties => new-name2.properties} (100%)
+[2014-01-05 21:47:23 CST] Committer: Committing changes to git
+[2014-01-05 21:47:23 CST] Pusher: Syncing with annex2, ADATAUFD 
+To /home/tyc20/Desktop/annex2
+   da020f9..1649bb6  git-annex -> synced/git-annex
+Already up-to-date.
+[2014-01-05 21:47:24 CST] Committer: Committing changes to git
+To /media/A-DATA UFD/annex
+   da020f9..1649bb6  git-annex -> synced/git-annex
+   8de8929..2bfeaab  master -> synced/master
+Already up-to-date.
+[2014-01-05 21:47:37 CST] Pusher: Syncing with annex2, ADATAUFD 
+Everything up-to-date
+Everything up-to-date
+
+Smalltalk-80 The language and its implementation (Bluebook).pdf
+
+       32768   0%    0.00kB/s    0:00:00  
+    10354688  30%    9.84MB/s    0:00:02  
+    20709376  61%    9.86MB/s    0:00:01  
+    29851648  88%    9.48MB/s    0:00:00  
+    33558574 100%    9.33MB/s    0:00:03 (xfer#1, to-check=0/1)
+
+sent 33562798 bytes  received 31 bytes  3532929.37 bytes/sec
+total size is 33558574  speedup is 1.00
+[2014-01-05 21:52:09 CST] Transferrer: Uploaded Smalltalk..book).pdf
+[2014-01-05 21:52:09 CST] Pusher: Syncing with annex2, ADATAUFD 
+
+cassandra-rackdc.properties
+
+        1199 100%    0.00kB/s    0:00:00  
+        1199 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 1290 bytes  received 31 bytes  2642.00 bytes/sec
+total size is 1199  speedup is 0.91
+To /home/tyc20/Desktop/annex2
+   1649bb6..7329695  git-annex -> synced/git-annex
+[2014-01-05 21:52:13 CST] Transferrer: Uploaded cassandra..roperties
+
+cassandra-topology.properties
+
+        1358 100%    0.00kB/s    0:00:00  
+        1358 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 1451 bytes  received 31 bytes  2964.00 bytes/sec
+total size is 1358  speedup is 0.92
+[2014-01-05 21:52:13 CST] Transferrer: Uploaded cassandra..roperties
+
+cassandra.thrift
+
+       32768  93%    0.00kB/s    0:00:00  
+       35216 100%    2.33MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 35300 bytes  received 31 bytes  23554.00 bytes/sec
+total size is 35216  speedup is 1.00
+[2014-01-05 21:52:14 CST] Transferrer: Uploaded cassandra.thrift
+
+commitlog_archiving.properties
+
+        2328 100%    0.00kB/s    0:00:00  
+        2328 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 2422 bytes  received 31 bytes  4906.00 bytes/sec
+total size is 2328  speedup is 0.95
+[2014-01-05 21:52:15 CST] Transferrer: Uploaded commitlog..roperties
+
+cqlshrc.sample
+
+        1324 100%    0.00kB/s    0:00:00  
+        1324 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 1402 bytes  received 31 bytes  2866.00 bytes/sec
+total size is 1324  speedup is 0.92
+[2014-01-05 21:52:15 CST] Transferrer: Uploaded cqlshrc.sample
+
+new-name2.properties
+
+        1850 100%    0.00kB/s    0:00:00  
+        1850 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 1934 bytes  received 31 bytes  3930.00 bytes/sec
+total size is 1850  speedup is 0.94
+[2014-01-05 21:52:17 CST] Transferrer: Uploaded new-name2..roperties
+To /media/A-DATA UFD/annex
+   1649bb6..7329695  git-annex -> synced/git-annex
+[2014-01-05 21:52:21 CST] Pusher: Syncing with annex2, ADATAUFD 
+To /home/tyc20/Desktop/annex2
+   7329695..a7286da  git-annex -> synced/git-annex
+To /media/A-DATA UFD/annex
+   7329695..a7286da  git-annex -> synced/git-annex
+Updating 2bfeaab..40ceb79
+Fast-forward
+ conf/commitlog_archiving.properties | 1 -
+ 1 file changed, 1 deletion(-)
+ delete mode 120000 conf/commitlog_archiving.properties
+[2014-01-05 21:55:05 CST] Pusher: Syncing with annex2 
+[2014-01-05 21:55:05 CST] Committer: Committing changes to git
+To /home/tyc20/Desktop/annex2
+   a7286da..688d27e  git-annex -> synced/git-annex
+Already up-to-date.
+[2014-01-05 21:55:07 CST] Pusher: Syncing with annex2 
+Everything up-to-date
+[2014-01-05 21:55:58 CST] MountWatcher: You should enable consistency checking to protect your data in ADATAUFD. 
+[2014-01-05 21:55:58 CST] MountWatcher: Syncing with ADATAUFD 
+To /media/A-DATA UFD/annex
+   a7286da..688d27e  git-annex -> synced/git-annex
+   2bfeaab..40ceb79  master -> synced/master
+Already up-to-date.
+
+
+
+
+In addition, this is what the drive looks like from the console.
+
+tyc20@im1:/media/A-DATA UFD/annex$ git annex get
+(merging synced/git-annex into git-annex...)
+(Recording state in git...)
+get SHA256E-s9400--8dce230c548a40fe9722ef1cf9444a54ae726a7420391a8eae937c8beaff6d96.sh (not available) 
+  No other repository is known to contain the file.
+failed
+get SHA256E-s1228--7e4190c2da12aa55c0f2598688d38723716bc11809ade1e594eae000ca40742c (not available) 
+  No other repository is known to contain the file.
+failed
+get SHA256E-s298--d60cff88544f63e6da177d98ef18a593268df6d4fcfd1247443ce3656cb185ba.txt (not available) 
+  No other repository is known to contain the file.
+failed
+get SHA256E-s26331--69bbae153239fa57b752bc931345275f36b608b26a3e9542ab4fabf21e05e57c.pdf (not available) 
+  No other repository is known to contain the file.
+failed
+get SHA256E-s31688--fea8690cf82baea3365ff692108742fdec308638bf6d66a8765bdc582e6ebb2c.yaml (not available) 
+  No other repository is known to contain the file.
+failed
+git-annex: get: 5 failed
+tyc20@im1:/media/A-DATA UFD/annex$ ls
+annex  branches  config  description  HEAD  hooks  info  objects  refs
+tyc20@im1:/media/A-DATA UFD/annex$ git annex sync
+commit  
+ok
+pull im1 
+From /home/tyc20/Desktop/annex
+ * [new branch]      git-annex  -> im1/git-annex
+ * [new branch]      master     -> im1/master
+ * [new branch]      synced/git-annex -> im1/synced/git-annex
+ * [new branch]      synced/master -> im1/synced/master
+ok
+push im1 
+Counting objects: 73, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (17/17), done.
+Writing objects: 100% (24/24), 1.54 KiB | 0 bytes/s, done.
+Total 24 (delta 16), reused 0 (delta 0)
+To /home/tyc20/Desktop/annex
+   688d27e..2819176  git-annex -> synced/git-annex
+ok
+tyc20@im1:/media/A-DATA UFD/annex$ git annex sync
+commit  
+ok
+pull im1 
+remote: Counting objects: 10, done.
+remote: Compressing objects: 100% (4/4), done.
+remote: Total 5 (delta 3), reused 0 (delta 0)
+Unpacking objects: 100% (5/5), done.
+From /home/tyc20/Desktop/annex
+   688d27e..c28d1a4  git-annex  -> im1/git-annex
+   2819176..c28d1a4  synced/git-annex -> im1/synced/git-annex
+ok
+(merging im1/git-annex into git-annex...)
+tyc20@im1:/media/A-DATA UFD/annex$ git annex get
+get SHA256E-s9400--8dce230c548a40fe9722ef1cf9444a54ae726a7420391a8eae937c8beaff6d96.sh (not available) 
+  No other repository is known to contain the file.
+failed
+get SHA256E-s1228--7e4190c2da12aa55c0f2598688d38723716bc11809ade1e594eae000ca40742c (not available) 
+  No other repository is known to contain the file.
+failed
+get SHA256E-s298--d60cff88544f63e6da177d98ef18a593268df6d4fcfd1247443ce3656cb185ba.txt (not available) 
+  No other repository is known to contain the file.
+failed
+get SHA256E-s26331--69bbae153239fa57b752bc931345275f36b608b26a3e9542ab4fabf21e05e57c.pdf (not available) 
+  No other repository is known to contain the file.
+failed
+get SHA256E-s31688--fea8690cf82baea3365ff692108742fdec308638bf6d66a8765bdc582e6ebb2c.yaml (not available) 
+  No other repository is known to contain the file.
+failed
+git-annex: get: 5 failed
+tyc20@im1:/media/A-DATA UFD/annex$ mount -l
+sysfs on /sys type sysfs (rw,nosuid,nodev,noexec,relatime)
+proc on /proc type proc (rw,nosuid,nodev,noexec,relatime)
+udev on /dev type devtmpfs (rw,relatime,size=10240k,nr_inodes=128012,mode=755)
+devpts on /dev/pts type devpts (rw,nosuid,noexec,relatime,gid=5,mode=620,ptmxmode=000)
+tmpfs on /run type tmpfs (rw,nosuid,noexec,relatime,size=103412k,mode=755)
+/dev/disk/by-uuid/25f084fb-c946-4c0d-bf0b-65ae4b68a7c6 on / type ext3 (rw,relatime,errors=remount-ro,barrier=1,data=ordered)
+tmpfs on /run/lock type tmpfs (rw,nosuid,nodev,noexec,relatime,size=5120k)
+tmpfs on /run/shm type tmpfs (rw,nosuid,nodev,noexec,relatime,size=285260k)
+none on /mnt/share type vboxsf (rw,nodev,relatime)
+rpc_pipefs on /var/lib/nfs/rpc_pipefs type rpc_pipefs (rw,relatime)
+/dev/sr0 on /media/VBOXADDITIONS_4.3.6_91406 type iso9660 (ro,nosuid,nodev,relatime,uid=1000,gid=1000,iocharset=utf8,mode=0400,dmode=0500,uhelper=udisks) [VBOXADDITIONS_4.3.6_91406]
+/dev/sdb1 on /media/A-DATA UFD type vfat (rw,nosuid,nodev,relatime,uid=1000,gid=1000,fmask=0022,dmask=0077,codepage=cp437,iocharset=utf8,shortname=mixed,showexec,utf8,flush,errors=remount-ro,uhelper=udisks) [A-DATA UFD]
+
+
+tyc20@im1:/media/A-DATA UFD/annex$ ls -la ~/Desktop/annex/conf/
+total 60
+drwxr-xr-x 2 tyc20 tyc20  4096 Jan  5 21:55 .
+drwxr-xr-x 4 tyc20 tyc20  4096 Jan  5 21:42 ..
+-rw-r--r-- 1 tyc20 tyc20  1199 Jul 28 09:14 cassandra-rackdc.properties
+-rw-r--r-- 1 tyc20 tyc20 35216 Jul 28 09:14 cassandra.thrift
+-rw-r--r-- 1 tyc20 tyc20  1358 Jul 28 09:14 cassandra-topology.properties
+-rw-r--r-- 1 tyc20 tyc20  1324 Jul 28 09:14 cqlshrc.sample
+-rw-r--r-- 1 tyc20 tyc20  1850 Jul 28 09:14 new-name2.properties
+tyc20@im1:/media/A-DATA UFD/annex$ ls -la ~/Desktop/annex/
+total 32828
+drwxr-xr-x 4 tyc20 tyc20     4096 Jan  5 21:42 .
+drwxr-xr-x 4 tyc20 tyc20     4096 Jan  5 21:45 ..
+drwxr-xr-x 2 tyc20 tyc20     4096 Jan  5 21:55 conf
+drwxr-xr-x 9 tyc20 tyc20     4096 Jan  5 22:01 .git
+-rwxrwxrwx 1 tyc20 tyc20 33558574 Aug 27  2007 Smalltalk-80 The language and its implementation (Bluebook).pdf
+tyc20@im1:/media/A-DATA UFD/annex$ 
+
+# End of transcript or log.
+"""]]
+
+> [[done]]; seems to be some badly set up repository. Happy to help with
+> fixing it, if you reply.. --[[Joey]]

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl-xMSPoRHcT5d2nAc1K8pWVi-AexKkYik"
+ nickname="Ralf"
+ subject="Mac OS X Maverick - symbol not found"
+ date="2013-10-27T21:02:45Z"
+ content="""
+Just to mention that the beta dated 24 Oct 2013 and Joey's autobuild of 27 Oct both don't start with the following error message for git-annex, git-annex-webapp under Mac OS X 10.9 Maverick with latest XCode installed: 
+
+    dyld: Symbol not found: _objc_debug_taggedpointer_mask
+      Referenced from: /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+      Expected in: /Applications/git-annex.app/Contents/MacOS/bundle/I
+     in /System/Library/Frameworks/CoreFoundation.framework/Versions/A/CoreFoundation
+
+    Trace/BPT trap: 5
+
+Many thanks. Can I help?
+"""]]

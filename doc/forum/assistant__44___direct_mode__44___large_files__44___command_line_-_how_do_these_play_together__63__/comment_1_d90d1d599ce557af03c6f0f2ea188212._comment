@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.246"
+ subject="comment 1"
+ date="2013-11-09T17:36:01Z"
+ content="""
+Files in direct mode are stored in the git annex the same way as when using indirect mode. But you're perhaps right to be wary of using direct mode, it's been quite easy to mess up while using it at the command line until very recently when the [[todo/direct_mode_guard]] was implemented.
+
+You can switch repositories created using the assistant from direct to indirect mode if you like. The assistant works in either mode.
+"""]]

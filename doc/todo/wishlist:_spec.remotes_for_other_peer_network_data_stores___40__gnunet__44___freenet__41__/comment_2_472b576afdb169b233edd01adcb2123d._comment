@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://lj.rossia.org/users/imz/"
+ ip="79.165.56.162"
+ subject="comment 2"
+ date="2012-09-25T23:29:49Z"
+ content="""
+I see. But then, as with Tahoe-LAFS, they also have their own formats for checksums, keys, which could be re-used in git-annex, and that needs special treatment.
+"""]]

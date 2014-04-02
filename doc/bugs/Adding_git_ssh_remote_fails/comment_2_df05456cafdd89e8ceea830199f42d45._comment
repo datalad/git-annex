@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Chris"
+ ip="89.14.216.1"
+ subject="Reason found"
+ date="2013-07-07T21:21:49Z"
+ content="""
+I found the reason for the behavior. On the server, for non-interactive login shells, the right path to git-annex was not set and an old version that was installed by the OS was used instead. I've put the \"export $PATH\" at the right position in .bashrc and now it works. Sorry for the noise.
+
+Best regards, Chris
+"""]]

@@ -1,0 +1,37 @@
+When having "git annex watch" running, unlocking files causes the watcher
+to immediately lock/commit them.
+
+----
+
+Possible approaches:
+
+* The watcher could detect unlocked files by checking if newly added files
+  are a typechange of a file already in git. But this would add git overhead
+  to every file add.
+* `git annex unlock` could add some type of flag file, which the assistant
+  could check. This would work fine, for users who want to use `git annex
+  unlock` with the assistant. That's probably not simple enough for most
+  users, though.
+* There could be a UI in the assistant to pick a file and unlock it.
+  The assistant would have its own list of files it knows are unlocked.
+  But I'm trying to avoid mandatory UI to use the assistant.
+* Perhaps instead, have a directory, like "edit". The assistant could notice
+  when files move into this special directory, and automatically unlock them.
+  Then when they're moved out, automatically commit them.
+* Alternatively, files that are moved out of the repository entirely could be
+  automatically unlocked, and then when they're moved back in, it would
+  automatically do the right thing. This may be worth implementing in
+  combination with the "edit" directory, as different use cases would work
+  better with one or the other. However, I don't currently get inotify
+  events when files are moved out of the repository (well, I do, but it
+  just says "file moved", with no forwarding address, so I don't know 
+  how to find the file to unlock it.
+
+[[!meta title="assistant: watcher_commits_unlocked_files"]]
+
+> [[done]]; I just tested and somehow this no longer happens;
+> the watcher/assistant leaves the unlocked file alone, and then
+> as soon as it's modified re-adds it.
+> 
+> Also, of course, there is direct mode, which avoids needing to unlock...
+> --[[Joey]]

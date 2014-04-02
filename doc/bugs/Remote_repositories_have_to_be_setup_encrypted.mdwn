@@ -1,0 +1,27 @@
+What steps will reproduce the problem?
+
+Create a new remote repository in the webapp. Get to the final phase of the setup where it asks you if you want to encrypt it, yet no other option is given to continue.
+
+What is the expected output? What do you see instead?
+
+At least two options:
+
+1. Use an encrypted rsync repository on the server (the existing one)
+2. Use an unencrypted rsync repository on the server
+
+What version of git-annex are you using? On what operating system?
+
+    $ ./git-annex version
+    git-annex version: 3.20130102
+
+    $ uname -a
+    Linux wintermute 3.2.0-35-generic #55-Ubuntu SMP Wed Dec 5 17:45:18 UTC 2012 i686 i686 i386 GNU/Linux
+
+    $ lsb_release -a
+    Distributor ID:	Ubuntu
+    Description:	Ubuntu 12.04.1 LTS
+    Release:	12.04
+    Codename:	precise
+
+[[!meta title="webapp does not allow disabling encryption on rsync special remotes"]]
+[[!tag /design/assistant]]

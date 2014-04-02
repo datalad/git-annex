@@ -1,0 +1,3 @@
+I am trying to share files between my PC at home at that at work using the walkthrough here: http://git-annex.branchable.com/assistant/remote_sharing_walkthrough/. However, I don't have the option on my machine to "Share with other devices". Any ideas why this would be missing? I am using Ubuntu 13.04 if that helps. 
+
+Update: it now works after a software update, I guess I just had an older version of git-annex. Now, I have version 4.20130723. 

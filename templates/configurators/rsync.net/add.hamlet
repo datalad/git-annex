@@ -1,0 +1,40 @@
+<div .span9 .hero-unit>
+  <h2>
+    Adding a Rsync.net repository
+  <p>
+    <a href="http://rsync.net/">
+      Rsync.net #
+    is a well-respected cloud storage provider. Its rsync repositories are #
+    supported very well by git-annex. #
+
+  <p>
+    They have committed to support git-annex and offer a special
+    discounted rate for git-annex users.
+
+    <a href="http://www.rsync.net/products/git-annex-pricing.html">
+      pricing details
+  <p>
+    $case status
+      $of UnusableServer msg
+        <div .alert .alert-error>
+          <i .icon-warning-sign></i> #{msg}
+      $of _
+        <div>
+          Your data will be encrypted before it is sent to Rsync.net.
+  <p>
+    <form method="post" .form-horizontal enctype=#{enctype}>
+      <fieldset>
+        ^{form}
+        ^{webAppFormAuthToken}
+        <div .form-actions>
+          <button .btn .btn-primary type=submit onclick="$('#setupmodal').modal('show');">
+            Use this rsync.net repository
+<div .modal .fade #setupmodal>
+  <div .modal-header>
+    <h3>
+      Checking access to rsync.net ...
+  <div .modal-body>
+    <p>
+      This could take a minute.
+    <p>
+      You may be prompted for your rsync.net ssh password.

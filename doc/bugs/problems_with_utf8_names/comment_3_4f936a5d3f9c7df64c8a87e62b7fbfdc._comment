@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://www.joachim-breitner.de/"
+ nickname="nomeata"
+ subject="comment 3"
+ date="2011-12-24T12:51:43Z"
+ content="""
+An alternative that is available from ghc 7.4 on is a pure ByteString based unix API: http://thread.gmane.org/gmane.comp.lang.haskell.libraries/16556
+"""]]

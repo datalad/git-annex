@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmRFKwny4rArBaz-36xTcsJYqKIgdDaw5Q"
+ nickname="Andrew"
+ subject="comment 2"
+ date="2013-01-26T08:13:34Z"
+ content="""
+Oh! Good call. That worked, though I did have to sync and revert alternately a few times to get things resolved.  I still haven't figured out what exactly happened, though. In two separate instances, the commit message was \"git-annex automatic sync\"
+"""]]

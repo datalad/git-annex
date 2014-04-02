@@ -1,0 +1,35 @@
+Made a release today. Releasing has sure gotten easier with all the
+autobuilds to use!
+
+I am now using git-annex to share files with my mom. Here's how the webapp
+looks for our family's repository. Soon several of us will be using this
+repository.
+
+[[!img assistant/example.png]]
+
+We're using XMPP and rsync.net, so pretty standard setup much like
+shown in my last screencast.
+
+Real-world deployments help find bugs, and I found a few:
+
+* If you're running the webapp in `w3m` on a remote computer to set it up,
+  some forms are lacking submit buttons. This must be a issue with
+  Bootstrap, or HTML5, I guess. I switched to `lynx` and it offers a
+  way to submit forms that lack an explicit button.
+
+* Progress bars for downloads from encrypted rsync repos don't update
+  during the actual download, but only when gpg is decrypting the
+  downloaded file.
+
+* XMPP pushes sometimes fail still. Especially when your mom's computer
+  is saturating its limited outgoing network connection uploading hundreds of
+  photos. I have not yet determined if this is a packet loss/corruption issue,
+  or if the XMPP messages are getting out of order. My gut feeling is it's
+  the latter, in which can I can fix this pretty easily by adding sequence
+  numbers and some buffering for out of order packets. Or perhaps just
+  make it retry failed pushes when this happens.
+  
+  Anyway, I found it was useful to set up a regular git repository on a
+  server to suppliment the git pushes over XMPP. It's helpful to have
+  such a git repository anyway, so that clients can push to there when the
+  other client(s) are not online to be pushed to directly over XMPP.

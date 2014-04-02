@@ -1,0 +1,37 @@
+[[!comment format=mdwn
+ username="carlo"
+ ip="118.208.1.126"
+ subject="comment 1"
+ date="2013-07-06T22:52:18Z"
+ content="""
+I got the same error. Local repo has no name but in the logs I can see that it's trying to make a local connection:
+
+    [2013-07-07 08:29:51 EST] main: starting assistant version 4.20130627
+    [2013-07-07 08:29:51 EST] TransferScanner: Syncing with arkham.local_annex
+
+(snip)
+
+    07/Jul/2013:08:41:56 +1000 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.3:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:471:5)
+    ssh: Could not resolve hostname arkham.local: Name or service not known
+    ssh: Could not resolve hostname arkham.local: Name or service not known
+    fatal: The remote end hung up unexpectedly
+    git-annex: Unknown UUID
+    ssh: Could not resolve hostname arkham.local: Name or service not known
+    ssh: Could not resolve hostname arkham.local: Name or service not known
+    fatal: The remote end hung up unexpectedly
+    git-annex: Unknown UUID
+    ssh: Could not resolve hostname arkham.local: Name or service not known
+    ssh: Could not resolve hostname arkham.local: Name or service not known
+    fatal: The remote end hung up unexpectedly
+    git-annex: Unknown UUID
+    ssh: Could not resolve hostname arkham.local: Name or service not known
+    07/Jul/2013:08:42:32 +1000 [Error#yesod-core] Unknown UUID @(yesod-core-1.2.3:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:471:5)
+    ssh: Could not resolve hostname arkham.local: Name or service not known
+    fatal: The remote end hung up unexpectedly
+    git-annex: Unknown UUID
+    ssh: Could not resolve hostname arkham.local: Name or service not known
+
+When I turn on arkham (the other laptop) I see transfers start up:
+
+
+"""]]

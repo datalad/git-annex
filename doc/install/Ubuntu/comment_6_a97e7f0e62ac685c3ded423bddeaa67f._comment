@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmhGq_ii5HaDkp9nx2m9qIMe-xxI4HV5wo"
+ nickname="Jeff"
+ subject="comment 6"
+ date="2013-07-27T21:51:11Z"
+ content="""
+Ah, does it only have the webapp? I was able to boot the webapp and see messages, and it looked mostly the same, I assumed it was broken since no syncing was happening, but that would be due to the assistant not being there.
+
+I guess it's hard as a new user that goes straight for the easy/out-of-the box solution, via the assistant, after watching your video on it. I just assumed things were broken since I was seeing slightly different things. I didn't understand that the assistant was separate from the webapp (and was missing).
+
+Maybe mentioning the minimum required version on the assistant page to at least prompt users to check the version they're getting? I assumed following the link to the install guide, and installing the package for Ubuntu, would give me what I needed.
+
+
+"""]]

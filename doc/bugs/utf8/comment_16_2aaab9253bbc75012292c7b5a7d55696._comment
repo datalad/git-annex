@@ -1,0 +1,173 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRai_qFYPVvEgC6i1nlM1bh-C__jbhqS0"
+ nickname="Matthew"
+ subject="Not completely..."
+ date="2013-07-28T11:44:40Z"
+ content="""
+So done a bit of testing this morning...
+
+I upgraded the Git Annex on my phone and added a text file called \"mañnequin\" into my Git Annex. The assistant web app did not do anything and it did not appear on my desktop when I sync'd... So I went to my phone manually added it and synced. Which then did make it appear on my desktop when I did a sync.
+
+Phone Log:
+
+    Falling back to hardcoded app location; cannot find expected files in /data/app-lib
+    git annex webapp
+    u0_a84@android:/sdcard/git-annex.home $ git annex webapp
+    ^Z[1] + Stopped              git annex webapp
+    u0_a84@android:/sdcard/git-annex.home $ bg
+    [1] git annex webapp
+    u0_a84@android:/sdcard/git-annex.home $ cd ../annex/
+    u0_a84@android:/sdcard/annex $ git remote -v
+    markdown.lang.speechmarks.com_phoneannex        ssh://fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex/~/phone-annex/ (fetch)
+    markdown.lang.speechmarks.com_phoneannex        ssh://fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex/~/phone-annex/ (push)
+    u0_a84@android:/sdcard/annex $ git-annex version
+    git-annex version: 4.20130723-ged05a63
+    build flags: Assistant Webapp Testsuite S3 WebDAV Inotify XMPP DNS
+    local repository version: 4
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+    u0_a84@android:/sdcard/annex $ git annex copy . --to markdown.lang.speechmarks.com_phoneannex
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KGRK_(disc_1)_01_-_Barcelona_(New_Orchestrated_Version.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KH5G_(disc_1)_02_-_La_Japonaise_(New_Orchestrated_Vers.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KHD8_(disc_1)_03_-_The_Fallen_Priest_(New_Orchestrated.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KHNS_(disc_1)_04_-_Ensueo_(New_Orchestrated_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KHY2_(disc_1)_05_-_The_Golden_Boy_(New_Orchestrated_Ve.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KI9G_(disc_1)_06_-_Guide_Me_Home_(New_Orchestrated_Ver.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KIIW_(disc_1)_07_-_How_Can_I_Go_On_(New_Orchestrated_V.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KITG_(disc_1)_08_-_Exercises_In_Free_Love_(New_Orchest.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KJ22_(disc_1)_09_-_Overture_Piccante_(New_Orchestrated.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KJB8_(disc_1)_10_-_How_Can_I_Go_On_(New_Orchestrated_V.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KJMW_(disc_2)_01_-_Exercises_In_Free_Love_(1987_B-Side.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KJVI_(disc_2)_02_-_Barcelona_(Early_Version__Freddie's.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KK5I_(disc_2)_03_-_La_Japonaise_(Early_Version__Freddi.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KKHQ_(disc_2)_04_-_Rachmaninov's_Revenge_(The_Fallen_P.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KKSA_(disc_2)_05_-_Ensueo_(Monsterrat's_Live_Takes).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KL2U_(disc_2)_06_-_The_Golden_Boy_(Early_Version__Fred.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KLBQ_(disc_2)_07_-_Guide_Me_Home_(Alternative_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KLJI_(disc_2)_08_-_How_Can_I_Go_On_(Alternative_Versio.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KLUC_(disc_2)_09_-_How_Can_I_Go_On_(Alternative_Piano_.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KM3I_(disc_3)_01_-_Barcelona_(Orchestral_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KMBU_(disc_3)_02_-_La_Japonaise_(Orchestral_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KMM4_(disc_3)_03_-_The_Fallen_Priest_(Orchestral_Versi.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KMYW_(disc_3)_04_-_Ensueo_(Orchestral_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KNAK_(disc_3)_05_-_The_Golden_Boy_(Orchestral_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KNUA_(disc_3)_06_-_Guide_Me_Home_(Orchestral_Version).mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KOVI_(disc_3)_07_-_How_Can_I_Go_On_(Orchestral_Version.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KPP8_(disc_3)_08_-_Exercises_In_Free_Love_(Orchestral_.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    copy Freddie_Mercury/Barcelona_[+video]/B00921KQJ8_(disc_3)_09_-_Overture_Piccante_(Orchestral_Versi.mp3 (checking markdown.lang.speechmarks.com_phoneannex...) ok
+    u0_a84@android:/sdcard/annex $ ls
+    Freddie_Mercury
+    u0_a84@android:/sdcard/annex $ ls
+    ls     lsattr lsmod  lsof   lspci  lsusb
+    rcury/Barcelona_\[+video]/B00921K                                                                <
+    B00921KGRK_(disc_1)_01_-_Barcelona_(New_Orchestrated_Version.mp3
+    B00921KH5G_(disc_1)_02_-_La_Japonaise_(New_Orchestrated_Vers.mp3
+    B00921KHD8_(disc_1)_03_-_The_Fallen_Priest_(New_Orchestrated.mp3
+    B00921KHNS_(disc_1)_04_-_Ensueo_(New_Orchestrated_Version).mp3
+    B00921KHY2_(disc_1)_05_-_The_Golden_Boy_(New_Orchestrated_Ve.mp3
+    B00921KI9G_(disc_1)_06_-_Guide_Me_Home_(New_Orchestrated_Ver.mp3
+    B00921KIIW_(disc_1)_07_-_How_Can_I_Go_On_(New_Orchestrated_V.mp3
+    B00921KITG_(disc_1)_08_-_Exercises_In_Free_Love_(New_Orchest.mp3
+    B00921KJ22_(disc_1)_09_-_Overture_Piccante_(New_Orchestrated.mp3
+    B00921KJB8_(disc_1)_10_-_How_Can_I_Go_On_(New_Orchestrated_V.mp3
+    B00921KJMW_(disc_2)_01_-_Exercises_In_Free_Love_(1987_B-Side.mp3
+    B00921KJVI_(disc_2)_02_-_Barcelona_(Early_Version__Freddie's.mp3
+    B00921KK5I_(disc_2)_03_-_La_Japonaise_(Early_Version__Freddi.mp3
+    B00921KKHQ_(disc_2)_04_-_Rachmaninov's_Revenge_(The_Fallen_P.mp3
+    B00921KKSA_(disc_2)_05_-_Ensueo_(Monsterrat's_Live_Takes).mp3
+    B00921KL2U_(disc_2)_06_-_The_Golden_Boy_(Early_Version__Fred.mp3
+    B00921KLBQ_(disc_2)_07_-_Guide_Me_Home_(Alternative_Version).mp3
+    B00921KLJI_(disc_2)_08_-_How_Can_I_Go_On_(Alternative_Versio.mp3
+    B00921KLUC_(disc_2)_09_-_How_Can_I_Go_On_(Alternative_Piano_.mp3
+    B00921KM3I_(disc_3)_01_-_Barcelona_(Orchestral_Version).mp3
+    B00921KMBU_(disc_3)_02_-_La_Japonaise_(Orchestral_Version).mp3
+    B00921KMM4_(disc_3)_03_-_The_Fallen_Priest_(Orchestral_Versi.mp3
+    B00921KMYW_(disc_3)_04_-_Ensueo_(Orchestral_Version).mp3
+    B00921KNAK_(disc_3)_05_-_The_Golden_Boy_(Orchestral_Version).mp3
+    B00921KNUA_(disc_3)_06_-_Guide_Me_Home_(Orchestral_Version).mp3
+    B00921KOVI_(disc_3)_07_-_How_Can_I_Go_On_(Orchestral_Version.mp3
+    B00921KPP8_(disc_3)_08_-_Exercises_In_Free_Love_(Orchestral_.mp3
+    B00921KQJ8_(disc_3)_09_-_Overture_Piccante_(Orchestral_Versi.mp3
+    rcury/Barcelona_\[+video]/B00921K                                                                <
+    ls: Freddie_Mercury/Barcelona_[+video]/B00921K: No such file or directory
+    1|u0_a84@android:/sdcard/annex $
+    1|u0_a84@android:/sdcard/annex $
+    1|u0_a84@android:/sdcard/annex $
+    1|u0_a84@android:/sdcard/annex $
+    1|u0_a84@android:/sdcard/annex $
+    1|u0_a84@android:/sdcard/annex $ fg
+    git annex webapp
+    bg
+    ^Z[1] + Stopped              git annex webapp
+    u0_a84@android:/sdcard/annex $ bg
+    [1] git annex webapp
+    u0_a84@android:/sdcard/annex $ ls
+    Freddie_Mercury  ma??nequin
+    u0_a84@android:/sdcard/annex $ git annex add manequin
+    Freddie_Mercury/   manequin
+    u0_a84@android:/sdcard/annex $ git annex add manequin
+    add manequin (checksum...) ok
+    (Recording state in git...)
+    u0_a84@android:/sdcard/annex $ git annex sync
+    commit
+    ok
+    pull markdown.lang.speechmarks.com_phoneannex
+    remote: Counting objects: 12, done.
+    remote: Compressing objects: 100% (6/6), done.
+    remote: Total 8 (delta 4), reused 0 (delta 0)
+    Unpacking objects: 100% (8/8), done.
+    From ssh://git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex/~/phone-annex
+       c709e47..d2678a5  synced/git-annex -> markdown.lang.speechmarks.com_phoneannex/synced/git-annex
+    ok
+    (merging markdown.lang.speechmarks.com_phoneannex/synced/git-annex into git-annex...)
+    (Recording state in git...)
+    (Recording state in git...)
+    push markdown.lang.speechmarks.com_phoneannex
+    warning: no threads support, ignoring --threads
+    Counting objects: 15, done.
+    Compressing objects: 100% (11/11), done.
+    Writing objects: 100% (12/12), 1.19 KiB, done.
+    Total 12 (delta 4), reused 0 (delta 0)
+    To ssh://fozz@git-annex-markdown.lang.speechmarks.com-fozz_phone.2Dannex/~/phone-annex/
+       d2678a5..577fa92  git-annex -> synced/git-annex
+       c829a0a..2aa892f  master -> synced/master
+    ok
+    u0_a84@android:/sdcard/annex $
+
+I have no idea in this log why it is wrote \"manequin\" not \"mañnequin\" but this is what the command completion gave me ( I don't know how to type that letter ), but as you can see later it came over correctly later.
+
+Desktop:
+
+    fozz@cobol:~/phone-annex $ git annex sync
+    commit
+    # On branch master
+    nothing to commit, working directory clean
+    ok
+    pull origin
+    remote: Counting objects: 15, done.
+    remote: Compressing objects: 100% (11/11), done.
+    remote: Total 12 (delta 4), reused 0 (delta 0)
+    Unpacking objects: 100% (12/12), done.
+    From ssh://markdown.lang.speechmarks.com/home/fozz/phone-annex
+       c829a0a..2aa892f  master     -> origin/master
+       d2678a5..577fa92  synced/git-annex -> origin/synced/git-annex
+       c829a0a..2aa892f  synced/master -> origin/synced/master
+    
+    Updating c829a0a..2aa892f
+    Fast-forward
+     \"ma\303\261nequin\" | 1 +
+     1 file changed, 1 insertion(+)
+     create mode 120000 \"ma\303\261nequin\"
+    
+    Already up-to-date.
+    ok
+    (merging origin/synced/git-annex into git-annex...)
+    push origin
+    Everything up-to-date
+    ok
+
+I have since gone through and replicated this with \"mañnequin.txt\" from scratch with a completely empty repository and it did an identical thing again. I then added a backup of my KeePass.kdb database and it went over fine. So it seems that git-annex has no problem with the \"ñ\" file now, but the assistant does not see it at all.
+
+I have left the repository on my phone / desktop / server in this state so if you want further output please let me know.
+"""]]

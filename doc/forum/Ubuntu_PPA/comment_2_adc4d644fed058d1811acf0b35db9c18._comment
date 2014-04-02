@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmVICFY2CDP08xdsPr3cgmScomy9HA-1sk"
+ nickname="Andrew"
+ subject="comment 2"
+ date="2013-03-13T02:31:52Z"
+ content="""
+It's perfectly possible (though slightly messy) to install git-annex on Ubuntu via [[/install/cabal]], though you need to find and install all the required dependencies yourself (haskell, libidn, libgnutls, libgsasl etc). If you want to get crazy with this look at <http://developer.ubuntu.com/packaging/html/>
+"""]]

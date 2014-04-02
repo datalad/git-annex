@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://bigasterisk.com/"
+ nickname="Drew Perttula"
+ subject="comment 10"
+ date="2013-07-27T07:42:26Z"
+ content="""
+Sorry, I meant to get those logs earlier but I got distracted.
+
+One confounding thing in the previous runs is that I may have had accidental instances of git-annex assistant running on at least one of the machines. I killed them all for this next attempt, and named the dir annex2 just in case.
+
+daemon.log files are now at http://bigasterisk.com/post/git-annex/logs1/
+"""]]

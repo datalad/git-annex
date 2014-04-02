@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.27"
+ subject="comment 1"
+ date="2012-11-11T16:06:42Z"
+ content="""
+I suspect you have an old build of the assistant. Version 3.20121009 was supposed to fix this.
+
+I re-tested with current git head today, and found I was able to unlock a file, repeatedly edit it in place without the assistant re-adding it, and then run \"git annex add\" and the assistant auto-committed the changed file. Better behavior than I was expecting in fact -- the ability to repeatedly edit is a pleasant surprise.
+"""]]

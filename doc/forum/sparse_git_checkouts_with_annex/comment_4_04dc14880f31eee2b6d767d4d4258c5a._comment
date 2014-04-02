@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkptNW1PzrVjYlJWP_9e499uH0mjnBV6GQ"
+ nickname="Christian"
+ subject="comment 4"
+ date="2011-04-08T07:54:37Z"
+ content="""
+And something else i've done is, that i symlinked the video/ directory from the media annex to the normal raid annex
+
+    ln -s ~/media/annex/video ~/annex
+
+And it's working out great.
+
+    ~annex $ git annex whereis video/series/episode1.avi
+    whereis video/series/episode1.avi(1 copy)
+        	f210b45a-60d3-11e0-b593-3318d96f2520  -- Trantor - Media
+    ok
+
+I really like this, perhaps it is a good idea to store all log files in every repo, but maybe there is a possibilitiy to to pack multiple log files into one single file, where not only the time, the present bit and the annex-repository is stored, but also the file key. I don't know if this format would also be merged correctly by the union merge driver.
+
+"""]]

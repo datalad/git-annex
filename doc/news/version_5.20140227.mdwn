@@ -1,0 +1,32 @@
+git-annex 5.20140227 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * metadata: Field names limited to alphanumerics and a few whitelisted
+     punctuation characters to avoid issues with views, etc.
+   * metadata: Field names are now case insensative.
+   * When constructing views, metadata is available about the location of the
+     file in the view's reference branch. Allows incorporating parts of the
+     directory hierarchy in a view.
+     For example `git annex view tag=* podcasts/=*` makes a view in the form
+     tag/showname.
+   * --metadata field=value can now use globs to match, and matches
+     case insensatively, the same as git annex view field=value does.
+   * annex.genmetadata can be set to make git-annex automatically set
+     metadata (year and month) when adding files.
+   * Make annex.web-options be used in several places that call curl.
+   * Fix handling of rsync remote urls containing a username,
+     including rsync.net.
+   * Preserve metadata when staging a new version of an annexed file.
+   * metadata: Support --json
+   * webapp: Fix creation of box.com and Amazon S3 and Glacier
+     repositories, broken in 5.20140221.
+   * webdav: When built with DAV 0.6.0, use the new DAV monad to avoid
+     locking files, which is not needed by git-annex's use of webdav, and
+     does not work on Box.com.
+   * webdav: Fix path separator bug when used on Windows.
+   * repair: Optimise unpacking of pack files, and avoid repeated error
+     messages about corrupt pack files.
+   * Add build dep on regex-compat to fix build on mipsel, which lacks
+     regex-tdfa.
+   * Disable test suite on sparc, which is missing optparse-applicative.
+   * Put non-object tmp files in .git/annex/misctmp, leaving .git/annex/tmp
+     for only partially transferred objects."""]]

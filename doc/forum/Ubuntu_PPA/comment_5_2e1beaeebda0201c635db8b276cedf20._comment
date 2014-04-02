@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 5"
+ date="2013-05-08T23:25:37Z"
+ content="""
+If you are on raring you can still use
+
+    deb http://ppa.launchpad.net/fmarier/ppa/ubuntu precise main
+
+It's worked fine for me so far.
+"""]]

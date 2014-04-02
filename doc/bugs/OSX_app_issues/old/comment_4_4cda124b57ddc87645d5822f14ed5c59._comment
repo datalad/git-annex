@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkBTVYS5lTecuenAB01eHgfUxE20vWVpU4"
+ nickname="Peng"
+ subject="Large Mountain Loin package size"
+ date="2012-12-28T22:17:43Z"
+ content="""
+I see that git-annex package file is 489.9MB on Mac Mountain Loin (git-annex.dmg.bz2). The file git-annex.dmg.bz2 is only of size 24M. Is there any way to reduce the package size?
+"""]]

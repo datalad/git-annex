@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 23"
+ date="2013-10-21T22:09:05Z"
+ content="""
+git-annex needs cryptohash version 0.10.0 or greater. You appear to have an old version. You can cabal `configure -f-CryptoHash` if it's for some reason failing to disable the cryptohash support despite the declared dependency not being met.
+"""]]

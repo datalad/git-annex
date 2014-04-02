@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmyFvkaewo432ELwtCoecUGou4v3jCP0Pc"
+ nickname="Eric"
+ subject="Updating to latest build"
+ date="2013-01-25T06:05:35Z"
+ content="""
+What is the appropriate way to update to the latest build of git-annex using cabal?
+"""]]

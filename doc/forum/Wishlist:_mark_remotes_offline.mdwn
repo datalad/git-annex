@@ -1,0 +1,12 @@
+I have several remotes which are not always accessible. For example they can
+be on hosts only accessible by LAN or on a portable hard drive which is not
+plugged in. When running sync these remotes are checked as well, leading to
+unnecessary error messages and possibly git-annex waiting for a few minutes
+on each remote for a timeout.
+
+In this situation it would be useful to mark some remotes as offline
+(`git annex offline <remotename>`), so that git-annex would not even attempt
+to contact them. Then, I could configure my system to automatically, for example,
+mark a portable hard disk remote online when plugging it in, and offline when
+unplugging it, and similarly marking remotes offline and online depending on
+whether I have an internet connection or a connection to a specific network.

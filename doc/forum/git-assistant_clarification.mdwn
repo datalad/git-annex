@@ -1,0 +1,11 @@
+I've noticed that if I'm using git-assistant, it wants to pull down all my files from other repos onto my laptop, even after I've dropped them.  (My laptop is set up as "client," my usb drive and an ssh server as "backup".)
+
+I want to use git annex to save space on my laptop, but of course when I'm running the assistant, it pulls everything down there, even things I've manually dropped.
+
+Is my "I want to save space, with a partial archive on my laptop" use case simply out of scope for the assistant?  So I should just be using the command line for my needs?  That's fine if that's the case.
+
+Or maybe something like this is what I should be doing?  http://git-annex.branchable.com/assistant/archival_walkthrough/  ?  so instead of manually "git annex drop"-ping files in place, I should set up a directory called "archive" on my machine, from which files will magically disappear and get backed up elsewhere?
+
+If it's the case that a directory named "archive" in your checkout has the magical property of having the assistant drop and archive its contents, that's awesome, maybe just what I need, but if that behavior is spelled out in so many words anywhere I managed to miss it.
+
+Apologies for all these questions, just enjoying the software immensely and wanting to get to know it.

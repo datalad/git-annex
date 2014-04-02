@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 1"
+ date="2013-12-27T19:02:28Z"
+ content="""
+Each separate repository needs to have a separate `git annex assistant` process handling it.
+
+Normally, these would all be started when `git annex assistant --autostart` is run, typically when you log into a desktop environment.
+
+So, on Linux, this is done via a .desktop file (or you can arrange for the command to be run as the right user at boot if not using a desktop); on OSX it's done via a .plist file. On Windows and Android, nothing handles the autostarting yet.
+"""]]

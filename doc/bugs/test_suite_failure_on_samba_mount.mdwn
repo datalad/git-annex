@@ -1,0 +1,278 @@
+### Please describe the problem.
+
+`git annex test` show multiple failures on a samba mounted partition.
+
+### What steps will reproduce the problem?
+
+just run `git annex test` (in the mounted dir)
+
+### What version of git-annex are you using? On what operating system?
+
+4.20130521, built for architecture `armhf` by the Raspbian maintainers ("jessie" suite at the time of writing)
+
+### Please provide any additional information below.
+
+Here are the last lines of `git annex test` output; AFAICT they are the only lines mentioning failures. Before them the output mentions `+++ OK, passed 100 tests.`.
+
+[[!format text """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+Cases: 1  Tried: 0  Errors: 0  Failures: 0----------------------------------------------------------------------
+Now, some broader checks ...
+  (Do not be alarmed by odd output here; it's normal.
+   wait for the last line to see how it went.)
+----------------------------------------------------------------------
+init
+  Detected a crippled filesystem.
+  Enabling direct mode.
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+                                          Cases: 1  Tried: 1  Errors: 0  Failures: 0
+Cases: 3  Tried: 0  Errors: 0  Failures: 0Cases: 3  Tried: 1  Errors: 0  Failures: 0----------------------------------------------------------------------
+add
+  Detected a crippled filesystem.
+  Enabling direct mode.
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+Cases: 3  Tried: 2  Errors: 0  Failures: 0  Detected a crippled filesystem.
+  Enabling direct mode.
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+error: unable to create temporary sha1 filename : No such file or directory
+
+git-annex: user error (git ["--git-dir=/media/freebox/.t/tmprepo0/.git","--work-tree=/media/freebox/.t/tmprepo0","commit-tree","4b825dc642cb6eb9a060e54bf8d69288fbee4904"] exited 1)
+                                          ### Failure in: git-annex add:2
+git annex init failed
+Cases: 3  Tried: 3  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0----------------------------------------------------------------------
+reinject
+  Detected a crippled filesystem.
+  Enabling direct mode.
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+  Detected a crippled filesystem.
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+                                          Cases: 1  Tried: 1  Errors: 0  Failures: 0
+Cases: 2  Tried: 0  Errors: 0  Failures: 0not supported in direct mode; skipping
+----------------------------------------------------------------------
+unannex
+  Detected a crippled filesystem.
+  Enabling direct mode.
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+error: unable to create temporary sha1 filename : No such file or directory
+
+git-annex: user error (git ["--git-dir=/media/freebox/.t/tmprepo1/.git","--work-tree=/media/freebox/.t/tmprepo1","commit-tree","4b825dc642cb6eb9a060e54bf8d69288fbee4904"] exited 1)
+                                          ### Failure in: git-annex unannex:0:no content
+git annex init failed
+Cases: 2  Tried: 1  Errors: 0  Failures: 1  Detected a crippled filesystem.
+  Enabling direct mode.
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+  Detected a crippled filesystem.
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+                                          Cases: 2  Tried: 2  Errors: 0  Failures: 1
+Cases: 3  Tried: 0  Errors: 0  Failures: 0not supported in direct mode; skipping
+----------------------------------------------------------------------
+drop
+  Detected a crippled filesystem.
+  Enabling direct mode.
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+error: unable to create temporary sha1 filename : No such file or directory
+
+git-annex: user error (git ["--git-dir=/media/freebox/.t/tmprepo2/.git","--work-tree=/media/freebox/.t/tmprepo2","commit-tree","4b825dc642cb6eb9a060e54bf8d69288fbee4904"] exited 1)
+                                          ### Failure in: git-annex drop:0:no remotes
+git annex init failed
+Cases: 3  Tried: 1  Errors: 0  Failures: 1  Detected a crippled filesystem.
+  Enabling direct mode.
+  Detected a filesystem without fifo support.
+  Disabling ssh connection caching.
+Cases: 3  Tried: 2  Errors: 0  Failures: 1/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex drop:2:untrusted remote
+git clone failed
+Cases: 3  Tried: 3  Errors: 0  Failures: 2
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex get
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex move
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex copy
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex unlock/lock
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 2  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex edit/commit:0
+git clone failed
+Cases: 2  Tried: 1  Errors: 0  Failures: 1/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex edit/commit:1
+git clone failed
+Cases: 2  Tried: 2  Errors: 0  Failures: 2
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex fix
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex trust/untrust/semitrust/dead
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 4  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex fsck:0
+git clone failed
+Cases: 4  Tried: 1  Errors: 0  Failures: 1/media/freebox/.t/tmprepo3/refs: No such file or directory
+                                          ### Failure in: git-annex fsck:1
+git clone failed
+Cases: 4  Tried: 2  Errors: 0  Failures: 2/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex fsck:2
+git clone failed
+Cases: 4  Tried: 3  Errors: 0  Failures: 3/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex fsck:3
+git clone failed
+Cases: 4  Tried: 4  Errors: 0  Failures: 4
+Cases: 2  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex migrate:0
+git clone failed
+Cases: 2  Tried: 1  Errors: 0  Failures: 1/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex migrate:1
+git clone failed
+Cases: 2  Tried: 2  Errors: 0  Failures: 2
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex unused/dropunused
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex describe
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex find
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex merge
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex status
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex version
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex sync
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: union merge regression
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: automatic conflict resolution
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex map
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex uninit
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex upgrade
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex whereis
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex hook remote
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex directory remote
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex rsync remote
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex bup remote
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+Cases: 1  Tried: 0  Errors: 0  Failures: 0/media/freebox/.t/tmprepo3/.git: No such file or directory
+                                          ### Failure in: git-annex crypto
+git clone failed
+Cases: 1  Tried: 1  Errors: 0  Failures: 1
+----------------------------------------------------------------------
+get
+----------------------------------------------------------------------
+move
+----------------------------------------------------------------------
+copy
+----------------------------------------------------------------------
+lock
+----------------------------------------------------------------------
+edit
+----------------------------------------------------------------------
+fix
+----------------------------------------------------------------------
+trust
+----------------------------------------------------------------------
+fsck
+----------------------------------------------------------------------
+migrate
+----------------------------------------------------------------------
+ unused
+----------------------------------------------------------------------
+describe
+----------------------------------------------------------------------
+find
+----------------------------------------------------------------------
+merge
+----------------------------------------------------------------------
+status
+----------------------------------------------------------------------
+version
+----------------------------------------------------------------------
+sync
+----------------------------------------------------------------------
+union merge regression
+----------------------------------------------------------------------
+conflict resolution
+----------------------------------------------------------------------
+map
+----------------------------------------------------------------------
+uninit
+----------------------------------------------------------------------
+upgrade
+----------------------------------------------------------------------
+whereis
+----------------------------------------------------------------------
+hook remote
+----------------------------------------------------------------------
+directory remote
+----------------------------------------------------------------------
+rsync remote
+----------------------------------------------------------------------
+bup remote
+----------------------------------------------------------------------
+crypto
+git-annex: .t/repo/.git/annex: removeDirectory: unsatisified constraints (Directory not empty)
+
+# End of transcript or log.
+"""]]

@@ -1,0 +1,5 @@
+Do not place git-annex enabled git repository inside your Dropbox folder! 
+
+You will encounter broken symlinks and git-annex complaining about lost files. Dropbox [doesn't preserve case of file names](https://www.dropbox.com/help/145/en) and this breaks storage of annexed files (.git/annex/objects/). For possible recovery see <http://git-annex.branchable.com/bugs/interference_with_Dropbox_results_in_data_loss>.
+
+

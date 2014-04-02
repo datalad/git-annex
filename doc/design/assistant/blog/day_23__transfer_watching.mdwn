@@ -1,0 +1,25 @@
+Starting to travel, so limited time today.
+
+Yet Another Thread added to the assistant, all it does is watch for changes
+to transfer information files, and update the assistant's map of transfers
+currently in progress. Now the assistant will know if some other repository
+has connected to the local repo and is sending or receiving a file's
+content.
+
+This seemed really simple to write, it's just 78 lines of code. It worked
+100% correctly the first time. :) But it's only so easy because I've got
+this shiny new inotify hammer that I keep finding places to use in the
+assistant.
+
+Also, the new thread does some things that caused a similar thread (the
+merger thread) to go into a MVar deadlock. Luckily, I spent much of 
+[day 19](day_19__random_improvements) investigating and fixing that
+deadlock, even though it was not a problem at the time.
+
+So, good.. I'm doing things right and getting to a place where rather
+nontrivial features can be added easily.
+
+--
+
+Next up: Enough nonsense with tracking transfers... Time to start actually
+transferring content around!

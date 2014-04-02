@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkx5V3MTbzCXS3J7Mn9FEq8M9bPPYMkAHY"
+ nickname="Pedro"
+ subject="comment 7"
+ date="2013-05-20T19:52:30Z"
+ content="""
+Your example is pretty much what I've done. I'll enable a debug log as soon as possible. By the away \"git annex assistant --foreground\" still logs to .git/annex/daemon.log instead of stdout/stderr, which I assume was not the intended behavior.
+
+This bug was indeed about the assistant not syncing, the comments about the broken symlinks were just in response to edheil's comment. I can post a separate bug report about this but the reason I don't think this should be default behavior is that it breaks several simple uses of git-annex. One simple example is using it to store your configs across machines (things like .bashrc). If at any point the git-annex can't sync a file (a network problem or ssh breakage or whatever) but becomes aware of a file change (for example through xmpp) you now have a broken login shell. In general it breaks the user expectations of having a \"folder that just happens to also sync\" for something where his files randomly get replaced with strange broken things for odd technical reasons.
+"""]]

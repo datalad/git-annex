@@ -1,0 +1,28 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkvN0eFnwvgw2JyTSSHw0QouytcxtPLln8"
+ nickname="Stein Roald"
+ subject="Need some clarification"
+ date="2014-03-28T22:49:14Z"
+ content="""
+OK, thank you Joey for your help, and I think you have made some really excellent software. I've spent a couple of days to configure gpg and understand how to use it (glad I did, it has been on my todo-list for a long time...)
+
+First to your question: When I started, I just used the git-annex assistant to \"set up a repository on a remote server using ssh\" as a \"transfer repository\". Now I'll use git-remote-gcrypt instead.
+
+Now I have 2 questions:
+
+---
+
+1) On this webpage: [[https://github.com/joeyh/git-remote-gcrypt]] these are the instructions for setting up a remote for two participants:
+
+    git remote add cryptremote gcrypt::rsync://example.com:repo
+    git config remote.cryptremote.gcrypt-participants \"KEY1 KEY2\"
+    git push cryptremote master
+
+**Question 1:** As I own both computers myself, will syncing between the 2 computers work if I only use 1 KEY (the same KEY on both computers)?
+
+---
+
+2) I am still struggling to understand git-annex assistant and the use of special remotes. Important reasons for using git-annex are backups and moving data to the cloud to free up disk space locally. If I've understood it correctly, git-annex assistant always encrypts data sent to special remotes. And it seems to me that this page [[http://git-annex.branchable.com/special_remotes/]] suggest that git-annex assistant makes it easy to transfer files between different computers that do not communicate directly. I must clearly have misunderstood something, as Joey's comment above seem to state that I can't use the assistant for setting up syncing between computers.
+
+**Question 2:** If I loose my computer, or it becomes corrupted, how can I get my files back if I don't set up special remotes as a gcrypt special remote? (And if I can't, what is the purpose of the special remotes made by the assistant?)
+"""]]

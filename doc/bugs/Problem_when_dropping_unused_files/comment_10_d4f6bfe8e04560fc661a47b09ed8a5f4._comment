@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.251.174"
+ subject="comment 10"
+ date="2013-09-07T17:14:36Z"
+ content="""
+Again this error message has nothing to do with git-annex beyond it being a file in the git-annex branch that is corrupt. Your system seems to be repeatedly corrupting git repositories. You need to run `git fsck`, get the git repository in a clean state, and probably check the drive it's on, and run a memory test or otherwise deal with whatever is causing your system to corrupt files in the git repository.
+"""]]

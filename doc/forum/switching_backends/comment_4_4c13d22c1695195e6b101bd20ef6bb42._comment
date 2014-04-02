@@ -1,0 +1,35 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 4"
+ date="2013-01-28T14:30:55Z"
+ content="""
+If by \"synced to the local repo\" you mean run a git annex sync, then yes, I have done that.
+
+Here's an example of what I'm seeing:
+
+    annex$ readlink subdir/subdir/file.txt 
+    ../../.git/annex/objects/zV/57/SHA256E-s3952--cb67d2cbadfea373ed8aa5ec434f246acccb33471a7e28a444138cc4fe8552c2.txt/SHA256E-s3952--cb67d2cbadfea373ed8aa5ec434f246acccb33471a7e28a444138cc4fe8552c2.txt
+    annex$ find .git/annex/objects/ -name SHA256-s3952--cb67d2cbadfea373ed8aa5ec434f246acccb33471a7e28a444138cc4fe8552c2
+    .git/annex/objects//1w/Q4/SHA256-s3952--cb67d2cbadfea373ed8aa5ec434f246acccb33471a7e28a444138cc4fe8552c2
+    .git/annex/objects//1w/Q4/SHA256-s3952--cb67d2cbadfea373ed8aa5ec434f246acccb33471a7e28a444138cc4fe8552c2/SHA256-s3952--cb67d2cbadfea373ed8aa5ec434f246acccb33471a7e28a444138cc4fe8552c2
+    annex$ git annex sync
+    commit  
+    # On branch master
+    nothing to commit, working directory clean
+    ok
+    pull homeworld 
+    ok
+    push homeworld 
+    Everything up-to-date
+    ok
+    annex$ git annex unused
+    unused . (checking for unused data...) (checking master...) (checking sync/master...) (checking homeworld/master...) (checking toshiba/master...) (checking toshiba/synced/master...) ok
+    annex$ find .git/annex/objects/ -name SHA256-s3952--cb67d2cbadfea373ed8aa5ec434f246acccb33471a7e28a444138cc4fe8552c2
+    .git/annex/objects//1w/Q4/SHA256-s3952--cb67d2cbadfea373ed8aa5ec434f246acccb33471a7e28a444138cc4fe8552c2
+    .git/annex/objects//1w/Q4/SHA256-s3952--cb67d2cbadfea373ed8aa5ec434f246acccb33471a7e28a444138cc4fe8552c2/SHA256-s3952--cb67d2cbadfea373ed8aa5ec434f246acccb33471a7e28a444138cc4fe8552c2
+    annex$ 
+
+
+As you can see, there are two remotes, \"toshiba\" and \"homeworld\".  Neither of them is bare, they have checked out \"master\" branches.  Could they be the reason that some of this data isn't \"unused\"?  (I ask because I notice it reports that it is checking homeworld/master and toshiba/master when it does the unused check)
+"""]]

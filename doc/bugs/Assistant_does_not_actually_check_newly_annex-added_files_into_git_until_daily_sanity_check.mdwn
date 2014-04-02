@@ -1,0 +1,106 @@
+What steps will reproduce the problem?
+
+Move any file into a git annex repository using "mv".  The symlink is created, content is stored in .git/annex, content may even be moved to other repos, but the symlink is not checked into git.  A day later, the daily sanity check will add and check-in the link.
+
+What is the expected output? What do you see instead?
+
+After adding content to git-annex, "git status" should show a clean repo with everything checked in.
+
+Instead it looks like this:
+
+    ~$ touch foobar
+    ~$ rm foobar
+    ~$ echo "foo" > bar
+    ~$ mv bar annex/Incoming/
+    ~$ cd annex
+    annex$ git status
+    # On branch master
+    # Untracked files:
+    #   (use "git add <file>..." to include in what will be committed)
+    #
+    #	Incoming/bar
+    nothing added to commit but untracked files present (use "git add" to track)
+    annex$ 
+
+
+
+I ran the assistant with the --debug option and this is what was in the daemon.log when this happened:
+
+    [2013-03-13 09:23:36 EDT] read: git ["--git-dir=/Users/ed/annex/.git","--work-tree=/Users/ed/annex","ls-files","--others","--exclude-standard","-z","--","/Users/ed/annex/Incoming/bar"]
+    [2013-03-13 09:23:37 EDT] read: lsof ["-F0can","+d","/Users/ed/annex/.git/annex/tmp/"]
+    [2013-03-13 09:23:39 EDT] Committer: Adding bar
+    
+    
+    (Recording state in git...)
+    (Recording state in git...)
+    (Recording state in git...)
+    (Recording state in git...)
+    add Incoming/bar (checksum...) recv: resource vanished (Connection reset by peer)
+    [2013-03-13 09:23:39 EDT] 127.0.0.1 GET /sidebar/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:19.0) Gecko/20100101 Firefox/19.0
+    [2013-03-13 09:23:40 EDT] 127.0.0.1 GET /sidebar/NotificationId%201 Mozilla/5.0 (Macintosh; Intel Mac OS X 10.7; rv:19.0) Gecko/20100101 Firefox/19.0
+
+
+What version of git-annex are you using? On what operating system?
+
+A fresh compile from last night (git hash fe2df85f0db08227556897db3b076ef321e4303a).  OS X Lion.
+
+
+Please provide any additional information below.
+
+I get the same effect when doing this with a newly created "testannex" repo with nothing in it but a newly created file -- I just haven't left the assistant running in a test repo all day to confirm that the file doesn't get checked in till the next daily sanity check.
+
+Here it is on a newly-created, empty repo:
+
+    testannex$ git init
+    Initialized empty Git repository in /Users/ed/testannex/.git/
+    testannex$ git annex init
+    init  ok
+    (Recording state in git...)
+    testannex$ git annex assistant --debug
+    [2013-03-13 09:31:10 EDT] read: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","show-ref","git-annex"]
+    [2013-03-13 09:31:10 EDT] read: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","show-ref","--hash","refs/heads/git-annex"]
+    [2013-03-13 09:31:10 EDT] read: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","log","refs/heads/git-annex..4aeceaff629c83c35c1244da9eeeac4b7c228fef","--oneline","-n1"]
+    [2013-03-13 09:31:10 EDT] chat: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","cat-file","--batch"]
+    testannex$ cd
+    ~$ echo "foo" > bar
+    ~$ mv bar testannex/
+    ~$ cd testannex/
+    testannex$ git status
+    # On branch master
+    #
+    # Initial commit
+    #
+    # Untracked files:
+    #   (use "git add <file>..." to include in what will be committed)
+    #
+    #	bar
+    nothing added to commit but untracked files present (use "git add" to track)
+
+
+    (meanwhile.....)
+
+    ~$ cd testannex/.git/annex/
+    annex$ tail -f daemon.log 
+    [2013-03-13 09:31:10 EDT] TransferWatcher: watching for transfers
+    [2013-03-13 09:31:10 EDT] read: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","show-ref","git-annex"]
+    [2013-03-13 09:31:10 EDT] read: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","show-ref","--hash","refs/heads/git-annex"]
+    [2013-03-13 09:31:10 EDT] read: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","log","refs/heads/git-annex..4aeceaff629c83c35c1244da9eeeac4b7c228fef","--oneline","-n1"]
+    [2013-03-13 09:31:10 EDT] Merger: watching /Users/ed/testannex/.git/refs
+    [2013-03-13 09:31:10 EDT] read: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","ls-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","preferred-content.log"]
+    [2013-03-13 09:31:10 EDT] read: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","ls-tree","-z","--","refs/heads/git-annex","uuid.log","remote.log","trust.log","group.log","preferred-content.log"]
+    (scanning...) [2013-03-13 09:31:10 EDT] Watcher: Performing startup scan
+    [2013-03-13 09:31:10 EDT] read: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","ls-files","--deleted","-z","--","/Users/ed/testannex"]
+    (started...) [2013-03-13 09:31:10 EDT] Watcher: watching .
+    [2013-03-13 09:31:48 EDT] read: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","ls-files","--others","--exclude-standard","-z","--","/Users/ed/testannex/bar"]
+    [2013-03-13 09:31:49 EDT] read: lsof ["-F0can","+d","/Users/ed/testannex/.git/annex/tmp/"]
+    [2013-03-13 09:31:51 EDT] Committer: Adding bar
+    
+    add bar [2013-03-13 09:31:51 EDT] chat: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
+    (checksum...) [2013-03-13 09:31:51 EDT] chat: git ["--git-dir=/Users/ed/testannex/.git","--work-tree=/Users/ed/testannex","cat-file","--batch"]
+
+> This bug affected OSX when indirect mode repositories were used.
+> Direct mode repositories were ok.
+> I expected to get an event from fsevents when I made the symlink,
+> and this event is not arriving (or at least not always). Switched
+> the code to use the same method for fsevents as for kqueue and that fixed
+> it. [[done]] --[[Joey]]

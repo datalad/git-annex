@@ -1,0 +1,65 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkZktNHFhxC1kYA9KKdKpYJO4clq9WDsjE"
+ nickname="Jason"
+ subject="comment 7"
+ date="2013-04-26T19:10:15Z"
+ content="""
+http://pastebin.com/CM2EfQ21
+
+This is what the commit log looks like for the remote.log file.  There is some interesting stuff in here.  I'll try to highlight the changes without giving too much of the important bits away.
+
+The I commit at 2013-04-22 11:57 is when I added the box remote:
+
+0490d177-78e2-421b-a004-47d88ee7a2e3 chunksize=10mb cipher=... davcreds=... embedcreds=yes name=box.com type=webdav url=https://www.box.com/dav/annex timestamp=1366657062.972357s
+1d0ab67c-6a43-11e2-9feb-df22c6d1e308 bucket=annex-1d0ab67c-6a43-11e2-9feb-df22c6d1e308 cipher=... datacenter=US host=s3.amazonaws.com name=annex port=80 storageclass=REDUCED_REDUNDANCY type=S3 timestamp=1359484726.520727s
+
+The contents also includes my nas remote, but I will omit that for brevity's sake.  I did notice that initially the s3 remote was named \"annex\".  That was probably the web interface's doing, way back when I added it.
+
+The next commit at 2013-04-24 10:55 seems to have added encryption=shared and highRandomQuality=false to the nas remote (I think this was when I re-enabled the nas remote through the webapp).
+
+The commit at 2013-04-24 11:05 looks like it added similar stuff to the box remote (added highRandomQuality=false).  Probably this was from enabling it then as well.
+
+At 2013-04-24 11:12 the s3 remote had highRandomQuality=false added also.
+
+At 2013-04-24 11:26, a new remote was added:
+
+4d86972d-9b0a-4095-bc50-f9bec8144c30 bucket=s3-4d86972d-9b0a-4095-bc50-f9bec8144c30 cipher=... datacenter=US host=s3.amazonaws.com name=s3 port=80 storageclass=STANDARD type=S3 timestamp=1366828017.8792s
+
+Very possibly this was me doing a `git annex initremote ...` thinking that the s3 remote was actually named s3 (somehow, I feel like I would have checked that, but I'm going to chalk that up to my own stupidity).
+
+Then at 2013-04-24 11:35, the new s3 remote was changed... but it seems like only the timestamp was altered.  I suspect this was from another command line change, but I don't remember exactly what I did at that point.  Probably a reference in a different file was also modified, but I'm not looking at those.
+
+At 2013-04-24 11:37, again the new s3 remote was changed, but again it was just the timestamp.
+
+In the merge at 2013-04-24 15:15, a bunch of things happened.  This may be where stuff went wrong.  I do find it weird because it should have just been a fast forward, given what the history looks like.  I suspect that this was caused by a `git annex sync`, but I'm not 100% sure.
+
+In this commit the following happened:
+
+* The box remote was duplicated (with different davcreds and one having highRandomQuality=false)
+* The annex remote was duplicated (with highRandomQuality=false in one)
+* The nas remote was duplicated (one with encryption=shared and highRandomQuality=false and the other without)
+
+In addition, within that commit, my uuid.log file also had duplication that seems to be where part of the confusion comes from:
+
+* The 1d0ab67c-6a43-11e2-9feb-df22c6d1e308 remote shows up twice, once named \"annex\" and the other time named \"s3\".
+* The 4d86972d-9b0a-4095-bc50-f9bec8144c30 remote is only include once in there, but its name is also \"s3\".
+* Other remotes are duplicated, with different timestamps, but no overlapping uuids.
+
+Then at 2013-04-24 18:13, I think things try to fix themselves:
+
+* The older box remote (I guess based on timestamp) is removed.  Now there's only one.
+* The older 1d0ab67c-6a43-11e2-9feb-df22c6d1e308 remote (still named annex) is removed.  Now there's only one there too.
+* The single 4d86972d-9b0a-4095-bc50-f9bec8144c30 remote is updated with a new timestamp.
+* The older nas remote is also removed.
+
+No duplicates exist in this file and no cross-references exist either.
+
+The uuid.log file seems to be the place where the annex remote is renamed to s3.  I have no idea what caused that, but it was probably me.
+
+* In 2013-04-24 11:12, everything is fine in the uuid.log file.  The annex timestamp is updated, but no problems.
+* In 2013-04-24 11:13 (which doesn't show up when I look at the remote.log changes, because it didn't change that), a file's location log is updated and the 1d0ab67c-6a43-11e2-9feb-df22c6d1e308 remote is renamed from annex to s3 in uuid.log, but not in remotes.log.
+* In 2013-04-24 11:26, 4d86972d-9b0a-4095-bc50-f9bec8144c30 is added to remotes.log with the name s3 and to uuid.log with the name s3 (which is now a duplicate of the renamed 1d0ab67c-6a43-11e2-9feb-df22c6d1e308, but only in uuid.log).
+
+All of this seems horribly confusing and I don't envy your trying to unwind it.
+
+"""]]

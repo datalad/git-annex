@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 15"
+ date="2012-01-02T16:01:49Z"
+ content="""
+With a lazy branch, I get \"git-annex: no branch is checked out\". Weird.. my best guess is that it's because this is running at the seek stage, which is unusual, and the value is not used until a later stage and so perhaps the git command gets reaped by some cleanup code before its output is read.
+
+(pipeRead is lazy because often it's used to read large quantities of data from git that are processed progressively.)
+
+I did make it merge both branches, separately. It would be possible to do one single merge, but it's probably harder for the user to recover if there are conflicts in an octopus merge. The order of the merges does not seem to me to matter much, barring conflicts it will work either way. Dealing with conflicts during sync is probably a weakness of all this; after the first conflict the rest of the sync will continue failing.
+"""]]

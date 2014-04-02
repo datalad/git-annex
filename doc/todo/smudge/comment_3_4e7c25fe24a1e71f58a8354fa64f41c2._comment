@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn1QhtPvsRBV7pfaDW_ZTPFv_ZIxSzQ8Rg"
+ nickname="Paul Léo"
+ subject="comment 3"
+ date="2013-11-13T20:41:52Z"
+ content="""
+> SHA1 has a harder job. Would not want to re-sha1 the file every time, probably. So it'd need a local cache of file stat info, mapped to known objects.
+
+I think that is not true? If gits wants the file to be cleaned, it thinks that the file was changed. So you would have to SHA1 it anyway if you don't want rely on WORM (which git already does in the first step anyway).
+"""]]

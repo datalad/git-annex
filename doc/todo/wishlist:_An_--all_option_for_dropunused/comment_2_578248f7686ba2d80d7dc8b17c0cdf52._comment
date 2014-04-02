@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://hands.com/~phil/"
+ nickname="hands"
+ subject="and you can specify ranges to dropunused"
+ date="2012-11-02T09:07:48Z"
+ content="""
+so having run:
+
+    git annex unused
+
+you can then run:
+
+    git annex dropunused 1-10000
+
+or whatever, and it deletes the items in that range from the most recent <tt>unused</tt> invocation
+"""]]

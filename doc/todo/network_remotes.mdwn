@@ -1,0 +1,5 @@
+Support for remote git repositories (ssh:// specifically can be made to
+work, although the other end probably needs to have git-annex
+installed..)
+
+[[done]], at least get and put work..

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="aarone"
+ ip="2607:f470:8:d008:290:f5ff:fec3:a9e6"
+ subject="Email alert"
+ date="2013-10-22T21:23:24Z"
+ content="""
+I have at least one git-annex repository where I seldom open the web UI, but rather have the assistant humming along in the background.  I think for my use case it would be best to receive an email notification that the assistant had detected a problem, which would prompt me to open the web UI and perform the recovery.
+"""]]

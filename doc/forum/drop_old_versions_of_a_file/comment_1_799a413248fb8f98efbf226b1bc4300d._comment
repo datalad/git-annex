@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-03-10T17:59:01Z"
+ content="""
+What you're looking for is `git annex unused` and `git annex dropunused`
+"""]]

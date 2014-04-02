@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 1"
+ date="2014-03-03T21:58:20Z"
+ content="""
+You have 2 different keys, so get variant files. This is expected behavior.
+
+You're right that the 2 files have the same content. But two different keys were generated for them when they were added in their respective repositories. This can happen when you use the SHA512E (or SHA256E) backend, because it uses the extension as part of the key. One of the files you added had an extension of \".cam\", and the other \".JPG.cam\"
+
+If there is any bug here, it's perhaps that the \"E\" backends are smart about multi-component file extensions, so will treat eg .tar.gz as an extension, rather than just .gz. If this was not done, both files would have had a .cam extension, and the conflict would not have occurred. But while being less smart would have avoided it in this case, it won't in other cases where files can have different extensions but the same content (for example, \".jpeg\" vs \".jpg\").
+"""]]

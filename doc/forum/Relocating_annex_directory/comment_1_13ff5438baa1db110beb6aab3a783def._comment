@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="comment 1"
+ date="2013-08-16T03:42:00Z"
+ content="""
+moving the annex should work fine, provided:
+
+* You are moving it to a proper unix filesystem - NOT fat32
+* The assistant is shutdown. If it is running, bad things will happen.
+"""]]

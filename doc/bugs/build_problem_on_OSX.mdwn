@@ -1,0 +1,18 @@
+I just squelched a bunch of build issues (to do with dependancies) on my autobuilder for OSX, this is currently happening
+
+<pre>
+install -d tmp
+ghc -O2 -Wall -outputdir tmp -IUtility  -DWITH_ASSISTANT -DWITH_S3 -DWITH_WEBAPP -DWITH_PAIRING -DWITH_XMPP -DWITH_DNS -DWITH_KQUEUE -threaded --make git-annex -o tmp/git-annex Utility/libdiskfree.o Utility/libmounts.o Utility/libkqueue.o
+
+Assistant/Threads/NetWatcher.hs:29:0:
+     warning: #warning Building without dbus support; will poll for network connection changes
+
+Assistant/Threads/MountWatcher.hs:36:0:
+     warning: #warning Building without dbus support; will use mtab polling
+[ 29 of 259] Compiling Utility.OSX      ( Utility/OSX.hs, tmp/Utility/OSX.o )
+
+Utility/OSX.hs:22:17: Not in scope: `myHomeDir'
+make: *** [git-annex] Error 1
+</pre>
+
+> Someone else reported that too; I fixed it. [[done]] --[[Joey]] 

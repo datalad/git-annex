@@ -1,0 +1,6 @@
+When addWatcher gets a permission denied, it would be helpful to display the name of the object on which the permission was denied, in the error message which shows in the webapp.
+
+> I have made the inotify code more robust; now it doesn't crash if it
+> cannot read a directory or a file, and only logs a warning, which includes
+> the directory name.
+> [[done]] --[[Joey]] 

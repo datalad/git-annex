@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 5"
+ date="2014-01-06T16:47:43Z"
+ content="""
+Searching for \"OSX SIGILL\" finds rather a lot of reports of problems like this.
+
+<http://trac.sagemath.org/ticket/12954>
+
+<http://stackoverflow.com/questions/20114920/can-an-exec-bad-instruction-sigill-on-dyld-my-fault>
+
+> My libraries were built using homebrew. By default homebrew optimizes for native architecture, resulting in machine instructions that don't work on older machines.
+
+Suggests to me that the OSX autobuilder probably needs to run the build with PATH set to a directory with un-optimised builds (or fat binary builds?) of all the utilities included in the app. Seems we're lucky and git-annex itself is not built with whatever sort of optimisations (SSE?) is causing this.
+"""]]

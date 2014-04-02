@@ -1,0 +1,3 @@
+Hi,
+
+I own a computer that I use as a home server. I'm just getting started with git-annex, and I was trying to add an ssh remote. It connected fine, but only gave me the "encrypted rsync" option. I'd like to be able to access these files on the server as well, but the "use a git repository" option didn't show up. How do I enable this?

@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://olivier.mehani.name/"
+ nickname="olivier-mehani"
+ subject="comment 1"
+ date="2013-09-16T01:27:14Z"
+ content="""
+The version with which the following tests were run (installed with Cabal)
+
+[[!format sh \"\"\"
+git-annex version: 4.20130827
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus DNS
+\"\"\"]]
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 4"
+ date="2013-04-16T20:28:44Z"
+ content="""
+There's an open bug about this weird commit editor problem. Please follow up there: [[assistant_hangs_during_commit]]
+"""]]

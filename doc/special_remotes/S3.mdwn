@@ -1,0 +1,53 @@
+This special remote type stores file contents in a bucket in Amazon S3
+or a similar service.
+
+See [[tips/using_Amazon_S3]] and
+[[tips/Internet_Archive_via_S3]] for usage examples.
+
+## configuration
+
+The standard environment variables `AWS_ACCESS_KEY_ID` and 
+`AWS_SECRET_ACCESS_KEY` are used to supply login credentials
+for Amazon. You need to set these only when running
+`git annex initremote`, as they will be cached in a file only you
+can read inside the local git repository.
+
+A number of parameters can be passed to `git annex initremote` to configure
+the S3 remote.
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]].
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
+
+* `embedcreds` - Optional. Set to "yes" embed the login credentials inside
+  the git repository, which allows other clones to also access them. This is
+  the default when gpg encryption is enabled; the credentials are stored
+  encrypted and only those with the repository's keys can access them.
+
+  It is not the default when using shared encryption, or no encryption.
+  Think carefully about who can access your repository before using
+  embedcreds without gpg encryption.
+
+* `datacenter` - Defaults to "US". Other values include "EU",
+  "us-west-1", and "ap-southeast-1".
+
+* `storageclass` - Default is "STANDARD". If you have configured git-annex
+  to preserve multiple [[copies]], consider setting this to "REDUCED_REDUNDANCY"
+  to save money.
+
+* `host` and `port` - Specify in order to use a different, S3 compatable
+  service.
+
+* `bucket` - S3 requires that buckets have a globally unique name, 
+  so by default, a bucket name is chosen based on the remote name
+  and UUID. This can be specified to pick a bucket name.
+
+* `fileprefix` - By default, git-annex places files in a tree rooted at the
+  top of the S3 bucket. When this is set, it's prefixed to the filenames
+  used. For example, you could set it to "foo/" in one special remote,
+  and to "bar/" in another special remote, and both special remotes could
+  then use the same bucket.
+
+* `x-amz-*` are passed through as http headers when storing keys
+  in S3.

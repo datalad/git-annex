@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="Renaud"
+ ip="126.10.66.235"
+ subject="comment 1"
+ date="2014-01-11T14:29:08Z"
+ content="""
+I had that problem when I tried to access a newly created remote repository.
+It seems git-annex doesn't recognize anymore if the remote repository has been initialized or not.
+The workaround I used is create a local repository, initialize it with git annex, `clone --bare` it, add the bare repository as a remote and `git annex sync` it to initialize the bare repository. Then, you can put the bare repository where gitolite usualy keep its repositories and use it normally.
+"""]]

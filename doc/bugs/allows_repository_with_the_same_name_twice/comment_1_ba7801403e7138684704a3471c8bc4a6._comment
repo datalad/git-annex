@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-04T16:10:38Z"
+ content="""
+The \"bigserver\" shown there is not a repository name, it's a repository description. You can change it with `git annex describe 6ddfda5d-0f17-45a9-b41a-2a626a823101 otherbigserver`
+
+git-annex does not use these descriptions in any way, except for to show them to you. It also shows the UUID, so that if you have described two repositories the same way, you can still tell them apart.
+
+I don't see a bug here, unless you can be more specific about a problem.
+"""]]

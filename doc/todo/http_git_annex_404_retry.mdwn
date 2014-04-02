@@ -1,0 +1,18 @@
+A repository like http://annex.debconf.org/debconf-share/ has a git repo
+published via http. When getting files from such a repo, git-annex tries
+two urls. One url would be used by a bare repo, and the other by a non-bare
+repo. (This is due to the directory hashing change.) Result is every file
+download from a non-bare http repo starts with a 404 and then it retries
+with the right url.
+
+Since git-annex already downloads the .git/config to find the uuid of the
+http repo, it could also look at it to see if the repo is bare. If not,
+set a flag, and try the two urls in reverse order, which would almost
+always avoid this 404 problem.
+
+(The real solution is probably to flag day and get rid of the old-style
+directory hashing, but that's been discussed elsewhere.)
+
+--[[Joey]]
+
+[[done]]

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-02-27T17:54:47Z"
+ content="""
+Both friends need to be online at the same time to sync with Jabber.
+
+There are some extensions that store and forward jabber messages, but:
+
+* They are probably not widely available.
+* AFAIK they only forward chat messages. But we try not to use visible messages, because that would prevent
+  reusing your jabber account with git-annex.
+* Most importantly, the git protocol lets the sender and receiver communicate with each other to work out what data to transfer. If one if offline, the best that could be done is to upload the whole git repository!
+
+If you want the ability for off-line clients to sync up, you should add a shared bare git repository.
+"""]]

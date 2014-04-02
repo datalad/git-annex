@@ -1,0 +1,13 @@
+### Please describe the problem.
+The files created in another remote when syncing is "now" rather than keeping the modification time of the source file. As such, git-annex assistant is removing an important bit of information about the file.
+
+### What steps will reproduce the problem?
+1) create two repositories in your computer using webapp
+2) add files to RepoA, see that they are synced to the RepoB.
+3) check the file modification times from any file manager. you will see that while files in RepoA carry correct modification time, synced file in RepoB carries current time.
+
+### What version of git-annex are you using? On what operating system?
+Ubuntu 13.10 32bit version 4.20130815 from apt-get.
+
+> duplicate of [[todo/add_metadata_to_annexed_files]] --[[Joey]]
+> [[done]]

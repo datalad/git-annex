@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="clacke"
+ subject="git-annex release annex"
+ date="2013-11-25T06:15:23Z"
+ content="""
+Immediate thought: instead of an info file, why not sync a public git repo with releases annexed with URLs?
+"""]]

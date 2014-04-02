@@ -1,0 +1,125 @@
+### Please describe the problem.
+
+Direct mode repositories seem to initially ignore hard linked files and then when changes are done to them sync them as separate files. However, changes to one file are only propagated to that file and not to any of the others that are hardlinked to it.
+
+### What steps will reproduce the problem?
+
+Inside a direct mode repository linked to a ssh remote:
+
+[[!format sh """
+$ ls -l
+total 0
+$ echo "something" > foo
+$ ln foo bar
+$ ls -l
+total 8
+-rw-r--r-- 2 pedrocr pedrocr 10 May 29 12:08 bar
+-rw-r--r-- 2 pedrocr pedrocr 10 May 29 12:08 foo
+$ tail .git/annex/daemon.log
+   6c0fbd7..0bb8ef9  git-annex -> synced/git-annex
+   0bae1b4..bfedc45  master -> synced/master
+
+sent 77 bytes  received 31 bytes  72.00 bytes/sec
+total size is 10  speedup is 0.09
+[2013-05-29 12:08:03 WEST] Transferrer: Uploaded foo
+Already up-to-date.
+[2013-05-29 12:08:05 WEST] Pusher: Syncing with golias 
+To ssh://golias.git-annex/home/pedrocr/testsync
+   0bb8ef9..2ce5013  git-annex -> synced/git-annex
+$ git status
+# On branch master
+# Changes not staged for commit:
+#   (use "git add <file>..." to update what will be committed)
+#   (use "git checkout -- <file>..." to discard changes in working directory)
+#
+#	typechange: foo
+#
+# Untracked files:
+#   (use "git add <file>..." to include in what will be committed)
+#
+#	bar
+no changes added to commit (use "git add" and/or "git commit -a")
+"""]]
+
+On the remote repository:
+
+[[!format sh """
+$ ls -l
+total 4
+-rw-r--r-- 1 pedrocr pedrocr 10 May 29 12:08 foo
+"""]]
+
+If I now just touch the linked file on the repository:
+
+[[!format sh """
+$ touch bar
+$ tail .git/annex/daemon.log
+
+(merging synced/git-annex into git-annex...)
+(Recording state in git...)
+add bar (checksum...) [2013-05-29 12:12:49 WEST] Committer: Committing changes to git
+[2013-05-29 12:12:49 WEST] Pusher: Syncing with golias 
+Already up-to-date.
+To ssh://golias.git-annex/home/pedrocr/testsync
+   2ce5013..d36166b  git-annex -> synced/git-annex
+   bfedc45..ee3a7a1  master -> synced/master
+Already up-to-date.
+"""]]
+
+On the remote repository:
+
+[[!format sh """
+$ ls -l
+total 8
+-rw-r--r-- 1 pedrocr pedrocr 10 May 29 12:08 bar
+-rw-r--r-- 1 pedrocr pedrocr 10 May 29 12:08 foo
+"""]]
+
+Note that now bar has been synced as a new file and not a hardlink as it should be (the 1's after the permissions). 
+
+The sync also isn't acting properly on the linked files. For example. 
+
+First in the origin repository:
+
+[[!format sh """
+$ cat bar
+something
+$ cat foo
+something
+$ echo "someotherthing" > bar
+$ cat bar
+someotherthing
+$ cat foo
+someotherthing
+"""]]
+
+The result in the destination:
+
+[[!format sh """
+$ cat bar
+someotherthing
+$ cat foo
+something
+"""]]
+
+So even if the intended behavior is for hardlinked files to be synced as two separate files the sync isn't correct because the two files changed in the origin and only one of them changed in the destination. This probably needs to be fixed with actual hard links for real filesystems and with some copying for crippled filesystems.
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ git annex version
+git-annex version: 4.20130516.1
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+local repository version: 4
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 12.04.2 LTS
+Release:	12.04
+Codename:	precise
+"""]]
+
+

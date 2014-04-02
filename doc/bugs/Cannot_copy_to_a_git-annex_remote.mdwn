@@ -1,0 +1,14 @@
+What steps will reproduce the problem?
+
+I really have no way to reproduce.  I have these two annex repository, both living on CentOS 6.3 machines, using SSH to copy from one to the other.  Everything has always worked fine, and I've copied hundreds of gigabytes and tens of thousands of files so far without a problem.
+
+What is the expected output? What do you see instead?
+
+I do "git copy --to storage FILE" and it says "Copying FILE... failed".  That's it.
+
+How do I fix things so that I can copy again?  Nothing that I tried had any effect on the problem.
+
+Thanks!
+
+> Thanks to Jim's smart correlation of this with another bug, I've fixed
+> them both. [[done]] --[[Joey]]

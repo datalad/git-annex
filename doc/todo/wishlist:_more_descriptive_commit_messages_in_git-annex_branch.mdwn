@@ -1,0 +1,55 @@
+as of git-annex version 3.20110719, all git-annex commits only contain the word "update" as a commit message. given that the contents of the commit are pretty non-descriptive (SHA1 hashes for file names, uuids for repository names), i suggest to have more descriptive commit messages, as shown here:
+
+    /mnt/usb_disk/photos/2011$ git annex get
+    /mnt/usb_disk/photos/2011$ git show git-annex
+    [...]
+    usb-disk-photos: get 2011
+    
+    * 10 files retrieved from 2 sources (9 from local-harddisk, 1 from my-server)
+    * 120 files were already present
+    * 2 files could not be retrieved
+    /mnt/usb_disk/photos/2011$ cd ~/photos/2011/07
+    ~/photos/2011/07$ git copy --to my-server
+    ~/photos/2011/07$ git show git-annex
+    [...]
+    local-harddisk: copy 2011/07 to my-server
+    
+    * 20 files pushed
+    ~/photos/2011/07$
+
+in my opinion, the messages should at least contain
+
+* what command was used
+* in which repository they were executed
+* which files or directories they affected (not necessarily all files, but what was given on command line or implicitly from the working directory)
+
+--[[chrysn]]
+
+> The implementation of the git-annex branch precludes more descriptive
+> commit messages, since a single commit can include changes that were
+> previously staged to the branch's index file, or spooled to its journal
+> by other git-annex commands (either concurrently running or
+> interrupted commands, or even changes needed to automatically merge
+> other git-annex branches).
+> 
+> It would be possible to make it *less* verbose, with an empty commit
+> message. :) --[[Joey]] 
+
+>> Closing as this is literally impossible to do without making
+>> git-annex worse. [[done]] --[[Joey]] 
+
+> I'm not sure that the requested feature is that far off. There are two
+> aspects, that can be solved relatively easy:
+>
+>  * Recording the name of the remote the commit was issued on. This
+>    information is simply constant per remote.
+>
+>  * While it is true that there is no 1 on 1 correspondence between commands
+>    and git-annex commits, it would be entirely possible to add a "message
+>    journal". Every command issued would start out with writing its
+>    invocation to the message journal. At the time the journal ends up being
+>    committed to the git-annex branch, the message journal is used as the
+>    body of the commit message and truncated.
+>
+> It is true that these suggestions do not address every aspect of the
+> original report, but they would solve about 90%. --[[HelmutGrohne]]

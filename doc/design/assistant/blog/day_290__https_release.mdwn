@@ -1,0 +1,17 @@
+Spent too many hours last night tracking down a bug that caused the webapp
+to hang when it got built with the new yesod 1.2 release. Much of that time
+was spent figuring out that yesod 1.2 was causing the problem. It turned out to
+be a stupid typo in my yesod compatability layer. `liftH = liftH` in
+Haskell is an infinite loop, not the stack overflow you get in most
+languages. ;)
+
+Even though it's only been a week since the last release,
+that was worth pushing a release out for, which I've just done.
+This release is essentially all bug fixes (aside from the automatic 
+ionice and nicing of the daemon).
+
+This website is now available over https. Perhaps more importantly, all the
+links to download git-annex builds are https by default.
+
+The [[success_stories|day_288__success_stories]] list is getting really
+nice. Only way it could possibly be nicer is if you added your story! Hint. ;)

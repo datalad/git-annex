@@ -1,0 +1,7 @@
+Hi,
+
+Is there a chance to get a build of git-annex for the Nokia N9 smartphone with Meego Harmattan and later for Sailfish OS (Jolla phone)?
+Git is already available for Meego Harmattan: http://www.who.is.free.fr/wiki/doku.php?id=harmattan
+
+Cheers,
+Tobias

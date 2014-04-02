@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnldTTAP8PAifJUmqhRar6RAWNWlRcencw"
+ nickname="Marco"
+ subject="You can set the trust to &quot;dead&quot;"
+ date="2013-01-23T19:02:22Z"
+ content="""
+Simple answer: You can't fully delete a remote - with annex commands. You can mark it as dead.
+
+You can give this a try as a workaround: [[Truly_purging_dead_repositories/#comment-51ab797094f4c07bf5327fd21cad5835]]
+"""]]

@@ -1,0 +1,70 @@
+### Please describe the problem.
+
+I've setup two (actually more) direct mode repositories pointing at each other with ssh keys allowing them to talk to each other. I run the assistant in both repositories. Once I add a file to one repository I can see in the assistant log that it's been sent to the other side but it doesn't show up. Once I add a file to the other repository both repositories get both files.
+
+### What steps will reproduce the problem?
+
+In the first host:
+[[!format sh """
+$ ls -l
+total 0
+$ date | tee fromhostA
+Fri May 31 19:25:12 WEST 2013
+"""]]
+
+And then in the second host
+
+[[!format sh """
+$ ls
+$ date | tee fromhostB
+Fri May 31 19:25:27 WEST 2013
+$ ls
+fromhostB
+$ ls # After a little while
+fromhostA  fromhostB
+"""]]
+
+Back at hostA
+
+[[!format sh """
+$ ls -l
+total 8
+-rw-r--r-- 1 pedrocr pedrocr 30 May 31 19:25 fromhostA
+-rw-r--r-- 1 pedrocr pedrocr 30 May 31 19:25 fromhostB
+"""]]
+
+I looked at the logs for hostA and it seemed like it was pushing the changes right away. In hostB this is the moment where fromhostB gets added:
+
+[[!format sh """
+[2013-05-31 19:22:04 WEST] Pusher: Syncing with zeus, wintermute, ulisses 
+[2013-05-31 19:25:27 WEST] Committer: Adding fromhostB
+
+(merging zeus/git-annex into git-annex...)
+(Recording state in git...)
+(merging wintermute/git-annex into git-annex...)
+(Recording state in git...)
+(merging ulisses/git-annex into git-annex...)
+(Recording state in git...)
+"""]]
+
+It seems to be that merging in the remotes only gets done when there's an added file and that's why fromhostA didn't show up until fromhostB was there. I don't think this is the correct behavior. I want to be able to setup a new repository with other repositories as remotes and have it automatically pull in all the contents without having to create content itself.
+
+### What version of git-annex are you using? On what operating system?
+
+[[!format sh """
+$ git annex version
+git-annex version: 4.20130516.1
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+local repository version: 4
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+$ lsb_release -a
+No LSB modules are available.
+Distributor ID:	Ubuntu
+Description:	Ubuntu 12.04.2 LTS
+Release:	12.04
+Codename:	precise
+"""]]
+
+> [[done]]; see comment --[[Joey]] 

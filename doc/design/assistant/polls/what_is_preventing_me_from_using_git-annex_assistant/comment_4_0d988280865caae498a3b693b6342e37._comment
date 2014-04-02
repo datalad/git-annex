@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="Two local repositories"
+ date="2013-01-11T10:31:54Z"
+ content="""
+Here is my usecase:
+I want two local (direct mode) repositories. So basically a working directory and a backup directory to the working one.
+
+The removable media repository *almost* fulfill this usecase, except you can only select drive and not a directory.
+I think it would be relatively simple to implement. (A drive is a directory under linux after all).
+
+Best, 
+ Laszlo
+
+"""]]

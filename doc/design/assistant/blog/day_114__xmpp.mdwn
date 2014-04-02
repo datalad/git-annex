@@ -1,0 +1,56 @@
+Had to toss out my XMPP presence hack. Turns out that, at least in Google
+Talk, presence info is not sent to clients that have marked themselves
+unavailable, and that means the assistant would not see notifications, as it
+was nearly always marked unavailable as part of the hack.
+
+I tried writing a test program that uses XMPP personal eventing, only
+to find that Google Talk rejected my messages. I'm not 100% sure my
+messages were right, but I was directly copying the example in the RFC,
+and prosody accepted them. I could not seem to get a list of extensions out
+of Google Talk either, so I don't know if it doesn't support personal
+eventing, or perhaps only supports certian specific types of events.
+
+So, plan C... using XMPP [presence extended content](http://xmpp.org/rfcs/rfc6121.html#presence-extended).
+The assistant generates a presence message tagged "xa" (Extended Away),
+which hopefully will make it not seem present to clients.
+And to that presence message, I add my own XML element:
+
+	<git-annex xmlns='git-annex' push="uuid,uuid" />
+
+This is all entirely legal, and not at all a hack.
+(Aside from this not really being presence info.) Isn't XML fun?
+
+And plan C works, with Google Talk, and prosody. I've successfully gotten
+push notifications flowing over XMPP!
+
+----
+
+Spent some hours dealing with an unusual probolem: git-annex started
+segfaulting intermittently on startup with the new XMPP code. 
+
+Haskell code is not supposed to segfault..
+
+I think this was probably due to not using a bound thread for XMPP,
+so if haskell's runtime system recheduled its green thread onto a different
+OS thread during startup, when it's setting up TLS, it'd make gnuTLS very
+unhappy.
+
+So, fixed it to use a bound thread. Will wait and see if the crash is gone.
+
+----
+
+Re-enabled DBUS support, using a new version of the library that avoids the
+memory leak. Will need further changes to the library to support
+reconnecting to dbus.
+
+----
+
+Next will be a webapp configuration UI for XMPP. Various parts of the
+webapp will direct the user to set up XMPP, when appropriate, especially
+when the user sets up a cloud remote.
+
+To make XMPP sufficiently easy to configure, I need to check SRV records to
+find the XMPP server, which is an unexpected PITA because `getaddrinfo`
+can't do that. There are several haskell DNS libraries that I could use for
+SRV, or I could use the `host` command: 
+`host -t SRV _xmpp-client._tcp.gmail.com`

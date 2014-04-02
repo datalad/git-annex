@@ -1,0 +1,29 @@
+As per IRC
+
+    22:13:10 < RichiH> joeyh: btw, i have been pondering a `git annex import --lazy` or some such which basically goes through a directory and deletes everything i find in the annex it run from
+    22:50:39 < joeyh> not sure of the use case
+    23:41:06 < RichiH> joeyh: the use case is "i have important a ton of data into my annexes. now, i am going through the usual crud of cp -ax'ed, rsync'ed, and other random 'new disk, move stuff around and just put a full dump over there' file dumps and would like to delete everything that's annexed already"
+    23:41:33 < RichiH> joeyh: that would allow me to spend time on dealing with the files which are not yet annexed
+    23:41:54 < RichiH> instead of verifying file after file which has been imported already
+    23:43:19 < joeyh> have you tried just running git annex import in a subdirectory and then deleting the dups?
+    23:45:34 < joeyh> or in a separate branch for that matter, which you could then merge in, etc
+    23:54:08 < joeyh> Thinking anout it some more, it would need to scan the whole work tree to see what keys were there, and populate a lookup table. I prefer to avoid things that need git-annex to do such a large scan and use arbitrary amounts of memory.
+    00:58:11 < RichiH> joeyh: that would force everything into the annex, though
+    00:58:20 < RichiH> a plain import, that is
+    00:58:53 < RichiH> in a usual data dump directory, there's tons of stuff i will never import
+    00:59:00 < RichiH> i want to delete large portions of it
+    00:59:32 < RichiH> but getting rid of duplicates first allows me to spend my time focused on stuff humans are good at: deciding
+    00:59:53 < RichiH> whereas the computer can focus on stuff it's good at: mindless comparision of bits
+    01:00:15 < RichiH> joeyh: as you're saying this is complex, maybe i need to rephrase
+    01:01:40 < RichiH> what i envision is git annex import --foo to 1) decide what hashing algorithm should be used for this file 2) hash that file 3) look into the annex if that hash is annexed 3a) optionally verify numcopies within the annex 4) delete the file in the source directory
+    01:01:47 < RichiH> and then move on to the next file
+    01:02:00 < RichiH> if the hash does not exist in the annex, leave it alone
+    01:02:50 < RichiH> if the hash exists in annex, but numcopies is not fulfilled, just import it as a normal import would
+    01:03:50 < RichiH> that sounds quite easy, to me; in fact i will prolly script it if you decide not to implement it
+    01:04:07 < RichiH> but i think it's useful for a _lot_ of people who migrate tons of data into annexes
+    01:04:31 < RichiH> thus i would rather see this upstream and not hacked locally
+
+The only failure mode I see in the above is "file has been dropped elsewhere, numcopies not fulfilled, but that info is not synched to the local repo, yet" -- This could be worked around by always importing the data.
+
+> [[done]] as `git annex import --deduplicate`.
+> --[[Joey]]

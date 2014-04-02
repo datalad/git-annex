@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-11T16:26:26Z"
+ content="""
+When git-annex uses an existing key (which is done automatically if it detects you have already set up passwordless login to the server using the default key), it does not configure the server to further restrict use of that key.
+
+I have just verified this to be sure. That would be a bad bug. Doesn't happen.
+
+So, I still don't understand what this bug report is about.
+"""]]

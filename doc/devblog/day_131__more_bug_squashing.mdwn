@@ -1,0 +1,11 @@
+Squashed three or four more bugs today. Unanswered message backlog is down
+to 27.
+
+The most interesting problem today is that the git-repair code was using
+too much memory when `git-fsck` output a lot of problems (300 thousand!). I
+managed to half the memory use in the worst case (and reduced it much more
+in more likely cases). But, don't really feel I can close that bug yet,
+since really big, really badly broken repositories can still run it out of
+memory. It would be good to find a way to reorganize the code so that the
+broken objects list streams through git-repair and never has to all be
+buffered in memory at once. But this is not easy.

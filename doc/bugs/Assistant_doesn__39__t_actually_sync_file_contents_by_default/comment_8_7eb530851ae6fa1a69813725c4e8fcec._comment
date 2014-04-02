@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkx5V3MTbzCXS3J7Mn9FEq8M9bPPYMkAHY"
+ nickname="Pedro"
+ subject="comment 8"
+ date="2013-05-20T19:59:22Z"
+ content="""
+Here's the same example you posted being followed by me and showing the problem
+
+[[!format sh \"\"\"
+$mkdir 1 2
+$cd 1; git init; git-annex init; git annex direct; echo \"file added to 1\" > file_from_1; cd ..
+Initialized empty Git repository in /home/pedrocr/Hacks/test-git-annex/1/.git/
+init  ok
+(Recording state in git...)
+commit  
+# On branch master
+#
+# Initial commit
+#
+nothing to commit (create/copy files and use \"git add\" to track)
+ok
+direct  ok
+$cd 2; git init; git-annex init; git annex direct; echo \"file added to 2\" > file_from_2; cd ..
+Initialized empty Git repository in /home/pedrocr/Hacks/test-git-annex/2/.git/
+init  ok
+(Recording state in git...)
+commit  
+# On branch master
+#
+# Initial commit
+#
+nothing to commit (create/copy files and use \"git add\" to track)
+ok
+direct  ok
+$cd 1; git remote add 2 ssh://localhost/~pedrocr/Hacks/test-git-annex/2; git annex assistant; cd ..
+$cd 2; git remote add 1 ssh://localhost/~pedrocr/Hacks/test-git-annex/1; git annex assistant; cd ..
+(merging synced/git-annex into git-annex...)
+$cd 1
+$ls
+file_from_1  file_from_2
+$ls -la
+total 20
+drwxrwxr-x 3 pedrocr pedrocr 4096 May 20 20:57 .
+drwxrwxr-x 4 pedrocr pedrocr 4096 May 20 20:55 ..
+-rw-r--r-- 1 pedrocr pedrocr   16 May 20 20:56 file_from_1
+lrwxrwxrwx 1 pedrocr pedrocr  180 May 20 20:57 file_from_2 -> .git/annex/objects/1P/8w/SHA256E-s16--b651aaa274225b617cb4d3033047ac6aee29dd6f2465f94ec38dc6630b7d48c8/SHA256E-s16--b651aaa274225b617cb4d3033047ac6aee29dd6f2465f94ec38dc6630b7d48c8
+drwxrwxr-x 9 pedrocr pedrocr 4096 May 20 20:57 .git
+$cd ..
+$cd 2
+$ls -la
+total 20
+drwxrwxr-x 3 pedrocr pedrocr 4096 May 20 20:57 .
+drwxrwxr-x 4 pedrocr pedrocr 4096 May 20 20:55 ..
+lrwxrwxrwx 1 pedrocr pedrocr  180 May 20 20:57 file_from_1 -> .git/annex/objects/qQ/x9/SHA256E-s16--cca8b6c2db480aa680e12c48f471a351de69978c7665fac5b63d9a765f4c16f4/SHA256E-s16--cca8b6c2db480aa680e12c48f471a351de69978c7665fac5b63d9a765f4c16f4
+-rw-r--r-- 1 pedrocr pedrocr   16 May 20 20:56 file_from_2
+drwxrwxr-x 9 pedrocr pedrocr 4096 May 20 20:57 .git
+$
+\"\"\"]]
+"""]]

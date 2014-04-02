@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlutNrg7ajiNAfi5gqJfD8crv0aimZa27k"
+ nickname="Chuck"
+ subject="Now I'm really confused 8-/"
+ date="2013-07-28T05:26:02Z"
+ content="""
+Yes, I followed the directions on that page and executed \"sudo apt-get install git-annex\" on my 13.04 (Raring) system.  I did it again just now to verify, and I got the same result from \"git-annex version\", namely \"3.20121112ubuntu2\".  Do I need to add a repo for Raring as for Precise? 
+"""]]

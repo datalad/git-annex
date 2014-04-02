@@ -1,0 +1,15 @@
+It all came together for Android today. Went from a sort of working app
+to a fully working app!
+
+* rsync.net works.
+* Box.com appears to work -- at least it's failing with the same
+  timeout I get on my linux box here behind the firewall of dialup doom.
+* XMPP is working too!
+
+These all needed various little fixes. Like loading TLS certificates from
+where they're stored on Android, and ensuring that totally crazy file
+permissions from Android (----rwxr-x for files?!) don't leak out into rsync
+repositories. Mostly though, it all just fell into place today.
+Wonderful..
+
+The Android autobuild is updated with all of today's work, so try it out.

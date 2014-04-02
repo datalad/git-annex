@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.8.126"
+ subject="re: cloud"
+ date="2012-06-11T04:48:08Z"
+ content="""
+Yes, git-annex has to split files for certian providers. I already added support for this as part of my first pass at supporting box.com, see [[tips/using_box.com_as_a_special_remote]].
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 6"
+ date="2013-08-16T09:14:52Z"
+ content="""
+You can either keep running 2 webapps paired using xmpp running all the time that gives you push like notifications or if you are ok with syncing every once in a while you can have a check mail script that adds files on the server commits them then calls git annex sync locally,
+
+    ssh $1 \"cd /path/to/annex/;git add .;git commit 'Update'\";git annex sync
+
+should do the trick. The latter method you just need to annex repos no encrypted third repo. Just init your git annex repo on the server and clone on the laptop thats it.
+"""]]

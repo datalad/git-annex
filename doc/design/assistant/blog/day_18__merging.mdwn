@@ -1,0 +1,82 @@
+Worked on automatic merge conflict resolution today. I had expected to be
+able to use git's merge driver interface for this, but that interface is
+not sufficient. There are two problems with it:
+
+1. The merge program is run when git is in the middle of an operation
+   that locks the index. So it cannot delete or stage files. I need to
+   do both as part of my conflict resolution strategy.
+2. The merge program is not run at all when the merge conflict is caused
+   by one side deleting a file, and the other side modifying it. This is
+   an important case to handle.
+
+So, instead, git-annex will use a regular `git merge`, and if it fails, it
+will fix up the conflicts.
+
+That presented its own difficulty, of finding which files in the tree
+conflict. `git ls-files --unmerged` is the way to do that, but its output
+is a quite raw form:
+
+	120000 3594e94c04db171e2767224db355f514b13715c5 1	foo
+	120000 35ec3b9d7586b46c0fd3450ba21e30ef666cfcd6 3	foo
+	100644 1eabec834c255a127e2e835dadc2d7733742ed9a 2	bar
+	100644 36902d4d842a114e8b8912c02d239b2d7059c02b 3	bar
+
+I had to stare at the rather impenetrable documentation for hours and
+write a lot of parsing and processing code to get from that to these mostly
+self explanatory data types:
+
+	data Conflicting v = Conflicting
+	        { valUs :: Maybe v
+	        , valThem :: Maybe v
+	        } deriving (Show)
+
+	data Unmerged = Unmerged
+	        { unmergedFile :: FilePath
+	        , unmergedBlobType :: Conflicting BlobType
+	        , unmergedSha :: Conflicting Sha
+	        } deriving (Show)
+
+Not the first time I've whined here about time spent parsing unix command
+output, is it? :)
+
+From there, it was relatively easy to write the actual conflict cleanup
+code, and make `git annex sync` use it. Here's how it looks:
+
+	$ ls -1
+	foo.png
+	bar.png
+	$ git annex sync
+	commit  
+	# On branch master
+	nothing to commit (working directory clean)
+	ok
+	merge synced/master 
+	CONFLICT (modify/delete): bar.png deleted in refs/heads/synced/master and modified in HEAD. Version HEAD of bar.png left in tree.
+	Automatic merge failed; fix conflicts and then commit the result.
+	bar.png: needs merge
+	(Recording state in git...)
+	[master 0354a67] git-annex automatic merge conflict fix
+	ok
+	$ ls -1
+	foo.png
+	bar.variant-a1fe.png
+	bar.variant-93a1.png
+
+There are very few options for ways for the conflict resolution code to
+name conflicting variants of files. The conflict resolver can only use data
+present in git to generate the names, because the same conflict needs to 
+be resolved the same everywhere.
+
+So I had to choose between using the full key name in the filenames produced
+when resolving a merge, and using a shorter checksum of the key, that would be
+more user-friendly, but could theoretically collide with another key. 
+I chose the checksum, and weakened it horribly by only using 32 bits of it!
+
+Surprisingly, I think this is a safe choice. The worst that can
+happens if such a collision happens is another conflict, and the conflict
+resolution code will work on conflicts produced by the conflict resolution
+code! In such a case, it does fall back to putting the whole key in
+the filename:
+"bar.variant-SHA256-s2550--2c09deac21fa93607be0844fefa870b2878a304a7714684c4cc8f800fda5e16b.png"
+
+Still need to hook this code into `git annex assistant`.

@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl9sYlePmv1xK-VvjBdN-5doOa_Xw-jH4U"
+ nickname="Richard"
+ subject="comment 2"
+ date="2013-07-11T20:18:44Z"
+ content="""
+I wanted to use it as a way to prepare the files before running `git annex add`. I like to have everything exactly how I want it before I add anything to git, or git-annex. Does git-annex do anything in the git-annex branch prior to running the pre-commit hook? I.e. is there any penalty, however slight, in running `git annex add` several times while moving stuff around?
+
+"""]]

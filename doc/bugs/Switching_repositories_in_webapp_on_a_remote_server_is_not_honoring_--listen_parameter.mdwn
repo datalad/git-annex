@@ -1,0 +1,24 @@
+### Please describe the problem.
+I am running my "origin" repositories on a headless server. Managing these with webapp --listen=<server IP>:<port> is a very conveniant way. Now I am creating more repositories for different content on the same server. When I try to switch the webapp between these repositories webapp gives me a link with 127.0.0.1:<random port> in the URL.
+
+### What steps will reproduce the problem?
+1. Start webapp on a remote system with --listen parameter.
+2. Add an existing (did not try for a new repository) manually created annex to the webapp using "add another local repository" (btw. file select dialog is also not working remotely)
+3. You get asked if you want to combine the new annex with the current or to keep them separate (--> keep them separate)
+4. You get forwarded to the new webapp instance but with a localhost address (127.0.0.1). The same address is also used when you manually try to swich between repositories using the repository menu.
+
+### What version of git-annex are you using? On what operating system?
+4.20130501 on Ubuntu precise from the rubiojr PPA repository
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/debug.log
+
+
+# End of transcript or log.
+"""]]
+
+>> --listen no longer accepts a port. Use the new HTTPS support instead.
+>> [[done]] --[[Joey]] 

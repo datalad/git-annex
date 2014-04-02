@@ -1,0 +1,32 @@
+### Please describe the problem.
+When I try to create the repository with the suggested location `C:\Users\bbigras\Desktop\annex\` I get "Cannot write a repository there". I didn't see the program output any errors on the console. [screen capture](http://imgur.com/7ZUqqVQ)
+
+It works if I change the path to `C:\Users\bbigras\annex\`.
+
+### What steps will reproduce the problem?
+* run `git annex webapp`
+* click `Make Repository`
+
+### What version of git-annex are you using? On what operating system?
+[[!format sh """
+git-annex version: 5.20131213-g2893b22
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+
+git version 1.8.4.msysgit.0
+"""]]
+
+Windows 7 64-bit
+
+### Please provide any additional information below.
+
+[[!format sh """
+Launching web browser on file://C:\Users\bbigras\AppData\Local\Temp\webapp9924.html
+"""]]
+
+> It checks if the directory can be written to, and it seems that for some
+> reason Windows is preventing you from writing to your Desktop. That seems
+> really weird to me (and I have not seen that behavior). But, I can easily
+> make it check if that's the case, and fall back to the other path, so
+> have done so. [[done]] --[[Joey]]

@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkx5V3MTbzCXS3J7Mn9FEq8M9bPPYMkAHY"
+ nickname="Pedro"
+ subject="comment 1"
+ date="2013-05-29T11:33:05Z"
+ content="""
+Implementing hard links will probably also require handling the edge case where the user has setup two repositories where one of them spans filesystems. So:
+
+- Repository A is all in a single filesystem
+- Repository B has it's root in one filesystem and them /someotherdirectory/ is another filesystem.
+
+If the user in repository A does a \"ln /somefile /someotherdirectory/otherfile\" you'd need to treat this as in the crippled case as repository B can't do the hardlink spanning filesystems.
+
+Another edge case may also be that OSX supports hardlinked directories for use with their TimeMachine feature. The feature isn't exposed through the normal ln command but users may sometimes hack around that[1]. Also, any TimeMachine backups will naturally have hardlinked directories.
+
+[1] http://stackoverflow.com/questions/1432540/creating-directory-hard-links-in-macos-x
+"""]]

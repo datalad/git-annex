@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.249"
+ subject="comment 2"
+ date="2014-01-22T20:25:44Z"
+ content="""
+Something seems to have prevented the upload getting onto hackage. I have re-run the upload in case that helps.
+
+But, you can always get the source by `git clone git://git-annex.branchable.com/` or see the install link in the sidebar.
+"""]]

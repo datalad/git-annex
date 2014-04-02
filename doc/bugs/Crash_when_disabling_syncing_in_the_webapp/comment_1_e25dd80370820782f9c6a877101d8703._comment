@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.41"
+ subject="comment 1"
+ date="2014-03-26T17:36:00Z"
+ content="""
+How did you install git-annex? Is this Debian Linux?
+
+I have not been able to reproduce a crash. It's indeed the case that a PauseWatcher exception is thrown, but the Watcher explicitly catches that exception.
+"""]]

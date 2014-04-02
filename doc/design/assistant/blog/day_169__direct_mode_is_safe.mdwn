@@ -1,0 +1,24 @@
+I've finished making direct mode file transfers safe. The last piece of the
+puzzle was making `git-annex-shell recv-key` check data it's received from
+direct mode repositories. This is a bit expensive, but avoids adding
+another round-trip to the protocol. I might revisit this later, this was
+just a quick fix.
+
+---
+
+The [[poll|polls/what is preventing me from using git-annex assistant]] was 
+quite useful. Some interesting points:
+
+* 14% have been reading this blog, and rightly don't trust direct mode to
+  be safe. Which is why I went ahead with a quick fix to make it safe.
+* 6% want an Ubuntu PPA. I don't anticipate doing this myself, but
+  if anyone who develops for Ubuntu wants to put together a PPA with a
+  newer version, I can help you pick the newer haskell packages you'll
+  need from Debian, etc.
+* 9% just need me to update the amd64 build in Debian sid. I forgot to
+  include it in the last release, and the Debian buildds cannot currently
+  autobuild git-annex due to some breakage in the versions of haskell
+  libraries in unstable. Hopefully I'll remember to include an amd64 build
+  in my next release.
+
+And lots of other interesting stuff, I have a nice new TODO list now. :)

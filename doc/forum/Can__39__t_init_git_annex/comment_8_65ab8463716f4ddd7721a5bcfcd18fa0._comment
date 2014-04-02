@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnZ0g2UAijV7RGrKtWPljCCAYHBJ3pwPvM"
+ nickname="Meng"
+ subject="comment 8"
+ date="2012-10-16T05:22:54Z"
+ content="""
+Oh,  I see.   But what I need on the remote partition `/Volumes/subproject` connected via `smb://` is the actual `bigdir1` and `bigfile`, not the encoded objects.  Maybe I should use some other types of special remote?
+"""]]

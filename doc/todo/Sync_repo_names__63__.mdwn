@@ -1,0 +1,10 @@
+It's very confusing to me that the same repo viewed from different client systems can have different names and descriptions.  This implies that making changes to a remote repo from one system only affects how that system sees the repo, but it seems to affect how the entire git-annex "pair" or "network of repos" sees it.
+
+I think it would be good if the names and descriptions of repos were synced across clients.
+
+> The descriptions of repositories are synced. (They're stored in git-annex:uuid.log)
+> 
+> git allows for the same repository to be referred to using as many different remote names as you want to set up. git-annex inherits this,
+> and I can't see this changing; there are very good reasons for remotes to
+> have this flexability. [[done]]
+> --[[Joey]] 

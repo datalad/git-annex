@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRai_qFYPVvEgC6i1nlM1bh-C__jbhqS0"
+ nickname="Matthew"
+ subject="Renaming files"
+ date="2013-07-21T10:08:16Z"
+ content="""
+Renaming the files does not fix it, Git annex on all computers knows that those files are only in my phone, but the assistant is refusing to transfer the contents, it does not seem to know that it needs to...
+
+    whereis Freddie_Mercury/Barcelona_[+video]/B00921KMM4_(disc_3)_03_-_The_Fallen_Priest_(Orchestral_Versi.mp3 (3 copies) 
+      	1f368162-f02f-4794-af0c-1b5489e099b3 -- u0_a84@localhost:/sdcard/annex
+       	53f03d06-f1e3-11e2-8519-1b41c09abecd -- here (Cobol: Phone)
+       	cb6240e0-f1df-11e2-836a-7f4323e50c49 -- origin (Markdown: Phone)
+    ok
+    whereis Freddie_Mercury/Barcelona_[+video]/B00921KMYW_(disc_3)_04_-_Ensueno_(Orchestral_Version).mp3 (1 copy) 
+      	1f368162-f02f-4794-af0c-1b5489e099b3 -- u0_a84@localhost:/sdcard/annex
+    ok
+    whereis Freddie_Mercury/Barcelona_[+video]/B00921KNAK_(disc_3)_05_-_The_Golden_Boy_(Orchestral_Version).mp3 (3 copies) 
+      	1f368162-f02f-4794-af0c-1b5489e099b3 -- u0_a84@localhost:/sdcard/annex
+       	53f03d06-f1e3-11e2-8519-1b41c09abecd -- here (Cobol: Phone)
+       	cb6240e0-f1df-11e2-836a-7f4323e50c49 -- origin (Markdown: Phone)
+    ok
+
+"""]]

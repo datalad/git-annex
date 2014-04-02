@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl99Gxq3NPNvwZHp3PDufaknQH4rZb_KKY"
+ nickname="Florian"
+ subject="comment 4"
+ date="2013-06-27T01:52:03Z"
+ content="""
+Thanks for the quick fix! I'm always amazed how fasts you find fixes for such problems. This qualified you for a flattr subscription (I know it's not much but if more people did this...). I didn't test the fix but I'm nearly sure it will work with the next release :-)
+
+I know that my expectations in this project are a little bit high and I see how much work it was to get where we are now. Once again thank you for the excellent work done so far. I don't fear to synchronize important data with git-annex. I even use git-annex to backup and synchronize the member database for our club (wannabe hackerspace). As soon as cabal downloads an compiles your latest release my last problems will be gone (the locking problem).
+
+I know about the remaining problems and thus use git-annex with care. Of course you didn't imagine all use cases in the beginning and maybe some are impossible to realise but as I already said, we are on a very good way! :-)
+
+My vision is to get rid of any centralized service (even the XMPP part -> maybe you could add add a global polling/watchdog/keepalive option for SSH only setups (in case one node died/wasn't started) ). At the moment this already works as long as git-annex runs on all machines. I already synced several thousands of private photos just by using SSH so thanks again! :-)
+
+An other vision (I know I'm not speaking for the majority and this is still utopic...) is to decentralize my home directory and to enable collaboration (e.g. on our club database (of course not simultaneously)). At my university AFS is used to store home and project directories. This filesystem also suffers from race conditions and file locking is only as good as each application implemented it but we still use it because it is sufficient. I am sure that git-annex is not far from this state and it could even do more (-> lock files as long as they are opened on one machine).
+
+One last thing I can imagine for now is to improve the synchronization speed. At least for me git-annex seems quite slow in syncing smaller files over high latency connections. Do you close ssh connections after each file and do you use something like the the fuzzy option in rsync (for moved/renamed logfiles/backups (once again one of these little problem with the management tool for our club))?
+
+I hope you don't get me wrong for this. I never before wrote any bug reports so take this as an other success of your project. ;-) I really hope it will get to the point I described above and I can assure you that it is already way better than what I tried to use before. Keep up the good work!
+"""]]

@@ -1,0 +1,6 @@
+Conversation moved from [[tips/recover_data_from_lost+found]]
+to a proper bug. --[[Joey]]
+
+(Unfortunatly that scrambled the comment creation times and thus order.)
+
+> Added a message [[done]] --[[Joey]] 

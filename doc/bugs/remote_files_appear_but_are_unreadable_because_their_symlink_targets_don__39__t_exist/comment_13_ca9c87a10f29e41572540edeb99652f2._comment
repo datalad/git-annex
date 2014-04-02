@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 13"
+ date="2013-07-30T18:51:38Z"
+ content="""
+I'm more interested in fixing core problems, like why it was not able to find git-annex-shell, than in fixing bugs in the web UI that follow on from those problems. 
+
+When you're using the standalone tarball, it's supposed to set up `~/.ssh/git-annex-shell` to point to wherever you've unpacked the tarball. The assistant does this the first time you run it, and any time it sees the file is out of date.
+I've tested this, and it appears to be working ok. I don't understand what happened in your case to prevent this from happening.
+"""]]

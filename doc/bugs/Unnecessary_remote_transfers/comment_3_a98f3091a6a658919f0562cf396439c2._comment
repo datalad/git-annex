@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 3"
+ date="2013-11-02T22:59:18Z"
+ content="""
+Also, I just realized that it's uploading two large files to my remote transfer repo, even though I already have both files in my local paired repo on both systems; i.e. there's no need to send it to the transfer repo at all.  And it was yesterday when the two files were transferred.  So I have no idea why today it thinks it needs to upload them to the transfer repo.  :/
+"""]]

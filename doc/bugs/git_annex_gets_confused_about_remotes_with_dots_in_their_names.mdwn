@@ -1,0 +1,34 @@
+For test.com//test, I get this:
+
+    % git annex copy . --to test.com//test
+    (getting UUID for test...) git-annex: there is no git remote named "test.com//test"
+
+And my .git/config changes from
+
+    [remote "test.com//test"]
+    	url = richih@test.com:/test
+    	fetch = +refs/heads/*:refs/remotes/test.com//test/*
+
+to
+
+    [remote "test.com//test"]
+    	url = richih@test.com:/test
+    	fetch = +refs/heads/*:refs/remotes/test.com//test/*
+    	annex-uuid = xyz
+    [remote "test"]
+    	annex-uuid = xyz
+
+
+Unless I am misunderstanding something, git annex gets confused about what the name of the remote it supposed to be, truncates at the dot for some operations and uses the full name for others.
+
+> I've fixed this bug. [[done]]
+> 
+> However, using "/" in a remote name seems likely to me to confuse 
+> git's own remote branch handling. Although I've never tried it.
+> --[[Joey]] 
+
+>> From what I can see, git handles / just fine, but would get upset about : which is why it's not allowed in a remote's name.
+>> My naming scheme is host//path/to/annex. It sorts nicely and gives all important information left to right with the most specific parts at the beginning and end.
+>> If you have any other ideas or scheme, I am all ears :)
+>> Either way, thanks for fixing this so quickly.
+>> -- RichiH

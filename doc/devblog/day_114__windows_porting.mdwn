@@ -1,0 +1,8 @@
+Windows porting all day. Fixed a lot of issues with the webapp,
+so quite productive. Except for the 2 hours wasted finding a way to kill a
+process by PID from Haskell on Windows.
+
+Last night, made `git annex metadata` able to set metadata on a whole
+directory or list of files if desired. And added a `--metadata field=value`
+switch (and corresponding preferred content terminal) which limits
+git-annex to acting on files with the specified metadata.
