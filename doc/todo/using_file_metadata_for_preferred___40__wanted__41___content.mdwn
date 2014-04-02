@@ -1,0 +1,12 @@
+Having the option of choosing for every file if we want it in our repository or not would be a great feature. It is currently possible using the wanted expression, but it is not very flexible, or it becomes unmaintainable.
+
+I tried with two repositories a and b, with the following wanted expressions :
+
+* for a: `not metadata=unwanted=<uuid-of-a>`
+* for b: `not metadata=unwanted=<uuid-of-b>`
+
+I think those expressions should be included in standard wanted expressions.
+
+Also, to improbe the feature, it should be possible to set (or remove) metadata in directories, and those should automatically affect their content.
+
+And we could imagine a `git annex unwant` command that would add the unwanted metadata to a file, copy it to other repositories, and attempt to drop it.
