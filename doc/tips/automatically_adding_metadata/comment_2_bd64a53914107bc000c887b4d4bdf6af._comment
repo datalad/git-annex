@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="2001:1928:1:9::1"
+ subject="comment 2"
+ date="2014-04-01T04:18:10Z"
+ content="""
+is there a way for this to be done globally, without having to install and configure the hook for each repository? it seems like a fairly useful feature that could be factored in git-annex itself (as opposed to be shipped as a shell script)...
+
+also, is there a way to retroactively parse the tags from existing files (as opposed to only new files added to the repo).
+
+thanks
+"""]]
