@@ -32,3 +32,10 @@ remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook ex
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] so
+> 
+> I have not tried to make the assistant go back and fix up existing
+> `authorized_keys` lines. So if someone had been using a posix shell and
+> switched to fish, they'll hit this and need to fix it themselves. I judge
+> this is pretty small number of users. --[[Joey]]

@@ -28,6 +28,10 @@ git-annex (5.20140321) UNRELEASED; urgency=medium
     to add the missing settings. For details, see
     http://git-annex.branchable.com/bugs/problems_with_glacier/
   * Added required content configuration.
+  * assistant: Adjust ssh authorized keys line generated in local pairing
+    or for a remote ssh server to set environment variables in an 
+    alternative way that works with the non-POSIX fix shell, as well
+    as POSIX shells.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 21 Mar 2014 14:08:41 -0400
 
