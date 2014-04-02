@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 2"
+ date="2014-04-02T22:44:14Z"
+ content="""
+@Mildred, I think both preferred content expressions will do the same thing. There is, however a difference between the groups: The webapp notices when all files have gone from an unwanted repository, and will help the user finish deleting the repository.
+"""]]
