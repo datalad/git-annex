@@ -1,4 +1,4 @@
-git-annex (5.20140321) UNRELEASED; urgency=medium
+git-annex (5.20140402) unstable; urgency=medium
 
   * unannex, uninit: Avoid committing after every file is unannexed,
     for massive speedup.
@@ -28,12 +28,12 @@ git-annex (5.20140321) UNRELEASED; urgency=medium
     to add the missing settings. For details, see
     http://git-annex.branchable.com/bugs/problems_with_glacier/
   * Added required content configuration.
-  * assistant: Adjust ssh authorized keys line generated in local pairing
+  * assistant: Improve ssh authorized keys line generated in local pairing
     or for a remote ssh server to set environment variables in an 
     alternative way that works with the non-POSIX fish shell, as well
     as POSIX shells.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 21 Mar 2014 14:08:41 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 02 Apr 2014 16:42:53 -0400
 
 git-annex (5.20140320) unstable; urgency=medium
 
