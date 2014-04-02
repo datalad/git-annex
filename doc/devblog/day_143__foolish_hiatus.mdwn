@@ -9,7 +9,7 @@ with the Tahoe developers about improving git-annex's tahoe integration.
 Today, I have been wrapping up [building propellor](http://joeyh.name/code/propellor/).
 To test its docker support, I used propellor to build and deploy a
 container that is a git-annex autobuilder. I'll be replacing the old
-autobuilder setup this shortly, and expect to also publish docker
+autobuilder setup with this shortly, and expect to also publish docker
 images for git-annex autobuilders, so anyone who wants to can run their
 own autobuilder really easily.
 
