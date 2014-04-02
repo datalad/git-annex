@@ -62,10 +62,14 @@ subdirectories).
 
 * `add [path ...]`
 
-  Adds files in the path to the annex. Files that are already checked into
-  git, or that git has been configured to ignore will be silently skipped.
-  (Use `--force` to add ignored files.) Dotfiles are skipped unless explicitly
-  listed.
+  Adds files in the path to the annex. If no path is specified, adds
+  files from the current directory and below.
+  
+  Files that are already checked into git, or that git has been configured
+  to ignore will be silently skipped. (Use `--force` to add ignored files.)
+
+  Dotfiles are skipped unless explicitly listed, or the --include-dotfiles
+  option is used.
 
 * `get [path ...]`
 
@@ -302,7 +306,8 @@ subdirectories).
 * `webapp`
 
   Opens a web app, that allows easy setup of a git-annex repository,
-  and control of the git-annex assistant.
+  and control of the git-annex assistant. If the assistant is not
+  already running, it will be started.
 
   By default, the webapp can only be accessed from localhost, and running
   it opens a browser window.
@@ -476,8 +481,8 @@ subdirectories).
 * `vicfg`
 
   Opens EDITOR on a temp file containing most of the above configuration
-  settings, and when it exits, stores any changes made back to the git-annex
-  branch.
+  settings, as well as a few others, and when it exits, stores any changes
+  made back to the git-annex branch.
 
 * `direct`
 
@@ -704,12 +709,21 @@ subdirectories).
 
 # METADATA COMMANDS
 
-* `metadata [path ...] [-s field=value -s field+=value -s field-=value ...]`
+* `metadata [path ...] [-s field=value -s field+=value -s field-=value ...] [-g field]`
 
-  Each file can have any number of metadata fields attached to it,
-  which each in turn have any number of values. This sets metadata
-  for the specified file or files, or if run without any values, shows
-  the current metadata.
+  The content of a file can have any number of metadata fields 
+  attached to it to describe it. Each metadata field can in turn
+  have any number of values. 
+  
+  This command can be used to set metadata, or show the currently set
+  metadata.
+  
+  To show current metadata, run without any -s parameters. The --json
+  option will enable json output.
+
+  To only get the value(s) of a single field, use -g field.
+  The values will be output one per line, with no other output, so
+  this is suitable for use in a script.
 
   To set a field's value, removing any old value(s), use -s field=value.
 
@@ -1043,6 +1057,19 @@ subdirectories).
 * `--user-agent=value`
 
   Overrides the User-Agent to use when downloading files from the web.
+
+* `--notify-finish`
+
+  Caused a desktop notification to be displayed after each successful
+  file download and upload.
+
+  (Only supported on some platforms, eg Linux with dbus. A no-op when
+  not supported.)
+
+* `--notify-start`
+
+  Caused a desktop notification to be displayed when a file upload
+  or download has started, or when a file is dropped.
 
 * `-c name=value`
 
@@ -1688,7 +1715,7 @@ used by git-annex.
 `~/.config/git-annex/autostart` is a list of git repositories
 to start the git-annex assistant in.
 
-`.git/hooks/pre-commit-annex` in your git repsitory will be run whenever
+`.git/hooks/pre-commit-annex` in your git repository will be run whenever
 a commit is made, either by git commit, git-annex sync, or the git-annex
 assistant.
 

@@ -197,7 +197,7 @@ authorizedKeysLine gitannexshellonly dir pubkey
 	 - long perl script. -}
 	| otherwise = pubkey
   where
-	limitcommand = "command=\"GIT_ANNEX_SHELL_DIRECTORY="++shellEscape dir++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty "
+	limitcommand = "command=\"env GIT_ANNEX_SHELL_DIRECTORY="++shellEscape dir++" ~/.ssh/git-annex-shell\",no-agent-forwarding,no-port-forwarding,no-X11-forwarding,no-pty "
 
 {- Generates a ssh key pair. -}
 genSshKeyPair :: IO SshKeyPair

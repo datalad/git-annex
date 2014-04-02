@@ -22,8 +22,8 @@ buildFlags = filter (not . null)
 #else
 #warning Building without the webapp. You probably need to install Yesod..
 #endif
-#ifdef WITH_WEBAPP_HTTPS
-	, "Webapp-https"
+#ifdef WITH_WEBAPP_SECURE
+	, "Webapp-secure"
 #endif
 #ifdef WITH_PAIRING
 	, "Pairing"
@@ -56,6 +56,9 @@ buildFlags = filter (not . null)
 #endif
 #ifdef WITH_DBUS
 	, "DBus"
+#endif
+#ifdef WITH_DESKTOP_NOTIFY
+	, "DesktopNotify"
 #endif
 #ifdef WITH_XMPP
 	, "XMPP"

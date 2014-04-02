@@ -1,14 +1,79 @@
-git-annex (5.20140307) UNRELEASED; urgency=medium
+git-annex (5.20140402) unstable; urgency=medium
+
+  * unannex, uninit: Avoid committing after every file is unannexed,
+    for massive speedup.
+  * --notify-finish switch will cause desktop notifications after each 
+    file upload/download/drop completes
+    (using the dbus Desktop Notifications Specification)
+  * --notify-start switch will show desktop notifications when each
+    file upload/download starts.
+  * webapp: Automatically install Nautilus integration scripts
+    to get and drop files.
+  * tahoe: Pass -d parameter before subcommand; putting it after
+    the subcommand no longer works with tahoe-lafs version 1.10.
+    (Thanks, Alberto Berti)
+  * forget --drop-dead: Avoid removing the dead remote from the trust.log,
+    so that if git remotes for it still exist anywhere, git annex info
+    will still know it's dead and not show it.
+  * git-annex-shell: Make configlist automatically initialize
+    a remote git repository, as long as a git-annex branch has
+    been pushed to it, to simplify setup of remote git repositories,
+    including via gitolite.
+  * add --include-dotfiles: New option, perhaps useful for backups.
+  * Version 5.20140227 broke creation of glacier repositories,
+    not including the datacenter and vault in their configuration.
+    This bug is fixed, but glacier repositories set up with the broken
+    version of git-annex need to have the datacenter and vault set
+    in order to be usable. This can be done using git annex enableremote
+    to add the missing settings. For details, see
+    http://git-annex.branchable.com/bugs/problems_with_glacier/
+  * Added required content configuration.
+  * assistant: Improve ssh authorized keys line generated in local pairing
+    or for a remote ssh server to set environment variables in an 
+    alternative way that works with the non-POSIX fish shell, as well
+    as POSIX shells.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 02 Apr 2014 16:42:53 -0400
+
+git-annex (5.20140320) unstable; urgency=medium
 
   * Fix zombie leak and general inneficiency when copying files to a
     local git repo.
+  * Fix ssh connection caching stop method to work with openssh 6.5p1,
+    which broke the old method.
   * webapp: Added a "Sync now" item to each repository's menu.
+  * webapp: Use securemem for constant time auth token comparisons.
+  * copy --fast --to remote: Avoid printing anything for files that
+    are already believed to be present on the remote.
+  * Commands that allow specifying which repository to act on using
+    the repository's description will now fail when multiple repositories
+    match, rather than picking a repository at random.
+    (So will --in=)
+  * Better workaround for problem umasks when eg, setting up ssh keys.
+  * "standard" can now be used as a first-class keyword in preferred content
+    expressions. For example "standard or (include=otherdir/*)"
+  * groupwanted can be used in preferred content expressions.
+  * vicfg: Allows editing preferred content expressions for groups.
+  * Improve behavior when unable to parse a preferred content expression
+    (thanks, ion).
+  * metadata: Add --get
+  * metadata: Support --key option (and some other ones like --all)
+  * For each metadata field, there's now an automatically maintained
+    "$field-lastchanged" that gives the date of the last change to that
+    field. Also the "lastchanged" field for the date of the last change
+    to any of a file's metadata.
   * unused: In direct mode, files that are deleted from the work tree
-    are no longer incorrectly detected as unused.
+    and so have no content present are no longer incorrectly detected as
+    unused.
+  * Avoid encoding errors when using the unused log file.
+  * map: Fix crash when one of the remotes of a repo is a local directory
+    that does not exist, or is not a git repo.
   * repair: Improve memory usage when git fsck finds a great many broken
     objects.
+  * Windows: Fix some filename encoding bugs.
+  * rsync special remote: Fix slashes when used on Windows.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 06 Mar 2014 16:17:01 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 20 Mar 2014 13:21:12 -0400
 
 git-annex (5.20140306) unstable; urgency=high
 

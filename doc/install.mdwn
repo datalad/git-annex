@@ -14,6 +14,7 @@ detailed instructions             | quick install
 &nbsp;&nbsp;[[Gentoo]]            | `emerge git-annex`
 &nbsp;&nbsp;[[ScientificLinux5]]  |
 &nbsp;&nbsp;[[openSUSE]]          | 
+&nbsp;&nbsp;[[Docker]]            | 
 [[Windows]]                       | [download installer](http://downloads.kitenet.net/git-annex/windows/current/) **alpha**
 """]]
 

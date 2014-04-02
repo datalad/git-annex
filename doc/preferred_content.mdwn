@@ -1,8 +1,8 @@
 git-annex tries to ensure that the configured number of [[copies]] of your
 data always exist, and leaves it up to you to use commands like `git annex
 get` and `git annex drop` to move the content to the repositories you want
-to contain it. But sometimes, it can be good to have more fine-grained
-control over which repositories prefer to have which content. Configuring
+to contain it. But often, it can be good to have more fine-grained
+control over which content is wanted by which repositories. Configuring
 this allows the git-annex assistant as well as 
 `git annex get --auto`, `git annex drop --auto`, `git annex sync --content`,
 etc to do smarter things.
@@ -11,12 +11,32 @@ Preferred content settings can be edited using `git
 annex vicfg`, or viewed and set at the command line with `git annex wanted`.
 Each repository can have its own settings, and other repositories will
 try to honor those settings when interacting with it.
-So there's no local `.git/config` for preferred content settings.
+(So there's no local `.git/config` for preferred content settings.)
+
+[[!template id=note text="""
+### [[quickstart|standard_groups]]
+
+Rather than writing your own preferred content expression, you can use
+several standard ones included in git-annex that are tuned to cover different
+common use cases.
+
+You do this by putting a repository in a group,
+and simply setting its preferred content to "standard" to match whatever
+is standard for that group. See [[standard_groups]] for a list.
+"""]]
 
 The idea is that you write an expression that files are matched against.
-If a file matches, it's preferred to have its content stored in the
-repository. If it doesn't, it's preferred to drop its content from
-the repository (if there are enough copies elsewhere).
+If a file matches, the repository wants to store its content.
+If it doesn't, the repository wants to drop its content
+(if there are enough copies elsewhere to allow removing it).
+
+To check at the command line which files are matched by preferred content
+settings, you can use the --want-get and --want-drop options.
+
+For example, `git annex find --want-get --not --in .` will find all the
+files that `git annex get --auto` will want to get, and `git annex find
+--want-drop --in .` will find all the files that `git annex drop --auto`
+will want to drop.
 
 The expressions are very similar to the matching options documented
 on the [[git-annex]] man page. At the command line, you can use those
@@ -54,7 +74,7 @@ and use "copies=transfer:1"
 
 To decide if content should be dropped, git-annex evaluates the preferred
 content expression under the assumption that the content has *already* been
-dropped. If the content would not be preferred then, the drop can be done.
+dropped. If the content would not be wanted then, the drop can be done.
 So, for example, `copies=2` in a preferred content expression lets
 content be dropped only when there are currently 3 copies of it, including
 the repo it's being dropped from. This is different than running `git annex
@@ -63,7 +83,7 @@ drop --copies=2`, which will drop files that currently have 2 copies.
 ### difference: "present"
 
 There's a special "present" keyword you can use in a preferred content
-expression. This means that content is preferred if it's present,
+expression. This means that content is wanted if it's present,
 and not otherwise. This leaves it up to you to use git-annex manually
 to move content around. You can use this to avoid preferred content
 settings from affecting a subdirectory. For example:
@@ -71,7 +91,7 @@ settings from affecting a subdirectory. For example:
 	auto/* or (include=ad-hoc/* and present)
 
 Note that `not present` is a very bad thing to put in a preferred content 
-expression. It'll make it prefer to get content that's not present, and
+expression. It'll make it want to get content that's not present, and
 drop content that is present! Don't go there..
 
 ### difference: "inpreferreddir"
@@ -86,130 +106,64 @@ The name of the directory can be configured using
 
 (If no directory name is configured, it uses "public" by default.)
 
-## testing preferred content settings
+### difference: "standard"
 
-To check at the command line which files are matched by preferred content
-settings, you can use the --want-get and --want-drop options.
+git-annex comes with some built-in preferred content expressions, that
+can be used with repositories that are in some [[standard_groups]].
 
-For example, "git annex find --want-get --not --in ." will find all the
-files that "git annex get --auto" will want to get, and "git annex find
---want-drop --in ." will find all the files that "git annex drop --auto"
-will want to drop.
+When a repository is in exactly one such group, you can use the "standard"
+keyword in its preferred content expression, to match whatever content
+the group's expression matches.
+(If a repository is put into multiple standard
+groups, "standard" will match anything.. so don't do that!)
 
-## standard expressions
+Most often, the whole preferred content expression is simply "standard".
+But, you can do more complicated things, for example:
+"`standard or include=otherdir/*`"
 
-git-annex comes with some standard preferred content expressions, that can
-be used with repositories that are in some pre-defined groups. To make a
-repository use one of these, just set its preferred content expression
-to "standard", and put it in one of these groups.
+### difference: "groupwanted"
 
-(Note that most of these standard expressions also make the repository
-prefer any content that is only currently available on untrusted and
-dead repositories. So if an untrusted repository gets connected,
-any repository that can will back it up.)
+The "groupwanted" keyword can be used to refer to a preferred content
+expression that is associated with a group. This is like the "standard"
+keyword, but you can set up groupwanted preferred content expressions
+using `git annex vicfg`.
 
-### client
+Note that when writing a groupwanted preferred content expression,
+you can use all of the keywords listed above, including "standard".
+(But not "groupwanted".)
 
-All content is preferred, unless it's for a file in a "archive" directory,
-which has reached an archive repository, or is unused.
+For example, to make a variant of the standard client preferred content
+expression that does not want files in the "out" directory, you
+could set `groupwanted client = standard and exclude=out/*`.
+Then repositories that are in the client group and have their preferred
+content expression set to "groupwanted" will use that, while
+other client repositories that have their preferred content expression
+set to "standard" will use the standard expression.
 
-`(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or roughlylackingcopies=1`
+Or, you could make a new group, with your own custom preferred content
+expression tuned for your needs, and every repository you put in this
+group and make its preferred content be "groupwanted" will use it.
 
-### transfer
+## upgrades
 
-Use for repositories that are used to transfer data between other
-repositories, but do not need to retain data themselves. For
-example, a repository on a server, or in the cloud, or a small
-USB drive used in a sneakernet.
+It's important that all clones of a repository can understand one-another's
+preferred content expressions, especially when using the git-annex
+assistant. So using newly added keywords can cause a problem if
+an older version of git-annex is in use elsewhere.
 
-The preferred content expression for these causes them to get and retain
-data until all clients have a copy.
+Before git-annex version 5.20140320, when git-annex saw a keyword it
+did not understand, it defaulted to assuming *all* files were
+preferred content. From version 5.20140320, git-annex has a nicer fallback
+behavior: When it is unable to parse a preferred content expression,
+it assumes all files that are currently present are preferred content.
 
-`(not (inallgroup=client and copies=client:2) and ($client)`
+Here are recent changes to preferred content expressions, and the version
+they were added in.
 
-(Where $client is a copy of the preferred content expression used for
-clients.)
-
-The "copies=client:2" part of the above handles the case where
-there is only one client repository. It makes a transfer repository
-speculatively  prefer content in this case, even though it as of yet
-has nowhere to transfer it to. Presumably, another client repository
-will be added later.
-
-### backup
-
-All content is preferred.
-
-`include=* or unused`
-
-### incremental backup
-
-Only prefers content that's not already backed up to another backup
-or incremental backup repository.
-
-`((include=* or unused) and (not copies=backup:1) and (not copies=incrementalbackup:1)) or approxlackingcopies=1`
-
-### small archive
-
-Only prefers content that's located in an "archive" directory, and
-only if it's not already been archived somewhere else.
-
-`((include=*/archive/* or include=archive/*) and not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
-
-### full archive
-
-All content is preferred, unless it's already been archived somewhere else.
-
-`(not (copies=archive:1 or copies=smallarchive:1)) or approxlackingcopies=1`
-
-Note that if you want to archive multiple copies (not a bad idea!),
-you should instead configure all your archive repositories with a
-version of the above preferred content expression with a larger
-number of copies.
-
-### source
-
-Use for repositories where files are often added, but that do not need to
-retain files for local use. For example, a repository on a camera, where
-it's desirable to remove photos as soon as they're transferred elsewhere.
-
-The preferred content expression for these causes them to only retain
-data until a copy has been sent to some other repository.
-
-`not (copies=1)`
-
-### manual
-
-This gives you nearly full manual control over what content is stored in the
-repository. This allows using the [[assistant]] without it trying to keep a
-local copy of every file. Instead, you can manually run `git annex get`,
-`git annex drop`, etc to manage content. Only content that is present
-is preferred.
-
-The exception to this manual control is that content that a client
-repository would not want is not preferred. So, files in archive
-directories are not preferred once their content has 
-reached an archive repository.
-
-`present and ($client)`
-
-(Where $client is a copy of the preferred content expression used for
-clients.)
-
-### public
-
-This is used for publishing information to a repository that can be
-publically accessed. Only files in a directory with a particular name
-will be published. (The directory can be located anywhere in the
-repository.)
-
-The name of the directory can be configured using
-`git annex enableremote $remote preferreddir=$dirname`
-
-### unwanted
-
-Use for repositories that you don't want to exist. This will result
-in any content on them being moved away to other repositories. (Works
-best when the unwanted repository is also marked as untrusted or dead.)
-
-`exclude=*`
+* "standard" 5.20140314  
+  (only when used in a more complicated expression; "standard" by
+  itself has been supported for a long time)
+* "groupwanted=" 5.20140314
+* "metadata=" 5.20140221
+* "lackingcopies=", "approxlackingcopies=", "unused=" 5.20140127
+* "inpreferreddir=" 4.20130501

@@ -1,0 +1,8 @@
+Hi,
+
+I have two repo one in direct (on windows) and one in indirect mode. From time to time the files in the direct repo are replaced by empty files however running git annex fsck always solves it.
+The problem is that today I did run git annex sync before running git annex fsck and git annex has then created two -variants for each of my files one empty and one with the content.
+I guess the easier for me is to just scrap that repo and make a new one however how do I prevent the changes to propagate now? I guess that if I now run git annex sync on my other repo all those small files are going to have linked created for them there as well.
+
+I hope this is clear,
+Thanks in advance.

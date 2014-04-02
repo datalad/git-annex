@@ -19,7 +19,7 @@
 
 module Utility.Matcher (
 	Token(..),
-	Matcher,
+	Matcher(..),
 	token,
 	tokens,
 	generate,

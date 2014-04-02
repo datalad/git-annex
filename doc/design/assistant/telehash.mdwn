@@ -11,6 +11,9 @@ git-annex (assistant) repositories.
 * Rapid development, situation may change in a month or 2.
 * Is it secure? A security review should be done by competant people
   (not Joey). See <https://github.com/telehash/telehash.org/issues/23>
+* **Haskell version** 
+  <https://github.com/alanz/htelehash/tree/v2/src/TeleHash>
+  Development on v2 in haskell is just starting up!
 
 ## implementation basics
 

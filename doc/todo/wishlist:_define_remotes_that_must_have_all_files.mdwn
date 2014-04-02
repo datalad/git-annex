@@ -16,3 +16,7 @@ Based on existing output, this is what a warning message could look like:
 	Warning
 
 What do you think?
+
+> I think that [[required_content]] will make it easy to configure
+> such remotes, so this is another reason to build that. Closing
+> this bug as a dup of that one; [[done]] --[[Joey]]

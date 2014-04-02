@@ -73,7 +73,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 #endif
 	webapp <- WebApp
 		<$> pure assistantdata
-		<*> (pack <$> genRandomToken)
+		<*> genAuthToken
 		<*> getreldir
 		<*> pure staticRoutes
 		<*> pure postfirstrun
@@ -125,9 +125,13 @@ myUrl tlssettings webapp addr = unpack $ yesodRender webapp urlbase DashboardR [
 
 getTlsSettings :: Annex (Maybe TLS.TLSSettings)
 getTlsSettings = do
+#ifdef WITH_WEBAPP_SECURE
 	cert <- fromRepo gitAnnexWebCertificate
 	privkey <- fromRepo gitAnnexWebPrivKey
 	ifM (liftIO $ allM doesFileExist [cert, privkey])
 		( return $ Just $ TLS.tlsSettings cert privkey
 		, return Nothing
 		)
+#else
+	return Nothing
+#endif

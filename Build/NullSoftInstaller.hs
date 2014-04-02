@@ -67,7 +67,7 @@ uninstaller :: FilePath
 uninstaller = "git-annex-uninstall.exe"
 
 gitInstallDir :: Exp FilePath
-gitInstallDir = fromString "$PROGRAMFILES\\Git\\cmd"
+gitInstallDir = fromString "$PROGRAMFILES\\Git\\bin"
 
 startMenuItem :: Exp FilePath
 startMenuItem = "$SMPROGRAMS/git-annex.lnk"

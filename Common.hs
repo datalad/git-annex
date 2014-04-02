@@ -11,6 +11,7 @@ import Control.Exception.Extensible as X (IOException)
 import Data.Maybe as X
 import Data.List as X hiding (head, tail, init, last)
 import Data.String.Utils as X hiding (join)
+import Data.Monoid as X
 
 import System.FilePath as X
 import System.Directory as X

@@ -10,7 +10,6 @@
 module Command.Unused where
 
 import qualified Data.Set as S
-import qualified Data.ByteString.Lazy as L
 import Data.BloomFilter
 import Data.BloomFilter.Easy
 import Data.BloomFilter.Hash
@@ -296,7 +295,7 @@ withKeysReferencedInGitRef a ref = do
 	liftIO $ void clean
   where
 	tKey True = fmap fst <$$> Backend.lookupFile . getTopFilePath . DiffTree.file
-	tKey False = fileKey . takeFileName . encodeW8 . L.unpack <$$>
+	tKey False = fileKey . takeFileName . decodeBS <$$>
 		catFile ref . getTopFilePath . DiffTree.file
 
 {- Looks in the specified directory for bad/tmp keys, and returns a list

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://schnouki.net/"
+ nickname="Schnouki"
+ subject="comment 13"
+ date="2014-03-20T23:54:51Z"
+ content="""
+Sorry for the delay (my laptop hard drive died so I was offline for a few days).
+
+Just tested git-annex 5.20140320 on my NAS and it works just fine! The webapp is running, I can connect to it, and there's no more spam in the daemon.log (except for the dbus message every minute, but that's not really a problem).
+
+Thanks a lot Joey! 
+"""]]

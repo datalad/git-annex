@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="cehteh"
+ ip="217.8.62.137"
+ subject="consistent syntax"
+ date="2014-03-25T15:25:43Z"
+ content="""
+Further thinking led to the idea to use the test(1) like syntax to filter matches.
+
+    git annex view length=.* -lt 300 -gt 30 -o -eq 273 bpm=.* -eq 0
+
+"""]]

@@ -20,6 +20,7 @@ import System.Console.GetOpt
 import Common.Annex
 import qualified Annex
 import Types.Messages
+import Types.DesktopNotify
 import Limit
 import CmdLine.Usage
 
@@ -41,6 +42,10 @@ commonOptions =
 		"don't show debug messages"
 	, Option ['b'] ["backend"] (ReqArg setforcebackend paramName)
 		"specify key-value backend to use"
+	, Option [] ["notify-finish"] (NoArg (setdesktopnotify mkNotifyFinish))
+		"show desktop notification after transfer finishes"
+	, Option [] ["notify-start"] (NoArg (setdesktopnotify mkNotifyStart))
+		"show desktop notification after transfer completes"
 	]
   where
 	setforce v = Annex.changeState $ \s -> s { Annex.force = v }
@@ -49,6 +54,7 @@ commonOptions =
 	setforcebackend v = Annex.changeState $ \s -> s { Annex.forcebackend = Just v }
 	setdebug = Annex.changeGitConfig $ \c -> c { annexDebug = True }
 	unsetdebug = Annex.changeGitConfig $ \c -> c { annexDebug = False }
+	setdesktopnotify v = Annex.changeState $ \s -> s { Annex.desktopnotify = Annex.desktopnotify s <> v }
 
 matcherOptions :: [Option]
 matcherOptions =

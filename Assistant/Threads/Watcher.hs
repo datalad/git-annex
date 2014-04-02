@@ -35,6 +35,7 @@ import Annex.CatFile
 import Annex.CheckIgnore
 import Annex.Link
 import Annex.FileMatcher
+import Types.FileMatcher
 import Annex.ReplaceFile
 import Git.Types
 import Config
@@ -196,7 +197,7 @@ runHandler handler file filestatus = void $ do
 		| otherwise = f
 
 {- Small files are added to git as-is, while large ones go into the annex. -}
-add :: FileMatcher -> FilePath -> Assistant (Maybe Change)
+add :: FileMatcher Annex -> FilePath -> Assistant (Maybe Change)
 add bigfilematcher file = ifM (liftAnnex $ checkFileMatcher bigfilematcher file)
 	( pendingAddChange file
 	, do
@@ -205,7 +206,7 @@ add bigfilematcher file = ifM (liftAnnex $ checkFileMatcher bigfilematcher file)
 		madeChange file AddFileChange
 	)
 
-onAdd :: FileMatcher -> Handler
+onAdd :: FileMatcher Annex -> Handler
 onAdd matcher file filestatus
 	| maybe False isRegularFile filestatus =
 		unlessIgnored file $
@@ -218,7 +219,7 @@ shouldRestage ds = scanComplete ds || forceRestage ds
 {- In direct mode, add events are received for both new files, and
  - modified existing files.
  -}
-onAddDirect :: Bool -> FileMatcher -> Handler
+onAddDirect :: Bool -> FileMatcher Annex -> Handler
 onAddDirect symlinkssupported matcher file fs = do
 	v <- liftAnnex $ catKeyFile file
 	case (v, fs) of

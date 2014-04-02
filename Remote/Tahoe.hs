@@ -216,7 +216,7 @@ readTahoe hdl command params = withTahoeConfigDir hdl $ \configdir ->
 
 tahoeParams :: TahoeConfigDir -> String -> [CommandParam] -> [CommandParam]
 tahoeParams configdir command params = 
-	Param command : Param "-d" : File configdir : params
+	Param "-d" : File configdir : Param command : params
 
 storeCapability :: UUID -> Key -> Capability -> Annex ()
 storeCapability u k cap = setRemoteState u k cap

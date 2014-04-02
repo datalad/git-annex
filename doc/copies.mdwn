@@ -30,3 +30,6 @@ refuse to do so.
 
 With N=2, in order to drop the file content from Laptop, it would need access
 to both USB and Server.
+
+For more complicated requirements about which repositories contain which
+content, see [[required_content]].

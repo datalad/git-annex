@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.102"
+ subject="comment 3"
+ date="2014-03-19T23:14:24Z"
+ content="""
+I added a toplevel \"lastchanged\" that applies to all the fields. (Also when the last change was unsetting a field, the toplevel lastchanged will show the time of that which is otherwise not visible by collecting the lastchanged-* fields).
+"""]]

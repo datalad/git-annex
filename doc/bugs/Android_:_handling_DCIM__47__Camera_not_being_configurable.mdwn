@@ -12,5 +12,5 @@ In the log, there are many "too many open files" errors like these :
 
 git:createProcess: runInteractiveProcess: pipe: resource exhausted (Too many open files)
 
-[[!moreinfo]]
+[[!tag moreinfo]]
 [[!meta title="too many open files on android"]]

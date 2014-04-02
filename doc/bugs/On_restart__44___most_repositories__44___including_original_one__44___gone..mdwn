@@ -228,3 +228,13 @@ Everything up-to-date
 """]]
 
 Well, I see that thing about "failed to lock". I can imagine that my 'killall git-annex' to kill a leftover process that was hanging around after I'd done git-annex assistant --stop might have left stale lock files, somewhere... but of course I only got as far as doing that because I was already encountering problems, just trying to return to the webapp.
+
+> The original bug report seems to be a case of user confusion, 
+> and not a bug. (Although perhaps the UI is confusing?)
+> 
+> The "resource exhausted" that came up later is quite likely the problem
+> fixed in [[!commit 4d06037fdd44ba38fcd4c118d1e6330f06e22366]],
+> which affected local git remotes.
+> 
+> [[closing|done]]; I don't see any value keeping this open, I'm afraid.
+> --[[Joey]]

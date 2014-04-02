@@ -41,7 +41,7 @@ mkYesodData "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
 data WebApp = WebApp
 	{ assistantData :: AssistantData
-	, secretToken :: Text
+	, authToken :: AuthToken
 	, relDir :: Maybe FilePath
 	, getStatic :: Static
 	, postFirstRun :: Maybe (IO String)
@@ -52,11 +52,11 @@ data WebApp = WebApp
 
 instance Yesod WebApp where
 	{- Require an auth token be set when accessing any (non-static) route -}
-	isAuthorized _ _ = checkAuthToken secretToken
+	isAuthorized _ _ = checkAuthToken authToken
 
 	{- Add the auth token to every url generated, except static subsite
 	 - urls (which can show up in Permission Denied pages). -}
-	joinPath = insertAuthToken secretToken excludeStatic
+	joinPath = insertAuthToken authToken excludeStatic
 	  where
 		excludeStatic [] = True
 		excludeStatic (p:_) = p /= "static"

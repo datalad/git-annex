@@ -13,7 +13,7 @@ import Common.Annex
 import Command
 import Annex.Content
 import Logs.Location
-import Logs.Transfer
+import Annex.Transfer
 import qualified Remote
 import Types.Key
 
@@ -34,14 +34,15 @@ start = withHandles $ \(readh, writeh) -> do
 	stop
   where
 	runner (TransferRequest direction remote key file)
-		| direction == Upload = 
+		| direction == Upload = notifyTransfer direction file $
 			upload (Remote.uuid remote) key file forwardRetry $ \p -> do
 				ok <- Remote.storeKey remote key file p
 				when ok $
 					Remote.logStatus remote key InfoPresent
 				return ok
-		| otherwise = download (Remote.uuid remote) key file forwardRetry $ \p ->
-			getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
+		| otherwise = notifyTransfer direction file $
+			download (Remote.uuid remote) key file forwardRetry $ \p ->
+				getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
 
 {- stdin and stdout are connected with the caller, to be used for
  - communication with it. But doing a transfer might involve something
