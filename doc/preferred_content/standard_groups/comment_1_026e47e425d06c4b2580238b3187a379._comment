@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://mildred.fr/"
+ ip="2a01:e35:2f7b:8350:290:f5ff:feea:5546"
+ subject="difference between source and unwanted"
+ date="2014-04-02T22:25:26Z"
+ content="""
+What's the difference between `source` and `unwanted` ?
+
+- `source` (`not copies=1`) will keep files that have less than 1 copies, meaning zero copies, meaning no files.
+- `unwanted` will exclude all files.
+
+Both gets to the same results, all files are moved elsewhere. Right?
+"""]]
