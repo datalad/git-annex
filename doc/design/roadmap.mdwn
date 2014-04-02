@@ -10,8 +10,8 @@ Now in the
 * Month 4 [[!traillink assistant/windows text="Windows webapp"]], Linux arm, [[!traillink todo/support_for_writing_external_special_remotes]]
 * Month 5 user-driven features and polishing
 * Month 6 get Windows out of beta, [[!traillink design/metadata text="metadata and views"]]
-* **Month 7 user-driven features and polishing**
-* Month 8 [[!traillink assistant/telehash]]
+* Month 7 user-driven features and polishing
+* **Month 8 [[!traillink assistant/telehash]]**
 * Month 9 [[!traillink assistant/gpgkeys]] [[!traillink assistant/sshpassword]]
 * Month 10 get [[assistant/Android]] out of beta
 * Month 11 [[!traillink assistant/chunks]] [[!traillink assistant/deltas]]
