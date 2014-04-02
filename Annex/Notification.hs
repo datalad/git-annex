@@ -10,9 +10,9 @@
 module Annex.Notification where
 
 import Common.Annex
-import qualified Annex
 import Logs.Transfer
 #ifdef WITH_DBUS_NOTIFICATIONS
+import qualified Annex
 import Types.DesktopNotify
 import qualified DBus.Notify as Notify
 import qualified DBus.Client
@@ -26,8 +26,8 @@ data NotifyWitness = NotifyWitness
  - for it. -}
 notifyTransfer :: Direction -> Maybe FilePath -> (NotifyWitness -> Annex Bool) -> Annex Bool
 notifyTransfer _ Nothing a = a NotifyWitness
-notifyTransfer direction (Just f) a = do
 #ifdef WITH_DBUS_NOTIFICATIONS
+notifyTransfer direction (Just f) a = do
 	wanted <- Annex.getState Annex.desktopnotify
 	let action = if direction == Upload then "uploading" else "downloading"
 	let basedesc = action ++ " " ++ f
@@ -49,13 +49,13 @@ notifyTransfer direction (Just f) a = do
 			return ok
 		else a NotifyWitness
 #else
-	a NotifyWitness
+notifyTransfer _ (Just _) a = do a NotifyWitness
 #endif
 
 notifyDrop :: Maybe FilePath -> Bool -> Annex ()
 notifyDrop Nothing _ = noop
-notifyDrop (Just f) ok = do
 #ifdef WITH_DBUS_NOTIFICATIONS
+notifyDrop (Just f) ok = do
 	wanted <- Annex.getState Annex.desktopnotify
 	when (notifyFinish wanted) $ liftIO $ do
 		client <- DBus.Client.connectSession
@@ -64,7 +64,7 @@ notifyDrop (Just f) ok = do
 			else "failed to drop" ++ f
 		void $ Notify.notify client (mkNote msg)
 #else
-	noop
+notifyDrop (Just _) _ = noop
 #endif
 
 #ifdef WITH_DBUS_NOTIFICATIONS
