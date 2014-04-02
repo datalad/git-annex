@@ -1,0 +1,20 @@
+Last week's trip was productive, but I came home more tired than I
+realized. Found myself being snappy & stressed, so I have been on break.
+
+I did do a little git-annex dev in the past 5 days. On Saturday I
+implemented [[todo/preferred_content]] (although without the active checks
+I think it probably ought to have.) Yesterday I had a long conversation
+with the Tahoe developers about improving git-annex's tahoe integration.
+
+Today, I have been wrapping up [building propellor](http://joeyh.name/code/propellor/).
+To test its docker support, I used propellor to build and deploy a
+container that is a git-annex autobuilder. I'll be replacing the old
+autobuilder setup this shortly, and expect to also publish docker
+images for git-annex autobuilders, so anyone who wants to can run their
+own autobuilder really easily.
+
+---
+
+I have April penciled in on the roadmap as the month to do telehash.
+I don't know if telehash-c is ready for me yet, but it has had a lot of
+activity lately, so this schedule may still work out!
