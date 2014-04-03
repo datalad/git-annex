@@ -47,15 +47,36 @@ either:
 
 It is configured entirely by .git/config.
 
+# encryption & authentication
+
+For simplicity, the network transports have to do their own end-to-end
+encryption. Encryption is not part of this design.
+
+(XMPP does not do end-to-end encryption, but might be supported
+transitionally.)
+
+Ditto for authentication that we're talking to who we indend to talk to.
+Any public key data etc used for authenticion is part of the remote's
+configuration (or hidden away in a secure chmodded file, if neccesary).
+This design does not concern itself with authenticating the remote node,
+it just takes the auth token and uses it.
+
+For example, in telehash, each node has its own keypair, which is used
+or authentication and encryption, and is all that's needed to route
+messages to that node.
+
 # stdio protocol
 
 This is an asynchronous protocol. Ie, either side can send any message
 at any time, and the other side does not send a reply.
 
-It is line based and intended to be low volume.
+It is line based and intended to be low volume and not used for large data.
 
 TODO: Expand with commands for sending/receiving git-annex objects, and
 progress during transfer.
+
+TODO: Will probably need to add something for whatever pairing is done by
+the webapp.
 
 ## emitted messages
 
