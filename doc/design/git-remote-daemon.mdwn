@@ -95,6 +95,11 @@ progress during transfer.
   transport when next possible. May be repeated many times before the push
   finally happens.
 
+* `RELOAD`
+
+  Indicates that configs have changed. Daemon should reload .git/config
+  and/or restart.
+
 # send-pack and receive-pack
 
 Done as the assistant does with XMPP currently. Does not involve
