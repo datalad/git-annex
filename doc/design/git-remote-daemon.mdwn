@@ -133,3 +133,18 @@ How do peers communicate with one another over the network?
 This seems to need to be network-layer dependant. Telehash will need
 one design, and git-annex-shell on a central ssh server has a very different
 (and much simpler) design.
+
+## git-annex-shell
+
+Speak a subset of the stdio protocol between git-annex-shell and
+git-remote-daemon, over ssh.
+
+Only thing that seems to be needed is CHANGED, actually!
+
+## telehash 
+
+TODO
+
+## XMPP
+
+Reuse [[assistant/xmpp]]
