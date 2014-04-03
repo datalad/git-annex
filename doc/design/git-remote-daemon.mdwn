@@ -125,3 +125,7 @@ the webapp.
 
 Done as the assistant does with XMPP currently. Does not involve
 communication over the above stdio protocol.
+
+# network level protocol
+
+TODO How do peers communicate with one another over the network?
