@@ -1,0 +1,16 @@
+I have a plan for this month. While waiting for telehash, I am going to
+build [[design/git-remote-daemon]], which is the infrastructure git-annex
+will need, to use telehash. Since it's generalized to support other protocols,
+I'll be able to start using it before telehash is ready.
+
+In fact, I plan to first make it work with ssh:// remotes, where
+it will talk with git-annex-shell on the remote server. This will let the
+assistant immediately know when the server has received a commit, and that
+will simplify using the assistant with a ssh server -- no more need for
+XMPP in this case! It should also work with git-remote-gcrypt encrypted
+repositories, so also covers the case of an untrusted ssh server where
+everything is end-to-end encrypted.
+
+Building the git-annex-shell part of this should be pretty easy, and
+building enough of the [[design/git-remote-daemon]] design to support it
+also not hard.
