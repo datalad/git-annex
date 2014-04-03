@@ -1,0 +1,101 @@
+# goals
+
+* be configured like a regular git remote, with an unusual url
+  or other configuration
+* receive notifications when a remote has received new commits,
+  and take some action
+* optionally, do receive-pack and send-pack to a remote that
+  is only accessible over an arbitrary network transport
+  (like assistant does with XMPP)
+* optionally, send/receive git-annex objects to remote
+  over an arbitrary network transport
+
+# difficulties
+
+* authentication & configuration
+* multiple nodes may be accessible over a single network transport,
+  with it desirable to sync with any/all of them. For example, with
+  XMPP, there can be multiple friends synced with. This means that
+  one git remote can map to multiple remote nodes. Specific to git-annex,
+  this means that a set of UUIDs known to be associated with the remote
+  needs to be maintained, while currently each remote can only have one
+  annex-uuid in .git/config.
+
+# payoffs
+
+* support [[assistant/telehash]]!
+* Allow running against a normal ssh git remote. This would run
+  git-annex-shell on the remote, watching for changes, and so be able to
+  notify when a commit was pushed to the remote repo. This would let the
+  assistant immediately notice and pull. So the assistant would be fully
+  usable with a single ssh remote and no other configuration!
+  **do this first**
+* clean up existing XMPP support, make it not a special case, and not
+  tightly tied to the assistant
+* git-remote-daemon could be used independantly of git-annex,
+  in any git repository.
+
+# design
+
+Let git-remote-daemon be the name. It runs in a repo and
+either:
+
+* forks to background and performs configured actions (ie, `git pull`)
+* with --foreground, communicates over stdio
+  with its caller using a simple protocol (exiting when its caller closes its
+  stdin handle so it will stop when the assistant stops).
+
+It is configured entirely by .git/config.
+
+# stdio protocol
+
+This is an asynchronous protocol. Ie, either side can send any message
+at any time, and the other side does not send a reply.
+
+It is line based and intended to be low volume.
+
+TODO: Expand with commands for sending/receiving git-annex objects, and
+progress during transfer.
+
+## emitted messages
+
+* `CHANGED $remote $ref ...`
+
+  This indicates that the given refs in the named git remote have changed.
+
+* `STATUS $remote $string`
+
+  A user-visible status message about a named remote.
+
+* `ERROR $remote $string`
+
+  A user-visible error about a named remote.  
+  (Can continue running past this point, for this or other remotes.)
+
+## consumed messages
+
+* `PAUSE`
+
+  This indicates that the network connection has gone down,
+  or the user has requested a pause.
+  git-remote-daemon should close connections and idle.
+
+  Affects all remotes.
+
+* `RESUME`
+
+  This indicates that the network connection has come back up, or the user
+  has asked it to run again. Start back up network connections.
+
+  Affects all remotes.
+
+* `PUSH $remote`
+
+  Requests that a git push be done with the remote over the network
+  transport when next possible. May be repeated many times before the push
+  finally happens.
+
+# send-pack and receive-pack
+
+Done as the assistant does with XMPP currently. Does not involve
+communication over the above stdio protocol.

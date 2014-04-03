@@ -66,8 +66,7 @@ encryption.
 
 ## separate daemon?
 
-A `gathd` could contain all the telehash specific code, and git-annex
-communicate with it via a local socket.
+See [[git-remote-daemon]] for a design.
 
 Advantages:
 
@@ -88,8 +87,4 @@ Advantages:
 
 Disadvantages:
 
-* Adds a memcopy when large files are being transferred through telehash.
-  Unlikely to be a bottleneck.
 * Adds some complexity.
-* What IPC to use on Windows? Might have to make git-annex communicate
-  with it over its stdin/stdout there.
