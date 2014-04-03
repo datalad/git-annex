@@ -128,4 +128,8 @@ communication over the above stdio protocol.
 
 # network level protocol
 
-TODO How do peers communicate with one another over the network?
+How do peers communicate with one another over the network?
+
+This seems to need to be network-layer dependant. Telehash will need
+one design, and git-annex-shell on a central ssh server has a very different
+(and much simpler) design.
