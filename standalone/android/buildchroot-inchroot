@@ -22,5 +22,5 @@ apt-get clean
 wget http://snapshot.debian.org/archive/debian/20130903T155330Z/pool/main/a/automake-1.14/automake_1.14-1_all.deb
 dpkg -i automake*.deb
 rm *.deb
-useradd builder --create-home ||
+useradd builder --create-home || true
 su builder -c $0-asuser
