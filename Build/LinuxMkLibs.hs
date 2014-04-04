@@ -14,12 +14,10 @@ import System.FilePath
 import System.Directory
 import Control.Monad
 import Data.List
-import Data.List.Utils
 import System.Posix.Files
-import Data.Char
 import Control.Monad.IfElse
 
-import Utility.PartialPrelude
+import Utility.LinuxMkLibs
 import Utility.Directory
 import Utility.Process
 import Utility.Monad
@@ -41,7 +39,7 @@ mklibs top = do
 	libs <- parseLdd <$> readProcess "ldd" exes
 	glibclibs <- glibcLibs
 	let libs' = nub $ libs ++ glibclibs
-	libdirs <- nub . catMaybes <$> mapM (installLib top) libs'
+	libdirs <- nub . catMaybes <$> mapM (installLib installFile top) libs'
 
 	-- Various files used by runshell to set up env vars used by the
 	-- linker shims.
@@ -52,26 +50,6 @@ mklibs top = do
 		(parentDir $ Prelude.head $ filter ("/gconv/" `isInfixOf`) glibclibs)
 	
 	mapM_ (installLinkerShim top) exes
-
-{- Installs a library. If the library is a symlink to another file,
- - install the file it links to, and update the symlink to be relative. -}
-installLib :: FilePath -> FilePath -> IO (Maybe FilePath)
-installLib top lib = ifM (doesFileExist lib)
-	( do
-		installFile top lib
-		checksymlink lib
-		return $ Just $ parentDir lib
-	, return Nothing
-	)
-  where
-	checksymlink f = whenM (isSymbolicLink <$> getSymbolicLinkStatus (inTop top f)) $ do
-		l <- readSymbolicLink (inTop top f)
-		let absl = absPathFrom (parentDir f) l
-		let target = relPathDirToFile (parentDir f) absl
-		installFile top absl
-		nukeFile (top ++ f)
-		createSymbolicLink target (inTop top f)
-		checksymlink absl
 
 {- Installs a linker shim script around a binary.
  -
@@ -108,10 +86,6 @@ installFile top f = do
   where
 	destdir = inTop top $ parentDir f
 
--- Note that f is not relative, so cannot use </>
-inTop :: FilePath -> FilePath -> FilePath
-inTop top f = top ++ f -- 
-
 checkExe :: FilePath -> IO Bool
 checkExe f
 	| ".so" `isSuffixOf` f = return False
@@ -127,18 +101,3 @@ checkFileExe s = and
 	[ "ELF" `isInfixOf` s
 	, "executable" `isInfixOf` s || "shared object" `isInfixOf` s
 	]
-
-{- Parse ldd output, getting all the libraries that the input files
- - link to. Note that some of the libraries may not exist 
- - (eg, linux-vdso.so) -}
-parseLdd :: String -> [FilePath]
-parseLdd = catMaybes . map (getlib . dropWhile isSpace) . lines
-  where
-	getlib l = headMaybe . words =<< lastMaybe (split " => " l)
-
-{- Get all glibc libs and other support files, including gconv files
- -
- - XXX Debian specific. -}
-glibcLibs :: IO [FilePath]
-glibcLibs = lines <$> readProcess "sh"
-	["-c", "dpkg -L libc6:$(dpkg --print-architecture) libgcc1:$(dpkg --print-architecture) | egrep '\\.so|gconv'"]
