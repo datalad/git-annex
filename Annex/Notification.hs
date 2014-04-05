@@ -7,7 +7,7 @@
 
 {-# LANGUAGE CPP #-}
 
-module Annex.Notification where
+module Annex.Notification (NotifyWitness, notifyTransfer, notifyDrop) where
 
 import Common.Annex
 import Logs.Transfer
@@ -29,22 +29,16 @@ notifyTransfer _ Nothing a = a NotifyWitness
 #ifdef WITH_DBUS_NOTIFICATIONS
 notifyTransfer direction (Just f) a = do
 	wanted <- Annex.getState Annex.desktopnotify
-	let action = if direction == Upload then "uploading" else "downloading"
-	let basedesc = action ++ " " ++ f
-	let startdesc = "started " ++ basedesc
-	let enddesc ok = if ok
-		then "finished " ++ basedesc
-		else basedesc ++ " failed"
 	if (notifyStart wanted || notifyFinish wanted)
 		then do
 			client <- liftIO DBus.Client.connectSession
 			startnotification <- liftIO $ if notifyStart wanted
-				then Just <$> Notify.notify client (mkNote startdesc)
+				then Just <$> Notify.notify client (startedTransferNote direction f)
 				else pure Nothing
 			ok <- a NotifyWitness
 			when (notifyFinish wanted) $ liftIO $ void $ maybe 
-				(Notify.notify client $ mkNote $ enddesc ok)
-				(\n -> Notify.replace client n $ mkNote $ enddesc ok)
+				(Notify.notify client $ finishedTransferNote ok direction f)
+				(\n -> Notify.replace client n $ finishedTransferNote ok direction f)
 				startnotification
 			return ok
 		else a NotifyWitness
@@ -59,22 +53,48 @@ notifyDrop (Just f) ok = do
 	wanted <- Annex.getState Annex.desktopnotify
 	when (notifyFinish wanted) $ liftIO $ do
 		client <- DBus.Client.connectSession
-		let msg = if ok
-			then "dropped " ++ f
-			else "failed to drop" ++ f
-		void $ Notify.notify client (mkNote msg)
+		void $ Notify.notify client (droppedNote ok f)
 #else
 notifyDrop (Just _) _ = noop
 #endif
 
 #ifdef WITH_DBUS_NOTIFICATIONS
-mkNote :: String -> Notify.Note
-mkNote desc = Notify.blankNote
+startedTransferNote :: Direction -> FilePath -> Notify.Note
+startedTransferNote Upload   = mkNote Notify.Transfer Notify.Low iconUpload
+	"Uploading"
+startedTransferNote Download = mkNote Notify.Transfer Notify.Low iconDownload
+	"Downloading"
+
+finishedTransferNote :: Bool -> Direction -> FilePath -> Notify.Note
+finishedTransferNote False Upload   = mkNote Notify.TransferError Notify.Normal iconFailure
+	"Failed to upload"
+finishedTransferNote False Download = mkNote Notify.TransferError Notify.Normal iconFailure
+	"Failed to download"
+finishedTransferNote True  Upload   = mkNote Notify.TransferComplete Notify.Low iconSuccess
+	"Finished uploading"
+finishedTransferNote True  Download = mkNote Notify.TransferComplete Notify.Low iconSuccess
+	"Finished downloading"
+
+droppedNote :: Bool -> FilePath -> Notify.Note
+droppedNote False = mkNote Notify.TransferError Notify.Normal iconFailure
+	"Failed to drop"
+droppedNote True  = mkNote Notify.TransferComplete Notify.Low iconSuccess
+	"Dropped"
+
+iconUpload, iconDownload, iconFailure, iconSuccess :: String
+iconUpload   = "network-transmit"
+iconDownload = "network-receive"
+iconFailure  = "dialog-error"
+iconSuccess  = "git-annex"  -- Is there a standard icon for success/completion?
+
+mkNote :: Notify.Category -> Notify.UrgencyLevel -> String -> String -> FilePath -> Notify.Note
+mkNote category urgency icon desc path = Notify.blankNote
 	{ Notify.appName = "git-annex"
-	, Notify.summary = desc
+	, Notify.appImage = Just (Notify.Icon icon)
+	, Notify.summary = desc ++ " " ++ path
 	, Notify.hints =
-		[ Notify.Category Notify.Transfer
-		, Notify.Urgency Notify.Low
+		[ Notify.Category category
+		, Notify.Urgency urgency
 		, Notify.SuppressSound True
 		]
 	}
