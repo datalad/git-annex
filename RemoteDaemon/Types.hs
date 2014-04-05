@@ -14,8 +14,6 @@ import Common.Annex
 import qualified Git.Types as Git
 import qualified Utility.SimpleProtocol as Proto
 
-import Control.Concurrent.STM
-
 -- Messages that the daemon emits.
 data Emitted
 	= CHANGED RemoteName RefList
