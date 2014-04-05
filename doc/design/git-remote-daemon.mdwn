@@ -80,9 +80,18 @@ the webapp.
 
 ## emitted messages
 
-* `CHANGED $remote $ref ...`
+* `CONNECTED $remote`
 
-  This indicates that the given refs in the named git remote have changed.
+  Send when a connection has been made with a remote.
+
+* `DISCONNECTED $remote`
+
+  Send when connection with a remote has been lost.
+
+* `CHANGED $remote $sha ...`
+
+  This indicates that refs in the named git remote have changed,
+  and indicates the new shas.
 
 * `STATUS $remote $string`
 

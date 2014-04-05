@@ -10,13 +10,14 @@
 
 module RemoteDaemon.Types where
 
-import Common.Annex
 import qualified Git.Types as Git
 import qualified Utility.SimpleProtocol as Proto
 
 -- Messages that the daemon emits.
 data Emitted
-	= CHANGED RemoteName RefList
+	= CONNECTED RemoteName
+	| DISCONNECTED RemoteName
+	| CHANGED RemoteName ShaList
 	| STATUS RemoteName UserMessage
 	| ERROR RemoteName UserMessage
 
@@ -29,13 +30,17 @@ data Consumed
 
 type RemoteName = String
 type UserMessage = String
-type RefList = [Git.Ref]
+type ShaList = [Git.Sha]
 
 instance Proto.Sendable Emitted where
-	formatMessage (CHANGED remote refs) =
+	formatMessage (CONNECTED remote) =
+		["CONNECTED", Proto.serialize remote]
+	formatMessage (DISCONNECTED remote) =
+		["DISCONNECTED", Proto.serialize remote]
+	formatMessage (CHANGED remote shas) =
 		["CHANGED"
 		, Proto.serialize remote
-		, Proto.serialize refs
+		, Proto.serialize shas
 		]
 	formatMessage (STATUS remote msg) =
 		["STATUS"
@@ -55,6 +60,8 @@ instance Proto.Sendable Consumed where
 	formatMessage RELOAD = ["RELOAD"]
 
 instance Proto.Receivable Emitted where
+	parseCommand "CONNECTED" = Proto.parse1 CONNECTED
+	parseCommand "DISCONNECTED" = Proto.parse1 DISCONNECTED
 	parseCommand "CHANGED" = Proto.parse2 CHANGED
 	parseCommand "STATUS" = Proto.parse2 STATUS
 	parseCommand "ERROR" = Proto.parse2 ERROR
@@ -71,6 +78,6 @@ instance Proto.Serializable [Char] where
 	serialize = id
 	deserialize = Just
 
-instance Proto.Serializable RefList where
+instance Proto.Serializable ShaList where
 	serialize = unwords . map Git.fromRef
 	deserialize = Just . map Git.Ref . words
