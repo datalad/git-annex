@@ -71,7 +71,7 @@ notifyDrop (Just _) _ = noop
 mkNote :: String -> Notify.Note
 mkNote desc = Notify.blankNote
 	{ Notify.appName = "git-annex"
-	, Notify.body = Just $ Notify.Text desc
+	, Notify.summary = desc
 	, Notify.hints =
 		[ Notify.Category Notify.Transfer
 		, Notify.Urgency Notify.Low
