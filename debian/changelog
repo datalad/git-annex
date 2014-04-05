@@ -1,4 +1,4 @@
-git-annex (5.20140403) UNRELEASED; urgency=medium
+git-annex (5.20140405) unstable; urgency=medium
 
   * git-annex-shell: Added notifychanges command.
   * Improve display of dbus notifications. Thanks, Johan Kiviniemi.
@@ -6,7 +6,7 @@ git-annex (5.20140403) UNRELEASED; urgency=medium
     does not exist. Instead, only install scripts when the directory already
     exists.
 
- -- Joey Hess <joeyh@debian.org>  Sat, 05 Apr 2014 15:05:44 -0400
+ -- Joey Hess <joeyh@debian.org>  Sat, 05 Apr 2014 16:54:33 -0400
 
 git-annex (5.20140402) unstable; urgency=medium
 
