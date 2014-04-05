@@ -44,3 +44,6 @@ index 4d02c0e..883ca48 100644
         genscript scriptdir action =
                 installscript (scriptdir </> scriptname action) $ unlines
 """]]
+
+> [[applied|done]]. thanks! That's a fine way to send a small patch, or
+> make a git branch somewhere for a larger one. --[[Joey]] 
