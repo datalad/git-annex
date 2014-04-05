@@ -11,7 +11,7 @@ work on Ubuntu and adding icons. Awesome!
 There's going to be some fun to get git-annex-shell upgraded so that the
 assistant can use this new notify feaure. While I have not started working
 on the assistant side of this, you can get a jump by installing today's
-release of git-annex. I had to push this out early because there was a bug
-that prevented the webapp from running on non-gnome systems. Since
-all changes in this release only affected Linux, today's release is a
+upcoming release of git-annex. I had to push this out early because there
+was a bug that prevented the webapp from running on non-gnome systems. Since
+all changes in this release only affected Linux, today's release will be a
 Linux-only release.
