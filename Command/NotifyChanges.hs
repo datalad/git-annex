@@ -13,7 +13,7 @@ import Utility.DirWatcher
 import Utility.DirWatcher.Types
 import qualified Git
 import Git.Sha
-import RemoteDaemon.EndPoint.GitAnnexShell.Types
+import RemoteDaemon.Transport.Ssh.Types
 
 import Control.Concurrent
 import Control.Concurrent.Async

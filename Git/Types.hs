@@ -27,7 +27,7 @@ data RepoLocation
 	| LocalUnknown FilePath
 	| Url URI
 	| Unknown
-	deriving (Show, Eq)
+	deriving (Show, Eq, Ord)
 
 data Repo = Repo
 	{ location :: RepoLocation
@@ -41,7 +41,7 @@ data Repo = Repo
 	, gitEnv :: Maybe [(String, String)]
 	-- global options to pass to git when running git commands
 	, gitGlobalOpts :: [CommandParam]
-	} deriving (Show, Eq)
+	} deriving (Show, Eq, Ord)
 
 type RemoteName = String
 

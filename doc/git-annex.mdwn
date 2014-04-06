@@ -922,6 +922,10 @@ subdirectories).
 
   There are several parameters, provided by Haskell's tasty test framework.
 
+* `remotedaemon`
+
+  Detects when remotes have changed and fetches from them.
+
 * `xmppgit`
 
   This command is used internally to perform git pulls over XMPP.

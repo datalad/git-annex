@@ -1,4 +1,4 @@
-{- git-remote-daemon, git-annex-shell endpoint, datatypes
+{- git-remote-daemon, git-annex-shell notifychanges protocol types
  -
  - Copyright 2014 Joey Hess <joey@kitenet.net>
  -
@@ -8,7 +8,7 @@
 {-# LANGUAGE TypeSynonymInstances, FlexibleInstances #-}
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 
-module RemoteDaemon.EndPoint.GitAnnexShell.Types (
+module RemoteDaemon.Transport.Ssh.Types (
 	Notification(..),
 	Proto.serialize,
 	Proto.deserialize,
@@ -16,11 +16,11 @@ module RemoteDaemon.EndPoint.GitAnnexShell.Types (
 ) where
 
 import qualified Utility.SimpleProtocol as Proto
-import RemoteDaemon.Types (ShaList)
+import RemoteDaemon.Types (RefList)
 
 data Notification
 	= READY
-	| CHANGED ShaList
+	| CHANGED RefList
 
 instance Proto.Sendable Notification where
 	formatMessage READY = ["READY"]
