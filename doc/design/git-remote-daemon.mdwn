@@ -37,15 +37,89 @@
 
 # design
 
-Let git-remote-daemon be the name. It runs in a repo and
-either:
+Let git-remote-daemon be the name. Or for git-annex,
+`git annex remotedaemon`.
 
-* forks to background and performs configured actions (ie, `git pull`)
-* with --foreground, communicates over stdio
-  with its caller using a simple protocol (exiting when its caller closes its
-  stdin handle so it will stop when the assistant stops).
+It runs in one of two ways:
 
-It is configured entirely by .git/config.
+1. Forked to background, using a named pipe for the control protocol.
+2. With --foreground, the control protocol goes over stdio.
+
+Either way, behavior is the same:
+
+* Get a list of remotes to act on by looking at .git/config
+* Automatically notices when a remote has changes to branches
+  matching remote.$name.fetch, and pulls them down to the appropriate
+  location.
+* When the control protocol informs it about a new ref that's available,
+  it offers the ref to any interested remotes.
+
+# control protocol
+
+This is an asynchronous protocol. Ie, either side can send any message
+at any time, and the other side does not send a reply.
+
+It is line based and intended to be low volume and not used for large data.
+
+TODO: Expand with commands for sending/receiving git-annex objects, and
+progress during transfer.
+
+TODO: Will probably need to add something for whatever pairing is done by
+the webapp.
+
+## emitted messages
+
+* `CONNECTED $remote`
+
+  Sent when a connection has been made with a remote.
+
+* `DISCONNECTED $remote`
+
+  Sent when connection with a remote has been lost.
+
+* `SYNCING $remote`
+
+  Indicates that a pull or a push with a remote is in progress.
+  Always followed by DONESYNCING.
+
+* `DONESYNCING $remote 1|0`
+
+  Indicates that syncing with a remote is done, and either succeeded
+  (1) or failed (0).
+
+## consumed messages
+
+* `PAUSE`
+
+  This indicates that the network connection has gone down,
+  or the user has requested a pause.
+  git-remote-daemon should close connections and idle.
+
+  Affects all remotes.
+
+* `RESUME`
+
+  This indicates that the network connection has come back up, or the user
+  has asked it to run again. Start back up network connections.
+
+  Affects all remotes.
+
+* `CHANGED ref ...`
+
+  Indicates that a ref is new or has changed. These can be offered to peers,
+  and peers that are interested in them can pull the content.
+
+* `RELOAD`
+
+  Indicates that configs have changed. Daemon should reload .git/config
+  and/or restart.
+
+* `STOP`
+
+  Shut down git-remote-daemon
+
+  (When using stdio, it also should shutdown when it reaches EOF on 
+  stdin.)
 
 # encryption & authentication
 
@@ -65,76 +139,6 @@ For example, in telehash, each node has its own keypair, which is used
 or authentication and encryption, and is all that's needed to route
 messages to that node.
 
-# stdio protocol
-
-This is an asynchronous protocol. Ie, either side can send any message
-at any time, and the other side does not send a reply.
-
-It is line based and intended to be low volume and not used for large data.
-
-TODO: Expand with commands for sending/receiving git-annex objects, and
-progress during transfer.
-
-TODO: Will probably need to add something for whatever pairing is done by
-the webapp.
-
-## emitted messages
-
-* `CONNECTED $remote`
-
-  Send when a connection has been made with a remote.
-
-* `DISCONNECTED $remote`
-
-  Send when connection with a remote has been lost.
-
-* `CHANGED $remote $sha ...`
-
-  This indicates that refs in the named git remote have changed,
-  and indicates the new shas.
-
-* `STATUS $remote $string`
-
-  A user-visible status message about a named remote.
-
-* `ERROR $remote $string`
-
-  A user-visible error about a named remote.  
-  (Can continue running past this point, for this or other remotes.)
-
-## consumed messages
-
-* `PAUSE`
-
-  This indicates that the network connection has gone down,
-  or the user has requested a pause.
-  git-remote-daemon should close connections and idle.
-
-  Affects all remotes.
-
-* `RESUME`
-
-  This indicates that the network connection has come back up, or the user
-  has asked it to run again. Start back up network connections.
-
-  Affects all remotes.
-
-* `PUSH $remote`
-
-  Requests that a git push be done with the remote over the network
-  transport when next possible. May be repeated many times before the push
-  finally happens.
-
-* `RELOAD`
-
-  Indicates that configs have changed. Daemon should reload .git/config
-  and/or restart.
-
-# send-pack and receive-pack
-
-Done as the assistant does with XMPP currently. Does not involve
-communication over the above stdio protocol.
-
 # network level protocol
 
 How do peers communicate with one another over the network?
@@ -143,17 +147,29 @@ This seems to need to be network-layer dependant. Telehash will need
 one design, and git-annex-shell on a central ssh server has a very different
 (and much simpler) design.
 
-## git-annex-shell
+## ssh
 
-Speak a subset of the stdio protocol between git-annex-shell and
-git-remote-daemon, over ssh.
+`git-annex-shell notifychanges` is run, and speaks a simple protocol
+over stdio to inform when refs on the remote have changed.
 
-Only thing that seems to be needed is CHANGED, actually!
+No pushing is done for CHANGED, since git handles ssh natively.
+
+TODO:
+
+* It already detects changes and pulls, but it then dies with a protocol
+  error.
+* Remote system might not be available. Find a smart way to detect it,
+  ideally w/o generating network traffic. One way might be to check
+  if the ssh connection caching control socket exists, for example.
+* Remote system might be available, and connection get lost. Should
+  reconnect, but needs to avoid bad behavior (ie, constant reconnect
+  attempts.)
+* Detect if old system had a too old git-annex-shell and avoid bad behavior
 
 ## telehash 
 
 TODO
 
-## XMPP
+## xmpp
 
 Reuse [[assistant/xmpp]]
