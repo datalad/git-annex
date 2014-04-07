@@ -1,3 +1,10 @@
+git-annex (5.20140406) UNRELEASED; urgency=medium
+
+  * importfeed: Filename template can now contain an itempubdate variable.
+    Needs feed 0.3.9.2.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 07 Apr 2014 16:22:02 -0400
+
 git-annex (5.20140405) unstable; urgency=medium
 
   * git-annex-shell: Added notifychanges command.

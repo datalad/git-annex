@@ -23,7 +23,8 @@ there's a --template option. The default is
 `--template='${feedtitle}/${itemtitle}${extension}'`
 
 Other available template variables:  
-feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid
+feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid,
+itempubdate
 
 ## catching up
 

@@ -13,3 +13,6 @@ or
 that "works" but is ugly :)
 
 Would love to be able to put a YYYYMMDD at the beginning and then the title.
+
+> [[done]]; itempubdate will use form YYYY-MM-DD (or the raw date string
+> if the feed does not use a parsable form). --[[Joey]]
