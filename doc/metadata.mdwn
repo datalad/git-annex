@@ -12,7 +12,7 @@ Some of the things you can do with metadata include:
   or without particular metadata.
   For example `git annex find --metadata tag=foo --or --metadata tag=bar`
 * Using it in [[preferred_content]] expressions. 
-  For example "tag=important or not author=me"
+  For example "metadata=tag=important or not author=me"
 
 Each file (actually the underlying key) can have any number of metadata
 fields, which each can have any number of values. For example, to tag
