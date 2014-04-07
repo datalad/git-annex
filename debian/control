@@ -55,7 +55,7 @@ Build-Depends:
 	libghc-xml-types-dev,
 	libghc-async-dev,
 	libghc-http-dev,
-	libghc-feed-dev,
+	libghc-feed-dev (>= 0.3.9.2),
 	libghc-regex-tdfa-dev [!mipsel !s390],
 	libghc-regex-compat-dev [mipsel s390],
 	libghc-tasty-dev (>= 0.7) [!mipsel !sparc],

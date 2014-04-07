@@ -15,6 +15,8 @@ import Text.Feed.Types
 import qualified Data.Set as S
 import qualified Data.Map as M
 import Data.Time.Clock
+import Data.Time.Format
+import System.Locale
 
 import Common.Annex
 import qualified Annex
@@ -212,6 +214,7 @@ feedFile tmpl i extension = Utility.Format.format tmpl $ M.fromList
 	, fieldMaybe "itemdescription" $ getItemDescription $ item i
 	, fieldMaybe "itemrights" $ getItemRights $ item i
 	, fieldMaybe "itemid" $ snd <$> getItemId (item i)
+	, fieldMaybe "itempubdate" $ pubdate $ item i
 	, ("extension", sanitizeFilePath extension)
 	]
   where
@@ -220,6 +223,12 @@ feedFile tmpl i extension = Utility.Format.format tmpl $ M.fromList
 		if null s then (k, "none") else (k, s)
 	fieldMaybe k Nothing = (k, "none")
 	fieldMaybe k (Just v) = field k v
+
+	pubdate itm = case getItemPublishDate itm :: Maybe (Maybe UTCTime) of
+		Just (Just d) -> Just $
+			formatTime defaultTimeLocale "%F" d
+		-- if date cannot be parsed, use the raw string
+		_ -> replace "/" "-" <$> getItemPublishDateString itm
 
 {- Called when there is a problem with a feed.
  - Throws an error if the feed is broken, otherwise shows a warning. -}

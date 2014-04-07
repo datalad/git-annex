@@ -268,7 +268,7 @@ subdirectories).
 
   Use `--template` to control where the files are stored.
   The default template is '${feedtitle}/${itemtitle}${extension}'
-  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid)
+  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate)
 
   The `--relaxed` and `--fast` options behave the same as they do in addurl.
   

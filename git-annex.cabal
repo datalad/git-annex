@@ -210,7 +210,7 @@ Executable git-annex
     CPP-Options: -DWITH_DNS
 
   if flag(Feed)
-    Build-Depends: feed
+    Build-Depends: feed (>= 0.3.9.2)
     CPP-Options: -DWITH_FEED
   
   if flag(Quvi)
