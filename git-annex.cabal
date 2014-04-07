@@ -101,7 +101,7 @@ Executable git-annex
    base (>= 4.5 && < 4.9), monad-control, MonadCatchIO-transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
    SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
-   data-default, case-insensitive
+   data-default, case-insensitive, shakespeare
   CC-Options: -Wall
   GHC-Options: -Wall
   Extensions: PackageImports
