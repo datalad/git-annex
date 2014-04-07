@@ -144,6 +144,16 @@ Or, you could make a new group, with your own custom preferred content
 expression tuned for your needs, and every repository you put in this
 group and make its preferred content be "groupwanted" will use it.
 
+### difference: metadata matching
+
+This:
+
+	git annex get --metadata tag=done
+
+becomes
+
+	metadata=tag=done
+
 ## upgrades
 
 It's important that all clones of a repository can understand one-another's
