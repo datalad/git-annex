@@ -10,3 +10,6 @@ Help make git-annex better!
   You could work to improve the Android port (Java etc) or improve the
   Javascript and CSS of the git-annex webapp, or work on porting libraries
   needed by the Windows port.
+
+To send patches, either include the patch in a bug report (small patch)
+or put up a branch in a git repository containing your changes.
