@@ -29,8 +29,6 @@ runForeground = do
 	ichan <- newChan :: IO (Chan Consumed)
 	ochan <- newChan :: IO (Chan Emitted)
 
-	void $ async $ controller ichan ochan
-
 	let reader = forever $ do
 		l <- getLine
 		case parseMessage l of
@@ -40,18 +38,18 @@ runForeground = do
 		msg <- readChan ochan
 		putStrLn $ unwords $ formatMessage msg
 		hFlush stdout
+	let controller = runController ichan ochan
 	
-	-- If the reader or writer fails, for example because stdin/stdout
-	-- gets closed, kill the other one, and throw an exception which
-	-- will take down the daemon.
-	void $ concurrently reader writer
+	-- If any thread fails, the rest will be killed.
+	void $ tryIO $
+		reader `concurrently` writer `concurrently` controller
 
 type RemoteMap = M.Map Git.Repo (IO (), Chan Consumed)
 
 -- Runs the transports, dispatching messages to them, and handling
 -- the main control messages.
-controller :: Chan Consumed -> Chan Emitted -> IO ()
-controller ichan ochan = do
+runController :: Chan Consumed -> Chan Emitted -> IO ()
+runController ichan ochan = do
 	h <- genTransportHandle
 	m <- genRemoteMap h ochan
 	startrunning m

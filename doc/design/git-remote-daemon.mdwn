@@ -160,8 +160,6 @@ No pushing is done for CHANGED, since git handles ssh natively.
 
 TODO:
 
-* It already detects changes and pulls, but it then dies with a protocol
-  error.
 * Remote system might not be available. Find a smart way to detect it,
   ideally w/o generating network traffic. One way might be to check
   if the ssh connection caching control socket exists, for example.
