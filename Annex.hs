@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE GeneralizedNewtypeDeriving, PackageImports #-}
+{-# LANGUAGE CPP, GeneralizedNewtypeDeriving, PackageImports #-}
 
 module Annex (
 	Annex,
@@ -63,7 +63,9 @@ import Types.DesktopNotify
 import Types.CleanupActions
 import qualified Data.Map as M
 import qualified Data.Set as S
+#ifdef WITH_QUVI
 import Utility.Quvi (QuviVersion)
+#endif
 
 {- git-annex's monad is a ReaderT around an AnnexState stored in a MVar.
  - This allows modifying the state in an exception-safe fashion.
@@ -117,7 +119,9 @@ data AnnexState = AnnexState
 	, useragent :: Maybe String
 	, errcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
+#ifdef WITH_QUVI
 	, quviversion :: Maybe QuviVersion
+#endif
 	, existinghooks :: M.Map Git.Hook.Hook Bool
 	, desktopnotify :: DesktopNotify
 	}
@@ -160,7 +164,9 @@ newState c r = AnnexState
 	, useragent = Nothing
 	, errcounter = 0
 	, unusedkeys = Nothing
+#ifdef WITH_QUVI
 	, quviversion = Nothing
+#endif
 	, existinghooks = M.empty
 	, desktopnotify = mempty
 	}
