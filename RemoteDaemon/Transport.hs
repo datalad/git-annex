@@ -9,6 +9,7 @@ module RemoteDaemon.Transport where
 
 import RemoteDaemon.Types
 import qualified RemoteDaemon.Transport.Ssh
+import qualified Git.GCrypt
 
 import qualified Data.Map as M
 
@@ -18,4 +19,5 @@ type TransportScheme = String
 remoteTransports :: M.Map TransportScheme Transport
 remoteTransports = M.fromList
 	[ ("ssh:", RemoteDaemon.Transport.Ssh.transport)
+	, (Git.GCrypt.urlScheme, RemoteDaemon.Transport.Ssh.transport)
 	]

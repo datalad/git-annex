@@ -16,8 +16,11 @@ import qualified Git.Config as Config
 import qualified Git.Command as Command
 import Utility.Gpg
 
+urlScheme :: String
+urlScheme = "gcrypt:"
+
 urlPrefix :: String
-urlPrefix = "gcrypt::"
+urlPrefix = urlScheme ++ ":"
 
 isEncrypted :: Repo -> Bool
 isEncrypted Repo { location = Url url } = urlPrefix `isPrefixOf` show url
