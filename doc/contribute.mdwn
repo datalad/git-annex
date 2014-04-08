@@ -1,0 +1,12 @@
+Help make git-annex better!
+
+* This website is a wiki, so you can edit and improve any page.
+* Write a [[new_tip|tips]] explaining how to accomplish something with
+  git-annex.
+* [[download]] the source code and send patches!
+* If you know Haskell, git-annex has lots of Haskell code that
+  could be improved. See the [[coding_style]] and have at it.
+* If you don't know Haskell, git-annex has many other coding opportunities.
+  You could work to improve the Android port (Java etc) or improve the
+  Javascript and CSS of the git-annex webapp, or work on porting libraries
+  needed by the Windows port.
