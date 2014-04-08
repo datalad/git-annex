@@ -23,6 +23,9 @@ html
 dist
 # Sandboxed builds
 cabal-dev
+.cabal-sandbox
+cabal.sandbox.config
+cabal.config
 # Project-local emacs configuration
 .dir-locals.el
 # OSX related
