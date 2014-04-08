@@ -71,7 +71,7 @@ runController ichan ochan = do
 				go h paused (M.union common new)
 			PAUSE -> do
 				stoprunning m
-				go h True m
+				go h True M.empty
 			RESUME -> do
 				when paused $
 					startrunning m
