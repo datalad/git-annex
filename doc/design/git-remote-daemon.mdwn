@@ -82,7 +82,7 @@ the webapp.
   Indicates that a pull or a push with a remote is in progress.
   Always followed by DONESYNCING.
 
-* `DONESYNCING $remote 1|0`
+* `DONESYNCING 1|0 $remote`
 
   Indicates that syncing with a remote is done, and either succeeded
   (1) or failed (0).
@@ -113,6 +113,10 @@ the webapp.
 
   Indicates that configs have changed. Daemon should reload .git/config
   and/or restart.
+
+  Possible config changes include adding a new remote, removing a remote,
+  or setting `remote.<name>.annex-sync` to configure whether to sync with a
+  particular remote.
 
 * `STOP`
 
@@ -156,8 +160,6 @@ No pushing is done for CHANGED, since git handles ssh natively.
 
 TODO:
 
-* It already detects changes and pulls, but it then dies with a protocol
-  error.
 * Remote system might not be available. Find a smart way to detect it,
   ideally w/o generating network traffic. One way might be to check
   if the ssh connection caching control socket exists, for example.

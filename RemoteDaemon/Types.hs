@@ -18,14 +18,20 @@ import Control.Concurrent
 
 -- A Transport for a particular git remote consumes some messages
 -- from a Chan, and emits others to another Chan.
-type Transport = Git.Repo -> RemoteName -> Annex.AnnexState -> Chan Consumed -> Chan Emitted -> IO ()
+type Transport = RemoteRepo -> RemoteName -> TransportHandle -> Chan Consumed -> Chan Emitted -> IO ()
+
+type RemoteRepo = Git.Repo
+type LocalRepo = Git.Repo
+
+-- All Transports share a single AnnexState MVar
+data TransportHandle = TransportHandle LocalRepo (MVar Annex.AnnexState)
 
 -- Messages that the daemon emits.
 data Emitted
 	= CONNECTED RemoteName
 	| DISCONNECTED RemoteName
 	| SYNCING RemoteName
-	| DONESYNCING RemoteName Bool
+	| DONESYNCING Bool RemoteName
 
 -- Messages that the deamon consumes.
 data Consumed
@@ -45,8 +51,8 @@ instance Proto.Sendable Emitted where
 		["DISCONNECTED", Proto.serialize remote]
 	formatMessage (SYNCING remote) =
 		["SYNCING", Proto.serialize remote]
-	formatMessage (DONESYNCING remote status) =
-		["DONESYNCING", Proto.serialize remote, Proto.serialize status]
+	formatMessage (DONESYNCING status remote) =
+		["DONESYNCING", Proto.serialize status, Proto.serialize remote]
 
 instance Proto.Sendable Consumed where
 	formatMessage PAUSE = ["PAUSE"]
