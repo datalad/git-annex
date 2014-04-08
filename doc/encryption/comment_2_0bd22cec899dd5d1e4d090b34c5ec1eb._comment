@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/e65e6d0e-58ba-41de-84cc-1f2ba54cf574"
+ nickname="Mica Semrick"
+ subject="Encrypt with pub or sub?"
+ date="2014-04-08T03:47:25Z"
+ content="""
+Forgive me, I'm a bit new to PGP.
+
+ I do:
+```
+$ gpg --list-keys
+/home/users/.gnupg/pubring.gpg
+------------------------------
+pub   2048R/3339656A 2014-04-03
+uid                  Me (git-annex key) <me@example.com>
+sub   2048R/774B0ET4 2014-04-03
+
+```
+and see the `pub` and the `sub` key.
+
+When I `init` a new special remote and want encryption, should I give the `init` command the `pub` or the `sub` key? Or does git annex sort that out itself?
+"""]]
