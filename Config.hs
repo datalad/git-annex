@@ -32,7 +32,10 @@ getConfigMaybe (ConfigKey key) = fromRepo $ Git.Config.getMaybe key
 setConfig :: ConfigKey -> String -> Annex ()
 setConfig (ConfigKey key) value = do
 	inRepo $ Git.Command.run [Param "config", Param key, Param value]
-	Annex.changeGitRepo =<< inRepo Git.Config.reRead
+	reloadConfig
+
+reloadConfig :: Annex ()
+reloadConfig = Annex.changeGitRepo =<< inRepo Git.Config.reRead
 
 {- Unsets a git config setting. (Leaves it in state currently.) -}
 unsetConfig :: ConfigKey -> Annex ()

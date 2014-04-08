@@ -82,7 +82,7 @@ the webapp.
   Indicates that a pull or a push with a remote is in progress.
   Always followed by DONESYNCING.
 
-* `DONESYNCING $remote 1|0`
+* `DONESYNCING 1|0 $remote`
 
   Indicates that syncing with a remote is done, and either succeeded
   (1) or failed (0).
