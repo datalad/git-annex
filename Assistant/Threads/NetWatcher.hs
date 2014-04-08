@@ -15,6 +15,7 @@ import Assistant.Sync
 import Utility.ThreadScheduler
 import qualified Types.Remote as Remote
 import Assistant.DaemonStatus
+import Assistant.RemoteControl
 import Utility.NotificationBroadcaster
 
 #if WITH_DBUS
@@ -44,8 +45,9 @@ netWatcherThread = thread noop
  - while (despite the local network staying up), are synced with
  - periodically.
  -
- - Note that it does not call notifyNetMessagerRestart, because
- - it doesn't know that the network has changed.
+ - Note that it does not call notifyNetMessagerRestart, or
+ - signal the RemoteControl, because it doesn't know that the
+ - network has changed.
  -}
 netWatcherFallbackThread :: NamedThread
 netWatcherFallbackThread = namedThread "NetWatcherFallback" $
@@ -69,8 +71,10 @@ dbusThread = do
 		)
 	handleconn = do
 		debug ["detected network connection"]
+		sendRemoteControl PAUSE
 		notifyNetMessagerRestart
 		handleConnection
+		sendRemoteControl RESUME
 	onerr e _ = do
 		liftAnnex $
 			warning $ "lost dbus connection; falling back to polling (" ++ show e ++ ")"

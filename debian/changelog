@@ -2,6 +2,10 @@ git-annex (5.20140406) UNRELEASED; urgency=medium
 
   * importfeed: Filename template can now contain an itempubdate variable.
     Needs feed 0.3.9.2.
+  * assistant: Now detects immediately when other repositories push
+    changes to a ssh remote, and pulls.
+    XMPP is no longer needed in this configuration!
+    Requires the remote server have git-annex-shell with notifychanges support.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 07 Apr 2014 16:22:02 -0400
 

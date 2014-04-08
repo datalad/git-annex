@@ -167,6 +167,8 @@ TODO:
   reconnect, but needs to avoid bad behavior (ie, constant reconnect
   attempts.)
 * Detect if old system had a too old git-annex-shell and avoid bad behavior
+* CONNECTED and DISCONNECTED are not wired into any webapp UI; could be
+  used to show an icon when a ssh remote is available
 
 ## telehash 
 

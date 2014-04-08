@@ -43,6 +43,7 @@ import Assistant.Types.RepoProblem
 import Assistant.Types.Buddies
 import Assistant.Types.NetMessager
 import Assistant.Types.ThreadName
+import Assistant.Types.RemoteControl
 
 newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 	deriving (
@@ -68,6 +69,7 @@ data AssistantData = AssistantData
 	, branchChangeHandle :: BranchChangeHandle
 	, buddyList :: BuddyList
 	, netMessager :: NetMessager
+	, remoteControl :: RemoteControl
 	}
 
 newAssistantData :: ThreadState -> DaemonStatusHandle -> IO AssistantData
@@ -86,6 +88,7 @@ newAssistantData st dstatus = AssistantData
 	<*> newBranchChangeHandle
 	<*> newBuddyList
 	<*> newNetMessager
+	<*> newRemoteControl
 
 runAssistant :: AssistantData -> Assistant a -> IO a
 runAssistant d a = runReaderT (mkAssistant a) d
