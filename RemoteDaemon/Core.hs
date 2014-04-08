@@ -26,18 +26,19 @@ import qualified Data.Map as M
 
 runForeground :: IO ()
 runForeground = do
+	(readh, writeh) <- ioHandles
 	ichan <- newChan :: IO (Chan Consumed)
 	ochan <- newChan :: IO (Chan Emitted)
 
 	let reader = forever $ do
-		l <- getLine
+		l <- hGetLine readh
 		case parseMessage l of
 			Nothing -> error $ "protocol error: " ++ l
 			Just cmd -> writeChan ichan cmd
 	let writer = forever $ do
 		msg <- readChan ochan
-		putStrLn $ unwords $ formatMessage msg
-		hFlush stdout
+		hPutStrLn writeh $ unwords $ formatMessage msg
+		hFlush writeh
 	let controller = runController ichan ochan
 	
 	-- If any thread fails, the rest will be killed.

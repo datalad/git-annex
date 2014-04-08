@@ -16,8 +16,7 @@ import Logs.Location
 import Annex.Transfer
 import qualified Remote
 import Types.Key
-
-import GHC.IO.Handle
+import Utility.SimpleProtocol (ioHandles)
 
 data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
@@ -29,7 +28,8 @@ seek :: CommandSeek
 seek = withNothing start
 
 start :: CommandStart
-start = withHandles $ \(readh, writeh) -> do
+start = do
+	(readh, writeh) <- liftIO ioHandles
 	runRequests readh writeh runner
 	stop
   where
@@ -43,21 +43,6 @@ start = withHandles $ \(readh, writeh) -> do
 		| otherwise = notifyTransfer direction file $
 			download (Remote.uuid remote) key file forwardRetry $ \p ->
 				getViaTmp key $ \t -> Remote.retrieveKeyFile remote key file t p
-
-{- stdin and stdout are connected with the caller, to be used for
- - communication with it. But doing a transfer might involve something
- - that tries to read from stdin, or write to stdout. To avoid that, close
- - stdin, and duplicate stderr to stdout. Return two new handles
- - that are duplicates of the original (stdin, stdout). -}
-withHandles :: ((Handle, Handle) -> Annex a) -> Annex a
-withHandles a = do
-	readh <- liftIO $ hDuplicate stdin
-	writeh <- liftIO $ hDuplicate stdout
-	liftIO $ do
-		nullh <- openFile devNull ReadMode
-		nullh `hDuplicateTo` stdin
-		stderr `hDuplicateTo` stdout
-	a (readh, writeh)
 
 runRequests
 	:: Handle

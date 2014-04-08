@@ -16,12 +16,13 @@ module Utility.SimpleProtocol (
 	parse1,
 	parse2,
 	parse3,
+	ioHandles,
 ) where
 
-import Control.Applicative
 import Data.Char
+import GHC.IO.Handle
 
-import Utility.Misc
+import Common
 
 -- Messages that can be sent.
 class Sendable m where
@@ -73,3 +74,17 @@ parse3 mk s = mk <$> deserialize p1 <*> deserialize p2 <*> deserialize p3
 
 splitWord :: String -> (String, String)
 splitWord = separate isSpace
+
+{- When a program speaks a simple protocol over stdio, any other output
+ - to stdout (or anything that attempts to read from stdin)
+ - will mess up the protocol. To avoid that, close stdin, and 
+ - and duplicate stderr to stdout. Return two new handles
+ - that are duplicates of the original (stdin, stdout). -}
+ioHandles :: IO (Handle, Handle)
+ioHandles = do
+	readh <- hDuplicate stdin
+	writeh <- hDuplicate stdout
+	nullh <- openFile devNull ReadMode
+	nullh `hDuplicateTo` stdin
+	stderr `hDuplicateTo` stdout
+	return (readh, writeh)
