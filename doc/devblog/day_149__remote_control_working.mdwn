@@ -11,3 +11,5 @@ This is gonna be *awesome*. Much less need for XMPP. Windows will be fully
 usable even without XMPP. Also, most of the work I did today will be fully
 reused when the telehash backend gets built. The telehash-c developer is
 making noises about it being almost ready for use, too!
+
+Today's work was sponsored by Frédéric Schütz.
