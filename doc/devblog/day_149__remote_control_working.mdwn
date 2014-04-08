@@ -1,0 +1,13 @@
+[[design/git-remote-daemon]] is tied into the assistant, and working!
+Since it's not really ready yet, this is in the `remotecontrol` branch.
+
+My test case for this is two client repositories, both running
+the assistant. Both have a bare git repository, accessed over ssh,
+set up as their only remote, and no other way to keep in touch with
+one-another. When I change a file in one repository,
+the other one instantly notices the change and syncs.
+
+This is gonna be *awesome*. Much less need for XMPP. Windows will be fully
+usable even without XMPP. Also, most of the work I did today will be fully
+reused when the telehash backend gets built. The telehash-c developer is
+making noises about it being almost ready for use, too!
