@@ -26,6 +26,7 @@ import Data.Time.Clock.POSIX
 import Data.Time
 import System.Locale
 import qualified Data.Map as M
+import qualified Data.Set as S
 import qualified Data.Text as T
 
 getDaemonStatus :: Assistant DaemonStatus
@@ -77,6 +78,15 @@ updateSyncRemotes = do
 		updateAlertMap $
 			M.filter $ \alert ->
 				alertName alert /= Just CloudRepoNeededAlert
+
+changeCurrentlyConnected :: (S.Set UUID -> S.Set UUID) -> Assistant ()
+changeCurrentlyConnected sm = do
+	modifyDaemonStatus_ $ \ds -> ds
+		{ currentlyConnectedRemotes = sm (currentlyConnectedRemotes ds)
+		}
+	v <- currentlyConnectedRemotes <$> getDaemonStatus
+	debug [show v]
+	liftIO . sendNotification =<< syncRemotesNotifier <$> getDaemonStatus
 
 updateScheduleLog :: Assistant ()
 updateScheduleLog =

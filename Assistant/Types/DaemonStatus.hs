@@ -52,6 +52,8 @@ data DaemonStatus = DaemonStatus
 	, syncDataRemotes :: [Remote]
 	-- Are we syncing to any cloud remotes?
 	, syncingToCloudRemote :: Bool
+	-- Set of uuids of remotes that are currently connected.
+	, currentlyConnectedRemotes :: S.Set UUID
 	-- List of uuids of remotes that we may have gotten out of sync with.
 	, desynced :: S.Set UUID
 	-- Pairing request that is in progress.
@@ -103,6 +105,7 @@ newDaemonStatus = DaemonStatus
 	<*> pure []
 	<*> pure []
 	<*> pure False
+	<*> pure S.empty
 	<*> pure S.empty
 	<*> pure Nothing
 	<*> newNotificationBroadcaster

@@ -67,6 +67,7 @@ xmppClient urlrenderer d creds =
 		 - is not retained. -}
 		liftAssistant $
 			updateBuddyList (const noBuddies) <<~ buddyList
+		liftAssistant $ 
 		void client
 		liftAssistant $ modifyDaemonStatus_ $ \s -> s
 			{ xmppClientID = Nothing }

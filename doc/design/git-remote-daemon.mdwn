@@ -170,8 +170,6 @@ TODO:
 * Remote system might not be available. Find a smart way to detect it,
   ideally w/o generating network traffic. One way might be to check
   if the ssh connection caching control socket exists, for example.
-* CONNECTED and DISCONNECTED are not wired into any webapp UI; could be
-  used to show an icon when a ssh remote is available
 
 ## telehash 
 

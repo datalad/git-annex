@@ -23,8 +23,9 @@ import qualified Types.Remote as Remote
 import Control.Concurrent
 import Control.Concurrent.Async
 import System.Process (std_in, std_out)
-import qualified Data.Map as M
 import Network.URI
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 remoteControlThread :: NamedThread
 remoteControlThread = namedThread "RemoteControl" $ do
@@ -43,9 +44,9 @@ remoteControlThread = namedThread "RemoteControl" $ do
 	responder <- asIO $ remoteResponderThread fromh urimap
 
 	-- run controller and responder until the remotedaemon dies
-	liftIO $ do
-		void $ controller `concurrently` responder
-		forceSuccessProcess p pid
+	liftIO $ void $ tryNonAsync $ controller `concurrently` responder
+	debug ["remotedaemon exited"]
+	liftIO $ forceSuccessProcess p pid
 
 -- feed from the remoteControl channel into the remotedaemon
 remoteControllerThread :: Handle -> Assistant ()
@@ -61,14 +62,10 @@ remoteResponderThread :: Handle -> MVar (M.Map URI Remote) -> Assistant ()
 remoteResponderThread fromh urimap = go M.empty
   where
 	go syncalerts = do
-		let cont = go syncalerts
-		let withr uri = withRemote uri urimap cont
 		l <- liftIO $ hGetLine fromh
 		case parseMessage l of
-			Just (CONNECTED _uri) -> do
-				cont
-			Just (DISCONNECTED _uri) -> do
-				cont
+			Just (CONNECTED uri) -> changeconnected S.insert uri
+			Just (DISCONNECTED uri) -> changeconnected S.delete uri
 			Just (SYNCING uri) -> withr uri $ \r ->
 				if M.member (Remote.uuid r) syncalerts
 					then go syncalerts
@@ -92,6 +89,12 @@ remoteResponderThread fromh urimap = go M.empty
 			Nothing -> do
 				debug ["protocol error from remotedaemon: ", l]
 				cont
+	  where
+		cont = go syncalerts
+		withr uri = withRemote uri urimap cont
+		changeconnected sm uri = withr uri $ \r -> do
+			changeCurrentlyConnected $ sm $ Remote.uuid r
+			cont
 
 getURIMap :: Annex (M.Map URI Remote)
 getURIMap = Remote.remoteMap' id (mkk . Git.location . Remote.repo)
