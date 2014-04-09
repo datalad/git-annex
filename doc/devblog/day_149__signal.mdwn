@@ -1,0 +1,14 @@
+The git-remote-daemon now robustly handles loss of signal, with
+reconnection backoffs. And it detects if the remote ssh server has a too
+old version of git-annex-shell and the webapp will display a warning
+message.
+
+[[!img /assistant/connection.png]]
+
+Also, made the webapp show a network signal bars icon next to both
+ssh and xmpp remotes that it's currently connected with. And, updated the
+webapp's nudging to set up XMPP to now suggest either an XMPP or a ssh remote.
+
+I think that the `remotecontrol` branch is nearly ready for merging!
+
+Today's work was sponsored by Paul Tagliamonte.
