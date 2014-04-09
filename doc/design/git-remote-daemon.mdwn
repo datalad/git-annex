@@ -87,7 +87,7 @@ the webapp.
   Indicates that syncing with a remote is done, and either succeeded
   (1) or failed (0).
 
-* `WARNING`uri string`
+* `WARNING uri string`
 
   A message to display to the user about a remote.
 
