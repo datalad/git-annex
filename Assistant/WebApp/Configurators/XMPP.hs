@@ -32,23 +32,6 @@ import Network
 import qualified Data.Text as T
 #endif
 
-{- Displays an alert suggesting to configure XMPP. -}
-xmppNeeded :: Handler ()
-#ifdef WITH_XMPP
-xmppNeeded = whenM (isNothing <$> liftAnnex getXMPPCreds) $ do
-	urlrender <- getUrlRender
-	void $ liftAssistant $ do
-		close <- asIO1 removeAlert
-		addAlert $ xmppNeededAlert $ AlertButton
-			{ buttonLabel = "Configure a Jabber account"
-			, buttonUrl = urlrender XMPPConfigR
-			, buttonAction = Just close
-			, buttonPrimary = True
-			}
-#else
-xmppNeeded = return ()
-#endif
-
 {- When appropriate, displays an alert suggesting to configure a cloud repo
  - to suppliment an XMPP remote. -}
 checkCloudRepos :: UrlRenderer -> Remote -> Assistant ()

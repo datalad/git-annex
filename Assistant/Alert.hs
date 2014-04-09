@@ -329,10 +329,10 @@ pairRequestAcknowledgedAlert who button = baseActivityAlert
 	, alertButtons = maybeToList button
 	}
 
-xmppNeededAlert :: AlertButton -> Alert
-xmppNeededAlert button = Alert
+connectionNeededAlert :: AlertButton -> Alert
+connectionNeededAlert button = Alert
 	{ alertHeader = Just "Share with friends, and keep your devices in sync across the cloud."
-	, alertIcon = Just TheCloud
+	, alertIcon = Just ConnectionIcon
 	, alertPriority = High
 	, alertButtons = [button]
 	, alertClosable = True
@@ -340,7 +340,7 @@ xmppNeededAlert button = Alert
 	, alertMessageRender = renderData
 	, alertCounter = 0
 	, alertBlockDisplay = True
-	, alertName = Just $ XMPPNeededAlert
+	, alertName = Just ConnectionNeededAlert
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertData = []
 	}

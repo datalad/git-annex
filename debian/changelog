@@ -8,6 +8,8 @@ git-annex (5.20140406) UNRELEASED; urgency=medium
     Requires the remote server have git-annex-shell with notifychanges support.
   * webapp: Show a network signal icon next to ssh and xmpp remotes that
     it's currently connected with.
+  * webapp: Rework xmpp nudge to prompt for either xmpp or a ssh remote be
+    set up.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 07 Apr 2014 16:22:02 -0400
 

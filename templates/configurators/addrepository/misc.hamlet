@@ -7,17 +7,7 @@
   <a href="http://en.wikipedia.org/wiki/Sneakernet">SneakerNet</a> #
   between computers. 
 
-<h3>
-  <a href="@{StartXMPPPairSelfR}">
-    <i .icon-plus-sign></i> Share with your other devices
-<p>
-  Keep files in sync between your devices running git-annex.
-
-<h3>
-  <a href="@{StartXMPPPairFriendR}">
-    <i .icon-plus-sign></i> Share with a friend
-<p>
-  Combine your repository with a friend's repository, and share your files.
+^{makeXMPPConnection}
 
 <h3>
   <a href="@{StartLocalPairR}">
@@ -31,3 +21,5 @@
     <i .icon-plus-sign></i> Add another repository
 <p>
   Make another repository on your computer.
+
+^{makeSshRepository}

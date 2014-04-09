@@ -1,0 +1,6 @@
+<h3>
+  <a href="@{AddSshR}">
+    <i .icon-plus-sign></i> Remote server
+<p>
+  Set up a repository on a remote server using #
+  <tt>ssh</tt>.
