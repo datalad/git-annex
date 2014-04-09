@@ -42,17 +42,20 @@ xmppClientThread urlrenderer = namedThread "XMPPClient" $
 	restartableClient . xmppClient urlrenderer =<< getAssistant id
 
 {- Runs the client, handing restart events. -}
-restartableClient :: (XMPPCreds -> IO ()) -> Assistant ()
+restartableClient :: (XMPPCreds -> UUID -> IO ()) -> Assistant ()
 restartableClient a = forever $ go =<< liftAnnex getXMPPCreds
   where
 	go Nothing = waitNetMessagerRestart
 	go (Just creds) = do
-		tid <- liftIO $ forkIO $ a creds
+		xmppuuid <- maybe NoUUID Remote.uuid . headMaybe 
+			. filter Remote.isXMPPRemote . syncRemotes
+			<$> getDaemonStatus
+		tid <- liftIO $ forkIO $ a creds xmppuuid
 		waitNetMessagerRestart
 		liftIO $ killThread tid
 
-xmppClient :: UrlRenderer -> AssistantData -> XMPPCreds -> IO ()
-xmppClient urlrenderer d creds =
+xmppClient :: UrlRenderer -> AssistantData -> XMPPCreds -> UUID -> IO ()
+xmppClient urlrenderer d creds xmppuuid =
 	retry (runclient creds) =<< getCurrentTime
   where
 	liftAssistant = runAssistant d
@@ -67,10 +70,12 @@ xmppClient urlrenderer d creds =
 		 - is not retained. -}
 		liftAssistant $
 			updateBuddyList (const noBuddies) <<~ buddyList
-		liftAssistant $ 
 		void client
-		liftAssistant $ modifyDaemonStatus_ $ \s -> s
-			{ xmppClientID = Nothing }
+		liftAssistant $ do
+			modifyDaemonStatus_ $ \s -> s
+				{ xmppClientID = Nothing }
+			changeCurrentlyConnected $ S.delete xmppuuid
+			
 		now <- getCurrentTime
 		if diffUTCTime now starttime > 300
 			then do
@@ -88,6 +93,7 @@ xmppClient urlrenderer d creds =
 		inAssistant $ do
 			modifyDaemonStatus_ $ \s -> s
 				{ xmppClientID = Just $ xmppJID creds }
+			changeCurrentlyConnected $ S.insert xmppuuid
 			debug ["connected", logJid selfjid]
 
 		lasttraffic <- liftIO $ atomically . newTMVar =<< getCurrentTime
