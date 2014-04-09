@@ -22,6 +22,7 @@ module Remote (
 	remoteList,
 	gitSyncableRemote,
 	remoteMap,
+	remoteMap',
 	uuidDescriptions,
 	byName,
 	byNameOnly,
@@ -64,9 +65,19 @@ import Git.Types (RemoteName)
 import qualified Git
 
 {- Map from UUIDs of Remotes to a calculated value. -}
-remoteMap :: (Remote -> a) -> Annex (M.Map UUID a)
-remoteMap c = M.fromList . map (\r -> (uuid r, c r)) .
-	filter (\r -> uuid r /= NoUUID) <$> remoteList
+remoteMap :: (Remote -> v) -> Annex (M.Map UUID v)
+remoteMap mkv = remoteMap' mkv mkk
+  where
+	mkk r = case uuid r of
+		NoUUID -> Nothing
+		u -> Just u
+
+remoteMap' :: Ord k => (Remote -> v) -> (Remote -> Maybe k) -> Annex (M.Map k v)
+remoteMap' mkv mkk = M.fromList . mapMaybe mk <$> remoteList
+  where
+	mk r = case mkk r of
+		Nothing -> Nothing
+		Just k -> Just (k, mkv r)
 
 {- Map of UUIDs of remotes and their descriptions.
  - The names of Remotes are added to suppliment any description that has

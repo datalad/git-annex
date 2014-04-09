@@ -106,7 +106,7 @@ genRemoteMap h@(TransportHandle g _) ochan =
 					ichan <- newChan :: IO (Chan Consumed)
 					return $ Just
 						( r
-						, (transport r (Git.repoDescribe r) h ichan ochan, ichan)
+						, (transport r (RemoteURI u) h ichan ochan, ichan)
 						)
 			_ -> return Nothing
 		_ -> return Nothing

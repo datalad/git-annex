@@ -10,15 +10,20 @@
 
 module RemoteDaemon.Types where
 
+import Common
 import qualified Annex
 import qualified Git.Types as Git
 import qualified Utility.SimpleProtocol as Proto
 
+import Network.URI
 import Control.Concurrent
+
+-- The URI of a remote is used to uniquely identify it (names change..)
+newtype RemoteURI = RemoteURI URI
 
 -- A Transport for a particular git remote consumes some messages
 -- from a Chan, and emits others to another Chan.
-type Transport = RemoteRepo -> RemoteName -> TransportHandle -> Chan Consumed -> Chan Emitted -> IO ()
+type Transport = RemoteRepo -> RemoteURI -> TransportHandle -> Chan Consumed -> Chan Emitted -> IO ()
 
 type RemoteRepo = Git.Repo
 type LocalRepo = Git.Repo
@@ -28,10 +33,11 @@ data TransportHandle = TransportHandle LocalRepo (MVar Annex.AnnexState)
 
 -- Messages that the daemon emits.
 data Emitted
-	= CONNECTED RemoteName
-	| DISCONNECTED RemoteName
-	| SYNCING RemoteName
-	| DONESYNCING Bool RemoteName
+	= CONNECTED RemoteURI
+	| DISCONNECTED RemoteURI
+	| SYNCING RemoteURI
+	| DONESYNCING RemoteURI Bool
+	| WARNING RemoteURI String
 
 -- Messages that the deamon consumes.
 data Consumed
@@ -41,7 +47,6 @@ data Consumed
 	| RELOAD
 	| STOP
 
-type RemoteName = String
 type RefList = [Git.Ref]
 
 instance Proto.Sendable Emitted where
@@ -51,8 +56,10 @@ instance Proto.Sendable Emitted where
 		["DISCONNECTED", Proto.serialize remote]
 	formatMessage (SYNCING remote) =
 		["SYNCING", Proto.serialize remote]
-	formatMessage (DONESYNCING status remote) =
-		["DONESYNCING", Proto.serialize status, Proto.serialize remote]
+	formatMessage (DONESYNCING remote status) =
+		["DONESYNCING", Proto.serialize remote, Proto.serialize status]
+	formatMessage (WARNING remote message) =
+		["WARNING", Proto.serialize remote, Proto.serialize message]
 
 instance Proto.Sendable Consumed where
 	formatMessage PAUSE = ["PAUSE"]
@@ -66,6 +73,7 @@ instance Proto.Receivable Emitted where
 	parseCommand "DISCONNECTED" = Proto.parse1 DISCONNECTED
 	parseCommand "SYNCING" = Proto.parse1 SYNCING
 	parseCommand "DONESYNCING" = Proto.parse2 DONESYNCING
+	parseCommand "WARNING" = Proto.parse2 WARNING
 	parseCommand _ = Proto.parseFail
 
 instance Proto.Receivable Consumed where
@@ -75,6 +83,10 @@ instance Proto.Receivable Consumed where
 	parseCommand "RELOAD" = Proto.parse0 RELOAD
 	parseCommand "STOP" = Proto.parse0 STOP
 	parseCommand _ = Proto.parseFail
+
+instance Proto.Serializable RemoteURI where
+	serialize (RemoteURI u) = show u
+	deserialize = RemoteURI <$$> parseURI
 
 instance Proto.Serializable [Char] where
 	serialize = id
