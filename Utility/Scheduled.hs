@@ -10,7 +10,11 @@ module Utility.Scheduled (
 	Recurrance(..),
 	ScheduledTime(..),
 	NextTime(..),
+	WeekDay,
+	MonthDay,
+	YearDay,
 	nextTime,
+	startTime,
 	fromSchedule,
 	fromScheduledTime,
 	toScheduledTime,
@@ -21,9 +25,13 @@ module Utility.Scheduled (
 	prop_schedule_roundtrips
 ) where
 
-import Common
+import Utility.Data
 import Utility.QuickCheck
+import Utility.PartialPrelude
+import Utility.Misc
 
+import Control.Applicative
+import Data.List
 import Data.Time.Clock
 import Data.Time.LocalTime
 import Data.Time.Calendar
@@ -41,9 +49,9 @@ data Recurrance
 	| Weekly (Maybe WeekDay)
 	| Monthly (Maybe MonthDay)
 	| Yearly (Maybe YearDay)
-	-- Days, Weeks, or Months of the year evenly divisible by a number.
-	-- (Divisible Year is years evenly divisible by a number.)
 	| Divisible Int Recurrance
+	-- ^ Days, Weeks, or Months of the year evenly divisible by a number.
+	-- (Divisible Year is years evenly divisible by a number.)
   deriving (Eq, Read, Show, Ord)
 
 type WeekDay = Int
