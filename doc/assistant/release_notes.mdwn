@@ -2,7 +2,9 @@
 
 Automatic upgrading was broken on OSX for previous versions. This has been
 fixed, but you'll need to manually upgrade to this version to get it going
-again.
+again. (Note that the fix is currently only available in the daily builds,
+not a released version.) Workaround: Remove the wget bundled inside the
+git-annex dmg.
 
 ## version 5.20140221
 
