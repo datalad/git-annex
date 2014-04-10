@@ -1,3 +1,9 @@
+## version 5.20140406
+
+Automatic upgrading was broken on OSX for previous versions. This has been
+fixed, but you'll need to manually upgrade to this version to get it going
+again.
+
 ## version 5.20140221
 
 The Windows port of the assistant and webapp is now considered to be beta
