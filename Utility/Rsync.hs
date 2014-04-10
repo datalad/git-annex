@@ -124,6 +124,9 @@ rsyncUrlIsPath s
  - after the \r is the number of bytes processed. After the number,
  - there must appear some whitespace, or we didn't get the whole number,
  - and return the \r and part we did get, for later processing.
+ -
+ - In some locales, the number will have one or more commas in the middle
+ - of it.
  -}
 parseRsyncProgress :: String -> (Maybe Integer, String)
 parseRsyncProgress = go [] . reverse . progresschunks
@@ -142,7 +145,7 @@ parseRsyncProgress = go [] . reverse . progresschunks
 	parsebytes s = case break isSpace s of
 		([], _) -> Nothing
 		(_, []) -> Nothing
-		(b, _) -> readish b
+		(b, _) -> readish $ filter (/= ',') b
 
 {- Filters options to those that are safe to pass to rsync in server mode,
  - without causing it to eg, expose files. -}

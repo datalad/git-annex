@@ -5,6 +5,8 @@ git-annex (5.20140406) UNRELEASED; urgency=medium
   * Remove wget from OSX dmg, due to issues with cert paths that broke
     git-annex automatic upgrading. Instead, curl is used, unless the
     OSX system has wget installed, which will then be used.
+  * Fix rsync progress parsing in locales that use comma in number display.
+    Closes: #744148
 
  -- Joey Hess <joeyh@debian.org>  Mon, 07 Apr 2014 16:22:02 -0400
 
