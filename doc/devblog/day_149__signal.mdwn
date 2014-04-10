@@ -1,3 +1,5 @@
+[[!meta title="day 150 signal"]]
+
 The git-remote-daemon now robustly handles loss of signal, with
 reconnection backoffs. And it detects if the remote ssh server has a too
 old version of git-annex-shell and the webapp will display a warning
