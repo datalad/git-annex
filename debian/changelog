@@ -1,3 +1,9 @@
+git-annex (5.20140412) unstable; urgency=high
+
+  * Last release didn't quite fix the high cpu issue in all cases, this should.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 17:14:38 -0400
+
 git-annex (5.20140411) unstable; urgency=high
 
   * importfeed: Filename template can now contain an itempubdate variable.
