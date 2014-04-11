@@ -7,6 +7,10 @@ git-annex (5.20140406) UNRELEASED; urgency=medium
     OSX system has wget installed, which will then be used.
   * Fix rsync progress parsing in locales that use comma in number display.
     Closes: #744148
+  * assistant: Fix high CPU usage triggered when a monthly fsck is scheduled,
+    and the last time the job ran was a day of the month > 12. This caused a
+    runaway loop. Thanks to Anarcat for his assistance, and to Maximiliano
+    Curia for identifying the cause of this bug.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 07 Apr 2014 16:22:02 -0400
 
