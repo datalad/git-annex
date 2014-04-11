@@ -1,4 +1,7 @@
-## version 5.20140406
+## version 5.20140411
+
+This release fixes a bug that could cause the assistant to use a *lot* of
+CPU, when monthly fscking was set up.
 
 Automatic upgrading was broken on OSX for previous versions. This has been
 fixed, but you'll need to manually upgrade to this version to get it going
