@@ -121,7 +121,7 @@ calcNextTime (Schedule recurrance scheduledtime) lasttime currenttime
 					| otherwise -> skip 1
 		Monthly Nothing
 			| afterday -> skip 1
-			| maybe True (\old -> mnum candidate > mnum old && mday candidate >= (mday old `mod` minmday)) lastday ->
+			| maybe True (\old -> mday candidate > mday old && mday candidate >= (mday old `mod` minmday)) lastday ->
 				-- Window only covers current month,
 				-- in case there is a Divisible requirement.
 				Just $ window candidate (endOfMonth candidate)
