@@ -1,0 +1,13 @@
+git-annex 5.20140411 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * importfeed: Filename template can now contain an itempubdate variable.
+     Needs feed 0.3.9.2.
+   * Fix rsync progress parsing in locales that use comma in number display.
+     Closes: #[744148](http://bugs.debian.org/744148)
+   * assistant: Fix high CPU usage triggered when a monthly fsck is scheduled,
+     and the last time the job ran was a day of the month &gt; 12. This caused a
+     runaway loop. Thanks to Anarcat for his assistance, and to Maximiliano
+     Curia for identifying the cause of this bug.
+   * Remove wget from OSX dmg, due to issues with cert paths that broke
+     git-annex automatic upgrading. Instead, curl is used, unless the
+     OSX system has wget installed, which will then be used."""]]
