@@ -67,7 +67,7 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
 
 * notifychanges
 
-  This is used by `git-annex remote-daemon` to be notified when
+  This is used by `git-annex remotedaemon` to be notified when
   refs in the remote repository are changed.
 
 * gcryptsetup gcryptid
