@@ -3,8 +3,6 @@ manager. Here's how to add git-annex support to gitolite, so you can
 `git annex copy` files to a gitolite repository, and `git annex get`
 files from it.
 
-Warning : The method described here works with gitolite version g2, avaible in the g2 branch on github. There is an experimental support for g3 in the git-annex branch, if you tested it please add some feedback.
-
 A nice feature of using gitolite with git-annex is that users can be given
 read-only access to a repository, and this allows them to `git annex get`
 file contents, but not change anything.
@@ -12,7 +10,8 @@ file contents, but not change anything.
 First, you need new enough versions:
 
 * gitolite 2.2 is needed -- this version contains a git-annex-shell ADC
-  and supports "ua" ADCs.
+  and supports "ua" ADCs. Alternatively, gitoline g3 also recently added
+  support for git-annex.
 * git-annex 3.20111016 or newer needs to be installed on the gitolite
   server. Don't install an older version, it wouldn't be secure!
 
@@ -37,6 +36,13 @@ Install the git-annex-shell ADC into the "ua" subdirectory from the gitolie repo
 <pre>   
 cd /usr/local/lib/gitolite/adc/ua/
 cp gitolite/contrib/adc/git-annex-shell .
+</pre>
+
+If using gitolite g3, an additional setup step is needed:
+In the ENABLE list in the rc file, add an entry like this:
+
+<pre>
+	'git-annex-shell ua',
 </pre>
 
 Now all gitolite repositories can be used with git-annex just as any
