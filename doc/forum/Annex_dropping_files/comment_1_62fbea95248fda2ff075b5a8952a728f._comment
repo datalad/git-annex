@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 1"
+ date="2013-09-12T21:01:03Z"
+ content="""
+If you have just created repository D and have just copied some files to it, then it will only contain those files, and not old deleted files or old versions of files. You can run `git annex copy --all --to D` to copy all those files to D, although if you're only wanting to dropunused them, there is not much point in that..
+"""]]

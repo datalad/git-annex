@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-22T20:00:12Z"
+ content="""
+1. Use `git log --stat` to find the commit that changed your file `Z.7z`
+2. Use `git revert` to revert that commit
+
+That will put things back the way they were.
+
+You should then investigate what caused the bad commit to be made. It seems to have involved the file being reset to be 0 bytes in size.
+"""]]

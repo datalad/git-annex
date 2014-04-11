@@ -1,0 +1,9 @@
+Apparently newer gnupg has support for hardware-accelerated AES-NI. It
+would be good to have an option to use that. I also wonder if using the
+same symmetric key for many files presents a security issues (and whether
+using GPG keys directly would be more secure).
+
+> [[done]]; you can now use encryption=pubkey when setting up a special
+> remote to use pure public keys without the hybrid symmetric key scheme.
+> Which you choose is up to you. Also,  annex.gnupg-options can configure
+> the ciphers used. --[[Joey]]

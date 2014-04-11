@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 2"
+ date="2014-03-10T17:11:41Z"
+ content="""
+Your laptop is in indirect mode, so we know that the only way files can be deleted by a merge is if a commit was made to git that deletes the files.
+
+My conclusion is that some repository, perhaps the usb drive, made a commit that deleted those files. You should be able to find this commit with `git log --stat`, and can just `git revert` it if you want to.
+
+So far, I don't see evidence of a bug. For all I know, you actually did delete the files on the usb drive, and that change got committed..
+"""]]

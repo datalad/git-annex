@@ -1,0 +1,20 @@
+[[!comment format=c
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 5"
+ date="2013-01-03T22:49:41Z"
+ content="""
+Ok, I think I figured it out. I have quit from git-annex-assistant (Ctrl-C in terminal window).
+
+And launched this command:
+$ ps -e |grep git-ann
+ 1782 ?        00:01:00 git-annex
+20144 pts/0    00:00:00 git-annex-webap
+20148 pts/0    00:00:00 git-annex
+20178 pts/0    00:00:00 git-annex <defunct>
+20508 pts/0    00:00:00 git-annex <defunct>
+20528 ?        00:00:02 git-annex
+21132 ?        00:00:00 git-annex <defunct>
+
+I will be more cautious in future.
+"""]]

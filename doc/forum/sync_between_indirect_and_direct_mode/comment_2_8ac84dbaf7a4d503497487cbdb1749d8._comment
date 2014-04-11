@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnDXvDvWTXmCqQ90ATTD4dV3Ii4YbnE8E0"
+ nickname="sys"
+ subject="git annex direct when not all content is in this repo"
+ date="2014-03-12T14:41:53Z"
+ content="""
+what does git annex direct do when all the content isn't available in the current repo (i am assuming it will leave symlinks for the missing content)
+"""]]

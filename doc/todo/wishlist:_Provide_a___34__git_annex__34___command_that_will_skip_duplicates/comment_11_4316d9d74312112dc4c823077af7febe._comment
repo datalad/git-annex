@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 11"
+ date="2011-12-23T17:52:21Z"
+ content="""
+I don't think that [[tips/finding_duplicate_files]] is hard to find, and the multiple different ways it shows to deal with the duplicate files shows the flexability of the unix pipeline approach.
+"""]]

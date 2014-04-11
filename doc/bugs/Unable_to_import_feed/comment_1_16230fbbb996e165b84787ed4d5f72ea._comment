@@ -1,0 +1,45 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 1"
+ date="2013-08-23T18:09:27Z"
+ content="""
+When I try this, without the German translation, I get:
+
+<pre>
+joey@gnu:~/tmp/newrepo>git annex importfeed 'http://www.ndr.de/fernsehen/sendungen/extra_3/videos/zum_mitnehmen/extradrei196_version-hq.xml'
+(checking known urls...)
+importfeed http://www.ndr.de/fernsehen/sendungen/extra_3/videos/zum_mitnehmen/extradrei196_version-hq.xml 
+--2013-08-23 13:58:19--  http://www.ndr.de/fernsehen/sendungen/extra_3/videos/zum_mitnehmen/extradrei196_version-hq.xml
+Resolving www.ndr.de (www.ndr.de)... 23.73.180.154, 23.73.180.115
+Connecting to www.ndr.de (www.ndr.de)|23.73.180.154|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 61865 (60K) [application/xml]
+Saving to: ‘/home/joey/tmp/feed31120’
+
+100%[======================================>] 61,865       151KB/s   in 0.4s   
+
+2013-08-23 13:58:25 (151 KB/s) - ‘/home/joey/tmp/feed31120’ saved [61865/61865]
+
+
+  warning: bad feed content
+</pre>
+
+It seems you left out the last line of the error.
+
+The feed library seems to fail to find any of the enclosures in this feed, although it is able to parse it as far as finding the individual items in the feed:
+
+<pre>
+Prelude Text.Feed.Query Text.Feed.Import> f <- parseFeedFromFile \"extradrei196_version-hq.xml\" 
+Prelude Text.Feed.Query Text.Feed.Import> map getItemEnclosure $ feedItems f
+[Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing,Nothing]
+</pre>
+
+The feed *appears* to contain enclosures, for example:
+
+<pre>
+<enclosure url=\"http://media.ndr.de/progressive/2013/0821/TV-20130821-2329-5942.hq.mp4\" type=\"video/mp4\"/>
+</pre>
+
+It may not be well-formed, or the feed library may have a bug. Assuming the latter, I have filed a bug report on the feed library: https://github.com/sof/feed/issues/3
+"""]]

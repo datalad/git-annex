@@ -1,0 +1,8 @@
+I have a setup as follows,
+
+3 drives on a remote ssh server regular git annex repos.
+One untrusted clone of this repository on my laptop. 
+
+On my laptop in webapp I have set num of copies to 2 (each file does have two copies on the server already). all repos plus laptop is set to manual mode. What happens is whenever I get a file to the laptop it would drop it from the disk on the server. Even though laptop is marked as untrusted this does not happen when using annex at the command line when I do a git annex get . --auto on the server it does not take the files on the untrusted repos into account which is what I want so I can drop files without moving them back to the server.
+
+Is this the intended behavior or am I doing something wrong?

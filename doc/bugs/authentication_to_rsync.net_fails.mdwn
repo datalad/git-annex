@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+Used assistant to "Add a cloud repository".  Supplied hostname, username in webapp. Directory "annex" port 22.
+Clicked on "Use this rsync.net repository" and got
+
+**********************
+ssh_askpass: exec(/usr/bin/ssh-askpass): No such file or directory
+ssh_askpass: exec(/usr/bin/ssh-askpass): No such file or directory
+ssh_askpass: exec(/usr/bin/ssh-askpass): No such file or directory
+Received disconnect from 69.43.165.7: 2: Too many authentication failures for 2440
+**********************
+
+### What steps will reproduce the problem?
+See above?  A simple "ssh user@host.rsync.net ls /usr/bin" reveals that indeed no ssh-askpass is available in that namespace.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 4.20130521 on debian linux 7.1.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+That log is empty.
+# End of transcript or log.
+"""]]
+
+> I added ssh-askpass as a recommends, so I suppose
+> I can close this. [[done]] --[[Joey]] 

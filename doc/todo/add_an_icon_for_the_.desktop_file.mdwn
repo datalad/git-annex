@@ -1,0 +1,3 @@
+Maybe add the icon /usr/share/doc/git-annex/html/logo.svg to the .desktp file.
+
+> [[done]] long ago.. --[[Joey]] 

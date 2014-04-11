@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm9tgeFE5v-arAYYftSv3yUTI5Q4qB2C9M"
+ nickname="Khaije"
+ subject="git-annex with gitolite FTW"
+ date="2013-08-13T15:13:07Z"
+ content="""
+The steps to activate git-annex integration have changed/simplified for v3.
+
+
+1) during install, be sure to use the 'git-annex' branch, rather than master[fn:1]. 
+
+2) to enable git-annex-shell, open ~/.gitolite.rc and insert 'git-annex-shell' => 'ua' into the hash list in the COMMANDS array.[fn:2] 
+#'git-annex-shell'   =>  'ua',
+   
+
+
+
+[fn:1] We'd like to have this feature-branch merged to master, so please send Sitaram feedback, positive and negative, based on your experiences.
+[fn:2] There is no GL_ADC_PATH and no \"ua\" subdirectory here, and nothing to \"install\"; the command now comes with gitolite.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="Have you seen the dar utility?"
+ date="2012-10-20T19:03:37Z"
+ content="""
+http://dar.linux.free.fr/doc/index.html
+
+Would be nice to have this as another remote option for git-annex, since I too would like to have static (and possibly incrementally extended) remotes that span multiple DVDs
+"""]]

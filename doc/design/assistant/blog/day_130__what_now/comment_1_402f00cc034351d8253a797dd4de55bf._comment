@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7AuSfii_tCkLyspL6Mr0ATlO6OxLNYOo"
+ nickname="Georg"
+ subject="definitely glacier would be cool"
+ date="2012-11-14T08:51:40Z"
+ content="""
+Because having it available as an archival system to move stuff over that you don't expect to constantly need available. But what would be needed is a way to prevent the assistant to pull all the data from there back on your clients. This probably allready is doable with preferred content, but probably needs an easier way to set up - when I tried the new version it immediately started to pull all the stuff from my server repository that I moved there to get my disk space free. So my scenario would be \"move stuff to archives and when I drop it afterwards, keep it dropped locally if at least one archival server has it\".
+"""]]

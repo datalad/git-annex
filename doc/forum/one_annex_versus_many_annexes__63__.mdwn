@@ -1,0 +1,10 @@
+I'm curious how other people are using git-annex:
+
+ * A single annex containing everything they want to keep track of (albeit with some files only available in some remotes).
+ * Several annexes for different purposes.
+
+I'm mostly asking because I don't want to get too far into using git-annex without thinking clearly about which is the most suitable choice for me.  At present I have things split into two annexes, one for things I really wouldn't want to lose (and some of which are somewhat private), and another for comparatively throwaway items.  However, given the possibility of setting different annex.numcopies on different file globs or directories, it seems like it might be kind of silly to make my life more complicated by having more than one annex.
+
+Primarily, I'm curious if there are some implications of the decision that I haven't considered.  It seems like an obvious point that one would want different annexes is if they're used in distinctly different security-level environments (e.g. I'm happy to copy my FLAC (music) files over to my work computer which lives at the office, but I wouldn't want to copy personal financial documents - or even the filenames - there.)
+
+-Mike

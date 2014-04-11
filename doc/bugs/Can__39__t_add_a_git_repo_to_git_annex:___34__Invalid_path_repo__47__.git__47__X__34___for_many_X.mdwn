@@ -1,0 +1,34 @@
+I have some git repositories I don't edit often that I'd like to back up.  I'd like to add these to my git annex, so I don't have to resort to a time-consuming hack (such as setting up a proper submodule, or bundling the repositories).
+
+But when I try to add a .git directory to git annex, I get a bunch of errors of the form
+
+    git-annex: user error (xargs ["-0","git","--git-dir=/tmp/tmp.LhGN3nT9uM/annex/.git","--work-tree=/tmp/tmp.LhGN3nT9uM/annex","add","--"] exited 123)
+    failed
+    git-annex: add: 1 failed
+    add repo/.git/hooks/pre-push.sample ok
+    (Recording state in git...)
+    error: Invalid path 'repo/.git/hooks/pre-push.sample'
+    error: unable to add repo/.git/hooks/pre-push.sample to index
+    fatal: adding files failed
+
+STR:
+
+    $ mkdir annex
+    $ cd annex
+    annex$ git init
+    annex$ git annex init
+    annex$ cd ..
+
+    $ mkdir repo
+    $ cd repo
+    repo$ git init
+    repo$ cd ..
+
+    $ mv repo annex
+    $ cd annex
+    annex$ find repo | xargs -n1 git annex add
+    # Lots of errors of the form above.
+
+You can't simply do `git annex add repo` because that will ignore the .git directory.  Similarly,` git annex add .git` (which I'd think really should try to add the contents of the .git directory) ignores everything.
+
+I don't know what this error means.  Is there a right way to work around this?

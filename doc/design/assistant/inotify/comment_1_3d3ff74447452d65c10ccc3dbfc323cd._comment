@@ -1,0 +1,7 @@
+[[!comment format=mdwn
+ username="http://ciffer.net/~svend/"
+ subject="comment 1"
+ date="2012-06-04T19:42:07Z"
+ content="""
+I would find it useful if the watch command could 'git add' new files (instead of 'git annex add') for certain repositories.
+"""]]

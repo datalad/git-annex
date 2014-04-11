@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.23"
+ subject="comment 1"
+ date="2012-10-18T02:20:25Z"
+ content="""
+If you really want to, check out the git-annex branch and delete the line from uuid.log, and do this on every repo in tandem. But it seems a lot of bother for something that is entirely hidden except for this one place.
+"""]]

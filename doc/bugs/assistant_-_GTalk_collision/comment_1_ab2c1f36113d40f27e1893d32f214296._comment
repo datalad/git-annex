@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://smcv.pseudorandom.co.uk/"
+ nickname="smcv"
+ subject="GTalk wants you to implement its &quot;shared status&quot; protocol"
+ date="2013-03-16T11:59:22Z"
+ content="""
+For invisibility to work, GTalk demands that every connected resource implements its \"shared status\" extension. Given that git-annex sets negative priority, this seems like a GTalk bug - it should ignore negative-priority resources when deciding whether it can be invisible - but it seems unlikely to be fixed.
+
+We implement shared status in telepathy-gabble (mostly in src/conn-presence.c, tests in tests/twisted/presence/shared-status.py) if it's any help.
+
+<http://code.google.com/apis/talk/jep_extensions/shared_status.html>
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 13"
+ date="2011-02-09T21:59:47Z"
+ content="""
+The dtrace puzzlingly does not have the same errors shown above, but a set of mostly new errors. I don't know what to make of that.
+
+> git-annex: git-annex/.t/repo/.git/hooks/pre-commit: fileAccess: permission denied (Operation not permitted)
+
+This seems to be caused by it setting the execute bit on the file. I don't know why that would fail; it's just written the file and renamed it into place so clearly should be able to write to it.
+
+> was able to modify annexed file's sha1foo content
+
+This also suggests something breaking with permissions.
+"""]]

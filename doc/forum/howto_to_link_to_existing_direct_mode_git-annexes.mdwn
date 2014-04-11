@@ -1,0 +1,5 @@
+I have created two git-annexes (one on my laptop and one on my work pc) The are using nearly the same files with some files existing only on the pc but not on the laptop as they are too large for the laptop. How do I get the two into sync. I found the manual in the tips section but that will create normal git-annexes with all files linked only. However, I would like to have my exiting file structure unchanged (the way the assistant does it by default)
+
+any ideas?
+
+Gregor

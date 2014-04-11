@@ -1,0 +1,4 @@
+It would be wonderful if a pre-built package would be available for Synology NAS. Basically, this is an ARM-based Linux. It has most of the required shell commands either out of the box or easily available (through ipkg). But I think it would be difficult to install the Haskell compiler and all the required modules, so it would probably be better to cross-compile targeting ARM.
+
+> [[done]]; the standalone armel tarball has now been tested working on
+> Synology. --[[Joey]]

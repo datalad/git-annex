@@ -1,0 +1,18 @@
+Some podcasts don't include a sortable date as the first thing in their episode title, which makes listening to them in order challenging if not impossible.
+
+The date the item was posted is part of the RSS standard, so we should parse that and provide a new importfeed template option "itemdate".
+
+(For the curious, I tried "itemid" thinking that might give me something close, but it doesn't. I used --template='${feedtitle}/${itemid}-${itemtitle}${extension}' and get:
+
+    http___openmetalcast.com__p_1163-Open_Metalcast_Episode__93__Headless_Chicken.ogg
+
+or
+
+    http___www.folkalley.com_music_podcasts__name_2013_08_21_alleycast_6_13.mp3-Alleycast___06.13.mp3
+
+that "works" but is ugly :)
+
+Would love to be able to put a YYYYMMDD at the beginning and then the title.
+
+> [[done]]; itempubdate will use form YYYY-MM-DD (or the raw date string
+> if the feed does not use a parsable form). --[[Joey]]

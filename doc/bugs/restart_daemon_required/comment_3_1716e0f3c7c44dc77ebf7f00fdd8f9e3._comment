@@ -1,0 +1,310 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmxns2UBAMDbTwrwHq_Lx1sNKrVVayq1X4"
+ nickname="Darren"
+ subject="comment 3"
+ date="2013-06-01T01:19:02Z"
+ content="""
+Thanks Joey for the quick reply, I've just updated both clients to the latest versions I could find, one is running Lion so the version is slightly behind as the autobuilds are currently failing to compile. The mountain lion system I believe is running one of the latest builds.
+
+I've captured the error here as best I can, I didn't know what to leave out so apologies for the length of the logs.
+
+===
+Sending Repo (added sync.mov)
+===
+
+    [2013-06-01 01:59:56 BST] main: starting assistant version 4.20130522-g933ba09
+    [2013-06-01 01:59:56\"_xmpp-client._tcp.gmail.com\"
+     BST] TransferScanner: Syncing with Cloud 
+    Already up-to-date.
+    Just [(20,0,5222,\"alt1.xmpp.l.google.com.\"),(20,0,5222,\"alt2.xmpp.l.google.com.\"),(20,0,5222,\"alt3.xmpp.l.google.com.\"),(20,0,5222,\"alt4.xmpp.l.google.com.\"),(5,0,5222,\"xmpp.l.google.com.\")]
+
+    (scanning...) [2013-06-01 01:59:56 BST] Watcher: Performing startup scan
+    Already up-to-date.
+    Everything up-to-date
+
+    (started...) [2013-06-01 01:59:58 BST] Committer: Committing changes to git
+    [2013-06-01 01:59:58 BST] Pusher: Syncing with Cloud 
+    Everything up-to-date
+    From ssh://cloud.rhymeorange.com:21/tank/git-annex/projects
+       da9a4d5..4142ae6  synced/git-annex -> Cloud/synced/git-annex
+    [2013-06-01 02:00:56 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"ls-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"preferred-content.log\"]
+    [2013-06-01 02:01:19 BST] Watcher: add direct /Volumes/StoragePool/Projects/init/sync.mov
+    [2013-06-01 02:01:19 BST] read: lsof [\"-F0can\",\"+d\",\"/Volumes/StoragePool/Projects/init/.git/annex/tmp/\"]
+    [2013-06-01 02:01:19 BST] Committer: Adding sync.mov
+
+    (Recording state in git...)
+    (merging Cloud/synced/git-annex into git-annex...)
+    add /Volumes/StoragePool/Projects/init/sync.mov (checksum...) [2013-06-01 02:01:19 BST] read: sha256sum [\"/Volumes/StoragePool/Projects/init/.git/annex/tmp/sync1693.mov\"]
+    recv: resource vanished (Connection reset by peer)
+    [2013-06-01 02:01:20 BST] chat: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\"]
+    [2013-06-01 02:01:20 BST] Committer: committing 1 changes
+    [2013-06-01 02:01:20 BST] Committer: Committing changes to git
+    [2013-06-01 02:01:20 BST] feed: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-06-01 02:01:20 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"commit\",\"--allow-empty-message\",\"--no-edit\",\"-m\",\"\",\"--quiet\",\"--no-verify\"]
+    [2013-06-01 02:01:20 BST] Pusher: Syncing with Cloud 
+    [2013-06-01 02:01:20 BST] Committer: queued Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Nothing : new file created
+    [2013-06-01 02:01:20 rBeScTv]:  Trreasnosufrecrer evra:n iTsrhaends f(eCrorninnegc:t iUopnl oraeds eUtU IbDy  \"pee3e9r3)d
+    45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Nothing
+    [2013-06-01 02:01:20 BST] chat: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"hash-object\",\"-w\",\"--stdin-paths\"]
+    [2013-06-01 02:01:20 BST] call: /Applications/git-annex.app/Contents/MacOS/git-annex [\"transferkeys\",\"--readfd\",\"82\",\"--writefd\",\"81\"]
+    [2013-06-01 02:01:20 BST] feed: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-06-01 02:01:20 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:20 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"write-tree\"]
+    [2013-06-01 02:01:20 BST] chat: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"commit-tree\",\"181162ed25fb1bec4d077e359a5f0e60344e735e\",\"-p\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:20 BST] call: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"update-ref\",\"refs/heads/git-annex\",\"ef8dc3b251fbf6baa8149ed077703b2363b3dbc9\"]
+    [2013-06-01 02:01:20 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:20 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:20 BST] Pusher: pushing to [Remote { name =\"Cloud\" }]
+    [2013-06-01 02:01:20 BST] call: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"branch\",\"-f\",\"synced/master\"]
+    [2013-06-01 02:01:20 BST] call: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"push\",\"Cloud\",\"git-annex:synced/git-annex\",\"master:synced/master\"]
+    [2013-06-01 02:01:20 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Nothing
+    [2013-06-01 02:01:20 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Nothing
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"git-annex\"]
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+
+    sync.mov
+           32768   0%    0.00kB/s    0:00:00
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"log\",\"refs/heads/git-annex..ef8dc3b251fbf6baa8149ed077703b2363b3dbc9\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"log\",\"refs/heads/git-annex..8c35b10f8f42367fddc5c12fe39b30014358cd4d\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"log\",\"refs/heads/git-annex..4142ae6e3befdff987748a92feb65a11aecf4b63\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:21 BST] Merger: merging refs/heads/synced/master into refs/heads/master
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-06-01 02:01:21 BST] call: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init/.git/annex/merge/\",\"merge\",\"--no-edit\",\"refs/heads/synced/master\"]
+    To ssh://darren@cloud.rhymeorange.com:21/tank/git-annex/projects/
+       4142ae6..ef8dc3b2 git-annex -> synced/git-annex
+       1723064..75aa568  master -> synced/master
+    [2013-06-01 02:01:21 BST] XMPPClient: sending: NotifyPush [UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\"]
+    Already up-to-date.
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"diff-tree\",\"-z\",\"--raw\",\"--no-renames\",\"-l0\",\"-r\",\"75aa568fb7f484609a36abdf6afd84ab5aeb0f06\",\"75aa568fb7f484609a36abdf6afd84ab5aeb0f06\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"git-annex\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"log\",\"refs/heads/git     7602176  11%    7.17MB/s    0:00:08
+    -annex..ef8dc3b251fbf6baa8149ed077703b2363b3dbc9\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"log\",\"refs/heads/git-annex..8c35b10f8f42367fddc5c12fe39b30014358cd4d\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 7602176
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:22 BST] Merger: merging refs/remotes/Cloud/synced/master into refs/heads/master
+    [2013-06-01 02:01:22 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 7602176
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-06-01 02:01:22 BST] call: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init/.git/annex/merge/\",\"merge\",\"--no-edit\",\"refs/remotes/Cloud/synced/master\"]
+    Already up-to-date.
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"diff-tree\",\"-z\",\"--raw\",\"--no-renames\",\"-l0\",\"-r\",\"75aa568fb7f484609a36abdf6afd84ab5aeb0f06\",\"75aa568fb7f484609a36abdf6afd84ab5aeb0f06\"]
+        12943360  19%    6.11MB/s    0:00:08
+    [2013-06-01 02:01:23 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 12943360
+    [2013-06-01 02:01:23 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 12943360
+        18710528  27%    5.90MB/s    0:00:08
+    [2013-06-01 02:01:24 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 18710528
+    [2013-06-01 02:01:24 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 18710528
+        24477696  36%    5.79MB/s    0:00:07
+    [2013-06-01 02:01:25 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 24477696
+    [2013-06-01 02:01:25 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 24477696
+        30375936  44%    5.39MB/s    0:00:06
+    [2013-06-01 02:01:26 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 30375936
+    [2013-06-01 02:01:26 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 30375936
+        36143104  53%    5.49MB/s    0:00:05
+    [2013-06-01 02:01:27 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 36143104
+    [2013-06-01 02:01:27 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 36143104
+        42008576  61%    5.51MB/s    0:00:04
+    [2013-06-01 02:01:28 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 42008576
+    [2013-06-01 02:01:28 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 42008576
+        47906816  70%    5.52MB/s    0:00:03
+    [2013-06-01 02:01:29 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 47906816
+    [2013-06-01 02:01:29 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 47906816
+        53805056  79%    5.51MB/s    0:00:02
+    [2013-06-01 02:01:30 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 53805056
+        59572224  87%    5.52MB/s    0:00:01
+    [2013-06-01 02:01:31 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 59572224
+        65339392  96%    5.50MB/s    0:00:00
+    [2013-06-01 02:01:32 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 65339392
+        67924272 100%    5.61MB/s    0:00:11 (xfer#1, to-check=0/1)
+    [2013-06-01 02:01:33 BST] TransferWatcher: transfer starting: Upload UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\" /Volumes/StoragePool/Projects/init/sync.mov Just 67924272
+
+    sent 67932633 bytes  received 31 bytes  5032049.19 bytes/sec
+    total size is 67924272  speedup is 1.00
+    [2013-06-01 02:01:33 BST] Transferrer: Uploaded sync.mov
+    [2013-06-01 02:01:33 BST] Pusher: Syncing with Cloud 
+    [2013-06-01 02:01:33 BST] chat: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"hash-object\",\"-w\",\"--stdin-paths\"]
+    [2013-06-01 02:01:33 BST] feed: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-06-01 02:01:33 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:33 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"write-tree\"]
+    [2013-06-01 02:01:33 BST] chat: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"commit-tree\",\"45ae1694ed9a7f54bab38405fa963859fd1c1918\",\"-p\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:33 BST] call: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"update-ref\",\"refs/heads/git-annex\",\"c22f52548a6fa05418d655906d8f182fb2d1bced\"]
+    [2013-06-01 02:01:33 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:33 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:33 BST] Pusher: pushing to [Remote { name =\"Cloud\" }]
+    [2013-06-01 02:01:33 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"git-annex\"]
+    [2013-06-01 02:01:33 BST] call: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"branch\",\"-f\",\"synced/master\"]
+    [2013-06-01 02:01:33 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:33 BST] call: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"push\",\"Cloud\",\"git-annex:synced/git-annex\",\"master:synced/master\"]
+    [2013-06-01 02:01:33 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"log\",\"refs/heads/git-annex..c22f52548a6fa05418d655906d8f182fb2d1bced\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:33 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"log\",\"refs/heads/git-annex..8c35b10f8f42367fddc5c12fe39b30014358cd4d\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:33 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"log\",\"refs/heads/git-annex..ef8dc3b251fbf6baa8149ed077703b2363b3dbc9\",\"--oneline\",\"-n1\"]
+    To ssh://darren@cloud.rhymeorange.com:21/tank/git-annex/projects/
+       ef8dc3b2..c22f525 git-annex -> synced/git-annex
+    [2013-06-01 02:01:34 BST] XMPPClient: sending: NotifyPush [UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\"]
+    [2013-06-01 02:01:34 BST] TransferWatcher: transfer finishing: Transfer {transferDirection = Upload, transferUUID = UUID \"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\", transferKey = Key {keyName = \"48acd7e4d52f823c679d5adc2a1f52d18a8d1e05faecd779ec362d2f50c521dd.mov\", keyBackendName = \"SHA256E\", keySize = Just 67924272, keyMtime = Nothing}}
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"git-annex\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"log\",\"refs/heads/git-annex..c22f52548a6fa05418d655906d8f182fb2d1bced\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"log\",\"refs/heads/git-annex..8c35b10f8f42367fddc5c12fe39b30014358cd4d\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:56 BST] read: git [\"--git-dir=/Volumes/StoragePool/Projects/init/.git\",\"--work-tree=/Volumes/StoragePool/Projects/init\",\"ls-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"preferred-content.log\"]
+
+
+
+
+
+
+
+
+
+
+====
+Receiving Repo (recognises sync.mov but does not download)
+====
+
+
+    [2013-06-01 02:00:04 BST] main: starting assistant version 4.20130530-g8100cad
+
+    [2013-06-01 02:00:04 BST] TransferScanner: Syncing with Cloud 
+    Already up-to-date.
+
+    (scanning...) [2013-06-01 02:00:04 BST] Watcher: Performing startup scan
+    Already up-to-date.
+    Already up-to-date.
+    Already up-to-date.
+    Already up-to-date.
+    [2013-06-01 02:00:05 BST] Committer: Committing changes to git
+    Already up-to-date.
+    Already up-to-date.
+    To ssh://darren@cloud.rhymeorange.com:21/tank/git-annex/projects/
+       da9a4d5..4142ae6  git-annex -> synced/git-annex
+
+
+
+
+
+    (Recording state in git...)
+
+    (started...) [2013-06-01 02:00:06 BST] Pusher: Syncing with Cloud 
+    Everything up-to-date
+    [2013-06-01 02:00:07 BST] Committer: Committing changes to git
+    [2013-06-01 02:00:08 BST] Pusher: Syncing with Cloud 
+    Everything up-to-date
+    [2013-06-01 02:01:04 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"ls-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"preferred-content.log\"]
+    [2013-06-01 02:01:21 BST] XMPPClient: received: [\"Presence from d15/BB5939E1 Just (Element {elementName = Name {nameLocalName = \\"git-annex\\", nameNamespace = Just \\"git-annex\\", namePrefix = Nothing}, elementAttributes = [(Name {nameLocalName = \\"push\\", nameNamespace = Nothing, namePrefix = Nothing},[ContentText \\"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\\"])], elementNodes = []})\",\"NotifyPush [UUID \\"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\\"]\"]
+    [2013-06-01 02:01:21 BST] XMPPClient: push notification for e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:21 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:21 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"fetch\",\"Cloud\"]
+    From ssh://cloud.rhymeorange.com:21/tank/git-annex/projects
+       4142ae6..ef8dc3b2 synced/git-annex -> Cloud/synced/git-annex
+       1723064..75aa568  synced/master -> Cloud/synced/master
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"git-annex\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..4142ae6e3befdff987748a92feb65a11aecf4b63\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8c35b10f8f42367fddc5c12fe39b30014358cd4d\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..ef8dc3b251fbf6baa8149ed077703b2363b3dbc9\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..3ddff95f0fdc37a75e0124ba5f965606b2f81bea\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..5e6dd0a555a5f67879e66ca1d83fe1312e87a0e1\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8a0e3fb46d23acdfe9a30e6e85823b37bfae182c\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] feed: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"ef8dc3b251fbf6baa8149ed077703b2363b3dbc9\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"ef8dc3b251fbf6baa8149ed077703b2363b3dbc9..refs/heads/git-annex\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"update-ref\",\"refs/heads/git-annex\",\"ef8dc3b251fbf6baa8149ed077703b2363b3dbc9\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"git-annex\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..ef8dc3b251fbf6baa8149ed077703b2363b3dbc9\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8c35b10f8f42367fddc5c12fe39b30014358cd4d\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..3ddff95f0fdc37a75e0124ba5f965606b2f81bea\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:22 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..5e6dd0a555a5f67879e66ca1d83fe1312e87a0e1\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8a0e3fb46d23acdfe9a30e6e85823b37bfae182c\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:23 BST] feed: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:23 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--verify\",\"-q\",\"refs/remotes/Cloud/master\"]
+    [2013-06-01 02:01:23 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--verify\",\"-q\",\"refs/remotes/Cloud/synced/master\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/synced/master..refs/remotes/Cloud/synced/master\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-06-01 02:01:23 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects/.git/annex/merge/\",\"merge\",\"--no-edit\",\"refs/remotes/Cloud/synced/master\"]
+    Updating 1723064..75aa568
+    Fast-forward
+     sync.mov | 1 +
+     1 file changed, 1 insertion(+)
+     create mode 120000 sync.mov
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"diff-tree\",\"-z\",\"--raw\",\"--no-renames\",\"-l0\",\"-r\",\"172306459777930560a2cbbfd5c39ad596d93a0e\",\"75aa568fb7f484609a36abdf6afd84ab5aeb0f06\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:23 BST] Merger: merging refs/remotes/Cloud/synced/master into refs/heads/master
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-06-01 02:01:23 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects/.git/annex/merge/\",\"merge\",\"--no-edit\",\"refs/remotes/Cloud/synced/master\"]
+    Already up-to-date.
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"diff-tree\",\"-z\",\"--raw\",\"--no-renames\",\"-l0\",\"-r\",\"75aa568fb7f484609a36abdf6afd84ab5aeb0f06\",\"75aa568fb7f484609a36abdf6afd84ab5aeb0f06\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"git-annex\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..ef8dc3b251fbf6baa8149ed077703b2363b3dbc9\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8c35b10f8f42367fddc5c12fe39b30014358cd4d\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..3ddff95f0fdc37a75e0124ba5f965606b2f81bea\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..5e6dd0a555a5f67879e66ca1d83fe1312e87a0e1\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:23 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8a0e3fb46d23acdfe9a30e6e85823b37bfae182c\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] XMPPClient: received: [\"Presence from d15/BB5939E1 Just (Element {elementName = Name {nameLocalName = \\"git-annex\\", nameNamespace = Just \\"git-annex\\", namePrefix = Nothing}, elementAttributes = [(Name {nameLocalName = \\"push\\", nameNamespace = Nothing, namePrefix = Nothing},[ContentText \\"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\\"])], elementNodes = []})\",\"NotifyPush [UUID \\"e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae\\"]\"]
+    [2013-06-01 02:01:34 BST] XMPPClient: push notification for e393d45e-c8b7-11e2-a1f9-f7c95b1b45ae
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:34 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"fetch\",\"Cloud\"]
+    From ssh://cloud.rhymeorange.com:21/tank/git-annex/projects
+       ef8dc3b2..c22f525 synced/git-annex -> Cloud/synced/git-annex
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"git-annex\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..ef8dc3b251fbf6baa8149ed077703b2363b3dbc9\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8c35b10f8f42367fddc5c12fe39b30014358cd4d\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..c22f52548a6fa05418d655906d8f182fb2d1bced\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..3ddff95f0fdc37a75e0124ba5f965606b2f81bea\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..5e6dd0a555a5f67879e66ca1d83fe1312e87a0e1\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8a0e3fb46d23acdfe9a30e6e85823b37bfae182c\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] feed: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"c22f52548a6fa05418d655906d8f182fb2d1bced\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"c22f52548a6fa05418d655906d8f182fb2d1bced..refs/heads/git-annex\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"update-ref\",\"refs/heads/git-annex\",\"c22f52548a6fa05418d655906d8f182fb2d1bced\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"git-annex\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..c22f52548a6fa05418d655906d8f182fb2d1bced\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8c35b10f8f42367fddc5c12fe39b30014358cd4d\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..3ddff95f0fdc37a75e0124ba5f965606b2f81bea\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:34 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..5e6dd0a555a5f67879e66ca1d83fe1312e87a0e1\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8a0e3fb46d23acdfe9a30e6e85823b37bfae182c\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:35 BST] feed: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"update-index\",\"-z\",\"--index-info\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:35 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--verify\",\"-q\",\"refs/remotes/Cloud/master\"]
+    [2013-06-01 02:01:35 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--verify\",\"-q\",\"refs/remotes/Cloud/synced/master\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/synced/master..refs/remotes/Cloud/synced/master\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"symbolic-ref\",\"HEAD\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"refs/heads/master\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-06-01 02:01:35 BST] call: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects/.git/annex/merge/\",\"merge\",\"--no-edit\",\"refs/remotes/Cloud/synced/master\"]
+    Already up-to-date.
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"diff-tree\",\"-z\",\"--raw\",\"--no-renames\",\"-l0\",\"-r\",\"75aa568fb7f484609a36abdf6afd84ab5aeb0f06\",\"75aa568fb7f484609a36abdf6afd84ab5aeb0f06\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"git-annex\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..c22f52548a6fa05418d655906d8f182fb2d1bced\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8c35b10f8f42367fddc5c12fe39b30014358cd4d\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..3ddff95f0fdc37a75e0124ba5f965606b2f81bea\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..5e6dd0a555a5f67879e66ca1d83fe1312e87a0e1\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:01:35 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"log\",\"refs/heads/git-annex..8a0e3fb46d23acdfe9a30e6e85823b37bfae182c\",\"--oneline\",\"-n1\"]
+    [2013-06-01 02:02:04 BST] read: git [\"--git-dir=/Users/darren/Projects/.git\",\"--work-tree=/Users/darren/Projects\",\"ls-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"preferred-content.log\"]
+    [2013-06-01 02:02:05 BST] XMPPClient: received: [\"Unknown message\"]
+"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmR-xG9O2HWoybxYZPVbYVYxwitfcfDgtE"
+ nickname="Charles"
+ subject="comment 1"
+ date="2013-09-09T00:29:14Z"
+ content="""
+Oh actually, I just clicked the available option and it gave me a \"connection refused\" due to my using a port other than 22. I edited the .ssh/config, but it decided to use 22 anyway?
+"""]]

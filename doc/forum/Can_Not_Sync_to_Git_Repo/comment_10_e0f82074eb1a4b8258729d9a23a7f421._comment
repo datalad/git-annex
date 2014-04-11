@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="http://cstork.org/"
+ nickname="Chris Stork"
+ subject="no annex/direct/master branch"
+ date="2013-12-21T04:19:33Z"
+ content="""
+Same problem here:
+
+    % git branch -a
+      git-annex
+    * master
+      synced/git-annex
+      synced/master
+      remotes/HD02/git-annex
+      remotes/HD02/master
+      remotes/HD02/synced/git-annex
+      remotes/HD02/synced/master
+
+This is a direct mode repo, too.
+
+It seems that git-annex didn't properly update the repo.  .git/config shows:
+
+    [core]
+        repositoryformatversion = 0
+        filemode = true
+        bare = false
+        ...
+    [annex]
+        ...
+        version = 3
+        direct = true
+
+"""]]

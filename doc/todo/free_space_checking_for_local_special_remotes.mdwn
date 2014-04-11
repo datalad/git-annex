@@ -1,0 +1,4 @@
+Should be possible to configure an annex.diskreserve setting for local
+special remotes, such as a directory special remote or possibly a bup
+special remote. (Although bup's deltas will make storing some versions of
+files take less space than git-annex would have to assume it would take.)

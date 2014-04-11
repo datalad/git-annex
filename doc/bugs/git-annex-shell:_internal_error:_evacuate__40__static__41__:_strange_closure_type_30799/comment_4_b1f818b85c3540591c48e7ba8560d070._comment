@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 4"
+ date="2011-04-03T16:06:34Z"
+ content="""
+Nice work on the bisection. It's obviously a compiler bug. Having two test cases that differ in only as trivial and innocous a commit as 828a84ba3341d4b7a84292d8b9002a8095dd2382 might help a GHC developer track it down.
+
+We should probably forward this as a GHC bug. I hope you can find a different version or build of GHC to build git-annex with.
+"""]]

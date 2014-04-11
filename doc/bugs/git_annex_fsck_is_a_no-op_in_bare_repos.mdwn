@@ -1,0 +1,21 @@
+What is says on the tin:
+
+git annex fsck is a no-op in bare repos
+
+See http://lists.madduck.net/pipermail/vcs-home/2011-June/000433.html
+
+> Thinking about this some more, it would be difficult to do anything
+> when bad content is found, since it also cannot update the location log.
+> 
+> So this may be another thing blocked by [[todo/branching]], assuming
+> that is fixed in a way that makes `.git-annex` available to bare repos.
+> --[[Joey]] 
+
+>> Even if there is nothing it can _do_, knowing that the data is intact,
+>> or not, is valuable in and as of itself. -- RichiH
+
+>>> While storing the data is no longer an issue in bare repos, fsck would
+>>> need a special mode that examines all the location logs, since it
+>>> cannot run thru the checked out files. --[[Joey]] 
+
+>>>> [[done]]! --[[Joey]] 

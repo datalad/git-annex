@@ -1,0 +1,55 @@
+### Please describe the problem.
+
+When I use the web app and try to create a remote on a remote server (via ssh connection) the assistant shows a gpg error.
+
+### What steps will reproduce the problem?
+
+1. Start the the web app using git-annex web app
+2. create a local repository
+3. create a new repository on a Remote server (Set up a repository on a remote server using ssh).
+4. provide correct server address, user, port, etc.
+
+Then gpg fails. 
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 4.20131106
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+local repository version: unknown
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+
+On Mac OS X 10.9 Mavericks, build 13A603.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+[2013-11-14 21:03:47 CET] main: starting assistant version 4.20131106
+[2013-11-14 21:03:47 CET] Cronner: You should enable consistency checking to protect your data. 
+(Recording state in git...)
+(scanning...) [2013-11-14 21:03:47 CET] Watcher: Performing startup scan
+(started...) [2013-11-14 21:04:47 CET] Cronner: Consistency check in progress
+[2013-11-14 21:05:21 CET] Committer: Adding sunflower.html test.html cindy.css d3.js d3.min.js Accessors.js Essentials.js List.js Namespace.js and 6 other files
+
+(Recording state in git...)
+
+add /Users/ulli/Documents/annex/test.html (checksum...) ok
+### several similar adds removed for privacy reasons.
+ 
+[2013-11-14 21:05:22 CET] Committer: Committing changes to git
+ok
+(Recording state in git...)
+(Recording state in git...)
+14/Nov/2013:21:21:05 +0100 [Error#yesod-core] user error (gpg ["--quiet","--trust-model","always","--with-colons","--list-secret-keys","--fixed-list-mode"] exited 127) @(yesod-core-1.2.5:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:485:5)
+
+# End of transcript or log.
+"""]]
+
+> I've had reports from others that gpg works when installing from the
+> bundle. [[done]] --[[Joey]] 

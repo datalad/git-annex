@@ -1,0 +1,85 @@
+[[!comment format=mdwn
+ username="EmanueleAina"
+ ip="93.38.211.231"
+ subject="comment 2"
+ date="2013-09-11T17:55:14Z"
+ content="""
+I seem to hit the same issue (`ResponseTimeout`) on box.com, but I don't have any log file under .git/annex.
+
+The timeout is quite unpredictable, sometimes I'm able to transfer less than 20% of the file while sometimes it fails after reaching 51%. The file is quite big, 6.2G.
+
+Unfortunately, after the first upload fails, `git-annex` seems to think that the file has been uploaded successfully and will refuse to copy it again. Even `whereis` will list the box.com location.
+
+I think there are really two bugs: the one triggering the timeouts, and the fact that `git-annex` thinks that the failing upload succeeded and is unable to recover the interrupted upload.
+
+Here's the log I got on the shell. Let me know how I can provide any additional information needed. Thanks!
+
+	$ git annex copy --verbose --debug home.tar.gz --to box.com
+	[2013-09-11 17:42:52 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"show-ref\",\"git-annex\"]
+	[2013-09-11 17:42:52 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+	[2013-09-11 17:42:52 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"log\",\"refs/heads/git-annex..1e029f92c5c82b094cbe70b55927996c31579e2e\",\"--oneline\",\"-n1\"]
+	[2013-09-11 17:42:52 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"log\",\"refs/heads/git-annex..1090c21b121fd8b6e2ab49a772c8eab5235a3930\",\"--oneline\",\"-n1\"]
+	[2013-09-11 17:42:52 CEST] chat: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"cat-file\",\"--batch\"]
+	[2013-09-11 17:42:52 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"home.tar.gz\"]
+	copy home.tar.gz (gpg) [2013-09-11 17:42:52 CEST] chat: gpg [\"--quiet\",\"--trust-model\",\"always\",\"--decrypt\"]
+	(checking box.com...) (to box.com...) 
+	[2013-09-11 17:42:57 CEST] chat: gpg [\"--quiet\",\"--trust-model\",\"always\",\"--batch\",\"--passphrase-fd\",\"11\",\"--symmetric\",\"--force-mdc\",\"--no-textmode\"]
+	35%      660.8KB/s 1h44mResponseTimeout
+	gpg: [stdout]: write error: Broken pipe
+	gpg: DBG: deflate: iobuf_write failed
+	gpg: build_packet failed: file write error
+	gpg: [stdout]: write error: Broken pipe
+	gpg: iobuf_flush failed on close: file write error
+	gpg: [stdout]: write error: Broken pipe
+	gpg: iobuf_flush failed on close: file write error
+	gpg: symmetric encryption of `[stdin]' failed: file write error
+	git-annex: fd:13: hPutBuf: resource vanished (Broken pipe)
+	failed
+	git-annex: copy: 1 failed
+	$ git annex copy --verbose --debug home.tar.gz --to box.com
+	[2013-09-11 19:38:26 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"show-ref\",\"git-annex\"]
+	[2013-09-11 19:38:26 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+	[2013-09-11 19:38:26 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"log\",\"refs/heads/git-annex..1e029f92c5c82b094cbe70b55927996c31579e2e\",\"--oneline\",\"-n1\"]
+	[2013-09-11 19:38:26 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"log\",\"refs/heads/git-annex..1090c21b121fd8b6e2ab49a772c8eab5235a3930\",\"--oneline\",\"-n1\"]
+	[2013-09-11 19:38:26 CEST] chat: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"cat-file\",\"--batch\"]
+	[2013-09-11 19:38:26 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"home.tar.gz\"]
+	copy home.tar.gz (gpg) [2013-09-11 19:38:26 CEST] chat: gpg [\"--quiet\",\"--trust-model\",\"always\",\"--decrypt\"]
+	(checking box.com...) ok
+	$ git annex whereis --verbose --debug home.tar.gz             
+	[2013-09-11 19:38:57 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"show-ref\",\"git-annex\"]
+	[2013-09-11 19:38:57 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+	[2013-09-11 19:38:57 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"log\",\"refs/heads/git-annex..1e029f92c5c82b094cbe70b55927996c31579e2e\",\"--oneline\",\"-n1\"]
+	[2013-09-11 19:38:57 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"log\",\"refs/heads/git-annex..1090c21b121fd8b6e2ab49a772c8eab5235a3930\",\"--oneline\",\"-n1\"]
+	[2013-09-11 19:38:57 CEST] chat: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"cat-file\",\"--batch\"]
+	[2013-09-11 19:38:57 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"home.tar.gz\"]
+	whereis home.tar.gz (2 copies) 
+		d7db543e-5463-11e2-b7dd-9f423f798cc4 -- here (em@ocracy:/data/backup)
+		e71fa45e-5463-11e2-a14e-93ca09c272da -- box.com
+	ok
+	$ git annex fsck --verbose --debug home.tar.gz
+	[2013-09-11 19:39:05 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"home.tar.gz\"]
+	[2013-09-11 19:39:05 CEST] chat: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.numcopies\",\"--\"]
+	fsck home.tar.gz [2013-09-11 19:39:05 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"show-ref\",\"git-annex\"]
+	[2013-09-11 19:39:05 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+	[2013-09-11 19:39:05 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"log\",\"refs/heads/git-annex..1e029f92c5c82b094cbe70b55927996c31579e2e\",\"--oneline\",\"-n1\"]
+	[2013-09-11 19:39:05 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"log\",\"refs/heads/git-annex..1090c21b121fd8b6e2ab49a772c8eab5235a3930\",\"--oneline\",\"-n1\"]
+	[2013-09-11 19:39:05 CEST] chat: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"cat-file\",\"--batch\"]
+	(checksum...) [2013-09-11 19:39:05 CEST] read: sha256sum [\"/data/backup/.git/annex/objects/mG/kp/SHA256E-s6640317400--dcf0a535728f3f3f787db6339b740a4a6f6529e5ce1d238f28574499a8172670.tar.gz/SHA256E-s6640317400--dcf0a535728f3f3f787db6339b740a4a6f6529e5ce1d238f28574499a8172670.tar.gz\"]
+	ok
+	$ git annex fsck --verbose --debug home.tar.gz --from box.com
+	[2013-09-11 19:42:15 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"show-ref\",\"git-annex\"]
+	[2013-09-11 19:42:15 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+	[2013-09-11 19:42:15 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"log\",\"refs/heads/git-annex..1e029f92c5c82b094cbe70b55927996c31579e2e\",\"--oneline\",\"-n1\"]
+	[2013-09-11 19:42:15 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"log\",\"refs/heads/git-annex..1090c21b121fd8b6e2ab49a772c8eab5235a3930\",\"--oneline\",\"-n1\"]
+	[2013-09-11 19:42:15 CEST] chat: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"cat-file\",\"--batch\"]
+	[2013-09-11 19:42:15 CEST] read: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"ls-files\",\"--cached\",\"-z\",\"--\",\"home.tar.gz\"]
+	[2013-09-11 19:42:15 CEST] chat: git [\"--git-dir=/data/backup/.git\",\"--work-tree=/data/backup\",\"check-attr\",\"-z\",\"--stdin\",\"annex.backend\",\"annex.numcopies\",\"--\"]
+	fsck home.tar.gz (gpg) [2013-09-11 19:42:15 CEST] chat: gpg [\"--quiet\",\"--trust-model\",\"always\",\"--decrypt\"]
+	(checking box.com...) 
+	[2013-09-11 19:42:28 CEST] chat: gpg [\"--quiet\",\"--trust-model\",\"always\",\"--batch\",\"--passphrase-fd\",\"10\",\"--decrypt\"]
+	gpg: decrypt_message failed: eof
+	ok
+
+
+
+"""]]

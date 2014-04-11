@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="Matt"
+ ip="78.251.139.64"
+ subject="Correct syntax"
+ date="2013-07-15T08:46:51Z"
+ content="""
+After some digging, it turned out that the correct syntax is                git annex content . \"include=*.mp3 or include=*.ogg\". So it is more a documentation bug
+"""]]

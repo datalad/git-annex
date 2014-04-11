@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.153.14.141"
+ subject="comment 1"
+ date="2012-09-25T22:56:22Z"
+ content="""
+Note that git-annex already has the git configs `remote.<name>.annex-start-command` and `remote.<name>.annex-stop-command` which can be used to handle mounting and umounting.
+"""]]

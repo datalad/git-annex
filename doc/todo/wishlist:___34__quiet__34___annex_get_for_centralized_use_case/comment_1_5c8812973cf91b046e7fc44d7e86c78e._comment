@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.6.48"
+ subject="comment 1"
+ date="2013-07-17T23:23:50Z"
+ content="""
+I'm interested to hear that your team is using git-annex.
+
+Have you tried `git config annex.alwayscommit false`? This will avoid committing, and just store the info in a local journal -- so even `git annex fsck` will still work.
+
+Hmm, perhaps you want to update the branch when running `git annex copy` to put files onto the server, but not when getting them? A switch to disable updating the branch would then make sense. Any use of fsck would notice the inconsistency though, and commit a fix to the git-annex branch -- unless you also used the new switch when running fsck.
+
+But what happens if someone makes a change, pushes to the server, but forgets to `git annex copy` the file? Everyone would then be left with a missing file that git annex doesn't know where it is. One of the reasons it tracks the locations is so that if necessary you know which repository such a misplaced fail is stored in. And can go track down that person's laptop and apply a cluebat. ;) Do you do something on the server to prevent this scenario?
+"""]]

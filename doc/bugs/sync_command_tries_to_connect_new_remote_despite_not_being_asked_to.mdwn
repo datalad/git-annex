@@ -1,0 +1,46 @@
+### Please describe the problem.
+When adding a new remote which is not accessible (hence still unsynced) git annex tries to connect to it at each remote operation, even if a specific other remote is given for the command.
+
+### What steps will reproduce the problem?
+<pre>
+git init 1
+
+cd 1
+git annex init
+touch file
+git annex add file
+git commit -m"a file"
+
+git clone . ../2
+
+git remote add 2 ../2
+git annex sync 2
+</pre>
+At this point annex syncs with remote "2" and nothing else
+
+But if adding a (currently) unaccessible remote
+<pre>
+git remote add bad nobody@offline.local:nothing
+git annex sync 2
+</pre>
+gives
+<pre>
+ssh: Could not resolve hostname offline.local: Name or service not known
+ssh: Could not resolve hostname offline.local: Name or service not known
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+commit  ok
+pull 2 
+ok
+push 2 
+Everything up-to-date
+ok
+</pre>
+so annex tries to sync with the "bad" remote, even though the command tells it to only sync from "2". I would expect it to only sync with remote "2" in this case.
+### What version of git-annex are you using? On what operating system?
+git-annex version: 5.20131221
+Debian Sid
+
+> Behaving as intended. [[done]] --[[Joey]]

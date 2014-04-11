@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmLdL4zLty4fsfaIXNtPMS5RXs4y8OAk0o"
+ nickname="Marc"
+ subject="comment 9"
+ date="2013-12-08T20:41:41Z"
+ content="""
+After further testing, it seems that the setup I wanted works when both repos are set as indirect, instead of direct as comment 7 recommends. With both repos in indirect mode, the changes are propagated correctly and the files not selected by annex.largefiles are kept in git.
+"""]]

@@ -1,0 +1,16 @@
+This is confusing:
+
+"Next we come to the archive repositories.The archive repositories coordinate together, so that each file is archived in only one place. **When you move files into a folder named "archive"**, they'll be moved to an archive repository, and removed from all your client repositories. This is handy if you have old files you don't need anymore, but want to keep archived for later. When you copy or move a file out of an "archive" folder, it'll be retrieved from the archive repository."
+
+"The small archive repositories are like other archive repositories, but smaller. While archive repositories normally accumulate every file they can, small archive repositories only accumulate files **once you put them in an "archive" directory.**"
+
+Based upon those descriptions, I don't know what the difference is.
+
+> Improved wording to not imply that files are only put into archive
+> repositories once the files are moved to archive directories.
+> (Which is how small archive repositories work.)
+> 
+> If you're still confused about it, see
+> <http://git-annex.branchable.com/assistant/archival_walkthrough/>
+> 
+> [[done]] --[[Joey]]

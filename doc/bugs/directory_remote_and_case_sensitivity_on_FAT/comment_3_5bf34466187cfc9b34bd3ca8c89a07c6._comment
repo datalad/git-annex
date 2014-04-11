@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnBJ6Dv1glxzzi4qIzGFNa6F-mfHIvv9Ck"
+ nickname="Jim"
+ subject="comment 3"
+ date="2011-11-22T20:35:01Z"
+ content="""
+I see the same results (\"`touch: cannot touch 'Zp': File exists`\") on these Debian systems:
+
+    Linux pilot 3.0.3+ #1 SMP Mon Aug 29 15:21:18 EDT 2011 x86_64 GNU/Linux
+    Linux neurosis 3.0.0-1-amd64 #1 SMP Sun Jul 24 02:24:44 UTC 2011 x86_64 GNU/Linux
+    Linux bucket 2.6.39-2-amd64 #1 SMP Tue Jul 5 02:51:22 UTC 2011 x86_64 GNU/Linux
+    Linux psychosis 2.6.37-trunk-amd64 #1 SMP Thu Jan 6 14:13:28 UTC 2011 x86_64 GNU/Linux
+    Linux bacon 2.6.32-5-amd64 #1 SMP Thu Aug 12 13:01:50 UTC 2010 x86_64 GNU/Linux
+
+It does NOT happen on this Ubuntu system:
+
+    Linux esensor 3.0.0-12-generic #20-Ubuntu SMP Fri Oct 7 14:56:25 UTC 2011 x86_64 x86_64 x86_64 GNU/Linux
+
+So really it seems like only the Ubuntu kernel is the outlier here?  Maybe it has something to do with charsets or something; I think FAT is a mess in that regard and even long versus short filenames can behave differently.
+"""]]

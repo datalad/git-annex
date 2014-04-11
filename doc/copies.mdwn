@@ -1,0 +1,35 @@
+Annexed data is stored inside  your git repository's `.git/annex` directory.
+Some [[special_remotes]] can store annexed data elsewhere.
+
+It's important that data not get lost by an ill-considered `git annex drop`
+command.  So, git-annex can be configured to try
+to keep N copies of a file's content available across all repositories. 
+(Although [[untrusted_repositories|trust]] don't count toward this total.)
+
+By default, N is 1; it is configured by running `git annex numcopies N`.
+This default can be overridden on a per-file-type basis by the annex.numcopies
+setting in `.gitattributes` files. The --numcopies switch allows
+temporarily using a different value.
+
+`git annex drop` attempts to check with other git remotes, to check that N
+copies of the file exist. If enough repositories cannot be verified to have
+it, it will retain the file content to avoid data loss. Note that
+[[trusted_repositories|trust]] are not explicitly checked.
+
+For example, consider three repositories: Server, Laptop, and USB. Both Server
+and USB have a copy of a file, and N=1. If on Laptop, you `git annex get
+$file`, this will transfer it from either Server or USB (depending on which
+is available), and there are now 3 copies of the file.
+
+Suppose you want to free up space on Laptop again, and you `git annex drop` the file
+there. If USB is connected, or Server can be contacted, git-annex can check
+that it still has a copy of the file, and the content is removed from
+Laptop. But if USB is currently disconnected, and Server also cannot be
+contacted, it can't verify that it is safe to drop the file, and will
+refuse to do so.
+
+With N=2, in order to drop the file content from Laptop, it would need access
+to both USB and Server.
+
+For more complicated requirements about which repositories contain which
+content, see [[required_content]].

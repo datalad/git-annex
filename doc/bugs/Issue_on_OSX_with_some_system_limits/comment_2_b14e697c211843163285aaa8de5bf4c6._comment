@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 2"
+ date="2012-06-29T12:02:48Z"
+ content="""
+Doing,
+
+    sudo sysctl -w kern.maxfilesperproc=400000
+
+Somewhat works for me, git-annex watch at least starts up and takes a while to scan the directory, but it's not ideal. Also, creating files seems to work okay, when I remove a file the changes don't seem to get pushed across my other repos, running a sync on the remote repo fixes things.
+"""]]

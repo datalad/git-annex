@@ -1,0 +1,44 @@
+**What is the expected output? What do you see instead?**
+
+SyntaxError: missing ( before formal parameters
+
+function longpoll_"sidebar"() {
+
+reposi...c5e0ead (строка 5, столбец 18)
+	
+
+**Please provide any additional information below.**
+
+functions have illegal characters in their names: *function longpoll_"sidebar"*
+
+    <script>function longpoll_"sidebar"() {
+    	longpoll(longpoll_"sidebar"_url, '"sidebar"'
+    		, function() { setTimeout(longpoll_"sidebar", "10"); }
+    		, function() { webapp_disconnected(); }
+    	);
+    }
+    $(function() {
+    	$.get("/notifier/sidebar?auth=bd717e7499f2c42363719c833d3df2d25b77cf42184aacbcd0f969895911a0208ba17fd4f468c4b97274d5e3f7f419260e5df7d83d2e7642524a89325c5e0ead", function(url){
+    		longpoll_"sidebar"_url = url;
+    		setTimeout(longpoll_"sidebar", "10");
+    	});
+    });
+    function longpoll_"repolist"() {
+    	longpoll(longpoll_"repolist"_url, '"repolist"'
+    		, function() { setTimeout(longpoll_"repolist", "10"); }
+    		, function() { webapp_disconnected(); }
+    	);
+    }
+    $(function() {
+    	$.get("/notifier/repolist/RepoSelector%20%7BonlyCloud%20=%20False,%20onlyConfigured%20=%20False,%20includeHere%20=%20True%7D?auth=bd717e7499f2c42363719c833d3df2d25b77cf42184aacbcd0f969895911a0208ba17fd4f468c4b97274d5e3f7f419260e5df7d83d2e7642524a89325c5e0ead", function(url){
+    		longpoll_"repolist"_url = url;
+    		setTimeout(longpoll_"repolist", "10");
+    	});
+    });
+
+> This is already fixed in the 3.20130124 release. [[done]]
+> 
+> (Standalone builds of that release are not yet available for Mountian
+> Lion.
+> 
+> --[[Joey]] 

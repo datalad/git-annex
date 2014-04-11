@@ -1,0 +1,11 @@
+While following the instructions given at the OSX build page , I get this error:
+
+$ make
+ghc -O2 -Wall -ignore-package monads-fd -fspec-constr-count=5 --make git-annex
+
+Utility/JSONStream.hs:14:8:
+    Could not find module `Text.JSON':
+      Use -v to see a list of the files searched for.
+make: *** [git-annex] Error 1
+
+> Updated the instructions. [[done]] --[[Joey]] 

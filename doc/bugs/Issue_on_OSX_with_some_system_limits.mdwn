@@ -1,0 +1,26 @@
+I was dumping ~gigs of files of approximately 3-6megs a pop (my music collection) so I could track the files that I want to listen to when I'm on the go. I had the git watch command running from the assistant branch.
+
+I was getting something along the lines of...
+
+    /Users/jtang/annex/.git/annex/tmp/: openTempFile: resource exhausted (Too many open files)
+
+and
+
+    git-annex: createPipe: resource exhausted (Too many open files)
+
+I also noticed that I somehow ended up with 256 ssh-agent's running on one of my machines, I'm not sure if the two issues are related or not, I had not noticed this type of behaviour up until recently.
+
+Also this was appearing in the logs
+
+    x00:annex jtang$ tail -f .git/annex/daemon.log
+    (scanning...) Already up-to-date.
+    kqueue: Too many open files
+
+To be precise, I suspect that the kqueue limit is 256, I had 325 files in the 'queue', I ended up doing a _git annex add_ manually and all was fine.
+
+[[!meta title="kqueue system limits"]]
+
+> This affects BSD systems that use Kqueue. It no longer affects OSX,
+> since we use FSEvents there instead. --[[Joey]] 
+
+[[!tag /design/assistant]]

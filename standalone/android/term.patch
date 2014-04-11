@@ -1,0 +1,598 @@
+diff --git a/AndroidManifest.xml b/AndroidManifest.xml
+index b0e866a..1ab8515 100644
+--- a/AndroidManifest.xml
++++ b/AndroidManifest.xml
+@@ -7,6 +7,7 @@
+     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+     <uses-permission android:name="android.permission.INTERNET" />
+     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
++    <uses-permission android:name="android.permission.WRITE_MEDIA_STORAGE" />
+     <uses-permission android:name="android.permission.WAKE_LOCK" />
+     <permission android:name="jackpal.androidterm.permission.RUN_SCRIPT"
+                 android:label="@string/perm_run_script"
+diff --git a/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java b/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
+index f6952f0..1a8df8f 100644
+--- a/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
++++ b/examples/widget/src/jackpal/androidterm/sample/telnet/TermActivity.java
+@@ -166,7 +166,7 @@ public class TermActivity extends Activity
+         /* ... create a process ... */
+         String execPath = LaunchActivity.getDataDir(this) + "/bin/execpty";
+         ProcessBuilder execBuild =
+-                new ProcessBuilder(execPath, "/system/bin/sh", "-");
++                new ProcessBuilder(execPath, "/data/data/ga.androidterm/lib/lib.start.so", "");
+         execBuild.redirectErrorStream(true);
+         Process exec = null;
+         try {
+diff --git a/res/menu/main.xml b/res/menu/main.xml
+index 064f833..fe5f3a3 100644
+--- a/res/menu/main.xml
++++ b/res/menu/main.xml
+@@ -16,6 +16,8 @@
+ -->
+ 
+ <menu xmlns:android="http://schemas.android.com/apk/res/android">
++    <item android:id="@+id/menu_send_email"
++        android:title="@string/send_email" />
+     <item android:id="@+id/menu_new_window"
+         android:title="@string/new_window"
+         android:icon="@drawable/ic_menu_add" />
+@@ -34,8 +36,6 @@
+         android:icon="@drawable/ic_menu_preferences" />
+     <item android:id="@+id/menu_reset"
+         android:title="@string/reset" />
+-    <item android:id="@+id/menu_send_email"
+-        android:title="@string/send_email" />
+     <item android:id="@+id/menu_toggle_wakelock"
+         android:title="@string/enable_wakelock" />
+     <item android:id="@+id/menu_toggle_wifilock"
+diff --git a/res/values-cz/strings.xml b/res/values-cz/strings.xml
+index f3d19bc..882e19b 100644
+--- a/res/values-cz/strings.xml
++++ b/res/values-cz/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Predešlé okno</string>
+    <string name="next_window">Další okno</string>
+    <string name="reset">Reset terminálu</string>
+-   <string name="send_email">Napiš email</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Speciální znaky</string>
+    <string name="toggle_soft_keyboard">Přepnout soft. klávesnici</string>
+    
+@@ -124,4 +124,4 @@
+   <string name="control_key_dialog_fn_disabled_text">Není nastaveno žádné tlačitko pro funkční klávesu.</string>
+ 
+   <string name="confirm_window_close_message">Zavřít okno?</string>
+-</resources>
+\ No newline at end of file
++</resources>
+diff --git a/res/values-de/strings.xml b/res/values-de/strings.xml
+index f6134a5..06d2e1f 100644
+--- a/res/values-de/strings.xml
++++ b/res/values-de/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Vorh. Fenster</string>
+    <string name="next_window">Nächst. Fenster</string>
+    <string name="reset">Zurücksetzen</string>
+-   <string name="send_email">Email schreiben</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Spezialtasten</string>
+    <string name="toggle_soft_keyboard">Tastatur an/aus</string>
+ 	
+@@ -124,4 +124,4 @@
+ 
+   <string name="perm_run_script">Beliebige Scripte im Terminal Emulator ausführen</string>
+   <string name="permdesc_run_script">Erlaubt Anwendungen, neue Fenster im Android Terminal Emulator zu öffnen und in diesen Befehle auszuführen. Dies schließt alle Berechtigungen von Android Terminal Emulator ein, inklusive Internetzugang und Schreib-/Leserechte auf der SD-Karte.</string>
+-</resources>
+\ No newline at end of file
++</resources>
+diff --git a/res/values-es/strings.xml b/res/values-es/strings.xml
+index 94553b2..92d9e2a 100644
+--- a/res/values-es/strings.xml
++++ b/res/values-es/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Ventana anterior</string>
+    <string name="next_window">Ventana posterior</string>
+    <string name="reset">Reiniciar consola</string>
+-   <string name="send_email">Enviar email</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Teclas especiales</string>
+    <string name="toggle_soft_keyboard">Ver/ocultar teclado</string>
+ 
+diff --git a/res/values-eu/strings.xml b/res/values-eu/strings.xml
+index b9f0586..92a16a0 100644
+--- a/res/values-eu/strings.xml
++++ b/res/values-eu/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Aurreko leihoa</string>
+    <string name="next_window">Hurrengo leihoa</string>
+    <string name="reset">Berrezarri terminala</string>
+-   <string name="send_email">Bidali eposta ...(r)i</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Tekla bereziak</string>
+    <string name="toggle_soft_keyboard">Txandakatu soft teklatua</string>
+ 
+diff --git a/res/values-fr/strings.xml b/res/values-fr/strings.xml
+index beab2be..529f720 100644
+--- a/res/values-fr/strings.xml
++++ b/res/values-fr/strings.xml
+@@ -24,7 +24,7 @@
+    <string name="prev_window">Fenêtre Préc.</string>
+    <string name="next_window">Fenêtre Suiv.</string>
+    <string name="reset">Terminal par défaut</string>
+-   <string name="send_email">Envoyer un e-mail</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Touches spéciales</string>
+    <string name="toggle_soft_keyboard">Afficher/Masquer Clavier</string>
+ 
+diff --git a/res/values-hu/strings.xml b/res/values-hu/strings.xml
+index 5dbecb5..ce917c5 100644
+--- a/res/values-hu/strings.xml
++++ b/res/values-hu/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Előző ablak</string>
+    <string name="next_window">Következő ablak</string>
+    <string name="reset">Alaphelyzet</string>
+-   <string name="send_email">Küldés emailben</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Speciális billentyűk</string>
+    <string name="toggle_soft_keyboard">Billentyűzet ki/be</string>
+ 
+@@ -148,4 +148,4 @@
+   <string name="alt_sends_esc">Az Alt billentyű ESC-et küld</string>
+   <string name="alt_sends_esc_summary_on">Az Alt billentyű ESC-et küld.</string>
+   <string name="alt_sends_esc_summary_off">Az Alt billentyű nem ESC-et küld.</string>
+-</resources>
+\ No newline at end of file
++</resources>
+diff --git a/res/values-it/strings.xml b/res/values-it/strings.xml
+index e6a7294..9d97869 100644
+--- a/res/values-it/strings.xml
++++ b/res/values-it/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Fin. successiva</string>
+    <string name="next_window">Fin. precedente</string>
+    <string name="reset">Reset terminale</string>
+-   <string name="send_email">Invia email</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Tasti speciali</string>
+    <string name="toggle_soft_keyboard">Mostra/nascondi tastiera</string>
+ 
+diff --git a/res/values-ja/strings.xml b/res/values-ja/strings.xml
+index 502fa23..dbfe9fa 100644
+--- a/res/values-ja/strings.xml
++++ b/res/values-ja/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">前のウインドウ</string>
+    <string name="next_window">次のウインドウ</string>
+    <string name="reset">端末をリセット</string>
+-   <string name="send_email">メール送信</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">特殊キー</string>
+    <string name="toggle_soft_keyboard">ソフトキーボード</string>
+ 
+diff --git a/res/values-ka/strings.xml b/res/values-ka/strings.xml
+index 06629d0..1d545b6 100644
+--- a/res/values-ka/strings.xml
++++ b/res/values-ka/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">წინა ფანჯარა</string>
+    <string name="next_window">შემდეგი ფანჯარა</string>
+    <string name="reset">ტერმინალის რესტარტი</string>
+-   <string name="send_email">ელ-ფოსტის გაგზავნა</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">სპეციალური ღილაკები</string>
+    <string name="toggle_soft_keyboard">პროგრამული კლავიატურის ჩართ./გამორთ.</string>
+ 
+diff --git a/res/values-nb/strings.xml b/res/values-nb/strings.xml
+index d81ee07..c370c6f 100644
+--- a/res/values-nb/strings.xml
++++ b/res/values-nb/strings.xml
+@@ -18,7 +18,7 @@
+    <string name="application_terminal">Terminal Emulator</string>
+    <string name="preferences">Innstillinger</string>
+    <string name="reset">Tilbakestill terminal</string>
+-   <string name="send_email">Send epost til</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Spesielle tegn</string>
+    <string name="toggle_soft_keyboard">Veksle virtuelt tastatur</string>
+ 
+diff --git a/res/values-nl/strings.xml b/res/values-nl/strings.xml
+index 19fa3d0..e24fbf5 100644
+--- a/res/values-nl/strings.xml
++++ b/res/values-nl/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Vorig venster</string>
+    <string name="next_window">Volgend venster</string>
+    <string name="reset">Herstellen</string>
+-   <string name="send_email">E-mail sturen naar</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Speciale knoppen</string>
+    <string name="toggle_soft_keyboard">Toetsenbord aan/uit</string>
+ 
+diff --git a/res/values-pl/strings.xml b/res/values-pl/strings.xml
+index 25b3b43..2e0e651 100644
+--- a/res/values-pl/strings.xml
++++ b/res/values-pl/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Poprzednie okno</string>
+    <string name="next_window">Następne okno</string>
+    <string name="reset">Wyczyść terminal</string>
+-   <string name="send_email">Wyślij e-mail</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Przyciski specjalne</string>
+    <string name="toggle_soft_keyboard">Pokaż klawiaturę</string>
+ 
+diff --git a/res/values-pt-rPT/strings.xml b/res/values-pt-rPT/strings.xml
+index aa4ba54..aa3d735 100644
+--- a/res/values-pt-rPT/strings.xml
++++ b/res/values-pt-rPT/strings.xml
+@@ -18,7 +18,7 @@
+    <string name="application_terminal">Terminal Emulator</string>
+    <string name="preferences">Preferências</string>
+    <string name="reset">Reset terminal</string>
+-   <string name="send_email">Email para</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Teclas especiais</string>
+    <string name="toggle_soft_keyboard">Abrir teclado</string>
+ 
+diff --git a/res/values-pt/strings.xml b/res/values-pt/strings.xml
+index 2d992f9..e53a9ac 100644
+--- a/res/values-pt/strings.xml
++++ b/res/values-pt/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Anterior</string>
+    <string name="next_window">Seguinte</string>
+    <string name="reset">Repor terminal</string>
+-   <string name="send_email">Enviar mensagem para</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Teclas especiais</string>
+    <string name="toggle_soft_keyboard">Mostrar/ocultar teclado</string>
+ 
+diff --git a/res/values-ro/strings.xml b/res/values-ro/strings.xml
+index 3c7ea06..7a072d0 100644
+--- a/res/values-ro/strings.xml
++++ b/res/values-ro/strings.xml
+@@ -21,7 +21,7 @@
+    <string name="prev_window">"Fereastra anterioră"</string>
+    <string name="next_window">"Fereastra următoare"</string>
+    <string name="reset">"Resetaţi "</string>
+-   <string name="send_email">"E-mail"</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">"Taste speciale"</string>
+    <string name="toggle_soft_keyboard">"Comutați tastatura"</string>
+ 
+@@ -123,4 +123,4 @@
+   <string name="alt_sends_esc">"Tasta Alt trimite ESC"</string>
+   <string name="alt_sends_esc_summary_on">"Tasta Alt trimite ESC."</string>
+   <string name="alt_sends_esc_summary_off">"Tasta Alt nu trimite ESC."</string>
+-</resources>
+\ No newline at end of file
++</resources>
+diff --git a/res/values-ru/strings.xml b/res/values-ru/strings.xml
+index 0e96360..762324e 100644
+--- a/res/values-ru/strings.xml
++++ b/res/values-ru/strings.xml
+@@ -8,7 +8,7 @@
+     <string name="prev_window">Предыдущее окно</string>
+     <string name="next_window">Следующее окно</string>
+     <string name="reset">Сбросить терминал</string>
+-    <string name="send_email">Отправить Email</string>
++    <string name="send_email">WebApp</string>
+     <string name="special_keys">Специальные клавиши</string>
+     <string name="toggle_soft_keyboard">Экранная клавиатура</string>
+     <string name="reset_toast_notification">Терминальное состояние этого окна было сброшено.</string>
+diff --git a/res/values-sk/strings.xml b/res/values-sk/strings.xml
+index ef35366..cc31d80 100644
+--- a/res/values-sk/strings.xml
++++ b/res/values-sk/strings.xml
+@@ -23,7 +23,7 @@
+   <string name="prev_window">Dalšie okno</string>
+   <string name="next_window">Predch. okno</string>
+   <string name="reset">Obnoviť term.</string>
+-  <string name="send_email">Poslať e-mailom</string>
++  <string name="send_email">WebApp</string>
+   <string name="special_keys">Špec. klávesy</string>
+   <string name="toggle_soft_keyboard">Skryť/zobraziť klávesnicu</string>
+ 
+diff --git a/res/values-sv/strings.xml b/res/values-sv/strings.xml
+index 1aa9055..8de6c09 100644
+--- a/res/values-sv/strings.xml
++++ b/res/values-sv/strings.xml
+@@ -3,7 +3,7 @@
+     <string name="application_terminal">Terminalemulator</string>
+     <string name="preferences">Inställningar</string>
+     <string name="reset">Återställ terminal</string>
+-    <string name="send_email">E-posta till</string>
++    <string name="send_email">WebApp</string>
+     <string name="special_keys">Special tangenter</string>
+     <string name="toggle_soft_keyboard">Växla till virtuellt tangentbord</string>
+     <string name="enable_wakelock">Aktivera VäckningsLås</string>
+diff --git a/res/values-tr/strings.xml b/res/values-tr/strings.xml
+index b45fa12..fb70f78 100644
+--- a/res/values-tr/strings.xml
++++ b/res/values-tr/strings.xml
+@@ -18,7 +18,7 @@
+    <string name="application_terminal">Terminal Emülatörü</string>
+    <string name="preferences">Tercihler</string>
+    <string name="reset">Terminali yeniden başlat</string>
+-   <string name="send_email">Email olarak yolla</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">Özel tuşlar</string>
+    <string name="toggle_soft_keyboard">Ekran klavyesine geç</string>
+ 
+diff --git a/res/values-uk/strings.xml b/res/values-uk/strings.xml
+index 2f267a9..d3622c4 100644
+--- a/res/values-uk/strings.xml
++++ b/res/values-uk/strings.xml
+@@ -8,7 +8,7 @@
+     <string name="prev_window">Попереднє вікно</string>
+     <string name="next_window">Наступне вікно</string>
+     <string name="reset">Скинути термінал</string>
+-    <string name="send_email">Відіслати Email</string>
++    <string name="send_email">WebApp</string>
+     <string name="special_keys">Спеціальні клавіші</string>
+     <string name="toggle_soft_keyboard">Екранна клавіатура</string>
+     <string name="reset_toast_notification">"Термінальний стан цього вікна було скинуто."</string>
+diff --git a/res/values-zh-rCN/strings.xml b/res/values-zh-rCN/strings.xml
+index 6f47b4f..81316ec 100644
+--- a/res/values-zh-rCN/strings.xml
++++ b/res/values-zh-rCN/strings.xml
+@@ -18,7 +18,7 @@
+    <string name="application_terminal">终端模拟器</string>
+    <string name="preferences">首选项</string>
+    <string name="reset">重置终端</string>
+-   <string name="send_email">发送电子邮件到...</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">特殊键</string>
+    <string name="toggle_soft_keyboard">打开/关闭软键盘</string>
+ 
+diff --git a/res/values-zh-rTW/strings.xml b/res/values-zh-rTW/strings.xml
+index afda0f1..37d1b50 100644
+--- a/res/values-zh-rTW/strings.xml
++++ b/res/values-zh-rTW/strings.xml
+@@ -18,7 +18,7 @@
+    <string name="application_terminal">模擬終端</string>
+    <string name="preferences">設定</string>
+    <string name="reset">結束</string>
+-   <string name="send_email">以電郵傳送</string>
++   <string name="send_email">WebApp</string>
+    <string name="special_keys">特別按鍵</string>
+    <string name="toggle_soft_keyboard">顯示／隱藏鍵盤</string>
+ 
+diff --git a/res/values/defaults.xml b/res/values/defaults.xml
+index 67287b2..9b7cfcd 100644
+--- a/res/values/defaults.xml
++++ b/res/values/defaults.xml
+@@ -13,10 +13,10 @@
+    <string name="pref_fnkey_default">4</string>
+    <string name="pref_ime_default">0</string>
+    <bool name="pref_alt_sends_esc_default">false</bool>
+-   <string name="pref_shell_default">/system/bin/sh -</string>
+-   <string name="pref_initialcommand_default"></string>
++   <string name="pref_shell_default">/data/data/ga.androidterm/lib/lib.start.so</string>
++   <string name="pref_initialcommand_default">git annex webapp</string>
+    <string name="pref_termtype_default">screen</string>
+-   <bool name="pref_close_window_on_process_exit_default">true</bool>
++   <bool name="pref_close_window_on_process_exit_default">false</bool>
+    <bool name="pref_verify_path_default">true</bool>
+    <bool name="pref_do_path_extensions_default">true</bool>
+    <bool name="pref_allow_prepend_path_default">true</bool>
+diff --git a/res/values/strings.xml b/res/values/strings.xml
+index f1464e9..b06ec9a 100644
+--- a/res/values/strings.xml
++++ b/res/values/strings.xml
+@@ -23,7 +23,7 @@
+    <string name="prev_window">Prev window</string>
+    <string name="next_window">Next window</string>
+    <string name="reset">Reset term</string>
+-   <string name="send_email">Email to</string>
++   <string name="send_email">Open WebApp</string>
+    <string name="special_keys">Special keys</string>
+    <string name="toggle_soft_keyboard">Toggle soft keyboard</string>
+ 
+diff --git a/src/jackpal/androidterm/ShellTermSession.java b/src/jackpal/androidterm/ShellTermSession.java
+index 501e7ab..0b43513 100644
+--- a/src/jackpal/androidterm/ShellTermSession.java
++++ b/src/jackpal/androidterm/ShellTermSession.java
+@@ -80,12 +80,12 @@ public class ShellTermSession extends TermSession {
+         }
+     };
+ 
+-    public ShellTermSession(TermSettings settings, String initialCommand) {
++    public ShellTermSession(TermSettings settings, String initialCommand, String webAppFifo) {
+         super();
+ 
+         updatePrefs(settings);
+ 
+-        initializeSession();
++        initializeSession(webAppFifo);
+         mInitialCommand = initialCommand;
+ 
+         mWatcherThread = new Thread() {
+@@ -106,7 +106,7 @@ public class ShellTermSession extends TermSession {
+         setDefaultUTF8Mode(settings.defaultToUTF8Mode());
+     }
+ 
+-    private void initializeSession() {
++    private void initializeSession(String webAppFifo) {
+         TermSettings settings = mSettings;
+ 
+         int[] processId = new int[1];
+@@ -128,9 +128,10 @@ public class ShellTermSession extends TermSession {
+         if (settings.verifyPath()) {
+             path = checkPath(path);
+         }
+-        String[] env = new String[2];
++        String[] env = new String[3];
+         env[0] = "TERM=" + settings.getTermType();
+         env[1] = "PATH=" + path;
++	env[2] = "FIFO=" + webAppFifo;
+ 
+         createSubprocess(processId, settings.getShell(), env);
+         mProcId = processId[0];
+diff --git a/src/jackpal/androidterm/Term.java b/src/jackpal/androidterm/Term.java
+index 8a3a4ac..824025d 100644
+--- a/src/jackpal/androidterm/Term.java
++++ b/src/jackpal/androidterm/Term.java
+@@ -20,6 +20,13 @@ import java.io.UnsupportedEncodingException;
+ import java.text.Collator;
+ import java.util.Arrays;
+ import java.util.Locale;
++import java.lang.Process;
++import java.lang.ProcessBuilder;
++import java.util.Map;
++
++import java.io.FileReader;
++import java.io.BufferedReader;
++import java.io.File;
+ 
+ import android.app.Activity;
+ import android.app.AlertDialog;
+@@ -59,6 +66,11 @@ import android.view.inputmethod.InputMethodManager;
+ import android.widget.TextView;
+ import android.widget.Toast;
+ 
++import android.content.Intent;
++import android.net.Uri;
++import android.app.Activity;
++import android.content.Context;
++
+ import jackpal.androidterm.emulatorview.ColorScheme;
+ import jackpal.androidterm.emulatorview.EmulatorView;
+ import jackpal.androidterm.emulatorview.TermSession;
+@@ -107,6 +119,9 @@ public class Term extends Activity implements UpdateCallback {
+     public static final String EXTRA_WINDOW_ID = "jackpal.androidterm.window_id";
+     private int onResumeSelectWindow = -1;
+ 
++    public static String appDir;
++    public static String webAppFifo;
++
+     private PowerManager.WakeLock mWakeLock;
+     private WifiManager.WifiLock mWifiLock;
+     // Available on API 12 and later
+@@ -257,6 +272,48 @@ public class Term extends Activity implements UpdateCallback {
+     @Override
+     public void onCreate(Bundle icicle) {
+         super.onCreate(icicle);
++	
++	try {
++		appDir = getApplicationContext().getPackageManager().getPackageInfo(getPackageName(), 0).applicationInfo.dataDir;
++	} catch (Exception e) {
++		appDir = "/data/data/ga.androidterm";
++	}
++	webAppFifo = appDir + "/fifo";
++
++	/* webapp url opening thread */
++        new Thread() {
++            @Override
++            public void run() {
++		    try {
++			    /* First, set up the fifo that urls to open will be
++			     * read from. This is complicated by java not being
++			     * able to mkfifo. */
++			    File f = new File (webAppFifo);
++			    if (! f.exists()) {
++				    ProcessBuilder pb = new ProcessBuilder(appDir + "/lib/lib.start.so");
++				    Map<String, String> env = pb.environment();
++				    env.put("MKFIFO", webAppFifo);
++				    Process p = pb.start();
++				    p.waitFor();
++			    }
++           	 
++			    /* Reading from the fifo blocks until a url is written
++			     * to it. */
++			    while (true) {
++			            BufferedReader buf = new BufferedReader(new FileReader(webAppFifo));
++				    String s = buf.readLine();
++				    try {
++					    Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(s));
++					    startActivity(intent);
++				    } catch (Exception e) {
++				    }
++
++			    }
++		    } catch (Exception e) {
++		    }
++	    }
++        }.start();
++
+         Log.e(TermDebug.LOG_TAG, "onCreate");
+         mPrefs = PreferenceManager.getDefaultSharedPreferences(this);
+         mSettings = new TermSettings(getResources(), mPrefs);
+@@ -427,7 +484,7 @@ public class Term extends Activity implements UpdateCallback {
+     }
+ 
+     protected static TermSession createTermSession(Context context, TermSettings settings, String initialCommand) {
+-        ShellTermSession session = new ShellTermSession(settings, initialCommand);
++        ShellTermSession session = new ShellTermSession(settings, initialCommand, webAppFifo);
+         // XXX We should really be able to fetch this from within TermSession
+         session.setProcessExitMessage(context.getString(R.string.process_exit_message));
+ 
+@@ -911,31 +968,15 @@ public class Term extends Activity implements UpdateCallback {
+     }
+ 
+     private void doEmailTranscript() {
++	// Hack: repurposed to open the git-annex webapp
+         TermSession session = getCurrentTermSession();
+         if (session != null) {
+-            // Don't really want to supply an address, but
+-            // currently it's required, otherwise nobody
+-            // wants to handle the intent.
+-            String addr = "user@example.com";
+-            Intent intent =
+-                    new Intent(Intent.ACTION_SENDTO, Uri.parse("mailto:"
+-                            + addr));
+-
+-            String subject = getString(R.string.email_transcript_subject);
+-            String title = session.getTitle();
+-            if (title != null) {
+-                subject = subject + " - " + title;
+-            }
+-            intent.putExtra(Intent.EXTRA_SUBJECT, subject);
+-            intent.putExtra(Intent.EXTRA_TEXT,
+-                    session.getTranscriptText().trim());
+             try {
+-                startActivity(Intent.createChooser(intent,
+-                        getString(R.string.email_transcript_chooser_title)));
+-            } catch (ActivityNotFoundException e) {
+-                Toast.makeText(this,
+-                        R.string.email_transcript_no_email_activity_found,
+-                        Toast.LENGTH_LONG).show();
++              BufferedReader buf = new BufferedReader(new FileReader("/sdcard/git-annex.home/.git-annex-url"));
++              String s = buf.readLine();
++              Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(s));
++              startActivity(intent);
++	    } catch (Exception e) {
+             }
+         }
+     }
+diff --git a/tools/build-debug b/tools/build-debug
+index 1f15cd2..e611956 100755
+--- a/tools/build-debug
++++ b/tools/build-debug
+@@ -34,4 +34,4 @@ fi
+ 
+ rm -rf `find . -name bin -o -name obj -prune`
+ cd jni
+-$ANDROID_NDK_ROOT/ndk-build && cd .. && ant debug
++$ANDROID_NDK_ROOT/ndk-build && cd ..
+diff --git a/tools/update.sh b/tools/update.sh
+index 57219c3..79b45ef 100755
+--- a/tools/update.sh
++++ b/tools/update.sh
+@@ -18,7 +18,7 @@ command -v "$ANDROID" >/dev/null 2>&1 || { echo >&2 "The $ANDROID tool is not fo
+ 
+ # Make sure target-11 is installed
+ 
+-$ANDROID update sdk -u -t android-11
++$ANDROID update sdk -u -t android-17
+ 
+ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+ ATE_ROOT="$( cd $DIR/.. && pwd )"
+@@ -31,5 +31,5 @@ for PROJECT_FILE in $PROJECT_FILES
+ do
+     PROJECT_DIR="$( dirname "$PROJECT_FILE" )"
+     echo "Updating $PROJECT_FILE"
+-    $ANDROID update project -p "$PROJECT_DIR" --target android-11
++    $ANDROID update project -p "$PROJECT_DIR" --target android-17
+ done

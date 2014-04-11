@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkjvjLHW9Omza7x1VEzIFQ8Z5honhRB90I"
+ nickname="Asheesh"
+ subject="I actually *do* want to avoid duplication of filenames"
+ date="2011-01-28T07:30:05Z"
+ content="""
+I really do want just one filename per file, at least for some cases.
+
+For my photos, there's no benefit to having a few filenames point to the same file. As I'm putting them all into the git-annex, that is a good time to remove the pure duplicates so that I don't e.g. see them twice when browsing the directory as a gallery. Also, I am uploading my photos to the web, and I want to avoid uploading the same photo (by content) twice.
+
+I hope that makes things clearer!
+
+For now I'm just doing this:
+
+* paulproteus@renaissance:/mnt/backups-terabyte/paulproteus/sd-card-from-2011-01-06/sd-cards/DCIM/100CANON $ for file in *; do hash=$(sha1sum \"$file\"); if ls /home/paulproteus/Photos/in-flickr/.git-annex | grep -q \"$hash\"; then echo already annexed ; else flickr_upload \"$file\" && mv \"$file\" \"/home/paulproteus/Photos/in-flickr/2011-01-28/from-some-nested-sd-card-bk\" && (cd /home/paulproteus/Photos/in-flickr/2011-01-28/from-some-nested-sd-card-bk && git annex add . && git commit -m ...) ; fi; done
+
+(Yeah, Flickr for my photos for now. I feel sad about betraying the principle of autonomo.us-ness.)
+"""]]

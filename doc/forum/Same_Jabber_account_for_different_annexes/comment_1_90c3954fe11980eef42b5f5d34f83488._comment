@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 1"
+ date="2013-04-11T15:02:40Z"
+ content="""
+This is a limitation of how jabber is currently used. You need different accounts to sync different repositories over jabber. Supporting using 1 account is the main open todo item on the [[design/assistant/xmpp]] page.
+"""]]

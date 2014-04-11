@@ -1,0 +1,11 @@
+### Please describe the problem.
+
+I have a jabber account on `jabber.ccc.de`. When trying to log in to that account, I get "Unable to connect to the Jabber server. Maybe you entered the wrong password? (Error message: AuthenticationFailure)" I've typed the password enough times that I'm relatively certain that I've typed it correctly at least once. It's difficult to see behind this error message. This is the only thing that shows up in the debug log:
+
+    [2013-05-26 21:40:16 EDT] read: host ["-t","SRV","--","_xmpp-client._tcp.jabber.ccc.de"]
+    [2013-05-26 21:40:16 EDT] read: host ["-t","SRV","--","_xmpp-client._tcp.jabber.ccc.de"]
+
+It'd be great if this error were a wee bit more verbose.
+
+> The XMPP library has been updated to include the actual error message from the server.
+> [[done]] --[[Joey]]

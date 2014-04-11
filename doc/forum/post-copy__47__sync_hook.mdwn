@@ -1,0 +1,14 @@
+Hi,
+
+I have the following setup:
+- normal git repository with website code.
+- git annex repository to hold large set of binary data (pdfs, flashmovies, etc) that belongs to the site.
+
+I use git annex so I (and other developers) don't need to copy 1.4Gb+ of binary data for every working copy. (Data that is mostly left untouched.) Using git annex copy --to=origin I can simply only add new additions to this media/binary repository, without first pulling all the data. So far so good.
+
+When commits are pushed to a certain branch on the normal git repository, a post-receive hook exports (GIT_WORK_TREE=/data/site/ git checkout $branch -f) the updated repository to an apache documentroot. Thereby updating the staging server of the website.
+
+My question is, how can I do the same thing for my git annex repository? Since post-receive fires on receiving the annex hashes, and not the actual files. Those are rsynced, and I cannot find a way to trigger an action after all files are copied by git annex via rsync.
+
+Any tips?
+

@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="maybe killed another osx bug in the test."
+ date="2011-02-13T15:12:10Z"
+ content="""
+I think I have figured out why 
+
+    ### Failure in: 1:blackbox:3:git-annex unannex:1:with content
+    foo is not a symlink
+
+It goes back to the this piece of code (in test.hs)
+
+    copyrepo :: FilePath -> FilePath -> IO FilePath
+    copyrepo old new = do
+            cleanup new
+            ensuretmpdir
+            Utility.boolSystem \"cp\" [\"-pr\", old, new] @? \"cp -pr failed\"
+
+It seems that on OSX it does not preserve the symbolic link information, basically cp is not gnu cp on OSX, doing a \"cp -a SOURCE DEST\" seem's to the right thing on OSX. I tried it out on my archlinux workstation by replacing *-pr* with just *-a* and all the tests passed on archlinux.
+
+I'm not sure what the implications would be with changing the test with changing the cp command.
+
+"""]]

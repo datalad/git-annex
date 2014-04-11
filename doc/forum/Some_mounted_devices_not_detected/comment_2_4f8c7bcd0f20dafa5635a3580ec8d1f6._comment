@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmyEv6SesaYeke389mHdiHlavirPkGHzHI"
+ nickname="Albin"
+ subject="comment 2"
+ date="2013-11-26T14:35:58Z"
+ content="""
+I missed your reply on IRC. Sorry for that!
+
+Here's an example from /proc/mounts:
+
+   /dev/sdf1 /media/SoderUSB ext4 rw,nosuid,nodev,noexec,relatime,errors=remount-ro,data=ordered 0 0
+
+"""]]

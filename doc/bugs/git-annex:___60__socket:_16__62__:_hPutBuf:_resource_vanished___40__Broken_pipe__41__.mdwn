@@ -1,0 +1,16 @@
+### Please describe the problem.
+git-annex will randomly crash.
+
+### What steps will reproduce the problem?
+Unknown. Keeping git-annex running for an extended period, failing to sync properly on XMPP(not sure if that is relevant, but given this haven't been found before it might be)
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 4.20130521-g20710d4 (And multiple prior versions)
+
+### Please provide any additional information below.
+
+.git/annex/daemon.log upload: http://paste.ubuntu.com/5694813/
+
+I could find no debug.log?
+
+> [[moreinfo]] until it's reproduced with a current version.. --[[Joey]] 

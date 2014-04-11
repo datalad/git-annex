@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnmvVKc1ECzZx7EhtLHBP6RWPZewq4x_9I"
+ nickname="Daniele"
+ subject="Windows + git ignore like syntax for files to sync"
+ date="2013-04-19T10:47:36Z"
+ content="""
+Hi,
+
+my company would need this for some project.
+
+But to adopt it I would need:
+* windows support (I don't care if now symlink support for now)
+* being able to define which files are automatically synced using a syntax similar to the gitignore one
+* being able to disable auto-commit (just synching, user should be able to commit on their own)
+
+thanks
+
+"""]]

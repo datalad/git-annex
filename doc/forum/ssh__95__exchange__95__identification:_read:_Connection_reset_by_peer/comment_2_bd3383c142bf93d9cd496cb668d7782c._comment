@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.43"
+ subject="comment 2"
+ date="2014-01-14T21:16:14Z"
+ content="""
+I tried using git-annex on encfs to see if I could reproduce this problem, and I could not get exactly this error, but I certianly did see it cause problems with the ssh connection caching socket.
+
+It would be a good idea to `git config annex.sshcaching false` in repositories stored on encfs. 
+
+Actually, given other reports of problems caused by encfs, it would be a good idea to not use git-annex on encfs. There are better ways to encrypt your files.
+"""]]

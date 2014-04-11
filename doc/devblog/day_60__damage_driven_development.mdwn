@@ -1,0 +1,36 @@
+Wrote some evil code you don't want to run today. Git.Destroyer randomly
+generates Damage, and applies it to a git repository, in a way that is
+reproducible -- applying the same Damage to clones of the same git repo 
+will always yeild the same result.
+
+This let me build a test harness for git-repair, which repeatedly clones,
+damages, and repairs a repository. And when it fails, I can just ask it to
+retry after fixing the bug and it'll re-run every attempt it's logged.
+
+This is already yeilding improvements to the git-repair code.
+The first randomly constructed Damage that it failed to recover
+turned out to be a truncated index file that hid some other
+corrupted object files from being repaired.
+
+	[Damage Empty (FileSelector 1),
+	 Damage Empty (FileSelector 2),
+	 Damage Empty (FileSelector 3),
+	 Damage Reverse (FileSelector 3),
+	 Damage (ScrambleFileMode 3) (FileSelector 5),
+	 Damage Delete (FileSelector 9),
+	 Damage (PrependGarbage "¥SOH¥STX¥ENQ¥f¥a¥ACK¥b¥DLE¥n") (FileSelector 9),
+	 Damage Empty (FileSelector 12),
+	 Damage (CorruptByte 11 25) (FileSelector 6),
+	 Damage Empty (FileSelector 5),
+	 Damage (ScrambleFileMode 4294967281) (FileSelector 14)
+	]
+
+I need to improve the ranges of files that it damages -- currently QuickCheck
+seems to only be selecting one of the first 20 or so files. Also, it's quite
+common that it will damage `.git/config` so badly that git thinks it's not
+a git repository anymore. I am not sure if that is something `git-repair`
+should try to deal with.
+
+---
+
+Today's work was sponsored by the WikiMedia Foundation.

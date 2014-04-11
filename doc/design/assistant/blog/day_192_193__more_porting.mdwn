@@ -1,0 +1,44 @@
+Felt spread thin yesterday, as I was working on multiple things
+concurrently & bouncing around as compiles finished. Been working to get
+openssh to build for Android, which is quite a pain, starting with getting
+openssl to build and then dealing with the Cyanogenmod patches, some of
+which are necessary to build on Android and some of which break builds
+outside Cyanogenmod. At the same time was testing git-annex on Android.
+Found and fixed several more portability bugs while doing that. And on the
+back burner I was making some changes to the webapp..
+
+(Forgot to commit my blog post yesterday too..)
+
+Today, that all came together.
+
+* When adding another local repository in the webapp, 
+  it now allows you to choose whether it should be combined with
+  your current repository, or kept separate. Several people had requested
+  a way to add local clones with the webapp, for various reasons, like
+  wanting a backup repository, or wanting to make a repository on a NFS
+  server, and this allows doing that.
+
+[[!img /assistant/combinerepos.png]]
+
+* More porting fun. FAT filesystems and other things used on Android can
+  get all new inode numbers each time mounted. Made git-annex use a
+  sentinal file to detect when this has happened, since in direct mode
+  it compares inodes. (As a bonus this also makes copying direct mode
+  repositories between filesystems work.)
+
+* Got openssh building for Android. Changed it to use $HOME/.ssh rather
+  than trusting pwent.
+
+* Got git-annex's ssh connection caching working on Android. That needs
+  a place where it can create a socket. When the
+  repository is on a crippled filesystem, it instead puts the socket
+  in a temporary directory set up on the filesystem where the git-annex
+  program resides.
+
+With ssh connection caching, transferring multiple files off my Android
+tablet *screams*! I was seeing 6.5 megabytes transferred per second,
+sustained over a whole month's worth of photos.
+
+Next problem: `git annex assistant` on Android is for some reason crashing
+with a segfault on startup. Especially odd since `git annex watch` works.
+I'm so close to snap-photo-and-it-syncs-nirvana, but still so far away...

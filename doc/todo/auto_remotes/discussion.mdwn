@@ -1,0 +1,7 @@
+Remotes log should probably be stored in ".git/annex/remote.log"
+instead of ".git-annex/remote.log" to prevent leaking credentials.
+
+> The idea is to distribute the info between repositories, which is
+> why it'd go in `.git-annex`. Of course that does mean that repository
+> location information would be included, and if that'd not desirable
+> this feature would need to be turned off. --[[Joey]] 

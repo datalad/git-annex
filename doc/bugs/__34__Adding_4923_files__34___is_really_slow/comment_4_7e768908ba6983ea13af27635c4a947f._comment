@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.246.110"
+ subject="comment 4"
+ date="2013-07-26T22:28:37Z"
+ content="""
+Did some playing around, and I am seeing a progressive slowdown when adding lots of identical files in direct mode. 
+This does not happen when the files have different content, and thinking about it, it's pretty clear what's going on: 
+
+When there are a ton of files with the same content, the map file that has to list all the files using this content
+get larger and larger. Each file added has to read and re-write the map file, which is obviously not going to scale well to thousands of duplicate files.
+"""]]

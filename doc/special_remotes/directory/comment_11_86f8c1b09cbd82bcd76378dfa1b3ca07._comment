@@ -1,0 +1,49 @@
+[[!comment format=mdwn
+ username="dietz"
+ ip="128.119.40.196"
+ subject="annexing external files"
+ date="2013-07-18T20:57:53Z"
+ content="""
+This is great work. I've developed a serious annex-addiction and now I want to use it everywhere! In particular I was hoping to apply it to this use case:
+
+I have large files/directories (approx 5 TB) on an nfs mount to which is a) write-protected (think \"read-only medium\") and b) used by non-git users. Both reasons prevent me from setting up a git-annex repos there. However, I would like to use git-annex to keep track of the paths and get/drop files from my different computers.
+
+On one of my servers, I set up a git annex repos, hoping to only manage the structure, the locations, and the number of copies. I don't want to have copies of the 5TB files in that repository, as disk space is not unlimited (just for the sake of making them available to my laptop).
+
+I as banking on using a special remote (either directory or rsync) to tell the git-annex repos where the actual data is. 
+
+I am not concerned with data loss, as it is backed up in regular time intervals by our sysadmin.
+
+
+I tried both directory remote and rsync remote but there seems to be a missing piece (I suppose its add). Any ideas?
+
+This is what I did:
+
+
+I added the directory remote and an rsync remote
+
+- $ git annex initremote collections type=directory directory=/my/nfs/dir encryption=none
+- $ git annex initremote rsync type=rsync rsyncurl=ssh://myserver/mnt/nfs/dir encryption=none
+
+the copy command fails without complaints
+ $ git annex copy --from collections
+
+I tried adding virtual files to git annex
+
+- $ git annex add file/inside/dir
+
+but still any kind of get/copy command does not get any new files
+
+
+It would be awesome if I could use git-annex for this, to keep track of my copies and copies of copies. And then I could also keep track of data on my write-protected DVDs.
+
+Is there any chance?
+
+Thanks a lot!
+
+-- Laura
+
+
+
+
+"""]]

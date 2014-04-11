@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.47"
+ subject="comment 1"
+ date="2013-10-26T16:44:59Z"
+ content="""
+git-annex version 4.20131002 *already* ionices itself on startup, assuming it detects a system it can do that on. So the only relevant change you made is delaying it from starting. I have made the assistant wait 5 seconds before running the startup scan when autostarted.
+"""]]

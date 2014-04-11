@@ -1,0 +1,245 @@
+From 66fdbc0cb69036b61552a3bce7e995ea2a7f76c1 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Fri, 7 Mar 2014 05:43:33 +0000
+Subject: [PATCH] TH
+
+---
+ lens.cabal                              | 19 +------------------
+ src/Control/Lens.hs                     |  8 ++------
+ src/Control/Lens/Cons.hs                |  2 --
+ src/Control/Lens/Internal/Fold.hs       |  2 --
+ src/Control/Lens/Internal/Reflection.hs |  2 --
+ src/Control/Lens/Operators.hs           |  2 +-
+ src/Control/Lens/Prism.hs               |  2 --
+ src/Control/Monad/Primitive/Lens.hs     |  1 -
+ 8 files changed, 4 insertions(+), 34 deletions(-)
+
+diff --git a/lens.cabal b/lens.cabal
+index 790a9d7..7cd3ff9 100644
+--- a/lens.cabal
++++ b/lens.cabal
+@@ -10,7 +10,7 @@ stability:     provisional
+ homepage:      http://github.com/ekmett/lens/
+ bug-reports:   http://github.com/ekmett/lens/issues
+ copyright:     Copyright (C) 2012-2014 Edward A. Kmett
+-build-type:    Custom
++build-type:    Simple
+ -- build-tools:   cpphs
+ tested-with:   GHC == 7.6.3
+ synopsis:      Lenses, Folds and Traversals
+@@ -177,7 +177,6 @@ flag lib-Werror
+ 
+ library
+   build-depends:
+-    aeson                     >= 0.7      && < 0.8,
+     array                     >= 0.3.0.2  && < 0.6,
+     base                      >= 4.3      && < 5,
+     bifunctors                >= 4        && < 5,
+@@ -216,7 +215,6 @@ library
+     Control.Exception.Lens
+     Control.Lens
+     Control.Lens.Action
+-    Control.Lens.At
+     Control.Lens.Combinators
+     Control.Lens.Cons
+     Control.Lens.Each
+@@ -251,22 +249,18 @@ library
+     Control.Lens.Level
+     Control.Lens.Loupe
+     Control.Lens.Operators
+-    Control.Lens.Plated
+     Control.Lens.Prism
+     Control.Lens.Reified
+     Control.Lens.Review
+     Control.Lens.Setter
+-    Control.Lens.TH
+     Control.Lens.Traversal
+     Control.Lens.Tuple
+     Control.Lens.Type
+     Control.Lens.Wrapped
+     Control.Lens.Zoom
+-    Control.Monad.Error.Lens
+     Control.Monad.Primitive.Lens
+     Control.Parallel.Strategies.Lens
+     Control.Seq.Lens
+-    Data.Aeson.Lens
+     Data.Array.Lens
+     Data.Bits.Lens
+     Data.ByteString.Lens
+@@ -289,17 +283,10 @@ library
+     Data.Typeable.Lens
+     Data.Vector.Lens
+     Data.Vector.Generic.Lens
+-    Generics.Deriving.Lens
+-    GHC.Generics.Lens
+     System.Exit.Lens
+     System.FilePath.Lens
+-    System.IO.Error.Lens
+-    Language.Haskell.TH.Lens
+     Numeric.Lens
+ 
+-  other-modules:
+-    Control.Lens.Internal.TupleIxedTH
+-
+   if flag(safe)
+     cpp-options: -DSAFE=1
+ 
+@@ -396,7 +383,6 @@ test-suite doctests
+       deepseq,
+       doctest        >= 0.9.1,
+       filepath,
+-      generic-deriving,
+       mtl,
+       nats,
+       parallel,
+@@ -434,7 +420,6 @@ benchmark plated
+     comonad,
+     criterion,
+     deepseq,
+-    generic-deriving,
+     lens,
+     transformers
+ 
+@@ -469,7 +454,6 @@ benchmark unsafe
+     comonads-fd,
+     criterion,
+     deepseq,
+-    generic-deriving,
+     lens,
+     transformers
+ 
+@@ -486,6 +470,5 @@ benchmark zipper
+     comonads-fd,
+     criterion,
+     deepseq,
+-    generic-deriving,
+     lens,
+     transformers
+diff --git a/src/Control/Lens.hs b/src/Control/Lens.hs
+index 7e15267..433f1fc 100644
+--- a/src/Control/Lens.hs
++++ b/src/Control/Lens.hs
+@@ -41,7 +41,6 @@
+ ----------------------------------------------------------------------------
+ module Control.Lens
+   ( module Control.Lens.Action
+-  , module Control.Lens.At
+   , module Control.Lens.Cons
+   , module Control.Lens.Each
+   , module Control.Lens.Empty
+@@ -53,12 +52,11 @@ module Control.Lens
+   , module Control.Lens.Lens
+   , module Control.Lens.Level
+   , module Control.Lens.Loupe
+-  , module Control.Lens.Plated
+   , module Control.Lens.Prism
+   , module Control.Lens.Reified
+   , module Control.Lens.Review
+   , module Control.Lens.Setter
+-#ifndef DISABLE_TEMPLATE_HASKELL
++#if 0
+   , module Control.Lens.TH
+ #endif
+   , module Control.Lens.Traversal
+@@ -69,7 +67,6 @@ module Control.Lens
+   ) where
+ 
+ import Control.Lens.Action
+-import Control.Lens.At
+ import Control.Lens.Cons
+ import Control.Lens.Each
+ import Control.Lens.Empty
+@@ -81,12 +78,11 @@ import Control.Lens.Iso
+ import Control.Lens.Lens
+ import Control.Lens.Level
+ import Control.Lens.Loupe
+-import Control.Lens.Plated
+ import Control.Lens.Prism
+ import Control.Lens.Reified
+ import Control.Lens.Review
+ import Control.Lens.Setter
+-#ifndef DISABLE_TEMPLATE_HASKELL
++#if 0
+ import Control.Lens.TH
+ #endif
+ import Control.Lens.Traversal
+diff --git a/src/Control/Lens/Cons.hs b/src/Control/Lens/Cons.hs
+index a80e9c8..7d27b80 100644
+--- a/src/Control/Lens/Cons.hs
++++ b/src/Control/Lens/Cons.hs
+@@ -55,8 +55,6 @@ import           Data.Vector.Unboxed (Unbox)
+ import qualified Data.Vector.Unboxed as Unbox
+ import           Data.Word
+ 
+-{-# ANN module "HLint: ignore Eta reduce" #-}
+-
+ -- $setup
+ -- >>> :set -XNoOverloadedStrings
+ -- >>> import Control.Lens
+diff --git a/src/Control/Lens/Internal/Fold.hs b/src/Control/Lens/Internal/Fold.hs
+index ab09c6b..43aa905 100644
+--- a/src/Control/Lens/Internal/Fold.hs
++++ b/src/Control/Lens/Internal/Fold.hs
+@@ -37,8 +37,6 @@ import Data.Maybe
+ import Data.Semigroup hiding (Min, getMin, Max, getMax)
+ import Data.Reflection
+ 
+-{-# ANN module "HLint: ignore Avoid lambda" #-}
+-
+ ------------------------------------------------------------------------------
+ -- Folding
+ ------------------------------------------------------------------------------
+diff --git a/src/Control/Lens/Internal/Reflection.hs b/src/Control/Lens/Internal/Reflection.hs
+index bf09f2c..c9e112f 100644
+--- a/src/Control/Lens/Internal/Reflection.hs
++++ b/src/Control/Lens/Internal/Reflection.hs
+@@ -64,8 +64,6 @@ import Data.Word
+ import Data.Typeable
+ import Data.Reflection
+ 
+-{-# ANN module "HLint: ignore Avoid lambda" #-}
+-
+ class Typeable s => B s where
+   reflectByte :: proxy s -> IntPtr
+ 
+diff --git a/src/Control/Lens/Operators.hs b/src/Control/Lens/Operators.hs
+index 3e14c55..989eb92 100644
+--- a/src/Control/Lens/Operators.hs
++++ b/src/Control/Lens/Operators.hs
+@@ -110,7 +110,7 @@ module Control.Lens.Operators
+   , (<#~)
+   , (<#=)
+   -- * "Control.Lens.Plated"
+-  , (...)
++  --, (...)
+   -- * "Control.Lens.Review"
+   , ( # )
+   -- * "Control.Lens.Setter"
+diff --git a/src/Control/Lens/Prism.hs b/src/Control/Lens/Prism.hs
+index 9e0bec7..0cf6737 100644
+--- a/src/Control/Lens/Prism.hs
++++ b/src/Control/Lens/Prism.hs
+@@ -59,8 +59,6 @@ import Unsafe.Coerce
+ import Data.Profunctor.Unsafe
+ #endif
+ 
+-{-# ANN module "HLint: ignore Use camelCase" #-}
+-
+ -- $setup
+ -- >>> :set -XNoOverloadedStrings
+ -- >>> import Control.Lens
+diff --git a/src/Control/Monad/Primitive/Lens.hs b/src/Control/Monad/Primitive/Lens.hs
+index ee942c6..2f37134 100644
+--- a/src/Control/Monad/Primitive/Lens.hs
++++ b/src/Control/Monad/Primitive/Lens.hs
+@@ -20,7 +20,6 @@ import Control.Lens
+ import Control.Monad.Primitive (PrimMonad(..))
+ import GHC.Prim (State#)
+ 
+-{-# ANN module "HLint: ignore Unused LANGUAGE pragma" #-}
+ 
+ prim :: (PrimMonad m) => Iso' (m a) (State# (PrimState m) -> (# State# (PrimState m), a #))
+ prim = iso internal primitive
+-- 
+1.9.0
+

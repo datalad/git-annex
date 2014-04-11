@@ -1,0 +1,195 @@
+Addurl can fail due to an apparent race condition when watch or assistant is running and the repository is in direct mode. The following stress test script encounters the bug consistently on my system. I am running git-annex 5.20140320 on on Ubuntu 13.10.
+
+[[!format sh """
+#!/bin/sh
+set -eu
+
+cleanup() {
+  local dir
+  dir="$1"; shift
+  if [ -d "$dir" ]; then
+    (
+      set -x
+      fuser -k -w "$dir/annex/.git/annex/daemon.log" || :
+      find "$dir" -type d -exec chmod 700 '{}' '+'
+      find "$dir" -type f -exec chmod 600 '{}' '+'
+      rm -fr "$dir"
+    )
+  fi
+}
+
+go() {
+  local dir
+  dir="$(mktemp -d "${TMP:-/tmp}/stress-annex.XXXXXXXXXX")"
+  trap "cleanup '$dir'" 0 1 2 13 15
+
+  (
+    cd "$dir"
+    mkdir annex
+    cd annex
+    set -x
+
+    git init
+    git annex init
+    git annex direct
+    git annex watch
+
+    for n in $(seq 100); do
+      git annex addurl --file=foo http://heh.fi/robots.txt
+      git annex sync
+      rm -f foo
+      git annex sync
+    done
+
+    git annex watch --stop
+    git annex uninit
+  )
+
+  cleanup "$dir"
+  trap - 0 1 2 13 14
+}
+
+go
+"""]]
+
+Script output:
+
+[[!format sh """
+% ./stress-annex
++ git init
+Initialized empty Git repository in /tmp/stress-annex.OKj6D8kVmV/annex/.git/
++ git annex init
+init  ok
+(Recording state in git...)
++ git annex direct
+commit  
+On branch master
+
+Initial commit
+
+nothing to commit
+ok
+direct  ok
++ git annex watch
++ seq 100
++ git annex addurl --file=foo http://heh.fi/robots.txt
+addurl foo (downloading http://heh.fi/robots.txt ...) 
+--2014-03-27 03:14:29--  http://heh.fi/robots.txt
+Resolving heh.fi (heh.fi)... 83.145.237.222
+Connecting to heh.fi (heh.fi)|83.145.237.222|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 0 [text/plain]
+Saving to: ‘/tmp/stress-annex.OKj6D8kVmV/annex/.git/annex/tmp/URL--http&c%%heh.fi%robots.txt’
+
+    [ <=>                                                                                      ] 0           --.-K/s   in 0s      
+
+2014-03-27 03:14:29 (0.00 B/s) - ‘/tmp/stress-annex.OKj6D8kVmV/annex/.git/annex/tmp/URL--http&c%%heh.fi%robots.txt’ saved [0/0]
+
+(Recording state in git...)
+ok
+(Recording state in git...)
++ git annex sync
+commit  ok
++ rm -f foo
++ git annex sync
+commit  (Recording state in git...)
+ok
+(Recording state in git...)
++ git annex addurl --file=foo http://heh.fi/robots.txt
+addurl foo (downloading http://heh.fi/robots.txt ...) 
+--2014-03-27 03:14:29--  http://heh.fi/robots.txt
+Resolving heh.fi (heh.fi)... 83.145.237.222
+Connecting to heh.fi (heh.fi)|83.145.237.222|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 0 [text/plain]
+Saving to: ‘/tmp/stress-annex.OKj6D8kVmV/annex/.git/annex/tmp/URL--http&c%%heh.fi%robots.txt’
+
+    [ <=>                                                                                      ] 0           --.-K/s   in 0s      
+
+2014-03-27 03:14:29 (0.00 B/s) - ‘/tmp/stress-annex.OKj6D8kVmV/annex/.git/annex/tmp/URL--http&c%%heh.fi%robots.txt’ saved [0/0]
+
+(Recording state in git...)
+ok
+(Recording state in git...)
++ git annex sync
+commit  ok
++ rm -f foo
++ git annex sync
+commit  (Recording state in git...)
+ok
+(Recording state in git...)
++ git annex addurl --file=foo http://heh.fi/robots.txt
+addurl foo (downloading http://heh.fi/robots.txt ...) 
+--2014-03-27 03:14:29--  http://heh.fi/robots.txt
+Resolving heh.fi (heh.fi)... 83.145.237.222
+Connecting to heh.fi (heh.fi)|83.145.237.222|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 0 [text/plain]
+Saving to: ‘/tmp/stress-annex.OKj6D8kVmV/annex/.git/annex/tmp/URL--http&c%%heh.fi%robots.txt’
+
+    [ <=>                                                                                      ] 0           --.-K/s   in 0s      
+
+2014-03-27 03:14:29 (0.00 B/s) - ‘/tmp/stress-annex.OKj6D8kVmV/annex/.git/annex/tmp/URL--http&c%%heh.fi%robots.txt’ saved [0/0]
+
+
+git-annex: /tmp/stress-annex.OKj6D8kVmV/annex/.git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/: openTempFile: permission denied (Permission denied)
+failed
+git-annex: addurl: 1 failed
++ fuser -k -w /tmp/stress-annex.OKj6D8kVmV/annex/.git/annex/daemon.log
+/tmp/stress-annex.OKj6D8kVmV/annex/.git/annex/daemon.log: 30704 30709 30735 30738 30778
++ find /tmp/stress-annex.OKj6D8kVmV -type d -exec chmod 700 {} +
++ find /tmp/stress-annex.OKj6D8kVmV -type f -exec chmod 600 {} +
++ rm -fr /tmp/stress-annex.OKj6D8kVmV
+"""]]
+
+The script also seems to encounter another issue. The output when seq 100 is changed to seq 1 and addurl happens to succeed:
+
+[[!format sh """
++ git init
+Initialized empty Git repository in /tmp/stress-annex.QEs0pNyS9z/annex/.git/
++ git annex init
+init  ok
+(Recording state in git...)
++ git annex direct
+commit  
+On branch master
+
+Initial commit
+
+nothing to commit
+ok
+direct  ok
++ git annex watch
++ seq 1
++ git annex addurl --file=foo http://heh.fi/robots.txt
+addurl foo (downloading http://heh.fi/robots.txt ...) 
+--2014-03-27 03:17:20--  http://heh.fi/robots.txt
+Resolving heh.fi (heh.fi)... 83.145.237.222
+Connecting to heh.fi (heh.fi)|83.145.237.222|:80... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 0 [text/plain]
+Saving to: ‘/tmp/stress-annex.QEs0pNyS9z/annex/.git/annex/tmp/URL--http&c%%heh.fi%robots.txt’
+
+    [ <=>                                                                                      ] 0           --.-K/s   in 0s      
+
+2014-03-27 03:17:20 (0.00 B/s) - ‘/tmp/stress-annex.QEs0pNyS9z/annex/.git/annex/tmp/URL--http&c%%heh.fi%robots.txt’ saved [0/0]
+
+(Recording state in git...)
+ok
+(Recording state in git...)
++ git annex sync
+commit  ok
++ rm -f foo
++ git annex sync
+commit  (Recording state in git...)
+ok
+(Recording state in git...)
++ git annex watch --stop
++ git annex uninit
+git-annex: /tmp/stress-annex.QEs0pNyS9z/annex/.git/annex/objects/pX/ZJ/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/SHA256E-s0--e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.map: removeLink: permission denied (Permission denied)
++ fuser -k -w /tmp/stress-annex.QEs0pNyS9z/annex/.git/annex/daemon.log
++ :
++ find /tmp/stress-annex.QEs0pNyS9z -type d -exec chmod 700 {} +
++ find /tmp/stress-annex.QEs0pNyS9z -type f -exec chmod 600 {} +
++ rm -fr /tmp/stress-annex.QEs0pNyS9z
+"""]]

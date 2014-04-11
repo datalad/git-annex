@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmnG4EuvZWse5hvgrl0XAK-U61e-0iGaao"
+ nickname="David"
+ subject="git commit in direct mode"
+ date="2013-01-31T08:30:19Z"
+ content="""
+How about creating a .git/hooks/pre-commit script that warns the user or checks the commit before anything goes wrong? 
+"""]]

@@ -1,0 +1,16 @@
+[Maybe I should have extented [[wishlist:_simpler_gpg_usage/]], but I thought I'd make my own since it's perhaps too old.]
+
+I second Justin and [[his idea|wishlist:_simpler_gpg_usage/#comment-e120f8ede0d4cffce17cbf84564211c1]] of having per-remote GnuPG options. I'd even go one step further, and propose the option in the <tt>.gitattributes</tt> file. Indeed by default GnuPG compresses the data before encryption, which doesn't make a lot of sense for git-annex (in my use-case at least); My work-around to save this waste of CPU cycles was to customize my <tt>gpg.conf</tt>, but it's somewhat dirty since I do want to use compression in general.
+
+Here is how I envision the <tt>.git/config</tt>:
+<pre>    <code>[annex]
+        gnupg-options = --s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 8388608 --cipher-algo AES256 --compress-algo none
+</code></pre>
+
+And compression could be enabled on say, text files, with a suitable wildcard in the <tt>.gitattributes</tt> file.
+<pre>    <code>*.txt annex.gnupg-options="--s2k-cipher-algo AES256 --s2k-digest-algo SHA512 --s2k-count 8388608 --cipher-algo AES256 --compress-algo zlib"
+</code></pre>
+
+This is something I could probably hack on if you think it'd be a worthwhile option ;-)
+
+> Done, and [[done]]! --[[Joey]]

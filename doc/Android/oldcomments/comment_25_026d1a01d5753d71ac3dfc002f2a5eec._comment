@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnRfQArYOmDd7r2DC7DkIJFOQgqXCVcAeU"
+ nickname="Frew"
+ subject="comment 25"
+ date="2013-07-18T13:14:46Z"
+ content="""
+frioux here (something messed up with myopenid or something)
+
+So I deleted the repo on my phone (via the CLI since the web app seemed hung) and recreated it; this time making sure that I set things to manual mode ASAP.  It didn't have the problem it was having before, but now what seems to have happened is that it fetches from the remote, commits to the local repo, and then immediately fetches and commits again.  It looks like it's about a 4s repeat loop.  Any ideas what I should do next?
+"""]]

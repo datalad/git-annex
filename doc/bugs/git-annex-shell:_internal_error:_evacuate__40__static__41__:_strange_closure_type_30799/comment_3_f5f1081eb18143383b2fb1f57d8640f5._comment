@@ -1,0 +1,38 @@
+[[!comment format=mdwn
+ username="http://fraggod.pip.verisignlabs.com.pip.verisignlabs.com/"
+ subject="comment 3"
+ date="2011-04-03T06:57:02Z"
+ content="""
+Repeated bisect with -j1, just to be sure it's not a random error, and it gave me 828a84ba3341d4b7a84292d8b9002a8095dd2382 again.
+Guess I'll look through the changes there a bit later and try to revert these until it works.
+
+Not sure if it's repeatable by anyone but me  (and hence worth fixing), but here's a bit more of info about the system:
+
+    Exherbo linux
+    Linux sacrilege 2.6.38.2-fg.roam #4 SMP PREEMPT Mon Mar 28 21:08:47 YEKST 2011 i686 GNU/Linux
+
+    dev-lang/ghc-7.0.2:7.0.2::installed
+    dev-haskell/HUnit-1.2.2.3:1.2.2.3::installed
+    dev-haskell/MissingH-1.1.0.3:1.1.0.3::installed
+    dev-haskell/QuickCheck-2.4.0.1:2.4.0.1::installed
+    dev-haskell/array-0.3.0.2:0.3.0.2::installed
+    dev-haskell/bytestring-0.9.1.7:0.9.1.7::installed
+    dev-haskell/containers-0.4.0.0:0.4.0.0::installed
+    dev-haskell/extensible-exceptions-0.1.1.2:0.1.1.2::installed
+    dev-haskell/filepath-1.2.0.0:1.2.0.0::installed
+    dev-haskell/hslogger-1.1.3:0::installed
+    dev-haskell/mtl-2.0.1.0:2.0.1.0::installed
+    dev-haskell/network-2.3.0.1:2.3.0.1::installed
+    dev-haskell/old-locale-1.0.0.2:1.0.0.2::installed
+    dev-haskell/parsec-3.1.0:3.1.0::installed
+    dev-haskell/pcre-light-0.4:0::installed
+    dev-haskell/regex-base-0.93.2:0.93.2::installed
+    dev-haskell/regex-compat-0.93.1:0.93.1::installed
+    dev-haskell/regex-posix-0.94.4:0.94.4::installed
+    dev-haskell/syb-0.3:0.3::installed
+    dev-haskell/transformers-0.2.2.0:0.2.2.0::installed
+    dev-haskell/utf8-string-0.3.6:0.3.6::installed
+
+(some stuff listed here as ::installed, but contains no files, since these packages detect whether ghc-7.0.2 already comes with the same/newer package version)
+
+"""]]

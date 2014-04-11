@@ -1,0 +1,33 @@
+Almost done with the data transfer code.. Today I filled in some bits and
+peices.
+
+Made the expensive transfer scan handle multiple remotes in one pass.
+So on startup, it only runs once, not N times. And when reconnecting to the
+network, when a remote has changed, it scans all network remotes in one
+pass, rather than making M redundant passes.
+
+Got syncing with special remotes all working. Pretty easy actually. Just
+had to avoid doing any git repo push/pull with them, while still queueing
+data transfers.
+
+It'll even download anything it can from the web special remote. To support
+that, I added generic support for readonly remotes; it'll only download from
+those and not try to upload to them.
+
+(Oh, and I properly fixed the nasty `GIT_INDEX_FILE` environment variable
+problem I had the other day.)
+
+I feel I'm very close to being able to merge the assistant branch into
+master now. I'm reasonably confident the data transfer code will work
+well now, and manage to get things in sync eventually in all circumstances.
+(Unless there are bugs.) All the other core functionality of the assistant
+and webapp is working. The only think I might delay because of is the
+missing [[progressbars]] in the webapp .. but that's a silly thing to
+block the merge on. 
+
+Still, I might spend a day and get a dumb implementation of progress bars
+for downloads working first (progress bars for uploads are probably rather
+harder). I'd spend longer on progress bars, but there are so many more
+exciting things I'm now ready to develop, like automatic configurators
+for using your git annex with Amazon S3, rsync.net, and the computer across
+the room..!

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 12"
+ date="2011-12-23T18:02:24Z"
+ content="""
+BTW, sort -S '90%' benchmarks consistently 2x as fast as perl's hashes all the way up to 1 million files. Of course the pipeline approach allows you to swap in perl or whatever else is best for you at scale.
+"""]]

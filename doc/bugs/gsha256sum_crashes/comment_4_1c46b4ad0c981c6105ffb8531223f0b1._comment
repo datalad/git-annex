@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.35"
+ subject="comment 4"
+ date="2014-01-06T16:26:16Z"
+ content="""
+So far, only Jan has seen this problem, and it has affected both wget and gsha256sum. 
+
+This makes me wonder if it's somehow a problem with running 64 bit code on his system.
+"""]]

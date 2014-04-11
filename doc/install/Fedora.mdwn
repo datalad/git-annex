@@ -1,0 +1,38 @@
+git-annex is available in recent versions of Fedora.
+[status](http://koji.fedoraproject.org/koji/packageinfo?packageID=14145)
+
+Should be as simple as: `yum install git-annex`
+
+----
+
+To install the latest version of git-annex on Fedora 18 and later, you can use `cabal`:
+
+<pre>
+# Install dependencies
+sudo yum install libxml2-devel gnutls-devel libgsasl-devel ghc cabal-install happy alex libidn-devel
+# Update the cabal list
+cabal update
+# Install c2hs, required by dependencies of git-annex, but not automatically installed
+cabal install --bindir=$HOME/bin c2hs
+# Install git-annex
+cabal install --bindir=$HOME/bin git-annex
+</pre>
+
+----
+
+Older version? Here's an installation recipe for Fedora 14 through 15.
+
+<pre>
+sudo yum install ghc cabal-install
+git clone git://git-annex.branchable.com/ git-annex
+cd git-annex
+git checkout ghc7.0
+cabal update
+cabal install --only-dependencies
+cabal configure
+cabal build
+cabal install --bindir=$HOME/bin
+</pre>
+
+Note: You can't just use `cabal install git-annex`, because Fedora does
+not yet ship ghc 7.4.

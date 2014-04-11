@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://www.rfc1149.net/"
+ nickname="Sam"
+ subject="comment 1"
+ date="2013-08-05T09:49:56Z"
+ content="""
+`git annex copy` will only push objects (content) into git annex private directory. You have to issue a `git annex merge` (or `git annex sync`) on the receiving end, or run `git annex assistant` there to update the working directory.
+
+Note that you can run `git annex merge` as a post-update hook if you want this to be done automatically.
+
+"""]]

@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
+ nickname="John"
+ subject="comment 2"
+ date="2013-03-03T22:43:41Z"
+ content="""
+It's a ZFS filesystem, using indirect mode.  Here are my version numbers:
+
+    Vulcan:~/src/fpco $ git annex version
+    git-annex version: 4.20130227
+    local repository version: 3
+    default repository version: 3
+    supported repository versions: 3 4
+    upgrade supported from repository versions: 0 1 2
+
+"""]]

@@ -1,0 +1,22 @@
+Whenever I try to get a file with a non-English character, git annex gives me trouble that I don't have with English filenames from the same repo.  I'm hesitant to file a bug report here since the problem seems to stem from rsync not being able to handle the characters.  Here's the output (everything enclosed in pointy brackets are redacted):
+
+    get <artist>/<album>/<track> (from origin...) 
+    git-annex: /home/<username>/Music/.git/annex/transfer/upload/53e11324-041f-11e2-93ca-27250d76416f/SHA256-s7941079--c5a31f15302d57563d8cd35e43ba34669b5485a99b617a83c89fba02fb2ca981: commitBuffer: invalid argument (invalid character)
+    protocol version mismatch -- is your shell clean?
+    (see the rsync man page for an explanation)
+    rsync error: protocol incompatibility (code 2) at compat.c(174) [Receiver=3.0.9]
+
+    git-annex-shell: sendkey: 1 failed
+      rsync failed -- run git annex again to resume file transfer
+
+      Unable to access these remotes: origin
+
+      Try making some of these repositories available:
+            604f093f-a980-4740-a9df-d21b580a2ba4 -- origin (<remote>)
+    failed
+
+
+
+It spits out similar errors for all files with Japanese/German/French/special characters, and ends with this on the last line:
+
+    git-annex: get: 138 failed

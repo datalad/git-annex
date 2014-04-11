@@ -1,0 +1,104 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkZktNHFhxC1kYA9KKdKpYJO4clq9WDsjE"
+ nickname="Jason"
+ subject="comment 2"
+ date="2013-01-30T19:14:48Z"
+ content="""
+I'm seeing the same thing and I think it's a bug.  Everything I'm reading says that when you move a file from anywhere into an archive directory, it's supposed to upload it to an archive and drop it locally.
+
+If I copy the file from outside my annex into the archive directory it will usually do exactly that and I'll end up with a symlink, but not always.  Sometimes I'll end up with a file.
+
+If I move the file from within my annex into the archive, everything gets confused.  Here is an example:
+
+    [jchu@april annex(master)]$ mkdir testdir
+    [jchu@april annex(master)]$ cd testdir/
+    [jchu@april testdir(master)]$ ls
+    [jchu@april testdir(master)]$ cat > test.txt << EOF
+    > I have a file.  It is very nice.
+    > EOF
+    [jchu@april testdir(master)]$ ls -l
+    total 4
+    -rw-r--r-- 1 jchu users 33 Jan 30 10:53 test.txt
+    [jchu@april testdir(master)]$ mkdir archive
+    [jchu@april testdir(master)]$ mv test.txt archive/
+    [jchu@april testdir(master)]$ ls -l
+    total 0
+    drwxr-xr-x 2 jchu users 21 Jan 30 10:54 archive
+    [jchu@april testdir(master)]$ ls -l archive/
+    total 4
+    -rw-r--r-- 1 jchu users 33 Jan 30 10:53 test.txt
+    [jchu@april testdir(master)]$ # Shouldn't this be a symlink?
+    [jchu@april testdir(master)]$ git show
+    commit 2fb2cba3fae98e0e0b8b7891b1af0cc655754896
+    Author: Jason Chu <jchu@xentac.net>
+    Date:   Wed Jan 30 10:54:11 2013 -0800
+
+    diff --git a/testdir/archive/test.txt b/testdir/archive/test.txt
+    new file mode 120000
+    index 0000000..5bd7982
+    --- /dev/null
+    +++ b/testdir/archive/test.txt
+    @@ -0,0 +1 @@
+    +../../.git/annex/objects/x5/Q1/SHA256E-s33--1859a57b635b0702dd3813dd7637f11842730b0464c35a4ad361dd0d37fc3dab.txt/SHA256E-s33--1859a57b635b0702dd3813dd7637f11842730b0464c35a4ad3
+    \ No newline at end of file
+    [jchu@april testdir(master)]$ git show HEAD^
+    commit 410f58f782348599d42496db2c9b21cfb2e59124
+    Author: Jason Chu <jchu@xentac.net>
+    Date:   Wed Jan 30 10:54:10 2013 -0800
+
+    diff --git a/testdir/test.txt b/testdir/test.txt
+    deleted file mode 120000
+    index 82343e3..0000000
+    --- a/testdir/test.txt
+    +++ /dev/null
+    @@ -1 +0,0 @@
+    -../.git/annex/objects/x5/Q1/SHA256E-s33--1859a57b635b0702dd3813dd7637f11842730b0464c35a4ad361dd0d37fc3dab.txt/SHA256E-s33--1859a57b635b0702dd3813dd7637f11842730b0464c35a4ad361d
+    \ No newline at end of file
+
+From what I can see here, the file was archived properly and the delete in git was issued correctly.  The daemon.log shows me that the file was uploaded correctly when it was initially created and then added to the archive directory, but I don't see a direct delete in the log file (even though the git log shows me it happened).
+
+Now on to the really weird part.  If I restart the daemon (or there are other ways to trigger it, but this seems to be the easiest for me), I see that log lines that say testdir/archive/test.txt was dropped (good) but then testdir/test.txt is re-downloaded and appears back in that directory.  I wanted the file deleted from testdir, why is it back?!?  Since it gets redownloaded and readded, my new logs look like this:
+
+    [jchu@april testdir(master)]$ git show
+    commit 850464dd2f8ae5cd407a214543afab668d4b34eb
+    Author: Jason Chu <jchu@xentac.net>
+    Date:   Wed Jan 30 11:00:03 2013 -0800
+
+    diff --git a/testdir/archive/test.txt b/testdir/archive/test.txt
+    deleted file mode 120000
+    index 5bd7982..0000000
+    --- a/testdir/archive/test.txt
+    +++ /dev/null
+    @@ -1 +0,0 @@
+    -../../.git/annex/objects/x5/Q1/SHA256E-s33--1859a57b635b0702dd3813dd7637f11842730b0464c35a4ad361dd0d37fc3dab.txt/SHA256E-s33--1859a57b635b0702dd3813dd7637f11842730b0464c35a4ad3
+    \ No newline at end of file
+    [jchu@april testdir(master)]$ git show HEAD^
+    commit 8cf9019e66e5a2cb0478e965fda352c742972591
+    Author: Jason Chu <jchu@xentac.net>
+    Date:   Wed Jan 30 11:00:00 2013 -0800
+
+    diff --git a/testdir/test.txt b/testdir/test.txt
+    new file mode 120000
+    index 0000000..82343e3
+    --- /dev/null
+    +++ b/testdir/test.txt
+    @@ -0,0 +1 @@
+    +../.git/annex/objects/x5/Q1/SHA256E-s33--1859a57b635b0702dd3813dd7637f11842730b0464c35a4ad361dd0d37fc3dab.txt/SHA256E-s33--1859a57b635b0702dd3813dd7637f11842730b0464c35a4ad361d
+    \ No newline at end of file
+
+And the filesystem looks like this:
+
+    [jchu@april testdir(master)]$ ls -lR
+    .:
+    total 4
+    drwxr-xr-x 2 jchu users 21 Jan 30 11:00 archive
+    -rw-r--r-- 1 jchu users 33 Jan 30 11:00 test.txt
+
+    ./archive:
+    total 4
+    -rw-r--r-- 1 jchu users 33 Jan 30 11:00 test.txt
+
+I have 3 remotes set up: a usb drive (client, it was created like that directly by annex when I created a Removable drive repo, it's a bare repo), s3 (archive), and nas (a remote server repo, that connects over ssh and uses rsync).  I thought maybe that the usb drive still had a record of testdir/test.txt existing, but the logs in refs/heads/synced/master match.
+
+It's as if the git annex thinks that the original content is still within a non-archive directory, so the data can't be dropped, but everywhere I look the references to that content are gone.  The only way I've found to fix this is to convert to indirect mode and delete the symlinks from there (which seems to work better).  It seems to be an interaction between direct mode, the archive, and maybe my filesystem (xfs).
+"""]]

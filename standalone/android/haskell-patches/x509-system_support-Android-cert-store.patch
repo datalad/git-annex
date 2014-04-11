@@ -1,0 +1,36 @@
+From 2c736615e38ee4f582af9d98d7169cf07b84d875 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Mon, 10 Feb 2014 23:27:32 +0000
+Subject: [PATCH] support Android cert store
+
+Android puts it in a different place and has only hashed files.
+See https://github.com/vincenthz/hs-certificate/issues/19
+---
+ System/X509/Unix.hs |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/System/X509/Unix.hs b/System/X509/Unix.hs
+index cbf9bbe..cab4f4a 100644
+--- a/System/X509/Unix.hs
++++ b/System/X509/Unix.hs
+@@ -34,7 +34,7 @@ import qualified Control.Exception as E
+ import Data.Char
+ 
+ defaultSystemPath :: FilePath
+-defaultSystemPath = "/etc/ssl/certs/"
++defaultSystemPath = "/system/etc/security/cacerts/"
+ 
+ envPathOverride :: String
+ envPathOverride = "SYSTEM_CERTIFICATE_PATH"
+@@ -46,7 +46,7 @@ listDirectoryCerts path = (map (path </>) . filter isCert <$> getDirectoryConten
+                         && isDigit (s !! 9)
+                         && (s !! 8) == '.'
+                         && all isHexDigit (take 8 s)
+-          isCert x = (not $ isPrefixOf "." x) && (not $ isHashedFile x)
++          isCert x = (not $ isPrefixOf "." x) 
+ 
+ getSystemCertificateStore :: IO CertificateStore
+ getSystemCertificateStore = makeCertificateStore . concat <$> (getSystemPath >>= listDirectoryCerts >>= mapM readCertificates)
+-- 
+1.7.10.4
+

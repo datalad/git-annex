@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 7"
+ date="2013-06-18T01:38:05Z"
+ content="""
+There were at least 4 windows port bugs here. (Including `git annex sync` not committing on Windows, I think!) Should now have fixed them all. This includes fixing my earlier fix to make git annex sync push to master in a bare repository, which was not working on Windows.
+"""]]

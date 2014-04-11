@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmmLfBDEDFfEOba8Ra46nsnTmoNHFsLObo"
+ nickname="Brian"
+ subject="I also see the connection timed out"
+ date="2013-05-15T00:19:34Z"
+ content="""
+Same Android device and same behavior as the above comment. While the connection attempt was being made, I switched to the terminal window and saw a connection to 173.194.46.86:5222 in the SYN_SENT state (and that connection wasn't there prior to the jabber configuration attempt).
+
+Even from my desktop, manual connection attempts to 173.194.46.86:5222 timed out.
+
+Then I ran the same jabber configuration from my desktop and it worked fin. Using netstat, I could see it connected to 74.125.133.125:5222.
+
+So is the Android version using the wrong address?
+"""]]

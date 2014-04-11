@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmBUR4O9mofxVbpb8JV9mEbVfIYv670uJo"
+ nickname="Justin"
+ subject="What about..."
+ date="2012-10-16T16:43:29Z"
+ content="""
+    ssh remotehost \"cd /path/to/annex && git annex sync\"
+"""]]

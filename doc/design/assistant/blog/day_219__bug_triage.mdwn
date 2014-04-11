@@ -1,0 +1,14 @@
+Triaged some of the older bugs and was able to close a lot of them.
+
+-----
+
+Should mention that I will be in Boston this weekend, attending
+[LibrePlanet 2013](http://libreplanet.org/wiki/LibrePlanet:Conference/2013).
+Drop by and find me, I'll have git-annex stickers! ;)
+
+-----
+
+Did some UI work on the webapp. Minor stuff, but stuff that needed to be
+fixed up. Like inserting zero-width spaces into filenames displayed in it
+so very long filenames always get reasonably wrapped by the browser.
+(Perhaps there's a better way to do that with CSS?)

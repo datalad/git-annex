@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 3"
+ date="2013-04-16T20:33:44Z"
+ content="""
+> walter@dionysus:~/presence$ echo 1 > Here.txt
+> walter@dionysus:~/presence$ git annex whereis
+> whereis Here.txt (2 copies)
+
+It seems the file Here.txt must already have been added to git-annex before this point ... or whereis would not show it. Did you leave out a step? Was the file already added? Are you using direct mode?
+"""]]

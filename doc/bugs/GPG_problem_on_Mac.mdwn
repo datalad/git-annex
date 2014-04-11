@@ -1,0 +1,34 @@
+### Please describe the problem.
+Adding a box.com repository fails with an Internal server error and the message "user error (gpg ["--quiet","--trust-model","always","--batch","--passphrase-fd","48","--symmetric","--force-mdc"] exited 2)"
+
+Looking at the logfile it seems like git-annex is looking for gpg (gpg-agent) in /usr/local/MacGPG2/bin/. On my system it is in /usr/local/bin (installed using homebrew). I do not have the directory /usr/local/MacGPG2/.
+
+Not sure if what the git-annex philosophy is: detect the location of such external programs or ship them together with git-annex.
+
+### What steps will reproduce the problem?
+Add a box.com repository (I assume every repository type that uses gpg will fail in the same way) on a Mac.
+
+
+### What version of git-annex are you using? On what operating system?
+* git-annex version 4.20130626-g2dd6f84 (from https://downloads.kitenet.net/git-annex/OSX/current/10.8.2_Mountain_Lion/)
+* Mac OS 10.8.4
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+(Recording state in git...)
+
+(encryption setup) (shared cipher) (testing WebDAV server...)
+(gpg) gpg: error running `/usr/local/MacGPG2/bin/gpg-agent': probably not installed
+gpg: DBG: running `/usr/local/MacGPG2/bin/gpg-agent' for testing failed: Configuration error
+gpg: can't connect to the agent: IPC connect call failed
+gpg: problem with the agent: No agent running
+27/Jun/2013:13:41:37 +0200 [Error#yesod-core] user error (gpg ["--quiet","--trust-model","always","--batch","--passphrase-fd","21","--symmetric","--force-mdc"] exited 2) @(yesod-core-1.1.8.3:Yesod.Internal.Core ./Yesod/Internal/Core.hs:550:5)
+# End of transcript or log.
+"""]]
+
+> [[done]]; I've updated the OSX autobuild to 
+> use a gpg that doesn't fail when gpg-agent is missing. --[[Joey]]

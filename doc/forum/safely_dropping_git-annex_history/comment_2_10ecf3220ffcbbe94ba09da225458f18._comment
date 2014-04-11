@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://christian.amsuess.com/chrysn"
+ nickname="chrysn"
+ subject="worked well"
+ date="2012-11-04T12:23:56Z"
+ content="""
+the procedure i outlined originally worked well for me; the method chosen for reinjection was moving over the .git/annex/objects directory and doing a ``git annex fsck``.
+
+special care had to be taken of the special remote (rsync+gpg) -- i guess that's why they are called special ;-) . as described in the forum post you linked, i had to copy over remote.log and the uuid.log line from the old git-annex branch -- otherwise, a ``git annex initremote`` would have generated a new hmac, effectively resetting the remote repo.
+
+the formerly 5gb git-annex branch (admittedly not ``git gc``'d recently, but that just wasn't feasible any more) shrunk down to around 25mb of current location information. i'll keep an eye on how it's growing to see if the problem is inherent or if it was just old bugs causing trouble.
+"""]]

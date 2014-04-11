@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="guilhem"
+ ip="129.16.20.209"
+ subject="comment 3"
+ date="2013-08-19T13:44:35Z"
+ content="""
+AES-NI acceleration will be used by default providing you're using
+the new modularized GnuPG (v2.x) and libgcrypt ≥ 1.5.0. Of course it
+only speeds up AES encryption, while GnuPG uses CAST by default; you can
+either set `personal-cipher-preferences` to AES or AES256 in your
+`gpg.conf` or, as joeyh hinted at, set `remote.<name>.annex-gnupg-options`
+as described in the manpage.
+
+By the way, I observed a significant speed up when using `--compress-algo none`.
+Image, music and video files are typically hard to compress further, and it seems
+that's where gpg spent most of its time, at least on the few files I benchmarked.
+"""]]

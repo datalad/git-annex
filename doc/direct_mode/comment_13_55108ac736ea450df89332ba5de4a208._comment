@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.63"
+ subject="comment 13"
+ date="2013-08-23T17:50:15Z"
+ content="""
+@obergix asked:
+
+> But then, how can a direct repo sync with changes made in other remotes, if there no pull/fetch available.
+
+The answer is simple: By running `git annex sync`, which handles all that.
+"""]]

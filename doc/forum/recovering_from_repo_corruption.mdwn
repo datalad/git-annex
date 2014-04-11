@@ -1,0 +1,11 @@
+In my current annex config, I have 4 computers with "traditional" git annexes as well as an external drive that is a git annex, an rsync'd backup annex, and a glacier archive.  Today, one of the computers got a corrupted git repo. It was complaining that a pack file was invalid. In my attempts to fix it, a commit was logged that deleted every file in the annex. I didn't find this out until I did 'git annex sync' and watched git delete everything, then send all those commits to my other 3 systems and the external drive. *facepalm*
+
+Fortunately, I had one of those other systems in direct mode and I copied everything from the annex as a backup. Now, when I try to re-add files to the annex, I'm running into some errors. These appear to be "collisions" within the annex part of the .git folder:
+
+    %  › git annex add House.netspd 
+    add House.netspd (checksum...) 
+    git-annex: /Users/akraut/Desktop/annex/.git/annex/objects/31/Gw/SHA256E-s167433--41e68ea0adb5a4086a0b7b39d0556b9b86523ffb6b498d58f12f96460da315e9/SHA256E-s167433--41e68ea0adb5a4086a0b7b39d0556b9b86523ffb6b498d58f12f96460da315e9.map.tmp62699: openFile: permission denied (Permission denied)
+    failed
+    git-annex: add: 1 failed
+
+Any ideas on what's going on here? Perhaps how to get things added back in or recovered? It seems all the actual file contents are here, but annex doesn't seem to know they're there anymore.

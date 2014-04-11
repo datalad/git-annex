@@ -1,0 +1,10 @@
+Nothing flashy today; I was up all night trying to download photos taken 
+by a robot lowered onto Mars by a skycrane.
+
+Some work on alerts. Added an alert when a file transfer succeeds or fails.
+Improved the alert combining code so it handles those alerts, and
+simplified it a lot, and made it more efficient.
+
+Also made the text of action alerts change from present to past tense when
+the action finishes. To support that I wrote a fun data type, a `TenseString`
+that can be rendered in either tense.

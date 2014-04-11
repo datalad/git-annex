@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://openid.stackexchange.com/user/a05bb829-932b-49f2-85a9-00dcda8b5e20"
+ nickname="Christian Pietsch"
+ subject="Re: Build failure"
+ date="2014-03-20T13:56:16Z"
+ content="""
+I get exactly the same error message as Matthias when attempting the minimal Cabal install on openSUSE 12.2 (x86_64) Linux.
+"""]]

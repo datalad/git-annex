@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn4bbuawnh-nSo9pAh8irYAcV4MQCcfdHo"
+ nickname="Stefan"
+ subject="comment 7"
+ date="2012-09-18T00:11:50Z"
+ content="""
+cd /mnt/data/annex/ &&
+/usr/bin/git annex sync &&
+/usr/bin/git annex copy --auto --to usbdrive &&
+cd /mnt/usb1/annex/ &&
+/usr/bin/git annex sync &&
+echo \"synced\" ||
+echo \"backup of annex failed\" | sendxmpp -t name@server.country
+
+
+ok suprisingly that did not only sync the files but also did remove the file, so you dont need a pull... dont know what I did wrong the other times I tried, does maybe the  copy command also \"copies\" the delete commit?
+
+but annyway that works for me... (for now I do the dropunused command manuelly...)
+
+that should work as cronjob...
+"""]]

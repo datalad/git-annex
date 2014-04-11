@@ -1,0 +1,10 @@
+Worked on cleaning up and reorganizing all the code that handles numcopies
+settings. Much nicer now. Fixed some bugs.
+
+As expected, making the preferred content numcopies check look at
+.gitattributes slows it down significantly. So, exposed both the slow and
+accurate check and a faster version that ignores .gitattributes.
+
+Also worked on the test suite, removing dependencies between tests.
+This will let tasty-rerun be used later to run only previously failing
+tests.

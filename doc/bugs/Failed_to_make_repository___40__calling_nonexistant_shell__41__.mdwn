@@ -1,0 +1,28 @@
+### Please describe the problem.
+
+I get this error message:
+
+ Failed to make repository
+
+Something went wrong setting up the repository on the remote server.
+
+Transcript:
+
+/opt/git-annex.linux/runshell: line 73: /home/annex/sh -c 'mkdir -p '"'"'annex'"'"'&&cd '"'"'annex'"'"'&&if [ ! -d .git ]; then git init --bare --shared; fi&&git annex init&&mkdir -p ~/.ssh&&if [ ! -e ~/.ssh/git-annex-shell ]; then (echo '"'"'#!/bin/sh'"'"';echo '"'"'set -e'"'"';echo '"'"'if [ "x$SSH_ORIGINAL_COMMAND" != "x" ]; then'"'"';echo '"'"'exec git-annex-shell -c "$SSH_ORIGINAL_COMMAND"'"'"';echo '"'"'else'"'"';echo '"'"'exec git-annex-shell -c "$@"'"'"';echo '"'"'fi'"'"') > ~/.ssh/git-annex-shell; fi&&chmod 700 ~/.ssh/git-annex-shell&&touch ~/.ssh/authorized_keys&&chmod 600 ~/.ssh/authorized_keys&&echo '"'"'command="GIT_ANNEX_SHELL_DIRECTORY='"'"'"'"'"'"'"'"'annex'"'"'"'"'"'"'"'"' ~/.ssh/git-annex-shell",no-agent-forwarding,no-port-forwarding,no-X11-forwarding ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAQEA1RQLCJP/gY62xxTOHa4PlZSlSWD2kWBC2+o27SBpBaCVibFfxNKP+1CAgzbyzVygpE0XUXxDOA8dnrq7vPHkkdIlYUZ8JQxTO/zaVVRlzryhWb8QOjEE3ZG0CF+ZQVu14q/M/T4qZm1mtXBCIZMs1wpwTr9dRdf7e/5q5hHROd5sRj+v0PhdiyZ8e6egoq1gFAvspUF1VC74PvZwZ2NKd1s0iGOGGYvoD/nWGCeBUQzMcGk56243zI54tOcDePdZJnd7iIn8FHGprr9yGhc3KYKppWmG7vQU+DhO607FiVnW5aMWjz/msmQidCceIFvnmLFWSDQ5ZNdGVUvHlT9kQQ== p264360@pales
+'"'"' >>~/.ssh/authorized_keys': No such file or directory
+
+### What steps will reproduce the problem?
+
+I made a user annex on my server and set its shell to /opt/git-annex.linux/runshell, then used the webapp on my desktop PC to try and add a remote git repository on my server.
+
+### What version of git-annex are you using? On what operating system?
+
+The latest tarball: git-annex-standalone-amd64.tar.gz	2013-07-09 14:24 	19M	 
+
+Ubuntu 10.04 on both desktop and server.
+
+### Please provide any additional information below.
+
+The problem seems to be runshell trying to call /home/annex/sh, which does not exist. Why would it do that?
+
+> [[done]]

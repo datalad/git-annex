@@ -1,0 +1,19 @@
+What steps will reproduce the problem?
+
+Adding files to a local annex set up to sync to a remote S3 one
+
+
+What is the expected output? What do you see instead?
+
+It syncs, but maxes out the uplink
+
+
+What version of git-annex are you using? On what operating system?
+
+3.20121112 on Debian testing
+
+
+Please provide any additional information below.
+
+The man page lists how to configure rate limiting for rsync, not sure how to do it for this
+

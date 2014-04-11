@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlkAghrKEvslMcV2INKUhtPPMsfnzQyyd8"
+ nickname="Jeremy"
+ subject="Unable to start assistant"
+ date="2013-04-16T01:07:05Z"
+ content="""
+I got the git-annex assistant to work once a long time ago when I ran it the first time directly from the dmg. Ever since then (i.e., after putting it in my applications folder) I have never gotten it to run. Wondering if anyone else has experienced this?
+
+I am running OSX 10.7.5 and just pulled the latest app (05-Apr-2013 10:17).
+
+For reference, when I try to kick off the the assistant from the command line I get the error:
+
+    $ open /Applications/git-annex.app
+    LSOpenURLsWithRole() failed with error -10810 for the file /Applications/git-annex.app.
+
+I am wondering if there is some sort of file or modification that was made when I accidently kicked it off initially from the dmg, if so any thoughts on what to clear / change?
+
+"""]]

@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-03-14T16:12:49Z"
+ content="""
+My experience is that modern filesystems are not going to have many issues with tens to hundreds of thousands of items in the directory. However, if a transition does happen for FAT support I will consider adding hashing. Although getting a good balanced hash in general without, say, checksumming the filename and taking part of the checksum, is difficult. 
+
+I prefer to keep all the metadata in the filename, as this eases recovery if the files end up in lost+found. So while \"SHA/\" is a nice workaround for the FAT colon problem, I'll be doing something else. (What I'm not sure yet.)
+
+There is no point in creating unused hash directories on initialization. If anything, with a bad filesystem that just guarantees worst performance from the beginning..
+"""]]

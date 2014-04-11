@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="2001:1928:1:9::1"
+ subject="comment 2"
+ date="2013-12-30T17:47:26Z"
+ content="""
+Fair enough, I guess. However, I must say that it seems that git-annex doesn't actually detect properly externally mounted hard drives. For example, here I have an annex in /srv/foo that is part of my system hard drive (but in a separate /srv partition). Then I made a backup annex in /backup/srv/foo that is on an external hard drive, yet the webapp sees those two repos as under its control - as in, i can choose both in the \"switch repository\" menu.
+
+Another drive I was able to add using the \"add external drive\" tool in the webapp doesn't show up in that list (and that's fine too!).
+"""]]

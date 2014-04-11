@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnSenxKyE_2Z6Wb-EBMO8FciyRywjx1ZiQ"
+ nickname="Walter"
+ subject="comment 4"
+ date="2013-04-16T20:42:34Z"
+ content="""
+The repository is a direct mode one.
+
+I think there's something in your comment though; the content (\"1\") had already been added to a file (since deleted on dionysus),
+however it does seem a bit inconsistent.
+
+    walter@dionysus:~/presence$ echo 1 > New1
+    walter@dionysus:~/presence$ echo 1 > New1.txt
+    walter@dionysus:~/presence$ git annex whereis New1 New1.txt
+    whereis New1 (1 copy) 
+      	1c6ffc98-d12c-4844-920b-5e28bc8e8b60 -- here (walter@dionysus:~/presence)
+    ok
+    whereis New1.txt (2 copies) 
+       	1c6ffc98-d12c-4844-920b-5e28bc8e8b60 -- here (walter@dionysus:~/presence)
+       	8da299b6-006c-4410-9b3d-a542766d40a4 -- kronos.local_presence (walter@kronos:~/presence)
+    ok
+
+
+"""]]

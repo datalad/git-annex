@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 6"
+ date="2011-03-16T16:32:52Z"
+ content="""
+The mtime cannot be stored for all keys. Consider a SHA1 key. The mtime is irrelevant; 2 files with different mtimes, when added to the SHA1 backend, should get the same key.
+
+Probably our spam filter doesn't like your work IP.
+"""]]

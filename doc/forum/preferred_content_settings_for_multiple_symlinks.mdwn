@@ -1,0 +1,7 @@
+I have my music library in `music/` and some really old files I recently added in `reallyold/`.  There are some MP3s in the really old files and some are the same as my library, so of course git annex is only keeping one copy.  Now, I have an rsync remote, `ma`, which prefers content from `music/` but doesn't want anything from `reallyold/`.  So while right now it is trying to drop stuff, I suspect at some point that it will try to re-add them in virtue of being in `music/`, as I've got a loop.
+
+I want to eliminate this by using the present keyword to disable dropping for stuff in `reallyold/` and `music/`.  Here is my attempt, which doesn't work--I am hoping someone can spot what's wrong.
+
+    (present and include=music/*) or (present and include=reallyold/*) or (exclude=reallyold/* and exclude=video/* and exclude= ...)
+
+Note that music is included by virtue of not being excluded so it should satisfy the third disjunct.  Thanks.

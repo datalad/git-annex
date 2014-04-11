@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.140"
+ subject="comment 6"
+ date="2013-07-20T22:31:02Z"
+ content="""
+Isolated the bug to a problem with the upstream inotify library.
+<https://github.com/kolmodin/hinotify/issues/5> I've sent in a patch to that library that fixes the problem.
+
+Unfortunately, I cannot work around it in git-annex more than I already have. It'll no longer crash, but will skip over files or directories that contain characters not valid in the current locale.
+
+I have applied my patch to the haskell-hinotify package in Debian unstable, and have deployed fixed versions to all my linux autobuilds, including Android. (An Android user had mentioned also seeing this bug.)
+"""]]

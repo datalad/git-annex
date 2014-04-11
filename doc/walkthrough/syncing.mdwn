@@ -1,0 +1,27 @@
+Notice that in the [[previous example|getting_file_content]], `git annex
+sync` was used. This lets git-annex know what has changed in the other
+repositories like the laptop, and so it knows about the files present there and can
+get them.
+
+Let's look at what the sync command does in more detail:
+
+	# cd /media/usb/annex
+	# git annex sync
+	commit
+	nothing to commit (working directory clean)
+	ok
+	pull laptop
+	ok
+	push laptop
+	ok
+
+After you run sync, the git repository will be updated with all changes
+made to its remotes, and any changes in the git repository will be pushed
+out to its remotes, where a sync will get them. This is especially useful
+when using git in a distributed fashion, without a [[central bare
+repository|tips/centralized_git_repository_tutorial]]. See [[sync]] for
+details.
+
+By default `git annex sync` only syncs the metadata about your
+files that is stored in git. It does not sync the contents of files, that
+are managed by git-annex. To do that, you can use `git annex sync --content`

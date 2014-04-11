@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="madduck"
+ ip="2001:a60:f0fb:0:224:d7ff:fe04:c82c"
+ subject="Warn while inconsistent"
+ date="2014-04-06T20:44:17Z"
+ content="""
+Sure, git-annex prevents me from dropping files unless there are numcopies around elsewhere, but shouldn't it also ensure that numcopies cannot be set unless that requirement is already met?
+
+Furthermore, shouldn't it ensure that when new files are added, they are automatically distributed to fulfill the requirement?
+"""]]

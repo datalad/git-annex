@@ -1,0 +1,46 @@
+[[!inline raw=yes pages="summary"]]
+
+[[!sidebar content="""
+[[!inline feeds=no template=bare pages=sidebar]]
+
+[[Feeds]]:
+
+<small>
+[[!inline pages="internal(feeds/*)" archive=yes show=8 feeds=no]]
+</small>
+"""]]
+
+<table>
+<tr>
+<td width="33%" valign="top">[[!inline feeds=no template=bare pages=links/key_concepts]]</td>
+<td width="33%" valign="top">[[!inline feeds=no template=bare pages=links/the_details]]</td>
+<td width="33%" valign="top">[[!inline feeds=no template=bare pages=links/other_stuff]]</td>
+</tr>
+</table>
+
+<table>
+<tr>
+<td width="50%" valign="top">[[!inline feeds=no template=bare pages=use_case/bob]]</td>
+<td width="50%" valign="top">[[!inline feeds=no template=bare pages=use_case/alice]]</td>
+</tr>
+</table>
+
+If that describes you, or if you're some from column A and some from column
+B, then git-annex may be the tool you've been looking for to expand from
+keeping all your small important files in git, to managing your large
+files with git.
+
+<table>
+<tr>
+<td width="50%" valign="top">[[!inline feeds=no template=bare pages=footer/column_a]]</td>
+<td widtd="50%" valign="top">[[!inline feeds=no template=bare pages=footer/column_b]]</td>
+</tr>
+</table>
+
+----
+
+git-annex is [[Free Software|license]], written in [Haskell](http://www.haskell.org/).
+You can [[contribute]]!
+
+git-annex's wiki is powered by [Ikiwiki](http://ikiwiki.info/) and
+hosted by [Branchable](http://branchable.com/).

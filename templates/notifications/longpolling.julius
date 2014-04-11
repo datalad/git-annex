@@ -1,0 +1,11 @@
+$(function() {
+	$.get("@{geturl}", function(url){
+		var f = function() {
+			longpoll_div(url, #{ident}
+				, function() { setTimeout(f, #{delay}); }
+				, function() { window.location.reload(true); }
+			);	
+		};
+		setTimeout(f, #{startdelay});
+	});
+});

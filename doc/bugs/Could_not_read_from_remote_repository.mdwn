@@ -1,0 +1,26 @@
+### Please describe the problem.
+
+I've been using git-annex for a few weeks now, and everything was working fine until today. Now, when git-annex goes to sync my files, it will hang for a while, and then display a red box on the left side, saying `! Synced with adam.liter`. So, basically, it doesn't really sync. The logs say that it cannot read from the remote repository, which is set up on box.com and was working just fine until today.
+
+I've tried reconfiguring my jabber account on all my devices with git-annex as well as deleting and remaking the box.com repository, and none of these steps have solved the problem.
+
+### What steps will reproduce the problem?
+
+Making changes to any file located in the repository.
+
+### What version of git-annex are you using? On what operating system?
+
+Mac OS X 10.8.4 and git-annex version 4.20130801-gc88bbc4.
+
+### Please provide any additional information below.
+
+[[!format sh """
+[2013-09-09 01:33:03 EDT] XMPPSendPack: Syncing with adam.liter 
+Already up-to-date.
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+"""]]
+
+[[!meta title="xmpp syncing sometimes fails"]]

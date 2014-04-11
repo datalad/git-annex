@@ -1,0 +1,38 @@
+### Please describe the problem.
+
+1 thumb drive became corrupted when using as a server on raspberry pi, and 2 microSD cards when using as a client in my phone. Both happened during syncing largish repository. (corrupted = permanent input/output error)
+
+* Put git annex on my android phone with a 64GB (FAT) micro SD, fired up git annex, it got reported as corrupted half on hour later, reformatting worked but got reported as corrupted again.
+
+* Put git annex assistant on my raspberry pi, one of the thumbdrives in my LVM (ext4) got corrupted shortly after I began using the assistant. I replaced them with a cheap real SSD drive, and had no problem since.
+
+* Put git annex back on my android phone. Kept it going for an extended sync session, but it never started syncing. I kept it going for an hour or so, and my new 32GB microSD (FAT) got corrupted.
+
+The pattern is nothing like proof, but it seems to be too regular to be completely coincidental. The pattern seems to be: ARM + (SDcard|USBstick) + Assistant = drive corruption.
+
+My guess is that the ARM build might have some kind of unlucky write pattern or loop that causes increased wear, but I know very little of the interna.
+
+### What steps will reproduce the problem?
+
+* Get a raspberry pi and a USB stick, or an android phone and a microSD card
+* Get an [ARM build of the assistant](https://github.com/tradloff/git-annex-RPi)
+* Sync a largish (12GB) repository
+
+### What version of git-annex are you using? On what operating system?
+
+4.20131002 on the pi, 20131024 for the 32GB SD, and 20131015 for the 64GB SD.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+Unfortunately, daemon.log was unrecoverable along with the other files on the SD card.
+
+I can try and autosync the daemon.log somewhere if I happen to come along a bunch of scrap flash storage (not impossible).
+
+# End of transcript or log.
+"""]]
+
+[[done]]

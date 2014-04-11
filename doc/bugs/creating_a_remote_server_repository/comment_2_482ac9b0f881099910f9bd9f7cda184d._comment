@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://edward.myopenid.com/"
+ nickname="edward"
+ subject="Same problem on Android 4.3"
+ date="2013-12-01T08:47:06Z"
+ content="""
+I have the same error on Android. Is git-annex on Android meant to come with ssh-askpass?
+"""]]

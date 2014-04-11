@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnHRhCe3qwVKQ8_NOGGSYJnAMW6FFyKbOc"
+ nickname="Holger"
+ subject="comment 5"
+ date="2013-07-03T02:43:32Z"
+ content="""
+Btw, this would also provide a cheap test for whether we need to recurse into the folder in certain copy or get actions (e.g., if number of bytes present here equals number of bytes globally present, we don't need to recurse).
+"""]]

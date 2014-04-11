@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://cstork.org/"
+ nickname="Chris Stork"
+ subject="Idea: checksum left-over files in .git/annex/tmp for potential recovery"
+ date="2013-10-19T12:30:58Z"
+ content="""
+This just came to mind when I thought about the second case.  I noticed quite often that files were left in .git/annex/tmp (seen on OS X) and sometimes these are the only instances of files on this particular computer.
+
+(It's on my todo list to file several bug reports about this and other issues on OS X...)
+"""]]

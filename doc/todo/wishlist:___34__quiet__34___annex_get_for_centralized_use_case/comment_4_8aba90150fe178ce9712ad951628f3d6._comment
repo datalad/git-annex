@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 4"
+ date="2013-07-18T18:03:00Z"
+ content="""
+If you can have developers only add large files on the central server, avoiding using git annex sync and only pulling from git repo should work, I think.
+"""]]

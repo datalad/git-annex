@@ -1,0 +1,45 @@
+What steps will reproduce the problem?
+My annex dir has 23459 files and uses 749MB disk space.
+Just create a repository put this dir inside, and git-annex will crash.
+
+What is the expected output? What do you see instead?
+I expect git-annex handles large number of files, and does not watch every single file of it.
+
+What version of git-annex are you using? On what operating system?
+I'm using git-annex linux build, version 2013.04.17.
+
+Please provide any additional information below.
+
+    [2013-04-17 23:52:35 CEST] Transferrer: Downloaded pappas_hu..di_44.jpg
+    git-annex: runInteractiveProcess: pipe: Too many open files
+    Committer crashed: lsof: createProcess: resource exhausted (Too many open files)
+    [2013-04-17 23:53:52 CEST] Committer: warning Committer crashed: lsof: createProcess: resource exhausted (Too many open files)
+    git-annex: runInteractiveProcess: pipe: Too many open files
+    git: createProcess: resource exhausted (Too many open files)
+    DaemonStatus crashed: /home/user/Desktop/down/annex_test/.git/annex/daemon.status.tmp21215: openFile: resource exhausted (Too many open files)
+    [2013-04-17 23:57:24 CEST] DaemonStatus: warning DaemonStatus crashed: /home/user/Desktop/down/annex_test/.git/annex/daemon.status.tmp21215: openFile: resource exhausted (Too many open files)
+    git-annex: runInteractiveProcess: pipe: Too many open files
+    git: createProcess: resource exhausted (Too many open files)
+    git-annex: runInteractiveProcess: pipe: Too many open files
+    NetWatcherFallback crashed: git: createProcess: resource exhausted (Too many open files)
+    [2013-04-18 00:27:17 CEST] NetWatcherFallback: warning NetWatcherFallback crashed: git: createProcess: resource exhausted (Too many open files)
+    git-annex: runInteractiveProcess: pipe: Too many open files
+    git-annex: git: createProcess: resource exhausted (Too many open files)
+    git-annex: accept: resource exhausted (Too many open files)
+
+Instead of raising system's limit (which is a neverending story), can we make git-annex only watch a directory and not every file of it?
+
+Or could the user specify some directory which he knows it is rarely change, to not be watched only check it once a day?
+
+The best would be if git annex could automatically adapt itself.
+Ie. it watches eg. 200 files, and if some of it does not change for three days, then it drops from the watching basket, and those who changed (noticed while sanity checked) it adds to the basket.
+
+I don't really want to raise the ulimit, because my ultimate goal is to have git-annex on multiple raspberry pi with external harddrive (one at my home, one at my mom's home, one at my friends home, etc, etc). And raspberry is fairly low on resource.
+
+I'm interested in your thoughts.
+
+Best, 
+ Laszlo
+
+[[!tag /design/assistant]]
+[[!meta title="assistant can try to add too many files at once in batch add mode"]]

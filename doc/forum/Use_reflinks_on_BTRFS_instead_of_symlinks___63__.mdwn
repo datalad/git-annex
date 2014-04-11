@@ -1,0 +1,1 @@
+On BTRFS it is possible to use [reflinks / clones](https://en.wikipedia.org/wiki/Btrfs#Cloning). This is the equivalent of hardlinks except that when the file is modified, a copy is performed (copy on write). Perhaps git-annex could detect the availability of this feature and use it in case it is available (and the repository and the file are in the same filesystem).

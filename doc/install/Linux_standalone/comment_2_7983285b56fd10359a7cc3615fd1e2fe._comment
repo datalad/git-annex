@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 2"
+ date="2014-02-26T21:07:20Z"
+ content="""
+The arm binaries are ARMv6; they're built on a Debian armel system.
+
+Obviously there is a lot of variation in ARM instructions sets. Like Debian, we're shooting for lowest common denominator here.
+
+(Note: I'm going to be moving your comment and this one to the place you should have posted it...)
+"""]]

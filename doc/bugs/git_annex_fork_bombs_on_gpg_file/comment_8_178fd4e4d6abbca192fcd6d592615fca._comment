@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ nickname="joey"
+ subject="comment 8"
+ date="2013-05-19T19:35:51Z"
+ content="""
+I've fixed the repeated \"(gpg)\" problem. But that is not the real problem...
+
+Looks to me like there is a problem with running gpg to extract the encryption key of the repository. I can cause the same \"resource vanished\" message if I make gpg exit 1 immediately when it starts. I also managed to get 3 zombies when failing to send 100 files. Although in my case they were gpg zombies, not git-annex zombies.
+
+Can you run `gpg` manually at the command line? If you installed git-annex from the OSX dmg file, you need to have used \"runshell\" to get the gpg that's included in it onto the PATH before you do this.
+"""]]

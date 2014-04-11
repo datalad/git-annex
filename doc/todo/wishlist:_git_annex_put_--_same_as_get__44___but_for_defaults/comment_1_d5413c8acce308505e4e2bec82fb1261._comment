@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-04-04T18:13:46Z"
+ content="""
+This begs the question: What is the default remote? It's probably *not* the same repository that git's master branch is tracking (ie, origin/master). It seems there would have to be an annex.defaultremote setting.
+
+BTW, mr can easily be configured on a per-repo basis so that \"mr push\" copies to somewhere: `push = git push; git annex push wherever`
+"""]]

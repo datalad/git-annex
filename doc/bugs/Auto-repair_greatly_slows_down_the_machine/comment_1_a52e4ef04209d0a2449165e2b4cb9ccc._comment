@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 1"
+ date="2014-02-26T17:38:05Z"
+ content="""
+Auto repair is not intended to be a common occurrance. It means something went badly, horribly wrong on your machine, and it lost data that git wrote to disk. It's more important in such a scenraio to get back to a working system eventually than to do something fast or inexpensively.
+
+If you're seeing the need for auto repair on a weekly basis, your computer is failing in a horrible way horribly frequently, and the thing to do is to find out why, and fix that. Perhaps you need to start cleanly shutting down the system. Perhaps something is causing your computer to crash, and you need to fix that.
+"""]]

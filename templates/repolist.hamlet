@@ -1,0 +1,66 @@
+<div ##{ident}>
+  $if onlyCloud reposelector
+    $if not (null repolist)
+      <h2>
+        Cloud repositories
+    $else
+      No cloud repositories are configured yet.
+  $else
+    $if not (null repolist)
+      <h2>
+        Repositories
+  <table .table .table-condensed>
+    <tbody #costsortable>
+      $forall (name, repoid, actions) <- repolist
+        <tr .repoline ##{show repoid}>
+          <td .handle>
+            <a .btn .btn-mini .disabled>
+              <i .icon-resize-vertical></i>
+            &nbsp; #{name}
+          <td .draghide>
+            $if needsEnabled actions
+              <a href="@{setupRepoLink actions}">
+                <i .icon-warning-sign></i> not enabled
+            $else
+              $if notWanted actions
+                <i .icon-trash></i> cleaning out..
+              $else
+                <a href="@{syncToggleLink actions}">
+                  $if notSyncing actions
+                    <i .icon-ban-circle></i> syncing disabled
+                  $else
+                    <i .icon-refresh></i> syncing enabled #
+                      $if lacksUUID repoid
+                        (metadata only)
+          <td .draghide>
+            $if needsEnabled actions
+              <a href="@{setupRepoLink actions}">
+                enable
+            $else
+              <span .dropdown #menu-#{show repoid}>
+                <a .dropdown-toggle data-toggle="dropdown" href="#menu-#{show repoid}">
+                  <i .icon-cog></i> actions
+                  <b .caret></b>
+                <ul .dropdown-menu>
+                  <li>
+                    <a href="@{setupRepoLink actions}">
+                      <i .icon-pencil></i> Edit
+                    $if not (lacksUUID repoid)
+                      <a href="@{SyncNowRepositoryR $ asUUID repoid}">
+                        <i .icon-refresh></i> Sync now
+                      <a href="@{DisableRepositoryR $ asUUID repoid}">
+                        <i .icon-minus></i> Disable
+                      <a href="@{DeleteRepositoryR $ asUUID repoid}">
+                        <i .icon-trash></i> Delete
+      $if addmore
+        <tr>
+          <td colspan="3">
+            $if nootherrepos
+              <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">
+                <i .icon-plus-sign></i> Add another repository
+            $else
+              <a .btn .btn-small href="@{AddRepositoryR}">
+                <i .icon-plus-sign></i> Add another repository
+            <span>
+              &nbsp; Sync your files with another device, or #
+              share with a friend.

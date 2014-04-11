@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 2"
+ date="2011-03-16T03:04:50Z"
+ content="""
+Right. You probably don't want git-annex to fill up your entire drive anyway, so if it tries to reseve 10 mb or 1% or whatever (probably configurable) for overhead, that should be good enough.
+"""]]

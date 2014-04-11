@@ -1,0 +1,78 @@
+### Please describe the problem.
+
+I have a repo that I initialized in direct mode because i felt unconfortable with the "symlink forest" approach.
+
+Now that I prefer that, i want to switch back to indirect mode. The problem is, when I did that, I realized that some files in the repo were not writable by my user, and git annex indirect crashed, and didn't "indirect" all the files. Now the repo is in a "half-direct" state, and I seem to be unable to recover.
+
+### What steps will reproduce the problem?
+
+[[!format txt """
+git init
+git annex init
+git annex direct
+git annex add . # make sure some files are not writable by your user
+git annex indirect
+"""]]
+
+The `indirect` step will stop at the file that is not writable and will fail to move some files to `.git/annex`. And then the repo is in `indirect` mode yet some files are still not symlinks.
+
+Doing a `git annex direct` will try to commit all those nasty files into git, as it does a `git commit -a`.
+
+### What version of git-annex are you using? On what operating system?
+
+    git-annex version: 4.20130912-ga1faca3
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS Feeds Quvi
+
+Debian wheezy.
+
+### Please provide any additional information below.
+
+Ideally, there would be a way to just tell git annex it's really still in direct mode and migrate the remaining files.
+
+The workaround is, obviously, to make sure you own all those files before messing around:
+
+    chown -R you *
+    chmod -R u+w *
+
+A [[patch]], maybe, that allows you to flip cleanly between the two modes:
+
+[[!format diff """
+From a21dfc97da96883b2a088bb5f3f466296f08d858 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Antoine=20Beaupr=C3=A9?= <anarcat@koumbit.org>
+Date: Mon, 16 Sep 2013 13:58:29 -0400
+Subject: [PATCH] do not commit -a when going back to direct mode
+
+without this, if we switched to indirect mode but failed doing so
+(because of a permission problem, for example), going back to
+direct mode will commit all files to git, which we really want 
+to avoid.
+
+---
+ Command/Direct.hs |    1 -
+ 1 file changed, 1 deletion(-)
+
+diff --git a/Command/Direct.hs b/Command/Direct.hs
+index 7835988..ed8ea6c 100644
+--- a/Command/Direct.hs
++++ b/Command/Direct.hs
+@@ -33,7 +33,6 @@ perform = do
+        showOutput
+        _ <- inRepo $ Git.Command.runBool
+                [ Param "commit"
+-               , Param "-a"
+                , Param "-m"
+                , Param "commit before switching to direct mode"
+                ]
+--
+1.7.10.4
+
+"""]]
+
+Any update on this? Why is `-a` used here? -- [[anarcat]]
+
+> -a is not really the problem. You certainly do usually want
+> to commit your changes before converting to direct mode.
+> 
+> [[done]]; now when this happens it catches the exception and 
+> leaves the file in direct mode, which is the same as it being
+> unlocked. --[[Joey]]

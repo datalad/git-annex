@@ -1,0 +1,42 @@
+This special remote type stores file contents in a WebDAV server.
+
+## configuration
+
+The environment variables `WEBDAV_USERNAME` and `WEBDAV_PASSWORD` are used
+to supply login credentials. You need to set these only when running
+`git annex initremote`, as they will be cached in a file only you 
+can read inside the local git repository.
+
+A number of parameters can be passed to `git annex initremote` to configure
+the webdav remote.
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]].
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
+
+* `embedcreds` - Optional. Set to "yes" embed the login credentials inside
+  the git repository, which allows other clones to also access them. This is
+  the default when gpg encryption is enabled; the credentials are stored
+  encrypted and only those with the repository's keys can access them.
+
+  It is not the default when using shared encryption, or no encryption.
+  Think carefully about who can access your repository before using
+  embedcreds without gpg encryption.
+
+* `url` - Required. The URL to the WebDAV directory where files will be
+  stored. This can be a subdirectory of a larger WebDAV repository, and will
+  be created as needed. Use of a https URL is strongly
+  encouraged, since HTTP basic authentication is used.
+
+* `chunksize` - Avoid storing files larger than the specified size in
+  WebDAV. For use when the WebDAV server has file size
+  limitations. The default is to never chunk files.  
+  The value can use specified using any commonly used units.
+  Example: `chunksize=75 megabytes`  
+  Note that enabling chunking on an existing remote with non-chunked
+  files is not recommended.
+
+Setup example:
+
+	# WEBDAV_USERNAME=joey@kitenet.net WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://www.box.com/dav/git-annex chunksize=75mb keyid=joey@kitenet.net

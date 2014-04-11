@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk_W9oOMDiBaU_xLIbeaTF8wW2wJzJ7bfw"
+ nickname="Christopher"
+ subject="comment 5"
+ date="2014-01-01T16:37:38Z"
+ content="""
+Ok, so, looking into it a little more I think I've found that I screwed up updating a ref, so I didn't reset synced/master like I thought I did.
+
+So, I don't know why it chose to make this choice in the first place, but I was able to reset and manually change my way around it.
+
+That being said, I don't want to do this a lot, because I'm not fully clear on what the synced branches represent.
+Is it that, on repo1, repo2/synced/master is the last thing that pushed over, and that after a sync local synced/master is always master, and before that it's the last sync to anywhere?
+
+How safe is it to screw around with these things?
+"""]]

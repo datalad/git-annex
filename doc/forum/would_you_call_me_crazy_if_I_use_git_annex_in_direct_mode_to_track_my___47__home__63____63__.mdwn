@@ -1,0 +1,7 @@
+Hello people :)
+
+I'm learning to use git annex and I'm doing some tests to know how it works from an user point of view... My big goal would be to use git annex to track my entire /home directory in direct mode, so I would be able to sync my main computer with my laptop in a really effective way. But of course I feel some fear because things could go wrong and of course I have lots of important files I can't lose —nothing really important since I'll backup that /home in an external hard drive, but it would make me cry if I have to spend some hours restoring my /home :S
+
+So, do you think that tracking all the /home would be a reasonable goal?
+
+Thanks a lot for your time :)

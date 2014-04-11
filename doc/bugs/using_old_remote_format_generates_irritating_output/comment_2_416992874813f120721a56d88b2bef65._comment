@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.252.11.120"
+ subject="comment 2"
+ date="2012-11-13T17:27:31Z"
+ content="""
+So, I don't know how to suppress this message without causing worse problems, like suppressing real error messages, and even password prompts.
+
+"""]]

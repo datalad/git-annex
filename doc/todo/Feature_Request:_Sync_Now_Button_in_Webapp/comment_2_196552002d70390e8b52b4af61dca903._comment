@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 2"
+ date="2014-03-06T22:12:27Z"
+ content="""
+I've added a \"Sync now\" to the menu for each remote. So can be used to sync with an individual remote, or if picked from the menu for the local repository, it causes it to try to sync with every one if its remotes at once.
+"""]]

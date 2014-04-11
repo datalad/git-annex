@@ -1,0 +1,415 @@
+From a908cec3ae1644d72d04ccc7657433d8335665bc Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Sat, 8 Feb 2014 17:11:05 +0000
+Subject: [PATCH] expand TH
+
+---
+ DAV.cabal                       |   24 +---
+ Network/Protocol/HTTP/DAV.hs    |   96 ++++++++++++----
+ Network/Protocol/HTTP/DAV/TH.hs |  232 ++++++++++++++++++++++++++++++++++++++-
+ 3 files changed, 307 insertions(+), 45 deletions(-)
+
+diff --git a/DAV.cabal b/DAV.cabal
+index 3a755bb..748b0e1 100644
+--- a/DAV.cabal
++++ b/DAV.cabal
+@@ -42,29 +42,7 @@ library
+                      , transformers-base
+                      , xml-conduit >= 1.0          && <= 1.2
+                      , xml-hamlet >= 0.4           && <= 0.5
+-executable hdav
+-  main-is:           hdav.hs
+-  ghc-options:       -Wall
+-  build-depends:       base >= 4.5                 && <= 5
+-                     , bytestring
+-                     , bytestring
+-                     , case-insensitive >= 0.4
+-                     , containers
+-                     , either >= 4.1
+-                     , errors
+-                     , http-client >= 0.2
+-                     , http-client-tls >= 0.2
+-                     , http-types >= 0.7
+-                     , lens >= 3.0
+-                     , lifted-base >= 0.1
+-                     , monad-control >= 0.3.2
+-                     , mtl >= 2.1
+-                     , network >= 2.3
+-                     , optparse-applicative >= 0.5.0
+-                     , transformers >= 0.3
+-                     , transformers-base
+-                     , xml-conduit >= 1.0          && <= 1.2
+-                     , xml-hamlet >= 0.4           && <= 0.5
++                     , text
+ 
+ source-repository head
+   type:     git
+diff --git a/Network/Protocol/HTTP/DAV.hs b/Network/Protocol/HTTP/DAV.hs
+index 94d21bc..c48618f 100644
+--- a/Network/Protocol/HTTP/DAV.hs
++++ b/Network/Protocol/HTTP/DAV.hs
+@@ -78,7 +78,7 @@ import Network.HTTP.Types (hContentType, Method, Status, RequestHeaders, unautho
+ 
+ import qualified Text.XML as XML
+ import Text.XML.Cursor (($/), (&/), element, node, fromDocument, checkName)
+-import Text.Hamlet.XML (xml)
++import qualified Data.Text
+ 
+ import Data.CaseInsensitive (mk)
+ 
+@@ -336,28 +336,84 @@ makeCollection url username password = choke $ evalDAVT url $ do
+ propname :: XML.Document
+ propname = XML.Document (XML.Prologue [] Nothing []) root []
+     where
+-        root = XML.Element "D:propfind" (Map.fromList [("xmlns:D", "DAV:")]) [xml|
+-<D:allprop>
+-|]
+-
++        root = XML.Element "D:propfind" (Map.fromList [("xmlns:D", "DAV:")])  $         concat
++          [[XML.NodeElement
++              (XML.Element
++                 (XML.Name
++                    (Data.Text.pack "D:allprop") Nothing Nothing)
++                 Map.empty
++                 (concat []))]]
+ locky :: XML.Document
+ locky = XML.Document (XML.Prologue [] Nothing []) root []
+-    where
+-        root = XML.Element "D:lockinfo" (Map.fromList [("xmlns:D", "DAV:")]) [xml|
+-<D:lockscope>
+-  <D:exclusive>
+-<D:locktype>
+-  <D:write>
+-<D:owner>Haskell DAV user
+-|]
++ where
++  root = XML.Element "D:lockinfo" (Map.fromList [("xmlns:D", "DAV:")])  $ concat
++   [[XML.NodeElement
++       (XML.Element
++          (XML.Name
++             (Data.Text.pack "D:lockscope") Nothing Nothing)
++          Map.empty
++          (concat
++             [[XML.NodeElement
++                 (XML.Element
++                    (XML.Name
++                       (Data.Text.pack "D:exclusive") Nothing Nothing)
++                    Map.empty
++                    (concat []))]]))],
++    [XML.NodeElement
++       (XML.Element
++          (XML.Name
++             (Data.Text.pack "D:locktype") Nothing Nothing)
++          Map.empty
++          (concat
++             [[XML.NodeElement
++                 (XML.Element
++                    (XML.Name (Data.Text.pack "D:write") Nothing Nothing)
++                    Map.empty
++                    (concat []))]]))],
++    [XML.NodeElement
++       (XML.Element
++          (XML.Name (Data.Text.pack "D:owner") Nothing Nothing)
++          Map.empty
++          (concat
++             [[XML.NodeContent
++                 (Data.Text.pack "Haskell DAV user")]]))]]
++
+ 
+ calendarquery :: XML.Document
+ calendarquery = XML.Document (XML.Prologue [] Nothing []) root []
+     where
+-        root = XML.Element "C:calendar-query" (Map.fromList [("xmlns:D", "DAV:"),("xmlns:C", "urn:ietf:params:xml:ns:caldav")]) [xml|
+-<D:prop>
+-  <D:getetag>
+-  <C:calendar-data>
+-<C:filter>
+-  <C:comp-filter name="VCALENDAR">
+-|]
++        root = XML.Element "C:calendar-query" (Map.fromList [("xmlns:D", "DAV:"),("xmlns:C", "urn:ietf:params:xml:ns:caldav")])  $         concat
++          [[XML.NodeElement
++              (XML.Element
++                 (XML.Name (Data.Text.pack "D:prop") Nothing Nothing)
++                 Map.empty
++                 (concat
++                    [[XML.NodeElement
++                        (XML.Element
++                           (XML.Name
++                              (Data.Text.pack "D:getetag") Nothing Nothing)
++                           Map.empty
++                           (concat []))],
++                     [XML.NodeElement
++                        (XML.Element
++                           (XML.Name
++                              (Data.Text.pack "C:calendar-data") Nothing Nothing)
++                           Map.empty
++                           (concat []))]]))],
++           [XML.NodeElement
++              (XML.Element
++                 (XML.Name
++                    (Data.Text.pack "C:filter") Nothing Nothing)
++                 Map.empty
++                 (concat
++                    [[XML.NodeElement
++                        (XML.Element
++                           (XML.Name
++                              (Data.Text.pack "C:comp-filter") Nothing Nothing)
++                           (Map.insert
++                              (XML.Name (Data.Text.pack "name") Nothing Nothing)
++                              (Data.Text.concat
++                                 [Data.Text.pack "VCALENDAR"])
++                              Map.empty)
++                           (concat []))]]))]]
++
+diff --git a/Network/Protocol/HTTP/DAV/TH.hs b/Network/Protocol/HTTP/DAV/TH.hs
+index b072116..5a01bf9 100644
+--- a/Network/Protocol/HTTP/DAV/TH.hs
++++ b/Network/Protocol/HTTP/DAV/TH.hs
+@@ -20,9 +20,11 @@
+ 
+ module Network.Protocol.HTTP.DAV.TH where
+ 
+-import Control.Lens (makeLenses)
++import Control.Lens
+ import qualified Data.ByteString as B
+ import Network.HTTP.Client (Manager, Request)
++import qualified Control.Lens.Type
++import qualified Data.Functor
+ 
+ data Depth = Depth0 | Depth1 | DepthInfinity
+ instance Read Depth where
+@@ -47,4 +49,230 @@ data DAVContext = DAVContext {
+   , _lockToken :: Maybe B.ByteString
+   , _userAgent :: B.ByteString
+ }
+-makeLenses ''DAVContext
++allowedMethods :: Control.Lens.Type.Lens' DAVContext [B.ByteString]
++allowedMethods
++  _f_a2PF
++  (DAVContext __allowedMethods'_a2PG
++              __baseRequest_a2PI
++              __basicusername_a2PJ
++              __basicpassword_a2PK
++              __complianceClasses_a2PL
++              __depth_a2PM
++              __httpManager_a2PN
++              __lockToken_a2PO
++              __userAgent_a2PP)
++  = ((\ __allowedMethods_a2PH
++        -> DAVContext
++             __allowedMethods_a2PH
++             __baseRequest_a2PI
++             __basicusername_a2PJ
++             __basicpassword_a2PK
++             __complianceClasses_a2PL
++             __depth_a2PM
++             __httpManager_a2PN
++             __lockToken_a2PO
++             __userAgent_a2PP)
++     Data.Functor.<$> (_f_a2PF __allowedMethods'_a2PG))
++{-# INLINE allowedMethods #-}
++baseRequest :: Control.Lens.Type.Lens' DAVContext Request
++baseRequest
++  _f_a2PQ
++  (DAVContext __allowedMethods_a2PR
++              __baseRequest'_a2PS
++              __basicusername_a2PU
++              __basicpassword_a2PV
++              __complianceClasses_a2PW
++              __depth_a2PX
++              __httpManager_a2PY
++              __lockToken_a2PZ
++              __userAgent_a2Q0)
++  = ((\ __baseRequest_a2PT
++        -> DAVContext
++             __allowedMethods_a2PR
++             __baseRequest_a2PT
++             __basicusername_a2PU
++             __basicpassword_a2PV
++             __complianceClasses_a2PW
++             __depth_a2PX
++             __httpManager_a2PY
++             __lockToken_a2PZ
++             __userAgent_a2Q0)
++     Data.Functor.<$> (_f_a2PQ __baseRequest'_a2PS))
++{-# INLINE baseRequest #-}
++basicpassword :: Control.Lens.Type.Lens' DAVContext B.ByteString
++basicpassword
++  _f_a2Q1
++  (DAVContext __allowedMethods_a2Q2
++              __baseRequest_a2Q3
++              __basicusername_a2Q4
++              __basicpassword'_a2Q5
++              __complianceClasses_a2Q7
++              __depth_a2Q8
++              __httpManager_a2Q9
++              __lockToken_a2Qa
++              __userAgent_a2Qb)
++  = ((\ __basicpassword_a2Q6
++        -> DAVContext
++             __allowedMethods_a2Q2
++             __baseRequest_a2Q3
++             __basicusername_a2Q4
++             __basicpassword_a2Q6
++             __complianceClasses_a2Q7
++             __depth_a2Q8
++             __httpManager_a2Q9
++             __lockToken_a2Qa
++             __userAgent_a2Qb)
++     Data.Functor.<$> (_f_a2Q1 __basicpassword'_a2Q5))
++{-# INLINE basicpassword #-}
++basicusername :: Control.Lens.Type.Lens' DAVContext B.ByteString
++basicusername
++  _f_a2Qc
++  (DAVContext __allowedMethods_a2Qd
++              __baseRequest_a2Qe
++              __basicusername'_a2Qf
++              __basicpassword_a2Qh
++              __complianceClasses_a2Qi
++              __depth_a2Qj
++              __httpManager_a2Qk
++              __lockToken_a2Ql
++              __userAgent_a2Qm)
++  = ((\ __basicusername_a2Qg
++        -> DAVContext
++             __allowedMethods_a2Qd
++             __baseRequest_a2Qe
++             __basicusername_a2Qg
++             __basicpassword_a2Qh
++             __complianceClasses_a2Qi
++             __depth_a2Qj
++             __httpManager_a2Qk
++             __lockToken_a2Ql
++             __userAgent_a2Qm)
++     Data.Functor.<$> (_f_a2Qc __basicusername'_a2Qf))
++{-# INLINE basicusername #-}
++complianceClasses ::
++  Control.Lens.Type.Lens' DAVContext [B.ByteString]
++complianceClasses
++  _f_a2Qn
++  (DAVContext __allowedMethods_a2Qo
++              __baseRequest_a2Qp
++              __basicusername_a2Qq
++              __basicpassword_a2Qr
++              __complianceClasses'_a2Qs
++              __depth_a2Qu
++              __httpManager_a2Qv
++              __lockToken_a2Qw
++              __userAgent_a2Qx)
++  = ((\ __complianceClasses_a2Qt
++        -> DAVContext
++             __allowedMethods_a2Qo
++             __baseRequest_a2Qp
++             __basicusername_a2Qq
++             __basicpassword_a2Qr
++             __complianceClasses_a2Qt
++             __depth_a2Qu
++             __httpManager_a2Qv
++             __lockToken_a2Qw
++             __userAgent_a2Qx)
++     Data.Functor.<$> (_f_a2Qn __complianceClasses'_a2Qs))
++{-# INLINE complianceClasses #-}
++depth :: Control.Lens.Type.Lens' DAVContext (Maybe Depth)
++depth
++  _f_a2Qy
++  (DAVContext __allowedMethods_a2Qz
++              __baseRequest_a2QA
++              __basicusername_a2QB
++              __basicpassword_a2QC
++              __complianceClasses_a2QD
++              __depth'_a2QE
++              __httpManager_a2QG
++              __lockToken_a2QH
++              __userAgent_a2QI)
++  = ((\ __depth_a2QF
++        -> DAVContext
++             __allowedMethods_a2Qz
++             __baseRequest_a2QA
++             __basicusername_a2QB
++             __basicpassword_a2QC
++             __complianceClasses_a2QD
++             __depth_a2QF
++             __httpManager_a2QG
++             __lockToken_a2QH
++             __userAgent_a2QI)
++     Data.Functor.<$> (_f_a2Qy __depth'_a2QE))
++{-# INLINE depth #-}
++httpManager :: Control.Lens.Type.Lens' DAVContext Manager
++httpManager
++  _f_a2QJ
++  (DAVContext __allowedMethods_a2QK
++              __baseRequest_a2QL
++              __basicusername_a2QM
++              __basicpassword_a2QN
++              __complianceClasses_a2QO
++              __depth_a2QP
++              __httpManager'_a2QQ
++              __lockToken_a2QS
++              __userAgent_a2QT)
++  = ((\ __httpManager_a2QR
++        -> DAVContext
++             __allowedMethods_a2QK
++             __baseRequest_a2QL
++             __basicusername_a2QM
++             __basicpassword_a2QN
++             __complianceClasses_a2QO
++             __depth_a2QP
++             __httpManager_a2QR
++             __lockToken_a2QS
++             __userAgent_a2QT)
++     Data.Functor.<$> (_f_a2QJ __httpManager'_a2QQ))
++{-# INLINE httpManager #-}
++lockToken ::
++  Control.Lens.Type.Lens' DAVContext (Maybe B.ByteString)
++lockToken
++  _f_a2QU
++  (DAVContext __allowedMethods_a2QV
++              __baseRequest_a2QW
++              __basicusername_a2QX
++              __basicpassword_a2QY
++              __complianceClasses_a2QZ
++              __depth_a2R0
++              __httpManager_a2R1
++              __lockToken'_a2R2
++              __userAgent_a2R4)
++  = ((\ __lockToken_a2R3
++        -> DAVContext
++             __allowedMethods_a2QV
++             __baseRequest_a2QW
++             __basicusername_a2QX
++             __basicpassword_a2QY
++             __complianceClasses_a2QZ
++             __depth_a2R0
++             __httpManager_a2R1
++             __lockToken_a2R3
++             __userAgent_a2R4)
++     Data.Functor.<$> (_f_a2QU __lockToken'_a2R2))
++{-# INLINE lockToken #-}
++userAgent :: Control.Lens.Type.Lens' DAVContext B.ByteString
++userAgent
++  _f_a2R5
++  (DAVContext __allowedMethods_a2R6
++              __baseRequest_a2R7
++              __basicusername_a2R8
++              __basicpassword_a2R9
++              __complianceClasses_a2Ra
++              __depth_a2Rb
++              __httpManager_a2Rc
++              __lockToken_a2Rd
++              __userAgent'_a2Re)
++  = ((\ __userAgent_a2Rf
++        -> DAVContext
++             __allowedMethods_a2R6
++             __baseRequest_a2R7
++             __basicusername_a2R8
++             __basicpassword_a2R9
++             __complianceClasses_a2Ra
++             __depth_a2Rb
++             __httpManager_a2Rc
++             __lockToken_a2Rd
++             __userAgent_a2Rf)
++     Data.Functor.<$> (_f_a2R5 __userAgent'_a2Re))
++{-# INLINE userAgent #-}
+-- 
+1.7.10.4
+

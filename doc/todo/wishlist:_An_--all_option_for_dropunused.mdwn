@@ -1,0 +1,4 @@
+Cleaning out a repository is presently a fairly manual process.  Am I missing a UI trick?  "dropunsed" with no arguments prints nothing at all; I think in that case it should display the list of what could be dropped.
+
+> [[done]]; comments seem satisfactory and I see no reason to complicate
+> dropunused to output something unused already outputs. --[[Joey]]

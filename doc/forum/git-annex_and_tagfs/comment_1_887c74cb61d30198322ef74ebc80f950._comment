@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.210"
+ subject="comment 1"
+ date="2013-02-24T21:52:41Z"
+ content="""
+I welcome people doing this kind of thing with git-annex. Since you can have multiple files linking to the same content easily, it should be a reasonable platform with which to build something like this.
+"""]]

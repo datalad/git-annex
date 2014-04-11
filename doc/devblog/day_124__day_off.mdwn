@@ -1,0 +1,13 @@
+Did not plan to work on git-annex today..
+
+Unexpectedly ended up making the webapp support HTTPS. Not by default,
+but if a key and certificate are provided, it'll use them. Great for
+using the webapp remotely! See the new tip: [[tips/remote_webapp_setup]].
+
+Also removed support for --listen with a port, which was buggy and not
+necessary with HTTPS.
+
+Also fixed several webapp/assistant bugs, including one that let it be run in
+a bare git repository.
+
+And, made the quvi version be probed at runtime, rather than compile time.

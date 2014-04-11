@@ -1,0 +1,189 @@
+From 753f8ce37e096a343f1dd02a696a287bc91c24a0 Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Thu, 6 Mar 2014 22:34:03 +0000
+Subject: [PATCH] remove TH
+
+---
+ Text/Shakespeare.hs      | 73 ++++++++++--------------------------------------
+ Text/Shakespeare/Base.hs | 28 -------------------
+ 2 files changed, 14 insertions(+), 87 deletions(-)
+
+diff --git a/Text/Shakespeare.hs b/Text/Shakespeare.hs
+index 68e344f..aef741c 100644
+--- a/Text/Shakespeare.hs
++++ b/Text/Shakespeare.hs
+@@ -14,17 +14,20 @@ module Text.Shakespeare
+     , WrapInsertion (..)
+     , PreConversion (..)
+     , defaultShakespeareSettings
+-    , shakespeare
+-    , shakespeareFile
+-    , shakespeareFileReload
++    -- , shakespeare
++    -- , shakespeareFile
++    -- , shakespeareFileReload
+     -- * low-level
+-    , shakespeareFromString
+-    , shakespeareUsedIdentifiers
++    -- , shakespeareFromString
++    -- , shakespeareUsedIdentifiers
+     , RenderUrl
+     , VarType (..)
+     , Deref
+     , Parser
+ 
++    -- used by TH
++    , pack'
++
+ #ifdef TEST_EXPORT
+     , preFilter
+ #endif
+@@ -154,38 +157,6 @@ defaultShakespeareSettings = ShakespeareSettings {
+   , modifyFinalValue = Nothing
+ }
+ 
+-instance Lift PreConvert where
+-    lift (PreConvert convert ignore comment wrapInsertion) =
+-        [|PreConvert $(lift convert) $(lift ignore) $(lift comment) $(lift wrapInsertion)|]
+-
+-instance Lift WrapInsertion where
+-    lift (WrapInsertion indent sb sep sc e wp) =
+-        [|WrapInsertion $(lift indent) $(lift sb) $(lift sep) $(lift sc) $(lift e) $(lift wp)|]
+-
+-instance Lift PreConversion where
+-    lift (ReadProcess command args) =
+-        [|ReadProcess $(lift command) $(lift args)|]
+-    lift Id = [|Id|]
+-
+-instance Lift ShakespeareSettings where
+-    lift (ShakespeareSettings x1 x2 x3 x4 x5 x6 x7 x8 x9) =
+-        [|ShakespeareSettings
+-            $(lift x1) $(lift x2) $(lift x3)
+-            $(liftExp x4) $(liftExp x5) $(liftExp x6) $(lift x7) $(lift x8) $(liftMExp x9)|]
+-      where
+-        liftExp (VarE n) = [|VarE $(liftName n)|]
+-        liftExp (ConE n) = [|ConE $(liftName n)|]
+-        liftExp _ = error "liftExp only supports VarE and ConE"
+-        liftMExp Nothing = [|Nothing|]
+-        liftMExp (Just e) = [|Just|] `appE` liftExp e
+-        liftName (Name (OccName a) b) = [|Name (OccName $(lift a)) $(liftFlavour b)|]
+-        liftFlavour NameS = [|NameS|]
+-        liftFlavour (NameQ (ModName a)) = [|NameQ (ModName $(lift a))|]
+-        liftFlavour (NameU _) = error "liftFlavour NameU" -- [|NameU $(lift $ fromIntegral a)|]
+-        liftFlavour (NameL _) = error "liftFlavour NameL" -- [|NameU $(lift $ fromIntegral a)|]
+-        liftFlavour (NameG ns (PkgName p) (ModName m)) = [|NameG $(liftNS ns) (PkgName $(lift p)) (ModName $(lift m))|]
+-        liftNS VarName = [|VarName|]
+-        liftNS DataName = [|DataName|]
+ 
+ type QueryParameters = [(TS.Text, TS.Text)]
+ type RenderUrl url = (url -> QueryParameters -> TS.Text)
+@@ -349,6 +320,7 @@ pack' = TS.pack
+ {-# NOINLINE pack' #-}
+ #endif
+ 
++{-
+ contentsToShakespeare :: ShakespeareSettings -> [Content] -> Q Exp
+ contentsToShakespeare rs a = do
+     r <- newName "_render"
+@@ -400,16 +372,19 @@ shakespeareFile r fp =
+     qAddDependentFile fp >>
+ #endif
+         readFileQ fp >>= shakespeareFromString r
++-}
+ 
+ data VarType = VTPlain | VTUrl | VTUrlParam | VTMixin
+     deriving (Show, Eq, Ord, Enum, Bounded, Typeable, Data, Generic)
+ 
++{-
+ getVars :: Content -> [(Deref, VarType)]
+ getVars ContentRaw{} = []
+ getVars (ContentVar d) = [(d, VTPlain)]
+ getVars (ContentUrl d) = [(d, VTUrl)]
+ getVars (ContentUrlParam d) = [(d, VTUrlParam)]
+ getVars (ContentMix d) = [(d, VTMixin)]
++-}
+ 
+ data VarExp url = EPlain Builder
+                 | EUrl url
+@@ -418,8 +393,10 @@ data VarExp url = EPlain Builder
+ 
+ -- | Determine which identifiers are used by the given template, useful for
+ -- creating systems like yesod devel.
++{-
+ shakespeareUsedIdentifiers :: ShakespeareSettings -> String -> [(Deref, VarType)]
+ shakespeareUsedIdentifiers settings = concatMap getVars . contentFromString settings
++-}
+ 
+ type MTime = UTCTime
+ 
+@@ -436,28 +413,6 @@ insertReloadMap :: FilePath -> (MTime, [Content]) -> IO [Content]
+ insertReloadMap fp (mt, content) = atomicModifyIORef reloadMapRef
+   (\reloadMap -> (M.insert fp (mt, content) reloadMap, content))
+ 
+-shakespeareFileReload :: ShakespeareSettings -> FilePath -> Q Exp
+-shakespeareFileReload settings fp = do
+-    str <- readFileQ fp
+-    s <- qRunIO $ preFilter (Just fp) settings str
+-    let b = shakespeareUsedIdentifiers settings s
+-    c <- mapM vtToExp b
+-    rt <- [|shakespeareRuntime settings fp|]
+-    wrap' <- [|\x -> $(return $ wrap settings) . x|]
+-    return $ wrap' `AppE` (rt `AppE` ListE c)
+-  where
+-    vtToExp :: (Deref, VarType) -> Q Exp
+-    vtToExp (d, vt) = do
+-        d' <- lift d
+-        c' <- c vt
+-        return $ TupE [d', c' `AppE` derefToExp [] d]
+-      where
+-        c :: VarType -> Q Exp
+-        c VTPlain = [|EPlain . $(return $
+-          InfixE (Just $ unwrap settings) (VarE '(.)) (Just $ toBuilder settings))|]
+-        c VTUrl = [|EUrl|]
+-        c VTUrlParam = [|EUrlParam|]
+-        c VTMixin = [|\x -> EMixin $ \r -> $(return $ unwrap settings) $ x r|]
+ 
+ 
+ 
+diff --git a/Text/Shakespeare/Base.hs b/Text/Shakespeare/Base.hs
+index a0e983c..23b4692 100644
+--- a/Text/Shakespeare/Base.hs
++++ b/Text/Shakespeare/Base.hs
+@@ -52,34 +52,6 @@ data Deref = DerefModulesIdent [String] Ident
+            | DerefTuple [Deref]
+     deriving (Show, Eq, Read, Data, Typeable, Ord)
+ 
+-instance Lift Ident where
+-    lift (Ident s) = [|Ident|] `appE` lift s
+-instance Lift Deref where
+-    lift (DerefModulesIdent v s) = do
+-        dl <- [|DerefModulesIdent|]
+-        v' <- lift v
+-        s' <- lift s
+-        return $ dl `AppE` v' `AppE` s'
+-    lift (DerefIdent s) = do
+-        dl <- [|DerefIdent|]
+-        s' <- lift s
+-        return $ dl `AppE` s'
+-    lift (DerefBranch x y) = do
+-        x' <- lift x
+-        y' <- lift y
+-        db <- [|DerefBranch|]
+-        return $ db `AppE` x' `AppE` y'
+-    lift (DerefIntegral i) = [|DerefIntegral|] `appE` lift i
+-    lift (DerefRational r) = do
+-        n <- lift $ numerator r
+-        d <- lift $ denominator r
+-        per <- [|(%) :: Int -> Int -> Ratio Int|]
+-        dr <- [|DerefRational|]
+-        return $ dr `AppE` InfixE (Just n) per (Just d)
+-    lift (DerefString s) = [|DerefString|] `appE` lift s
+-    lift (DerefList x) = [|DerefList $(lift x)|]
+-    lift (DerefTuple x) = [|DerefTuple $(lift x)|]
+-
+ derefParens, derefCurlyBrackets :: UserParser a Deref
+ derefParens        = between (char '(') (char ')') parseDeref
+ derefCurlyBrackets = between (char '{') (char '}') parseDeref
+-- 
+1.9.0
+

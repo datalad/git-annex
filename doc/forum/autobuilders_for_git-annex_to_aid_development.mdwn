@@ -1,0 +1,34 @@
+This is a continuation of the conversation from [[the comments|design/assistant/#comment-77e54e7ebfbd944c370173014b535c91]] section in the design of git-assistant. In summary, I've setup an auto builder which should help [[Joey]] have an easier time developing on git-annex on non-linux/debian platforms. This builder is currently running on OSX 10.7 with the 64bit version of Haskell Platform.
+
+The builder output can be found at <http://www.sgenomics.org/~jtang/gitbuilder-git-annex-x00-x86_64-apple-darwin10.8.0/>, the CGI on this site does not work as my OSX workstation is pushing the output from another location.
+
+The builder currently tries to build all branches except 
+
+* debian-stable
+* pristine-tar
+* setup
+
+It also does not build any of the tags as well, Joey had suggested to ignore the bpo named tags, but for now it's easier for me to not build any tags. To continue on this discussion, if anyone wants to setup a gitbuilder instance, here is the build.sh script that I am using.
+
+<pre>
+#!/bin/bash -x
+
+# Macports
+export PATH=/opt/local/bin:$PATH
+
+# Haskell userland
+export PATH=$PATH:$HOME/.cabal/bin
+
+# Macports gnu
+export PATH=/opt/local/libexec/gnubin:$PATH
+
+make || exit 3
+
+make -q test
+if [ "$?" = 1 ]; then
+        # run "make test", but give it a time limit in case a test gets stuck
+        ../maxtime 1800 make test || exit 4
+fi
+</pre>
+
+It's also using the branches-local script for sorting and prioritising the branches to build, this branches-local script can be found at the [autobuild-ceph](https://github.com/ceph/autobuild-ceph/blob/master/branches-local) repository. If there are other people interested in setting up their own instances of gitbuilder for git-annex, please let me know and I will setup an aggregator page to collect status of the builds. The builder runs and updates on a very regular basis.

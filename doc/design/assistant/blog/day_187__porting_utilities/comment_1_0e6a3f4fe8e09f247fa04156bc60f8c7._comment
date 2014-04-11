@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://a-or-b.myopenid.com/"
+ ip="203.45.2.230"
+ subject="comment 1"
+ date="2013-02-13T22:16:17Z"
+ content="""
+In addition to dropbear, there is ConnectBot <https://code.google.com/p/connectbot/> which might make the ssh side of the equation simpler.  I prefer it because it is half the size of dropbear.
+"""]]

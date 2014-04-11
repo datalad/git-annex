@@ -1,0 +1,54 @@
+Built a `git-recover-repository` command today. So far it only does the
+detection and deletion of corrupt objects, and retrieves them from remotes
+when possible. No handling yet of missing objects that cannot be recovered
+from remotes.
+
+Here's a couple of sample runs where I do bad things to the git
+repository and it fixes them:
+
+<pre>
+joey@darkstar:~/tmp/git-annex>chmod 644 .git/objects/pack/*
+joey@darkstar:~/tmp/git-annex>echo > .git/objects/pack/pack-a1a770c1569ac6e2746f85573adc59477b96ebc5.pack 
+joey@darkstar:~/tmp/git-annex>~/src/git-annex/git-recover-repository 
+Running git fsck ...
+git fsck found a problem but no specific broken objects. Perhaps a corrupt pack file? Unpacking all pack files.
+fatal: early EOF
+Unpacking objects: 100% (148/148), done.
+Unpacking objects: 100% (354/354), done.
+Re-running git fsck to see if it finds more problems.
+Re-running git fsck to see if it finds more problems.
+Initialized empty Git repository in /home/joey/tmp/tmprepo.0/.git/
+Trying to recover missing objects from remote origin
+Successfully recovered repository!
+You should run "git fsck" to make sure, but it looks like
+everything was recovered ok.
+</pre>
+
+----
+
+<pre>
+joey@darkstar:~/tmp/git-annex>chmod 644 .git/objects/00/0800742987b9f9c34caea512b413e627dd718e
+joey@darkstar:~/tmp/git-annex>echo > .git/objects/00/0800742987b9f9c34caea512b413e627dd718e
+joey@darkstar:~/tmp/git-annex>~/src/git-annex/git-recover-repository 
+Running git fsck ...
+error: unable to unpack 000800742987b9f9c34caea512b413e627dd718e header
+error: inflateEnd: stream consistency error (no message)
+error: unable to unpack 000800742987b9f9c34caea512b413e627dd718e header
+error: inflateEnd: stream consistency error (no message)
+git fsck found 1 broken objects. Unpacking all pack files.
+removing 1 corrupt loose objects
+Re-running git fsck to see if it finds more problems.
+Re-running git fsck to see if it finds more problems.
+Initialized empty Git repository in /home/joey/tmp/tmprepo.0/.git/
+Trying to recover missing objects from remote origin
+Successfully recovered repository!
+You should run "git fsck" to make sure, but it looks like
+everything was recovered ok.
+</pre>
+
+Works great! I need to move this and `git-union-merge` out of the git-annex
+source tree sometime.
+
+----
+
+Today's work was sponsored by Francois Marier.

@@ -1,0 +1,10 @@
+Hacking on a bus to Canberra for [LCA2013](https://lca2013.linux.org.au/),
+I made the webapp's UI for pausing syncing to a repository also work for
+the local repository. This pauses the watcher thread. (There's also an
+annex.autocommit config setting for this.)
+
+Ironically, this didn't turn out to the use the thread manager I built
+yesterday. I am not sure that a ThreadKilled exception would never be
+masked in the watcher thread. (There is some overly broad exception
+handling in git-annex that dates to back before I quite understood haskell
+exceptions.)

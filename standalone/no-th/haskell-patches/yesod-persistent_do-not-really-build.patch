@@ -1,0 +1,26 @@
+From 03819615edb1c5f7414768dae84234d6791bd758 Mon Sep 17 00:00:00 2001
+From: foo <foo@bar>
+Date: Sun, 22 Sep 2013 04:11:46 +0000
+Subject: [PATCH] do not really build
+
+---
+ yesod-persistent.cabal |    3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
+
+diff --git a/yesod-persistent.cabal b/yesod-persistent.cabal
+index 98c2146..11960cf 100644
+--- a/yesod-persistent.cabal
++++ b/yesod-persistent.cabal
+@@ -23,8 +23,7 @@ library
+                    , lifted-base
+                    , pool-conduit
+                    , resourcet
+-    exposed-modules: Yesod.Persist
+-                     Yesod.Persist.Core
++    exposed-modules: 
+     ghc-options:     -Wall
+ 
+ test-suite test
+-- 
+1.7.10.4
+

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmz8d2M0lQDYWLSbDQSjYRHfrQkWKgPu60"
+ nickname="Alex"
+ subject="re: long polling"
+ date="2014-01-17T20:27:23Z"
+ content="""
+After poking through git-annex, I had the same realization. I hadn't realized that Yesod (or perhaps more accurately, Warp) is asynchronous above the Application level. I had feared I'd need to write some WAI middleware to accommodate the blocking nature of long polling requests. In retrospect it seems kind of silly: what kind of high-performance webserver doesn't handle requests concurrently?
+
+I do still think there's a pattern worth encapsulating, even if it won't be long until WebSockets and SSE are widespread enough to be developed against without fallbacks.
+"""]]

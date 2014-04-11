@@ -1,0 +1,34 @@
+## What steps will reproduce the problem?
+
+I attempt
+
+      cabal install git-annex
+
+(already having installed `c2hs`)
+
+## What is the expected output? What do you see instead?
+
+I get
+
+        $ cabal install git-annex
+        Resolving dependencies...
+        cabal: Could not resolve dependencies:
+        trying: git-annex-3.20130216.1 (user goal)
+        trying: git-annex-3.20130216.1:+webapp
+        trying: git-annex-3.20130216.1:+assistant
+        trying: yesod-1.1.9 (dependency of git-annex-3.20130216.1:+assistant)
+        trying: http-conduit-1.9.0 (dependency of yesod-1.1.9)
+        trying: regex-compat-0.95.1/installed-851... (dependency of
+        http-conduit-1.9.0)
+        next goal: regex-base (dependency of regex-compat-0.95.1/installed-851...)
+        rejecting: regex-base-0.93.2/installed-999... (conflict: regex-base =>
+        mtl==2.0.1.0/installed-db1..., git-annex => mtl(>=2.1.1))
+        rejecting: regex-base-0.93.2, 0.93.1, 0.93, 0.92, 0.91, 0.90, 0.83, 0.72.0.2,
+        0.72.0.1, 0.71 (conflict: regex-compat => regex-base==0.93.2/installed-999...)
+
+> This is a transient version skew in cabal, generally
+> known as "cabal hell". It will be fixed when the libraries
+> involved fix their versioned dependencies, which may have
+> already happened. Precompiled builds of git-annex are provided
+> so I do not have to chase every transient version skew
+> that occurs for every use who runs into it. [[done]] --[[Joey]] 

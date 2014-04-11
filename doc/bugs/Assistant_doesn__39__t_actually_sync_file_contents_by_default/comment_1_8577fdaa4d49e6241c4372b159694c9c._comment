@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://edheil.wordpress.com/"
+ ip="173.162.44.162"
+ subject="comment 1"
+ date="2013-05-20T13:57:59Z"
+ content="""
+just fyi -- *broken* symlinks represent content which git-annex knows about, but is not present on that machine.  They are there even in direct mode.  In indirect mode, content which is present is represented by non-broken symlinks.  In direct mode, content which is present is actual files.
+
+I'm not sure why your setup doesn't work.  It seems as if it would, from your description of it.
+
+Your machines are successfully syncing their knowledge about what files exist (which is stored in git), but not actually transferring the content of those files.  That's why symlinks are showing up (to show that those files exist) but not the content.  I would think numcopies=2 would force that to happen.
+"""]]

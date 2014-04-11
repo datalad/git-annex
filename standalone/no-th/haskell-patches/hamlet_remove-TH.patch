@@ -1,0 +1,205 @@
+From 60d7ac8aa1b3282a06ea7b17680dfc32c61fcbf6 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Thu, 6 Mar 2014 23:19:40 +0000
+Subject: [PATCH] remove TH
+
+---
+ Text/Hamlet.hs       | 86 +++++++++++++++++-----------------------------------
+ Text/Hamlet/Parse.hs |  3 +-
+ 2 files changed, 29 insertions(+), 60 deletions(-)
+
+diff --git a/Text/Hamlet.hs b/Text/Hamlet.hs
+index 9500ecb..ec8471a 100644
+--- a/Text/Hamlet.hs
++++ b/Text/Hamlet.hs
+@@ -11,36 +11,36 @@
+ module Text.Hamlet
+     ( -- * Plain HTML
+       Html
+-    , shamlet
+-    , shamletFile
+-    , xshamlet
+-    , xshamletFile
++    --, shamlet
++    --, shamletFile
++    --, xshamlet
++    --, xshamletFile
+       -- * Hamlet
+     , HtmlUrl
+-    , hamlet
+-    , hamletFile
+-    , hamletFileReload
+-    , ihamletFileReload
+-    , xhamlet
+-    , xhamletFile
++    --, hamlet
++    --, hamletFile
++    --, hamletFileReload
++    --, ihamletFileReload
++    --, xhamlet
++    --, xhamletFile
+       -- * I18N Hamlet
+     , HtmlUrlI18n
+-    , ihamlet
+-    , ihamletFile
++    --, ihamlet
++    --, ihamletFile
+       -- * Type classes
+     , ToAttributes (..)
+       -- * Internal, for making more
+     , HamletSettings (..)
+     , NewlineStyle (..)
+-    , hamletWithSettings
+-    , hamletFileWithSettings
++    --, hamletWithSettings
++    --, hamletFileWithSettings
+     , defaultHamletSettings
+     , xhtmlHamletSettings
+-    , Env (..)
+-    , HamletRules (..)
+-    , hamletRules
+-    , ihamletRules
+-    , htmlRules
++    --, Env (..)
++    --, HamletRules (..)
++    --, hamletRules
++    --, ihamletRules
++    --, htmlRules
+     , CloseStyle (..)
+       -- * Used by generated code
+     , condH
+@@ -110,47 +110,9 @@ type HtmlUrl url = Render url -> Html
+ -- | A function generating an 'Html' given a message translator and a URL rendering function.
+ type HtmlUrlI18n msg url = Translate msg -> Render url -> Html
+ 
+-docsToExp :: Env -> HamletRules -> Scope -> [Doc] -> Q Exp
+-docsToExp env hr scope docs = do
+-    exps <- mapM (docToExp env hr scope) docs
+-    case exps of
+-        [] -> [|return ()|]
+-        [x] -> return x
+-        _ -> return $ DoE $ map NoBindS exps
+-
+ unIdent :: Ident -> String
+ unIdent (Ident s) = s
+ 
+-bindingPattern :: Binding -> Q (Pat, [(Ident, Exp)])
+-bindingPattern (BindAs i@(Ident s) b) = do
+-    name <- newName s
+-    (pattern, scope) <- bindingPattern b
+-    return (AsP name pattern, (i, VarE name):scope)
+-bindingPattern (BindVar i@(Ident s))
+-    | all isDigit s = do
+-        return (LitP $ IntegerL $ read s, [])
+-    | otherwise = do
+-        name <- newName s
+-        return (VarP name, [(i, VarE name)])
+-bindingPattern (BindTuple is) = do
+-    (patterns, scopes) <- fmap unzip $ mapM bindingPattern is
+-    return (TupP patterns, concat scopes)
+-bindingPattern (BindList is) = do
+-    (patterns, scopes) <- fmap unzip $ mapM bindingPattern is
+-    return (ListP patterns, concat scopes)
+-bindingPattern (BindConstr con is) = do
+-    (patterns, scopes) <- fmap unzip $ mapM bindingPattern is
+-    return (ConP (mkConName con) patterns, concat scopes)
+-bindingPattern (BindRecord con fields wild) = do
+-    let f (Ident field,b) =
+-           do (p,s) <- bindingPattern b
+-              return ((mkName field,p),s)
+-    (patterns, scopes) <- fmap unzip $ mapM f fields
+-    (patterns1, scopes1) <- if wild
+-       then bindWildFields con $ map fst fields
+-       else return ([],[])
+-    return (RecP (mkConName con) (patterns++patterns1), concat scopes ++ scopes1)
+-
+ mkConName :: DataConstr -> Name
+ mkConName = mkName . conToStr
+ 
+@@ -158,6 +120,7 @@ conToStr :: DataConstr -> String
+ conToStr (DCUnqualified (Ident x)) = x
+ conToStr (DCQualified (Module xs) (Ident x)) = intercalate "." $ xs ++ [x]
+ 
++{-
+ -- Wildcards bind all of the unbound fields to variables whose name
+ -- matches the field name.
+ --
+@@ -296,10 +259,12 @@ hamlet = hamletWithSettings hamletRules defaultHamletSettings
+ 
+ xhamlet :: QuasiQuoter
+ xhamlet = hamletWithSettings hamletRules xhtmlHamletSettings
++-}
+ 
+ asHtmlUrl :: HtmlUrl url -> HtmlUrl url
+ asHtmlUrl = id
+ 
++{-
+ hamletRules :: Q HamletRules
+ hamletRules = do
+     i <- [|id|]
+@@ -360,6 +325,7 @@ hamletFromString :: Q HamletRules -> HamletSettings -> String -> Q Exp
+ hamletFromString qhr set s = do
+     hr <- qhr
+     hrWithEnv hr $ \env -> docsToExp env hr [] $ docFromString set s
++-}
+ 
+ docFromString :: HamletSettings -> String -> [Doc]
+ docFromString set s =
+@@ -367,6 +333,7 @@ docFromString set s =
+         Error s' -> error s'
+         Ok (_, d) -> d
+ 
++{-
+ hamletFileWithSettings :: Q HamletRules -> HamletSettings -> FilePath -> Q Exp
+ hamletFileWithSettings qhr set fp = do
+ #ifdef GHC_7_4
+@@ -408,6 +375,7 @@ strToExp s@(c:_)
+     | isUpper c = ConE $ mkName s
+     | otherwise = VarE $ mkName s
+ strToExp "" = error "strToExp on empty string"
++-}
+ 
+ -- | Checks for truth in the left value in each pair in the first argument. If
+ -- a true exists, then the corresponding right action is performed. Only the
+@@ -452,7 +420,7 @@ hamletUsedIdentifiers settings =
+ data HamletRuntimeRules = HamletRuntimeRules {
+                             hrrI18n :: Bool
+                           }
+-
++{-
+ hamletFileReloadWithSettings :: HamletRuntimeRules
+                              -> HamletSettings -> FilePath -> Q Exp
+ hamletFileReloadWithSettings hrr settings fp = do
+@@ -479,7 +447,7 @@ hamletFileReloadWithSettings hrr settings fp = do
+             c VTUrlParam = [|EUrlParam|]
+             c VTMixin = [|\r -> EMixin $ \c -> r c|]
+             c VTMsg = [|EMsg|]
+-
++-}
+ -- move to Shakespeare.Base?
+ readFileUtf8 :: FilePath -> IO String
+ readFileUtf8 fp = fmap TL.unpack $ readUtf8File fp
+diff --git a/Text/Hamlet/Parse.hs b/Text/Hamlet/Parse.hs
+index b7e2954..1f14946 100644
+--- a/Text/Hamlet/Parse.hs
++++ b/Text/Hamlet/Parse.hs
+@@ -616,6 +616,7 @@ data NewlineStyle = NoNewlines -- ^ never add newlines
+                   | DefaultNewlineStyle
+     deriving Show
+ 
++{-
+ instance Lift NewlineStyle where
+     lift NoNewlines = [|NoNewlines|]
+     lift NewlinesText = [|NewlinesText|]
+@@ -627,7 +628,7 @@ instance Lift (String -> CloseStyle) where
+ 
+ instance Lift HamletSettings where
+     lift (HamletSettings a b c d) = [|HamletSettings $(lift a) $(lift b) $(lift c) $(lift d)|]
+-
++-}
+ 
+ htmlEmptyTags :: Set String
+ htmlEmptyTags = Set.fromAscList
+-- 
+1.9.0
+

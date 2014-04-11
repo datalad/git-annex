@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="marvin"
+ ip="91.152.75.65"
+ subject="comment 12"
+ date="2013-04-14T09:51:27Z"
+ content="""
+hmm.. I did use -vvv, even tried with 4 which doesen't change anything. Is there a ceartain version of ssh or debian live image I could test with? There shouldn't be anything extraordinary about my setup.
+"""]]

@@ -1,0 +1,47 @@
+This special remote type stores file contents in Amazon Glacier.
+
+To use it, you need to have [glacier-cli](http://github.com/basak/glacier-cli)
+installed.
+
+The unusual thing about Amazon Glacier is the multiple-hour delay it takes
+to retrieve information out of Glacier. To deal with this, commands like
+"git-annex get" request Glacier start the retrieval process, and will fail
+due to the data not yet being available. You can then wait appriximately 
+four hours, re-run the same command, and this time, it will actually
+download the data.
+
+## configuration
+
+The standard environment variables `AWS_ACCESS_KEY_ID` and 
+`AWS_SECRET_ACCESS_KEY` are used to supply login credentials
+for Amazon. You need to set these only when running
+`git annex initremote`, as they will be cached in a file only you
+can read inside the local git repository.
+
+A number of parameters can be passed to `git annex initremote` to configure
+the Glacier remote.
+
+* `encryption` - One of "none", "hybrid", "shared", or "pubkey".
+  See [[encryption]].
+
+* `keyid` - Specifies the gpg key to use for [[encryption]].
+
+* `embedcreds` - Optional. Set to "yes" embed the login credentials inside
+  the git repository, which allows other clones to also access them. This is
+  the default when gpg encryption is enabled; the credentials are stored
+  encrypted and only those with the repository's keys can access them.
+
+  It is not the default when using shared encryption, or no encryption.
+  Think carefully about who can access your repository before using
+  embedcreds without gpg encryption.
+
+* `datacenter` - Defaults to "us-east-1".
+
+* `vault` - By default, a vault name is chosen based on the remote name
+  and UUID. This can be specified to pick a vault name.
+
+* `fileprefix` - By default, git-annex places files in a tree rooted at the
+  top of the Glacier vault. When this is set, it's prefixed to the filenames
+  used. For example, you could set it to "foo/" in one special remote,
+  and to "bar/" in another special remote, and both special remotes could
+  then use the same vault.

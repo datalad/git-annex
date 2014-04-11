@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5iosFbL2By7UFeViqkc6v-hoAtqILeDA"
+ nickname="Laszlo"
+ subject="comment 11"
+ date="2013-05-11T05:36:48Z"
+ content="""
+rechecksuming: it seem like it is indeed fixed in the newest (2013.05.01) version downloaded from here:
+http://downloads.kitenet.net/git-annex/linux/
+
+I tried to add the big stress test dir as a secondary repository into git-annex (along with my real data dir), but 
+seems like some library is not matching on my system, so some curl is complaining:
+
+    curl: /lib/tls/i686/cmov/libc.so.6: version `GLIBC_2.12' not found (required by /home/user/Desktop/down/git-annex.linux//usr/lib/i386-linux-gnu/libldap_r-2.4.so.2)
+
+I'm on ubuntu 10.04.
+
+And the log file is starting to fill up, so maybe once a problem occur, it should only write into the log file once.
+
+I will redone this stress test next week, without combining with any repository.
+Thank you very much for your response, I do appreciate you are bothering/dealing with my complains!:)
+
+Best, 
+ Laszlo
+
+"""]]

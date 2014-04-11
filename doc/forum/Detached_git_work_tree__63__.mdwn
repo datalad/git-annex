@@ -1,0 +1,11 @@
+Does git-annex (safely) handle detached work trees?
+
+That is, in git I can set `GIT_WORK_TREE=/dir/A` and `GIT_DIR=/dir/B` in the environment and have all my .git stuff in /dir/B and all my files in /dir/A.
+
+I can see this coming in useful for a few situations, but in particular for difficult file systems - like SMB or old implementations of NFS.
+
+In my particular case I have a Drobo (something like a proprietary NAS).  The Drobo is linux based, but by default mounts as a samba share or if you install `unfsd` it can be mounted via NFS.  Unfortunately, the nfs is v3 and doesn't allow locks, so git-annex barfs.  :-(
+
+What I'd like to be able to do is have a direct mode annex on the drobo, with the git directory sitting on one of my linux machines.  That machine would be the only one that would directly access the drobo data as an annex but other systems that look at the drobo would see what looks like a normal directory structure; for example my media centre - `mythtv` naturally! - would see "normal" names for my music collection, not SHA256 hashes...
+
+I guess there would be an issue if there were different `GIT_DIR`s pointing to the one `GIT_WORK_TREE`, but that is a caveat emptor IMHO. 

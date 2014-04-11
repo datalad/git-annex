@@ -1,0 +1,10 @@
+<div .span9 .hero-unit>
+  <h2>
+    Enabling #{description}
+  <p>
+    Where is this repository located?
+  <p>
+    <a .btn href="@{AddDriveR}">
+      On a removable drive
+    <a .btn href="@{DashboardR}">
+      Cancel

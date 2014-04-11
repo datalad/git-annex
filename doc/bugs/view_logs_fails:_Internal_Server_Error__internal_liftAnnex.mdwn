@@ -1,0 +1,20 @@
+### Please describe the problem.
+I tried to setup a fresh local repository and got an error:
+> Internal Server Error
+> user error (git ["--git-dir=/home/jana/Bilder/Fotos/.git","--work-tree=/home/jana/Bilder/Fotos","commit-tree","4b825dc642cb6eb9a060e54bf8d69288fbee4904"] exited 128)
+
+When clicking on "View logs", I get the following error:
+
+> Internal Server Error
+> internal liftAnnex
+
+### What steps will reproduce the problem?
+1. Run git-annex from programs menu
+2. Click "Make repository"
+
+### What version of git-annex are you using? On what operating system?
+- git-annex 4.20130627 on Ubuntu 13.10, installed from debian unstable (sid) repository.
+- git version 1.8.1.2
+
+> I've made it detect systems that lack a FQDN and set user.email
+> automatically. [[done]] --[[Joey]] 

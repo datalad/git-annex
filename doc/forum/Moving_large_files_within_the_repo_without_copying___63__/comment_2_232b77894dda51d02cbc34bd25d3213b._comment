@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlgyVag95OnpvSzQofjyX0WjW__MOMKsl0"
+ nickname="Sehr"
+ subject="Does not work"
+ date="2012-11-28T14:50:16Z"
+ content="""
+    $ git annex fix 
+
+Does not change anything. and
+
+    $ git annex fix showImages.jpg
+    git-annex: showImages.jpg not found
+"""]]

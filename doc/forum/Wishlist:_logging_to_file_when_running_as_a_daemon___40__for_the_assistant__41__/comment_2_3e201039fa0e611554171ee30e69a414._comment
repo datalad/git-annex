@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
+ nickname="Jimmy"
+ subject="comment 1"
+ date="2012-06-23T08:00:12Z"
+ content="""
+actually, scratch that, i found it. it was in _.git/annex/daemon.log_ along with the other bits and pieces
+"""]]

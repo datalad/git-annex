@@ -1,0 +1,5 @@
+[swift](http://swift.openstack.org/) is the object storage of Openstack. Think S3, but fully open source. As it's backed by rackspace.com, NASA, Dell and several other major players, adoption rates will explode.
+
+I can provide a test account soonish if need be, else rackspace.com if offering swift storage. Their API gateway lives at https://auth.api.rackspacecloud.com/v1.0
+
+Richard

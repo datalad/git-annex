@@ -1,0 +1,20 @@
+Windows webapp now starts, opens a web browser, and ... crashes. 
+
+<img src="https://identi.ca/uploads/joeyh/2013/12/7/hDkkSA.png">
+
+This  is [a bug in warp](https://github.com/yesodweb/wai/issues/202)
+or a deep level of the stack. I know that yesod apps have run on Windows
+before, so apparently something has changed and introduced this problem.
+
+Also have a problem with the autobuilder; the EvilSplicer or something
+it runs is locking up on that system for reasons not yet determined.
+
+Looks like I will need to wait a bit longer for the windows webapp, but I
+could keep working on porting the assistant in the meantime. 
+
+The most important thing that I need to port is how to check if a file
+is being written to at the same time the assistant adds it to the
+repository. No real `lsof` equivilant on Windows. I might be able to do
+something with exclusive locking to detect if there's a writer (but this
+would also block using the file while it was being added). Or I may be able
+to avoid the need for this check, at least in direct mode.

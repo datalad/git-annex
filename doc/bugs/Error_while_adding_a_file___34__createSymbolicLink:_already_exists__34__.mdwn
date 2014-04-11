@@ -1,0 +1,46 @@
+I'm importing a directory where some files are hard links of each other.
+
+This is confusing git-annex. Here's a small test of that:
+
+<pre>
+paulproteus@pathi:/tmp$ mkdir annex-test
+paulproteus@pathi:/tmp$ cd annex-test
+paulproteus@pathi:/tmp/annex-test$ git init
+Initialized empty Git repository in /tmp/annex-test/.git/
+paulproteus@pathi:/tmp/annex-test$ git annex init testing
+init testing ok
+paulproteus@pathi:/tmp/annex-test$ echo '* annex.backend=SHA1' >> .gitattributes 
+paulproteus@pathi:/tmp/annex-test$ git commit .gitattributes -m 'Default to sha1'
+[master dd54b41] Default to sha1
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+paulproteus@pathi:/tmp/annex-test$ echo "Look at me" > file1
+paulproteus@pathi:/tmp/annex-test$ cp -l file1 file2
+paulproteus@pathi:/tmp/annex-test$ git annex add file1
+add file1 (checksum...) ok
+(Recording state in git...)
+paulproteus@pathi:/tmp/annex-test$ git commit -m 'So far, so good'
+[master eb43084] So far, so good
+ 2 files changed, 2 insertions(+), 0 deletions(-)
+ create mode 100644 .git-annex/9a3/f1f/SHA1-s11--b9c599d64212934582d676c722cf3ec61f60e09c.log
+ create mode 120000 file1
+paulproteus@pathi:/tmp/annex-test$ git annex add file2
+add file2 (checksum...) 
+  git-annex: .git/annex/objects/PM/7p/SHA1-s11--b9c599d64212934582d676c722cf3ec61f60e09c/SHA1-s11--b9c599d64212934582d676c722cf3ec61f60e09c: createSymbolicLink: already exists (File exists)
+git-annex: 1 failed
+paulproteus@pathi:/tmp/annex-test$ 
+</pre>
+
+When trying to make a small test case for this bug, I noticed that if file1 and file2 have the same contents but are not hard links of each other, they both get annexed just fine.
+
+I think the right behavior here is to annex file2 just fine, as if they weren't hard links before.
+
+
+-- Asheesh.
+
+> The same thing happens anytime the key for a file collides with a key
+> already in the annex, AFAICS. (Including when the files have the same
+> content but are not hard links... unless you're using WORM backend.)
+> 
+> I've fixed this bug. The first file in wins. See commit for some
+> interesting discussion about why it should not check for hash collisions
+> in this situation. [[done]] --[[Joey]]

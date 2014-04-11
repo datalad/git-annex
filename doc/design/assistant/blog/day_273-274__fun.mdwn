@@ -1,0 +1,19 @@
+Got caught up on some bug reports yesterday. The main one was odd behavior
+of the assistant when the repository was in manual mode. A recent change to
+the preferred content expression caused it. But the expression was not
+broken. The problem was in the parser, which got the parentheses wrong
+in this case. I had to mostly rewrite the parser, unfortunately. I've tested
+the new one fairly extensively -- on the other hand this bug lurked in the
+old parser for several years (this same code is used for matching files
+with command-line parameters).
+
+Just as I finished with that, I noticed another bug. Turns out git-cat-file
+doesn't reload the index after it's started. So last week's changes to make
+git-annex check the state of files in the index won't work when using the
+assistant. Luckily there was an easy workaround for this.
+
+Today I finished up some robustness fixes, and added to the test suite
+checks for preferred content expressions, manual mode, etc.
+
+I've started a stress test, syncing 2 repositories over XMPP, with the fuzz
+tester running in each to create lots of changes to keep in sync.

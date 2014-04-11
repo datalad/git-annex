@@ -1,0 +1,18 @@
+Switched the OSX standalone app to use `DYLD_ROOT_PATH`.
+This is the third `DYLD_*` variable I've tried; neither
+of the other two worked in all situations. This one may do better.
+If not, I may be stuck modifying the library names in each executable
+using `install_name_tool`
+([good reference for doing that](http://www.mikeash.com/pyblog/friday-qa-2009-11-06-linking-and-install-names.html)).
+As far as I know, every existing dynamic library lookup system is broken
+in some way other other; nothing I've seen about OSX's so far
+disproves that rule.
+
+Fixed a nasty utf-8 encoding crash that could occur when merging the
+git-annex branch. I hope I'm almost done with those.
+
+Made git-annex auto-detect when a git remote is on a sever like github
+that doesn't support git-annex, and automatically set annex-ignore.
+
+Finished the UI for pausing syncing of a remote. Making the syncing
+actually stop still has some glitches to resolve.

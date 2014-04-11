@@ -1,0 +1,7 @@
+I've an external USB hard disc attached to my (fritzbox) router that is only accessible through SMB/CIFS. I'd like have all my annexed files on this drive in kind of direct-mode so that I can also access the files without git-annex.
+
+I tried to put a direct-mode repo on the drive but this is painfully slow. The git-annex process than runs on my desktop and accesses the repo over SMB over the slow fritzbox over USB.
+
+I'd wish that git-annex could be told to just use a (mounted) folder as a direct-mode remote.
+
+> [[done]]; dup. --[[Joey]] 

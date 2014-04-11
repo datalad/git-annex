@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.146"
+ subject="comment 5"
+ date="2014-03-06T18:22:31Z"
+ content="""
+Do you edit this file in multiple places? This could be an occurance of this bug: [[bugs/direct_mode_merge_can_overwrite_local,_non-annexed_files]] which is fixed in the latest release.
+
+If the program that writes the workspace.xml file did so by first deleting it, and then writing the new version, this could result in the assistant committing the deletion, which makes the new version a local, non-annexed file, and then if a pull is received that modified the file, I think the above bug could happen. 
+
+You could tell if this was the case by looking at the git log of the directory containing the file, and see if it has been repeatedly deleted and added back to the repository. The git log snippet you pasted unfortunately does not let me tell this information.
+"""]]

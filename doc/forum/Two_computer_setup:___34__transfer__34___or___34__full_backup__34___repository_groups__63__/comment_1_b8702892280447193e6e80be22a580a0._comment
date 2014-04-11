@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlkA6XinbeOdnEDxEGQUWyjqPGh0kdMXr4"
+ nickname="Blake"
+ subject="update"
+ date="2013-10-30T07:19:56Z"
+ content="""
+It seems both Client-A and Client-B ARE actually syncing with this current setup. I think Client-B was just delayed due to the initial startup scan. So I guess at this point I am more or less asking if having both Client-A and Client-B have the remote repository being a \"full backup\" type is appropriate or if there is a better configuration that achieves what I am hoping to have.
+
+Regards,
+Blake
+"""]]

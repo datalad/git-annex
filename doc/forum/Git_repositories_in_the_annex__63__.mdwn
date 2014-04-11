@@ -1,0 +1,5 @@
+First of all thanks for the great work. git-annex looks very nice already!
+
+I wonder if it's possible to add Git repositories to the annex. In my current Dropbox setup I drop some small Git repositories into the Dropbox to keep them in sync on two computers. 
+
+This is obviously not possible with git-annex, as the annex itself is a Git repository and sub-repositories (directories with .git folders) are ignored. But in some cases people might want to be able to drop "anything" into the annex, maybe even Git repositories (e.g. the "nomad" usecase)...

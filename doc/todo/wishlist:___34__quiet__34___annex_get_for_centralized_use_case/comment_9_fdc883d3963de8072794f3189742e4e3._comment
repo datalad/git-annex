@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.227"
+ subject="comment 9"
+ date="2014-01-02T17:25:50Z"
+ content="""
+I have now implemented a way to mark a remote as readonly. This prevents git-annex from pushing anything to the remote, or modifying it in other ways.
+
+It seems that in your use case, you might want to avoid git-annex sync pushing the git-annex branch, but still push a branch like master. So far, it's up to you to decide which branches to manually push; readonly disables all pushing.
+"""]]

@@ -1,0 +1,2 @@
+I would like to be able to set 'annex-ignore' for remote servers through the webapp.
+Maybe a checkbox beneath "Syncing enabled" with something like "Also sync content" that it's checked by default?

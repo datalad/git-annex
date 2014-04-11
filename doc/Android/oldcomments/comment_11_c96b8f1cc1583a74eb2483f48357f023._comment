@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="http://yarikoptic.myopenid.com/"
+ nickname="site-myopenid"
+ subject="fresh build"
+ date="2013-05-24T03:21:29Z"
+ content="""
+With fresh build got:
+
+u0_a39@android:/ $ git annex webapp
+/system/bin/sh: git: not found
+
+the PATH is /sbin:/system/bin:/system/xbin
+
+where should git (and ga) reside now ? (/data somehow is not accessible now to u0_a39)
+"""]]

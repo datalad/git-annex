@@ -1,0 +1,13 @@
+Would help alot when having to add large(ish) amounts of remotes.
+
+Maybe detect this kind of commit message and ask user whether to automatically add them? See [[auto_remotes]]:
+> Question: When should git-annex update the remote.log? (If not just on init.) Whenever it reads in a repo's remotes?
+
+----
+
+I'm not sure that the above suggestion is going down a path that really
+makes sense. If you want a list of repository UUIDs and descriptions,
+it's there in machine-usable form in `.git-annex/uuid.log`, there is no
+need to try to pull this info out of git commit messages. --[[Joey]]
+
+[[done]]

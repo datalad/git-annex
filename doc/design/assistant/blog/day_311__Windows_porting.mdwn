@@ -1,0 +1,10 @@
+Made two big improvements to the Windows port, in just a few hours.
+First, got gpg working, and encrypted special remotes work on Windows.
+Next, fixed a permissions problem that was breaking removing files
+from directory special remotes on Windows.
+(Also cleaned up a lot of compiler warnings on Windows.)
+
+I think I'm almost ready to move the Windows port from alpha to beta
+status. The only really bad problem that I know of with using it is that
+due to a lack of locking, it's not safe to run multiple git-annex
+commands at the same time in Windows.

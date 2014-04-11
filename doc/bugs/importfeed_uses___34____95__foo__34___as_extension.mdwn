@@ -1,0 +1,17 @@
+### Please describe the problem.
+When running importfeed on gitminutes <http://feeds.gitminutes.com/gitminutes-podcast> git-annex interprets the extension as "_mp3" rather than ".mp3" which means that renaming is needed for various audio players to accept the files.
+
+### What steps will reproduce the problem?
+git annex importfeed http://feeds.gitminutes.com/gitminutes-podcast --fast
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 4.20130802
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV Inotify DBus XMPP
+local repository version: 3
+default repository version: 3
+supported repository versions: 3 4
+upgrade supported from repository versions: 0 1 2
+
+on Debian Sid
+
+> Already fixed in git. [[done]] --[[Joey]]

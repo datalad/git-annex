@@ -1,0 +1,95 @@
+[Gitolite](https://github.com/sitaramc/gitolite) is a git repository
+manager. Here's how to add git-annex support to gitolite, so you can
+`git annex copy` files to a gitolite repository, and `git annex get`
+files from it.
+
+A nice feature of using gitolite with git-annex is that users can be given
+read-only access to a repository, and this allows them to `git annex get`
+file contents, but not change anything.
+
+First, you need new enough versions:
+
+* gitolite 2.2 is needed -- this version contains a git-annex-shell ADC
+  and supports "ua" ADCs. Alternatively, gitoline g3 also recently added
+  support for git-annex.
+* git-annex 3.20111016 or newer needs to be installed on the gitolite
+  server. Don't install an older version, it wouldn't be secure!
+
+And here's how to set it up. The examples are for gitolite as installed
+on Debian with apt-get, but the changes described can be made to any
+gitolite installation, just with different paths.
+
+Set `$GL_ADC_PATH` in `.gitolite.rc`, if you have not already done so.
+
+<pre>
+echo '$GL_ADC_PATH = "/usr/local/lib/gitolite/adc/";' >>~gitolite/.gitolite.rc
+</pre>
+
+Make the ADC directory, and a "ua" subdirectory.
+
+<pre>   
+mkdir -p /usr/local/lib/gitolite/adc/ua
+</pre>
+
+Install the git-annex-shell ADC into the "ua" subdirectory from the gitolie repository.
+
+<pre>   
+cd /usr/local/lib/gitolite/adc/ua/
+cp gitolite/contrib/adc/git-annex-shell .
+</pre>
+
+If using gitolite g3, an additional setup step is needed:
+In the ENABLE list in the rc file, add an entry like this:
+
+<pre>
+	'git-annex-shell ua',
+</pre>
+
+Now all gitolite repositories can be used with git-annex just as any
+ssh remote normally would be used. For example:
+
+<pre>
+# git clone gitolite@localhost:testing
+Cloning into testing...
+Receiving objects: 100% (18/18), done.
+# cd testing
+# git annex init
+init  ok
+# cp /etc/passwd my-cool-big-file
+# git annex add my-cool-big-file
+add my-cool-big-file ok
+(Recording state in git...)
+# git commit -m added
+[master d36c8b4] added
+ 1 files changed, 1 insertions(+), 0 deletions(-)
+ create mode 120000 my-cool-big-file
+# git push --all
+Counting objects: 17, done.
+Delta compression using up to 2 threads.
+Compressing objects: 100% (12/12), done.
+Writing objects: 100% (14/14), 1.39 KiB, done.
+Total 14 (delta 0), reused 1 (delta 0)
+To gitolite@localhost:testing
+   c552a38..db4653e  git-annex -> git-annex
+   29cd204..d36c8b4  master -> master
+# git annex copy --to origin
+copy my-cool-big-file (checking origin...) (to origin...) 
+WORM-s2502-m1318875140--my-cool-big-file
+        2502 100%    0.00kB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 2606 bytes  received 31 bytes  1758.00 bytes/sec
+total size is 2502  speedup is 0.95
+ok
+</pre>
+
+
+### Troubleshooting
+
+I got an error like this when setting up gitolite *after* setting up a local git repo and git annex:
+
+<pre>
+git-annex-shell: First run: git-annex init
+Command ssh ["git@git.example.com","git-annex-shell 'configlist' '/~/myrepo.git'"] failed; exit code 1
+</pre>
+
+because I forgot to "git push --all" after adding the new gitolite remote.

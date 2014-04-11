@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.193"
+ subject="comment 1"
+ date="2013-06-25T17:26:25Z"
+ content="""
+git-annex is designed to work with really large trees of files, and so it processes files one at a time in a stream. To get an overall estimate of the size, it would need to traverse the whole directory to get the total, and then traverse it again to perform the transfer. This would make no-op transfers take twice as long, which is why I'm unlikely to implement it.
+"""]]

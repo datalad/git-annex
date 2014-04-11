@@ -1,0 +1,19 @@
+### Please describe the problem.
+
+Git annex lock discards data without --force; this is misleading from the name.
+
+### What steps will reproduce the problem?
+
+    git annex unlock something.txt
+    kwrite something.txt # edit
+    git annex lock something.txt # lock is the opposite of unlock, right?
+
+Oops, just lost my changes!
+
+If you want my opinion, `git annex lock` should either require `-f` to throw away data or should be renamed (e.g. to `revert` or `checkout`).
+
+### What version of git-annex are you using? On what operating system?
+
+git version 1.8.1.2, git-annex version: 4.20130815, Kubuntu 13.04
+
+> Agreed; [[done]] --[[Joey]]

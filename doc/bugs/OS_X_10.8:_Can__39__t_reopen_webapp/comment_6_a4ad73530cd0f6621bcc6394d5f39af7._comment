@@ -1,0 +1,41 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkfHTPsiAcHEEN7Xl7WxiZmYq-vX7azxFY"
+ nickname="Vincent"
+ subject="seems to work"
+ date="2013-07-31T09:37:36Z"
+ content="""
+I tried this as well.
+
+    % diff -u /Applications/git-annex.app/Contents/MacOS/git-annex-shell{.old,}
+    --- /Applications/git-annex.app/Contents/MacOS/git-annex-shell.old	2013-07-31 19:32:28.000000000 +1000
+    +++ /Applications/git-annex.app/Contents/MacOS/git-annex-shell	2013-07-23 14:12:36.000000000 +1000
+    @@ -22,4 +22,4 @@
+     	export GIT_ANNEX_APP_BASE
+     fi
+     
+    -\"$base/runshell\" git-annex-shell
+    +\"$base/runshell\" git-annex-shell \"$@\"
+
+    % ps ax|grep git|grep -v grep |wc
+    0    0     0
+
+    <click the gui app icon>
+    <a new browser tab opens, running the assistant>
+    % ps ax|grep git |grep -v grep
+    33124   ??  S      0:00.40 git-annex webapp -psn_0_31972988
+    33133   ??  S      0:00.00 git --git-dir=/Users/me/annex/.git --work-tree=/Users/me/annex cat-file --batch
+    33162   ??  S      0:00.00 git --git-dir=/Users/me/annex/.git --work-tree=/Users/me/annex cat-file --batch
+    33174   ??  S      0:00.00 git --git-dir=/Users/me/annex/.git --work-tree=/Users/me/annex cat-file --batch
+    33177   ??  S      0:00.00 git --git-dir=/Users/me/annex/.git --work-tree=/Users/me/annex check-attr -z --stdin annex.backend annex.numcopies --
+
+    <click the gui app icon again>
+    <a new browser tab opens, running the assistant. the original remains.>
+    % ps ax|grep git |grep -v grep
+    33124   ??  S      0:00.46 git-annex webapp -psn_0_31972988
+    33133   ??  S      0:00.00 git --git-dir=/Users/me/annex/.git --work-tree=/Users/me/annex cat-file --batch
+    33162   ??  S      0:00.00 git --git-dir=/Users/me/annex/.git --work-tree=/Users/me/annex cat-file --batch
+    33174   ??  S      0:00.00 git --git-dir=/Users/me/annex/.git --work-tree=/Users/me/annex cat-file --batch
+    33177   ??  S      0:00.00 git --git-dir=/Users/me/annex/.git --work-tree=/Users/me/annex check-attr -z --stdin annex.backend annex.numcopies --
+
+HTH
+"""]]

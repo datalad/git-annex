@@ -1,0 +1,6 @@
+Hi again,
+
+I have a SSH remote server that I registered to my git-annex repository via git-annex assistant. When I go to edit the settings for the repository from within git-annex assistant I noticed I can't edit the server address. If the server IP changes, how should I go about letting git-annex know of this? Can I just (1) shutdown git-annex assistant, (2) edit the 'url' line of the remote entry inside the repository's ``.git/config`` file, and then (3) start up git-annex assistant again? Is this a safe method for doing this?
+
+Regards,
+Blake

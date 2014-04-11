@@ -1,0 +1,1 @@
+Currently events happening in the webapp (sync upload etc. on the right) has no time stamp thus user has no way to tell when was the last sync happened. Which is problematic when not using XMPP and repos lag behind.

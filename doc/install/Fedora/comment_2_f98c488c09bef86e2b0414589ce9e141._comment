@@ -1,0 +1,25 @@
+[[!comment format=mdwn
+ username="http://mebus.pip.verisignlabs.com/"
+ nickname="Bussard"
+ subject="comment 2"
+ date="2013-07-30T20:41:07Z"
+ content="""
+When I try to build in from source on Fedora 17, I get this error:
+
+[ 77 of 163] Compiling Utility.DiskFree ( Utility/DiskFree.hs, dist/build/git-annex/git-annex-tmp/Utility/DiskFree.o )
+[ 78 of 163] Compiling Utility.Url      ( Utility/Url.hs, dist/build/git-annex/git-annex-tmp/Utility/Url.o )
+
+Utility/Url.hs:111:88:
+    Couldn't match expected type `Maybe URI' with actual type `URI'
+    In the second argument of `fromMaybe', namely
+      `(newURI `relativeTo` u)'
+    In the expression: fromMaybe newURI (newURI `relativeTo` u)
+    In an equation for `newURI_abs':
+        newURI_abs = fromMaybe newURI (newURI `relativeTo` u)
+
+Any help?
+
+Mebus
+
+
+"""]]

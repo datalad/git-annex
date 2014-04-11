@@ -1,0 +1,29 @@
+### Please describe the problem.
+Filenames for the *include* statement for [preferred content](http://git-annex.branchable.com/preferred_content/) can not contain spaces.
+
+### What steps will reproduce the problem?
+
+* Create an annex repo
+* Run `git annex vicfg`
+* Enter expression *include='pictures/dir with spaces'*
+* git annex complains: # ** Parse error in next line: Parse failure: near "with" Parse failure: near "spaces'"
+
+(The *'* is interpreted as part of the filepath.)
+
+### What version of git-annex are you using? On what operating system?
+
+I am using the current binaries from Debian stable amd64.
+
+<pre>
+git-annex version: 5.20140320~bpo70+1
+build flags: Assistant Webapp Pairing S3 Inotify DBus XMPP Feeds Quvi TDFA
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
+remote types: git gcrypt S3 bup directory rsync web tahoe glacier hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+</pre>
+
+### Please provide any additional information below.
+
+The only workaround I found is to use a glob for the filepath which only works for the first space: *include='pictures/dir\*'*.

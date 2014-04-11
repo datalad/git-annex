@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.7.238"
+ subject="comment 2"
+ date="2013-01-16T02:17:26Z"
+ content="""
+Someone else reported what sounds like the same bug at [[encryption_given_a_gpg_keyid_still_uses_symmetric_encryption]]. It sounds like this is somehow an agent bug. I cannot reproduce it. I can hypothesise that, if this bug is occurring, you'll be prompted for a passphrase when running this command.. which if it happens would certainly be a bug in gpg or its agent
+
+touch foo; echo foo| gpg --symmetric --passphrase-fd=0 foo
+
+(You can run `git annex initremote $yourremote embedcreds=yes`  and it'll modify the existing configuration.)
+"""]]

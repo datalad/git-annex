@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnXybLxkPMYpP3yw4b_I6IdC3cKTD-xEdU"
+ nickname="Matt"
+ subject="comment 2"
+ date="2013-06-11T14:13:22Z"
+ content="""
+My temporary work around so that I may continue to use the assistant is to touch an appropriate test.aux before running latexmk.
+"""]]

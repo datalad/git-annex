@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.64"
+ subject="comment 7"
+ date="2013-11-26T21:07:12Z"
+ content="""
+If you kept your git repository on your local disk, and used a [[directory special remote|special_remotes/directory]] on the SMB share, you could then `git annex copy --to smbshare` and `git annex get --from smbshare` as desired, which would probably be much more efficient.
+"""]]

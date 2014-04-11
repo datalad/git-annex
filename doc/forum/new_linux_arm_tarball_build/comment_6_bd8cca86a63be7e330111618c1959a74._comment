@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.87"
+ subject="Re: RLIMIT_NOFILE"
+ date="2013-12-19T02:10:45Z"
+ content="""
+I've passed this problem on to the git developers, and they have quickly developed a patch that will solve it, so I'll just wait for the next git release.
+"""]]

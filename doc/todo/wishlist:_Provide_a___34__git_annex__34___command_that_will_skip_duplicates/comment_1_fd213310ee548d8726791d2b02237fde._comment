@@ -1,0 +1,29 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-01-27T18:29:44Z"
+ content="""
+Hey Asheesh, I'm happy you're finding git-annex useful.
+
+So, there are two forms of duplication going on here. There's duplication of the content, and duplication of the filenames 
+pointing at that content.
+
+Duplication of the filenames is probably not a concern, although it's what I thought you were talking about at first. It's probably info worth recording that backup-2010/some_dir/foo and backup-2009/other_dir/foo are two names you've used for the same content in the past. If you really wanted to remove backup-2009/foo, you could do it by writing a script that looks at the basenames of the symlink targets and removes files that point to the same content as other files.
+
+Using SHA1 ensures that the same key is used for identical files, so generally avoids duplication of content. But if you have 2 disks with an identical file on each, and make them both into annexes, then git-annex will happily retain both
+copies of the content, one per disk. It generally considers keeping copies of content a good thing. :)
+
+So, what if you want to remove the unnecessary copies? Well, there's a really simple way:
+
+<pre>
+cd /media/usb-1
+git remote add other-disk /media/usb-0
+git annex add
+git annex drop
+</pre>
+
+This asks git-annex to add everything to the annex, but then remove any file contents that it can safely remove. What can it safely remove? Well, anything that it can verify is on another repository such as \"other-disk\"! So, this will happily drop any duplicated file contents, while leaving all the rest alone.
+
+In practice, you might not want to have all your old backup disks mounted at the same time and configured as remotes. Look into configuring [[trust]] to avoid needing do to that. If usb-0 is already a trusted disk, all you need is a simple \"git annex drop\" on usb-1.
+"""]]

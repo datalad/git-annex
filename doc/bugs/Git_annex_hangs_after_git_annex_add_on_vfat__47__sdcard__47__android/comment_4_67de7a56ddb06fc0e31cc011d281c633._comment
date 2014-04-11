@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="64.134.31.139"
+ subject="comment 4"
+ date="2013-10-16T16:16:02Z"
+ content="""
+Thanks for testing that. I had a fencepost error, which I've fixed, and actually tested with problimatic git version now.
+"""]]

@@ -1,0 +1,177 @@
+# goals
+
+* be configured like a regular git remote, with an unusual url
+  or other configuration
+* receive notifications when a remote has received new commits,
+  and take some action
+* optionally, do receive-pack and send-pack to a remote that
+  is only accessible over an arbitrary network transport
+  (like assistant does with XMPP)
+* optionally, send/receive git-annex objects to remote
+  over an arbitrary network transport
+
+# difficulties
+
+* authentication & configuration
+* multiple nodes may be accessible over a single network transport,
+  with it desirable to sync with any/all of them. For example, with
+  XMPP, there can be multiple friends synced with. This means that
+  one git remote can map to multiple remote nodes. Specific to git-annex,
+  this means that a set of UUIDs known to be associated with the remote
+  needs to be maintained, while currently each remote can only have one
+  annex-uuid in .git/config.
+
+# payoffs
+
+* support [[assistant/telehash]]!
+* Allow running against a normal ssh git remote. This would run
+  git-annex-shell on the remote, watching for changes, and so be able to
+  notify when a commit was pushed to the remote repo. This would let the
+  assistant immediately notice and pull. So the assistant would be fully
+  usable with a single ssh remote and no other configuration!
+  **do this first**
+* clean up existing XMPP support, make it not a special case, and not
+  tightly tied to the assistant
+* git-remote-daemon could be used independantly of git-annex,
+  in any git repository.
+
+# design
+
+Let git-remote-daemon be the name. Or for git-annex,
+`git annex remotedaemon`.
+
+It runs in one of two ways:
+
+1. Forked to background, using a named pipe for the control protocol.
+2. With --foreground, the control protocol goes over stdio.
+
+Either way, behavior is the same:
+
+* Get a list of remotes to act on by looking at .git/config
+* Automatically notices when a remote has changes to branches
+  matching remote.$name.fetch, and pulls them down to the appropriate
+  location.
+* When the control protocol informs it about a new ref that's available,
+  it offers the ref to any interested remotes.
+
+# control protocol
+
+This is an asynchronous protocol. Ie, either side can send any message
+at any time, and the other side does not send a reply.
+
+It is line based and intended to be low volume and not used for large data.
+
+TODO: Expand with commands for sending/receiving git-annex objects, and
+progress during transfer.
+
+TODO: Will probably need to add something for whatever pairing is done by
+the webapp.
+
+## emitted messages
+
+* `CONNECTED $remote`
+
+  Sent when a connection has been made with a remote.
+
+* `DISCONNECTED $remote`
+
+  Sent when connection with a remote has been lost.
+
+* `SYNCING $remote`
+
+  Indicates that a pull or a push with a remote is in progress.
+  Always followed by DONESYNCING.
+
+* `DONESYNCING 1|0 $remote`
+
+  Indicates that syncing with a remote is done, and either succeeded
+  (1) or failed (0).
+
+## consumed messages
+
+* `PAUSE`
+
+  This indicates that the network connection has gone down,
+  or the user has requested a pause.
+  git-remote-daemon should close connections and idle.
+
+  Affects all remotes.
+
+* `RESUME`
+
+  This indicates that the network connection has come back up, or the user
+  has asked it to run again. Start back up network connections.
+
+  Affects all remotes.
+
+* `CHANGED ref ...`
+
+  Indicates that a ref is new or has changed. These can be offered to peers,
+  and peers that are interested in them can pull the content.
+
+* `RELOAD`
+
+  Indicates that configs have changed. Daemon should reload .git/config
+  and/or restart.
+
+  Possible config changes include adding a new remote, removing a remote,
+  or setting `remote.<name>.annex-sync` to configure whether to sync with a
+  particular remote.
+
+* `STOP`
+
+  Shut down git-remote-daemon
+
+  (When using stdio, it also should shutdown when it reaches EOF on 
+  stdin.)
+
+# encryption & authentication
+
+For simplicity, the network transports have to do their own end-to-end
+encryption. Encryption is not part of this design.
+
+(XMPP does not do end-to-end encryption, but might be supported
+transitionally.)
+
+Ditto for authentication that we're talking to who we indend to talk to.
+Any public key data etc used for authenticion is part of the remote's
+configuration (or hidden away in a secure chmodded file, if neccesary).
+This design does not concern itself with authenticating the remote node,
+it just takes the auth token and uses it.
+
+For example, in telehash, each node has its own keypair, which is used
+or authentication and encryption, and is all that's needed to route
+messages to that node.
+
+# network level protocol
+
+How do peers communicate with one another over the network?
+
+This seems to need to be network-layer dependant. Telehash will need
+one design, and git-annex-shell on a central ssh server has a very different
+(and much simpler) design.
+
+## ssh
+
+`git-annex-shell notifychanges` is run, and speaks a simple protocol
+over stdio to inform when refs on the remote have changed.
+
+No pushing is done for CHANGED, since git handles ssh natively.
+
+TODO:
+
+* Remote system might not be available. Find a smart way to detect it,
+  ideally w/o generating network traffic. One way might be to check
+  if the ssh connection caching control socket exists, for example.
+* Remote system might be available, and connection get lost. Should
+  reconnect, but needs to avoid bad behavior (ie, constant reconnect
+  attempts.)
+* Detect if old system had a too old git-annex-shell and avoid bad behavior
+
+## telehash 
+
+TODO
+
+## xmpp
+
+Reuse [[assistant/xmpp]]

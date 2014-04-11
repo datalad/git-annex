@@ -1,0 +1,11 @@
+I wanted to try out this probably great piece of software you wrote, alas I do not use a Debian distro with managed software menus (i.e. I use OpenBox), so I cannot simply open the assistant through my programs-menu. In fact, to do that I'd need the command to start the assistant so I can add it manually myself. Sadly, the man page did not gave me any advices... :(
+
+Any chance to give me the terminal command to start the assistant?
+
+***
+edit: just to update the thread: everythings okay now. Thanks for this great program!
+
+the commands (as posted by Paul):
+
+    git annex assistant
+    git annex webapp

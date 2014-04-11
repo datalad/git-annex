@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.0.21"
+ subject="comment 1"
+ date="2013-07-31T16:25:34Z"
+ content="""
+It should be sufficient to run: `git annex add; git annex sync`
+
+That adds any new files and then commits those along with any changed or deleted files.
+"""]]

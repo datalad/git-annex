@@ -1,0 +1,33 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn4bbuawnh-nSo9pAh8irYAcV4MQCcfdHo"
+ nickname="Stefan"
+ subject="comment 4"
+ date="2012-09-16T22:51:00Z"
+ content="""
+hmm Ok I tried now something that seems to did it...  after I did checkin and pull the deletion of the soft-link of the file... I addionaly used git annex sync, and then again pushed it from the usb drive... now the unused command finds stuff...
+
+So am I right now to make that happen:
+
+1. delete the file in the \"main\" repos
+2. git pull from the other repository(s)
+3. git annex sync
+
+4. git annex unused (now it founds something to delete)
+
+5. git annex dropunused 1-1000 (or some other range) do that in both repositories to delete in on both... and do that maybe as cronjob (from point 2 to 5) or do the last last step only if a drive is nearly full (automaticly or manually...)
+
+ok so maybe I could use that.
+
+the advantages over something like rsync are...
+
+1. I have a history and can reverse some operations (till I do step 5 ^^)
+2. I am more flexible in repo/remote types
+3. checksums get saved
+4. I can have repo with all links but 0 data on a 3rd pc and can \"get\" stuff dynamicly (what is the cheapest transfeir) ot them... aka partial checkouts
+
+ok I think the 4. advantage buys me ;)
+
+hope I got it now right with the 5 step instruction.
+
+keep up your great work, would have tried kickstarter here maybe too for other stuff... but I am no american ;) and eu-guys are not allowed, and I also have no relative in usa ;) but that only as a site note ;)
+"""]]

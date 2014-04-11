@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.154.4.51"
+ subject="comment 1"
+ date="2013-09-12T20:37:05Z"
+ content="""
+Define \"huge\"? Checking out a git repository necessarily requires one inode per file in the repository, plus a smaller quantity for the things in .git. A git-annex repository  is much the same as any other git repository.
+
+Even when I make a really tiny 100 mb ext4 filesystem, it defaults to 25000 inodes, which would be enough to contain a checkout of my second largest git-annex repository. 
+
+Anyway, using git branches seems like a reasonable workaround, to the extent I understand your problem. Make a branch with the files in it you want to have available on the small drive, or check out an empty branch on the small drive and `git annex add` files in there. You can merge the branch back into your master branch on the large drive.
+"""]]

@@ -1,0 +1,3 @@
+It would be great to have a custom f-droid repo "alla guardianproject.info" (before getting git-annex into the main f-droid repo).
+
+See https://github.com/guardianproject/fdroid-repo (https://guardianproject.info/repo/).

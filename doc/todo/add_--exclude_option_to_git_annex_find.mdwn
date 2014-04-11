@@ -1,0 +1,4 @@
+Seems pretty self-explanatory.
+
+> This was already implemented, the --exclude option can be used
+> for find as well as most any other subcommand. --[[Joey]] [[done]]

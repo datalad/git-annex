@@ -1,0 +1,26 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="4.152.108.140"
+ subject="comment 7"
+ date="2013-09-05T16:54:36Z"
+ content="""
+./configure says:
+
+<pre>
+checking whether the resolver is usable... no
+checking whether I can make the resolver usable with BIND_8_COMPAT... no
+
+configure:7918: gcc -o conftest -g -O2   conftest.c  >&5
+Undefined symbols for architecture x86_64:
+  \"_res_9_dn_expand\", referenced from:
+      _main in ccsJFrZc.o
+  \"_res_9_dn_skipname\", referenced from:
+      _main in ccsJFrZc.o
+  \"_res_9_query\", referenced from:
+      _main in ccsJFrZc.o
+ld: symbol(s) not found for architecture x86_64
+collect2: ld returned 1 exit status
+</pre>
+
+So no DNS stuff until I can find a way to build a gpg for OSX that supports it.
+"""]]

@@ -1,0 +1,19 @@
+It's done! The assistant branch is merged into master.
+
+Updated the [[assistant]] page with some screenshots and instructions for
+using it.
+
+Made some cosmetic fixes to the webapp.
+
+Fixed the transferrer to use `~/.config/git-annex/program`
+to find the path to git-annex when running it. (There are ways to find the
+path of the currently running program in unux, but they all suck, so I'm
+avoiding them this way.)
+
+Read some OSX launchd documentation, and it seems it'd be pretty easy to
+get the assistant to autostart on login on OSX. If someone would like to
+test launchd files for me, get in touch.
+
+-----
+
+AKA: Procrastinating really hard on those progress bars. ;)

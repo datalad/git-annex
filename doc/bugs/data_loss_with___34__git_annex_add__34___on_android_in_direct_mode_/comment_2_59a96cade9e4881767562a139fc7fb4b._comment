@@ -1,0 +1,40 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn26WQjIP5fnMgQF_L_k3Q3UrR5v8mjRTY"
+ nickname="Ellis"
+ subject="comment 2"
+ date="2013-04-02T20:18:05Z"
+ content="""
+*Are you sure these files did not already have the same content before you ran git-annex on them?*
+
+Yes, each one was a distinct photo, video, or audio recording.  The only operation performed between creation and ``git annex add`` was moving them into the import directory from the command line via e.g. ``mv /sdcard/DCIM/Camera/* .``.
+
+If you'd like, I'll try to find a set of files to reproduce the problem with.
+
+*Can you show me the output of git show when run on some of these files?*
+
+Sure.  Here are two WAV files.  The first one was correctly stored, and the second one is now a duplicate of the first.
+
+    commit bb282af90745c8a50e74c1f724e6cc708bfa9591
+    Author: Ellis Whitehead <ellis@****>
+    Date:   Mon Apr 1 17:05:19 2013 +0200
+
+        git-annex automatic sync
+
+    diff --git a/import/2013-03-02_13-57-08_jeromin.wav b/import/2013-03-02_13-57-08_jeromin.wav
+    new file mode 120000
+    index 0000000..55a8cf1
+    --- /dev/null
+    +++ b/import/2013-03-02_13-57-08_jeromin.wav
+    @@ -0,0 +1 @@
+    +../.git/annex/objects/VG/vf/SHA256E-s49222316--acd9b8f94981543c601461c4cb602dae4e7d9d9a72654a3915c6e9d0221791b7.wav/SHA256E-s49222316--acd9b8f94981543c601461c4cb602dae4e7d9d9a72654a3915c6e9d0221791b7.wav
+    \ No newline at end of file
+    diff --git a/import/2013-03-02_14-06-11_karina.wav b/import/2013-03-02_14-06-11_karina.wav
+    new file mode 120000
+    index 0000000..55a8cf1
+    --- /dev/null
+    +++ b/import/2013-03-02_14-06-11_karina.wav
+    @@ -0,0 +1 @@
+    +../.git/annex/objects/VG/vf/SHA256E-s49222316--acd9b8f94981543c601461c4cb602dae4e7d9d9a72654a3915c6e9d0221791b7.wav/SHA256E-s49222316--acd9b8f94981543c601461c4cb602dae4e7d9d9a72654a3915c6e9d0221791b7.wav
+    \ No newline at end of file
+
+"""]]

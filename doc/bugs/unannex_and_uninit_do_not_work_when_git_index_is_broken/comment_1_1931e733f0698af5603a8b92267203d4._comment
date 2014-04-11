@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joey.kitenet.net/"
+ nickname="joey"
+ subject="comment 1"
+ date="2011-04-03T01:40:50Z"
+ content="""
+They rely on git-ls-files to get a list of files that are checked into git, in order to tell what to unannex.
+"""]]

@@ -1,0 +1,1 @@
+If I use git-annex with a centralized bare git repository as [described here](http://git-annex.branchable.com/tips/centralized_git_repository_tutorial/), will the Assistant automatically `git push` and `git pull` the master and git-annex branches? Or does it basically just do a `git annex sync`?

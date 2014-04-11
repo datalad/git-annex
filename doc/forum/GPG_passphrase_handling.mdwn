@@ -1,0 +1,76 @@
+[[!meta title="GPG passphrase handling on OSX"]]
+
+Hello!
+I'm using OSX 10.9 and have installed gpg (and gpg2, if it matters) through
+homebrew and git-annex through cabal. I also installed
+https://github.com/joeyh/git-remote-gcrypt like the UI told me.
+
+Whenever I'm trying to add an encrypted remote through the web UI I get a
+lot of "You need a passphrase to unlock the secret key for user:" on stdout
+and, obviously, I can't enter my passphrase (If I could I wouldn't make this
+post to begin with :))
+Is this behavior normal? What should I do to work around it?
+I did also try to not use the web UI by using this command:
+git annex initremote rsync.net type=gcrypt gitrepo=user@host:directory encryption=pubkey keyid=X
+
+Because of this I can't copy files to my remotes. All I get is:
+-----
+$ git annex copy --to rsync.net
+copy MySecretFile (gpg) 
+You need a passphrase to unlock the secret key for
+user: "user"
+4096-bit RSA key, ID X, created 2013-10-01 (main key ID Y)
+
+(checking rsync.net...) (to rsync.net...) gpg: no valid addressees
+gpg: [stdin]: encryption failed: No user ID
+failed
+-----
+
+Yes, I am using gpg-agent. When other applications ask for my passphrase I get
+the pinentry dialog from GPGTools, just like I've configured it in
+~/.gnupg/gpg-agent.conf, but this isn't the case with git-annex.
+
+If I remove GPGTools from /usr/local/bin with: ``brew link --overwrite gnupg &&
+brew link --overwrite gnupg2'' it works *slightly* better. 
+I get that pinentry dialog I want but when I do a copy I get:
+-----
+$ git annex copy --to rsync.net
+copy MySecretFile (gpg) (checking rsync.net...) (to rsync.net...) gpg: no valid addressees
+gpg: [stdin]: encryption failed: no such user id
+failed
+-----
+
+--debug shows me it is executing gpg llke so:
+-----
+gpg ["--batch","--no-tty","--use-agent","--quiet","--trust-model","always","--batch","--encrypt","--no-encrypt-to","--no-default-recipient","--force-mdc","--no-textmode"]
+-----
+
+$ git annex version
+git-annex version: 4.20131024
+build flags: Assistant Webapp Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
+
+$ gpg --version
+gpg (GnuPG) 2.0.22
+libgcrypt 1.5.3
+Copyright (C) 2013 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+
+Home: ~/.gnupg
+Supported algorithms:
+Pubkey: RSA, ELG, DSA, ?, ?
+Cipher: IDEA, 3DES, CAST5, BLOWFISH, AES, AES192, AES256, TWOFISH,
+        CAMELLIA128, CAMELLIA192, CAMELLIA256
+Hash: MD5, SHA1, RIPEMD160, SHA256, SHA384, SHA512, SHA224
+Compression: Uncompressed, ZIP, ZLIB, BZIP2
+
+ $ gpg-agent --version
+gpg-agent (GnuPG/MacGPG2) 2.0.22
+libgcrypt 1.5.3
+Copyright (C) 2013 Free Software Foundation, Inc.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
