@@ -9,11 +9,12 @@ mkdir --parents dist/$sdist_dir
 
 find . \( -name .git -or -name dist -or -name cabal-dev \) -prune \
 	-or -not -name \\*.orig -not -type d -print \
-| perl -ne "print unless length >= 100 - length q{$sdist_dir}" \
-| xargs cp --parents --target-directory dist/$sdist_dir
+	| perl -ne "print unless length >= 100 - length q{$sdist_dir}" \
+	| grep -v ':' \
+	| xargs cp --parents --target-directory dist/$sdist_dir
 
 cd dist
-tar -caf $sdist_dir.tar.gz $sdist_dir
+tar --format=ustar -caf $sdist_dir.tar.gz $sdist_dir
 
 # Check that tarball can be unpacked by cabal.
 # It's picky about tar longlinks etc.
