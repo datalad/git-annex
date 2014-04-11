@@ -86,7 +86,7 @@ nextTime schedule lasttime = do
 {- Calculate the next time that fits a Schedule, based on the
  - last time it occurred, and the current time. -}
 calcNextTime :: Schedule -> Maybe LocalTime -> LocalTime -> Maybe NextTime
-calcNextTime (Schedule recurrance scheduledtime) lasttime currenttime
+calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 	| scheduledtime == AnyTime = do
 		next <- findfromtoday True
 		return $ case next of
@@ -108,7 +108,13 @@ calcNextTime (Schedule recurrance scheduledtime) lasttime currenttime
 	window startd endd = NextTimeWindow
 		(LocalTime startd nexttime)
 		(LocalTime endd (TimeOfDay 23 59 0))
-	findfrom r afterday candidate = case r of
+	findfrom r afterday candidate
+		| ynum candidate > (ynum (localDay currenttime)) + 100 =
+			-- avoid possible infinite recusion
+			error $ "bug: calcNextTime did not find a time within 100 years to run " ++
+			show (schedule, lasttime, currenttime)
+		| otherwise = findfromChecked r afterday candidate
+	findfromChecked r afterday candidate = case r of
 		Daily
 			| afterday -> Just $ exactly $ addDays 1 candidate
 			| otherwise -> Just $ exactly candidate
@@ -121,7 +127,7 @@ calcNextTime (Schedule recurrance scheduledtime) lasttime currenttime
 					| otherwise -> skip 1
 		Monthly Nothing
 			| afterday -> skip 1
-			| maybe True (\old -> mnum candidate > mnum old && mday candidate >= (mday old `mod` minmday)) lastday ->
+			| maybe True (\old -> mday candidate > mday old && mday candidate >= (mday old `mod` minmday)) lastday ->
 				-- Window only covers current month,
 				-- in case there is a Divisible requirement.
 				Just $ window candidate (endOfMonth candidate)
