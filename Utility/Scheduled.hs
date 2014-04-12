@@ -67,8 +67,8 @@ data ScheduledTime
 type Hour = Int
 type Minute = Int
 
-{- Next time a Schedule should take effect. The NextTimeWindow is used
- - when a Schedule is allowed to start at some point within the window. -}
+-- | Next time a Schedule should take effect. The NextTimeWindow is used
+-- when a Schedule is allowed to start at some point within the window.
 data NextTime
 	= NextTimeExactly LocalTime
 	| NextTimeWindow LocalTime LocalTime
@@ -84,8 +84,8 @@ nextTime schedule lasttime = do
 	tz <- getTimeZone now
 	return $ calcNextTime schedule lasttime $ utcToLocalTime tz now
 
-{- Calculate the next time that fits a Schedule, based on the
- - last time it occurred, and the current time. -}
+-- | Calculate the next time that fits a Schedule, based on the
+-- last time it occurred, and the current time.
 calcNextTime :: Schedule -> Maybe LocalTime -> LocalTime -> Maybe NextTime
 calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 	| scheduledtime == AnyTime = do
@@ -98,10 +98,10 @@ calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
   	findfromtoday anytime = findfrom recurrance afterday today
 	  where
 	  	today = localDay currenttime
-		afterday = sameaslastday || toolatetoday
+		afterday = sameaslastrun || toolatetoday
 		toolatetoday = not anytime && localTimeOfDay currenttime >= nexttime
-		sameaslastday = lastday == Just today
-	lastday = localDay <$> lasttime
+		sameaslastrun = lastrun == Just today
+	lastrun = localDay <$> lasttime
 	nexttime = case scheduledtime of
 		AnyTime -> TimeOfDay 0 0 0
 		SpecificTime h m -> TimeOfDay h m 0
@@ -121,21 +121,19 @@ calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 			| otherwise -> Just $ exactly candidate
 		Weekly Nothing
 			| afterday -> skip 1
-			| otherwise -> case (wday <$> lastday, wday candidate) of
+			| otherwise -> case (wday <$> lastrun, wday candidate) of
 				(Nothing, _) -> Just $ window candidate (addDays 6 candidate)
 				(Just old, curr)
 					| old == curr -> Just $ window candidate (addDays 6 candidate)
 					| otherwise -> skip 1
 		Monthly Nothing
 			| afterday -> skip 1
-			-- any day in the month following lasttime
-			| maybe True (\old -> (mnum candidate > mnum old || ynum candidate > ynum old)) lastday ->
+			| maybe True (candidate `oneMonthPast`) lastrun ->
 				Just $ window candidate (endOfMonth candidate)
 			| otherwise -> skip 1
 		Yearly Nothing
 			| afterday -> skip 1
-			-- any day in the year following lasttime
-			| maybe True (\old -> ynum candidate > ynum old) lastday ->
+			| maybe True (candidate `oneYearPast`) lastrun ->
 				Just $ window candidate (endOfYear candidate)
 			| otherwise -> skip 1
 		Weekly (Just w)
@@ -177,6 +175,32 @@ calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 		getday = localDay . startTime
 	divisible n v = v `rem` n == 0
 
+-- Check if the new Day occurs one month or more past the old Day.
+oneMonthPast :: Day -> Day -> Bool
+new `oneMonthPast` old
+	| mday new >= mday old && (new `newerMonth` old || new `newerYear` old) = True
+	| new `skippedAMonth` old || new `skippedAYear` old = True
+	| otherwise = False
+
+-- Check if the new Day occurs one year or more past the old Day.
+oneYearPast :: Day -> Day -> Bool
+new `oneYearPast` old
+	| yday new >= yday old && new `newerYear` old = True
+	| new `skippedAYear` old = True
+	| otherwise = False
+
+newerMonth :: Day -> Day -> Bool
+new `newerMonth` old = mnum new > mnum old
+
+newerYear :: Day -> Day -> Bool
+new `newerYear` old = ynum new > ynum old
+
+skippedAMonth :: Day -> Day -> Bool
+new `skippedAMonth` old = mnum new > mnum old + 1
+
+skippedAYear :: Day -> Day -> Bool
+new `skippedAYear` old = ynum new > ynum old + 1
+
 endOfMonth :: Day -> Day
 endOfMonth day =
 	let (y,m,_d) = toGregorian day
@@ -201,7 +225,7 @@ yday = snd . toOrdinalDate
 ynum :: Day -> Int
 ynum = fromIntegral . fst . toOrdinalDate
 
-{- Calendar max values. -}
+-- Calendar max values.
 maxyday :: Int
 maxyday = 366 -- with leap days
 maxwnum :: Int
