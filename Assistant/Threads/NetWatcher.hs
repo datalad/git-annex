@@ -130,18 +130,36 @@ listenNMConnections client setconnected =
 			setconnected True
 		| otherwise = noop
 
-{- Listens for Wicd connections (not currently disconnections). -}
+{- Listens for Wicd connections and disconnections.
+ -
+ - Connection example:
+ -   ConnectResultsSent:
+ -     Variant "success"
+ -
+ - Diconnection example:
+ -   StatusChanged
+ -     [Variant 0, Variant [Varient ""]]
+ -}
 listenWicdConnections :: Client -> (Bool -> IO ()) -> IO ()
-listenWicdConnections client callback =
-	listen client matcher $ \event ->
+listenWicdConnections client setconnected = do
+	listen client connmatcher $ \event ->
 		when (any (== wicd_success) (signalBody event)) $
-			callback False >> callback True
+			setconnected True
+	listen client statusmatcher $ \event -> handle (signalBody event)
   where
-	matcher = matchAny
+	connmatcher = matchAny
 		{ matchInterface = Just "org.wicd.daemon"
 		, matchMember = Just "ConnectResultsSent"
 		}
+	statusmatcher = matchAny
+		{ matchInterface = Just "org.wicd.daemon"
+		, matchMember = Just "StatusChanged"
+		}
 	wicd_success = toVariant ("success" :: String)
+	wicd_disconnected = toVariant [toVariant ("" :: String)]
+	handle status
+		| any (== wicd_disconnected) status = setconnected False
+		| otherwise = noop
 
 #endif
 

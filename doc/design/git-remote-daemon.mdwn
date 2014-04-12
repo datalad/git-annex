@@ -164,9 +164,6 @@ No pushing is done for CHANGED, since git handles ssh natively.
 
 TODO:
 
-* For wicd, the NetWatcher does not detect network loss, only network gain.
-  So PAUSE is only sent when a new network is detected, followed
-  immediately by RESUME. This was already fixed for networkmanager.
 * Remote system might not be available. Find a smart way to detect it,
   ideally w/o generating network traffic. One way might be to check
   if the ssh connection caching control socket exists, for example.
