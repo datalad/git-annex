@@ -14,6 +14,7 @@ module Utility.Scheduled (
 	MonthDay,
 	YearDay,
 	nextTime,
+	calcNextTime,
 	startTime,
 	fromSchedule,
 	fromScheduledTime,
@@ -22,7 +23,7 @@ module Utility.Scheduled (
 	toRecurrance,
 	toSchedule,
 	parseSchedule,
-	prop_schedule_roundtrips
+	prop_schedule_roundtrips,
 ) where
 
 import Utility.Data
@@ -127,14 +128,14 @@ calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 					| otherwise -> skip 1
 		Monthly Nothing
 			| afterday -> skip 1
-			| maybe True (\old -> mday candidate > mday old && mday candidate >= (mday old `mod` minmday)) lastday ->
-				-- Window only covers current month,
-				-- in case there is a Divisible requirement.
+			-- any day in the month following lasttime
+			| maybe True (\old -> (mnum candidate > mnum old || ynum candidate > ynum old)) lastday ->
 				Just $ window candidate (endOfMonth candidate)
 			| otherwise -> skip 1
 		Yearly Nothing
 			| afterday -> skip 1
-			| maybe True (\old -> ynum candidate > ynum old && yday candidate >= (yday old `mod` minyday)) lastday ->
+			-- any day in the year following lasttime
+			| maybe True (\old -> ynum candidate > ynum old) lastday ->
 				Just $ window candidate (endOfYear candidate)
 			| otherwise -> skip 1
 		Weekly (Just w)
@@ -200,17 +201,13 @@ yday = snd . toOrdinalDate
 ynum :: Day -> Int
 ynum = fromIntegral . fst . toOrdinalDate
 
-{- Calendar max and mins. -}
+{- Calendar max values. -}
 maxyday :: Int
 maxyday = 366 -- with leap days
-minyday :: Int
-minyday = 365
 maxwnum :: Int
 maxwnum = 53 -- some years have more than 52
 maxmday :: Int
 maxmday = 31
-minmday :: Int
-minmday = 28
 maxmnum :: Int
 maxmnum = 12
 maxwday :: Int

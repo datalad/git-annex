@@ -1,3 +1,9 @@
+git-annex (5.20140413) UNRELEASED; urgency=medium
+
+  * Improve handling on monthly/yearly scheduling.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
+
 git-annex (5.20140412) unstable; urgency=high
 
   * Last release didn't quite fix the high cpu issue in all cases, this should.
