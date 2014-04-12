@@ -31,3 +31,7 @@ new `oneMonthPast` old = fromGregorian y (m+1) d <= new
   where
         (y,m,d) = toGregorian old
 """]]
+
+-------
+
+Today's work was sponsored by Asbjørn Sloth Tønnesen.
