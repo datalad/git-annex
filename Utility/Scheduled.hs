@@ -1,6 +1,6 @@
 {- scheduled activities
  - 
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -24,6 +24,7 @@ module Utility.Scheduled (
 	toSchedule,
 	parseSchedule,
 	prop_schedule_roundtrips,
+	prop_past_sane,
 ) where
 
 import Utility.Data
@@ -177,29 +178,15 @@ calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 
 -- Check if the new Day occurs one month or more past the old Day.
 oneMonthPast :: Day -> Day -> Bool
-new `oneMonthPast` old
-	| mday new >= mday old && (new `newerMonth` old || new `newerYear` old) = True
-	| new `skippedAMonth` old || new `skippedAYear` old = True
-	| otherwise = False
+new `oneMonthPast` old = fromGregorian y (m+1) d <= new
+  where
+	(y,m,d) = toGregorian old
 
 -- Check if the new Day occurs one year or more past the old Day.
 oneYearPast :: Day -> Day -> Bool
-new `oneYearPast` old
-	| yday new >= yday old && new `newerYear` old = True
-	| new `skippedAYear` old = True
-	| otherwise = False
-
-newerMonth :: Day -> Day -> Bool
-new `newerMonth` old = mnum new > mnum old
-
-newerYear :: Day -> Day -> Bool
-new `newerYear` old = ynum new > ynum old
-
-skippedAMonth :: Day -> Day -> Bool
-new `skippedAMonth` old = mnum new > mnum old + 1
-
-skippedAYear :: Day -> Day -> Bool
-new `skippedAYear` old = ynum new > ynum old + 1
+new `oneYearPast` old = fromGregorian (y+1) m d <= new
+  where
+	(y,m,d) = toGregorian old
 
 endOfMonth :: Day -> Day
 endOfMonth day =
@@ -383,3 +370,27 @@ instance Arbitrary Recurrance where
 
 prop_schedule_roundtrips :: Schedule -> Bool
 prop_schedule_roundtrips s = toSchedule (fromSchedule s) == Just s
+
+prop_past_sane :: Bool
+prop_past_sane = and
+	[ all (checksout oneMonthPast) (mplus1 ++ yplus1)
+	, all (not . (checksout oneMonthPast)) (map swap (mplus1 ++ yplus1))
+	, all (checksout oneYearPast) yplus1
+	, all (not . (checksout oneYearPast)) (map swap yplus1)
+	]
+  where
+	mplus1 =   -- new date               old date, 1+ months before it
+		[ (fromGregorian 2014 01 15, fromGregorian 2013 12 15)
+		, (fromGregorian 2014 01 15, fromGregorian 2013 02 15)
+		, (fromGregorian 2014 02 15, fromGregorian 2013 01 15)
+		, (fromGregorian 2014 03 01, fromGregorian 2013 01 15)
+		, (fromGregorian 2014 03 01, fromGregorian 2013 12 15)
+		, (fromGregorian 2015 01 01, fromGregorian 2010 01 01)
+		]
+	yplus1 =   -- new date               old date, 1+ years before it
+		[ (fromGregorian 2014 01 15, fromGregorian 2012 01 16)
+		, (fromGregorian 2014 01 15, fromGregorian 2013 01 14)
+		, (fromGregorian 2022 12 31, fromGregorian 2000 01 01)
+		]
+	checksout cmp (new, old) = new `cmp` old
+	swap (a,b) = (b,a)
