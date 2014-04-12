@@ -1,6 +1,6 @@
 {- git-annex ssh interface, with connection caching
  -
- - Copyright 2012,2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -11,19 +11,28 @@ module Annex.Ssh (
 	sshCachingOptions,
 	sshCacheDir,
 	sshReadPort,
+	sshCachingEnv,
+	sshCachingTo,
+	inRepoWithSshCachingTo,
+	runSshCaching,
 ) where
 
 import qualified Data.Map as M
 import Data.Hash.MD5
 import System.Process (cwd)
+import System.Exit
 
 import Common.Annex
 import Annex.LockPool
 import qualified Build.SysConfig as SysConfig
 import qualified Annex
+import qualified Git
+import qualified Git.Url
 import Config
+import Config.Files
 import Utility.Env
 import Types.CleanupActions
+import Annex.Index (addGitEnv)
 #ifndef mingw32_HOST_OS
 import Annex.Perms
 #endif
@@ -31,22 +40,13 @@ import Annex.Perms
 {- Generates parameters to ssh to a given host (or user@host) on a given
  - port, with connection caching. -}
 sshCachingOptions :: (String, Maybe Integer) -> [CommandParam] -> Annex [CommandParam]
-sshCachingOptions (host, port) opts = do
-	Annex.addCleanup SshCachingCleanup sshCleanup
-	go =<< sshInfo (host, port)
+sshCachingOptions (host, port) opts = go =<< sshInfo (host, port)
   where
 	go (Nothing, params) = ret params
 	go (Just socketfile, params) = do
-		cleanstale
-		liftIO $ createDirectoryIfMissing True $ parentDir socketfile
-		lockFile $ socket2lock socketfile
+		prepSocket socketfile
 		ret params
 	ret ps = return $ ps ++ opts ++ portParams port ++ [Param "-T"]
-	-- If the lock pool is empty, this is the first ssh of this
-	-- run. There could be stale ssh connections hanging around
-	-- from a previous git-annex run that was interrupted.
-	cleanstale = whenM (not . any isLock . M.keys <$> getPool)
-		sshCleanup
 
 {- Returns a filename to use for a ssh connection caching socket, and
  - parameters to enable ssh connection caching. -}
@@ -108,6 +108,21 @@ sshCacheDir
 portParams :: Maybe Integer -> [CommandParam]
 portParams Nothing = []
 portParams (Just port) = [Param "-p", Param $ show port]
+
+{- Prepare to use a socket file. Locks a lock file to prevent
+ - other git-annex processes from stopping the ssh on this socket. -}
+prepSocket :: FilePath -> Annex ()
+prepSocket socketfile = do
+	-- If the lock pool is empty, this is the first ssh of this
+	-- run. There could be stale ssh connections hanging around
+	-- from a previous git-annex run that was interrupted.
+	whenM (not . any isLock . M.keys <$> getPool)
+		sshCleanup
+	-- Cleanup at end of this run.
+	Annex.addCleanup SshCachingCleanup sshCleanup
+
+	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
+	lockFile $ socket2lock socketfile
 
 {- Stop any unused ssh processes. -}
 sshCleanup :: Annex ()
@@ -199,3 +214,46 @@ sshReadPort params = (port, reverse args)
 	aux (p,ps) (q:rest) | "-p" `isPrefixOf` q = aux (readPort $ drop 2 q, ps) rest
 			    | otherwise = aux (p,q:ps) rest
 	readPort p = fmap fst $ listToMaybe $ reads p
+
+{- When this env var is set, git-annex runs ssh with parameters
+ - to use the socket file that the env var contains.
+ -
+ - This is a workaround for GiT_SSH not being able to contain
+ - additional parameters to pass to ssh. -}
+sshCachingEnv :: String
+sshCachingEnv = "GIT_ANNEX_SSHCACHING"
+
+{- Enables ssh caching for git push/pull to a particular
+ - remote git repo. (Can safely be used on non-ssh remotes.)
+ -
+ - Like inRepo, the action is run with the local git repo.
+ - But here it's a modified version, with gitEnv to set GIT_SSH=git-annex,
+ - and sshCachingEnv set so that git-annex will know what socket
+ - file to use. -}
+inRepoWithSshCachingTo :: Git.Repo -> (Git.Repo -> IO a) -> Annex a
+inRepoWithSshCachingTo remote a =
+	liftIO . a =<< sshCachingTo remote =<< gitRepo
+
+{- To make any git commands be run with ssh caching enabled, 
+ - alters the local Git.Repo's gitEnv to set GIT_SSH=git-annex,
+ - and set sshCachingEnv so that git-annex will know what socket
+ - file to use. -}
+sshCachingTo :: Git.Repo -> Git.Repo -> Annex Git.Repo
+sshCachingTo remote g = case Git.Url.hostuser remote of
+	Nothing -> return g
+	Just host -> do
+		(msockfile, _) <- sshInfo (host, Git.Url.port remote)
+		case msockfile of
+			Nothing -> return g
+			Just sockfile -> do
+				command <- liftIO readProgramFile
+				prepSocket sockfile
+				liftIO $ do
+					g' <- addGitEnv g sshCachingEnv sockfile
+					addGitEnv g' "GIT_SSH" command
+
+runSshCaching :: [String] -> String -> IO ()
+runSshCaching args sockfile = do
+	let args' = toCommand (sshConnectionCachingParams sockfile) ++ args
+	let p = proc "ssh" args'
+	exitWith =<< waitForProcess . processHandle =<< createProcess p

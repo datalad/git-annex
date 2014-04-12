@@ -1,6 +1,6 @@
 {- git-annex main program
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,8 @@ module CmdLine.GitAnnex where
 import qualified Git.CurrentRepo
 import CmdLine
 import Command
+import Utility.Env
+import Annex.Ssh
 
 import qualified Command.Add
 import qualified Command.Unannex
@@ -193,4 +195,5 @@ run args = do
 #ifdef WITH_EKG
 	_ <- forkServer "localhost" 4242
 #endif
-	dispatch True args cmds gitAnnexOptions [] header Git.CurrentRepo.get
+	maybe (dispatch True args cmds gitAnnexOptions [] header Git.CurrentRepo.get)
+		(runSshCaching args) =<< getEnv sshCachingEnv

@@ -20,7 +20,7 @@ import Annex.CatFile
 import Control.Concurrent
 
 -- Runs an Annex action. Long-running actions should be avoided,
--- since only one liftAnnex can be running at a time, amoung all
+-- since only one liftAnnex can be running at a time, across all
 -- transports.
 liftAnnex :: TransportHandle -> Annex a -> IO a
 liftAnnex (TransportHandle _ annexstate) a = do

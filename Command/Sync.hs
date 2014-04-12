@@ -21,7 +21,6 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git.Branch
 import qualified Git.Ref
 import qualified Git
-import qualified Types.Remote
 import qualified Remote.Git
 import Config
 import Annex.Wanted
@@ -32,6 +31,7 @@ import Logs.Location
 import Annex.Drop
 import Annex.UUID
 import Annex.AutoMerge
+import Annex.Ssh
 
 import Control.Concurrent.MVar
 
@@ -113,11 +113,11 @@ syncRemotes rs = ifM (Annex.getState Annex.fast) ( nub <$> pickfast , wanted )
 		| null rs = filterM good =<< concat . Remote.byCost <$> available
 		| otherwise = listed
 	listed = catMaybes <$> mapM (Remote.byName . Just) rs
-	available = filter (remoteAnnexSync . Types.Remote.gitconfig)
+	available = filter (remoteAnnexSync . Remote.gitconfig)
 		. filter (not . Remote.isXMPPRemote)
 		<$> Remote.remoteList
 	good r
-		| Remote.gitSyncableRemote r = Remote.Git.repoAvail $ Types.Remote.repo r
+		| Remote.gitSyncableRemote r = Remote.Git.repoAvail $ Remote.repo r
 		| otherwise = return True
 	fastest = fromMaybe [] . headMaybe . Remote.byCost
 
@@ -201,7 +201,7 @@ pullRemote remote branch = do
 		stopUnless fetch $
 			next $ mergeRemote remote branch
   where
-	fetch = inRepo $ Git.Command.runBool
+	fetch = inRepoWithSshCachingTo (Remote.repo remote) $ Git.Command.runBool
 		[Param "fetch", Param $ Remote.name remote]
 
 {- The remote probably has both a master and a synced/master branch.
@@ -227,14 +227,15 @@ pushRemote _remote Nothing = stop
 pushRemote remote (Just branch) = go =<< needpush
   where
 	needpush
-		| remoteAnnexReadOnly (Types.Remote.gitconfig remote) = return False
+		| remoteAnnexReadOnly (Remote.gitconfig remote) = return False
 		| otherwise = anyM (newer remote) [syncBranch branch, Annex.Branch.name]
 	go False = stop
 	go True = do
 		showStart "push" (Remote.name remote)
 		next $ next $ do
 			showOutput
-			ok <- inRepo $ pushBranch remote branch
+			ok <- inRepoWithSshCachingTo (Remote.repo remote) $
+				pushBranch remote branch
 			unless ok $ do
 				warning $ unwords [ "Pushing to " ++ Remote.name remote ++ " failed." ]
 				showLongNote "(non-fast-forward problems can be solved by setting receive.denyNonFastforwards to false in the remote's git config)"
@@ -367,7 +368,7 @@ syncFile rs f (k, _) = do
 		next $ next $ getViaTmp k $ \dest -> getKeyFile' k (Just f) dest have
 
 	wantput r
-		| Remote.readonly r || remoteAnnexReadOnly (Types.Remote.gitconfig r) = return False
+		| Remote.readonly r || remoteAnnexReadOnly (Remote.gitconfig r) = return False
 		| otherwise = wantSend True (Just k) (Just f) (Remote.uuid r)
 	handleput lack = ifM (inAnnex k)
 		( map put <$> filterM wantput lack

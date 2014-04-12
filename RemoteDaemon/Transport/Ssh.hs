@@ -8,6 +8,7 @@
 module RemoteDaemon.Transport.Ssh (transport) where
 
 import Common.Annex
+import Annex.Ssh
 import RemoteDaemon.Types
 import RemoteDaemon.Common
 import Remote.Helper.Ssh
@@ -22,7 +23,14 @@ import Control.Concurrent.Async
 import System.Process (std_in, std_out, std_err)
 
 transport :: Transport
-transport r url transporthandle ichan ochan = do
+transport r url h@(TransportHandle g s) ichan ochan = do
+	-- enable ssh connection caching wherever inLocalRepo is called
+	g' <- liftAnnex h $ sshCachingTo r g
+	transport' r url (TransportHandle g' s) ichan ochan
+
+transport' :: Transport
+transport' r url transporthandle ichan ochan = do
+
 	v <- liftAnnex transporthandle $ git_annex_shell r "notifychanges" [] []
 	case v of
 		Nothing -> noop
