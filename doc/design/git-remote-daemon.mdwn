@@ -95,18 +95,18 @@ the webapp.
 
 * `PAUSE`
 
-  This indicates that the network connection has gone down,
-  or the user has requested a pause.
+  The user has requested a pause.  
   git-remote-daemon should close connections and idle.
 
-  Affects all remotes.
+* `LOSTNET`
+
+  The network connection has been lost.  
+  git-remote-daemon should close connections and idle.
 
 * `RESUME`
 
-  This indicates that the network connection has come back up, or the user
-  has asked it to run again. Start back up network connections.
-
-  Affects all remotes.
+  Undoes PAUSE or DISCONNECTED.  
+  Start back up network connections.
 
 * `CHANGED ref ...`
 
@@ -170,6 +170,21 @@ TODO:
 * Remote system might not be available. Find a smart way to detect it,
   ideally w/o generating network traffic. One way might be to check
   if the ssh connection caching control socket exists, for example.
+* Now that ssh connection caching is enabled for git push/pull in sync,
+  there's the possibility that a stale ssh connection may linger when 
+  changing network connections, and so attempts to use it will stall.  
+  (This was already a potential issue with transfers, which already
+  used the caching.)  
+
+  One option is ssh's ServerAliveCountMax, which will make a dead
+  ssh connection disconnect after approx 45 seconds, per ssh manual.
+  It would need to be enabled by setting ServerAliveInterval=15.
+  And this would add network traffic..
+
+  Another option is to disable all cached connections when the network
+  connection changes. This would handle *most* cases. The case
+  not handled is eg, my dialup ppp box getting a new public IP address,
+  which my laptop won't notice. **done**
 
 ## telehash 
 

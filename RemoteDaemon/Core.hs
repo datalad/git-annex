@@ -18,6 +18,7 @@ import qualified Git.Types as Git
 import qualified Git.CurrentRepo
 import Utility.SimpleProtocol
 import Config
+import Annex.Ssh
 
 import Control.Concurrent.Async
 import Control.Concurrent
@@ -65,12 +66,19 @@ runController ichan ochan = do
 				let common = M.intersection m m'
 				let new = M.difference m' m
 				let old = M.difference m m'
-				stoprunning old
+				broadcast STOP old
 				unless paused $
 					startrunning new
 				go h paused (M.union common new)
+			LOSTNET -> do
+				-- force close all cached ssh connections
+				-- (done here so that if there are multiple
+				-- ssh remotes, it's only done once)
+				liftAnnex h forceSshCleanup
+				broadcast LOSTNET m
+				go h True M.empty
 			PAUSE -> do
-				stoprunning m
+				broadcast STOP m
 				go h True M.empty
 			RESUME -> do
 				when paused $
@@ -89,9 +97,9 @@ runController ichan ochan = do
 	startrunning m = forM_ (M.elems m) startrunning'
 	startrunning' (transport, _) = void $ async transport
 	
-	-- Ask the transport nicely to stop.
-	stoprunning m = forM_ (M.elems m) stoprunning'
-	stoprunning' (_, c) = writeChan c STOP
+	broadcast msg m = forM_ (M.elems m) send
+	  where
+		send (_, c) = writeChan c msg
 
 -- Generates a map with a transport for each supported remote in the git repo,
 -- except those that have annex.sync = false

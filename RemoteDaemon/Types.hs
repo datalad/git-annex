@@ -42,6 +42,7 @@ data Emitted
 -- Messages that the deamon consumes.
 data Consumed
 	= PAUSE
+	| LOSTNET
 	| RESUME
 	| CHANGED RefList
 	| RELOAD
@@ -63,6 +64,7 @@ instance Proto.Sendable Emitted where
 
 instance Proto.Sendable Consumed where
 	formatMessage PAUSE = ["PAUSE"]
+	formatMessage LOSTNET = ["LOSTNET"]
 	formatMessage RESUME = ["RESUME"]
 	formatMessage (CHANGED refs) =["CHANGED", Proto.serialize refs]
 	formatMessage RELOAD = ["RELOAD"]
@@ -78,6 +80,7 @@ instance Proto.Receivable Emitted where
 
 instance Proto.Receivable Consumed where
 	parseCommand "PAUSE" = Proto.parse0 PAUSE
+	parseCommand "LOSTNET" = Proto.parse0 LOSTNET
 	parseCommand "RESUME" = Proto.parse0 RESUME
 	parseCommand "CHANGED" = Proto.parse1 CHANGED
 	parseCommand "RELOAD" = Proto.parse0 RELOAD

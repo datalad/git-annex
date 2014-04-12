@@ -71,7 +71,7 @@ dbusThread = do
 		)
 	handleconn = do
 		debug ["detected network connection"]
-		sendRemoteControl PAUSE
+		sendRemoteControl LOSTNET
 		notifyNetMessagerRestart
 		handleConnection
 		sendRemoteControl RESUME

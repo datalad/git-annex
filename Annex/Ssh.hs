@@ -11,6 +11,7 @@ module Annex.Ssh (
 	sshCachingOptions,
 	sshCacheDir,
 	sshReadPort,
+	forceSshCleanup,
 	sshCachingEnv,
 	sshCachingTo,
 	inRepoWithSshCachingTo,
@@ -124,21 +125,27 @@ prepSocket socketfile = do
 	liftIO $ createDirectoryIfMissing True $ parentDir socketfile
 	lockFile $ socket2lock socketfile
 
-{- Stop any unused ssh processes. -}
-sshCleanup :: Annex ()
-sshCleanup = go =<< sshCacheDir
+enumSocketFiles :: Annex [FilePath]
+enumSocketFiles = go =<< sshCacheDir
   where
-	go Nothing = noop
-	go (Just dir) = do
-		sockets <- liftIO $ filter (not . isLock)
-			<$> catchDefaultIO [] (dirContents dir)
-		forM_ sockets cleanup
+	go Nothing = return []
+	go (Just dir) = liftIO $ filter (not . isLock)
+		<$> catchDefaultIO [] (dirContents dir)
+
+{- Stop any unused ssh connection caching processes. -}
+sshCleanup :: Annex ()
+sshCleanup = mapM_ cleanup =<< enumSocketFiles
+  where
 	cleanup socketfile = do
 #ifndef mingw32_HOST_OS
 		-- Drop any shared lock we have, and take an
 		-- exclusive lock, without blocking. If the lock
 		-- succeeds, nothing is using this ssh, and it can
 		-- be stopped.
+		--
+		-- After ssh is stopped cannot remove the lock file;
+		-- other processes may be waiting on our exclusive
+		-- lock to use it.
 		let lockfile = socket2lock socketfile
 		unlockFile lockfile
 		mode <- annexFileMode
@@ -148,24 +155,28 @@ sshCleanup = go =<< sshCacheDir
 			setLock fd (WriteLock, AbsoluteSeek, 0, 0)
 		case v of
 			Left _ -> noop
-			Right _ -> stopssh socketfile
+			Right _ -> forceStopSsh socketfile
 		liftIO $ closeFd fd
 #else
-		stopssh socketfile
+		forceStopSsh socketfile
 #endif
-	stopssh socketfile = do
-		let (dir, base) = splitFileName socketfile
-		let params = sshConnectionCachingParams base
-		-- "ssh -O stop" is noisy on stderr even with -q
-		void $ liftIO $ catchMaybeIO $
-			withQuietOutput createProcessSuccess $
-				(proc "ssh" $ toCommand $
-					[ Params "-O stop"
-					] ++ params ++ [Param "localhost"])
-					{ cwd = Just dir }
-		liftIO $ nukeFile socketfile
-		-- Cannot remove the lock file; other processes may
-		-- be waiting on our exclusive lock to use it.
+
+{- Stop all ssh connection caching processes, even when they're in use. -}
+forceSshCleanup :: Annex ()
+forceSshCleanup = mapM_ forceStopSsh =<< enumSocketFiles
+
+forceStopSsh :: FilePath -> Annex ()
+forceStopSsh socketfile = do
+	let (dir, base) = splitFileName socketfile
+	let params = sshConnectionCachingParams base
+	-- "ssh -O stop" is noisy on stderr even with -q
+	void $ liftIO $ catchMaybeIO $
+		withQuietOutput createProcessSuccess $
+			(proc "ssh" $ toCommand $
+				[ Params "-O stop"
+				] ++ params ++ [Param "localhost"])
+				{ cwd = Just dir }
+	liftIO $ nukeFile socketfile
 
 {- This needs to be as short as possible, due to limitations on the length
  - of the path to a socket file. At the same time, it needs to be unique

@@ -84,6 +84,7 @@ transport' r url transporthandle ichan ochan = do
 		msg <- readChan ichan
 		case msg of
 			STOP -> return Stopping
+			LOSTNET -> return Stopping
 			_ -> handlecontrol
 
 	-- Old versions of git-annex-shell that do not support
