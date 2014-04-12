@@ -1,3 +1,14 @@
+## version 5.20140411
+
+This release fixes a bug that could cause the assistant to use a *lot* of
+CPU, when monthly fscking was set up.
+
+Automatic upgrading was broken on OSX for previous versions. This has been
+fixed, but you'll need to manually upgrade to this version to get it going
+again. (Note that the fix is currently only available in the daily builds,
+not a released version.) Workaround: Remove the wget bundled inside the
+git-annex dmg.
+
 ## version 5.20140221
 
 The Windows port of the assistant and webapp is now considered to be beta

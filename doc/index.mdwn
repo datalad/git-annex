@@ -39,7 +39,8 @@ files with git.
 
 ----
 
-git-annex is [[Free Software|license]]
+git-annex is [[Free Software|license]], written in [Haskell](http://www.haskell.org/).
+You can [[contribute]]!
 
 git-annex's wiki is powered by [Ikiwiki](http://ikiwiki.info/) and
 hosted by [Branchable](http://branchable.com/).

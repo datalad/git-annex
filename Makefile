@@ -140,7 +140,7 @@ OSXAPP_BASE=$(OSXAPP_DEST)/Contents/MacOS/bundle
 osxapp: Build/Standalone Build/OSXMkLibs
 	$(MAKE) git-annex
 
-	rm -rf "$(OSXAPP_DEST)"
+	rm -rf "$(OSXAPP_DEST)" "$(OSXAPP_BASE)"
 	install -d tmp/build-dmg
 	cp -R standalone/osx/git-annex.app "$(OSXAPP_DEST)"
 

@@ -1,6 +1,6 @@
 {- scheduled activities
  - 
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -10,7 +10,12 @@ module Utility.Scheduled (
 	Recurrance(..),
 	ScheduledTime(..),
 	NextTime(..),
+	WeekDay,
+	MonthDay,
+	YearDay,
 	nextTime,
+	calcNextTime,
+	startTime,
 	fromSchedule,
 	fromScheduledTime,
 	toScheduledTime,
@@ -18,12 +23,17 @@ module Utility.Scheduled (
 	toRecurrance,
 	toSchedule,
 	parseSchedule,
-	prop_schedule_roundtrips
+	prop_schedule_roundtrips,
+	prop_past_sane,
 ) where
 
-import Common
+import Utility.Data
 import Utility.QuickCheck
+import Utility.PartialPrelude
+import Utility.Misc
 
+import Control.Applicative
+import Data.List
 import Data.Time.Clock
 import Data.Time.LocalTime
 import Data.Time.Calendar
@@ -41,9 +51,9 @@ data Recurrance
 	| Weekly (Maybe WeekDay)
 	| Monthly (Maybe MonthDay)
 	| Yearly (Maybe YearDay)
-	-- Days, Weeks, or Months of the year evenly divisible by a number.
-	-- (Divisible Year is years evenly divisible by a number.)
 	| Divisible Int Recurrance
+	-- ^ Days, Weeks, or Months of the year evenly divisible by a number.
+	-- (Divisible Year is years evenly divisible by a number.)
   deriving (Eq, Read, Show, Ord)
 
 type WeekDay = Int
@@ -58,8 +68,8 @@ data ScheduledTime
 type Hour = Int
 type Minute = Int
 
-{- Next time a Schedule should take effect. The NextTimeWindow is used
- - when a Schedule is allowed to start at some point within the window. -}
+-- | Next time a Schedule should take effect. The NextTimeWindow is used
+-- when a Schedule is allowed to start at some point within the window.
 data NextTime
 	= NextTimeExactly LocalTime
 	| NextTimeWindow LocalTime LocalTime
@@ -75,10 +85,10 @@ nextTime schedule lasttime = do
 	tz <- getTimeZone now
 	return $ calcNextTime schedule lasttime $ utcToLocalTime tz now
 
-{- Calculate the next time that fits a Schedule, based on the
- - last time it occurred, and the current time. -}
+-- | Calculate the next time that fits a Schedule, based on the
+-- last time it occurred, and the current time.
 calcNextTime :: Schedule -> Maybe LocalTime -> LocalTime -> Maybe NextTime
-calcNextTime (Schedule recurrance scheduledtime) lasttime currenttime
+calcNextTime schedule@(Schedule recurrance scheduledtime) lasttime currenttime
 	| scheduledtime == AnyTime = do
 		next <- findfromtoday True
 		return $ case next of
@@ -89,10 +99,10 @@ calcNextTime (Schedule recurrance scheduledtime) lasttime currenttime
   	findfromtoday anytime = findfrom recurrance afterday today
 	  where
 	  	today = localDay currenttime
-		afterday = sameaslastday || toolatetoday
+		afterday = sameaslastrun || toolatetoday
 		toolatetoday = not anytime && localTimeOfDay currenttime >= nexttime
-		sameaslastday = lastday == Just today
-	lastday = localDay <$> lasttime
+		sameaslastrun = lastrun == Just today
+	lastrun = localDay <$> lasttime
 	nexttime = case scheduledtime of
 		AnyTime -> TimeOfDay 0 0 0
 		SpecificTime h m -> TimeOfDay h m 0
@@ -100,67 +110,83 @@ calcNextTime (Schedule recurrance scheduledtime) lasttime currenttime
 	window startd endd = NextTimeWindow
 		(LocalTime startd nexttime)
 		(LocalTime endd (TimeOfDay 23 59 0))
-	findfrom r afterday day = case r of
+	findfrom r afterday candidate
+		| ynum candidate > (ynum (localDay currenttime)) + 100 =
+			-- avoid possible infinite recusion
+			error $ "bug: calcNextTime did not find a time within 100 years to run " ++
+			show (schedule, lasttime, currenttime)
+		| otherwise = findfromChecked r afterday candidate
+	findfromChecked r afterday candidate = case r of
 		Daily
-			| afterday -> Just $ exactly $ addDays 1 day
-			| otherwise -> Just $ exactly day
+			| afterday -> Just $ exactly $ addDays 1 candidate
+			| otherwise -> Just $ exactly candidate
 		Weekly Nothing
 			| afterday -> skip 1
-			| otherwise -> case (wday <$> lastday, wday day) of
-				(Nothing, _) -> Just $ window day (addDays 6 day)
+			| otherwise -> case (wday <$> lastrun, wday candidate) of
+				(Nothing, _) -> Just $ window candidate (addDays 6 candidate)
 				(Just old, curr)
-					| old == curr -> Just $ window day (addDays 6 day)
+					| old == curr -> Just $ window candidate (addDays 6 candidate)
 					| otherwise -> skip 1
 		Monthly Nothing
 			| afterday -> skip 1
-			| maybe True (\old -> mnum day > mday old && mday day >= (mday old `mod` minmday)) lastday ->
-				-- Window only covers current month,
-				-- in case there is a Divisible requirement.
-				Just $ window day (endOfMonth day)
+			| maybe True (candidate `oneMonthPast`) lastrun ->
+				Just $ window candidate (endOfMonth candidate)
 			| otherwise -> skip 1
 		Yearly Nothing
 			| afterday -> skip 1
-			| maybe True (\old -> ynum day > ynum old && yday day >= (yday old `mod` minyday)) lastday ->
-				Just $ window day (endOfYear day)
+			| maybe True (candidate `oneYearPast`) lastrun ->
+				Just $ window candidate (endOfYear candidate)
 			| otherwise -> skip 1
 		Weekly (Just w)
 			| w < 0 || w > maxwday -> Nothing
-			| w == wday day -> if afterday
-				then Just $ exactly $ addDays 7 day
-				else Just $ exactly day
+			| w == wday candidate -> if afterday
+				then Just $ exactly $ addDays 7 candidate
+				else Just $ exactly candidate
 			| otherwise -> Just $ exactly $
-				addDays (fromIntegral $ (w - wday day) `mod` 7) day
+				addDays (fromIntegral $ (w - wday candidate) `mod` 7) candidate
 		Monthly (Just m)
 			| m < 0 || m > maxmday -> Nothing
 			-- TODO can be done more efficiently than recursing
-			| m == mday day -> if afterday
+			| m == mday candidate -> if afterday
 				then skip 1
-				else Just $ exactly day
+				else Just $ exactly candidate
 			| otherwise -> skip 1
 		Yearly (Just y)
 			| y < 0 || y > maxyday -> Nothing
-			| y == yday day -> if afterday
+			| y == yday candidate -> if afterday
 				then skip 365
-				else Just $ exactly day
+				else Just $ exactly candidate
 			| otherwise -> skip 1
 		Divisible n r'@Daily -> handlediv n r' yday (Just maxyday)
 		Divisible n r'@(Weekly _) -> handlediv n r' wnum (Just maxwnum)
 		Divisible n r'@(Monthly _) -> handlediv n r' mnum (Just maxmnum)
 		Divisible n r'@(Yearly _) -> handlediv n r' ynum Nothing
-		Divisible _ r'@(Divisible _ _) -> findfrom r' afterday day
+		Divisible _ r'@(Divisible _ _) -> findfrom r' afterday candidate
 	  where
-	  	skip n = findfrom r False (addDays n day)
+	  	skip n = findfrom r False (addDays n candidate)
 	  	handlediv n r' getval mmax
 			| n > 0 && maybe True (n <=) mmax =
-				findfromwhere r' (divisible n . getval) afterday day
+				findfromwhere r' (divisible n . getval) afterday candidate
 			| otherwise = Nothing
-	findfromwhere r p afterday day
+	findfromwhere r p afterday candidate
 		| maybe True (p . getday) next = next
 		| otherwise = maybe Nothing (findfromwhere r p True . getday) next
 	  where
-		next = findfrom r afterday day
+		next = findfrom r afterday candidate
 		getday = localDay . startTime
 	divisible n v = v `rem` n == 0
+
+-- Check if the new Day occurs one month or more past the old Day.
+oneMonthPast :: Day -> Day -> Bool
+new `oneMonthPast` old = fromGregorian y (m+1) d <= new
+  where
+	(y,m,d) = toGregorian old
+
+-- Check if the new Day occurs one year or more past the old Day.
+oneYearPast :: Day -> Day -> Bool
+new `oneYearPast` old = fromGregorian (y+1) m d <= new
+  where
+	(y,m,d) = toGregorian old
 
 endOfMonth :: Day -> Day
 endOfMonth day =
@@ -186,17 +212,13 @@ yday = snd . toOrdinalDate
 ynum :: Day -> Int
 ynum = fromIntegral . fst . toOrdinalDate
 
-{- Calendar max and mins. -}
+-- Calendar max values.
 maxyday :: Int
 maxyday = 366 -- with leap days
-minyday :: Int
-minyday = 365
 maxwnum :: Int
 maxwnum = 53 -- some years have more than 52
 maxmday :: Int
 maxmday = 31
-minmday :: Int
-minmday = 28
 maxmnum :: Int
 maxmnum = 12
 maxwday :: Int
@@ -348,3 +370,27 @@ instance Arbitrary Recurrance where
 
 prop_schedule_roundtrips :: Schedule -> Bool
 prop_schedule_roundtrips s = toSchedule (fromSchedule s) == Just s
+
+prop_past_sane :: Bool
+prop_past_sane = and
+	[ all (checksout oneMonthPast) (mplus1 ++ yplus1)
+	, all (not . (checksout oneMonthPast)) (map swap (mplus1 ++ yplus1))
+	, all (checksout oneYearPast) yplus1
+	, all (not . (checksout oneYearPast)) (map swap yplus1)
+	]
+  where
+	mplus1 =   -- new date               old date, 1+ months before it
+		[ (fromGregorian 2014 01 15, fromGregorian 2013 12 15)
+		, (fromGregorian 2014 01 15, fromGregorian 2013 02 15)
+		, (fromGregorian 2014 02 15, fromGregorian 2013 01 15)
+		, (fromGregorian 2014 03 01, fromGregorian 2013 01 15)
+		, (fromGregorian 2014 03 01, fromGregorian 2013 12 15)
+		, (fromGregorian 2015 01 01, fromGregorian 2010 01 01)
+		]
+	yplus1 =   -- new date               old date, 1+ years before it
+		[ (fromGregorian 2014 01 15, fromGregorian 2012 01 16)
+		, (fromGregorian 2014 01 15, fromGregorian 2013 01 14)
+		, (fromGregorian 2022 12 31, fromGregorian 2000 01 01)
+		]
+	checksout cmp (new, old) = new `cmp` old
+	swap (a,b) = (b,a)

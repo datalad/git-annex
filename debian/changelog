@@ -1,7 +1,5 @@
-git-annex (5.20140406) UNRELEASED; urgency=medium
+git-annex (5.20140413) UNRELEASED; urgency=medium
 
-  * importfeed: Filename template can now contain an itempubdate variable.
-    Needs feed 0.3.9.2.
   * assistant: Now detects immediately when other repositories push
     changes to a ssh remote, and pulls.
     XMPP is no longer needed in this configuration!
@@ -10,8 +8,31 @@ git-annex (5.20140406) UNRELEASED; urgency=medium
     it's currently connected with.
   * webapp: Rework xmpp nudge to prompt for either xmpp or a ssh remote be
     set up.
+  * Improve handling on monthly/yearly scheduling.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 07 Apr 2014 16:22:02 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
+
+git-annex (5.20140412) unstable; urgency=high
+
+  * Last release didn't quite fix the high cpu issue in all cases, this should.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 17:14:38 -0400
+
+git-annex (5.20140411) unstable; urgency=high
+
+  * importfeed: Filename template can now contain an itempubdate variable.
+    Needs feed 0.3.9.2.
+  * Fix rsync progress parsing in locales that use comma in number display.
+    Closes: #744148
+  * assistant: Fix high CPU usage triggered when a monthly fsck is scheduled,
+    and the last time the job ran was a day of the month > 12. This caused a
+    runaway loop. Thanks to Anarcat for his assistance, and to Maximiliano
+    Curia for identifying the cause of this bug.
+  * Remove wget from OSX dmg, due to issues with cert paths that broke
+    git-annex automatic upgrading. Instead, curl is used, unless the
+    OSX system has wget installed, which will then be used.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 14:59:49 -0400
 
 git-annex (5.20140405) unstable; urgency=medium
 
