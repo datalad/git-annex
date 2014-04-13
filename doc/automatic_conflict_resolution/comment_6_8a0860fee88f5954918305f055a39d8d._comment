@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn3p4i4lk_zMilvjnJ9sS6g2nerpgz0Fjc"
+ nickname="Matthias"
+ subject="auto conflict resolution master branch"
+ date="2014-04-13T17:48:19Z"
+ content="""
+@joeyh: This must be a misunderstanding of what I want. I use version 5.20140320. I can't find a workflow where \"git annex merge\" changes my master branch, it only updates the git-annex branch.
+
+Thinking again of it after some time, I am basically fine with \"git annex sync\". The only thing I am uncomfortable with is that the automatic merge is pushed without review.
+"""]]
