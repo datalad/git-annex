@@ -10,7 +10,7 @@ when git invokes git-annex as ssh, it runs ssh with the connection caching
 parameters.
 
 Also, improved the network-manager and wicd code, so it detects when a
-connection has gone down. That propigates through to the remote-daemon,
+connection has gone down. That propagates through to the remote-daemon,
 which closes all ssh connections. I need to also find out how to detect
 network connections/disconnections on OSX..
 
