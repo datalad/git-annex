@@ -1,0 +1,9 @@
+I am unable to start the git-annex assistant/webapp.
+
+I use OpenBox as desktop manager and the assistant/webapp is not available through the menu.
+
+Trying to use the CLI, all my attempts fail with a message saying that it(?) is not a git repository!? Since the video show that on first start the assistant/webapp allows a choice of a directory and then creates it, I am not sure as to what git initialized directory does the assistant/webapp requires in this instance. And I also guess that means invoking the webapp from that directory rather than from the directory that contains the standalone git-annex.
+
+Any help would be appreciated as git-annex really seems to be the app I am looking for.  :)
+
+Thanks
