@@ -91,10 +91,10 @@ Edit this page and add instructions!
 If your file manager can run a command on a file, it should be easy to
 integrate git-annex with it. A simple script will suffice:
 
-	#!/bun/sh
+	#!/bin/sh
 	git-annex get --notify-start --notify-finish -- "$@"
 
 The --notify-start and --notify-stop options make git-annex display a
 desktop notification. This is useful to give the user an indication that
 their action took effect. Desktop notifications are currently only
-implenented for Linux.
+implemented for Linux.
