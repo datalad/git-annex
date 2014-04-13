@@ -1,0 +1,8 @@
+I am new to git (but extensively used SVN).
+
+In SVN I could have a big fat repository but only check out sub-trees is it.
+Is that also common in git(-annex) / recommended?
+
+E.g., should I create a big-fat repos with all data I have (personal data, music, videos, ...) and check out only the appropriate subtress or create a repository for each purpose? E.g., one for Fotos, Music, OnTheGoData, ebooks, ...
+
+What happens if I have a git-annex repository checked out at my laptop (say, d:\Files) and within it, check out another one (e.g. d:\Files\Library)?

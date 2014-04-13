@@ -2,19 +2,12 @@ Tobias Ussing
 
 See:
 
-[[https://github.com/TobiasTheViking/flickrannex/]]
-
-[[https://github.com/TobiasTheViking/imapannex]]
-
-[[https://github.com/TobiasTheViking/dropboxannex]]
-
-[[https://github.com/TobiasTheViking/skydriveannex]]
-
-[[https://github.com/TobiasTheViking/googledriveannex]]
-
-[[https://github.com/TobiasTheViking/owncloudannex]]
-
-[[https://github.com/TobiasTheViking/megaannex]]
-
-[[http://git-annex.branchable.com/forum/nntp__47__usenet_special_remote/]]
+* [[tips/flickrannex]] - [[https://github.com/TobiasTheViking/flickrannex/]]
+* [[tips/imapannex]] - [[https://github.com/TobiasTheViking/imapannex]]
+* [[tips/dropboxannex]] - [[https://github.com/TobiasTheViking/dropboxannex]]
+* [[tips/skydriveannex]] - [[https://github.com/TobiasTheViking/skydriveannex]]
+* [[tips/googledriveannex]] - [[https://github.com/TobiasTheViking/googledriveannex]]
+* [[tips/owncloudannex]] - [[https://github.com/TobiasTheViking/owncloudannex]]
+* [[tips/megaannex]] - [[https://github.com/TobiasTheViking/megaannex]]
+* [[forum/nntp__47__usenet_special_remote/]]
 
