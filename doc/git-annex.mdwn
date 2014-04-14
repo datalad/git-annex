@@ -924,7 +924,7 @@ subdirectories).
 
 * `remotedaemon`
 
-  Detects when remotes have changed and fetches from them.
+  Detects when network remotes have received git pushes and fetches from them.
 
 * `xmppgit`
 
