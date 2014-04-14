@@ -76,10 +76,10 @@ runController ichan ochan = do
 				-- ssh remotes, it's only done once)
 				liftAnnex h forceSshCleanup
 				broadcast LOSTNET m
-				go h True M.empty
+				go h True m
 			PAUSE -> do
 				broadcast STOP m
-				go h True M.empty
+				go h True m
 			RESUME -> do
 				when paused $
 					startrunning m

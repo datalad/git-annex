@@ -105,7 +105,7 @@ the webapp.
 
 * `RESUME`
 
-  Undoes PAUSE or DISCONNECTED.  
+  Undoes PAUSE or LOSTNET.  
   Start back up network connections.
 
 * `CHANGED ref ...`
