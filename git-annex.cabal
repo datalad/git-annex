@@ -101,7 +101,7 @@ Executable git-annex
    base (>= 4.5 && < 4.9), monad-control, MonadCatchIO-transformers,
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
    SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
-   data-default, case-insensitive, shakespeare
+   data-default, case-insensitive
   CC-Options: -Wall
   GHC-Options: -Wall
   Extensions: PackageImports
@@ -191,7 +191,8 @@ Executable git-annex
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      http-types, transformers, wai, wai-logger, warp, warp-tls,
      blaze-builder, crypto-api, hamlet, clientsession,
-     template-haskell, data-default, aeson, network-conduit
+     template-haskell, data-default, aeson, network-conduit,
+     shakespeare
     CPP-Options: -DWITH_WEBAPP
   if flag(Webapp) && flag (Webapp-secure)
     Build-Depends: warp-tls (>= 1.4), securemem, byteable

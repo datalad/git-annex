@@ -13,6 +13,7 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
   * remotedaemon: When network connection is lost, close all cached ssh
     connections.
   * Improve handling on monthly/yearly scheduling.
+  * Avoid depending on shakespeare except for when building the webapp.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
 
