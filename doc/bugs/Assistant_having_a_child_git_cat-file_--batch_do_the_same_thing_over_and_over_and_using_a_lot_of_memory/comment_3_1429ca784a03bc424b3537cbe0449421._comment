@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.244"
+ subject="comment 3"
+ date="2014-04-07T21:55:19Z"
+ content="""
+Unfortunately all I have been able to tell for sure from this log is that it seems that the expensive transfer scan is not running, and this is unlikely to be a repository auto-repair.
+
+My best guess as to what might be going on is an update of the git-annex branch. 
+
+[2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"write-tree\"]
+
+This is prep for an index file commit, probably to the git-annex branch.
+
+[2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"rev-parse\",\"84068090af4bcd3d24f16d865ac07b0478f20ada:\"]
+
+This is a getting the parent commit's tree.
+
+The git-cat-file churn could then be a union merge reading the contents of the git-annex branch to union-merge it into the `.git/annex/index` (in `mergeIndex`). This would reuse the main git cat-file process.
+
+That does not explain why it would need to read eg, SHA256E-s106800355--c70e31d511e7eec4881a15dfba521ea3d1fe14694968f81ae1819f1a2a93f9be.mp4.log 28 times.
+Normally, during a union merge only files listed by `diff-index` need to be read, and it lists each file only once.
+"""]]

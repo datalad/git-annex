@@ -89,6 +89,7 @@ import qualified Command.WebApp
 #ifdef WITH_XMPP
 import qualified Command.XMPPGit
 #endif
+import qualified Command.RemoteDaemon
 #endif
 import qualified Command.Test
 #ifdef WITH_TESTSUITE
@@ -176,6 +177,7 @@ cmds = concat
 #ifdef WITH_XMPP
 	, Command.XMPPGit.def
 #endif
+	, Command.RemoteDaemon.def
 #endif
 	, Command.Test.def
 #ifdef WITH_TESTSUITE

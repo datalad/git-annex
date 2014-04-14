@@ -62,10 +62,14 @@ subdirectories).
 
 * `add [path ...]`
 
-  Adds files in the path to the annex. Files that are already checked into
-  git, or that git has been configured to ignore will be silently skipped.
-  (Use `--force` to add ignored files.) Dotfiles are skipped unless explicitly
-  listed.
+  Adds files in the path to the annex. If no path is specified, adds
+  files from the current directory and below.
+  
+  Files that are already checked into git, or that git has been configured
+  to ignore will be silently skipped. (Use `--force` to add ignored files.)
+
+  Dotfiles are skipped unless explicitly listed, or the --include-dotfiles
+  option is used.
 
 * `get [path ...]`
 
@@ -264,7 +268,7 @@ subdirectories).
 
   Use `--template` to control where the files are stored.
   The default template is '${feedtitle}/${itemtitle}${extension}'
-  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid)
+  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate)
 
   The `--relaxed` and `--fast` options behave the same as they do in addurl.
   
@@ -707,8 +711,9 @@ subdirectories).
 
 * `metadata [path ...] [-s field=value -s field+=value -s field-=value ...] [-g field]`
 
-  Each file can have any number of metadata fields attached to it,
-  which each in turn have any number of values. 
+  The content of a file can have any number of metadata fields 
+  attached to it to describe it. Each metadata field can in turn
+  have any number of values. 
   
   This command can be used to set metadata, or show the currently set
   metadata.
@@ -917,6 +922,10 @@ subdirectories).
 
   There are several parameters, provided by Haskell's tasty test framework.
 
+* `remotedaemon`
+
+  Detects when remotes have changed and fetches from them.
+
 * `xmppgit`
 
   This command is used internally to perform git pulls over XMPP.
@@ -1052,6 +1061,19 @@ subdirectories).
 * `--user-agent=value`
 
   Overrides the User-Agent to use when downloading files from the web.
+
+* `--notify-finish`
+
+  Caused a desktop notification to be displayed after each successful
+  file download and upload.
+
+  (Only supported on some platforms, eg Linux with dbus. A no-op when
+  not supported.)
+
+* `--notify-start`
+
+  Caused a desktop notification to be displayed when a file upload
+  or download has started, or when a file is dropped.
 
 * `-c name=value`
 
@@ -1697,7 +1719,7 @@ used by git-annex.
 `~/.config/git-annex/autostart` is a list of git repositories
 to start the git-annex assistant in.
 
-`.git/hooks/pre-commit-annex` in your git repsitory will be run whenever
+`.git/hooks/pre-commit-annex` in your git repository will be run whenever
 a commit is made, either by git commit, git-annex sync, or the git-annex
 assistant.
 

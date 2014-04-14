@@ -3,7 +3,7 @@
 set -e
 
 cd
-rm -rf .ghc .cabal
+rm -rf .ghc .cabal .android
 cabal update
 cabal install happy alex --bindir=$HOME/bin
 PATH=$HOME/bin:$PATH

@@ -1,0 +1,89 @@
+[[!comment format=mdwn
+ username="http://johan.kiviniemi.name/"
+ nickname="Johan"
+ subject="comment 9"
+ date="2014-04-07T22:55:12Z"
+ content="""
+[[!toggle id=\"excerpt\" text=\"The full log excerpt\"]] which includes the sync from the client and the final messages after the cat-file loop ended and things stabilized (but a memory leak of 30 MB in the git-annex assistant process remained).
+
+[[!toggleable id=\"excerpt\" text=\"\"\"
+    [2014-04-04 10:55:00 EEST] main: starting assistant version 5.20140402
+    
+    
+    
+    [2014-04-07 23:21:08 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"git-annex\"]
+    [2014-04-07 23:21:08 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2014-04-07 23:21:08 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..20d1f5538f6aa430f29ef938f6db045f5a69425d\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:21:08 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..b402a6e7b9268e25dbd9c6a027f4a5258993980d\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:21:08 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..7b18a191d58d779aab5789b923adb09863938ffe\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:21:08 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"ls-tree\",\"--full-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"numcopies.log\",\"schedule.log\",\"preferred-content.log\",\"required-content.log\",\"group-preferred-content.log\"]
+    [2014-04-07 23:21:52 EEST] TransferWatcher: transfer starting: Download UUID \"86e07a59-8bba-4878-8d0b-5dfe8c6366c4\" SHA256E-s6--5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03 Nothing
+    [2014-04-07 23:21:52 EEST] read: git [\"config\",\"--null\",\"--list\"]
+    [2014-04-07 23:21:52 EEST] TransferWatcher: transfer starting: Download UUID \"86e07a59-8bba-4878-8d0b-5dfe8c6366c4\" test/hello Nothing
+    [2014-04-07 23:21:52 EEST] read: git [\"config\",\"--null\",\"--list\"]
+    [2014-04-07 23:21:52 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"git-annex\"]
+    [2014-04-07 23:21:52 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2014-04-07 23:21:52 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..20d1f5538f6aa430f29ef938f6db045f5a69425d\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:21:52 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..4deec8203e0baf7bb5b7d5d868d82439261ab3bc\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:21:52 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..b402a6e7b9268e25dbd9c6a027f4a5258993980d\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:21:52 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..7b18a191d58d779aab5789b923adb09863938ffe\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:21:52 EEST] feed: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"update-index\",\"-z\",\"--index-info\"]
+    [2014-04-07 23:21:52 EEST] TransferWatcher: transfer finishing: Transfer {transferDirection = Download, transferUUID = UUID \"86e07a59-8bba-4878-8d0b-5dfe8c6366c4\", transferKey = Key {keyName = \"5891b5b522d5df086d0ff0b110fbd9d21bb4fc7163af34d08286a2e846f6be03\", keyBackendName = \"SHA256E\", keySize = Just 6, keyMtime = Nothing}}
+    [2014-04-07 23:21:52 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"4deec8203e0baf7bb5b7d5d868d82439261ab3bc\"]
+    [2014-04-07 23:21:52 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"4deec8203e0baf7bb5b7d5d868d82439261ab3bc..refs/heads/git-annex\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:21:52 EEST] call: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"update-ref\",\"refs/heads/git-annex\",\"4deec8203e0baf7bb5b7d5d868d82439261ab3bc\"]
+    [2014-04-07 23:22:08 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"ls-tree\",\"--full-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"numcopies.log\",\"schedule.log\",\"preferred-content.log\",\"required-content.log\",\"group-preferred-content.log\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"symbolic-ref\",\"HEAD\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"refs/heads/master\"]
+    [2014-04-07 23:24:24 EEST] Merger: merging refs/heads/synced/master into refs/heads/master
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2014-04-07 23:24:24 EEST] call: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"merge\",\"--no-edit\",\"refs/heads/synced/master\"]
+    Updating 645e474..8406809
+    Fast-forward
+     test/hello |    1 +
+     1 file changed, 1 insertion(+)
+     create mode 120000 test/hello
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"git-annex\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..4deec8203e0baf7bb5b7d5d868d82439261ab3bc\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..2e0884d9c8859339855ceee396b9ea9ae05865b4\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..b402a6e7b9268e25dbd9c6a027f4a5258993980d\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..7b18a191d58d779aab5789b923adb09863938ffe\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:24:24 EEST] chat: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"hash-object\",\"-w\",\"--stdin-paths\",\"--no-filters\"]
+    [2014-04-07 23:24:24 EEST] feed: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"update-index\",\"-z\",\"--index-info\"]
+    [2014-04-07 23:24:24 EEST] feed: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"update-index\",\"-z\",\"--index-info\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"2e0884d9c8859339855ceee396b9ea9ae05865b4\"]
+    [2014-04-07 23:24:24 EEST] chat: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\",\"--no-filters\"]
+    [2014-04-07 23:24:24 EEST] feed: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"update-index\",\"-z\",\"--index-info\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"diff-index\",\"--raw\",\"-z\",\"-r\",\"--no-renames\",\"-l0\",\"--cached\",\"refs/heads/git-annex\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"write-tree\"]
+    [2014-04-07 23:24:24 EEST] chat: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"commit-tree\",\"0bd4352b4008165d356bc9b1250bdb456c675175\",\"-p\",\"refs/heads/git-annex\",\"-p\",\"2e0884d9c8859339855ceee396b9ea9ae05865b4\"]
+    [2014-04-07 23:24:24 EEST] call: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"update-ref\",\"refs/heads/git-annex\",\"214ed317536695b91c8dd5bed059c46c11ad00be\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"ls-tree\",\"--full-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"numcopies.log\",\"schedule.log\",\"preferred-content.log\",\"required-content.log\",\"group-preferred-content.log\"]
+    [2014-04-07 23:24:24 EEST] Watcher: add symlink test/hello
+    [2014-04-07 23:24:24 EEST] chat: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"hash-object\",\"-t\",\"blob\",\"-w\",\"--stdin\",\"--no-filters\"]
+    [2014-04-07 23:24:24 EEST] Committer: committing 1 changes
+    [2014-04-07 23:24:24 EEST] Committer: Committing changes to git
+    [2014-04-07 23:24:24 EEST] feed: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"update-index\",\"-z\",\"--index-info\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"symbolic-ref\",\"HEAD\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"--hash\",\"refs/heads/master\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"write-tree\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"rev-parse\",\"84068090af4bcd3d24f16d865ac07b0478f20ada:\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"symbolic-ref\",\"HEAD\"]
+    [2014-04-07 23:24:24 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"refs/heads/master\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"git-annex\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..214ed317536695b91c8dd5bed059c46c11ad00be\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..2e0884d9c8859339855ceee396b9ea9ae05865b4\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..b402a6e7b9268e25dbd9c6a027f4a5258993980d\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..7b18a191d58d779aab5789b923adb09863938ffe\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"ls-tree\",\"--full-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"numcopies.log\",\"schedule.log\",\"preferred-content.log\",\"required-content.log\",\"group-preferred-content.log\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"git-annex\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"show-ref\",\"--hash\",\"refs/heads/git-annex\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..214ed317536695b91c8dd5bed059c46c11ad00be\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..2e0884d9c8859339855ceee396b9ea9ae05865b4\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..b402a6e7b9268e25dbd9c6a027f4a5258993980d\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:30:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"log\",\"refs/heads/git-annex..7b18a191d58d779aab5789b923adb09863938ffe\",\"--oneline\",\"-n1\"]
+    [2014-04-07 23:31:13 EEST] read: git [\"--git-dir=/storage/sarjat/annex-sarjat/.git\",\"--work-tree=/storage/sarjat/annex-sarjat\",\"ls-tree\",\"--full-tree\",\"-z\",\"--\",\"refs/heads/git-annex\",\"uuid.log\",\"remote.log\",\"trust.log\",\"group.log\",\"numcopies.log\",\"schedule.log\",\"preferred-content.log\",\"required-content.log\",\"group-preferred-content.log\"]
+\"\"\"]]
+"""]]

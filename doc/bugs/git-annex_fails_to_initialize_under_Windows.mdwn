@@ -1,0 +1,212 @@
+### Please describe the problem.
+Git-annex fails to initialize and fails tests.
+
+### What steps will reproduce the problem?
+Attempted initialization:
+
+    C:\Users\Andrew\Documents\GitHub\git-annex-test [master]> git annex init
+    init
+      Detected a filesystem without fifo support.
+
+      Disabling ssh connection caching.
+
+      Detected a crippled filesystem.
+
+      Enabling direct mode.
+    fatal: index file open failed: Invalid argument
+    git-annex: git [Param "checkout",Param "-q",Param "-B",Param "annex/direct/master"] failed
+
+Tests:
+
+    C:\Users\Andrew\Documents\GitHub\git-annex-test [master]> git annex test
+    Tests
+      QuickCheck
+        prop_idempotent_deencode_git:                     OK
+          +++ OK, passed 1000 tests.
+        prop_idempotent_deencode:                         OK
+          +++ OK, passed 1000 tests.
+        prop_idempotent_fileKey:                          OK
+          +++ OK, passed 1000 tests.
+        prop_idempotent_key_encode:                       OK
+          +++ OK, passed 1000 tests.
+        prop_idempotent_key_decode:                       OK
+          +++ OK, passed 1000 tests.
+        prop_idempotent_shellEscape:                      OK
+          +++ OK, passed 1000 tests.
+        prop_idempotent_shellEscape_multiword:            OK
+          +++ OK, passed 1000 tests.
+        prop_logs_sane:                                   OK
+          +++ OK, passed 1000 tests.
+        prop_idempotent_configEscape:                     OK
+          +++ OK, passed 1000 tests.
+        prop_parse_show_Config:                           OK
+          +++ OK, passed 1000 tests.
+        prop_parentDir_basics:                            OK
+          +++ OK, passed 1000 tests.
+        prop_relPathDirToFile_basics:                     OK
+          +++ OK, passed 1000 tests.
+        prop_relPathDirToFile_regressionTest:             OK
+          +++ OK, passed 1000 tests.
+        prop_cost_sane:                                   OK
+          +++ OK, passed 1000 tests.
+        prop_matcher_sane:                                OK
+          +++ OK, passed 1000 tests.
+        prop_HmacSha1WithCipher_sane:                     OK
+          +++ OK, passed 1000 tests.
+        prop_TimeStamp_sane:                              OK
+          +++ OK, passed 1000 tests.
+        prop_addLog_sane:                                 OK
+          +++ OK, passed 1000 tests.
+        prop_verifiable_sane:                             OK
+          +++ OK, passed 1000 tests.
+        prop_segment_regressionTest:                      OK
+          +++ OK, passed 1000 tests.
+        prop_read_write_transferinfo:                     OK
+          +++ OK, passed 1000 tests.
+        prop_read_show_inodecache:                        OK
+          +++ OK, passed 1000 tests.
+        prop_parse_show_log:                              OK
+          +++ OK, passed 1000 tests.
+        prop_read_show_TrustLevel:                        OK
+          +++ OK, passed 1000 tests.
+        prop_parse_show_TrustLog:                         OK
+          +++ OK, passed 1000 tests.
+        prop_hashes_stable:                               OK
+          +++ OK, passed 1000 tests.
+        prop_schedule_roundtrips:                         OK
+          +++ OK, passed 1000 tests.
+        prop_duration_roundtrips:                         OK
+          +++ OK, passed 1000 tests.
+        prop_metadata_sane:                               OK
+          +++ OK, passed 1000 tests.
+        prop_metadata_serialize:                          OK
+          +++ OK, passed 1000 tests.
+        prop_branchView_legal:                            OK
+          +++ OK, passed 1000 tests.
+        prop_view_roundtrips:                             OK
+          +++ OK, passed 1000 tests.
+        prop_viewedFile_rountrips:                    I n i t  TOeKs
+    ts
+          i n+i+t+:  OK, passed 1000 tests.
+      Unit Tests
+        add sha1dup:                                      git-annex: System.PosixCompat.User.getEffectiveUserID: not support
+    ed: illegal operation
+    FAIL
+        init failed
+      add:  git-annex: System.PosixCompat.User.getEffectiveUserID: not supported: illegal operation
+    FAIL
+        add failed
+
+    2 out of 2 tests failed
+    FAIL
+          Exception: init tests failed! cannot continue
+        add extras:                                       FAIL
+          Exception: init tests failed! cannot continue
+        reinject:                                         FAIL
+          Exception: init tests failed! cannot continue
+        unannex (no copy):                                FAIL
+          Exception: init tests failed! cannot continue
+        unannex (with copy):                              FAIL
+          Exception: init tests failed! cannot continue
+        drop (no remote):                                 FAIL
+          Exception: init tests failed! cannot continue
+        drop (with remote):                               FAIL
+          Exception: init tests failed! cannot continue
+        drop (untrusted remote):                          FAIL
+          Exception: init tests failed! cannot continue
+        get:                                              FAIL
+          Exception: init tests failed! cannot continue
+        move:                                             FAIL
+          Exception: init tests failed! cannot continue
+        copy:                                             FAIL
+          Exception: init tests failed! cannot continue
+        lock:                                             FAIL
+          Exception: init tests failed! cannot continue
+        edit (no pre-commit):                             FAIL
+          Exception: init tests failed! cannot continue
+        edit (pre-commit):                                FAIL
+          Exception: init tests failed! cannot continue
+        fix:                                              FAIL
+          Exception: init tests failed! cannot continue
+        trust:                                            FAIL
+          Exception: init tests failed! cannot continue
+        fsck (basics):                                    FAIL
+          Exception: init tests failed! cannot continue
+        fsck (bare):                                      FAIL
+          Exception: init tests failed! cannot continue
+        fsck (local untrusted):                           FAIL
+          Exception: init tests failed! cannot continue
+        fsck (remote untrusted):                          FAIL
+          Exception: init tests failed! cannot continue
+        migrate:                                          FAIL
+          Exception: init tests failed! cannot continue
+        migrate (via gitattributes):                      FAIL
+          Exception: init tests failed! cannot continue
+         unused:                                          FAIL
+          Exception: init tests failed! cannot continue
+        describe:                                         FAIL
+          Exception: init tests failed! cannot continue
+        find:                                             FAIL
+          Exception: init tests failed! cannot continue
+        merge:                                            FAIL
+          Exception: init tests failed! cannot continue
+        info:                                             FAIL
+          Exception: init tests failed! cannot continue
+        version:                                          FAIL
+          Exception: init tests failed! cannot continue
+        sync:                                             FAIL
+          Exception: init tests failed! cannot continue
+        union merge regression:                           FAIL
+          Exception: init tests failed! cannot continue
+        conflict resolution:                              FAIL
+          Exception: init tests failed! cannot continue
+        conflict_resolution (mixed directory and file):   FAIL
+          Exception: init tests failed! cannot continue
+        conflict_resolution (mixed directory and file) 2: FAIL
+          Exception: init tests failed! cannot continue
+        map:                                              FAIL
+          Exception: init tests failed! cannot continue
+        uninit:                                           FAIL
+          Exception: init tests failed! cannot continue
+        uninit (in git-annex branch):                     FAIL
+          Exception: init tests failed! cannot continue
+        upgrade:                                          FAIL
+          Exception: init tests failed! cannot continue
+        whereis:                                          FAIL
+          Exception: init tests failed! cannot continue
+        hook remote:                                      FAIL
+          Exception: init tests failed! cannot continue
+        directory remote:                                 FAIL
+          Exception: init tests failed! cannot continue
+        rsync remote:                                     FAIL
+          Exception: init tests failed! cannot continue
+        bup remote:                                       FAIL
+          Exception: init tests failed! cannot continue
+        crypto:                                           FAIL
+          Exception: init tests failed! cannot continue
+        preferred content:                                FAIL
+          Exception: init tests failed! cannot continue
+        add subdirs:                                      FAIL
+          Exception: init tests failed! cannot continue
+    
+    45 out of 78 tests failed
+      (This could be due to a bug in git-annex, or an incompatability
+       with utilities, such as git, installed on this system.)
+
+### What version of git-annex are you using? On what operating system?
+    C:\Users\Andrew\Documents\GitHub\git-annex-test [master]> git --version
+    git version 1.8.4.msysgit.0
+    C:\Users\Andrew\Documents\GitHub\git-annex-test [master]> git annex version
+    git-annex version: 5.20140227-gd872677
+    build flags: Assistant Webapp Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256
+    SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 2 3 4
+    C:\Users\Andrew\Documents\GitHub\git-annex-test [master]> (Get-WmiObject -class Win32_OperatingSystem).Caption
+    Microsoft Windows 8.1
+
+### Please provide any additional information below.
+^^^ See above

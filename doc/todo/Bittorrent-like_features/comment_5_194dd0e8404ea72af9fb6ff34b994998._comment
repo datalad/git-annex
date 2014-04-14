@@ -1,0 +1,20 @@
+[[!comment format=mdwn
+ username="https://id.koumbit.net/anarcat"
+ ip="2001:1928:1:9::1"
+ subject="comment 5"
+ date="2014-04-01T04:43:16Z"
+ content="""
+re #3, sure, magnet link support would be awesome as well but i'd prefer to start with something i could digest more easily.
+
+looking at the source, it seems to me that the [quvi implementation](http://source.git-annex.branchable.com/?p=source.git;a=commitdiff;h=46b6d75) could serve as an example as to how this would work. more particularly, there's this concept of a [downloader](http://source.git-annex.branchable.com/?p=source.git;a=commitdiff;h=46b6d75#patch5) that can be used to tap into `addurl` directly. there's a check to see if the downloader is supported, for example.
+
+so we would need:
+
+1. see if the URL / magnet link can be turned into a .torrent somehow
+2. figure out what the filename(s!) will be
+3. start the torrent and wait for its completion, ideally with some progress bar
+
+i asked around to see if transmission-remote could do this, because it would be nice if we could use an existing daemon (instead of having to rebootstrap the whole DHT at every download). so far, I can't see how it could be done cleanly - maybe we would need to use the simpler \"bittorrent\" commandline client, or maybe tap into libtorrent...
+
+in any case, one of the key problems here is that addurl assumes that the URL maps to a single file, not a directory full of file, which is the way bittorrent works. I am not sure how to fix that assumption.
+"""]]

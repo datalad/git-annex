@@ -29,6 +29,7 @@ import qualified Command.RecvKey
 import qualified Command.SendKey
 import qualified Command.TransferInfo
 import qualified Command.Commit
+import qualified Command.NotifyChanges
 import qualified Command.GCryptSetup
 
 cmds_readonly :: [Command]
@@ -37,6 +38,7 @@ cmds_readonly = concat
 	, gitAnnexShellCheck Command.InAnnex.def
 	, gitAnnexShellCheck Command.SendKey.def
 	, gitAnnexShellCheck Command.TransferInfo.def
+	, gitAnnexShellCheck Command.NotifyChanges.def
 	]
 
 cmds_notreadonly :: [Command]

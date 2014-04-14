@@ -26,7 +26,12 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
 * configlist directory
 
   This outputs a subset of the git configuration, in the same form as
-  `git config --list`
+  `git config --list`. This is used to get the annex.uuid of the remote
+  repository.
+
+  When run in a repository that does not yet have an annex.uuid, one
+  will be created, as long as a git-annex branch has already been pushed to
+  the repository.
 
 * inannex directory [key ...]
 
@@ -59,6 +64,11 @@ first "/~/" or "/~user/" is expanded to the specified home directory.
 
   This commits any staged changes to the git-annex branch.
   It also runs the annex-content hook.
+
+* notifychanges
+
+  This is used by `git-annex remotedaemon` to be notified when
+  refs in the remote repository are changed.
 
 * gcryptsetup gcryptid
 
@@ -95,6 +105,9 @@ changed.
 * GIT_ANNEX_SHELL_READONLY
 
   If set, disallows any command that could modify the repository.
+
+  Note that this does not prevent passing commands on to git-shell.
+  For that, you also need ...
 
 * GIT_ANNEX_SHELL_LIMITED
 

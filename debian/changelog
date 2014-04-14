@@ -1,3 +1,72 @@
+git-annex (5.20140412) unstable; urgency=high
+
+  * Last release didn't quite fix the high cpu issue in all cases, this should.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 17:14:38 -0400
+
+git-annex (5.20140411) unstable; urgency=high
+
+  * importfeed: Filename template can now contain an itempubdate variable.
+    Needs feed 0.3.9.2.
+  * Fix rsync progress parsing in locales that use comma in number display.
+    Closes: #744148
+  * assistant: Fix high CPU usage triggered when a monthly fsck is scheduled,
+    and the last time the job ran was a day of the month > 12. This caused a
+    runaway loop. Thanks to Anarcat for his assistance, and to Maximiliano
+    Curia for identifying the cause of this bug.
+  * Remove wget from OSX dmg, due to issues with cert paths that broke
+    git-annex automatic upgrading. Instead, curl is used, unless the
+    OSX system has wget installed, which will then be used.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 14:59:49 -0400
+
+git-annex (5.20140405) unstable; urgency=medium
+
+  * git-annex-shell: Added notifychanges command.
+  * Improve display of dbus notifications. Thanks, Johan Kiviniemi.
+  * Fix nautilus script installation to not crash when the nautilus script dir
+    does not exist. Instead, only install scripts when the directory already
+    exists.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 05 Apr 2014 16:54:33 -0400
+
+git-annex (5.20140402) unstable; urgency=medium
+
+  * unannex, uninit: Avoid committing after every file is unannexed,
+    for massive speedup.
+  * --notify-finish switch will cause desktop notifications after each 
+    file upload/download/drop completes
+    (using the dbus Desktop Notifications Specification)
+  * --notify-start switch will show desktop notifications when each
+    file upload/download starts.
+  * webapp: Automatically install Nautilus integration scripts
+    to get and drop files.
+  * tahoe: Pass -d parameter before subcommand; putting it after
+    the subcommand no longer works with tahoe-lafs version 1.10.
+    (Thanks, Alberto Berti)
+  * forget --drop-dead: Avoid removing the dead remote from the trust.log,
+    so that if git remotes for it still exist anywhere, git annex info
+    will still know it's dead and not show it.
+  * git-annex-shell: Make configlist automatically initialize
+    a remote git repository, as long as a git-annex branch has
+    been pushed to it, to simplify setup of remote git repositories,
+    including via gitolite.
+  * add --include-dotfiles: New option, perhaps useful for backups.
+  * Version 5.20140227 broke creation of glacier repositories,
+    not including the datacenter and vault in their configuration.
+    This bug is fixed, but glacier repositories set up with the broken
+    version of git-annex need to have the datacenter and vault set
+    in order to be usable. This can be done using git annex enableremote
+    to add the missing settings. For details, see
+    http://git-annex.branchable.com/bugs/problems_with_glacier/
+  * Added required content configuration.
+  * assistant: Improve ssh authorized keys line generated in local pairing
+    or for a remote ssh server to set environment variables in an 
+    alternative way that works with the non-POSIX fish shell, as well
+    as POSIX shells.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 02 Apr 2014 16:42:53 -0400
+
 git-annex (5.20140320~bpo70+1) wheezy-backports; urgency=medium
 
   * Updating backport to newest release.

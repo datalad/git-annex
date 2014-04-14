@@ -20,7 +20,7 @@ chroot debian-stable-android "tmp/$(basename $0)-inchroot"
 
 echo
 echo
-echo "debian-stable-android is set up, with a user androidbuilder"
+echo "debian-stable-android is set up, with a user builder"
 echo "your next step is probably to check out git-annex in this chroot"
 echo "and run standalone/android/install-haskell-packages"
 echo

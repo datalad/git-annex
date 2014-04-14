@@ -1,0 +1,10 @@
+Hi
+
+I have read some info about telehash. It looks verry promising. I was wondering though how syncing will work. For example. I have 2 computers. Normal PC and a laptop. Mostly only one is on at a time. 
+
+* Sync messages will be sent over telehash protocoll ?
+* What if I push some changes (they will be synced to a shared repository) and laptop is not online. How will git-annex know what to sync from a shared repository ?
+* Do you plan to send files/commits directly to online clients ? If 2 friends are online at the same time.
+* What will happen with data on a shared repository if all clients have synced content ? Will it be deleted since it is not longer needed ?
+
+I was thinking of a model where you sync directly (if possible), and just drop shared content to repo for offline users. Whan everyone have pulled content it may be removed from shared repo.

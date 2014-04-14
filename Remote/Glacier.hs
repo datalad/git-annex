@@ -82,7 +82,7 @@ glacierSetup' enabling u c = do
 	unless enabling $
 		genVault fullconfig u
 	gitConfigSpecialRemote u fullconfig "glacier" "true"
-	return (c', u)
+	return (fullconfig, u)
   where
 	remotename = fromJust (M.lookup "name" c)
 	defvault = remotename ++ "-" ++ fromUUID u
@@ -225,7 +225,8 @@ glacierParams :: RemoteConfig -> [CommandParam] -> [CommandParam]
 glacierParams c params = datacenter:params
   where
 	datacenter = Param $ "--region=" ++
-		fromJust (M.lookup "datacenter" c)
+		fromMaybe (error "Missing datacenter configuration")
+			(M.lookup "datacenter" c)
 
 glacierEnv :: RemoteConfig -> UUID -> Annex (Maybe [(String, String)])
 glacierEnv c u = go =<< getRemoteCredPairFor "glacier" c creds
@@ -239,7 +240,8 @@ glacierEnv c u = go =<< getRemoteCredPairFor "glacier" c creds
 	(uk, pk) = credPairEnvironment creds
 
 getVault :: RemoteConfig -> Vault
-getVault = fromJust . M.lookup "vault"
+getVault = fromMaybe (error "Missing vault configuration") 
+	. M.lookup "vault"
 
 archive :: Remote -> Key -> Archive
 archive r k = fileprefix ++ key2file k

@@ -34,8 +34,12 @@ import Annex.ReplaceFile
 import Utility.Tmp
 
 def :: [Command]
-def = [notBareRepo $ command "add" paramPaths seek SectionCommon
-	"add files to annex"]
+def = [notBareRepo $ withOptions [includeDotFilesOption] $
+	command "add" paramPaths seek SectionCommon
+		"add files to annex"]
+
+includeDotFilesOption :: Option
+includeDotFilesOption = flagOption [] "include-dotfiles" "don't skip dotfiles"
 
 {- Add acts on both files not checked into git yet, and unlocked files.
  -
@@ -47,7 +51,8 @@ seek ps = do
 		( start file
 		, stop
 		)
-	go withFilesNotInGit
+	skipdotfiles <- not <$> Annex.getFlag (optionName includeDotFilesOption)
+	go $ withFilesNotInGit skipdotfiles
 	ifM isDirect
 		( go withFilesMaybeModified
 		, go withFilesUnlocked

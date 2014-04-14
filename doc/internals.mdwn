@@ -150,6 +150,13 @@ Files matching the expression are preferred to be retained in the
 repository, while files not matching it are preferred to be stored
 somewhere else.
 
+## `required-content.log`
+
+Used to indicate which repositories are required to contain which file
+contents.
+
+File format is identical to preferred-content.log.
+
 ## `group-preferred-content.log`
 
 Contains standard preferred content settings for groups. (Overriding or

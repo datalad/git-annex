@@ -34,8 +34,8 @@ perform numcopies key = maybe droplocal dropremote =<< Remote.byNameWithUUID =<<
   where
 	dropremote r = do
 		showAction $ "from " ++ Remote.name r
-		Command.Drop.performRemote key numcopies r
-	droplocal = Command.Drop.performLocal key numcopies Nothing
+		Command.Drop.performRemote key Nothing numcopies r
+	droplocal = Command.Drop.performLocal key Nothing numcopies Nothing
 	from = Annex.getField $ optionName Command.Drop.dropFromOption
 
 performOther :: (Key -> Git.Repo -> FilePath) -> Key -> CommandPerform

@@ -1,0 +1,27 @@
+There is not yet a pre-built Docker image for git-annex. However, it's
+easy to add it to an image.
+
+For example:
+
+	docker run -i -t joeyh/debian-unstable apt-get install git-annex
+
+# autobuilders
+
+The git-annex Linux autobuilds are built using a Docker container.
+If you'd like to set up your own autobuilder in a Docker container,
+the image that is used is not currently published, but you can build
+a new image using [Propellor](http://joeyh.name/code/propellor). Just
+install Propellor and add this to its `config.hs`:
+
+[[!format haskell """
+host hostname@"your.machine.net" = Just $ props
+        & Docker.configured
+        & Docker.docked container hostname "amd64-git-annex-builder"
+
+container _ "amd64-git-annex-builder" = in Just $ Docker.containerFrom
+	(image $ System (Debian Unstable) "amd64")
+	[ Docker.inside $ props & GitAnnexBuilder.builder "amd64" "15 * * * *" False ]
+"""]]
+
+This will autobuild every hour at :15, and the autobuilt image will be
+left inside the container in /home/builder/gitbuilder/out/

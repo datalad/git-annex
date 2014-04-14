@@ -12,10 +12,12 @@ but a tahoe-lafs special remote would be more flexible.
 To support a special remote, a mapping is needed from git-annex keys to
 Tahoe keys, stored in the git-annex branch.
 
-> This is now done, however, there are 2 known
+> This is now done, however, there are 3 known
 > problems: 
 > 
 > * tahoe start run unncessarily <https://tahoe-lafs.org/trac/tahoe-lafs/ticket/2149>
 > * web.port can conflict <https://tahoe-lafs.org/trac/tahoe-lafs/ticket/2147>
-> 
+> * Nothing renews leases, which is a problem on grids that expire.
+>   <https://tahoe-lafs.org/trac/tahoe-lafs/ticket/2212>
+
 > --[[Joey]] 

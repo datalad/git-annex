@@ -1,7 +1,7 @@
 git-annex tries to ensure that the configured number of [[copies]] of your
 data always exist, and leaves it up to you to use commands like `git annex
 get` and `git annex drop` to move the content to the repositories you want
-to contain it. But sometimes, it can be good to have more fine-grained
+to contain it. But often, it can be good to have more fine-grained
 control over which content is wanted by which repositories. Configuring
 this allows the git-annex assistant as well as 
 `git annex get --auto`, `git annex drop --auto`, `git annex sync --content`,
@@ -33,9 +33,9 @@ If it doesn't, the repository wants to drop its content
 To check at the command line which files are matched by preferred content
 settings, you can use the --want-get and --want-drop options.
 
-For example, "git annex find --want-get --not --in ." will find all the
-files that "git annex get --auto" will want to get, and "git annex find
---want-drop --in ." will find all the files that "git annex drop --auto"
+For example, `git annex find --want-get --not --in .` will find all the
+files that `git annex get --auto` will want to get, and `git annex find
+--want-drop --in .` will find all the files that `git annex drop --auto`
 will want to drop.
 
 The expressions are very similar to the matching options documented
@@ -143,6 +143,16 @@ set to "standard" will use the standard expression.
 Or, you could make a new group, with your own custom preferred content
 expression tuned for your needs, and every repository you put in this
 group and make its preferred content be "groupwanted" will use it.
+
+### difference: metadata matching
+
+This:
+
+	git annex get --metadata tag=done
+
+becomes
+
+	metadata=tag=done
 
 ## upgrades
 

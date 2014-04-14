@@ -32,8 +32,12 @@ getTransitionCalculator ForgetDeadRemotes = Just dropDead
 
 dropDead :: FilePath -> String -> TrustMap -> FileTransition
 dropDead f content trustmap = case getLogVariety f of
-	Just UUIDBasedLog -> ChangeFile $
-		UUIDBased.showLog id $ dropDeadFromUUIDBasedLog trustmap $ UUIDBased.parseLog Just content
+	Just UUIDBasedLog
+		-- Don't remove the dead repo from the trust log,
+		-- because git remotes may still exist, and they need
+		-- to still know it's dead.
+		| f == trustLog -> PreserveFile
+		| otherwise -> ChangeFile $ UUIDBased.showLog id $ dropDeadFromUUIDBasedLog trustmap $ UUIDBased.parseLog Just content
 	Just NewUUIDBasedLog -> ChangeFile $
 		UUIDBased.showLogNew id $ dropDeadFromUUIDBasedLog trustmap $ UUIDBased.parseLogNew Just content
 	Just (PresenceLog _) ->

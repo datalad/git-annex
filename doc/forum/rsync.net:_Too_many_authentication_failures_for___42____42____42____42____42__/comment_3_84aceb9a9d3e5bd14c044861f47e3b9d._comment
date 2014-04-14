@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn_3tllXjSmtgm__aGr9Z4gVNFgJgGyJ30"
+ nickname="David Alan"
+ subject="comment 3"
+ date="2014-04-03T00:31:14Z"
+ content="""
+I'm running Version: 5.20140318-gdcf93d0. Do I have to install a ssh-askpass manually? I only found one thread referring to ssh-askpass, but didn't really know what to do with that information. So, no I don't have it installed as far as I know... _I_ never did anyway...
+
+Do I need it? Did I miss something in the docs?
+"""]]

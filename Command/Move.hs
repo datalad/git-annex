@@ -14,8 +14,8 @@ import qualified Annex
 import Annex.Content
 import qualified Remote
 import Annex.UUID
+import Annex.Transfer
 import Logs.Presence
-import Logs.Transfer
 
 def :: [Command]
 def = [withOptions moveOptions $ command "move" paramPaths seek
@@ -98,8 +98,9 @@ toPerform dest move key afile fastcheck isthere = moveLock move key $
 			stop
 		Right False -> do
 			showAction $ "to " ++ Remote.name dest
-			ok <- upload (Remote.uuid dest) key afile noRetry $
-				Remote.storeKey dest key afile
+			ok <- notifyTransfer Upload afile $
+				upload (Remote.uuid dest) key afile noRetry $
+					Remote.storeKey dest key afile
 			if ok
 				then do
 					Remote.logStatus dest key InfoPresent
@@ -155,9 +156,10 @@ fromPerform src move key afile = moveLock move key $
 		, handle move =<< go
 		)
   where
-	go = download (Remote.uuid src) key afile noRetry $ \p -> do
-		showAction $ "from " ++ Remote.name src
-		getViaTmp key $ \t -> Remote.retrieveKeyFile src key afile t p
+	go = notifyTransfer Download afile $ 
+		download (Remote.uuid src) key afile noRetry $ \p -> do
+			showAction $ "from " ++ Remote.name src
+			getViaTmp key $ \t -> Remote.retrieveKeyFile src key afile t p
 	handle _ False = stop -- failed
 	handle False True = next $ return True -- copy complete
 	handle True True = do -- finish moving

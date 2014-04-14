@@ -5,12 +5,11 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE GeneralizedNewtypeDeriving, PackageImports #-}
+{-# LANGUAGE CPP, GeneralizedNewtypeDeriving, PackageImports #-}
 
 module Annex (
 	Annex,
 	AnnexState(..),
-	PreferredContentMap,
 	new,
 	run,
 	eval,
@@ -60,11 +59,13 @@ import Types.FileMatcher
 import Types.NumCopies
 import Types.LockPool
 import Types.MetaData
+import Types.DesktopNotify
 import Types.CleanupActions
-import qualified Utility.Matcher
 import qualified Data.Map as M
 import qualified Data.Set as S
+#ifdef WITH_QUVI
 import Utility.Quvi (QuviVersion)
+#endif
 
 {- git-annex's monad is a ReaderT around an AnnexState stored in a MVar.
  - This allows modifying the state in an exception-safe fashion.
@@ -79,9 +80,6 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 		Functor,
 		Applicative
 	)
-
-type Matcher a = Either [Utility.Matcher.Token a] (Utility.Matcher.Matcher a)
-type PreferredContentMap = M.Map UUID (Utility.Matcher.Matcher (S.Set UUID -> MatchInfo -> Annex Bool))
 
 -- internal state storage
 data AnnexState = AnnexState
@@ -103,9 +101,10 @@ data AnnexState = AnnexState
 	, forcebackend :: Maybe String
 	, globalnumcopies :: Maybe NumCopies
 	, forcenumcopies :: Maybe NumCopies
-	, limit :: Matcher (MatchInfo -> Annex Bool)
+	, limit :: ExpandableMatcher Annex
 	, uuidmap :: Maybe UUIDMap
-	, preferredcontentmap :: Maybe PreferredContentMap
+	, preferredcontentmap :: Maybe (FileMatcherMap Annex)
+	, requiredcontentmap :: Maybe (FileMatcherMap Annex)
 	, shared :: Maybe SharedRepository
 	, forcetrust :: TrustMap
 	, trustmap :: Maybe TrustMap
@@ -120,8 +119,11 @@ data AnnexState = AnnexState
 	, useragent :: Maybe String
 	, errcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
+#ifdef WITH_QUVI
 	, quviversion :: Maybe QuviVersion
+#endif
 	, existinghooks :: M.Map Git.Hook.Hook Bool
+	, desktopnotify :: DesktopNotify
 	}
 
 newState :: GitConfig -> Git.Repo -> AnnexState
@@ -144,9 +146,10 @@ newState c r = AnnexState
 	, forcebackend = Nothing
 	, globalnumcopies = Nothing
 	, forcenumcopies = Nothing
-	, limit = Left []
+	, limit = BuildingMatcher []
 	, uuidmap = Nothing
 	, preferredcontentmap = Nothing
+	, requiredcontentmap = Nothing
 	, shared = Nothing
 	, forcetrust = M.empty
 	, trustmap = Nothing
@@ -161,8 +164,11 @@ newState c r = AnnexState
 	, useragent = Nothing
 	, errcounter = 0
 	, unusedkeys = Nothing
+#ifdef WITH_QUVI
 	, quviversion = Nothing
+#endif
 	, existinghooks = M.empty
+	, desktopnotify = mempty
 	}
 
 {- Makes an Annex state object for the specified git repo.

@@ -61,6 +61,7 @@ data Cfg = Cfg
 	{ cfgTrustMap :: TrustMap
 	, cfgGroupMap :: M.Map UUID (S.Set Group)
 	, cfgPreferredContentMap :: M.Map UUID PreferredContentExpression
+	, cfgRequiredContentMap :: M.Map UUID PreferredContentExpression
 	, cfgGroupPreferredContentMap :: M.Map Group PreferredContentExpression
 	, cfgScheduleMap :: M.Map UUID [ScheduledActivity]
 	}
@@ -70,6 +71,7 @@ getCfg = Cfg
 	<$> trustMapRaw -- without local trust overrides
 	<*> (groupsByUUID <$> groupMap)
 	<*> preferredContentMapRaw
+	<*> requiredContentMapRaw
 	<*> groupPreferredContentMapRaw
 	<*> scheduleMap
 
@@ -79,6 +81,7 @@ setCfg curcfg newcfg = do
 	mapM_ (uncurry trustSet) $ M.toList $ cfgTrustMap diff
 	mapM_ (uncurry groupSet) $ M.toList $ cfgGroupMap diff
 	mapM_ (uncurry preferredContentSet) $ M.toList $ cfgPreferredContentMap diff
+	mapM_ (uncurry requiredContentSet) $ M.toList $ cfgRequiredContentMap diff
 	mapM_ (uncurry groupPreferredContentSet) $ M.toList $ cfgGroupPreferredContentMap diff
 	mapM_ (uncurry scheduleSet) $ M.toList $ cfgScheduleMap diff
 
@@ -87,6 +90,7 @@ diffCfg curcfg newcfg = Cfg
 	{ cfgTrustMap = diff cfgTrustMap
 	, cfgGroupMap = diff cfgGroupMap
 	, cfgPreferredContentMap = diff cfgPreferredContentMap
+	, cfgRequiredContentMap = diff cfgRequiredContentMap
 	, cfgGroupPreferredContentMap = diff cfgGroupPreferredContentMap
 	, cfgScheduleMap = diff cfgScheduleMap
 	}
@@ -102,6 +106,7 @@ genCfg cfg descs = unlines $ intercalate [""]
 	, preferredcontent
 	, grouppreferredcontent
 	, standardgroups
+	, requiredcontent
 	, schedule
 	]
   where
@@ -137,6 +142,11 @@ genCfg cfg descs = unlines $ intercalate [""]
 		[ com "Repository preferred contents" ]
 		(\(s, u) -> line "wanted" u s)
 		(\u -> line "wanted" u "standard")
+	
+	requiredcontent = settings cfg descs cfgRequiredContentMap
+		[ com "Repository required contents" ]
+		(\(s, u) -> line "required" u s)
+		(\u -> line "required" u "")
 
 	grouppreferredcontent = settings' cfg allgroups cfgGroupPreferredContentMap
 		[ com "Group preferred contents"
@@ -228,6 +238,12 @@ parseCfg curcfg = go [] curcfg . lines
 				Nothing ->
 					let m = M.insert u value (cfgPreferredContentMap cfg)
 					in Right $ cfg { cfgPreferredContentMap = m }
+		| setting == "required" = 
+			case checkPreferredContentExpression value of
+				Just e -> Left e
+				Nothing ->
+					let m = M.insert u value (cfgRequiredContentMap cfg)
+					in Right $ cfg { cfgRequiredContentMap = m }
 		| setting == "groupwanted" =
 			case checkPreferredContentExpression value of
 				Just e -> Left e
@@ -255,7 +271,6 @@ parseCfg curcfg = go [] curcfg . lines
 		[ com "** There was a problem parsing your input!"
 		, com "** Search for \"Parse error\" to find the bad lines."
 		, com "** Either fix the bad lines, or delete them (to discard your changes)."
-		, ""
 		]
 	parseerr = com "** Parse error in next line: "
 

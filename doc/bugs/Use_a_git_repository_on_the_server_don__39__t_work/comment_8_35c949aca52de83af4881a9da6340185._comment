@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk_QeJTzgCJj2ZC8EAJEODsLvxJ7dCOCVM"
+ nickname="Sindre"
+ subject="Non-ASCII Hostname fails"
+ date="2014-04-02T05:36:54Z"
+ content="""
+This bug still persists when specifying non-ascii hostnames.
+"""]]

@@ -1,0 +1,1 @@
+When using git-annex in a distributed fashion (lots of repos everywhere) It is easy to lose track of which remotes has a particular repo and enable it. Currently I have to run `git annex info` and see which remotes are available then add them through the webapp. Would it be possible to make webapp show all repos not just the ones it is syncing give an option to enable it.

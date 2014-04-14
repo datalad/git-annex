@@ -35,6 +35,7 @@ topLevelUUIDBasedLogs =
 	, trustLog
 	, groupLog 
 	, preferredContentLog
+	, requiredContentLog
 	, scheduleLog
 	]
 
@@ -69,6 +70,9 @@ groupLog = "group.log"
 
 preferredContentLog :: FilePath
 preferredContentLog = "preferred-content.log"
+
+requiredContentLog :: FilePath
+requiredContentLog = "required-content.log"
 
 groupPreferredContentLog :: FilePath
 groupPreferredContentLog = "group-preferred-content.log"
