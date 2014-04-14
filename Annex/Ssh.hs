@@ -250,18 +250,22 @@ inRepoWithSshCachingTo remote a =
  - and set sshCachingEnv so that git-annex will know what socket
  - file to use. -}
 sshCachingTo :: Git.Repo -> Git.Repo -> Annex Git.Repo
-sshCachingTo remote g = case Git.Url.hostuser remote of
-	Nothing -> return g
-	Just host -> do
-		(msockfile, _) <- sshInfo (host, Git.Url.port remote)
-		case msockfile of
-			Nothing -> return g
-			Just sockfile -> do
-				command <- liftIO readProgramFile
-				prepSocket sockfile
-				liftIO $ do
-					g' <- addGitEnv g sshCachingEnv sockfile
-					addGitEnv g' "GIT_SSH" command
+sshCachingTo remote g 
+	| not (Git.repoIsUrl remote) || Git.repoIsHttp remote = uncached
+	| otherwise = case Git.Url.hostuser remote of
+		Nothing -> uncached
+		Just host -> do
+			(msockfile, _) <- sshInfo (host, Git.Url.port remote)
+			case msockfile of
+				Nothing -> return g
+				Just sockfile -> do
+					command <- liftIO readProgramFile
+					prepSocket sockfile
+					liftIO $ do
+						g' <- addGitEnv g sshCachingEnv sockfile
+						addGitEnv g' "GIT_SSH" command
+  where
+	uncached = return g
 
 runSshCaching :: [String] -> String -> IO ()
 runSshCaching args sockfile = do
