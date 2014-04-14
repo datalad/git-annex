@@ -2,8 +2,9 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
 
   * assistant: Now detects immediately when other repositories push
     changes to a ssh remote, and pulls.
-    XMPP is no longer needed in this configuration!
-    Requires the remote server have git-annex-shell with notifychanges support.
+    ** XMPP is no longer needed in this configuration! **
+    This requires the remote server have git-annex-shell with
+    notifychanges support (>= 5.20140405)
   * webapp: Show a network signal icon next to ssh and xmpp remotes that
     it's currently connected with.
   * webapp: Rework xmpp nudge to prompt for either xmpp or a ssh remote be
@@ -12,7 +13,7 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
     and pulls.
   * remotedaemon: When network connection is lost, close all cached ssh
     connections.
-  * Improve handling on monthly/yearly scheduling.
+  * Improve handling of monthly/yearly scheduling.
   * Avoid depending on shakespeare except for when building the webapp.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
