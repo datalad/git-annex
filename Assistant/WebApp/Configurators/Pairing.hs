@@ -21,7 +21,6 @@ import Assistant.Ssh
 import Assistant.Alert
 import Assistant.DaemonStatus
 import Utility.Verifiable
-import Utility.Network
 #endif
 #ifdef WITH_XMPP
 import Assistant.XMPP.Client

@@ -27,7 +27,6 @@ import Utility.DiskFree
 import Utility.Mounts
 #endif
 import Utility.DataUnits
-import Utility.Network
 import Remote (prettyUUID)
 import Annex.UUID
 import Annex.Direct

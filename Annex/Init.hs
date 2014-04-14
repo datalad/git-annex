@@ -16,7 +16,6 @@ module Annex.Init (
 ) where
 
 import Common.Annex
-import Utility.Network
 import qualified Annex
 import qualified Git
 import qualified Git.LsFiles
