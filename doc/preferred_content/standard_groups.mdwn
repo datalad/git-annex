@@ -13,7 +13,7 @@ any repository that can will back it up.)
 All content is wanted, unless it's for a file in a "archive" directory,
 which has reached an archive repository, or is unused.
 
-`(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or roughlylackingcopies=1`
+`(((exclude=*/archive/* and exclude=archive/*) or (not (copies=archive:1 or copies=smallarchive:1))) and not unused) or approxlackingcopies=1`
 
 ### transfer
 
