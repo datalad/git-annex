@@ -1,0 +1,30 @@
+### Please describe the problem.
+
+When adding files, the error
+
+ fatal: Out of memory? mmap failed: No error
+
+appears 
+
+
+### What steps will reproduce the problem?
+
+In Windows, I have a directory with 8GB and 333.820 files (of course, in different directory, the big one is probably the Android SDK).
+
+### What version of git-annex are you using? On what operating system?
+
+Windows 8.
+
+ $ git annex version
+ git-annex version: 5.20140411-gda795e0
+ build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+ key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+ remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
+ local repository version: 5
+ supported repository version: 5
+ upgrade supported from repository versions: 2 3 4
+
+
+### Please provide any additional information below.
+
+
