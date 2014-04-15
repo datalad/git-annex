@@ -16,6 +16,7 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
   * Improve handling of monthly/yearly scheduling.
   * Avoid depending on shakespeare except for when building the webapp.
   * uninit: Avoid making unncessary copies of files.
+  * info: Allow use in a repository where annex.uuid is not set.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
 
