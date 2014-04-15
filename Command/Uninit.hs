@@ -8,6 +8,7 @@
 module Command.Uninit where
 
 import Common.Annex
+import qualified Annex
 import Command
 import qualified Git
 import qualified Git.Command
@@ -37,6 +38,7 @@ check = do
 seek :: CommandSeek
 seek ps = do
 	withFilesNotInGit False (whenAnnexed startCheckIncomplete) ps
+	Annex.changeState $ \s -> s { Annex.fast = True }
 	withFilesInGit (whenAnnexed Command.Unannex.start) ps
 	finish
 

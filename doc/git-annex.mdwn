@@ -845,10 +845,6 @@ subdirectories).
   repository, and remove all of git-annex's other data, leaving you with a
   git repository plus the previously annexed files.
 
-  Normally this does a slow copy of every file. In `--fast` mode, this copy
-  is avoided, but if two files in the repository have the same content,
-  they will end up hard linked together.
-
 # PLUMBING COMMANDS
 
 * `pre-commit [path ...]`

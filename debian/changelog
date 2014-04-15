@@ -15,6 +15,7 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
     connections.
   * Improve handling of monthly/yearly scheduling.
   * Avoid depending on shakespeare except for when building the webapp.
+  * uninit: Avoid making unncessary copies of files.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
 

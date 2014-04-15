@@ -75,7 +75,16 @@ cleanupIndirect :: FilePath -> Key -> CommandCleanup
 cleanupIndirect file key = do
 	src <- calcRepo $ gitAnnexLocation key
 	ifM (Annex.getState Annex.fast)
-		( hardlinkfrom src
+		( do
+			-- Only make a hard link if the annexed file does not
+			-- already have other hard links pointing at it.
+			-- This avoids unannexing (and uninit) ending up
+			-- hard linking files together, which would be
+			-- surprising.
+			s <- liftIO $ getFileStatus src
+			if linkCount s > 1
+				then copyfrom src
+				else hardlinkfrom src
 		, copyfrom src
 		)
   where
