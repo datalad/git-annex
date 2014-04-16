@@ -137,9 +137,9 @@ encryption. Encryption is not part of this design.
 (XMPP does not do end-to-end encryption, but might be supported
 transitionally.)
 
-Ditto for authentication that we're talking to who we indend to talk to.
-Any public key data etc used for authenticion is part of the remote's
-configuration (or hidden away in a secure chmodded file, if neccesary).
+Ditto for authentication that we're talking to who we intend to talk to.
+Any public key data etc used for authentication is part of the remote's
+configuration (or hidden away in a secure chmodded file, if necessary).
 This design does not concern itself with authenticating the remote node,
 it just takes the auth token and uses it.
 
