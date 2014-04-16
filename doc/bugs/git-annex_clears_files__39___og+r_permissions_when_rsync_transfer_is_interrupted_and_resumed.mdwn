@@ -11,6 +11,22 @@ Plus, og+r permissions can actually be important for setups like serving content
 
 ### What steps will reproduce the problem?
 
+    cd dir1
+    git init
+    git annex init
+    touch some-small-file
+    truncate -s 10G some-large-file
+    git annex add .
+    git commit -m 'new'
+
+    git clone localhost:/path/to/dir1 dir2
+    cd dir2
+    git annex get
+    ctrl^c
+    ls -lL
+    ... see different perms
+
+
 
 ### What version of git-annex are you using? On what operating system?
 
