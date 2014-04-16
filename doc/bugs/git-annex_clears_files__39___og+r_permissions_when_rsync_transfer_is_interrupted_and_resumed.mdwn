@@ -23,6 +23,7 @@ Plus, og+r permissions can actually be important for setups like serving content
     cd dir2
     git annex get
     ctrl^c
+    git annex get
     ls -lL
     ... see different perms
 
