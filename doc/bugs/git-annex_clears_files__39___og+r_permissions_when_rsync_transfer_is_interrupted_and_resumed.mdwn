@@ -14,8 +14,8 @@ Plus, og+r permissions can actually be important for setups like serving content
     cd dir1
     git init
     git annex init
-    touch some-small-file
-    truncate -s 10G some-large-file
+    touch a
+    truncate -s 10G b
     git annex add .
     git commit -m 'new'
 
