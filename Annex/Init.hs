@@ -11,6 +11,7 @@ module Annex.Init (
 	ensureInitialized,
 	isInitialized,
 	initialize,
+	initialize',
 	uninitialize,
 	probeCrippledFileSystem,
 ) where
@@ -60,6 +61,17 @@ genDescription Nothing = do
 initialize :: Maybe String -> Annex ()
 initialize mdescription = do
 	prepUUID
+	initialize'
+
+	u <- getUUID
+	{- This will make the first commit to git, so ensure git is set up
+	 - properly to allow commits when running it. -}
+	ensureCommit $ do
+		Annex.Branch.create
+		describeUUID u =<< genDescription mdescription
+
+initialize' :: Annex ()
+initialize' = do
 	checkFifoSupport
 	checkCrippledFileSystem
 	unlessM isBare $
@@ -75,12 +87,6 @@ initialize mdescription = do
 			switchHEADBack
 		)
 	createInodeSentinalFile
-	u <- getUUID
-	{- This will make the first commit to git, so ensure git is set up
-	 - properly to allow commits when running it. -}
-	ensureCommit $ do
-		Annex.Branch.create
-		describeUUID u =<< genDescription mdescription
 
 uninitialize :: Annex ()
 uninitialize = do

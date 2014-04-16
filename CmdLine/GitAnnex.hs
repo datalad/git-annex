@@ -57,6 +57,7 @@ import qualified Command.Info
 import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
+import qualified Command.Reinit
 import qualified Command.NumCopies
 import qualified Command.Trust
 import qualified Command.Untrust
@@ -125,6 +126,7 @@ cmds = concat
 	, Command.Reinject.def
 	, Command.Unannex.def
 	, Command.Uninit.def
+	, Command.Reinit.def
 	, Command.PreCommit.def
 	, Command.NumCopies.def
 	, Command.Trust.def

@@ -21,6 +21,7 @@ module Annex.UUID (
 	gCryptNameSpace,
 	removeRepoUUID,
 	storeUUID,
+	storeUUIDIn,
 	setUUID,
 ) where
 
@@ -70,7 +71,7 @@ getRepoUUID r = do
   where
 	updatecache u = do
 		g <- gitRepo
-		when (g /= r) $ storeUUID cachekey u
+		when (g /= r) $ storeUUIDIn cachekey u
 	cachekey = remoteConfig r "uuid"
 
 removeRepoUUID :: Annex ()
@@ -84,10 +85,13 @@ getUncachedUUID = toUUID . Git.Config.get key ""
 {- Make sure that the repo has an annex.uuid setting. -}
 prepUUID :: Annex ()
 prepUUID = whenM ((==) NoUUID <$> getUUID) $
-	storeUUID configkey =<< liftIO genUUID
+	storeUUID =<< liftIO genUUID
 
-storeUUID :: ConfigKey -> UUID -> Annex ()
-storeUUID configfield = setConfig configfield . fromUUID
+storeUUID :: UUID -> Annex ()
+storeUUID = storeUUIDIn configkey
+
+storeUUIDIn :: ConfigKey -> UUID -> Annex ()
+storeUUIDIn configfield = setConfig configfield . fromUUID
 
 {- Only sets the configkey in the Repo; does not change .git/config -}
 setUUID :: Git.Repo -> UUID -> IO Git.Repo

@@ -74,7 +74,7 @@ makeXMPPGitRemote :: String -> JID -> UUID -> Assistant Bool
 makeXMPPGitRemote buddyname jid u = do
 	remote <- liftAnnex $ addRemote $
 		makeGitRemote buddyname $ gitXMPPLocation jid
-	liftAnnex $ storeUUID (remoteConfig (Remote.repo remote) "uuid") u
+	liftAnnex $ storeUUIDIn (remoteConfig (Remote.repo remote) "uuid") u
 	liftAnnex $ void remoteListRefresh
 	remote' <- liftAnnex $ fromMaybe (error "failed to add remote")
 		<$> Remote.byName (Just buddyname)

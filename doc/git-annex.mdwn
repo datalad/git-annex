@@ -845,6 +845,17 @@ subdirectories).
   repository, and remove all of git-annex's other data, leaving you with a
   git repository plus the previously annexed files.
 
+* `reinit uuid|description`
+
+  Normally, initializing a repository generates a new, unique identifier
+  (UUID) for that repository. Occasionally it may be useful to reuse a
+  UUID -- for example, if a repository got deleted, and you're
+  setting it back up.
+
+  Use this with caution; it can be confusing to have two existing
+  repositories with the same UUID. Also, you will probably want to run
+  a fsck.
+
 # PLUMBING COMMANDS
 
 * `pre-commit [path ...]`
