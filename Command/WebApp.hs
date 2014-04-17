@@ -65,7 +65,7 @@ start' allowauto listenhost = do
 	stop
   where
 	go = do
-		cannotrun <- needsUpgrade . fromMaybe (error "no version") =<< getVersion
+		cannotrun <- needsUpgrade . fromMaybe (error "annex.version is not set.. seems this repository has not been initialized by git-annex") =<< getVersion
 		browser <- fromRepo webBrowser
 		f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 		listenhost' <- if isJust listenhost
@@ -98,7 +98,7 @@ start' allowauto listenhost = do
 	checkshim f = liftIO $ doesFileExist f
 
 {- When run without a repo, start the first available listed repository in
- - the autostart file. If not, it's our first time being run! -}
+ - the autostart file. If none, it's our first time being run! -}
 startNoRepo :: CmdParams -> IO ()
 startNoRepo _ = do
 	-- FIXME should be able to reuse regular getopt, but 
@@ -107,13 +107,18 @@ startNoRepo _ = do
 	let listenhost = headMaybe $ map (snd . separate (== '=')) $ 
 		filter ("--listen=" `isPrefixOf`) args
 
-	dirs <- liftIO $ filterM doesDirectoryExist =<< readAutoStartFile
-	case dirs of
-		[] -> firstRun listenhost
-		(d:_) -> do
+	go listenhost =<< liftIO (filterM doesDirectoryExist =<< readAutoStartFile)
+  where
+	go listenhost [] = firstRun listenhost
+	go listenhost (d:ds) = do
+		v <- tryNonAsync $ do
 			setCurrentDirectory d
-			state <- Annex.new =<< Git.CurrentRepo.get
-			void $ Annex.eval state $ do
+			Annex.new =<< Git.CurrentRepo.get
+		case v of
+			Left e -> do
+				warningIO $ "unable to start webapp in " ++ d ++ ": " ++ show e
+				go listenhost ds
+			Right state -> void $ Annex.eval state $ do
 				whenM (fromRepo Git.repoIsLocalBare) $
 					error $ d ++ " is a bare git repository, cannot run the webapp in it"
 				callCommandAction $
