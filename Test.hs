@@ -712,7 +712,7 @@ test_unused env = intmpclonerepoInDirect env $ do
 			(sort expectedkeys) (sort unusedkeys)
 	findkey f = do
 		r <- Backend.lookupFile f
-		return $ fst $ fromJust r
+		return $ fromJust r
 
 test_describe :: TestEnv -> Assertion
 test_describe env = intmpclonerepo env $ do
@@ -1233,7 +1233,7 @@ test_crypto env = do
 			(c,k) <- annexeval $ do
 				uuid <- Remote.nameToUUID "foo"
 				rs <- Logs.Remote.readRemoteLog
-				Just (k,_) <- Backend.lookupFile annexedfile
+				Just k <- Backend.lookupFile annexedfile
 				return (fromJust $ M.lookup uuid rs, k)
 			let key = if scheme `elem` ["hybrid","pubkey"]
 					then Just $ Utility.Gpg.KeyIds [Utility.Gpg.testKeyId]
@@ -1500,7 +1500,7 @@ checklocationlog f expected = do
 	thisuuid <- annexeval Annex.UUID.getUUID
 	r <- annexeval $ Backend.lookupFile f
 	case r of
-		Just (k, _) -> do
+		Just k -> do
 			uuids <- annexeval $ Remote.keyLocations k
 			assertEqual ("bad content in location log for " ++ f ++ " key " ++ Types.Key.key2file k ++ " uuid " ++ show thisuuid)
 				expected (thisuuid `elem` uuids)
@@ -1508,9 +1508,9 @@ checklocationlog f expected = do
 
 checkbackend :: FilePath -> Types.Backend -> Assertion
 checkbackend file expected = do
-	r <- annexeval $ Backend.lookupFile file
-	let b = snd $ fromJust r
-	assertEqual ("backend for " ++ file) expected b
+	b <- annexeval $ maybe (return Nothing) (Backend.getBackend file) 
+		=<< Backend.lookupFile file
+	assertEqual ("backend for " ++ file) (Just expected) b
 
 inlocationlog :: FilePath -> Assertion
 inlocationlog f = checklocationlog f True

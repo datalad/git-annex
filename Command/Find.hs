@@ -39,8 +39,8 @@ seek ps = do
 	format <- getFormat
 	withFilesInGit (whenAnnexed $ start format) ps
 
-start :: Maybe Utility.Format.Format -> FilePath -> (Key, Backend) -> CommandStart
-start format file (key, _) = do
+start :: Maybe Utility.Format.Format -> FilePath -> Key -> CommandStart
+start format file key = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
 	whenM (limited <||> inAnnex key) $

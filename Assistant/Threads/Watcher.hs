@@ -271,7 +271,7 @@ onAddSymlink :: Bool -> Handler
 onAddSymlink isdirect file filestatus = unlessIgnored file $ do
 	linktarget <- liftIO (catchMaybeIO $ readSymbolicLink file)
 	kv <- liftAnnex (Backend.lookupFile file)
-	onAddSymlink' linktarget (fmap fst kv) isdirect file filestatus
+	onAddSymlink' linktarget kv isdirect file filestatus
 
 onAddSymlink' :: Maybe String -> Maybe Key -> Bool -> Handler
 onAddSymlink' linktarget mk isdirect file filestatus = go mk

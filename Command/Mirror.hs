@@ -31,8 +31,8 @@ seek ps = do
 		(withFilesInGit $ whenAnnexed $ start to from)
 		ps
 
-start :: Maybe Remote -> Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start to from file (key, _backend) = startKey to from (Just file) key
+start :: Maybe Remote -> Maybe Remote -> FilePath -> Key -> CommandStart
+start to from file key = startKey to from (Just file) key
 
 startKey :: Maybe Remote -> Maybe Remote -> Maybe FilePath -> Key -> CommandStart
 startKey to from afile key = do

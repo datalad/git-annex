@@ -58,8 +58,8 @@ wrapUnannex a = ifM isDirect
 			then void (liftIO cleanup) >> return True
 			else void (liftIO cleanup) >> return False
 
-start :: FilePath -> (Key, Backend) -> CommandStart
-start file (key, _) = stopUnless (inAnnex key) $ do
+start :: FilePath -> Key -> CommandStart
+start file key = stopUnless (inAnnex key) $ do
 	showStart "unannex" file
 	next $ ifM isDirect
 		( performDirect file key

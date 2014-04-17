@@ -31,8 +31,8 @@ seek ps = do
 		(withFilesInGit $ whenAnnexed $ start from)
 		ps
 
-start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = start' expensivecheck from key (Just file)
+start :: Maybe Remote -> FilePath -> Key -> CommandStart
+start from file key = start' expensivecheck from key (Just file)
   where
 	expensivecheck = checkAuto (numCopiesCheck file key (<) <||> wantGet False (Just key) (Just file))
 

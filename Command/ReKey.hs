@@ -29,7 +29,7 @@ start :: (FilePath, String) -> CommandStart
 start (file, keyname) = ifAnnexed file go stop
   where
 	newkey = fromMaybe (error "bad key") $ file2key keyname
-	go (oldkey, _)
+	go oldkey
 		| oldkey == newkey = stop
 		| otherwise = do
 			showStart "rekey" file

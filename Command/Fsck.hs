@@ -104,12 +104,16 @@ getIncremental = do
 						resetStartTime
 		return True
 
-start :: Maybe Remote -> Incremental -> FilePath -> (Key, Backend) -> CommandStart
-start from inc file (key, backend) = do
-	numcopies <- getFileNumCopies file
-	case from of
-		Nothing -> go $ perform key file backend numcopies
-		Just r -> go $ performRemote key file backend numcopies r
+start :: Maybe Remote -> Incremental -> FilePath -> Key -> CommandStart
+start from inc file key = do
+	v <- Backend.getBackend file key
+	case v of
+		Nothing -> stop
+		Just backend -> do
+			numcopies <- getFileNumCopies file
+			case from of
+				Nothing -> go $ perform key file backend numcopies
+				Just r -> go $ performRemote key file backend numcopies r
   where
 	go = runFsck inc file key
 

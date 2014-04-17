@@ -63,8 +63,8 @@ seek ps = do
 		(withFilesInGit (whenAnnexed $ start now getfield modmeta))
 		ps
 
-start :: POSIXTime -> Maybe MetaField -> [ModMeta] -> FilePath -> (Key, Backend) -> CommandStart
-start now f ms file (k, _) = start' (Just file) now f ms k
+start :: POSIXTime -> Maybe MetaField -> [ModMeta] -> FilePath -> Key -> CommandStart
+start now f ms file = start' (Just file) now f ms
 
 startKeys :: POSIXTime -> Maybe MetaField -> [ModMeta] -> Key -> CommandStart
 startKeys = start' Nothing

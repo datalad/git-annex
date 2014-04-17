@@ -34,8 +34,8 @@ seek ps = do
 	from <- getOptionField dropFromOption Remote.byNameWithUUID
 	withFilesInGit (whenAnnexed $ start from) ps
 
-start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = checkDropAuto from file key $ \numcopies ->
+start :: Maybe Remote -> FilePath -> Key -> CommandStart
+start from file key = checkDropAuto from file key $ \numcopies ->
 	stopUnless (checkAuto $ wantDrop False (Remote.uuid <$> from) (Just key) (Just file)) $
 		case from of
 			Nothing -> startLocal (Just file) numcopies key Nothing

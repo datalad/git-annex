@@ -70,11 +70,11 @@ stopUnless :: Annex Bool -> Annex (Maybe a) -> Annex (Maybe a)
 stopUnless c a = ifM c ( a , stop )
 
 {- Modifies an action to only act on files that are already annexed,
- - and passes the key and backend on to it. -}
-whenAnnexed :: (FilePath -> (Key, Backend) -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
+ - and passes the key on to it. -}
+whenAnnexed :: (FilePath -> Key -> Annex (Maybe a)) -> FilePath -> Annex (Maybe a)
 whenAnnexed a file = ifAnnexed file (a file) (return Nothing)
 
-ifAnnexed :: FilePath -> ((Key, Backend) -> Annex a) -> Annex a -> Annex a
+ifAnnexed :: FilePath -> (Key -> Annex a) -> Annex a -> Annex a
 ifAnnexed file yes no = maybe no yes =<< Backend.lookupFile file
 
 isBareRepo :: Annex Bool

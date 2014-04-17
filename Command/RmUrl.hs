@@ -20,7 +20,7 @@ seek :: CommandSeek
 seek = withPairs start
 
 start :: (FilePath, String) -> CommandStart
-start (file, url) = flip whenAnnexed file $ \_ (key, _) -> do
+start (file, url) = flip whenAnnexed file $ \_ key -> do
 	showStart "rmurl" file
 	next $ next $ cleanup url key
 

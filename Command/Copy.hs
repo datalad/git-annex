@@ -30,9 +30,9 @@ seek ps = do
 {- A copy is just a move that does not delete the source file.
  - However, --auto mode avoids unnecessary copies, and avoids getting or
  - sending non-preferred content. -}
-start :: Maybe Remote -> Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start to from file (key, backend) = stopUnless shouldCopy $ 
-	Command.Move.start to from False file (key, backend)
+start :: Maybe Remote -> Maybe Remote -> FilePath -> Key -> CommandStart
+start to from file key = stopUnless shouldCopy $ 
+	Command.Move.start to from False file key
   where
 	shouldCopy = checkAuto (check <||> numCopiesCheck file key (<))
 	check = case to of

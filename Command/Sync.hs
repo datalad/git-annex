@@ -338,8 +338,8 @@ seekSyncContent rs = do
 		(\v -> void (liftIO (tryPutMVar mvar ())) >> syncFile rs f v)
 		noop
 
-syncFile :: [Remote] -> FilePath -> (Key, Backend) -> Annex ()
-syncFile rs f (k, _) = do
+syncFile :: [Remote] -> FilePath -> Key -> Annex ()
+syncFile rs f k = do
 	locs <- loggedLocations k
 	let (have, lack) = partition (\r -> Remote.uuid r `elem` locs) rs
 

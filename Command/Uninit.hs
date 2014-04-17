@@ -44,7 +44,7 @@ seek ps = do
 
 {- git annex symlinks that are not checked into git could be left by an
  - interrupted add. -}
-startCheckIncomplete :: FilePath -> (Key, Backend) -> CommandStart
+startCheckIncomplete :: FilePath -> Key -> CommandStart
 startCheckIncomplete file _ = error $ unlines
 	[ file ++ " points to annexed content, but is not checked into git."
 	, "Perhaps this was left behind by an interrupted git annex add?"

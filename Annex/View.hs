@@ -348,7 +348,7 @@ applyView' mkviewedfile getfilemetadata view = do
 			void clean
   where
 	genviewedfiles = viewedFiles view mkviewedfile -- enables memoization
-	go uh hasher f (Just (k, _)) = do
+	go uh hasher f (Just k) = do
 		metadata <- getCurrentMetaData k
 		let metadata' = getfilemetadata f `unionMetaData` metadata
 		forM_ (genviewedfiles f metadata') $ \fv -> do

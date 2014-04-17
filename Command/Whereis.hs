@@ -27,8 +27,8 @@ seek ps = do
 		(withFilesInGit $ whenAnnexed $ start m)
 		ps
 
-start :: M.Map UUID Remote -> FilePath -> (Key, Backend) -> CommandStart
-start remotemap file (key, _) = start' remotemap key (Just file)
+start :: M.Map UUID Remote -> FilePath -> Key -> CommandStart
+start remotemap file key = start' remotemap key (Just file)
 
 startKeys :: M.Map UUID Remote -> Key -> CommandStart
 startKeys remotemap key = start' remotemap key Nothing

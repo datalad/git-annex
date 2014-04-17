@@ -234,10 +234,10 @@ limitSize vs s = case readSize dataUnits s of
 	Nothing -> Left "bad size"
 	Just sz -> Right $ go sz
   where
-  	go sz _ (MatchingFile fi) = lookupFile fi >>= check fi sz
+  	go sz _ (MatchingFile fi) = lookupFileKey fi >>= check fi sz
 	go sz _ (MatchingKey key) = checkkey sz key
 	checkkey sz key = return $ keySize key `vs` Just sz
-	check _ sz (Just (key, _)) = checkkey sz key
+	check _ sz (Just key) = checkkey sz key
 	check fi sz Nothing = do
 		filesize <- liftIO $ catchMaybeIO $
 			fromIntegral . fileSize
@@ -272,11 +272,8 @@ addTimeLimit s = do
 				liftIO $ exitWith $ ExitFailure 101
 			else return True
 
-lookupFile :: FileInfo -> Annex (Maybe (Key, Backend))
-lookupFile = Backend.lookupFile . relFile
-
 lookupFileKey :: FileInfo -> Annex (Maybe Key)
-lookupFileKey = (fst <$>) <$$> Backend.lookupFile . relFile
+lookupFileKey = Backend.lookupFile . relFile
 
 checkKey :: (Key -> Annex Bool) -> MatchInfo -> Annex Bool
 checkKey a (MatchingFile fi) = lookupFileKey fi >>= maybe (return False) a

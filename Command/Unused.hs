@@ -250,7 +250,7 @@ withKeysReferenced' mdir initial a = do
 		x <- Backend.lookupFile f
 		case x of
 			Nothing -> go v fs
-			Just (k, _) -> do
+			Just k -> do
 				!v' <- a k f v
 				go v' fs
 
@@ -294,7 +294,7 @@ withKeysReferencedInGitRef a ref = do
 	forM_ ts $ tKey lookAtWorkingTree >=> maybe noop a
 	liftIO $ void clean
   where
-	tKey True = fmap fst <$$> Backend.lookupFile . getTopFilePath . DiffTree.file
+	tKey True = Backend.lookupFile . getTopFilePath . DiffTree.file
 	tKey False = fileKey . takeFileName . decodeBS <$$>
 		catFile ref . getTopFilePath . DiffTree.file
 
