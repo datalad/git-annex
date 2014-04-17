@@ -17,7 +17,7 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
   * Avoid depending on shakespeare except for when building the webapp.
   * uninit: Avoid making unncessary copies of files.
   * info: Allow use in a repository where annex.uuid is not set.
-  * reinit: New command that can initialize a new reposotory using
+  * reinit: New command that can initialize a new repository using
     the configuration of a previously known repository.
     Useful if a repository got deleted and you want
     to clone it back the way it was.
