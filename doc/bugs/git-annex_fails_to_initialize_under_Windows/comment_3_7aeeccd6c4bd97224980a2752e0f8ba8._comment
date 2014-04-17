@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 3"
+ date="2014-04-17T21:08:36Z"
+ content="""
+@ayutheos, can you confirm that running this git command fails the same way?
+
+git checkout -B annex/direct/master
+
+What version of git do you have installed?
+
+(Note to self: This checkout happens when enabling direct mode.. Works for me in a new git repo made on FAT. This repo does not have a .git/index file, and the error message \"fatal: index file open failed: Invalid argument\" comes from git when it tries to read the index file.)
+"""]]
