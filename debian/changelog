@@ -21,6 +21,8 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
     the configuration of a previously known repository.
     Useful if a repository got deleted and you want
     to clone it back the way it was.
+  * drop --from: When local repository is untrusted, its copy of a file does
+    not count.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
 

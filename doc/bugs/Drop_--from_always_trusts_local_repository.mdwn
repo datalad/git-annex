@@ -42,3 +42,5 @@ index 269c4c2..09ea99a 100644
         let tocheck = filter (/= remote) $
                 Remote.remotesWithoutUUID remotes (have++untrusteduuids)
 """]]
+
+> [[fixed|done]] --[[Joey]]
