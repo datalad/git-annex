@@ -1,0 +1,72 @@
+I'm having an issue with 2 repos: one on my laptop, the other on my NAS. Both are in indirect mode, running Arch Linux, and have the latest Git version. Laptop has git-annex 5.20140411-gda795e0, NAS has 5.20140319-g9aa31b7 (from prebuilt tarballs).
+
+The issue is quite simple. When I `git-annex add` new files on my laptop, commit them, and then `git-annex sync` them, they show up as staged for deletion on my NAS.
+
+    laptop $ git annex add some-file
+    laptop $ git commit -m "Add some-file"
+    laptop $ git annex sync
+    commit  ok
+    pull ds413j 
+    ok
+    push ds413j 
+    Counting objects: 133, done.
+    Delta compression using up to 8 threads.
+    Compressing objects: 100% (78/78), done.
+    Writing objects: 100% (80/80), 10.64 KiB | 0 bytes/s, done.
+    Total 80 (delta 12), reused 0 (delta 0)
+    To ssh://**/**
+       1dcd188..8ef4249  git-annex -> synced/git-annex
+       c0f45a6..21711d6  master -> synced/master
+    ok
+    laptop $ ssh $NAS
+    nas $ git status
+    On branch master
+    Changes to be committed:
+      (use "git reset HEAD <file>..." to unstage)
+
+            deleted:    some-file
+
+    nas $
+
+If I run `git annex sync` on the NAS, it will create a new commit that deletes that file. So I have to play with `git reset`/`git checkout` by hand to make sure that the new file won't be deleted.
+
+I'm not sure when this started, but I think it was after I did some stupid mistake (`git checkout -B master synced/master`, kill a `git annex sync` with Ctrl+C, or something else that even resulted in my non-bare repo to have "bare=true" in .git/config...). And I haven't yet been able to fix this.
+
+Any idea what can have caused this, how to fix it, and how to prevent it from happening again in the future?
+
+.git/config on NAS:
+
+    [core]
+            repositoryformatversion = 0
+            filemode = true
+            logallrefupdates = true
+    [annex]
+            uuid = d54ae60a-1f59-403c-923f-32ea3bf2d00f
+            version = 5
+            diskreserve = 1 megabyte
+            autoupgrade = ask
+            debug = false
+
+.git/config on laptop:
+
+    [core]
+            repositoryformatversion = 0
+            filemode = true
+            bare = false
+            logallrefupdates = true
+    [branch "master"]
+    [annex]
+            uuid = f20cb506-945d-4c78-af1a-0aa884bb899b
+            version = 5
+            diskreserve = 20 gigabytes
+            autoupgrade = ask
+            debug = false
+            expireunused = 7d
+            genmetadata = true
+    [push]
+            default = matching
+    [remote "ds413j"]
+            url = ssh://**/**
+            fetch = +refs/heads/*:refs/remotes/ds413j/*
+            annex-uuid = d54ae60a-1f59-403c-923f-32ea3bf2d00f
+            annex-sync = true
