@@ -1,12 +1,12 @@
 <h3>
   <a href="@{AddBoxComR}">
-    <i .icon-plus-sign></i> Box.com
+    <span .glyphicon .glyphicon-plus-sign></span> Box.com
 <p>
   Provides free cloud storage for small amounts of data.
 
 <h3>
   <a href="@{AddRsyncNetR}">
-    <i .icon-plus-sign></i> Rsync.net
+    <span .glyphicon .glyphicon-plus-sign></span> Rsync.net
 <p>
   Works very well with git-annex.
   <br>
@@ -14,7 +14,7 @@
 
 <h3>
   <a href="@{AddS3R}">
-    <i .icon-plus-sign></i> Amazon S3
+    <span .glyphicon .glyphicon-plus-sign></span> Amazon S3
 <p>
   Good choice for professional quality storage.
 

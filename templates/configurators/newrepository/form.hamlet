@@ -2,7 +2,7 @@
 <p>
   <div .input-group>
     <span .input-group-addon>
-      <i .icon-folder-open></i>
+      <span .glyphicon .glyphicon-folder-open></span>
     ^{fvInput pathView}
     <button type=submit .btn .btn-primary>
       Make Repository

@@ -21,7 +21,7 @@
       Add a check:
       ^{showFsckForm True (defaultFsck Nothing)}
     $else
-      <i .icon-warning-sign></i> #
+      <span .glyphicon .glyphicon-warning-sign></span> #
       Some repositories are not yet checked. #
       Please consider adding these checks:
       $forall c <- recommendedchecks

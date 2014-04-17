@@ -7,10 +7,10 @@
     files to be retrieved from Glacier, making it mostly suitable for #
     backups and long-term data archival. #
   <p>
-    <i .icon-warning-sign></i> By default, only files you place in #
+    <span .glyphicon .glyphicon-warning-sign></span> By default, only files you place in #
     "archive" directories will be archived in Amazon Glacier.
   <p>
-    <i .icon-warning-sign></i> You will be charged by Amazon for data #
+    <span .glyphicon .glyphicon-warning-sign></span> You will be charged by Amazon for data #
     uploaded to Glacier, as well as data downloaded from Glacier, and a #
     monthly fee for data storage. #
     <a href="http://aws.amazon.com/glacier/pricing/">

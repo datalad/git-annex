@@ -3,6 +3,6 @@
     Shutdown daemon?
   <p>
     <a .btn .btn-danger href="@{ShutdownConfirmedR}">
-      <i .icon-off></i> Confirm shutdown
+      <span .glyphicon .glyphicon-off></span> Confirm shutdown
     <a .btn .btn-default href="@{DashboardR}">
       Keep running

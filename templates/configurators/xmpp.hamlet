@@ -10,10 +10,10 @@
     post any messages to it.
   <p>
     $maybe msg <- problem
-      <i .icon-warning-sign></i> Unable to connect to the Jabber server. #
+      <span .glyphicon .glyphicon-warning-sign></span> Unable to connect to the Jabber server. #
       Maybe you entered the wrong password? (Error message: #{msg})
     $nothing
-      <i .icon-user></I> If you have a Gmail account, you can use #
+      <span .glyphicon .glyphicon-user></span> If you have a Gmail account, you can use #
       Google Talk. Just enter your full Gmail address #
       <small>(<tt>you@gmail.com</tt>)</small> #
       and password below.

@@ -8,12 +8,12 @@
     Do you want to combine these files into your repository?
   <p>
     <a .btn .btn-default onclick="$('#setupmodal').modal('show');" href="@{FinishAddDriveR drive NoRepoKey}">
-      <i .icon-resize-small></i> Combine the repositories #
+      <span .glyphicon .glyphicon-resize-small></span> Combine the repositories #
     The combined repositories will sync and share their files.
   <p>
   <p>
     <a .btn .btn-default href="@{AddDriveR}">
-      <i .icon-resize-full></i> Go back #
+      <span .glyphicon .glyphicon-resize-full></span> Go back #
     Use a different directory than <tt>#{driveRepoPath drive}</tt> to #
     avoid combining the repositories.
 ^{setupDriveModal}

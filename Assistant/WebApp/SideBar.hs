@@ -106,4 +106,4 @@ htmlIcon UpgradeIcon = bootstrapIcon "arrow-up"
 htmlIcon ConnectionIcon = bootstrapIcon "signal"
 
 bootstrapIcon :: Text -> Widget
-bootstrapIcon name = [whamlet|<i .icon-#{name}></i>|]
+bootstrapIcon name = [whamlet|<span .glyphicon .glyphicon-#{name}></span>|]

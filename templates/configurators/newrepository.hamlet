@@ -2,7 +2,7 @@
   <h2>
     Add another local repository
   <p>
-    <i .icon-asterisk></i> Do you want to back your repository up to a #
+    <span .glyphicon .glyphicon-asterisk></span> Do you want to back your repository up to a #
     removable drive?
     <a .btn .btn-primary href="@{AddDriveR}">
       Make a repository on a Removable Drive

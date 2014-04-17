@@ -8,7 +8,7 @@
       Do you only want to share photos and videos you take?
     <p>
       <a .btn .btn-primary .btn-lg href="@{AndroidCameraRepositoryR}">
-        <i .icon-camera></i> Make Camera Repository
+        <span .glyphicon .glyphicon-camera></span> Make Camera Repository
   <p>
     $if androidspecial
       Want to share more files? #
