@@ -49,6 +49,7 @@ import qualified Command.Unlock
 import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.Find
+import qualified Command.FindRef
 import qualified Command.Whereis
 import qualified Command.List
 import qualified Command.Log
@@ -158,6 +159,7 @@ cmds = concat
 	, Command.DropUnused.def
 	, Command.AddUnused.def
 	, Command.Find.def
+	, Command.FindRef.def
 	, Command.Whereis.def
 	, Command.List.def
 	, Command.Log.def

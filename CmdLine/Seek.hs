@@ -19,6 +19,8 @@ import qualified Annex
 import qualified Git
 import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
+import qualified Git.LsTree as LsTree
+import Git.FilePath
 import qualified Limit
 import CmdLine.Option
 import CmdLine.Action
@@ -48,6 +50,20 @@ withFilesNotInGit skipdotfiles a params
 		liftIO $ Git.Command.leaveZombie <$> LsFiles.notInRepo force l g
 	go l = seekActions $ prepFiltered a $
 		return $ concat $ segmentPaths params l
+
+withFilesInRefs :: (FilePath -> Key -> CommandStart) -> CommandSeek
+withFilesInRefs a = mapM_ go
+  where
+	go r = do	
+		matcher <- Limit.getMatcher
+		l <- inRepo $ LsTree.lsTree (Git.Ref r)
+		forM_ l $ \i -> do
+			let f = getTopFilePath $ LsTree.file i
+			v <- catKey (Git.Ref $ LsTree.sha i) (LsTree.mode i)
+			case v of
+				Nothing -> noop
+				Just k -> whenM (matcher $ MatchingKey k) $
+					void $ commandAction $ a f k
 
 withPathContents :: ((FilePath, FilePath) -> CommandStart) -> CommandSeek
 withPathContents a params = seekActions $ 

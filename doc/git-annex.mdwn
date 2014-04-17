@@ -927,6 +927,14 @@ subdirectories).
   With `--force`, even files whose content is not currently available will
   be rekeyed. Use with caution.
 
+* `findref [ref]`
+
+  This is similar to the find command, but instead of finding files in the
+  current work tree, it finds files in the specified git ref. 
+
+  Most MATCHING OPTIONS can be used with findref, to limit the files it
+  finds. However, the --include and --exclude options will not work.
+
 * `test`
 
   This runs git-annex's built-in test suite.
