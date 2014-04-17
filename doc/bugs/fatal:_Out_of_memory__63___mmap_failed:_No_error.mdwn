@@ -28,3 +28,4 @@ Windows 8.
 ### Please provide any additional information below.
 
 
+> closing as not a git-annex bug at all, but a git bug. [[done]] --[[Joey]]
