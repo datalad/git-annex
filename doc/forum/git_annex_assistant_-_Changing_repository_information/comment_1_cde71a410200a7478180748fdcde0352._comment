@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 1"
+ date="2014-04-17T20:59:43Z"
+ content="""
+This information is stored on the git-annex branch, and so it is synced between repositories with the rest of git-annex's data. You only need to change it in one place.. But it's also fine to change it in multiple places if necessary.
+"""]]
