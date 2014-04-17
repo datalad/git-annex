@@ -43,3 +43,5 @@ Linux
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]]; brought back -p on non-crippled file systems --[[Joey]]

@@ -23,6 +23,9 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
     to clone it back the way it was.
   * drop --from: When local repository is untrusted, its copy of a file does
     not count.
+  * Bring back rsync -p, but only when git-annex is running on a non-crippled
+    file system. This is a better approach to fix #700282 while not
+    unncessarily losing file permissions on non-crippled systems.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
 

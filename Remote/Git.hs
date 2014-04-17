@@ -312,7 +312,7 @@ copyFromRemote r key file dest _p = copyFromRemote' r key file dest
 copyFromRemote' :: Remote -> Key -> AssociatedFile -> FilePath -> Annex Bool
 copyFromRemote' r key file dest
 	| not $ Git.repoIsUrl (repo r) = guardUsable (repo r) False $ do
-		let params = Ssh.rsyncParams r Download
+		params <- Ssh.rsyncParams r Download
 		u <- getUUID
 		-- run copy from perspective of remote
 		onLocal r $ do
@@ -411,7 +411,7 @@ copyToRemote r key file p
 		-- the remote's Annex, but it needs access to the current
 		-- Annex monad's state.
 		checksuccessio <- Annex.withCurrentState checksuccess
-		let params = Ssh.rsyncParams r Upload
+		params <- Ssh.rsyncParams r Upload
 		u <- getUUID
 		-- run copy from perspective of remote
 		onLocal r $ ifM (Annex.Content.inAnnex key)
