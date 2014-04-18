@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlqL3QbH6hrzf4XT-OW5IcMj6zSrMWl2dg"
+ nickname="Michel"
+ subject="comment 4"
+ date="2014-04-18T00:20:47Z"
+ content="""
+Thank you.
+
+The problem was indeed with having a file containing a non-existent ~/.config/git-annex/autostart.
+
+I can now continue my evaluation of what looks like a very fine and useful piece of software.
+
+Thanks again for the help.
+"""]]
