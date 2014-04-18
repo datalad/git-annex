@@ -265,8 +265,8 @@ data InputSecret = InputSecret { secretText :: Maybe Text }
 promptSecret :: Maybe PairMsg -> (Text -> Secret -> Widget) -> Handler Html
 promptSecret msg cont = pairPage $ do
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $
-			InputSecret <$> aopt textField "Secret phrase" Nothing
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
+			InputSecret <$> aopt textField (bfs "Secret phrase") Nothing
 	case result of
 		FormSuccess v -> do
 			let rawsecret = fromMaybe "" $ secretText v

@@ -27,9 +27,9 @@ data UnusedForm = UnusedForm
 
 unusedForm :: UnusedForm -> Hamlet.Html -> MkMForm UnusedForm
 unusedForm def msg = do
-	(enableRes, enableView) <- mreq (selectFieldList enabledisable) ""
+	(enableRes, enableView) <- mreq (selectFieldList enabledisable) (bfs "")
 		(Just $ enableExpire def)
-	(whenRes, whenView) <- mreq intField ""
+	(whenRes, whenView) <- mreq intField (bfs "")
 		(Just $ expireWhen def)
 	let form = do
 		webAppFormAuthToken

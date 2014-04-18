@@ -25,6 +25,7 @@ module Utility.Yesod
 
 #if MIN_VERSION_yesod(1,2,0)
 import Yesod as Y
+import Yesod.Form.Bootstrap3 as Y hiding (bfs)
 #else
 import Yesod as Y hiding (Html)
 #endif

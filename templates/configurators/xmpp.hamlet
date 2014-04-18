@@ -22,9 +22,10 @@
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
-            Use this account
+        <div .form-group>
+          <div .col-sm-offset-2>
+            <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+              Use this account
           <a .btn .btn-default href="@{DisconnectXMPPR}">
             Stop using this account
 <div .modal .fade #workingmodal>

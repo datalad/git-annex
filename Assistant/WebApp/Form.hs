@@ -17,6 +17,8 @@ import Assistant.Gpg
 
 import Yesod hiding (textField, passwordField)
 import Yesod.Form.Fields as F
+import Yesod.Form.Bootstrap3 hiding (bfs)
+import Data.String (IsString (..))
 import Data.Text (Text)
 
 {- Yesod's textField sets the required attribute for required fields.
@@ -80,10 +82,27 @@ enableEncryptionField :: (RenderMessage site FormMessage) => AForm (HandlerT sit
 #else
 enableEncryptionField :: RenderMessage master FormMessage => AForm sub master EnableEncryption
 #endif
-enableEncryptionField = areq (selectFieldList choices) "Encryption" (Just SharedEncryption)
+enableEncryptionField = areq (selectFieldList choices) (bfs "Encryption") (Just SharedEncryption)
   where
 	choices :: [(Text, EnableEncryption)]
 	choices =
 		[ ("Encrypt all data", SharedEncryption)
 		, ("Disable encryption", NoEncryption)
 		]
+
+{- Defines the layout used by the Bootstrap3 form helper -}
+bootstrapFormLayout :: BootstrapFormLayout
+bootstrapFormLayout = BootstrapHorizontalForm (ColSm 0) (ColSm 2) (ColSm 0) (ColSm 5)
+
+{- Adds the form-control class used by Bootstrap3 for layout to a field
+ - This is the same as Yesod.Form.Bootstrap3.bfs except it takes just a Text
+ - parameter as I couldn't get the original bfs to compile due to type ambiguities.
+ -}
+bfs :: Text -> FieldSettings master
+bfs msg = FieldSettings
+	{ fsLabel = SomeMessage msg
+	, fsName  = Nothing
+	, fsId    = Nothing
+	, fsAttrs = [("class", "form-control")]
+	, fsTooltip = Nothing
+	}

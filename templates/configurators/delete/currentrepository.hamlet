@@ -27,7 +27,7 @@
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}
-        <div .form-actions>
+        <div .col-md-2>
           <button .btn .btn-danger type=submit>
             <span .glyphicon .glyphicon-warning-sign></span> Delete this repository #
           <a .btn .btn-default href="@{DashboardR}">

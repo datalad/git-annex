@@ -20,11 +20,12 @@
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-primary type=submit>
-            Save Changes #
-          <a .btn .btn-default href="@{DashboardR}">
-            Cancel #
+        <div .form-group>
+          <div .col-sm-offset-2>
+            <button .btn .btn-primary type=submit>
+              Save Changes #
+            <a .btn .btn-default href="@{DashboardR}">
+              Cancel #
   $if new
     <p>
       In a hurry? Feel free to skip this step! You can always come back #

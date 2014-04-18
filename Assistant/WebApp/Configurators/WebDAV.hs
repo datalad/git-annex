@@ -45,16 +45,16 @@ toCredPair input = (T.unpack $ user input, T.unpack $ password input)
 
 boxComAForm :: Maybe CredPair -> MkAForm WebDAVInput
 boxComAForm defcreds = WebDAVInput
-	<$> areq textField "Username or Email" (T.pack . fst <$> defcreds)
-	<*> areq passwordField "Box.com Password" (T.pack . snd <$> defcreds)
-	<*> areq checkBoxField "Share this account with other devices and friends?" (Just True)
-	<*> areq textField "Directory" (Just "annex")
+	<$> areq textField (bfs "Username or Email") (T.pack . fst <$> defcreds)
+	<*> areq passwordField (bfs "Box.com Password") (T.pack . snd <$> defcreds)
+	<*> areq checkBoxField (bfs "Share this account with other devices and friends?") (Just True)
+	<*> areq textField (bfs "Directory") (Just "annex")
 	<*> enableEncryptionField
 
 webDAVCredsAForm :: Maybe CredPair -> MkAForm WebDAVInput
 webDAVCredsAForm defcreds = WebDAVInput
-	<$> areq textField "Username or Email" (T.pack . fst <$> defcreds)
-	<*> areq passwordField "Password" (T.pack . snd <$> defcreds)
+	<$> areq textField (bfs "Username or Email") (T.pack . fst <$> defcreds)
+	<*> areq passwordField (bfs "Password") (T.pack . snd <$> defcreds)
 	<*> pure False
 	<*> pure T.empty
 	<*> pure NoEncryption -- not used!
@@ -66,7 +66,8 @@ postAddBoxComR :: Handler Html
 postAddBoxComR = boxConfigurator $ do
 	defcreds <- liftAnnex $ previouslyUsedWebDAVCreds "box.com"
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ boxComAForm defcreds
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout
+			$ boxComAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ 
 			makeWebDavRemote initSpecialRemote "box.com" (toCredPair input) $ M.fromList
@@ -109,7 +110,8 @@ postEnableWebDAVR uuid = do
 			maybe (pure Nothing) previouslyUsedWebDAVCreds $
 				urlHost url
 		((result, form), enctype) <- liftH $
-			runFormPostNoToken $ renderBootstrap $ webDAVCredsAForm defcreds
+			runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
+				webDAVCredsAForm defcreds
 		case result of
 			FormSuccess input -> liftH $
 				makeWebDavRemote enableSpecialRemote name (toCredPair input) M.empty

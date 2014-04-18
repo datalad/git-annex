@@ -30,12 +30,13 @@
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-primary type=submit>
-            $if start
-              Start pairing
-            $else
-              Finish pairing
+        <div .form-group>
+          <div .col-sm-offset-2>
+            <button .btn .btn-primary type=submit>
+              $if start
+                Start pairing
+              $else
+                Finish pairing
     <div .alert .alert-info>
       $if start
         <p>

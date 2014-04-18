@@ -142,9 +142,9 @@ setRepoConfig uuid mremote oldc newc = do
 editRepositoryAForm :: Maybe Remote -> RepoConfig -> MkAForm RepoConfig
 editRepositoryAForm mremote def = RepoConfig
 	<$> areq (if ishere then readonlyTextField else textField)
-		"Name" (Just $ repoName def)
-	<*> aopt textField "Description" (Just $ repoDescription def)
-	<*> areq (selectFieldList groups `withNote` help) "Repository group" (Just $ repoGroup def)
+		(bfs "Name") (Just $ repoName def)
+	<*> aopt textField (bfs "Description") (Just $ repoDescription def)
+	<*> areq (selectFieldList groups `withNote` help) (bfs "Repository group") (Just $ repoGroup def)
 	<*> associateddirectory
 	<*> areq checkBoxField "Syncing enabled" (Just $ repoSyncable def)
   where
@@ -166,7 +166,7 @@ editRepositoryAForm mremote def = RepoConfig
 
 	associateddirectory = case repoAssociatedDirectory def of
 		Nothing -> aopt hiddenField "" Nothing
-		Just d -> aopt textField "Associated directory" (Just $ Just d)
+		Just d -> aopt textField (bfs "Associated directory") (Just $ Just d)
 
 getEditRepositoryR :: RepoId -> Handler Html
 getEditRepositoryR = postEditRepositoryR
@@ -195,7 +195,7 @@ editForm new (RepoUUID uuid) = page "Edit repository" (Just Configuration) $ do
 	curr <- liftAnnex $ getRepoConfig uuid mremote
 	liftAnnex $ checkAssociatedDirectory curr mremote
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ editRepositoryAForm mremote curr
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ editRepositoryAForm mremote curr
 	case result of
 		FormSuccess input -> liftH $ do
 			setRepoConfig uuid mremote curr input

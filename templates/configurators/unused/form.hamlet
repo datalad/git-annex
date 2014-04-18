@@ -1,6 +1,6 @@
 #{msg}
 <p>
-  <div .input-group>
+  <div .form-group>
     ^{fvInput enableView} after ^{fvInput whenView} days.&nbsp;
     <button type=submit .btn .btn-default >
       Save Changes

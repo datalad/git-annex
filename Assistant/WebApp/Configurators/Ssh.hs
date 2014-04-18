@@ -76,10 +76,10 @@ sshInputAForm :: Field Handler Text -> SshInput -> AForm Handler SshInput
 sshInputAForm :: Field WebApp WebApp Text -> SshInput -> AForm WebApp WebApp SshInput
 #endif
 sshInputAForm hostnamefield def = SshInput
-	<$> aopt check_hostname "Host name" (Just $ inputHostname def)
-	<*> aopt check_username "User name" (Just $ inputUsername def)
-	<*> aopt textField "Directory" (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
-	<*> areq intField "Port" (Just $ inputPort def)
+	<$> aopt check_hostname (bfs "Host name") (Just $ inputHostname def)
+	<*> aopt check_username (bfs "User name") (Just $ inputUsername def)
+	<*> aopt textField (bfs "Directory") (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
+	<*> areq intField (bfs "Port") (Just $ inputPort def)
   where
 	check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
 		bad_username textField
@@ -121,7 +121,7 @@ postAddSshR :: Handler Html
 postAddSshR = sshConfigurator $ do
 	username <- liftIO $ T.pack <$> myUserName
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ sshInputAForm textField $
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ sshInputAForm textField $
 			SshInput Nothing (Just username) Nothing 22
 	case result of
 		FormSuccess sshinput -> do
@@ -173,7 +173,7 @@ enableSpecialSshRemote getsshinput rsyncnetsetup genericsetup u = do
 	case (mkSshInput . unmangle <$> getsshinput m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- liftH $
-				runFormPostNoToken $ renderBootstrap $ sshInputAForm textField sshinput
+				runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (inputHostname sshinput') ->
@@ -450,7 +450,7 @@ getAddRsyncNetR = postAddRsyncNetR
 postAddRsyncNetR :: Handler Html
 postAddRsyncNetR = do
 	((result, form), enctype) <- runFormPostNoToken $
-		renderBootstrap $ sshInputAForm hostnamefield $
+		renderBootstrap3 bootstrapFormLayout $ sshInputAForm hostnamefield $
 			SshInput Nothing Nothing Nothing 22
 	let showform status = inpage $
 		$(widgetFile "configurators/rsync.net/add")

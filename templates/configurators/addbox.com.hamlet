@@ -12,9 +12,10 @@
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
-            Add repository
+        <div .form-group>
+          <div .col-sm-offset-2>
+            <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+              Add repository
 <div .modal .fade #workingmodal>
   <div .modal-header>
     <h3>

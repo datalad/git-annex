@@ -17,7 +17,8 @@
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
-            Check this server
+        <div .form-group>
+          <div .col-sm-offset-2>
+            <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
+              Check this server
 ^{sshTestModal}

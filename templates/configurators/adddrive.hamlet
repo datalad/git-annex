@@ -22,10 +22,12 @@
         <a .btn .btn-primary href="@{AddDriveR}">
           Rescan for removable drives
   $else
-    <form method="post" enctype=#{enctype}>
+    <form method="post" enctype=#{enctype} .form-horizontal>
       <fieldset>
         ^{form}
         ^{webAppFormAuthToken}
-        <button .btn .btn-primary type=submit>Use this drive</button> #
-        <a .btn .btn-default href="@{AddDriveR}">
-          Rescan for removable drives
+        <div .form-group>
+          <div .col-sm-offset-2>
+            <button .btn .btn-primary type=submit>Use this drive</button> #
+            <a .btn .btn-default href="@{AddDriveR}">
+              Rescan for removable drives
