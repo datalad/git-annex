@@ -7,8 +7,8 @@ history.  Some motivating reasons:
 
 * manual choice of which files to annex (based on predicted usage) could be useful, e.g. a repo might contain a 4MB PDF which you want available in *every* remote even without `git annex get`, and also some 2MB images which are only required in some remotes
 
-> This particular case is now catered to by the "manual" repository group
-> in preferred content settings. --[[Joey]]
+> This particular case is now catered to by the ["manual" repository group](/preferred_content/standard_groups/)
+> in [[preferred content]] settings. --[[Joey]]
 
 Obviously this needs to be configurable at least per repository, and
 ideally perhaps even per remote, since usage habits can vary from machine
