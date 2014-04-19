@@ -11,4 +11,4 @@ ideally, that documentation would be the one and the same so that a change on on
 
 in fact, having an inline manual in the assistant would be a must: we want this thing to work offline, so it should be able to access this wiki, or whatever of it is shipped with git-annex.
 
-that way we wouldn't have this kind of inconsistencies...
+that way we wouldn't have this kind of inconsistencies... more generally, maybe we could even [[build a user guide]]! -- [[anarcat]]
