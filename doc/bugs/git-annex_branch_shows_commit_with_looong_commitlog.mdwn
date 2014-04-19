@@ -32,3 +32,39 @@ Date:   Sat Apr 19 01:48:18 2014 -0400
 """]]
 
 that's 80KB for only one commit here - maybe that should be cleaned up? --[[anarcat]]
+
+Ah! more information: it seems that 01:48 was the moment i shutdown the assistant in yet another panic... 
+
+[[!format sh """
+anarcat@marcos:video$ ls -al .git/annex/daemon.log*
+-rw-r--r-- 1 anarcat anarcat  17075 avril 19 09:28 .git/annex/daemon.log
+-rw-r--r-- 1 anarcat anarcat 128367 avril 19 01:48 .git/annex/daemon.log.1
+"""]]
+
+an extract from that second logfile:
+
+[[!format sh """
+19/Apr/2014:01:31:38 -0400 [Error#yesod-core] unknown response from git cat-file ("9a73bf01-ed01-450d-a0ab-f20fff47ed32 encryption=none name=stephc rsyncurl=192.168.0.104:video/ type=rsync timestamp=1397865844.925354s","refs/heads/git-annex:remote.log") @(yesod-core-1.2.3:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:471:5)
+19/Apr/2014:01:31:50 -0400 [Error#yesod-core] unknown response from git cat-file ("fe428a7a-25a2-4c2e-b01f-315c490cbe45 encryption=none name=myrsync rsyncurl=/home/anarcat/video/ type=rsync timestamp=1397868063.038898s","refs/heads/git-annex:remote.log") @(yesod-core-1.2.3:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:471:5)
+19/Apr/2014:01:31:57 -0400 [Error#yesod-core] unknown response from git cat-file ("","refs/heads/git-annex:remote.log") @(yesod-core-1.2.3:Yesod.Core.Class.Yesod ./Yesod/Core/Class/Yesod.hs:471:5)
+[2014-04-19 01:32:03 EDT] TransferScanner: Syncing with test, mnt
+Depuis /mnt/video
+ * [nouvelle branche] synced/git-annex -> test/synced/git-annex
+ * [nouvelle branche] synced/master -> test/synced/master
+fatal: 'mnt' does not appear to be a git repository
+fatal: Could not read from remote repository.
+
+Please make sure you have the correct access rights
+and the repository exists.
+Already up-to-date.
+[2014-04-19 01:32:21 EDT] main: warning git-annex has been shut down
+
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+(Recording state in git...)
+"""]]
+
+the last line repeats about 4000 times.
+
+i would love to paste the daemon.log.1 file, but it seems like it containts encryption credentials... which i have no idea how to get rid of or change.
