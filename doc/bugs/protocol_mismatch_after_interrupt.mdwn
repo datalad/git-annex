@@ -4,7 +4,7 @@ git annex now fails to transfer a fail with: `protocol version mismatch -- is yo
 
 ### What steps will reproduce the problem?
 
-start a transfer, then interrupt it.
+start a transfer, then switch between your wireless and wired connexions (I am using network-manager), then interrupt the transfer with control-c.
 
 ### What version of git-annex are you using? On what operating system?
 
@@ -25,5 +25,7 @@ rsync error: protocol incompatibility (code 2) at compat.c(174) [sender=3.0.9]
 failed
 git-annex: copy: 1 failed
 """]]
+
+workaround: `cd .git/annex/; mv transfer transfer.old` on the other side.
 
 -- [[anarcat]]
