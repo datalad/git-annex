@@ -9,11 +9,72 @@ file contents, but not change anything.
 
 First, you need new enough versions:
 
-* gitolite 2.2 is needed -- this version contains a git-annex-shell ADC
-  and supports "ua" ADCs. Alternatively, gitoline g3 also recently added
-  support for git-annex.
+* the current `master` branch of gitolite works with git-annex (tested 2014-04-19),
+  but v3.5.3 and earlier v3.x require use of the `git-annex` branch.
+* gitolite 2.2 also works -- this version contains a git-annex-shell ADC
+  and supports "ua" ADCs.
 * git-annex 3.20111016 or newer needs to be installed on the gitolite
   server. Don't install an older version, it wouldn't be secure!
+
+### Instructions for gitolite `master` branch
+
+To setup gitolite to work with git-annex, you can follow the instructions on the gitolite website,
+and just add `'git-annex-shell ua',` to the ENABLE list in `~/.gitolite.rc`.
+
+Here are more detailed instructions:
+
+1: Create a `git` user
+
+<pre>
+sudo adduser \
+   --system \
+   --shell /bin/bash \
+   --gecos 'git version control' \
+   --group \
+   --disabled-password \
+   --home /home/git git
+</pre>
+
+2: Copy a public SSH key for the user you want to be the gitolite administrator.
+In the instructions below, I placed the key in a file named `/home/git/me.pub`. 
+
+3: Clone and install gitolite
+
+First switch to the `git` user (e.g. `sudo su - git`) and then run:
+
+<pre>
+cd
+git clone https://github.com/sitaramc/gitolite.git
+mkdir -p bin
+./gitolite/install -ln
+</pre>
+
+4: Add `~/bin` to `PATH`
+
+Make sure that `~/bin` is in the `PATH`, since that's where gitolite installed its binary.  Do something like this:
+
+<pre>
+echo 'export PATH=/home/git/bin:$PATH' >> .profile
+export PATH=/home/git/bin:$PATH
+</pre>
+
+5: Configure gitolite
+
+Edit `~/.gitolite.rc` to enable the git-annex-shell command.
+Find the `ENABLE` list and add this line in there somewhere:
+
+<pre>
+'git-annex-shell ua',
+</pre>
+
+Now run gitolite's setup:
+
+<pre>
+gitolite setup -pk me.pub
+rm me.pub
+</pre>
+
+### Instructions for gitolite 2.2
 
 And here's how to set it up. The examples are for gitolite as installed
 on Debian with apt-get, but the changes described can be made to any
@@ -36,13 +97,6 @@ Install the git-annex-shell ADC into the "ua" subdirectory from the gitolie repo
 <pre>   
 cd /usr/local/lib/gitolite/adc/ua/
 cp gitolite/contrib/adc/git-annex-shell .
-</pre>
-
-If using gitolite g3, an additional setup step is needed:
-In the ENABLE list in the rc file, add an entry like this:
-
-<pre>
-	'git-annex-shell ua',
 </pre>
 
 Now all gitolite repositories can be used with git-annex just as any
