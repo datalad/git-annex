@@ -1,0 +1,34 @@
+### Please describe the problem.
+
+I have found a really weird commit in my git-annex branch:
+
+    * a59dd1c update (il y a 8 heures) <Antoine Beaupré>
+    * 57f887a update (recovery from race) (recovery from race) (recovery from race) [...]
+
+it repeats that for a looong time. about 12 000 times, to be more precise:
+
+
+### What steps will reproduce the problem?
+
+Now i have absolutely no idea how I managed that. I got through some pretty dark moments last night trying various levels of git-annex voodoo (including a duplicate repo which was rsync'd to a backup drive so the unique identifier applied to two distinct paths), so I have no idea exactly what happened here.
+
+### What version of git-annex are you using? On what operating system?
+
+debian jessie amd64 5.20140412
+
+### Please provide any additional information below.
+
+[[!format sh """
+anarcat@marcos:video$ git show 57f887a | wc
+      5   12686   88850
+anarcat@marcos:video$ git show 57f887a | tail -c 100
+very from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race)
+anarcat@marcos:video$ git show 57f887a | head -c 512
+commit 57f887a9d766829d00832ad1ee23b2785212d055
+Author: Antoine Beaupré <anarcat@koumbit.org>
+Date:   Sat Apr 19 01:48:18 2014 -0400
+
+    update (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race) (recovery
+"""]]
+
+that's 80KB for only one commit here - maybe that should be cleaned up? --[[anarcat]]
