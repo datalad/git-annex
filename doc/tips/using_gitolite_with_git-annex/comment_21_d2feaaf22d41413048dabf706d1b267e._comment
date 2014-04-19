@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn26WQjIP5fnMgQF_L_k3Q3UrR5v8mjRTY"
+ nickname="Ellis"
+ subject="Worked for me, updated wiki"
+ date="2014-04-19T09:41:11Z"
+ content="""
+I tried the `master` branch of gitolite today on my server, and it works fine!  Updated the wiki with the commands I used to setup gitolite.
+"""]]
