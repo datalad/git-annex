@@ -1,0 +1,14 @@
+i have been using git-annex for a while now, yet I still can't quite wrap my head around [[preferred_content/standard groups]], especially how they are documented in about/repogroups in the assistant web interface. i have repeatedly synced files where they shouldn't have been synced (usually by setting the repo as "client" or "transfer") and also destroyed files I wanted to keep by setting it to "unwanted" (actually, that was by pressing the "delete" button on the repo, which i didn't expect to drop the files on the remote...)
+
+i have been able to understand a lot of what's going on by trial and error and by decrypting the [[preferred_content]] expressions on the wiki.
+
+it seems to me the [[preferred_content/standard groups]] wiki page and the `about/repogroups` URL in the assistant should be merged:
+
+ 1. the assistant should be more explicit: maybe it should have examples of what will happen in some cases to give an idea. maybe "stories" like "a transfer repo is for when you have two client repos that can't talk to each other, so you use a transfer repo, e.g. a portable hard drive, to transfer files between them". having the actual, current [[preferred_content]] expressions from the [[preferred_content/standard groups]] groups page would also help, maybe in a smaller font to not scare people of
+ 2. the [[preferred_content/standard groups]] wiki page should be expanded to include narratives like the ones that are in the `about/repogroups` page of the assistant. that way people looking at the software from the outside can understand the mechanics better
+
+ideally, that documentation would be the one and the same so that a change on one side would reflect on the other.
+
+in fact, having an inline manual in the assistant would be a must: we want this thing to work offline, so it should be able to access this wiki, or whatever of it is shipped with git-annex.
+
+that way we wouldn't have this kind of inconsistencies...
