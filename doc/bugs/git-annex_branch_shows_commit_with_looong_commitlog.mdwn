@@ -7,6 +7,10 @@ I have found a really weird commit in my git-annex branch:
 
 it repeats that for a looong time. about 12 000 times, to be more precise:
 
+[[!format sh """
+anarcat@marcos:video$ git show 57f887a | wc
+      5   12686   88850
+"""]]
 
 ### What steps will reproduce the problem?
 
@@ -19,8 +23,6 @@ debian jessie amd64 5.20140412
 ### Please provide any additional information below.
 
 [[!format sh """
-anarcat@marcos:video$ git show 57f887a | wc
-      5   12686   88850
 anarcat@marcos:video$ git show 57f887a | tail -c 100
 very from race) (recovery from race) (recovery from race) (recovery from race) (recovery from race)
 anarcat@marcos:video$ git show 57f887a | head -c 512
