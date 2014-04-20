@@ -29,6 +29,7 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
   * webapp: Start even if the current directory is listed in
     ~/.config/git-annex/autostart but no longer has a git repository in it.
   * findref: New command, like find but shows files in a specified git ref.
+  * webapp: Fix UI for removing XMPP connection.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
 

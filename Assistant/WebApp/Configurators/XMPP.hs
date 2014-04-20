@@ -25,6 +25,9 @@ import Assistant.WebApp.RepoList
 import Assistant.WebApp.Configurators
 import Assistant.XMPP
 #endif
+import qualified Git.Remote
+import Remote.List
+import Creds
 
 #ifdef WITH_XMPP
 import Network.Protocol.XMPP
@@ -200,6 +203,23 @@ testXMPP creds = do
 	showport (PortNumber n) = show n
 	showport (Service s) = s
 	showport (UnixSocket s) = s
+#endif
+
+getDisconnectXMPPR :: Handler Html
+getDisconnectXMPPR = do
+#ifdef WITH_XMPP
+	rs <- filter Remote.isXMPPRemote . syncRemotes
+		<$> liftAssistant getDaemonStatus
+	liftAnnex $ do
+		mapM_ (inRepo . Git.Remote.remove . Remote.name) rs
+		void remoteListRefresh
+		removeCreds xmppCredsFile
+	liftAssistant $ do
+		updateSyncRemotes
+		notifyNetMessagerRestart
+	redirect DashboardR
+#else
+	xmppPage $ $(widgetFile "configurators/xmpp/disabled")
 #endif
 
 xmppPage :: Widget -> Handler Html

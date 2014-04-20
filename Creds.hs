@@ -14,6 +14,7 @@ module Creds (
 	getEnvCredPair,
 	writeCacheCreds,
 	readCacheCreds,
+	removeCreds,
 ) where
 
 import Common.Annex
@@ -138,3 +139,9 @@ decodeCredPair :: Creds -> Maybe CredPair
 decodeCredPair creds = case lines creds of
 	l:p:[] -> Just (l, p)
 	_ -> Nothing
+
+removeCreds :: FilePath -> Annex ()
+removeCreds file = do
+	d <- fromRepo gitAnnexCredsDir
+	let f = d </> file
+	liftIO $ nukeFile f
