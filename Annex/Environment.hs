@@ -56,10 +56,12 @@ checkEnvironmentIO =
 #endif
 
 {- Runs an action that commits to the repository, and if it fails, 
- - sets user.email to a dummy value and tries the action again. -}
+ - sets user.email and user.name to a dummy value and tries the action again. -}
 ensureCommit :: Annex a -> Annex a
 ensureCommit a = either retry return =<< tryAnnex a 
   where
   	retry _ = do
-		setConfig (ConfigKey "user.email") =<< liftIO myUserName
+		name <- liftIO myUserName
+		setConfig (ConfigKey "user.name") name
+		setConfig (ConfigKey "user.email") name
 		a
