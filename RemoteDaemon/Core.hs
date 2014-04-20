@@ -61,15 +61,15 @@ runController ichan ochan = do
 		cmd <- readChan ichan
 		case cmd of
 			RELOAD -> do
-				liftAnnex h reloadConfig
-				m' <- genRemoteMap h ochan
+				h' <- updateTransportHandle h
+				m' <- genRemoteMap h' ochan
 				let common = M.intersection m m'
 				let new = M.difference m' m
 				let old = M.difference m m'
 				broadcast STOP old
 				unless paused $
 					startrunning new
-				go h paused (M.union common new)
+				go h' paused (M.union common new)
 			LOSTNET -> do
 				-- force close all cached ssh connections
 				-- (done here so that if there are multiple
@@ -104,7 +104,7 @@ runController ichan ochan = do
 -- Generates a map with a transport for each supported remote in the git repo,
 -- except those that have annex.sync = false
 genRemoteMap :: TransportHandle -> Chan Emitted -> IO RemoteMap
-genRemoteMap h@(TransportHandle g _) ochan =
+genRemoteMap h@(TransportHandle g _) ochan = 
 	M.fromList . catMaybes <$> mapM gen (Git.remotes g)
   where
 	gen r = case Git.location r of
@@ -124,3 +124,10 @@ genTransportHandle = do
 	annexstate <- newMVar =<< Annex.new =<< Git.CurrentRepo.get
 	g <- Annex.repo <$> readMVar annexstate
 	return $ TransportHandle g annexstate
+
+updateTransportHandle :: TransportHandle -> IO TransportHandle
+updateTransportHandle h@(TransportHandle _g annexstate) = do
+	g' <- liftAnnex h $ do
+		reloadConfig
+		Annex.fromRepo id
+	return (TransportHandle g' annexstate)

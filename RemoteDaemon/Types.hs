@@ -30,6 +30,10 @@ type RemoteRepo = Git.Repo
 type LocalRepo = Git.Repo
 
 -- All Transports share a single AnnexState MVar
+--
+-- Different TransportHandles may have different versions of the LocalRepo.
+-- (For example, the ssh transport modifies it to enable ssh connection
+-- caching.)
 data TransportHandle = TransportHandle LocalRepo (MVar Annex.AnnexState)
 
 -- Messages that the daemon emits.
