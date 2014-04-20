@@ -30,8 +30,8 @@ standaloneAppBase = getEnv "GIT_ANNEX_APP_BASE"
 
 {- The standalone app does not have an installation process.
  - So when it's run, it needs to set up autostarting of the assistant
- - daemon, as well as writing the programFile, and putting a
- - git-annex-shell wrapper into ~/.ssh
+ - daemon, as well as writing the programFile, and putting the
+ - git-annex-shell and git-annex-wrapper wrapper scripts into ~/.ssh
  -
  - Note that this is done every time it's started, so if the user moves
  - it around, the paths this sets up won't break.
@@ -59,29 +59,34 @@ ensureInstalled = go =<< standaloneAppBase
 #endif
 		installAutoStart program autostartfile
 
-		{- This shim is only updated if it doesn't
-		 - already exist with the right content. -}
 		sshdir <- sshDir
-		let shim = sshdir </> "git-annex-shell"
-		let runshell var = "exec " ++ base </> "runshell" ++
-			" git-annex-shell -c \"" ++ var ++ "\""
-		let content = unlines
+		let runshell var = "exec " ++ base </> "runshell " ++ var
+		let rungitannexshell var = runshell $ "git-annex-shell -c \"" ++ var ++ "\""
+
+		installWrapper (sshdir </> "git-annex-shell") $ unlines
 			[ shebang_local
 			, "set -e"
 			, "if [ \"x$SSH_ORIGINAL_COMMAND\" != \"x\" ]; then"
-			,   runshell "$SSH_ORIGINAL_COMMAND"
+			,   rungitannexshell "$SSH_ORIGINAL_COMMAND"
 			, "else"
-			,   runshell "$@"
+			,   rungitannexshell "$@"
 			, "fi"
 			]
-
-		curr <- catchDefaultIO "" $ readFileStrict shim
-		when (curr /= content) $ do
-			createDirectoryIfMissing True (parentDir shim)
-			viaTmp writeFile shim content
-			modifyFileMode shim $ addModes [ownerExecuteMode]
+		installWrapper (sshdir </> "git-annex-wrapper") $ unlines
+			[ shebang_local
+			, "set -e"
+			, runshell "\"$@\""
+			]
 
 		installNautilus program
+
+installWrapper :: FilePath -> String -> IO ()
+installWrapper file content = do
+	curr <- catchDefaultIO "" $ readFileStrict file
+	when (curr /= content) $ do
+		createDirectoryIfMissing True (parentDir file)
+		viaTmp writeFile file content
+		modifyFileMode file $ addModes [ownerExecuteMode]
 
 installNautilus :: FilePath -> IO ()
 #ifdef linux_HOST_OS

@@ -32,6 +32,11 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
   * webapp: Fix UI for removing XMPP connection.
   * When init detects that git is not configured to commit, and sets
     user.email to work around the problem, also make it set user.name.
+  * webapp: Support using git-annex on a remote server, which was installed
+    from the standalone tarball or OSX app, and so does not have
+    git-annex in PATH (and may also not have git or rsync in PATH).
+  * standalone tarball, OSX app: Install a ~/.ssh/git-annex-wrapper, which
+    can be used to run git-annex, git, rsync, etc.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
 
