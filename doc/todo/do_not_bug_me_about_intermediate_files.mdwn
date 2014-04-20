@@ -1,3 +1,5 @@
+[[!meta title="--notify-finish operates on a per-file, not per-process basis"]]
+
 so this is another UX pickyness, but it seems important to me.
 
 i like the new desktop notifications, but they are little too verbose. when i choose "git annex get" on the folder, if there's a lot of files, it will flood me with all the files being transfered in a mostly incomprehensible list of files being transfered.
