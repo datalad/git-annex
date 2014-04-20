@@ -29,3 +29,5 @@ drwxr-x--x u0_a172  u0_a172           2014-04-20 11:12 ga.androidterm
 version 5.20140413 of the Git Annex app (tested using the daily build and regular build).
 
 Samsung Galaxy Tab 3 (GT-P5210) running Android 4.2.2 (without root access).
+
+> [[done|dup]] --[[Joey]]
