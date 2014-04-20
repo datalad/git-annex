@@ -26,12 +26,18 @@ import Utility.Yesod
 
 {- Runs an action that creates or enables a cloud remote,
  - and finishes setting it up, then starts syncing with it,
- - and finishes by displaying the page to edit it. -}
+ - and finishes by displaying the page to edit it.
+ -
+ - This includes displaying the connectionNeeded nudge if appropariate.
+ -}
 setupCloudRemote :: StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
-setupCloudRemote defaultgroup mcost name = do
-	r <- liftAnnex $ addRemote name
+setupCloudRemote = setupRemote EditNewCloudRepositoryR
+
+setupRemote :: (UUID -> Route WebApp) -> StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
+setupRemote redirto defaultgroup mcost getname = do
+	r <- liftAnnex $ addRemote getname
 	liftAnnex $ do
 		setStandardGroup (Remote.uuid r) defaultgroup
 		maybe noop (Config.setRemoteCost (Remote.repo r)) mcost
 	liftAssistant $ syncRemote r
-	redirect $ EditNewCloudRepositoryR $ Remote.uuid r
+	redirect $ redirto $ Remote.uuid r

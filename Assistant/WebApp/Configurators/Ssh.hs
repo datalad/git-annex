@@ -403,11 +403,14 @@ prepSsh' newgcrypt origsshdata sshdata keypair a = sshSetup
 	rsynconly = onlyCapability origsshdata RsyncCapable
 
 makeSshRepo :: SshData -> Handler Html
-makeSshRepo sshdata = setupCloudRemote TransferGroup Nothing $
-	makeSshRemote sshdata
+makeSshRepo sshdata
+	| onlyCapability sshdata RsyncCapable = setupCloudRemote TransferGroup Nothing go
+	| otherwise = setupRemote EditNewRepositoryR TransferGroup Nothing go
+  where
+	go = makeSshRemote sshdata
 
 makeGCryptRepo :: KeyId -> SshData -> Handler Html
-makeGCryptRepo keyid sshdata = setupCloudRemote TransferGroup Nothing $ 
+makeGCryptRepo keyid sshdata = setupRemote EditNewRepositoryR TransferGroup Nothing $ 
 	makeGCryptRemote (sshRepoName sshdata) (genSshUrl sshdata) keyid
 
 getAddRsyncNetR :: Handler Html
