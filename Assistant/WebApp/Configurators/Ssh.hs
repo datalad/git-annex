@@ -24,6 +24,7 @@ import Git.Types (RemoteName)
 import qualified Remote.GCrypt as GCrypt
 import Annex.UUID
 import Logs.UUID
+import Assistant.RemoteControl
 
 #ifdef mingw32_HOST_OS
 import Utility.Tmp
@@ -405,12 +406,19 @@ prepSsh' newgcrypt origsshdata sshdata keypair a = sshSetup
 makeSshRepo :: SshData -> Handler Html
 makeSshRepo sshdata
 	| onlyCapability sshdata RsyncCapable = setupCloudRemote TransferGroup Nothing go
-	| otherwise = setupRemote EditNewRepositoryR TransferGroup Nothing go
+	| otherwise = makeSshRepoConnection go
   where
 	go = makeSshRemote sshdata
 
+makeSshRepoConnection :: Annex RemoteName -> Handler Html
+makeSshRepoConnection a = setupRemote postsetup TransferGroup Nothing a
+  where
+	postsetup u = do
+		liftAssistant $ sendRemoteControl RELOAD
+		redirect $ EditNewRepositoryR u
+
 makeGCryptRepo :: KeyId -> SshData -> Handler Html
-makeGCryptRepo keyid sshdata = setupRemote EditNewRepositoryR TransferGroup Nothing $ 
+makeGCryptRepo keyid sshdata = makeSshRepoConnection $ 
 	makeGCryptRemote (sshRepoName sshdata) (genSshUrl sshdata) keyid
 
 getAddRsyncNetR :: Handler Html

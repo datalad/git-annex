@@ -20,6 +20,7 @@ import Control.Concurrent
 
 -- The URI of a remote is used to uniquely identify it (names change..)
 newtype RemoteURI = RemoteURI URI
+  deriving (Show)
 
 -- A Transport for a particular git remote consumes some messages
 -- from a Chan, and emits others to another Chan.
@@ -38,6 +39,7 @@ data Emitted
 	| SYNCING RemoteURI
 	| DONESYNCING RemoteURI Bool
 	| WARNING RemoteURI String
+	deriving (Show)
 
 -- Messages that the deamon consumes.
 data Consumed
@@ -47,6 +49,7 @@ data Consumed
 	| CHANGED RefList
 	| RELOAD
 	| STOP
+	deriving (Show)
 
 type RefList = [Git.Ref]
 

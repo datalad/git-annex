@@ -52,10 +52,12 @@ remoteControlThread = namedThread "RemoteControl" $ do
 remoteControllerThread :: Handle -> Assistant ()
 remoteControllerThread toh = do
 	clicker <- getAssistant remoteControl
-	liftIO $ forever $ do
-		msg <- readChan clicker
-		hPutStrLn toh $ unwords $ formatMessage msg
-		hFlush toh
+	forever $ do
+		msg <- liftIO $ readChan clicker
+		debug [show msg]
+		liftIO $ do
+			hPutStrLn toh $ unwords $ formatMessage msg
+			hFlush toh
 
 -- read status messages emitted by the remotedaemon and handle them
 remoteResponderThread :: Handle -> MVar (M.Map URI Remote) -> Assistant ()
@@ -63,6 +65,7 @@ remoteResponderThread fromh urimap = go M.empty
   where
 	go syncalerts = do
 		l <- liftIO $ hGetLine fromh
+		debug [l]
 		case parseMessage l of
 			Just (CONNECTED uri) -> changeconnected S.insert uri
 			Just (DISCONNECTED uri) -> changeconnected S.delete uri
