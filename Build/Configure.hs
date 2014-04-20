@@ -7,6 +7,7 @@ import Control.Applicative
 import System.Environment (getArgs)
 import Control.Monad.IfElse
 import Control.Monad
+import System.IO
 
 import Build.TestConfig
 import Build.Version
@@ -62,7 +63,11 @@ shaTestCases l = map make l
 		key = "sha" ++ show n
 	  	search [] = return Nothing
 		search (c:cmds) = do
+			putStr $ "(" ++ c
+			hFlush stdout
 			sha <- externalSHA c n "/dev/null"
+			putStr $ ":" ++ show sha ++ ")"
+			hFlush stdout
 			if sha == Right knowngood
 				then return $ Just c
 				else search cmds
