@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     <i .icon-warning-sign></i> Failed to make repository
   <p>

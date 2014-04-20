@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Adding a remote server using ssh
   <p>
@@ -9,7 +9,7 @@
   <p>
     $case status
       $of UnusableServer msg
-        <div .alert .alert-error>
+        <div .alert .alert-danger>
           <i .icon-warning-sign></i> #{msg}
       $of _
   <p>

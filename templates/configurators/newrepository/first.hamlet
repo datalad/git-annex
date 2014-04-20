@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Welcome to git-annex!
   <p>
@@ -7,7 +7,7 @@
     <p>
       Do you only want to share photos and videos you take?
     <p>
-      <a .btn .btn-primary .btn-large href="@{AndroidCameraRepositoryR}">
+      <a .btn .btn-primary .btn-lg href="@{AndroidCameraRepositoryR}">
         <i .icon-camera></i> Make Camera Repository
   <p>
     $if androidspecial

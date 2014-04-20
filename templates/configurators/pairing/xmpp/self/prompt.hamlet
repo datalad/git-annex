@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Sharing with your other devices
   <p>
@@ -14,7 +14,7 @@
     repositories configured to use the same Jabber account will be #
     combined together when you do this.
   <p>
-    <a .btn .btn-primary .btn-large href="@{RunningXMPPPairSelfR}">
+    <a .btn .btn-primary .btn-lg href="@{RunningXMPPPairSelfR}">
       Start sharing with my other devices #
-    <a .btn .btn-large href="@{DashboardR}">
+    <a .btn .btn-default .btn-lg href="@{DashboardR}">
       Cancel

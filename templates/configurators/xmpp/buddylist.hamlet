@@ -1,4 +1,4 @@
-<div .span9 ##{ident}>
+<div .col-sm-9 ##{ident}>
   <table .table>
     <tbody>
     $if null buddies
@@ -14,15 +14,15 @@
           <td>
             $if isself buddyid
               <i .icon-star></i> #
-              <span :away:.muted>
+              <span :away:.text-muted>
                 your other devices
             $else
               <i .icon-user></i> #
-              <span :away:.muted>
+              <span :away:.text-muted>
                   #{name}
           <td>
             $if away
-              <span .muted>
+              <span .text-muted>
                 away
             $else
               $if paired
@@ -31,10 +31,10 @@
               $else
                 $if canpair
                   $if isself buddyid
-                    <a .btn .btn-primary .btn-small href="@{RunningXMPPPairSelfR}">
+                    <a .btn .btn-primary .btn-sm href="@{RunningXMPPPairSelfR}">
                       Start pairing
                   $else
-                    <a .btn .btn-primary .btn-small href="@{RunningXMPPPairFriendR buddyid}">
+                    <a .btn .btn-primary .btn-sm href="@{RunningXMPPPairFriendR buddyid}">
                       Start pairing
                 $else
                   not using git-annex

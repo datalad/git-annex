@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Deleting #{reldir}
   <p>
@@ -12,11 +12,11 @@
         losing any data, if all files have been synced to them. #
         No guarantees -- It's up to you to make sure before you continue.
     $else
-      <div .alert .alert-error>
+      <div .alert .alert-danger>
         This repository is not uploading its files to other repositories,
         so you will lose data if you delete it!
   $else
-    <div .alert .alert-error>
+    <div .alert .alert-danger>
       This repository is not syncing to other git repositories, #
       so you will lose data if you delete it!
   <p>
@@ -30,5 +30,5 @@
         <div .form-actions>
           <button .btn .btn-danger type=submit>
             <i .icon-warning-sign></i> Delete this repository #
-          <a .btn href="@{DashboardR}">
+          <a .btn .btn-default href="@{DashboardR}">
             Cancel

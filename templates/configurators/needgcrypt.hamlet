@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Need git-remote-gcrypt
   <p>
@@ -6,5 +6,5 @@
     <a href="https://github.com/joeyh/git-remote-gcrypt">
       git-remote-gcrypt
   <p>
-    <a .btn .btn-primary .btn-large href="">
+    <a .btn .btn-primary .btn-lg href="">
       Retry

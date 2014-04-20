@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Just a git repository
   <p>
@@ -10,7 +10,7 @@
       upgrade this repository to a full git annex, which will store the
       contents of your files, not only their metadata.
     <p>
-      <a .btn href="@{UpgradeRepositoryR r}">
+      <a .btn .btn-default href="@{UpgradeRepositoryR r}">
         Upgrade Repository
   <h2>
     Repository information

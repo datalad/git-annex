@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Adding a removable drive
   <p>
@@ -7,7 +7,7 @@
     content will be synced with the content of this repository.
   <p>
   $if (null writabledrives)
-    <div .span6 .alert .alert-error .alert-block>
+    <div .col-sm-6 .alert .alert-danger .alert-block>
       $if (null removabledrives)
         <h4 .alert-heading>
           No removable drives found
@@ -27,5 +27,5 @@
         ^{form}
         ^{webAppFormAuthToken}
         <button .btn .btn-primary type=submit>Use this drive</button> #
-        <a .btn href="@{AddDriveR}">
+        <a .btn .btn-default href="@{AddDriveR}">
           Rescan for removable drives

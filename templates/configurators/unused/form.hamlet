@@ -1,6 +1,6 @@
 #{msg}
 <p>
-  <div .input-prepend .input-append>
+  <div .input-group>
     ^{fvInput enableView} after ^{fvInput whenView} days.&nbsp;
-    <button type=submit .btn>
+    <button type=submit .btn .btn-default >
       Save Changes

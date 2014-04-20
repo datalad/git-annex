@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Managing unused files
   <p>
@@ -23,7 +23,7 @@
         or in the cloud, and the unused files will be moved to it, freeing #
         up space.
         <br>
-        <a .btn href="@{AddRepositoryR}">
+        <a .btn .btn-default href="@{AddRepositoryR}">
           <i .icon-plus></i> Add a new repository
     <li>
       <p>
@@ -34,5 +34,5 @@
       <p>
         Finally, you can clean up all unused files manually at any time.
         <br>
-        <a .btn href="@{CleanupUnusedR}">
+        <a .btn .btn-default href="@{CleanupUnusedR}">
           <i .icon-trash></i> Clean up unused files now

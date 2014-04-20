@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Combine repositories?
   <p>
@@ -6,12 +6,12 @@
     <br>
     Do you want to combine it with your existing repository at #{mainrepo}?
   <p>
-    <a .btn href="@{CombineRepositoryR newrepopath newrepouuid}">
+    <a .btn .btn-default href="@{CombineRepositoryR newrepopath newrepouuid}">
       <i .icon-resize-small></i> Combine the repositories #
     The combined repositories will sync and share their files.
   <p>
     -or-
   <p>
-    <a .btn href="@{SwitchToRepositoryR newrepopath}">
+    <a .btn .btn-default href="@{SwitchToRepositoryR newrepopath}">
       <i .icon-resize-full></i> Keep the repositories separate #
     Files placed in one will not be synced to the other.

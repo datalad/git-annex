@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   $if inprogress
     <h2>
       Pair request sent ...

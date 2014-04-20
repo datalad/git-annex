@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Ready to use rsync.net
   <p>
@@ -11,7 +11,7 @@
     files stored on rsync.net. That makes it good for sharing. #
     And it's easy to set up and use.
   <p>
-    <a .btn href="@{MakeRsyncNetSharedR sshdata}" onclick="$('#setupmodal').modal('show');">
+    <a .btn .btn-default href="@{MakeRsyncNetSharedR sshdata}" onclick="$('#setupmodal').modal('show');">
       <i .icon-lock></i> Use shared encryption
   <p style="text-align: center">
     -or-
@@ -26,11 +26,11 @@
   <p>
     $forall (keyid, name) <- secretkeys
       <p>
-        <a .btn href="@{MakeRsyncNetGCryptR sshdata (RepoKey keyid)}" onclick="$('#setupmodal').modal('show');">
+        <a .btn .btn-default href="@{MakeRsyncNetGCryptR sshdata (RepoKey keyid)}" onclick="$('#setupmodal').modal('show');">
           <i .icon-lock></i> Encrypt repository #
         to ^{gpgKeyDisplay keyid (Just name)}
   <p>
-    <a .btn href="@{MakeRsyncNetGCryptR sshdata NoRepoKey}" onclick="$('#genkeymodal').modal('show');">
+    <a .btn .btn-default href="@{MakeRsyncNetGCryptR sshdata NoRepoKey}" onclick="$('#genkeymodal').modal('show');">
       <i .icon-plus-sign></i> Encrypt repository #
     with a new encryption key
 ^{genKeyModal}

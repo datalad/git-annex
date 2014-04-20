@@ -14,7 +14,7 @@
       $forall (name, repoid, currentlyconnected, actions) <- repolist
         <tr .repoline ##{show repoid}>
           <td .handle>
-            <a .btn .btn-mini .disabled>
+            <a .btn .btn-default .btn-xs .disabled>
               <i .icon-resize-vertical></i>
             &nbsp; #{name}
           <td .draghide>
@@ -44,10 +44,10 @@
               <a href="@{setupRepoLink actions}">
                 enable
             $else
-              <span .dropdown #menu-#{show repoid}>
-                <a .dropdown-toggle data-toggle="dropdown" href="#menu-#{show repoid}">
+              <div .dropdown #menu-#{show repoid}>
+                <a data-toggle="dropdown" data-target="#" href="#menu-#{show repoid}">
                   <i .icon-cog></i> actions
-                  <b .caret></b>
+                  <span .caret>
                 <ul .dropdown-menu>
                   <li>
                     <a href="@{setupRepoLink actions}">
@@ -63,10 +63,10 @@
         <tr>
           <td colspan="3">
             $if nootherrepos
-              <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">
+              <a .btn .btn-primary .btn-lg href="@{AddRepositoryR}">
                 <i .icon-plus-sign></i> Add another repository
             $else
-              <a .btn .btn-small href="@{AddRepositoryR}">
+              <a .btn .btn-default .btn-sm href="@{AddRepositoryR}">
                 <i .icon-plus-sign></i> Add another repository
             <span>
               &nbsp; Sync your files with another device, or #

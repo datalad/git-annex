@@ -3,9 +3,9 @@
   $if transfersrunning
     $forall (transfer, info) <- transfers
       $with percent <- maybe "unknown" (showPercentage 0) $ percentComplete transfer info
-        <div .row-fluid>
-          <div .span10>
-            <div .row-fluid>
+        <div .row>
+          <div .col-sm-10>
+            <div .row>
               <h3 .forcewrap>
                 $maybe file <- associatedFile info
                   #{file}
@@ -27,10 +27,10 @@
                         <small .pull-right>paused at #{percent} of #{size}</small>
                     $else
                         <small .pull-right>queued (#{size})</small>
-            <div .row-fluid>
+            <div .row>
               <div .progress .progress-striped>
-                <div .bar style="width: #{percent};">
-          <div .btn-group .span2>
+                <div .progress-bar style="width: #{percent};">
+          <div .btn-group .col-sm-2>
             $if isrunning info
               ^{actionButton (PauseTransferR transfer) Nothing (Just "pause") "btn" "icon-pause"}
             $else

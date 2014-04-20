@@ -38,7 +38,7 @@ sideBarDisplay = do
 	bootstrapclass :: AlertClass -> Text
 	bootstrapclass Activity = "alert-info"
 	bootstrapclass Warning = "alert"
-	bootstrapclass Error = "alert-error"
+	bootstrapclass Error = "alert-danger"
 	bootstrapclass Success = "alert-success"
 	bootstrapclass Message = "alert-info"
 

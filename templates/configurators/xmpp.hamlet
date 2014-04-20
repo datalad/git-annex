@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Configuring jabber account
   <p>
@@ -25,7 +25,7 @@
         <div .form-actions>
           <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
             Use this account
-          <a .btn href="@{DisconnectXMPPR}">
+          <a .btn .btn-default href="@{DisconnectXMPPR}">
             Stop using this account
 <div .modal .fade #workingmodal>
   <div .modal-header>

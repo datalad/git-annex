@@ -1,8 +1,8 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Shutdown daemon?
   <p>
     <a .btn .btn-danger href="@{ShutdownConfirmedR}">
       <i .icon-off></i> Confirm shutdown
-    <a .btn href="@{DashboardR}">
+    <a .btn .btn-default href="@{DashboardR}">
       Keep running

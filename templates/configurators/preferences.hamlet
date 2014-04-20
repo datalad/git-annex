@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Preferences
   <p>
@@ -9,5 +9,5 @@
         <div .form-actions>
           <button .btn .btn-primary type=submit>
             Save Preferences
-          <a .btn href="@{ConfigurationR}">
+          <a .btn .btn-default href="@{ConfigurationR}">
             Cancel

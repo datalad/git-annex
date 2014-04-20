@@ -1,4 +1,4 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Combine repositories?
   <p>
@@ -7,12 +7,12 @@
   <p>
     Do you want to merge this repository's contents into your repository?
   <p>
-    <a .btn onclick="$('#setupmodal').modal('show');" href="@{CombineSshR sshdata}">
+    <a .btn .btn-default onclick="$('#setupmodal').modal('show');" href="@{CombineSshR sshdata}">
       <i .icon-resize-small></i> Combine the repositories #
     The combined repositories will sync and share their files.
   <p>
   <p>
-    <a .btn href="@{AddSshR}">
+    <a .btn .btn-default href="@{AddSshR}">
       <i .icon-resize-full></i> Go back #
     Use a different directory than <tt>#{sshDirectory sshdata}</tt> to #
     avoid combining the repositories.

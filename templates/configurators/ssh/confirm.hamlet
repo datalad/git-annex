@@ -1,8 +1,8 @@
-<div .span9 .hero-unit>
+<div .col-sm-9 .jumbotron>
   <h2>
     Ready to add remote server
-  <div .row-fluid>
-    <div .span9>
+  <div .row>
+    <div .col-sm-9>
       $if not (hasCapability sshdata GitAnnexShellCapable)
         <p>
           <i .icon-warning-sign></i> #
@@ -15,7 +15,7 @@
           on it would make it work better, and provide more options below. #
         <p>
           If you're able to install software on the server, do so and click
-          <a .btn href="@{RetrySshR sshdata}" onclick="$('#testmodal').modal('show');">
+          <a .btn .btn-default href="@{RetrySshR sshdata}" onclick="$('#testmodal').modal('show');">
             Retry
       $else
         <p>
@@ -30,7 +30,7 @@
           other devices to use the same server, or share the repository with #
           others.
         <p>
-          <a .btn href="@{MakeSshGitR sshdata}" onclick="$('#setupmodal').modal('show');">
+          <a .btn .btn-default href="@{MakeSshGitR sshdata}" onclick="$('#setupmodal').modal('show');">
             Make an unencrypted git repository on the server
         <p style="text-align: center">
           -or-
@@ -41,7 +41,7 @@
         decrypt the files stored on #{sshHostName sshdata}. That makes #
         it good for sharing. And it's easy to set up and use.
       <p>
-        <a .btn href="@{MakeSshRsyncR sshdata}" onclick="$('#setupmodal').modal('show');">
+        <a .btn .btn-default href="@{MakeSshRsyncR sshdata}" onclick="$('#setupmodal').modal('show');">
           <i .icon-lock></i> Use shared encryption
       $if hasCapability sshdata GitCapable
         <p style="text-align: center">
@@ -57,7 +57,7 @@
         <p>
           $forall (keyid, name) <- secretkeys
             <p>
-              <a .btn href="@{MakeSshGCryptR sshdata (RepoKey keyid)}" onclick="$('#setupmodal').modal('show');" >
+              <a .btn .btn-default href="@{MakeSshGCryptR sshdata (RepoKey keyid)}" onclick="$('#setupmodal').modal('show');" >
                 <i .icon-lock></i> Encrypt repository #
               to ^{gpgKeyDisplay keyid (Just name)}
         <p>
