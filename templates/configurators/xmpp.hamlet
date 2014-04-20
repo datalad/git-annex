@@ -29,9 +29,11 @@
           <a .btn .btn-default href="@{DisconnectXMPPR}">
             Stop using this account
 <div .modal .fade #workingmodal>
-  <div .modal-header>
-    <h3>
-      Testing account ...
-  <div .modal-body>
-    <p>
-      Testing jabber account. This could take a minute.
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Testing account ...
+      <div .modal-body>
+        <p>
+          Testing jabber account. This could take a minute.

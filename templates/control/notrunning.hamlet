@@ -2,9 +2,11 @@
   <p>
     Bye bye!
 <div .modal .fade #shutdownmodal>
-  <div .modal-header>
-    <h3>
-      git-annex has shut down
-  <div .modal-body>
-    <p>
-      You can now close this browser window.
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          git-annex has shut down
+      <div .modal-body>
+        <p>
+          You can now close this browser window.

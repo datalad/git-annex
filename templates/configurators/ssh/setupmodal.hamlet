@@ -1,12 +1,14 @@
 <div .modal .fade #setupmodal>
-  <div .modal-header>
-    <h3>
-      Setting up repository ...
-  <div .modal-body>
-    <p>
-      Setting up repository on the remote server. This could take a minute.
-    $if needsPubKey sshdata
-      <p>
-        You will be prompted once more for your ssh password. A ssh key #
-        is being installed on the server, allowing git-annex to access it #
-        securely without a password.
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Setting up repository ...
+      <div .modal-body>
+        <p>
+          Setting up repository on the remote server. This could take a minute.
+        $if needsPubKey sshdata
+          <p>
+            You will be prompted once more for your ssh password. A ssh key #
+            is being installed on the server, allowing git-annex to access it #
+            securely without a password.

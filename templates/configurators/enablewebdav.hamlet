@@ -15,9 +15,11 @@
             <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
               Enable repository
 <div .modal .fade #workingmodal>
-  <div .modal-header>
-    <h3>
-      Enabling repository ...
-  <div .modal-body>
-    <p>
-      Enabling this WebDAV repository. This could take a minute.
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Enabling repository ...
+      <div .modal-body>
+        <p>
+          Enabling this WebDAV repository. This could take a minute.

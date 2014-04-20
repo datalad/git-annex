@@ -35,9 +35,11 @@
     with a new encryption key
 ^{genKeyModal}
 <div .modal .fade #setupmodal>
-  <div .modal-header>
-    <h3>
-      Making repository ...
-  <div .modal-body>
-    <p>
-      Setting up your rsync.net repository. This could take a minute.
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Making repository ...
+      <div .modal-body>
+        <p>
+          Setting up your rsync.net repository. This could take a minute.

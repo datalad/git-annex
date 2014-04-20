@@ -20,11 +20,13 @@
         ^{form}
         ^{webAppFormAuthToken}
 <div .modal .fade #testmodal>
-  <div .modal-header>
-    <h3>
-      Testing server ...
-  <div .modal-body>
-    <p>
-      Checking ssh connection to the server. This could take a minute.
-    <p>
-      You may be prompted for your password to log into the server.
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Testing server ...
+      <div .modal-body>
+        <p>
+          Checking ssh connection to the server. This could take a minute.
+        <p>
+          You may be prompted for your password to log into the server.

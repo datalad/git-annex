@@ -17,9 +17,11 @@
             <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
               Add repository
 <div .modal .fade #workingmodal>
-  <div .modal-header>
-    <h3>
-      Making repository ...
-  <div .modal-body>
-    <p>
-      Setting up your Box.com repository. This could take a minute.
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Making repository ...
+      <div .modal-body>
+        <p>
+          Setting up your Box.com repository. This could take a minute.

@@ -31,11 +31,13 @@
             <button .btn .btn-primary type=submit onclick="$('#setupmodal').modal('show');">
               Use this rsync.net repository
 <div .modal .fade #setupmodal>
-  <div .modal-header>
-    <h3>
-      Checking access to rsync.net ...
-  <div .modal-body>
-    <p>
-      This could take a minute.
-    <p>
-      You may be prompted for your rsync.net ssh password.
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Checking access to rsync.net ...
+      <div .modal-body>
+        <p>
+          This could take a minute.
+        <p>
+          You may be prompted for your rsync.net ssh password.
