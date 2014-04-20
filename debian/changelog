@@ -1,4 +1,4 @@
-git-annex (5.20140413) UNRELEASED; urgency=medium
+git-annex (5.20140421) unstable; urgency=medium
 
   * assistant: Now detects immediately when other repositories push
     changes to a ssh remote, and pulls.
@@ -7,8 +7,8 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
     notifychanges support (>= 5.20140405)
   * webapp: Show a network signal icon next to ssh and xmpp remotes that
     it's currently connected with.
-  * webapp: Rework xmpp nudge to prompt for either xmpp or a ssh remote be
-    set up.
+  * webapp: Rework xmpp nudge to prompt for either xmpp or a ssh remote 
+    to be set up.
   * sync, assistant, remotedaemon: Use ssh connection caching for git pushes
     and pulls.
   * remotedaemon: When network connection is lost, close all cached ssh
@@ -38,7 +38,7 @@ git-annex (5.20140413) UNRELEASED; urgency=medium
   * standalone tarball, OSX app: Install a ~/.ssh/git-annex-wrapper, which
     can be used to run git-annex, git, rsync, etc.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 11 Apr 2014 21:33:35 -0400
+ -- Joey Hess <joeyh@debian.org>  Sun, 20 Apr 2014 19:43:14 -0400
 
 git-annex (5.20140412) unstable; urgency=high
 
