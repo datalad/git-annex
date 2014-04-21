@@ -10,11 +10,9 @@
 module Utility.URI where
 
 -- Old versions of network lacked an Ord for URI
-#ifdef VERSION_network
 #if ! MIN_VERSION_network(2,4,0)
 import Network.URI
 
 instance Ord URI where
 	a `compare` b = show a `compare` show b
-#endif
 #endif

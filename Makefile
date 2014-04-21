@@ -253,7 +253,7 @@ hdevtools:
 distributionupdate:
 	git pull
 	cabal configure
-	ghc --make Build/DistributionUpdate -XPackageImports
+	ghc --make Build/DistributionUpdate -XPackageImports -optP-include -optPdist/build/autogen/cabal_macros.h
 	./Build/DistributionUpdate
 
 .PHONY: git-annex git-union-merge git-recover-repository tags build-stamp
