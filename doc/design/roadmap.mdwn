@@ -6,13 +6,13 @@ Now in the
 
 * Month 1 [[!traillink assistant/encrypted_git_remotes]]
 * Month 2 [[!traillink assistant/disaster_recovery]]
-* Month 3 user-driven features and polishing [[!traillink todo/direct_mode_guard]] [[!traillink assistant/upgrading]]
+* Month 3 [[!traillink todo/direct_mode_guard]] [[!traillink assistant/upgrading]]
 * Month 4 [[!traillink assistant/windows text="Windows webapp"]], Linux arm, [[!traillink todo/support_for_writing_external_special_remotes]]
 * Month 5 user-driven features and polishing
 * Month 6 get Windows out of beta, [[!traillink design/metadata text="metadata and views"]]
 * Month 7 user-driven features and polishing
-* **Month 8 [[!traillink git-remote-daemon]] [[!traillink assistant/telehash]]**
-* Month 9 [[!traillink assistant/gpgkeys]] [[!traillink assistant/sshpassword]]
+* **Month 8 [[!traillink git-remote-daemon]]**
+* Month 9 Brazil!, [[!traillink assistant/sshpassword]]
 * Month 10 get [[assistant/Android]] out of beta
-* Month 11 [[!traillink assistant/chunks]] [[!traillink assistant/deltas]]
-* Month 12 user-driven features and polishing
+* Month 11 [[!traillink assistant/chunks]], [[!traillink assistant/deltas]], [[!traillink assistant/gpgkeys]] (pick 2?)
+* Month 12 [[!traillink assistant/telehash]]**
