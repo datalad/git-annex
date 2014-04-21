@@ -1,11 +1,12 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Pair request received from #{name}
-  <p>
-    Pairing with #{name} will combine your two git annex #
-    repositories into one, allowing you to share files.
-  <p>
-    <a .btn .btn-primary .btn-lg href="@{FinishXMPPPairFriendR pairkey}">
-      Accept pair request
-    <a .btn .btn-default .btn-lg href="@{DashboardR}">
-      No thanks
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Pair request received from #{name}
+    <p>
+      Pairing with #{name} will combine your two git annex #
+      repositories into one, allowing you to share files.
+    <p>
+      <a .btn .btn-primary .btn-lg href="@{FinishXMPPPairFriendR pairkey}">
+        Accept pair request
+      <a .btn .btn-default .btn-lg href="@{DashboardR}">
+        No thanks

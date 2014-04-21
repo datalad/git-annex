@@ -1,14 +1,15 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Switch repository
-  <p>
-    $if null repolist
-      There are no other local repositories. Want to #
-      <a href="@{NewRepositoryR}">add one</a>?
-    $else
-      You can switch to any of these other local repositories:
-      <ul>
-        $forall (name, path) <- repolist
-          <li>
-            <a href="@{SwitchToRepositoryR path}">
-              #{name}
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Switch repository
+    <p>
+      $if null repolist
+        There are no other local repositories. Want to #
+        <a href="@{NewRepositoryR}">add one</a>?
+      $else
+        You can switch to any of these other local repositories:
+        <ul>
+          $forall (name, path) <- repolist
+            <li>
+              <a href="@{SwitchToRepositoryR path}">
+                #{name}

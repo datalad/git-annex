@@ -1,12 +1,13 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Delete repository #
-    <small>
-      #{reponame}
-  <p>
-    Before this repository can be deleted, all data must be moved #
-    off it, to other repositories.
-  <p>
-   <a .btn .btn-primary href="@{StartDeleteRepositoryR uuid}">
-     <span .glyphicon .glyphicon-minus>
-    \ Start deletion process
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Delete repository #
+      <small>
+        #{reponame}
+    <p>
+      Before this repository can be deleted, all data must be moved #
+      off it, to other repositories.
+    <p>
+     <a .btn .btn-primary href="@{StartDeleteRepositoryR uuid}">
+       <span .glyphicon .glyphicon-minus>
+      \ Start deletion process

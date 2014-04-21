@@ -1,6 +1,7 @@
-<div .col-sm-9 .jumbotron>
-  <p>
-    Bye bye!
+<div .col-sm-9>
+  <div .jumbotron>
+    <p>
+      Bye bye!
 <div .modal .fade #shutdownmodal>
   <div .modal-dialog>
     <div .modal-content>

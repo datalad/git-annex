@@ -1,14 +1,15 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Preferences
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-group>
-          <div .col-sm-offset-2>
-            <button .btn .btn-primary type=submit>
-              Save Preferences
-            <a .btn .btn-default href="@{ConfigurationR}">
-              Cancel
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Preferences
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-offset-2>
+              <button .btn .btn-primary type=submit>
+                Save Preferences
+              <a .btn .btn-default href="@{ConfigurationR}">
+                Cancel

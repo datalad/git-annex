@@ -1,20 +1,21 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Welcome to git-annex!
-  <p>
-    To get started, let's create a git-annex repository.
-  $if androidspecial
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Welcome to git-annex!
     <p>
-      Do you only want to share photos and videos you take?
-    <p>
-      <a .btn .btn-primary .btn-lg href="@{AndroidCameraRepositoryR}">
-        <span .glyphicon .glyphicon-camera>
-        \ Make Camera Repository
-  <p>
+      To get started, let's create a git-annex repository.
     $if androidspecial
-      Want to share more files? #
-    Files in this repository will be kept in sync with your #
-    repositories on other devices.
-  <p>
-    <form method="post" .form-inline enctype=#{enctype}>
-      ^{form}
+      <p>
+        Do you only want to share photos and videos you take?
+      <p>
+        <a .btn .btn-primary .btn-lg href="@{AndroidCameraRepositoryR}">
+          <span .glyphicon .glyphicon-camera>
+          \ Make Camera Repository
+    <p>
+      $if androidspecial
+        Want to share more files? #
+      Files in this repository will be kept in sync with your #
+      repositories on other devices.
+    <p>
+      <form method="post" .form-inline enctype=#{enctype}>
+        ^{form}

@@ -1,4 +1,5 @@
-<div .col-sm-9 .jumbotron>
+<div .col-sm-9>
+  <div .jumbotron>
   <h2>
     Adding an Amazon S3 repository
   <p>

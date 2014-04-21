@@ -1,6 +1,7 @@
-<div .col-sm-9 .jumbotron>
-  <p>
-    Here's everything that has been logged by the git-annex assistant, #
-    as well as by programs it has run.
-  <pre>
-    #{logcontent}
+<div .col-sm-9>
+  <div .jumbotron>
+    <p>
+      Here's everything that has been logged by the git-annex assistant, #
+      as well as by programs it has run.
+    <pre>
+      #{logcontent}

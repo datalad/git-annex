@@ -1,31 +1,32 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Adding an Amazon Glacier repository
-  <p>
-    <a href="http://aws.amazon.com/glacier/">Amazon Glacier</a> is an #
-    offline cloud storage provider. It takes several hours for requested #
-    files to be retrieved from Glacier, making it mostly suitable for #
-    backups and long-term data archival. #
-  <p>
-    <span .glyphicon .glyphicon-warning-sign>
-    \ By default, only files you place in #
-    "archive" directories will be archived in Amazon Glacier.
-  <p>
-    <span .glyphicon .glyphicon-warning-sign>
-    \ You will be charged by Amazon for data #
-    uploaded to Glacier, as well as data downloaded from Glacier, and a #
-    monthly fee for data storage. #
-    <a href="http://aws.amazon.com/glacier/pricing/">
-      Pricing details
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-group>
-          <div .col-sm-offset-2>
-            <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
-              Add Glacier repository
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Adding an Amazon Glacier repository
+    <p>
+      <a href="http://aws.amazon.com/glacier/">Amazon Glacier</a> is an #
+      offline cloud storage provider. It takes several hours for requested #
+      files to be retrieved from Glacier, making it mostly suitable for #
+      backups and long-term data archival. #
+    <p>
+      <span .glyphicon .glyphicon-warning-sign>
+      \ By default, only files you place in #
+      "archive" directories will be archived in Amazon Glacier.
+    <p>
+      <span .glyphicon .glyphicon-warning-sign>
+      \ You will be charged by Amazon for data #
+      uploaded to Glacier, as well as data downloaded from Glacier, and a #
+      monthly fee for data storage. #
+      <a href="http://aws.amazon.com/glacier/pricing/">
+        Pricing details
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+                Add Glacier repository
 <div .modal .fade #workingmodal>
   <div .modal-dialog>
     <div .modal-content>

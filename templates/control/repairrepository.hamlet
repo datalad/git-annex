@@ -1,22 +1,23 @@
-<div .col-sm-9 .jumbotron>
-  <p>
-    A #
-    <a href="@{ConfigFsckR}">
-      consistency check #
-    found corrupt data in the git repository #{repodesc}.
-  <p>
-    While this is not good, this problem can be automatically repaired,
-    often without data loss.
-  $if repairingmainrepo
+<div .col-sm-9>
+  <div .jumbotron>
     <p>
-      When possible, the corrupt data will be recovered from other #
-      repositories. You should make sure any other repositories that might #
-      have this data are available before continuing. So, plug in any #
-      removable drive that contains a repository, or make sure your network #
-      connection to other repositories is active.
-  <p>
-    <a .btn .btn-primary href="@{RepairRepositoryRunR u}" onclick="$('#workingmodal').modal('show');">
-      Start Repair Process
+      A #
+      <a href="@{ConfigFsckR}">
+        consistency check #
+      found corrupt data in the git repository #{repodesc}.
+    <p>
+      While this is not good, this problem can be automatically repaired,
+      often without data loss.
+    $if repairingmainrepo
+      <p>
+        When possible, the corrupt data will be recovered from other #
+        repositories. You should make sure any other repositories that might #
+        have this data are available before continuing. So, plug in any #
+        removable drive that contains a repository, or make sure your network #
+        connection to other repositories is active.
+    <p>
+      <a .btn .btn-primary href="@{RepairRepositoryRunR u}" onclick="$('#workingmodal').modal('show');">
+        Start Repair Process
 <div .modal .fade #workingmodal>
   <div .modal-dialog>
     <div .modal-content>

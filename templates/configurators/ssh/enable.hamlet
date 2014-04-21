@@ -1,25 +1,26 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Enabling #{description}
-  <p>
-    To enable this repository, you first need to check that its ssh server #
-    is usable from here.
-  <p>
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        <div .form-group>
-          <div .col-sm-offset-2>
-            <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
-              Check this server
-        $case status
-          $of UnusableServer msg
-            <div .alert .alert-danger>
-              <span .glyphicon .glyphicon-warning-sign>
-              \ #{msg}
-          $of _
-        ^{form}
-        ^{webAppFormAuthToken}
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Enabling #{description}
+    <p>
+      To enable this repository, you first need to check that its ssh server #
+      is usable from here.
+    <p>
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          <div .form-group>
+            <div .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
+                Check this server
+          $case status
+            $of UnusableServer msg
+              <div .alert .alert-danger>
+                <span .glyphicon .glyphicon-warning-sign>
+                \ #{msg}
+            $of _
+          ^{form}
+          ^{webAppFormAuthToken}
 <div .modal .fade #testmodal>
   <div .modal-dialog>
     <div .modal-content>

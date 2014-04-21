@@ -1,19 +1,20 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Enabling #{description}
-  <p>
-    This is a WebDAV repository located at #
-    <a href="#{url}">
-      #{url}
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-group>
-          <div .col-sm-offset-2>
-            <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
-              Enable repository
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Enabling #{description}
+    <p>
+      This is a WebDAV repository located at #
+      <a href="#{url}">
+        #{url}
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+                Enable repository
 <div .modal .fade #workingmodal>
   <div .modal-dialog>
     <div .modal-content>

@@ -1,5 +1,6 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    not supported
-  <p>
-    This build of git-annex does not support #{pairingtype} pairing. Sorry!
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      not supported
+    <p>
+      This build of git-annex does not support #{pairingtype} pairing. Sorry!

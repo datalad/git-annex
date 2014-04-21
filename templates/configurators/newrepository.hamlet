@@ -1,13 +1,14 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Add another local repository
-  <p>
-    <span .glyphicon .glyphicon-asterisk>
-    \ Do you want to back your repository up to a #
-    removable drive?
-    <a .btn .btn-primary href="@{AddDriveR}">
-      Make a repository on a Removable Drive
-  <p>
-    Repository location:
-    <form method="post" .form-inline enctype=#{enctype}>
-      ^{form}
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Add another local repository
+    <p>
+      <span .glyphicon .glyphicon-asterisk>
+      \ Do you want to back your repository up to a #
+      removable drive?
+      <a .btn .btn-primary href="@{AddDriveR}">
+        Make a repository on a Removable Drive
+    <p>
+      Repository location:
+      <form method="post" .form-inline enctype=#{enctype}>
+        ^{form}

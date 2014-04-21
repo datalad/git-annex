@@ -1,9 +1,10 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Shutdown daemon?
-  <p>
-    <a .btn .btn-danger href="@{ShutdownConfirmedR}">
-      <span .glyphicon .glyphicon-off>
-      \ Confirm shutdown
-    <a .btn .btn-default href="@{DashboardR}">
-      Keep running
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Shutdown daemon?
+    <p>
+      <a .btn .btn-danger href="@{ShutdownConfirmedR}">
+        <span .glyphicon .glyphicon-off>
+        \ Confirm shutdown
+      <a .btn .btn-default href="@{DashboardR}">
+        Keep running

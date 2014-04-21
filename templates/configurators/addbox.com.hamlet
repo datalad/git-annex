@@ -1,21 +1,22 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Adding a Box.com repository
-  <p>
-    <a href="http://box.com">Box.com</a> offers a small quantity of storage #
-    for free, and larger quantities for a fee.
-  <p>
-    Even a small amount of free storage is useful, as a transfer point #
-    between your repositories.
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-group>
-          <div .col-sm-offset-2>
-            <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
-              Add repository
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Adding a Box.com repository
+    <p>
+      <a href="http://box.com">Box.com</a> offers a small quantity of storage #
+      for free, and larger quantities for a fee.
+    <p>
+      Even a small amount of free storage is useful, as a transfer point #
+      between your repositories.
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+                Add repository
 <div .modal .fade #workingmodal>
   <div .modal-dialog>
     <div .modal-content>

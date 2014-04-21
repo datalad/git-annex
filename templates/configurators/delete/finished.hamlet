@@ -1,14 +1,15 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Repository deleted
-  <p>
-    As much data as possible has been removed from the repository
-    "#{reponame}", and it has been removed from the list of repositories.
-  <p>
-    $if gitrepo
-     <div .alert>
-       Since "#{reponame}" is a git repository, it still contains
-       some data. To completely remove it, you should go delete that git
-       repository.
-    $else
-      Now you can safely go delete the underlying storage of the repository.
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Repository deleted
+    <p>
+      As much data as possible has been removed from the repository
+      "#{reponame}", and it has been removed from the list of repositories.
+    <p>
+      $if gitrepo
+       <div .alert>
+         Since "#{reponame}" is a git repository, it still contains
+         some data. To completely remove it, you should go delete that git
+         repository.
+      $else
+        Now you can safely go delete the underlying storage of the repository.

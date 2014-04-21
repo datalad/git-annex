@@ -1,19 +1,20 @@
-<div .col-sm-9 .jumbotron>
-  <h2>
-    Enabling #{description}
-  <p>
-    To use this Internet Archive repository, you need an Access Key ID, and a #
-    Secret Access Key. These access keys will be stored in a file that #
-    only you can access.
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-group>
-          <div .col-sm-offset-2>
-            <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
-              Enable Internet Archive repository
+<div .col-sm-9>
+  <div .jumbotron>
+    <h2>
+      Enabling #{description}
+    <p>
+      To use this Internet Archive repository, you need an Access Key ID, and a #
+      Secret Access Key. These access keys will be stored in a file that #
+      only you can access.
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+                Enable Internet Archive repository
 <div .modal .fade #workingmodal>
   <div .modal-dialog>
     <div .modal-content>
