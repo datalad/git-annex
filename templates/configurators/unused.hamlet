@@ -6,7 +6,8 @@
       Some old versions of files and deleted files have been preserved #
       inside this repository.
       <div .alert .alert-info>
-        <span .glyphicon .glyphicon-info-sign></span> #{renderTense Past desc} #
+        <span .glyphicon .glyphicon-info-sign>
+        \ #{renderTense Past desc} #
         $maybe lastchecked <- mlastchecked
           (last checked #{fromDuration lastchecked} ago)
     $nothing
@@ -24,7 +25,8 @@
         up space.
         <br>
         <a .btn .btn-default href="@{AddRepositoryR}">
-          <span .glyphicon .glyphicon-plus></span> Add a new repository
+          <span .glyphicon .glyphicon-plus>
+          \ Add a new repository
     <li>
       <p>
         Or, you can let unused files expire after a period of time.
@@ -35,4 +37,5 @@
         Finally, you can clean up all unused files manually at any time.
         <br>
         <a .btn .btn-default href="@{CleanupUnusedR}">
-          <span .glyphicon .glyphicon-trash></span> Clean up unused files now
+          <span .glyphicon .glyphicon-trash>
+          \ Clean up unused files now

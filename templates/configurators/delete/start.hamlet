@@ -8,4 +8,5 @@
     off it, to other repositories.
   <p>
    <a .btn .btn-primary href="@{StartDeleteRepositoryR uuid}">
-     <span .glyphicon .glyphicon-minus></span> Start deletion process
+     <span .glyphicon .glyphicon-minus>
+    \ Start deletion process

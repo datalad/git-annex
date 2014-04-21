@@ -24,7 +24,8 @@
         phrase, go ask #{username} ...
   $if badphrase
     <div .alert .alert-danger>
-      <span .glyphicon .glyphicon-warning-sign></span> #{problem}
+      <span .glyphicon .glyphicon-warning-sign>
+      \ #{problem}
   <p>
     <form method="post" .form-horizontal enctype=#{enctype}>
       <fieldset>

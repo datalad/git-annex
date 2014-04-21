@@ -1,2 +1,3 @@
 <a title="#{fromMaybe "" tooltip}" class="#{buttonclass}" href="@{route}" onclick="(function( $ ) { $.post('@{route}'); })( jQuery ); return false;">
-  <span class="glyphicon #{iconclass}"></span> #{fromMaybe "" label}
+  <span class="glyphicon #{iconclass}"> #
+  #{fromMaybe "" label}

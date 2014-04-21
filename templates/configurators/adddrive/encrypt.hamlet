@@ -10,16 +10,19 @@
     easily accessing its contents on another computer.
   <p>
     <a .btn .btn-default onclick="$('#setupmodal').modal('show');" href="@{FinishAddDriveR drive NoRepoKey}">
-      <span .glyphicon .glyphicon-minus-sign></span> Do not encrypt repository #
+      <span .glyphicon .glyphicon-minus-sign>
+      \ Do not encrypt repository #
     Anyone who has the drive can see the files stored on it.
     $forall (keyid, name) <- secretkeys
       <p>
         <a .btn .btn-default onclick="$('#setupmodal').modal('show');" href="@{FinishAddDriveR drive (RepoKey keyid)}">
-          <span .glyphicon .glyphicon-ok-sign></span> Encrypt repository #
+          <span .glyphicon .glyphicon-ok-sign>
+          \ Encrypt repository #
         to ^{gpgKeyDisplay keyid (Just name)}
   <p>
     <a .btn .btn-default onclick="$('#genkeymodal').modal('show');" href="@{GenKeyForDriveR drive}">
-      <span .glyphicon .glyphicon-plus-sign></span> Encrypt repository #
+      <span .glyphicon .glyphicon-plus-sign>
+      \ Encrypt repository #
     with a new encryption key
 ^{setupDriveModal}
 ^{genKeyModal}

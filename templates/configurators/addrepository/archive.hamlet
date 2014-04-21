@@ -1,11 +1,13 @@
 <h3>
   <a href="@{AddGlacierR}">
-    <span .glyphicon .glyphicon-plus-sign></span> Amazon Glacier
+    <span .glyphicon .glyphicon-plus-sign>
+    \ Amazon Glacier
 <p>
   Low cost offline data archival.
 
 <h3>
   <a href="@{AddIAR}">
-    <span .glyphicon .glyphicon-plus-sign></span> Internet Archive
+    <span .glyphicon .glyphicon-plus-sign>
+    \ Internet Archive
 <p>
   Free archival of public data.

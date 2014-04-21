@@ -1,6 +1,7 @@
 <div .col-sm-9 .jumbotron>
   <h2>
-    <span .glyphicon .glyphicon-signal></span> Connection needed
+    <span .glyphicon .glyphicon-signal>
+    \ Connection needed
     <p>
       In order to quickly sync with other repositories, #
       a direct connection is needed to another git-annex. #

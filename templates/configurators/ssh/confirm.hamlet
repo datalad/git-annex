@@ -5,8 +5,8 @@
     <div .col-sm-9>
       $if not (hasCapability sshdata GitAnnexShellCapable)
         <p>
-          <span .glyphicon .glyphicon-warning-sign></span> #
-          The server #{sshHostName sshdata} can be used as is, but #
+          <span .glyphicon .glyphicon-warning-sign>
+          \ The server #{sshHostName sshdata} can be used as is, but #
           installing #
           $if not (hasCapability sshdata GitCapable)
             git and git-annex #
@@ -42,7 +42,8 @@
         it good for sharing. And it's easy to set up and use.
       <p>
         <a .btn .btn-default href="@{MakeSshRsyncR sshdata}" onclick="$('#setupmodal').modal('show');">
-          <span .glyphicon .glyphicon-lock></span> Use shared encryption
+          <span .glyphicon .glyphicon-lock>
+          \ Use shared encryption
       $if hasCapability sshdata GitCapable
         <p style="text-align: center">
           -or-
@@ -58,11 +59,13 @@
           $forall (keyid, name) <- secretkeys
             <p>
               <a .btn .btn-default href="@{MakeSshGCryptR sshdata (RepoKey keyid)}" onclick="$('#setupmodal').modal('show');" >
-                <span .glyphicon .glyphicon-lock></span> Encrypt repository #
+                <span .glyphicon .glyphicon-lock>
+                \ Encrypt repository #
               to ^{gpgKeyDisplay keyid (Just name)}
         <p>
           <a .btn href="@{MakeSshGCryptR sshdata NoRepoKey}" onclick="$('#genkeymodal').modal('show');">
-            <span .glyphicon .glyphicon-plus-sign></span> Encrypt repository #
+            <span .glyphicon .glyphicon-plus-sign>
+            \ Encrypt repository #
           with a new encryption key
 ^{sshTestModal}
 ^{sshSetupModal sshdata}

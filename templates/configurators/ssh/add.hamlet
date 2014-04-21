@@ -10,7 +10,8 @@
     $case status
       $of UnusableServer msg
         <div .alert .alert-danger>
-          <span .glyphicon .glyphicon-warning-sign></span> #{msg}
+          <span .glyphicon .glyphicon-warning-sign>
+          \ #{msg}
       $of _
   <p>
     <form method="post" .form-horizontal enctype=#{enctype}>

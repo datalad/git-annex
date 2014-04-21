@@ -29,6 +29,7 @@
         ^{webAppFormAuthToken}
         <div .col-md-2>
           <button .btn .btn-danger type=submit>
-            <span .glyphicon .glyphicon-warning-sign></span> Delete this repository #
+            <span .glyphicon .glyphicon-warning-sign>
+            \ Delete this repository #
           <a .btn .btn-default href="@{DashboardR}">
             Cancel

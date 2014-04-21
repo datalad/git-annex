@@ -1,6 +1,7 @@
 <div .col-sm-9 .jumbotron>
   <h2>
-    <span .glyphicon .glyphicon-warning-sign></span> Failed to make repository
+    <span .glyphicon .glyphicon-warning-sign>
+    \ Failed to make repository
   <p>
     Something went wrong setting up the repository on the remote server.
   <p>

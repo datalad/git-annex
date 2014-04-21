@@ -12,7 +12,8 @@
     And it's easy to set up and use.
   <p>
     <a .btn .btn-default href="@{MakeRsyncNetSharedR sshdata}" onclick="$('#setupmodal').modal('show');">
-      <span .glyphicon .glyphicon-lock></span> Use shared encryption
+      <span .glyphicon .glyphicon-lock>
+      \ Use shared encryption
   <p style="text-align: center">
     -or-
   <h3>
@@ -27,11 +28,13 @@
     $forall (keyid, name) <- secretkeys
       <p>
         <a .btn .btn-default href="@{MakeRsyncNetGCryptR sshdata (RepoKey keyid)}" onclick="$('#setupmodal').modal('show');">
-          <span .glyphicon .glyphicon-lock></span> Encrypt repository #
+          <span .glyphicon .glyphicon-lock>
+          \ Encrypt repository #
         to ^{gpgKeyDisplay keyid (Just name)}
   <p>
     <a .btn .btn-default href="@{MakeRsyncNetGCryptR sshdata NoRepoKey}" onclick="$('#genkeymodal').modal('show');">
-      <span .glyphicon .glyphicon-plus-sign></span> Encrypt repository #
+      <span .glyphicon .glyphicon-plus-sign>
+      \ Encrypt repository #
     with a new encryption key
 ^{genKeyModal}
 <div .modal .fade #setupmodal>

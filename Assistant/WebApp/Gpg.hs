@@ -27,11 +27,12 @@ import qualified Data.Map as M
 gpgKeyDisplay :: KeyId -> Maybe UserId -> Widget
 gpgKeyDisplay keyid userid = [whamlet|
   <span title="key id #{keyid}">
-    <span .glyphicon .glyphicon-user></span> #
-      $maybe name <- userid
-        #{name}
-      $nothing
-        key id #{keyid}
+    <span .glyphicon .glyphicon-user>
+    \ 
+    $maybe name <- userid
+      #{name}
+    $nothing
+      key id #{keyid}
 |]
 
 genKeyModal :: Widget

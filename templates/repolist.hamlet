@@ -15,28 +15,30 @@
         <tr .repoline ##{show repoid}>
           <td .handle>
             <a .btn .btn-default .btn-xs .disabled>
-              <span .glyphicon .glyphicon-resize-vertical></span>
+              <span .glyphicon .glyphicon-resize-vertical>
             &nbsp; #{name}
           <td .draghide>
             $if needsEnabled actions
               <a href="@{setupRepoLink actions}">
-                <span .glyphicon .glyphicon-warning-sign></span> not enabled
+                <span .glyphicon .glyphicon-warning-sign>
+                \ not enabled
             $else
               $if notWanted actions
-                <span .glyphicon .glyphicon-trash></span> cleaning out..
+                <span .glyphicon .glyphicon-trash>
+                \ cleaning out..
               $else
                 <a href="@{syncToggleLink actions}">
                   $if currentlyconnected
-                    <span .glyphicon .glyphicon-signal></span> #
+                    <span .glyphicon .glyphicon-signal>
                   $else
                     $if notSyncing actions
-                      <span .glyphicon .glyphicon-ban-circle></span> #
+                      <span .glyphicon .glyphicon-ban-circle>
                     $else
-                      <span .glyphicon .glyphicon-refresh></span> #
+                      <span .glyphicon .glyphicon-refresh>
                   $if notSyncing actions
-                    syncing disabled
+                    \ syncing disabled
                   $else
-                    syncing enabled #
+                    \ syncing enabled #
                       $if lacksUUID repoid
                         (metadata only)
           <td .draghide>
@@ -46,28 +48,35 @@
             $else
               <div .dropdown #menu-#{show repoid}>
                 <a data-toggle="dropdown" data-target="#" href="#menu-#{show repoid}">
-                  <span .glyphicon .glyphicon-cog></span> actions
+                  <span .glyphicon .glyphicon-cog>
+                  \ actions #
                   <span .caret>
                 <ul .dropdown-menu>
                   <li>
                     <a href="@{setupRepoLink actions}">
-                      <span .glyphicon .glyphicon-pencil></span> Edit
+                      <span .glyphicon .glyphicon-pencil>
+                      \ Edit
                     $if not (lacksUUID repoid)
                       <a href="@{SyncNowRepositoryR $ asUUID repoid}">
-                        <span .glyphicon .glyphicon-refresh></span> Sync now
+                        <span .glyphicon .glyphicon-refresh>
+                        \ Sync now
                       <a href="@{DisableRepositoryR $ asUUID repoid}">
-                        <span .glyphicon .glyphicon-minus></span> Disable
+                        <span .glyphicon .glyphicon-minus>
+                        \ Disable
                       <a href="@{DeleteRepositoryR $ asUUID repoid}">
-                        <span .glyphicon .glyphicon-trash></span> Delete
+                        <span .glyphicon .glyphicon-trash>
+                        \ Delete
       $if addmore
         <tr>
           <td colspan="3">
             $if nootherrepos
               <a .btn .btn-primary .btn-lg href="@{AddRepositoryR}">
-                <span .glyphicon .glyphicon-plus-sign></span> Add another repository
+                <span .glyphicon .glyphicon-plus-sign>
+                \ Add another repository
             $else
               <a .btn .btn-default .btn-sm href="@{AddRepositoryR}">
-                <span .glyphicon .glyphicon-plus-sign></span> Add another repository
+                <span .glyphicon .glyphicon-plus-sign>
+                \ Add another repository
             <span>
               &nbsp; Sync your files with another device, or #
               share with a friend.

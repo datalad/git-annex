@@ -3,7 +3,7 @@
   <div .form-group>
     <div .input-group>
       <span .input-group-addon>
-        <span .glyphicon .glyphicon-folder-open></span>
+        <span .glyphicon .glyphicon-folder-open>
       ^{fvInput pathView}
       <span .input-group-btn>
         <button type=submit .btn .btn-primary>

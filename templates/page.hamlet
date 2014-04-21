@@ -2,7 +2,7 @@
   <div .container>
     <div .navbar-header>
       <button type="button" .navbar-toggle data-toggle="collapse" data-target=".navbar-collapse">
-        <span .sr-only">Toggle navigation
+        <span .sr-only>Toggle navigation
         <span .icon-bar>
         <span .icon-bar>
         <span .icon-bar>
@@ -22,7 +22,7 @@
           <li .dropdown #menu1>
             <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
               Repository: #{reldir}
-              <b .caret></b>
+              <b .caret>
             ^{controlMenu}
       $nothing
 <div .container-fluid>

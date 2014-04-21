@@ -7,11 +7,13 @@
     Do you want to combine it with your existing repository at #{mainrepo}?
   <p>
     <a .btn .btn-default href="@{CombineRepositoryR newrepopath newrepouuid}">
-      <span .glyphicon .glyphicon-resize-small></span> Combine the repositories #
+      <span .glyphicon .glyphicon-resize-small>
+      \ Combine the repositories #
     The combined repositories will sync and share their files.
   <p>
     -or-
   <p>
     <a .btn .btn-default href="@{SwitchToRepositoryR newrepopath}">
-      <span .glyphicon .glyphicon-resize-full></span> Keep the repositories separate #
+      <span .glyphicon .glyphicon-resize-full>
+      \ Keep the repositories separate #
     Files placed in one will not be synced to the other.

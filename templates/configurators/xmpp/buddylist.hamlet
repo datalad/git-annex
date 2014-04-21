@@ -13,11 +13,11 @@
         <tr>
           <td>
             $if isself buddyid
-              <span .glyphicon .glyphicon-star></span> #
+              <span .glyphicon .glyphicon-star> #
               <span :away:.text-muted>
                 your other devices
             $else
-              <span .glyphicon .glyphicon-user></span> #
+              <span .glyphicon .glyphicon-user> #
               <span :away:.text-muted>
                   #{name}
           <td>

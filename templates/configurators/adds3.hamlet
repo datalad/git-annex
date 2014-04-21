@@ -6,7 +6,8 @@
     provider. If you need a professional level of storage for your data, #
     this is a good choice.
   <p>
-    <span .glyphicon .glyphicon-warning-sign></span> You will be charged by Amazon for data #
+    <span .glyphicon .glyphicon-warning-sign>
+    \ You will be charged by Amazon for data #
     uploaded to S3, as well as data downloaded from S3, and a monthly fee #
     for data storage. #
     <a href="http://aws.amazon.com/s3/pricing/">
