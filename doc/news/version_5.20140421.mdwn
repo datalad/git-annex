@@ -1,0 +1,39 @@
+git-annex 5.20140421 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * assistant: Now detects immediately when other repositories push
+     changes to a ssh remote, and pulls.
+     ** XMPP is no longer needed in this configuration! **
+     This requires the remote server have git-annex-shell with
+     notifychanges support (&gt;= 5.20140405)
+   * webapp: Show a network signal icon next to ssh and xmpp remotes that
+     it's currently connected with.
+   * webapp: Rework xmpp nudge to prompt for either xmpp or a ssh remote
+     to be set up.
+   * sync, assistant, remotedaemon: Use ssh connection caching for git pushes
+     and pulls.
+   * remotedaemon: When network connection is lost, close all cached ssh
+     connections.
+   * Improve handling of monthly/yearly scheduling.
+   * Avoid depending on shakespeare except for when building the webapp.
+   * uninit: Avoid making unncessary copies of files.
+   * info: Allow use in a repository where annex.uuid is not set.
+   * reinit: New command that can initialize a new repository using
+     the configuration of a previously known repository.
+     Useful if a repository got deleted and you want
+     to clone it back the way it was.
+   * drop --from: When local repository is untrusted, its copy of a file does
+     not count.
+   * Bring back rsync -p, but only when git-annex is running on a non-crippled
+     file system. This is a better approach to fix #700282 while not
+     unncessarily losing file permissions on non-crippled systems.
+   * webapp: Start even if the current directory is listed in
+     ~/.config/git-annex/autostart but no longer has a git repository in it.
+   * findref: New command, like find but shows files in a specified git ref.
+   * webapp: Fix UI for removing XMPP connection.
+   * When init detects that git is not configured to commit, and sets
+     user.email to work around the problem, also make it set user.name.
+   * webapp: Support using git-annex on a remote server, which was installed
+     from the standalone tarball or OSX app, and so does not have
+     git-annex in PATH (and may also not have git or rsync in PATH).
+   * standalone tarball, OSX app: Install a ~/.ssh/git-annex-wrapper, which
+     can be used to run git-annex, git, rsync, etc."""]]
