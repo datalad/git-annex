@@ -36,7 +36,7 @@ makeinfos = do
 		v <- lookupFile f
 		case v of
 			Nothing -> noop
-			Just (k, _b) -> whenM (inAnnex k) $ do
+			Just k -> whenM (inAnnex k) $ do
 				liftIO $ putStrLn f
 				let infofile = f ++ ".info"
 				liftIO $ writeFile infofile $ show $ GitAnnexDistribution
