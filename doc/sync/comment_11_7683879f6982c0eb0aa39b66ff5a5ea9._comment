@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawn3p4i4lk_zMilvjnJ9sS6g2nerpgz0Fjc"
+ nickname="Matthias"
+ subject="sync slow with content switch"
+ date="2014-04-22T20:37:05Z"
+ content="""
+I noticed that in a test with 2 local repositories and around 2'000 files \"git annex sync\" is still very fast, but \"git annex sync --content\" takes multiple seconds. Is this avoidable?
+
+I have a central repo and client repos. I want to copy all content to the central repo after a commit. Right now, I use \"git annex group central backup\", \"git annex wanted central standard\", and a hook that triggers \"git annex sync --content\" after each commit. Maybe there is a more efficient way to do this? Thanks for sharing thoughts.
+"""]]
