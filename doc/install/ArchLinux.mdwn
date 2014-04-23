@@ -1,20 +1,19 @@
-There is a non-official source package for git-annex in
-[AUR](https://aur.archlinux.org/packages.php?ID=44272).
+There are three non non-official packages for git-annex in the Archlinux User Repository. Any of these may be installed manually per [AUR guidelines](https://wiki.archlinux.org/index.php/AUR_User_Guidelines#Installing_packages) or using a wrapper such as [`yaourt`](https://wiki.archlinux.org/index.php/yaourt) shown below.
 
-You can then build it yourself or use a wrapper for AUR
-such as yaourt:
+1. The simplest method is to use the [git-annex-bin](https://aur.archlinux.org/packages/git-annex-bin/) package based on the [prebuilt Linux tarballs](http://downloads.kitenet.net/git-annex/linux/current/). This package includes many of the binary shims from the pre-built package. Although common Linux system utilities have been stripped in favor of normal dependencies, the pre-configured Haskell libraries included out of the box make this an easy install. The disadvantage is the resulting installation is a bit on the heavy side at nearly 100M.
 
-<pre>
-$ yaourt -Sy git-annex
-</pre>
+       $ yaourt -Sy git-annex-bin
 
-----
+2. A more traditional source package is available at [git-annex](https://aur.archlinux.org/packages/git-annex/). This depends on a large number of Haskell packages available from a third party repository or through Cabal. This has been historically a bit problematic and the package frequently sits flagged out of date. The state of dependencies also varies, so some intervention may be required to get this option to work.
 
-I'm told the AUR has some dependency problems currently.
-If it doesn't work, you can just use cabal:
+       $ yaourt -Sy git-annex
 
-<pre>
-pacman -S git rsync curl wget gnupg openssh cabal-install
-cabal update
-cabal install git-annex --bindir=$HOME/bin
-</pre>
+3. A development package is available at [git-annex-git]() that functions similarly to the source package but builds directly from the HEAD of the git repository rather that the last official release.
+
+       $ yaourt -Sy git-annex-git
+
+Finally you may choose to forgo the Archlinux package system and install git-annex directly through cabal.
+
+    $ pacman -S git rsync curl wget gnupg openssh cabal-install
+    $ cabal update
+    $ cabal install git-annex --bindir=$HOME/bin
