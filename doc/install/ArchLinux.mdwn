@@ -8,7 +8,7 @@ There are three non non-official packages for git-annex in the Archlinux User Re
 
        $ yaourt -Sy git-annex
 
-3. A development package is available at [git-annex-git]() that functions similarly to the source package but builds directly from the HEAD of the git repository rather that the last official release.
+3. A development package is available at [git-annex-git](https://aur.archlinux.org/packages/git-annex-git/) that functions similarly to the source package but builds directly from the HEAD of the git repository rather that the last official release.
 
        $ yaourt -Sy git-annex-git
 
