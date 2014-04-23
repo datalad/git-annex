@@ -90,13 +90,12 @@ For OS X, it is possible to get context menus in Finder. Due to how OS X deals w
 2. Using the Drop down menus in the top create the sentence "Service receives selected folders in Finder.app" to have it work on folders. For direct mode operation it is probably reasonable to select "files or folders".
 3. Add a "Run shell script" element and fill in line with the following script:
 
-
-	#!/usr/bin/bash
-	source ~/.bash_profile
-	for f in "$@"
-	do
-		cd $(dirname $f); git-annex get $f
-	done
+        #!/usr/bin/bash
+        source ~/.bash_profile
+        for f in "$@"
+        do
+            cd "$(dirname "$f")" && git-annex get "$f"
+        done
 
 The purpose of the first line is there to get git-annex on to the path. The reason for the for loop is in case multiple files or folders are marked when running the context menu command.
 
