@@ -2,6 +2,6 @@
 
 so this is another UX pickyness, but it seems important to me.
 
-i like the new desktop notifications, but they are little too verbose. when i choose "git annex get" on the folder, if there's a lot of files, it will flood me with all the files being transfered in a mostly incomprehensible list of files being transfered.
+i like the new [[desktop notifications|tips/file_manager_integration]], but they are little too verbose. when i choose "git annex get" on the folder, if there's a lot of files, it will flood me with all the files being transfered in a mostly incomprehensible list of files being transfered.
 
 what i would expect is more: "starting transfer of folder X", "transfer of folder X finished!", only two message per item i chose. this is especially a problem with DVD backups, which have a bunch of small files (screenshots, .nfos and so on) and large video files - so it seems the thing has finished transfering, while it's only partly done. --[[anarcat]]
