@@ -1,3 +1,9 @@
+git-annex (5.20140422) UNRELEASED; urgency=medium
+
+  * Standalone builds now check gpg signatures before upgrading.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 23 Apr 2014 12:43:39 -0400
+
 git-annex (5.20140421) unstable; urgency=medium
 
   * assistant: Now detects immediately when other repositories push

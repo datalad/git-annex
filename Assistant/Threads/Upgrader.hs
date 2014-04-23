@@ -18,11 +18,8 @@ import Assistant.Types.UrlRenderer
 import Assistant.DaemonStatus
 import Assistant.Alert
 import Utility.NotificationBroadcaster
-import Utility.Tmp
 import qualified Annex
 import qualified Build.SysConfig
-import qualified Utility.Url as Url
-import qualified Annex.Url as Url
 import qualified Git.Version
 import Types.Distribution
 #ifdef WITH_WEBAPP
@@ -62,7 +59,7 @@ upgraderThread urlrenderer = namedThread "Upgrader" $
 checkUpgrade :: UrlRenderer -> Assistant ()
 checkUpgrade urlrenderer = do
 	debug [ "Checking if an upgrade is available." ]
-	go =<< getDistributionInfo
+	go =<< downloadDistributionInfo
   where
 	go Nothing = debug [ "Failed to check if upgrade is available." ]
 	go (Just d) = do
@@ -86,16 +83,3 @@ canUpgrade urgency urlrenderer d = ifM autoUpgradeEnabled
 		noop
 #endif
 	)
-
-getDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
-getDistributionInfo = do
-	uo <- liftAnnex Url.getUrlOptions
-	liftIO $ withTmpFile "git-annex.tmp" $ \tmpfile h -> do
-		hClose h
-		ifM (Url.downloadQuiet distributionInfoUrl tmpfile uo)
-			( readish <$> readFileStrict tmpfile
-			, return Nothing
-			)
-
-distributionInfoUrl :: String
-distributionInfoUrl = fromJust Build.SysConfig.upgradelocation ++ ".info"

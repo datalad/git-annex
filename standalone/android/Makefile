@@ -76,6 +76,7 @@ build: start
 	cp $(GIT_ANNEX_ANDROID_SOURCETREE)/git/git.tar.gz $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.git.tar.gz.so
 
 	git rev-parse HEAD > $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.version.so
+	cp ../trustedkeys.gpg $(GIT_ANNEX_ANDROID_SOURCETREE)/term/libs/armeabi/lib.trustedkeys.so
 
 	mkdir -p ../../tmp/4.0 ../../tmp/4.3
 	
