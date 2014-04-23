@@ -1,0 +1,14 @@
+Hi,
+
+I really like git-annex for sharing contents with all my devices. But i have a problem with the assistant on my phone, i don't know how to git annex get some file but not all.
+For example i have this on a remote:
+
+repository:
+ - big file1
+ - big file2
+ - big file3
+
+I have this repository on my phone. I would like to be able to checkout out only "big file2" directly within the assistant.
+How can i achieve that?
+
+Thank you. 

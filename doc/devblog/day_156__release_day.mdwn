@@ -1,5 +1,5 @@
 I hope this will be a really good release. Didn't get all the way to
-telehash this month, but the remotedaemon is pretty sweet. Updated roadmap
+[[design/assistant/telehash]] this month, but the remotedaemon is pretty sweet. Updated [[design/roadmap]]
 pushes telehash back again.
 
 The files in this release are now gpg signed, after recently moving the
