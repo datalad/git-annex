@@ -18,6 +18,14 @@ Alternatively, from the command line you can run
 programs bundled inside the app, including not just git-annex, but git, and
 several more. Handy if you don't otherwise have git installed.
 
+## SSH Issues
+
+This [[forum post|/forum/OSX__39__s_default_sshd_behaviour_has_limited_paths_set/]] describes how to fix issues you may have with the assistant trying to run remote commands via SSH.  Interactive logins behave differently to remote commands and the path is okay.  Essentially OSX's command path is very restricted and it needs to be extended in order to find the git-annex binaries.
+
+With the changes made as per the post the SSH deamon can be restarted with:
+
+    ps -ef | grep sshd | awk '{print $2}' | sudo xargs kill -HUP
+
 ## autobuilds
 
 [[Joey]] autobuilds the app for Mavericks.
