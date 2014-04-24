@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.114"
+ subject="comment 1"
+ date="2014-04-24T18:08:00Z"
+ content="""
+If you use git-annex from the OSX .dmg, it will set up a ~/.ssh/git-annex-shell, which is the only command that is needed when git-annex is using an OSX server as a remote. Since version 5.20140421, the webapp will also use ~/.ssh/git-annex-wrapper, which the .dmg also sets up, to run some commands like git. 
+
+The upshot is that this should not affect git-annex when installed from the .dmg on the OSX server. If you build git-annex from source yourself, you do need to make sure that it and git end up in PATH.
+"""]]
