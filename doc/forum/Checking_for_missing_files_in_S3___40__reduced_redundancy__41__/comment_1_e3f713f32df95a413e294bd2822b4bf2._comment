@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.114"
+ subject="comment 1"
+ date="2014-04-24T18:11:42Z"
+ content="""
+git annex fsck --fast $yours3remote
+"""]]
