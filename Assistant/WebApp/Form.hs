@@ -17,7 +17,7 @@ import Assistant.Gpg
 
 import Yesod hiding (textField, passwordField)
 import Yesod.Form.Fields as F
-import Yesod.Form.Bootstrap3 hiding (bfs)
+import Assistant.WebApp.Bootstrap3 hiding (bfs)
 import Data.String (IsString (..))
 import Data.Text (Text)
 
