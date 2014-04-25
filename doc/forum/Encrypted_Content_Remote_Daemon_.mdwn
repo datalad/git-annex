@@ -1,0 +1,1 @@
+I am currently using rsync.net to keep my notes in sync, both git repo and the content (gpg encrypted) is stored there. Instead of creating two other repos on a server that I have which has git-annex installed where I can actually use remote daemon. Is it possible to create a repo containing both the git repo and the content encrypted from the command line?
