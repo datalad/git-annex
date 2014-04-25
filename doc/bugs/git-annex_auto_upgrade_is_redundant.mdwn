@@ -2,7 +2,7 @@
 
 Hi,
 
-On OS the web-app keeps notifying me of an upgrade, I choose to run it but nothing seems to happen.
+On OSX the web-app keeps notifying me of an upgrade, I choose to run it but nothing seems to happen.
 
 The debug logs show that the upgrade is skipped as it's redundant.
 
