@@ -1,7 +1,10 @@
 {-# LANGUAGE QuasiQuotes #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE CPP #-}
 -- | Helper functions for creating forms when using Bootstrap v3.
+-- This is a copy of the Yesod.Form.Bootstrap3 module that has been slightly
+-- modified to be compatible with Yesod 1.0.1
 module Assistant.WebApp.Bootstrap3
   ( -- * Rendering forms
     renderBootstrap3
@@ -146,30 +149,36 @@ data BootstrapFormLayout =
 -- >    ^{bootstrapSubmit MsgSubmit}
 --
 -- Since: yesod-form 1.3.8
+#if MIN_VERSION_yesod(1,2,0)
 renderBootstrap3 :: Monad m => BootstrapFormLayout -> FormRender m a
+#else
+renderBootstrap3 :: BootstrapFormLayout -> FormRender sub master a
+#endif
 renderBootstrap3 formLayout aform fragment = do
     (res, views') <- aFormToForm aform
     let views = views' []
         has (Just _) = True
         has Nothing  = False
         widget = [whamlet|
+#if MIN_VERSION_yesod(1,2,0)
             $newline never
+#endif
             #{fragment}
             $forall view <- views
               <div .form-group :fvRequired view:.required :not $ fvRequired view:.optional :has $ fvErrors view:.has-error>
                 $case formLayout
                   $of BootstrapBasicForm
-                    $if fvId view /= bootstrapSubmitId
+                    $if nequals (fvId view) bootstrapSubmitId
                       <label for=#{fvId view}>#{fvLabel view}
                     ^{fvInput view}
                     ^{helpWidget view}
                   $of BootstrapInlineForm
-                    $if fvId view /= bootstrapSubmitId
+                    $if nequals (fvId view) bootstrapSubmitId
                       <label .sr-only for=#{fvId view}>#{fvLabel view}
                     ^{fvInput view}
                     ^{helpWidget view}
                   $of BootstrapHorizontalForm labelOffset labelSize inputOffset inputSize
-                    $if fvId view /= bootstrapSubmitId
+                    $if nequals (fvId view) bootstrapSubmitId
                       <label .control-label .#{toOffset labelOffset} .#{toColumn labelSize} for=#{fvId view}>#{fvLabel view}
                       <div .#{toOffset inputOffset} .#{toColumn inputSize}>
                         ^{fvInput view}
@@ -180,10 +189,15 @@ renderBootstrap3 formLayout aform fragment = do
                         ^{helpWidget view}
                 |]
     return (res, widget)
-
+  where
+    nequals a b = a /= b -- work around older hamlet versions not liking /=
 
 -- | (Internal) Render a help widget for tooltips and errors.
+#if MIN_VERSION_yesod(1,2,0)
 helpWidget :: FieldView site -> WidgetT site IO ()
+#else
+helpWidget :: FieldView sub master -> GWidget sub master ()
+#endif
 helpWidget view = [whamlet|
     $maybe tt <- fvTooltip view
       <span .help-block>#{tt}
@@ -228,9 +242,13 @@ instance IsString msg => IsString (BootstrapSubmit msg) where
 -- layout.
 --
 -- Since: yesod-form 1.3.8
+#if MIN_VERSION_yesod(1,2,0)
 bootstrapSubmit
     :: (RenderMessage site msg, HandlerSite m ~ site, MonadHandler m)
     => BootstrapSubmit msg -> AForm m ()
+#else
+bootstrapSubmit :: (RenderMessage master msg) => BootstrapSubmit msg -> AForm sub master ()
+#endif
 bootstrapSubmit = formToAForm . liftM (second return) . mbootstrapSubmit
 
 
@@ -239,9 +257,13 @@ bootstrapSubmit = formToAForm . liftM (second return) . mbootstrapSubmit
 -- anyway.
 --
 -- Since: yesod-form 1.3.8
+#if MIN_VERSION_yesod(1,2,0)
 mbootstrapSubmit
     :: (RenderMessage site msg, HandlerSite m ~ site, MonadHandler m)
     => BootstrapSubmit msg -> MForm m (FormResult (), FieldView site)
+#else
+mbootstrapSubmit :: (RenderMessage master msg) => BootstrapSubmit msg -> MForm sub master (FormResult (), FieldView sub master)
+#endif
 mbootstrapSubmit (BootstrapSubmit msg classes attrs) =
     let res = FormSuccess ()
         widget = [whamlet|<button class="btn #{classes}" type=submit *{attrs}>_{msg}|]

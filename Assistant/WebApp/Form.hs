@@ -15,11 +15,19 @@ module Assistant.WebApp.Form where
 import Assistant.WebApp.Types
 import Assistant.Gpg
 
+#if MIN_VERSION_yesod(1,2,0)
 import Yesod hiding (textField, passwordField)
 import Yesod.Form.Fields as F
+#else
+import Yesod hiding (textField, passwordField, selectField, selectFieldList)
+import Yesod.Form.Fields as F hiding (selectField, selectFieldList)
+#endif
 import Assistant.WebApp.Bootstrap3 hiding (bfs)
 import Data.String (IsString (..))
 import Data.Text (Text)
+
+import Control.Monad (unless)
+import Data.Maybe (listToMaybe)
 
 {- Yesod's textField sets the required attribute for required fields.
  - We don't want this, because many of the forms used in this webapp 
@@ -49,6 +57,54 @@ passwordField = F.passwordField
 <input id="#{theId}" name="#{name}" *{attrs} type="password" value="#{either id id val}">
 |]
 	}
+
+{- In older Yesod versions attrs is written into the <option> tag instead of the
+ - surrounding <select>. This breaks the Bootstrap 3 layout of select fields as
+ - it requires the "form-control" class on the <select> tag.
+ - We need to change that to behave the same way as in newer versions.
+ -}
+#if ! MIN_VERSION_yesod(1,2,0)
+selectFieldList :: (Eq a, RenderMessage master FormMessage, RenderMessage master msg) => [(msg, a)] -> Field sub master a
+selectFieldList = selectField . optionsPairs
+
+selectField :: (Eq a, RenderMessage master FormMessage) => GHandler sub master (OptionList a) -> Field sub master a
+selectField = selectFieldHelper
+	(\theId name attrs inside -> [whamlet|<select ##{theId} name=#{name} *{attrs}>^{inside}|]) -- outside
+	(\_theId _name isSel -> [whamlet|<option value=none :isSel:selected>_{MsgSelectNone}|]) -- onOpt
+	(\_theId _name _attrs value isSel text -> [whamlet|<option value=#{value} :isSel:selected>#{text}|]) -- inside
+
+selectFieldHelper :: (Eq a, RenderMessage master FormMessage)
+	=> (Text -> Text -> [(Text, Text)] -> GWidget sub master () -> GWidget sub master ())
+	-> (Text -> Text -> Bool -> GWidget sub master ())
+	-> (Text -> Text -> [(Text, Text)] -> Text -> Bool -> Text -> GWidget sub master ())
+	-> GHandler sub master (OptionList a) -> Field sub master a
+selectFieldHelper outside onOpt inside opts' = Field
+	{ fieldParse = \x -> do
+		opts <- opts'
+		return $ selectParser opts x
+	, fieldView = \theId name attrs val isReq -> do
+		opts <- fmap olOptions $ lift opts'
+		outside theId name attrs $ do
+			unless isReq $ onOpt theId name $ not $ render opts val `elem` map optionExternalValue opts
+			flip mapM_ opts $ \opt -> inside
+				theId
+				name
+				((if isReq then (("required", "required"):) else id) attrs)
+				(optionExternalValue opt)
+				((render opts val) == optionExternalValue opt)
+				(optionDisplay opt)
+	}
+  where
+	render _ (Left _) = ""
+	render opts (Right a) = maybe "" optionExternalValue $ listToMaybe $ filter ((== a) . optionInternalValue) opts
+	selectParser _ [] = Right Nothing
+	selectParser opts (s:_) = case s of
+		"" -> Right Nothing
+		"none" -> Right Nothing
+		x -> case olReadExternal opts x of
+			Nothing -> Left $ SomeMessage $ MsgInvalidEntry x
+			Just y -> Right $ Just y
+#endif
 
 {- Makes a note widget be displayed after a field. -}
 #if MIN_VERSION_yesod(1,2,0)
