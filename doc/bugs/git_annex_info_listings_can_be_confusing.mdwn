@@ -1,0 +1,31 @@
+### Please describe the problem.
+
+The output of git-annex info can be confusing as the format rules change based on positioning
+
+    repository mode: indirect
+    trusted repositories: 0
+    semitrusted repositories: 5
+        00000000-0000-0000-0000-000000000001 -- web
+        105776ba-bd78-4884-9126-aeb7c1e6da21 -- UoM Laptop
+        79ff3c20-fab3-44dd-88f7-cc1a41eb73d6 -- here (UoM Desktop Client)
+        949a8fc3-6334-5f5e-887d-b1e5725ea443 -- isilon (UoM Isilon Encrypted Git Backup)
+        c3cec307-367b-4373-8cb9-a3da67cee745 -- home (Mac Mini Home Client)
+
+Here we see the description surrounded in brackets and also not in brackets.  The second annex listed does not have a name (as there is no git remote configured).  Always including the brackets or an additional setting I think would make things much clearer esp. when setting things up.
+
+    
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
