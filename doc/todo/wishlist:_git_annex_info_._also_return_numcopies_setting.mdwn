@@ -1,0 +1,1 @@
+The stats produced by `git annex info .` are nice but I often find myself separately looking up the actual numcopies set value.  Can this also be included in the report please?
