@@ -5,7 +5,7 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE BangPatterns, CPP #-}
+{-# LANGUAGE CPP #-}
 
 module Utility.Lsof where
 
@@ -110,7 +110,7 @@ parseFormatted s = bundle $ go [] $ lines s
 
 {- Parses lsof's default output format. -}
 parseDefault :: LsofParser
-parseDefault = catMaybes . map parseline . drop 1 . lines
+parseDefault = mapMaybe parseline . drop 1 . lines
   where
 	parseline l = case words l of
 		(command : spid : _user : _fd : _type : _device : _size : _node : rest) -> 

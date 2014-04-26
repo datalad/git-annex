@@ -111,7 +111,7 @@ roughSize units short i
 	| i < 0 = '-' : findUnit units' (negate i)
 	| otherwise = findUnit units' i
   where
-	units' = reverse $ sort units -- largest first
+	units' = sortBy (flip compare) units -- largest first
 
 	findUnit (u@(Unit s _ _):us) i'
 		| i' >= s = showUnit i' u

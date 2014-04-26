@@ -17,5 +17,5 @@ showImprecise precision n
 	int :: Integer
 	(int, frac) = properFraction n
 	remainder = round (frac * 10 ^ precision) :: Integer
-	pad0s s = (take (precision - length s) (repeat '0')) ++ s
+	pad0s s = replicate (precision - length s) '0' ++ s
 	striptrailing0s = reverse . dropWhile (== '0') . reverse

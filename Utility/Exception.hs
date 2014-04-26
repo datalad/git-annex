@@ -18,7 +18,7 @@ import Utility.Data
 
 {- Catches IO errors and returns a Bool -}
 catchBoolIO :: IO Bool -> IO Bool
-catchBoolIO a = catchDefaultIO False a
+catchBoolIO = catchDefaultIO False
 
 {- Catches IO errors and returns a Maybe -}
 catchMaybeIO :: IO a -> IO (Maybe a)

@@ -43,7 +43,7 @@ dirContents d = map (d </>) . filter (not . dirCruft) <$> getDirectoryContents d
  - When the directory does not exist, no exception is thrown,
  - instead, [] is returned. -}
 dirContentsRecursive :: FilePath -> IO [FilePath]
-dirContentsRecursive topdir = dirContentsRecursiveSkipping (const False) True topdir
+dirContentsRecursive = dirContentsRecursiveSkipping (const False) True
 
 {- Skips directories whose basenames match the skipdir. -}
 dirContentsRecursiveSkipping :: (FilePath -> Bool) -> Bool -> FilePath -> IO [FilePath]

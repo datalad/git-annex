@@ -36,7 +36,7 @@ daemonize logfd pidfile changedirectory a = do
 	_ <- forkProcess child1
 	out
   where
-	checkalreadyrunning f = maybe noop (const $ alreadyRunning) 
+	checkalreadyrunning f = maybe noop (const alreadyRunning) 
 		=<< checkDaemon f
 	child1 = do
 		_ <- createSession

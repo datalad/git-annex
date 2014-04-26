@@ -49,7 +49,7 @@ inTop top f = top ++ f
  - link to. Note that some of the libraries may not exist 
  - (eg, linux-vdso.so) -}
 parseLdd :: String -> [FilePath]
-parseLdd = catMaybes . map (getlib . dropWhile isSpace) . lines
+parseLdd = mapMaybe (getlib . dropWhile isSpace) . lines
   where
 	getlib l = headMaybe . words =<< lastMaybe (split " => " l)
 

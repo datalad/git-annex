@@ -59,7 +59,7 @@ parseDuration = Duration <$$> go 0
 fromDuration :: Duration -> String
 fromDuration Duration { durationSeconds = d }
 	| d == 0 = "0s"
-	| otherwise = concat $ map showunit $ go [] units d
+	| otherwise = concatMap showunit $ go [] units d
   where
 	showunit (u, n)
 		| n > 0 = show n ++ [u]
