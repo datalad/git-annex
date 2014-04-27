@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.114"
+ subject="comment 1"
+ date="2014-04-27T00:31:18Z"
+ content="""
+Why not go all the way and encrypt the git repository stored on the remote server too? [[special_remotes/gcrypt]]
+
+When you have git-annex-shell installed on the remote server, the remote daemon should work for gcrypt repositories as well as normal non-encrypted git repositories.
+"""]]
