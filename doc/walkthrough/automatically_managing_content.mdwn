@@ -13,7 +13,7 @@ file.
 		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
 	whereis other_file (3 copies)
 		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
-		62b39bbe-4149-11e0-af01-bb89245a1e61  -- here (usb drive)
+		62b39bbe-4149-11e0-af01-bb89245a1e61  -- usb drive [here]
 		7570b02e-15e9-11e0-adf0-9f3f94cb2eaa  -- backup drive
 
 What would be handy is some automated versions of get and drop, that only
@@ -31,7 +31,7 @@ work toward having two copies of your files.
 	# git annex whereis
 	whereis my_cool_big_file (2 copies)
 		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
-		62b39bbe-4149-11e0-af01-bb89245a1e61  -- here (usb drive)
+		62b39bbe-4149-11e0-af01-bb89245a1e61  -- usb drive [here]
 	whereis other_file (2 copies)
 		0c443de8-e644-11df-acbf-f7cd7ca6210d  -- laptop
 		7570b02e-15e9-11e0-adf0-9f3f94cb2eaa  -- backup drive
