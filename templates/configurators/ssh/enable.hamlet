@@ -10,7 +10,7 @@
       <form method="post" .form-horizontal enctype=#{enctype}>
         <fieldset>
           <div .form-group>
-            <div .col-sm-offset-2>
+            <div .col-sm-10 .col-sm-offset-2>
               <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
                 Check this server
           $case status

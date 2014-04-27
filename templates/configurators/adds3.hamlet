@@ -1,27 +1,27 @@
 <div .col-sm-9>
   <div .jumbotron>
-  <h2>
-    Adding an Amazon S3 repository
-  <p>
-    <a href="http://aws.amazon.com/s3/">Amazon S3</a> is a cloud storage #
-    provider. If you need a professional level of storage for your data, #
-    this is a good choice.
-  <p>
-    <span .glyphicon .glyphicon-warning-sign>
-    \ You will be charged by Amazon for data #
-    uploaded to S3, as well as data downloaded from S3, and a monthly fee #
-    for data storage. #
-    <a href="http://aws.amazon.com/s3/pricing/">
-      Pricing details, including one year Free Usage Tier promotion
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-group>
-          <div .col-sm-offset-2>
-            <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
-              Add S3 repository
+    <h2>
+      Adding an Amazon S3 repository
+    <p>
+      <a href="http://aws.amazon.com/s3/">Amazon S3</a> is a cloud storage #
+      provider. If you need a professional level of storage for your data, #
+      this is a good choice.
+    <p>
+      <span .glyphicon .glyphicon-warning-sign>
+      \ You will be charged by Amazon for data #
+      uploaded to S3, as well as data downloaded from S3, and a monthly fee #
+      for data storage. #
+      <a href="http://aws.amazon.com/s3/pricing/">
+        Pricing details, including one year Free Usage Tier promotion
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-10 .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+                Add S3 repository
 <div .modal .fade #workingmodal>
   <div .modal-dialog>
     <div .modal-content>

@@ -12,7 +12,7 @@
           ^{form}
           ^{webAppFormAuthToken}
           <div .form-group>
-            <div .col-sm-offset-2>
+            <div .col-sm-10 .col-sm-offset-2>
               <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
                 Enable repository
 <div .modal .fade #workingmodal>
