@@ -2,7 +2,7 @@
 
 This URL:
 http://downloads.kitenet.net/git-annex/OSX/current/10.7.5_Lion/git-annex.dmg
-currently points to a DMG with an .app that has crime/mtime of Dec 29.
+currently points to a DMG with an .app that has ctime/mtime of Dec 29.
 
 After launching the app, the About screen says this:
 
