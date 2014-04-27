@@ -4,7 +4,7 @@ I've setup a gcrypt based git backup repository as per the examples here:
 
 http://git-annex.branchable.com/tips/fully_encrypted_git_repositories_with_gcrypt/
 
-It all seems to work well until I try to do any kind git annex operation from the console on the gcrypted repo on the remote server.  If I run a `git annex info` (this seems a reasonable thing to do) then it initialises the encrypted remote with a different uuid to the one in the creation step.  The initial repository that created the repo seems to work okay but it's no longer possible to add further repositories without getting conflicting uuid errors.
+It all seems to work well until I try to do any kind git annex operation from the console on the gcrypted repo on the remote server.  If I run a `git annex fsck` (this seems a reasonable thing to do) then it initialises the encrypted remote with a different uuid to the one in the creation step.  The initial repository that created the repo seems to work okay but it's no longer possible to add further repositories without getting conflicting uuid errors.
 
 ### What steps will reproduce the problem?
 
