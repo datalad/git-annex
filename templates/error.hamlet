@@ -1,24 +1,30 @@
 <div .navbar .navbar-inverse .navbar-fixed-top>
   <div .container>
-    <a .navbar-brand>
-      git-annex
-    <ul .nav>
-      <li .active>
-        <a href="">
-          Error
-      <li>
-        <a href="" onclick="history.back(-1);return false">
-          Go Back
-      <li>
-        <a href="@{LogR}">
-          View logs
-      <li>
-        <a href="http://git-annex.branchable.com/bugs/">
-          File a Bug
+    <div .navbar-header>
+      <button type="button" .navbar-toggle data-toggle="collapse" data-target=".navbar-collapse">
+        <span .sr-only>Toggle navigation
+        <span .icon-bar>
+        <span .icon-bar>
+        <span .icon-bar>
+      <a .navbar-brand>
+        git-annex
+    <div .navbar-collapse .collapse>
+      <ul .nav .navbar-nav>
+        <li .active>
+          <a href="">
+            Error
+        <li>
+          <a href="" onclick="history.back(-1);return false">
+            Go Back
+        <li>
+          <a href="@{LogR}">
+            View logs
+        <li>
+          <a href="http://git-annex.branchable.com/bugs/">
+            File a Bug
 <div .container-fluid>
   <div .row>
-    <div .col-sm-3>
-    <div .col-sm-6>
+    <div .col-sm-6 .col-sm-offset-3>
       <div .alert .alert-danger .alert-block>
         ^{content}
       <hr>
