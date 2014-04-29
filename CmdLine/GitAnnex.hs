@@ -199,5 +199,11 @@ run args = do
 #ifdef WITH_EKG
 	_ <- forkServer "localhost" 4242
 #endif
-	maybe (dispatch True args cmds gitAnnexOptions [] header Git.CurrentRepo.get)
-		(runSshCaching args) =<< getEnv sshCachingEnv
+	go envmodes
+  where
+	go [] = dispatch True args cmds gitAnnexOptions [] header Git.CurrentRepo.get
+	go ((v, a):rest) = maybe (go rest) a =<< getEnv v
+	envmodes =
+		[ (sshCachingEnv, runSshCaching args)
+		, (sshAskPassEnv, runSshAskPass)
+		]
