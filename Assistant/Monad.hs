@@ -44,6 +44,7 @@ import Assistant.Types.Buddies
 import Assistant.Types.NetMessager
 import Assistant.Types.ThreadName
 import Assistant.Types.RemoteControl
+import Assistant.Types.CredPairCache
 
 newtype Assistant a = Assistant { mkAssistant :: ReaderT AssistantData IO a }
 	deriving (
@@ -70,6 +71,7 @@ data AssistantData = AssistantData
 	, buddyList :: BuddyList
 	, netMessager :: NetMessager
 	, remoteControl :: RemoteControl
+	, credPairCache :: CredPairCache
 	}
 
 newAssistantData :: ThreadState -> DaemonStatusHandle -> IO AssistantData
@@ -89,6 +91,7 @@ newAssistantData st dstatus = AssistantData
 	<*> newBuddyList
 	<*> newNetMessager
 	<*> newRemoteControl
+	<*> newCredPairCache
 
 runAssistant :: AssistantData -> Assistant a -> IO a
 runAssistant d a = runReaderT (mkAssistant a) d
