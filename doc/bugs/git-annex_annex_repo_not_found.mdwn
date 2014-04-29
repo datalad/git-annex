@@ -10,7 +10,7 @@ The git-annex annex repo at <https://downloads.kitenet.net/.git/> is not availab
 
 ### Please provide any additional information below.
 
-Have tried various combinations of the URL, but nothing works. It was like this a week ago too, but I didn't report it because thought it was a temporary error due to some server reconfiguration or something.
+Have tried various combinations of the URL, but nothing works. It was like this a week ago too, but I didn't report it because I thought it was a temporary error due to some server reconfiguration or something.
 
 [[!format sh """
 # If you can, paste a complete transcript of the problem occurring here.
