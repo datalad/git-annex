@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="elfangor"
+ ip="176.57.244.101"
+ subject="comment 2"
+ date="2014-04-28T13:12:07Z"
+ content="""
+Thanks for your reply.
+
+The Standard group \"manual\" seems to be what i need. The last thing i'd like to now is, is there a way to do git annex get on the assistant(on the webui) on my phone? (I know i can do this on the shell opened, but it's not that easy to write from the phone.) I guess it's not implemented, and i understand that it should be a lot of work to add a file browser in the ui where you can git annex get, and git annex add from it.
+
+Thanks again for your answer, really helpfull: I have a better idea on how i will structur my git annex repositories.
+"""]]
