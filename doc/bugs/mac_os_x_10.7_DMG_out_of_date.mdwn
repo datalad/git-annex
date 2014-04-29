@@ -8,3 +8,9 @@ After launching the app, the About screen says this:
 
 Version: 5.20131230-g684f2e6 
 
+> Nobody is autobuilding git-annex for old versions of OSX, which 
+> is why the download page says, "**warning: not being updated any longer**"
+> 
+> So, not a bug, and nothing ca be done, unless someone steps up to run an
+> autobuilder. You can of course build it from source yourself. [[done]]
+> --[[Joey]]
