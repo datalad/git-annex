@@ -1,0 +1,5 @@
+Here's yet another weird use case. I have a ext3 external drive for storing media that i brought to the office. Naturally, all files on the drive are owned by my desktop user (uid = 1000). In the office, my userid is different (say 1001), so git-annex doesn't see the removable drive at all (which is a little confusing). But even if i try to add the repo on the drive as an external repo, it says it can't write to it (which is true).
+
+I would expect it to at least be able to leech the files off of it.
+
+Otherwise, I would welcome advice on how to fix this problem without doing a `sudo chown -R` every time i plug this drive somewhere ... --[[anarcat]]
