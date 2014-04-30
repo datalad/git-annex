@@ -3,9 +3,12 @@
   <div .form-group>
     Check ^{fvInput reposView} for #
   <div .form-group>
+    \ 
     ^{fvInput durationView} minutes #
   <div .form-group>
+    \ 
     ^{fvInput recurranceView} #
+  \ 
   starting at ^{fvInput timeView} #
   $if new
     <button type=submit .btn .btn-primary>
@@ -13,5 +16,6 @@
   $else
     <button type=submit .btn .btn-default>
       Save
+    \ 
     <a .btn .btn-default href="@{RemoveActivityR u activity}">
       Remove

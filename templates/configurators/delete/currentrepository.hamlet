@@ -4,7 +4,7 @@
       Deleting #{reldir}
     <p>
       Deleting this repository will remove <tt>#{reldir}</tt> and all its #
-      ^{actionButton FileBrowserR (Just "files") (Just "Click to open a file browser") "" "icon-folder-open"}.
+      ^{actionButton FileBrowserR (Just "files") (Just "Click to open a file browser") "" "glyphicon-folder-open"}.
     $if havegitremotes
       $if havedataremotes
         <div .alert>

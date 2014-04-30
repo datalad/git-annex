@@ -5,37 +5,35 @@
       $with percent <- maybe "unknown" (showPercentage 0) $ percentComplete transfer info
         <div .row>
           <div .col-sm-10>
-            <div .row>
-              <h3 .forcewrap>
-                $maybe file <- associatedFile info
-                  #{file}
-                $nothing
-                  #{key2file $ transferKey transfer}
-                $case transferDirection transfer
-                  $of Upload
-                    &rarr;
-                  $of Download
-                    &larr;
-                <small>
-                  <a href="@{EditRepositoryR $ RepoUUID $ transferUUID transfer}">
-                    #{maybe "unknown" Remote.name $ transferRemote info}
-                  $with size <- maybe "unknown" (roughSize dataUnits True) $ keySize $ transferKey transfer
-                    $if isJust $ startedTime info
-                      $if isrunning info
-                        <small .pull-right><b>#{percent} of #{size}</b></small>
-                      $else
-                        <small .pull-right>paused at #{percent} of #{size}</small>
+            <h3 .forcewrap .small-margin-top .tiny-margin-bottom>
+              $maybe file <- associatedFile info
+                #{file}
+              $nothing
+                #{key2file $ transferKey transfer}
+              $case transferDirection transfer
+                $of Upload
+                  &rarr;
+                $of Download
+                  &larr;
+              <small>
+                <a href="@{EditRepositoryR $ RepoUUID $ transferUUID transfer}">
+                  #{maybe "unknown" Remote.name $ transferRemote info}
+                $with size <- maybe "unknown" (roughSize dataUnits True) $ keySize $ transferKey transfer
+                  $if isJust $ startedTime info
+                    $if isrunning info
+                      <span .pull-right><b>#{percent} of #{size}</b>
                     $else
-                        <small .pull-right>queued (#{size})</small>
-            <div .row>
-              <div .progress .progress-striped>
-                <div .progress-bar style="width: #{percent};">
-          <div .btn-group .col-sm-2>
+                      <span .pull-right>paused at #{percent} of #{size}
+                  $else
+                      <span .pull-right>queued (#{size})
+            <div .progress .progress-striped .small-margin-bottom>
+              <div .progress-bar style="width: #{percent};">
+          <div .btn-group .col-sm-2 .small-margin-top>
             $if isrunning info
-              ^{actionButton (PauseTransferR transfer) Nothing (Just "pause") "btn" "icon-pause"}
+              ^{actionButton (PauseTransferR transfer) Nothing (Just "pause") "btn btn-default btn-sm" "glyphicon-pause"}
             $else
-              ^{actionButton (StartTransferR transfer) Nothing (Just "continue") "btn" "icon-play"}
-            ^{actionButton (CancelTransferR transfer) Nothing (Just "cancel") "btn" "icon-remove"}
+              ^{actionButton (StartTransferR transfer) Nothing (Just "continue") "btn btn-default btn-sm" "glyphicon-play"}
+            ^{actionButton (CancelTransferR transfer) Nothing (Just "cancel") "btn btn-default btn-sm" "glyphicon-remove"}
   $if scanrunning
     <img src="@{StaticR activityicon_gif}" alt=""> #
     Scanning for files to transfer

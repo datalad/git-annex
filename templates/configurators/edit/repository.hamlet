@@ -24,7 +24,8 @@
           <div .form-group>
             <div .col-sm-10 .col-sm-offset-2>
               <button .btn .btn-primary type=submit>
-                Save Changes #
+                Save Changes
+              \ 
               <a .btn .btn-default href="@{DashboardR}">
                 Cancel #
     $if new

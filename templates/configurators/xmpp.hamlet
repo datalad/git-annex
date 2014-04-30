@@ -29,6 +29,7 @@
             <div .col-sm-10 .col-sm-offset-2>
               <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
                 Use this account
+              \ 
               <a .btn .btn-default href="@{DisconnectXMPPR}">
                 Stop using this account
 <div .modal .fade #workingmodal>

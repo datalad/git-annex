@@ -47,7 +47,7 @@ boxComAForm :: Maybe CredPair -> MkAForm WebDAVInput
 boxComAForm defcreds = WebDAVInput
 	<$> areq textField (bfs "Username or Email") (T.pack . fst <$> defcreds)
 	<*> areq passwordField (bfs "Box.com Password") (T.pack . snd <$> defcreds)
-	<*> areq checkBoxField (bfs "Share this account with other devices and friends?") (Just True)
+	<*> areq checkBoxField "Share this account with other devices and friends?" (Just True)
 	<*> areq textField (bfs "Directory") (Just "annex")
 	<*> enableEncryptionField
 

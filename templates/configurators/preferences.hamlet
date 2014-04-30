@@ -11,5 +11,6 @@
             <div .col-sm-10 .col-sm-offset-2>
               <button .btn .btn-primary type=submit>
                 Save Preferences
+              \ 
               <a .btn .btn-default href="@{ConfigurationR}">
                 Cancel

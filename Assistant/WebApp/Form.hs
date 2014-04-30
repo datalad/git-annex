@@ -148,7 +148,7 @@ enableEncryptionField = areq (selectFieldList choices) (bfs "Encryption") (Just 
 
 {- Defines the layout used by the Bootstrap3 form helper -}
 bootstrapFormLayout :: BootstrapFormLayout
-bootstrapFormLayout = BootstrapHorizontalForm (ColSm 0) (ColSm 2) (ColSm 0) (ColSm 5)
+bootstrapFormLayout = BootstrapHorizontalForm (ColSm 0) (ColSm 2) (ColSm 0) (ColSm 10)
 
 {- Adds the form-control class used by Bootstrap3 for layout to a field
  - This is the same as Yesod.Form.Bootstrap3.bfs except it takes just a Text
