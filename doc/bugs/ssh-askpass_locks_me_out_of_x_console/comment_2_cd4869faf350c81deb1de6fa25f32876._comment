@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.114"
+ subject="comment 2"
+ date="2014-05-01T14:04:12Z"
+ content="""
+Actually, no, that is only going to handle ssh password prompting the one time needed to set up a passwordless dedicated ssh key.
+
+It may be that it makes sense to *always* set up such a key, which would bypass the normal key handling, and so avoid this problem. Currently, the assumption is that if you have gone to the bother to already set up a login to a host, without a password being needed, it makes sense for the assistant to use that configuration.
+"""]]
