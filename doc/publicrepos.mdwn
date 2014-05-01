@@ -2,7 +2,7 @@ git-annex repositories are often kept private, but here's a list of some of
 the public repositories that you can clone to try out git-annex.
 
 * [downloads.kitenet.net](http://downloads.kitenet.net/)  
-  `git clone git://git.kitenet.net/downloads.git/`  
+  `git clone https://downloads.kitenet.net/.git/`  
   Various downloads of things produced by Joey Hess, including git-annex
   builds.
 * debconf-share  

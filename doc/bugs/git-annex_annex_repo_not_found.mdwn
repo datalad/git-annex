@@ -20,6 +20,4 @@ Have tried various combinations of the URL, but nothing works. It was like this 
 # End of transcript or log.
 """]]
 
-> I have fixed the url to one that works. [[done]] If http protocol is needed for
-> sme reason, you will need to reopen this bug report and wait 2 weeks
-> until I have a decent internet connection to work on it. --[[Joey]]
+> [[fixed|done]] --[[Joey]] 
