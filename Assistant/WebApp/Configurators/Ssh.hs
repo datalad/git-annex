@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurator for ssh-based remotes
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -125,8 +125,9 @@ postAddSshR = sshConfigurator $ do
 			SshInput Nothing (Just username) Nothing 22
 	case result of
 		FormSuccess sshinput -> do
-			s <- liftIO $ testServer sshinput
+			s <- liftIO $ testServer NoPassword sshinput
 			case s of
+				-- XXX FIXME: now what???
 				Left status -> showform form enctype status
 				Right (sshdata, u) -> liftH $ redirect $ ConfirmSshR sshdata u
 		_ -> showform form enctype UntestedServer
@@ -205,12 +206,18 @@ wrapCommand cmd = "if [ -x " ++ commandWrapper ++ " ]; then " ++ commandWrapper 
 commandWrapper :: String
 commandWrapper = "~/.ssh/git-annex-wrapper"
 
+data UsePassword
+	= NoPassword
+	| CachedPassword
+	deriving (Eq)
+
 {- Test if we can ssh into the server.
  -
- - Two probe attempts are made. First, try sshing in using the existing
- - configuration, but don't let ssh prompt for any password. If
- - passwordless login is already enabled, use it. Otherwise,
- - a special ssh key will need to be generated just for this server.
+ - To detect if passwordless login is already enabled on the server,
+ - pass NoPassword.
+ -
+ - If that fails, the caller should prompt the user for the necessary
+ - password, and retry with CachedPassword.
  -
  - Once logged into the server, probe to see if git-annex-shell,
  - git, and rsync are available. 
@@ -223,18 +230,17 @@ commandWrapper = "~/.ssh/git-annex-wrapper"
  - Also probe to see if there is already a git repository at the location
  - with either an annex-uuid or a gcrypt-id set. (If not, returns NoUUID.)
  -}
-testServer :: SshInput -> IO (Either ServerStatus (SshData, UUID))
-testServer (SshInput { inputHostname = Nothing }) = return $
+testServer :: UsePassword -> SshInput -> IO (Either ServerStatus (SshData, UUID))
+testServer _ (SshInput { inputHostname = Nothing }) = return $
 	Left $ UnusableServer "Please enter a host name."
-testServer sshinput@(SshInput { inputHostname = Just hn }) = do
-	(status, u) <- probe [sshOpt "NumberOfPasswordPrompts" "0"]
+testServer usepassword sshinput@(SshInput { inputHostname = Just hn }) = do
+	(status, u) <- probe  $
+		if usepassword == NoPassword
+			then [sshOpt "NumberOfPasswordPrompts" "0"]
+			else [] 
 	case capabilities status of
-		[] -> do
-			(status', u') <- probe []
-			case capabilities status' of
-				[] -> return $ Left status'
-				cs -> ret cs True u'
-		cs -> ret cs False u
+		[] -> return $ Left status'
+		cs -> ret cs (usepassword == CachedPassword) u
   where
 	ret cs needspubkey u = do
 		let sshdata = (mkSshData sshinput)
