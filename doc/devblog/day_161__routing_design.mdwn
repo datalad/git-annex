@@ -1,7 +1,7 @@
 I've moved out of implementation mode (unable to concentrate enough), and
 into high-level design mode.
 
-[[design/assistant/Syncing_efficiency]] has been an open TODO for years,
+[[Syncing efficiency|design/assistant/syncing/efficiency]] has been an open TODO for years,
 to find a way to avoid flood filling the network, and find more efficient
 ways to ensure data only gets to the nodes that want it. Relatedly,
 Android devices  often need a way to mark individual files they want to have.
