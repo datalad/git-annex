@@ -3,7 +3,7 @@ line diff, with 2 thousand lines after the javascript and CSS libraries are
 filtered out. Either way, the biggest patch contributed by anyone to
 git-annex so far, and excellent work.
 
-Meanwhile, I built a [[haskell program|doc/design/assistant/syncing/efficiency/simroutes.hs]] to simulate
+Meanwhile, I built a [[haskell program|design/assistant/syncing/efficiency/simroutes.hs]] to simulate
 a network of highly distributed git-annex nodes with ad-hoc connections and
 the selective file syncing algorythm now documented at the bottom of
 [[design/assistant/syncing/efficiency]].
