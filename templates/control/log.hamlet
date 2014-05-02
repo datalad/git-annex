@@ -1,5 +1,5 @@
 <div .col-sm-9>
-  <div .jumbotron>
+  <div .content-box>
     <p>
       Here's everything that has been logged by the git-annex assistant, #
       as well as by programs it has run.

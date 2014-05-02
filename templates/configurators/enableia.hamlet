@@ -1,5 +1,5 @@
 <div .col-sm-9>
-  <div .jumbotron>
+  <div .content-box>
     <h2>
       Enabling #{description}
     <p>

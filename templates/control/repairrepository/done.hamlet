@@ -1,5 +1,5 @@
 <div .col-sm-9>
-  <div .jumbotron>
+  <div .content-box>
     <p>
       Good news: Your repository has successfully been repaired!
     <p>

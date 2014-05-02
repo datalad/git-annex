@@ -1,5 +1,5 @@
 <div .col-sm-9>
-  <div .jumbotron>
+  <div .content-box>
     <h2>
       Ready to add remote server
     <div .row>

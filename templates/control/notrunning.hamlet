@@ -1,5 +1,5 @@
 <div .col-sm-9>
-  <div .jumbotron>
+  <div .content-box>
     <p>
       Bye bye!
 <div .modal .fade #shutdownmodal>

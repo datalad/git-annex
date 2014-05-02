@@ -12,6 +12,14 @@ body
   display: inline
 .form-horizontal input.form-control+span
   width: 100%
+.content-box
+  padding: 30px
+  padding-top: 10px
+  margin-bottom: 30px
+  color: inherit
+  background-color: #eee
+  border-radius: 6px
+  
 h1
   font-size: 30px
 h2
