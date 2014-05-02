@@ -9,6 +9,7 @@
 
 module Utility.DBus where
 
+import Utility.PartialPrelude
 import Utility.Exception
 
 import DBus.Client
@@ -22,7 +23,7 @@ type ServiceName = String
 listServiceNames :: Client -> IO [ServiceName]
 listServiceNames client = do
 	reply <- callDBus client "ListNames" []
-	return $ fromMaybe [] $ fromVariant (methodReturnBody reply !! 0)
+	return $ fromMaybe [] $ fromVariant =<< headMaybe (methodReturnBody reply)
 
 callDBus :: Client -> MemberName -> [Variant] -> IO MethodReturn
 callDBus client name params = call_ client $

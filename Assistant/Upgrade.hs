@@ -32,7 +32,11 @@ import Config.Files
 import Utility.ThreadScheduler
 import Utility.Tmp
 import Utility.UserInfo
+import Utility.Gpg
 import qualified Utility.Lsof as Lsof
+import qualified Build.SysConfig
+import qualified Utility.Url as Url
+import qualified Annex.Url as Url
 
 import qualified Data.Map as M
 import Data.Tuple.Utils
@@ -313,3 +317,48 @@ upgradeSanityCheck = ifM usingDistribution
 
 usingDistribution :: IO Bool
 usingDistribution = isJust <$> getEnv "GIT_ANNEX_STANDLONE_ENV"
+
+downloadDistributionInfo :: Assistant (Maybe GitAnnexDistribution)
+downloadDistributionInfo = do
+	uo <- liftAnnex Url.getUrlOptions
+	liftIO $ withTmpDir "git-annex.tmp" $ \tmpdir -> do
+		let infof = tmpdir </> "info"
+		let sigf = infof ++ ".sig"
+		ifM (Url.downloadQuiet distributionInfoUrl infof uo
+			<&&> Url.downloadQuiet distributionInfoSigUrl sigf uo
+			<&&> verifyDistributionSig sigf)
+			( readish <$> readFileStrict infof
+			, return Nothing
+			)
+
+distributionInfoUrl :: String
+distributionInfoUrl = fromJust Build.SysConfig.upgradelocation ++ ".info"
+
+distributionInfoSigUrl :: String
+distributionInfoSigUrl = distributionInfoUrl ++ ".sig"
+
+{- Verifies that a file from the git-annex distribution has a valid
+ - signature. Pass the detached .sig file; the file to be verified should
+ - be located next to it.
+ -
+ - The gpg keyring used to verify the signature is located in
+ - trustedkeys.gpg, next to the git-annex program.
+ -}
+verifyDistributionSig :: FilePath -> IO Bool
+verifyDistributionSig sig = do
+	p <- readProgramFile
+	if isAbsolute p
+		then withTmpDir "git-annex-gpg.tmp" $ \gpgtmp -> do
+			let trustedkeys = takeDirectory p </> "trustedkeys.gpg"
+			boolSystem gpgcmd
+				[ Param "--no-default-keyring"
+				, Param "--no-auto-check-trustdb"
+				, Param "--no-options"
+				, Param "--homedir"
+				, File gpgtmp
+				, Param "--keyring"
+				, File trustedkeys
+				, Param "--verify"
+				, File sig
+				]
+		else return False

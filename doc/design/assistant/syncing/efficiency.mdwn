@@ -71,3 +71,24 @@ repositories have a non-git out of band signaling mechanism. This could,
 for example, be used by laptopB to tell laptopA that it's trying to send 
 a file directly to laptopC. laptopA could then defer the upload to the
 cloud for a while.
+
+## syncing only requested content
+
+In some situations, nodes only want particular files, and not everything.
+(Or don't have the bandwidth to get everything.) A way to handle this,
+that should work in a fully ad-hoc, offline distributed network,
+suggested by Vincenzo Tozzi:
+
+* Nodes generate a request for a specific file they want, committed
+  to git somewhere.
+* This request has a TTL (of eg 3).
+* When syncing, copy the requests that a node has, and decrease their TTL
+  by 1. Requests with a TTL of 0 have timed out and are not copied.
+  (So, requests are stored in git, but on eg, per-node branches.)
+* Only copy content to nodes that have a request for it (either one
+  originating with them, or one they copied from another node).
+* Each request indicates the requesting node, so once no nodes have an
+  active request for a particular file, it's ok to drop it from the
+  transfer nodes (honoring numcopies etc of course).
+
+A simulation of a network using this method is in [[simroutes.hs]]

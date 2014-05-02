@@ -9,4 +9,6 @@ module Types.Creds where
 
 type Creds = String -- can be any data that contains credentials
 
-type CredPair = (String, String) -- login, password
+type CredPair = (Login, Password)
+type Login = String
+type Password = String -- todo: use securemem

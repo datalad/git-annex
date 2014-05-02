@@ -1,0 +1,19 @@
+### Please describe the problem.
+
+In lieu of a better place to ask/report this.  Is it possible to have an email sent when bugs are moved into another category?  I get emails on comments but not much when the bugs are moved elsewhere - they just seem to disappear.
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]

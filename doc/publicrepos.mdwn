@@ -5,7 +5,7 @@ the public repositories that you can clone to try out git-annex.
   `git clone https://downloads.kitenet.net/.git/`  
   Various downloads of things produced by Joey Hess, including git-annex
   builds.
-* [debconf-share](https://downloads.kitenet.net/.git/)  
+* debconf-share  
   `git clone http://annex.debconf.org/debconf-share/.git/`  
   [DebConf](http://debconf.org/) Media, photos, videos, etc.
 * [conference-proceedings](https://github.com/RichiH/conference_proceedings)  
