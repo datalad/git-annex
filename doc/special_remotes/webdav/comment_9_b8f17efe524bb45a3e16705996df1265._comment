@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnmF_9CAtfqdZkC4e-_dCX-rK5bqh4RWkw"
+ nickname="Carl"
+ subject="Change Password"
+ date="2014-05-02T12:30:58Z"
+ content="""
+I want to change the password that I use on a webdav service (Heartbleed mitigration). What do I need to do to in git annex to make it have access to the new password? Thanks in anvance.
+"""]]
