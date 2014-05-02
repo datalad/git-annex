@@ -1,3 +1,10 @@
+git-annex (5.20140422) UNRELEASED; urgency=medium
+
+  * webapp: Switched to bootstrap 3.
+    Thanks, Sören Brunk.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 02 May 2014 15:28:53 -0300
+
 git-annex (5.20140421) unstable; urgency=medium
 
   * assistant: Now detects immediately when other repositories push
