@@ -14,4 +14,4 @@ generated, and so contains disconnected islands. So next, some data entry,
 from a map that involves an Amazon not in .com, dotted with names of people
 I have recently met... :)
 
-<img src="https://downloads.kitenet.net/git-annex/mapa/mapa.jpg" size=1024x768>
+<img src="https://downloads.kitenet.net/git-annex/mapa/mapa.jpg" width=1024 height=768>
