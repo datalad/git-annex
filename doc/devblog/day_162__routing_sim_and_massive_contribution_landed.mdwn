@@ -1,0 +1,17 @@
+Sören Brunk's massive bootstrap 3 patch has landed! This is a 43 thousand
+line diff, with 2 thousand lines after the javascript and CSS libraries are
+filtered out. Either way, the biggest patch contributed by anyone to
+git-annex so far, and excellent work.
+
+Meanwhile, I built a [[haskell program|doc/design/assistant/syncing/efficiency/simroutes.hs]] to simulate
+a network of highly distributed git-annex nodes with ad-hoc connections and
+the selective file syncing algorythm now documented at the bottom of
+[[design/assistant/syncing/efficiency]].
+
+Currently around 33% of requested files never get to their destination
+in this simulation, but this is probably because its network is randomly
+generated, and so contains disconnected islands. So next, some data entry,
+from a map that involves an Amazon not in .com, dotted with names of people
+I have recently met... :)
+
+<img src="https://downloads.kitenet.net/git-annex/mapa/mapa.jpg" size=1024x768>
