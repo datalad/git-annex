@@ -1,5 +1,5 @@
 The Date resolution for FAT is only 2 seconds for the "last modified time."
-This leeds to the strange behaviour, that after umount and remount of an usb drive (direct mode) git-annex thinks that suddenly approx. 50% of
+This leads to the strange behaviour, that after umount and remount of an usb drive (direct mode) git-annex thinks that suddenly approx. 50% of
 the files are modified.  (after remount the times appears to be rounded to even values)
 
 One solution would be to treat differences up to 1s in modification time as unmodified or create an new parameter like rsync's "modify-window" for this...
