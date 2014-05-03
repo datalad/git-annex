@@ -55,7 +55,10 @@ numSteps = 100
 
 -- IO code
 --main = putStrLn . summarize =<< evalRandIO (simulate numSteps =<< genNetwork)
-main = putStrLn . summarize =<< evalRandIO (simulate numSteps =<< mocambos)
+main = do
+	initialnetwork <- evalRandIO mocambos
+	putStrLn . summarize initialnetwork
+		=<< evalRandIO (simulate numSteps initialnetwork)
 -- Only pure code below :)
 
 data Network = Network (M.Map NodeName ImmobileNode) [TransferNode]
@@ -240,14 +243,16 @@ randomfrom l = do
 	i <- getRandomR (1, length l)
 	return $ l !! (i - 1)
 
-summarize :: Network -> String
-summarize (Network is _ts) = unlines $ map (\(d, s) -> d ++ ": " ++ s)
+summarize :: Network -> Network -> String
+summarize _initial@(Network origis _) _final@(Network is _ts) = format
 	[ ("Total wanted files",
 		show (sum (overis (length . findoriginreqs . wantFiles . repo))))
 	, ("Wanted files that were not transferred to requesting node",
 		show (sum (overis (S.size . findunsatisfied . repo))))
-	--, ("List of files not transferred", show unsatisfied)
-	, ("Immobile nodes at end", show is)
+	, ("Nodes that failed to get files",
+		show (map withinitiallocs $ filter (not . S.null . snd)
+			(M.toList $ M.map (findunsatisfied . repo) is)))
+	--, ("Immobile nodes at end", show is)
 	]
   where
   	findoriginreqs = filter (\r -> requestTTL r == originTTL)
@@ -256,6 +261,14 @@ summarize (Network is _ts) = unlines $ map (\(d, s) -> d ++ ": " ++ s)
 		in S.difference wantedfs (haveFiles r)
 	repo (ImmobileNode r) = r
 	overis f = map f $ M.elems is
+	format = unlines . map (\(d, s) -> d ++ ": " ++ s)
+
+	withinitiallocs (name, missingfiles) = (name, S.map addinitialloc missingfiles)
+	addinitialloc f = (f, M.lookup f initiallocs)
+
+	initiallocs = M.fromList $ 
+		concatMap (\(k, v) -> map (\f -> (f, k)) (S.toList $ haveFiles $ repo v)) $
+			M.toList origis
 
 mocambos :: (RandomGen g) => Rand g Network
 mocambos = do
