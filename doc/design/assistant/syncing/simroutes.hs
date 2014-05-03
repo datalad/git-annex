@@ -10,6 +10,7 @@ import Data.Ratio
 import Data.Ord
 import Data.List
 import qualified Data.Set as S
+import qualified Data.Map.Strict as M
 
 {-
  - Tunable values
@@ -56,18 +57,17 @@ numSteps = 100
 main = putStrLn . summarize =<< evalRandIO (simulate numSteps =<< genNetwork)
 -- Only pure code below :)
 
-data Network = Network [ImmobileNode] [TransferNode]
+data Network = Network (M.Map NodeName ImmobileNode) [TransferNode]
 	deriving (Show, Eq)
 
 data ImmobileNode = ImmobileNode NodeRepo
 	deriving (Show, Eq)
 
--- Index in the Network's list of ImmobileNodes.
-type ImmobileNodeIdx = Int
+type NodeName = String
 
 data TransferNode = TransferNode
-	{ currentlocation :: ImmobileNodeIdx
-	, possiblelocations :: [ImmobileNodeIdx]
+	{ currentlocation :: NodeName
+	, possiblelocations :: [NodeName]
 	, movefrequency :: Probability
 	, transferrepo :: NodeRepo
 	}
@@ -145,11 +145,12 @@ step (Network immobiles transfers) = go immobiles [] transfers
 	go is c (t:ts) = do
 		r <- randomProbability
 		if movefrequency t <= r
-			then do
-				let (is1, (currentloc:is2)) = splitAt (currentlocation t) is
-				let (currentloc', t') = exchangeRequestsFiles currentloc t
-				t'' <- move t'
-				go (is1 ++ currentloc' : is2) (c ++ [t'']) ts
+			then case M.lookup (currentlocation t) is of
+				Nothing -> go is (c ++ [t]) ts
+				Just currentloc -> do
+					let (currentloc', t') = exchangeRequestsFiles currentloc t
+					t'' <- move t'
+					go (M.insert (currentlocation t) currentloc' is) (c ++ [t'']) ts
 			else go is (c ++ [t]) ts
 
 type Exchanger = ImmobileNode -> TransferNode -> (ImmobileNode, TransferNode)
@@ -190,7 +191,8 @@ move t = do
 
 genNetwork :: (RandomGen g) => Rand g Network
 genNetwork = do
-	immobiles <- sequence (replicate numImmobileNodes mkImmobile)
+	l <- sequence (replicate numImmobileNodes mkImmobile)
+	let immobiles = M.fromList (zip (map show [1..]) l)
 	transfers <- sequence (replicate numTransferNodes (mkTransfer immobiles))
 	return $ Network immobiles transfers
 
@@ -213,7 +215,7 @@ mkImmobile = ImmobileNode <$> genrepo
 		-- (Also when running the sim.)
 		<*> (S.fromList <$> sequence (replicate (totalFiles `div` numImmobileNodes) randomFile))
 
-mkTransfer :: (RandomGen g) => [ImmobileNode] -> Rand g TransferNode
+mkTransfer :: (RandomGen g) => M.Map NodeName ImmobileNode -> Rand g TransferNode
 mkTransfer immobiles = do
   	-- Transfer nodes are given random routes. May be simplistic.
 	-- Also, some immobile nodes will not be serviced by any transfer nodes.
@@ -225,7 +227,7 @@ mkTransfer immobiles = do
 	let repo = (NodeRepo [] S.empty)
 	return $ TransferNode currentloc possiblelocs movefreq repo
   where
-	indexes = [0..length immobiles - 1]
+	indexes = M.keys immobiles
 
 randomfrom :: (RandomGen g) => [a] -> Rand g a
 randomfrom l = do
@@ -247,4 +249,4 @@ summarize (Network is _ts) = unlines $ map (\(d, s) -> d ++ ": " ++ s)
 		let wantedfs = S.fromList $ map requestedFile (findoriginreqs (wantFiles r))
 		in S.difference wantedfs (haveFiles r)
 	repo (ImmobileNode r) = r
-	overis f = map f is
+	overis f = map f $ M.elems is
