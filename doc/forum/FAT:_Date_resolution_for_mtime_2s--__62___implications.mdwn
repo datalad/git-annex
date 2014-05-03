@@ -16,6 +16,7 @@ Fertig.
 martin@dell:$ cd /mnt/transfer/transfer-repo/
 
 martin@dell:$ git annex init "test"
+
 init test 
   Detected a filesystem without fifo support.
 
