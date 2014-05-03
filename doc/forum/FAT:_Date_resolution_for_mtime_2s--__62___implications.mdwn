@@ -54,7 +54,10 @@ sent 1622459 bytes  received 31 bytes  3244980.00 bytes/sec
 total size is 1622113  speedup is 1.00
 ok
 
-–--> All files successfully got
+...
+...
+
+–--> All 29 files (n01.mp3 to n29.mp3) successfully got
 
 (Recording state in git...)
 martin@dell:$ git annex status
