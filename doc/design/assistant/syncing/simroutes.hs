@@ -17,7 +17,7 @@ import qualified Data.Map.Strict as M
  -}
 
 totalFiles :: Int
-totalFiles = 10
+totalFiles = 100
 
 -- How likely is a given file to be wanted by any particular node?
 probabilityFilesWanted :: Probability
@@ -26,7 +26,7 @@ probabilityFilesWanted = 0.10
 -- How many different locations can each transfer node move between?
 -- (Min, Max)
 transferDestinationsRange :: (Int, Int)
-transferDestinationsRange = (2, 5)
+transferDestinationsRange = (2, 3)
 
 -- Controls how likely transfer nodes are to move around in a given step
 -- of the simulation.
@@ -54,7 +54,8 @@ numSteps :: Int
 numSteps = 100
 
 -- IO code
-main = putStrLn . summarize =<< evalRandIO (simulate numSteps =<< genNetwork)
+--main = putStrLn . summarize =<< evalRandIO (simulate numSteps =<< genNetwork)
+main = putStrLn . summarize =<< evalRandIO (simulate numSteps =<< mocambos)
 -- Only pure code below :)
 
 data Network = Network (M.Map NodeName ImmobileNode) [TransferNode]
@@ -64,6 +65,8 @@ data ImmobileNode = ImmobileNode NodeRepo
 	deriving (Show, Eq)
 
 type NodeName = String
+
+type Route = [NodeName]
 
 data TransferNode = TransferNode
 	{ currentlocation :: NodeName
@@ -193,41 +196,44 @@ genNetwork :: (RandomGen g) => Rand g Network
 genNetwork = do
 	l <- sequence (replicate numImmobileNodes mkImmobile)
 	let immobiles = M.fromList (zip (map show [1..]) l)
-	transfers <- sequence (replicate numTransferNodes (mkTransfer immobiles))
+	transfers <- sequence (replicate numTransferNodes (mkTransfer $ M.keys immobiles))
 	return $ Network immobiles transfers
 
 mkImmobile :: (RandomGen g) => Rand g ImmobileNode
-mkImmobile = ImmobileNode <$> genrepo
-  where
-	genrepo = NodeRepo
-		-- The files this node wants.
-		-- Currently assumes each file is equally popular.
-		<$> sequence (replicate (truncate (fromIntegral totalFiles * probabilityFilesWanted)) randomRequest)
-		-- The files this node already has.
-		--
-		-- We'll assume equal production, so split the total
-		-- number of files amoung the immobile nodes.
-		-- (This will produce some duplication of files
-		--  (consider birthday paradox), and some missing files.)
-		--
-		-- TODO: Some immobile nodes are internet connected,
-		-- and these should all share their files automatically)
-		-- (Also when running the sim.)
-		<*> (S.fromList <$> sequence (replicate (totalFiles `div` numImmobileNodes) randomFile))
+mkImmobile = ImmobileNode <$> mkImmobileRepo
 
-mkTransfer :: (RandomGen g) => M.Map NodeName ImmobileNode -> Rand g TransferNode
+mkImmobileRepo :: (RandomGen g) => Rand g NodeRepo
+mkImmobileRepo = NodeRepo
+	-- The files this node wants.
+	-- Currently assumes each file is equally popular.
+	<$> sequence (replicate (truncate (fromIntegral totalFiles * probabilityFilesWanted)) randomRequest)
+	-- The files this node already has.
+	--
+	-- We'll assume equal production, so split the total
+	-- number of files amoung the immobile nodes.
+	-- (This will produce some duplication of files
+	--  (consider birthday paradox), and some missing files.)
+	--
+	-- TODO: Some immobile nodes are internet connected,
+	-- and these should all share their files automatically)
+	-- (Also when running the sim.)
+	<*> (S.fromList <$> sequence (replicate (totalFiles `div` numImmobileNodes) randomFile))
+
+mkTransfer :: (RandomGen g) => [NodeName] -> Rand g TransferNode
 mkTransfer immobiles = do
   	-- Transfer nodes are given random routes. May be simplistic.
 	-- Also, some immobile nodes will not be serviced by any transfer nodes.
 	numpossiblelocs <- getRandomR transferDestinationsRange
-	possiblelocs <- sequence (replicate numpossiblelocs (randomfrom indexes))
+	possiblelocs <- sequence (replicate numpossiblelocs (randomfrom immobiles))
+	mkTransferBetween possiblelocs
+
+mkTransferBetween :: (RandomGen g) => [NodeName] -> Rand g TransferNode
+mkTransferBetween possiblelocs = do
 	currentloc <- randomfrom possiblelocs
 	movefreq <- getRandomR transferMoveFrequencyRange
 	-- transfer nodes start out with no files or requests in their repo
 	let repo = (NodeRepo [] S.empty)
 	return $ TransferNode currentloc possiblelocs movefreq repo
-  where
-	indexes = M.keys immobiles
 
 randomfrom :: (RandomGen g) => [a] -> Rand g a
 randomfrom l = do
@@ -250,3 +256,88 @@ summarize (Network is _ts) = unlines $ map (\(d, s) -> d ++ ": " ++ s)
 		in S.difference wantedfs (haveFiles r)
 	repo (ImmobileNode r) = r
 	overis f = map f $ M.elems is
+
+mocambos :: (RandomGen g) => Rand g Network
+mocambos = do
+	major <- mapM (immobilenamed . fst) communities
+	minor <- mapM immobilenamed (concatMap snd communities)
+	majortransfer <- mapM mkTransferBetween majorroutes
+	minortransfer <- mapM mkTransferBetween (concatMap minorroutes communities)
+	return $ Network
+		(M.fromList (major++minor))
+		(majortransfer ++ minortransfer)
+  where
+	immobilenamed name = do
+		node <- mkImmobile
+		return (name, node)
+
+	-- As a simplification, this only makes 2 hop routes, between minor
+	-- and major communities; no 3-legged routes.
+	minorroutes :: (NodeName, [NodeName]) -> [Route]
+	minorroutes (major, minors) = map (\n -> [major, n]) minors
+
+communities :: [(NodeName, [NodeName])]
+communities =
+	[ ("Tainá/SP",
+		[ "badtas"
+		, "vauedo ribera"
+		, "cofundo"
+		, "jao"
+		, "fazenda"
+		]
+	  )
+	, ("Odomode/RS",
+		[ "moradadapaz"
+		, "pelotas" 
+		]
+	  )
+	, ("MercadoSul/DF",
+		[ "mesquito"
+		, "kalungos"
+		]
+	  )
+	, ("Coco/PE",
+		[ "xambá"
+		, "alafin"
+		, "terreiaos"
+		]
+	  )
+	, ("Linharinho/ES",
+		[ "monte alegne"
+		]
+	  )
+	, ("Boneco/BA",
+		[ "barroso"
+		, "lagoa santa"
+		, "terravista"
+		]
+	  )
+	, ("Zumbidospalmanes/NA",
+		[ "allantana"
+		]
+	  )
+	, ("Casa Pneta/PA",
+		[ "marajó"
+		]
+	  )
+	, ("Purarue/PA",
+		[ "oriaminá"
+		]
+	  )
+	, ("Madiba/NET", [])
+	]
+
+majorroutes :: [Route]
+majorroutes =
+	-- person's routes
+	[ ["Tainá/SP", "Odomode/RS"]
+	, ["Tainá/SP", "MercadoSul/DF"]
+	, ["MercadoSul/DF", "Boneco/BA"]
+	, ["MercadoSul/DF", "Zumbidospalmanes/NA"]
+	, ["Zumbidospalmanes/NA", "Casa Pneta/PA"]
+	, ["Casa Pneta/PA", "Purarue/PA"]
+	, ["Casa Pneta/PA", "Linharinho/ES"]
+	, ["Boneco/BA", "Coco/PE"]
+	-- internet connections
+	, ["Tainá/SP", "MercadoSul/DF", "Coco/PE", "Purarue/PA", "Odomode/RS", "Madiba/NET"]
+	]
