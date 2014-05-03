@@ -7,10 +7,14 @@ One solution would be to treat differences up to 1s in modification time as unmo
 Here's an konsole session to explain this:
 
 martin@dell:$ mount /mnt/transfer/
+
 martin@dell:$ git clone source/ /mnt/transfer/transfer-repo
+
 Klone nach '/mnt/transfer/transfer-repo'...
 Fertig.
+
 martin@dell:$ cd /mnt/transfer/transfer-repo/
+
 martin@dell:$ git annex init "test"
 init test 
   Detected a filesystem without fifo support.
@@ -22,11 +26,13 @@ init test
   Enabling direct mode.
 ok
 (Recording state in git...)
+
 martin@dell:$ git annex group here transfer
 group here (merging origin/git-annex into git-annex...)
 (Recording state in git...)
 ok
 (Recording state in git...)
+
 martin@dell:$ git annex wanted here standard
 wanted here ok
 (Recording state in git...)
