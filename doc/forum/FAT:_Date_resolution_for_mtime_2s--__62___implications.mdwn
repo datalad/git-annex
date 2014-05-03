@@ -1,0 +1,109 @@
+The Date resolution for FAT is only 2 seconds for the "last modified time."
+This leeds to the strange behaviour, that after umount and remount of an usb drive (direct mode) git-annex thinks that suddenly approx. 50% of
+the files are modified.  (after remount the times appears to be rounded to even values)
+
+One solution would be to treat differences up to 1s in modification time as unmodified or create an new parameter like rsync's "modify-window" for this...
+
+Here's an konsole session to explain this:
+
+martin@dell:$ mount /mnt/transfer/
+martin@dell:$ git clone source/ /mnt/transfer/transfer-repo
+Klone nach '/mnt/transfer/transfer-repo'...
+Fertig.
+martin@dell:$ cd /mnt/transfer/transfer-repo/
+martin@dell:$ git annex init "test"
+init test 
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+ok
+(Recording state in git...)
+martin@dell:$ git annex group here transfer
+group here (merging origin/git-annex into git-annex...)
+(Recording state in git...)
+ok
+(Recording state in git...)
+martin@dell:$ git annex wanted here standard
+wanted here ok
+(Recording state in git...)
+martin@dell:$ git annex get --auto
+get n01.mp3 (from origin...) 
+SHA256E-s1159018--5674452792970dc03e9ba47d3a8af5ad7c8da6b3ca19e8e64b9a4cf462d4a92d.mp3
+     1159018 100%   82.62MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 1159308 bytes  received 31 bytes  2318678.00 bytes/sec
+total size is 1159018  speedup is 1.00
+ok
+get n02.mp3 (from origin...) 
+SHA256E-s1622113--03998dc10c4839d5ab9aeaceaa63f0363c9d728aaaca2a2707f025c7b9e920a3.mp3
+     1622113 100%   34.45MB/s    0:00:00 (xfer#1, to-check=0/1)
+
+sent 1622459 bytes  received 31 bytes  3244980.00 bytes/sec
+total size is 1622113  speedup is 1.00
+ok
+
+–--> All files successfully got
+
+(Recording state in git...)
+martin@dell:$ git annex status
+martin@dell:$ stat * >../stat-before-umount
+martin@dell:$ cd /
+martin@dell:/$ umount /mnt/transfer 
+martin@dell:/$ mount /mnt/transfer 
+martin@dell:/$ cd /mnt/transfer/transfer-repo
+martin@dell:/mnt/transfer/transfer-repo$ stat * >../stat-after-remount
+martin@dell:/mnt/transfer/transfer-repo$ git annex status
+M n05.mp3
+M n10.mp3
+M n11.mp3
+M n13.mp3
+M n16.mp3
+M n17.mp3
+M n20.mp3
+M n22.mp3
+M n23.mp3
+M n24.mp3
+M n26.mp3
+M n27.mp3
+martin@dell:$ diff -u ../stat-before-umount ../stat-after-remount | grep -B8 "+Modifiziert" | grep -E "Datei:|Modifi"
+   Datei: „n05.mp3“
+-Modifiziert: 2014-05-03 19:42:39.000000000 +0200
++Modifiziert: 2014-05-03 19:42:38.000000000 +0200
+   Datei: „n10.mp3“
+-Modifiziert: 2014-05-03 19:43:05.000000000 +0200
++Modifiziert: 2014-05-03 19:43:04.000000000 +0200
+   Datei: „n11.mp3“
+-Modifiziert: 2014-05-03 19:43:07.000000000 +0200
++Modifiziert: 2014-05-03 19:43:06.000000000 +0200
+   Datei: „n13.mp3“
+-Modifiziert: 2014-05-03 19:43:15.000000000 +0200
++Modifiziert: 2014-05-03 19:43:14.000000000 +0200
+   Datei: „n16.mp3“
+-Modifiziert: 2014-05-03 19:43:21.000000000 +0200
++Modifiziert: 2014-05-03 19:43:20.000000000 +0200
+   Datei: „n17.mp3“
+-Modifiziert: 2014-05-03 19:43:29.000000000 +0200
++Modifiziert: 2014-05-03 19:43:28.000000000 +0200
+   Datei: „n20.mp3“
+-Modifiziert: 2014-05-03 19:43:53.000000000 +0200
++Modifiziert: 2014-05-03 19:43:52.000000000 +0200
+   Datei: „n22.mp3“
+-Modifiziert: 2014-05-03 19:44:13.000000000 +0200
++Modifiziert: 2014-05-03 19:44:12.000000000 +0200
+   Datei: „n23.mp3“
+-Modifiziert: 2014-05-03 19:44:23.000000000 +0200
++Modifiziert: 2014-05-03 19:44:22.000000000 +0200
+   Datei: „n24.mp3“
+-Modifiziert: 2014-05-03 19:44:31.000000000 +0200
++Modifiziert: 2014-05-03 19:44:30.000000000 +0200
+   Datei: „n26.mp3“
+-Modifiziert: 2014-05-03 19:44:35.000000000 +0200
++Modifiziert: 2014-05-03 19:44:34.000000000 +0200
+   Datei: „n27.mp3“
+-Modifiziert: 2014-05-03 19:44:39.000000000 +0200
++Modifiziert: 2014-05-03 19:44:38.000000000 +0200
+
