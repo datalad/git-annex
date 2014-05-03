@@ -50,6 +50,7 @@ ok
 
 (Recording state in git...)
 martin@dell:$ git annex status
+
 martin@dell:$ stat * >../stat-before-umount
 martin@dell:$ cd /
 martin@dell:/$ umount /mnt/transfer 
