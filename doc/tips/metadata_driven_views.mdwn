@@ -106,9 +106,9 @@ by tag.
 	# tree -d
 	2014
 	  |-- work
-          |-- todo
+	  |-- todo
 	  |-- urgent
-          `-- done
+	  `-- done
 	2013
 	  |-- work
 	  `-- done
