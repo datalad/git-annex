@@ -65,6 +65,7 @@ ok
 –--> All 29 files (n01.mp3 to n29.mp3) successfully got
 
 (Recording state in git...)
+
 $ git annex status
 
 $ stat * >../stat-before-umount
