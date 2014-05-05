@@ -7,16 +7,16 @@ Other solution would be to treat differences up to 1s in modification time as un
 
 Here's an konsole session to show this behaviour:
 
-martin@dell:$ mount /mnt/transfer/
+$ mount /mnt/transfer/
 
-martin@dell:$ git clone source/ /mnt/transfer/transfer-repo
+$ git clone source/ /mnt/transfer/transfer-repo
 
 Klone nach '/mnt/transfer/transfer-repo'...
 Fertig.
 
-martin@dell:$ cd /mnt/transfer/transfer-repo/
+$ cd /mnt/transfer/transfer-repo/
 
-martin@dell:$ git annex init "test"
+$ git annex init "test"
 
 init test 
   Detected a filesystem without fifo support.
@@ -36,12 +36,12 @@ group here (merging origin/git-annex into git-annex...)
 ok
 (Recording state in git...)
 
-martin@dell:$ git annex wanted here standard
+$ git annex wanted here standard
 
 wanted here ok
 (Recording state in git...)
 
-martin@dell:$ git annex get --auto
+$ git annex get --auto
 
 get n01.mp3 (from origin...) 
 SHA256E-s1159018--5674452792970dc03e9ba47d3a8af5ad7c8da6b3ca19e8e64b9a4cf462d4a92d.mp3
@@ -65,21 +65,21 @@ ok
 –--> All 29 files (n01.mp3 to n29.mp3) successfully got
 
 (Recording state in git...)
-martin@dell:$ git annex status
+$ git annex status
 
-martin@dell:$ stat * >../stat-before-umount
+$ stat * >../stat-before-umount
 
-martin@dell:$ cd /
+$ cd /
 
-martin@dell:/$ umount /mnt/transfer 
+$ umount /mnt/transfer 
 
-martin@dell:/$ mount /mnt/transfer 
+$ mount /mnt/transfer 
 
-martin@dell:/$ cd /mnt/transfer/transfer-repo
+$ cd /mnt/transfer/transfer-repo
 
-martin@dell:/mnt/transfer/transfer-repo$ stat * >../stat-after-remount
+$ stat * >../stat-after-remount
 
-martin@dell:/mnt/transfer/transfer-repo$ git annex status
+$ git annex status
 
 M n05.mp3
 
@@ -105,7 +105,7 @@ M n26.mp3
 
 M n27.mp3
 
-martin@dell:$ diff -u ../stat-before-umount ../stat-after-remount | grep -B8 "+Modifiziert" | grep -E "Datei:|Modifi"
+$ diff -u ../stat-before-umount ../stat-after-remount | grep -B8 "+Modifiziert" | grep -E "Datei:|Modifi"
 
    Datei: „n05.mp3“
 -Modifiziert: 2014-05-03 19:42:39.000000000 +0200
