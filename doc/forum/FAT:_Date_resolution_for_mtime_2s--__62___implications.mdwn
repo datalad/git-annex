@@ -1,4 +1,4 @@
-The Date resolution for FAT is only 2 seconds for the "last modified time."
+The Date resolution of the FAT filesystem is only 2 seconds for the "last modified time."
 This leads to the strange behaviour, that after umount and remount of an usb drive (direct mode) git-annex thinks that suddenly approx. 50% of
 the files are modified.  (after remount the times appears to be rounded to even values - the inode cache before unmount had 1 second resolution) So git-annex is not real "guilty" but it would be fine to create a "workaround" for this problem...
 
