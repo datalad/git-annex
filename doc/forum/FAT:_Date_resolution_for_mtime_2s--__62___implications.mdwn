@@ -29,7 +29,7 @@ init test
 ok
 (Recording state in git...)
 
-martin@dell:$ git annex group here transfer
+$ git annex group here transfer
 
 group here (merging origin/git-annex into git-annex...)
 (Recording state in git...)
