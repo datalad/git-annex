@@ -1,0 +1,3 @@
+I have a preliminary design for [[design/requests_routing]]. Won't be
+working on it immediately, but simulations show it can work well in a large
+ad-hoc network.

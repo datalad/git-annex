@@ -28,15 +28,31 @@ Currently:
 	time 0|1 uuid1
 	time 0|1 uuid2
 
-* Use negative numbers for the TTL of a request.
+* Use negative numbers for the TTL of a request:
+
+	time -3! uuid1
+	time -2 uuid2
+
+  The `!` indicates that the request originated on
+  that node.
 * To propigate a request, set -1 * (TTL+1) in the line
-  for the uuid of the repository that is propigating it.
-  This should be done as part of the git-annex branch merging,
+  for the uuid of the repository that is propigating it.  
+  This should be done as part of the git-annex branch merge,
   so if a location tracking file is merged, any open requests
-  get propigated to the current repository.
+  get propigated to the current repository automatically.
 * When a requested file reaches a node that requested it,
   the location is set to 1; this automatically clears the
   request.
+* When a file has no more originating requests, clear all
+  the copied requests:
+
+	time 1 uuid1
+	time -2 uuid2
+
+  Becomes:
+
+	time 1 uuid1
+	time' 0 uuid2
 
 ## generating requests
 
