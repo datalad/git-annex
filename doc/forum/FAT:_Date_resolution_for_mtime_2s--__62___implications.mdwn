@@ -14,28 +14,27 @@ Here's an konsole session to show this behaviour:
     Fertig.
 
     $ cd /mnt/transfer/transfer-repo/
-
     $ git annex init "test"
 
-init test 
-  Detected a filesystem without fifo support.
+    init test 
+      Detected a filesystem without fifo support.
 
-  Disabling ssh connection caching.
+      Disabling ssh connection caching.
 
-  Detected a crippled filesystem.
+      Detected a crippled filesystem.
 
-  Enabling direct mode.
-ok
-(Recording state in git...)
+      Enabling direct mode.
+    ok
+    (Recording state in git...)
 
-$ git annex group here transfer
+    $ git annex group here transfer
 
-group here (merging origin/git-annex into git-annex...)
-(Recording state in git...)
-ok
-(Recording state in git...)
+    group here (merging origin/git-annex into git-annex...)
+    (Recording state in git...)
+    ok
+    (Recording state in git...)
 
-$ git annex wanted here standard
+    $ git annex wanted here standard
 
 wanted here ok
 (Recording state in git...)
