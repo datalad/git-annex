@@ -9,9 +9,8 @@ Here's an konsole session to show this behaviour:
 
 
 
-    $ mount /mnt/transfer/
-
-    $ git clone source/ /mnt/transfer/transfer-repo
+  $ mount /mnt/transfer/
+  $ git clone source/ /mnt/transfer/transfer-repo
 
 Klone nach '/mnt/transfer/transfer-repo'...
 Fertig.
