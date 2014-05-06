@@ -7,17 +7,15 @@ Other solution would be to treat differences up to 1s in modification time as un
 
 Here's an konsole session to show this behaviour:
 
-<code bash>
+    $ mount /mnt/transfer/
+    $ git clone source/ /mnt/transfer/transfer-repo
 
-$ mount /mnt/transfer/\\
-$ git clone source/ /mnt/transfer/transfer-repo
+    Klone nach '/mnt/transfer/transfer-repo'...
+    Fertig.
 
-Klone nach '/mnt/transfer/transfer-repo'...
-Fertig.
+    $ cd /mnt/transfer/transfer-repo/
 
-$ cd /mnt/transfer/transfer-repo/
-
-$ git annex init "test"
+    $ git annex init "test"
 
 init test 
   Detected a filesystem without fifo support.
@@ -157,4 +155,4 @@ $ diff -u ../stat-before-umount ../stat-after-remount | grep -B8 "+Modifiziert" 
 -Modifiziert: 2014-05-03 19:44:39.000000000 +0200
 +Modifiziert: 2014-05-03 19:44:38.000000000 +0200
 
-</code>
+
