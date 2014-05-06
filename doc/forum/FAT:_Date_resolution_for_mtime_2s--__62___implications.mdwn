@@ -1,157 +1,137 @@
-The Date resolution for FAT is only 2 seconds for the "last modified time."
+The Date resolution of the FAT filesystem is only 2 seconds for the "last modified time."
 This leads to the strange behaviour, that after umount and remount of an usb drive (direct mode) git-annex thinks that suddenly approx. 50% of
-the files are modified.  (after remount the times appears to be rounded to even values)
+the files are modified.  (after remount the "seconds" appears to be rounded to even values - the inode cache before unmount had 1 second resolution) So git-annex is not real "guilty" but it would be fine to create a "workaround" for this problem...
 
-Possible the best solution for this is to set even values for the seconds in the filesystem and in annex internal tables direct after the "git annex get". 
-Other solution would be to treat differences up to 1s in modification time as unmodified or create an new parameter like rsync's "modify-window" for this. To do an "git annex sync" or git annex add is in my opinion not a good option, because one could add so Bad file content by accident...
+Possible the best solution for this is to set even values for the seconds in the filesystem and in annex internal tables direct after the `git annex get`. 
+Other solution would be to treat differences up to 1s in modification time as unmodified or create an new parameter like rsync's "modify-window" for this. To do an `git annex sync` or `git annex add` is in my opinion not a good option, because one could add so Bad file content by accident...
 
 Here's an konsole session to show this behaviour:
 
-martin@dell:$ mount /mnt/transfer/
+    $ mount /mnt/transfer/
+    $ git clone source/ /mnt/transfer/transfer-repo
 
-martin@dell:$ git clone source/ /mnt/transfer/transfer-repo
+    Klone nach '/mnt/transfer/transfer-repo'...
+    Fertig.
 
-Klone nach '/mnt/transfer/transfer-repo'...
-Fertig.
+    $ cd /mnt/transfer/transfer-repo/
+    $ git annex init "test"
 
-martin@dell:$ cd /mnt/transfer/transfer-repo/
+    init test 
+      Detected a filesystem without fifo support.
 
-martin@dell:$ git annex init "test"
+      Disabling ssh connection caching.
 
-init test 
-  Detected a filesystem without fifo support.
+      Detected a crippled filesystem.
 
-  Disabling ssh connection caching.
+      Enabling direct mode.
+    ok
+    (Recording state in git...)
 
-  Detected a crippled filesystem.
+    $ git annex group here transfer
 
-  Enabling direct mode.
-ok
-(Recording state in git...)
+    group here (merging origin/git-annex into git-annex...)
+    (Recording state in git...)
+    ok
+    (Recording state in git...)
 
-martin@dell:$ git annex group here transfer
+    $ git annex wanted here standard
 
-group here (merging origin/git-annex into git-annex...)
-(Recording state in git...)
-ok
-(Recording state in git...)
+    wanted here ok
+    (Recording state in git...)
 
-martin@dell:$ git annex wanted here standard
+    $ git annex get --auto
 
-wanted here ok
-(Recording state in git...)
+    get n01.mp3 (from origin...) 
+    SHA256E-s1159018--5674452792970dc03e9ba47d3a8af5ad7c8da6b3ca19e8e64b9a4cf462d4a92d.mp3
+         1159018 100%   82.62MB/s    0:00:00 (xfer#1, to-check=0/1)
 
-martin@dell:$ git annex get --auto
+    sent 1159308 bytes  received 31 bytes  2318678.00 bytes/sec
+    total size is 1159018  speedup is 1.00
+    ok
 
-get n01.mp3 (from origin...) 
-SHA256E-s1159018--5674452792970dc03e9ba47d3a8af5ad7c8da6b3ca19e8e64b9a4cf462d4a92d.mp3
-     1159018 100%   82.62MB/s    0:00:00 (xfer#1, to-check=0/1)
-
-sent 1159308 bytes  received 31 bytes  2318678.00 bytes/sec
-total size is 1159018  speedup is 1.00
-ok
-
-get n02.mp3 (from origin...) 
-SHA256E-s1622113--03998dc10c4839d5ab9aeaceaa63f0363c9d728aaaca2a2707f025c7b9e920a3.mp3
+    get n02.mp3 (from origin...) 
+    SHA256E-s1622113--03998dc10c4839d5ab9aeaceaa63f0363c9d728aaaca2a2707f025c7b9e920a3.mp3
      1622113 100%   34.45MB/s    0:00:00 (xfer#1, to-check=0/1)
 
-sent 1622459 bytes  received 31 bytes  3244980.00 bytes/sec
-total size is 1622113  speedup is 1.00
-ok
+    sent 1622459 bytes  received 31 bytes  3244980.00 bytes/sec
+    total size is 1622113  speedup is 1.00
+    ok
 
-...
-...
+    ...
+    ...
 
-–--> All 29 files (n01.mp3 to n29.mp3) successfully got
+    –--> All 29 files (n01.mp3 to n29.mp3) successfully got
 
-(Recording state in git...)
-martin@dell:$ git annex status
+    (Recording state in git...)
 
-martin@dell:$ stat * >../stat-before-umount
+    $ git annex status
+    $ stat * >../stat-before-umount
+    $ cd /
+    $ umount /mnt/transfer 
+    $ mount /mnt/transfer 
+    $ cd /mnt/transfer/transfer-repo
+    $ stat * >../stat-after-remount
+    $ git annex status
+    M n05.mp3
+    M n10.mp3
+    M n11.mp3
+    M n13.mp3
+    M n16.mp3
+    M n17.mp3
+    M n20.mp3
+    M n22.mp3
+    M n23.mp3
+    M n24.mp3
+    M n26.mp3
+    M n27.mp3
+    $ diff -u ../stat-before-umount ../stat-after-remount | grep -B8 "+Modifiziert" | grep -E "Datei:|Modifi"
 
-martin@dell:$ cd /
+       Datei: „n05.mp3“
+    -Modifiziert: 2014-05-03 19:42:39.000000000 +0200
+    +Modifiziert: 2014-05-03 19:42:38.000000000 +0200
 
-martin@dell:/$ umount /mnt/transfer 
+       Datei: „n10.mp3“
+    -Modifiziert: 2014-05-03 19:43:05.000000000 +0200
+    +Modifiziert: 2014-05-03 19:43:04.000000000 +0200
 
-martin@dell:/$ mount /mnt/transfer 
+       Datei: „n11.mp3“
+    -Modifiziert: 2014-05-03 19:43:07.000000000 +0200
+    +Modifiziert: 2014-05-03 19:43:06.000000000 +0200
 
-martin@dell:/$ cd /mnt/transfer/transfer-repo
+      Datei: „n13.mp3“
+    -Modifiziert: 2014-05-03 19:43:15.000000000 +0200
+    +Modifiziert: 2014-05-03 19:43:14.000000000 +0200
 
-martin@dell:/mnt/transfer/transfer-repo$ stat * >../stat-after-remount
+       Datei: „n16.mp3“
+    -Modifiziert: 2014-05-03 19:43:21.000000000 +0200
+    +Modifiziert: 2014-05-03 19:43:20.000000000 +0200
 
-martin@dell:/mnt/transfer/transfer-repo$ git annex status
+       Datei: „n17.mp3“
+    -Modifiziert: 2014-05-03 19:43:29.000000000 +0200
+    +Modifiziert: 2014-05-03 19:43:28.000000000 +0200
 
-M n05.mp3
+       Datei: „n20.mp3“
+    -Modifiziert: 2014-05-03 19:43:53.000000000 +0200
+    +Modifiziert: 2014-05-03 19:43:52.000000000 +0200
 
-M n10.mp3
+       Datei: „n22.mp3“
+    -Modifiziert: 2014-05-03 19:44:13.000000000 +0200
+    +Modifiziert: 2014-05-03 19:44:12.000000000 +0200
 
-M n11.mp3
+       Datei: „n23.mp3“
+    -Modifiziert: 2014-05-03 19:44:23.000000000 +0200
+    +Modifiziert: 2014-05-03 19:44:22.000000000 +0200
 
-M n13.mp3
+       Datei: „n24.mp3“
+    -Modifiziert: 2014-05-03 19:44:31.000000000 +0200
+    +Modifiziert: 2014-05-03 19:44:30.000000000 +0200
 
-M n16.mp3
+       Datei: „n26.mp3“
+    -Modifiziert: 2014-05-03 19:44:35.000000000 +0200
+    +Modifiziert: 2014-05-03 19:44:34.000000000 +0200
 
-M n17.mp3
+       Datei: „n27.mp3“
+    -Modifiziert: 2014-05-03 19:44:39.000000000 +0200
+    +Modifiziert: 2014-05-03 19:44:38.000000000 +0200
 
-M n20.mp3
-
-M n22.mp3
-
-M n23.mp3
-
-M n24.mp3
-
-M n26.mp3
-
-M n27.mp3
-
-martin@dell:$ diff -u ../stat-before-umount ../stat-after-remount | grep -B8 "+Modifiziert" | grep -E "Datei:|Modifi"
-
-   Datei: „n05.mp3“
--Modifiziert: 2014-05-03 19:42:39.000000000 +0200
-+Modifiziert: 2014-05-03 19:42:38.000000000 +0200
-
-   Datei: „n10.mp3“
--Modifiziert: 2014-05-03 19:43:05.000000000 +0200
-+Modifiziert: 2014-05-03 19:43:04.000000000 +0200
-
-   Datei: „n11.mp3“
--Modifiziert: 2014-05-03 19:43:07.000000000 +0200
-+Modifiziert: 2014-05-03 19:43:06.000000000 +0200
-
-  Datei: „n13.mp3“
--Modifiziert: 2014-05-03 19:43:15.000000000 +0200
-+Modifiziert: 2014-05-03 19:43:14.000000000 +0200
-
-   Datei: „n16.mp3“
--Modifiziert: 2014-05-03 19:43:21.000000000 +0200
-+Modifiziert: 2014-05-03 19:43:20.000000000 +0200
-
-   Datei: „n17.mp3“
--Modifiziert: 2014-05-03 19:43:29.000000000 +0200
-+Modifiziert: 2014-05-03 19:43:28.000000000 +0200
-
-   Datei: „n20.mp3“
--Modifiziert: 2014-05-03 19:43:53.000000000 +0200
-+Modifiziert: 2014-05-03 19:43:52.000000000 +0200
-
-   Datei: „n22.mp3“
--Modifiziert: 2014-05-03 19:44:13.000000000 +0200
-+Modifiziert: 2014-05-03 19:44:12.000000000 +0200
-
-   Datei: „n23.mp3“
--Modifiziert: 2014-05-03 19:44:23.000000000 +0200
-+Modifiziert: 2014-05-03 19:44:22.000000000 +0200
-
-   Datei: „n24.mp3“
--Modifiziert: 2014-05-03 19:44:31.000000000 +0200
-+Modifiziert: 2014-05-03 19:44:30.000000000 +0200
-
-   Datei: „n26.mp3“
--Modifiziert: 2014-05-03 19:44:35.000000000 +0200
-+Modifiziert: 2014-05-03 19:44:34.000000000 +0200
-
-   Datei: „n27.mp3“
--Modifiziert: 2014-05-03 19:44:39.000000000 +0200
-+Modifiziert: 2014-05-03 19:44:38.000000000 +0200
 
