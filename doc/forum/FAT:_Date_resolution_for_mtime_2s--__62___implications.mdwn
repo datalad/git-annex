@@ -9,7 +9,7 @@ Here's an konsole session to show this behaviour:
 
 <code bash>
 
-$ mount /mnt/transfer/
+$ mount /mnt/transfer/\\
 $ git clone source/ /mnt/transfer/transfer-repo
 
 Klone nach '/mnt/transfer/transfer-repo'...
