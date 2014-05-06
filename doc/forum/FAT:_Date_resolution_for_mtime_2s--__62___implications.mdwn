@@ -7,6 +7,8 @@ Other solution would be to treat differences up to 1s in modification time as un
 
 Here's an konsole session to show this behaviour:
 
+<code>
+
 $ mount /mnt/transfer/
 
 $ git clone source/ /mnt/transfer/transfer-repo
@@ -155,4 +157,6 @@ $ diff -u ../stat-before-umount ../stat-after-remount | grep -B8 "+Modifiziert" 
    Datei: „n27.mp3“
 -Modifiziert: 2014-05-03 19:44:39.000000000 +0200
 +Modifiziert: 2014-05-03 19:44:38.000000000 +0200
+
+</code>
 
