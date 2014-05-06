@@ -1,0 +1,59 @@
+## requesting content
+ 
+In some situations, nodes only want particular files, and not everything.
+(Or don't have the bandwidth to get everything.) A way to handle this,
+that should work in a fully ad-hoc, offline distributed network,
+suggested by Vincenzo Tozzi:
+
+* Nodes generate a request for a specific file they want, committed
+  to git somewhere.
+* This request has a TTL (of eg 3 or 4).
+* When syncing, copy the requests that a node has, and decrease their TTL
+  by 1. Requests with a TTL of 0 have timed out and are not copied.
+  (So, requests are stored in git, but on eg, per-node branches.)
+* Only copy content to nodes that have a request for it (either one
+  originating with them, or one they copied from another node).
+* Each request indicates the requesting node, so once no nodes have an
+  active request for a particular file, it's ok to drop it from the
+  transfer nodes (honoring numcopies etc of course).
+
+A simulation of a network using this method is in [[simroutes.hs]]
+
+## storing requests
+
+Requests could be stored in the location tracking file.
+
+Currently:
+
+	time 0|1 uuid1
+	time 0|1 uuid2
+
+* Use negative numbers for the TTL of a request.
+* To propigate a request, set -1 * (TTL+1) in the line
+  for the uuid of the repository that is propigating it.
+  This should be done as part of the git-annex branch merging,
+  so if a location tracking file is merged, any open requests
+  get propigated to the current repository.
+* When a requested file reaches a node that requested it,
+  the location is set to 1; this automatically clears the
+  request.
+
+## generating requests
+
+	git annex request [file...]
+
+Indicates that the file is wanted in the current repository.
+
+(git annex get could also do this on failure, or suggest doing this)
+
+## acting on requests
+
+Add a preferred content expression that looks at request data:
+
+	requestedby=N
+
+Matches files that have been requested by at least N nodes.
+
+	requested
+
+Matches files that the current node has requested.

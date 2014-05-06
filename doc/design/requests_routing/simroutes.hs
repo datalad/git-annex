@@ -9,6 +9,7 @@ import Control.Applicative
 import Data.Ratio
 import Data.Ord
 import Data.List
+import Data.Maybe
 import qualified Data.Set as S
 import qualified Data.Map.Strict as M
 
@@ -38,11 +39,9 @@ transferMoveFrequencyRange = (0.10, 1.00)
 
 -- counts both immobile and transfer nodes as hops, so double Vince's
 -- theoretical TTL of 3.
+-- (30% loss on mocambos network w/o ttl of 4!)
 maxTTL :: TTL
-maxTTL = TTL 6
-
-minTTL :: TTL
-minTTL = TTL 1
+maxTTL = TTL (4 * 2)
 
 numImmobileNodes :: Int
 numImmobileNodes = 10
@@ -54,11 +53,17 @@ numSteps :: Int
 numSteps = 100
 
 -- IO code
---main = putStrLn . summarize =<< evalRandIO (simulate numSteps =<< genNetwork)
+main :: IO ()
 main = do
-	initialnetwork <- evalRandIO mocambos
-	putStrLn . summarize initialnetwork
-		=<< evalRandIO (simulate numSteps initialnetwork)
+--	initialnetwork <- evalRandIO (seedFiles totalFiles =<< genNetwork)
+	initialnetwork <- evalRandIO (seedFiles totalFiles =<< mocambosNetwork)
+	networks <- evalRandIO (simulate numSteps initialnetwork)
+	let finalnetwork = last networks
+	putStrLn $ summarize initialnetwork finalnetwork
+	putStrLn "location history of file 1:"
+	print $ trace (traceHaveFile (File 1)) networks
+	putStrLn "request history of file 1:"
+	print $ trace (traceWantFile (File 1)) networks
 -- Only pure code below :)
 
 data Network = Network (M.Map NodeName ImmobileNode) [TransferNode]
@@ -131,9 +136,14 @@ type Probability = Float
 randomProbability :: (RandomGen g) => Rand g Probability
 randomProbability = getRandomR (0, 1)
 
-simulate :: (RandomGen g) => Int -> Network -> Rand g Network
-simulate 0 net = return net
-simulate c net = simulate (c - 1) =<< step net
+-- Returns the state of the network at each step of the simulation.
+simulate :: (RandomGen g) => Int -> Network -> Rand g [Network]
+simulate n net = go n [net]
+  where
+	go 0 nets = return (reverse nets)
+	go c (prev:nets) = do
+		new <- step prev
+		go (c - 1) (new:prev:nets)
 
 -- Each step of the simulation, check if each TransferNode wants to move,
 -- and if so:
@@ -197,30 +207,12 @@ move t = do
 
 genNetwork :: (RandomGen g) => Rand g Network
 genNetwork = do
-	l <- sequence (replicate numImmobileNodes mkImmobile)
-	let immobiles = M.fromList (zip (map show [1..]) l)
+	let immobiles = M.fromList (zip (map show [1..]) (replicate numImmobileNodes emptyImmobile))
 	transfers <- sequence (replicate numTransferNodes (mkTransfer $ M.keys immobiles))
 	return $ Network immobiles transfers
 
-mkImmobile :: (RandomGen g) => Rand g ImmobileNode
-mkImmobile = ImmobileNode <$> mkImmobileRepo
-
-mkImmobileRepo :: (RandomGen g) => Rand g NodeRepo
-mkImmobileRepo = NodeRepo
-	-- The files this node wants.
-	-- Currently assumes each file is equally popular.
-	<$> sequence (replicate (truncate (fromIntegral totalFiles * probabilityFilesWanted)) randomRequest)
-	-- The files this node already has.
-	--
-	-- We'll assume equal production, so split the total
-	-- number of files amoung the immobile nodes.
-	-- (This will produce some duplication of files
-	--  (consider birthday paradox), and some missing files.)
-	--
-	-- TODO: Some immobile nodes are internet connected,
-	-- and these should all share their files automatically)
-	-- (Also when running the sim.)
-	<*> (S.fromList <$> sequence (replicate (totalFiles `div` numImmobileNodes) randomFile))
+emptyImmobile :: ImmobileNode
+emptyImmobile = ImmobileNode (NodeRepo [] S.empty)
 
 mkTransfer :: (RandomGen g) => [NodeName] -> Rand g TransferNode
 mkTransfer immobiles = do
@@ -242,6 +234,27 @@ randomfrom :: (RandomGen g) => [a] -> Rand g a
 randomfrom l = do
 	i <- getRandomR (1, length l)
 	return $ l !! (i - 1)
+
+-- Seeds the network with the given number of files. Each file is added to
+-- one of the immobile nodes of the network at random. And, one other node,
+-- at random, is selected which wants to get the file.
+seedFiles :: (RandomGen g) => Int -> Network -> Rand g Network
+seedFiles 0 network = return network
+seedFiles n network@(Network m t) = do
+	(origink, ImmobileNode originr) <- randnode
+	(destinationk, ImmobileNode destinationr) <- randnode
+	let file = File n
+	let origin = ImmobileNode $ originr
+		{ haveFiles = S.insert file (haveFiles originr) }
+	let destination = ImmobileNode $ destinationr
+		{ wantFiles = Request file originTTL : wantFiles destinationr }
+	let m' = M.insert origink origin $
+		M.insert destinationk destination m
+	seedFiles (n - 1) (Network m' t)
+  where
+	randnode = do
+		k <- randomfrom (M.keys m)
+		return (k, fromJust $ M.lookup k m)
 
 summarize :: Network -> Network -> String
 summarize _initial@(Network origis _) _final@(Network is _ts) = format
@@ -270,19 +283,33 @@ summarize _initial@(Network origis _) _final@(Network is _ts) = format
 		concatMap (\(k, v) -> map (\f -> (f, k)) (S.toList $ haveFiles $ repo v)) $
 			M.toList origis
 
-mocambos :: (RandomGen g) => Rand g Network
-mocambos = do
-	major <- mapM (immobilenamed . fst) communities
-	minor <- mapM immobilenamed (concatMap snd communities)
+trace :: (Network -> S.Set NodeName) -> [Network] -> String
+trace tracer networks = show $ go [] S.empty $ map tracer networks
+  where
+	go c old [] = reverse c
+	go c old (new:l) = go ((S.toList $ new `S.difference` old):c) new l
+
+traceHaveFile :: File -> Network -> S.Set NodeName
+traceHaveFile f (Network m _) = S.fromList $ M.keys $
+	M.filter (\(ImmobileNode r) -> f `S.member` haveFiles r) m 
+
+traceWantFile :: File -> Network -> S.Set NodeName
+traceWantFile f (Network m _) = S.fromList $ M.keys $
+	M.filter (\(ImmobileNode r) -> any wantf (wantFiles r)) m 
+  where
+	wantf (Request rf _ttl) = rf == f
+
+mocambosNetwork :: (RandomGen g) => Rand g Network
+mocambosNetwork = do
+	let major = map (immobilenamed . fst) communities
+	let minor = map immobilenamed (concatMap snd communities)
 	majortransfer <- mapM mkTransferBetween majorroutes
-	minortransfer <- mapM mkTransferBetween (concatMap minorroutes communities)
+	minortransfer <- mapM mkTransferBetween (concatMap minorroutes (concat (replicate 5 communities)))
 	return $ Network
 		(M.fromList (major++minor))
 		(majortransfer ++ minortransfer)
   where
-	immobilenamed name = do
-		node <- mkImmobile
-		return (name, node)
+	immobilenamed name = (name, emptyImmobile)
 
 	-- As a simplification, this only makes 2 hop routes, between minor
 	-- and major communities; no 3-legged routes.
@@ -352,5 +379,9 @@ majorroutes =
 	, ["Casa Pneta/PA", "Linharinho/ES"]
 	, ["Boneco/BA", "Coco/PE"]
 	-- internet connections
+	, ["Tainá/SP", "MercadoSul/DF", "Coco/PE", "Purarue/PA", "Odomode/RS", "Madiba/NET"]
+	, ["Tainá/SP", "MercadoSul/DF", "Coco/PE", "Purarue/PA", "Odomode/RS", "Madiba/NET"]
+	, ["Tainá/SP", "MercadoSul/DF", "Coco/PE", "Purarue/PA", "Odomode/RS", "Madiba/NET"]
+	, ["Tainá/SP", "MercadoSul/DF", "Coco/PE", "Purarue/PA", "Odomode/RS", "Madiba/NET"]
 	, ["Tainá/SP", "MercadoSul/DF", "Coco/PE", "Purarue/PA", "Odomode/RS", "Madiba/NET"]
 	]
