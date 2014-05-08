@@ -6,9 +6,9 @@ Here's my scenario: I have been using Dropbox for several years.  I want to move
 
 For some time I used Bazaar repos inside Dropbox.  A couple of times I accidentally modified files on one computer before another finished syncing, and the repo became mildly corrupted, but I recovered it okay.
 
-Recently I switched to git, and so far, so good.  I'm careful not to make any changes to my files before Dropbox is finished syncing, so everything works fine.
+Recently I switched from bzr to git, and so far, so good.  I'm careful not to make any changes to my files before Dropbox is finished syncing, so everything works fine.
 
-But when I add a directory containing a git repo to an annex, git-annex ignores the .git directory, so the repo isn't synced.
+Now I'm testing git-annex as a replacement for Dropbox again.  But when I add a directory containing a git repo to an annex, git-annex ignores the .git directory, so the repo isn't synced.
 
 I read this forum thread, and I read the bug report, but there don't appear to be any real solutions.
 
