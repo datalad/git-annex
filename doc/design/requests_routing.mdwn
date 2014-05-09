@@ -17,7 +17,12 @@ suggested by Vincenzo Tozzi:
   active request for a particular file, it's ok to drop it from the
   transfer nodes (honoring numcopies etc of course).
 
-A simulation of a network using this method is in [[simroutes.hs]]
+## simulation
+
+A simulation of a network using this method is in [[simroutes.hs]].
+
+Question: How efficient is this method? Does the network fill with many
+copies that are not needed, before the request is fulfilled?
 
 ## storing requests
 
