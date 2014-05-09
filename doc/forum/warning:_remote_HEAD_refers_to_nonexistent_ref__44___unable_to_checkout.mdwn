@@ -17,3 +17,32 @@ Then, on the Windows client:
      warning: remote HEAD refers to nonexistent ref, unable to checkout.
 
 What's going on here?
+
+EDIT: Of course, I would not ask if everything would work as expected. But the client repository in windows is always empty, no matter what I do (issueing git annex init, git add remote, git annex sync, ...) does not seem to help me ...
+
+EDIT2: When I continue on the windows side (despite the warning):
+
+     cd bin
+     git annex init client
+     git annex sync
+     Permission denied (publickey,keyboard-interactive).
+     (merging origin/git-annex origin/synced/git-annex into git-annex...)
+     (Recording state in git...)
+     
+       Remote origin does not have git-annex installed; setting annex-ignore
+     commit  ok
+     pull origin Already up-to-date!
+     Merge made by the 'recursive' strategy.
+     
+     
+     ok
+     push origin To ssh://me@server/srv/data/bin
+        b79922f..4fe0505  git-annex -> synced/git-annex
+        2f6a601..02a2603  annex/direct/master -> synced/master
+     
+     ok
+
+
+But that's not true, git-annex is definitely installed on the server (it's just the Debian package and it resides in /usr/bin/git-annex). In any case, the client repository is still empty
+
+
