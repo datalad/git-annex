@@ -90,6 +90,11 @@ For a node that only transfers files between the immobile nodes:
 
 	requestedby=1
 
+For an immobile node that only accumulates files it requests, but never
+stores files requested by other nodes:
+
+	present or requested
+
 TODO: Would be nice to be able to prioritize files that more nodes are
 requesting, or that have some urgent flag set. But currently there is no
 way to do that; content is either preferred or not preferred.

@@ -87,6 +87,7 @@ data TransferNode = TransferNode
 data NodeRepo = NodeRepo
 	{ wantFiles :: [Request]
 	, haveFiles :: S.Set File
+	, satisfiedRequests :: S.Set Request
 	}
 	deriving (Show, Eq)
 
@@ -97,7 +98,7 @@ randomFile :: (RandomGen g) => Rand g File
 randomFile = File <$> getRandomR (0, totalFiles)
 
 data Request = Request File TTL
-	deriving (Show)
+	deriving (Show, Ord)
 
 -- compare ignoring TTL
 instance Eq Request where
@@ -164,29 +165,41 @@ step (Network immobiles transfers) = go immobiles [] transfers
 			then case M.lookup (currentlocation t) is of
 				Nothing -> go is (c ++ [t]) ts
 				Just currentloc -> do
-					let (currentloc', t') = exchangeRequestsFiles currentloc t
+					let (currentloc', t') = merge currentloc t
 					t'' <- move t'
 					go (M.insert (currentlocation t) currentloc' is) (c ++ [t'']) ts
 			else go is (c ++ [t]) ts
 
-type Exchanger = ImmobileNode -> TransferNode -> (ImmobileNode, TransferNode)
-
-exchangeRequestsFiles :: Exchanger
-exchangeRequestsFiles (ImmobileNode ir) t@(TransferNode { transferrepo = tr }) =
+merge :: ImmobileNode -> TransferNode -> (ImmobileNode, TransferNode)
+merge (ImmobileNode ir) t@(TransferNode { transferrepo = tr }) =
 	( ImmobileNode (go ir tr)
 	, t { transferrepo = go tr ir }
 	)
   where
 	go r1 r2 = r1
-		{ wantFiles = foldr addRequest (wantFiles r1) (wantFiles r2)
-		, haveFiles = S.foldr (addFile (wantFiles r1)) (haveFiles r1) (haveFiles r2)
+		{ wantFiles = wantFiles'
+		, haveFiles = haveFiles'
+		, satisfiedRequests = satisfiedRequests' `S.union` checkSatisfied wantFiles' haveFiles'
 		}
+	  where
+	  	wantFiles' = foldr addRequest (wantFiles r1) (wantFiles r2)
+		haveFiles' = S.foldr (addFile wantFiles' satisfiedRequests') (haveFiles r1) (haveFiles r2)
+		satisfiedRequests' = satisfiedRequests r1 `S.union` satisfiedRequests r2
 
--- Adds a file to the set, when there's a request for it.
-addFile :: [Request] -> File -> S.Set File -> S.Set File
-addFile rs f fs
+-- Adds a file to the set, when there's a request for it, and the request
+-- has not already been satisfied.
+addFile :: [Request] -> S.Set Request -> File -> S.Set File -> S.Set File
+addFile rs srs f fs
+	| any (\sr -> f == requestedFile sr) (S.toList srs) = fs
 	| any (\r -> f == requestedFile r) rs = S.insert f fs
 	| otherwise = fs
+
+-- Checks if any requests have been satisfied, and returns them,
+-- to be added to satisfidRequests
+checkSatisfied :: [Request] -> S.Set File -> S.Set Request
+checkSatisfied want have = S.fromList (filter satisfied want)
+  where
+	satisfied r = requestTTL r == originTTL && S.member (requestedFile r) have
 
 -- Decrements TTL, and avoids adding request with a stale TTL, or a
 -- request for an already added file with the same or a lower TTL.
@@ -212,7 +225,7 @@ genNetwork = do
 	return $ Network immobiles transfers
 
 emptyImmobile :: ImmobileNode
-emptyImmobile = ImmobileNode (NodeRepo [] S.empty)
+emptyImmobile = ImmobileNode (NodeRepo [] S.empty S.empty)
 
 mkTransfer :: (RandomGen g) => [NodeName] -> Rand g TransferNode
 mkTransfer immobiles = do
@@ -227,7 +240,7 @@ mkTransferBetween possiblelocs = do
 	currentloc <- randomfrom possiblelocs
 	movefreq <- getRandomR transferMoveFrequencyRange
 	-- transfer nodes start out with no files or requests in their repo
-	let repo = (NodeRepo [] S.empty)
+	let repo = (NodeRepo [] S.empty S.empty)
 	return $ TransferNode currentloc possiblelocs movefreq repo
 
 randomfrom :: (RandomGen g) => [a] -> Rand g a
@@ -265,6 +278,8 @@ summarize _initial@(Network origis _) _final@(Network is _ts) = format
 	, ("Nodes that failed to get files",
 		show (map withinitiallocs $ filter (not . S.null . snd)
 			(M.toList $ M.map (findunsatisfied . repo) is)))
+	, ("Total number of files on immobile nodes at end",
+		show (overis (S.size . haveFiles . repo)))
 	--, ("Immobile nodes at end", show is)
 	]
   where
