@@ -1,0 +1,19 @@
+I am struggling for so long time, everytime getting different errors :( :(
+
+I digged up my backup and started from scratch. Still not working.
+
+On the (linux) server (directory contains already files):
+
+     cd bin
+     git init
+     git annex init server
+     git annex direct
+     git annex add .
+
+Then, on the Windows client:
+
+     $ git clone ssh://me@server/srv/data/bin bin
+     Cloning into 'bin'...
+     warning: remote HEAD refers to nonexistent ref, unable to checkout.
+
+What's going on here?

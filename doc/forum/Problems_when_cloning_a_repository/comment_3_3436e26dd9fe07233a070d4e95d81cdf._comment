@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="171.67.174.99"
+ subject="comment 3"
+ date="2014-05-09T06:06:54Z"
+ content="""
+Finally I found it: https://git-annex.branchable.com/bugs/assistant_doesn__39__t_sync_empty_directories/
+
+Empty directories.
+
+Wow! I was not aware that git is actually a step BACKWARDS in this regard :-(
+
+That was already a big problem half a century ago in CVS, finally fixed in SVN and git re-introduces the issue? Sad :-(
+
+
+"""]]
