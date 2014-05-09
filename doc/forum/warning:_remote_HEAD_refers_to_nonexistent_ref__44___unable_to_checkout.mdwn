@@ -17,3 +17,6 @@ Then, on the Windows client:
      warning: remote HEAD refers to nonexistent ref, unable to checkout.
 
 What's going on here?
+
+EDIT: Of course, I would not ask if everything would work as expected. But the client repository in windows is always empty, no matter what I do (issueing git annex init, git add remote, git annex sync, ...) does not seem to help me ...
+
