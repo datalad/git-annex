@@ -78,3 +78,18 @@ Matches files that have been requested by at least N nodes.
 	requested
 
 Matches files that the current node has requested.
+
+### Example preferred content expressions
+
+For an immobile node that accumulates files it requests, and also
+temporarily stores files requested by other such nodes:
+
+	present or requestedby=1
+
+For a node that only transfers files between the immobile nodes:
+
+	requestedby=1
+
+TODO: Would be nice to be able to prioritize files that more nodes are
+requesting, or that have some urgent flag set. But currently there is no
+way to do that; content is either preferred or not preferred.
