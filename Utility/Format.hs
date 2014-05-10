@@ -2,7 +2,7 @@
  -
  - Copyright 2010, 2011 Joey Hess <joey@kitenet.net>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 module Utility.Format (
