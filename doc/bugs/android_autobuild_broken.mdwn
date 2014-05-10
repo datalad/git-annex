@@ -1,2 +1,4 @@
 The android build is broken. Annoying evilsplicer failure in the new
 bootstrap3 code. --[[Joey]]
+
+[[fixed|done]]
