@@ -177,14 +177,14 @@ renderBootstrap3 formLayout aform fragment = do
                       <label .sr-only for=#{fvId view}>#{fvLabel view}
                     ^{fvInput view}
                     ^{helpWidget view}
-                  $of BootstrapHorizontalForm labelOffset labelSize inputOffset inputSize
+                  $of f@(BootstrapHorizontalForm _ _ _ _)
                     $if nequals (fvId view) bootstrapSubmitId
-                      <label .control-label .#{toOffset labelOffset} .#{toColumn labelSize} for=#{fvId view}>#{fvLabel view}
-                      <div .#{toOffset inputOffset} .#{toColumn inputSize}>
+                      <label .control-label .#{toOffset (bflLabelOffset f)} .#{toColumn (bflLabelSize f)} for=#{fvId view}>#{fvLabel view}
+                      <div .#{toOffset (bflInputOffset f)} .#{toColumn (bflInputSize f)}>
                         ^{fvInput view}
                         ^{helpWidget view}
                     $else
-                      <div .#{toOffset (addGO inputOffset (addGO labelOffset labelSize))} .#{toColumn inputSize}>
+                      <div .#{toOffset (addGO (bflInputOffset f) (addGO (bflLabelOffset f) (bflLabelSize f)))} .#{toColumn (bflInputSize f)}>
                         ^{fvInput view}
                         ^{helpWidget view}
                 |]
