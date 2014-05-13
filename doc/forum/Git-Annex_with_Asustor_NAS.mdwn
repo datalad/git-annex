@@ -1,0 +1,4 @@
+I'd like to use git-annex with my Asustor 302t NAS. It should be treated like a "simple" removable drive. I don't really know how to do this however, when scanning for "removable drives", it can't be found, when I try connecting via SSH, I receive an Error: Permission denied (publickey,password). As there is no way to insert my password before connecting.
+
+How do I setup a repository on my NAS to be synced with my laptop?
+I am using MAC OS X and the git-annex web interface currently.
