@@ -64,10 +64,10 @@ runFsckForm new activity = case activity of
 		u <- liftAnnex getUUID
 		repolist <- liftAssistant (getrepolist ru)
 		runFormPostNoToken $ \msg -> do
-			(reposRes, reposView) <- mreq (selectFieldList repolist) "" (Just ru)
-			(durationRes, durationView) <- mreq intField "" (Just $ durationSeconds d `quot` 60 )
-			(timeRes, timeView) <- mreq (selectFieldList times) "" (Just t)
-			(recurranceRes, recurranceView) <- mreq (selectFieldList recurrances) "" (Just r)
+			(reposRes, reposView) <- mreq (selectFieldList repolist) (bfs "") (Just ru)
+			(durationRes, durationView) <- mreq intField (bfs "") (Just $ durationSeconds d `quot` 60 )
+			(timeRes, timeView) <- mreq (selectFieldList times) (bfs "") (Just t)
+			(recurranceRes, recurranceView) <- mreq (selectFieldList recurrances) (bfs "") (Just r)
 			let form = do
 				webAppFormAuthToken
 				$(widgetFile "configurators/fsck/formcontent")
@@ -175,7 +175,8 @@ fsckPreferencesAForm def = FsckPreferences
 runFsckPreferencesForm :: Handler ((FormResult FsckPreferences, Widget), Enctype)
 runFsckPreferencesForm = do
 	prefs <- liftAnnex getFsckPreferences
-	runFormPostNoToken $ renderBootstrap $ fsckPreferencesAForm prefs
+	runFormPostNoToken $ renderBootstrap3 formLayout $ fsckPreferencesAForm prefs
+  where formLayout = BootstrapHorizontalForm (ColSm 0) (ColSm 2) (ColSm 0) (ColSm 10)
 
 showFsckPreferencesForm :: Widget
 showFsckPreferencesForm = do

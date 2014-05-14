@@ -5,7 +5,7 @@
  -
  - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 module Utility.ExternalSHA (externalSHA) where

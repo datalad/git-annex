@@ -1,0 +1,2 @@
+Is it possible to use Gitblit as a centralized repository using git-annex? 
+thanks Gary

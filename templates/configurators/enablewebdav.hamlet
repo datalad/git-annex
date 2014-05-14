@@ -1,22 +1,26 @@
-<div .span9 .hero-unit>
-  <h2>
-    Enabling #{description}
-  <p>
-    This is a WebDAV repository located at #
-    <a href="#{url}">
-      #{url}
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
-            Enable repository
-<div .modal .fade #workingmodal>
-  <div .modal-header>
-    <h3>
-      Enabling repository ...
-  <div .modal-body>
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Enabling #{description}
     <p>
-      Enabling this WebDAV repository. This could take a minute.
+      This is a WebDAV repository located at #
+      <a href="#{url}">
+        #{url}
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-10 .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+                Enable repository
+<div .modal .fade #workingmodal>
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Enabling repository ...
+      <div .modal-body>
+        <p>
+          Enabling this WebDAV repository. This could take a minute.

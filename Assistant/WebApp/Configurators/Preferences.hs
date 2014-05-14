@@ -36,13 +36,13 @@ data PrefsForm = PrefsForm
 prefsAForm :: PrefsForm -> MkAForm PrefsForm
 prefsAForm def = PrefsForm
 	<$> areq (storageField `withNote` diskreservenote)
-		"Disk reserve" (Just $ diskReserve def)
+		(bfs "Disk reserve") (Just $ diskReserve def)
 	<*> areq (positiveIntField `withNote` numcopiesnote)
-		"Number of copies" (Just $ numCopies def)
+		(bfs "Number of copies") (Just $ numCopies def)
 	<*> areq (checkBoxField `withNote` autostartnote)
 		"Auto start" (Just $ autoStart def)
 	<*> areq (selectFieldList autoUpgradeChoices)
-		autoUpgradeLabel (Just $ autoUpgrade def)
+		(bfs autoUpgradeLabel) (Just $ autoUpgrade def)
 	<*> areq (checkBoxField `withNote` debugnote)
 		"Enable debug logging" (Just $ debugEnabled def)
   where
@@ -109,7 +109,7 @@ postPreferencesR :: Handler Html
 postPreferencesR = page "Preferences" (Just Configuration) $ do
 	((result, form), enctype) <- liftH $ do
 		current <- liftAnnex getPrefs
-		runFormPostNoToken $ renderBootstrap $ prefsAForm current
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ prefsAForm current
 	case result of
 		FormSuccess new -> liftH $ do
 			liftAnnex $ storePrefs new

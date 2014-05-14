@@ -1,0 +1,27 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawl2I59wfwq505F9W0a6f7sFDcC9neWcc24"
+ nickname="Andrew"
+ subject="Still missing something"
+ date="2014-05-06T17:35:20Z"
+ content="""
+On the server I ran
+
+git init
+git annex init
+
+On client I ran
+
+git init
+git annex init
+git annex direct
+
+then dropped some files in and ran
+
+git sync
+
+This didn't upload any files. I now have a broken link on the server without the actual file.
+
+When I tried to set up the server in the same way, then used the web assistant to create the repository on the client and then combine it with the manually created repository on the server, it actually worked for the first file. I could see a working link to the file it had just uploaded. But any subsequent files didn't reflect in the file structure. Additional files would show up in the .git/annex/objects folder, but again I have no way to explore these. git annex find showed nothing, git annex status showed only the first file and git log didn't show much. I tried re-adding this remote to a new annex repository, but it didn't give me access to the files or the history of the files. I'm confused!
+
+Is it me or is this not working as expected?
+"""]]

@@ -1,24 +1,30 @@
-<div .navbar .navbar-fixed-top>
-  <div .navbar-inner>
-    <div .container>
-      <a .brand>
+<div .navbar .navbar-inverse .navbar-fixed-top role="navigation">
+  <div .container>
+    <div .navbar-header>
+      <button type="button" .navbar-toggle data-toggle="collapse" data-target=".navbar-collapse">
+        <span .sr-only>Toggle navigation
+        <span .icon-bar>
+        <span .icon-bar>
+        <span .icon-bar>
+      <a .navbar-brand>
         git-annex
-      <ul .nav>
+    <div .navbar-collapse .collapse>
+      <ul .nav .navbar-nav>
         $forall (name, route, isactive) <- navbar
           <li :isactive:.active>
             <a href="@{route}">
               #{name}
       $maybe reldir <- relDir webapp
-        <ul .nav .pull-right>
+        <ul .nav .navbar-nav .navbar-right>
           $if hasFileBrowser
             <li>
-              ^{actionButton FileBrowserR (Just "Files") (Just "Click to open a file browser") "" "icon-folder-open icon-white"}
+              ^{actionButton FileBrowserR (Just "Files") (Just "Click to open a file browser") "" "glyphicon-folder-open icon-white"}
           <li .dropdown #menu1>
             <a .dropdown-toggle data-toggle="dropdown" href="#menu1">
               Repository: #{reldir}
-              <b .caret></b>
+              <b .caret>
             ^{controlMenu}
       $nothing
 <div .container-fluid>
-  <div .row-fluid>
+  <div .row>
     ^{content}

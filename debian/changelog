@@ -1,11 +1,13 @@
 git-annex (5.20140422) UNRELEASED; urgency=medium
 
+  * webapp: Switched to bootstrap 3.
+    Thanks, Sören Brunk.
   * Standalone builds now check gpg signatures before upgrading.
   * Simplified repository description line format. The remote name,
     if any, is always in square brackets after the description.
   * assistant: Clean up stale tmp files on startup.
 
- -- Joey Hess <joeyh@debian.org>  Wed, 23 Apr 2014 12:43:39 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 02 May 2014 15:28:53 -0300
 
 git-annex (5.20140421) unstable; urgency=medium
 

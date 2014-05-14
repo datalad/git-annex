@@ -89,8 +89,8 @@ deleteCurrentRepository = dangerPage $ do
 	havegitremotes <- haveremotes syncGitRemotes
 	havedataremotes <- haveremotes syncDataRemotes
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ sanityVerifierAForm $
-			SanityVerifier magicphrase
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $
+			sanityVerifierAForm $ SanityVerifier magicphrase
 	case result of
 		FormSuccess _ -> liftH $ do
 			dir <- liftAnnex $ fromRepo Git.repoPath
@@ -122,7 +122,7 @@ data SanityVerifier = SanityVerifier T.Text
 
 sanityVerifierAForm :: SanityVerifier -> MkAForm SanityVerifier
 sanityVerifierAForm template = SanityVerifier
-	<$> areq checksanity "Confirm deletion?" Nothing
+	<$> areq checksanity (bfs "Confirm deletion?") Nothing
   where
 	checksanity = checkBool (\input -> SanityVerifier input == template)
 		insane textField

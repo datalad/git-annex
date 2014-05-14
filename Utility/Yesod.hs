@@ -28,6 +28,7 @@ import Yesod as Y
 #else
 import Yesod as Y hiding (Html)
 #endif
+import Assistant.WebApp.Bootstrap3 as Y hiding (bfs)
 #ifndef __NO_TH__
 import Yesod.Default.Util
 import Language.Haskell.TH.Syntax (Q, Exp)

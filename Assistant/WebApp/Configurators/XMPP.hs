@@ -99,7 +99,7 @@ xmppform :: Route WebApp -> Handler Html
 xmppform next = xmppPage $ do
 	((result, form), enctype) <- liftH $ do
 		oldcreds <- liftAnnex getXMPPCreds
-		runFormPostNoToken $ renderBootstrap $ xmppAForm $
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ xmppAForm $
 			creds2Form <$> oldcreds
 	let showform problem = $(widgetFile "configurators/xmpp")
 	case result of
@@ -162,8 +162,8 @@ creds2Form c = XMPPForm (xmppJID c) (xmppPassword c)
 
 xmppAForm :: (Maybe XMPPForm) -> MkAForm XMPPForm
 xmppAForm def = XMPPForm
-	<$> areq jidField "Jabber address" (formJID <$> def)
-	<*> areq passwordField "Password" Nothing
+	<$> areq jidField (bfs "Jabber address") (formJID <$> def)
+	<*> areq passwordField (bfs "Password") Nothing
 
 jidField :: MkField Text
 jidField = checkBool (isJust . parseJID) bad textField

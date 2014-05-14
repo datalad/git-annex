@@ -73,8 +73,10 @@ instance Yesod WebApp where
 	defaultLayout content = do
 		webapp <- getYesod
 		pageinfo <- widgetToPageContent $ do
-			addStylesheet $ StaticR bootstrap_css
-			addStylesheet $ StaticR bootstrap_responsive_css
+			addStylesheet $ StaticR css_bootstrap_css
+			addStylesheet $ StaticR css_bootstrap_theme_css
+			addScript $ StaticR js_jquery_full_js
+			addScript $ StaticR js_bootstrap_js
 			$(widgetFile "error")
 		giveUrlRenderer $(hamletFile $ hamletTemplate "bootstrap")
 

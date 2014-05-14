@@ -113,10 +113,10 @@ cloudRepoList = repoListDisplay RepoSelector
 repoListDisplay :: RepoSelector -> Widget
 repoListDisplay reposelector = do
 	autoUpdate ident (NotifierRepoListR reposelector) (10 :: Int) (10 :: Int)
-	addScript $ StaticR jquery_ui_core_js
-	addScript $ StaticR jquery_ui_widget_js
-	addScript $ StaticR jquery_ui_mouse_js
-	addScript $ StaticR jquery_ui_sortable_js
+	addScript $ StaticR js_jquery_ui_core_js
+	addScript $ StaticR js_jquery_ui_widget_js
+	addScript $ StaticR js_jquery_ui_mouse_js
+	addScript $ StaticR js_jquery_ui_sortable_js
 
 	repolist <- liftH $ repoList reposelector
 	let addmore = nudgeAddMore reposelector

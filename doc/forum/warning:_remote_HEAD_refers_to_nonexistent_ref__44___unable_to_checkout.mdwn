@@ -1,0 +1,69 @@
+I am struggling for so long time, everytime getting different errors :( :(
+
+I digged up my backup and started from scratch. Still not working.
+
+On the (linux) server (directory contains already files):
+
+     cd bin
+     git init
+     git annex init server
+     git annex direct
+     git annex add .
+
+Then, on the Windows client:
+
+     $ git clone ssh://me@server/srv/data/bin bin
+     Cloning into 'bin'...
+     warning: remote HEAD refers to nonexistent ref, unable to checkout.
+
+What's going on here?
+
+EDIT: Of course, I would not ask if everything would work as expected. But the client repository in windows is always empty, no matter what I do (issueing git annex init, git add remote, git annex sync, ...) does not seem to help me ...
+
+EDIT2: When I continue on the windows side (despite the warning):
+
+     cd bin
+     git annex init client
+     git annex sync
+     Permission denied (publickey,keyboard-interactive).
+     (merging origin/git-annex origin/synced/git-annex into git-annex...)
+     (Recording state in git...)
+     
+       Remote origin does not have git-annex installed; setting annex-ignore
+     commit  ok
+     pull origin Already up-to-date!
+     Merge made by the 'recursive' strategy.
+     
+     
+     ok
+     push origin To ssh://me@server/srv/data/bin
+        b79922f..4fe0505  git-annex -> synced/git-annex
+        2f6a601..02a2603  annex/direct/master -> synced/master
+     
+     ok
+
+
+But that's not true, git-annex is definitely installed on the server (it's just the Debian package and it resides in /usr/bin/git-annex). In any case, the client repository is still empty
+
+EDIT3: Struggle, struggle, ...
+
+Finally, for whatever reason, the client dir is not empty. What seems to be missing on the server was:
+
+     git annex sync
+
+but this is never written (also not in the walkthrough). Can anyone tell me if it's required and why?
+
+Furthermore, even that I "see" at least the file references now, I am not able to get them:
+
+     $ git annex get apps
+     get apps/gitignore (not available)
+       Try making some of these repositories available:
+             10d0ffd8-f499-4b55-83e6-ff58cd98edc5 -- server
+     
+       (Note that these git remotes have annex-ignore set: origin)
+     failed
+     git-annex: get: 1 failed
+
+That's an SSH remote, it *is* available! What is meant by that?
+
+

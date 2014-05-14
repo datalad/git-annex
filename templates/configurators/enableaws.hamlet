@@ -1,30 +1,34 @@
-<div .span9 .hero-unit>
-  <h2>
-    Enabling #{description}
-  <p>
-    To use this Amazon repository, you need an Access Key ID, and a #
-    Secret Access Key. These access keys will be stored in a file that #
-    only you can access.
-  <p>
-    If this repository uses your Amazon account, you can #
-    <a href="https://portal.aws.amazon.com/gp/aws/securityCredentials#id_block">
-      look up your access keys. #
-    If this repository uses someone else's Amazon account, they #
-    can generate access keys for you, using their #
-    <a href="https://console.aws.amazon.com/iam/home">
-      IAM Management Console.
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
-            Enable Amazon repository
-<div .modal .fade #workingmodal>
-  <div .modal-header>
-    <h3>
-      Enabling repository ...
-  <div .modal-body>
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Enabling #{description}
     <p>
-      Enabling this Amazon repository. This could take a minute.
+      To use this Amazon repository, you need an Access Key ID, and a #
+      Secret Access Key. These access keys will be stored in a file that #
+      only you can access.
+    <p>
+      If this repository uses your Amazon account, you can #
+      <a href="https://portal.aws.amazon.com/gp/aws/securityCredentials#id_block">
+        look up your access keys. #
+      If this repository uses someone else's Amazon account, they #
+      can generate access keys for you, using their #
+      <a href="https://console.aws.amazon.com/iam/home">
+        IAM Management Console.
+    <p>
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-10 .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
+                Enable Amazon repository
+<div .modal .fade #workingmodal>
+  <div .modal-dialog>
+    <div .modal-content>
+      <div .modal-header>
+        <h3>
+          Enabling repository ...
+      <div .modal-body>
+        <p>
+          Enabling this Amazon repository. This could take a minute.

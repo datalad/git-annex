@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="Keen to see this happen too!"
+ date="2014-05-08T21:44:30Z"
+ content="""
+Or alternatively support for S3 Lifecycle Rules. 
+I'm not exactly sure what git-annex assistant does if it backs up into a S3 bucket with i.e. a rule to archive everything 1 month later into Glacier. Can it restore/access?
+"""]]

@@ -460,6 +460,11 @@ mangleCode = flip_colon
 	 -
 	 - Nothing
 	 -   -> foo
+	 -
+	 - -- This is not yet handled!
+	 - ComplexConstructor  var var
+	 -        var var
+	 -   -> foo
 	 -}
 	case_layout_multiline = parsecAndReplace $ do
 		void newline
