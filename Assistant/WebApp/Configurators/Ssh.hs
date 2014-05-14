@@ -266,17 +266,18 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 			, getgitconfig (T.unpack <$> inputDirectory sshinput)
 			]
 		knownhost <- liftIO $ knownHost hn
-		let sshopts = catMaybes
+		let sshopts =
 			{- If this is an already known host, let
 			 - ssh check it as usual.
 			 - Otherwise, trust the host key. -}
-			[ if knownhost then Nothing else Just (sshOpt "StrictHostKeyChecking" "no")
-			, Just "-n" -- don't read from stdin
-			, Just "-p", Just (show (inputPort sshinput))
-			, Just $ genSshHost
+			[ sshOpt "StrictHostKeyChecking" $
+				if knownhost then "yes" else "no"
+			, "-n" -- don't read from stdin
+			, "-p", show (inputPort sshinput)
+			, genSshHost
 				(fromJust $ inputHostname sshinput)
 				(inputUsername sshinput)
-			, Just remotecommand
+			, remotecommand
 			]
 		parsetranscript . fst <$> sshAuthTranscript sshinput sshopts Nothing
 	parsetranscript s =
