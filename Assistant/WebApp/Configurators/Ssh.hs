@@ -324,6 +324,18 @@ showSshErr :: String -> Handler Html
 showSshErr msg = sshConfigurator $
 	$(widgetFile "configurators/ssh/error")
 
+{- Runs a ssh command, returning a transcript of its output.
+ -
+ - Depending on the SshInput, avoids using a password, or uses a
+ - cached password. ssh is coaxed to use git-annex as SSH_ASKPASS
+ - to get the password.
+ -
+ - Note that ssh will only use SSH_ASKPASS when DISPLAY is set and there
+ - is no controlling terminal. On Unix, that is set up when the assistant
+ - starts, by calling createSession. On Windows, all of stdin, stdout, and
+ - stderr must be disconnected from the terminal. This is accomplished
+ - by always providing an empty input string on stdin.
+ -}
 sshAuthTranscript :: SshInput -> [String] -> (Maybe String) -> Assistant (String, Bool)
 sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 	ExistingSshKey -> liftIO $ go [passwordprompts 0] Nothing
@@ -335,7 +347,8 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 	login = geti inputUsername ++ "@" ++ geti inputHostname
 	geti f = maybe "" T.unpack (f sshinput)
 
-	go extraopts env = processTranscript' "ssh" (extraopts ++ opts) env input
+	go extraopts env = processTranscript' "ssh" (extraopts ++ opts) env $
+		Just (fromMaybe "" input)
 
 	setupAskPass = do
 		program <- liftIO readProgramFile
