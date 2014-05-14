@@ -334,7 +334,7 @@ showSshErr msg = sshConfigurator $
  - is no controlling terminal. On Unix, that is set up when the assistant
  - starts, by calling createSession. On Windows, all of stdin, stdout, and
  - stderr must be disconnected from the terminal. This is accomplished
- - by always providing an empty input string on stdin.
+ - by always providing input on stdin.
  -}
 sshAuthTranscript :: SshInput -> [String] -> (Maybe String) -> Assistant (String, Bool)
 sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of

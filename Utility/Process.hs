@@ -167,10 +167,10 @@ processTranscript :: String -> [String] -> (Maybe String) -> IO (String, Bool)
 processTranscript cmd opts input = processTranscript' cmd opts Nothing input
 
 processTranscript' :: String -> [String] -> Maybe [(String, String)] -> (Maybe String) -> IO (String, Bool)
+processTranscript' cmd opts environ input = do
 #ifndef mingw32_HOST_OS
 {- This implementation interleves stdout and stderr in exactly the order
  - the process writes them. -}
-processTranscript' cmd opts environ input = do
 	(readf, writef) <- createPipe
 	readh <- fdToHandle readf
 	writeh <- fdToHandle writef
@@ -184,24 +184,13 @@ processTranscript' cmd opts environ input = do
 	hClose writeh
 
 	get <- mkreader readh
-
-	-- now write and flush any input
-	case input of
-		Just s -> do
-			let inh = stdinHandle p
-			unless (null s) $ do
-				hPutStr inh s
-				hFlush inh
-			hClose inh
-		Nothing -> return ()
-
+	writeinput input p
 	transcript <- get
 
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
 #else
 {- This implementation for Windows puts stderr after stdout. -}
-processTranscript' cmd opts environ input = do
 	p@(_, _, _, pid) <- createProcess $
 		(proc cmd opts)
 			{ std_in = if isJust input then CreatePipe else Inherit
@@ -212,17 +201,9 @@ processTranscript' cmd opts environ input = do
 
 	getout <- mkreader (stdoutHandle p)
 	geterr <- mkreader (stderrHandle p)
-
-	case input of
-		Just s -> do
-			let inh = stdinHandle p
-			unless (null s) $ do
-				hPutStr inh s
-				hFlush inh
-			hClose inh
-		Nothing -> return ()
-	
+	writeinput input p
 	transcript <- (++) <$> getout <*> geterr
+
 	ok <- checkSuccessProcess pid
 	return (transcript, ok)
 #endif
@@ -236,6 +217,14 @@ processTranscript' cmd opts environ input = do
 		return $ do
 			takeMVar v
 			return s
+
+	writeinput (Just s) p = do
+		let inh = stdinHandle p
+		unless (null s) $ do
+			hPutStr inh s
+			hFlush inh
+		hClose inh
+	writeinput Nothing _ = return ()
 
 {- Runs a CreateProcessRunner, on a CreateProcess structure, that
  - is adjusted to pipe only from/to a single StdHandle, and passes
