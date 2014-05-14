@@ -56,6 +56,15 @@ daemonize logfd pidfile changedirectory a = do
 	out = exitImmediately ExitSuccess
 #endif
 
+{- To run an action that is normally daemonized in the forground. -}
+foreground :: Fd -> Maybe FilePath -> IO () -> IO ()
+foreground logfd pidfile a = do
+	maybe noop lockPidFile pidfile
+	_ <- createSession
+	redirLog logfd
+	a
+	exitImmediately ExitSuccess
+
 {- Locks the pid file, with an exclusive, non-blocking lock,
  - and leaves it locked on return.
  -

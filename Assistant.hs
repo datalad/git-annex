@@ -84,9 +84,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 				fdToHandle =<< dup stdError
 			let undaemonize a = do
 				debugM desc $ "logging to " ++ logfile
-				Utility.Daemon.lockPidFile pidfile
-				Utility.LogFile.redirLog logfd
-				a
+				Utility.Daemon.foreground logfd (Just pidfile) a
 			start undaemonize $ 
 				case startbrowser of
 					Nothing -> Nothing
