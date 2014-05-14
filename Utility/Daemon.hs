@@ -54,7 +54,6 @@ daemonize logfd pidfile changedirectory a = do
 		wait =<< asyncWithUnmask (\unmask -> unmask a)
 		out
 	out = exitImmediately ExitSuccess
-#endif
 
 {- To run an action that is normally daemonized in the forground. -}
 foreground :: Fd -> Maybe FilePath -> IO () -> IO ()
@@ -64,6 +63,7 @@ foreground logfd pidfile a = do
 	redirLog logfd
 	a
 	exitImmediately ExitSuccess
+#endif
 
 {- Locks the pid file, with an exclusive, non-blocking lock,
  - and leaves it locked on return.

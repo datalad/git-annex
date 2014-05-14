@@ -606,7 +606,7 @@ prepRsyncNet sshinput reponame a = do
 			, Param $ sshhost ++ ":.ssh/"
 			]
 	let remotecommand = "mkdir -p " ++ T.unpack (sshDirectory sshdata)
-	sshSetup ssinput (torsyncnet remotecommand) Nothing (a sshdata)
+	sshSetup sshinput (torsyncnet remotecommand) Nothing (a sshdata)
 #endif
 
 isRsyncNet :: Maybe Text -> Bool
