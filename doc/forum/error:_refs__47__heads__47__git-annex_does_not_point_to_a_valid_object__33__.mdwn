@@ -1,0 +1,15 @@
+for the command:
+
+    $ git annex info
+
+I get the following output:
+
+   repository mode: direct
+   trusted repositories: error: refs/heads/git-annex does not point to a valid object!
+   error: refs/heads/git-annex does not point to a valid object!
+   error: invalid object 100644 993859515190743e9bed7fc8e697d5ac4e2d03a0 for '01d/56e/SHA256E-s209799168--cb8450b63c699c5f8fb121e51ed7e387258d57c851b256af0e5ceeae9542ffd8.me.avi.log'
+   fatal: git-write-tree: error building trees
+   git-annex: failed to read sha from git write-tree
+
+Please help,
+Yuval Langer.
