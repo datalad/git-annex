@@ -31,6 +31,7 @@ import Config.Files
 import Utility.Tmp
 import Utility.FileMode
 import Utility.ThreadScheduler
+import Utility.Env
 
 #ifdef mingw32_HOST_OS
 import Utility.Rsync
@@ -344,7 +345,8 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 			Just pass -> withTmpFile "ssh" $ \passfile h -> do
 				hClose h
 				writeFileProtected passfile pass
-				let env =
+				env <- getEnvironment
+				let env' = addEntries
 					[ ("SSH_ASKPASS", program)
 					, (sshAskPassEnv, passfile)
 					-- ssh does not use SSH_ASKPASS
@@ -352,8 +354,8 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 					-- there is no controlling
 					-- terminal.
 					, ("DISPLAY", ":0")
-					]
-				go [passwordprompts 1] (Just env)	
+					] env
+				go [passwordprompts 1] (Just env')
 	
 	passwordprompts :: Int -> String
 	passwordprompts = sshOpt "NumberOfPasswordPrompts" . show
