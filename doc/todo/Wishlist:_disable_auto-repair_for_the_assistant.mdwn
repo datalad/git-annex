@@ -1,0 +1,3 @@
+Auto-repair takes up a lot of computing power, greatly slowing down the machine. It also still happens very often here, several times a month on different hardware, leading it to become an annoyance (and it would be easier and faster to perform manual repairs if that should be required).
+
+Therefore I'd like a setting that makes the assistant not attempt to repair on its own. Either not do anything at all, or display a message about it instead.
