@@ -41,5 +41,3 @@
         <div .modal-body>
           <p>
             This could take a minute.
-          <p>
-            You may be prompted for your rsync.net ssh password.

@@ -21,13 +21,12 @@ import Yesod.Form.Fields as F
 #else
 import Yesod hiding (textField, passwordField, selectField, selectFieldList)
 import Yesod.Form.Fields as F hiding (selectField, selectFieldList)
-#endif
-import Assistant.WebApp.Bootstrap3 hiding (bfs)
 import Data.String (IsString (..))
-import Data.Text (Text)
-
 import Control.Monad (unless)
 import Data.Maybe (listToMaybe)
+#endif
+import Data.Text (Text)
+import Assistant.WebApp.Bootstrap3 hiding (bfs)
 
 {- Yesod's textField sets the required attribute for required fields.
  - We don't want this, because many of the forms used in this webapp 
