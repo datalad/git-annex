@@ -64,7 +64,7 @@
                   \ Encrypt repository #
                 to ^{gpgKeyDisplay keyid (Just name)}
           <p>
-            <a .btn href="@{MakeSshGCryptR sshdata NoRepoKey}" onclick="$('#genkeymodal').modal('show');">
+            <a .btn .btn-default href="@{MakeSshGCryptR sshdata NoRepoKey}" onclick="$('#genkeymodal').modal('show');">
               <span .glyphicon .glyphicon-plus-sign>
               \ Encrypt repository #
             with a new encryption key
