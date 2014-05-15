@@ -38,6 +38,7 @@ import qualified Remote.WebDAV
 import qualified Remote.Tahoe
 #endif
 import qualified Remote.Glacier
+import qualified Remote.Ddar
 import qualified Remote.Hook
 import qualified Remote.External
 
@@ -59,6 +60,7 @@ remoteTypes =
 	, Remote.Tahoe.remote
 #endif
 	, Remote.Glacier.remote
+	, Remote.Ddar.remote
 	, Remote.Hook.remote
 	, Remote.External.remote
 	]

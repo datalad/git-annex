@@ -131,6 +131,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBupSplitOptions :: [String]
 	, remoteAnnexDirectory :: Maybe FilePath
 	, remoteAnnexGCrypt :: Maybe String
+	, remoteAnnexDdarRepo :: Maybe String
 	, remoteAnnexHookType :: Maybe String
 	, remoteAnnexExternalType :: Maybe String
 	{- A regular git remote's git repository config. -}
@@ -162,6 +163,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
 	, remoteAnnexDirectory = notempty $ getmaybe "directory"
 	, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
+	, remoteAnnexDdarRepo = getmaybe "ddarrepo"
 	, remoteAnnexHookType = notempty $ getmaybe "hooktype"
 	, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
 	, remoteGitConfig = Nothing

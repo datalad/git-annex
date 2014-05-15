@@ -1,0 +1,32 @@
+Another [[special_remote|special_remotes]] that git-annex can use is
+a [[special_remotes/ddar]] repository. ddar stores large file contents
+in a directory structure of its own, with deduplication. For remote
+repositories, ddar requires that ssh is available on the remote, with ddar also
+installed remotely. When copying files to the remote, ddar only needs to send
+over the network the parts of the files that are not already present remotely.
+
+Unlike bup, ddar uses its own storage format, which allows for both creation
+and deletion of de-deduplicated files.
+
+Here's how to create a ddar remote, and describe it.
+
+[[!template id=note text="""
+Instead of specifying a remote system, you could choose to make a bup
+remote that is only accessible on the current system, by passing
+"ddarrepo=/big/myddar".
+"""]]
+
+	# git annex initremote myddar type=ddar encryption=none ddarrepo=example.com:/big/myddar
+	initremote ddar (bup init)
+	Initialized empty Git repository in /big/myddar/
+	ok
+	# git annex describe myddar "my bup repository at example.com"
+	describe myddar ok
+
+Now the remote can be used like any other remote.
+
+	# git annex move my_cool_big_file --to myddar
+	move my_cool_big_file (to myddar...)
+	ok
+
+See [[special_remotes/bup]] for details.

@@ -10,6 +10,7 @@ They cannot be used by other git commands though.
 * [[S3]] (Amazon S3, and other compatible services)
 * [[Amazon_Glacier|glacier]]
 * [[bup]]
+* [[ddar]]
 * [[gcrypt]] (encrypted git repositories!)
 * [[directory]]
 * [[rsync]]

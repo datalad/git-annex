@@ -1647,6 +1647,12 @@ Here are all the supported configuration settings.
   the location of the bup repository to use. Normally this is automatically
   set up by `git annex initremote`, but you can change it if needed.
 
+* `remote.<name>.ddarrepo`
+
+  Used by ddar special remotes, this configures
+  the location of the ddar repository to use. Normally this is automatically
+  set up by `git annex initremote`, but you can change it if needed.
+
 * `remote.<name>.directory`
 
   Used by directory special remotes, this configures
