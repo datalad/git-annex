@@ -11,3 +11,5 @@ Connecting to downloads.kitenet.net|107.170.31.195|:443... connected.
 ERROR: certificate common name "kitenet.net" doesn\'t match requested host name "downloads.kitenet.net".
 To connect to downloads.kitenet.net insecurely, use '--no-check-certificate'.
 """]]
+
+> [[done]]: Per joey's comment, I'll investigate my broken wget
