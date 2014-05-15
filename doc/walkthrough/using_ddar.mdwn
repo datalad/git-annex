@@ -17,10 +17,10 @@ remote that is only accessible on the current system, by passing
 """]]
 
 	# git annex initremote myddar type=ddar encryption=none ddarrepo=example.com:/big/myddar
-	initremote ddar (bup init)
+	initremote ddar (ddar init)
 	Initialized empty Git repository in /big/myddar/
 	ok
-	# git annex describe myddar "my bup repository at example.com"
+	# git annex describe myddar "my ddar repository at example.com"
 	describe myddar ok
 
 Now the remote can be used like any other remote.
