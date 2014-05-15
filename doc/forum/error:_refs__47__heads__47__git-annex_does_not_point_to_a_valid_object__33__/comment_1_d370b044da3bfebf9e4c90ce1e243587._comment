@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-05-15T20:22:40Z"
+ content="""
+This means that a git commit's data has gotten lost somehow. You can verify that by trying
+
+    git show 993859515190743e9bed7fc8e697d5ac4e2d03a0
+
+The most common reason for this to happen is if the system is shutdown unexpectedly while git-annex is running. Or, if this repository is on a removable drive, if it got removed before the data could be written.
+
+You can probably fix the problem by running:
+
+    git annex repair
+
+(Code formatting: Use 4 spaces.)
+"""]]
