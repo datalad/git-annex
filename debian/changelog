@@ -7,6 +7,8 @@ git-annex (5.20140422) UNRELEASED; urgency=medium
     if any, is always in square brackets after the description.
   * assistant: Clean up stale tmp files on startup.
   * webapp: Better ssh password prompting.
+  * Depend on git-remote-gcrypt 0.20130908-6. Older versions
+    fail when the assistant is run with no controlling tty.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 02 May 2014 15:28:53 -0300
 
