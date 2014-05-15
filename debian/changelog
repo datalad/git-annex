@@ -9,6 +9,8 @@ git-annex (5.20140422) UNRELEASED; urgency=medium
   * webapp: Better ssh password prompting.
   * Depend on git-remote-gcrypt 0.20130908-6. Older versions
     fail when the assistant is run with no controlling tty.
+  * Added ddar special remote.
+    Thanks, Robie Basak.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 02 May 2014 15:28:53 -0300
 

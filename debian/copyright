@@ -10,6 +10,11 @@ Copyright: © 2012-2014 Joey Hess <joey@kitenet.net>
            © 2014 Sören Brunk
 License: AGPL-3+
 
+Files: Remote/Ddar.hs
+Copyright: © 2011 Joey Hess <joey@kitenet.net>
+           © 2014 Robie Basak <robie@justgohome.co.uk>
+License: GPL-3+
+
 Files: Utility/ThreadScheduler.hs
 Copyright: 2011 Bas van Dijk & Roel van Dijk
            2012, 2013 Joey Hess <joey@kitenet.net>
