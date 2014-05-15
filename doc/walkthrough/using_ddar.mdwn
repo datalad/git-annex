@@ -11,7 +11,7 @@ and deletion of de-deduplicated files.
 Here's how to create a ddar remote, and describe it.
 
 [[!template id=note text="""
-Instead of specifying a remote system, you could choose to make a bup
+Instead of specifying a remote system, you could choose to make a ddar
 remote that is only accessible on the current system, by passing
 "ddarrepo=/big/myddar".
 """]]
