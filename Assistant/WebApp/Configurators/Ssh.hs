@@ -26,6 +26,7 @@ import qualified Remote.GCrypt as GCrypt
 import Annex.UUID
 import Logs.UUID
 import Assistant.RemoteControl
+import Types.Creds
 import Assistant.CredPairCache
 import Config.Files
 import Utility.Tmp
@@ -318,12 +319,23 @@ sshSetup :: SshInput -> [String] -> Maybe String -> Handler Html -> Handler Html
 sshSetup sshinput opts input a = do
 	(transcript, ok) <- liftAssistant $ sshAuthTranscript sshinput opts input
 	if ok
-		then a
-		else showSshErr transcript
+		then do
+			liftAssistant $ expireCachedCred $ getLogin sshinput
+			a
+		else sshErr sshinput transcript
 
-showSshErr :: String -> Handler Html
-showSshErr msg = sshConfigurator $
-	$(widgetFile "configurators/ssh/error")
+sshErr :: SshInput -> String -> Handler Html
+sshErr sshinput msg
+	| inputAuthMethod sshinput == CachedPassword =
+		ifM (liftAssistant $ isNothing <$> getCachedCred (getLogin sshinput))
+			( sshConfigurator $
+				$(widgetFile "configurators/ssh/expiredpassword")
+			, showerr
+			)
+	| otherwise = showerr
+  where
+	showerr = sshConfigurator $
+		$(widgetFile "configurators/ssh/error")
 
 {- Runs a ssh command, returning a transcript of its output.
  -
@@ -345,7 +357,7 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 		cacheCred (login, geti inputPassword) (Seconds $ 60 * 10)
 		setupAskPass
   where
-	login = geti inputUsername ++ "@" ++ geti inputHostname
+	login = getLogin sshinput
 	geti f = maybe "" T.unpack (f sshinput)
 
 	go extraopts env = processTranscript' "ssh" (extraopts ++ opts) env $
@@ -373,6 +385,11 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 	
 	passwordprompts :: Int -> String
 	passwordprompts = sshOpt "NumberOfPasswordPrompts" . show
+
+getLogin :: SshInput -> Login
+getLogin sshinput = geti inputUsername ++ "@" ++ geti inputHostname
+  where
+	geti f = maybe "" T.unpack (f sshinput)
 
 {- The UUID will be NoUUID when the repository does not already exist,
  - or was not a git-annex repository before. -}
