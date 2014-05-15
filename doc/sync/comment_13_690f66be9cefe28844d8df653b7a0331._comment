@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="134.147.14.84"
+ subject="comment 13"
+ date="2014-05-15T08:28:09Z"
+ content="""
+I agree with mshri. It’s confusing to have every local branch wind up on every remote (and it hinders «git annex unused»).
+
+I tried working around this by just including relevant branches in the «fetch» refspec, but this will only work until another remote pushes the branches again.
+"""]]
