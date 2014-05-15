@@ -112,7 +112,7 @@ store ddarrepo k _f _p = sendAnnex k (void $ remove ddarrepo k) $ \src -> do
 		]
 	liftIO $ boolSystem "ddar" params
 
-storeEncrypted :: Remote -> DdarRepo -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
+storeEncrypted :: Remote -> DdarRepo -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 storeEncrypted r ddarrepo (cipher, enck) k _p =
 	sendAnnex k (void $ remove ddarrepo k) $ \src ->
 		liftIO $ catchBoolIO $
