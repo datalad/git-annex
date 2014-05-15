@@ -1,0 +1,17 @@
+My backlog is massive -- 181 items to answer. Will probably take the rest
+of the month to get caught back up. Rather than digging into that yet,
+spent today working on the webapp's ssh password prompting. 
+
+I simplified it so the password is entered on the same form as the rest
+of the server's information. That made the UI easy to build, but
+means that when a user already has a ssh key they want to use, they need
+to select "existing ssh key"; the webapp no longer probes to automatically
+detect that case.
+
+Got the ssh password prompting in the webapp basically working, and it's a
+*really* nice improvement! I even got it to work on Windows (eventually...).
+It's still only in the `sshpassword` branch, since I need to test it more
+and probably fix some bugs. In particular, when enabling a remote that
+already exists, I think it never prompts for the password yet.
+
+Today's work was sponsored by Nicola Chiapolini.
