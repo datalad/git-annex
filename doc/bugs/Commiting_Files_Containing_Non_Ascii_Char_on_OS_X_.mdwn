@@ -1,0 +1,44 @@
+### Please describe the problem.
+
+Any file containing non ascii chars either won't get commited by the webapp or when clone of that repo is made they are shown as deleted in git status but the files are there. 
+
+you can not commit them neither,
+
+    git commit -m 'foo'
+
+or
+ 
+    git annex sync
+
+will get them to commit trying to reset the state using, 
+     
+    git checkout master 
+
+or 
+
+    git clean -f 
+
+won't fix the issue. till the issue is fixed sync does not work from the command line since there are changes. Temporarily running assistant in the directory does fix the problem but every now and then it pops again.
+
+Also moving any symlinks around containing non ascii chars also causes the same issue. git annex won't add the moved symlinks git annex fix or git annex add won't add them git annex sync also skips them again the only solution is to either run the assistant or restart it if it is running.
+
+### What steps will reproduce the problem?
+
+Adding any file with a non ascii char on OS X (10.9).
+
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20140421-gc34a665
+
+### Please provide any additional information below.
+
+Also another thing I noticed is that same file names same repo will clone fine on Linux no errors this only happens on OS X.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]

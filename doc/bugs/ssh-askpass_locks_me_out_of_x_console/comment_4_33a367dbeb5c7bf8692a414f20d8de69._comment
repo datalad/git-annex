@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 4"
+ date="2014-05-15T19:22:21Z"
+ content="""
+The webapp now has a dropdown menu, which defaults to using a password you enter in the form. It still has the option to use an already configured ssh key, but this won't just happen without the user explicitly choosing it.
+
+I think that's enough to close this bug, so will do so in the sshpassword branch.
+"""]]
