@@ -3,16 +3,8 @@
     <h2>
       Enabling #{description}
     <p>
-      To enable this repository, you first need to check that its ssh server #
-      is usable from here.
-    <p>
-    <p>
       <form method="post" .form-horizontal enctype=#{enctype}>
         <fieldset>
-          <div .form-group>
-            <div .col-sm-10 .col-sm-offset-2>
-              <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
-                Check this server
           $case status
             $of UnusableServer msg
               <div .alert .alert-danger>
@@ -21,6 +13,10 @@
             $of _
           ^{form}
           ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-10 .col-sm-offset-2>
+              <button .btn .btn-primary type=submit onclick="$('#testmodal').modal('show');">
+                Check this server
 <div .modal .fade #testmodal>
   <div .modal-dialog>
     <div .modal-content>
