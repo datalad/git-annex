@@ -20,3 +20,7 @@ Also if I run "git-annex webapp" from the terminal, this doesn't happen because 
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]]; the assistant no longer recommends ssh-askpass, it does
+> its own ssh password prompting and is its own ssh password agent.
+> --[[Joey]]

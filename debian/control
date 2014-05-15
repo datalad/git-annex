@@ -91,7 +91,6 @@ Recommends:
 	lsof,
 	gnupg,
 	bind9-host,
-	ssh-askpass,
 	quvi,
 	git-remote-gcrypt (>= 0.20130908-6),
 	nocache,
