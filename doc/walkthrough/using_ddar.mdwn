@@ -29,4 +29,4 @@ Now the remote can be used like any other remote.
 	move my_cool_big_file (to myddar...)
 	ok
 
-See [[special_remotes/bup]] for details.
+See [[special_remotes/ddar]] for details.
