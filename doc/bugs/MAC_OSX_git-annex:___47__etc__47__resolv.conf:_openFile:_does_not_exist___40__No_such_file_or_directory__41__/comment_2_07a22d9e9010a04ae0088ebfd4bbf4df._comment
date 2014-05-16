@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="comment 2"
+ date="2014-05-16T18:11:02Z"
+ content="""
+Ah, that theory was right. I unplugged my iphone thus cutting my internet off, and the file is gone indeed.
+Does that mean we can ignore this problem? I'm only sporadically online via internet cafes and to check emails at night via iphone.
+
+Can't say whether git annex is working or not, still trying to figure out how it all works so I have only put a relatively small folder into the local repo and created a full backup S3 repo as well as an archive one on box.com
+"""]]
