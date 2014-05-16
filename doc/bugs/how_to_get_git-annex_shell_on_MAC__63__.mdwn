@@ -21,3 +21,7 @@ export PATH=/opt/local/bin:/opt/local/sbin/Applications/git-annex.app/Contents/M
 
 # End of transcript or log.
 """]]
+
+> To the extent this is a bug report, it's a duplicate of
+> [[standalone_tarball_symlink_to_PATH_broken]].
+> [[closing dup|done]]. --[[Joey]]
