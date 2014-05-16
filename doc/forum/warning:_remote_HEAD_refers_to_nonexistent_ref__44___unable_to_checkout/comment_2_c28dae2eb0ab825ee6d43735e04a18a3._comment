@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 2"
+ date="2014-05-16T16:49:09Z"
+ content="""
+After you add a file to a git repository, you have to git commit it. Using git-annex is no different. The walkthrough shows using `git commit`: <http://git-annex.branchable.com/walkthrough/adding_files/>; you can use `git-annex sync` if you prefer.
+
+<pre>
+Permission denied (publickey,keyboard-interactive).
+ (merging origin/git-annex origin/synced/git-annex into git-annex...)
+ (Recording state in git...)
+
+   Remote origin does not have git-annex installed; setting annex-ignore
+</pre>
+
+git-annex uses a heuristic to determine if git-annex-shell is not installed on a remote server: It tries to run it, and if that fails, it tries to run git fetch. If that succeeds it assumes this means it can log into the server, but git-annex-shell is not installed.
+
+Above, that heuristic seems to have failed; you seem to have given the wrong password or something so it didn't run git-annex-shell, but then it was able to log in for the git fetch. 
+
+You will need to run this command to fix it up: `git config origin.annex-ignore false`
+"""]]
