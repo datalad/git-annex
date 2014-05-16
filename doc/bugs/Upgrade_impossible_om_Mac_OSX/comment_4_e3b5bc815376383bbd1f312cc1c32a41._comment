@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 4"
+ date="2014-05-16T17:36:10Z"
+ content="""
+\"Cannot find old distribution bundle; not upgrading\"
+
+This message means that git-annex was unable to find where the old version was installed, which it needs to do in order to replace it with the new version. It looks for a `git-annex.app` directory, and could not find one. How did you install the old version, and to what location?
+
+I think it might try to upload the dmg file to a repository if that repository is set as a full backup and so wants all files even ones not in the work tree.
+"""]]
