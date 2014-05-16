@@ -1,6 +1,6 @@
 git-annex now does Windows!
 
-* First, [install git](http://git-scm.com/downloads)
+* First, [install git](http://git-scm.com/downloads) (msysgit 1.9 or newer is needed)
 * Then, [install git-annex](https://downloads.kitenet.net/git-annex/windows/current/)
 
 This port is now in reasonably good shape for command-line use of
