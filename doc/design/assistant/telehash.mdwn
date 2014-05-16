@@ -83,7 +83,7 @@ Advantages:
   exchange protocols implemented in such a daemon to allow SSH-less
   transfers.
 * Security holes in telehash would not need to compromise the entire
-  git-annex. gathd could be sandboxed in one way or another.
+  git-annex. daemon could be sandboxed in one way or another.
 
 Disadvantages:
 

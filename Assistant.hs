@@ -21,6 +21,7 @@ import Assistant.Threads.Pusher
 import Assistant.Threads.Merger
 import Assistant.Threads.TransferWatcher
 import Assistant.Threads.Transferrer
+import Assistant.Threads.RemoteControl
 import Assistant.Threads.SanityChecker
 import Assistant.Threads.Cronner
 import Assistant.Threads.ProblemFixer
@@ -147,6 +148,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 				, assist $ transferWatcherThread
 				, assist $ transferPollerThread
 				, assist $ transfererThread
+				, assist $ remoteControlThread
 				, assist $ daemonStatusThread
 				, assist $ sanityCheckerDailyThread urlrenderer
 				, assist $ sanityCheckerHourlyThread

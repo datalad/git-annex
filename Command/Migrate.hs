@@ -25,15 +25,19 @@ def = [notDirect $
 seek :: CommandSeek
 seek = withFilesInGit $ whenAnnexed start
 
-start :: FilePath -> (Key, Backend) -> CommandStart
-start file (key, oldbackend) = do
-	exists <- inAnnex key
-	newbackend <- choosebackend =<< chooseBackend file
-	if (newbackend /= oldbackend || upgradableKey oldbackend key) && exists
-		then do
-			showStart "migrate" file
-			next $ perform file key oldbackend newbackend
-		else stop
+start :: FilePath -> Key -> CommandStart
+start file key = do
+	v <- Backend.getBackend file key
+	case v of
+		Nothing -> stop
+		Just oldbackend -> do
+			exists <- inAnnex key
+			newbackend <- choosebackend =<< chooseBackend file
+			if (newbackend /= oldbackend || upgradableKey oldbackend key) && exists
+				then do
+					showStart "migrate" file
+					next $ perform file key oldbackend newbackend
+				else stop
   where
 	choosebackend Nothing = Prelude.head <$> orderedList
 	choosebackend (Just backend) = return backend

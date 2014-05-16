@@ -21,6 +21,7 @@ import Utility.Metered
 import Utility.Rsync
 import Types.Remote
 import Logs.Transfer
+import Config
 
 {- Generates parameters to ssh to a repository's host and run a command.
  - Caller is responsible for doing any neccessary shellEscaping of the
@@ -122,7 +123,7 @@ rsyncParamsRemote direct r direction key file afile = do
 		fields
 	-- Convert the ssh command into rsync command line.
 	let eparam = rsyncShell (Param shellcmd:shellparams)
-	let o = rsyncParams r direction
+	o <- rsyncParams r direction
 	return $ if direction == Download
 		then o ++ rsyncopts eparam dummy (File file)
 		else o ++ rsyncopts eparam (File file) dummy
@@ -140,9 +141,19 @@ rsyncParamsRemote direct r direction key file afile = do
 	dummy = Param "dummy:"
 
 -- --inplace to resume partial files
-rsyncParams :: Remote -> Direction -> [CommandParam]
-rsyncParams r direction = Params "--progress --inplace" :
-	map Param (remoteAnnexRsyncOptions gc ++ dps)
+--
+-- Only use --perms when not on a crippled file system, as rsync
+-- will fail trying to restore file perms onto a filesystem that does not
+-- support them.
+rsyncParams :: Remote -> Direction -> Annex [CommandParam]
+rsyncParams r direction = do
+	crippled <- crippledFileSystem
+	return $ map Param $ catMaybes
+		[ Just "--progress"
+		, Just "--inplace"
+		, if crippled then Nothing else Just "--perms"
+		] 
+		++ remoteAnnexRsyncOptions gc ++ dps
   where
 	dps
 		| direction == Download = remoteAnnexRsyncDownloadOptions gc

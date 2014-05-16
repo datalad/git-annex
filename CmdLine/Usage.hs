@@ -93,6 +93,8 @@ paramFormat :: String
 paramFormat = "FORMAT"
 paramFile :: String
 paramFile = "FILE"
+paramRef :: String
+paramRef = "REF"
 paramGroup :: String
 paramGroup = "GROUP"
 paramExpression :: String

@@ -64,9 +64,15 @@ seek ps = do
 		Annex.getField (optionName o)
 	use o v = [Param ("--" ++ optionName o), Param v]
 
-start :: M.Map UUID String -> TimeZone -> [CommandParam] -> Bool ->
-	FilePath -> (Key, Backend) -> CommandStart
-start m zone os gource file (key, _) = do
+start
+	:: M.Map UUID String
+	-> TimeZone
+	-> [CommandParam]
+	-> Bool
+	-> FilePath
+	-> Key
+	-> CommandStart
+start m zone os gource file key = do
 	showLog output =<< readLog <$> getLog key os
 	-- getLog produces a zombie; reap it
 	liftIO reapZombies

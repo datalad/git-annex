@@ -1,0 +1,18 @@
+Pushed out a new release today, fixing two important bugs, followed by a
+second release which fixed the bugs harder.
+
+Automatic upgrading was broken on OSX. The webapp will tell you upgrading
+failed, and you'll need to manually download the .dmg and install it.
+
+With help from Maximiliano Curia, finally tracked down a bug I have been
+chasing for a while where the assistant would start using a lot of CPU
+while not seeming to be busy doing anything. Turned out to be triggered by
+a scheduled fsck that was configured to run once a month with no particular
+day specified.
+
+That bug turned out to affect users who first scheduled such a fsck job
+after the 11th day of the month. So I expedited putting a release out to
+avoid anyone else running into it starting tomorrow.
+
+(Oddly, the 11th day of this month also happens to be my birthday. I did not
+expect to have to cut 2 releases today..)

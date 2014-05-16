@@ -96,7 +96,7 @@ performQuvi :: Bool -> URLString -> URLString -> FilePath -> CommandPerform
 performQuvi relaxed pageurl videourl file = ifAnnexed file addurl geturl
   where
   	quviurl = setDownloader pageurl QuviDownloader
-  	addurl (key, _backend) = next $ cleanup quviurl file key Nothing
+  	addurl key = next $ cleanup quviurl file key Nothing
 	geturl = next $ addUrlFileQuvi relaxed quviurl videourl file
 #endif
 
@@ -130,7 +130,7 @@ perform :: Bool -> URLString -> FilePath -> CommandPerform
 perform relaxed url file = ifAnnexed file addurl geturl
   where
 	geturl = next $ addUrlFile relaxed url file
-	addurl (key, _backend)
+	addurl key
 		| relaxed = do
 			setUrlPresent key url
 			next $ return True

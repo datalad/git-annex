@@ -69,40 +69,44 @@ the webapp.
 
 ## emitted messages
 
-* `CONNECTED $remote`
+* `CONNECTED uri`
 
   Sent when a connection has been made with a remote.
 
-* `DISCONNECTED $remote`
+* `DISCONNECTED uri`
 
   Sent when connection with a remote has been lost.
 
-* `SYNCING $remote`
+* `SYNCING uri`
 
   Indicates that a pull or a push with a remote is in progress.
   Always followed by DONESYNCING.
 
-* `DONESYNCING 1|0 $remote`
+* `DONESYNCING uri 1|0`
 
   Indicates that syncing with a remote is done, and either succeeded
   (1) or failed (0).
+
+* `WARNING uri string`
+
+  A message to display to the user about a remote.
 
 ## consumed messages
 
 * `PAUSE`
 
-  This indicates that the network connection has gone down,
-  or the user has requested a pause.
+  The user has requested a pause.  
   git-remote-daemon should close connections and idle.
 
-  Affects all remotes.
+* `LOSTNET`
+
+  The network connection has been lost.  
+  git-remote-daemon should close connections and idle.
 
 * `RESUME`
 
-  This indicates that the network connection has come back up, or the user
-  has asked it to run again. Start back up network connections.
-
-  Affects all remotes.
+  Undoes PAUSE or LOSTNET.  
+  Start back up network connections.
 
 * `CHANGED ref ...`
 
@@ -133,9 +137,9 @@ encryption. Encryption is not part of this design.
 (XMPP does not do end-to-end encryption, but might be supported
 transitionally.)
 
-Ditto for authentication that we're talking to who we indend to talk to.
-Any public key data etc used for authenticion is part of the remote's
-configuration (or hidden away in a secure chmodded file, if neccesary).
+Ditto for authentication that we're talking to who we intend to talk to.
+Any public key data etc used for authentication is part of the remote's
+configuration (or hidden away in a secure chmodded file, if necessary).
 This design does not concern itself with authenticating the remote node,
 it just takes the auth token and uses it.
 
@@ -158,15 +162,7 @@ over stdio to inform when refs on the remote have changed.
 
 No pushing is done for CHANGED, since git handles ssh natively.
 
-TODO:
-
-* Remote system might not be available. Find a smart way to detect it,
-  ideally w/o generating network traffic. One way might be to check
-  if the ssh connection caching control socket exists, for example.
-* Remote system might be available, and connection get lost. Should
-  reconnect, but needs to avoid bad behavior (ie, constant reconnect
-  attempts.)
-* Detect if old system had a too old git-annex-shell and avoid bad behavior
+TODO: test!
 
 ## telehash 
 

@@ -11,11 +11,12 @@ module Assistant.WebApp.Configurators.Edit where
 
 import Assistant.WebApp.Common
 import Assistant.WebApp.Gpg
+import Assistant.WebApp.Configurators
 import Assistant.DaemonStatus
 import Assistant.WebApp.MakeRemote (uniqueRemoteName)
-import Assistant.WebApp.Configurators.XMPP (xmppNeeded)
 import Assistant.ScanRemotes
 import Assistant.Sync
+import Assistant.Alert
 import qualified Assistant.WebApp.Configurators.AWS as AWS
 import qualified Assistant.WebApp.Configurators.IA as IA
 #ifdef WITH_S3
@@ -183,7 +184,7 @@ getEditNewCloudRepositoryR :: UUID -> Handler Html
 getEditNewCloudRepositoryR = postEditNewCloudRepositoryR
 
 postEditNewCloudRepositoryR :: UUID -> Handler Html
-postEditNewCloudRepositoryR uuid = xmppNeeded >> editForm True (RepoUUID uuid)
+postEditNewCloudRepositoryR uuid = connectionNeeded >> editForm True (RepoUUID uuid)
 
 editForm :: Bool -> RepoId -> Handler Html
 editForm new (RepoUUID uuid) = page "Edit repository" (Just Configuration) $ do
@@ -275,3 +276,23 @@ getUpgradeRepositoryR r = go =<< liftAnnex (repoIdRemote r)
 		liftAssistant updateSyncRemotes
 		liftAssistant $ syncRemote rmt
 		redirect DashboardR
+
+{- If there is no currently connected remote, display an alert suggesting
+ - to set up one. -}
+connectionNeeded :: Handler ()
+connectionNeeded = whenM noconnection $ do
+	urlrender <- getUrlRender
+	void $ liftAssistant $ do
+		close <- asIO1 removeAlert
+		addAlert $ connectionNeededAlert $ AlertButton
+			{ buttonLabel = "Connnect"
+			, buttonUrl = urlrender ConnectionNeededR
+			, buttonAction = Just close
+			, buttonPrimary = True
+			}
+  where
+	noconnection = S.null . currentlyConnectedRemotes <$> liftAssistant getDaemonStatus
+
+getConnectionNeededR :: Handler Html
+getConnectionNeededR = page "Connection needed" (Just Configuration) $ do
+	$(widgetFile "configurators/needconnection")

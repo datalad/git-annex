@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://id.clacke.se/"
+ nickname="Claes"
+ subject="comment 3"
+ date="2014-04-17T14:04:31Z"
+ content="""
+Yeah, git does not have the concept of checking out subdirectories that subversion does. You could, however, have different branches with different content that live in the same repo and therefore share the same git-annex backend, so there could be overlap between what files are in what branch without them using up much extra disk space.
+"""]]

@@ -70,7 +70,7 @@ data StatInfo = StatInfo
 type StatState = StateT StatInfo Annex
 
 def :: [Command]
-def = [noCommit $ withOptions [jsonOption] $
+def = [noCommit $ dontCheck repoExists $ withOptions [jsonOption] $
 	command "info" paramPaths seek SectionQuery
 	"shows general information about the annex"]
 

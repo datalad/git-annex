@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="128.12.90.218"
+ subject="comment 2"
+ date="2014-04-15T18:23:13Z"
+ content="""
+Thank you, that's a good point!
+
+Does this also mean that a repository in git(-annex) is \"all or nothing\"?
+
+For example, I cannot share/clone parts of it? Or define access rights within a repository?
+
+With SVN for example, I have a big repository \"university\" and it contains all stuff of projects/research. Each individual directory is only shared with the persons whom I worked together in this particular project. In short: In git, this should not be that way, right?
+"""]]

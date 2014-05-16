@@ -33,9 +33,10 @@ import qualified Data.Text as T
 import Data.Function
 import Control.Concurrent
 
-type RepoList = [(RepoDesc, RepoId, Actions)]
+type RepoList = [(RepoDesc, RepoId, CurrentlyConnected, Actions)]
 
 type RepoDesc = String
+type CurrentlyConnected = Bool
 
 {- Actions that can be performed on a repo in the list. -}
 data Actions
@@ -192,12 +193,18 @@ repoList reposelector
 	  where
 	  	getconfig k = M.lookup k =<< M.lookup u m
 		val iscloud r = Just (iscloud, (RepoUUID u, DisabledRepoActions $ r u))
-	list l = liftAnnex $
+	list l = do
+		cc <- currentlyConnectedRemotes <$> liftAssistant getDaemonStatus
 		forM (nubBy ((==) `on` fst) l) $ \(repoid, actions) ->
-			(,,)
-				<$> describeRepoId repoid
+			(,,,)
+				<$> liftAnnex (describeRepoId repoid)
 				<*> pure repoid
+				<*> pure (getCurrentlyConnected repoid cc)
 				<*> pure actions
+
+getCurrentlyConnected :: RepoId -> S.Set UUID -> CurrentlyConnected
+getCurrentlyConnected (RepoUUID u) cc = S.member u cc
+getCurrentlyConnected _ _ = False
 
 getEnableSyncR :: RepoId -> Handler ()
 getEnableSyncR = flipSync True

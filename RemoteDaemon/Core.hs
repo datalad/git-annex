@@ -18,6 +18,7 @@ import qualified Git.Types as Git
 import qualified Git.CurrentRepo
 import Utility.SimpleProtocol
 import Config
+import Annex.Ssh
 
 import Control.Concurrent.Async
 import Control.Concurrent
@@ -60,17 +61,24 @@ runController ichan ochan = do
 		cmd <- readChan ichan
 		case cmd of
 			RELOAD -> do
-				liftAnnex h reloadConfig
-				m' <- genRemoteMap h ochan
+				h' <- updateTransportHandle h
+				m' <- genRemoteMap h' ochan
 				let common = M.intersection m m'
 				let new = M.difference m' m
 				let old = M.difference m m'
-				stoprunning old
+				broadcast STOP old
 				unless paused $
 					startrunning new
-				go h paused (M.union common new)
+				go h' paused (M.union common new)
+			LOSTNET -> do
+				-- force close all cached ssh connections
+				-- (done here so that if there are multiple
+				-- ssh remotes, it's only done once)
+				liftAnnex h forceSshCleanup
+				broadcast LOSTNET m
+				go h True m
 			PAUSE -> do
-				stoprunning m
+				broadcast STOP m
 				go h True m
 			RESUME -> do
 				when paused $
@@ -89,14 +97,14 @@ runController ichan ochan = do
 	startrunning m = forM_ (M.elems m) startrunning'
 	startrunning' (transport, _) = void $ async transport
 	
-	-- Ask the transport nicely to stop.
-	stoprunning m = forM_ (M.elems m) stoprunning'
-	stoprunning' (_, c) = writeChan c STOP
+	broadcast msg m = forM_ (M.elems m) send
+	  where
+		send (_, c) = writeChan c msg
 
 -- Generates a map with a transport for each supported remote in the git repo,
 -- except those that have annex.sync = false
 genRemoteMap :: TransportHandle -> Chan Emitted -> IO RemoteMap
-genRemoteMap h@(TransportHandle g _) ochan =
+genRemoteMap h@(TransportHandle g _) ochan = 
 	M.fromList . catMaybes <$> mapM gen (Git.remotes g)
   where
 	gen r = case Git.location r of
@@ -106,7 +114,7 @@ genRemoteMap h@(TransportHandle g _) ochan =
 					ichan <- newChan :: IO (Chan Consumed)
 					return $ Just
 						( r
-						, (transport r (Git.repoDescribe r) h ichan ochan, ichan)
+						, (transport r (RemoteURI u) h ichan ochan, ichan)
 						)
 			_ -> return Nothing
 		_ -> return Nothing
@@ -116,3 +124,10 @@ genTransportHandle = do
 	annexstate <- newMVar =<< Annex.new =<< Git.CurrentRepo.get
 	g <- Annex.repo <$> readMVar annexstate
 	return $ TransportHandle g annexstate
+
+updateTransportHandle :: TransportHandle -> IO TransportHandle
+updateTransportHandle h@(TransportHandle _g annexstate) = do
+	g' <- liftAnnex h $ do
+		reloadConfig
+		Annex.fromRepo id
+	return (TransportHandle g' annexstate)

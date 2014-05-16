@@ -39,6 +39,14 @@ makeMiscRepositories = $(widgetFile "configurators/addrepository/misc")
 makeCloudRepositories :: Widget
 makeCloudRepositories = $(widgetFile "configurators/addrepository/cloud")
 
+makeXMPPConnection :: Widget
+makeXMPPConnection = $(widgetFile "configurators/addrepository/xmppconnection")
+
+makeSshRepository :: Widget
+makeSshRepository = $(widgetFile "configurators/addrepository/ssh")
+
+makeConnectionRepositories :: Widget
+makeConnectionRepositories = $(widgetFile "configurators/addrepository/connection")
+
 makeArchiveRepositories :: Widget
 makeArchiveRepositories = $(widgetFile "configurators/addrepository/archive")
-

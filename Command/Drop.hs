@@ -34,8 +34,8 @@ seek ps = do
 	from <- getOptionField dropFromOption Remote.byNameWithUUID
 	withFilesInGit (whenAnnexed $ start from) ps
 
-start :: Maybe Remote -> FilePath -> (Key, Backend) -> CommandStart
-start from file (key, _) = checkDropAuto from file key $ \numcopies ->
+start :: Maybe Remote -> FilePath -> Key -> CommandStart
+start from file key = checkDropAuto from file key $ \numcopies ->
 	stopUnless (checkAuto $ wantDrop False (Remote.uuid <$> from) (Just key) (Just file)) $
 		case from of
 			Nothing -> startLocal (Just file) numcopies key Nothing
@@ -78,12 +78,18 @@ performRemote :: Key -> AssociatedFile -> NumCopies -> Remote -> CommandPerform
 performRemote key afile numcopies remote = lockContent key $ do
 	-- Filter the remote it's being dropped from out of the lists of
 	-- places assumed to have the key, and places to check.
-	-- When the local repo has the key, that's one additional copy.
+	-- When the local repo has the key, that's one additional copy,
+	-- as long asthe local repo is not untrusted.
 	(remotes, trusteduuids) <- Remote.keyPossibilitiesTrusted key
 	present <- inAnnex key
 	u <- getUUID
-	let have = filter (/= uuid) $
-		if present then u:trusteduuids else trusteduuids
+	trusteduuids' <- if present
+		then ifM ((<= SemiTrusted) <$> lookupTrust u)
+			( pure (u:trusteduuids)
+			, pure trusteduuids
+			)
+		else pure trusteduuids
+	let have = filter (/= uuid) trusteduuids'
 	untrusteduuids <- trustGet UnTrusted
 	let tocheck = filter (/= remote) $
 		Remote.remotesWithoutUUID remotes (have++untrusteduuids)

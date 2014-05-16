@@ -15,6 +15,7 @@ import Assistant.Alert
 import Assistant.Alert.Utility
 import Assistant.DaemonStatus
 import Assistant.ScanRemotes
+import Assistant.RemoteControl
 import qualified Command.Sync
 import Utility.Parallel
 import qualified Git
@@ -258,6 +259,7 @@ changeSyncable Nothing enable = do
 changeSyncable (Just r) True = do
 	liftAnnex $ changeSyncFlag r True
 	syncRemote r
+	sendRemoteControl RELOAD
 changeSyncable (Just r) False = do
 	liftAnnex $ changeSyncFlag r False
 	updateSyncRemotes

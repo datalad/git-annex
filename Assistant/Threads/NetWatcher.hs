@@ -15,13 +15,13 @@ import Assistant.Sync
 import Utility.ThreadScheduler
 import qualified Types.Remote as Remote
 import Assistant.DaemonStatus
+import Assistant.RemoteControl
 import Utility.NotificationBroadcaster
 
 #if WITH_DBUS
 import Utility.DBus
 import DBus.Client
 import DBus
-import Data.Word (Word32)
 import Assistant.NetMessager
 #else
 #ifdef linux_HOST_OS
@@ -44,8 +44,9 @@ netWatcherThread = thread noop
  - while (despite the local network staying up), are synced with
  - periodically.
  -
- - Note that it does not call notifyNetMessagerRestart, because
- - it doesn't know that the network has changed.
+ - Note that it does not call notifyNetMessagerRestart, or
+ - signal the RemoteControl, because it doesn't know that the
+ - network has changed.
  -}
 netWatcherFallbackThread :: NamedThread
 netWatcherFallbackThread = namedThread "NetWatcherFallback" $
@@ -61,16 +62,22 @@ dbusThread = do
   where
 	go client = ifM (checkNetMonitor client)
 		( do
-			listenNMConnections client <~> handleconn
-			listenWicdConnections client <~> handleconn
+			callback <- asIO1 connchange
+			liftIO $ do
+				listenNMConnections client callback
+				listenWicdConnections client callback
 		, do
 			liftAnnex $
 				warning "No known network monitor available through dbus; falling back to polling"
 		)
-	handleconn = do
+	connchange False = do
+		debug ["detected network disconnection"]
+		sendRemoteControl LOSTNET
+	connchange True = do
 		debug ["detected network connection"]
 		notifyNetMessagerRestart
 		handleConnection
+		sendRemoteControl RESUME
 	onerr e _ = do
 		liftAnnex $
 			warning $ "lost dbus connection; falling back to polling (" ++ show e ++ ")"
@@ -95,37 +102,64 @@ checkNetMonitor client = do
 	networkmanager = "org.freedesktop.NetworkManager"
 	wicd = "org.wicd.daemon"
 
-{- Listens for new NetworkManager connections. -}
-listenNMConnections :: Client -> IO () -> IO ()
-listenNMConnections client callback =
-	listen client matcher $ \event ->
-		when (Just True == anyM activeconnection (signalBody event)) $
-			callback
+{- Listens for NetworkManager connections and diconnections.
+ -
+ - Connection example (once fully connected):
+ - [Variant {"ActivatingConnection": Variant (ObjectPath "/"), "PrimaryConnection": Variant (ObjectPath "/org/freedesktop/NetworkManager/ActiveConnection/34"), "State": Variant 70}]
+ -
+ - Disconnection example:
+ - [Variant {"ActiveConnections": Variant []}]
+ -}
+listenNMConnections :: Client -> (Bool -> IO ()) -> IO ()
+listenNMConnections client setconnected =
+	listen client matcher $ \event -> mapM_ handle
+		(map dictionaryItems $ mapMaybe fromVariant $ signalBody event)
   where
 	matcher = matchAny
-		{ matchInterface = Just "org.freedesktop.NetworkManager.Connection.Active"
+		{ matchInterface = Just "org.freedesktop.NetworkManager"
 		, matchMember = Just "PropertiesChanged"
 		}
-	nm_connection_activated = toVariant (2 :: Word32)
-	nm_state_key = toVariant ("State" :: String)
-	activeconnection v = do
-		m <- fromVariant v
-		vstate <- lookup nm_state_key $ dictionaryItems m
-		state <- fromVariant vstate
-		return $ state == nm_connection_activated
+	nm_active_connections_key = toVariant ("ActiveConnections" :: String)
+	nm_activatingconnection_key = toVariant ("ActivatingConnection" :: String)
+	noconnections = Just $ toVariant $ toVariant ([] :: [ObjectPath])
+	rootconnection = Just $ toVariant $ toVariant $ objectPath_ "/"
+	handle m
+		| lookup nm_active_connections_key m == noconnections =
+			setconnected False
+		| lookup nm_activatingconnection_key m == rootconnection =
+			setconnected True
+		| otherwise = noop
 
-{- Listens for new Wicd connections. -}
-listenWicdConnections :: Client -> IO () -> IO ()
-listenWicdConnections client callback =
-	listen client matcher $ \event ->
+{- Listens for Wicd connections and disconnections.
+ -
+ - Connection example:
+ -   ConnectResultsSent:
+ -     Variant "success"
+ -
+ - Diconnection example:
+ -   StatusChanged
+ -     [Variant 0, Variant [Varient ""]]
+ -}
+listenWicdConnections :: Client -> (Bool -> IO ()) -> IO ()
+listenWicdConnections client setconnected = do
+	listen client connmatcher $ \event ->
 		when (any (== wicd_success) (signalBody event)) $
-			callback
+			setconnected True
+	listen client statusmatcher $ \event -> handle (signalBody event)
   where
-	matcher = matchAny
+	connmatcher = matchAny
 		{ matchInterface = Just "org.wicd.daemon"
 		, matchMember = Just "ConnectResultsSent"
 		}
+	statusmatcher = matchAny
+		{ matchInterface = Just "org.wicd.daemon"
+		, matchMember = Just "StatusChanged"
+		}
 	wicd_success = toVariant ("success" :: String)
+	wicd_disconnected = toVariant [toVariant ("" :: String)]
+	handle status
+		| any (== wicd_disconnected) status = setconnected False
+		| otherwise = noop
 
 #endif
 

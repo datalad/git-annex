@@ -1,6 +1,6 @@
 {- git-annex main program
  -
- - Copyright 2010-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2010-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -12,6 +12,8 @@ module CmdLine.GitAnnex where
 import qualified Git.CurrentRepo
 import CmdLine
 import Command
+import Utility.Env
+import Annex.Ssh
 
 import qualified Command.Add
 import qualified Command.Unannex
@@ -47,6 +49,7 @@ import qualified Command.Unlock
 import qualified Command.Lock
 import qualified Command.PreCommit
 import qualified Command.Find
+import qualified Command.FindRef
 import qualified Command.Whereis
 import qualified Command.List
 import qualified Command.Log
@@ -55,6 +58,7 @@ import qualified Command.Info
 import qualified Command.Status
 import qualified Command.Migrate
 import qualified Command.Uninit
+import qualified Command.Reinit
 import qualified Command.NumCopies
 import qualified Command.Trust
 import qualified Command.Untrust
@@ -123,6 +127,7 @@ cmds = concat
 	, Command.Reinject.def
 	, Command.Unannex.def
 	, Command.Uninit.def
+	, Command.Reinit.def
 	, Command.PreCommit.def
 	, Command.NumCopies.def
 	, Command.Trust.def
@@ -154,6 +159,7 @@ cmds = concat
 	, Command.DropUnused.def
 	, Command.AddUnused.def
 	, Command.Find.def
+	, Command.FindRef.def
 	, Command.Whereis.def
 	, Command.List.def
 	, Command.Log.def
@@ -193,4 +199,5 @@ run args = do
 #ifdef WITH_EKG
 	_ <- forkServer "localhost" 4242
 #endif
-	dispatch True args cmds gitAnnexOptions [] header Git.CurrentRepo.get
+	maybe (dispatch True args cmds gitAnnexOptions [] header Git.CurrentRepo.get)
+		(runSshCaching args) =<< getEnv sshCachingEnv

@@ -194,7 +194,7 @@ performDownload relaxed cache todownload = case location todownload of
 				in d </> show n ++ "_" ++ base
 		tryanother = makeunique url (n + 1) file
 		alreadyexists = liftIO $ isJust <$> catchMaybeIO (getSymbolicLinkStatus f)
-		checksameurl (k, _) = ifM (elem url <$> getUrls k)
+		checksameurl k = ifM (elem url <$> getUrls k)
 			( return Nothing
 			, tryanother
 			)

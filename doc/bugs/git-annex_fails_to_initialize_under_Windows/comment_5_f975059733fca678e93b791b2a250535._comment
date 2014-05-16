@@ -1,0 +1,13 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.191"
+ subject="comment 5"
+ date="2014-04-20T18:35:39Z"
+ content="""
+You might want to try upgrading to msysgit 1.9.0, which is the one I am using for windows development.
+
+So, your screenshot shows that git checkout -B annex/direct/master worked ok when you ran it, but then when git-annex init failed, it was running
+the same command, only with a -q also. The -q is only quiet mode, shouldn't matter.
+
+(The .t folder is created when running git-annex test, so not relevant.)
+"""]]

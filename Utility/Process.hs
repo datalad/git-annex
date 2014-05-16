@@ -31,6 +31,7 @@ module Utility.Process (
 	stdinHandle,
 	stdoutHandle,
 	stderrHandle,
+	processHandle,
 	devNull,
 ) where
 
@@ -312,6 +313,9 @@ stderrHandle _ = error "expected stderrHandle"
 bothHandles :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> (Handle, Handle)
 bothHandles (Just hin, Just hout, _, _) = (hin, hout)
 bothHandles _ = error "expected bothHandles"
+
+processHandle :: (Maybe Handle, Maybe Handle, Maybe Handle, ProcessHandle) -> ProcessHandle
+processHandle (_, _, _, pid) = pid
 
 {- Debugging trace for a CreateProcess. -}
 debugProcess :: CreateProcess -> IO ()

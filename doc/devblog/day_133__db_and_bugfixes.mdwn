@@ -4,7 +4,7 @@ several stages, starting with using it for generating views, and ending(?)
 with using it for direct mode file mappings.
 
 Not sure I'm ready to dive into that yet, so instead spent the rest of the
-day working on small bugfixes and improvemnts. Only two significant ones..
+day working on small bugfixes and improvements. Only two significant ones..
 
 Made the webapp use a constant time string comparison (from `securemem`)
 to check if its auth token is valid. This could help avoid a potential

@@ -34,6 +34,7 @@ Build-Depends:
 	libghc-yesod-static-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
 	libghc-yesod-default-dev [i386 amd64 kfreebsd-amd64 powerpc sparc],
 	libghc-hamlet-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
+	libghc-shakespeare-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
 	libghc-clientsession-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
 	libghc-warp-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],
 	libghc-warp-tls-dev [i386 amd64 kfreebsd-i386 kfreebsd-amd64 powerpc sparc],

@@ -74,7 +74,7 @@ perform = do
 		case r of
 			Just s
 				| isSymbolicLink s -> void $ flip whenAnnexed f $
-					\_ (k, _) -> do
+					\_ k -> do
 						removeInodeCache k
 						removeAssociatedFiles k
 						return Nothing

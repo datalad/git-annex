@@ -103,8 +103,7 @@ htmlIcon InfoIcon = bootstrapIcon "info-sign"
 htmlIcon SuccessIcon = bootstrapIcon "ok"
 htmlIcon ErrorIcon = bootstrapIcon "exclamation-sign"
 htmlIcon UpgradeIcon = bootstrapIcon "arrow-up"
--- utf-8 umbrella (utf-8 cloud looks too stormy)
-htmlIcon TheCloud = [whamlet|&#9730;|]
+htmlIcon ConnectionIcon = bootstrapIcon "signal"
 
 bootstrapIcon :: Text -> Widget
 bootstrapIcon name = [whamlet|<i .icon-#{name}></i>|]

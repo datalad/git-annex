@@ -11,7 +11,7 @@
         Repositories
   <table .table .table-condensed>
     <tbody #costsortable>
-      $forall (name, repoid, actions) <- repolist
+      $forall (name, repoid, currentlyconnected, actions) <- repolist
         <tr .repoline ##{show repoid}>
           <td .handle>
             <a .btn .btn-mini .disabled>
@@ -26,10 +26,17 @@
                 <i .icon-trash></i> cleaning out..
               $else
                 <a href="@{syncToggleLink actions}">
-                  $if notSyncing actions
-                    <i .icon-ban-circle></i> syncing disabled
+                  $if currentlyconnected
+                    <i .icon-signal></i> #
                   $else
-                    <i .icon-refresh></i> syncing enabled #
+                    $if notSyncing actions
+                      <i .icon-ban-circle></i> #
+                    $else
+                      <i .icon-refresh></i> #
+                  $if notSyncing actions
+                    syncing disabled
+                  $else
+                    syncing enabled #
                       $if lacksUUID repoid
                         (metadata only)
           <td .draghide>

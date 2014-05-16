@@ -25,6 +25,8 @@
         <div .form-actions>
           <button .btn .btn-primary type=submit onclick="$('#workingmodal').modal('show');">
             Use this account
+          <a .btn href="@{DisconnectXMPPR}">
+            Stop using this account
 <div .modal .fade #workingmodal>
   <div .modal-header>
     <h3>

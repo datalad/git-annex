@@ -8,6 +8,7 @@
 module Command.Uninit where
 
 import Common.Annex
+import qualified Annex
 import Command
 import qualified Git
 import qualified Git.Command
@@ -37,12 +38,13 @@ check = do
 seek :: CommandSeek
 seek ps = do
 	withFilesNotInGit False (whenAnnexed startCheckIncomplete) ps
+	Annex.changeState $ \s -> s { Annex.fast = True }
 	withFilesInGit (whenAnnexed Command.Unannex.start) ps
 	finish
 
 {- git annex symlinks that are not checked into git could be left by an
  - interrupted add. -}
-startCheckIncomplete :: FilePath -> (Key, Backend) -> CommandStart
+startCheckIncomplete :: FilePath -> Key -> CommandStart
 startCheckIncomplete file _ = error $ unlines
 	[ file ++ " points to annexed content, but is not checked into git."
 	, "Perhaps this was left behind by an interrupted git annex add?"

@@ -151,7 +151,7 @@ expensiveScan urlrenderer rs = unless onlyweb $ batch <~> do
 	enqueue f (r, t) =
 		queueTransferWhenSmall "expensive scan found missing object"
 			(Just f) t r
-	findtransfers f unwanted (key, _) = do
+	findtransfers f unwanted key = do
 		{- The syncable remotes may have changed since this
 		 - scan began. -}
 		syncrs <- syncDataRemotes <$> getDaemonStatus

@@ -47,7 +47,7 @@ perform = do
 	void $ liftIO clean
 	next cleanup
   where
-	go = whenAnnexed $ \f (k, _) -> do
+	go = whenAnnexed $ \f k -> do
 		r <- toDirectGen k f
 		case r of
 			Nothing -> noop

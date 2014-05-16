@@ -1,0 +1,12 @@
+<div .span9 .hero-unit>
+  <h2>
+    <i .icon-signal></i> Connection needed
+    <p>
+      In order to quickly sync with other repositories, #
+      a direct connection is needed to another git-annex. #
+    <p>
+      You don't currently seem to have such a connection configured -- #
+      or if you do, it's not currently connected!
+  <h2>
+    Add a connection
+  ^{makeConnectionRepositories}

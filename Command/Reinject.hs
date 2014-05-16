@@ -12,6 +12,7 @@ import Command
 import Logs.Location
 import Annex.Content
 import qualified Command.Fsck
+import qualified Backend
 
 def :: [Command]
 def = [command "reinject" (paramPair "SRC" "DEST") seek
@@ -33,16 +34,20 @@ start (src:dest:[])
 		next $ whenAnnexed (perform src) dest
 start _ = error "specify a src file and a dest file"
 
-perform :: FilePath -> FilePath -> (Key, Backend) -> CommandPerform
-perform src _dest (key, backend) =
+perform :: FilePath -> FilePath -> Key -> CommandPerform
+perform src dest key = do
 	{- Check the content before accepting it. -}
-	ifM (Command.Fsck.checkKeySizeOr reject key src
-		<&&> Command.Fsck.checkBackendOr reject backend key src)
-		( do
-			unlessM move $ error "mv failed!"
-			next $ cleanup key
-		, error "not reinjecting"
-		)
+	v <- Backend.getBackend dest key
+	case v of
+		Nothing -> stop
+		Just backend ->
+			ifM (Command.Fsck.checkKeySizeOr reject key src
+				<&&> Command.Fsck.checkBackendOr reject backend key src)
+				( do
+					unlessM move $ error "mv failed!"
+					next $ cleanup key
+				, error "not reinjecting"
+				)
   where
 	-- the file might be on a different filesystem,
 	-- so mv is used rather than simply calling

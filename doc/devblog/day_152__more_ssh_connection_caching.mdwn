@@ -1,0 +1,37 @@
+Made ssh connection caching be used in several more places. `git annex
+sync` will use it when pushing/pulling to a remote, as will the assistant.
+And `git-annex remotedaemon` also uses connection caching. So, when
+a push lands on a ssh remote, the assistant will immediately notice it, and
+pull down the change over the same TCP connection used for the
+notifications.
+
+This was a bit of a pain to do. Had to set `GIT_SSH=git-annex` and then
+when git invokes git-annex as ssh, it runs ssh with the connection caching
+parameters.
+
+Also, improved the network-manager and wicd code, so it detects when a
+connection has gone down. That propagates through to the remote-daemon,
+which closes all ssh connections. I need to also find out how to detect
+network connections/disconnections on OSX..
+
+Otherwise, the remote-control branch seems ready to be merged. But I want
+to test it for a while first.
+
+----
+
+Followed up on yesterday's bug with writing some test cases for
+Utility.Scheduled, which led to some more bug fixes. Luckily nothing
+I need to rush out a release over. In the end, the code got a lot
+simpler and clearer.
+
+[[!format haskell """
+-- Check if the new Day occurs one month or more past the old Day.
+oneMonthPast :: Day -> Day -> Bool
+new `oneMonthPast` old = fromGregorian y (m+1) d <= new
+  where
+        (y,m,d) = toGregorian old
+"""]]
+
+-------
+
+Today's work was sponsored by Asbjørn Sloth Tønnesen.

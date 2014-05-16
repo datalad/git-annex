@@ -1,6 +1,9 @@
 {- Builds distributon info files for each git-annex release in a directory
  - tree, which must itself be part of a git-annex repository. Only files
- - that are present have their info file created. -}
+ - that are present have their info file created.
+ -
+ - Also gpg signs the files.
+ -}
 
 import Common.Annex
 import Types.Distribution
@@ -14,6 +17,10 @@ import Backend
 import Git.Command
 
 import Data.Time.Clock
+
+-- git-annex distribution signing key (for Joey Hess)
+signingKey :: String
+signingKey = "89C809CB"
 
 main = do
 	state <- Annex.new =<< Git.Construct.fromPath =<< getRepoDir
@@ -36,7 +43,7 @@ makeinfos = do
 		v <- lookupFile f
 		case v of
 			Nothing -> noop
-			Just (k, _b) -> whenM (inAnnex k) $ do
+			Just k -> whenM (inAnnex k) $ do
 				liftIO $ putStrLn f
 				let infofile = f ++ ".info"
 				liftIO $ writeFile infofile $ show $ GitAnnexDistribution
@@ -46,7 +53,9 @@ makeinfos = do
 					, distributionReleasedate = now
 					, distributionUrgentUpgrade = Nothing
 					}
-				void $ inRepo $ runBool [Param "add", Param infofile]
+				void $ inRepo $ runBool [Param "add", File infofile]
+				signFile infofile
+				signFile f
 	void $ inRepo $ runBool 
 		[ Param "commit"
 		, Param "-m"
@@ -81,3 +90,14 @@ getRepoDir = do
 
 mkUrl :: FilePath -> FilePath -> String
 mkUrl basedir f = "https://downloads.kitenet.net/" ++ relPathDirToFile basedir f
+				
+signFile :: FilePath -> Annex ()
+signFile f = do
+	void $ liftIO $ boolSystem "gpg"
+		[ Param "-a"
+		, Param $ "--default-key=" ++ signingKey
+		, Param "--sign"
+		, File f
+		]
+	liftIO $ rename (f ++ ".asc") (f ++ ".sig")
+	void $ inRepo $ runBool [Param "add", File (f ++ ".sig")]

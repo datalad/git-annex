@@ -1,0 +1,3 @@
+git-annex 5.20140412 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Last release didn't quite fix the high cpu issue in all cases, this should."""]]

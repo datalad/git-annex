@@ -845,6 +845,17 @@ subdirectories).
   repository, and remove all of git-annex's other data, leaving you with a
   git repository plus the previously annexed files.
 
+* `reinit uuid|description`
+
+  Normally, initializing a repository generates a new, unique identifier
+  (UUID) for that repository. Occasionally it may be useful to reuse a
+  UUID -- for example, if a repository got deleted, and you're
+  setting it back up.
+
+  Use this with caution; it can be confusing to have two existing
+  repositories with the same UUID. Also, you will probably want to run
+  a fsck.
+
 # PLUMBING COMMANDS
 
 * `pre-commit [path ...]`
@@ -916,6 +927,14 @@ subdirectories).
   With `--force`, even files whose content is not currently available will
   be rekeyed. Use with caution.
 
+* `findref [ref]`
+
+  This is similar to the find command, but instead of finding files in the
+  current work tree, it finds files in the specified git ref. 
+
+  Most MATCHING OPTIONS can be used with findref, to limit the files it
+  finds. However, the --include and --exclude options will not work.
+
 * `test`
 
   This runs git-annex's built-in test suite.
@@ -924,7 +943,7 @@ subdirectories).
 
 * `remotedaemon`
 
-  Detects when remotes have changed and fetches from them.
+  Detects when network remotes have received git pushes and fetches from them.
 
 * `xmppgit`
 

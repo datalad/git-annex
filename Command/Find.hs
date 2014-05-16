@@ -19,8 +19,10 @@ import Utility.DataUnits
 import Types.Key
 
 def :: [Command]
-def = [noCommit $ noMessages $ withOptions [formatOption, print0Option, jsonOption] $
-	command "find" paramPaths seek SectionQuery "lists available files"]
+def = [mkCommand $ command "find" paramPaths seek SectionQuery "lists available files"]
+
+mkCommand :: Command -> Command
+mkCommand = noCommit . noMessages . withOptions [formatOption, print0Option, jsonOption]
 
 formatOption :: Option
 formatOption = fieldOption [] "format" paramFormat "control format of output"
@@ -39,8 +41,8 @@ seek ps = do
 	format <- getFormat
 	withFilesInGit (whenAnnexed $ start format) ps
 
-start :: Maybe Utility.Format.Format -> FilePath -> (Key, Backend) -> CommandStart
-start format file (key, _) = do
+start :: Maybe Utility.Format.Format -> FilePath -> Key -> CommandStart
+start format file key = do
 	-- only files inAnnex are shown, unless the user has requested
 	-- others via a limit
 	whenM (limited <||> inAnnex key) $

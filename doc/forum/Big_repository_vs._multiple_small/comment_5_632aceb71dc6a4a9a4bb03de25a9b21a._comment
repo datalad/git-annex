@@ -1,0 +1,23 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="74.61.144.53"
+ subject="comment 5"
+ date="2014-04-19T05:38:43Z"
+ content="""
+Thanks!
+
+But what to my question regarding checking out a repository within a repository?
+
+I will most likely have a \"home\" repository which I would check out at first level.
+
+Then, within one directory I would like to (only locally!) check out another, such as \"Library\".
+
+Something like mount ... to mount one FS within another mount point.
+
+For SVN I think there exist externals for that ...
+
+Does this work?
+
+
+
+"""]]

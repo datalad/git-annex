@@ -60,8 +60,8 @@ getList = ifM (Annex.getFlag $ optionName allrepos)
 printHeader :: [(UUID, RemoteName, TrustLevel)] -> Annex ()
 printHeader l = liftIO $ putStrLn $ header $ map (\(_, n, t) -> (n, t)) l
 
-start :: [(UUID, RemoteName, TrustLevel)] -> FilePath -> (Key, Backend) -> CommandStart
-start l file (key, _) = do
+start :: [(UUID, RemoteName, TrustLevel)] -> FilePath -> Key -> CommandStart
+start l file key = do
 	ls <- S.fromList <$> keyLocations key
 	liftIO $ putStrLn $ format (map (\(u, _, t) -> (t, S.member u ls)) l) file
 	stop

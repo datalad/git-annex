@@ -33,8 +33,8 @@ seek ps = do
 		(withFilesInGit $ whenAnnexed $ start to from True)
 		ps
 
-start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> (Key, Backend) -> CommandStart
-start to from move file (key, _) = start' to from move (Just file) key
+start :: Maybe Remote -> Maybe Remote -> Bool -> FilePath -> Key -> CommandStart
+start to from move file key = start' to from move (Just file) key
 
 startKey :: Maybe Remote -> Maybe Remote -> Bool -> Key -> CommandStart
 startKey to from move = start' to from move Nothing

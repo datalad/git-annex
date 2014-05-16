@@ -16,6 +16,7 @@ import qualified Remote
 import Utility.Tense
 import Logs.Transfer
 import Types.Distribution
+import Git.Types (RemoteName)
 
 import Data.String
 import qualified Data.Text as T
@@ -117,11 +118,14 @@ commitAlert :: Alert
 commitAlert = activityAlert Nothing
 	[Tensed "Committing" "Committed", "changes to git"]
 
-showRemotes :: [Remote] -> TenseChunk
-showRemotes = UnTensed . T.intercalate ", " . map (T.pack . Remote.name)
+showRemotes :: [RemoteName] -> TenseChunk
+showRemotes = UnTensed . T.intercalate ", " . map T.pack
 
 syncAlert :: [Remote] -> Alert
-syncAlert rs = baseActivityAlert
+syncAlert = syncAlert' . map Remote.name
+
+syncAlert' :: [RemoteName] -> Alert
+syncAlert' rs = baseActivityAlert
 	{ alertName = Just SyncAlert
 	, alertHeader = Just $ tenseWords
 		[Tensed "Syncing" "Synced", "with", showRemotes rs]
@@ -130,7 +134,12 @@ syncAlert rs = baseActivityAlert
 	}
 
 syncResultAlert :: [Remote] -> [Remote] -> Alert
-syncResultAlert succeeded failed = makeAlertFiller (not $ null succeeded) $
+syncResultAlert succeeded failed = syncResultAlert'
+	(map Remote.name succeeded)
+	(map Remote.name failed)
+
+syncResultAlert' :: [RemoteName] -> [RemoteName] -> Alert
+syncResultAlert' succeeded failed = makeAlertFiller (not $ null succeeded) $
 	baseActivityAlert
 		{ alertName = Just SyncAlert
 		, alertHeader = Just $ tenseWords msg
@@ -320,10 +329,10 @@ pairRequestAcknowledgedAlert who button = baseActivityAlert
 	, alertButtons = maybeToList button
 	}
 
-xmppNeededAlert :: AlertButton -> Alert
-xmppNeededAlert button = Alert
+connectionNeededAlert :: AlertButton -> Alert
+connectionNeededAlert button = Alert
 	{ alertHeader = Just "Share with friends, and keep your devices in sync across the cloud."
-	, alertIcon = Just TheCloud
+	, alertIcon = Just ConnectionIcon
 	, alertPriority = High
 	, alertButtons = [button]
 	, alertClosable = True
@@ -331,7 +340,7 @@ xmppNeededAlert button = Alert
 	, alertMessageRender = renderData
 	, alertCounter = 0
 	, alertBlockDisplay = True
-	, alertName = Just $ XMPPNeededAlert
+	, alertName = Just ConnectionNeededAlert
 	, alertCombiner = Just $ dataCombiner $ \_old new -> new
 	, alertData = []
 	}

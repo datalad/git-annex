@@ -73,7 +73,7 @@ start file = ifAnnexed file addpresent add
 				| otherwise -> do
 					showStart "add" file
 					next $ perform file
-	addpresent (key, _) = ifM isDirect
+	addpresent key = ifM isDirect
 		( ifM (goodContent key file) ( stop , add )
 		, fixup key
 		)
