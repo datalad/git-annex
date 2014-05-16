@@ -11,6 +11,7 @@ git-annex (5.20140422) UNRELEASED; urgency=medium
     fail when the assistant is run with no controlling tty.
   * Added ddar special remote.
     Thanks, Robie Basak.
+  * webapp: Fixed drag and drop to reorder the list of remotes.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 02 May 2014 15:28:53 -0300
 
