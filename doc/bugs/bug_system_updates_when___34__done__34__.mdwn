@@ -17,3 +17,8 @@ In lieu of a better place to ask/report this.  Is it possible to have an email s
 
 # End of transcript or log.
 """]]
+
+> That's because I add a [[done]] to close bugs, not a comment and you are
+> only subscribed to comments. It's possible to subscribe to changes to
+> pages, but ikiwiki does not make this easy. You should file a bug on
+> ikiwiki. --[[Joey]]
