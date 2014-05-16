@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 7"
+ date="2014-05-16T17:57:13Z"
+ content="""
+The repeated attempts to upgrade to 21 when it only downloads 20 are due to a different bug: [[bugs/git-annex_auto_upgrade_is_redundant]]. I've just put in a quick fix that should avoid that.
+
+However, for the purposes of this bug report, I'm interested in the original problem of \"Cannot find old distribution bundle; not upgrading\", and to fix that, I need to know how you originally installed git-annex.
+"""]]
