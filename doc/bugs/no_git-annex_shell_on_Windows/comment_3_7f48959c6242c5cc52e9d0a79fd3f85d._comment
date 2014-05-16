@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 3"
+ date="2014-05-16T20:36:02Z"
+ content="""
+I mean that copying git-annex.exe to git-annex-shell.exe doubles the disk space needed to install git-annex.
+"""]]
