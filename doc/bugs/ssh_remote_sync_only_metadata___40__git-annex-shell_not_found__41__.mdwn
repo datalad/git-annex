@@ -43,3 +43,8 @@ fatal: Could not read from remote repository.
 
 # End of transcript or log.
 """]]
+
+> [[done]]; user fixed their problem and I have 
+> [[bugs/standalone_tarball_symlink_to_PATH_broken]] 
+> for the general problem. I have also improved the message git-annex
+> prints in this situation.
