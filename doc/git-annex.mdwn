@@ -456,6 +456,8 @@ subdirectories).
   Adds a repository to a group, such as "archival", "enduser", or "transfer".
   The groupname must be a single word.
 
+  Omit the groupname to show the current groups that a repository is in.
+
 * `ungroup repository groupname`
 
   Removes a repository from a group.

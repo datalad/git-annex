@@ -12,6 +12,8 @@ git-annex (5.20140422) UNRELEASED; urgency=medium
   * Added ddar special remote.
     Thanks, Robie Basak.
   * webapp: Fixed drag and drop to reorder the list of remotes.
+  * group: When no groups are specified to set, lists the current groups
+    of a repository.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 02 May 2014 15:28:53 -0300
 
