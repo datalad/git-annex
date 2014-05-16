@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 2"
+ date="2014-05-16T20:25:40Z"
+ content="""
+I've fixed this for Linux, as long as readlink -f is supported by the host system. Not fixed for OSX though, and needing to manually symlink things to install is really rather crap.
+"""]]
