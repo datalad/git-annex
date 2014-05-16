@@ -29,7 +29,7 @@
               $else
                 <a href="@{syncToggleLink actions}">
                   $if currentlyconnected
-                    <span .glyphicon .glyphicon-signal>
+                    <span title="Remote changes will be instantly synchronised" .glyphicon .glyphicon-signal>
                   $else
                     $if notSyncing actions
                       <span .glyphicon .glyphicon-ban-circle>
