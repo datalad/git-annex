@@ -1493,6 +1493,14 @@ Here are all the supported configuration settings.
   The command will only be run once *all* running git-annex processes
   are finished using the remote.
 
+* `remote.<name>.annex-shell`
+
+  Specify an alternative git-annex-shell executable on the remote
+  instead of looking for "git-annex-shell" on the PATH.
+
+  This is useful if the git-annex-shell program is outside the PATH
+  or has a non-standard name.
+
 * `remote.<name>.annex-ignore`
 
   If set to `true`, prevents git-annex

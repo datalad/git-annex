@@ -119,6 +119,7 @@ data RemoteGitConfig = RemoteGitConfig
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
+	, remoteAnnexShell :: Maybe String
 	, remoteAnnexSshOptions :: [String]
 	, remoteAnnexRsyncOptions :: [String]
 	, remoteAnnexRsyncUploadOptions :: [String]
@@ -151,6 +152,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexAvailability = getmayberead "availability"
 	, remoteAnnexBare = getmaybebool "bare"
 
+	, remoteAnnexShell = getmaybe "shell"
 	, remoteAnnexSshOptions = getoptions "ssh-options"
 	, remoteAnnexRsyncOptions = getoptions "rsync-options"
 	, remoteAnnexRsyncDownloadOptions = getoptions "rsync-download-options"

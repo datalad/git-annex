@@ -26,10 +26,8 @@ import Config
 {- Generates parameters to ssh to a repository's host and run a command.
  - Caller is responsible for doing any neccessary shellEscaping of the
  - passed command. -}
-toRepo :: Git.Repo -> [CommandParam] -> Annex [CommandParam]
-toRepo r sshcmd = do
-	g <- fromRepo id
-	let c = extractRemoteGitConfig g (Git.repoDescribe r)
+toRepo :: Git.Repo -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
+toRepo r c sshcmd = do
 	let opts = map Param $ remoteAnnexSshOptions c
 	let host = fromMaybe (error "bad ssh url") $ Git.Url.hostuser r
 	params <- sshCachingOptions (host, Git.Url.port r) opts
@@ -41,16 +39,19 @@ git_annex_shell :: Git.Repo -> String -> [CommandParam] -> [(Field, String)] -> 
 git_annex_shell r command params fields
 	| not $ Git.repoIsUrl r = return $ Just (shellcmd, shellopts ++ fieldopts)
 	| Git.repoIsSsh r = do
+		g <- fromRepo id
+		let c = extractRemoteGitConfig g (Git.repoDescribe r)
 		u <- getRepoUUID r
-		sshparams <- toRepo r [Param $ sshcmd u ]
+		sshparams <- toRepo r c [Param $ sshcmd u c]
 		return $ Just ("ssh", sshparams)
 	| otherwise = return Nothing
   where
 	dir = Git.repoPath r
 	shellcmd = "git-annex-shell"
 	shellopts = Param command : File dir : params
-	sshcmd u = unwords $
-		shellcmd : map shellEscape (toCommand shellopts) ++
+	sshcmd u c = unwords $
+		fromMaybe shellcmd (remoteAnnexShell c)
+			: map shellEscape (toCommand shellopts) ++
 		uuidcheck u ++
 		map shellEscape (toCommand fieldopts)
 	uuidcheck NoUUID = []
