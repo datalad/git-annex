@@ -27,3 +27,5 @@ remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook ex
 
 # End of transcript or log.
 """]]
+
+> This seems to be a duplicate of this bug: [[Upgrade_impossible_om_Mac_OSX]]. Please follow up there with any details you can provide. --[[Joey]]
