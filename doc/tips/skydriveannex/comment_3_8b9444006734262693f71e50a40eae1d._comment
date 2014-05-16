@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="Hitting trouble"
+ date="2014-05-16T17:49:59Z"
+ content="""
+    shiny-2:skydriveannex ovi$ git annex initremote skydrive type=external externaltype=skydrive encryption=shared folder=git-annex
+    git-annex: First run: git-annex init
+    shiny-2:skydriveannex ovi$
+
+Above wasn't mentioned in the tutorial so I tried it:
+
+    shiny-2:skydriveannex ovi$ git-annex init
+    init  ok
+    (Recording state in git...)
+    shiny-2:skydriveannex ovi$
+
+What now? Never got asked about any OAUTH...
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-05-16T18:22:26Z"
+ content="""
+Which is why the assistant uses shared encryption by default..
+
+You have set up a webdav repository using a gpg key that is on computer 1. To be able to access this repository on computer 2 you'll need to either copy the gpg private key from computer 1, or give computer 2 its own key and, on computer 1, add that key as one that can access the webdav repository.
+"""]]
