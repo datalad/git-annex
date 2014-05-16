@@ -10,6 +10,8 @@ git-annex (5.20140421~bpo70+1) wheezy-backports; urgency=medium
     - Webapp is not safe for use on multiuser systems, since it does not
       do constant time auth token comparisons, since haskell-securemem is
       not yet backported.
+    - importfeed filename template cannot contain itempubdate variable.
+    - FDO desktop notifications are not suported.
 
  -- Joey Hess <joeyh@debian.org>  Fri, 16 May 2014 16:53:03 -0400
 
