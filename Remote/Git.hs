@@ -87,10 +87,9 @@ list = do
  - cached UUID value. -}
 configRead :: Git.Repo -> Annex Git.Repo
 configRead r = do
-	g <- fromRepo id
-	let c = extractRemoteGitConfig g (Git.repoDescribe r)
+	gc <- Annex.getRemoteGitConfig r
 	u <- getRepoUUID r
-	case (repoCheap r, remoteAnnexIgnore c, u) of
+	case (repoCheap r, remoteAnnexIgnore gc, u) of
 		(_, True, _) -> return r
 		(True, _, _) -> tryGitConfigRead r
 		(False, _, NoUUID) -> tryGitConfigRead r

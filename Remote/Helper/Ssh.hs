@@ -8,13 +8,13 @@
 module Remote.Helper.Ssh where
 
 import Common.Annex
+import qualified Annex
 import qualified Git
 import qualified Git.Url
 import Annex.UUID
 import Annex.Ssh
 import CmdLine.GitAnnexShell.Fields (Field, fieldName)
 import qualified CmdLine.GitAnnexShell.Fields as Fields
-import Types.GitConfig
 import Types.Key
 import Remote.Helper.Messages
 import Utility.Metered
@@ -27,8 +27,8 @@ import Config
  - Caller is responsible for doing any neccessary shellEscaping of the
  - passed command. -}
 toRepo :: Git.Repo -> RemoteGitConfig -> [CommandParam] -> Annex [CommandParam]
-toRepo r c sshcmd = do
-	let opts = map Param $ remoteAnnexSshOptions c
+toRepo r gc sshcmd = do
+	let opts = map Param $ remoteAnnexSshOptions gc
 	let host = fromMaybe (error "bad ssh url") $ Git.Url.hostuser r
 	params <- sshCachingOptions (host, Git.Url.port r) opts
 	return $ params ++ Param host : sshcmd
@@ -39,18 +39,17 @@ git_annex_shell :: Git.Repo -> String -> [CommandParam] -> [(Field, String)] -> 
 git_annex_shell r command params fields
 	| not $ Git.repoIsUrl r = return $ Just (shellcmd, shellopts ++ fieldopts)
 	| Git.repoIsSsh r = do
-		g <- fromRepo id
-		let c = extractRemoteGitConfig g (Git.repoDescribe r)
+		gc <- Annex.getRemoteGitConfig r
 		u <- getRepoUUID r
-		sshparams <- toRepo r c [Param $ sshcmd u c]
+		sshparams <- toRepo r gc [Param $ sshcmd u gc]
 		return $ Just ("ssh", sshparams)
 	| otherwise = return Nothing
   where
 	dir = Git.repoPath r
 	shellcmd = "git-annex-shell"
 	shellopts = Param command : File dir : params
-	sshcmd u c = unwords $
-		fromMaybe shellcmd (remoteAnnexShell c)
+	sshcmd u gc = unwords $
+		fromMaybe shellcmd (remoteAnnexShell gc)
 			: map shellEscape (toCommand shellopts) ++
 		uuidcheck u ++
 		map shellEscape (toCommand fieldopts)

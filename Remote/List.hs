@@ -15,7 +15,6 @@ import Common.Annex
 import qualified Annex
 import Logs.Remote
 import Types.Remote
-import Types.GitConfig
 import Annex.UUID
 import Remote.Helper.Hooks
 import Remote.Helper.ReadOnly
@@ -94,8 +93,7 @@ remoteListRefresh = do
 remoteGen :: M.Map UUID RemoteConfig -> RemoteType -> Git.Repo -> Annex (Maybe Remote)
 remoteGen m t r = do
 	u <- getRepoUUID r
-	g <- fromRepo id
-	let gc = extractRemoteGitConfig g (Git.repoDescribe r)
+	gc <- Annex.getRemoteGitConfig r
 	let c = fromMaybe M.empty $ M.lookup u m
 	mrmt <- generate t r u c gc
 	return $ adjustReadOnly . addHooks <$> mrmt

@@ -22,7 +22,6 @@ import Logs.UUID
 import Logs.Trust
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Utility.Dot as Dot
-import Types.GitConfig
 
 -- a link from the first repository to the second (its remote)
 data Link = Link Git.Repo Git.Repo
@@ -204,9 +203,8 @@ tryScan r
 
 	configlist = Ssh.onRemote r (pipedconfig, Nothing) "configlist" [] []
 	manualconfiglist = do
-		g <- fromRepo id
-		let c = extractRemoteGitConfig g (Git.repoDescribe r)
-		sshparams <- Ssh.toRepo r c [Param sshcmd]
+		gc <- Annex.getRemoteGitConfig r
+		sshparams <- Ssh.toRepo r gc [Param sshcmd]
 		liftIO $ pipedconfig "ssh" sshparams
 	  where
 		sshcmd = cddir ++ " && " ++
