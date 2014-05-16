@@ -21,3 +21,12 @@ The documentation says "sync" only sync metadata.
 ### What version of git-annex are you using? On what operating system?
 
 git-annex version: 5.20140420-ga25b8bb
+
+> `git annex sync`, when used without --content, does not sync the content
+> of files. However, in your example, Alice is still runing the assistant.
+> The assistant will notice when Bob's git annex sync sends it a change,
+> and see there are new files, and go get them. If you don't want that to
+> happen, you'll need to disable the assistant on Alice too, or configure
+> it to not sync with bob, etc.
+> 
+> Not a bug, so [[done]] --[[Joey]]
