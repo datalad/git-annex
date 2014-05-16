@@ -1,0 +1,35 @@
+### Please describe the problem.
+[2014-05-13 00:01:18 SAST] Cronner: Consistency check in progress
+[2014-05-13 00:29:49 SAST] NetWatcherFallback: Syncing with box.com, gitannexbackup 
+[2014-05-13 08:42:48 SAST] main: starting assistant version 5.20140420-ga25b8bb
+Already up-to-date.
+
+(scanning...) [2014-05-13 08:42:49 SAST] Watcher: Performing startup scan
+[2014-05-13 08:42:50 SAST] Upgrader: An upgrade of git-annex is available.  (version 5.20140421)
+(started...) [2014-05-13 13:31:46 SAST] NetWatcherFallback: Syncing with box.com, gitannexbackup 
+
+git-annex: /etc/resolv.conf: openFile: does not exist (No such file or directory)
+[2014-05-13 18:34:12 SAST] NetWatcherFallback: Syncing with box.com, gitannexbackup 
+[2014-05-13 19:34:12 SAST] NetWatcherFallback: Syncing with box.com, gitannexbackup 
+[2014-05-13 19:46:48 SAST] main: starting assistant version 5.20140420-ga25b8bb
+Already up-to-date.
+
+(scanning...) [2014-05-13 19:50:06 SAST] Watcher: Performing startup scan
+
+### What steps will reproduce the problem?
+I don't know, simply saw the error in my logs.
+
+### What version of git-annex are you using? On what operating system?
+Version: 5.20140420-ga25b8bb 
+Build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+Maac OSX 10.9.2
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
