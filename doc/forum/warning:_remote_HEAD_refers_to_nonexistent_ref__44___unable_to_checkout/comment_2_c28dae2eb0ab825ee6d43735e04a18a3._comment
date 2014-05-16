@@ -18,5 +18,5 @@ git-annex uses a heuristic to determine if git-annex-shell is not installed on a
 
 Above, that heuristic seems to have failed; you seem to have given the wrong password or something so it didn't run git-annex-shell, but then it was able to log in for the git fetch. 
 
-You will need to run this command to fix it up: `git config origin.annex-ignore false`
+You will need to run this command to fix it up: `git config remote.origin.annex-ignore false`
 """]]
