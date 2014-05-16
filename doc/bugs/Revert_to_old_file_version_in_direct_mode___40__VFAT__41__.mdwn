@@ -21,3 +21,7 @@ T.
 
 git-annex 5.20140421
 Linux 3.14.3
+
+> VFAT is a crippled file system. I am not going to reimplenent all of git
+> to support it. The suggested method won't work; git-annex would need
+> to add a git-annex revert, etc, etc, etc ad infinitum. [[wontfix|done]] --[[Joey]]
