@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="hyperio"
- ip="62.31.92.216"
- subject="Still not working"
- date="2014-05-17T17:25:04Z"
- content="""
-I experted the public key on computer 2 with gpg --armor --export [keyid] and just imported it on computer 1...
-"""]]
