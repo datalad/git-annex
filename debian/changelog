@@ -1,4 +1,4 @@
-git-annex (5.20140422) UNRELEASED; urgency=medium
+git-annex (5.20140517) unstable; urgency=medium
 
   * webapp: Switched to bootstrap 3.
     Thanks, Sören Brunk.
@@ -20,7 +20,7 @@ git-annex (5.20140422) UNRELEASED; urgency=medium
     from the Linux standalone bundle into PATH.
     Thanks, jlebar.
 
- -- Joey Hess <joeyh@debian.org>  Fri, 02 May 2014 15:28:53 -0300
+ -- Joey Hess <joeyh@debian.org>  Sat, 17 May 2014 13:30:39 -0400
 
 git-annex (5.20140421) unstable; urgency=medium
 
