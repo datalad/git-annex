@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm9ocq1Kb0WL-cz-LPpvd2Xm-q8tIQvqXA"
+ nickname="Dominik"
+ subject="debian squeeze"
+ date="2014-05-16T22:58:52Z"
+ content="""
+I'm tring to set up a bare repo on a debian squeeze server and sync it to windows client. Unfortunately the direct mode does not seem to be available for the git-annex version (3.20120629~bpo60+2
+) in the squeeze-backports 
+
+Would you be able to update the version in that repository? Thank you for your hard work! Git-annex is awesome
+"""]]

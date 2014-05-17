@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://hands.com/~phil/"
- nickname="hands"
- subject="any chance of a wheezy-backports upload?"
- date="2013-05-30T18:43:52Z"
- content="""
-I note that the instructions at the top of the page suggest that one can install the unstable version into wheezy, but as mentioned by [mey.vn](#comment-f9811cbd46471d4159d09d814ac9cf15) this is not the case with 4.20130521 (on amd64 at least) because of the libc6 version dependency.  That being the case, it would be really nice to see this in wheezy-backports as well, or would that require backporting a huge pile of haskell as well? (in which case I can see why you're not keen).
-"""]]
