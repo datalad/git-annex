@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="hyperio"
+ ip="62.31.92.216"
+ subject="Still not working"
+ date="2014-05-17T12:22:17Z"
+ content="""
+Thank you for your reply. I copied over the public key from computer 2 to computer 1 and tried to add it using git annex enableremote box.com keyid+=[keyid]. I am then asked for the passphrase for my private key on computer 1. Afterwards I am asked for the passphrase for the private key on computer 2... why? Obviously I don't have it so I get 
+
+gpg: can't query passphrase in batch mode
+gpg: decryption failed: secret key not available
+
+git-annex: user error (gpg [\"--quiet\",\"--trust-model\",\"always\",\"--batch\",\"--decrypt\"] exited 2)
+
+Why would I need computer 2's secret key? Or I might just get it completely wrong.
+Also, can the passphrase be remembered somewhere, so that I can use the assistant? (otherwise I think it won't work, because I would have to type the passphrase at every synchronisation attempt).
+
+Sorry for my confusion, thanks for your support.
+"""]]
