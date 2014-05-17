@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
+ nickname="Adam"
+ subject="comment 4"
+ date="2014-05-17T00:41:04Z"
+ content="""
+I should have also mentioned, the network topology is an issue that git-annex helps solve.  When my computers are on the same LAN, they could obviously sync directly with each other using git.  But when they are not on the same network, or when one of them is not online, a transfer repo is needed.  Dropbox and git-annex make this simple by handling it for me.  
+
+But if I did all my syncing with git manually, it could end up being quite a mess.  If I took my laptop with me and left the house without syncing it first, I'd have to sync with my server on the Internet.  But if I forgot to push from my desktop computer before I left, the server would be out-of-date, and I'd be stuck.
+
+Dropbox handles this for me by automatically syncing as soon as I make changes.  git-annex does the same thing, but doesn't work with nested git repos.  But giving up the nested git repo would mean giving up version control of my files.  As a developer, you understand why that's not an option!  :)
+
+Again, this seems like a very natural problem to run into, and I don't understand why it is controversial to want git-annex to handle this the way Dropbox or other sync software (e.g. SpiderOak, Wuala) can.
+"""]]
