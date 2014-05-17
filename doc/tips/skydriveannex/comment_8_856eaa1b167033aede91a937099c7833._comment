@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="Done! Success!"
+ date="2014-05-17T19:23:06Z"
+ content="""
+realized I need requests. to install I need pip.
+
+    sudo port install py27-pip
+
+    pip install requests
+
+    login : 'EXCEPTION api.auth_get_token:ImportError('No module named six',)' 
+
+    pip install six
+
+Finished! Seems to be working and I can see this repository in my assistant!
+"""]]
