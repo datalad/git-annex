@@ -39,4 +39,4 @@ the webdav remote.
 
 Setup example:
 
-	# WEBDAV_USERNAME=joey@kitenet.net WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://www.box.com/dav/git-annex chunksize=75mb keyid=joey@kitenet.net
+	# WEBDAV_USERNAME=joey@kitenet.net WEBDAV_PASSWORD=xxxxxxx git annex initremote box.com type=webdav url=https://dav.box.com/dav/git-annex chunksize=75mb keyid=joey@kitenet.net
