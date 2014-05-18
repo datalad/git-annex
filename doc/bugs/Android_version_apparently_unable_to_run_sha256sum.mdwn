@@ -1,8 +1,16 @@
 I’m running git-annex 5.20140517-gee56d21 on Android 4.3.
 
-Running “git annex add filename” from the command line fails to execute sha256sum.
+Running “git annex add filename” from the command line fails to execute sha256sum:
+
+[[!format sh """
+git-annex: sha256sum: createProcess: runInteractiveProcess: exec: does not exist (No such file or directory)
+failed
+git-annex: add: 1 failed
+"""]]
 
 “type sha256sum” says “sha256sum not found”, and indeed, /data/data/ga.androidterm/bin only contains the following files: busybox, git, git-annex, git-receive-pack, git-shell, git-upload-archive, git-upload-pack, gpg, rsync, ssh, ssh-keygen, trustedkeys.gpg.
+
+Running “busybox sha256sum” does the right thing.
 
 The assistant says “Added filename” every time it’s started but the file does not actually get added.
 
