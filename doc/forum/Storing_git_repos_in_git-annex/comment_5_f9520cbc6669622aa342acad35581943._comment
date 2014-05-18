@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://me.yahoo.com/a/FHnTlSBo1eCGJRwueeKeB6.RCaPbGMPr5jxx8A--#ce0d8"
+ nickname="Hamza"
+ subject="comment 5"
+ date="2014-05-18T12:55:47Z"
+ content="""
+My, 2 cents. I used to do the same keep my git repos in Dropbox. I do not push/pull to dropbox I just keep them in there so they sync between my machines. My use case is that I am in the middle of a change and I need to switch computers (home/office) I can continue where I left of on another machine otherwise you have to make wierd commits with broken code. So IMHO it is perfectly reasonable for a single person to keep his git repo in git-annex assuming I don't use it as a central repo where other people pull push.
+
+Plus one giant problem with git annex is that there is no way to revert a file in direct repo. It only sync and reverting to old files take a lot of effort (convert to indirect checkout commit save file to a temp location convert back to direct mode place the file back its place.) with a git repo in annex I can just use git to revert files.
+
+On the other hand, git likes to create a lot of small files and sync them can take a lot of time. annex copies on file at a time.
+
+That said, at one point I did experiment putting a git repo in annex for testing (using --git-dir option) it did work so it should not be that big of a deal to add the support.
+"""]]
