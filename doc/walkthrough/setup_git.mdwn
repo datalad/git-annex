@@ -1,2 +1,0 @@
-If you haven't configured your identity for Git, you will have to do this before git annex will work.
-

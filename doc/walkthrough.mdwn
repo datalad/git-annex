@@ -3,7 +3,6 @@ A walkthrough of the basic features of git-annex.
 [[!toc]]
 
 [[!inline feeds=no trail=yes show=0 template=walkthrough pagenames="""
-	walkthrough/setup_git
 	walkthrough/creating_a_repository
 	walkthrough/adding_a_remote
 	walkthrough/adding_files
