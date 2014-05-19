@@ -68,3 +68,5 @@ Mac OS
 
 # End of transcript or log.
 """]]
+
+> [[done]]; dup of [[bugs/git-annex_auto_upgrade_is_redundant]]. --[[Joey]]
