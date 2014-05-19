@@ -136,3 +136,5 @@ gpg: 68D8501429C42E01: skipped: public key already present
 """]]
 
 [[!meta title="transferkeys protocol needs to include remote name to deal with multiple remotes with same UUID"]]
+
+> [[fixed|done]] --[[Joey]]

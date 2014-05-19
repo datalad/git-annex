@@ -1,3 +1,11 @@
+git-annex (5.20140518) UNRELEASED; urgency=medium
+
+  * assistant: When there are multiple remotes giving different ways
+    to access the same repository, honor remote cost settings and use
+    the cheapest available.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 19 May 2014 15:59:25 -0400
+
 git-annex (5.20140517) unstable; urgency=medium
 
   * webapp: Switched to bootstrap 3.

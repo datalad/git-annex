@@ -17,6 +17,7 @@ import Annex.Transfer
 import qualified Remote
 import Types.Key
 import Utility.SimpleProtocol (ioHandles)
+import Git.Types (RemoteName)
 
 data TransferRequest = TransferRequest Direction Remote Key AssociatedFile
 
@@ -56,13 +57,13 @@ runRequests readh writeh a = do
 		fileEncoding writeh
 	go =<< readrequests
   where
-  	go (d:u:k:f:rest) = do
-		case (deserialize d, deserialize u, deserialize k, deserialize f) of
-			(Just direction, Just uuid, Just key, Just file) -> do
-				mremote <- Remote.remoteFromUUID uuid
+  	go (d:rn:k:f:rest) = do
+		case (deserialize d, deserialize rn, deserialize k, deserialize f) of
+			(Just direction, Just remotename, Just key, Just file) -> do
+				mremote <- Remote.byName' remotename
 				case mremote of
-					Nothing -> sendresult False
-					Just remote -> sendresult =<< a
+					Left _ -> sendresult False
+					Right remote -> sendresult =<< a
 						(TransferRequest direction remote key file)
 			_ -> sendresult False
 		go rest
@@ -75,13 +76,15 @@ runRequests readh writeh a = do
 		hPutStrLn writeh $ serialize b
 		hFlush writeh
 
-sendRequest :: Transfer -> AssociatedFile -> Handle -> IO ()
-sendRequest t f h = do
+sendRequest :: Transfer -> TransferInfo -> Handle -> IO ()
+sendRequest t info h = do
 	hPutStr h $ intercalate fieldSep
 		[ serialize (transferDirection t)
-		, serialize (transferUUID t)
+		, maybe (serialize (fromUUID (transferUUID t)))
+			(serialize . Remote.name)
+			(transferRemote info)
 		, serialize (transferKey t)
-		, serialize f
+		, serialize (associatedFile info)
 		, "" -- adds a trailing null
 		]
 	hFlush h
@@ -116,9 +119,9 @@ instance TCSerialized AssociatedFile where
 	deserialize "" = Just Nothing
 	deserialize f = Just $ Just f
 
-instance TCSerialized UUID where
-	serialize = fromUUID
-	deserialize = Just . toUUID
+instance TCSerialized RemoteName where
+	serialize n = n
+	deserialize n = Just n
 
 instance TCSerialized Key where
 	serialize = key2file

@@ -25,6 +25,7 @@ module Remote (
 	remoteMap',
 	uuidDescriptions,
 	byName,
+	byName',
 	byNameOnly,
 	byNameWithUUID,
 	byCost,
