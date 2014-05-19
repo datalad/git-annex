@@ -24,3 +24,6 @@ This command should take care of:
 These are just the main problems that one faces in this task; they are mostly caused by the fact that the repo is in direct mode.
 
 There are workarounds, like those sketched at <http://unix.stackexchange.com/questions/75557/init-gix-annex-additional-repo-with-existing-files>, but they are all time-consuming and fragile.
+
+> Closing since there is a documented procedure for this
+> and I don't think it can be usefully simplified to a single command. [[done]] --[[Joey]]
