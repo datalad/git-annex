@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 15"
+ date="2014-05-19T15:43:52Z"
+ content="""
+Since version 5.20140517, the git-annex assistant will automatically clean up stale tmp files on startup.
+
+If not using the assistant, you can do it yourself..
+
+So far, all the tmp files people have been kind enough to share the details about with me seem to be created by the assistant when it locks a file down. I know this can result in dangling files if the computer is rebooted while the assistant is in the middle of doing that.
+"""]]

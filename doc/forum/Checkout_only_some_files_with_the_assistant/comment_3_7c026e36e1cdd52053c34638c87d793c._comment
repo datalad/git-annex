@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 3"
+ date="2014-05-19T15:45:57Z"
+ content="""
+There is not currently any UI to do git-annex get/drop. 
+
+There is some recent work on [[tips/file_manager_integration]] which lets you use a file manager and pick files you want and files to drop. Nobody has gotten it working with android file manager yet AFAIK.
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 1"
+ date="2014-05-19T15:05:49Z"
+ content="""
+If spideroak has a CLI tool that can get/put/delete individual files, it should be quite easy to use [[the_external_special_remote|special_remotes/external]] to support it. The demo shell script could be used as a starting place.
+
+I built that so that others can easily write special remotes, and so unless spideroak's CLI is free software, I don't anticipate working on this myself.
+"""]]
