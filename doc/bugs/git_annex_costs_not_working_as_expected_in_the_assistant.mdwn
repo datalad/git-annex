@@ -134,3 +134,5 @@ gpg: 68D8501429C42E01: skipped: public key already present
 
 # End of transcript or log.
 """]]
+
+[[!meta title="transferkeys protocol needs to include remote name to deal with multiple remotes with same UUID"]]
