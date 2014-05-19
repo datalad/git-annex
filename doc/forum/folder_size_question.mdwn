@@ -1,0 +1,3 @@
+For test purposes I copied a folder into my local repository to do some tests. 
+I now had a look at the original folder size and the size of the repository and compared it to the original folder and the repo is about 2x bigger. How come?
+=> http://screencast.com/t/Tvqe5P22Ux

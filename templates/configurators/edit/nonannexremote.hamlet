@@ -1,18 +1,19 @@
-<div .span9 .hero-unit>
-  <h2>
-    Just a git repository
-  <p>
-    This repository is not currently set up as a git annex; #
-    only git metadata is synced with this repository.
-  $if sshrepo
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Just a git repository
     <p>
-      If this repository's ssh server has git-annex installed, you can #
-      upgrade this repository to a full git annex, which will store the
-      contents of your files, not only their metadata.
+      This repository is not currently set up as a git annex; #
+      only git metadata is synced with this repository.
+    $if sshrepo
+      <p>
+        If this repository's ssh server has git-annex installed, you can #
+        upgrade this repository to a full git annex, which will store the
+        contents of your files, not only their metadata.
+      <p>
+        <a .btn .btn-default href="@{UpgradeRepositoryR r}">
+          Upgrade Repository
+    <h2>
+      Repository information
     <p>
-      <a .btn href="@{UpgradeRepositoryR r}">
-        Upgrade Repository
-  <h2>
-    Repository information
-  <p>
-    ^{repoInfo}
+      ^{repoInfo}

@@ -16,6 +16,8 @@ module Annex.Ssh (
 	sshCachingTo,
 	inRepoWithSshCachingTo,
 	runSshCaching,
+	sshAskPassEnv,
+	runSshAskPass
 ) where
 
 import qualified Data.Map as M
@@ -230,7 +232,7 @@ sshReadPort params = (port, reverse args)
 {- When this env var is set, git-annex runs ssh with parameters
  - to use the socket file that the env var contains.
  -
- - This is a workaround for GiT_SSH not being able to contain
+ - This is a workaround for GIT_SSH not being able to contain
  - additional parameters to pass to ssh. -}
 sshCachingEnv :: String
 sshCachingEnv = "GIT_ANNEX_SSHCACHING"
@@ -268,8 +270,17 @@ sshCachingTo remote g
   where
 	uncached = return g
 
-runSshCaching :: [String] -> String -> IO ()
+runSshCaching :: [String] -> FilePath -> IO ()
 runSshCaching args sockfile = do
 	let args' = toCommand (sshConnectionCachingParams sockfile) ++ args
 	let p = proc "ssh" args'
 	exitWith =<< waitForProcess . processHandle =<< createProcess p
+
+{- When this env var is set, git-annex is being used as a ssh-askpass
+ - program, and should read the password from the specified location,
+ - and output it for ssh to read. -}
+sshAskPassEnv :: String
+sshAskPassEnv = "GIT_ANNEX_SSHASKPASS"
+
+runSshAskPass :: FilePath -> IO ()
+runSshAskPass passfile = putStrLn =<< readFile passfile

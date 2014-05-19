@@ -2,7 +2,7 @@
  -
  - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
@@ -36,7 +36,7 @@ daemonize logfd pidfile changedirectory a = do
 	_ <- forkProcess child1
 	out
   where
-	checkalreadyrunning f = maybe noop (const $ alreadyRunning) 
+	checkalreadyrunning f = maybe noop (const alreadyRunning) 
 		=<< checkDaemon f
 	child1 = do
 		_ <- createSession
@@ -54,6 +54,15 @@ daemonize logfd pidfile changedirectory a = do
 		wait =<< asyncWithUnmask (\unmask -> unmask a)
 		out
 	out = exitImmediately ExitSuccess
+
+{- To run an action that is normally daemonized in the forground. -}
+foreground :: Fd -> Maybe FilePath -> IO () -> IO ()
+foreground logfd pidfile a = do
+	maybe noop lockPidFile pidfile
+	_ <- createSession
+	redirLog logfd
+	a
+	exitImmediately ExitSuccess
 #endif
 
 {- Locks the pid file, with an exclusive, non-blocking lock,

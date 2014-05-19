@@ -124,9 +124,10 @@ Poobalasubramanian, Alexandre Garel, David Clark, Jeff Johnson,
 Mica Semrick, Paul Staab, Rémi Vanicat, Martin Holtschneider, Jan Ivar
 Beddari, Peter Simons, Thomas Koch, Justin Geibel, Guillaume DELVIT, Shanti
 Bouchez, Oliver Brandt, François Deppierraz, Chad Walstrom, Tim Mattison,
-Jakub Antoni Tyszko, and 30 anonymous bitcoin users
+Jakub Antoni Tyszko, Casa do Boneco, and 30 anonymous bitcoin users
 
-With an especial thanks to the WikiMedia foundation.
+With an especial thanks to the WikiMedia foundation,
+and Rede Mocambos.
 
 ## 2012-2013
 

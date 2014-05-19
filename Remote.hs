@@ -87,9 +87,8 @@ uuidDescriptions = M.unionWith addName <$> uuidMap <*> remoteMap name
 
 addName :: String -> RemoteName -> String
 addName desc n
-	| desc == n = desc
-	| null desc = n
-	| otherwise = n ++ " (" ++ desc ++ ")"
+	| desc == n || null desc = "[" ++ n ++ "]"
+	| otherwise = desc ++ " [" ++ n ++ "]"
 
 {- When a name is specified, looks up the remote matching that name.
  - (Or it can be a UUID.) -}

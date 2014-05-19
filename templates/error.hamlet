@@ -1,9 +1,15 @@
-<div .navbar .navbar-fixed-top>
-  <div .navbar-inner>
-    <div .container>
-      <a .brand>
+<div .navbar .navbar-inverse .navbar-fixed-top>
+  <div .container>
+    <div .navbar-header>
+      <button type="button" .navbar-toggle data-toggle="collapse" data-target=".navbar-collapse">
+        <span .sr-only>Toggle navigation
+        <span .icon-bar>
+        <span .icon-bar>
+        <span .icon-bar>
+      <a .navbar-brand>
         git-annex
-      <ul .nav>
+    <div .navbar-collapse .collapse>
+      <ul .nav .navbar-nav>
         <li .active>
           <a href="">
             Error
@@ -17,10 +23,9 @@
           <a href="http://git-annex.branchable.com/bugs/">
             File a Bug
 <div .container-fluid>
-  <div .row-fluid>
-    <div .span3>
-    <div .span6>
-      <div .alert .alert-error .alert-block>
+  <div .row>
+    <div .col-sm-6 .col-sm-offset-3>
+      <div .alert .alert-danger .alert-block>
         ^{content}
       <hr>
       git-annex version #{packageversion}

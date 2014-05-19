@@ -1,37 +1,40 @@
-<div .span9 .hero-unit>
-  <h2>
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      $if new
+        Setup complete
+      $else
+        Editing repository
     $if new
-      Setup complete
-    $else
-      Editing repository
-  $if new
+      <p>
+        This repository is set up and ready to go!
+      <p>
+        Now you can do a little more configuring of it, if you like. #
+        Perhaps enter a better name than the automatically generated one.
+      $if istransfer
+        <div .alert .alert-info>
+          This repository is currently in the transfer group. That's the #
+          right choice if you'll use it to shuttle data back and forth #
+          between other repositories. Otherwise, pick one of the other groups.
     <p>
-      This repository is set up and ready to go!
+      <form method="post" .form-horizontal enctype=#{enctype}>
+        <fieldset>
+          ^{form}
+          ^{webAppFormAuthToken}
+          <div .form-group>
+            <div .col-sm-10 .col-sm-offset-2>
+              <button .btn .btn-primary type=submit>
+                Save Changes
+              \ 
+              <a .btn .btn-default href="@{DashboardR}">
+                Cancel #
+    $if new
+      <p>
+        In a hurry? Feel free to skip this step! You can always come back #
+        and configure this repository later.
+    <h3>
+      Repository information
     <p>
-      Now you can do a little more configuring of it, if you like. #
-      Perhaps enter a better name than the automatically generated one.
-    $if istransfer
-      <div .alert .alert-info>
-        This repository is currently in the transfer group. That's the #
-        right choice if you'll use it to shuttle data back and forth #
-        between other repositories. Otherwise, pick one of the other groups.
-  <p>
-    <form method="post" .form-horizontal enctype=#{enctype}>
-      <fieldset>
-        ^{form}
-        ^{webAppFormAuthToken}
-        <div .form-actions>
-          <button .btn .btn-primary type=submit>
-            Save Changes #
-          <a .btn href="@{DashboardR}">
-            Cancel #
-  $if new
+      ^{repoInfo}
     <p>
-      In a hurry? Feel free to skip this step! You can always come back #
-      and configure this repository later.
-  <h3>
-    Repository information
-  <p>
-    ^{repoInfo}
-  <p>
-    ^{repoEncryption}
+      ^{repoEncryption}

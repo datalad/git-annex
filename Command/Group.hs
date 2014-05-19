@@ -26,10 +26,14 @@ start :: [String] -> CommandStart
 start (name:g:[]) = do
 	showStart "group" name
 	u <- Remote.nameToUUID name
-	next $ perform u g
+	next $ setGroup u g
+start (name:[]) = do
+	u <- Remote.nameToUUID name
+	showRaw . unwords . S.toList =<< lookupGroups u
+	stop
 start _ = error "Specify a repository and a group."
 
-perform :: UUID -> Group -> CommandPerform
-perform uuid g = do
+setGroup :: UUID -> Group -> CommandPerform
+setGroup uuid g = do
 	groupChange uuid (S.insert g) 
 	next $ return True

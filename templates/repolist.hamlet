@@ -14,29 +14,31 @@
       $forall (name, repoid, currentlyconnected, actions) <- repolist
         <tr .repoline ##{show repoid}>
           <td .handle>
-            <a .btn .btn-mini .disabled>
-              <i .icon-resize-vertical></i>
+            <a .btn .btn-default .btn-xs .disabled>
+              <span .glyphicon .glyphicon-resize-vertical>
             &nbsp; #{name}
           <td .draghide>
             $if needsEnabled actions
               <a href="@{setupRepoLink actions}">
-                <i .icon-warning-sign></i> not enabled
+                <span .glyphicon .glyphicon-warning-sign>
+                \ not enabled
             $else
               $if notWanted actions
-                <i .icon-trash></i> cleaning out..
+                <span .glyphicon .glyphicon-trash>
+                \ cleaning out..
               $else
                 <a href="@{syncToggleLink actions}">
                   $if currentlyconnected
-                    <i .icon-signal></i> #
+                    <span title="connected; change notification enabled" .glyphicon .glyphicon-signal>
                   $else
                     $if notSyncing actions
-                      <i .icon-ban-circle></i> #
+                      <span .glyphicon .glyphicon-ban-circle>
                     $else
-                      <i .icon-refresh></i> #
+                      <span .glyphicon .glyphicon-refresh>
                   $if notSyncing actions
-                    syncing disabled
+                    \ syncing disabled
                   $else
-                    syncing enabled #
+                    \ syncing enabled #
                       $if lacksUUID repoid
                         (metadata only)
           <td .draghide>
@@ -44,30 +46,37 @@
               <a href="@{setupRepoLink actions}">
                 enable
             $else
-              <span .dropdown #menu-#{show repoid}>
-                <a .dropdown-toggle data-toggle="dropdown" href="#menu-#{show repoid}">
-                  <i .icon-cog></i> actions
-                  <b .caret></b>
+              <div .dropdown #menu-#{show repoid}>
+                <a data-toggle="dropdown" data-target="#" href="#menu-#{show repoid}">
+                  <span .glyphicon .glyphicon-cog>
+                  \ actions #
+                  <span .caret>
                 <ul .dropdown-menu>
                   <li>
                     <a href="@{setupRepoLink actions}">
-                      <i .icon-pencil></i> Edit
+                      <span .glyphicon .glyphicon-pencil>
+                      \ Edit
                     $if not (lacksUUID repoid)
                       <a href="@{SyncNowRepositoryR $ asUUID repoid}">
-                        <i .icon-refresh></i> Sync now
+                        <span .glyphicon .glyphicon-refresh>
+                        \ Sync now
                       <a href="@{DisableRepositoryR $ asUUID repoid}">
-                        <i .icon-minus></i> Disable
+                        <span .glyphicon .glyphicon-minus>
+                        \ Disable
                       <a href="@{DeleteRepositoryR $ asUUID repoid}">
-                        <i .icon-trash></i> Delete
+                        <span .glyphicon .glyphicon-trash>
+                        \ Delete
       $if addmore
         <tr>
           <td colspan="3">
             $if nootherrepos
-              <a .btn .btn-primary .btn-large href="@{AddRepositoryR}">
-                <i .icon-plus-sign></i> Add another repository
+              <a .btn .btn-primary .btn-lg href="@{AddRepositoryR}">
+                <span .glyphicon .glyphicon-plus-sign>
+                \ Add another repository
             $else
-              <a .btn .btn-small href="@{AddRepositoryR}">
-                <i .icon-plus-sign></i> Add another repository
+              <a .btn .btn-default .btn-sm href="@{AddRepositoryR}">
+                <span .glyphicon .glyphicon-plus-sign>
+                \ Add another repository
             <span>
               &nbsp; Sync your files with another device, or #
               share with a friend.

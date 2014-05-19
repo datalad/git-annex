@@ -2,7 +2,7 @@
  -
  - Copyright 2011-2012 Joey Hess <joey@kitenet.net>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE ScopedTypeVariables #-}
@@ -18,7 +18,7 @@ import Utility.Data
 
 {- Catches IO errors and returns a Bool -}
 catchBoolIO :: IO Bool -> IO Bool
-catchBoolIO a = catchDefaultIO False a
+catchBoolIO = catchDefaultIO False
 
 {- Catches IO errors and returns a Maybe -}
 catchMaybeIO :: IO a -> IO (Maybe a)

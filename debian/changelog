@@ -1,3 +1,27 @@
+git-annex (5.20140517) unstable; urgency=medium
+
+  * webapp: Switched to bootstrap 3.
+    Thanks, Sören Brunk.
+  * Standalone builds now check gpg signatures before upgrading.
+  * Simplified repository description line format. The remote name,
+    if any, is always in square brackets after the description.
+  * assistant: Clean up stale tmp files on startup.
+  * webapp: Better ssh password prompting.
+  * Depend on git-remote-gcrypt 0.20130908-6. Older versions
+    fail when the assistant is run with no controlling tty.
+  * Added ddar special remote.
+    Thanks, Robie Basak.
+  * webapp: Fixed drag and drop to reorder the list of remotes.
+  * group: When no groups are specified to set, lists the current groups
+    of a repository.
+  * Add remote.$name.annex-shell configuration.
+    Thanks, Fraser Tweedale 
+  * Support symlinking git-annex and git-annex-shell
+    from the Linux standalone bundle into PATH.
+    Thanks, jlebar.
+
+ -- Joey Hess <joeyh@debian.org>  Sat, 17 May 2014 13:30:39 -0400
+
 git-annex (5.20140421~bpo70+1) wheezy-backports; urgency=medium
 
   * Updating backport to newest release.

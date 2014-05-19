@@ -2,7 +2,7 @@
  -
  - Copyright 2011 Joey Hess <joey@kitenet.net>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -
  -
  - And now a rant: 
@@ -111,7 +111,7 @@ roughSize units short i
 	| i < 0 = '-' : findUnit units' (negate i)
 	| otherwise = findUnit units' i
   where
-	units' = reverse $ sort units -- largest first
+	units' = sortBy (flip compare) units -- largest first
 
 	findUnit (u@(Unit s _ _):us) i'
 		| i' >= s = showUnit i' u

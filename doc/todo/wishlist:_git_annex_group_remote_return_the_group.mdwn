@@ -1,0 +1,11 @@
+Hi,
+
+It would be good if the command 
+
+    git annex group repository
+
+returned the current list of groups the repository belongs to...(can it belong to more than one?)
+
+Currently the command requires an additional parameter to set the group.
+
+> [[done]] --[[Joey]] 

@@ -1,0 +1,13 @@
+I've moved out of implementation mode (unable to concentrate enough), and
+into high-level design mode.
+
+[[Syncing efficiency|design/assistant/syncing/efficiency]] has been an open TODO for years,
+to find a way to avoid flood filling the network, and find more efficient
+ways to ensure data only gets to the nodes that want it. Relatedly,
+Android devices  often need a way to mark individual files they want to have.
+Had a [very productive discussion with Vince and Fernao](http://joeyh.name/blog/entry/who_needs_whiteboards_when_you_have_strange_seed_pods_from_the_jungle/)
+and I think we're heading toward a design that will address both these
+needs, as well as some more Brazil-specific use cases, about which more
+later.
+
+Today's work was sponsored by Casa do Boneco.

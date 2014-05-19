@@ -1,0 +1,35 @@
+### Please describe the problem.
+
+I have to run the webapp to do upgrades...it would be nice to have a CLI.  I would hate for the CLI to be less featured than the webapp.  Unless I've missed it in the man page?
+
+### What steps will reproduce the problem?
+
+
+### What version of git-annex are you using? On what operating system?
+
+
+### Please provide any additional information below.
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
+
+> The CLI for performing upgrades is:
+> 
+>	wget http://url/file
+>	$unpack file
+> 
+> Where on linux $unpack is "tar xf" and on OSX it's something with hduutil
+> attach dmg.
+>
+> Or, even better, it's `apt-get upgrade; apt-get install git-annex` or the
+> fine equivilant provided by your fine OS.
+> 
+> Command-line programs do not typically provide upgrade commands, 
+> because this is up to the OS, or easily handled with other command-line
+> programs. I see no reason for git-annex to be different, so [[done]]
+> --[[Joey]]

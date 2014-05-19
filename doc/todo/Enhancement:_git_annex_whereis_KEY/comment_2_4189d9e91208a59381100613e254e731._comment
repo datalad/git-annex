@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="zardoz"
+ ip="134.147.14.84"
+ subject="comment 2"
+ date="2014-05-15T13:03:47Z"
+ content="""
+Okay, I suppose one way of doing a search that works like that would do a «git log --stat -S'KEY' $commit», starting with HEAD and then walking the parents.
+"""]]

@@ -3,7 +3,7 @@
  -
  - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE CPP #-}
@@ -62,7 +62,7 @@ query ch send receive = do
 	s <- readMVar ch
 	restartable s (send $ coProcessTo s) $ const $
 		restartable s (hFlush $ coProcessTo s) $ const $
-			restartable s (receive $ coProcessFrom s) $
+			restartable s (receive $ coProcessFrom s)
 				return
   where
   	restartable s a cont

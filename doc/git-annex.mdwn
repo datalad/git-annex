@@ -456,6 +456,8 @@ subdirectories).
   Adds a repository to a group, such as "archival", "enduser", or "transfer".
   The groupname must be a single word.
 
+  Omit the groupname to show the current groups that a repository is in.
+
 * `ungroup repository groupname`
 
   Removes a repository from a group.
@@ -1491,6 +1493,14 @@ Here are all the supported configuration settings.
   The command will only be run once *all* running git-annex processes
   are finished using the remote.
 
+* `remote.<name>.annex-shell`
+
+  Specify an alternative git-annex-shell executable on the remote
+  instead of looking for "git-annex-shell" on the PATH.
+
+  This is useful if the git-annex-shell program is outside the PATH
+  or has a non-standard name.
+
 * `remote.<name>.annex-ignore`
 
   If set to `true`, prevents git-annex
@@ -1645,6 +1655,12 @@ Here are all the supported configuration settings.
 
   Used by bup special remotes, this configures
   the location of the bup repository to use. Normally this is automatically
+  set up by `git annex initremote`, but you can change it if needed.
+
+* `remote.<name>.ddarrepo`
+
+  Used by ddar special remotes, this configures
+  the location of the ddar repository to use. Normally this is automatically
   set up by `git annex initremote`, but you can change it if needed.
 
 * `remote.<name>.directory`

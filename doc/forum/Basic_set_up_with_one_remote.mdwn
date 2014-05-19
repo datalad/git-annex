@@ -1,0 +1,14 @@
+Hi, I'm new to git annex and so far it's looking really useful. I'm convinced what I'm trying to achieve is possible, but I can't seem to hit upon the right combination. Here's what I'd like to set up.
+
+One server with git annex / rsync / ssh access, but configured such that it contains a history of all the files as a full backup.
+Two clients WITHOUT ssh access (these are portable machines and I'd rather not open any ports I don't absolutely have to).
+
+I've used the assistant to set up syncing between all three, using a jabber account to send signals and the server to pass on the files between the machines. This all works beautifully. But what I can't seem to get right is the server / backup aspect. If I set up the server using the assistant as a remote, and set it to "full backup" from the drop down list, it doesn't seem to have any files in the repository except in the .git/annex/objects folder. Which are all cryptic file names and not really accessible. If I run commands such as 
+
+> git annex find
+
+(which should list all files as far as I can tell) in the server repository, it doesn't list any files at all. As the clients are all set up as direct repositories I can't access any history of the files there, so this doesn't seem to be quite what I'm after. The sync is working, but I really want the backup / history aspect as well.
+
+Does anyone know if what I want is possible? If so hopefully I'm close and someone can point out where I've gone wrong. I'm not afraid of the command line, but the assistant is a very convenient way to get started. 
+
+Thanks for your help.

@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="http://mildred.fr/"
+ nickname="Mildred"
+ subject="submodules with git-annex in direct mode"
+ date="2014-04-27T14:05:20Z"
+ content="""
+Does this work well even with direct mode ?
+How is this managed in direct mode ?
+
+Coming back from direct mode to indirect mode (required when I want to run git commands) I found that the .gitmodules file was an annex symlink (to .git/annex/objects/...). I just recovered from corrupt repository and may have made mistakes, but is this a risk under normal curcumstances ?
+"""]]

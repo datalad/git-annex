@@ -1,0 +1,21 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmTIL7ubr5opWM69Q5VtCxuxC2H0SSnzic"
+ nickname="Petr"
+ subject="SOLVED"
+ date="2014-04-29T21:42:39Z"
+ content="""
+You were right. 
+When executed command over SSH it does not perform login (so .**rc files are not necessarily loaded). 
+
+Zsh:
+.zprofile or rather .zshenv (is loaded, use these to set PATH)
+Note: .profile is not loaded at all (it's Bash stuff)
+
+Bash:
+.bashrc is said to be loaded but not .profile
+
+See:
+http://shreevatsa.wordpress.com/2008/03/30/zshbash-startup-files-loading-order-bashrc-zshrc-etc/
+http://superuser.com/questions/187639/zsh-not-hitting-profile
+https://wiki.archlinux.org/index.php/zsh
+"""]]

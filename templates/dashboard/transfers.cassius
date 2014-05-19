@@ -1,2 +1,8 @@
 .forcewrap
   word-wrap: break-word
+.small-margin-bottom
+  margin-bottom: 10px
+.small-margin-top
+  margin-top: 10px
+.tiny-margin-bottom
+  margin-bottom: 4px

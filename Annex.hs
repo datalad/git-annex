@@ -28,6 +28,7 @@ module Annex (
 	getGitConfig,
 	changeGitConfig,
 	changeGitRepo,
+	getRemoteGitConfig,
 	withCurrentState,
 ) where
 
@@ -266,6 +267,13 @@ changeGitRepo r = changeState $ \s -> s
 	{ repo = r
 	, gitconfig = extractGitConfig r
 	}
+
+{- Gets the RemoteGitConfig from a remote, given the Git.Repo for that
+ - remote. -}
+getRemoteGitConfig :: Git.Repo -> Annex RemoteGitConfig
+getRemoteGitConfig r = do
+	g <- gitRepo
+	return $ extractRemoteGitConfig g (Git.repoDescribe r)
 
 {- Converts an Annex action into an IO action, that runs with a copy
  - of the current Annex state. 

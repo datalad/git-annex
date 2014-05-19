@@ -112,8 +112,13 @@ checkNetMonitor client = do
  -}
 listenNMConnections :: Client -> (Bool -> IO ()) -> IO ()
 listenNMConnections client setconnected =
-	listen client matcher $ \event -> mapM_ handle
-		(map dictionaryItems $ mapMaybe fromVariant $ signalBody event)
+#if MIN_VERSION_dbus(0,10,7)
+	void $ addMatch client matcher
+#else
+	listen client matcher
+#endif
+		$ \event -> mapM_ handle
+			(map dictionaryItems $ mapMaybe fromVariant $ signalBody event)
   where
 	matcher = matchAny
 		{ matchInterface = Just "org.freedesktop.NetworkManager"
@@ -142,10 +147,10 @@ listenNMConnections client setconnected =
  -}
 listenWicdConnections :: Client -> (Bool -> IO ()) -> IO ()
 listenWicdConnections client setconnected = do
-	listen client connmatcher $ \event ->
+	match connmatcher $ \event ->
 		when (any (== wicd_success) (signalBody event)) $
 			setconnected True
-	listen client statusmatcher $ \event -> handle (signalBody event)
+	match statusmatcher $ \event -> handle (signalBody event)
   where
 	connmatcher = matchAny
 		{ matchInterface = Just "org.wicd.daemon"
@@ -160,7 +165,12 @@ listenWicdConnections client setconnected = do
 	handle status
 		| any (== wicd_disconnected) status = setconnected False
 		| otherwise = noop
-
+	match matcher a = 
+#if MIN_VERSION_dbus(0,10,7)
+		void $ addMatch client matcher a
+#else
+		listen client matcher a
+#endif
 #endif
 
 handleConnection :: Assistant ()

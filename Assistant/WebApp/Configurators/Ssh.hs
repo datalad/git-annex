@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurator for ssh-based remotes
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -13,6 +13,7 @@ module Assistant.WebApp.Configurators.Ssh where
 import Assistant.WebApp.Common
 import Assistant.WebApp.Gpg
 import Assistant.Ssh
+import Annex.Ssh
 import Assistant.WebApp.MakeRemote
 import Logs.Remote
 import Remote
@@ -25,9 +26,15 @@ import qualified Remote.GCrypt as GCrypt
 import Annex.UUID
 import Logs.UUID
 import Assistant.RemoteControl
+import Types.Creds
+import Assistant.CredPairCache
+import Config.Files
+import Utility.Tmp
+import Utility.FileMode
+import Utility.ThreadScheduler
+import Utility.Env
 
 #ifdef mingw32_HOST_OS
-import Utility.Tmp
 import Utility.Rsync
 #endif
 
@@ -42,10 +49,17 @@ sshConfigurator = page "Add a remote server" (Just Configuration)
 data SshInput = SshInput
 	{ inputHostname :: Maybe Text
 	, inputUsername :: Maybe Text
+	, inputAuthMethod :: AuthMethod
+	, inputPassword :: Maybe Text
 	, inputDirectory :: Maybe Text
 	, inputPort :: Int
 	}
-	deriving (Show)
+
+data AuthMethod
+	= Password
+	| CachedPassword
+	| ExistingSshKey
+	deriving (Eq, Show)
 
 {- SshInput is only used for applicative form prompting, this converts
  - the result of such a form into a SshData. -}
@@ -66,6 +80,8 @@ mkSshInput :: SshData -> SshInput
 mkSshInput s = SshInput
 	{ inputHostname = Just $ sshHostName s
 	, inputUsername = sshUserName s
+	, inputAuthMethod = if needsPubKey s then CachedPassword else ExistingSshKey
+	, inputPassword = Nothing
 	, inputDirectory = Just $ sshDirectory s
 	, inputPort = sshPort s
 	}
@@ -76,11 +92,19 @@ sshInputAForm :: Field Handler Text -> SshInput -> AForm Handler SshInput
 sshInputAForm :: Field WebApp WebApp Text -> SshInput -> AForm WebApp WebApp SshInput
 #endif
 sshInputAForm hostnamefield def = SshInput
-	<$> aopt check_hostname "Host name" (Just $ inputHostname def)
-	<*> aopt check_username "User name" (Just $ inputUsername def)
-	<*> aopt textField "Directory" (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
-	<*> areq intField "Port" (Just $ inputPort def)
+	<$> aopt check_hostname (bfs "Host name") (Just $ inputHostname def)
+	<*> aopt check_username (bfs "User name") (Just $ inputUsername def)
+	<*> areq (selectFieldList authmethods) (bfs "Authenticate with") (Just $ inputAuthMethod def)
+	<*> aopt passwordField (bfs "Password") Nothing
+	<*> aopt textField (bfs "Directory") (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
+	<*> areq intField (bfs "Port") (Just $ inputPort def)
   where
+	authmethods :: [(Text, AuthMethod)]
+	authmethods =
+		[ ("password", Password)
+		, ("existing ssh key", ExistingSshKey)
+		]
+
 	check_username = checkBool (all (`notElem` "/:@ \t") . T.unpack)
 		bad_username textField
 
@@ -121,11 +145,11 @@ postAddSshR :: Handler Html
 postAddSshR = sshConfigurator $ do
 	username <- liftIO $ T.pack <$> myUserName
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ sshInputAForm textField $
-			SshInput Nothing (Just username) Nothing 22
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ sshInputAForm textField $
+			SshInput Nothing (Just username) Password Nothing Nothing 22
 	case result of
 		FormSuccess sshinput -> do
-			s <- liftIO $ testServer sshinput
+			s <- liftAssistant $ testServer sshinput
 			case s of
 				Left status -> showform form enctype status
 				Right (sshdata, u) -> liftH $ redirect $ ConfirmSshR sshdata u
@@ -173,13 +197,13 @@ enableSpecialSshRemote getsshinput rsyncnetsetup genericsetup u = do
 	case (mkSshInput . unmangle <$> getsshinput m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
 			((result, form), enctype) <- liftH $
-				runFormPostNoToken $ renderBootstrap $ sshInputAForm textField sshinput
+				runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ sshInputAForm textField sshinput
 			case result of
 				FormSuccess sshinput'
 					| isRsyncNet (inputHostname sshinput') ->
 						void $ liftH $ rsyncnetsetup sshinput' reponame
 					| otherwise -> do
-						s <- liftIO $ testServer sshinput'
+						s <- liftAssistant $ testServer sshinput'
 						case s of
 							Left status -> showform form enctype status
 							Right (sshdata, _u) -> void $ liftH $ genericsetup
@@ -205,44 +229,34 @@ wrapCommand cmd = "if [ -x " ++ commandWrapper ++ " ]; then " ++ commandWrapper 
 commandWrapper :: String
 commandWrapper = "~/.ssh/git-annex-wrapper"
 
-{- Test if we can ssh into the server.
- -
- - Two probe attempts are made. First, try sshing in using the existing
- - configuration, but don't let ssh prompt for any password. If
- - passwordless login is already enabled, use it. Otherwise,
- - a special ssh key will need to be generated just for this server.
+{- Test if we can ssh into the server, using the specified AuthMethod.
  -
  - Once logged into the server, probe to see if git-annex-shell,
  - git, and rsync are available. 
  -
- - Note that, ~/.ssh/git-annex-shell may be
- - present, while git-annex-shell is not in PATH.
+ - Note that ~/.ssh/git-annex-shell may be present, while
+ - git-annex-shell is not in PATH.
  - Also, git and rsync may not be in PATH; as long as the commandWrapper
  - is present, assume it is able to be used to run them.
  -
  - Also probe to see if there is already a git repository at the location
  - with either an annex-uuid or a gcrypt-id set. (If not, returns NoUUID.)
  -}
-testServer :: SshInput -> IO (Either ServerStatus (SshData, UUID))
+testServer :: SshInput -> Assistant (Either ServerStatus (SshData, UUID))
 testServer (SshInput { inputHostname = Nothing }) = return $
 	Left $ UnusableServer "Please enter a host name."
 testServer sshinput@(SshInput { inputHostname = Just hn }) = do
-	(status, u) <- probe [sshOpt "NumberOfPasswordPrompts" "0"]
+	(status, u) <- probe
 	case capabilities status of
-		[] -> do
-			(status', u') <- probe []
-			case capabilities status' of
-				[] -> return $ Left status'
-				cs -> ret cs True u'
-		cs -> ret cs False u
+		[] -> return $ Left status
+		cs -> do
+			let sshdata = (mkSshData sshinput)
+				{ needsPubKey = inputAuthMethod sshinput /= ExistingSshKey
+				, sshCapabilities = cs
+				}
+			return $ Right (sshdata, u)
   where
-	ret cs needspubkey u = do
-		let sshdata = (mkSshData sshinput)
-			{ needsPubKey = needspubkey
-			, sshCapabilities = cs
-			}
-		return $ Right (sshdata, u)
-	probe extraopts = do
+	probe = do
 		let remotecommand = shellWrap $ intercalate ";"
 			[ report "loggedin"
 			, checkcommand "git-annex-shell"
@@ -252,12 +266,13 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 			, checkcommand commandWrapper
 			, getgitconfig (T.unpack <$> inputDirectory sshinput)
 			]
-		knownhost <- knownHost hn
-		let sshopts = filter (not . null) $ extraopts ++
+		knownhost <- liftIO $ knownHost hn
+		let sshopts =
 			{- If this is an already known host, let
 			 - ssh check it as usual.
 			 - Otherwise, trust the host key. -}
-			[ if knownhost then "" else sshOpt "StrictHostKeyChecking" "no"
+			[ sshOpt "StrictHostKeyChecking" $
+				if knownhost then "yes" else "no"
 			, "-n" -- don't read from stdin
 			, "-p", show (inputPort sshinput)
 			, genSshHost
@@ -265,7 +280,7 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 				(inputUsername sshinput)
 			, remotecommand
 			]
-		parsetranscript . fst <$> sshTranscript sshopts Nothing
+		parsetranscript . fst <$> sshAuthTranscript sshinput sshopts Nothing
 	parsetranscript s =
 		let cs = map snd $ filter (reported . fst)
 			[ ("git-annex-shell", GitAnnexShellCapable)
@@ -298,18 +313,83 @@ testServer sshinput@(SshInput { inputHostname = Just hn }) = do
 		| not (null d) = "cd " ++ shellEscape d ++ " && git config --list"
 	getgitconfig _ = "echo"
 
-{- Runs a ssh command; if it fails shows the user the transcript,
- - and if it succeeds, runs an action. -}
-sshSetup :: [String] -> Maybe String -> Handler Html -> Handler Html
-sshSetup opts input a = do
-	(transcript, ok) <- liftIO $ sshTranscript opts input
+{- Runs a ssh command to set up the repository; if it fails shows
+ - the user the transcript, and if it succeeds, runs an action. -}
+sshSetup :: SshInput -> [String] -> Maybe String -> Handler Html -> Handler Html
+sshSetup sshinput opts input a = do
+	(transcript, ok) <- liftAssistant $ sshAuthTranscript sshinput opts input
 	if ok
-		then a
-		else showSshErr transcript
+		then do
+			liftAssistant $ expireCachedCred $ getLogin sshinput
+			a
+		else sshErr sshinput transcript
 
-showSshErr :: String -> Handler Html
-showSshErr msg = sshConfigurator $
-	$(widgetFile "configurators/ssh/error")
+sshErr :: SshInput -> String -> Handler Html
+sshErr sshinput msg
+	| inputAuthMethod sshinput == CachedPassword =
+		ifM (liftAssistant $ isNothing <$> getCachedCred (getLogin sshinput))
+			( sshConfigurator $
+				$(widgetFile "configurators/ssh/expiredpassword")
+			, showerr
+			)
+	| otherwise = showerr
+  where
+	showerr = sshConfigurator $
+		$(widgetFile "configurators/ssh/error")
+
+{- Runs a ssh command, returning a transcript of its output.
+ -
+ - Depending on the SshInput, avoids using a password, or uses a
+ - cached password. ssh is coaxed to use git-annex as SSH_ASKPASS
+ - to get the password.
+ -
+ - Note that ssh will only use SSH_ASKPASS when DISPLAY is set and there
+ - is no controlling terminal. On Unix, that is set up when the assistant
+ - starts, by calling createSession. On Windows, all of stdin, stdout, and
+ - stderr must be disconnected from the terminal. This is accomplished
+ - by always providing input on stdin.
+ -}
+sshAuthTranscript :: SshInput -> [String] -> (Maybe String) -> Assistant (String, Bool)
+sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
+	ExistingSshKey -> liftIO $ go [passwordprompts 0] Nothing
+	CachedPassword -> setupAskPass
+	Password -> do
+		cacheCred (login, geti inputPassword) (Seconds $ 60 * 10)
+		setupAskPass
+  where
+	login = getLogin sshinput
+	geti f = maybe "" T.unpack (f sshinput)
+
+	go extraopts env = processTranscript' "ssh" (extraopts ++ opts) env $
+		Just (fromMaybe "" input)
+
+	setupAskPass = do
+		program <- liftIO readProgramFile
+		v <- getCachedCred login
+		liftIO $ case v of
+			Nothing -> go [passwordprompts 0] Nothing
+			Just pass -> withTmpFile "ssh" $ \passfile h -> do
+				hClose h
+				writeFileProtected passfile pass
+				env <- getEnvironment
+				let env' = addEntries
+					[ ("SSH_ASKPASS", program)
+					, (sshAskPassEnv, passfile)
+					-- ssh does not use SSH_ASKPASS
+					-- unless DISPLAY is set, and
+					-- there is no controlling
+					-- terminal.
+					, ("DISPLAY", ":0")
+					] env
+				go [passwordprompts 1] (Just env')
+	
+	passwordprompts :: Int -> String
+	passwordprompts = sshOpt "NumberOfPasswordPrompts" . show
+
+getLogin :: SshInput -> Login
+getLogin sshinput = geti inputUsername ++ "@" ++ geti inputHostname
+  where
+	geti f = maybe "" T.unpack (f sshinput)
 
 {- The UUID will be NoUUID when the repository does not already exist,
  - or was not a git-annex repository before. -}
@@ -343,7 +423,7 @@ getCombineSshR sshdata = prepSsh False sshdata $ \sshdata' ->
 
 getRetrySshR :: SshData -> Handler ()
 getRetrySshR sshdata = do
-	s <- liftIO $ testServer $ mkSshInput sshdata
+	s <- liftAssistant $ testServer $ mkSshInput sshdata
 	redirect $ either (const $ ConfirmSshR sshdata NoUUID) (uncurry ConfirmSshR) s
 
 {- Making a new git repository. -}
@@ -403,7 +483,7 @@ prepSsh needsinit sshdata a
 	| otherwise = prepSsh' needsinit sshdata sshdata Nothing a
 
 prepSsh' :: Bool -> SshData -> SshData -> Maybe SshKeyPair -> (SshData -> Handler Html) -> Handler Html
-prepSsh' needsinit origsshdata sshdata keypair a = sshSetup
+prepSsh' needsinit origsshdata sshdata keypair a = sshSetup (mkSshInput origsshdata)
 	 [ "-p", show (sshPort origsshdata)
 	 , genSshHost (sshHostName origsshdata) (sshUserName origsshdata)
 	 , remoteCommand
@@ -450,8 +530,8 @@ getAddRsyncNetR = postAddRsyncNetR
 postAddRsyncNetR :: Handler Html
 postAddRsyncNetR = do
 	((result, form), enctype) <- runFormPostNoToken $
-		renderBootstrap $ sshInputAForm hostnamefield $
-			SshInput Nothing Nothing Nothing 22
+		renderBootstrap3 bootstrapFormLayout $ sshInputAForm hostnamefield $
+			SshInput Nothing Nothing Password Nothing Nothing 22
 	let showform status = inpage $
 		$(widgetFile "configurators/rsync.net/add")
 	case result of
@@ -476,6 +556,7 @@ postAddRsyncNetR = do
 	go sshinput = do
 		let reponame = genSshRepoName "rsync.net" 
 			(maybe "" T.unpack $ inputDirectory sshinput)
+		
 		prepRsyncNet sshinput reponame $ \sshdata -> inpage $ 
 			checkExistingGCrypt sshdata $ do
 				secretkeys <- sortBy (comparing snd) . M.toList
@@ -490,7 +571,7 @@ getMakeRsyncNetGCryptR :: SshData -> RepoKey -> Handler Html
 getMakeRsyncNetGCryptR sshdata NoRepoKey = whenGcryptInstalled $
 	withNewSecretKey $ getMakeRsyncNetGCryptR sshdata . RepoKey
 getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $
-	sshSetup [sshhost, gitinit] Nothing $ makeGCryptRepo keyid sshdata
+	sshSetup (mkSshInput sshdata) [sshhost, gitinit] Nothing $ makeGCryptRepo keyid sshdata
   where
 	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
 	gitinit = "git init --bare " ++ T.unpack (sshDirectory sshdata)
@@ -514,11 +595,6 @@ enableRsyncNetGCrypt sshinput reponame =
  - To append the ssh key to rsync.net's authorized_keys, their
  - documentation recommends a dd methodd, where the line is fed
  - in to ssh over stdin.
- -
- - On Windows, ssh password prompting happens on stdin, so cannot
- - feed the key in that way. Instead, first rsync down any current
- - authorized_keys file, then modifiy it, and then rsync it back up.
- - This means 2 password prompts rather than one for Windows.
  -}
 prepRsyncNet :: SshInput -> String -> (SshData -> Handler Html) -> Handler Html
 prepRsyncNet sshinput reponame a = do
@@ -536,7 +612,6 @@ prepRsyncNet sshinput reponame a = do
 		, sshhost
 		, cmd
 		]
-#ifndef mingw32_HOST_OS
 	{- I'd prefer to separate commands with && , but
 	 - rsync.net's shell does not support that. -}
 	let remotecommand = intercalate ";"
@@ -545,22 +620,7 @@ prepRsyncNet sshinput reponame a = do
 		, "dd of=.ssh/authorized_keys oflag=append conv=notrunc"
 		, "mkdir -p " ++ T.unpack (sshDirectory sshdata)
 		]
-	sshSetup (torsyncnet remotecommand) (Just $ sshPubKey keypair) (a sshdata)
-#else
-	liftIO $ withTmpDir "rsyncnet" $ \tmpdir -> do
-		createDirectory $ tmpdir </> ".ssh"
-		(oldkeys, _) <- sshTranscript (torsyncnet "cat .ssh/authorized_keys") Nothing
-		writeFile (tmpdir </> ".ssh" </> "authorized_keys")
-			(sshPubKey keypair ++ "\n" ++ oldkeys)
-		liftIO $ putStrLn "May need to prompt for your rsync.net password one more time..."
-		void $ rsync
-			[ Param "-r"
-			, File $ tmpdir </> ".ssh/"
-			, Param $ sshhost ++ ":.ssh/"
-			]
-	let remotecommand = "mkdir -p " ++ T.unpack (sshDirectory sshdata)
-	sshSetup (torsyncnet remotecommand) Nothing (a sshdata)
-#endif
+	sshSetup sshinput (torsyncnet remotecommand) (Just $ sshPubKey keypair) (a sshdata)
 
 isRsyncNet :: Maybe Text -> Bool
 isRsyncNet Nothing = False

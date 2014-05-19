@@ -1,0 +1,8 @@
+It seems that currently, syncing will result in every branch winding
+up everywhere within the network of git annex nodes. It would be great
+if one could keep some branches purely local.
+
+The «fetch» part of «sync» seems to respect the fetch refspec in the
+git config, but the push part seems to always push everything.
+
+> [[done]]

@@ -1,0 +1,63 @@
+[[!comment format=mdwn
+ username="erics"
+ ip="76.10.136.8"
+ subject="comment 3"
+ date="2014-05-04T00:48:55Z"
+ content="""
+I think things would be simpler if a \"drop --relaxed\" file were to look to
+the outside world just like one that was dropped without \"--relaxed\".
+In particular, even if a file is dropped with \"--relaxed\":
+
+  - the file's work-tree symlink should be broken synchronously by the
+   \"drop --relaxed\" command (as opposed to only being broken later,
+   if and when the file physically goes away)
+
+  - other repos should no longer see the file as available from this repo
+
+Basically, the idea is to add a third state, but **not** a user-visible one.
+Rather, it should be a well hidden implementation detail, which doesn't
+affect the conceptual model (very much like git's own distinction between
+loose and packed objects).  Thus, *logically dropped* would be a
+better name than *potentially dropped*.
+
+Corollaries:
+
+  - A logically (but not physically) dropped file should *not* count towards
+    satisfying the numcopies limit, i.e. if some other repo has been asked
+    to drop the file too
+
+  - That in turn means that \"git annex drop --relaxed\" needs to satisfy a
+    numcopies check at the time the user runs it; it's not enough to only do
+    the check later, at physical-deletion time.  (At that point, there should probably be
+    a second numcopies check.  I don't know whether the model requires it,
+    but even if not, paranoia is good :-) )
+
+  - If the user wants to use the file again, they have to \"git annex get\" it
+    again, just like usual -- but if the file hasn't been physically deleted yet,
+    the \"get\" will be nearly instantaneous, since the data won't have to be copied
+
+One possible implementation would be to have \"drop --relaxed\" behave almost identically
+to a non-relaxed drop -- do all the same safety checks, bookkeeping, etc.  The only
+difference would be to have it rename the file at the end, rather
+than deleting it outright.  (Logically dropped files could stay in their same
+directory, but with a distinguishing filename, or they could be moved to a
+parallel tree, e.g. *.git/annex/dropped*.  I don't have an opinion on that choice;
+I've just picked one arbitrarily to keep talking about.)
+
+\"get\" would simply search .git/annex/dropped before going off to remote
+repos, and if the file is found there, would move (not copy) it back into
+.git/annex/objects.
+
+An alternative might be to set some kind of *logically dropped* flag, but
+that would probably be a much more intrusive change; a lot of places in the
+code would have to check the flag.  Doing it as a file rename would make for a much more
+localized change; most of git-annex would completely ignore .git/annex/dropped, and just go
+about its business as it has always done.
+
+(It might be tempting to think of (or even implement) .git/annex/dropped as a
+very low-cost remote, but that's not accurate; the semantics are different.)
+
+I'm just starting to experiment with git-annex, so I can only hope that what 
+I'm saying isn't completely silly...
+
+"""]]

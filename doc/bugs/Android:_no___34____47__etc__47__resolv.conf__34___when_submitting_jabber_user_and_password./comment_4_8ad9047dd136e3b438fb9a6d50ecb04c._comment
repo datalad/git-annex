@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 4"
+ date="2014-05-16T17:30:21Z"
+ content="""
+You have a symlink to a file that may or may not exist. I'd check if the file exists, and if your user can read it before fileing a bug report.
+"""]]

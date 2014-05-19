@@ -120,6 +120,7 @@ linuxstandalone-nobuild: Build/Standalone Build/LinuxMkLibs
 	ln -sf git-annex "$(LINUXSTANDALONE_DEST)/bin/git-annex-shell"
 	zcat standalone/licences.gz > $(LINUXSTANDALONE_DEST)/LICENSE
 	cp doc/logo_16x16.png doc/logo.svg $(LINUXSTANDALONE_DEST)
+	cp standalone/trustedkeys.gpg $(LINUXSTANDALONE_DEST)
 
 	./Build/Standalone "$(LINUXSTANDALONE_DEST)"
 	
@@ -150,6 +151,7 @@ osxapp: Build/Standalone Build/OSXMkLibs
 	ln -sf git-annex "$(OSXAPP_BASE)/git-annex-shell"
 	gzcat standalone/licences.gz > $(OSXAPP_BASE)/LICENSE
 	cp $(OSXAPP_BASE)/LICENSE tmp/build-dmg/LICENSE.txt
+	cp standalone/trustedkeys.gpg $(OSXAPP_BASE)
 
 	./Build/Standalone $(OSXAPP_BASE)
 

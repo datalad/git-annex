@@ -1,0 +1,5 @@
+so i am wondering how better to remember the state of a repository.
+
+the use case is this: i have this part of my music collection which i consider to be my "favorites". i would like to have only those on an external hard drive, but also on my portable music player. so i cloned my main music collection to the external hard drive and did `git annex get` on the files i wanted there. now i want to replicate that to the music player - how would i go around doing that? if i clone that repo again, it will all have empty symlinks and i would have to reproduce the same process all over again, which i can script, but it seems a little quirky...
+
+ideas? --[[anarcat]]

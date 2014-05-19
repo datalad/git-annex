@@ -1,0 +1,22 @@
+Now git-annex's self-upgrade code will check the gpg signature of a
+new version before using it.
+
+To do this I had to include the gpg public keys into the
+git-annex distribution, and that raised the question of which public keys
+to include. Currently I have both the dedicated git-annex distribution
+signing key, and my own gpg key as a backup in case I somehow misplace the
+former.
+
+Also spent a while looking at the recent logs on the web server. There
+seem to be around 600 users of the assistant with
+upgrade checking enabled. That breaks down to 68% Linux amd64, 20% Linux
+i386, 11% OSX Mavericks, and 0.5% OSX Lion.
+
+Most are upgrading successfully, but there are a few that seem to
+repeatedly fail for some reason. (Not counting the OSX Lion, which will
+probably never find an upgrade available.) I hope that someone who is
+experiencing an upgrade failure gets in touch with some debug logs.
+
+In the same time period, around 450 unique hosts manually downloaded a
+git-anex distribution. Also compare with Debian popcon, which has 1200
+reporting git-annex users.

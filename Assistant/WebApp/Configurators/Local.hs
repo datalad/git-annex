@@ -143,7 +143,7 @@ defaultRepositoryPath firstrun = do
 
 newRepositoryForm :: FilePath -> Hamlet.Html -> MkMForm RepositoryPath
 newRepositoryForm defpath msg = do
-	(pathRes, pathView) <- mreq (repositoryPathField True) ""
+	(pathRes, pathView) <- mreq (repositoryPathField True) (bfs "")
 		(Just $ T.pack $ addTrailingPathSeparator defpath)
 	let (err, errmsg) = case pathRes of
 		FormMissing -> (False, "")
@@ -217,10 +217,10 @@ getCombineRepositoryR newrepopath newrepouuid = do
 	remotename = takeFileName newrepopath
 
 selectDriveForm :: [RemovableDrive] -> Hamlet.Html -> MkMForm RemovableDrive
-selectDriveForm drives = renderBootstrap $ RemovableDrive
+selectDriveForm drives = renderBootstrap3 bootstrapFormLayout $ RemovableDrive
 	<$> pure Nothing
-	<*> areq (selectFieldList pairs `withNote` onlywritable) "Select drive:" Nothing
-	<*> areq textField "Use this directory on the drive:"
+	<*> areq (selectFieldList pairs `withNote` onlywritable) (bfs "Select drive:") Nothing
+	<*> areq textField (bfs "Use this directory on the drive:")
 		(Just $ T.pack gitAnnexAssistantDefaultDir)
   where
 	pairs = zip (map describe drives) (map mountPoint drives)

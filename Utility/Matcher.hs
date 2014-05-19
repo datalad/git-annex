@@ -12,7 +12,7 @@
  -
  - Copyright 2011-2013 Joey Hess <joey@kitenet.net>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 {-# LANGUAGE Rank2Types, KindSignatures #-}
@@ -64,10 +64,10 @@ generate = simplify . process MAny . tokenGroups
 	process m [] = m
 	process m ts = uncurry process $ consume m ts
 
-	consume m ((One And):rest) = term (m `MAnd`) rest
-	consume m ((One Or):rest) = term (m `MOr`) rest
-	consume m ((One Not):rest) = term (\p -> m `MAnd` (MNot p)) rest
-	consume m ((One (Operation o)):rest) = (m `MAnd` MOp o, rest)
+	consume m (One And:rest) = term (m `MAnd`) rest
+	consume m (One Or:rest) = term (m `MOr`) rest
+	consume m (One Not:rest) = term (\p -> m `MAnd` (MNot p)) rest
+	consume m (One (Operation o):rest) = (m `MAnd` MOp o, rest)
 	consume m (Group g:rest) = (process m g, rest)
 	consume m (_:rest) = consume m rest
 	consume m [] = (m, [])

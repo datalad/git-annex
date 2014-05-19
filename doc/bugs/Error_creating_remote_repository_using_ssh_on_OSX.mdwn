@@ -34,3 +34,6 @@ Please provide any additional information below.
 
 [[!tag /design/assistant/OSX]]
 [[!meta title="ssh-askpass not available on OSX"]]
+
+> [[fixed|done]]; the webapp now handles ssh password prompting on its own,
+> ssh-askpass is not needed. --[[Joey]]

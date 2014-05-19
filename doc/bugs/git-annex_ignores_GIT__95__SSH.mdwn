@@ -1,0 +1,39 @@
+### Please describe the problem.
+
+git uses environment variable GIT_SSH to determine SSH client.
+
+I set it to plink.exe because I extensively use pageant infrastructure and do NOT want to have 2 systems lying around.
+
+Unfortunately git-annex seems to ignore that.
+
+Even worse, it results in unpredicted behavior because the git part works (e.g. clone) whereas annex/rsync does not resulting in half-ok repositories without meaningful error messages.
+
+It only becomes evident when ssh.exe in the git repository is deleted.
+
+### What steps will reproduce the problem?
+
+Set %GIT_SSH% and remove ssh.exe
+
+You will get
+
+     git-annex: ssh: createProcess: does not exist (No such file or directory)
+     failed
+     git-annex: drop: 1 failed
+
+### What version of git-annex are you using? On what operating system?
+
+Windows 8,
+
+     $ git annex version
+     git-annex version: 5.20140411-gda795e0
+     build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+     key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+     remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
+     local repository version: 5
+     supported repository version: 5
+     upgrade supported from repository versions: 2 3 4
+
+
+### Please provide any additional information below.
+
+

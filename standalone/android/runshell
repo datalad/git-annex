@@ -53,6 +53,7 @@ buildtree () {
 	$cmd echo "exec $base/lib/lib.start.so" >> "$base/runshell"
 	$cmd chmod 755 runshell
 
+	$cmd cat "$base/lib/lib.trustedkeys.so" > "$base/bin/trustedkeys.gpg"
 	$cmd cat "$base/lib/lib.version.so" > "$base/installed-version"
 	$cmd echo "Installation complete"
 }

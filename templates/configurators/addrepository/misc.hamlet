@@ -1,6 +1,7 @@
 <h3>
   <a href="@{AddDriveR}">
-    <i .icon-plus-sign></i> Removable drive
+    <span .glyphicon .glyphicon-plus-sign>
+    \ Removable drive
 <p>
   Add a USB drive, memory stick, or other removable media. #
   For offline archiving, backups, or to #
@@ -11,14 +12,16 @@
 
 <h3>
   <a href="@{StartLocalPairR}">
-    <i .icon-plus-sign></i> Local computer
+    <span .glyphicon .glyphicon-plus-sign>
+    \ Local computer
 <p>
   Pair with a computer to keep files in sync quickly, #
   over your local network.
 
 <h3>
   <a href="@{NewRepositoryR}">
-    <i .icon-plus-sign></i> Add another repository
+    <span .glyphicon .glyphicon-plus-sign>
+    \ Add another repository
 <p>
   Make another repository on your computer.
 

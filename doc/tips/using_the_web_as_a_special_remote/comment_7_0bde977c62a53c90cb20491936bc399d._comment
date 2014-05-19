@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawnkXKIAfgPsuV-EJpXm3jCc3q9IZwzvCcw"
+ nickname="Garrett"
+ subject="Default pathdepth"
+ date="2014-05-08T21:36:00Z"
+ content="""
+Is there away to change the default pathdepth so I do not need to add --pathdepth=-1 everything I run addurl?
+"""]]

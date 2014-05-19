@@ -1,0 +1,14 @@
+I hope this will be a really good release. Didn't get all the way to
+[[design/assistant/telehash]] this month, but the remotedaemon is pretty sweet. Updated [[design/roadmap]]
+pushes telehash back again.
+
+The files in this release are now gpg signed, after recently moving the
+downloads site to a dedicated server, which has a dedicated gpg key.
+You can verify the detached signatures as an additional security check
+over trusting SSL. The automatic upgrade code doesn't check the gpg
+signatures yet.
+
+Sören Brunk has ported the webapp to Bootstrap 3.
+<https://github.com/brunksn/git-annex/tree/bootstrap3>  
+The branch is not ready for merging yet (it would break the Debian stable
+backports), but that was a nice surprise.

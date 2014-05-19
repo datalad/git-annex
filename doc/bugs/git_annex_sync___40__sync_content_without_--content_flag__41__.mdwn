@@ -1,0 +1,32 @@
+### Please describe the problem.
+
+Not sure if it's a bug, but pls explain why it sync files and how to stop it by cfg.
+
+Repos. created with Assistant - git annex sync i an indirect mode not only fetch metadata but also a files. What is the correct way to disable file sync (so only broken links are created in working tree)
+
+Desired:
+to boostrap annex infrastructure with assistant, but then some repos switch to indirect mode (while still synced by assistant/webapp) but only metadata (not files). Files to be fetched on request (like git annex get xyz/*) when needed.
+
+### What steps will reproduce the problem?
+
+1. with git annex webapp create two repos on two nodes (Alice and Bob).
+2. pair them using discovery on local lan
+3. on Bob stop assistant and fire "git annex indirect"
+4. add files to Alice repo
+5. run git annex sync on Bob repo from CLI
+
+Bob's repo not only sync metadata but also retrive files.
+The documentation says "sync" only sync metadata.
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex version: 5.20140420-ga25b8bb
+
+> `git annex sync`, when used without --content, does not sync the content
+> of files. However, in your example, Alice is still runing the assistant.
+> The assistant will notice when Bob's git annex sync sends it a change,
+> and see there are new files, and go get them. If you don't want that to
+> happen, you'll need to disable the assistant on Alice too, or configure
+> it to not sync with bob, etc.
+> 
+> Not a bug, so [[done]] --[[Joey]]

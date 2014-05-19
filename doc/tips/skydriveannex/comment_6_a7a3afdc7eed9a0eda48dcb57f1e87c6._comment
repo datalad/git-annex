@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="comment 6"
+ date="2014-05-16T19:25:03Z"
+ content="""
+tried it but no luck:
+
+    git annex initremote skydrive type=external externaltype=skydrive encryption=shared folder=git-annex
+    initremote skydrive (encryption setup) (shared cipher) env: python2: No such file or directory
+    git-annex: external special remote protocol error, unexpectedly received \"\" (unable to parse command)
+"""]]

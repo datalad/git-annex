@@ -1,19 +1,22 @@
-<div .span9 .hero-unit>
-  <h2>
-    Combine repositories?
-  <p>
-    A repository already exists on #{sshHostName sshdata} in the #
-    <tt>#{sshDirectory sshdata}</tt> directory.
-  <p>
-    Do you want to merge this repository's contents into your repository?
-  <p>
-    <a .btn onclick="$('#setupmodal').modal('show');" href="@{CombineSshR sshdata}">
-      <i .icon-resize-small></i> Combine the repositories #
-    The combined repositories will sync and share their files.
-  <p>
-  <p>
-    <a .btn href="@{AddSshR}">
-      <i .icon-resize-full></i> Go back #
-    Use a different directory than <tt>#{sshDirectory sshdata}</tt> to #
-    avoid combining the repositories.
+<div .col-sm-9>
+  <div .content-box>
+    <h2>
+      Combine repositories?
+    <p>
+      A repository already exists on #{sshHostName sshdata} in the #
+      <tt>#{sshDirectory sshdata}</tt> directory.
+    <p>
+      Do you want to merge this repository's contents into your repository?
+    <p>
+      <a .btn .btn-default onclick="$('#setupmodal').modal('show');" href="@{CombineSshR sshdata}">
+        <span .glyphicon .glyphicon-resize-small>
+        \ Combine the repositories #
+      The combined repositories will sync and share their files.
+    <p>
+    <p>
+      <a .btn .btn-default href="@{AddSshR}">
+        <span .glyphicon .glyphicon-resize-full>
+        \ Go back #
+      Use a different directory than <tt>#{sshDirectory sshdata}</tt> to #
+      avoid combining the repositories.
 ^{sshSetupModal sshdata}

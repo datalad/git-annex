@@ -82,6 +82,25 @@ This gives me the resulting config on disk, in `.config/Thunar/uca.xml`:
 
 The complete instructions on how to setup actions is [in the XFCE documentation](http://docs.xfce.org/xfce/thunar/custom-actions).
 
+## OS X (Finder)
+
+For OS X, it is possible to get context menus in Finder. Due to how OS X deals with sym links, one needs to operate on folders if using indirect mode. Direct mode operation has not been tested.
+
+1. Open Automator and create a new Service.
+2. Using the Drop down menus in the top create the sentence "Service receives selected folders in Finder.app" to have it work on folders. For direct mode operation it is probably reasonable to select "files or folders".
+3. Add a "Run shell script" element and fill in line with the following script:
+
+        #!/usr/bin/bash
+        source ~/.bash_profile
+        for f in "$@"
+        do
+            cd "$(dirname "$f")" && git-annex get "$f"
+        done
+
+The purpose of the first line is there to get git-annex on to the path. The reason for the for loop is in case multiple files or folders are marked when running the context menu command.
+
+Finally save the the workflow under the name for which it should be listed in the context menu.
+
 ## your file manager here
 
 Edit this page and add instructions!

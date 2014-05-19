@@ -2,7 +2,7 @@
  -
  - Copyright 2013 Joey Hess <joey@kitenet.net>
  -
- - Licensed under the GNU GPL version 3 or higher.
+ - License: BSD-2-clause
  -}
 
 module Utility.LinuxMkLibs where
@@ -49,7 +49,7 @@ inTop top f = top ++ f
  - link to. Note that some of the libraries may not exist 
  - (eg, linux-vdso.so) -}
 parseLdd :: String -> [FilePath]
-parseLdd = catMaybes . map (getlib . dropWhile isSpace) . lines
+parseLdd = mapMaybe (getlib . dropWhile isSpace) . lines
   where
 	getlib l = headMaybe . words =<< lastMaybe (split " => " l)
 

@@ -1,0 +1,87 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="comment 5"
+ date="2014-05-16T17:45:48Z"
+ content="""
+I gave up on this. After doing this a few times, I stopped. Living in Africa, bandwidth is really expensive :-/ 
+
+Initially I installed via the downloaded .dmg file. 
+After poking around a few times, I found a folder inside my Applications folder:
+
+    ls -al /Applications/gi*
+    /Applications/git-annex.app:
+    total 0
+    drwxr-xr-x@   3 ovi   admin   102 May 12 13:10 .
+    drwxrwxr-x+ 155 root  admin  5270 May 15 04:19 ..
+    drwxr-xr-x    5 ovi   admin   170 May  9 15:45 Contents
+
+    /Applications/git-annex.app.5.20140421:
+    total 0
+    drwxr-xr-x    2 ovi   admin    68 May 11 11:26 .
+    drwxrwxr-x+ 155 root  admin  5270 May 15 04:19 ..
+
+Every time I now open git-annex assistant I am greeted with: 
+
+    An upgrade of git-annex is available.
+    (version 5.20140421)
+
+I just did it again and it starts downloading again arrrghh!
+
+    Transfers
+    git-annex.dmg (for upgrade)←web 12% of 22.52 MiB
+
+restarted the assistant and it now says: 
+
+    Finished upgrading git-annex to version 5.20140420-ga25b8bb
+
+Then I check and find this:
+
+ls -al /Applications/gi*
+/Applications/git-annex.app:
+total 0
+drwxr-xr-x@   3 ovi   admin   102 May 12 13:10 .
+drwxrwxr-x+ 155 root  admin  5270 May 15 04:19 ..
+drwxr-xr-x    5 ovi   admin   170 May  9 15:45 Contents
+
+/Applications/git-annex.app.5.20140421:
+total 0
+drwxr-xr-x    2 ovi   admin    68 May 11 11:26 .
+drwxrwxr-x+ 155 root  admin  5270 May 15 04:19 ..
+shiny-2:~ ovi$ ls -al /Applications/gi*
+/Applications/git-annex.app:
+total 0
+drwxr-xr-x@   3 ovi   admin   102 May 12 13:10 .
+drwxrwxr-x+ 155 root  admin  5270 May 15 04:19 ..
+drwxr-xr-x    5 ovi   admin   170 May  9 15:45 Contents
+
+/Applications/git-annex.app.5.20140421:
+total 0
+drwxr-xr-x    2 ovi   admin    68 May 11 11:26 .
+drwxrwxr-x+ 155 root  admin  5270 May 15 04:19 ..
+
+LOL. restarting the assistant am greeted with click here to finish the upgrade. did so.
+
+now only 2 folders not 3 left:
+
+ls -al /Applications/gi*
+/Applications/git-annex.app:
+total 0
+drwxr-xr-x@   3 ovi   admin   102 May 12 13:10 .
+drwxrwxr-x+ 155 root  admin  5270 May 15 04:19 ..
+drwxr-xr-x    5 ovi   admin   170 May  9 15:45 Contents
+
+/Applications/git-annex.app.5.20140421:
+total 0
+drwxr-xr-x    2 ovi   admin    68 May 11 11:26 .
+drwxrwxr-x+ 155 root  admin  5270 May 15 04:19 ..
+
+Started the asistant again, am greeted with:
+
+ An upgrade of git-annex is available.
+(version 5.20140421)
+
+Thank you very much... not going to downlaod it again...
+
+COULD YOU PLEASE JUST SHARE THE DOWNLOAD LINK TO THE NEWEST ONE?
+"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 7"
+ date="2014-04-23T17:47:59Z"
+ content="""
+Ok, I am tempted to close this bug if it only happens with an older version of msysgit. It really is looking like a bug in git, or in the msysgit port.
+
+The \"crippled filesystem\" is normal on Windows. git-annex does not try to use symblic links on Windows, and so is limited to working in [[direct_mode]].
+"""]]

@@ -1,3 +1,10 @@
+## version 5.20140421
+
+This release begins to deprecate XMPP support. In particular, if you use
+the assistant with a ssh remote that has this version of git-annex
+installed, you don't need XMPP any longer to get immediate syncing of
+changes.
+
 ## version 5.20140411
 
 This release fixes a bug that could cause the assistant to use a *lot* of
@@ -5,9 +12,7 @@ CPU, when monthly fscking was set up.
 
 Automatic upgrading was broken on OSX for previous versions. This has been
 fixed, but you'll need to manually upgrade to this version to get it going
-again. (Note that the fix is currently only available in the daily builds,
-not a released version.) Workaround: Remove the wget bundled inside the
-git-annex dmg.
+again. Workaround: Remove the wget bundled inside the git-annex dmg.
 
 ## version 5.20140221
 

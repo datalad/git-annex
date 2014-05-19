@@ -87,10 +87,9 @@ list = do
  - cached UUID value. -}
 configRead :: Git.Repo -> Annex Git.Repo
 configRead r = do
-	g <- fromRepo id
-	let c = extractRemoteGitConfig g (Git.repoDescribe r)
+	gc <- Annex.getRemoteGitConfig r
 	u <- getRepoUUID r
-	case (repoCheap r, remoteAnnexIgnore c, u) of
+	case (repoCheap r, remoteAnnexIgnore gc, u) of
 		(_, True, _) -> return r
 		(True, _, _) -> tryGitConfigRead r
 		(False, _, NoUUID) -> tryGitConfigRead r
@@ -197,7 +196,7 @@ tryGitConfigRead r
 				)
 		case v of
 			Left _ -> do
-				set_ignore "not usable by git-annex"
+				set_ignore "not usable by git-annex" False
 				return r
 			Right r' -> do
 				-- Cache when http remote is not bare for
@@ -225,15 +224,18 @@ tryGitConfigRead r
 	configlist_failed = case Git.remoteName r of
 		Nothing -> return r
 		Just n -> do
-			whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $
-				set_ignore "does not have git-annex installed"
+			whenM (inRepo $ Git.Command.runBool [Param "fetch", Param "--quiet", Param n]) $ do
+				set_ignore "does not have git-annex installed" True
 			return r
 	
-	set_ignore msg = do
+	set_ignore msg longmessage = do
 		let k = "annex-ignore"
 		case Git.remoteName r of
 			Nothing -> noop
-			Just n -> warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting " ++ k
+			Just n -> do
+				warning $ "Remote " ++ n ++ " " ++ msg ++ "; setting " ++ k
+				when longmessage $
+					warning $ "This could be a problem with the git-annex installation on the remote. Please make sure that git-annex-shell is available in PATH when you ssh into the remote. Once you have fixed the git-annex installation, run: git config remote." ++ n ++ "." ++ k ++ " false"
 		setremote k (Git.Config.boolConfig True)
 	
 	setremote k v = case Git.remoteName r of

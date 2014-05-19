@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk3HGoDpnOPob5jOjvIootmkve1-nCpRiI"
+ nickname="Kalle"
+ subject="ssh remote defaults to bare repo"
+ date="2014-05-06T06:10:06Z"
+ content="""
+Hi,
+
+When setting up a ssh remote the default is to create a repo without a human readable file structure. To achieve what you are looking for you have to initialize a git annex repo on the server and then add the remote to the clients. afaik this has to be done using the command line interface. 
+
+If i remember correctly you add remotes with `git remote add ssh://example.com/path/to/annex`
+
+Cant find the docs atm (I'm commuting and at my final dest)
+
+"""]]

@@ -203,7 +203,8 @@ tryScan r
 
 	configlist = Ssh.onRemote r (pipedconfig, Nothing) "configlist" [] []
 	manualconfiglist = do
-		sshparams <- Ssh.toRepo r [Param sshcmd]
+		gc <- Annex.getRemoteGitConfig r
+		sshparams <- Ssh.toRepo r gc [Param sshcmd]
 		liftIO $ pipedconfig "ssh" sshparams
 	  where
 		sshcmd = cddir ++ " && " ++

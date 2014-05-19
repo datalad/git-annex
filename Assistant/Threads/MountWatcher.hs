@@ -63,7 +63,11 @@ dbusThread urlrenderer = do
 				wasmounted <- liftIO $ swapMVar mvar nowmounted
 				handleMounts urlrenderer wasmounted nowmounted
 			liftIO $ forM_ mountChanged $ \matcher ->
+#if MIN_VERSION_dbus(0,10,7)
+				void $ addMatch client matcher handleevent
+#else
 				listen client matcher handleevent
+#endif
 		, do
 			liftAnnex $
 				warning "No known volume monitor available through dbus; falling back to mtab polling"

@@ -96,7 +96,7 @@ signFile f = do
 	void $ liftIO $ boolSystem "gpg"
 		[ Param "-a"
 		, Param $ "--default-key=" ++ signingKey
-		, Param "--sign"
+		, Param "--detach-sign"
 		, File f
 		]
 	liftIO $ rename (f ++ ".asc") (f ++ ".sig")

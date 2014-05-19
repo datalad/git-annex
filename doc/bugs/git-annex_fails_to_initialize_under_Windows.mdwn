@@ -210,3 +210,6 @@ Tests:
 
 ### Please provide any additional information below.
 ^^^ See above
+
+> [[done]]; I have made the windows documentation document the need for
+> msysgit 1.9. --[[Joey]]

@@ -1,0 +1,27 @@
+### Please describe the problem.
+
+Can't access X console after returning to work overnight.
+
+### What steps will reproduce the problem?
+
+1. Create git-annex remote repository, with git annex assistance, connected via ssh, using ssh-agent key for authentication.
+2. "ssh-add -D" to delete the ssh key when not attending computer. Forget to kill git-annex assistant.
+3. Lock screen with xscreeensaver.
+4. Return to work. Unlock screen. Find keyboard and mouse not responding. However there are no dialog boxes on screen.
+5. Open up text console, kill the numerous ssh-askpass processes. Find more ssh-askpass processes. Kill the git-annex processes, then kill the ssh-askpass processes. Find I can access the x console again.
+
+### What version of git-annex are you using? On what operating system?
+
+Version 5.20140320~bpo70+1 in Debian backports.
+
+### Please provide any additional information below.
+
+This isn't git-annex's fault, but it is a serious problem with using git-annex assistant.
+
+Suspect ssh-askpass isn't displaying dialog properly as it conflicts with xscreensaver, which is running at the time.
+
+Not really sure what the solution is.
+
+Unfortunately, Out of time for today, will double check this report makes sense tomorrow.
+
+> [[done]] per my comment. --[[Joey]]

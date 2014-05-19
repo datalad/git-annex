@@ -83,8 +83,8 @@ iaInputAForm :: Maybe CredPair -> MkAForm IAInput
 iaInputAForm defcreds = IAInput
 	<$> accessKeyIDFieldWithHelp (T.pack . fst <$> defcreds)
 	<*> AWS.secretAccessKeyField (T.pack . snd <$> defcreds)
-	<*> areq (selectFieldList mediatypes) "Media Type" (Just MediaOmitted)
-	<*> areq (textField `withExpandableNote` ("Help", itemNameHelp)) "Item Name" Nothing
+	<*> areq (selectFieldList mediatypes) (bfs "Media Type") (Just MediaOmitted)
+	<*> areq (textField `withExpandableNote` ("Help", itemNameHelp)) (bfs "Item Name") Nothing
   where
 	mediatypes :: [(Text, MediaType)]
 	mediatypes = map (\t -> (T.pack $ showMediaType t, t)) [minBound..]
@@ -126,7 +126,7 @@ postAddIAR :: Handler Html
 postAddIAR = iaConfigurator $ do
 	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ iaInputAForm defcreds
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ iaInputAForm defcreds
 	case result of
 		FormSuccess input -> liftH $ do
 			let name = escapeBucket $ T.unpack $ itemName input
@@ -165,7 +165,7 @@ enableIARemote :: UUID -> Widget
 enableIARemote uuid = do
 	defcreds <- liftAnnex previouslyUsedIACreds
 	((result, form), enctype) <- liftH $
-		runFormPostNoToken $ renderBootstrap $ iaCredsAForm defcreds
+		runFormPostNoToken $ renderBootstrap3 bootstrapFormLayout $ iaCredsAForm defcreds
 	case result of
 		FormSuccess creds -> liftH $ do
 			m <- liftAnnex readRemoteLog

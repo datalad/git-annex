@@ -13,6 +13,7 @@ import System.Process
 import Data.ByteString.Lazy.UTF8 (fromString)
 
 import Common.Annex
+import qualified Annex
 import Types.Remote
 import Types.Key
 import Types.Creds
@@ -223,7 +224,8 @@ storeBupUUID u buprepo = do
 
 onBupRemote :: Git.Repo -> (FilePath -> [CommandParam] -> IO a) -> FilePath -> [CommandParam] -> Annex a
 onBupRemote r a command params = do
-	sshparams <- Ssh.toRepo r [Param $
+	c <- Annex.getRemoteGitConfig r
+	sshparams <- Ssh.toRepo r c [Param $
 			"cd " ++ dir ++ " && " ++ unwords (command : toCommand params)]
 	liftIO $ a "ssh" sshparams
   where

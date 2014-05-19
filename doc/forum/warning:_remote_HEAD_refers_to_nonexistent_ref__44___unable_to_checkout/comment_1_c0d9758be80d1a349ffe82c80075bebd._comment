@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="171.67.174.99"
+ subject="comment 1"
+ date="2014-05-10T21:20:36Z"
+ content="""
+I think, although not sure, that all of this is related of failing/inconsistent ssh calls.
+
+I filed a bug here: https://git-annex.branchable.com/bugs/git-annex_ignores_GIT__95__SSH
+
+The problem is that failure in ssh does not result in proper error messages in git-annex, resulting in inconsistent repositories.
+"""]]

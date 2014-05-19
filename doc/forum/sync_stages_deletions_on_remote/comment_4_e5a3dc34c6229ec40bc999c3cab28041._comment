@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.114"
+ subject="comment 4"
+ date="2014-04-24T18:22:16Z"
+ content="""
+git sets bare = false in newly created non-bare repositories. Perhaps this is why? It seems likely that git has an inconsistent default if there's no configuration. Sounds worth filing a bug on git for. OTOH, messing with .git/config  in nonstandard ways seems like a good way to cause yourself random pain too.
+"""]]

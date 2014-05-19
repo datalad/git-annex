@@ -119,6 +119,7 @@ data RemoteGitConfig = RemoteGitConfig
 
 	{- These settings are specific to particular types of remotes
 	 - including special remotes. -}
+	, remoteAnnexShell :: Maybe String
 	, remoteAnnexSshOptions :: [String]
 	, remoteAnnexRsyncOptions :: [String]
 	, remoteAnnexRsyncUploadOptions :: [String]
@@ -131,6 +132,7 @@ data RemoteGitConfig = RemoteGitConfig
 	, remoteAnnexBupSplitOptions :: [String]
 	, remoteAnnexDirectory :: Maybe FilePath
 	, remoteAnnexGCrypt :: Maybe String
+	, remoteAnnexDdarRepo :: Maybe String
 	, remoteAnnexHookType :: Maybe String
 	, remoteAnnexExternalType :: Maybe String
 	{- A regular git remote's git repository config. -}
@@ -150,6 +152,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexAvailability = getmayberead "availability"
 	, remoteAnnexBare = getmaybebool "bare"
 
+	, remoteAnnexShell = getmaybe "shell"
 	, remoteAnnexSshOptions = getoptions "ssh-options"
 	, remoteAnnexRsyncOptions = getoptions "rsync-options"
 	, remoteAnnexRsyncDownloadOptions = getoptions "rsync-download-options"
@@ -162,6 +165,7 @@ extractRemoteGitConfig r remotename = RemoteGitConfig
 	, remoteAnnexBupSplitOptions = getoptions "bup-split-options"
 	, remoteAnnexDirectory = notempty $ getmaybe "directory"
 	, remoteAnnexGCrypt = notempty $ getmaybe "gcrypt"
+	, remoteAnnexDdarRepo = getmaybe "ddarrepo"
 	, remoteAnnexHookType = notempty $ getmaybe "hooktype"
 	, remoteAnnexExternalType = notempty $ getmaybe "externaltype"
 	, remoteGitConfig = Nothing

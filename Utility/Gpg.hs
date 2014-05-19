@@ -145,7 +145,7 @@ findPubKeys :: String -> IO KeyIds
 findPubKeys for = KeyIds . parse . lines <$> readStrict params
   where
 	params = [Params "--with-colons --list-public-keys", Param for]
-	parse = catMaybes . map (keyIdField . split ":")
+	parse = mapMaybe (keyIdField . split ":")
 	keyIdField ("pub":_:_:_:f:_) = Just f
 	keyIdField _ = Nothing
 
@@ -195,7 +195,7 @@ genSecretKey keytype passphrase userid keysize =
 					Algo n -> show n
 			, Just $ "Key-Length: " ++ show keysize
 			, Just $ "Name-Real: " ++ userid
-			, Just $ "Expire-Date: 0"
+			, Just "Expire-Date: 0"
 			, if null passphrase
 				then Nothing
 				else Just $ "Passphrase: " ++ passphrase

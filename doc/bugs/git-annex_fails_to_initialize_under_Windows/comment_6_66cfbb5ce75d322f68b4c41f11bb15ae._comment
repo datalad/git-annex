@@ -1,0 +1,59 @@
+[[!comment format=mdwn
+ username="ayutheos"
+ ip="49.124.129.253"
+ subject="comment 6"
+ date="2014-04-23T08:56:58Z"
+ content="""
+I upgraded git to 1.9.0.msysgit.0, and managed to initialise git-annex:
+
+    user@NOTEBOOK /d/pictures
+    $ git init
+    Initialized empty Git repository in D:/pictures/.git/
+    
+    user@NOTEBOOK /d/pictures
+    $ git annex init \"laptop photos\"
+    init laptop photos
+      Detected a filesystem without fifo support.
+    
+      Disabling ssh connection caching.
+    
+      Detected a crippled filesystem.
+    
+      Enabling direct mode.
+    ok
+    (Recording state in git...)
+
+But there's a message that it detected a crippled filesystem? What does that mean?
+
+Running `git status` gives:
+
+    user@NOTEBOOK /d/pictures
+    $ git st
+    fatal: This operation must be run in a work tree
+
+And then I run `git init`
+
+    user@NOTEBOOK /d/pictures
+    $ git init
+    Reinitialized existing Git repository in D:/pictures/.git/
+    
+    user@NOTEBOOK /d/pictures
+    $ git st
+    On branch annex/direct/master
+    
+    Initial commit
+    
+    Untracked files:
+      (use \"git add <file>...\" to include in what will be committed)
+    
+            2011/
+            2012/
+            2013/
+            2014/
+            dump/
+            to burn/
+    
+    nothing added to commit but untracked files present (use \"git add\" to track)
+
+..and git works ok. Any suggestions what might be wrong?
+"""]]

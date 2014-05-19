@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-05-16T18:12:34Z"
+ content="""
+You should be able to copy git-annex.exe to git-annex-shell.exe and that will be usable as git-annex-shell. I could make the windows installer do this, but without the ability to easily hard or symlink the files, it would double the disk space for what seems an unusual use case..
+"""]]
