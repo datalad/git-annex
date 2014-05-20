@@ -1,0 +1,46 @@
+### Please describe the problem.
+When i start "git annex assistant" it starts normally without messages and then even syncs one time. But then after a minute or so it stops doing anything. I see it in "ps aux" but it doesn't autoprocess directory anymore. Repo is in "direct" mode.
+
+### What version of git-annex are you using? On what operating system?
+CentOS 6.5, standalone git-annex 5.20140421-g515d251 unpacked in /home/filesync/git-annex.linux/ and in $PATH.
+
+### Please provide any additional information below.
+
+[[!format sh """
+# .git/annex/daemon.log
+
+[2014-05-20 08:56:37 MSK] main: starting assistant version 5.20140421-g515d251
+[2014-05-20 08:56:37 MSK] Cronner: You should enable consistency checking to protect your data. 
+
+  dbus failed; falling back to mtab p[of2la0li1il4ne-gd0  5(t-Co2l 0ia ed0nd8t :Ew5ra6rt:oc3rh8   {oMcnSl Kid]ei nrTterEcartnrosorfryeM re/Sshcsoaamngene/e fr=i: l "eSrsyuynnncCcil/ni.gec nowtni:ft ihug n/oagrbiiltge-i antn on
+ edxe t(e/rhmoimnee/ fDiBlUeSs yandcd/r.ecsosn"f,i gc/lgiietn-taEnrnreoxr:F agteatlD i=r eTcrtuoer}y)C
+o
+n t elnotsst:  ddbouess  cnoontn eecxtiisotn ;( Nfoa lsluicnhg  fbialcek  otro  dpiorlelcitnogr y()S)o
+cketError {socketErrorMessage = "connect: does not exist (No such file or directory)", socketErrorFatal = True, socketErrorAddress = Just (Address "unix:path=/var/run/dbus/system_bus_socket")})
+
+Already up-to-date.
+p11-kit: couldn't load module: /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so: /usr/lib/x86_64-linux-gnu/pkcs11/p11-kit-trust.so: cannot open shared object file: No such file or directory
+(scanning...) [2014-05-20 08:56:38 MSK] Watcher: Performing startup scan
+[2014-05-20 08:56:39 MSK] Upgrader: An upgrade of git-annex is available.  (version 5.20140517)
+Everything up-to-date
+
+  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)", socketErrorFatal = True, socketErrorAddress = Just (Address "unix:path=/var/run/dbus/system_bus_socket")})
+(started...) 
+
+  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)", socketErrorFatal = True, socketErrorAddress = Just (Address "unix:path=/var/run/dbus/system_bus_socket")})
+
+  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)", socketErrorFatal = True, socketErrorAddress = Just (Address "unix:path=/var/run/dbus/system_bus_socket")})
+
+  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)", socketErrorFatal = True, socketErrorAddress = Just (Address "unix:path=/var/run/dbus/system_bus_socket")})
+
+  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)", socketErrorFatal = True, socketErrorAddress = Just (Address "unix:path=/var/run/dbus/system_bus_socket")})
+
+  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)", socketErrorFatal = True, socketErrorAddress = Just (Address "unix:path=/var/run/dbus/system_bus_socket")})
+
+  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)", socketErrorFatal = True, socketErrorAddress = Just (Address "unix:path=/var/run/dbus/system_bus_socket")})
+
+  lost dbus connection; falling back to polling (SocketError {socketErrorMessage = "connect: does not exist (No such file or directory)", socketErrorFatal = True, socketErrorAddress = Just (Address "unix:path=/var/run/dbus/system_bus_socket")})
+
+
+# End of transcript or log.
+"""]]
