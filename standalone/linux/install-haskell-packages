@@ -63,18 +63,14 @@ install_pkgs () {
 
 	patched network
 	patched wai-app-static
+	patched aeson
 	patched shakespeare
-	patched shakespeare-css
 	patched yesod-routes
-	patched hamlet
 	patched monad-logger
-	patched shakespeare-i18n
-	patched shakespeare-js
 	patched yesod-core
 	patched persistent
 	patched persistent-template
 	patched file-embed
-	patched shakespeare-text
 	patched process-conduit
 	patched yesod-static
 	patched yesod-persistent

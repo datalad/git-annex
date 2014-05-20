@@ -1,0 +1,1312 @@
+From a4b8a90dbb97392378a3c5980cbb9c033702dfb2 Mon Sep 17 00:00:00 2001
+From: Your Name <you@example.com>
+Date: Tue, 20 May 2014 21:17:27 +0000
+Subject: [PATCH] remove TN
+
+---
+ Text/Cassius.hs          |  23 ------
+ Text/Coffee.hs           |  56 ++-------------
+ Text/Css.hs              | 151 ----------------------------------------
+ Text/CssCommon.hs        |   4 --
+ Text/Hamlet.hs           |  86 +++++++----------------
+ Text/Hamlet/Parse.hs     |   3 +-
+ Text/Julius.hs           |  67 +++---------------
+ Text/Lucius.hs           |  46 +-----------
+ Text/Roy.hs              |  51 ++------------
+ Text/Shakespeare.hs      |  70 +++----------------
+ Text/Shakespeare/Base.hs |  28 --------
+ Text/Shakespeare/I18N.hs | 178 ++---------------------------------------------
+ Text/Shakespeare/Text.hs | 125 +++------------------------------
+ shakespeare.cabal        |   2 +-
+ 14 files changed, 78 insertions(+), 812 deletions(-)
+
+diff --git a/Text/Cassius.hs b/Text/Cassius.hs
+index 91fc90f..c515807 100644
+--- a/Text/Cassius.hs
++++ b/Text/Cassius.hs
+@@ -13,10 +13,6 @@ module Text.Cassius
+     , renderCss
+     , renderCssUrl
+       -- * Parsing
+-    , cassius
+-    , cassiusFile
+-    , cassiusFileDebug
+-    , cassiusFileReload
+       -- * ToCss instances
+       -- ** Color
+     , Color (..)
+@@ -27,11 +23,8 @@ module Text.Cassius
+     , AbsoluteUnit (..)
+     , AbsoluteSize (..)
+     , absoluteSize
+-    , EmSize (..)
+-    , ExSize (..)
+     , PercentageSize (..)
+     , percentageSize
+-    , PixelSize (..)
+       -- * Internal
+     , cassiusUsedIdentifiers
+     ) where
+@@ -43,25 +36,9 @@ import Language.Haskell.TH.Quote (QuasiQuoter (..))
+ import Language.Haskell.TH.Syntax
+ import qualified Data.Text.Lazy as TL
+ import Text.CssCommon
+-import Text.Lucius (lucius)
+ import qualified Text.Lucius
+ import Text.IndentToBrace (i2b)
+ 
+-cassius :: QuasiQuoter
+-cassius = QuasiQuoter { quoteExp = quoteExp lucius . i2b }
+-
+-cassiusFile :: FilePath -> Q Exp
+-cassiusFile fp = do
+-#ifdef GHC_7_4
+-    qAddDependentFile fp
+-#endif
+-    contents <- fmap TL.unpack $ qRunIO $ readUtf8File fp
+-    quoteExp cassius contents
+-
+-cassiusFileDebug, cassiusFileReload :: FilePath -> Q Exp
+-cassiusFileDebug = cssFileDebug True [|Text.Lucius.parseTopLevels|] Text.Lucius.parseTopLevels
+-cassiusFileReload = cassiusFileDebug
+-
+ -- | Determine which identifiers are used by the given template, useful for
+ -- creating systems like yesod devel.
+ cassiusUsedIdentifiers :: String -> [(Deref, VarType)]
+diff --git a/Text/Coffee.hs b/Text/Coffee.hs
+index 488c81b..61db85b 100644
+--- a/Text/Coffee.hs
++++ b/Text/Coffee.hs
+@@ -51,13 +51,13 @@ module Text.Coffee
+       -- ** Template-Reading Functions
+       -- | These QuasiQuoter and Template Haskell methods return values of
+       -- type @'JavascriptUrl' url@. See the Yesod book for details.
+-      coffee
+-    , coffeeFile
+-    , coffeeFileReload
+-    , coffeeFileDebug
++    --  coffee
++    --, coffeeFile
++    --, coffeeFileReload
++    --, coffeeFileDebug
+ 
+ #ifdef TEST_EXPORT
+-    , coffeeSettings
++    --, coffeeSettings
+ #endif
+     ) where
+ 
+@@ -65,49 +65,3 @@ import Language.Haskell.TH.Quote (QuasiQuoter (..))
+ import Language.Haskell.TH.Syntax
+ import Text.Shakespeare
+ import Text.Julius
+-
+-coffeeSettings :: Q ShakespeareSettings
+-coffeeSettings = do
+-  jsettings <- javascriptSettings
+-  return $ jsettings { varChar = '%'
+-  , preConversion = Just PreConvert {
+-      preConvert = ReadProcess "coffee" ["-spb"]
+-    , preEscapeIgnoreBalanced = "'\"`"     -- don't insert backtacks for variable already inside strings or backticks.
+-    , preEscapeIgnoreLine = "#"            -- ignore commented lines
+-    , wrapInsertion = Just WrapInsertion { 
+-        wrapInsertionIndent = Just "  "
+-      , wrapInsertionStartBegin = "("
+-      , wrapInsertionSeparator = ", "
+-      , wrapInsertionStartClose = ") =>"
+-      , wrapInsertionEnd = ""
+-      , wrapInsertionAddParens = False
+-      }
+-    }
+-  }
+-
+--- | Read inline, quasiquoted CoffeeScript.
+-coffee :: QuasiQuoter
+-coffee = QuasiQuoter { quoteExp = \s -> do
+-    rs <- coffeeSettings
+-    quoteExp (shakespeare rs) s
+-    }
+-
+--- | Read in a CoffeeScript template file. This function reads the file once, at
+--- compile time.
+-coffeeFile :: FilePath -> Q Exp
+-coffeeFile fp = do
+-    rs <- coffeeSettings
+-    shakespeareFile rs fp
+-
+--- | Read in a CoffeeScript template file. This impure function uses
+--- unsafePerformIO to re-read the file on every call, allowing for rapid
+--- iteration.
+-coffeeFileReload :: FilePath -> Q Exp
+-coffeeFileReload fp = do
+-    rs <- coffeeSettings
+-    shakespeareFileReload rs fp
+-
+--- | Deprecated synonym for 'coffeeFileReload'
+-coffeeFileDebug :: FilePath -> Q Exp
+-coffeeFileDebug = coffeeFileReload
+-{-# DEPRECATED coffeeFileDebug "Please use coffeeFileReload instead." #-}
+diff --git a/Text/Css.hs b/Text/Css.hs
+index 75dc549..20c206c 100644
+--- a/Text/Css.hs
++++ b/Text/Css.hs
+@@ -166,22 +166,6 @@ cssUsedIdentifiers toi2b parseBlocks s' =
+         (scope, rest') = go rest
+     go' (Attr k v) = k ++ v
+ 
+-cssFileDebug :: Bool -- ^ perform the indent-to-brace conversion
+-             -> Q Exp
+-             -> Parser [TopLevel Unresolved]
+-             -> FilePath
+-             -> Q Exp
+-cssFileDebug toi2b parseBlocks' parseBlocks fp = do
+-    s <- fmap TL.unpack $ qRunIO $ readUtf8File fp
+-#ifdef GHC_7_4
+-    qAddDependentFile fp
+-#endif
+-    let vs = cssUsedIdentifiers toi2b parseBlocks s
+-    c <- mapM vtToExp vs
+-    cr <- [|cssRuntime toi2b|]
+-    parseBlocks'' <- parseBlocks'
+-    return $ cr `AppE` parseBlocks'' `AppE` (LitE $ StringL fp) `AppE` ListE c
+-
+ combineSelectors :: HasLeadingSpace
+                  -> [Contents]
+                  -> [Contents]
+@@ -287,18 +271,6 @@ cssRuntime toi2b parseBlocks fp cd render' = unsafePerformIO $ do
+ 
+     addScope scope = map (DerefIdent . Ident *** CDPlain . fromString) scope ++ cd
+ 
+-vtToExp :: (Deref, VarType) -> Q Exp
+-vtToExp (d, vt) = do
+-    d' <- lift d
+-    c' <- c vt
+-    return $ TupE [d', c' `AppE` derefToExp [] d]
+-  where
+-    c :: VarType -> Q Exp
+-    c VTPlain = [|CDPlain . toCss|]
+-    c VTUrl = [|CDUrl|]
+-    c VTUrlParam = [|CDUrlParam|]
+-    c VTMixin = [|CDMixin|]
+-
+ getVars :: Monad m => [(String, String)] -> Content -> m [(Deref, VarType)]
+ getVars _ ContentRaw{} = return []
+ getVars scope (ContentVar d) =
+@@ -342,111 +314,8 @@ compressBlock (Block x y blocks mixins) =
+     cc (ContentRaw a:ContentRaw b:c) = cc $ ContentRaw (a ++ b) : c
+     cc (a:b) = a : cc b
+ 
+-blockToMixin :: Name
+-             -> Scope
+-             -> Block Unresolved
+-             -> Q Exp
+-blockToMixin r scope (Block _sel props subblocks mixins) =
+-    [|Mixin
+-        { mixinAttrs    = concat
+-                        $ $(listE $ map go props)
+-                        : map mixinAttrs $mixinsE
+-        -- FIXME too many complications to implement sublocks for now...
+-        , mixinBlocks   = [] -- foldr (.) id $(listE $ map subGo subblocks) []
+-        }|]
+-      {-
+-      . foldr (.) id $(listE $ map subGo subblocks)
+-      . (concatMap mixinBlocks $mixinsE ++)
+-    |]
+-    -}
+-  where
+-    mixinsE = return $ ListE $ map (derefToExp []) mixins
+-    go (Attr x y) = conE 'Attr
+-        `appE` (contentsToBuilder r scope x)
+-        `appE` (contentsToBuilder r scope y)
+-    subGo (Block sel' b c d) = blockToCss r scope $ Block sel' b c d
+-
+-blockToCss :: Name
+-           -> Scope
+-           -> Block Unresolved
+-           -> Q Exp
+-blockToCss r scope (Block sel props subblocks mixins) =
+-    [|((Block
+-        { blockSelector = $(selectorToBuilder r scope sel)
+-        , blockAttrs    = concat
+-                        $ $(listE $ map go props)
+-                        : map mixinAttrs $mixinsE
+-        , blockBlocks   = ()
+-        , blockMixins   = ()
+-        } :: Block Resolved):)
+-      . foldr (.) id $(listE $ map subGo subblocks)
+-      . (concatMap mixinBlocks $mixinsE ++)
+-    |]
+-  where
+-    mixinsE = return $ ListE $ map (derefToExp []) mixins
+-    go (Attr x y) = conE 'Attr
+-        `appE` (contentsToBuilder r scope x)
+-        `appE` (contentsToBuilder r scope y)
+-    subGo (hls, Block sel' b c d) =
+-        blockToCss r scope $ Block sel'' b c d
+-      where
+-        sel'' = combineSelectors hls sel sel'
+-
+-selectorToBuilder :: Name -> Scope -> [Contents] -> Q Exp
+-selectorToBuilder r scope sels =
+-    contentsToBuilder r scope $ intercalate [ContentRaw ","] sels
+-
+-contentsToBuilder :: Name -> Scope -> [Content] -> Q Exp
+-contentsToBuilder r scope contents =
+-    appE [|mconcat|] $ listE $ map (contentToBuilder r scope) contents
+-
+-contentToBuilder :: Name -> Scope -> Content -> Q Exp
+-contentToBuilder _ _ (ContentRaw x) =
+-    [|fromText . pack|] `appE` litE (StringL x)
+-contentToBuilder _ scope (ContentVar d) =
+-    case d of
+-        DerefIdent (Ident s)
+-            | Just val <- lookup s scope -> [|fromText . pack|] `appE` litE (StringL val)
+-        _ -> [|toCss|] `appE` return (derefToExp [] d)
+-contentToBuilder r _ (ContentUrl u) =
+-    [|fromText|] `appE`
+-        (varE r `appE` return (derefToExp [] u) `appE` listE [])
+-contentToBuilder r _ (ContentUrlParam u) =
+-    [|fromText|] `appE`
+-        ([|uncurry|] `appE` varE r `appE` return (derefToExp [] u))
+-contentToBuilder _ _ ContentMixin{} = error "contentToBuilder on ContentMixin"
+-
+ type Scope = [(String, String)]
+ 
+-topLevelsToCassius :: [TopLevel Unresolved]
+-                   -> Q Exp
+-topLevelsToCassius a = do
+-    r <- newName "_render"
+-    lamE [varP r] $ appE [|CssNoWhitespace . foldr ($) []|] $ fmap ListE $ go r [] a
+-  where
+-    go _ _ [] = return []
+-    go r scope (TopBlock b:rest) = do
+-        e <- [|(++) $ map TopBlock ($(blockToCss r scope b) [])|]
+-        es <- go r scope rest
+-        return $ e : es
+-    go r scope (TopAtBlock name s b:rest) = do
+-        let s' = contentsToBuilder r scope s
+-        e <- [|(:) $ TopAtBlock $(lift name) $(s') $(blocksToCassius r scope b)|]
+-        es <- go r scope rest
+-        return $ e : es
+-    go r scope (TopAtDecl dec cs:rest) = do
+-        e <- [|(:) $ TopAtDecl $(lift dec) $(contentsToBuilder r scope cs)|]
+-        es <- go r scope rest
+-        return $ e : es
+-    go r scope (TopVar k v:rest) = go r ((k, v) : scope) rest
+-
+-blocksToCassius :: Name
+-                -> Scope
+-                -> [Block Unresolved]
+-                -> Q Exp
+-blocksToCassius r scope a = do
+-    appE [|foldr ($) []|] $ listE $ map (blockToCss r scope) a
+-
+ renderCss :: Css -> TL.Text
+ renderCss css =
+     toLazyText $ mconcat $ map go tops
+@@ -515,23 +384,3 @@ renderBlock haveWhiteSpace indent (Block sel attrs () ())
+         | haveWhiteSpace = fromString ";\n"
+         | otherwise = singleton ';'
+ 
+-instance Lift Mixin where
+-    lift (Mixin a b) = [|Mixin a b|]
+-instance Lift (Attr Unresolved) where
+-    lift (Attr k v) = [|Attr k v :: Attr Unresolved |]
+-instance Lift (Attr Resolved) where
+-    lift (Attr k v) = [|Attr $(liftBuilder k) $(liftBuilder v) :: Attr Resolved |]
+-
+-liftBuilder :: Builder -> Q Exp
+-liftBuilder b = [|fromText $ pack $(lift $ TL.unpack $ toLazyText b)|]
+-
+-instance Lift Content where
+-    lift (ContentRaw s) = [|ContentRaw s|]
+-    lift (ContentVar d) = [|ContentVar d|]
+-    lift (ContentUrl d) = [|ContentUrl d|]
+-    lift (ContentUrlParam d) = [|ContentUrlParam d|]
+-    lift (ContentMixin m) = [|ContentMixin m|]
+-instance Lift (Block Unresolved) where
+-    lift (Block a b c d) = [|Block a b c d|]
+-instance Lift (Block Resolved) where
+-    lift (Block a b () ()) = [|Block $(liftBuilder a) b () ()|]
+diff --git a/Text/CssCommon.hs b/Text/CssCommon.hs
+index 719e0a8..8c40e8c 100644
+--- a/Text/CssCommon.hs
++++ b/Text/CssCommon.hs
+@@ -1,4 +1,3 @@
+-{-# LANGUAGE TemplateHaskell #-}
+ {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+ {-# LANGUAGE FlexibleInstances #-}
+ {-# LANGUAGE CPP #-}
+@@ -156,6 +155,3 @@ showSize :: Rational -> String -> String
+ showSize value' unit = printf "%f" value ++ unit
+   where value = fromRational value' :: Double
+ 
+-mkSizeType "EmSize" "em"
+-mkSizeType "ExSize" "ex"
+-mkSizeType "PixelSize" "px"
+diff --git a/Text/Hamlet.hs b/Text/Hamlet.hs
+index 9500ecb..ec8471a 100644
+--- a/Text/Hamlet.hs
++++ b/Text/Hamlet.hs
+@@ -11,36 +11,36 @@
+ module Text.Hamlet
+     ( -- * Plain HTML
+       Html
+-    , shamlet
+-    , shamletFile
+-    , xshamlet
+-    , xshamletFile
++    --, shamlet
++    --, shamletFile
++    --, xshamlet
++    --, xshamletFile
+       -- * Hamlet
+     , HtmlUrl
+-    , hamlet
+-    , hamletFile
+-    , hamletFileReload
+-    , ihamletFileReload
+-    , xhamlet
+-    , xhamletFile
++    --, hamlet
++    --, hamletFile
++    --, hamletFileReload
++    --, ihamletFileReload
++    --, xhamlet
++    --, xhamletFile
+       -- * I18N Hamlet
+     , HtmlUrlI18n
+-    , ihamlet
+-    , ihamletFile
++    --, ihamlet
++    --, ihamletFile
+       -- * Type classes
+     , ToAttributes (..)
+       -- * Internal, for making more
+     , HamletSettings (..)
+     , NewlineStyle (..)
+-    , hamletWithSettings
+-    , hamletFileWithSettings
++    --, hamletWithSettings
++    --, hamletFileWithSettings
+     , defaultHamletSettings
+     , xhtmlHamletSettings
+-    , Env (..)
+-    , HamletRules (..)
+-    , hamletRules
+-    , ihamletRules
+-    , htmlRules
++    --, Env (..)
++    --, HamletRules (..)
++    --, hamletRules
++    --, ihamletRules
++    --, htmlRules
+     , CloseStyle (..)
+       -- * Used by generated code
+     , condH
+@@ -110,47 +110,9 @@ type HtmlUrl url = Render url -> Html
+ -- | A function generating an 'Html' given a message translator and a URL rendering function.
+ type HtmlUrlI18n msg url = Translate msg -> Render url -> Html
+ 
+-docsToExp :: Env -> HamletRules -> Scope -> [Doc] -> Q Exp
+-docsToExp env hr scope docs = do
+-    exps <- mapM (docToExp env hr scope) docs
+-    case exps of
+-        [] -> [|return ()|]
+-        [x] -> return x
+-        _ -> return $ DoE $ map NoBindS exps
+-
+ unIdent :: Ident -> String
+ unIdent (Ident s) = s
+ 
+-bindingPattern :: Binding -> Q (Pat, [(Ident, Exp)])
+-bindingPattern (BindAs i@(Ident s) b) = do
+-    name <- newName s
+-    (pattern, scope) <- bindingPattern b
+-    return (AsP name pattern, (i, VarE name):scope)
+-bindingPattern (BindVar i@(Ident s))
+-    | all isDigit s = do
+-        return (LitP $ IntegerL $ read s, [])
+-    | otherwise = do
+-        name <- newName s
+-        return (VarP name, [(i, VarE name)])
+-bindingPattern (BindTuple is) = do
+-    (patterns, scopes) <- fmap unzip $ mapM bindingPattern is
+-    return (TupP patterns, concat scopes)
+-bindingPattern (BindList is) = do
+-    (patterns, scopes) <- fmap unzip $ mapM bindingPattern is
+-    return (ListP patterns, concat scopes)
+-bindingPattern (BindConstr con is) = do
+-    (patterns, scopes) <- fmap unzip $ mapM bindingPattern is
+-    return (ConP (mkConName con) patterns, concat scopes)
+-bindingPattern (BindRecord con fields wild) = do
+-    let f (Ident field,b) =
+-           do (p,s) <- bindingPattern b
+-              return ((mkName field,p),s)
+-    (patterns, scopes) <- fmap unzip $ mapM f fields
+-    (patterns1, scopes1) <- if wild
+-       then bindWildFields con $ map fst fields
+-       else return ([],[])
+-    return (RecP (mkConName con) (patterns++patterns1), concat scopes ++ scopes1)
+-
+ mkConName :: DataConstr -> Name
+ mkConName = mkName . conToStr
+ 
+@@ -158,6 +120,7 @@ conToStr :: DataConstr -> String
+ conToStr (DCUnqualified (Ident x)) = x
+ conToStr (DCQualified (Module xs) (Ident x)) = intercalate "." $ xs ++ [x]
+ 
++{-
+ -- Wildcards bind all of the unbound fields to variables whose name
+ -- matches the field name.
+ --
+@@ -296,10 +259,12 @@ hamlet = hamletWithSettings hamletRules defaultHamletSettings
+ 
+ xhamlet :: QuasiQuoter
+ xhamlet = hamletWithSettings hamletRules xhtmlHamletSettings
++-}
+ 
+ asHtmlUrl :: HtmlUrl url -> HtmlUrl url
+ asHtmlUrl = id
+ 
++{-
+ hamletRules :: Q HamletRules
+ hamletRules = do
+     i <- [|id|]
+@@ -360,6 +325,7 @@ hamletFromString :: Q HamletRules -> HamletSettings -> String -> Q Exp
+ hamletFromString qhr set s = do
+     hr <- qhr
+     hrWithEnv hr $ \env -> docsToExp env hr [] $ docFromString set s
++-}
+ 
+ docFromString :: HamletSettings -> String -> [Doc]
+ docFromString set s =
+@@ -367,6 +333,7 @@ docFromString set s =
+         Error s' -> error s'
+         Ok (_, d) -> d
+ 
++{-
+ hamletFileWithSettings :: Q HamletRules -> HamletSettings -> FilePath -> Q Exp
+ hamletFileWithSettings qhr set fp = do
+ #ifdef GHC_7_4
+@@ -408,6 +375,7 @@ strToExp s@(c:_)
+     | isUpper c = ConE $ mkName s
+     | otherwise = VarE $ mkName s
+ strToExp "" = error "strToExp on empty string"
++-}
+ 
+ -- | Checks for truth in the left value in each pair in the first argument. If
+ -- a true exists, then the corresponding right action is performed. Only the
+@@ -452,7 +420,7 @@ hamletUsedIdentifiers settings =
+ data HamletRuntimeRules = HamletRuntimeRules {
+                             hrrI18n :: Bool
+                           }
+-
++{-
+ hamletFileReloadWithSettings :: HamletRuntimeRules
+                              -> HamletSettings -> FilePath -> Q Exp
+ hamletFileReloadWithSettings hrr settings fp = do
+@@ -479,7 +447,7 @@ hamletFileReloadWithSettings hrr settings fp = do
+             c VTUrlParam = [|EUrlParam|]
+             c VTMixin = [|\r -> EMixin $ \c -> r c|]
+             c VTMsg = [|EMsg|]
+-
++-}
+ -- move to Shakespeare.Base?
+ readFileUtf8 :: FilePath -> IO String
+ readFileUtf8 fp = fmap TL.unpack $ readUtf8File fp
+diff --git a/Text/Hamlet/Parse.hs b/Text/Hamlet/Parse.hs
+index b7e2954..1f14946 100644
+--- a/Text/Hamlet/Parse.hs
++++ b/Text/Hamlet/Parse.hs
+@@ -616,6 +616,7 @@ data NewlineStyle = NoNewlines -- ^ never add newlines
+                   | DefaultNewlineStyle
+     deriving Show
+ 
++{-
+ instance Lift NewlineStyle where
+     lift NoNewlines = [|NoNewlines|]
+     lift NewlinesText = [|NewlinesText|]
+@@ -627,7 +628,7 @@ instance Lift (String -> CloseStyle) where
+ 
+ instance Lift HamletSettings where
+     lift (HamletSettings a b c d) = [|HamletSettings $(lift a) $(lift b) $(lift c) $(lift d)|]
+-
++-}
+ 
+ htmlEmptyTags :: Set String
+ htmlEmptyTags = Set.fromAscList
+diff --git a/Text/Julius.hs b/Text/Julius.hs
+index ec30690..5b5a075 100644
+--- a/Text/Julius.hs
++++ b/Text/Julius.hs
+@@ -14,17 +14,17 @@ module Text.Julius
+       -- ** Template-Reading Functions
+       -- | These QuasiQuoter and Template Haskell methods return values of
+       -- type @'JavascriptUrl' url@. See the Yesod book for details.
+-      js
+-    , julius
+-    , juliusFile
+-    , jsFile
+-    , juliusFileDebug
+-    , jsFileDebug
+-    , juliusFileReload
+-    , jsFileReload
++    -- js
++    -- julius
++    -- juliusFile
++    -- jsFile
++    --, juliusFileDebug
++    --, jsFileDebug
++    --, juliusFileReload
++    --, jsFileReload
+ 
+       -- * Datatypes
+-    , JavascriptUrl
++      JavascriptUrl
+     , Javascript (..)
+     , RawJavascript (..)
+ 
+@@ -37,9 +37,9 @@ module Text.Julius
+     , renderJavascriptUrl
+ 
+       -- ** internal, used by 'Text.Coffee'
+-    , javascriptSettings
++    --, javascriptSettings
+       -- ** internal
+-    , juliusUsedIdentifiers
++    --, juliusUsedIdentifiers
+     , asJavascriptUrl
+     ) where
+ 
+@@ -102,48 +102,3 @@ instance RawJS TL.Text where rawJS = RawJavascript . fromLazyText
+ instance RawJS Builder where rawJS = RawJavascript
+ instance RawJS Bool where rawJS = RawJavascript . unJavascript . toJavascript
+ 
+-javascriptSettings :: Q ShakespeareSettings
+-javascriptSettings = do
+-  toJExp <- [|toJavascript|]
+-  wrapExp <- [|Javascript|]
+-  unWrapExp <- [|unJavascript|]
+-  asJavascriptUrl' <- [|asJavascriptUrl|]
+-  return $ defaultShakespeareSettings { toBuilder = toJExp
+-  , wrap = wrapExp
+-  , unwrap = unWrapExp
+-  , modifyFinalValue = Just asJavascriptUrl'
+-  }
+-
+-js, julius :: QuasiQuoter
+-js = QuasiQuoter { quoteExp = \s -> do
+-    rs <- javascriptSettings
+-    quoteExp (shakespeare rs) s
+-    }
+-
+-julius = js
+-
+-jsFile, juliusFile :: FilePath -> Q Exp
+-jsFile fp = do
+-    rs <- javascriptSettings
+-    shakespeareFile rs fp
+-
+-juliusFile = jsFile
+-
+-
+-jsFileReload, juliusFileReload :: FilePath -> Q Exp
+-jsFileReload fp = do
+-    rs <- javascriptSettings
+-    shakespeareFileReload rs fp
+-
+-juliusFileReload = jsFileReload
+-
+-jsFileDebug, juliusFileDebug :: FilePath -> Q Exp
+-juliusFileDebug = jsFileReload
+-{-# DEPRECATED juliusFileDebug "Please use juliusFileReload instead." #-}
+-jsFileDebug = jsFileReload
+-{-# DEPRECATED jsFileDebug "Please use jsFileReload instead." #-}
+-
+--- | Determine which identifiers are used by the given template, useful for
+--- creating systems like yesod devel.
+-juliusUsedIdentifiers :: String -> [(Deref, VarType)]
+-juliusUsedIdentifiers = shakespeareUsedIdentifiers defaultShakespeareSettings
+diff --git a/Text/Lucius.hs b/Text/Lucius.hs
+index 346883d..f38492b 100644
+--- a/Text/Lucius.hs
++++ b/Text/Lucius.hs
+@@ -8,13 +8,9 @@
+ {-# OPTIONS_GHC -fno-warn-missing-fields #-}
+ module Text.Lucius
+     ( -- * Parsing
+-      lucius
+-    , luciusFile
+-    , luciusFileDebug
+-    , luciusFileReload
+       -- ** Mixins
+-    , luciusMixin
+-    , Mixin
++    -- luciusMixin
++      Mixin
+       -- ** Runtime
+     , luciusRT
+     , luciusRT'
+@@ -40,11 +36,8 @@ module Text.Lucius
+     , AbsoluteUnit (..)
+     , AbsoluteSize (..)
+     , absoluteSize
+-    , EmSize (..)
+-    , ExSize (..)
+     , PercentageSize (..)
+     , percentageSize
+-    , PixelSize (..)
+       -- * Internal
+     , parseTopLevels
+     , luciusUsedIdentifiers
+@@ -67,18 +60,6 @@ import Data.List (isSuffixOf)
+ import Control.Arrow (second)
+ import Text.Shakespeare (VarType)
+ 
+--- |
+---
+--- >>> renderCss ([lucius|foo{bar:baz}|] undefined)
+--- "foo{bar:baz}"
+-lucius :: QuasiQuoter
+-lucius = QuasiQuoter { quoteExp = luciusFromString }
+-
+-luciusFromString :: String -> Q Exp
+-luciusFromString s =
+-    topLevelsToCassius
+-  $ either (error . show) id $ parse parseTopLevels s s
+-
+ whiteSpace :: Parser ()
+ whiteSpace = many whiteSpace1 >> return ()
+ 
+@@ -218,17 +199,6 @@ parseComment = do
+     _ <- manyTill anyChar $ try $ string "*/"
+     return $ ContentRaw ""
+ 
+-luciusFile :: FilePath -> Q Exp
+-luciusFile fp = do
+-#ifdef GHC_7_4
+-    qAddDependentFile fp
+-#endif
+-    contents <- fmap TL.unpack $ qRunIO $ readUtf8File fp
+-    luciusFromString contents
+-
+-luciusFileDebug, luciusFileReload :: FilePath -> Q Exp
+-luciusFileDebug = cssFileDebug False [|parseTopLevels|] parseTopLevels
+-luciusFileReload = luciusFileDebug
+ 
+ parseTopLevels :: Parser [TopLevel Unresolved]
+ parseTopLevels =
+@@ -377,15 +347,3 @@ luciusRTMinified tl scope = either Left (Right . renderCss . CssNoWhitespace) $
+ -- creating systems like yesod devel.
+ luciusUsedIdentifiers :: String -> [(Deref, VarType)]
+ luciusUsedIdentifiers = cssUsedIdentifiers False parseTopLevels
+-
+-luciusMixin :: QuasiQuoter
+-luciusMixin = QuasiQuoter { quoteExp = luciusMixinFromString }
+-
+-luciusMixinFromString :: String -> Q Exp
+-luciusMixinFromString s' = do
+-    r <- newName "_render"
+-    case fmap compressBlock $ parse parseBlock s s of
+-        Left e -> error $ show e
+-        Right block -> blockToMixin r [] block
+-  where
+-    s = concat ["mixin{", s', "}"]
+diff --git a/Text/Roy.hs b/Text/Roy.hs
+index 6e5e246..9ab0dbc 100644
+--- a/Text/Roy.hs
++++ b/Text/Roy.hs
+@@ -39,12 +39,12 @@ module Text.Roy
+       -- ** Template-Reading Functions
+       -- | These QuasiQuoter and Template Haskell methods return values of
+       -- type @'JavascriptUrl' url@. See the Yesod book for details.
+-      roy
+-    , royFile
+-    , royFileReload
++    --  roy
++    --, royFile
++    --, royFileReload
+ 
+ #ifdef TEST_EXPORT
+-    , roySettings
++    --, roySettings
+ #endif
+     ) where
+ 
+@@ -53,46 +53,3 @@ import Language.Haskell.TH.Syntax
+ import Text.Shakespeare
+ import Text.Julius
+ 
+--- | The Roy language compiles down to Javascript.
+--- We do this compilation once at compile time to avoid needing to do it during the request.
+--- We call this a preConversion because other shakespeare modules like Lucius use Haskell to compile during the request instead rather than a system call.
+-roySettings :: Q ShakespeareSettings
+-roySettings = do
+-  jsettings <- javascriptSettings
+-  return $ jsettings { varChar = '#'
+-  , preConversion = Just PreConvert {
+-      preConvert = ReadProcess "roy" ["--stdio", "--browser"]
+-    , preEscapeIgnoreBalanced = "'\""
+-    , preEscapeIgnoreLine = "//"
+-    , wrapInsertion = Just WrapInsertion {
+-        wrapInsertionIndent = Just "  "
+-      , wrapInsertionStartBegin = "(\\"
+-      , wrapInsertionSeparator = " "
+-      , wrapInsertionStartClose = " ->\n"
+-      , wrapInsertionEnd = ")"
+-      , wrapInsertionAddParens = True
+-      }
+-    }
+-  }
+-
+--- | Read inline, quasiquoted Roy.
+-roy :: QuasiQuoter
+-roy = QuasiQuoter { quoteExp = \s -> do
+-    rs <- roySettings
+-    quoteExp (shakespeare rs) s
+-    }
+-
+--- | Read in a Roy template file. This function reads the file once, at
+--- compile time.
+-royFile :: FilePath -> Q Exp
+-royFile fp = do
+-    rs <- roySettings
+-    shakespeareFile rs fp
+-
+--- | Read in a Roy template file. This impure function uses
+--- unsafePerformIO to re-read the file on every call, allowing for rapid
+--- iteration.
+-royFileReload :: FilePath -> Q Exp
+-royFileReload fp = do
+-    rs <- roySettings
+-    shakespeareFileReload rs fp
+diff --git a/Text/Shakespeare.hs b/Text/Shakespeare.hs
+index 67d7dde..a510215 100644
+--- a/Text/Shakespeare.hs
++++ b/Text/Shakespeare.hs
+@@ -15,12 +15,12 @@ module Text.Shakespeare
+     , WrapInsertion (..)
+     , PreConversion (..)
+     , defaultShakespeareSettings
+-    , shakespeare
+-    , shakespeareFile
+-    , shakespeareFileReload
++    -- , shakespeare
++    -- , shakespeareFile
++    -- , shakespeareFileReload
+     -- * low-level
+-    , shakespeareFromString
+-    , shakespeareUsedIdentifiers
++    -- , shakespeareFromString
++    -- , shakespeareUsedIdentifiers
+     , RenderUrl
+     , VarType (..)
+     , Deref
+@@ -153,38 +153,6 @@ defaultShakespeareSettings = ShakespeareSettings {
+   , modifyFinalValue = Nothing
+ }
+ 
+-instance Lift PreConvert where
+-    lift (PreConvert convert ignore comment wrapInsertion) =
+-        [|PreConvert $(lift convert) $(lift ignore) $(lift comment) $(lift wrapInsertion)|]
+-
+-instance Lift WrapInsertion where
+-    lift (WrapInsertion indent sb sep sc e wp) =
+-        [|WrapInsertion $(lift indent) $(lift sb) $(lift sep) $(lift sc) $(lift e) $(lift wp)|]
+-
+-instance Lift PreConversion where
+-    lift (ReadProcess command args) =
+-        [|ReadProcess $(lift command) $(lift args)|]
+-    lift Id = [|Id|]
+-
+-instance Lift ShakespeareSettings where
+-    lift (ShakespeareSettings x1 x2 x3 x4 x5 x6 x7 x8 x9) =
+-        [|ShakespeareSettings
+-            $(lift x1) $(lift x2) $(lift x3)
+-            $(liftExp x4) $(liftExp x5) $(liftExp x6) $(lift x7) $(lift x8) $(liftMExp x9)|]
+-      where
+-        liftExp (VarE n) = [|VarE $(liftName n)|]
+-        liftExp (ConE n) = [|ConE $(liftName n)|]
+-        liftExp _ = error "liftExp only supports VarE and ConE"
+-        liftMExp Nothing = [|Nothing|]
+-        liftMExp (Just e) = [|Just|] `appE` liftExp e
+-        liftName (Name (OccName a) b) = [|Name (OccName $(lift a)) $(liftFlavour b)|]
+-        liftFlavour NameS = [|NameS|]
+-        liftFlavour (NameQ (ModName a)) = [|NameQ (ModName $(lift a))|]
+-        liftFlavour (NameU _) = error "liftFlavour NameU" -- [|NameU $(lift $ fromIntegral a)|]
+-        liftFlavour (NameL _) = error "liftFlavour NameL" -- [|NameU $(lift $ fromIntegral a)|]
+-        liftFlavour (NameG ns (PkgName p) (ModName m)) = [|NameG $(liftNS ns) (PkgName $(lift p)) (ModName $(lift m))|]
+-        liftNS VarName = [|VarName|]
+-        liftNS DataName = [|DataName|]
+ 
+ type QueryParameters = [(TS.Text, TS.Text)]
+ type RenderUrl url = (url -> QueryParameters -> TS.Text)
+@@ -348,6 +316,7 @@ pack' = TS.pack
+ {-# NOINLINE pack' #-}
+ #endif
+ 
++{-
+ contentsToShakespeare :: ShakespeareSettings -> [Content] -> Q Exp
+ contentsToShakespeare rs a = do
+     r <- newName "_render"
+@@ -399,16 +368,19 @@ shakespeareFile r fp =
+     qAddDependentFile fp >>
+ #endif
+         readFileQ fp >>= shakespeareFromString r
++-}
+ 
+ data VarType = VTPlain | VTUrl | VTUrlParam | VTMixin
+     deriving (Show, Eq, Ord, Enum, Bounded, Typeable, Data, Generic)
+ 
++{-
+ getVars :: Content -> [(Deref, VarType)]
+ getVars ContentRaw{} = []
+ getVars (ContentVar d) = [(d, VTPlain)]
+ getVars (ContentUrl d) = [(d, VTUrl)]
+ getVars (ContentUrlParam d) = [(d, VTUrlParam)]
+ getVars (ContentMix d) = [(d, VTMixin)]
++-}
+ 
+ data VarExp url = EPlain Builder
+                 | EUrl url
+@@ -417,8 +389,10 @@ data VarExp url = EPlain Builder
+ 
+ -- | Determine which identifiers are used by the given template, useful for
+ -- creating systems like yesod devel.
++{-
+ shakespeareUsedIdentifiers :: ShakespeareSettings -> String -> [(Deref, VarType)]
+ shakespeareUsedIdentifiers settings = concatMap getVars . contentFromString settings
++-}
+ 
+ type MTime = UTCTime
+ 
+@@ -435,28 +409,6 @@ insertReloadMap :: FilePath -> (MTime, [Content]) -> IO [Content]
+ insertReloadMap fp (mt, content) = atomicModifyIORef reloadMapRef
+   (\reloadMap -> (M.insert fp (mt, content) reloadMap, content))
+ 
+-shakespeareFileReload :: ShakespeareSettings -> FilePath -> Q Exp
+-shakespeareFileReload settings fp = do
+-    str <- readFileQ fp
+-    s <- qRunIO $ preFilter (Just fp) settings str
+-    let b = shakespeareUsedIdentifiers settings s
+-    c <- mapM vtToExp b
+-    rt <- [|shakespeareRuntime settings fp|]
+-    wrap' <- [|\x -> $(return $ wrap settings) . x|]
+-    return $ wrap' `AppE` (rt `AppE` ListE c)
+-  where
+-    vtToExp :: (Deref, VarType) -> Q Exp
+-    vtToExp (d, vt) = do
+-        d' <- lift d
+-        c' <- c vt
+-        return $ TupE [d', c' `AppE` derefToExp [] d]
+-      where
+-        c :: VarType -> Q Exp
+-        c VTPlain = [|EPlain . $(return $
+-          InfixE (Just $ unwrap settings) (VarE '(.)) (Just $ toBuilder settings))|]
+-        c VTUrl = [|EUrl|]
+-        c VTUrlParam = [|EUrlParam|]
+-        c VTMixin = [|\x -> EMixin $ \r -> $(return $ unwrap settings) $ x r|]
+ 
+ 
+ 
+diff --git a/Text/Shakespeare/Base.hs b/Text/Shakespeare/Base.hs
+index a0e983c..23b4692 100644
+--- a/Text/Shakespeare/Base.hs
++++ b/Text/Shakespeare/Base.hs
+@@ -52,34 +52,6 @@ data Deref = DerefModulesIdent [String] Ident
+            | DerefTuple [Deref]
+     deriving (Show, Eq, Read, Data, Typeable, Ord)
+ 
+-instance Lift Ident where
+-    lift (Ident s) = [|Ident|] `appE` lift s
+-instance Lift Deref where
+-    lift (DerefModulesIdent v s) = do
+-        dl <- [|DerefModulesIdent|]
+-        v' <- lift v
+-        s' <- lift s
+-        return $ dl `AppE` v' `AppE` s'
+-    lift (DerefIdent s) = do
+-        dl <- [|DerefIdent|]
+-        s' <- lift s
+-        return $ dl `AppE` s'
+-    lift (DerefBranch x y) = do
+-        x' <- lift x
+-        y' <- lift y
+-        db <- [|DerefBranch|]
+-        return $ db `AppE` x' `AppE` y'
+-    lift (DerefIntegral i) = [|DerefIntegral|] `appE` lift i
+-    lift (DerefRational r) = do
+-        n <- lift $ numerator r
+-        d <- lift $ denominator r
+-        per <- [|(%) :: Int -> Int -> Ratio Int|]
+-        dr <- [|DerefRational|]
+-        return $ dr `AppE` InfixE (Just n) per (Just d)
+-    lift (DerefString s) = [|DerefString|] `appE` lift s
+-    lift (DerefList x) = [|DerefList $(lift x)|]
+-    lift (DerefTuple x) = [|DerefTuple $(lift x)|]
+-
+ derefParens, derefCurlyBrackets :: UserParser a Deref
+ derefParens        = between (char '(') (char ')') parseDeref
+ derefCurlyBrackets = between (char '{') (char '}') parseDeref
+diff --git a/Text/Shakespeare/I18N.hs b/Text/Shakespeare/I18N.hs
+index a39a614..753cba7 100644
+--- a/Text/Shakespeare/I18N.hs
++++ b/Text/Shakespeare/I18N.hs
+@@ -52,10 +52,10 @@
+ --
+ -- You can also adapt those instructions for use with other systems.
+ module Text.Shakespeare.I18N
+-    ( mkMessage
+-    , mkMessageFor
+-    , mkMessageVariant
+-    , RenderMessage (..)
++    --( mkMessage
++    --, mkMessageFor
++    ---, mkMessageVariant
++    ( RenderMessage (..)
+     , ToMessage (..)
+     , SomeMessage (..)
+     , Lang
+@@ -106,143 +106,6 @@ instance RenderMessage master Text where
+ -- | an RFC1766 / ISO 639-1 language code (eg, @fr@, @en-GB@, etc).
+ type Lang = Text
+ 
+--- |generate translations from translation files
+---
+--- This function will:
+---
+---  1. look in the supplied subdirectory for files ending in @.msg@
+---
+---  2. generate a type based on the constructors found
+---
+---  3. create a 'RenderMessage' instance
+---
+-mkMessage :: String   -- ^ base name to use for translation type
+-          -> FilePath -- ^ subdirectory which contains the translation files
+-          -> Lang     -- ^ default translation language
+-          -> Q [Dec]
+-mkMessage dt folder lang =
+-    mkMessageCommon True "Msg" "Message" dt dt folder lang
+-
+-
+--- | create 'RenderMessage' instance for an existing data-type
+-mkMessageFor :: String     -- ^ master translation data type
+-             -> String     -- ^ existing type to add translations for
+-             -> FilePath   -- ^ path to translation folder
+-             -> Lang       -- ^ default language
+-             -> Q [Dec]
+-mkMessageFor master dt folder lang = mkMessageCommon False "" "" master dt folder lang
+-
+--- | create an additional set of translations for a type created by `mkMessage`
+-mkMessageVariant :: String     -- ^ master translation data type
+-                 -> String     -- ^ existing type to add translations for
+-                 -> FilePath   -- ^ path to translation folder
+-                 -> Lang       -- ^ default language
+-                 -> Q [Dec]
+-mkMessageVariant master dt folder lang = mkMessageCommon False "Msg" "Message" master dt folder lang
+-
+--- |used by 'mkMessage' and 'mkMessageFor' to generate a 'RenderMessage' and possibly a message data type
+-mkMessageCommon :: Bool      -- ^ generate a new datatype from the constructors found in the .msg files
+-                -> String    -- ^ string to append to constructor names
+-                -> String    -- ^ string to append to datatype name
+-                -> String    -- ^ base name of master datatype
+-                -> String    -- ^ base name of translation datatype
+-                -> FilePath  -- ^ path to translation folder
+-                -> Lang      -- ^ default lang
+-                -> Q [Dec]
+-mkMessageCommon genType prefix postfix master dt folder lang = do
+-    files <- qRunIO $ getDirectoryContents folder
+-    (_files', contents) <- qRunIO $ fmap (unzip . catMaybes) $ mapM (loadLang folder) files
+-#ifdef GHC_7_4
+-    mapM_ qAddDependentFile _files'
+-#endif
+-    sdef <-
+-        case lookup lang contents of
+-            Nothing -> error $ "Did not find main language file: " ++ unpack lang
+-            Just def -> toSDefs def
+-    mapM_ (checkDef sdef) $ map snd contents
+-    let mname = mkName $ dt ++ postfix
+-    c1 <- fmap concat $ mapM (toClauses prefix dt) contents
+-    c2 <- mapM (sToClause prefix dt) sdef
+-    c3 <- defClause
+-    return $
+-     ( if genType 
+-       then ((DataD [] mname [] (map (toCon dt) sdef) []) :)
+-       else id)
+-        [ InstanceD
+-            []
+-            (ConT ''RenderMessage `AppT` (ConT $ mkName master) `AppT` ConT mname)
+-            [ FunD (mkName "renderMessage") $ c1 ++ c2 ++ [c3]
+-            ]
+-        ]
+-
+-toClauses :: String -> String -> (Lang, [Def]) -> Q [Clause]
+-toClauses prefix dt (lang, defs) =
+-    mapM go defs
+-  where
+-    go def = do
+-        a <- newName "lang"
+-        (pat, bod) <- mkBody dt (prefix ++ constr def) (map fst $ vars def) (content def)
+-        guard <- fmap NormalG [|$(return $ VarE a) == pack $(lift $ unpack lang)|]
+-        return $ Clause
+-            [WildP, ConP (mkName ":") [VarP a, WildP], pat]
+-            (GuardedB [(guard, bod)])
+-            []
+-
+-mkBody :: String -- ^ datatype
+-       -> String -- ^ constructor
+-       -> [String] -- ^ variable names
+-       -> [Content]
+-       -> Q (Pat, Exp)
+-mkBody dt cs vs ct = do
+-    vp <- mapM go vs
+-    let pat = RecP (mkName cs) (map (varName dt *** VarP) vp)
+-    let ct' = map (fixVars vp) ct
+-    pack' <- [|Data.Text.pack|]
+-    tomsg <- [|toMessage|]
+-    let ct'' = map (toH pack' tomsg) ct'
+-    mapp <- [|mappend|]
+-    let app a b = InfixE (Just a) mapp (Just b)
+-    e <-
+-        case ct'' of
+-            [] -> [|mempty|]
+-            [x] -> return x
+-            (x:xs) -> return $ foldl' app x xs
+-    return (pat, e)
+-  where
+-    toH pack' _ (Raw s) = pack' `AppE` SigE (LitE (StringL s)) (ConT ''String)
+-    toH _ tomsg (Var d) = tomsg `AppE` derefToExp [] d
+-    go x = do
+-        let y = mkName $ '_' : x
+-        return (x, y)
+-    fixVars vp (Var d) = Var $ fixDeref vp d
+-    fixVars _ (Raw s) = Raw s
+-    fixDeref vp (DerefIdent (Ident i)) = DerefIdent $ Ident $ fixIdent vp i
+-    fixDeref vp (DerefBranch a b) = DerefBranch (fixDeref vp a) (fixDeref vp b)
+-    fixDeref _ d = d
+-    fixIdent vp i =
+-        case lookup i vp of
+-            Nothing -> i
+-            Just y -> nameBase y
+-
+-sToClause :: String -> String -> SDef -> Q Clause
+-sToClause prefix dt sdef = do
+-    (pat, bod) <- mkBody dt (prefix ++ sconstr sdef) (map fst $ svars sdef) (scontent sdef)
+-    return $ Clause
+-        [WildP, ConP (mkName "[]") [], pat]
+-        (NormalB bod)
+-        []
+-
+-defClause :: Q Clause
+-defClause = do
+-    a <- newName "sub"
+-    c <- newName "langs"
+-    d <- newName "msg"
+-    rm <- [|renderMessage|]
+-    return $ Clause
+-        [VarP a, ConP (mkName ":") [WildP, VarP c], VarP d]
+-        (NormalB $ rm `AppE` VarE a `AppE` VarE c `AppE` VarE d)
+-        []
+-
+ toCon :: String -> SDef -> Con
+ toCon dt (SDef c vs _) =
+     RecC (mkName $ "Msg" ++ c) $ map go vs
+@@ -258,39 +121,6 @@ varName a y =
+     upper (x:xs) = toUpper x : xs
+     upper [] = []
+ 
+-checkDef :: [SDef] -> [Def] -> Q ()
+-checkDef x y =
+-    go (sortBy (comparing sconstr) x) (sortBy (comparing constr) y)
+-  where
+-    go _ [] = return ()
+-    go [] (b:_) = error $ "Extra message constructor: " ++ constr b
+-    go (a:as) (b:bs)
+-        | sconstr a < constr b = go as (b:bs)
+-        | sconstr a > constr b = error $ "Extra message constructor: " ++ constr b
+-        | otherwise = do
+-            go' (svars a) (vars b)
+-            go as bs
+-    go' ((an, at):as) ((bn, mbt):bs)
+-        | an /= bn = error "Mismatched variable names"
+-        | otherwise =
+-            case mbt of
+-                Nothing -> go' as bs
+-                Just bt
+-                    | at == bt -> go' as bs
+-                    | otherwise -> error "Mismatched variable types"
+-    go' [] [] = return ()
+-    go' _ _ = error "Mistmached variable count"
+-
+-toSDefs :: [Def] -> Q [SDef]
+-toSDefs = mapM toSDef
+-
+-toSDef :: Def -> Q SDef
+-toSDef d = do
+-    vars' <- mapM go $ vars d
+-    return $ SDef (constr d) vars' (content d)
+-  where
+-    go (a, Just b) = return (a, b)
+-    go (a, Nothing) = error $ "Main language missing type for " ++ show (constr d, a)
+ 
+ data SDef = SDef
+     { sconstr :: String
+diff --git a/Text/Shakespeare/Text.hs b/Text/Shakespeare/Text.hs
+index 6865a5a..e25a8be 100644
+--- a/Text/Shakespeare/Text.hs
++++ b/Text/Shakespeare/Text.hs
+@@ -7,18 +7,18 @@ module Text.Shakespeare.Text
+     ( TextUrl
+     , ToText (..)
+     , renderTextUrl
+-    , stext
+-    , text
+-    , textFile
+-    , textFileDebug
+-    , textFileReload
+-    , st -- | strict text
+-    , lt -- | lazy text, same as stext :)
++    --, stext
++    --, text
++    --, textFile
++    --, textFileDebug
++    --, textFileReload
++    --, st -- | strict text
++    --, lt -- | lazy text, same as stext :)
+     -- * Yesod code generation
+-    , codegen
+-    , codegenSt
+-    , codegenFile
+-    , codegenFileReload
++    --, codegen
++    --, codegenSt
++    --, codegenFile
++    --, codegenFileReload
+     ) where
+ 
+ import Language.Haskell.TH.Quote (QuasiQuoter (..))
+@@ -45,106 +45,3 @@ instance ToText Int32 where toText = toText . show
+ instance ToText Int64 where toText = toText . show
+ instance ToText Int   where toText = toText . show
+ 
+-settings :: Q ShakespeareSettings
+-settings = do
+-  toTExp <- [|toText|]
+-  wrapExp <- [|id|]
+-  unWrapExp <- [|id|]
+-  return $ defaultShakespeareSettings { toBuilder = toTExp
+-  , wrap = wrapExp
+-  , unwrap = unWrapExp
+-  }
+-
+-
+-stext, lt, st, text :: QuasiQuoter
+-stext = 
+-  QuasiQuoter { quoteExp = \s -> do
+-    rs <- settings
+-    render <- [|toLazyText|]
+-    rendered <- shakespeareFromString rs { justVarInterpolation = True } s
+-    return (render `AppE` rendered)
+-    }
+-lt = stext
+-
+-st = 
+-  QuasiQuoter { quoteExp = \s -> do
+-    rs <- settings
+-    render <- [|TL.toStrict . toLazyText|]
+-    rendered <- shakespeareFromString rs { justVarInterpolation = True } s
+-    return (render `AppE` rendered)
+-    }
+-
+-text = QuasiQuoter { quoteExp = \s -> do
+-    rs <- settings
+-    quoteExp (shakespeare rs) $ filter (/='\r') s
+-    }
+-
+-
+-textFile :: FilePath -> Q Exp
+-textFile fp = do
+-    rs <- settings
+-    shakespeareFile rs fp
+-
+-
+-textFileDebug :: FilePath -> Q Exp
+-textFileDebug = textFileReload
+-{-# DEPRECATED textFileDebug "Please use textFileReload instead" #-}
+-
+-textFileReload :: FilePath -> Q Exp
+-textFileReload fp = do
+-    rs <- settings
+-    shakespeareFileReload rs fp
+-
+--- | codegen is designed for generating Yesod code, including templates
+--- So it uses different interpolation characters that won't clash with templates.
+-codegenSettings :: Q ShakespeareSettings
+-codegenSettings = do
+-  toTExp <- [|toText|]
+-  wrapExp <- [|id|]
+-  unWrapExp <- [|id|]
+-  return $ defaultShakespeareSettings { toBuilder = toTExp
+-  , wrap = wrapExp
+-  , unwrap = unWrapExp
+-  , varChar = '~'
+-  , urlChar = '*'
+-  , intChar = '&'
+-  , justVarInterpolation = True -- always!
+-  }
+-
+--- | codegen is designed for generating Yesod code, including templates
+--- So it uses different interpolation characters that won't clash with templates.
+--- You can use the normal text quasiquoters to generate code
+-codegen :: QuasiQuoter
+-codegen =
+-  QuasiQuoter { quoteExp = \s -> do
+-    rs <- codegenSettings
+-    render <- [|toLazyText|]
+-    rendered <- shakespeareFromString rs { justVarInterpolation = True } s
+-    return (render `AppE` rendered)
+-    }
+-
+--- | Generates strict Text
+--- codegen is designed for generating Yesod code, including templates
+--- So it uses different interpolation characters that won't clash with templates.
+-codegenSt :: QuasiQuoter
+-codegenSt =
+-  QuasiQuoter { quoteExp = \s -> do
+-    rs <- codegenSettings
+-    render <- [|TL.toStrict . toLazyText|]
+-    rendered <- shakespeareFromString rs { justVarInterpolation = True } s
+-    return (render `AppE` rendered)
+-    }
+-
+-codegenFileReload :: FilePath -> Q Exp
+-codegenFileReload fp = do
+-    rs <- codegenSettings
+-    render <- [|TL.toStrict . toLazyText|]
+-    rendered <- shakespeareFileReload rs{ justVarInterpolation = True } fp
+-    return (render `AppE` rendered)
+-
+-codegenFile :: FilePath -> Q Exp
+-codegenFile fp = do
+-    rs <- codegenSettings
+-    render <- [|TL.toStrict . toLazyText|]
+-    rendered <- shakespeareFile rs{ justVarInterpolation = True } fp
+-    return (render `AppE` rendered)
+diff --git a/shakespeare.cabal b/shakespeare.cabal
+index a555c24..d73da26 100644
+--- a/shakespeare.cabal
++++ b/shakespeare.cabal
+@@ -62,8 +62,8 @@ library
+                      Text.Cassius
+                      Text.Shakespeare.Base
+                      Text.Shakespeare
+-    other-modules:   Text.Hamlet.Parse
+                      Text.Css
++    other-modules:   Text.Hamlet.Parse
+                      Text.MkSizeType
+                      Text.IndentToBrace
+                      Text.CssCommon
+-- 
+2.0.0.rc2
+
