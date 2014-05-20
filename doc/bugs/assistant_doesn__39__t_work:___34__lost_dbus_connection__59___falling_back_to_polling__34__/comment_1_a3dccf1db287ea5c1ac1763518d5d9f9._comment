@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmaB2n9HFclAvyMyDzvTPaifh5OrlF51Co"
+ nickname="VS7"
+ subject="DBus wasn't installed"
+ date="2014-05-20T11:46:35Z"
+ content="""
+    yum install dbus
+    service messagebus restart
+"""]]
