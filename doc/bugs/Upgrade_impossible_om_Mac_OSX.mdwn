@@ -18,3 +18,5 @@ See problem description above, not sure what else to say.
 
 # End of transcript or log.
 """]]
+
+[[moreinfo]]
