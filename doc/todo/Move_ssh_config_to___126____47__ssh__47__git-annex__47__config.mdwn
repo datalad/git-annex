@@ -5,3 +5,5 @@ Instead of storing config for each remote in ~/.ssh/config, which mixes the user
 I'm using git-annex 4.20130601 on a Debian Testing/Unstable/Experimental mix.
 
 [[!tag design/assistant]]
+
+[[wontfix]]
