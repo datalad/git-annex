@@ -1,13 +1,13 @@
-From 369c99b9de0c82578f5221fdabc42ea9ba59ddea Mon Sep 17 00:00:00 2001
+From 86264ab2a76568585cacca9145e440d6c06edbe3 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 7 Mar 2014 04:10:02 +0000
-Subject: [PATCH] hack to TH
+Date: Wed, 21 May 2014 06:30:03 +0000
+Subject: [PATCH] avoid TH
 
 ---
  Yesod.hs              | 19 ++++++++++++--
- Yesod/Default/Main.hs | 25 +------------------
+ Yesod/Default/Main.hs | 31 +----------------------
  Yesod/Default/Util.hs | 69 ++-------------------------------------------------
- 3 files changed, 20 insertions(+), 93 deletions(-)
+ 3 files changed, 20 insertions(+), 99 deletions(-)
 
 diff --git a/Yesod.hs b/Yesod.hs
 index b367144..fbe309c 100644
@@ -41,7 +41,7 @@ index b367144..fbe309c 100644
 +insert = undefined
 +
 diff --git a/Yesod/Default/Main.hs b/Yesod/Default/Main.hs
-index 0780539..ad99ccd 100644
+index e273de2..bf46642 100644
 --- a/Yesod/Default/Main.hs
 +++ b/Yesod/Default/Main.hs
 @@ -1,10 +1,8 @@
@@ -55,7 +55,7 @@ index 0780539..ad99ccd 100644
      , defaultRunner
      , defaultDevelApp
      , LogFunc
-@@ -22,7 +20,7 @@ import Control.Monad (when)
+@@ -23,7 +21,7 @@ import Control.Monad (when)
  import System.Environment (getEnvironment)
  import Data.Maybe (fromMaybe)
  import Safe (readMay)
@@ -64,7 +64,7 @@ index 0780539..ad99ccd 100644
  import System.Log.FastLogger (LogStr, toLogStr)
  import Language.Haskell.TH.Syntax (qLocation)
  
-@@ -54,27 +52,6 @@ defaultMain load getApp = do
+@@ -55,33 +53,6 @@ defaultMain load getApp = do
  
  type LogFunc = Loc -> LogSource -> LogLevel -> LogStr -> IO ()
  
@@ -82,16 +82,22 @@ index 0780539..ad99ccd 100644
 -    runSettings defaultSettings
 -        { settingsPort = appPort config
 -        , settingsHost = appHost config
--        , settingsOnException = const $ \e -> logFunc
+-        , settingsOnException = const $ \e -> when (shouldLog' e) $ logFunc
 -            $(qLocation >>= liftLoc)
 -            "yesod"
 -            LevelError
 -            (toLogStr $ "Exception from Warp: " ++ show e)
 -        } app
--
+-  where
+-    shouldLog' =
+-#if MIN_VERSION_wai(2,1,3)
+-        Warp.defaultShouldDisplayException
+-#else
+-        const True
+-#endif
+ 
  -- | Run your application continously, listening for SIGINT and exiting
  --   when received
- --
 diff --git a/Yesod/Default/Util.hs b/Yesod/Default/Util.hs
 index a10358e..0547424 100644
 --- a/Yesod/Default/Util.hs
@@ -189,5 +195,5 @@ index a10358e..0547424 100644
 -                else return $ Just ex
 -        else return Nothing
 -- 
-1.9.0
+2.0.0.rc2
 

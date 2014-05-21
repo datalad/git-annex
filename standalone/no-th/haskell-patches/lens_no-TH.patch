@@ -1,10 +1,10 @@
-From 66fdbc0cb69036b61552a3bce7e995ea2a7f76c1 Mon Sep 17 00:00:00 2001
+From 2109923a879a02c8a79e8e08573bf9e500d8afc8 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 7 Mar 2014 05:43:33 +0000
-Subject: [PATCH] TH
+Date: Wed, 21 May 2014 16:25:06 +0000
+Subject: [PATCH] remove  TH
 
 ---
- lens.cabal                              | 19 +------------------
+ lens.cabal                              | 20 +-------------------
  src/Control/Lens.hs                     |  8 ++------
  src/Control/Lens/Cons.hs                |  2 --
  src/Control/Lens/Internal/Fold.hs       |  2 --
@@ -12,10 +12,10 @@ Subject: [PATCH] TH
  src/Control/Lens/Operators.hs           |  2 +-
  src/Control/Lens/Prism.hs               |  2 --
  src/Control/Monad/Primitive/Lens.hs     |  1 -
- 8 files changed, 4 insertions(+), 34 deletions(-)
+ 8 files changed, 4 insertions(+), 35 deletions(-)
 
 diff --git a/lens.cabal b/lens.cabal
-index 790a9d7..7cd3ff9 100644
+index 03f64f5..3f6f6d2 100644
 --- a/lens.cabal
 +++ b/lens.cabal
 @@ -10,7 +10,7 @@ stability:     provisional
@@ -27,7 +27,7 @@ index 790a9d7..7cd3ff9 100644
  -- build-tools:   cpphs
  tested-with:   GHC == 7.6.3
  synopsis:      Lenses, Folds and Traversals
-@@ -177,7 +177,6 @@ flag lib-Werror
+@@ -182,7 +182,6 @@ flag j
  
  library
    build-depends:
@@ -35,7 +35,7 @@ index 790a9d7..7cd3ff9 100644
      array                     >= 0.3.0.2  && < 0.6,
      base                      >= 4.3      && < 5,
      bifunctors                >= 4        && < 5,
-@@ -216,7 +215,6 @@ library
+@@ -221,7 +220,6 @@ library
      Control.Exception.Lens
      Control.Lens
      Control.Lens.Action
@@ -43,7 +43,14 @@ index 790a9d7..7cd3ff9 100644
      Control.Lens.Combinators
      Control.Lens.Cons
      Control.Lens.Each
-@@ -251,22 +249,18 @@ library
+@@ -249,29 +247,24 @@ library
+     Control.Lens.Internal.Reflection
+     Control.Lens.Internal.Review
+     Control.Lens.Internal.Setter
+-    Control.Lens.Internal.TH
+     Control.Lens.Internal.Zoom
+     Control.Lens.Iso
+     Control.Lens.Lens
      Control.Lens.Level
      Control.Lens.Loupe
      Control.Lens.Operators
@@ -66,7 +73,7 @@ index 790a9d7..7cd3ff9 100644
      Data.Array.Lens
      Data.Bits.Lens
      Data.ByteString.Lens
-@@ -289,17 +283,10 @@ library
+@@ -294,17 +287,10 @@ library
      Data.Typeable.Lens
      Data.Vector.Lens
      Data.Vector.Generic.Lens
@@ -81,10 +88,10 @@ index 790a9d7..7cd3ff9 100644
 -  other-modules:
 -    Control.Lens.Internal.TupleIxedTH
 -
-   if flag(safe)
-     cpp-options: -DSAFE=1
+   cpp-options: -traditional
  
-@@ -396,7 +383,6 @@ test-suite doctests
+   if flag(safe)
+@@ -406,7 +392,6 @@ test-suite doctests
        deepseq,
        doctest        >= 0.9.1,
        filepath,
@@ -92,7 +99,7 @@ index 790a9d7..7cd3ff9 100644
        mtl,
        nats,
        parallel,
-@@ -434,7 +420,6 @@ benchmark plated
+@@ -444,7 +429,6 @@ benchmark plated
      comonad,
      criterion,
      deepseq,
@@ -100,7 +107,7 @@ index 790a9d7..7cd3ff9 100644
      lens,
      transformers
  
-@@ -469,7 +454,6 @@ benchmark unsafe
+@@ -479,7 +463,6 @@ benchmark unsafe
      comonads-fd,
      criterion,
      deepseq,
@@ -108,7 +115,7 @@ index 790a9d7..7cd3ff9 100644
      lens,
      transformers
  
-@@ -486,6 +470,5 @@ benchmark zipper
+@@ -496,6 +479,5 @@ benchmark zipper
      comonads-fd,
      criterion,
      deepseq,
@@ -203,10 +210,10 @@ index bf09f2c..c9e112f 100644
    reflectByte :: proxy s -> IntPtr
  
 diff --git a/src/Control/Lens/Operators.hs b/src/Control/Lens/Operators.hs
-index 3e14c55..989eb92 100644
+index 9992e63..631e8e6 100644
 --- a/src/Control/Lens/Operators.hs
 +++ b/src/Control/Lens/Operators.hs
-@@ -110,7 +110,7 @@ module Control.Lens.Operators
+@@ -111,7 +111,7 @@ module Control.Lens.Operators
    , (<#~)
    , (<#=)
    -- * "Control.Lens.Plated"
@@ -241,5 +248,5 @@ index ee942c6..2f37134 100644
  prim :: (PrimMonad m) => Iso' (m a) (State# (PrimState m) -> (# State# (PrimState m), a #))
  prim = iso internal primitive
 -- 
-1.9.0
+2.0.0.rc2
 

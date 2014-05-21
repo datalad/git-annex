@@ -1,19 +1,19 @@
-From 3eb7b0a42099721dc19363ac41319efeed4ac5f9 Mon Sep 17 00:00:00 2001
-From: foo <foo@bar>
-Date: Sun, 22 Sep 2013 05:19:53 +0000
+From 9a8637661270d3c6a15e6aeca5e8983fe126bd27 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Wed, 21 May 2014 05:27:36 +0000
 Subject: [PATCH] don't really build
 
 ---
- yesod-auth.cabal |   11 +----------
- 1 file changed, 1 insertion(+), 10 deletions(-)
+ yesod-auth.cabal | 10 ----------
+ 1 file changed, 10 deletions(-)
 
 diff --git a/yesod-auth.cabal b/yesod-auth.cabal
-index 591ced5..11217be 100644
+index 0872581..723cde0 100644
 --- a/yesod-auth.cabal
 +++ b/yesod-auth.cabal
-@@ -52,16 +52,7 @@ library
-                    , safe
-                    , time
+@@ -60,16 +60,6 @@ library
+                    , byteable
+                    , binary
  
 -    exposed-modules: Yesod.Auth
 -                     Yesod.Auth.BrowserId
@@ -21,14 +21,13 @@ index 591ced5..11217be 100644
 -                     Yesod.Auth.Email
 -                     Yesod.Auth.OpenId
 -                     Yesod.Auth.Rpxnow
--                     Yesod.Auth.HashDB
 -                     Yesod.Auth.Message
 -                     Yesod.Auth.GoogleEmail
 -    other-modules:   Yesod.Auth.Routes
-+    exposed-modules: 
+-                     Yesod.PasswordStore
      ghc-options:     -Wall
  
  source-repository head
 -- 
-1.7.10.4
+2.0.0.rc2
 

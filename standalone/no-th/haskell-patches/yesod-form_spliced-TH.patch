@@ -1,19 +1,19 @@
-From 9f62992414f900fcafa00a838925e24c4365c50f Mon Sep 17 00:00:00 2001
+From 38834f94992679d8c4d936fec12eb32b82073553 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 7 Feb 2014 23:11:31 +0000
+Date: Wed, 21 May 2014 05:23:19 +0000
 Subject: [PATCH] splice TH
 
 ---
- Yesod/Form/Fields.hs    |  771 +++++++++++++++++++++++++++++++++++------------
- Yesod/Form/Functions.hs |  239 ++++++++++++---
- Yesod/Form/Jquery.hs    |  129 ++++++--
- Yesod/Form/MassInput.hs |  233 +++++++++++---
- Yesod/Form/Nic.hs       |   65 +++-
- yesod-form.cabal        |    1 +
- 6 files changed, 1127 insertions(+), 311 deletions(-)
+ Yesod/Form/Fields.hs    | 738 +++++++++++++++++++++++++++++++++---------------
+ Yesod/Form/Functions.hs | 289 +++++++++++++------
+ Yesod/Form/Jquery.hs    | 129 +++++++--
+ Yesod/Form/MassInput.hs | 233 ++++++++++++---
+ Yesod/Form/Nic.hs       |  65 ++++-
+ yesod-form.cabal        |   1 -
+ 6 files changed, 1054 insertions(+), 401 deletions(-)
 
 diff --git a/Yesod/Form/Fields.hs b/Yesod/Form/Fields.hs
-index 97d0034..016c98b 100644
+index cd67820..46b5d96 100644
 --- a/Yesod/Form/Fields.hs
 +++ b/Yesod/Form/Fields.hs
 @@ -1,4 +1,3 @@
@@ -21,7 +21,17 @@ index 97d0034..016c98b 100644
  {-# LANGUAGE TypeFamilies #-}
  {-# LANGUAGE OverloadedStrings #-}
  {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-@@ -36,15 +35,11 @@ module Yesod.Form.Fields
+@@ -18,9 +17,6 @@ module Yesod.Form.Fields
+     , timeField
+     , htmlField
+     , emailField
+-    , multiEmailField
+-    , searchField
+-    , AutoFocus
+     , urlField
+     , doubleField
+     , parseDate
+@@ -37,15 +33,11 @@ module Yesod.Form.Fields
      , selectFieldList
      , radioField
      , radioFieldList
@@ -37,8 +47,8 @@ index 97d0034..016c98b 100644
      , optionsPairs
      , optionsEnum
      ) where
-@@ -70,6 +65,15 @@ import Text.HTML.SanitizeXSS (sanitizeBalance)
- import Control.Monad (when, unless)
+@@ -72,6 +64,15 @@ import Control.Monad (when, unless)
+ import Data.Either (partitionEithers)
  import Data.Maybe (listToMaybe, fromMaybe)
  
 +import qualified Text.Blaze as Text.Blaze.Internal
@@ -53,11 +63,11 @@ index 97d0034..016c98b 100644
  import qualified Blaze.ByteString.Builder.Html.Utf8 as B
  import Blaze.ByteString.Builder (writeByteString, toLazyByteString)
  import Blaze.ByteString.Builder.Internal.Write (fromWriteList)
-@@ -82,14 +86,12 @@ import Data.Text (Text, unpack, pack)
+@@ -84,15 +85,12 @@ import Data.Text as T (Text, concat, intercalate, unpack, pack, splitOn)
  import qualified Data.Text.Read
  
  import qualified Data.Map as Map
--import Yesod.Persist (selectList, runDB, Filter, SelectOpt, Key, YesodPersist, PersistEntity, PersistQuery, YesodDB)
+-import Yesod.Persist (selectList, runDB, Filter, SelectOpt, Key, YesodPersist, PersistEntity, PersistQuery)
  import Control.Arrow ((&&&))
  
  import Control.Applicative ((<$>), (<|>))
@@ -65,10 +75,11 @@ index 97d0034..016c98b 100644
  import Data.Attoparsec.Text (Parser, char, string, digit, skipSpace, endOfInput, parseOnly)
  
 -import Yesod.Persist.Core
- 
+-
  defaultFormMessage :: FormMessage -> Text
  defaultFormMessage = englishFormMessage
-@@ -102,10 +104,24 @@ intField = Field
+ 
+@@ -104,10 +102,24 @@ intField = Field
              Right (a, "") -> Right a
              _ -> Left $ MsgInvalidInteger s
  
@@ -97,7 +108,7 @@ index 97d0034..016c98b 100644
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -119,10 +135,24 @@ doubleField = Field
+@@ -121,10 +133,24 @@ doubleField = Field
              Right (a, "") -> Right a
              _ -> Left $ MsgInvalidNumber s
  
@@ -126,7 +137,7 @@ index 97d0034..016c98b 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . show)
-@@ -130,10 +160,24 @@ $newline never
+@@ -132,10 +158,24 @@ $newline never
  dayField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Day
  dayField = Field
      { fieldParse = parseHelper $ parseDate . unpack
@@ -155,7 +166,7 @@ index 97d0034..016c98b 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . show)
-@@ -141,10 +185,23 @@ $newline never
+@@ -143,10 +183,23 @@ $newline never
  timeField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m TimeOfDay
  timeField = Field
      { fieldParse = parseHelper parseTime
@@ -183,7 +194,7 @@ index 97d0034..016c98b 100644
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -157,10 +214,18 @@ $newline never
+@@ -159,10 +212,18 @@ $newline never
  htmlField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Html
  htmlField = Field
      { fieldParse = parseHelper $ Right . preEscapedText . sanitizeBalance
@@ -206,16 +217,16 @@ index 97d0034..016c98b 100644
      , fieldEnctype = UrlEncoded
      }
    where showVal = either id (pack . renderHtml)
-@@ -169,8 +234,6 @@ $newline never
+@@ -171,8 +232,6 @@ $newline never
  -- br-tags.
  newtype Textarea = Textarea { unTextarea :: Text }
-     deriving (Show, Read, Eq, PersistField, Ord)
+     deriving (Show, Read, Eq, PersistField, Ord, ToJSON, FromJSON)
 -instance PersistFieldSql Textarea where
 -    sqlType _ = SqlString
  instance ToHtml Textarea where
      toHtml =
          unsafeByteString
-@@ -188,10 +251,18 @@ instance ToHtml Textarea where
+@@ -190,10 +249,18 @@ instance ToHtml Textarea where
  textareaField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Textarea
  textareaField = Field
      { fieldParse = parseHelper $ Right . Textarea
@@ -238,7 +249,7 @@ index 97d0034..016c98b 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -199,10 +270,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
+@@ -201,10 +268,19 @@ hiddenField :: (Monad m, PathPiece p, RenderMessage (HandlerSite m) FormMessage)
              => Field m p
  hiddenField = Field
      { fieldParse = parseHelper $ maybe (Left MsgValueRequired) Right . fromPathPiece
@@ -262,7 +273,7 @@ index 97d0034..016c98b 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -210,20 +290,55 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
+@@ -212,20 +288,55 @@ textField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Tex
  textField = Field
      { fieldParse = parseHelper $ Right
      , fieldView = \theId name attrs val isReq ->
@@ -326,7 +337,7 @@ index 97d0034..016c98b 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -295,10 +410,24 @@ emailField = Field
+@@ -297,57 +408,24 @@ emailField = Field
              case Email.canonicalizeEmail $ encodeUtf8 s of
                  Just e -> Right $ decodeUtf8With lenientDecode e
                  Nothing -> Left $ MsgInvalidEmail s
@@ -334,6 +345,8 @@ index 97d0034..016c98b 100644
 -$newline never
 -<input id="#{theId}" name="#{name}" *{attrs} type="email" :isReq:required="" value="#{either id id val}">
 -|]
+-    , fieldEnctype = UrlEncoded
+-    }
 +    , fieldView = \theId name attrs val isReq -> toWidget  $     \ _render_arQe
 +      -> do { id
 +                ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
@@ -351,49 +364,43 @@ index 97d0034..016c98b 100644
 +              id ((Text.Blaze.Internal.preEscapedText . pack) "\"");
 +              id ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
 +              id ((Text.Blaze.Internal.preEscapedText . pack) ">") }
-+
-     , fieldEnctype = UrlEncoded
-     }
  
-@@ -307,20 +436,78 @@ searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus
- searchField autoFocus = Field
-     { fieldParse = parseHelper Right
-     , fieldView = \theId name attrs val isReq -> do
--        [whamlet|\
+--- |
+---
+--- Since 1.3.7
+-multiEmailField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m [Text]
+-multiEmailField = Field
+-    { fieldParse = parseHelper $
+-        \s ->
+-            let addrs = map validate $ splitOn "," s
+-            in case partitionEithers addrs of
+-                ([], good) -> Right good
+-                (bad, _) -> Left $ MsgInvalidEmail $ cat bad
+-    , fieldView = \theId name attrs val isReq -> toWidget [hamlet|
+-$newline never
+-<input id="#{theId}" name="#{name}" *{attrs} type="email" multiple :isReq:required="" value="#{either id cat val}">
+-|]
+-    , fieldEnctype = UrlEncoded
+-    }
+-    where
+-        -- report offending address along with error
+-        validate a = case Email.validate $ encodeUtf8 a of
+-                        Left e -> Left $ T.concat [a, " (",  pack e, ")"]
+-                        Right r -> Right $ emailToText r
+-        cat = intercalate ", "
+-        emailToText = decodeUtf8With lenientDecode . Email.toByteString
+-
+-type AutoFocus = Bool
+-searchField :: Monad m => RenderMessage (HandlerSite m) FormMessage => AutoFocus -> Field m Text
+-searchField autoFocus = Field
+-    { fieldParse = parseHelper Right
+-    , fieldView = \theId name attrs val isReq -> do
+-        [whamlet|
 -$newline never
 -<input id="#{theId}" name="#{name}" *{attrs} type="search" :isReq:required="" :autoFocus:autofocus="" value="#{either id id val}">
 -|]
-+        do { (Yesod.Core.Widget.asWidgetT . toWidget)
-+               ((Text.Blaze.Internal.preEscapedText . pack) "<input id=\"");
-+             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
-+             (Yesod.Core.Widget.asWidgetT . toWidget)
-+               ((Text.Blaze.Internal.preEscapedText . pack) "\" name=\"");
-+             (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml name);
-+             (Yesod.Core.Widget.asWidgetT . toWidget)
-+               ((Text.Blaze.Internal.preEscapedText . pack) "\" type=\"search\"");
-+             Text.Hamlet.condH
-+               [(isReq, 
-+                 (Yesod.Core.Widget.asWidgetT . toWidget)
-+                   ((Text.Blaze.Internal.preEscapedText . pack) " required=\"\""))]
-+               Nothing;
-+             Text.Hamlet.condH
-+               [(autoFocus, 
-+                 (Yesod.Core.Widget.asWidgetT . toWidget)
-+                   ((Text.Blaze.Internal.preEscapedText . pack) " autofocus=\"\""))]
-+               Nothing;
-+             (Yesod.Core.Widget.asWidgetT . toWidget)
-+               ((Text.Blaze.Internal.preEscapedText . pack) " value=\"");
-+             (Yesod.Core.Widget.asWidgetT . toWidget)
-+               (toHtml (either id id val));
-+             (Yesod.Core.Widget.asWidgetT . toWidget)
-+               ((Text.Blaze.Internal.preEscapedText . pack) "\"");
-+             (Yesod.Core.Widget.asWidgetT . toWidget)
-+               ((Text.Hamlet.attrsToHtml . toAttributes) attrs);
-+             (Yesod.Core.Widget.asWidgetT . toWidget)
-+               ((Text.Blaze.Internal.preEscapedText . pack) ">") }
-+
-         when autoFocus $ do
-           -- we want this javascript to be placed immediately after the field
+-        when autoFocus $ do
+-          -- we want this javascript to be placed immediately after the field
 -          [whamlet|
 -$newline never
 -<script>if (!('autofocus' in document.createElement('input'))) {document.getElementById('#{theId}').focus();}
@@ -402,51 +409,10 @@ index 97d0034..016c98b 100644
 -            ##{theId}
 -              -webkit-appearance: textfield
 -            |]
-+          do { (Yesod.Core.Widget.asWidgetT . toWidget)
-+                 ((Text.Blaze.Internal.preEscapedText . pack)
-+                    "<script>if (!('autofocus' in document.createElement('input'))) {document.getElementById('");
-+               (Yesod.Core.Widget.asWidgetT . toWidget) (toHtml theId);
-+               (Yesod.Core.Widget.asWidgetT . toWidget)
-+                 ((Text.Blaze.Internal.preEscapedText . pack)
-+                    "').focus();}</script>") }
-+
-+          toWidget  $           \ _render_arQv
-+            -> (Text.Css.CssNoWhitespace
-+                . (foldr ($) []))
-+                 [((++)
-+                   $ (map
-+                        Text.Css.TopBlock
-+                        (((Text.Css.Block
-+                             {Text.Css.blockSelector = Data.Monoid.mconcat
-+                                                                                 [(Text.Css.fromText
-+                                                                                   . Text.Css.pack)
-+                                                                                    "#",
-+                                                                                  toCss theId],
-+                              Text.Css.blockAttrs = (concat
-+                                                                             $ ([Text.Css.Attr
-+                                                                                   (Data.Monoid.mconcat
-+                                                                                      [(Text.Css.fromText
-+                                                                                        . Text.Css.pack)
-+                                                                                         "-webkit-appearance"])
-+                                                                                   (Data.Monoid.mconcat
-+                                                                                      [(Text.Css.fromText
-+                                                                                        . Text.Css.pack)
-+                                                                                         "textfield"])]
-+                                                                                :
-+                                                                                  (map
-+                                                                                     Text.Css.mixinAttrs
-+                                                                                     []))),
-+                              Text.Css.blockBlocks = (),
-+                              Text.Css.blockMixins = ()}
-+                         :)
-+                          . ((foldr (.) id [])
-+                             . (concatMap Text.Css.mixinBlocks [] ++)))
-+                           [])))]
-+
      , fieldEnctype = UrlEncoded
      }
  
-@@ -331,7 +518,30 @@ urlField = Field
+@@ -358,7 +436,30 @@ urlField = Field
              Nothing -> Left $ MsgInvalidUrl s
              Just _ -> Right s
      , fieldView = \theId name attrs val isReq ->
@@ -478,7 +444,7 @@ index 97d0034..016c98b 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -344,18 +554,56 @@ selectField :: (Eq a, RenderMessage site FormMessage)
+@@ -371,18 +472,56 @@ selectField :: (Eq a, RenderMessage site FormMessage)
              => HandlerT site IO (OptionList a)
              -> Field (HandlerT site IO) a
  selectField = selectFieldHelper
@@ -547,7 +513,7 @@ index 97d0034..016c98b 100644
  
  multiSelectFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
                       => [(msg, a)]
-@@ -378,11 +626,48 @@ multiSelectField ioptlist =
+@@ -405,11 +544,48 @@ multiSelectField ioptlist =
      view theId name attrs val isReq = do
          opts <- fmap olOptions $ handlerToWidget ioptlist
          let selOpts = map (id &&& (optselected val)) opts
@@ -601,7 +567,7 @@ index 97d0034..016c98b 100644
          where
              optselected (Left _) _ = False
              optselected (Right vals) opt = (optionInternalValue opt) `elem` vals
-@@ -392,67 +677,172 @@ radioFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
+@@ -419,67 +595,172 @@ radioFieldList :: (Eq a, RenderMessage site FormMessage, RenderMessage site msg)
                 -> Field (HandlerT site IO) a
  radioFieldList = radioField . optionsPairs
  
@@ -732,6 +698,10 @@ index 97d0034..016c98b 100644
 -  $if not isReq
 -      <input id=#{theId}-none *{attrs} type=radio name=#{name} value=none checked>
 -      <label for=#{theId}-none>_{MsgSelectNone}
+-
+-
+-<input id=#{theId}-yes *{attrs} type=radio name=#{name} value=yes :showVal id val:checked>
+-<label for=#{theId}-yes>_{MsgBoolYes}
 +      , fieldView = \theId name attrs val isReq ->       do { Text.Hamlet.condH
 +             [(not isReq, 
 +               do { (Yesod.Core.Widget.asWidgetT . toWidget)
@@ -815,17 +785,13 @@ index 97d0034..016c98b 100644
 +           (Yesod.Core.Widget.asWidgetT . toWidget)
 +             ((Text.Blaze.Internal.preEscapedText . pack) "</label>") }
  
--
--<input id=#{theId}-yes *{attrs} type=radio name=#{name} value=yes :showVal id val:checked>
--<label for=#{theId}-yes>_{MsgBoolYes}
--
 -<input id=#{theId}-no *{attrs} type=radio name=#{name} value=no :showVal not val:checked>
 -<label for=#{theId}-no>_{MsgBoolNo}
 -|]
      , fieldEnctype = UrlEncoded
      }
    where
-@@ -478,10 +868,25 @@ $newline never
+@@ -505,10 +786,25 @@ $newline never
  checkBoxField :: Monad m => RenderMessage (HandlerSite m) FormMessage => Field m Bool
  checkBoxField = Field
      { fieldParse = \e _ -> return $ checkBoxParser e
@@ -855,14 +821,14 @@ index 97d0034..016c98b 100644
      , fieldEnctype = UrlEncoded
      }
  
-@@ -525,49 +930,7 @@ optionsPairs opts = do
+@@ -552,50 +848,6 @@ optionsPairs opts = do
  optionsEnum :: (MonadHandler m, Show a, Enum a, Bounded a) => m (OptionList a)
  optionsEnum = optionsPairs $ map (\x -> (pack $ show x, x)) [minBound..maxBound]
  
 -optionsPersist :: ( YesodPersist site, PersistEntity a
--                  , PersistQuery (YesodDB site)
+-                  , PersistQuery (YesodPersistBackend site (HandlerT site IO))
 -                  , PathPiece (Key a)
--                  , PersistEntityBackend a ~ PersistMonadBackend (YesodDB site)
+-                  , PersistEntityBackend a ~ PersistMonadBackend (YesodPersistBackend site (HandlerT site IO))
 -                  , RenderMessage site msg
 -                  )
 -               => [Filter a]
@@ -888,7 +854,7 @@ index 97d0034..016c98b 100644
 -     , PersistQuery (YesodPersistBackend site (HandlerT site IO))
 -     , PathPiece (Key a)
 -     , RenderMessage site msg
--     , PersistEntityBackend a ~ PersistMonadBackend (YesodDB site))
+-     , PersistEntityBackend a ~ PersistMonadBackend (YesodPersistBackend site (HandlerT site IO)))
 -  => [Filter a]
 -  -> [SelectOpt a]
 -  -> (a -> msg)
@@ -902,11 +868,11 @@ index 97d0034..016c98b 100644
 -        , optionInternalValue = key
 -        , optionExternalValue = toPathPiece key
 -        }) pairs
-+
- 
+-
  selectFieldHelper
          :: (Eq a, RenderMessage site FormMessage)
-@@ -611,9 +974,21 @@ fileField = Field
+         => (Text -> Text -> [(Text, Text)] -> WidgetT site IO () -> WidgetT site IO ())
+@@ -638,9 +890,21 @@ fileField = Field
          case files of
              [] -> Right Nothing
              file:_ -> Right $ Just file
@@ -931,7 +897,7 @@ index 97d0034..016c98b 100644
      , fieldEnctype = Multipart
      }
  
-@@ -640,10 +1015,20 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
+@@ -667,10 +931,20 @@ fileAFormReq fs = AForm $ \(site, langs) menvs ints -> do
              { fvLabel = toHtml $ renderMessage site langs $ fsLabel fs
              , fvTooltip = fmap (toHtml . renderMessage site langs) $ fsTooltip fs
              , fvId = id'
@@ -956,7 +922,7 @@ index 97d0034..016c98b 100644
              , fvErrors = errs
              , fvRequired = True
              }
-@@ -672,10 +1057,20 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
+@@ -699,10 +973,20 @@ fileAFormOpt fs = AForm $ \(master, langs) menvs ints -> do
              { fvLabel = toHtml $ renderMessage master langs $ fsLabel fs
              , fvTooltip = fmap (toHtml . renderMessage master langs) $ fsTooltip fs
              , fvId = id'
@@ -982,10 +948,18 @@ index 97d0034..016c98b 100644
              , fvRequired = False
              }
 diff --git a/Yesod/Form/Functions.hs b/Yesod/Form/Functions.hs
-index 8a36710..8675a10 100644
+index d84633e..9d9257f 100644
 --- a/Yesod/Form/Functions.hs
 +++ b/Yesod/Form/Functions.hs
-@@ -53,12 +53,16 @@ import Text.Blaze (Markup, toMarkup)
+@@ -25,7 +25,6 @@ module Yesod.Form.Functions
+     , generateFormPost
+     , generateFormGet
+       -- * More than one form on a handler
+-    , identifyForm
+       -- * Rendering
+     , FormRender
+     , renderTable
+@@ -56,12 +55,16 @@ import Text.Blaze (Markup, toMarkup)
  #define toHtml toMarkup
  import Yesod.Core
  import Network.Wai (requestMethod)
@@ -1003,7 +977,7 @@ index 8a36710..8675a10 100644
  
  -- | Get a unique identifier.
  newFormIdent :: Monad m => MForm m Text
-@@ -210,7 +214,14 @@ postHelper form env = do
+@@ -213,7 +216,14 @@ postHelper form env = do
      let token =
              case reqToken req of
                  Nothing -> mempty
@@ -1019,7 +993,7 @@ index 8a36710..8675a10 100644
      m <- getYesod
      langs <- languages
      ((res, xml), enctype) <- runFormGeneric (form token) m langs env
-@@ -279,7 +290,12 @@ getHelper :: MonadHandler m
+@@ -282,61 +292,17 @@ getHelper :: MonadHandler m
            -> Maybe (Env, FileEnv)
            -> m (a, Enctype)
  getHelper form env = do
@@ -1033,7 +1007,61 @@ index 8a36710..8675a10 100644
      langs <- languages
      m <- getYesod
      runFormGeneric (form fragment) m langs env
-@@ -293,19 +309,66 @@ renderTable, renderDivs, renderDivsNoLabels :: Monad m => FormRender m a
+ 
+ 
+--- | Creates a hidden field on the form that identifies it.  This
+--- identification is then used to distinguish between /missing/
+--- and /wrong/ form data when a single handler contains more than
+--- one form.
+---
+--- For instance, if you have the following code on your handler:
+---
+--- > ((fooRes, fooWidget), fooEnctype) <- runFormPost fooForm
+--- > ((barRes, barWidget), barEnctype) <- runFormPost barForm
+---
+--- Then replace it with
+---
+--- > ((fooRes, fooWidget), fooEnctype) <- runFormPost $ identifyForm "foo" fooForm
+--- > ((barRes, barWidget), barEnctype) <- runFormPost $ identifyForm "bar" barForm
+---
+--- Note that it's your responsibility to ensure that the
+--- identification strings are unique (using the same one twice on a
+--- single handler will not generate any errors).  This allows you
+--- to create a variable number of forms and still have them work
+--- even if their number or order change between the HTML
+--- generation and the form submission.
+-identifyForm
+-  :: Monad m
+-  => Text -- ^ Form identification string.
+-  -> (Html -> MForm m (FormResult a, WidgetT (HandlerSite m) IO ()))
+-  -> (Html -> MForm m (FormResult a, WidgetT (HandlerSite m) IO ()))
+-identifyForm identVal form = \fragment -> do
+-    -- Create hidden <input>.
+-    let fragment' =
+-          [shamlet|
+-            <input type=hidden name=#{identifyFormKey} value=#{identVal}>
+-            #{fragment}
+-          |]
+-
+-    -- Check if we got its value back.
+-    mp <- askParams
+-    let missing = (mp >>= Map.lookup identifyFormKey) /= Just [identVal]
+-
+-    -- Run the form proper (with our hidden <input>).  If the
+-    -- data is missing, then do not provide any params to the
+-    -- form, which will turn its result into FormMissing.  Also,
+-    -- doing this avoids having lots of fields with red errors.
+-    let eraseParams | missing   = local (\(_, h, l) -> (Nothing, h, l))
+-                    | otherwise = id
+-    eraseParams (form fragment')
+-
+-identifyFormKey :: Text
+-identifyFormKey = "_formid"
+-
+ 
+ type FormRender m a =
+        AForm m a
+@@ -347,19 +313,66 @@ renderTable, renderDivs, renderDivsNoLabels :: Monad m => FormRender m a
  renderTable aform fragment = do
      (res, views') <- aFormToForm aform
      let views = views' []
@@ -1113,7 +1141,7 @@ index 8a36710..8675a10 100644
      return (res, widget)
  
  -- | render a field inside a div
-@@ -318,19 +381,67 @@ renderDivsMaybeLabels :: Monad m => Bool -> FormRender m a
+@@ -372,19 +385,67 @@ renderDivsMaybeLabels :: Monad m => Bool -> FormRender m a
  renderDivsMaybeLabels withLabels aform fragment = do
      (res, views') <- aFormToForm aform
      let views = views' []
@@ -1193,8 +1221,8 @@ index 8a36710..8675a10 100644
 +
      return (res, widget)
  
- -- | Render a form using Bootstrap-friendly shamlet syntax.
-@@ -354,19 +465,63 @@ renderBootstrap aform fragment = do
+ -- | Render a form using Bootstrap v2-friendly shamlet syntax.
+@@ -410,19 +471,63 @@ renderBootstrap aform fragment = do
      let views = views' []
          has (Just _) = True
          has Nothing  = False
@@ -1269,8 +1297,8 @@ index 8a36710..8675a10 100644
 +           views }
 +
      return (res, widget)
+ {-# DEPRECATED renderBootstrap "Please use the Yesod.Form.Bootstrap3 module." #-}
  
- check :: (Monad m, RenderMessage (HandlerSite m) msg)
 diff --git a/Yesod/Form/Jquery.hs b/Yesod/Form/Jquery.hs
 index 2c4ae25..ed9b366 100644
 --- a/Yesod/Form/Jquery.hs
@@ -1436,7 +1464,7 @@ index 2c4ae25..ed9b366 100644
      }
  
 diff --git a/Yesod/Form/MassInput.hs b/Yesod/Form/MassInput.hs
-index 332eb66..5015e7b 100644
+index a2b434d..6766ad8 100644
 --- a/Yesod/Form/MassInput.hs
 +++ b/Yesod/Form/MassInput.hs
 @@ -9,6 +9,16 @@ module Yesod.Form.MassInput
@@ -1455,7 +1483,7 @@ index 332eb66..5015e7b 100644
 +
  import Yesod.Form.Types
  import Yesod.Form.Functions
- import Yesod.Form.Fields (boolField)
+ import Yesod.Form.Fields (checkBoxField)
 @@ -70,16 +80,28 @@ inputList label fixXml single mdef = formToAForm $ do
          { fvLabel = label
          , fvTooltip = Nothing
@@ -1512,7 +1540,7 @@ index 332eb66..5015e7b 100644
 +                  "\" value=\"yes\">") }
 +
          _ -> do
-             (_, xml2) <- aFormToForm $ areq boolField FieldSettings
+             (_, xml2) <- aFormToForm $ areq checkBoxField FieldSettings
                  { fsLabel = SomeMessage MsgDelete
 @@ -121,32 +147,155 @@ fixme eithers =
  massDivs, massTable
@@ -1789,17 +1817,17 @@ index 2862678..04ddaba 100644
      }
    where
 diff --git a/yesod-form.cabal b/yesod-form.cabal
-index 1f6e0e1..4667861 100644
+index 56a3053..e7a0729 100644
 --- a/yesod-form.cabal
 +++ b/yesod-form.cabal
-@@ -19,6 +19,7 @@ library
-                    , time                  >= 1.1.4
-                    , hamlet                >= 1.1      && < 1.2
-                    , shakespeare-css       >= 1.0      && < 1.1
-+                   , shakespeare
-                    , shakespeare-js        >= 1.0.2    && < 1.3
-                    , persistent            >= 1.2      && < 1.4
-                    , template-haskell
+@@ -43,7 +43,6 @@ library
+     exposed-modules: Yesod.Form
+                      Yesod.Form.Types
+                      Yesod.Form.Functions
+-                     Yesod.Form.Bootstrap3
+                      Yesod.Form.Input
+                      Yesod.Form.Fields
+                      Yesod.Form.Jquery
 -- 
-1.7.10.4
+2.0.0.rc2
 

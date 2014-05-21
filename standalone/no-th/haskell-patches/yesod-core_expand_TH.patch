@@ -1,9 +1,8 @@
-From 8dd61c7ea1b852957c74dc264004a6f7d70044a9 Mon Sep 17 00:00:00 2001
+From ccea70b3cb02c3a9e7fa43ebfbfcfdda76f9307f Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Tue, 20 May 2014 21:39:04 +0000
-Subject: [PATCH] remove and expand TH
+Date: Wed, 21 May 2014 03:51:16 +0000
+Subject: [PATCH] expand and remove TH
 
-fix Loc from MonadLogger
 ---
  Yesod/Core.hs              |  30 +++---
  Yesod/Core/Class/Yesod.hs  | 257 ++++++++++++++++++++++++++++++---------------
@@ -485,7 +484,7 @@ index 59663a8..9408a95 100644
  -- | Runs your application using default middlewares (i.e., via 'toWaiApp'). It
  -- reads port information from the PORT environment variable, as used by tools
 diff --git a/Yesod/Core/Handler.hs b/Yesod/Core/Handler.hs
-index e5cbc44..d583607 100644
+index e5cbc44..db7c097 100644
 --- a/Yesod/Core/Handler.hs
 +++ b/Yesod/Core/Handler.hs
 @@ -169,7 +169,7 @@ import           Data.Text.Encoding            (decodeUtf8With, encodeUtf8)
@@ -497,14 +496,14 @@ index e5cbc44..d583607 100644
  
  import qualified Data.ByteString               as S
  import qualified Data.ByteString.Lazy          as L
-@@ -550,6 +550,7 @@ sendFilePart ct fp off count = do
- #else
-     handlerError $ HCSendFile ct fp $ Just $ W.FilePart off count
- #endif
+@@ -198,6 +198,7 @@ import Control.Exception (throwIO)
+ import Blaze.ByteString.Builder (Builder)
+ import Safe (headMay)
+ import Data.CaseInsensitive (CI)
 +import qualified Text.Blaze.Internal
- 
- -- | Bypass remaining handler code and output the given content with a 200
- -- status code.
+ import           Control.Monad.Trans.Resource  (MonadResource, InternalState, runResourceT, withInternalState, getInternalState, liftResourceT, resourceForkIO
+ #if MIN_VERSION_wai(2, 0, 0)
+ #else
 @@ -806,19 +807,15 @@ redirectToPost :: (MonadHandler m, RedirectUrl (HandlerSite m) url)
                 -> m a
  redirectToPost url = do
