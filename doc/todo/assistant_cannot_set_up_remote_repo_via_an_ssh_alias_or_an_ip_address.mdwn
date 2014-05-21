@@ -1,3 +1,5 @@
+[[!meta title="webapp does not accept ssh alias for ssh remote"]]
+
 What steps will reproduce the problem?
 
 Using the assistant, create an SSH remote.  Try to use an alias as the name
