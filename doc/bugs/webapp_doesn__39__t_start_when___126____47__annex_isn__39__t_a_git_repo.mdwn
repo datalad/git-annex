@@ -25,3 +25,5 @@ $ /Applications/git-annex.app/Contents/MacOS/git-annex-webapp
 git-annex: no git repository in /Users/lhunath/annex
 # End of transcript or log.
 """]]
+
+> [[fixed|done]] --[[Joey]]
