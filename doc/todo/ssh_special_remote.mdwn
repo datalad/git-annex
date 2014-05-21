@@ -1,0 +1,30 @@
+ssh:// remotes are not special remotes. Perhaps it would be useful to have
+a special remote that wraps a ssh:// remote? This would allow setting up a
+ssh:// remote that can be enabled using the webapp's normal UI for enabling
+special remotes.
+
+Enabling such a special remote would just make a regular git remote, so
+there would be no need to implement the methods to get/put data. (Although
+it might need to provide stubs to appease the compiler.)
+
+It could optionally embed the ssh private key into the git-annex branch as
+a credential, for when you want anyone who has access to the git repo to be
+able to use the (locked-down) git-annex-shell on that server.
+
+I am on the fence about whether this would be useful, and would appreciate
+use cases.
+
+---
+
+One use case I was thinking about was a LAN with a central server, with a
+shared account with a git-annex repository on it. But then I realized this
+wouldn't really help set up git-annex in that situation, most of the time,
+because new clients would have the central server added as their first
+remote. 
+
+(It would help if one client paired with another new client, but
+that is unncessarily round-about most of the time.) 
+
+It might help in a more complex situation, where the LAN is not the whole
+network an a client might come onto the LAN already knowing about the
+central server there. --[[Joey]]
