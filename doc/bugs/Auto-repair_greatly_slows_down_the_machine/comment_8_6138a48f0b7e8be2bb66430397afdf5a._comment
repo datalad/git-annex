@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="EskildHustvedt"
+ ip="80.202.103.55"
+ subject="comment 8"
+ date="2014-05-21T19:19:30Z"
+ content="""
+The trouble with providing more information (outside of the logfile above) is that by the time I realize that there is a problem it is because git-annex has started to repair. Perhaps an option that makes git-annex write a ~/.git/annex/repair-reason.log file with the reason (ie. git fsck output etc.) for starting the repair could help?
+"""]]

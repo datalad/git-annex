@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.3"
+ subject="comment 9"
+ date="2014-05-21T17:28:16Z"
+ content="""
+I have adjusted the \"Cannot find old distribution bundle; not upgrading\" message to say where it looked, and failed to find the git-annex.app directory.
+
+I am going to have to moreinfo this, since without knowing where git-annex was installed to, I can't say why it failed to find a git-annex.app directory.
+"""]]
