@@ -222,18 +222,18 @@ upgradeToDistribution newdir cleanup distributionfile = do
 {- Finds where the old version was installed. -}
 oldVersionLocation :: IO FilePath
 oldVersionLocation = do
-#ifdef darwin_HOST_OS
 	pdir <- parentDir <$> readProgramFile
+#ifdef darwin_HOST_OS
 	let dirs = splitDirectories pdir
 	{- It will probably be deep inside a git-annex.app directory. -}
 	let olddir = case findIndex ("git-annex.app" `isPrefixOf`) dirs of
 		Nothing -> pdir
 		Just i -> joinPath (take (i + 1) dirs)
 #else
-	olddir <- parentDir <$> readProgramFile
+	let olddir = pdir
 #endif
 	when (null olddir) $
-		error $ "Cannot find old distribution bundle; not upgrading."
+		error $ "Cannot find old distribution bundle; not upgrading. (Looked in " ++ pdir ++ ")"
 	return olddir
 
 {- Finds a place to install the new version.
