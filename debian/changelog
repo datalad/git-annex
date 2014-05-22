@@ -4,6 +4,9 @@ git-annex (5.20140518) UNRELEASED; urgency=medium
     to access the same repository, honor remote cost settings and use
     the cheapest available.
   * webapp: More robust startup when annex directory is not a git repo.
+  * initremote/enableremote: Basic support for using with regular git remotes;
+    initremote stores the location of an already existing git remote,
+    and enableremote setups up a remote using its stored location.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 19 May 2014 15:59:25 -0400
 
