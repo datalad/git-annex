@@ -1,6 +1,6 @@
-From 8d28a63e9a67cde6149bb2cbcf6172ddd997cfff Mon Sep 17 00:00:00 2001
-From: dummy <dummy@example.com>
-Date: Tue, 20 May 2014 17:53:41 +0000
+From 685d4d9fbb929ed1356f8346f573e187746aee4b Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Thu, 22 May 2014 16:29:20 -0400
 Subject: [PATCH] deal with TH
 
 Export modules referenced by it.
@@ -10,8 +10,8 @@ Splicer.
 ---
  Network/Wai/Application/Static.hs | 4 ----
  WaiAppStatic/Storage/Embedded.hs  | 8 ++++----
- wai-app-static.cabal              | 2 --
- 3 files changed, 4 insertions(+), 10 deletions(-)
+ wai-app-static.cabal              | 4 +---
+ 3 files changed, 5 insertions(+), 11 deletions(-)
 
 diff --git a/Network/Wai/Application/Static.hs b/Network/Wai/Application/Static.hs
 index f2fa743..1a82b30 100644
@@ -55,7 +55,7 @@ index daa6e50..9873d4e 100644
 -import WaiAppStatic.Storage.Embedded.TH
 +--import WaiAppStatic.Storage.Embedded.TH
 diff --git a/wai-app-static.cabal b/wai-app-static.cabal
-index 925d350..d0086e8 100644
+index 925d350..e5d11a6 100644
 --- a/wai-app-static.cabal
 +++ b/wai-app-static.cabal
 @@ -33,7 +33,6 @@ library
@@ -66,11 +66,14 @@ index 925d350..d0086e8 100644
                     , text                      >= 0.7
                     , blaze-builder             >= 0.2.1.4
                     , base64-bytestring         >= 0.1
-@@ -62,7 +61,6 @@ library
+@@ -60,9 +59,8 @@ library
+                      WaiAppStatic.Listing
+                      WaiAppStatic.Types
                       WaiAppStatic.CmdLine
-     other-modules:   Util
+-    other-modules:   Util
                       WaiAppStatic.Storage.Embedded.Runtime
 -                     WaiAppStatic.Storage.Embedded.TH
++    other-modules:   Util
      ghc-options:     -Wall
      extensions:     CPP
  
