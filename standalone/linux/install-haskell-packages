@@ -51,6 +51,8 @@ patched () {
 
 installgitannexdeps () {
 	pushd ../..
+	echo "cabal install QuickCheck -f-templateHaskell"
+	cabal install QuickCheck -f-templateHaskell
 	echo cabal install --only-dependencies "$@"
 	cabal install --only-dependencies "$@"
 	popd
