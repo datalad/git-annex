@@ -81,6 +81,7 @@
 /config/repository/enable/IA/#UUID EnableIAR GET POST
 /config/repository/enable/glacier/#UUID EnableGlacierR GET POST
 /config/repository/enable/webdav/#UUID EnableWebDAVR GET POST
+/config/repository/enable/sshgitremote/#UUID EnableSshGitRemoteR GET POST
 
 /config/repository/reorder RepositoriesReorderR GET
 

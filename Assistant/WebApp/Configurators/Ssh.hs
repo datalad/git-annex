@@ -166,7 +166,7 @@ sshSetupModal sshdata = $(widgetFile "configurators/ssh/setupmodal")
 getEnableRsyncR :: UUID -> Handler Html
 getEnableRsyncR = postEnableRsyncR
 postEnableRsyncR :: UUID -> Handler Html
-postEnableRsyncR = enableSpecialSshRemote getsshinput enableRsyncNet enablersync
+postEnableRsyncR = enableSshRemote getsshinput enableRsyncNet enablersync
   where
 	enablersync sshdata u = redirect $ ConfirmSshR
 		(sshdata { sshCapabilities = [RsyncCapable] }) u
@@ -178,7 +178,7 @@ getEnableSshGCryptR :: UUID -> Handler Html
 getEnableSshGCryptR = postEnableSshGCryptR
 postEnableSshGCryptR :: UUID -> Handler Html
 postEnableSshGCryptR u = whenGcryptInstalled $
-	enableSpecialSshRemote getsshinput enableRsyncNetGCrypt enablegcrypt u
+	enableSshRemote getsshinput enableRsyncNetGCrypt enablegcrypt u
   where
   	enablegcrypt sshdata _ = prepSsh False sshdata $ \sshdata' ->
 		sshConfigurator $
@@ -186,13 +186,21 @@ postEnableSshGCryptR u = whenGcryptInstalled $
 				error "Expected to find an encrypted git repository, but did not."
 	getsshinput = parseSshUrl <=< M.lookup "gitrepo"
 
-{- To enable a special remote that uses ssh as its transport, 
- - parse a config key to get its url, and display a form whose
- - only real purpose is to check if ssh public keys need to be
- - set up.
+getEnableSshGitRemoteR :: UUID -> Handler Html
+getEnableSshGitRemoteR = postEnableSshGitRemoteR
+postEnableSshGitRemoteR :: UUID -> Handler Html
+postEnableSshGitRemoteR = enableSshRemote getsshinput enableRsyncNet enablesshgitremote
+  where
+	enablesshgitremote sshdata u = redirect $ ConfirmSshR sshdata u
+
+	getsshinput = parseSshUrl <=< M.lookup "location"
+
+{- To enable a remote that uses ssh as its transport, 
+ - parse a config key to get its url, and display a form
+ - to prompt for its password.
  -}
-enableSpecialSshRemote :: (RemoteConfig -> Maybe SshData) -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> UUID -> Handler Html) -> UUID -> Handler Html
-enableSpecialSshRemote getsshinput rsyncnetsetup genericsetup u = do
+enableSshRemote :: (RemoteConfig -> Maybe SshData) -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> UUID -> Handler Html) -> UUID -> Handler Html
+enableSshRemote getsshinput rsyncnetsetup genericsetup u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
 	case (mkSshInput . unmangle <$> getsshinput m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
