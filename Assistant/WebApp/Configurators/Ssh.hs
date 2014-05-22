@@ -517,21 +517,32 @@ prepSsh' needsinit origsshdata sshdata keypair a = sshSetup (mkSshInput origsshd
 
 makeSshRepo :: SshData -> Handler Html
 makeSshRepo sshdata
-	| onlyCapability sshdata RsyncCapable = setupCloudRemote TransferGroup Nothing go
-	| otherwise = makeSshRepoConnection go
+	| onlyCapability sshdata RsyncCapable = setupCloudRemote TransferGroup Nothing mk
+	| otherwise = makeSshRepoConnection mk setup
   where
-	go = makeSshRemote sshdata
+	mk = makeSshRemote sshdata
+	-- Record the location of the ssh remote in the remote log, so it
+	-- can easily be enabled elsewhere using the webapp.
+	setup r = do
+		m <- readRemoteLog
+		let c = fromMaybe M.empty (M.lookup (Remote.uuid r) m)
+		let c' = M.insert "location" (genSshUrl sshdata) $
+			M.insert "type" "git" $
+			M.insert "name" (fromMaybe (Remote.name r) (M.lookup "name" c)) c
+		configSet (Remote.uuid r) c'
 
-makeSshRepoConnection :: Annex RemoteName -> Handler Html
-makeSshRepoConnection a = setupRemote postsetup TransferGroup Nothing a
+makeSshRepoConnection :: Annex RemoteName -> (Remote -> Annex ()) -> Handler Html
+makeSshRepoConnection mk setup = setupRemote postsetup TransferGroup Nothing mk
   where
-	postsetup u = do
+	postsetup r = do
 		liftAssistant $ sendRemoteControl RELOAD
-		redirect $ EditNewRepositoryR u
+		liftAnnex $ setup r
+		redirect $ EditNewRepositoryR (Remote.uuid r)
 
 makeGCryptRepo :: KeyId -> SshData -> Handler Html
-makeGCryptRepo keyid sshdata = makeSshRepoConnection $ 
-	makeGCryptRemote (sshRepoName sshdata) (genSshUrl sshdata) keyid
+makeGCryptRepo keyid sshdata = makeSshRepoConnection mk (const noop)
+  where
+	mk = makeGCryptRemote (sshRepoName sshdata) (genSshUrl sshdata) keyid
 
 getAddRsyncNetR :: Handler Html
 getAddRsyncNetR = postAddRsyncNetR

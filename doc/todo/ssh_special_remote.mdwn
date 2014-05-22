@@ -7,14 +7,25 @@ Enabling such a special remote would just make a regular git remote, so
 there would be no need to implement the methods to get/put data. (Although
 it might need to provide stubs to appease the compiler.)
 
+> Above is done. The command line interface in initremote and enableremote
+> is not too easy or perhaps useful, but it works great in the webapp.
+> --[[Joey]]
+
 It could optionally embed the ssh private key into the git-annex branch as
 a credential, for when you want anyone who has access to the git repo to be
 able to use the (locked-down) git-annex-shell on that server.
 
+> Leaving this todo open for this ssh private key embedcreds part.
+> I think it makes sense to do, but it it probably not too easy.
+> ([[webapp_ssh_setup_should_work_with_locked_down_git-annex-shell_account]]
+> needs to be fixed first). --[[Joey]]
+
+[[!meta title="remember ssh remote including optionally ssh key"]]
+
+----
+
 I am on the fence about whether this would be useful, and would appreciate
 use cases.
-
----
 
 One use case I was thinking about was a LAN with a central server, with a
 shared account with a git-annex repository on it. But then I realized this
@@ -28,3 +39,6 @@ that is unncessarily round-about most of the time.)
 It might help in a more complex situation, where the LAN is not the whole
 network an a client might come onto the LAN already knowing about the
 central server there. --[[Joey]]
+
+A very compelling use case is switching from XMPP to a ssh server,
+and wanting to make it easy for users. --[[Joey]]
