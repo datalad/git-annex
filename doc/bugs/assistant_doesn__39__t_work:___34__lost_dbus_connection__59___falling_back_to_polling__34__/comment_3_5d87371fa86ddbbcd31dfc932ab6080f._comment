@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmaB2n9HFclAvyMyDzvTPaifh5OrlF51Co"
+ nickname="VS7"
+ subject="comment 3"
+ date="2014-05-22T06:07:50Z"
+ content="""
+At least installing DBus helped to get rid of these messages in daemon.log :)
+But yes it didn't resolve the problem - assistant still stops functioning after a while. Lets proceed to [[Daemon stops working on mounted CIF share]]
+"""]]
