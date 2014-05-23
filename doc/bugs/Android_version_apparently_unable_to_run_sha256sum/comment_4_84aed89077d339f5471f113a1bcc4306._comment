@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="24.159.78.125"
+ subject="comment 4"
+ date="2014-05-23T14:39:18Z"
+ content="""
+Did a previous version of git-annex work with this particular Android variant before?
+
+Try: `/data/data/ga.androidterm/bin/busybox --install -s /data/data/ga.androidterm/bin`
+
+That should make symlinks, rather than hardlinks. It seems that the policy is somehow denying creation of hard links, but allowing symlinks.
+"""]]
