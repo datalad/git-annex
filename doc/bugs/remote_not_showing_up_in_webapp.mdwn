@@ -86,3 +86,13 @@ backend usage:
 """]]
 
 Finally, note that you sometimes see `desktop008` above: it turns out I am running `git annex` from my workstation, which NFS-mounts the `/home` directory of `markov` into `/srv/musique`.  --[[anarcat]]
+
+Yesterday, I made the webapp register ssh remotes it creates. 
+They then show up in the webapp when run in a repository where that ssh
+remote is not enabled.
+
+You can also manually register a ssh remote. First set up the git remote
+as usual. Then run `git annex initremote type=git name=foo
+location=$url`.
+
+[[!meta title="webapp shows transfer from 'unknown' when no remote is configured for a system that is downloading files"]]
