@@ -1,3 +1,9 @@
+git-annex (5.20140517~bpo70+1) wheezy-backports; urgency=low
+
+  * Updating backport to newest release.
+
+ -- Joey Hess <joeyh@debian.org>  Fri, 23 May 2014 16:47:59 +0000
+
 git-annex (5.20140517) unstable; urgency=medium
 
   * webapp: Switched to bootstrap 3.

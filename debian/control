@@ -62,7 +62,6 @@ Build-Depends:
 	wget,
 	curl,
 	openssh-client,
-	git-remote-gcrypt (>= 0.20130908-6),
 Maintainer: Joey Hess <joeyh@debian.org>
 Standards-Version: 3.9.5
 Vcs-Git: git://git.kitenet.net/git-annex
