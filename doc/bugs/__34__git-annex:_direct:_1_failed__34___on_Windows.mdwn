@@ -1,0 +1,109 @@
+### Please describe the problem.
+
+When attempting to clone and use a git repository in a subdirectory several levels deep on Windows, I observe symptoms very similar to those described at http://git-annex.branchable.com/direct_mode/#comment-8feee726df4e287dd3751bc77fd1441f.  By contrast, when I attempt the same operation in a subdirectory higher up, the operation is successful.  Logs of both sessions are given below.
+
+My suspicion is that this has to do with exceeding the maximum path length limitation (MAX_PATH) of 260 characters on Windows, as described here: http://msdn.microsoft.com/en-us/library/aa365247.aspx. 
+
+C:\Users\areeves\Documents\Work\MyDirectoryHere\git>git clone ssh://areeves@myserver:/home/work/git/sbv
+Cloning into 'sbv'...
+remote: Counting objects: 65, done.
+remote: Compressing objects: 100% (57/57), done.
+remote: Total 65 (delta 26), reused 0 (delta 0)
+Receiving objects: 100% (65/65), 9.25 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (26/26), done.
+Checking connectivity... done.
+
+
+C:\Users\areeves\Documents\Work\MyDirectoryHere\git>cd sbv
+C:\Users\areeves\Documents\Work\MyDirectoryHere\git\sbv>git annex get
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+git-annex: C:\Users\areeves\Documents\Work\MyDirectoryHere\git\sbv\.git\annex\objects\3de\5f4\SHA256-s765223180--c9e2eebd915b4ade9429b00a7a893df928389b3fb4ab759ea9f00b0e05e18de6\: openTempFile: does not exist (No such file or directory)
+
+
+C:\Users\areeves\Documents\Work\MyDirectoryHere\git\sbv>git annex direct
+commit
+On branch master
+Your branch is up-to-date with 'origin/master'.
+
+nothing to commit, working directory clean
+ok
+
+git-annex: C:\Users\areeves\Documents\Work\MyDirectoryHere\git\sbv\.git\annex\objects\3de\5f4\SHA256-s765223180--c9e2eebd915b4ade9429b00a7a893df928389b3fb4ab759ea9f00b0e05e18de6\: openTempFile: does not exist (No such file or directory)
+failed
+git-annex: direct: 1 failed
+
+
+C:\Users\areeves\Documents\Work\MyDirectoryHere\git\sbv>cd c:\temp
+c:\temp>git clone ssh://areeves@myserver:/home/work/git/sbv
+Cloning into 'sbv'...
+remote: Counting objects: 65, done.
+remote: Compressing objects: 100% (57/57), done.
+remote: Total 65 (delta 26), reused 0 (delta 0)
+Receiving objects: 100% (65/65), 9.25 KiB | 0 bytes/s, done.
+Resolving deltas: 100% (26/26), done.
+Checking connectivity... done.
+
+c:\temp>cd sbv
+c:\temp\sbv>git annex direct
+
+  Detected a filesystem without fifo support.
+
+  Disabling ssh connection caching.
+
+  Detected a crippled filesystem.
+
+  Enabling direct mode.
+(Recording state in git...)
+
+
+c:\temp\sbv>git annex get
+get BigBinaryFile_Data_Package_2012-03-31.tar.bz2.gpg (merging origin/git-annex into git-annex...)
+(Recording state in git...)
+sent 30 bytes  received 765316741 bytes  11011752.10 bytes/sec
+total size is 765223180  speedup is 1.00
+ok
+(Recording state in git...)
+
+
+c:\temp\sbv>
+
+
+### What steps will reproduce the problem?
+
+See above.
+
+
+### What version of git-annex are you using? On what operating system?
+
+>git annex version
+git-annex version: 5.20140517-gee56d21
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 2 3 4
+
+>git version
+git version 1.9.0.msysgit.0
+
+Operating system: Windows 7 Professional (64-bit), Service Pack 1
+
+
+### Please provide any additional information below.
+
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
