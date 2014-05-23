@@ -30,7 +30,7 @@ buildtree () {
 		$cmd ln -s "$base/lib/lib.$prog.so" "$base/bin/$prog"
 	done
 
-	$cmd --install $base/bin
+	$cmd --install -s $base/bin
 
 	$cmd rm -rf "$base/bin.old"
 

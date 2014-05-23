@@ -23,3 +23,5 @@ The only relevant log lines seem to be:
 add git-annex.apk [2014-05-18 16:57:08 EEST] chat: git [--git-dir=/storage/emulated/legacy/annex/.git","--work-tree=/storage/emulated/legacy/annex","-c","core.bare=false","check-attr","-z","--stdin","annex.backend","annex.numcopies","--"]
 [2014-05-18 16:57:08 EEST] read: sha256sum ["git-annex.apk"]
 """]]
+
+> Modified runshell to use busybox install -s; [[done]] --[[Joey]]
