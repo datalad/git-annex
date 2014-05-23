@@ -276,3 +276,6 @@ git-annex: .t/repo/.git/annex: removeDirectory: unsatisified constraints (Direct
 
 # End of transcript or log.
 """]]
+
+> Since this is a git bug (or a samba bug) and not a git-annex bug, I am
+> closing it. [[done]] --[[Joey]] 
