@@ -82,7 +82,7 @@ Recommends:
 	gnupg,
 	bind9-host,
 	quvi,
-	git-remote-gcrypt (>= 0.20130908-6),
+	git-remote-gcrypt (>= 0.20130908-6~bpo70+1),
 	nocache,
 Suggests:
 	graphviz,
