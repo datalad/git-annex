@@ -1,5 +1,5 @@
 These bug reports have not yet been [[confirmed]] by the git-annex developers
 to be actually bugs in git-annex, rather than some other problem.
 
-[[!inline pages="./* and !link(./confirmed) and !link(./done) and !./confirmed" show=0
+[[!inline pages="./* and !link(./confirmed) and !link(./done) and !./done and !./confirmed" show=0
 archive=yes]]
