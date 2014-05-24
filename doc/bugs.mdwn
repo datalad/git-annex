@@ -1,20 +1,8 @@
-This is git-annex's bug list.
-
-[[!sidebar content="""
-[[!inline feeds=no template=bare pages=sidebar]]
-
-Categories:
-
-* [[bugs/confirmed]]
-* [[bugs/unconfirmed]]
-* [[bugs/moreinfo]]
-* [[bugs/done]]
-"""
-]]
+This is git-annex's bug list, including [[confirmed]], [[unconfirmed]],
+and [[moreinfo]]. Closed bugs are moved to [[done]].
 
 [[!inline pages="./bugs/* and !./bugs/*/* and !./bugs/done and !link(done) 
-and !./bugs/moreinfo and !link(moreinfo) and !./bugs/confirmed and
-!./bugs/unconfirmed
+and !./bugs/moreinfo and !./bugs/confirmed and !./bugs/unconfirmed
 and !*/Discussion" actions=yes postform=yes show=0 archive=yes]]
 
 [[!edittemplate template=templates/bugtemplate match="bugs/*" silent=yes]]
