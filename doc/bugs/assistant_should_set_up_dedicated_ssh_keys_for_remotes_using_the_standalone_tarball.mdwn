@@ -12,4 +12,8 @@ the assistant re-uses that key.
 The assistant should either always set up a dedicated ssh key, even when
 not otherwise needed, or it should probe to see if git-receive-pack and
 git-send-pack can be run as part of its probing, and set up a dedicated
-ssh key when they cannot be.
+ssh key when they cannot be. --[[Joey]] 
+
+> After recent sshpassword changes, the webapp sets up a dedicated ssh key
+> by default. If the user chooses to use an existing ssh key, it will be
+> used. So this is less likely to be a problem. --[[Joey]] 
