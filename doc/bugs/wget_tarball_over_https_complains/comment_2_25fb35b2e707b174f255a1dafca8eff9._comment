@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.36"
+ subject="comment 2"
+ date="2014-05-24T17:48:16Z"
+ content="""
+I reproduced this on a debian 6.0 system. Eep that's old. Probably *was* a wget bug.
+
+After downloading with --no-check-certificate, I tried with the wget bundled in the git-annex tarball. That works.
+"""]]
