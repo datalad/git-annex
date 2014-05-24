@@ -16,3 +16,12 @@ OS: Archlinux
 Shell: zsh
 
 
+> I tried to reproduce this, and it doesn't happen any longer. Tested in
+> both direct and indirect mode.
+> 
+> I think this bug was another manifestation of a bug that got fixed a
+> while ago where the direct mode repository updater got confused when run
+> in a subdirectory of the repository, and put files under that subdir that
+> were supposed to go under the root of the repository.
+> 
+> [[done]] --[[Joey]]
