@@ -28,3 +28,5 @@ Description:	Ubuntu 12.04.2 LTS
 Release:	12.04
 Codename:	precise
 """]]
+
+> [[confirmed]] (but may be out of scope) --[[Joey]] 

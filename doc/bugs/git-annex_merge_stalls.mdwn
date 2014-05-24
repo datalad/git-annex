@@ -14,3 +14,5 @@ Running git-annex merge shows the output "git-annex merge ", followed by a blink
 dtruss output at https://www.dropbox.com/s/4b3yqn7ajfz5el2/annex-merge.log
 
 [[!meta title="no indication when git-annex is stuck waiting for a lock"]]
+
+[[!tag confirmed]]

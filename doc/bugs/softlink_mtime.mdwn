@@ -52,3 +52,6 @@ Optionally, editing the meta-data should change the times in all annexes.
 
 >>>>>>>>> softbox sounds _really_ nice. File systems need to preserve mtimes. Oviously, it would be nice if git-annex exposed this to the upper layer instead of relying on this FUSE implementation, or the next, or the other totally cool thing around the corner to implement it again and again. 
 >>>>>>>>> I talked to the author of metastore; he is aware that the format is merge-unfriendly but never needed merges for himself. He is aware that this is not ideal for something like git. He does not have the time to implement a text storage instead of binary and I lack the skills to do it. If metastore is used, all it would need to do is introduce a new version of the store (it's versioned, apparently) and save metadata in text, one file per line. xattr would need to be ASCII-armoured, the rest could be plain text. I still think storing this directly in git-annex would make the most sense. Introducing a metadata storage file per storage object in .git/annex and using the object file's name as index is impossible because several softlinks might point to one object so it would need to be done per-softlink :/ -- RichiH
+
+> I think this is fixed by metamonger or something? Anyway, it's out of
+> scope for git-annex, so [[done]] --[[Joey]]

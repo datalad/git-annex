@@ -29,3 +29,5 @@ git-annex: copy: 1 failed
 workaround: `cd .git/annex/; mv transfer transfer.old` on the other side.
 
 -- [[anarcat]]
+
+[[moreinfo]]

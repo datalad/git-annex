@@ -22,3 +22,4 @@ Instead, it begins syncing the files to the server but prompts for a GPG passpha
 Not sure if I'm just missing a setting for GPG, but I would think I should only need to use the web app to configure the remote server.
 
 [[!tag /design/assistant]]
+[[!tag confirmed]]

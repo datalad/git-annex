@@ -5,3 +5,5 @@ does not find git-annex there.
 I think that there is documentation or at least past advice of symlinking
 this way to install it into PATH. So need to do something about this.
 Perhaps have an installation script? --[[Joey]]
+
+[[done]]

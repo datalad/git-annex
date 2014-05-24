@@ -12,3 +12,5 @@ Yes, there is an argument to be made that this is too much hand-holding, but I s
 > as it is to undo any other git commit, right? I quite like that git-annex 
 > no longer adds any clutter to the master branch, and would be reluctant
 > to change that. --[[Joey]]
+
+[[wontfix|done]] --[[Joey]]

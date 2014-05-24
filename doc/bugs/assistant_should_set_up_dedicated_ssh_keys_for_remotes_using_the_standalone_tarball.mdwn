@@ -17,3 +17,5 @@ ssh key when they cannot be. --[[Joey]]
 > After recent sshpassword changes, the webapp sets up a dedicated ssh key
 > by default. If the user chooses to use an existing ssh key, it will be
 > used. So this is less likely to be a problem. --[[Joey]] 
+
+[[!tag confirmed]]

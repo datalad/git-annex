@@ -12,3 +12,4 @@ resend the data if S3 sends it a 307 redirect. --[[Joey]]
 At least the send leak should be fixed by the patch in the s3-memory-leak
 branch in git. That needs a patch to hS3, which I have sent to its author.
 --[[Joey]] 
+[[!tag confirmed]]

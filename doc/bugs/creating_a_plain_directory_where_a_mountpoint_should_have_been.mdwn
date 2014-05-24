@@ -25,3 +25,5 @@ OS X lion (10.7)
 I wasn't logging when this happened.
 
 Again, just a heads-up; I'll keep my eye open for this happening again and post more info if it does.
+
+[[!tag confirmed]]

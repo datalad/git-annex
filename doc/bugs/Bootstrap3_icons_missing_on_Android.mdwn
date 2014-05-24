@@ -3,3 +3,5 @@ I’m running git-annex 5.20140517-gee56d21 on Android 4.3.
 A number of icons seem to be missing since the bootstrap3 update:
 
 <img src="http://heh.fi/tmp/git-annex-missing-icons.png" alt="git-annex missing icons" width="540">
+
+[[!tag confirmed]]

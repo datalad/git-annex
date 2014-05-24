@@ -32,3 +32,6 @@ STR:
 You can't simply do `git annex add repo` because that will ignore the .git directory.  Similarly,` git annex add .git` (which I'd think really should try to add the contents of the .git directory) ignores everything.
 
 I don't know what this error means.  Is there a right way to work around this?
+
+> [[meta title="cannot add .git/ to a git repository. even when using git-annex."]]
+> [[confirmed]] (but may be out of scope for git-annex) --[[Joey]]

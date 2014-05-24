@@ -12,3 +12,5 @@ I've discussed with glacier-cli's author making git-annex store enough info
 in its branch to be able to bootstrap glacier-cli to know about a file.
 This seems doable and he had a design; waiting on movement 
 on the glacier-cli side.
+
+[[!tag confirmed]]

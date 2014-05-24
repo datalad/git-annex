@@ -220,3 +220,5 @@ To git@bitbucket.org:waltersom/Pictures.git
 [2013-08-13 16:54:12 NZST] read: git ["--git-dir=/home/walter/Photos/.git","--work-tree=/home/walter/Photos","log","refs/heads/git-annex..11a0c19d7c79f3e574b81295782ab2820caea232","--oneline","-n1"]
 [2013-08-13 16:54:12 NZST] read: git ["--git-dir=/home/walter/Photos/.git","--work-tree=/home/walter/Photos","log","refs/heads/git-annex..cad75ea77d513a24006ee0b56ff0aad12b7aa805","--oneline","-n1"]
 """]]
+
+[[done]]

@@ -14,3 +14,5 @@ put this in your git annex config in the particular remote's section:
     annex-rsync-options = -e /local/path/to/your/repo/.git/ssh
 
 (typical bug report information: observed with git-annex 3.20121127 on debian)
+
+> [[done]]; see my comment --[[Joey]]

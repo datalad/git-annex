@@ -6,3 +6,5 @@ Mac OS 10.7 version 2013-09-10
 [[!meta title="assistant does not interoperate with gitolite when adding a repository"]]
 
 [2013-09-13 17:00:55 CEST] chat: ssh ["-p","22","git@example.org","sh -c 'mkdir -p '\"'\"'my-annex.git'\"'\"'&&cd '\"'\"'my-annex.git'\"'\"'&&if [ ! -d .git ]; then git init --bare --shared; fi&&git annex init'"]
+
+[[!tag confirmed]]

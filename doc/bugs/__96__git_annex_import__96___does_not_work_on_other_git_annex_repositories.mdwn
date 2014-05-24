@@ -111,3 +111,5 @@ To add insult to injury, this does "work":
 > add`. I originally wrote git-annex import just to avoid needing to run
 > those 2 commands myself, and I can make my own local shell script 
 > to do that... --[[Joey]]
+
+>> Well, I guess skipping .git is enough. [[done]] --[[Joey]] 

@@ -51,3 +51,4 @@ Please provide any additional information below.
 	supported repository versions: 3
 	upgrade supported from repository versions: 0 1 2
 
+[[!tag confirmed]]

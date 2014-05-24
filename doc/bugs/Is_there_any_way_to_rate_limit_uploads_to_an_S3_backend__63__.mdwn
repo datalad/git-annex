@@ -17,3 +17,4 @@ Please provide any additional information below.
 
 The man page lists how to configure rate limiting for rsync, not sure how to do it for this
 
+[[!tag confirmed]]

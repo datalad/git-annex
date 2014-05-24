@@ -96,3 +96,5 @@ as usual. Then run `git annex initremote type=git name=foo
 location=$url`.
 
 [[!meta title="webapp shows transfer from 'unknown' when no remote is configured for a system that is downloading files"]]
+
+[[!tag confirmed]]
