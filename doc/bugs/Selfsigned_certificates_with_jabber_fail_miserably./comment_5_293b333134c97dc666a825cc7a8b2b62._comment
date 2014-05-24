@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.36"
+ subject="comment 5"
+ date="2014-05-24T20:03:46Z"
+ content="""
+AFAIKS, this is not a failure from a self-signed certificate. git-annex contacted the jabber server, accepted its certificate, and tried to log in. The jabber server rejected the login.
+
+This kind of problem has in the past turned out to involve incompatabilities in SASL authentication using some newish authentication schemes. Often it's been a bug in the XMPP server that's tickled by the haksell TLS library. See for example <http://bugs.debian.org/717463>
+
+So, what XMPP server is used by CCC?
+"""]]
