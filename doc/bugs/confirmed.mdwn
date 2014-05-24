@@ -4,5 +4,5 @@ to be the next bugs fixed.
 If your bug report is not listed here, you probably need to provide more
 information so that the bug can be reproduced. See also: [[unconfirmed]]
 
-[[!inline pages="./* and link(./confirmed) and !link(./done) and !*/Discussion" sort=mtime show=10
+[[!inline pages="./* and link(./confirmed) and !link(./done) and !*/Discussion" show=0
 archive=yes]]
