@@ -22,3 +22,5 @@ I think I have found a workaround in creating that program as a shell script whi
 I'll update this page if I can confirm the workaround works.
 
 (I fully intend to roll that password as soon as I'm in, so no worries about a stale password falling into evildoers' hands.)
+
+> [[done]]; the webapp now handles ssh password prompting. --[[Joey]]
