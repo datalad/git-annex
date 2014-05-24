@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkN91jAhoesnVI9TtWANaBPaYjd1V9Pag8"
- nickname="Benjamin"
- subject="Package for older OS X"
- date="2012-11-17T12:36:45Z"
- content="""
-Is there an option to provide application bundle for older versions of OS X? The last time I tried the bundle wouldn't work under 10.5. If no specific features from newer OS X versions are required, it could be enough to add a simple switch when building.
-"""]]

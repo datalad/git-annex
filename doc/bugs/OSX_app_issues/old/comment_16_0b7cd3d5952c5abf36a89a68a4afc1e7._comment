@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.153.8.117"
- subject="comment 16"
- date="2012-12-13T22:40:59Z"
- content="""
-Today's daily build of the OSX app has a further change that *might* help. I removed the system library and frameworks from the bundle.
-"""]]
