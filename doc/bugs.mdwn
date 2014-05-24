@@ -5,10 +5,10 @@ This is git-annex's bug list.
 
 Categories:
 
-* [[Confirmed_bugs|confirmed]]
-* [[Unconfirmed_bugs|unconfirmed]]
-* [[Bugs_needing_more_info|moreinfo]]
-* [[Closed_bugs|bugs/done]]
+* [[bugs/confirmed]]
+* [[bugs/unconfirmed]]
+* [[bugs/moreinfo]]
+* [[bugs/done]]
 """
 ]]
 

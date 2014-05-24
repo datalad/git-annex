@@ -1,4 +1,4 @@
-These bug reports have not yet been confirmed by the git-annex developers
+These bug reports have not yet been [[confirmed]] by the git-annex developers
 to be actually bugs in git-annex, rather than some other problem.
 
 [[!inline pages="./* and link(./unconfirmed) and !link(./done) and !*/Discussion" sort=mtime show=10

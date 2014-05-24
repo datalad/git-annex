@@ -2,7 +2,7 @@ These bug reports have been confirmed to be real bugs, and so are likely
 to be the next bugs fixed.
 
 If your bug report is not listed here, you probably need to provide more
-information so that the bug can be reproduced.
+information so that the bug can be reproduced. See also: [[unconfirmed]]
 
 [[!inline pages="./* and link(./confirmed) and !link(./done) and !*/Discussion" sort=mtime show=10
 archive=yes]]
