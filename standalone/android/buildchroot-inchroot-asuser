@@ -1,6 +1,7 @@
 #!/bin/sh
 # Runs inside the chroot set up by buildchroot, as the user it creates
 set -e
+set -x
 
 cd
 rm -rf .ghc .cabal .android
@@ -30,9 +31,6 @@ rm -rf adt-bundle-linux-x86/eclipse
 
 # The git-annex android Makefile needs this cc symlink.
 ln -s arm-linux-androideabi-gcc $HOME/.ghc/$(cat /tmp/abiversion)/bin/cc
-
-cd
-git clone git://git-annex.branchable.com/ git-annex
 
 git config --global user.email androidbuilder@example.com
 git config --global user.name androidbuilder
