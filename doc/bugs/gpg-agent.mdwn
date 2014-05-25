@@ -1,0 +1,21 @@
+### Please describe the problem.
+I'm running git-annex on OSX 10.9.3. The problem is that during sync with an git-annex remote the system gets flooded with gpg-agent processes which are never stopped, eventually running out of user processes.
+
+### What steps will reproduce the problem?
+Any synchronization of a lot of files with a git-annex remote.
+
+### What version of git-annex are you using? On what operating system?
+5.20140517-g0aed6d9.
+
+The problem did not appear on any older version.
+
+### Please provide any additional information below.
+
+
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+
+
+# End of transcript or log.
+"""]]
