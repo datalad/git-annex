@@ -1,0 +1,22 @@
+### Please describe the problem.
+In the webapp, I enter my credentials for my jabber.de account.  When I hit "use this account" the daemon and webapp crash.
+
+### What steps will reproduce the problem?
+Presumably, authenticate with a jabber.de account.
+
+### What version of git-annex are you using? On what operating system?
+git-annex version: 5.20140517-g0aed6d9
+build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+local repository version: 5
+supported repository version: 5
+upgrade supported from repository versions: 0 1 2 4
+
+### Please provide any additional information below.
+
+[[!format sh """
+[2014-05-25 18:11:02 EDT] 127.0.0.1 POST /config/xmpp Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.114 Safari/537.36
+git-annex: <socket: 44>: hGetBuf: resource vanished (Connection reset by peer)
+git-annex: interrupted
+"""]]
