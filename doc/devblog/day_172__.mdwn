@@ -1,0 +1,7 @@
+Working on moving the android autobuilder to Docker & Propellor, which will
+finish containerizing all the autobuilds that I run. Updated
+ghc-android to use the released ghc 7.8.2, which will make it build more
+reliably. 
+
+Also did bug triage. Bugs are now divided into [[bugs/confirmed]]
+and [[bugs/unconfirmed]] categories.
