@@ -1,0 +1,15 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 6"
+ date="2014-05-24T21:49:47Z"
+ content="""
+However, it's still not usable remotely over ssh:
+
+git annex sync kpf
+
+git-annex-shell: git: createProcess: invalid argument (Invalid argument)
+
+  Remote kpf does not have git-annex installed; setting annex-ignore
+
+"""]]
