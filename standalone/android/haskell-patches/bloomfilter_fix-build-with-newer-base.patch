@@ -1,12 +1,27 @@
-From 09bcaf4f203c39c967a6951d56fd015347bb5dae Mon Sep 17 00:00:00 2001
-From: foo <foo@bar>
-Date: Sat, 21 Sep 2013 21:57:21 +0000
+From bfbbfe26817bb06ef518b72a9f942dd3843be618 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Sun, 25 May 2014 08:53:50 +0200
 Subject: [PATCH] fix build with newer base
 
 ---
- Data/BloomFilter/Array.hs |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ Data/BloomFilter.hs       | 3 ++-
+ Data/BloomFilter/Array.hs | 3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
 
+diff --git a/Data/BloomFilter.hs b/Data/BloomFilter.hs
+index 69711ef..7a284b8 100644
+--- a/Data/BloomFilter.hs
++++ b/Data/BloomFilter.hs
+@@ -93,7 +93,8 @@ import Control.Monad (liftM, forM_)
+ import Control.Monad.ST (ST, runST)
+ import Control.DeepSeq (NFData(..))
+ import Data.Array.Base (unsafeAt, unsafeRead, unsafeWrite)
+-import Data.Array.ST (STUArray, thaw, unsafeFreeze)
++import Data.Array.ST (STUArray, thaw)
++import Data.Array.Unsafe (unsafeFreeze)
+ import Data.Array.Unboxed (UArray)
+ import Data.Bits ((.&.), (.|.))
+ import Data.BloomFilter.Array (newArray)
 diff --git a/Data/BloomFilter/Array.hs b/Data/BloomFilter/Array.hs
 index e085bbe..d94757a 100644
 --- a/Data/BloomFilter/Array.hs
@@ -22,5 +37,5 @@ index e085bbe..d94757a 100644
  #if __GLASGOW_HASKELL__ >= 704
  import Foreign.C.Types (CInt(..), CSize(..))
 -- 
-1.7.10.4
+2.0.0.rc2
 

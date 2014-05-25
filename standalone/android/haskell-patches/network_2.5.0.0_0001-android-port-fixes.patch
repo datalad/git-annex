@@ -1,0 +1,161 @@
+From b3cb294077b627892721a2ebf9e0ce81f35f8c4c Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Sun, 25 May 2014 09:28:45 +0200
+Subject: [PATCH] android port fixes
+
+Build note: Ensure a hsc2hs in PATH is modified to pass -x to the real
+one, to enable cross-compiling.
+---
+ Network/Socket.hsc            | 22 ++++++----------------
+ Network/Socket/ByteString.hsc |  2 +-
+ Network/Socket/Internal.hsc   |  2 +-
+ Network/Socket/Types.hsc      |  4 ++--
+ cbits/HsNet.c                 | 14 ++++++++++++++
+ configure                     |  1 +
+ 6 files changed, 25 insertions(+), 20 deletions(-)
+
+diff --git a/Network/Socket.hsc b/Network/Socket.hsc
+index 607b270..04a83e8 100644
+--- a/Network/Socket.hsc
++++ b/Network/Socket.hsc
+@@ -35,7 +35,7 @@ module Network.Socket
+     , SockAddr(..)
+     , SocketStatus(..)
+     , HostAddress
+-#if defined(IPV6_SOCKET_SUPPORT)
++#if defined(IPV6_SOCKET_SUPPORTNO)
+     , HostAddress6
+     , FlowInfo
+     , ScopeID
+@@ -52,7 +52,7 @@ module Network.Socket
+     , HostName
+     , ServiceName
+ 
+-#if defined(IPV6_SOCKET_SUPPORT)
++#if defined(IPV6_SOCKET_SUPPORT) || 1
+     , AddrInfo(..)
+ 
+     , AddrInfoFlag(..)
+@@ -134,7 +134,7 @@ module Network.Socket
+     -- * Special constants
+     , aNY_PORT
+     , iNADDR_ANY
+-#if defined(IPV6_SOCKET_SUPPORT)
++#if defined(IPV6_SOCKET_SUPPORTNO)
+     , iN6ADDR_ANY
+ #endif
+     , sOMAXCONN
+@@ -326,16 +326,6 @@ socket family stype protocol = do
+     setNonBlockIfNeeded fd
+     socket_status <- newMVar NotConnected
+     let sock = MkSocket fd family stype protocol socket_status
+-#if HAVE_DECL_IPV6_V6ONLY
+-# if defined(mingw32_HOST_OS)
+-    -- the IPv6Only option is only supported on Windows Vista and later,
+-    -- so trying to change it might throw an error
+-    when (family == AF_INET6) $
+-            E.catch (setSocketOption sock IPv6Only 0) $ (\(_ :: E.IOException) -> return ())
+-# else
+-    when (family == AF_INET6) $ setSocketOption sock IPv6Only 0
+-# endif
+-#endif
+     return sock
+ 
+ -- | Build a pair of connected socket objects using the given address
+@@ -1061,9 +1051,9 @@ aNY_PORT = 0
+ iNADDR_ANY :: HostAddress
+ iNADDR_ANY = htonl (#const INADDR_ANY)
+ 
+-foreign import CALLCONV unsafe "htonl" htonl :: Word32 -> Word32
++foreign import CALLCONV unsafe "my_htonl" htonl :: Word32 -> Word32
+ 
+-#if defined(IPV6_SOCKET_SUPPORT)
++#if defined(IPV6_SOCKET_SUPPORTNO)
+ -- | The IPv6 wild card address.
+ 
+ iN6ADDR_ANY :: HostAddress6
+@@ -1241,7 +1231,7 @@ unpackBits ((k,v):xs) r
+ -----------------------------------------------------------------------------
+ -- Address and service lookups
+ 
+-#if defined(IPV6_SOCKET_SUPPORT)
++#if defined(IPV6_SOCKET_SUPPORT) || 1
+ 
+ -- | Flags that control the querying behaviour of 'getAddrInfo'.
+ data AddrInfoFlag
+diff --git a/Network/Socket/ByteString.hsc b/Network/Socket/ByteString.hsc
+index e21ad1b..c2dd70a 100644
+--- a/Network/Socket/ByteString.hsc
++++ b/Network/Socket/ByteString.hsc
+@@ -197,7 +197,7 @@ sendMany sock@(MkSocket fd _ _ _ _) cs = do
+       liftM fromIntegral . withIOVec cs $ \(iovsPtr, iovsLen) ->
+           throwSocketErrorWaitWrite sock "writev" $
+               c_writev (fromIntegral fd) iovsPtr
+-              (fromIntegral (min iovsLen (#const IOV_MAX)))
++              (fromIntegral (min iovsLen (0x0026)))
+ #else
+ sendMany sock = sendAll sock . B.concat
+ #endif
+diff --git a/Network/Socket/Internal.hsc b/Network/Socket/Internal.hsc
+index 83333f7..0dd6a7d 100644
+--- a/Network/Socket/Internal.hsc
++++ b/Network/Socket/Internal.hsc
+@@ -24,7 +24,7 @@ module Network.Socket.Internal
+     (
+     -- * Socket addresses
+       HostAddress
+-#if defined(IPV6_SOCKET_SUPPORT)
++#if defined(IPV6_SOCKET_SUPPORTNO)
+     , HostAddress6
+     , FlowInfo
+     , ScopeID
+diff --git a/Network/Socket/Types.hsc b/Network/Socket/Types.hsc
+index 48a43bb..1c5994f 100644
+--- a/Network/Socket/Types.hsc
++++ b/Network/Socket/Types.hsc
+@@ -711,8 +711,8 @@ intToPortNumber v = PortNum (htons (fromIntegral v))
+ portNumberToInt :: PortNumber -> Int
+ portNumberToInt (PortNum po) = fromIntegral (ntohs po)
+ 
+-foreign import CALLCONV unsafe "ntohs" ntohs :: Word16 -> Word16
+-foreign import CALLCONV unsafe "htons" htons :: Word16 -> Word16
++foreign import CALLCONV unsafe "my_ntohs" ntohs :: Word16 -> Word16
++foreign import CALLCONV unsafe "my_htons" htons :: Word16 -> Word16
+ --foreign import CALLCONV unsafe "ntohl" ntohl :: Word32 -> Word32
+ 
+ instance Enum PortNumber where
+diff --git a/cbits/HsNet.c b/cbits/HsNet.c
+index 86b55dc..5ea1199 100644
+--- a/cbits/HsNet.c
++++ b/cbits/HsNet.c
+@@ -6,3 +6,17 @@
+ 
+ #define INLINE
+ #include "HsNet.h"
++
++#include <sys/endian.h>
++uint16_t my_htons(uint16_t v)
++{
++	htons(v);
++}
++uint32_t my_htonl(uint32_t v)
++{
++	htonl(v);
++}
++uint16_t my_ntohs(uint16_t v)
++{
++	ntohs(v);
++}
+diff --git a/configure b/configure
+index db8240d..41674d9 100755
+--- a/configure
++++ b/configure
+@@ -1,4 +1,5 @@
+ #! /bin/sh
++set -- --host=arm-linux-androideabi
+ # Guess values for system-dependent variables and create Makefiles.
+ # Generated by GNU Autoconf 2.69 for Haskell network package 2.3.0.14.
+ #
+-- 
+2.0.0.rc2
+
