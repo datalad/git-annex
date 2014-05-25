@@ -3,6 +3,14 @@
 set -e
 set -x
 
+# Put in /tmp by buildchroot, but when bootstrapping with propellor,
+# this is run inside a checked out git-annex tree.
+if [ -e /tmp/abiversion ]; then
+	ABIVERSION=$(cat /tmp/abiversion)
+else
+	ABIVERSION=$(cat standalone/android/abiversion)
+fi
+
 cd
 rm -rf .ghc .cabal .android
 cabal update
@@ -30,7 +38,7 @@ mv adt-bundle-linux-x86-* adt-bundle-linux-x86
 rm -rf adt-bundle-linux-x86/eclipse
 
 # The git-annex android Makefile needs this cc symlink.
-ln -s arm-linux-androideabi-gcc $HOME/.ghc/$(cat /tmp/abiversion)/bin/cc
+ln -s arm-linux-androideabi-gcc $HOME/.ghc/$ABIVERSION/bin/cc
 
 git config --global user.email androidbuilder@example.com
 git config --global user.name androidbuilder
