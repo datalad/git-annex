@@ -17,7 +17,7 @@ index 5bfe687..ff1d08c 100644
  library
    hs-source-dirs: lib
    ghc-options: -Wall -O2
-+  LD-Options: -L /home/androidbuilder/.ghc/android-14/arm-linux-androideabi-4.8/sysroot/usr/lib/ -l:libgnutls.a -l:libnettle.a -l:libhogweed.a -l:libgmp.a
++  LD-Options: -L /home/builder/.ghc/android-14/arm-linux-androideabi-4.8/sysroot/usr/lib/ -l:libgnutls.a -l:libnettle.a -l:libhogweed.a -l:libgmp.a
  
    build-depends:
        base >= 4.0 && < 5.0
