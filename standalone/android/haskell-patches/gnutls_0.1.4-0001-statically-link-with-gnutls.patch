@@ -1,23 +1,29 @@
-From 67435289745b2f96fc9d1cd8e0263ef0565e4789 Mon Sep 17 00:00:00 2001
-From: Joey Hess <joey@kitenet.net>
-Date: Tue, 26 Nov 2013 19:18:28 +0000
-Subject: [PATCH] hack gnutls to statically link
+From 311aab1ae9d7a653edfbec1351f548b98de85c4b Mon Sep 17 00:00:00 2001
+From: androidbuilder <androidbuilder@example.com>
+Date: Mon, 26 May 2014 21:54:18 +0000
+Subject: [PATCH] hack gnutls to link on android
 
 This uses a hardcoded path to the library, which includes the
 arm-linux-androideabi-4.8 part. Will need to be changed when that changes..
+
+Have to list all the libraries that gnutls depends on, pkgconfig depends
+seems not to be working.
 ---
- gnutls.cabal |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ gnutls.cabal |    9 +++++----
+ 1 file changed, 5 insertions(+), 4 deletions(-)
 
 diff --git a/gnutls.cabal b/gnutls.cabal
-index 5bfe687..ff1d08c 100644
+index 5bfe687..61db23f 100644
 --- a/gnutls.cabal
 +++ b/gnutls.cabal
-@@ -31,16 +31,14 @@ source-repository this
+@@ -31,16 +31,17 @@ source-repository this
  library
    hs-source-dirs: lib
    ghc-options: -Wall -O2
-+  LD-Options: -L /home/builder/.ghc/android-14/arm-linux-androideabi-4.8/sysroot/usr/lib/ -l:libgnutls.a -l:libnettle.a -l:libhogweed.a -l:libgmp.a
++  LD-Options: -L /home/builder/.ghc/android-14/arm-linux-androideabi-4.8/sysroot/usr/lib/
++
++  extra-libraries: gnutls nettle hogweed gmp z
++  pkgconfig-depends: gnutls
  
    build-depends:
        base >= 4.0 && < 5.0
