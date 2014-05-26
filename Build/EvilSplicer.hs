@@ -553,7 +553,7 @@ mangleCode = flip_colon
 	{- Sometimes a string will end with ".."#, and the hash needs to be
 	 - removed. 
 	 -}
-	remove_weird_string_hash = replace "\"#" "#"
+	remove_weird_string_hash = replace "\"#" "\""
 
 {- This works around a problem in the expanded template haskell for Yesod
  - type-safe url rendering.
