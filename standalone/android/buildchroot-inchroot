@@ -19,6 +19,9 @@ apt-get -y install ca-certificates curl file m4 autoconf zlib1g-dev
 apt-get -y install libgnutls-dev libxml2-dev libgsasl7-dev pkg-config c2hs
 apt-get -y install ant default-jdk rsync wget gnupg lsof
 apt-get -y install gettext unzip python
+apt-get -y install locales
+echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
+locale-gen
 apt-get clean
 wget http://snapshot.debian.org/archive/debian/20130903T155330Z/pool/main/a/automake-1.14/automake_1.14-1_all.deb
 dpkg -i automake*.deb
