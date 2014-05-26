@@ -29,6 +29,8 @@ import qualified Data.Text.Encoding
 import qualified Network.Wai
 import qualified Network.Wai as Network.Wai.Internal
 import qualified Yesod.Core.Types
+import qualified GHC.IO
+import qualified Data.ByteString.Unsafe
 {- End EvilSplicer headers. -}
 
 
