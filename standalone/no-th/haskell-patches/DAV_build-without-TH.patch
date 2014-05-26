@@ -1,6 +1,6 @@
-From a908cec3ae1644d72d04ccc7657433d8335665bc Mon Sep 17 00:00:00 2001
+From 8e115228601a97b19d3f713ccf2d13f58838d927 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Sat, 8 Feb 2014 17:11:05 +0000
+Date: Mon, 26 May 2014 01:48:22 +0000
 Subject: [PATCH] expand TH
 
 ---
@@ -10,12 +10,12 @@ Subject: [PATCH] expand TH
  3 files changed, 307 insertions(+), 45 deletions(-)
 
 diff --git a/DAV.cabal b/DAV.cabal
-index 3a755bb..748b0e1 100644
+index bf54f44..04f375a 100644
 --- a/DAV.cabal
 +++ b/DAV.cabal
 @@ -42,29 +42,7 @@ library
                       , transformers-base
-                      , xml-conduit >= 1.0          && <= 1.2
+                      , xml-conduit >= 1.0          && < 1.3
                       , xml-hamlet >= 0.4           && <= 0.5
 -executable hdav
 -  main-is:           hdav.hs
@@ -38,7 +38,7 @@ index 3a755bb..748b0e1 100644
 -                     , optparse-applicative >= 0.5.0
 -                     , transformers >= 0.3
 -                     , transformers-base
--                     , xml-conduit >= 1.0          && <= 1.2
+-                     , xml-conduit >= 1.0          && < 1.3
 -                     , xml-hamlet >= 0.4           && <= 0.5
 +                     , text
  
