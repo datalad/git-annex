@@ -20,6 +20,8 @@ apt-get -y install libgnutls-dev libxml2-dev libgsasl7-dev pkg-config c2hs
 apt-get -y install ant default-jdk rsync wget gnupg lsof
 apt-get -y install gettext unzip python
 apt-get -y install locales
+# works around a dependncy issue with the current hjsmin
+apt-get -y install libghc-hjsmin-dev
 echo en_US.UTF-8 UTF-8 >> /etc/locale.gen
 locale-gen
 apt-get clean
