@@ -301,6 +301,7 @@ expandExpressionSplice sp lls = concat [before, spliced:padding, end]
 {- Tweaks code output by GHC in splices to actually build. Yipes. -}
 mangleCode :: String -> String
 mangleCode = flip_colon
+	. remove_weird_string_hash
 	. remove_unnecessary_type_signatures
 	. lambdaparenhack
 	. lambdaparens
@@ -548,6 +549,11 @@ mangleCode = flip_colon
 	 - that above, so have to fix up after it here. 
 	 - The ; is added by case_layout. -}
 	flip_colon = replace "; : _ " "; _ : "
+
+	{- Sometimes a string will end with ".."#, and the hash needs to be
+	 - removed. 
+	 -}
+	remove_weird_string_hash = replace "\"#" "#"
 
 {- This works around a problem in the expanded template haskell for Yesod
  - type-safe url rendering.
