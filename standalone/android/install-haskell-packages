@@ -119,7 +119,6 @@ install_pkgs () {
 	patched uuid
 	patched dns
 	patched gnutls
-	patched libxml-sax
 	patched network-protocol-xmpp
 	patched unbounded-delays
 
