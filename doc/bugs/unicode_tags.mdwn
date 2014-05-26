@@ -1,0 +1,46 @@
+### Please describe the problem.
+
+Add unicode tags, encoding is not right
+
+### What steps will reproduce the problem?
+
+    $ git annex metadata --tag '你好' FOSDEM/2014/AW1120/Saturday/Panel.webm
+    metadata FOSDEM/2014/AW1120/Saturday/Panel.webm
+      lastchanged=2014-05-26@14-53-03
+      tag=`}
+      tag-lastchanged=2014-05-26@14-53-03
+    ok
+    (Recording state in git...)
+    
+    $ git annex metadata --tag test FOSDEM/2014/AW1120/Saturday/Panel.webm
+    metadata FOSDEM/2014/AW1120/Saturday/Panel.webm
+      lastchanged=2014-05-26@14-54-07
+      tag=`}
+      tag=test
+      tag-lastchanged=2014-05-26@14-54-07
+    ok
+    (Recording state in git...)
+
+### What version of git-annex are you using? On what operating system?
+
+OS X 10.9
+
+    $ git annex version
+    git-annex version: 5.20140517-g0aed6d9
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV FsEvents XMPP DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 0 1 2 4
+    
+    $ locale
+    LANG="en_US.UTF-8"
+    LC_COLLATE="en_US.UTF-8"
+    LC_CTYPE="en_US.UTF-8"
+    LC_MESSAGES="en_US.UTF-8"
+    LC_MONETARY="en_US.UTF-8"
+    LC_NUMERIC="en_US.UTF-8"
+    LC_TIME="en_US.UTF-8"
+    LC_ALL=
+
