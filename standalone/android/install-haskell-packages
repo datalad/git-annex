@@ -131,7 +131,10 @@ echo
 echo native build
 echo
 setupcabal
-installgitannexdeps
+# --reorder-goals seems to be necessary to work around 
+# http://www.reddit.com/r/haskell/comments/26045a/if_youre_finding_cabal_cant_build_your_project/
+# should be able to remove it eventually
+installgitannexdeps --reorder-goals
 
 echo 
 echo
