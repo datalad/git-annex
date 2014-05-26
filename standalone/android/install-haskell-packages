@@ -31,6 +31,11 @@ setupcabal () {
 	# Some packages fail to install in a non unicode locale.
 	LANG=en_US.UTF-8
 	export LANG
+
+	# The android build chroot has recent versions of alex and happy
+	# installed here.
+	PATH=$HOME/bin:$PATH
+	export PATH
 }
 
 cabalinstall () {
