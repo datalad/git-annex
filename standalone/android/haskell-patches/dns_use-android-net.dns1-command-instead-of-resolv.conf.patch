@@ -1,6 +1,6 @@
-From bf2126a729e87c5eae7893a48f850993498a666a Mon Sep 17 00:00:00 2001
-From: Joey Hess <joey@kitenet.net>
-Date: Tue, 3 Dec 2013 13:11:15 -0400
+From 3f72e299c50476c270c5187092d6e8b13ddfbf1e Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Mon, 26 May 2014 01:53:13 +0000
 Subject: [PATCH] use android net.dns1 command instead of resolv.conf file
 
 Android has no /etc/resolv.conf. Some might have /system/etc/resolv.conf,
@@ -9,23 +9,32 @@ but even that does not seem likely.
 This is likely a little slow, but is at least fine for git-annex's uses,
 since it only uses this library for occasional SRV lookups.
 ---
- Network/DNS/Resolver.hs | 11 +++++++----
- dns.cabal               |  1 +
- 2 files changed, 8 insertions(+), 4 deletions(-)
+ Network/DNS/Resolver.hs |   13 ++++++++-----
+ dns.cabal               |    1 +
+ 2 files changed, 9 insertions(+), 5 deletions(-)
 
 diff --git a/Network/DNS/Resolver.hs b/Network/DNS/Resolver.hs
-index 9e6c951..c210763 100644
+index 5721e03..c4400d1 100644
 --- a/Network/DNS/Resolver.hs
 +++ b/Network/DNS/Resolver.hs
-@@ -27,6 +27,7 @@ import Network.Socket.ByteString.Lazy
+@@ -19,7 +19,7 @@ module Network.DNS.Resolver (
+   ) where
+ 
+ import Control.Applicative ((<$>), (<*>), pure)
+-import Control.Exception (bracket)
++import Control.Exception (bracket, catch, IOException)
+ import qualified Data.ByteString.Char8 as BS
+ import Data.Char (isSpace)
+ import Data.List (isPrefixOf)
+@@ -32,6 +32,7 @@ import Network.Socket (AddrInfoFlag(..), AddrInfo(..), defaultHints, getAddrInfo
  import Prelude hiding (lookup)
- import System.Random
- import System.Timeout
+ import System.Random (getStdRandom, randomR)
+ import System.Timeout (timeout)
 +import System.Process
  
  #if mingw32_HOST_OS == 1
  import Network.Socket (send)
-@@ -111,10 +112,12 @@ makeResolvSeed conf = ResolvSeed <$> addr
+@@ -130,10 +131,12 @@ makeResolvSeed conf = ResolvSeed <$> addr
    where
      addr = case resolvInfo conf of
          RCHostName numhost -> makeAddrInfo numhost
@@ -43,17 +52,17 @@ index 9e6c951..c210763 100644
  makeAddrInfo :: HostName -> IO AddrInfo
  makeAddrInfo addr = do
 diff --git a/dns.cabal b/dns.cabal
-index 0a7e6f8..06f5a90 100644
+index ceaf5f4..cd15e61 100644
 --- a/dns.cabal
 +++ b/dns.cabal
 @@ -37,6 +37,7 @@ Library
                        , network >= 2.3
-                       , network-conduit
                        , random
+                       , resourcet
 +                      , process
    else
      Build-Depends:      base >= 4 && < 5
                        , attoparsec
 -- 
-1.8.4.4
+1.7.10.4
 
