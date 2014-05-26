@@ -1,0 +1,17 @@
+### Please describe the problem.
+
+`git annex import` generates a commit in the `git-annex` branch even if `autocommit` has been disabled.
+
+It happens in direct mode, I haven't tested with indirect mode.
+
+### What steps will reproduce the problem?
+
+    git config --global annex.autocommit false
+    git annex direct
+    git annex import --force ~/Documents/*.pdf
+
+    git log git-annex # see the newly created commit
+
+### What version of git-annex are you using? On what operating system?
+
+git-annex 5.20140421 from the Ubuntu PPA.
