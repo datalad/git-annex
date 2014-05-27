@@ -25,9 +25,10 @@ module Annex.Branch (
 	performTransitions,
 ) where
 
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Set as S
 import qualified Data.Map as M
+import Data.Bits.Utils
 
 import Common.Annex
 import Annex.BranchState
@@ -199,7 +200,7 @@ getHistorical :: RefDate -> FilePath -> Annex String
 getHistorical date = getRef (Git.Ref.dateRef fullname date)
 
 getRef :: Ref -> FilePath -> Annex String
-getRef ref file = withIndex $ L.unpack <$> catFile ref file
+getRef ref file = withIndex $ decodeBS <$> catFile ref file
 
 {- Applies a function to modifiy the content of a file.
  -
@@ -259,7 +260,8 @@ commitIndex' jl branchref message parents = do
   where
 	-- look for "parent ref" lines and return the refs
 	commitparents = map (Git.Ref . snd) . filter isparent .
-		map (toassoc . L.unpack) . L.lines
+		map (toassoc . decodeBS) . L.split newline
+	newline = c2w8 '\n'
 	toassoc = separate (== ' ')
 	isparent (k,_) = k == "parent"
 		
@@ -432,7 +434,7 @@ handleTransitions jl localts refs = do
 			return True
   where
   	getreftransition ref = do
-		ts <- parseTransitionsStrictly "remote" . L.unpack
+		ts <- parseTransitionsStrictly "remote" . decodeBS
 			<$> catFile ref transitionsLog
 		return (ref, ts)
 

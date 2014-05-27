@@ -44,3 +44,6 @@ OS X 10.9
     LC_TIME="en_US.UTF-8"
     LC_ALL=
 
+> All strings written to the git-annex branch were truncated to 8 bits.
+> I've fixed this, and this example works now (of course data written with
+> an old git-annex remains truncated). [[done]] --[[Joey]]

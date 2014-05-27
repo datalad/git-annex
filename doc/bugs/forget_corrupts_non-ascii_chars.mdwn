@@ -72,3 +72,7 @@ backend usage:
 """]]
 
 well that's interesting - the above paste is broken by ikiwiki as well... in the text area where i paste it, "rachel@topcrapn:~/VidÃ©os/anarcat" shows up as "rachel@topcrapn:~/Vidéos/anarcat" but when i preview, the character gets corrupted. and obviously, the second instance then gets *double* corrupted - wheepee. the original paste has "rachel@topcrapn:~/VidÃÂ©os/anarcat". --[[anarcat]]
+
+> [[fixed|done]]; writes to git-annex branch now preserve the original
+> encoding, and I've tested that lots of interesting unicode is preserved
+> across a forget run. --[[Joey]]

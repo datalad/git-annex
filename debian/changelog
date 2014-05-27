@@ -13,6 +13,10 @@ git-annex (5.20140518) UNRELEASED; urgency=medium
     so that it can be easily enabled elsewhere.
   * android: Run busybox install with -s, since some versions of Android
     prohibit making hard links.
+  * Fix encoding of data written to git-annex branch. Avoid truncating
+    unicode characters to 8 bits. Allow any encoding to be used, as with
+    filenames (but utf8 is the sane choice). Affects metadata and repository
+    descriptions, and preferred content expressions.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 19 May 2014 15:59:25 -0400
 
