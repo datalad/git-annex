@@ -4,3 +4,5 @@ which was easy. But then much struggling with annoying stuff like getting
 the gnutls linking to work, and working around some dependency issues on
 hackage that make cabal's dependency resolver melt down.
 Finally succeeded after much more time than I had wanted to spend on this.
+
+[[!meta data="Mon May 27 16:36:40 JEST 2014"]]
