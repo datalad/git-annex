@@ -91,14 +91,16 @@ sshInputAForm :: Field Handler Text -> SshInput -> AForm Handler SshInput
 #else
 sshInputAForm :: Field WebApp WebApp Text -> SshInput -> AForm WebApp WebApp SshInput
 #endif
-sshInputAForm hostnamefield def = SshInput
-	<$> aopt check_hostname (bfs "Host name") (Just $ inputHostname def)
-	<*> aopt check_username (bfs "User name") (Just $ inputUsername def)
-	<*> areq (selectFieldList authmethods) (bfs "Authenticate with") (Just $ inputAuthMethod def)
-	<*> aopt passwordField (bfs "Password") Nothing
-	<*> aopt textField (bfs "Directory") (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
-	<*> areq intField (bfs "Port") (Just $ inputPort def)
+sshInputAForm hostnamefield def = normalize <$> gen
   where
+	gen = SshInput
+		<$> aopt check_hostname (bfs "Host name") (Just $ inputHostname def)
+		<*> aopt check_username (bfs "User name") (Just $ inputUsername def)
+		<*> areq (selectFieldList authmethods) (bfs "Authenticate with") (Just $ inputAuthMethod def)
+		<*> aopt passwordField (bfs "Password") Nothing
+		<*> aopt textField (bfs "Directory") (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
+		<*> areq intField (bfs "Port") (Just $ inputPort def)
+	
 	authmethods :: [(Text, AuthMethod)]
 	authmethods =
 		[ ("password", Password)
@@ -128,6 +130,12 @@ sshInputAForm hostnamefield def = SshInput
 	-- getAddrInfo currently broken on Android
 	check_hostname = hostnamefield -- unchecked
 #endif
+
+	-- The directory is implicitly in home, so remove any leading ~/
+	normalize i = i { inputDirectory = normalizedir <$> inputDirectory i }
+	normalizedir d
+		| "~/" `T.isPrefixOf` d = T.drop 2 d
+		| otherwise = d
 
 data ServerStatus
 	= UntestedServer
