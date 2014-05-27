@@ -15,3 +15,8 @@ It happens in direct mode, I haven't tested with indirect mode.
 ### What version of git-annex are you using? On what operating system?
 
 git-annex 5.20140421 from the Ubuntu PPA.
+
+> annex.autocommit has nothing to do with commits to the git-annex
+> branch. You want `git config annex.alwayscommit false`
+> 
+> [[done]] --[[Joey]]
