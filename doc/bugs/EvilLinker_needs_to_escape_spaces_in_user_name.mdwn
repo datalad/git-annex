@@ -14,3 +14,5 @@ Windows 7 Prof, Cygwin install on 28/5/2014
 ### Please provide any additional information below.
 
 The problem arises in escapeDosPaths of EvilLinker: windows usernames can have spaces in them which also need escaping
+
+[[!tag confirmed]]
