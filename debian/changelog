@@ -21,6 +21,8 @@ git-annex (5.20140518) UNRELEASED; urgency=medium
     normalize that to foo, since it's in the home directory by default.
   * Use exceptions in place of deprecated MonadCatchIO-transformers
     Thanks, Ben Gamari.
+  * Android webapp: Fix EvilSplicer bugs that mangled the css files,
+    preventing icons from displaying, and also slightly broke the js files.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 19 May 2014 15:59:25 -0400
 
