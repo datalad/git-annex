@@ -21,7 +21,7 @@ module Annex.Exception (
 	catchAnnex,
 ) where
 
-import qualified "MonadCatchIO-transformers" Control.Monad.CatchIO as M
+import qualified Control.Monad.Catch as M
 import Control.Exception
 
 import Common.Annex
@@ -43,7 +43,7 @@ tryAnnexIO = M.try
 
 {- throw in the Annex monad -}
 throwAnnex :: Exception e => e -> Annex a
-throwAnnex = M.throw
+throwAnnex = M.throwM
 
 {- catch in the Annex monad -}
 catchAnnex :: Exception e => Annex a -> (e -> Annex a) -> Annex a

@@ -33,7 +33,7 @@ module Annex (
 ) where
 
 import "mtl" Control.Monad.Reader
-import "MonadCatchIO-transformers" Control.Monad.CatchIO
+import Control.Monad.Catch
 import Control.Concurrent
 
 import Common
@@ -77,7 +77,9 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 		Monad,
 		MonadIO,
 		MonadReader (MVar AnnexState),
-		MonadCatchIO,
+		MonadCatch,
+		MonadThrow,
+		MonadMask,
 		Functor,
 		Applicative
 	)
