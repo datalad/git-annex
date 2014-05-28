@@ -79,7 +79,9 @@ newtype Annex a = Annex { runAnnex :: ReaderT (MVar AnnexState) IO a }
 		MonadReader (MVar AnnexState),
 		MonadCatch,
 		MonadThrow,
+#if MIN_VERSION_exceptions(0,6,0)
 		MonadMask,
+#endif
 		Functor,
 		Applicative
 	)
