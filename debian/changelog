@@ -1,3 +1,9 @@
+git-annex (5.20140517~bpo70+2) unstable; urgency=low
+
+  * Rebuild in correct backport build environment.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 28 May 2014 11:16:19 -0400
+
 git-annex (5.20140517~bpo70+1) wheezy-backports; urgency=low
 
   * Updating backport to newest release.
