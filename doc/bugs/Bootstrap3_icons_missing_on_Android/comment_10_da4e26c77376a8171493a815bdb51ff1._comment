@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmqz6wCn-Q1vzrsHGvEJHOt_T5ZESilxhc"
+ nickname="Sören"
+ subject="comment 10"
+ date="2014-05-28T15:03:26Z"
+ content="""
+Seems to work! The icons show up on android now.
+
+But JavaScript seems to be broken instead, dropdown menus don't work. Maybe more unwanted evil splicing in other files?
+"""]]
