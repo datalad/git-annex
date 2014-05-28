@@ -1,4 +1,4 @@
-git-annex (5.20140517~bpo70+2) unstable; urgency=low
+git-annex (5.20140517~bpo70+2) wheezy-backports; urgency=low
 
   * Rebuild in correct backport build environment.
 
