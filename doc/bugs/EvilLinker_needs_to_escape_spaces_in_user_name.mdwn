@@ -1,0 +1,16 @@
+### Please describe the problem.
+
+git-annex build on Windows does not complete when user name has a space in it
+
+### What steps will reproduce the problem?
+
+Build git-annex from scratch as described on the Windows page of the guide when running as user Joe Blogs
+
+
+### What version of git-annex are you using? On what operating system?
+
+Windows 7 Prof, Cygwin install on 28/5/2014
+
+### Please provide any additional information below.
+
+The problem arises in escapeDosPaths of EvilLinker: windows usernames can have spaces in them which also need escaping
