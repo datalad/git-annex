@@ -19,6 +19,8 @@ git-annex (5.20140518) UNRELEASED; urgency=medium
     descriptions, and preferred content expressions.
   * webapp: When setting up a ssh remote, if the user inputs ~/foo,
     normalize that to foo, since it's in the home directory by default.
+  * Use exceptions in place of deprecated MonadCatchIO-transformers
+    Thanks, Ben Gamari.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 19 May 2014 15:59:25 -0400
 

@@ -17,7 +17,7 @@ Build-Depends:
 	libghc-dav-dev (>= 0.6.1) [amd64 i386 kfreebsd-amd64 kfreebsd-i386 powerpc],
 	libghc-quickcheck2-dev,
 	libghc-monad-control-dev (>= 0.3),
-	libghc-monadcatchio-transformers-dev,
+	libghc-exceptions-dev,
 	libghc-unix-compat-dev,
 	libghc-dlist-dev,
 	libghc-uuid-dev,
