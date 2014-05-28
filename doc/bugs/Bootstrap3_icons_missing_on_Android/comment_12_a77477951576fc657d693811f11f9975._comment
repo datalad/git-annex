@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 12"
+ date="2014-05-28T22:31:21Z"
+ content="""
+The evilspliced data for eg, bootstrap.js omits that last byte. So presumably we overflow one byte and find a null (if we're lucky..).
+
+I checked the -ddump-splices output, and it omits that last newline!
+
+<pre>
+              \});\
+              \\
+              \})( jQuery );\"#),
+</pre>
+
+Indeed, ghc omits any number of trailing newlines in this display.
+
+This is probably only recently a problem because of the wacky use of a unsafe bytestring + length that file-embed has started to do. Before, the newline was not included, but that's still valid JS.
+
+So, one fix would be to have the EvilSplicer rewrite the unsafePackAddressLen back to a regular bytestring construction. But this would need some tricky parsing (need to find the end of the string to remove the # from it). Alternatively, could remove trailing newlines from all the static js and css files. (Luckily none of the other static files end in a newline, and ghc is careful to preserve ending NULs etc).
+
+For now, I've removed the trailing newlines from the files.
+"""]]
