@@ -98,7 +98,7 @@ Executable git-annex
    containers, utf8-string, network (>= 2.0), mtl (>= 2),
    bytestring, old-locale, time, HTTP,
    extensible-exceptions, dataenc, SHA, process, json,
-   base (>= 4.5 && < 4.9), monad-control, exceptions,
+   base (>= 4.5 && < 4.9), monad-control, exceptions (>= 0.5),
    IfElse, text, QuickCheck >= 2.1, bloomfilter, edit-distance, process,
    SafeSemaphore, uuid, random, dlist, unix-compat, async, stm (>= 2.3),
    data-default, case-insensitive
