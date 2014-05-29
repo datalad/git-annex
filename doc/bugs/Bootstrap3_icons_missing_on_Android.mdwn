@@ -4,4 +4,4 @@ A number of icons seem to be missing since the bootstrap3 update:
 
 <img src="http://heh.fi/tmp/git-annex-missing-icons.png" alt="git-annex missing icons" width="540">
 
-[[!tag confirmed]]
+[[!tag confirmed done]]
