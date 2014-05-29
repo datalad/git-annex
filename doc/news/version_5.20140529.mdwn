@@ -1,0 +1,25 @@
+git-annex 5.20140529 released with [[!toggle text="these changes"]]
+[[!toggleable text="""
+   * Fix encoding of data written to git-annex branch. Avoid truncating
+     unicode characters to 8 bits. Allow any encoding to be used, as with
+     filenames (but utf8 is the sane choice). Affects metadata and repository
+     descriptions, and preferred content expressions.
+   * assistant: When there are multiple remotes giving different ways
+     to access the same repository, honor remote cost settings and use
+     the cheapest available.
+   * webapp: More robust startup when annex directory is not a git repo.
+   * initremote/enableremote: Basic support for using with regular git remotes;
+     initremote stores the location of an already existing git remote,
+     and enableremote setups up a remote using its stored location.
+   * webapp: Support for enabling known git repositories on ssh servers.
+     The repository must have been added using initremote.
+   * webapp: When setting up a ssh remote, record it using initremote,
+     so that it can be easily enabled elsewhere.
+   * webapp: When setting up a ssh remote, if the user inputs ~/foo,
+     normalize that to foo, since it's in the home directory by default.
+   * Use exceptions in place of deprecated MonadCatchIO-transformers
+     Thanks, Ben Gamari.
+   * android: Run busybox install with -s, since some versions of Android
+     prohibit making hard links.
+   * Android webapp: Fix EvilSplicer bugs that mangled the css files,
+     preventing icons from displaying, and also slightly broke the js files."""]]

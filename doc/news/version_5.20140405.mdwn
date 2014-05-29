@@ -1,7 +1,0 @@
-git-annex 5.20140405 released with [[!toggle text="these changes"]]
-[[!toggleable text="""
-   * git-annex-shell: Added notifychanges command.
-   * Improve display of dbus notifications. Thanks, Johan Kiviniemi.
-   * Fix nautilus script installation to not crash when the nautilus script dir
-     does not exist. Instead, only install scripts when the directory already
-     exists."""]]
