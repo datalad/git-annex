@@ -95,11 +95,9 @@ fixSockAddr (SockAddrInet (PortNum port) addr) = SockAddrInet (PortNum $ swapEnd
 #endif
 fixSockAddr addr = addr
 
+-- disable buggy sloworis attack prevention code
 webAppSettings :: Settings
-webAppSettings = defaultSettings
-	-- disable buggy sloworis attack prevention code
-	{ settingsTimeout = 30 * 60
-	}
+webAppSettings = setTimeout (30 * 60) defaultSettings
 
 {- Binds to a local socket, or if specified, to a socket on the specified
  - hostname or address. Selects any free port, unless the hostname ends with
