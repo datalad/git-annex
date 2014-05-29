@@ -1,7 +1,0 @@
-A failure during "make test" should be signalled to the caller by means of
-a non-zero exit code. Without that signal, it's very hard to run the
-regression test suite in an automated fashion.
-
-> git-annex used to have a Makefile that ignored make test exit status,
-> but that was fixed in commit dab5bddc64ab4ad479a1104748c15d194e138847,
-> in October 6th. [[done]] --[[Joey]] 

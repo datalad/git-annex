@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.152.108.193"
- subject="comment 5"
- date="2013-06-25T17:14:02Z"
- content="""
-To get this fixed, someone is going to need to do some investigation of what is happening. I do not have resources to debug OSX problems that cannot be reproduced using the command line.
-"""]]

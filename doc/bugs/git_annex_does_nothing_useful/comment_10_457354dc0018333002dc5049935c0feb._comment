@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawlup4hyZo4eCjF8T85vfRXMKBxGj9bMdl0"
- nickname="Ben"
- subject="comment 10"
- date="2012-07-10T14:17:42Z"
- content="""
-Hmm, the commands above seem to have worked on both machines (both running 3.20120630). I guess I should probably just try rebuilding my data/ repository from scratch, eh?
-"""]]

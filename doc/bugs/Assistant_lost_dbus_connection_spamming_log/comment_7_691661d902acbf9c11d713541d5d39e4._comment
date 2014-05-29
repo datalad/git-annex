@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.146"
- subject="comment 7"
- date="2014-03-07T17:03:30Z"
- content="""
-Are you sure that the accept message happens every second? I don't see why the webapp would continue to try to bind a socket it it failed with a 1 second delay. (It does try 100 times if it fails, per [[!commit fe3009d83b08563875856152034e7c59a0c6ecca]], before ending with \"unable to bind to local socket\".)
-"""]]

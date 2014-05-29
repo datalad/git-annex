@@ -1,3 +1,0 @@
-git annex fsck marks files as bad when the checksumming fails. But this could also be due to a read error when the actual data stored is correct. So, fsck should check twice when a checksum fails.
-
-> [[done]]; apparently problem was caused by bad RAM. --[[Joey]]

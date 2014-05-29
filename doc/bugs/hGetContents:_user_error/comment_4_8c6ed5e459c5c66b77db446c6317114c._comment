@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.4.193"
- subject="comment 4"
- date="2013-07-02T16:41:51Z"
- content="""
-I wonder if this could be a glibc/kernel mismatch somehow. Any chance you can upgrade your kernel to something more recent? 
-"""]]

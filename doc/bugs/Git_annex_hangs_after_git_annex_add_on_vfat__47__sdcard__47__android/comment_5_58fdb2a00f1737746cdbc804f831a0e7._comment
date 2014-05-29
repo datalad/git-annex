@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://adamspiers.myopenid.com/"
- nickname="Adam"
- subject="any chance of a new release?"
- date="2013-10-22T13:33:57Z"
- content="""
-I just upgraded via cabal install to 4.20131002, which (unsurprisingly, I guess) still exhibits this issue.  Would be great if a new release could be cut for this ...
-"""]]

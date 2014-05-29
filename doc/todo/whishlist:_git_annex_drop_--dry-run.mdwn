@@ -1,5 +1,0 @@
-It'd be useful to be able to see what `git annex drop` would do *before* asking it to drop any files.
-
-For example, I just set up my preferred contents expressions, and I don't know if I got them right. Before dropping anything from this repo, it'd be nice to check what would happen. I know git annex drop will only drop files that are above their minimum numcopies, but I'd still like to avoid heavyweight copying in case I got my preferred contents expressions wrong.
-
-> [[done]]; added --want-get and --want-drop. --[[Joey]]

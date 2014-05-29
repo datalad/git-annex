@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="modules"
- ip="2.206.0.102"
- subject="comment 4"
- date="2013-04-03T07:45:53Z"
- content="""
-Seems like a user error from my side. I removed repos while webapp was still running. Removing ~/.config/git-annex solved my problem. Thanks.
-"""]]

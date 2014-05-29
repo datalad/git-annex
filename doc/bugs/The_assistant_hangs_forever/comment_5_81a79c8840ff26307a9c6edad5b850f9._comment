@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="saironiq"
- ip="147.251.209.29"
- subject="comment 5"
- date="2013-04-15T11:01:32Z"
- content="""
-Here's a full strace output (first symbol lookup error is on line #102681):<br/>
-[[https://dl.dropboxusercontent.com/u/62238161/webapp.log]]
-"""]]

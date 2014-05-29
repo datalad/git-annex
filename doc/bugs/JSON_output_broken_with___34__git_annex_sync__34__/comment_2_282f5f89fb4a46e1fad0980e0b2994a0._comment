@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://sunny256.sunbase.org/"
- nickname="sunny256"
- subject="comment 2"
- date="2012-11-27T21:30:48Z"
- content="""
-Yep, because of that I was in doubt if I should report it as a bug. Maybe it could be closed, as it's not a bug in git-annex, but git output leaking into the JSON. If there's not an easy way for git-annex to encapsulate the output or redirect the git output to stderr.
-"""]]

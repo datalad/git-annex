@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://edheil.wordpress.com/"
- ip="99.54.57.201"
- subject="comment 2"
- date="2013-04-27T05:45:53Z"
- content="""
-update -- compiled a fresh copy of git annex from master ( 1bdfec9 2013-04-24 ) -- same effect; archived content is pulled down to the client from one of the backups, despite numcopies being satisfied by the backups.
-"""]]

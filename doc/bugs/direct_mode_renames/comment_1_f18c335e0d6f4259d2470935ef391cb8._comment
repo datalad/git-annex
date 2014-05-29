@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkZktNHFhxC1kYA9KKdKpYJO4clq9WDsjE"
- nickname="Jason"
- subject="comment 1"
- date="2013-02-06T06:35:21Z"
- content="""
-I'm not sure if this matters, but in my case I wasn't even using `git mv`, I was just using `mv`.
-"""]]

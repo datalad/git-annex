@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.153.14.141"
- subject="comment 1"
- date="2012-09-24T17:24:47Z"
- content="""
-The proxy message is sent from github, so I can't do anything about that. `git@github.com:user/repo.git` is a ssh url, so git-annex tries to use it as a full git-annex remote. If you use a git:// url, git-annex will
-skip it. Or you can set `git config remote.origin.annex-ignore true` (replace origin with the name of the github remote).
-"""]]

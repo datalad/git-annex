@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.153.8.80"
- subject="comment 2"
- date="2013-09-30T16:23:31Z"
- content="""
-I've had a bit of a mess with cabal. First my release scripts apparently broke and didn't upload the last 2 releases there. Then when I manually fixed that, hackage has been upgraded to a new version, which  is broken and will not accept tarballs > 1 mb. So I had to re-upload git-annex hacked to fit in 1 mb (removing all documentation), and I did so from a current git snapshot. Meh.
-"""]]

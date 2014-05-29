@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="2001:4978:f:21a::2"
- subject="comment 1"
- date="2013-08-07T16:09:26Z"
- content="""
-You can have as many git remotes as you like all pointing at the same repository via different paths. git-annex fully supports this AFAIK. Are you having some problem with it?
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="EskildHustvedt"
- ip="84.48.83.221"
- subject="comment 5"
- date="2013-04-08T07:41:38Z"
- content="""
-Tobias, you may want to download the latest version of the install script and then run it as \"gitannex-install --force\", as its version of \"git-annex-shell\" was broken (linked to a missing file, fixed now).
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.244"
- subject="comment 9"
- date="2014-04-02T19:46:36Z"
- content="""
-Sorry, but this bug report is closed. If you think you have a bug in git-annex, file a *new* bug report with full details for how I can reproduce it.
-"""]]

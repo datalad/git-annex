@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 2"
- date="2013-03-19T00:07:23Z"
- content="""
-It seems to me that --bindir ~/bin will work, but --bindir=~/bin will not; it prevents the shell's tilde expansion from working. 
-"""]]

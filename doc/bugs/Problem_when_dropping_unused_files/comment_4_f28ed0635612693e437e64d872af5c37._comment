@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://me.yahoo.com/a/2grhJvAC049fJnvALDXek.6MRZMTlg--#eec89"
- nickname="John"
- subject="comment 4"
- date="2013-08-25T05:27:57Z"
- content="""
-Do you have any thoughts on why it may have gotten corrupted, or why it seems to happen so commonly with large git-annex repositories?  I've seen this exact same sort of error while processing log files maybe 5 or 6 times now.
-"""]]

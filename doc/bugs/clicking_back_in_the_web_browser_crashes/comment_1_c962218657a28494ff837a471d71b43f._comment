@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.153.255.110"
- subject="comment 1"
- date="2013-09-09T04:23:36Z"
- content="""
-This occurs when the javascript long polling code fails 4 times in a row attempting to communicate with git-annex's web server. Normally this will mean that the assistant has been stopped. I have seen it once or twice happen while the web server is still running -- possibly due to the browser killing the connection? I have never seen it happen when navigating between pages in the webapp, which is designed to allow use of back button etc. If you can reproduce it reliably, using the chromium inspector to modify the javascript code (look for \"longpoll\") and perhaps add some debug prints might track down what is going on.
-"""]]

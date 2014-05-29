@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://edheil.wordpress.com/"
- ip="99.54.57.201"
- subject="comment 10"
- date="2013-04-28T18:12:30Z"
- content="""
-oh, but to answer your earlier question,  \"(archive + smallarchive >= numcopies)\" would be exactly what I needed to get the behavior I want and have the others be archive directories.
-"""]]

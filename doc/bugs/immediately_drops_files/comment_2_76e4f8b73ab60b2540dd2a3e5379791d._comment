@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.0.63"
- subject="comment 2"
- date="2013-08-24T16:41:47Z"
- content="""
-BTW if you don't want the assistant to automatically get and drop files in your repository, you can edit the repository in the webapp and select \"manual mode\".
-"""]]

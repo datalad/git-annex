@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkwjBDXkP9HAQKhjTgThGOxUa1B99y_WRA"
- nickname="Franck"
- subject="comment 2"
- date="2013-05-24T21:31:44Z"
- content="""
-I tried to run the binary from the Debian package, unfortunately, after installing tons of libraries, git-annex fails complaining that GLIBC is not recent enough. Perhaps a static build for ARM (armel) can solve the problem? Thanks again for your help!
-"""]]

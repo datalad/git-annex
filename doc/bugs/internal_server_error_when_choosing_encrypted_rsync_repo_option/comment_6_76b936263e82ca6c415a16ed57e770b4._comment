@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
- nickname="Jimmy"
- subject="comment 6"
- date="2013-07-04T08:32:54Z"
- content="""
-Just wondering if its because I have gnupg 1.1.0 on the Lion build machine thats causing the problem. I could try installing gnupg 2.0.19 if that will fix the problem. What version of gnupg is on the Mountain Lion build?
-"""]]

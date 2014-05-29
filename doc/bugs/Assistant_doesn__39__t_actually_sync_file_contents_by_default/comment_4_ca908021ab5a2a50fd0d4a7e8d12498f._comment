@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="http://edheil.wordpress.com/"
- ip="173.162.44.162"
- subject="comment 4"
- date="2013-05-20T16:08:14Z"
- content="""
-The broken symlinks are important to me, because they represent content in archive directories which is intentionally not present, and they allow me to prompt git annex to retrieve that content by dragging and dropping them out of the archive subdirectory.  I'm not sure what the issue is with transferring content for you though.
-
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://me.tinco.nl/"
- nickname="Tinco"
- subject="comment 2"
- date="2013-05-19T15:37:23Z"
- content="""
-Alright, found there's a pre-commit hook that performed a git annex task. I removed it and now it all works again.
-"""]]

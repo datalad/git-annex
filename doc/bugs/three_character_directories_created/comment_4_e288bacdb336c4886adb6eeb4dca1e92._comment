@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawn9JRcJ_69McoLFe5-dvTMdfS9rJpGy6JI"
- nickname="Warren"
- subject="solved the problem"
- date="2013-03-30T00:13:29Z"
- content="""
-Just wanted to let future searchers know that I solved this problem by finding the most recent commit of the master that was not merged with the git-annex branch and hard resetting to that.  I hard reset the git-annex branch to its most recent separate commit and now things seem to working again.  By hard reset I mean the command \"git reset --hard <commit>\".
-"""]]

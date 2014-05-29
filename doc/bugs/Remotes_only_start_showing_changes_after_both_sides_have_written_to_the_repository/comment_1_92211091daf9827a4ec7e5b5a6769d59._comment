@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 1"
- date="2013-05-31T21:12:52Z"
- content="""
-How are you creating the repositories? git cannot merge origin/master into master when master does not exist yet. The assistant, when it creates a repository, makes an empty commit, to create the master branch, which should avoid this problem.
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://phil.0x539.de/"
- nickname="Philipp Kern"
- subject="comment 4"
- date="2013-03-05T07:17:08Z"
- content="""
-You (presumably) hand over 320 bytes of entropy to GPG, but you don't control the encryption key directly. GPG assumes that what it's given as a symmetric key is not at all random. Hence, with the default options (for OpenPGP interop, apparently) it will derive a 128 bit from the given passphrase. For this it uses (again, by default) salted SHA1 on the whole passphrase. So the strength of the cipher is 128 bit CAST5 or an attack on salted SHA1 with a mostly known input length (but this does seem large).
-"""]]

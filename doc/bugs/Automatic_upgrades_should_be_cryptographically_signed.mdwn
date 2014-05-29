@@ -1,8 +1,0 @@
-All builds of git-annex should be cryptographically signed.  Especially the automatic upgrades.
-
-Signing doesn't minimise the likelihood of unwanted software being installed, but it helps reduce it.
-
-*Please* Joey...
-
-> builds have been signed for a while now. auto-upgrader checks the sigs
-> too! [[done]] --[[Joey]] 

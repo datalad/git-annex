@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkwjBDXkP9HAQKhjTgThGOxUa1B99y_WRA"
- nickname="Franck"
- subject="comment 7"
- date="2013-05-25T19:01:29Z"
- content="""
-This is indeed what I'm doing. But I need to make a wrapper that will call the command in the chroot. Thanks for the tip anyway. :-) 
-"""]]

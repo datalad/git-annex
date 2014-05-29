@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawn26WQjIP5fnMgQF_L_k3Q3UrR5v8mjRTY"
- nickname="Ellis"
- subject="comment 4"
- date="2013-05-05T12:18:41Z"
- content="""
-I'm also using a Samsung Galaxy Nexus with the latest Android and git-annex, and I'm getting the same error as above (with different port, auth id, and uid).  Opening the url manually does work, as Joey said.
-"""]]

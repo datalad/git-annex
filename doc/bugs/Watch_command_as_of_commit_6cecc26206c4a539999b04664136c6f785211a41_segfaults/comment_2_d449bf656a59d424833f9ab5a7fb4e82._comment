@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.153.2.189"
- subject="comment 2"
- date="2012-07-26T17:09:59Z"
- content="""
-Also, you might try bisecting to find whatever commit it first started segfaulting on.
-"""]]

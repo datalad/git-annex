@@ -1,9 +1,0 @@
-Sending large-ish (few megabytes) files to encrypted S3 remotes stalls out.
-It works for the tiny files I was using to test while developing it, on
-dialup.
-
-There was a similar issue with bup, which I fixed by forking a process
-rather than using a thread to do some IO. Probably need the same here.
---[[Joey]]
-
-[[done]] --[[Joey]] 

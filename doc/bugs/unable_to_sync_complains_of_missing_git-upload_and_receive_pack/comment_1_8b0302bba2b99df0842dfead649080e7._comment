@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.227"
- subject="comment 1"
- date="2013-12-27T20:11:09Z"
- content="""
-Seems there really is a bug here, `git-shell` needs to be added to the top of the bundle. I've done so, but not tested it.
-"""]]

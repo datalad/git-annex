@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://kaizer.se/"
- nickname="ulrik.sverdrup"
- subject="GPG Cipher Algo"
- date="2013-03-06T04:53:06Z"
- content="""
-The GPG cipher algorithm is user configurable (unless annex overrides it) the best way to set it is personal-cipher-preferences. Annex' job is simply to provide enough key material for any viable GPG option (so 256 bits of random data). Also note that GPG's string-to-key \"s2k\" algorithm is an iterated application SHA-1 (also this can be configured). For a quick context, it will use a strength number (for example count=128*1024) and it will hash as many iterations as [count]/[key byte length].
-"""]]

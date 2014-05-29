@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.152.108.220"
- subject="comment 1"
- date="2013-09-25T18:47:13Z"
- content="""
-This is an exception from the inotify library, which is what contains the `addWatch` function. I catch and display the exception. Since `addWatch` is only passed a directory to watch, the most I could do is tack on the name of the directory when displaying the exception. That does not seem likely to be much help?
-"""]]

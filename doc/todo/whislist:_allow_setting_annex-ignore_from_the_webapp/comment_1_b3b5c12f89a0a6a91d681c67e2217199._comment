@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="216.145.95.162"
- subject="comment 1"
- date="2014-05-19T17:09:16Z"
- content="""
-This feels too complicated for the webapp. Especially because annex-ignore is intended to be used when the remote repository does not have git-annex-shell installed, so cannot contain any content. Which should be automatically detected when the webapp is used to set up a repository (or for that matter, when a repository is set up at the command line). 
-"""]]

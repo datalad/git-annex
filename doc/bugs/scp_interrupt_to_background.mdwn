@@ -1,2 +1,0 @@
-When getting a file with scp, SIGINT is blocked, exposing the git
-subcommand fork to background bug again. [[done]]

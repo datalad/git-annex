@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="108.236.230.124"
- subject="comment 1"
- date="2014-05-16T17:20:22Z"
- content="""
-Also note that bash goes out of its way to make it stupidly hard for users to add things to PATH. There are different dotfiles that it reads in different situations, and no dotfile it reads in all situations. In particular, \"ssh somebox git-annex-shell\" will avoid reading any dotfiles that could set PATH, AFAICS.
-"""]]

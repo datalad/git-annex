@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://nullroute.eu.org/~grawity/"
- nickname="Mantas"
- subject="comment 6"
- date="2013-01-10T20:13:42Z"
- content="""
-It doesn't look completely right – the *service* name (in `checkMountMonitor`) is `org.gtk.Private.UDisks2VolumeMonitor`, but the *interface* name (in `mountChanged`) is `org.gtk.Private.RemoteVolumeMonitor`, so the fix changed too much.
-"""]]

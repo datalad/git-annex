@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://me.tinco.nl/"
- nickname="Tinco"
- subject="comment 2"
- date="2013-05-18T23:36:22Z"
- content="""
-So that probably means I have some problem with the gpg encryption, that is used by bup. Maybe it doesn't even have to do with git annex, I'll see if I can make it say more in the log.
-"""]]

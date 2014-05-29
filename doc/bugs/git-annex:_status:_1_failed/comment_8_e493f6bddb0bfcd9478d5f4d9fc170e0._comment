@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="RaspberryPie"
- ip="204.8.156.142"
- subject="comment 8"
- date="2013-10-14T17:49:05Z"
- content="""
-Quick question: Is there any way to get rid of the error in the existing repository (e.g. remove the problematic tmp file entry) so I can get a complete status output? Bonus points if I don't have to annex every single file anew. `git annex fsck` doesn't work, as doesn't `git annex fix` (it's a direct repo).
-"""]]

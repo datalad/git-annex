@@ -1,8 +1,0 @@
-commit f20a40f breaks on OSX as mntent.h doesn't exist, the closet thing available to what mntent.h provides is getmntinfo(), it looks yet another bunch of ifdef's might be needed to work around OSX. This problem maybe similarly true with FreeBSD, libfam  seems to have worked around the issue - <http://oss.sgi.com/projects/fam/download/contrib/freebsd-mntent.patch>
-
-hope the above report helps.
-
-> Thanks, that was a very useful pointer. I couldn't figure out how to
-> use Haskell's FFI to loop over the list of statfs structs returned by
-> getmntinfo, so I incorporated that C code into a little library, 
-> and it seems to work ok. [[done]] --[[Joey]]

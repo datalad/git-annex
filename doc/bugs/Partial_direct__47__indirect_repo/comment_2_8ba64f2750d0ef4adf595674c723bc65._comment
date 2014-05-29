@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 2"
- date="2013-03-12T11:27:30Z"
- content="""
-Oh, I see, you started up the webapp, and told it to make a repo that already existed. So it helpfully set its annex.direct, thinking it was a new repository.
-"""]]

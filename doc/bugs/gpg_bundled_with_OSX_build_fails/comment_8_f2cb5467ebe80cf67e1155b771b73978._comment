@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.4.193"
- subject="comment 8"
- date="2013-06-30T18:02:03Z"
- content="""
-That's not the same error (2 != 5), and posting comments to long-closed bugs is never a good idea if your goal is to report a current bug in a way that will ensure it's noticed and that anyone remembers to follow up on it. You should file a new bug report, and include whatever actual error message is output *before* the message you pasted.
-"""]]

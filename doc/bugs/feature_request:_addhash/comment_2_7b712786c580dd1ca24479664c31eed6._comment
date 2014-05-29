@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://id.clacke.se/"
- nickname="clacke"
- subject="Re: git annex migrate"
- date="2013-12-17T22:04:09Z"
- content="""
-`migrate` replaces the manual work described in \"Workaround\", but has the drawback described in its own manual -- the content is now available under two keys in the annex. This proposal adds one layer of abstraction to avoid that duplication. It's entirely possible that this layer of abstraction is a bad idea with horrible complexity and/or performance issues, but I wanted to put this idea out there.
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joey.kitenet.net/"
- nickname="joey"
- subject="comment 2"
- date="2011-03-31T19:32:25Z"
- content="""
-One option would be to use the new [[news/sharebox_a_FUSE_filesystem_for_git-annex]], which would hide the immutable file details from Calibre, and proxy any changes it made through to git-annex as a series of `git annex unlock; modify; git-annex lock`
-"""]]

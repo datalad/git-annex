@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://olivier.mehani.name/"
- nickname="olivier-mehani"
- subject="comment 6"
- date="2013-10-04T05:14:16Z"
- content="""
-Right. By “it stalls”, I mean I get redirected to the same dialog page (either the one asking for the path to the repo to create, or the one asking for the details of the remote to add) that I just validated, rather than going further in the process.
-"""]]

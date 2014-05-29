@@ -1,9 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawlJEI45rGczFAnuM7gRSj4C6s9AS9yPZDc"
- nickname="Kevin"
- subject="SynoCommunity"
- date="2013-06-26T18:12:39Z"
- content="""
-Creating an installable git-annex package available via [SynoCommunity](http://www.synocommunity.com/) would be awesome.  They have created [cross-compilation tools](https://github.com/SynoCommunity/spksrc) to help build the packages and integrate the start/stop scripts with the package manager.
-
-"""]]

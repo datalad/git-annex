@@ -1,7 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- subject="comment 5"
- date="2012-09-21T04:12:54Z"
- content="""
-Ok.. My concern with this kind of \"fix\" is it could theoretically break under heavy load, and I get to pick a tradeoff between a timeout that's unlikely to break and one that'll make git-annex appear sluggish. OTOH, I can't think of anything better to do to address this. How common is \"pasting a file\" on OSX?
-"""]]

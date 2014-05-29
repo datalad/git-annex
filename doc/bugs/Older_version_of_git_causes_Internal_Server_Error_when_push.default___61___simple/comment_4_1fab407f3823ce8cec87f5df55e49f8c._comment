@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.0.63"
- subject="comment 4"
- date="2013-08-23T17:41:32Z"
- content="""
-It was done for the autobuilds, but then I switched them to build using Debian stable, which still has git 1.7, and there is not currently a backport of a newer git to stable for me to use.
-"""]]

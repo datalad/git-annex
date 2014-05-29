@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 1"
- date="2013-04-16T19:26:49Z"
- content="""
-Please show me the full output of `git annex whereis`, and also the contents of `.git/config`
-"""]]

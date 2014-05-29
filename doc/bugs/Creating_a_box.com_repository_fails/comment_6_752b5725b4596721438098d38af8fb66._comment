@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawk7iPiqWr3BVPLWEDvJhSSvcOqheLEbLNo"
- nickname="Dirk"
- subject="No working ubuntu package"
- date="2014-02-16T20:50:50Z"
- content="""
-The 5.20140210 package from François Marier tells me \"WebDAV not supported by this build\" when trying to add a box.com repository. So, can't really test this anymore on ubuntu.
-"""]]

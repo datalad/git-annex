@@ -1,5 +1,0 @@
-how to handle git rm file? (should try to drop keys that have no
-referring file, if it seems safe..)
-
-[[done]] -- I think that git annex unused and dropunused are the best
-solution to this.

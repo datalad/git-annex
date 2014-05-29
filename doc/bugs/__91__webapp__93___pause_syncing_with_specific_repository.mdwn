@@ -1,8 +1,0 @@
-[Due to some stupid issue on my and AT&T's part] one of my remote repositories is currently unreachable. I would like to tell the webapp/assistant to not attempt to sync with it, or, at least, modify this error message to be more specific (by telling me which repository is unreachable).
-
-In a red bubble it says: "Synced with rose 60justin"
-
-That verbage is the same if they all succeed. The only difference is the red instead of green. Would be nice to know exactly which machine to kick (if I didn't already know, eg I was syncing only with repositories not under my control).
-
-> Fixed alert display. Webapp has allowed pausing syncing with a repository
-> for a while. [[done]] --[[Joey]]

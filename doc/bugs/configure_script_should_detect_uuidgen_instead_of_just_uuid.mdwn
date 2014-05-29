@@ -1,6 +1,0 @@
-On RHEL5 (and clones) systems uuidgen is available as an alternative to
-uuid, the configure script fails, it should probably detect either uuid or
-uuidgen, or let the user decide? - also uuidgen behaves differently from
-uuid on debian.
-
-> uuidgen is now supported. --[[Joey]] [[done]]

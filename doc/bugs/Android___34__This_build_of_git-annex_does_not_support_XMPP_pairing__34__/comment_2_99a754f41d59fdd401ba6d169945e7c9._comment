@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.64"
- subject="comment 2"
- date="2013-11-26T19:40:55Z"
- content="""
-Managed to get it to build with XMPP, but it was quite a hack job getting the C libraries to behave, and I have not been able to test it yet. The daily build has it if you want to give it a try.
-"""]]

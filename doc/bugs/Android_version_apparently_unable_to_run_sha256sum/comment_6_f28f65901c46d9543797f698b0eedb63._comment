@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.36"
- subject="comment 6"
- date="2014-05-23T20:20:05Z"
- content="""
-I tried to reproduce the assistant behaving that way, but after removing sha256sum from PATH, the assistant failed to add files and complained strenuously.
-"""]]

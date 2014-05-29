@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.2.6"
- subject="comment 2"
- date="2012-06-20T14:34:23Z"
- content="""
-Your `locale` setting may also be relevant. FWIW, I've tried to create a file with `\xb4` in its name and have not gotten git-annex unused to crash on it.
-"""]]

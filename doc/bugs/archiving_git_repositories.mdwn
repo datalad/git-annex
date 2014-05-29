@@ -1,5 +1,0 @@
-In a true dropbox-like fashion, I tried to import my entire homefolder into the git-annex assistant. However, it seems that git-annex breaks on the several git repositories I've got checked out in my "Projects" folder. Is this a possible use case, or should I look at other tools to perform this with?
-
-> [[done]]; use a tarball or see extensive discussion here: 
-> <http://git-annex.branchable.com/bugs/Can__39__t_add_a_git_repo_to_git_annex:___34__Invalid_path_repo__47__.git__47__X__34___for_many_X/>
-> --[[Joey]]

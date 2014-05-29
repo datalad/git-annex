@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://johan.kiviniemi.name/"
- nickname="Johan"
- subject="comment 3"
- date="2014-05-01T20:46:18Z"
- content="""
-+1 for always setting up a key. I have had to temporarily disable a key and set up an account password or replicate what git-annex does (generate key, add pseudo host to .ssh/config, add remote, add entry to remote:.ssh/authorized_keys) manually when adding remotes a number of times.
-"""]]

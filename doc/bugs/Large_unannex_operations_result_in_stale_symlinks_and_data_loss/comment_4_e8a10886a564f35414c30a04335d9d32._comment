@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.153.8.30"
- subject="comment 4"
- date="2012-09-09T16:53:35Z"
- content="""
-Perhaps the solution is to make --fast the default and to make it copy files when the content in the annex already has a hard link to it.
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 1"
- date="2013-04-14T17:50:53Z"
- content="""
-This is expected. The content of direct mode files can change at any time, so fsck does not have a locked down object with a known checksum that it can verify. Similarly, fsck skips unlocked files in indirect mode.
-"""]]

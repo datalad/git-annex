@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawm5WyknJirJJridJjiPNgrlYxGG9xrZBvA"
- nickname="Daniel"
- subject="comment 8"
- date="2013-07-21T03:10:25Z"
- content="""
-Oh, and I agree with your reading of the spec; I was just looking that up myself. I will point out that most other software apparently treats a missing features tag as if it were an empty one, so it's certainly doable :)
-"""]]

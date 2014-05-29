@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawn9JRcJ_69McoLFe5-dvTMdfS9rJpGy6JI"
- nickname="Warren"
- subject="this just happened to me as well"
- date="2013-03-29T23:28:05Z"
- content="""
-I was trying to undo some changes from another bare repo, and then all of a sudden the three letter directories popped up.  I think the way I did this was to hard reset the master and git-annex branches to the same commit.  I take it that was the wrong thing to do?  I take it the git-annex and master branch should never be merged?
-"""]]

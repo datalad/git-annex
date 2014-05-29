@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.153.255.110"
- subject="comment 2"
- date="2013-09-09T05:44:48Z"
- content="""
-Also, note that libghc-aeson-dev is available for arm in Debian.
-"""]]

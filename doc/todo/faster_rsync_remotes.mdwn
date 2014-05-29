@@ -1,4 +1,0 @@
-Using an rsync remote is currently very slow when there are a lot of files, since rsync appears to be called for each file copied.  It would be awesome if each call to rsync was amortized to copy many files; rsync is very good at copying many small files quickly.
-
-> [[done]]; bug submitter was apparently not using a version 
-> with rsync connection caching. --[[Joey]]
