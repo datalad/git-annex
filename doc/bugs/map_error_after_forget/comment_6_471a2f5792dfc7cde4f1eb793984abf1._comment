@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.154"
- subject="comment 6"
- date="2014-03-17T19:30:37Z"
- content="""
-I was able to easily reproduce this kind of failure by making a git repository have a remote that did not exist. 
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.154"
- subject="comment 3"
- date="2014-03-15T21:41:13Z"
- content="""
-Since this is map, it could be one of the remotes of /media/xubuntu/archive/annex, or one of the remotes of one of the remotes, etc. Pretty sure it's a local repository it's choking on, and not a ssh remote though.
-"""]]
