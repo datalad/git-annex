@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="go8ose"
+ ip="59.167.191.61"
+ subject="comment 2"
+ date="2014-05-30T10:28:38Z"
+ content="""
+I was shown a password prompt for the remote. Then I realised I was controlling my ~/.ssh/authorized_keys file with puppet, which would have removed the public key that annex would have added to that file. I'm sure that once I fix that up, I'll get it working again.
+
+Thanks for the CLI suggestion.
+"""]]
