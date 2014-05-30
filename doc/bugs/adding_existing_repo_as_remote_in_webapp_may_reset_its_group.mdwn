@@ -5,4 +5,7 @@ settings.
 Adding existing local repositories or repositories from removable drives
 may have the same problems. Didn't check yet.
 
-[[!ttag confirmed]] --[[Joey]] 
+[[!tag confirmed]] --[[Joey]] 
+
+> Fixed for local repos and repos on removable drives. Still open for
+> ssh remotes (incl gcrypt). --[[Joey]]

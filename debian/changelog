@@ -3,6 +3,9 @@ git-annex (5.20140530) UNRELEASED; urgency=medium
   * webapp: When adding a new local repository, fix bug that caused its
     group and preferred content to be set in the current repository,
     even when not combining.
+  * webapp: Avoid stomping on existing group and preferred content settings
+    when adding a local repository (or removable drive repository) that
+    already exists.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 May 2014 20:10:59 -0400
 

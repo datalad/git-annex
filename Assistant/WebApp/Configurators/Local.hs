@@ -337,7 +337,8 @@ getFinishAddDriveR drive = go
 			setConfig (ConfigKey "core.fsyncobjectfiles")
 				(Git.Config.boolConfig True)
 		(u, r) <- a isnew
-		liftAnnex $ setStandardGroup u TransferGroup
+		when isnew $
+			liftAnnex $ setStandardGroup u TransferGroup
 		liftAssistant $ syncRemote r
 		redirect $ EditNewRepositoryR u
   	mountpoint = T.unpack (mountPoint drive)
@@ -459,15 +460,15 @@ initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
 		inRepo $ Git.Command.run
 			[Param "config", Param "gc.auto", Param "0"]
 	getUUID
-{- Repo already exists, could be a non-git-annex repo though. -}
+{- Repo already exists, could be a non-git-annex repo though so
+ - still initialize it. -}
 initRepo False _ dir desc mgroup = inDir dir $ do
 	initRepo' desc mgroup
 	getUUID
 
 initRepo' :: Maybe String -> Maybe StandardGroup -> Annex ()
-initRepo' desc mgroup = do
-	unlessM isInitialized $ do
-		initialize desc
+initRepo' desc mgroup = unlessM isInitialized $ do
+	initialize desc
 	u <- getUUID
 	maybe noop (setStandardGroup u) mgroup
 	{- Ensure branch gets committed right away so it is
