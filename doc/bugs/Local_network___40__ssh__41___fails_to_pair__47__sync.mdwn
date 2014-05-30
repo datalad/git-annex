@@ -174,4 +174,4 @@ ssh: connect to host Inspiron-14z.local port 22: Connection refused
 fatal: The remote end hung up unexpectedly
 """]]
 
-[[moreinfo]]
+[[!taglink moreinfo]]

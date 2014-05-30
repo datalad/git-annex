@@ -131,4 +131,4 @@ key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA
 remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
 """]]
 
-> [[moreinfo]] needed. --[[Joey]]
+> [[!taglink moreinfo]] needed. --[[Joey]]

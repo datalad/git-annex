@@ -13,4 +13,4 @@ git-annex version: 4.20130521-g20710d4 (And multiple prior versions)
 
 I could find no debug.log?
 
-> [[moreinfo]] until it's reproduced with a current version.. --[[Joey]] 
+> [[!taglink moreinfo]] until it's reproduced with a current version.. --[[Joey]] 
