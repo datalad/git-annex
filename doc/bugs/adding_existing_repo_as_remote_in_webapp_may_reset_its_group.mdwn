@@ -1,0 +1,8 @@
+Adding eg a ssh remote when the remote repo already exists, in the webapp,
+resets its group to transfer. It also clears any preferred content
+settings.
+
+Adding existing local repositories or repositories from removable drives
+may have the same problems. Didn't check yet.
+
+[[!ttag confirmed]] --[[Joey]] 
