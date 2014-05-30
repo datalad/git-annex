@@ -83,27 +83,15 @@ instance Yesod WebApp where
 instance RenderMessage WebApp FormMessage where
 	renderMessage _ _ = defaultFormMessage
 
-{- Runs an Annex action from the webapp.
- -
- - When the webapp is run outside a git-annex repository, the fallback
- - value is returned.
- -}
-#if MIN_VERSION_yesod(1,2,0)
-liftAnnexOr :: forall a. a -> Annex a -> Handler a
-#else
-liftAnnexOr :: forall sub a. a -> Annex a -> GHandler sub WebApp a
-#endif
-liftAnnexOr fallback a = ifM (noAnnex <$> getYesod)
-	( return fallback
-	, liftAssistant $ liftAnnex a
-	)
-
 #if MIN_VERSION_yesod(1,2,0)
 instance LiftAnnex Handler where
 #else
 instance LiftAnnex (GHandler sub WebApp) where
 #endif
-	liftAnnex = liftAnnexOr $ error "internal liftAnnex"
+	liftAnnex a = ifM (noAnnex <$> getYesod)
+		( error "internal liftAnnex"
+		, liftAssistant $ liftAnnex a
+		)
 
 #if MIN_VERSION_yesod(1,2,0)
 instance LiftAnnex (WidgetT WebApp IO) where

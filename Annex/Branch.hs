@@ -218,7 +218,7 @@ set = setJournalFile
 commit :: String -> Annex ()
 commit = whenM journalDirty . forceCommit
 
-{- Commits the current index to the branch even without any journalleda
+{- Commits the current index to the branch even without any journalled
  - changes. -}
 forceCommit :: String -> Annex ()
 forceCommit message = lockJournal $ \jl -> do

@@ -1,6 +1,6 @@
 {- git-annex assistant webapp configurators for making local repositories
  -
- - Copyright 2012 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU AGPL version 3 or higher.
  -}
@@ -19,6 +19,7 @@ import qualified Git
 import qualified Git.Construct
 import qualified Git.Config
 import qualified Git.Command
+import qualified Git.Branch
 import qualified Annex
 import Config.Files
 import Utility.FreeDesktop
@@ -196,8 +197,7 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 		FormSuccess (RepositoryPath p) -> do
 			let path = T.unpack p
 			isnew <- liftIO $ makeRepo path False
-			u <- liftIO $ initRepo isnew True path Nothing
-			liftH $ liftAnnexOr () $ setStandardGroup u ClientGroup
+			u <- liftIO $ initRepo isnew True path Nothing (Just ClientGroup)
 			liftIO $ addAutoStartFile path
 			liftIO $ startAssistant path
 			askcombine u path
@@ -211,7 +211,13 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 getCombineRepositoryR :: FilePath -> UUID -> Handler Html
 getCombineRepositoryR newrepopath newrepouuid = do
 	r <- combineRepos newrepopath remotename
-	liftAssistant $ syncRemote r
+	liftAssistant $ do
+		-- Manually pull from the remote, to ensure its description
+		-- and group etc are available before editing.
+		currentbranch <- liftAnnex (inRepo Git.Branch.current)
+		void $ manualPull currentbranch [r]
+		-- Sync with the remote to push to it as well.
+		syncRemote r
 	redirect $ EditRepositoryR $ RepoUUID newrepouuid
   where
 	remotename = takeFileName newrepopath
@@ -321,7 +327,7 @@ getFinishAddDriveR drive = go
 			return (u, r)
 	{- Making a new unencrypted repo, or combining with an existing one. -}
 	makeunencrypted = makewith $ \isnew -> (,)
-		<$> liftIO (initRepo isnew False dir $ Just remotename)
+		<$> liftIO (initRepo isnew False dir (Just remotename) Nothing)
 		<*> combineRepos dir remotename
 	makewith a = do
 		liftIO $ createDirectoryIfMissing True dir
@@ -398,10 +404,8 @@ startFullAssistant path repogroup setup = do
 	webapp <- getYesod
 	url <- liftIO $ do
 		isnew <- makeRepo path False
-		u <- initRepo isnew True path Nothing
-		inDir path $ do
-			setStandardGroup u repogroup
-			fromMaybe noop setup
+		void $ initRepo isnew True path Nothing (Just repogroup)
+		inDir path $ fromMaybe noop setup
 		addAutoStartFile path
 		setCurrentDirectory path
 		fromJust $ postFirstRun webapp
@@ -432,9 +436,9 @@ inDir dir a = do
 	Annex.eval state a
 
 {- Creates a new repository, and returns its UUID. -}
-initRepo :: Bool -> Bool -> FilePath -> Maybe String -> IO UUID
-initRepo True primary_assistant_repo dir desc = inDir dir $ do
-	initRepo' desc
+initRepo :: Bool -> Bool -> FilePath -> Maybe String -> Maybe StandardGroup -> IO UUID
+initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
+	initRepo' desc mgroup
 	{- Initialize the master branch, so things that expect
 	 - to have it will work, before any files are added. -}
 	unlessM (Git.Config.isBare <$> gitRepo) $
@@ -456,16 +460,18 @@ initRepo True primary_assistant_repo dir desc = inDir dir $ do
 			[Param "config", Param "gc.auto", Param "0"]
 	getUUID
 {- Repo already exists, could be a non-git-annex repo though. -}
-initRepo False _ dir desc = inDir dir $ do
-	initRepo' desc
+initRepo False _ dir desc mgroup = inDir dir $ do
+	initRepo' desc mgroup
 	getUUID
 
-initRepo' :: Maybe String -> Annex ()
-initRepo' desc = unlessM isInitialized $ do
-	initialize desc
+initRepo' :: Maybe String -> Maybe StandardGroup -> Annex ()
+initRepo' desc mgroup = do
+	unlessM isInitialized $ do
+		initialize desc
+	u <- getUUID
+	maybe noop (setStandardGroup u) mgroup
 	{- Ensure branch gets committed right away so it is
-	 - available for merging when a removable drive repo is being
-	 - added. -}
+	 - available for merging immediately. -}
 	Annex.Branch.commit "update"
 
 {- Checks if the user can write to a directory.
