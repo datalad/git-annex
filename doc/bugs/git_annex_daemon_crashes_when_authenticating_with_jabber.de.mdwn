@@ -20,3 +20,7 @@ upgrade supported from repository versions: 0 1 2 4
 git-annex: <socket: 44>: hGetBuf: resource vanished (Connection reset by peer)
 git-annex: interrupted
 """]]
+
+[[!tag confirmed]]
+
+[[!meta title="OSX xmpp crash with jabber.de"]]
