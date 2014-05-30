@@ -32,7 +32,7 @@ remote.
 
 ## bug reporting
 
-When you file a [[bug]] report on git-annex, you may need to provide
+When you file a [[bug|bugs]] report on git-annex, you may need to provide
 debugging output or details about your repository. In general, git-annex
 does not sanitize `--debug` output at all, so it may include the names of
 files or other repository details. You should review any debug or other
