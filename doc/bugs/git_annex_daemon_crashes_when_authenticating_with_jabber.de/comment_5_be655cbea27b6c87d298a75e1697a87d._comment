@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 5"
+ date="2014-05-30T19:09:31Z"
+ content="""
+If you can reproduce the crash, I can provide some debug program that will narrow down where the bug is..
+"""]]
