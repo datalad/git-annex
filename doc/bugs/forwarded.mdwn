@@ -1,0 +1,2 @@
+This tag is for bugs that have been forwarded from git-annex to some other
+software, such as a library it uses.

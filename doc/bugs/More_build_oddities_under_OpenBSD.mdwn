@@ -35,3 +35,5 @@ GHCi cannot safely continue in this situation.  Exiting now.  Sorry.
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]

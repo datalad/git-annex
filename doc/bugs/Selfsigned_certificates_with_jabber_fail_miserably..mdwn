@@ -20,3 +20,7 @@ There is no logoutput to add... I'm sorry.
 
 # End of transcript or log.
 """]]
+
+[[!meta title="XMPP does not work with jabber.ccc.de"]]
+
+[[!tag moreinfo]]

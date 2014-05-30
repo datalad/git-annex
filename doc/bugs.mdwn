@@ -1,7 +1,7 @@
 This is git-annex's bug list. Closed bugs are moved to [[done]].
 
 [[!inline pages="./bugs/* and !./bugs/*/* and !./bugs/done and !link(done) 
-and !./bugs/moreinfo and !./bugs/confirmed and !*/Discussion"
+and !./bugs/moreinfo and !./bugs/confirmed and !./bugs/forwarded and !*/Discussion"
 actions=yes postform=yes show=0 archive=yes template=buglist]]
 
 [[!edittemplate template=templates/bugtemplate match="bugs/*" silent=yes]]

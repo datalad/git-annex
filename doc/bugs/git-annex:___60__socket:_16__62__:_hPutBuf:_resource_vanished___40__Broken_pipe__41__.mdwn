@@ -14,3 +14,5 @@ git-annex version: 4.20130521-g20710d4 (And multiple prior versions)
 I could find no debug.log?
 
 > [[!taglink moreinfo]] until it's reproduced with a current version.. --[[Joey]] 
+
+>> Note that this seems like a similar untrappable crash as [[git_annex_daemon_crashes_when_authenticating_with_jabber.de]]. --[[Joey]] 

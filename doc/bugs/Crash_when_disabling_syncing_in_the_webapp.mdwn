@@ -21,3 +21,5 @@ This is all I can see in the logs
 Watcher crashed: PauseWatcher
 [2014-03-26 08:54:57 CET] Watcher: warning Watcher crashed: PauseWatcher
 """]]
+
+[[!tag moreinfo]]

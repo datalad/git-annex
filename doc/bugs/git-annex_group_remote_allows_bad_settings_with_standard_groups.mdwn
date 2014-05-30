@@ -21,3 +21,5 @@ Also it would be nice if `git annex group here` returned the list of groups (I p
 
 # End of transcript or log.
 """]]
+
+> [[done]] per my comment. (Please comment if you disagree!) --[[Joey]] 

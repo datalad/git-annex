@@ -42,3 +42,5 @@ Also another thing I noticed is that same file names same repo will clone fine o
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
