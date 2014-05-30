@@ -208,16 +208,17 @@ postNewRepositoryR = page "Add another repository" (Just Configuration) $ do
 		mainrepo <- fromJust . relDir <$> liftH getYesod
 		$(widgetFile "configurators/newrepository/combine")
 
+{- Ensure that a remote's description, group, etc are available by
+ - immediately pulling from it. Also spawns a sync to push to it as well. -}
+immediateSyncRemote :: Remote -> Assistant ()
+immediateSyncRemote r = do
+	currentbranch <- liftAnnex (inRepo Git.Branch.current)
+	void $ manualPull currentbranch [r]
+	syncRemote r
+
 getCombineRepositoryR :: FilePath -> UUID -> Handler Html
 getCombineRepositoryR newrepopath newrepouuid = do
-	r <- combineRepos newrepopath remotename
-	liftAssistant $ do
-		-- Manually pull from the remote, to ensure its description
-		-- and group etc are available before editing.
-		currentbranch <- liftAnnex (inRepo Git.Branch.current)
-		void $ manualPull currentbranch [r]
-		-- Sync with the remote to push to it as well.
-		syncRemote r
+	liftAssistant . immediateSyncRemote =<< combineRepos newrepopath remotename
 	redirect $ EditRepositoryR $ RepoUUID newrepouuid
   where
 	remotename = takeFileName newrepopath
@@ -339,7 +340,7 @@ getFinishAddDriveR drive = go
 		(u, r) <- a isnew
 		when isnew $
 			liftAnnex $ setStandardGroup u TransferGroup
-		liftAssistant $ syncRemote r
+		liftAssistant $ immediateSyncRemote r
 		redirect $ EditNewRepositoryR u
   	mountpoint = T.unpack (mountPoint drive)
 	dir = removableDriveRepository drive
