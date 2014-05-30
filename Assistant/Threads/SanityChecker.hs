@@ -40,6 +40,7 @@ import Logs.Transfer
 import Config.Files
 import Utility.DiskFree
 import qualified Annex
+import Annex.Exception
 #ifdef WITH_WEBAPP
 import Assistant.WebApp.Types
 #endif
@@ -84,8 +85,9 @@ sanityCheckerStartupThread startupdelay = namedThreadUnchecked "SanityCheckerSta
 	liftIO $ fixUpSshRemotes
 
 	{- Clean up old temp files. -}
-	liftAnnex cleanOldTmpMisc
-	liftAnnex cleanReallyOldTmp
+	void $ liftAnnex $ tryAnnex $ do
+		cleanOldTmpMisc
+		cleanReallyOldTmp
 
 	{- If there's a startup delay, it's done here. -}
 	liftIO $ maybe noop (threadDelaySeconds . Seconds . fromIntegral . durationSeconds) startupdelay
@@ -310,7 +312,8 @@ cleanReallyOldTmp = do
 			| otherwise -> noop
 
 cleanOld :: (POSIXTime -> Bool) -> FilePath -> IO ()
-cleanOld check f = do
-	mtime <- realToFrac . modificationTime <$> getFileStatus f
-	when (check mtime) $
-		nukeFile f
+cleanOld check f = go =<< catchMaybeIO getmtime
+  where
+	getmtime = realToFrac . modificationTime <$> getSymbolicLinkStatus f
+	go (Just mtime) | check mtime = nukeFile f
+	go _ = noop
