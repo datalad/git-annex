@@ -100,7 +100,8 @@ setupSpecialRemote name remotetype config mcreds (mu, c) = do
 	 - to perform IO actions to refill the pool. -}
 	(c', u) <- R.setup remotetype mu mcreds $
 		M.insert "highRandomQuality" "false" $ M.union config c
-	describeUUID u name
+	whenM (isNothing . M.lookup u <$> uuidMap) $
+		describeUUID u name
 	configSet u c'
 	return name
 
