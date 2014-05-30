@@ -90,19 +90,23 @@ enableSpecialRemote name remotetype mcreds config = do
 	r <- Command.InitRemote.findExisting name
 	case r of
 		Nothing -> error $ "Cannot find a special remote named " ++ name
-		Just (u, c) -> setupSpecialRemote name remotetype config mcreds (Just u, c)
+		Just (u, c) -> setupSpecialRemote' False name remotetype config mcreds (Just u, c)
 
 setupSpecialRemote :: RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.RemoteConfig) -> Annex RemoteName
-setupSpecialRemote name remotetype config mcreds (mu, c) = do
+setupSpecialRemote = setupSpecialRemote' True
+
+setupSpecialRemote' :: Bool -> RemoteName -> RemoteType -> R.RemoteConfig -> Maybe CredPair -> (Maybe UUID, R.RemoteConfig) -> Annex RemoteName
+setupSpecialRemote' setdesc name remotetype config mcreds (mu, c) = do
 	{- Currently, only 'weak' ciphers can be generated from the
 	 - assistant, because otherwise GnuPG may block once the entropy
 	 - pool is drained, and as of now there's no way to tell the user
 	 - to perform IO actions to refill the pool. -}
 	(c', u) <- R.setup remotetype mu mcreds $
 		M.insert "highRandomQuality" "false" $ M.union config c
-	whenM (isNothing . M.lookup u <$> uuidMap) $
-		describeUUID u name
 	configSet u c'
+	when setdesc $
+		whenM (isNothing . M.lookup u <$> uuidMap) $
+			describeUUID u name
 	return name
 
 {- Returns the name of the git remote it created. If there's already a
