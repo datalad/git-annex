@@ -550,7 +550,9 @@ makeSshRepoConnection rs mk setup = setupRemote postsetup mgroup Nothing mk
 	postsetup r = do
 		liftAssistant $ sendRemoteControl RELOAD
 		liftAnnex $ setup r
-		redirect $ EditNewRepositoryR (Remote.uuid r)
+		case rs of
+			NewRepo -> redirect $ EditNewRepositoryR (Remote.uuid r)
+			ExistingRepo -> redirect DashboardR
 
 makeGCryptRepo :: RepoStatus -> KeyId -> SshData -> Handler Html
 makeGCryptRepo rs keyid sshdata = makeSshRepoConnection rs mk (const noop)
