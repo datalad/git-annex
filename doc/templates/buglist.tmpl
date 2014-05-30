@@ -4,6 +4,11 @@
 <TMPL_ELSE>
 <a href="<TMPL_VAR PAGEURL>"><TMPL_VAR TITLE></a><br />
 </TMPL_IF>
+<TMPL_IF TAGS>
+<TMPL_LOOP TAGS>
+ [<TMPL_VAR LINK>]
+</TMPL_LOOP>
+</TMPL_IF>
 <span class="archivepagedate">
 Posted <TMPL_VAR CTIME>
 <TMPL_IF AUTHOR>
@@ -16,12 +21,4 @@ by <span class="author">
 </span>
 </TMPL_IF>
 </span>
-<TMPL_IF TAGS>
-<TMPL_IF HTML5><nav class="tags"><TMPL_ELSE><span class="tags"></TMPL_IF>
-Tagged:
-<TMPL_LOOP TAGS>
-<TMPL_VAR LINK>
-</TMPL_LOOP>
-<TMPL_IF HTML5></nav><TMPL_ELSE></span></TMPL_IF>
-</TMPL_IF>
 </div>
