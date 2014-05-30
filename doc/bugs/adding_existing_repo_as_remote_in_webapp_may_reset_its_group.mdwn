@@ -9,3 +9,8 @@ may have the same problems. Didn't check yet.
 
 > Fixed for local repos and repos on removable drives. Still open for
 > ssh remotes (incl gcrypt). --[[Joey]]
+
+>> Fixed for ssh (including gcrypt) too.
+>>
+>> Also affected enabling existing special remotes, like webdav; that's
+>> also fixed. [[done]] --[[Joey]]

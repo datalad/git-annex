@@ -61,6 +61,10 @@ data AuthMethod
 	| ExistingSshKey
 	deriving (Eq, Show)
 
+-- Is a repository a new one that's being created, or did it already exist
+-- and is just being added.
+data RepoStatus = NewRepo | ExistingRepo
+
 {- SshInput is only used for applicative form prompting, this converts
  - the result of such a form into a SshData. -}
 mkSshData :: SshInput -> SshData
@@ -425,9 +429,7 @@ getConfirmSshR sshdata u
 		m <- liftAnnex readRemoteLog
 		case M.lookup "type" =<< M.lookup u m of
 			Just "gcrypt" -> combineExistingGCrypt sshdata' u
-			-- This handles enabling git repositories
-			-- that already exist.
-			_ -> makeSshRepo sshdata'
+			_ -> makeSshRepo ExistingRepo sshdata'
 
 {- The user has confirmed they want to combine with a ssh repository,
  - which is not known to us. So it might be using gcrypt. -}
@@ -435,7 +437,7 @@ getCombineSshR :: SshData -> Handler Html
 getCombineSshR sshdata = prepSsh False sshdata $ \sshdata' ->
 	sshConfigurator $
 		checkExistingGCrypt sshdata' $
-			void $ liftH $ makeSshRepo sshdata'
+			void $ liftH $ makeSshRepo ExistingRepo sshdata'
 
 getRetrySshR :: SshData -> Handler ()
 getRetrySshR sshdata = do
@@ -444,10 +446,10 @@ getRetrySshR sshdata = do
 
 {- Making a new git repository. -}
 getMakeSshGitR :: SshData -> Handler Html
-getMakeSshGitR sshdata = prepSsh True sshdata makeSshRepo
+getMakeSshGitR sshdata = prepSsh True sshdata (makeSshRepo NewRepo)
 
 getMakeSshRsyncR :: SshData -> Handler Html
-getMakeSshRsyncR sshdata = prepSsh False (rsyncOnly sshdata) makeSshRepo
+getMakeSshRsyncR sshdata = prepSsh False (rsyncOnly sshdata) (makeSshRepo NewRepo)
 
 rsyncOnly :: SshData -> SshData
 rsyncOnly sshdata = sshdata { sshCapabilities = [RsyncCapable] }
@@ -456,7 +458,7 @@ getMakeSshGCryptR :: SshData -> RepoKey -> Handler Html
 getMakeSshGCryptR sshdata NoRepoKey = whenGcryptInstalled $
 	withNewSecretKey $ getMakeSshGCryptR sshdata . RepoKey
 getMakeSshGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $
-	prepSsh False sshdata $ makeGCryptRepo keyid
+	prepSsh False sshdata $ makeGCryptRepo NewRepo keyid
 	
 {- Detect if the user entered a location with an existing, known
  - gcrypt repository, and enable it. Otherwise, runs the action. -}
@@ -523,10 +525,10 @@ prepSsh' needsinit origsshdata sshdata keypair a = sshSetup (mkSshInput origsshd
 		]
 	rsynconly = onlyCapability origsshdata RsyncCapable
 
-makeSshRepo :: SshData -> Handler Html
-makeSshRepo sshdata
+makeSshRepo :: RepoStatus -> SshData -> Handler Html
+makeSshRepo rs sshdata
 	| onlyCapability sshdata RsyncCapable = setupCloudRemote TransferGroup Nothing mk
-	| otherwise = makeSshRepoConnection mk setup
+	| otherwise = makeSshRepoConnection rs mk setup
   where
 	mk = makeSshRemote sshdata
 	-- Record the location of the ssh remote in the remote log, so it
@@ -539,16 +541,19 @@ makeSshRepo sshdata
 			M.insert "name" (fromMaybe (Remote.name r) (M.lookup "name" c)) c
 		configSet (Remote.uuid r) c'
 
-makeSshRepoConnection :: Annex RemoteName -> (Remote -> Annex ()) -> Handler Html
-makeSshRepoConnection mk setup = setupRemote postsetup TransferGroup Nothing mk
+makeSshRepoConnection :: RepoStatus -> Annex RemoteName -> (Remote -> Annex ()) -> Handler Html
+makeSshRepoConnection rs mk setup = setupRemote postsetup mgroup Nothing mk
   where
+	mgroup = case rs of
+		NewRepo -> Just TransferGroup
+		ExistingRepo -> Nothing
 	postsetup r = do
 		liftAssistant $ sendRemoteControl RELOAD
 		liftAnnex $ setup r
 		redirect $ EditNewRepositoryR (Remote.uuid r)
 
-makeGCryptRepo :: KeyId -> SshData -> Handler Html
-makeGCryptRepo keyid sshdata = makeSshRepoConnection mk (const noop)
+makeGCryptRepo :: RepoStatus -> KeyId -> SshData -> Handler Html
+makeGCryptRepo rs keyid sshdata = makeSshRepoConnection rs mk (const noop)
   where
 	mk = makeGCryptRemote (sshRepoName sshdata) (genSshUrl sshdata) keyid
 
@@ -591,21 +596,22 @@ postAddRsyncNetR = do
 				$(widgetFile "configurators/rsync.net/encrypt")
 
 getMakeRsyncNetSharedR :: SshData -> Handler Html
-getMakeRsyncNetSharedR = makeSshRepo . rsyncOnly
+getMakeRsyncNetSharedR = makeSshRepo NewRepo . rsyncOnly
 
-{- Make a gcrypt special remote on rsync.net. -}
+{- Make a new gcrypt special remote on rsync.net. -}
 getMakeRsyncNetGCryptR :: SshData -> RepoKey -> Handler Html
 getMakeRsyncNetGCryptR sshdata NoRepoKey = whenGcryptInstalled $
 	withNewSecretKey $ getMakeRsyncNetGCryptR sshdata . RepoKey
 getMakeRsyncNetGCryptR sshdata (RepoKey keyid) = whenGcryptInstalled $
-	sshSetup (mkSshInput sshdata) [sshhost, gitinit] Nothing $ makeGCryptRepo keyid sshdata
+	sshSetup (mkSshInput sshdata) [sshhost, gitinit] Nothing $
+		makeGCryptRepo NewRepo keyid sshdata
   where
 	sshhost = genSshHost (sshHostName sshdata) (sshUserName sshdata)
 	gitinit = "git init --bare " ++ T.unpack (sshDirectory sshdata)
 
 enableRsyncNet :: SshInput -> String -> Handler Html
 enableRsyncNet sshinput reponame = 
-	prepRsyncNet sshinput reponame $ makeSshRepo . rsyncOnly
+	prepRsyncNet sshinput reponame $ makeSshRepo ExistingRepo . rsyncOnly
 
 enableRsyncNetGCrypt :: SshInput -> RemoteName -> Handler Html
 enableRsyncNetGCrypt sshinput reponame = 

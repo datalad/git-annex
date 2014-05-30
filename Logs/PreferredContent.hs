@@ -18,6 +18,7 @@ module Logs.PreferredContent (
 	groupPreferredContentMapRaw,
 	checkPreferredContentExpression,
 	setStandardGroup,
+	defaultStandardGroup,
 	preferredRequiredMapsLoad,
 ) where
 
@@ -133,10 +134,20 @@ checkPreferredContentExpression expr = case parsedToMatcher tokens of
 	tokens = exprParser matchAll matchAll emptyGroupMap M.empty Nothing expr
 
 {- Puts a UUID in a standard group, and sets its preferred content to use
- - the standard expression for that group, unless something is already set. -}
+ - the standard expression for that group (unless preferred content is
+ - already set). -}
 setStandardGroup :: UUID -> StandardGroup -> Annex ()
 setStandardGroup u g = do
 	groupSet u $ S.singleton $ fromStandardGroup g
-	m <- preferredContentMap
-	unless (isJust $ M.lookup u m) $
+	unlessM (isJust . M.lookup u <$> preferredContentMap) $
 		preferredContentSet u "standard"
+
+{- Avoids overwriting the UUID's standard group or preferred content
+ - when it's already been configured. -}
+defaultStandardGroup :: UUID -> StandardGroup -> Annex ()
+defaultStandardGroup u g = 
+	unlessM (hasgroup <||> haspc) $
+		setStandardGroup u g
+  where
+	hasgroup = not . S.null <$> lookupGroups u
+	haspc = isJust . M.lookup u <$> preferredContentMap

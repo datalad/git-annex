@@ -339,7 +339,7 @@ getFinishAddDriveR drive = go
 				(Git.Config.boolConfig True)
 		(u, r) <- a isnew
 		when isnew $
-			liftAnnex $ setStandardGroup u TransferGroup
+			liftAnnex $ defaultStandardGroup u TransferGroup
 		liftAssistant $ immediateSyncRemote r
 		redirect $ EditNewRepositoryR u
   	mountpoint = T.unpack (mountPoint drive)
@@ -471,7 +471,7 @@ initRepo' :: Maybe String -> Maybe StandardGroup -> Annex ()
 initRepo' desc mgroup = unlessM isInitialized $ do
 	initialize desc
 	u <- getUUID
-	maybe noop (setStandardGroup u) mgroup
+	maybe noop (defaultStandardGroup u) mgroup
 	{- Ensure branch gets committed right away so it is
 	 - available for merging immediately. -}
 	Annex.Branch.commit "update"
