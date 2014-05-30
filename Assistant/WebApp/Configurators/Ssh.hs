@@ -139,6 +139,7 @@ sshInputAForm hostnamefield def = normalize <$> gen
 	normalize i = i { inputDirectory = normalizedir <$> inputDirectory i }
 	normalizedir d
 		| "~/" `T.isPrefixOf` d = T.drop 2 d
+		| "/~/" `T.isPrefixOf` d = T.drop 3 d
 		| otherwise = d
 
 data ServerStatus
