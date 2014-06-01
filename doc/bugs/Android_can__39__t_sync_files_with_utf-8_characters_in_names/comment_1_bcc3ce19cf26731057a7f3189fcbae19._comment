@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawniXLhO9mLn-7EDfawdENZ2fQwlGy5w_oc"
+ nickname="Michał"
+ subject="Update - 20140529"
+ date="2014-06-01T01:36:16Z"
+ content="""
+Tried with the new 20140529 on Android, same behavior.
+
+One more note: I managed to spot the attempted update in the webapp. The filename that shows up there has all the non-ascii characters replaced by ��� (not truncated as in logs), ex: old/������������.pdf
+"""]]
