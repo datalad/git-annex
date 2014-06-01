@@ -7,7 +7,7 @@ The lastest version of git-annex, and Android 4.3, **without sdcard** (Wiko Wax)
 
 ### Please provide any additional information below.
 
-The message give by git-annex:
+The message given by git-annex:
 
 
     Falling back to hardcoded app location; cannot find expected files in /data/app-lib 
