@@ -289,7 +289,7 @@ connectionNeeded = whenM noconnection $ do
 	void $ liftAssistant $ do
 		close <- asIO1 removeAlert
 		addAlert $ connectionNeededAlert $ AlertButton
-			{ buttonLabel = "Connnect"
+			{ buttonLabel = "Connect"
 			, buttonUrl = urlrender ConnectionNeededR
 			, buttonAction = Just close
 			, buttonPrimary = True
