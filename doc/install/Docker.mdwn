@@ -5,22 +5,27 @@ For example:
 
 	docker run -i -t joeyh/debian-unstable apt-get install git-annex
 
-# autobuilders
+# containers for autobuilders
 
-The git-annex Linux autobuilds are built using a Docker container.
-If you'd like to set up your own autobuilder in a Docker container,
-the image that is used is not currently published, but you can build
-a new image using [Propellor](http://joeyh.name/code/propellor). Just
-install Propellor and add this to its `config.hs`:
+The git-annex Linux autobuilds are built using Docker containers.
+Most of these are not published, but you can build your own. (See below.)
+
+Since the Android autobuilder container can take quite a lot of work to get
+built, it is published. `docker pull joeyh/git-annex-android-builder`
+
+# building autobuilder containers using Propellor
+
+The Docker containers are built using
+[Propellor](http://joeyh.name/code/propellor). To generate your own image,
+Just install Propellor and add this to its `config.hs`:
 
 [[!format haskell """
-host hostname@"your.machine.net" = Just $ props
-        & Docker.configured
-        & Docker.docked container hostname "amd64-git-annex-builder"
+import qualified Propellor.Property.SiteSpecific.GitAnnexBuilder as GitAnnexBuilder
 
-container _ "amd64-git-annex-builder" = in Just $ Docker.containerFrom
-	(image $ System (Debian Unstable) "amd64")
-	[ Docker.inside $ props & GitAnnexBuilder.builder "amd64" "15 * * * *" False ]
+	, host hostname@"your.machine.net" = Just $ props
+	        & Docker.configured
+		& Docker.docked container hostname "amd64-git-annex-builder"
+	, GitAnnexBuilder.standardAutoBuilderContainer dockerImage "amd64" 15 "2h"
 """]]
 
 This will autobuild every hour at :15, and the autobuilt image will be
