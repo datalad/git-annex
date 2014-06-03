@@ -6,15 +6,15 @@ We have a number of repositories on a shared file server.  These repositories ar
 
 We're getting this message:
 [[!format sh """
-densho@kinkura:/media/qnfs/kinkura/gold/ddr-janm-1$ git annex status
+user@system:/path/to/repository$ git annex status
 git-annex: Repository version 5 is not supported. Upgrade git-annex.
 """]]
 
 The machine experiencing the problem is running Debian Wheezy (Stable).
 [[!format sh """
-densho@kinkura:/media/qnfs/kinkura/gold/ddr-janm-1$ git version
+user@system:/path/to/repository$ git version
 git version 1.7.10.4
-densho@kinkura:/media/qnfs/kinkura/gold/ddr-janm-1$ git annex version
+user@system:/path/to/repository$ git annex version
 git-annex version: 3.20120629
 local repository version: 5
 default repository version: 3
