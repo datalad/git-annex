@@ -10,3 +10,5 @@ a new branch representing the selected view gets created, as expected. The probl
 Am I doing it wrong? Should I be deleting used view branches on my own? How?
 
 thanks for your replies.
+
+EDIT: I just found out that even if I delete view branches with git branch -D "views/attr=_" (which I'm not sure I should be doing), the branches are still checked when doing "git annex unused". That is, "git annex unused" lists "checking..." a whole lot of past views/branches which are not even there anymore (not listed with "git branch"). I also suspect that this is preventing deleted (git-rm) files from being collected from "unused".
