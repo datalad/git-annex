@@ -1,0 +1,12 @@
+Hello everyone,
+I would like to know if this is normal behavior or if it's a problem with my repository:
+
+Whenever I set a view with 
+
+git annex view attr="\*"'
+
+a new branch representing the selected view gets created, as expected. The problem is that when I switch back to master ('git checkout master' or even 'git annex vpop') the view branch stays there, and all subsequent operations on the annex also consider the view branch, resulting a great slowdown if one has done many views (attr="this", attr="that", etc.). Is this normal? If so, why is it necessary for the branch to stay on? Does it speed up going back to the branch? Redoing git annex view attr="*" does not seem to take less time. 
+
+Am I doing it wrong? Should I be deleting used view branches on my own? How?
+
+thanks for your replies.
