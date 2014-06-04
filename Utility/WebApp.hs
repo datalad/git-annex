@@ -97,7 +97,14 @@ fixSockAddr addr = addr
 
 -- disable buggy sloworis attack prevention code
 webAppSettings :: Settings
-webAppSettings = setTimeout (30 * 60) defaultSettings
+
+#if MIN_VERSION_warp(2,1,0)
+webAppSettings = setTimeout halfhour defaultSettings
+#else
+webAppSettings = defaultSettings { settingsTimeout = halfhour }
+#endif
+  where
+	halfhour = 30 * 60
 
 {- Binds to a local socket, or if specified, to a socket on the specified
  - hostname or address. Selects any free port, unless the hostname ends with
