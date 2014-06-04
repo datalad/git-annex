@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmYMS6tQ8q9k1fylGyA9Q6fdFzRBotME2Q"
+ nickname="tom"
+ subject="comment reply"
+ date="2014-06-04T19:34:41Z"
+ content="""
+> You can delete the view branches if you like. I have considered making moving views clean up old branches, but I have also considered reusing existing view branches when popping back to an old view.
+
+Alright, I'd very much welcome anyone of the two possibilities as I'm making heavy use of views and would benefit from any of the two solutions.
+
+> Perhaps you have pushed the view branches to a remote repository, and it's checking those branches of the remote? See git branch -a.
+
+That's it! Solution for future reference: The remote branches referenced in local repo did not exist anymore in any repo (I had deleted them earlier from the remote) so \"git push origin --delete <branchName>\" wouldn't work. This other command worked very well in cleaning up the overwhelming missing remote view branches all in one go: \"git push origin --delete <branchName>\"
+
+> I think that it makes sense for unused to ignore (local) view branches, since these are by definition supposed to be views of an existing branch, so looking at the branch should be sufficient. So, made that change.
+
+Thanks a lot! It makes perfect sense, looking forward to it on the next release.
+
+Now it seems that even after pruning the view branches on the remote, unused would still not collect newly deleted files. I'm wondering if this is because there are other offline repos (backups which are not practical to take out of their resting place) I have not yet synchronized. Does this mean that until all repos (even the offline one I never sync and work mostly as a backup for old stuff) are synchronized 'unused' won't collect the deleted files? If so, is there a workaround for this? 
+
+
+
+
+"""]]
