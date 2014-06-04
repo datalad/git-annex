@@ -32,13 +32,13 @@ My bugs
 ... same.
 
 [[!inline pages="bugs/* and !bugs/done and !link(bugs/done) and
-link(users/anarcat)" sort=mtime feeds=no actions=yes archive=yes show=0]]
+link(users/anarcat)" sort=mtime feeds=no actions=yes archive=yes show=0  template=buglist]]
 
 Fixed
 -----
 
 [[!inline pages="bugs/* and !bugs/done and link(bugs/done) and
-link(users/anarcat)" feeds=no actions=yes archive=yes show=0]]
+link(users/anarcat)" feeds=no actions=yes archive=yes show=0  template=buglist]]
 
 Forum posts
 ===========
