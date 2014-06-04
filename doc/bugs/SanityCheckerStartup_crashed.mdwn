@@ -24,3 +24,5 @@ Precompiled 5.20140530 on Arch Linux x86_64 (git-annex-bin package from the AUR)
 
 ### Please provide any additional information below.
 The crash has not caused any real problem for me that I'm aware of. I'm just reporting it because the error message looks a little scary.
+
+> [[dup|done]] --[[Joey]]
