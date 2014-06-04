@@ -1,0 +1,3 @@
+I have made some mistakes while using `git annex import` in direct mode. Now I see that some files have been erroneously added and there are other problems. I have not yet used `git annex sync`.
+
+How can I tell git-annex in direct mode (or bare git) to forget about all these changes and revert back to the last known good (pre-import) state? This means also removing the few imported files and recreate their links.
