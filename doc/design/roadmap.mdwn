@@ -6,7 +6,7 @@ Now in the
 
 * Month 1 [[!traillink assistant/encrypted_git_remotes]]
 * Month 2 [[!traillink assistant/disaster_recovery]]
-* Month 3 [[!traillink todo/direct_mode_guard]] [[!traillink assistant/upgrading]]
+* Month 3 [[!traillink direct_mode]] guard [[!traillink assistant/upgrading]]
 * Month 4 [[!traillink assistant/windows text="Windows webapp"]], Linux arm, external special remotes
 * Month 5 user-driven features and polishing
 * Month 6 get Windows out of beta, [[!traillink design/metadata text="metadata and views"]]
