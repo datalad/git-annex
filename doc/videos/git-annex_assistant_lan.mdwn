@@ -2,5 +2,5 @@
 <source src="https://downloads.kitenet.net/videos/git-annex/git-annex-lan.webm">
 </video><br>
 A <a href="https://downloads.kitenet.net/videos/git-annex/git-annex-lan.webm">10 minute screencast</a>
-showing how to use the [[git-annex assistant|/assistant]] on a local
-network, with your own server.
+showing how to get started using the [[git-annex assistant|/assistant]],
+including sharing files on a local network, and installation on a server.
