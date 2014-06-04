@@ -7,6 +7,7 @@ git-annex (5.20140530) UNRELEASED; urgency=medium
     preferred content settings when enabling or combining with
     an already existing remote.
   * assistant: Make sanity checker tmp dir cleanup code more robust.
+  * unused: Avoid checking view branches for unused files.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 May 2014 20:10:59 -0400
 
