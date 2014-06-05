@@ -9,6 +9,8 @@ git-annex (5.20140530) UNRELEASED; urgency=medium
   * assistant: Make sanity checker tmp dir cleanup code more robust.
   * unused: Avoid checking view branches for unused files.
   * webapp: Include ssh port in mangled hostname.
+  * Windows: Fix bug introduced in last release that caused files
+    in the git-annex branch to have lines teminated with \r.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 May 2014 20:10:59 -0400
 

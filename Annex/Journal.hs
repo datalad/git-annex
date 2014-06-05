@@ -40,7 +40,12 @@ setJournalFile _jl file content = do
 	jfile <- fromRepo $ journalFile file
 	let tmpfile = tmp </> takeFileName jfile
 	liftIO $ do
-		writeFileAnyEncoding tmpfile content
+		withFile tmpfile WriteMode $ \h -> do
+			fileEncoding h
+#ifdef mingw32_HOST_OS
+			hSetNewlineMode h noNewlineTranslation
+#endif
+			hPutStr h content
 		moveFile tmpfile jfile
 
 {- Gets any journalled content for a file in the branch. -}
