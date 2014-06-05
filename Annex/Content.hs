@@ -124,7 +124,7 @@ inAnnexSafe key = inAnnex' (fromMaybe False) (Just False) go key
 			Nothing -> is_unlocked
 	check def Nothing = return def
 #else
-	checkindirect f = ifM (liftIO $ doesFileExist f)
+	checkindirect f = liftIO $ ifM (doesFileExist f)
 		( do
 			v <- lockShared f
 			case v of
