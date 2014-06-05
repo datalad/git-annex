@@ -312,7 +312,7 @@ setSshConfig sshdata config = do
 {- This hostname is specific to a given repository on the ssh host,
  - so it is based on the real hostname, the username, and the directory.
  -
- - The mangled hostname has the form "git-annex-realhostname-username_dir".
+ - The mangled hostname has the form "git-annex-realhostname-username-port_dir".
  - The only use of "-" is to separate the parts shown; this is necessary
  - to allow unMangleSshHostName to work. Any unusual characters in the
  - username or directory are url encoded, except using "." rather than "%"
@@ -324,6 +324,7 @@ mangleSshHostName sshdata = "git-annex-" ++ T.unpack (sshHostName sshdata)
   where
 	extra = intercalate "_" $ map T.unpack $ catMaybes
 		[ sshUserName sshdata
+		, Just $ T.pack $ show $ sshPort sshdata
 		, Just $ sshDirectory sshdata
 		]
 	safe c
