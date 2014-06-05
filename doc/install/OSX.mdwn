@@ -24,19 +24,11 @@ several more. Handy if you don't otherwise have git installed.
 
 * [autobuild of git-annex.dmg](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/git-annex.dmg) ([build logs](https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/))
 
-## using Brew
+## using Homebrew
 
 <pre>
 brew update
-brew install haskell-platform git ossp-uuid md5sha1sum coreutils gnutls libidn gsasl pkg-config libxml2
-brew link libxml2 --force
-cabal update
-mkdir $HOME/bin
-PATH=$HOME/bin:$PATH
-PATH=$HOME/.cabal/bin:$PATH
-cabal install c2hs --bindir=$HOME/bin
-cabal install gnuidn
-cabal install git-annex --bindir=$HOME/bin
+brew install git-annex
 </pre>
 
 ## using MacPorts
