@@ -3,6 +3,7 @@
 [[!table format=dsv header=yes data="""
 detailed instructions             | quick install
 [[OSX]]                           | [download git-annex.app](http://downloads.kitenet.net/git-annex/OSX/current/)
+&nbsp;&nbsp;[[Homebrew]]            | `brew install git-annex`
 [[Android]]                       | [download git-annex.apk](http://downloads.kitenet.net/git-annex/android/current/) **beta**
 [[Linux|linux_standalone]]        | [download prebuilt linux tarball](http://downloads.kitenet.net/git-annex/linux/current/)
 &nbsp;&nbsp;[[Debian]]            | `apt-get install git-annex`
