@@ -26,10 +26,7 @@ several more. Handy if you don't otherwise have git installed.
 
 ## using Homebrew
 
-<pre>
-brew update
-brew install git-annex
-</pre>
+git-annex is now [[available in Homebrew|Homebrew]]!
 
 ## using MacPorts
 
