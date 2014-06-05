@@ -138,3 +138,4 @@ I have a annex repo in external drive (a bare repo), usually synced with a macbo
     supported repository version: 5
     upgrade supported from repository versions: 2 3 4
                                                                   
+[[!tag confirmed]]
