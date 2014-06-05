@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 4"
+ date="2014-06-05T17:35:31Z"
+ content="""
+`git annex drop --force $file; git rm $file`
+
+Makes sense in some situations anyway..
+"""]]
