@@ -139,3 +139,5 @@ I have a annex repo in external drive (a bare repo), usually synced with a macbo
     upgrade supported from repository versions: 2 3 4
                                                                   
 [[!tag confirmed]]
+
+> [[fixed|done]] --[[Joey]]

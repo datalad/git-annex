@@ -11,6 +11,7 @@ git-annex (5.20140530) UNRELEASED; urgency=medium
   * webapp: Include ssh port in mangled hostname.
   * Windows: Fix bug introduced in last release that caused files
     in the git-annex branch to have lines teminated with \r.
+  * Windows: Fix retrieving of files from local bare git repositories.
 
  -- Joey Hess <joeyh@debian.org>  Thu, 29 May 2014 20:10:59 -0400
 

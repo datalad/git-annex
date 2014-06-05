@@ -124,7 +124,16 @@ inAnnexSafe key = inAnnex' (fromMaybe False) (Just False) go key
 			Nothing -> is_unlocked
 	check def Nothing = return def
 #else
-	checkindirect _ = return is_missing
+	checkindirect f = ifM (liftIO $ doesFileExist f)
+		( do
+			v <- lockShared f
+			case v of
+				Nothing -> return is_locked
+				Just lockhandle -> do
+					dropLock lockhandle
+					return is_unlocked
+		, return is_missing
+		)
 	{- In Windows, see if we can take a shared lock. If so, 
 	 - remove the lock file to clean up after ourselves. -}
 	checkdirect contentfile lockfile =
