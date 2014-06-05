@@ -1,0 +1,3 @@
+[Homebrew](http://brew.sh/) has a formula for git-annex.
+
+Homebrew users can simply run `brew install git-annex` to install git-annex.
