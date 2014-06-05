@@ -1,0 +1,13 @@
+Did work on Windows porting today. First, fixed a reversion in the last
+release, that broke the git-annex branch pretty badly on Windows, causing
+\r to be written to files on that branch that should never have DOS line
+endings. Second, fixed a long-standing bug that prevented getting a file
+from a local bare repository on Windows.
+
+Also refreshed all autobuilders to deal with the gnutls and openssl
+security holes-of-the-week. (git-annex uses gnutls only for XMPP,
+and does not use openssl itself, but a few programs bundled with it,
+like curl, do use openssl.)
+
+A nice peice of news: OSX Homebrew now contains git-annex, so it can be
+easily installed with `brew install git-annex`
