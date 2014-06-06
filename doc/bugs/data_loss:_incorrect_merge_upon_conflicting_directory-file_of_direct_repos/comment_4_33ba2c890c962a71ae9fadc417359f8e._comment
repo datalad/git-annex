@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawlWskoNgUB7r70OXglR-4iKI4bOuPJb-xg"
- nickname="Tim"
- subject="comment 4"
- date="2013-10-31T19:44:34Z"
- content="""
-Has this issue been fixed? I checked out the repository today and compiled with cabal, but I don't see a f.variant-A and a f.variant-B pop up after sync.
-"""]]

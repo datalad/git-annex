@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.2.6"
- subject="comment 1"
- date="2012-06-20T14:30:27Z"
- content="""
-Try running `git annex unused --debug`; this will tell us the git command that's outputing the data it cannot process. Then you can try running that git command and see what the problem filename is.
-"""]]

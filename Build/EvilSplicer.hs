@@ -536,7 +536,11 @@ mangleCode = flip_colon
 		void $ char ':'
 		if length s < 5
 			then unexpected "too short to be a namespace"
-			else hstoken
+			else do
+				t <- hstoken
+				case t of
+					(c:r) | isUpper c && "." `isInfixOf` r -> return t
+					_ -> unexpected "not a module qualified symbol"
 
 	hstoken :: Parser String
 	hstoken = do

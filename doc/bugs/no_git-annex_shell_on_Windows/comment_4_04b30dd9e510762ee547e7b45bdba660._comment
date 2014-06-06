@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawln3ckqKx0x_xDZMYwa9Q1bn4I06oWjkog"
+ nickname="Michael"
+ subject="comment 4"
+ date="2014-05-24T21:26:24Z"
+ content="""
+I tried copying git-annex.exe to git-annex-shell.exe, but it doesn't behave as git-annex-shell:
+
+git-annex-shell -c configlist
+git-annex-shell.exe: unknown command configlist
+
+"""]]

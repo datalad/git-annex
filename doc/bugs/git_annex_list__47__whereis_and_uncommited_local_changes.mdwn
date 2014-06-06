@@ -26,3 +26,5 @@ repositories. Is «git annex add» the intended way of doing so?
 ### What version of git-annex are you using? On what operating system?
 git-annex 5.20140421
 Linux 3.14.3
+
+[[!tag confirmed]]

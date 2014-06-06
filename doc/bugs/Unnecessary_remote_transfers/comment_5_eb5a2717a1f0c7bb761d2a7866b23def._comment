@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmNu4V5fvpLlBhaCUfXXOB0MI5NXwh8SkU"
- nickname="Adam"
- subject="Deleting repos from different perspectives"
- date="2013-11-02T23:33:48Z"
- content="""
-One other thing, sorry, but I think this is important:  From the perspective of the Full Backup repo, I set the Transfer repo to be deleted, thinking that would prevent the desktop's Client and Full Backup repos from syncing through the Transfer repo.  But then when I switch to the perspective of the desktop's Client repo, it is \"cleaning out\" the Transfer repo--but I wanted the Transfer repo to be used for syncing the two Client repos!  So I set it back to Transfer instead of Unwanted...but then when I switch back to the Full Backup perspective, the Transfer repo is no longer Unwanted.
-"""]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="fmarier"
- ip="192.81.133.89"
- subject="Re: No working ubuntu package"
- date="2014-02-26T02:06:24Z"
- content="""
-I have just uploaded version 5.20140221.1 of the git-annex package in my PPA. It should re-enable DAV support.
-"""]]

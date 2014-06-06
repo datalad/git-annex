@@ -31,13 +31,13 @@ import Utility.Yesod
  - This includes displaying the connectionNeeded nudge if appropariate.
  -}
 setupCloudRemote :: StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
-setupCloudRemote = setupRemote $ redirect . EditNewCloudRepositoryR
+setupCloudRemote = setupRemote $ redirect . EditNewCloudRepositoryR . Remote.uuid
 
-setupRemote :: (UUID -> Handler a) -> StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
+setupRemote :: (Remote -> Handler a) -> StandardGroup -> Maybe Cost -> Annex RemoteName -> Handler a
 setupRemote postsetup defaultgroup mcost getname = do
 	r <- liftAnnex $ addRemote getname
 	liftAnnex $ do
 		setStandardGroup (Remote.uuid r) defaultgroup
 		maybe noop (Config.setRemoteCost (Remote.repo r)) mcost
 	liftAssistant $ syncRemote r
-	postsetup $ Remote.uuid r
+	postsetup r

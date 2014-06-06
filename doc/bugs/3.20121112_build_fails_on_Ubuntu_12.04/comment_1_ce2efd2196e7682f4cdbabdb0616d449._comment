@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.252.11.120"
- subject="comment 1"
- date="2012-11-15T17:53:25Z"
- content="""
-I'm not quite sure what's going on here, but my guess is it's an out of date version of the haskell mtl library. Try installing a newer one with 'cabal install mtl'
-"""]]

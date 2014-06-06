@@ -189,6 +189,11 @@ repoList reposelector
 				Just rr	| remoteLocationIsUrl (parseRemoteLocation rr g) ->
 					val True EnableSshGCryptR
 				_ -> Nothing
+		Just "git" -> 
+			case getconfig "location" of
+				Just loc | remoteLocationIsSshUrl (parseRemoteLocation loc g) ->
+					val True EnableSshGitRemoteR
+				_ -> Nothing
 		_ -> Nothing
 	  where
 	  	getconfig k = M.lookup k =<< M.lookup u m

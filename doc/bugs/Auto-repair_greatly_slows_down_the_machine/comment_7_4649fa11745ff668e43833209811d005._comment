@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.3"
+ subject="comment 7"
+ date="2014-05-21T18:31:54Z"
+ content="""
+It seems to me that if you don't want to repair your repository, you can just go into the webapp and disable all scheduled consistency check jobs.
+
+If someone with this problem would like to run \"git annex repair\" at the console, and paste the output, perhaps I could then see why it thinks it needs to repair the repository. So far, I have nothing to go on, and no proof that this is a bug at all, and not just people with actually corrupted repositories that really do need to be repaired.
+"""]]

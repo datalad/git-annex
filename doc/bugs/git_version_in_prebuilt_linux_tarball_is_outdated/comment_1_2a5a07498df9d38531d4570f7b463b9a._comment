@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.152.108.220"
- subject="comment 1"
- date="2013-09-25T18:18:49Z"
- content="""
-The tarballs are built on Debian stable in order to have an old enough libc to work most places. So I am limited to what is available in stable and backports. Once there is a backport available of git, I will use it.
-"""]]

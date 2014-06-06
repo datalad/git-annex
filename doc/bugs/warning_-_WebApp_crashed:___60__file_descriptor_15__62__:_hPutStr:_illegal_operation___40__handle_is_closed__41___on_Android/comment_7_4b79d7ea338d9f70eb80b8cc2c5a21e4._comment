@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 7"
- date="2013-05-30T19:48:14Z"
- content="""
-Actually, the dupped stdout is open and working before `am` is run, so `am` must somehow be messing with it. Can't be a dupping problem. Need to stop using this `am` nonsense clearly.
-"""]]

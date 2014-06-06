@@ -30,3 +30,7 @@ Description:	Ubuntu 12.04.2 LTS
 Release:	12.04
 Codename:	precise
 """]]
+
+[[!meta title="git-annex does not guarantee modified files are available when merging with a new version of a repository"]]
+
+[[!tag confirmed]]

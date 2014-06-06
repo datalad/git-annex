@@ -1,8 +1,0 @@
-When I attempt to setup a [box.com special remote](http://git-annex.branchable.com/tips/using_box.com_as_a_special_remote/) I get the following error:
-
-    git-annex: Unknown remote type webdav
-
-I'm using the Linux prebuilt tarball. Does it not include webdav support?
-
-> The amd64 standalone tarball was indeed built without it for the last
-> release. Fixed that. [[done]] --[[Joey]]

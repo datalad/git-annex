@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 6"
- date="2013-04-13T22:40:02Z"
- content="""
-No, it is not supposed to do that. Can you take a look at the `.ssh/authorized_keys` file on the remote and see what key it has configured to run git-annex-shell? This should not be your main ssh key..
-"""]]

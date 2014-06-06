@@ -59,13 +59,14 @@ start' :: Bool -> Maybe HostName -> CommandStart
 start' allowauto listenhost = do
 	liftIO ensureInstalled
 	ifM isInitialized 
-		( go
-		, auto
+		( maybe notinitialized (go <=< needsUpgrade) =<< getVersion
+		, if allowauto
+			then liftIO $ startNoRepo []
+			else notinitialized
 		)
 	stop
   where
-	go = do
-		cannotrun <- needsUpgrade . fromMaybe (error "annex.version is not set.. seems this repository has not been initialized by git-annex") =<< getVersion
+	go cannotrun = do
 		browser <- fromRepo webBrowser
 		f <- liftIO . absPath =<< fromRepo gitAnnexHtmlShim
 		listenhost' <- if isJust listenhost
@@ -87,15 +88,14 @@ start' allowauto listenhost = do
 							then maybe noop (`hPutStrLn` url) origout
 							else openBrowser browser htmlshim url origout origerr
 			)
-	auto
-		| allowauto = liftIO $ startNoRepo []
-		| otherwise = do
-			d <- liftIO getCurrentDirectory
-			error $ "no git repository in " ++ d
 	checkpid = do
 		pidfile <- fromRepo gitAnnexPidFile
 		liftIO $ isJust <$> checkDaemon pidfile
 	checkshim f = liftIO $ doesFileExist f
+	notinitialized = do
+		g <- Annex.gitRepo
+		liftIO $ cannotStartIn (Git.repoLocation g) "repository has not been initialized by git-annex"
+		liftIO $ firstRun listenhost
 
 {- When run without a repo, start the first available listed repository in
  - the autostart file. If none, it's our first time being run! -}
@@ -116,13 +116,16 @@ startNoRepo _ = do
 			Annex.new =<< Git.CurrentRepo.get
 		case v of
 			Left e -> do
-				warningIO $ "unable to start webapp in " ++ d ++ ": " ++ show e
+				cannotStartIn d (show e)
 				go listenhost ds
 			Right state -> void $ Annex.eval state $ do
 				whenM (fromRepo Git.repoIsLocalBare) $
 					error $ d ++ " is a bare git repository, cannot run the webapp in it"
 				callCommandAction $
 					start' False listenhost
+
+cannotStartIn :: FilePath -> String -> IO ()
+cannotStartIn d reason = warningIO $ "unable to start webapp in repository " ++ d ++ ": " ++ reason
 
 {- Run the webapp without a repository, which prompts the user, makes one,
  - changes to it, starts the regular assistant, and redirects the

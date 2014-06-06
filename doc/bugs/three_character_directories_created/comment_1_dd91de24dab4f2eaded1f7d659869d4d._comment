@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.152.108.27"
- subject="comment 1"
- date="2012-11-10T00:36:49Z"
- content="""
-The three character directories, as well as the uuid.log file are supposed to stay in the git-annex branch. Perhaps you have somehow merged that branch into your master branch? I recommend you look at the history of your git repository to see how it happened. It seems very unlikely that git-annex did this.
-"""]]

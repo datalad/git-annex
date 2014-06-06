@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.4.90"
- subject="comment 3"
- date="2013-07-17T19:12:49Z"
- content="""
-I don't see how git annex fsck could resolve the corruption, which appeared to be of data from the git repository, not the git-annex content store. Did you try `git fsck`?
-"""]]

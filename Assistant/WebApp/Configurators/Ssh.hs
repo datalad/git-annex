@@ -91,14 +91,16 @@ sshInputAForm :: Field Handler Text -> SshInput -> AForm Handler SshInput
 #else
 sshInputAForm :: Field WebApp WebApp Text -> SshInput -> AForm WebApp WebApp SshInput
 #endif
-sshInputAForm hostnamefield def = SshInput
-	<$> aopt check_hostname (bfs "Host name") (Just $ inputHostname def)
-	<*> aopt check_username (bfs "User name") (Just $ inputUsername def)
-	<*> areq (selectFieldList authmethods) (bfs "Authenticate with") (Just $ inputAuthMethod def)
-	<*> aopt passwordField (bfs "Password") Nothing
-	<*> aopt textField (bfs "Directory") (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
-	<*> areq intField (bfs "Port") (Just $ inputPort def)
+sshInputAForm hostnamefield def = normalize <$> gen
   where
+	gen = SshInput
+		<$> aopt check_hostname (bfs "Host name") (Just $ inputHostname def)
+		<*> aopt check_username (bfs "User name") (Just $ inputUsername def)
+		<*> areq (selectFieldList authmethods) (bfs "Authenticate with") (Just $ inputAuthMethod def)
+		<*> aopt passwordField (bfs "Password") Nothing
+		<*> aopt textField (bfs "Directory") (Just $ Just $ fromMaybe (T.pack gitAnnexAssistantDefaultDir) $ inputDirectory def)
+		<*> areq intField (bfs "Port") (Just $ inputPort def)
+	
 	authmethods :: [(Text, AuthMethod)]
 	authmethods =
 		[ ("password", Password)
@@ -128,6 +130,12 @@ sshInputAForm hostnamefield def = SshInput
 	-- getAddrInfo currently broken on Android
 	check_hostname = hostnamefield -- unchecked
 #endif
+
+	-- The directory is implicitly in home, so remove any leading ~/
+	normalize i = i { inputDirectory = normalizedir <$> inputDirectory i }
+	normalizedir d
+		| "~/" `T.isPrefixOf` d = T.drop 2 d
+		| otherwise = d
 
 data ServerStatus
 	= UntestedServer
@@ -166,7 +174,7 @@ sshSetupModal sshdata = $(widgetFile "configurators/ssh/setupmodal")
 getEnableRsyncR :: UUID -> Handler Html
 getEnableRsyncR = postEnableRsyncR
 postEnableRsyncR :: UUID -> Handler Html
-postEnableRsyncR = enableSpecialSshRemote getsshinput enableRsyncNet enablersync
+postEnableRsyncR = enableSshRemote getsshinput enableRsyncNet enablersync
   where
 	enablersync sshdata u = redirect $ ConfirmSshR
 		(sshdata { sshCapabilities = [RsyncCapable] }) u
@@ -178,7 +186,7 @@ getEnableSshGCryptR :: UUID -> Handler Html
 getEnableSshGCryptR = postEnableSshGCryptR
 postEnableSshGCryptR :: UUID -> Handler Html
 postEnableSshGCryptR u = whenGcryptInstalled $
-	enableSpecialSshRemote getsshinput enableRsyncNetGCrypt enablegcrypt u
+	enableSshRemote getsshinput enableRsyncNetGCrypt enablegcrypt u
   where
   	enablegcrypt sshdata _ = prepSsh False sshdata $ \sshdata' ->
 		sshConfigurator $
@@ -186,13 +194,21 @@ postEnableSshGCryptR u = whenGcryptInstalled $
 				error "Expected to find an encrypted git repository, but did not."
 	getsshinput = parseSshUrl <=< M.lookup "gitrepo"
 
-{- To enable a special remote that uses ssh as its transport, 
- - parse a config key to get its url, and display a form whose
- - only real purpose is to check if ssh public keys need to be
- - set up.
+getEnableSshGitRemoteR :: UUID -> Handler Html
+getEnableSshGitRemoteR = postEnableSshGitRemoteR
+postEnableSshGitRemoteR :: UUID -> Handler Html
+postEnableSshGitRemoteR = enableSshRemote getsshinput enableRsyncNet enablesshgitremote
+  where
+	enablesshgitremote sshdata u = redirect $ ConfirmSshR sshdata u
+
+	getsshinput = parseSshUrl <=< M.lookup "location"
+
+{- To enable a remote that uses ssh as its transport, 
+ - parse a config key to get its url, and display a form
+ - to prompt for its password.
  -}
-enableSpecialSshRemote :: (RemoteConfig -> Maybe SshData) -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> UUID -> Handler Html) -> UUID -> Handler Html
-enableSpecialSshRemote getsshinput rsyncnetsetup genericsetup u = do
+enableSshRemote :: (RemoteConfig -> Maybe SshData) -> (SshInput -> RemoteName -> Handler Html) -> (SshData -> UUID -> Handler Html) -> UUID -> Handler Html
+enableSshRemote getsshinput rsyncnetsetup genericsetup u = do
 	m <- fromMaybe M.empty . M.lookup u <$> liftAnnex readRemoteLog
 	case (mkSshInput . unmangle <$> getsshinput m, M.lookup "name" m) of
 		(Just sshinput, Just reponame) -> sshConfigurator $ do
@@ -509,21 +525,32 @@ prepSsh' needsinit origsshdata sshdata keypair a = sshSetup (mkSshInput origsshd
 
 makeSshRepo :: SshData -> Handler Html
 makeSshRepo sshdata
-	| onlyCapability sshdata RsyncCapable = setupCloudRemote TransferGroup Nothing go
-	| otherwise = makeSshRepoConnection go
+	| onlyCapability sshdata RsyncCapable = setupCloudRemote TransferGroup Nothing mk
+	| otherwise = makeSshRepoConnection mk setup
   where
-	go = makeSshRemote sshdata
+	mk = makeSshRemote sshdata
+	-- Record the location of the ssh remote in the remote log, so it
+	-- can easily be enabled elsewhere using the webapp.
+	setup r = do
+		m <- readRemoteLog
+		let c = fromMaybe M.empty (M.lookup (Remote.uuid r) m)
+		let c' = M.insert "location" (genSshUrl sshdata) $
+			M.insert "type" "git" $
+			M.insert "name" (fromMaybe (Remote.name r) (M.lookup "name" c)) c
+		configSet (Remote.uuid r) c'
 
-makeSshRepoConnection :: Annex RemoteName -> Handler Html
-makeSshRepoConnection a = setupRemote postsetup TransferGroup Nothing a
+makeSshRepoConnection :: Annex RemoteName -> (Remote -> Annex ()) -> Handler Html
+makeSshRepoConnection mk setup = setupRemote postsetup TransferGroup Nothing mk
   where
-	postsetup u = do
+	postsetup r = do
 		liftAssistant $ sendRemoteControl RELOAD
-		redirect $ EditNewRepositoryR u
+		liftAnnex $ setup r
+		redirect $ EditNewRepositoryR (Remote.uuid r)
 
 makeGCryptRepo :: KeyId -> SshData -> Handler Html
-makeGCryptRepo keyid sshdata = makeSshRepoConnection $ 
-	makeGCryptRemote (sshRepoName sshdata) (genSshUrl sshdata) keyid
+makeGCryptRepo keyid sshdata = makeSshRepoConnection mk (const noop)
+  where
+	mk = makeGCryptRemote (sshRepoName sshdata) (genSshUrl sshdata) keyid
 
 getAddRsyncNetR :: Handler Html
 getAddRsyncNetR = postAddRsyncNetR

@@ -1,7 +1,0 @@
-When I attempt to add a Box.com special remote to my annex I get the following error:
-
-    git-annex: HandshakeFailed (Error_Protocol ("certificate rejected: certificate is not allowed to sign another certificate",True,CertificateUnknown))
-
-Running git-annex version: 3.20130207
-
-> Got that bug fixed in Debian and all builds updated. [[done]] --[[Joey]]

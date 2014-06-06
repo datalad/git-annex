@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.199"
- subject="comment 1"
- date="2014-01-29T17:49:18Z"
- content="""
-The preferred content setting for manual mode will try to clear out files that are in archive directories (once they reach an archive repository), but not other locations. I've re-tested it, and it still works that way. Perhaps your files are located inside archive directories; you don't say. If not, you will need to enable debug mode and show debug output.
-"""]]

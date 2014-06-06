@@ -186,7 +186,7 @@ no-th-webapp-stage1: Build/EvilSplicer
 # Some additional dependencies needed by the expanded splices.
 	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, /' tmp/no-th-tree/git-annex.cabal
 # Avoid warnings due to sometimes unused imports added for the splices.
-	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/no-th-tree/git-annex.cabal
+	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports -XMagicHash /i' tmp/no-th-tree/git-annex.cabal
 
 # Run on the arm system, after stage1
 no-th-webapp-stage2: 
@@ -215,7 +215,7 @@ android: Build/EvilSplicer
 # Some additional dependencies needed by the expanded splices.
 	sed -i 's/^  Build-Depends: /  Build-Depends: yesod-routes, yesod-core, shakespeare-css, shakespeare-js, shakespeare, blaze-markup, file-embed, wai-app-static, /' tmp/androidtree/git-annex.cabal
 # Avoid warnings due to sometimes unused imports added for the splices.
-	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports /i' tmp/androidtree/git-annex.cabal
+	sed -i 's/GHC-Options: \(.*\)-Wall/GHC-Options: \1-Wall -fno-warn-unused-imports -XMagicHash /i' tmp/androidtree/git-annex.cabal
 # Cabal cannot cross compile with custom build type, so workaround.
 	sed -i 's/Build-type: Custom/Build-type: Simple/' tmp/androidtree/git-annex.cabal
 # Build just once, but link twice, for 2 different versions of Android.

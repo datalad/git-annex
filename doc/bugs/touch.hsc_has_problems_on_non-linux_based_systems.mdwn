@@ -17,3 +17,4 @@ make: *** [Touch.hs] Error 1
 I dug around the OSX documentation and fcntl.h header file and it seems that UTIME_OMIT, UTIME_NOW, AT_FDCWD and AT_SYMLINK_NOFOLLOW aren't defined (at least on OSX). I suspect the BSD's in general will have problems compiling git-annex.
 
 [[!meta title="annexed symlink mtime matching code is disabled on non-linux systems; needs testing"]]
+[[!tag confirmed]]

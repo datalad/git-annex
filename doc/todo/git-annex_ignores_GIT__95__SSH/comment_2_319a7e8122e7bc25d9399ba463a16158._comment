@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="divB"
+ ip="171.67.172.81"
+ subject="comment 2"
+ date="2014-05-17T23:58:19Z"
+ content="""
+Hi Joey,
+
+Thanks for your answer. In my opinion, this would be an important requirement for various reasons:
+
+1.) It is very confusing and results in unpredictable errors. I spent days in finding out what caused all the weird stuff that happened. Even if it is not supported, an error message or at least warning should be issued.
+
+2.) At least in Windows, plink.exe is the quasi-standard SSH client. All SW I am aware of supports at least plink.exe as alternative to openssh (SVN, git, unison, ...). Even within cygwin I often use plink for X11 forwarding etc. If features like SSH caching do not work with that it's totally fine.
+
+3.) Even for a unix environment, it is critical to be able to use a wrapper (or at least to configure SSH parameters). In my opinion, this should and must work consistently (git, git-annex and rsync). For example what if I have a dedicated public key for a repository and to not want to use %HOME%\.ssh\id_rsa ?
+For unison, I use a wrapper my_ssh.cmd which wraps specialized parameters (in particular SSH key, port) with plink.exe to ssh.exe's interface. Similarly, I might be interested in disabling agent functionality and use GSSAPI etc. etc.
+
+A little bit OT now: I already wondered if and how inefficient git-annex is in this regard. For example, if I sync content, it seems that ssh opens a new connection for each file! (at least each file results in a signing request in my agent). This happens even if I use ssh.exe. Is there anything wrong?
+
+Thanks
+
+"""]]

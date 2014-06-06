@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 20"
- date="2013-04-14T20:59:26Z"
- content="""
-Ok, I don't know how gnome-keyring communicates with ssh, but that's good enough evidence for me: It was certainly gnome-keyring that got us into this mess!
-"""]]

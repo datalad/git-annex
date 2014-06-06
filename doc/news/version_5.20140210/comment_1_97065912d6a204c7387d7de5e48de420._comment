@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="rasmus"
- ip="94.34.129.197"
- subject="Bug?"
- date="2014-02-11T00:36:45Z"
- content="""
-In this build git annex gets confused with my username of rsync backends.  My username is annex@server but it keeps asking about rasmus@server (commandline and web interface).   Should I open a bug report about this?  Or is this a new feature that I haven't configured properly?
-"""]]

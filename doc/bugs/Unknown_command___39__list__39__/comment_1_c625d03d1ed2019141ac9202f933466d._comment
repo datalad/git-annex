@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://cstork.org/"
- nickname="Chris Stork"
- subject="News page stopped listing latest releases?"
- date="2013-09-30T16:08:18Z"
- content="""
-Ah, cabal tells me that 4.20130927 is out now.  I missed that because I thought that the [News](http://git-annex.branchable.com/news/) page is 'authoritative' :-)  and it's still advertising 4.20130909.  Sorry about that.
-"""]]

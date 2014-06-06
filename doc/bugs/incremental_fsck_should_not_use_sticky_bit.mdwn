@@ -13,3 +13,5 @@ Create a shared repository (core.sharedrepository = group), let a different user
 ### What version of git-annex are you using? On what operating system?
 
 Debian's 4.20131106~bpo70+1
+
+[[!tag confirmed]]

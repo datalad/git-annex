@@ -1,8 +1,0 @@
-When copying data to my remote, I regularly see speeds in excess of 100 MB/s on my home DSL line.
-
-    2073939 100%  176.96MB/s    0:00:00 (xfer#1, to-check=0/1)
-
-This is definitely not correct.
-
-> Closing, as rsync does this to show you when it's making your life
-> faster than it would be w/o rsync. [[done]] --[[Joey]] 

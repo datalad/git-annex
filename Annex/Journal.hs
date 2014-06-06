@@ -13,8 +13,6 @@
 
 module Annex.Journal where
 
-import System.IO.Binary
-
 import Common.Annex
 import Annex.Exception
 import qualified Git
@@ -42,7 +40,7 @@ setJournalFile _jl file content = do
 	jfile <- fromRepo $ journalFile file
 	let tmpfile = tmp </> takeFileName jfile
 	liftIO $ do
-		writeBinaryFile tmpfile content
+		writeFileAnyEncoding tmpfile content
 		moveFile tmpfile jfile
 
 {- Gets any journalled content for a file in the branch. -}
@@ -54,7 +52,7 @@ getJournalFile _jl = getJournalFileStale
  - changes. -}
 getJournalFileStale :: FilePath -> Annex (Maybe String)
 getJournalFileStale file = inRepo $ \g -> catchMaybeIO $
-	readFileStrict $ journalFile file g
+	readFileStrictAnyEncoding $ journalFile file g
 
 {- List of files that have updated content in the journal. -}
 getJournalledFiles :: JournalLocked -> Annex [FilePath]

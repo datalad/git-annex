@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmu416zAYgYzbXVZAe30MiXoOWO4z6nGX8"
- nickname="Johannes"
- subject="comment 2"
- date="2013-12-06T13:18:45Z"
- content="""
-I believe this has been caused by the direct mode guart. I already had core.bare=true but also annex.direct=true which is actually incorrect when you really wanna have bare repository.
-"""]]

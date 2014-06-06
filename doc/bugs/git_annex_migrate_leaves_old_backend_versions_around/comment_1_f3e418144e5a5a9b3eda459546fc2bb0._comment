@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://nicolas-schodet.myopenid.com/"
- ip="2a01:e35:8ae6:f130:1e4b:d6ff:fe78:1ddb"
- subject="Hardlink on remote repository?"
- date="2013-08-15T06:58:16Z"
- content="""
-Does the hardlink magic also work on the remote repository? If I understand correctly, the remote does not know that the new hash is the same file (and also, file needs to be transferred again) unless the migration is done on all remote before synchronizing. Is it right?
-"""]]

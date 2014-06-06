@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.0.63"
- subject="comment 9"
- date="2013-08-26T20:16:05Z"
- content="""
-Strace doesn't show it doing anything. I suppose I should try building the terminal without the several patches I added to it to support git-annex to see if I somehow made it use all this cpu..
-"""]]

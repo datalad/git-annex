@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnZEanlyzay_QlEAL0CWpyZcRTyN7vay8U"
- nickname="Carlo"
- subject="comment 3"
- date="2013-11-28T15:28:36Z"
- content="""
-I made that previous suggestion... I'm using sshelper right now, outstanding server. He seems to have already worked through all kinds of android specific details for running an SSH server. Of course, you don't get all the git goodness. I wonder how hard it would be to get runshell working when logging in through SSHelper, or provide an add an SSHelper style configured OpenSSH binary for the git annex shell.
-"""]]

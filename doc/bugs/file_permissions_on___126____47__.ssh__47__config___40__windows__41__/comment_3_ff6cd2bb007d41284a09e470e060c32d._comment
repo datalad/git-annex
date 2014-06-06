@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawm5WyknJirJJridJjiPNgrlYxGG9xrZBvA"
- nickname="Daniel"
- subject="comment 3"
- date="2014-01-01T23:52:32Z"
- content="""
-No, ~/.ssh/config is fresh. I'm running git annex webapp from the git bash prompt, which is some unholy combination of msys and cygwin.
-"""]]

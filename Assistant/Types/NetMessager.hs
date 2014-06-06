@@ -12,13 +12,13 @@ import Assistant.Pairing
 import Git.Types
 
 import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 import qualified Data.Set as S
 import qualified Data.Map as M
 import qualified Data.DList as D
 import Control.Concurrent.STM
 import Control.Concurrent.MSampleVar
 import Data.ByteString (ByteString)
-import qualified Data.ByteString.Char8 as B8
 import Data.Text (Text)
 
 {- Messages that can be sent out of band by a network messager. -}
@@ -85,7 +85,7 @@ logNetMessage (Pushing c stage) = show $ Pushing (logClientID c) $
 		SendPackOutput n _ -> SendPackOutput n elided
 		s -> s
   where
-  	elided = B8.pack "<elided>"
+  	elided = T.encodeUtf8 $ T.pack "<elided>"
 logNetMessage (PairingNotification stage c uuid) =
 	show $ PairingNotification stage (logClientID c) uuid
 logNetMessage m = show m

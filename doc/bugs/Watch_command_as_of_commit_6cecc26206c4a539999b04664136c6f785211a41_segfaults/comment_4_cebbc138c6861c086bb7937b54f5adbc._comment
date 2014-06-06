@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="jtang"
- ip="79.97.135.214"
- subject="comment 4"
- date="2012-07-26T17:50:42Z"
- content="""
-It just occurred to me that bisecting won't help much, as the watch command was disabled accidentally in earlier commits and doing a script for bisecting is going to be as much work as just stepping through and debugging the issue with a debugger (i might need to fire up gdb on a mac (this wont be fun))
-"""]]

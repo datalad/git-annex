@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="24.159.78.125"
+ subject="comment 3"
+ date="2014-05-23T14:57:43Z"
+ content="""
+Yesterday, I made the webapp register ssh remotes it creates.  
+They then show up in the webapp when run in a repository where that ssh
+remote is not enabled.
+ 
+You can also manually register a ssh remote. First set up the git remote
+as usual. Then run `git annex initremote type=git name=foo
+location=$url`.
+
+So, this bugs titular issue is fixed, but the issue of it displaying \"unknown\" rather than the remote description is not yet fixed. Will retitle this bug appropriately, and leave open until that gets fixed.
+"""]]

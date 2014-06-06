@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkx5V3MTbzCXS3J7Mn9FEq8M9bPPYMkAHY"
- nickname="Pedro"
- subject="comment 2"
- date="2013-05-31T21:48:43Z"
- content="""
-I'm doing everything by hand. I just do \"git init\" and \"git annex init\" in an empty directory, and then do \"git remote add ...\" to add the ssh remotes to each other. After that I launch \"git annex assistant\".
-"""]]

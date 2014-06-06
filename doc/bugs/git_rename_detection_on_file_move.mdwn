@@ -11,3 +11,4 @@ is committed. This would mean that a commit would result in new staged
 changes for another commit, which is perhaps startling behavior.
 
 The other way to fix it is to stop using symlinks, see [[todo/smudge]].
+[[!tag confirmed]]

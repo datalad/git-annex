@@ -20,6 +20,24 @@ fi
 
 cabalopts="$@"
 
+setupcabal () {
+	cabal update
+
+	# Workaround for http://www.reddit.com/r/haskell/comments/26045a/if_youre_finding_cabal_cant_build_your_project/
+	# should be able to remove this eventually.
+	cabal install transformers-compat -fthree
+	cabal install mtl-2.1.3.1
+
+	# Some packages fail to install in a non unicode locale.
+	LANG=en_US.UTF-8
+	export LANG
+
+	# The android build chroot has recent versions of alex and happy
+	# installed here.
+	PATH=$HOME/bin:$PATH
+	export PATH
+}
+
 cabalinstall () {
 	echo cabal install "$@" "$cabalopts"
 	eval cabal install "$@" "$cabalopts"
@@ -106,8 +124,6 @@ install_pkgs () {
 	patched uuid
 	patched dns
 	patched gnutls
-	patched libxml-sax
-	patched network-protocol-xmpp
 	patched unbounded-delays
 
 	cd ..
@@ -119,7 +135,7 @@ echo
 echo
 echo native build
 echo
-cabal update
+setupcabal
 installgitannexdeps
 
 echo 
@@ -127,5 +143,5 @@ echo
 echo cross build
 echo
 PATH=$HOME/.ghc/$(cat abiversion)/bin:$HOME/.ghc/$(cat abiversion)/arm-linux-androideabi/bin:$PATH
-cabal update
+setupcabal
 install_pkgs

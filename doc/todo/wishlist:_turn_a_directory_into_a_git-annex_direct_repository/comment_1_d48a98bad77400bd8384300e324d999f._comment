@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://id.koumbit.net/anarcat"
- ip="72.0.72.144"
- subject="comment 1"
- date="2014-04-25T13:28:18Z"
- content="""
-take a look at [[tips/migrating_two_seperate_disconnected_directories_to_git_annex]]. it's not a single command, granted, but it should be simple enough for your use case...
-"""]]

@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 4"
+ date="2014-05-19T16:56:15Z"
+ content="""
+erics, that all makes a lot of sense, except I don't know if there's actually a use case for a git-annex that behaves that way. It doesn't seem to solve the original use case.
+
+I'd be inclinded to instead use the new metadata support. A file could have a tag that indicates it's not strongly wanted, and if git-annex get doesn't have enough space it could seek out and drop such files.
+"""]]

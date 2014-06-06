@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.2.134"
- subject="comment 1"
- date="2013-09-13T15:31:35Z"
- content="""
-Can you add set -x near the top of the server's runshell script and run this again also with debugging enabled in the local assistant, and post the log, please.
-"""]]

@@ -18,7 +18,8 @@ module Utility.Hash (
 ) where
 
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Char8 as C8
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as T
 
 #ifndef WITH_CRYPTOHASH
 import Data.Digest.Pure.SHA
@@ -66,4 +67,4 @@ prop_hashes_stable = all (\(hasher, result) -> hasher foo == result)
 #endif
 	]
   where
-	foo = L.fromChunks [C8.pack "foo"]
+	foo = L.fromStrict $ T.encodeUtf8 $ T.pack "foo"

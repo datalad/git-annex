@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawlXlJDAF_lXaxbqeBdH4EGj6jsBjjrDODM"
- nickname="Antoine"
- subject="comment 4"
- date="2012-11-21T07:33:43Z"
- content="""
-I have the same problem (sorry, duplicate bug entry) on the same platform. The ghc version is 7.4.1 and is the one distributed by apt repos.
-"""]]

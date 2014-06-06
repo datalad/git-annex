@@ -1,6 +1,6 @@
-From 8cc398092892377d5fdbda990a2e860155422afa Mon Sep 17 00:00:00 2001
-From: foo <foo@bar>
-Date: Sun, 22 Sep 2013 07:29:39 +0000
+From 685d4d9fbb929ed1356f8346f573e187746aee4b Mon Sep 17 00:00:00 2001
+From: Joey Hess <joey@kitenet.net>
+Date: Thu, 22 May 2014 16:29:20 -0400
 Subject: [PATCH] deal with TH
 
 Export modules referenced by it.
@@ -55,7 +55,7 @@ index daa6e50..9873d4e 100644
 -import WaiAppStatic.Storage.Embedded.TH
 +--import WaiAppStatic.Storage.Embedded.TH
 diff --git a/wai-app-static.cabal b/wai-app-static.cabal
-index 5d81150..8f8c144 100644
+index 925d350..e5d11a6 100644
 --- a/wai-app-static.cabal
 +++ b/wai-app-static.cabal
 @@ -33,7 +33,6 @@ library
@@ -66,10 +66,10 @@ index 5d81150..8f8c144 100644
                     , text                      >= 0.7
                     , blaze-builder             >= 0.2.1.4
                     , base64-bytestring         >= 0.1
-@@ -57,9 +56,8 @@ library
-                      WaiAppStatic.Storage.Embedded
+@@ -60,9 +59,8 @@ library
                       WaiAppStatic.Listing
                       WaiAppStatic.Types
+                      WaiAppStatic.CmdLine
 -    other-modules:   Util
                       WaiAppStatic.Storage.Embedded.Runtime
 -                     WaiAppStatic.Storage.Embedded.TH
@@ -78,5 +78,5 @@ index 5d81150..8f8c144 100644
      extensions:     CPP
  
 -- 
-1.8.5.1
+2.0.0.rc2
 

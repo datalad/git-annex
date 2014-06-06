@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://me.tinco.nl/"
- nickname="Tinco"
- subject="comment 10"
- date="2013-05-19T20:45:53Z"
- content="""
-Alright! So first the issue was that gpg was asking for a passphrase. I fixed that by installing gpgtools for mac, but that one doesn't have a gpg executable, instead it has gpg2. I hadn't noticed that, so that's why it was saying 'resource vanished' without a proper error message, it simply couldn't find the gpg executable. I did ln -s /usr/local/bin/gpg2 /usr/local/bin/gpg, and now it's happily copying files. Thanks for helping me find out what was wrong!
-"""]]

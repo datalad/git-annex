@@ -130,3 +130,5 @@ build flags: Assistant Webapp Pairing S3 WebDAV Inotify DBus XMPP Feeds Quvi TDF
 key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SHA256 SHA1 SHA512 SHA224 SHA384 WORM URL
 remote types: git gcrypt S3 bup directory rsync web webdav glacier hook
 """]]
+
+> [[moreinfo]] needed. --[[Joey]]

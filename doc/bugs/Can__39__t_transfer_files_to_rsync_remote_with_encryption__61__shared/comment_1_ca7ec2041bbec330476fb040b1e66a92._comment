@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://schnouki.net/"
- nickname="Schnouki"
- subject="comment 1"
- date="2012-11-27T17:39:38Z"
- content="""
-Downgraded to 3.20121112 and the transfer went fine. In both cases I used the [prebuilt tarball](http://downloads.kitenet.net/git-annex/linux/). So it must be a regression in the current release.
-"""]]

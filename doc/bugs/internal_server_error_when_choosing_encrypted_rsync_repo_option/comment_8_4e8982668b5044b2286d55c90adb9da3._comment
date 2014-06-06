@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.153.254.222"
- subject="comment 8"
- date="2013-07-08T18:03:54Z"
- content="""
-Actually MacGPG caused problems on mountian lion and I have switched to gpg 1.4.13 from brew.
-"""]]

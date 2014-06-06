@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkvSZ1AFJdY_1FeutZr_KWeqtzjZta1PNE"
- nickname="Thedward"
- subject="comment 4"
- date="2013-01-18T16:30:59Z"
- content="""
-I couldn't get calibre to work with sharebox either, but I can confirm it works fine when I use git-annex in direct mode.
-"""]]

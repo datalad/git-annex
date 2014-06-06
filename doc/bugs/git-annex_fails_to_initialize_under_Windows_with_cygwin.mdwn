@@ -36,3 +36,5 @@ build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feed
 key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
 remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier hook external
 
+> [[fixed|done]]; documented the needed version of git on the windows
+> install page. --[[Joey]]

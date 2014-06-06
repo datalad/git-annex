@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 3"
- date="2013-03-19T18:17:23Z"
- content="""
-`~/Applications/git-annex.app/Contents/MacOS/runshell` is a little program that sets up your shell to use the programs, and crucially, the libraries, included in the dmg. Running binaries from the app directly and not through runshell is not likely to work. I have updated [[the_OSX_page|/install/OSX]] with information about runshell.
-"""]]

@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 8"
+ date="2014-05-28T00:04:58Z"
+ content="""
+Almost certinaly the EvilSplicer; it contains a hack to remove package-version qualifications from symbols. (s/package-version:symbol/symbol/)
+"""]]

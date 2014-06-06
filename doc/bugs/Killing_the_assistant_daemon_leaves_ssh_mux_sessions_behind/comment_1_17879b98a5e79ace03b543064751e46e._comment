@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 1"
- date="2013-05-29T15:36:48Z"
- content="""
-There is a --stop option that can be used to stop the assistant. It will clean up ssh sessions. git-annex also automatically cleans up stale ssh sessions whenever it starts a new one.
-"""]]

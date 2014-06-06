@@ -12,7 +12,8 @@ import Network.AWS.S3Object hiding (getStorageClass)
 import Network.AWS.S3Bucket hiding (size)
 import Network.AWS.AWSResult
 import qualified Data.Text as T
-import qualified Data.ByteString.Lazy.Char8 as L
+import qualified Data.Text.Encoding as T
+import qualified Data.ByteString.Lazy as L
 import qualified Data.Map as M
 import Data.Char
 import Network.Socket (HostName)
@@ -286,13 +287,13 @@ writeUUIDFile c u = do
 	go conn =<< liftIO (tryNonAsync $ getObject conn $ mkobject L.empty)
   where
 	go _conn (Right (Right o)) = unless (obj_data o == uuidb) $
-		error $ "This bucket is already in use by a different S3 special remote, with UUID: " ++ L.unpack (obj_data o)
+		error $ "This bucket is already in use by a different S3 special remote, with UUID: " ++ show (obj_data o)
 	go conn _ = do
 		let object = setStorageClass (getStorageClass c) (mkobject uuidb)
 		either s3Error return =<< liftIO (sendObject conn object)
 
 	file = filePrefix c ++ "annex-uuid"
-	uuidb = L.pack $ fromUUID u
+	uuidb = L.fromStrict $ T.encodeUtf8 $ T.pack $ fromUUID u
 	bucket = fromJust $ getBucket c
 
 	mkobject = S3Object bucket file "" (getXheaders c)

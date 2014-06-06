@@ -1,6 +1,0 @@
-Currently, git annex find lists files that are present in the current repository, possibly restricted to a subdirectory. But it does not easily seem possible to get this information about a remote repository.
-
-I would find it useful if this command understood flags that makes it tell me what is present somewhere else (maybe "--on remote") and combinations of the flags ("--on remote1 --and --not-on remote2" or "--on disk1 --or --on disk2").
-
-> Almost. You're looking for `--in remote`, which was added 2 months ago.
-> [[done]] --[[Joey]] 

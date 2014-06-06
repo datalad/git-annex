@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="2001:4978:f:21a::2"
- subject="comment 6"
- date="2013-07-25T17:57:31Z"
- content="""
-I've made it always build with -threaded. Did not see anything obvious I could do to not make it hang with the non-threaded runtime, other than forking a separate feeder process. -threaded may make it not build on a few systems with sustandard ghc support (like sparc). 
-"""]]

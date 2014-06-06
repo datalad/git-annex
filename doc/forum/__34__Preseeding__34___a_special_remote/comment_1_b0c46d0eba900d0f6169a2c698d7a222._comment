@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.3"
+ subject="comment 1"
+ date="2014-05-21T17:41:22Z"
+ content="""
+If you also have the files present locally, you can simply do `git annex copy --fast --to remote`. git-annex copy will first check to see if the remote has the file; seeing that it does it will update the location log.
+
+Another option, if you have shell access on the remote is to simply set up a git repository there, move the files into it and `git annex add` them, and merge that into your local repository.
+
+There is not currently any way to set the [[location_tracking]] information to tell git-annex that a file has appeared on a remote. Of course, you can modify the git-annex branch manually to do so. See [[internals]].
+"""]]

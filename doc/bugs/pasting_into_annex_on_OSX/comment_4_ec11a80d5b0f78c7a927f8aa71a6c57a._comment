@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://www.davidhaslem.com/"
- nickname="David"
- subject="comment 4"
- date="2012-09-21T04:05:20Z"
- content="""
-Looks like that did it. I started with 5 seconds, which seems to be more than enough - turned it down to 1 and it still seems to work.  The mode change sounds like a likely guess for what it's doing after it is doing writing the file - so even a second is probably more than enough.
-"""]]

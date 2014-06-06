@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="108.236.230.124"
- subject="comment 3"
- date="2014-05-16T18:25:29Z"
- content="""
-Yes, that makes sense. /etc/resolv.conf is only used when trying to access the network, so if the network is not up, nothing is going to fail that wouldn't fail anyway. And git-annex should retry everything at a later point, when the network is up.
-"""]]

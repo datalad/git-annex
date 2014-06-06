@@ -26,3 +26,5 @@ Current.
 """]]
 
 [[!meta title="upgrade loop when info file contains newer version than distributed version of git-annex"]]
+
+[[!tag confirmed]]

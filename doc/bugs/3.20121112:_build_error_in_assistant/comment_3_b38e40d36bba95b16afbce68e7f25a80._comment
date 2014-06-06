@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.6.49"
- subject="comment 3"
- date="2012-11-25T18:36:49Z"
- content="""
-The webdav library should not be hard to install, but I've gotten the webapp to build without it.
-"""]]

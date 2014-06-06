@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://rmunn.myopenid.com/"
- nickname="rmunn"
- subject="comment 4"
- date="2013-08-24T15:31:36Z"
- content="""
-Either quvi or youtube-dl might be a good possibility: youtube-dl has the --get-url option (or -g for short) that outputs just the download URL (and nothing else) to stdout. So if for some reason quvi turned out not to be suitable, it wouldn't necessarily mean the idea would have to be abandoned.
-"""]]

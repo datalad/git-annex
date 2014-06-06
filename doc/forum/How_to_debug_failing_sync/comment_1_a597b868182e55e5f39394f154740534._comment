@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.176"
+ subject="comment 1"
+ date="2014-05-29T18:15:12Z"
+ content="""
+That extra git-annex- prefix is used in ~/.ssh/config to set up the ssh keys for the repository. So it's normal.
+
+I suggest that you try running git-annex sync at the command line and paste the output so we can see how it fails.
+"""]]

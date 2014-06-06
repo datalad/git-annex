@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.4.193"
- subject="comment 1"
- date="2013-06-30T20:36:02Z"
- content="""
-There should be a more useful error message in the repository's debug.log, please post it.
-"""]]

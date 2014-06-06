@@ -1,4 +1,0 @@
-cannot "git annex ../foo"   (GitRepo.relative is buggy and
-git-ls-files also refuses w/o --full-name, which would need other changes)
-
-[[done]]

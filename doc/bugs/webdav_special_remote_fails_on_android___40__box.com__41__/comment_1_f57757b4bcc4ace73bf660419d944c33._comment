@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="209.250.56.227"
- subject="comment 1"
- date="2013-12-29T21:31:49Z"
- content="""
-Yeah, I have patched haskell network library to not do anything for NODELAY on Android, but I have to re-bootstrap my entire haskell dev environment due to that change. With luck, I will have a fixed build to try in around 16 hours.
-"""]]

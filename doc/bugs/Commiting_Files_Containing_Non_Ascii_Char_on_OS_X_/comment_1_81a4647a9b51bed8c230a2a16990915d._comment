@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.36"
+ subject="comment 1"
+ date="2014-05-24T19:23:08Z"
+ content="""
+I think you are going to need to provide more information:
+
+* Some actual file names that have the problem. \"non-ascii chars\" is a very wide description, you don't even say if you're using unicode or what.
+* Some error messages or transcripts of what happens when you see the problem.
+* What is your locale setting on OSX.
+
+I tried with some unicode filenames on OSX and they were committed without difficulty in the en_US.utf8 locale.
+"""]]

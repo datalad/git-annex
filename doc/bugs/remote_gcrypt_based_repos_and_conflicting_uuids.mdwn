@@ -21,3 +21,10 @@ It all seems to work well until I try to do any kind git annex operation from th
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]]; <>. I have updated the OSX autobuilder so tonight's
+> build will include the fixed git-remote-gcrypt. --[[Joey]]
+>
+> Note that gcrypt repositories affected by this bug are in fact empty, so
+> the first time a push is made with the fixed gcrypt it will probably
+> generate a new gcrypt-id and push everything.

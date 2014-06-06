@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.152.108.210"
- subject="comment 2"
- date="2013-02-26T19:51:47Z"
- content="""
-You are probably not running the assistant on the server. This is fine, but it means that git pushes made to the server when files are added to the client are not merged into its working copy. Which is why you don't see the files. Running `git annex sync` on the server should make all the files that have been sent to it show up.
-"""]]

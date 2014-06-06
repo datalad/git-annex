@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawmUJBh1lYmvfCCiGr3yrdx-QhuLCSRnU5c"
- nickname="Justin"
- subject="comment 1"
- date="2014-03-24T07:03:42Z"
- content="""
-Maybe the right solution is to make --force not ignore dotfiles, although perhaps that would break people who rely on its current behavior.
-"""]]

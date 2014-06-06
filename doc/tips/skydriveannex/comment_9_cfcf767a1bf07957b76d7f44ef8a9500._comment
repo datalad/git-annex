@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawkAUMhKOSkh9JaBA6xst3XxQIIsDEq5Zd4"
+ nickname="Ovidiu"
+ subject="QUESTION"
+ date="2014-05-17T19:29:37Z"
+ content="""
+Wondering about this:
+
+    encryption=shared
+
+I read what it means: http://git-annex.branchable.com/encryption/ 
+
+But now I'm wondering how the repos which I set up via the assistant have been setup. when setting them up I only had the choice between \"encrypt all files\" and \"disable encryption\" so how can I check what settings my other repos are using?
+"""]]

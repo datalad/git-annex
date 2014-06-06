@@ -29,3 +29,5 @@ Clones of my repositories lost all track of other repositories they only seem to
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]

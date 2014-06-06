@@ -56,9 +56,9 @@ checkTransferrerPoolItem program batchmaker i = case i of
 
 {- Requests that a Transferrer perform a Transfer, and waits for it to
  - finish. -}
-performTransfer :: Transferrer -> Transfer -> AssociatedFile -> IO Bool
-performTransfer transferrer t f = catchBoolIO $ do
-	T.sendRequest t f (transferrerWrite transferrer)
+performTransfer :: Transferrer -> Transfer -> TransferInfo -> IO Bool
+performTransfer transferrer t info = catchBoolIO $ do
+	T.sendRequest t info (transferrerWrite transferrer)
 	T.readResponse (transferrerRead transferrer)
 
 {- Starts a new git-annex transferkeys process, setting up handles

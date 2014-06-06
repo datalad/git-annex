@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="zardoz"
- ip="92.227.51.179"
- subject="comment 1"
- date="2014-05-13T20:34:33Z"
- content="""
-I suppose that makes sense. Is it more affordable to just retrieve the most recent filename? That would seem to be enough for many practical purposes. But I guess this would still possibly have to go through many revisions. I wonder if such a restricted search can be done by git though. Maybe using non-porcelain commands.
-"""]]

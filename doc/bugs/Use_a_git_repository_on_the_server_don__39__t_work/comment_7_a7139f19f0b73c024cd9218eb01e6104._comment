@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawnu1NYw8UF-NoDbKu8YKVGxi8FoZLH7JPs"
- nickname="Chris"
- subject="Same error with Android"
- date="2013-05-21T02:15:25Z"
- content="""
-I'm using git-annex version 4.20130516-g3240006 on Android, and when I attempt to add a cloud repo with SSH & git, I get that same error - \"unknown UUID: cannot modify\". My Linux box running 4.20130516-gedc4ccd handles the same server as a cloud repo without any problems.
-"""]]

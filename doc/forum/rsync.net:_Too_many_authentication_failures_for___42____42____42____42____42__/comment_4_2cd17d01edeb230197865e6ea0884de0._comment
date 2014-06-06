@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="216.145.95.162"
+ subject="comment 4"
+ date="2014-05-19T16:46:55Z"
+ content="""
+I suggest you upgrade to yesterday's release. It moves ssh password prompting during repository setup into a field in the webapp, so should avoid this class of problems.
+"""]]

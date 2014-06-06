@@ -1,3 +1,0 @@
-I just added a CIA bot to #vcs-home and tracking commits immediately would be nice. -- RichiH
-
-[[done]]

@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkwjBDXkP9HAQKhjTgThGOxUa1B99y_WRA"
- nickname="Franck"
- subject="comment 4"
- date="2013-05-25T07:40:13Z"
- content="""
-I've actually tried several ones: 4.20130521 on sid, 3.20120629~bpo60+2 on squeeze-backports, 3.20120629 on wheezy and jessie, plus a package for Ubuntu 11.02. All of them try to load GLIBC 2.6/2.7 while my system has 2.5 only... I'll try a different approach: install Debian in a chroot on the NAS and extract all the required files, including all libraries.
-"""]]

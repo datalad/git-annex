@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="https://www.google.com/accounts/o8/id?id=AItOawkSq2FDpK2n66QRUxtqqdbyDuwgbQmUWus"
- nickname="Jimmy"
- subject="comment 8"
- date="2012-11-07T16:08:00Z"
- content="""
-I've been updating my haskell platform install recently, i used to try and get the builder to spit out 32/64bit binaries, but recently it's just become too messy, I've just migrated to a full 64bit build system. I'm afraid I won't be able to  provide 32bit builds any more.
-"""]]

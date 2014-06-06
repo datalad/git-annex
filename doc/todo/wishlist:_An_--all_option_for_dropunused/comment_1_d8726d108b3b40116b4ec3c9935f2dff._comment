@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- ip="4.154.0.23"
- subject="comment 1"
- date="2012-10-22T15:35:30Z"
- content="""
-`git annex unused` prints the list
-"""]]

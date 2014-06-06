@@ -24,3 +24,4 @@ To be precise, I suspect that the kqueue limit is 256, I had 325 files in the 'q
 > since we use FSEvents there instead. --[[Joey]] 
 
 [[!tag /design/assistant]]
+[[!tag confirmed]]

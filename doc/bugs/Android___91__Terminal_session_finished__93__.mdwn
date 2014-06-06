@@ -30,4 +30,4 @@ version 5.20140413 of the Git Annex app (tested using the daily build and regula
 
 Samsung Galaxy Tab 3 (GT-P5210) running Android 4.2.2 (without root access).
 
-> [[done|dup]] --[[Joey]]
+> [[dup|done]] --[[Joey]]

@@ -22,6 +22,7 @@ import qualified Git.Config
 import qualified Git.Construct
 import qualified Git.Command
 import qualified Git.GCrypt
+import qualified Git.Types as Git
 import qualified Annex
 import Logs.Presence
 import Annex.Transfer
@@ -50,6 +51,7 @@ import Remote.Helper.Messages
 import qualified Remote.Helper.Ssh as Ssh
 import qualified Remote.GCrypt
 import Config.Files
+import Creds
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
@@ -62,7 +64,7 @@ remote = RemoteType {
 	typename = "git",
 	enumerate = list,
 	generate = gen,
-	setup = error "not supported"
+	setup = gitSetup
 }
 
 list :: Annex [Git.Repo]
@@ -79,6 +81,35 @@ list = do
 			Just url -> inRepo $ \g ->
 				Git.Construct.remoteNamed n $
 					Git.Construct.fromRemoteLocation url g
+
+{- Git remotes are normally set up using standard git command, not
+ - git-annex initremote and enableremote.
+ -
+ - For initremote, the git remote must already be set up, and have a uuid.
+ - Initremote simply remembers its location.
+ -
+ - enableremote simply sets up a git remote using the stored location.
+ - No attempt is made to make the remote be accessible via ssh key setup,
+ - etc.
+ -}
+gitSetup :: Maybe UUID -> Maybe CredPair -> RemoteConfig -> Annex (RemoteConfig, UUID)
+gitSetup Nothing _ c = do
+	let location = fromMaybe (error "Specify location=url") $
+		Url.parseURIRelaxed =<< M.lookup "location" c
+	g <- Annex.gitRepo
+	u <- case filter (\r -> Git.location r == Git.Url location) (Git.remotes g) of
+		[r] -> getRepoUUID r
+		[] -> error "could not find existing git remote with specified location"
+		_ -> error "found multiple git remotes with specified location"
+	return (c, u)
+gitSetup (Just u) _ c = do
+	inRepo $ Git.Command.run
+		[ Param "remote"
+		, Param "add"
+		, Param $ fromMaybe (error "no name") (M.lookup "name" c)
+		, Param $ fromMaybe (error "no location") (M.lookup "location" c)
+		]
+	return (c, u)
 
 {- It's assumed to be cheap to read the config of non-URL remotes, so this is
  - done each time git-annex is run in a way that uses remotes.

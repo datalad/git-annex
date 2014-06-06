@@ -24,3 +24,5 @@ and the repository exists.
 """]]
 
 [[!meta title="xmpp syncing sometimes fails"]]
+
+[[!tag confirmed]]

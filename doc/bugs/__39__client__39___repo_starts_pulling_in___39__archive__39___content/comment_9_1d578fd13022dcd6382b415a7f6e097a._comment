@@ -1,8 +1,0 @@
-[[!comment format=mdwn
- username="http://joeyh.name/"
- nickname="joey"
- subject="comment 9"
- date="2013-03-18T15:45:19Z"
- content="""
-There turned out to be a bug specific to OSX that prevented symlinks being checked into git. The daily sanity check did eventually add them. I fixed this bug yesterday.
-"""]]
