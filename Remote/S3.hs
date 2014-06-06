@@ -293,7 +293,7 @@ writeUUIDFile c u = do
 		either s3Error return =<< liftIO (sendObject conn object)
 
 	file = filePrefix c ++ "annex-uuid"
-	uuidb = L.fromStrict $ T.encodeUtf8 $ T.pack $ fromUUID u
+	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
 	bucket = fromJust $ getBucket c
 
 	mkobject = S3Object bucket file "" (getXheaders c)
