@@ -67,4 +67,4 @@ prop_hashes_stable = all (\(hasher, result) -> hasher foo == result)
 #endif
 	]
   where
-	foo = L.fromStrict $ T.encodeUtf8 $ T.pack "foo"
+	foo = L.fromChunks [T.encodeUtf8 $ T.pack "foo"]
