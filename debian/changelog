@@ -1,4 +1,4 @@
-git-annex (5.20140530) UNRELEASED; urgency=medium
+git-annex (5.20140606) unstable; urgency=medium
 
   * webapp: When adding a new local repository, fix bug that caused its
     group and preferred content to be set in the current repository,
@@ -13,7 +13,7 @@ git-annex (5.20140530) UNRELEASED; urgency=medium
     in the git-annex branch to have lines teminated with \r.
   * Windows: Fix retrieving of files from local bare git repositories.
 
- -- Joey Hess <joeyh@debian.org>  Thu, 29 May 2014 20:10:59 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 06 Jun 2014 12:54:06 -0400
 
 git-annex (5.20140529) unstable; urgency=medium
 
