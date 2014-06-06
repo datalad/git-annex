@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm5WyknJirJJridJjiPNgrlYxGG9xrZBvA"
+ nickname="Daniel"
+ subject="comment 3"
+ date="2014-06-06T10:49:27Z"
+ content="""
+Agreed. I'd rather lose connection caching than have to maintain both putty keys and openssh keys on my windows machines.
+"""]]
