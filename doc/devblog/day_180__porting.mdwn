@@ -9,5 +9,5 @@ security holes-of-the-week. (git-annex uses gnutls only for XMPP,
 and does not use openssl itself, but a few programs bundled with it,
 like curl, do use openssl.)
 
-A nice peice of news: OSX Homebrew now contains git-annex, so it can be
+A nice piece of news: OSX Homebrew now contains git-annex, so it can be
 easily installed with `brew install git-annex`
