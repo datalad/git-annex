@@ -1,0 +1,22 @@
+[[!comment format=mdwn
+ username="martin"
+ ip="89.183.56.177"
+ subject="use case and answer to joey's question &quot;...then when...&quot;"
+ date="2014-06-08T04:59:42Z"
+ content="""
+Hi joey,
+
+i really think we should repair the timestamp instead of force the user to `git-annex add` possibly corrupted files/content (see your comment above) git-annex checksums are excellent for data integrity but they are useless if we bypass them in case of adding and propagating 
+potentially corrupted content with `git-annex add`
+
+So here's for example a useful use case:
+
+1. user fills his transfer repo in town A. He checks (`git annex fsck`)  that everything is fine. He unmounts the drive and travels to town B.
+
+2. In town B user mounts the drive and sees, that he suddenly doesn't have \"access\" to those \"crippled files\" on his transfer repo (the files seems modified for the user without a reason - why should he `git-annex add` them again?? - he'd rather think about data corruption) . He wonders whats going on and thats why he does a
+
+3. `git-annex fsck` . `git annex fsck` should checksum also such crippled files, should report correct checksums if they are correct (so that the users knows their usb drive is working properly) and should give a message like this: \"checksum ok - crippled timestamp - repair with git-annex fsck --repair-timestamp or define a modify window \"- (to be implemented - in rsync the problem is already solved with this option \"--modify-window=NUM     compare mod-times with reduced accuracy\")
+
+In my case distance between town B and town A was approx 400km and in town B i didnt know what was going on. So i went back to town A without success for further investigation of my usb drive... :-((
+
+"""]]
