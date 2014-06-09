@@ -25,13 +25,20 @@ type Template = String
  - then moving it into place. The temp file is stored in the same
  - directory as the final file to avoid cross-device renames. -}
 viaTmp :: (FilePath -> String -> IO ()) -> FilePath -> String -> IO ()
-viaTmp a file content = do
-	let (dir, base) = splitFileName file
-	createDirectoryIfMissing True dir
-	(tmpfile, handle) <- openTempFile dir (base ++ ".tmp")
-	hClose handle
-	a tmpfile content
-	rename tmpfile file
+viaTmp a file content = bracket setup cleanup use
+  where
+	(dir, base) = splitFileName file
+	template = base ++ ".tmp"
+	setup = do
+		createDirectoryIfMissing True dir
+		openTempFile dir template
+	cleanup (tmpfile, handle) = do
+		_ <- tryIO $ hClose handle
+		tryIO $ removeFile tmpfile
+	use (tmpfile, handle) = do
+		hClose handle
+		a tmpfile content
+		rename tmpfile file
 
 {- Runs an action with a tmp file located in the system's tmp directory
  - (or in "." if there is none) then removes the file. -}
