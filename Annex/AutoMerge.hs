@@ -17,7 +17,6 @@ import qualified Git.LsFiles as LsFiles
 import qualified Git.UpdateIndex as UpdateIndex
 import qualified Git.Merge
 import qualified Git.Ref
-import qualified Git.Sha
 import qualified Git
 import Git.Types (BlobType(..))
 import Config
@@ -38,12 +37,7 @@ autoMergeFrom branch currbranch = do
 		Just b -> go =<< inRepo (Git.Ref.sha b)
   where
 	go old = ifM isDirect
-		( do
-			d <- fromRepo gitAnnexMergeDir
-			r <- inRepo (mergeDirect d branch)
-				<||> resolveMerge old branch
-			mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree old) Git.Ref.headRef
-			return r
+		( mergeDirect currbranch old branch (resolveMerge old branch)
 		, inRepo (Git.Merge.mergeNonInteractive branch)
 			<||> resolveMerge old branch
 		)
@@ -70,9 +64,11 @@ autoMergeFrom branch currbranch = do
  -
  - In indirect mode, the merge is resolved in the work tree and files
  - staged, to clean up from a conflicted merge that was run in the work
- - tree. In direct mode, the work tree is not touched here; files are 
- - staged to the index, and written to the gitAnnexMergeDir, and later
- - mergeDirectCleanup handles updating the work tree.
+ - tree. The resolution is committed.
+ -
+ - In direct mode, the work tree is not touched here, and no commit is made;
+ - files are  staged to the index, and written to the gitAnnexMergeDir, and
+ - later mergeDirectCleanup handles updating the work tree.
  -}
 resolveMerge :: Maybe Git.Ref -> Git.Ref -> Annex Bool
 resolveMerge us them = do
@@ -92,14 +88,13 @@ resolveMerge us them = do
 		unlessM isDirect $
 			cleanConflictCruft mergedfs top
 		Annex.Queue.flush
-		whenM isDirect $
-			void preCommitDirect
-		void $ inRepo $ Git.Command.runBool
-			[ Param "commit"
-			, Param "--no-verify"
-			, Param "-m"
-			, Param "git-annex automatic merge conflict fix"
-			]
+		unlessM isDirect $ do
+			void $ inRepo $ Git.Command.runBool
+				[ Param "commit"
+				, Param "--no-verify"
+				, Param "-m"
+				, Param "git-annex automatic merge conflict fix"
+				]
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
 

@@ -30,3 +30,7 @@ override index = do
 
 indexFile :: Repo -> FilePath
 indexFile r = localGitDir r </> "index"
+
+{- Git locks the index by creating this file. -}
+indexFileLock :: Repo -> FilePath
+indexFileLock r = indexFile r ++ ".lock"

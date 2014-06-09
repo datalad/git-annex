@@ -52,7 +52,22 @@ changed origbranch newbranch repo
 	diffs = pipeReadStrict
 		[ Param "log"
 		, Param (fromRef origbranch ++ ".." ++ fromRef newbranch)
-		, Params "--oneline -n1"
+		, Param "-n1"
+		, Param "--pretty=%H"
+		] repo
+
+{- Check if it's possible to fast-forward from the old
+ - ref to the new ref.
+ -
+ - This requires there to be a path from the old to the new. -}
+fastForwardable :: Ref -> Ref -> Repo -> IO Bool
+fastForwardable old new repo = not . null <$>
+	pipeReadStrict
+		[ Param "log"
+		, Param $ fromRef old ++ ".." ++ fromRef new
+		, Param "-n1"
+		, Param "--pretty=%H"
+		, Param "--ancestry-path"
 		] repo
 
 {- Given a set of refs that are all known to have commits not
@@ -74,7 +89,7 @@ fastForward branch (first:rest) repo =
   where
 	no_ff = return False
 	do_ff to = do
-		run [Param "update-ref", Param $ fromRef branch, Param $ fromRef to] repo
+		update branch to repo
 		return True
 	findbest c [] = return $ Just c
 	findbest c (r:rs)

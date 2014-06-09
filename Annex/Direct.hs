@@ -34,6 +34,8 @@ import Annex.Perms
 import Annex.ReplaceFile
 import Annex.Exception
 import Annex.VariantFile
+import Git.Index
+import Annex.Index
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -141,21 +143,63 @@ addDirect file cache = do
 		)
 
 {- In direct mode, git merge would usually refuse to do anything, since it
- - sees present direct mode files as type changed files. To avoid this,
- - merge is run with the work tree set to a temp directory.
+ - sees present direct mode files as type changed files.
+ -
+ - So, to handle a merge, it's run with the work tree set to a temp
+ - directory, and the merge is staged into a copy of the index.
+ - Then the work tree is updated to reflect the merge, and
+ - finally, the merge is committed and the real index updated.
  -}
-mergeDirect :: FilePath -> Git.Ref -> Git.Repo -> IO Bool
-mergeDirect d branch g = do
-	whenM (doesDirectoryExist d) $
-		removeDirectoryRecursive d
-	createDirectoryIfMissing True d
-	let g' = g { location = Local { gitdir = Git.localGitDir g, worktree = Just d } }
-	Git.Merge.mergeNonInteractive branch g'
+mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> Annex Bool
+mergeDirect startbranch oldref branch resolvemerge = do
+	-- Use the index lock file as the temp index file.
+	-- This is actually what git does when updating the index,
+	-- and so it will prevent other git processes from making
+	-- any changes to the index while our merge is in progress.
+	reali <- fromRepo indexFile
+	tmpi <- fromRepo indexFileLock
+	liftIO $ copyFile reali tmpi
 
-{- Cleans up after a direct mode merge. The merge must have been committed,
- - and the commit sha passed in, along with the old sha of the tree
- - before the merge. Uses git diff-tree to find files that changed between
- - the two shas, and applies those changes to the work tree.
+	d <- fromRepo gitAnnexMergeDir
+	liftIO $ do
+		whenM (doesDirectoryExist d) $
+			removeDirectoryRecursive d
+		createDirectoryIfMissing True d
+
+	withIndexFile tmpi $ do
+		r <- inRepo (mergein d) <||> resolvemerge
+		mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
+		mergeDirectCommit startbranch branch
+		liftIO $ rename tmpi reali
+		return r
+  where
+	mergein d g = Git.Merge.stageMerge branch $
+		g { location = Local { gitdir = Git.localGitDir g, worktree = Just d } }
+
+{- Commits after a direct mode merge is complete, and after the work
+ - tree has been updated by mergeDirectCleanup.
+ -}
+mergeDirectCommit :: Maybe Git.Ref -> Git.Branch -> Annex ()
+mergeDirectCommit old branch = do
+	void preCommitDirect
+	gitdir <- fromRepo Git.localGitDir
+	let merge_head = gitdir </> "MERGE_HEAD"
+	let merge_msg = gitdir </> "MERGE_MSG"
+	let merge_mode = gitdir </> "MERGE_MODE"
+	ifM (maybe (return False) (\o -> inRepo $ Git.Branch.fastForwardable o branch) old)
+		( inRepo $ Git.Branch.update Git.Ref.headRef branch -- fast forward
+		, do
+			msg <- liftIO $
+				catchDefaultIO ("merge " ++ fromRef branch) $
+					readFile merge_msg
+			void $ inRepo $ Git.Branch.commit False msg
+				Git.Ref.headRef [Git.Ref.headRef, branch]
+		)
+	liftIO $ mapM_ nukeFile [merge_head, merge_msg, merge_mode]
+
+{- Cleans up after a direct mode merge. The merge must have been staged
+ - in the index. Uses diff-index to compare the staged changes with
+ - the tree before the merge, and applies those changes to the work tree.
  -
  - There are really only two types of changes: An old item can be deleted,
  - or a new item added. Two passes are made, first deleting and then
@@ -164,9 +208,9 @@ mergeDirect d branch g = do
  - order, but we cannot add the directory until the file with the
  - same name is removed.)
  -}
-mergeDirectCleanup :: FilePath -> Git.Ref -> Git.Ref -> Annex ()
-mergeDirectCleanup d oldsha newsha = do
-	(items, cleanup) <- inRepo $ DiffTree.diffTreeRecursive oldsha newsha
+mergeDirectCleanup :: FilePath -> Git.Ref -> Annex ()
+mergeDirectCleanup d oldref = do
+	(items, cleanup) <- inRepo $ DiffTree.diffIndex oldref
 	makeabs <- flip fromTopFilePath <$> gitRepo
 	let fsitems = zip (map (makeabs . DiffTree.file) items) items
 	forM_ fsitems $
@@ -194,12 +238,12 @@ mergeDirectCleanup d oldsha newsha = do
 	 - key, it's left alone. 
 	 -
 	 - If the file is already present, and does not exist in the
-	 - oldsha branch, preserve this local file.
+	 - oldref, preserve this local file.
 	 -
 	 - Otherwise, create the symlink and then if possible, replace it
 	 - with the content. -}
 	movein item makeabs k f = unlessM (goodContent k f) $ do
-		preserveUnannexed item makeabs f oldsha
+		preserveUnannexed item makeabs f oldref
 		l <- inRepo $ gitAnnexLink f k
 		replaceFile f $ makeAnnexLink l
 		toDirect k f
@@ -207,13 +251,13 @@ mergeDirectCleanup d oldsha newsha = do
 	{- Any new, modified, or renamed files were written to the temp
 	 - directory by the merge, and are moved to the real work tree. -}
 	movein_raw item makeabs f = do
-		preserveUnannexed item makeabs f oldsha
+		preserveUnannexed item makeabs f oldref
 		liftIO $ do
 			createDirectoryIfMissing True $ parentDir f
 			void $ tryIO $ rename (d </> getTopFilePath (DiffTree.file item)) f
 
 {- If the file that's being moved in is already present in the work
- - tree, but did not exist in the oldsha branch, preserve this
+ - tree, but did not exist in the oldref, preserve this
  - local, unannexed file (or directory), as "variant-local".
  -
  - It's also possible that the file that's being moved in
@@ -221,7 +265,7 @@ mergeDirectCleanup d oldsha newsha = do
  - file (not a directory), which should be preserved.
  -}
 preserveUnannexed :: DiffTree.DiffTreeItem -> (TopFilePath -> FilePath) -> FilePath -> Ref -> Annex ()
-preserveUnannexed item makeabs absf oldsha = do
+preserveUnannexed item makeabs absf oldref = do
 	whenM (liftIO (collidingitem absf) <&&> unannexed absf) $
 		liftIO $ findnewname absf 0
 	checkdirs (DiffTree.file item)
@@ -241,7 +285,7 @@ preserveUnannexed item makeabs absf oldsha = do
 		<$> catchMaybeIO (getSymbolicLinkStatus f)
 
 	unannexed f = (isNothing <$> isAnnexLink f)
-		<&&> (isNothing <$> catFileDetails oldsha f)
+		<&&> (isNothing <$> catFileDetails oldref f)
 
 	findnewname :: FilePath -> Int -> IO ()
 	findnewname f n = do
