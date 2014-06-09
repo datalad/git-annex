@@ -49,8 +49,8 @@ daemonize logfd pidfile changedirectory a = do
 		nullfd <- openFd "/dev/null" ReadOnly Nothing defaultFileFlags
 		redir nullfd stdInput
 		redirLog logfd
-		{- forkProcess masks async exceptions; unmask them inside
-		 - the action. -}
+		{- In old versions of ghc, forkProcess masks async exceptions;
+		 - unmask them inside the action. -}
 		wait =<< asyncWithUnmask (\unmask -> unmask a)
 		out
 	out = exitImmediately ExitSuccess
