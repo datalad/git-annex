@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-06-09T18:57:25Z"
+ content="""
+It sounds rather like the webapp is failing to create the repository. Although I would expect for it to show an error message in red beneath the repository path. OTOH, it also sounds like something (either the webapp or eg a manual git-annex run) set up a git-annex repository in ~/Documents.
+
+git-annex will be started automatically on login as long as `~/.config/git-annex/autostart` lists a repository to use. If that file exists and contains ~/Documents then we'll know that the webapp successfully set up the repository.
+"""]]
