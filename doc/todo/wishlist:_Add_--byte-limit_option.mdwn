@@ -1,0 +1,14 @@
+This option is related to `--time-limit`, but stops after processing X 
+bytes. For example, I often need to free up a certain amount of space on 
+a disk and want `git-annex move` to stop after it has copied a specified 
+amount of data:
+
+    git annex move --to otherdisk --byte-limit 3G
+    git annex drop --auto --byte-limit 500m
+    git annex get --byte-limit 500m
+
+I've been using some `annex.diskreserve` trickery now and then to 
+accomplish this, but it's a bit cumbersome and also not a very precise 
+way to specify the amount I want to copy/move/get. The last example 
+would also be a useful command to limit the traffic when I'm connecting 
+via mobile – get as much as possible, but don't blow the mobile quota.
