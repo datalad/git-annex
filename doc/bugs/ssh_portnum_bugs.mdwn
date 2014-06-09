@@ -12,3 +12,4 @@ Change Port 22 in /etc/ssh/sshd_config to Port 9999, restart ssh on both compute
 
 When I was experiencing this issue, I was running the default on Jessie/Wheezy. Now I'm running the latest (via auto-update and distributed binary) but don't know if this is still an issue with latest versions (I switched to 22 as a workaround).
 
+[[!tag moreinfo]]

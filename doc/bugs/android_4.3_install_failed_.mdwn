@@ -16,4 +16,5 @@ The message given by git-annex:
     lib/lib.runshell.so: line 133: can't create /sdcard/git-annex.home/git-annex-install.log: Permission denied 
     Installation failed ! Please report a but and attach /sdcard/git-annex.home/git-annex-install.log
 
-
+[[!meta title="android 4.3 install failed on android device without sdcard"]]
+[[!tag moreinfo]]
