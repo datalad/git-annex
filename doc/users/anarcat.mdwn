@@ -46,3 +46,10 @@ Forum posts
 Forums where I posted.
 
 [[!inline pages="forum/* and link(users/anarcat)" sort=mtime feeds=no actions=yes archive=yes show=0]]
+
+Git annex dev news
+==================
+
+I find the recent changes a little too noisy, but i want more than just the [[news]], so i made up this little hybrid feed:
+
+[[!inline pages="(news/* and !news/*/* and !*/Discussion) or (devblog/* and !devblog/*/*)" feedonly="yes"]]
