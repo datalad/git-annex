@@ -8,3 +8,5 @@ This builds a bunch of stuff but then fails to compile the network-info package.
 Is there some other dependency that needs network-info? Is there a way to find out?
 
 Thanks
+
+> fowarded 2 ways; [[done]] --[[Joey]]
