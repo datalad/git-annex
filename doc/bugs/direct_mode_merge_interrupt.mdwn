@@ -19,3 +19,8 @@ branch when merging the remote branch into it (how?). It should first
 update the whole work tree, and only after it's updated should it update
 the current branch to reflect the merge. (I assume this is how `git merge`
 normally works.) --[[Joey]]
+
+> Implemented that. And then realized that even updating the index
+> as part of a merge results in the work tree being out of sync with the
+> index. Which will cause the next sync to again delete any files that
+> are in the index but not the work tree. Urgh. --[[Joey]]
