@@ -1,0 +1,9 @@
+[[!comment format=mdwn
+ username="Tamschi"
+ ip="178.27.213.202"
+ subject="It's still impossible to use the git-annex repository on Windows."
+ date="2014-06-09T14:44:07Z"
+ content="""
+Since the bug tracker is in the same repository and branch as the main program (why?), any bugs submitted with a colon in the title will prevent access on NTFS file systems.  
+There is at least one such instance, I assume it potentially affects blog posts too.
+"""]]
