@@ -39,7 +39,7 @@ daemonize logfd pidfile changedirectory a = do
 	checkalreadyrunning f = maybe noop (const alreadyRunning) 
 		=<< checkDaemon f
 	child1 = do
-		_ <- createSession
+		_ <- tryIO createSession
 		_ <- forkProcess child2
 		out
 	child2 = do
@@ -59,7 +59,7 @@ daemonize logfd pidfile changedirectory a = do
 foreground :: Fd -> Maybe FilePath -> IO () -> IO ()
 foreground logfd pidfile a = do
 	maybe noop lockPidFile pidfile
-	_ <- createSession
+	_ <- tryIO createSession
 	redirLog logfd
 	a
 	exitImmediately ExitSuccess

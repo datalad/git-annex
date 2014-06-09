@@ -1,3 +1,9 @@
+git-annex (5.20140607) UNRELEASED; urgency=medium
+
+  * Ignore setsid failures.
+
+ -- Joey Hess <joeyh@debian.org>  Mon, 09 Jun 2014 14:44:09 -0400
+
 git-annex (5.20140606) unstable; urgency=medium
 
   * webapp: When adding a new local repository, fix bug that caused its
