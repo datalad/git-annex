@@ -22,7 +22,6 @@ module Annex.Ssh (
 
 import qualified Data.Map as M
 import Data.Hash.MD5
-import System.Process (cwd)
 import System.Exit
 
 import Common.Annex

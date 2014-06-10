@@ -24,9 +24,6 @@ import Git.Command
 import qualified Git.UpdateIndex
 
 import qualified Data.Map as M
-#ifndef mingw32_HOST_OS
-import System.Process
-#endif
 
 {- Queable actions that can be performed in a git repository.
  -}

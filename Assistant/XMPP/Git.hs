@@ -38,7 +38,6 @@ import Utility.Env
 import Network.Protocol.XMPP
 import qualified Data.Text as T
 import System.Posix.Types
-import System.Process (std_in, std_out, std_err)
 import Control.Concurrent
 import System.Timeout
 import qualified Data.ByteString as B
@@ -112,15 +111,15 @@ xmppPush cid gitpush = do
 	tmpdir <- gettmpdir
 	installwrapper tmpdir
 
-	env <- liftIO getEnvironment
+	environ <- liftIO getEnvironment
 	path <- liftIO getSearchPath
-	let myenv = addEntries
+	let myenviron = addEntries
 		[ ("PATH", intercalate [searchPathSeparator] $ tmpdir:path)
 		, (relayIn, show inf)
 		, (relayOut, show outf)
 		, (relayControl, show controlf)
 		]
-		env
+		environ
 
 	inh <- liftIO $ fdToHandle readpush
 	outh <- liftIO $ fdToHandle writepush
@@ -132,7 +131,7 @@ xmppPush cid gitpush = do
 	{- This can take a long time to run, so avoid running it in the
 	 - Annex monad. Also, override environment. -}
 	g <- liftAnnex gitRepo
-	r <- liftIO $ gitpush $ g { gitEnv = Just myenv }
+	r <- liftIO $ gitpush $ g { gitEnv = Just myenviron }
 
 	liftIO $ do
 		mapM_ killThread [t1, t2]

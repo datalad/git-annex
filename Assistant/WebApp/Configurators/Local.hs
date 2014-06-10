@@ -116,11 +116,11 @@ defaultRepositoryPath :: Bool -> IO FilePath
 defaultRepositoryPath firstrun = do
 #ifndef mingw32_HOST_OS
 	home <- myHomeDir
-	cwd <- liftIO getCurrentDirectory
-	if home == cwd && firstrun
+	currdir <- liftIO getCurrentDirectory
+	if home == currdir && firstrun
 		then inhome
-		else ifM (legit cwd <&&> canWrite cwd)
-			( return cwd
+		else ifM (legit currdir <&&> canWrite currdir)
+			( return currdir
 			, inhome
 			)
 #else

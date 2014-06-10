@@ -142,8 +142,8 @@ gitAnnexLocation' key r crippled
 {- Calculates a symlink to link a file to an annexed object. -}
 gitAnnexLink :: FilePath -> Key -> Git.Repo -> IO FilePath
 gitAnnexLink file key r = do
-	cwd <- getCurrentDirectory
-	let absfile = fromMaybe whoops $ absNormPathUnix cwd file
+	currdir <- getCurrentDirectory
+	let absfile = fromMaybe whoops $ absNormPathUnix currdir file
 	loc <- gitAnnexLocation' key r False
 	return $ relPathDirToFile (parentDir absfile) loc
   where

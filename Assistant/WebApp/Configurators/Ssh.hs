@@ -381,7 +381,7 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 	login = getLogin sshinput
 	geti f = maybe "" T.unpack (f sshinput)
 
-	go extraopts env = processTranscript' "ssh" (extraopts ++ opts) env $
+	go extraopts environ = processTranscript' "ssh" (extraopts ++ opts) environ $
 		Just (fromMaybe "" input)
 
 	setupAskPass = do
@@ -392,8 +392,8 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 			Just pass -> withTmpFile "ssh" $ \passfile h -> do
 				hClose h
 				writeFileProtected passfile pass
-				env <- getEnvironment
-				let env' = addEntries
+				environ <- getEnvironment
+				let environ' = addEntries
 					[ ("SSH_ASKPASS", program)
 					, (sshAskPassEnv, passfile)
 					-- ssh does not use SSH_ASKPASS
@@ -401,8 +401,8 @@ sshAuthTranscript sshinput opts input = case inputAuthMethod sshinput of
 					-- there is no controlling
 					-- terminal.
 					, ("DISPLAY", ":0")
-					] env
-				go [passwordprompts 1] (Just env')
+					] environ
+				go [passwordprompts 1] (Just environ')
 	
 	passwordprompts :: Int -> String
 	passwordprompts = sshOpt "NumberOfPasswordPrompts" . show

@@ -9,8 +9,6 @@
 
 module Git.Command where
 
-import System.Process (std_out, env)
-
 import Common
 import Git
 import Git.Types

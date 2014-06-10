@@ -34,7 +34,6 @@ import Annex.Version
 
 import Control.Concurrent
 import Control.Concurrent.STM
-import System.Process (env, std_out, std_err, cwd)
 import Network.Socket (HostName)
 import System.Environment (getArgs)
 

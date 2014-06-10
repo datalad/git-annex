@@ -15,7 +15,6 @@ import Utility.Process
 import Utility.FileSystemEncoding
 import Utility.Misc
 
-import System.Process
 import Data.List
 import Data.Char
 import Control.Applicative

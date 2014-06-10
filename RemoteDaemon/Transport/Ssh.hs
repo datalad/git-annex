@@ -20,7 +20,6 @@ import Utility.ThreadScheduler
 
 import Control.Concurrent.Chan
 import Control.Concurrent.Async
-import System.Process (std_in, std_out, std_err)
 
 transport :: Transport
 transport r url h@(TransportHandle g s) ichan ochan = do

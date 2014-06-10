@@ -24,7 +24,6 @@ import qualified Annex
 import qualified Git
 
 import Control.Concurrent
-import System.Process (cwd)
 #ifndef mingw32_HOST_OS
 import System.Posix (signalProcess, sigTERM)
 #else

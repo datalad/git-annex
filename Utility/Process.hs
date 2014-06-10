@@ -10,7 +10,7 @@
 
 module Utility.Process (
 	module X,
-	CreateProcess,
+	CreateProcess(..),
 	StdHandle(..),
 	readProcess,
 	readProcessEnv,

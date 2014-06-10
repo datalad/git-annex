@@ -55,7 +55,6 @@ import Creds
 
 import Control.Concurrent
 import Control.Concurrent.MSampleVar
-import System.Process (std_in, std_err)
 import qualified Data.Map as M
 import Control.Exception.Extensible
 
@@ -467,12 +466,12 @@ fsckOnRemote r params
 	| otherwise = return $ do
 		program <- readProgramFile
 		r' <- Git.Config.read r
-		env <- getEnvironment
-		let env' = addEntries 
+		environ <- getEnvironment
+		let environ' = addEntries 
 			[ ("GIT_WORK_TREE", Git.repoPath r')
 			, ("GIT_DIR", Git.localGitDir r')
-			] env
-		batchCommandEnv program (Param "fsck" : params) $ Just env'
+			] environ
+		batchCommandEnv program (Param "fsck" : params) $ Just environ'
 
 {- The passed repair action is run in the Annex monad of the remote. -}
 repairRemote :: Git.Repo -> Annex Bool -> Annex (IO Bool)

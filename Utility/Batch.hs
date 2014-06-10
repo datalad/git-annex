@@ -16,7 +16,6 @@ import Control.Concurrent.Async
 import System.Posix.Process
 #endif
 import qualified Control.Exception as E
-import System.Process (env)
 
 {- Runs an operation, at batch priority.
  -

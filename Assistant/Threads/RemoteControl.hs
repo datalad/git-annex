@@ -22,7 +22,6 @@ import qualified Types.Remote as Remote
 
 import Control.Concurrent
 import Control.Concurrent.Async
-import System.Process (std_in, std_out)
 import Network.URI
 import qualified Data.Map as M
 import qualified Data.Set as S

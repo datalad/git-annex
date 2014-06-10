@@ -23,7 +23,6 @@ import Utility.Batch
 import qualified Git.Version
 
 import qualified Data.Set as S
-import System.Process (std_out, std_err)
 import Control.Concurrent.Async
 
 type MissingObjects = S.Set Sha
