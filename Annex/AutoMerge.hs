@@ -39,7 +39,7 @@ autoMergeFrom branch currbranch = do
 	go old = ifM isDirect
 		( mergeDirect currbranch old branch (resolveMerge old branch)
 		, inRepo (Git.Merge.mergeNonInteractive branch)
-			<||> resolveMerge old branch
+			<||> (resolveMerge old branch <&&> commitResolvedMerge)
 		)
 
 {- Resolves a conflicted merge. It's important that any conflicts be
@@ -64,11 +64,11 @@ autoMergeFrom branch currbranch = do
  -
  - In indirect mode, the merge is resolved in the work tree and files
  - staged, to clean up from a conflicted merge that was run in the work
- - tree. The resolution is committed.
+ - tree.
  -
- - In direct mode, the work tree is not touched here, and no commit is made;
- - files are staged to the index, and written to the gitAnnexMergeDir, and
- - later mergeDirectCleanup handles updating the work tree.
+ - In direct mode, the work tree is not touched here; files are staged to
+ - the index, and written to the gitAnnexMergeDir, for later handling by
+ - the direct mode merge code.
  -}
 resolveMerge :: Maybe Git.Ref -> Git.Ref -> Annex Bool
 resolveMerge us them = do
@@ -88,13 +88,6 @@ resolveMerge us them = do
 		unlessM isDirect $
 			cleanConflictCruft mergedfs top
 		Annex.Queue.flush
-		unlessM isDirect $ do
-			void $ inRepo $ Git.Command.runBool
-				[ Param "commit"
-				, Param "--no-verify"
-				, Param "-m"
-				, Param "git-annex automatic merge conflict fix"
-				]
 		showLongNote "Merge conflict was automatically resolved; you may want to examine the result."
 	return merged
 
@@ -172,3 +165,11 @@ cleanConflictCruft resolvedfs top = do
 	s = S.fromList resolvedfs
 	matchesresolved f = S.member (base f) s
 	base f = reverse $ drop 1 $ dropWhile (/= '~') $ reverse f
+	
+commitResolvedMerge :: Annex Bool
+commitResolvedMerge = inRepo $ Git.Command.runBool
+	[ Param "commit"
+	, Param "--no-verify"
+	, Param "-m"
+	, Param "git-annex automatic merge conflict fix"
+	]
