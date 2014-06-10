@@ -3,6 +3,8 @@ From: foo <foo@bar>
 Date: Sun, 22 Sep 2013 00:18:12 +0000
 Subject: [PATCH] hardcode little endian
 
+This is the same as building with a cabal flag.
+
 ---
  c_impl/optimized/skein_port.h |    1 +
  1 file changed, 1 insertion(+)
