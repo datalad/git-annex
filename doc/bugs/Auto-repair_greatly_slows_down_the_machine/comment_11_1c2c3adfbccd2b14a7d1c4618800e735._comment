@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 11"
+ date="2014-06-10T19:31:38Z"
+ content="""
+Disable consistency checks for the repo in the webapp UI, wait until long enough that you're sure the assistant would be wanting to repair it again if you hadn't disabled that, and run `git annex repair` at the console so I can see what's going on.
+"""]]
