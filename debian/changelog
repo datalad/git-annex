@@ -3,11 +3,7 @@ git-annex (5.20140607) UNRELEASED; urgency=medium
   * Ignore setsid failures.
   * Avoid leaving behind .tmp files when failing in some cases, including
     importing files to a disk that is full.
-  * direct mode: Avoid committing a merge until after the work tree is
-    updated. This avoids an interrupted merge leaving the work tree out
-    of sync with the last commit, which could result in the wrong thing
-    being committed later, and files appearing to get deleted.
-    (They could be recovered by reverting the bad commit.)
+  * Avoid bad commits after interrupted direct mode sync (or merge).
 
  -- Joey Hess <joeyh@debian.org>  Mon, 09 Jun 2014 14:44:09 -0400
 

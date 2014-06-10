@@ -1,0 +1,8 @@
+Spent most of today improving behavior when a sync or merge is
+interrupted in direct mode. It was possible for an interrupt at the wrong
+time to leave the merge committed, but the work tree not yet updated. And
+then the next sync would make a commit that reverted the merged changes!
+
+To fix this I had to avoid making any merge commit or indeed updating the
+index until after the work tree is updated. It looked intractable for a
+while; I'm still surprised I eventually succeeded.
