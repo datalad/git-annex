@@ -4,6 +4,8 @@ git-annex (5.20140607) UNRELEASED; urgency=medium
   * Avoid leaving behind .tmp files when failing in some cases, including
     importing files to a disk that is full.
   * Avoid bad commits after interrupted direct mode sync (or merge).
+  * Windows: Fix opening webapp when repository is in a directory with
+    spaces in the path.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 09 Jun 2014 14:44:09 -0400
 

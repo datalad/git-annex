@@ -61,6 +61,10 @@ browserProc url = proc "am"
 	["start", "-a", "android.intent.action.VIEW", "-d", url]
 #else
 #ifdef mingw32_HOST_OS
+-- Warning: On Windows, no quoting or escaping of the url seems possible,
+-- so spaces in it will cause problems. One approach is to make the url
+-- be a relative filename, and adjust the returned CreateProcess to change
+-- to the directory it's in.
 browserProc url = proc "cmd" ["/c start " ++ url]
 #else
 browserProc url = proc "xdg-open" [url]

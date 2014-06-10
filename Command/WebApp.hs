@@ -34,7 +34,7 @@ import Annex.Version
 
 import Control.Concurrent
 import Control.Concurrent.STM
-import System.Process (env, std_out, std_err)
+import System.Process (env, std_out, std_err, cwd)
 import Network.Socket (HostName)
 import System.Environment (getArgs)
 
@@ -215,7 +215,16 @@ openBrowser mcmd htmlshim realurl outh errh = do
   where
 	p = case mcmd of
 		Just cmd -> proc cmd [htmlshim]
-		Nothing -> browserProc url
+		Nothing -> 
+#ifndef mingw32_HOST_OS
+			browserProc url
+#else
+			{- Windows hack to avoid using the full path,
+			 - which might contain spaces that cause problems
+			 - for browserProc. -}
+			(browserProc (takeFileName htmlshim))
+				{ cwd = Just (takeDirectory htmlshim) } 
+#endif
 #ifdef __ANDROID__
 	{- Android does not support file:// urls, but neither is
 	 - the security of the url in the process table important
