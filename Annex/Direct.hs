@@ -167,9 +167,12 @@ mergeDirect startbranch oldref branch resolvemerge = do
 		createDirectoryIfMissing True d
 
 	withIndexFile tmpi $ do
-		r <- inRepo (mergein d) <||> resolvemerge
+		merged <- inRepo (mergein d)
+		r <- if merged
+			then return True
+			else resolvemerge
 		mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
-		mergeDirectCommit startbranch branch
+		mergeDirectCommit merged startbranch branch
 		liftIO $ rename tmpi reali
 		return r
   where
@@ -179,14 +182,14 @@ mergeDirect startbranch oldref branch resolvemerge = do
 {- Commits after a direct mode merge is complete, and after the work
  - tree has been updated by mergeDirectCleanup.
  -}
-mergeDirectCommit :: Maybe Git.Ref -> Git.Branch -> Annex ()
-mergeDirectCommit old branch = do
+mergeDirectCommit :: Bool -> Maybe Git.Ref -> Git.Branch -> Annex ()
+mergeDirectCommit allowff old branch = do
 	void preCommitDirect
-	gitdir <- fromRepo Git.localGitDir
-	let merge_head = gitdir </> "MERGE_HEAD"
-	let merge_msg = gitdir </> "MERGE_MSG"
-	let merge_mode = gitdir </> "MERGE_MODE"
-	ifM (maybe (return False) (\o -> inRepo $ Git.Branch.fastForwardable o branch) old)
+	d <- fromRepo Git.localGitDir
+	let merge_head = d </> "MERGE_HEAD"
+	let merge_msg = d </> "MERGE_MSG"
+	let merge_mode = d </> "MERGE_MODE"
+	ifM (pure allowff <&&> canff)
 		( inRepo $ Git.Branch.update Git.Ref.headRef branch -- fast forward
 		, do
 			msg <- liftIO $
@@ -196,6 +199,8 @@ mergeDirectCommit old branch = do
 				Git.Ref.headRef [Git.Ref.headRef, branch]
 		)
 	liftIO $ mapM_ nukeFile [merge_head, merge_msg, merge_mode]
+  where
+	canff = maybe (return False) (\o -> inRepo $ Git.Branch.fastForwardable o branch) old
 
 {- Cleans up after a direct mode merge. The merge must have been staged
  - in the index. Uses diff-index to compare the staged changes with

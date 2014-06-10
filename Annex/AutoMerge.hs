@@ -67,7 +67,7 @@ autoMergeFrom branch currbranch = do
  - tree. The resolution is committed.
  -
  - In direct mode, the work tree is not touched here, and no commit is made;
- - files are  staged to the index, and written to the gitAnnexMergeDir, and
+ - files are staged to the index, and written to the gitAnnexMergeDir, and
  - later mergeDirectCleanup handles updating the work tree.
  -}
 resolveMerge :: Maybe Git.Ref -> Git.Ref -> Annex Bool
