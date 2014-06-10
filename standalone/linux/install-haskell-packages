@@ -65,6 +65,7 @@ install_pkgs () {
 
 	patched network
 	patched wai-app-static
+	patched vector
 	patched aeson
 	patched shakespeare
 	patched yesod-routes
