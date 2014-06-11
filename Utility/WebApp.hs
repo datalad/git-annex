@@ -18,16 +18,12 @@ import qualified Yesod
 import qualified Network.Wai as Wai
 import Network.Wai.Handler.Warp
 import Network.Wai.Handler.WarpTLS
-import Network.Wai.Logger
-import Control.Monad.IO.Class
 import Network.HTTP.Types
-import System.Log.Logger
 import qualified Data.CaseInsensitive as CI
 import Network.Socket
 import "crypto-api" Crypto.Random
 import qualified Web.ClientSession as CS
 import qualified Data.ByteString.Lazy as L
-import qualified Data.ByteString.Lazy.UTF8 as L8
 import qualified Data.ByteString as B
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as TE
@@ -157,35 +153,6 @@ getSocket h = do
 	use sock = do
 		listen sock maxListenQueue
 		return sock
-
-{- Checks if debugging is actually enabled. -}
-debugEnabled :: IO Bool
-debugEnabled = do
-	l <- getRootLogger
-	return $ getLevel l <= Just DEBUG
-
-{- WAI middleware that logs using System.Log.Logger at debug level.
- -
- - Recommend only inserting this middleware when debugging is actually
- - enabled, as it's not optimised at all.
- -}
-httpDebugLogger :: Wai.Middleware
-httpDebugLogger waiApp req = do
-	logRequest req
-	waiApp req
-
-logRequest :: MonadIO m => Wai.Request -> m ()
-logRequest req = do
-	liftIO $ debugM "WebApp" $ unwords
-		[ showSockAddr $ Wai.remoteHost req
-		, frombs $ Wai.requestMethod req
-		, frombs $ Wai.rawPathInfo req
-		--, show $ Wai.httpVersion req
-		--, frombs $ lookupRequestField "referer" req
-		, frombs $ lookupRequestField "user-agent" req
-		]
-  where
-	frombs v = L8.toString $ L.fromChunks [v]
 
 lookupRequestField :: CI.CI B.ByteString -> Wai.Request -> B.ByteString
 lookupRequestField k req = fromMaybe "" . lookup k $ Wai.requestHeaders req

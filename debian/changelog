@@ -6,6 +6,7 @@ git-annex (5.20140607) UNRELEASED; urgency=medium
   * Avoid bad commits after interrupted direct mode sync (or merge).
   * Windows: Fix opening webapp when repository is in a directory with
     spaces in the path.
+  * Fix build with wai 0.3.0.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 09 Jun 2014 14:44:09 -0400
 

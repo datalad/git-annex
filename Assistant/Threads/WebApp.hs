@@ -47,6 +47,8 @@ import Yesod
 import Network.Socket (SockAddr, HostName)
 import Data.Text (pack, unpack)
 import qualified Network.Wai.Handler.WarpTLS as TLS
+import Network.Wai.Middleware.RequestLogger
+import System.Log.Logger
 
 mkYesodDispatch "WebApp" $(parseRoutesFile "Assistant/WebApp/routes")
 
@@ -83,7 +85,7 @@ webAppThread assistantdata urlrenderer noannex cannotrun postfirstrun listenhost
 	setUrlRenderer urlrenderer $ yesodRender webapp (pack "")
 	app <- toWaiAppPlain webapp
 	app' <- ifM debugEnabled
-		( return $ httpDebugLogger app
+		( return $ logStdout app
 		, return app
 		)
 	runWebApp tlssettings listenhost' app' $ \addr -> if noannex
@@ -135,3 +137,9 @@ getTlsSettings = do
 #else
 	return Nothing
 #endif
+
+{- Checks if debugging is actually enabled. -}
+debugEnabled :: IO Bool
+debugEnabled = do
+	l <- getRootLogger
+	return $ getLevel l <= Just DEBUG
