@@ -1,11 +1,26 @@
-{- Caching a file's inode, size, and modification time to see when it's changed.
+{- Caching a file's inode, size, and modification time
+ - to see when it's changed.
  -
- - Copyright 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2013, 2014 Joey Hess <joey@kitenet.net>
  -
  - License: BSD-2-clause
  -}
 
-module Utility.InodeCache where
+module Utility.InodeCache (
+	InodeCache,
+	InodeComparisonType(..),
+	compareStrong,
+	compareWeak,
+	compareBy,
+	readInodeCache,
+	showInodeCache,
+	genInodeCache,
+	toInodeCache,
+	InodeCacheKey,
+	inodeCacheToKey,
+	inodeCacheToMtime,
+	prop_read_show_inodecache
+) where
 
 import Common
 import System.PosixCompat.Types
@@ -16,6 +31,7 @@ data InodeCachePrim = InodeCachePrim FileID FileOffset EpochTime
 
 newtype InodeCache = InodeCache InodeCachePrim
 	deriving (Show)
+
 
 {- Inode caches can be compared in two different ways, either weakly
  - or strongly. -}
