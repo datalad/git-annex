@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="martin"
+ ip="193.174.111.250"
+ subject="specification"
+ date="2014-06-11T05:43:02Z"
+ content="""
+What you suggested (to not add if exact 1s or exact 1h time difference and changed checksum) would do the trick but it's hard for the user to test if this really works as expected and it would be more secure and IMHO more clear to do it like this:
+
+If `git annex add` \"meets\" such files, `git annex add` should not really add / commit these pseudo-modified files but *only adapt the timestamps* (which make the software erroneously thinks the files were modified) to the vfat values. (if checksum is still correct) I guess the timestamps are in the annex branch. 
+
+`git annex add` could - instead of write: \"add ok\" - only write: \"corrected timestamp ok - no need to add\"
+
+So the user sees whats really happen and after this these files appears again as what they are: unmodified. `git annex status` would say nothing (everything fine), and `git annex fsck` would checksum these files again.
+
+I suppose that the way i suggest is harder to code :-( Unfortunately I'm not a good coder and not experienced in haskell for sending a patch myself / the open source way...
+
+
+"""]]
