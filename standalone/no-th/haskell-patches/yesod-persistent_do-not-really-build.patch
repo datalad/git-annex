@@ -1,6 +1,6 @@
-From b232effd092b03c6ad4235e5aa0c5750461af02d Mon Sep 17 00:00:00 2001
+From 92a34bc2b09572a58a4e696e0d8a0a61475535f7 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Wed, 21 May 2014 04:47:44 +0000
+Date: Tue, 10 Jun 2014 19:09:56 +0000
 Subject: [PATCH] do not really build
 
 ---
@@ -8,7 +8,7 @@ Subject: [PATCH] do not really build
  1 file changed, 10 deletions(-)
 
 diff --git a/yesod-persistent.cabal b/yesod-persistent.cabal
-index 3560dd9..d01be4a 100644
+index b44499b..ef33863 100644
 --- a/yesod-persistent.cabal
 +++ b/yesod-persistent.cabal
 @@ -14,16 +14,6 @@ description:     Some helpers for using Persistent from Yesod.
@@ -18,7 +18,7 @@ index 3560dd9..d01be4a 100644
 -                   , yesod-core                >= 1.2.2    && < 1.3
 -                   , persistent                >= 1.2      && < 1.4
 -                   , persistent-template       >= 1.2      && < 1.4
--                   , transformers              >= 0.2.2    && < 0.4
+-                   , transformers              >= 0.2.2
 -                   , blaze-builder
 -                   , conduit
 -                   , resourcet                 >= 0.4.5
@@ -29,5 +29,5 @@ index 3560dd9..d01be4a 100644
  
  test-suite test
 -- 
-2.0.0.rc2
+2.0.0
 
