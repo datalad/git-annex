@@ -1,0 +1,16 @@
+Windows has an unfortunate handling of time zones, which means that when
+the time zone is changed (or DST changes), the timestamps of files also
+appear to change.
+
+This means that after such a change, git-annex will see new mtimes, and
+want to re-checksum every file in the repo.
+
+The best way to fix this seems to be to normalize the timestamp returned by
+getFileStatus, which is relative to the current time zone, to be relative
+to UTC. (As is always the case on Unix, of course).
+However, to do that, I need to know the current timezone. 
+
+Unfortunately, Data.Time.LocalTime.getCurrentTimeZone doesn't seem to really
+work on windows. It always returns a time zone 60 minutes from UTS in my tests,
+no matter what the zone really is. I need to test this more widely and file
+a GHC bug if appropriate.
