@@ -53,11 +53,11 @@ stageDirect = do
 	{- Determine what kind of modified or deleted file this is, as
 	 - efficiently as we can, by getting any key that's associated
 	 - with it in git, as well as its stat info. -}
-	go (file, Just sha, Just mode) = do
+	go (file, Just sha, Just mode) = withTSDelta $ \delta -> do
 		shakey <- catKey sha mode
 		mstat <- liftIO $ catchMaybeIO $ getSymbolicLinkStatus file
 		filekey <- isAnnexLink file
-		case (shakey, filekey, mstat, toInodeCache =<< mstat) of
+		case (shakey, filekey, mstat, toInodeCache delta =<< mstat) of
 			(_, Just key, _, _)
 				| shakey == filekey -> noop
 				{- A changed symlink. -}

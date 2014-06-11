@@ -1,9 +1,11 @@
 {- git-annex file content managing for direct mode
  -
- - Copyright 2012-2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
+
+{-# LANGUAGE CPP #-}
 
 module Annex.Content.Direct (
 	associatedFiles,
@@ -27,6 +29,8 @@ module Annex.Content.Direct (
 	inodesChanged,
 	createInodeSentinalFile,
 	addContentWhenNotPresent,
+	withTSDelta,
+	getTSDelta,
 ) where
 
 import Common.Annex
@@ -136,7 +140,7 @@ recordedInodeCache key = withInodeCacheFile key $ \f ->
  -}
 updateInodeCache :: Key -> FilePath -> Annex ()
 updateInodeCache key file = maybe noop (addInodeCache key)
-	=<< liftIO (genInodeCache file)
+	=<< withTSDelta (liftIO . genInodeCache file)
 
 {- Adds another inode to the cache for a key. -}
 addInodeCache :: Key -> InodeCache -> Annex ()
@@ -164,16 +168,16 @@ withInodeCacheFile key a = a =<< calcRepo (gitAnnexInodeCache key)
 {- Checks if a InodeCache matches the current version of a file. -}
 sameInodeCache :: FilePath -> [InodeCache] -> Annex Bool
 sameInodeCache _ [] = return False
-sameInodeCache file old = go =<< liftIO (genInodeCache file)
+sameInodeCache file old = go =<< withTSDelta (liftIO . genInodeCache file)
   where
 	go Nothing = return False
 	go (Just curr) = elemInodeCaches curr old
 
 {- Checks if a FileStatus matches the recorded InodeCache of a file. -}
 sameFileStatus :: Key -> FileStatus -> Annex Bool
-sameFileStatus key status = do
+sameFileStatus key status = withTSDelta $ \delta -> do
 	old <- recordedInodeCache key
-	let curr = toInodeCache status
+	let curr = toInodeCache delta status
 	case (old, curr) of
 		(_, Just c) -> elemInodeCaches c old
 		([], Nothing) -> return True
@@ -217,40 +221,43 @@ addContentWhenNotPresent key contentfile associatedfile = do
  - inodes have changed.
  -}
 inodesChanged :: Annex Bool
-inodesChanged = maybe calc return =<< Annex.getState Annex.inodeschanged
+inodesChanged = sentinalInodesChanged <$> sentinalStatus
+
+withTSDelta :: (TSDelta -> Annex a) -> Annex a
+withTSDelta a = a =<< getTSDelta
+
+getTSDelta :: Annex TSDelta
+#ifdef mingw32_HOST_OS
+getTSDelta = sentinalTSDelta <$> sentinalStatus
+#else
+getTSDelta = pure noTSDelta -- optimisation
+#endif
+
+sentinalStatus :: Annex SentinalStatus
+sentinalStatus = maybe check return =<< Annex.getState Annex.sentinalstatus
   where
-	calc = do
-		scache <- liftIO . genInodeCache
-			=<< fromRepo gitAnnexInodeSentinal
-		scached <- readInodeSentinalFile
-		let changed = case (scache, scached) of
-			(Just c1, Just c2) -> not $ compareStrong c1 c2
-			_ -> True
-		Annex.changeState $ \s -> s { Annex.inodeschanged = Just changed }
-		return changed
-
-readInodeSentinalFile :: Annex (Maybe InodeCache)
-readInodeSentinalFile = do
-	sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
-	liftIO $ catchDefaultIO Nothing $
-		readInodeCache <$> readFile sentinalcachefile
-
-writeInodeSentinalFile :: Annex ()
-writeInodeSentinalFile = do
-	sentinalfile <- fromRepo gitAnnexInodeSentinal
-	createAnnexDirectory (parentDir sentinalfile)
-	sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
-	liftIO $ writeFile sentinalfile ""
-	liftIO $ maybe noop (writeFile sentinalcachefile . showInodeCache)
-		=<< genInodeCache sentinalfile
+	check = do
+		sc <- liftIO . checkSentinalFile =<< annexSentinalFile
+		Annex.changeState $ \s -> s { Annex.sentinalstatus = Just sc }
+		return sc
 
 {- The sentinal file is only created when first initializing a repository.
  - If there are any annexed objects in the repository already, creating
  - the file would invalidate their inode caches. -}
 createInodeSentinalFile :: Annex ()
-createInodeSentinalFile =
-	unlessM (alreadyexists <||> hasobjects)
-		writeInodeSentinalFile
+createInodeSentinalFile = unlessM (alreadyexists <||> hasobjects) $ do
+	s <- annexSentinalFile
+	createAnnexDirectory (parentDir (sentinalFile s))
+	liftIO $ writeSentinalFile s
   where
-	alreadyexists = isJust <$> readInodeSentinalFile
+	alreadyexists = liftIO. sentinalFileExists =<< annexSentinalFile
 	hasobjects = liftIO . doesDirectoryExist =<< fromRepo gitAnnexObjectDir
+
+annexSentinalFile :: Annex SentinalFile
+annexSentinalFile = do
+	sentinalfile <- fromRepo gitAnnexInodeSentinal
+	sentinalcachefile <- fromRepo gitAnnexInodeSentinalCache
+	return $ SentinalFile
+		{ sentinalFile = sentinalfile
+		, sentinalCacheFile = sentinalcachefile
+		}

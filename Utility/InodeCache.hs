@@ -6,19 +6,33 @@
  - License: BSD-2-clause
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Utility.InodeCache (
 	InodeCache,
 	InodeComparisonType(..),
+
 	compareStrong,
 	compareWeak,
 	compareBy,
+
 	readInodeCache,
 	showInodeCache,
 	genInodeCache,
 	toInodeCache,
+
 	InodeCacheKey,
 	inodeCacheToKey,
 	inodeCacheToMtime,
+
+	SentinalFile(..),
+	SentinalStatus(..),
+	TSDelta,
+	noTSDelta,
+	writeSentinalFile,
+	checkSentinalFile,
+	sentinalFileExists,
+
 	prop_read_show_inodecache
 ) where
 
@@ -31,7 +45,6 @@ data InodeCachePrim = InodeCachePrim FileID FileOffset EpochTime
 
 newtype InodeCache = InodeCache InodeCachePrim
 	deriving (Show)
-
 
 {- Inode caches can be compared in two different ways, either weakly
  - or strongly. -}
@@ -92,16 +105,87 @@ readInodeCache s = case words s of
 		in InodeCache <$> prim
 	_ -> Nothing
 
-genInodeCache :: FilePath -> IO (Maybe InodeCache)
-genInodeCache f = catchDefaultIO Nothing $ toInodeCache <$> getFileStatus f
+genInodeCache :: FilePath -> TSDelta -> IO (Maybe InodeCache)
+genInodeCache f delta = catchDefaultIO Nothing $
+	toInodeCache delta <$> getFileStatus f
 
-toInodeCache :: FileStatus -> Maybe InodeCache
-toInodeCache s
+toInodeCache :: TSDelta -> FileStatus -> Maybe InodeCache
+toInodeCache (TSDelta delta) s
 	| isRegularFile s = Just $ InodeCache $ InodeCachePrim
 		(fileID s)
 		(fileSize s)
-		(modificationTime s)
+		(modificationTime s + delta)
 	| otherwise = Nothing
+
+{- Some filesystem get new random inodes each time they are mounted.
+ - To detect this and other problems, a sentinal file can be created.
+ - Its InodeCache at the time of its creation is written to the cache file,
+ - so changes can later be detected. -}
+data SentinalFile = SentinalFile
+	{ sentinalFile :: FilePath
+	, sentinalCacheFile :: FilePath
+	}
+	deriving (Show)
+
+{- On Windows, the mtime of a file appears to change when the time zone is
+ - changed. To deal with this, a TSDelta can be used; the delta is added to
+ - the mtime when generating an InodeCache. The current delta can be found
+ - by looking at the SentinalFile. -}
+newtype TSDelta = TSDelta EpochTime
+	deriving (Show)
+
+noTSDelta :: TSDelta
+noTSDelta = TSDelta 0
+
+writeSentinalFile :: SentinalFile -> IO ()
+writeSentinalFile s = do
+	writeFile (sentinalFile s) ""
+	maybe noop (writeFile (sentinalCacheFile s) . showInodeCache)
+		=<< genInodeCache (sentinalFile s) noTSDelta
+
+data SentinalStatus = SentinalStatus
+	{ sentinalInodesChanged :: Bool
+	, sentinalTSDelta :: TSDelta
+	} 
+	deriving (Show)
+
+{- Checks if the InodeCache of the sentinal file is the same
+ - as it was when it was originally created.
+ -
+ - On Windows, there's no change even when there is a nonzero
+ - TSDelta between the original and current InodeCaches.
+ -
+ - If the sential does not exist, returns a dummy value indicating
+ - that it's apparently changed.
+ -}
+checkSentinalFile :: SentinalFile -> IO SentinalStatus
+checkSentinalFile s = do
+	mold <- loadoldcache
+	case mold of
+		Nothing -> return dummy
+		(Just old) -> do
+			mnew <- gennewcache
+			case mnew of
+				Nothing -> return dummy
+				Just new -> return $ calc old new
+  where
+	loadoldcache = catchDefaultIO Nothing $
+		readInodeCache <$> readFile (sentinalCacheFile s)
+	gennewcache = genInodeCache (sentinalFile s) noTSDelta
+	calc (InodeCache (InodeCachePrim inode1 size1 mtime1)) (InodeCache (InodeCachePrim inode2 size2 mtime2)) =
+		SentinalStatus (not unchanged) tsdelta
+	  where
+#ifdef mingw32_HOST_OS
+	  	unchanged = inode1 == inode2 && size1 == size2
+		tsdelta = TSDelta (mtime1 - mtime2)
+#else
+		unchanged = inode1 == inode2 && size1 == size2 && mtime1 == mtime2
+		tsdelta = noTSDelta
+#endif
+	dummy = SentinalStatus True noTSDelta
+
+sentinalFileExists :: SentinalFile -> IO Bool
+sentinalFileExists s = allM doesFileExist [sentinalCacheFile s, sentinalFile s]
 
 instance Arbitrary InodeCache where
 	arbitrary =

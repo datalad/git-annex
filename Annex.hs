@@ -32,10 +32,6 @@ module Annex (
 	withCurrentState,
 ) where
 
-import "mtl" Control.Monad.Reader
-import Control.Monad.Catch
-import Control.Concurrent
-
 import Common
 import qualified Git
 import qualified Git.Config
@@ -62,11 +58,16 @@ import Types.LockPool
 import Types.MetaData
 import Types.DesktopNotify
 import Types.CleanupActions
-import qualified Data.Map as M
-import qualified Data.Set as S
 #ifdef WITH_QUVI
 import Utility.Quvi (QuviVersion)
 #endif
+import Utility.InodeCache
+
+import "mtl" Control.Monad.Reader
+import Control.Monad.Catch
+import Control.Concurrent
+import qualified Data.Map as M
+import qualified Data.Set as S
 
 {- git-annex's monad is a ReaderT around an AnnexState stored in a MVar.
  - This allows modifying the state in an exception-safe fashion.
@@ -120,7 +121,7 @@ data AnnexState = AnnexState
 	, fields :: M.Map String String
 	, modmeta :: [ModMeta]
 	, cleanup :: M.Map CleanupAction (Annex ())
-	, inodeschanged :: Maybe Bool
+	, sentinalstatus :: Maybe SentinalStatus
 	, useragent :: Maybe String
 	, errcounter :: Integer
 	, unusedkeys :: Maybe (S.Set Key)
@@ -165,7 +166,7 @@ newState c r = AnnexState
 	, fields = M.empty
 	, modmeta = []
 	, cleanup = M.empty
-	, inodeschanged = Nothing
+	, sentinalstatus = Nothing
 	, useragent = Nothing
 	, errcounter = 0
 	, unusedkeys = Nothing

@@ -313,10 +313,11 @@ handleAdds havelsof delayadd cs = returnWhen (null incomplete) $ do
 	adddirect toadd = do
 		ct <- liftAnnex compareInodeCachesWith
 		m <- liftAnnex $ removedKeysMap ct cs
+		delta <- liftAnnex getTSDelta
 		if M.null m
 			then forM toadd add
 			else forM toadd $ \c -> do
-				mcache <- liftIO $ genInodeCache $ changeFile c
+				mcache <- liftIO $ genInodeCache (changeFile c) delta
 				case mcache of
 					Nothing -> add c
 					Just cache ->
