@@ -1,21 +1,20 @@
-From 2109923a879a02c8a79e8e08573bf9e500d8afc8 Mon Sep 17 00:00:00 2001
+From bc312c7431877b3b788de5e7ce5ee743be73c0ba Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Wed, 21 May 2014 16:25:06 +0000
-Subject: [PATCH] remove  TH
+Date: Tue, 10 Jun 2014 22:13:58 +0000
+Subject: [PATCH] remove TH
 
 ---
- lens.cabal                              | 20 +-------------------
- src/Control/Lens.hs                     |  8 ++------
- src/Control/Lens/Cons.hs                |  2 --
- src/Control/Lens/Internal/Fold.hs       |  2 --
- src/Control/Lens/Internal/Reflection.hs |  2 --
- src/Control/Lens/Operators.hs           |  2 +-
- src/Control/Lens/Prism.hs               |  2 --
- src/Control/Monad/Primitive/Lens.hs     |  1 -
- 8 files changed, 4 insertions(+), 35 deletions(-)
+ lens.cabal                          | 19 +------------------
+ src/Control/Lens.hs                 |  8 ++------
+ src/Control/Lens/Cons.hs            |  2 --
+ src/Control/Lens/Internal/Fold.hs   |  2 --
+ src/Control/Lens/Operators.hs       |  2 +-
+ src/Control/Lens/Prism.hs           |  2 --
+ src/Control/Monad/Primitive/Lens.hs |  1 -
+ 7 files changed, 4 insertions(+), 32 deletions(-)
 
 diff --git a/lens.cabal b/lens.cabal
-index 03f64f5..3f6f6d2 100644
+index d70c2f4..28af768 100644
 --- a/lens.cabal
 +++ b/lens.cabal
 @@ -10,7 +10,7 @@ stability:     provisional
@@ -25,17 +24,9 @@ index 03f64f5..3f6f6d2 100644
 -build-type:    Custom
 +build-type:    Simple
  -- build-tools:   cpphs
- tested-with:   GHC == 7.6.3
+ tested-with:   GHC == 7.4.1, GHC == 7.4.2, GHC == 7.6.3, GHC == 7.8.1, GHC == 7.8.2
  synopsis:      Lenses, Folds and Traversals
-@@ -182,7 +182,6 @@ flag j
- 
- library
-   build-depends:
--    aeson                     >= 0.7      && < 0.8,
-     array                     >= 0.3.0.2  && < 0.6,
-     base                      >= 4.3      && < 5,
-     bifunctors                >= 4        && < 5,
-@@ -221,7 +220,6 @@ library
+@@ -220,7 +220,6 @@ library
      Control.Exception.Lens
      Control.Lens
      Control.Lens.Action
@@ -43,7 +34,7 @@ index 03f64f5..3f6f6d2 100644
      Control.Lens.Combinators
      Control.Lens.Cons
      Control.Lens.Each
-@@ -249,29 +247,24 @@ library
+@@ -248,29 +247,24 @@ library
      Control.Lens.Internal.Reflection
      Control.Lens.Internal.Review
      Control.Lens.Internal.Setter
@@ -73,7 +64,7 @@ index 03f64f5..3f6f6d2 100644
      Data.Array.Lens
      Data.Bits.Lens
      Data.ByteString.Lens
-@@ -294,17 +287,10 @@ library
+@@ -293,17 +287,10 @@ library
      Data.Typeable.Lens
      Data.Vector.Lens
      Data.Vector.Generic.Lens
@@ -91,7 +82,7 @@ index 03f64f5..3f6f6d2 100644
    cpp-options: -traditional
  
    if flag(safe)
-@@ -406,7 +392,6 @@ test-suite doctests
+@@ -405,7 +392,6 @@ test-suite doctests
        deepseq,
        doctest        >= 0.9.1,
        filepath,
@@ -99,7 +90,7 @@ index 03f64f5..3f6f6d2 100644
        mtl,
        nats,
        parallel,
-@@ -444,7 +429,6 @@ benchmark plated
+@@ -443,7 +429,6 @@ benchmark plated
      comonad,
      criterion,
      deepseq,
@@ -107,7 +98,7 @@ index 03f64f5..3f6f6d2 100644
      lens,
      transformers
  
-@@ -479,7 +463,6 @@ benchmark unsafe
+@@ -478,7 +463,6 @@ benchmark unsafe
      comonads-fd,
      criterion,
      deepseq,
@@ -115,7 +106,7 @@ index 03f64f5..3f6f6d2 100644
      lens,
      transformers
  
-@@ -496,6 +479,5 @@ benchmark zipper
+@@ -495,6 +479,5 @@ benchmark zipper
      comonads-fd,
      criterion,
      deepseq,
@@ -196,19 +187,6 @@ index ab09c6b..43aa905 100644
  ------------------------------------------------------------------------------
  -- Folding
  ------------------------------------------------------------------------------
-diff --git a/src/Control/Lens/Internal/Reflection.hs b/src/Control/Lens/Internal/Reflection.hs
-index bf09f2c..c9e112f 100644
---- a/src/Control/Lens/Internal/Reflection.hs
-+++ b/src/Control/Lens/Internal/Reflection.hs
-@@ -64,8 +64,6 @@ import Data.Word
- import Data.Typeable
- import Data.Reflection
- 
--{-# ANN module "HLint: ignore Avoid lambda" #-}
--
- class Typeable s => B s where
-   reflectByte :: proxy s -> IntPtr
- 
 diff --git a/src/Control/Lens/Operators.hs b/src/Control/Lens/Operators.hs
 index 9992e63..631e8e6 100644
 --- a/src/Control/Lens/Operators.hs
@@ -248,5 +226,5 @@ index ee942c6..2f37134 100644
  prim :: (PrimMonad m) => Iso' (m a) (State# (PrimState m) -> (# State# (PrimState m), a #))
  prim = iso internal primitive
 -- 
-2.0.0.rc2
+2.0.0
 
