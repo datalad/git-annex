@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawk9SYh6N-JUMkYkW4aOk55zC3Vr9KonDV4"
+ nickname="Florian"
+ subject="comment 3"
+ date="2014-06-11T18:29:38Z"
+ content="""
+I'm having the exact same issue on Arch.
+
+You said this fix was in the tarballs in one hour, which was almost two days ago. Are you refering to these downloads: http://downloads.kitenet.net/git-annex/linux/current/ I just wonder, because these show mtime of 5 days ago.
+
+Thx!
+"""]]
