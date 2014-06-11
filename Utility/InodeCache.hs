@@ -28,10 +28,17 @@ compareStrong (InodeCache x) (InodeCache y) = x == y
 
 {- Weak comparison of the inode caches, comparing the size and mtime,
  - but not the actual inode.  Useful when inodes have changed, perhaps
- - due to some filesystems being remounted. -}
+ - due to some filesystems being remounted.
+ -
+ - The weak mtime comparison treats any mtimes that are within 2 seconds
+ - of one-anther as the same. This is because FAT has only a 2 second
+ - resolution. When a FAT filesystem is used on Linux, higher resolution
+ - timestamps are cached and used by Linux, but this is lost on unmount,
+ - so after a remount, the timestamp can appear to have changed.
+ -}
 compareWeak :: InodeCache -> InodeCache -> Bool
 compareWeak (InodeCache (InodeCachePrim _ size1 mtime1)) (InodeCache (InodeCachePrim _ size2 mtime2)) =
-	size1 == size2 && mtime1 == mtime2
+	size1 == size2 && (abs (mtime1 - mtime2) < 2)
 
 compareBy :: InodeComparisonType -> InodeCache -> InodeCache -> Bool
 compareBy Strongly = compareStrong

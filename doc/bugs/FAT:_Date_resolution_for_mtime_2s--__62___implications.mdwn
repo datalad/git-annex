@@ -135,3 +135,4 @@ Here's an konsole session to show this behaviour:
     +Modifiziert: 2014-05-03 19:44:38.000000000 +0200
 
 
+> fixed [[done]] --[[Joey]]
