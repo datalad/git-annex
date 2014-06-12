@@ -5,14 +5,24 @@ appear to change.
 This means that after such a change, git-annex will see new mtimes, and
 want to re-checksum every file in the repo.
 
-The best way to fix this seems to be to normalize the timestamp returned by
-getFileStatus, which is relative to the current time zone, to be relative
-to UTC. (As is always the case on Unix, of course).
-However, to do that, I need to know the current timezone. 
-
-Unfortunately, Data.Time.LocalTime.getCurrentTimeZone doesn't seem to really
-work on windows. It always returns a time zone 60 minutes from UTS in my tests,
-no matter what the zone really is. I need to test this more widely and file
-a GHC bug if appropriate.
-
 [[!tag confirmed]]
+
+> Update: Actually, I seem to have been getting confused by behavior of
+> cygwin terminal setting TZ. That indeed led to timestamp changes when the
+> time zone changed. I have made git-annex unset TZ to avoid this.
+> 
+> Without TZ set, time stamps are actually stable across time zone changes.
+> Ie, a simple program to read the time stamp of a file and print it
+> always shows the same thing, before and after a timezone change.
+> 
+> However, and here's where it gets truely ghastly: A program that stats a
+> file in a loop will see its timestamp change when the timezone changes.
+> I suspect this might be a bug in the Haskell RTS caching something it
+> should not. Stopping and re-running the program gets back to the
+> original timestamp.
+>
+> I have not tested DST changes, but it's hard to imagine it being any
+> worse than the above behavior.
+> 
+> So, that's insane then. We can't trust timestamps to be stable on windows 
+> when git-annex is running for a long period of time. --[[Joey]]
