@@ -156,9 +156,9 @@ runAction repo action@(CommandAction {}) = do
 	-- Using xargs on Windows is problimatic, so just run the command
 	-- once per file (not as efficient.)
 	if null (getFiles action)
-		then void $ boolSystem "git" gitparams
+		then void $ boolSystemEnv "git" gitparams (gitEnv repo)
 		else forM_ (getFiles action) $ \f ->
-			void $ boolSystem "git" (gitparams ++ [f])
+			void $ boolSystemEnv "git" (gitparams ++ [f]) (gitEnv repo)
 #endif
   where
 	gitparams = gitCommandLine
