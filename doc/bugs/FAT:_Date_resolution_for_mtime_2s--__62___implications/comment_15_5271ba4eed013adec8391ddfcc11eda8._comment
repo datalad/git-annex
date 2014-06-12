@@ -1,0 +1,19 @@
+[[!comment format=mdwn
+ username="martin"
+ ip="89.183.21.108"
+ subject="In reply to comment 11"
+ date="2014-06-12T09:22:53Z"
+ content="""
+Dear joey,
+
+thanks a lot for fixing this!
+
+Only for this protocol (not to have the last word ;-)
+
+What `git annex add` already does now and what i suggested it could do better is indead the same (result) for uncorrupted files (the frequent case).
+But i'am afraid, it could be slightly different if we deal with corrupted files. The preset behaviour would add this file, the suggested behaviour would not...
+
+But this discussion is history now - i'm lucky :-))
+
+Now i do some tests with daylight savings time change - hopefully there are no problems!
+"""]]
