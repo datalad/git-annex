@@ -155,7 +155,7 @@ ingest (Just source) = withTSDelta $ \delta -> do
 	backend <- chooseBackend $ keyFilename source
 	k <- genKey source backend
 	ms <- liftIO $ catchMaybeIO $ getFileStatus $ contentLocation source
-	let mcache = toInodeCache delta =<< ms
+	mcache <- maybe (pure Nothing) (liftIO . toInodeCache delta) ms
 	case (mcache, inodeCache source) of
 		(_, Nothing) -> go k mcache ms
 		(Just newc, Just c) | compareStrong c newc -> go k mcache ms

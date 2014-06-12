@@ -107,15 +107,17 @@ readInodeCache s = case words s of
 
 genInodeCache :: FilePath -> TSDelta -> IO (Maybe InodeCache)
 genInodeCache f delta = catchDefaultIO Nothing $
-	toInodeCache delta <$> getFileStatus f
+	toInodeCache delta =<< getFileStatus f
 
-toInodeCache :: TSDelta -> FileStatus -> Maybe InodeCache
-toInodeCache (TSDelta delta) s
-	| isRegularFile s = Just $ InodeCache $ InodeCachePrim
-		(fileID s)
-		(fileSize s)
-		(modificationTime s + delta)
-	| otherwise = Nothing
+toInodeCache :: TSDelta -> FileStatus -> IO (Maybe InodeCache)
+toInodeCache (TSDelta getdelta) s
+	| isRegularFile s = do
+		delta <- getdelta
+		return $ Just $ InodeCache $ InodeCachePrim
+			(fileID s)
+			(fileSize s)
+			(modificationTime s + delta)
+	| otherwise = pure Nothing
 
 {- Some filesystem get new random inodes each time they are mounted.
  - To detect this and other problems, a sentinal file can be created.
@@ -130,12 +132,13 @@ data SentinalFile = SentinalFile
 {- On Windows, the mtime of a file appears to change when the time zone is
  - changed. To deal with this, a TSDelta can be used; the delta is added to
  - the mtime when generating an InodeCache. The current delta can be found
- - by looking at the SentinalFile. -}
-newtype TSDelta = TSDelta EpochTime
-	deriving (Show)
+ - by looking at the SentinalFile. Effectively, this makes all InodeCaches
+ - use the same time zone that was in use when the sential file was
+ - originally written. -}
+newtype TSDelta = TSDelta (IO EpochTime)
 
 noTSDelta :: TSDelta
-noTSDelta = TSDelta 0
+noTSDelta = TSDelta (pure 0)
 
 writeSentinalFile :: SentinalFile -> IO ()
 writeSentinalFile s = do
@@ -147,16 +150,15 @@ data SentinalStatus = SentinalStatus
 	{ sentinalInodesChanged :: Bool
 	, sentinalTSDelta :: TSDelta
 	} 
-	deriving (Show)
 
 {- Checks if the InodeCache of the sentinal file is the same
  - as it was when it was originally created.
  -
- - On Windows, there's no change even when there is a nonzero
- - TSDelta between the original and current InodeCaches.
+ - On Windows, time stamp differences are ignored, since they change
+ - with the timezone.
  -
- - If the sential does not exist, returns a dummy value indicating
- - that it's apparently changed.
+ - When the sential file does not exist, InodeCaches canot reliably be
+ - compared, so the assumption is that there is has been a change.
  -}
 checkSentinalFile :: SentinalFile -> IO SentinalStatus
 checkSentinalFile s = do
@@ -172,14 +174,21 @@ checkSentinalFile s = do
 	loadoldcache = catchDefaultIO Nothing $
 		readInodeCache <$> readFile (sentinalCacheFile s)
 	gennewcache = genInodeCache (sentinalFile s) noTSDelta
-	calc (InodeCache (InodeCachePrim inode1 size1 mtime1)) (InodeCache (InodeCachePrim inode2 size2 mtime2)) =
+	calc (InodeCache (InodeCachePrim oldinode oldsize oldmtime)) (InodeCache (InodeCachePrim newinode newsize newmtime)) =
 		SentinalStatus (not unchanged) tsdelta
 	  where
 #ifdef mingw32_HOST_OS
-	  	unchanged = inode1 == inode2 && size1 == size2
-		tsdelta = TSDelta (mtime1 - mtime2)
+	  	unchanged = oldinode == newinode && oldsize == newsize
+		tsdelta = TSDelta $ do
+			-- Run when generating an InodeCache, 
+			-- to get the current delta.
+			mnew <- gennewcache
+			return $ case mnew of
+				Just (InodeCache (InodeCachePrim _ _ currmtime)) ->
+					oldmtime - currmtime
+				Nothing -> 0
 #else
-		unchanged = inode1 == inode2 && size1 == size2 && mtime1 == mtime2
+		unchanged = oldinode == newinode && oldsize == newsize && oldmtime == newmtime
 		tsdelta = noTSDelta
 #endif
 	dummy = SentinalStatus True noTSDelta
