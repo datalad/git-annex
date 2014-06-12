@@ -4,17 +4,16 @@ git-annex (5.20140607) UNRELEASED; urgency=medium
   * Avoid leaving behind .tmp files when failing in some cases, including
     importing files to a disk that is full.
   * Avoid bad commits after interrupted direct mode sync (or merge).
-  * Windows: Fix opening webapp when repository is in a directory with
-    spaces in the path.
   * Fix build with wai 0.3.0.
   * Deal with FAT's low resolution timestamps, which in combination with
     Linux's caching of higher res timestamps while a FAT is mounted, caused
     direct mode repositories on FAT to seem to have modified files after
     they were unmounted and remounted.
+  * Windows: Fix opening webapp when repository is in a directory with
+    spaces in the path.
   * Detect when Windows has lost its mind in a timezone change, and
     automatically apply a delta to the timestamps it returns, to get back to
-    sane values. Note that this may cause a one-time re-checksumming of all
-    files on Windows, on upgrade to this version.
+    sane values.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 09 Jun 2014 14:44:09 -0400
 
