@@ -1,0 +1,22 @@
+It's officially a Windows porting month. Now that I'm half way through it
+and with the last week of the month going to be a vacation, this makes
+sense.
+
+Today, finished up dealing with the timezone/timestamp issues on Windows.
+This got stranger and stranger the closer I looked at it. After a timestamp
+change, a program that was already running will see one timestamp, while a
+program that is started after the change will see another one! My approach
+works pretty much no matter how Windows goes insane though, and always
+recovers a true timestamp. Yay.
+
+Also fixed a regression test failure on Windows, which turned out to be
+rooted in a bug in the command queue runner, which neglected to pass
+along environment overrides on Windows.
+
+Then I spent 5 hours tracking down a tricky 
+test suite failure on Windows, which turned out to also
+affect FAT and be a recent reversion that has as it's
+root cause a [fun bug in git itself](http://marc.info/?l=git&m=140262402204212&w=2).
+Put in a not very good workaround. Thank goodness for test suites!
+
+Also got the arm autobuilder unstuck. Release tomorrow.
