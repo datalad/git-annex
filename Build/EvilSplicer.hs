@@ -310,6 +310,7 @@ mangleCode = flip_colon
 	. yesod_url_render_hack
 	. text_builder_hack
 	. nested_instances 
+	. boxed_fileembed
 	. collapse_multiline_strings
 	. remove_package_version
 	. emptylambda
@@ -552,6 +553,42 @@ mangleCode = flip_colon
 	 - that above, so have to fix up after it here. 
 	 - The ; is added by case_layout. -}
 	flip_colon = replace "; : _ " "; _ : "
+
+{- Embedded files use unsafe packing, which is problimatic
+ - for several reasons, including that GHC sometimes omits trailing
+ - newlines in the file content, which leads to the wrong byte
+ - count. Also, GHC sometimes outputs unicode characters, which 
+ - are not legal in unboxed strings. 
+ -
+ - Avoid problems by converting:
+ - GHC.IO.unsafePerformIO
+ -   (Data.ByteString.Unsafe.unsafePackAddressLen
+ -      lllll
+ -      "blabblah"#)),
+ - to:
+ - Data.ByteString.Char8.pack "blabblah"),
+ -
+ - Note that the string is often multiline. This only works if
+ - collapse_multiline_strings has run first.
+ -}
+boxed_fileembed :: String -> String
+boxed_fileembed = parsecAndReplace $ do
+	i <- indent
+	void $ string "GHC.IO.unsafePerformIO"
+	void newline
+	void indent
+	void $ string "(Data.ByteString.Unsafe.unsafePackAddressLen"
+	void newline
+	void indent
+	void number
+	void newline
+	void indent
+	void $ char '"'
+	s <- restOfLine
+	let s' = take (length s - 5) s
+	if "\"#))," `isSuffixOf` s
+		then return (i ++ "Data.ByteString.Char8.pack \"" ++ s' ++ "\"),\n")
+		else fail "not an unboxed string"
 
 {- This works around a problem in the expanded template haskell for Yesod
  - type-safe url rendering.
