@@ -20,7 +20,7 @@ import Data.Maybe
 import Data.List
 
 import Utility.Monad
-import Utility.Process
+import Utility.Process hiding (env)
 import Utility.Env
 
 data CmdParams = CmdParams
