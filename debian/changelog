@@ -1,4 +1,4 @@
-git-annex (5.20140607) UNRELEASED; urgency=medium
+git-annex (5.20140613) unstable; urgency=medium
 
   * Ignore setsid failures.
   * Avoid leaving behind .tmp files when failing in some cases, including
@@ -15,7 +15,7 @@ git-annex (5.20140607) UNRELEASED; urgency=medium
     automatically apply a delta to the timestamps it returns, to get back to
     sane values.
 
- -- Joey Hess <joeyh@debian.org>  Mon, 09 Jun 2014 14:44:09 -0400
+ -- Joey Hess <joeyh@debian.org>  Fri, 13 Jun 2014 09:58:07 -0400
 
 git-annex (5.20140606) unstable; urgency=medium
 
