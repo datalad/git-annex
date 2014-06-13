@@ -32,8 +32,16 @@ merge. (I assume this is how `git merge` normally works.) --[[Joey]]
 > Seems that a direct mode
 > merge also needs to use a different index file to stage its changes?
 > (Ugh)
-> > [[done]] --[[Joey]]
-> 
+> > done --[[Joey]]
+
+> > > I had to revert the fix on FAT/Windows due to 
+> > > a git bug: <http://marc.info/?l=git&m=140262402204212&w=2>
+> > > Once that bug's fixed, I can revisit this. --[[Joey]]
+
+[[!meta title="direct mode merge interrupt (fixed for all except FAT, Windows)"]]
+
+## other options
+
 > Or could perhaps use `git-merge-tree`
 > and avoid staging the merge in the index until the work-tree is updated.
 > 

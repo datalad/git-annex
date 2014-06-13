@@ -1,6 +1,6 @@
 {- git-annex direct mode
  -
- - Copyright 2012, 2013 Joey Hess <joey@kitenet.net>
+ - Copyright 2012-2014 Joey Hess <joey@kitenet.net>
  -
  - Licensed under the GNU GPL version 3 or higher.
  -}
@@ -168,7 +168,7 @@ mergeDirect startbranch oldref branch resolvemerge = do
 		createDirectoryIfMissing True d
 
 	withIndexFile tmpi $ do
-		merged <- inRepo (mergein d)
+		merged <- stageMerge d branch
 		r <- if merged
 			then return True
 			else resolvemerge
@@ -176,8 +176,23 @@ mergeDirect startbranch oldref branch resolvemerge = do
 		mergeDirectCommit merged startbranch branch
 		liftIO $ rename tmpi reali
 		return r
-  where
-	mergein d g = Git.Merge.stageMerge branch $
+
+{- Stage a merge into the index, avoiding changing HEAD or the current
+ - branch. -}
+stageMerge :: FilePath -> Git.Branch -> Annex Bool
+stageMerge d branch = do
+	-- XXX A bug in git makes stageMerge unsafe to use if the git repo
+	-- is configured with core.symlinks=false
+	-- Using mergeNonInteractive is not ideal though, since it will
+	-- update the current branch immediately, before the work tree
+	-- has been updated, which would leave things in an inconsistent
+	-- state if mergeDirectCleanup is interrupted.
+	-- <http://marc.info/?l=git&m=140262402204212&w=2>
+	merger <- ifM (coreSymlinks <$> Annex.getGitConfig)
+		( return Git.Merge.stageMerge
+		, return Git.Merge.mergeNonInteractive
+		) 
+	inRepo $ \g -> merger branch $ 
 		g { location = Local { gitdir = Git.localGitDir g, worktree = Just d } }
 
 {- Commits after a direct mode merge is complete, and after the work
