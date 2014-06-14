@@ -1,0 +1,7 @@
+Starting the assistant version 5.20140613 on my  repository (~60GB), it performed a merge
+with an offline-repository, deleting a large part of the files.
+Since the repo is in direct mode, I cannot do a git revert. The other repo is not available anymore
+
+Any way of getting them back?
+Also, du shows me that the .git/annex/objects folder has approximately the size of my repo before the incident.
+
