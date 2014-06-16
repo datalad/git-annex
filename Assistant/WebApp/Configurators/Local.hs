@@ -14,13 +14,11 @@ import Assistant.WebApp.Gpg
 import Assistant.WebApp.MakeRemote
 import Assistant.Sync
 import Assistant.Restart
-import Annex.Init
+import Annex.MakeRepo
 import qualified Git
-import qualified Git.Construct
 import qualified Git.Config
 import qualified Git.Command
 import qualified Git.Branch
-import qualified Annex
 import Config.Files
 import Utility.FreeDesktop
 import Utility.DiskFree
@@ -30,14 +28,12 @@ import Utility.Mounts
 import Utility.DataUnits
 import Remote (prettyUUID)
 import Annex.UUID
-import Annex.Direct
 import Types.StandardGroups
 import Logs.PreferredContent
 import Logs.UUID
 import Utility.UserInfo
 import Config
 import Utility.Gpg
-import qualified Annex.Branch
 import qualified Remote.GCrypt as GCrypt
 import qualified Types.Remote
 
@@ -413,69 +409,6 @@ startFullAssistant path repogroup setup = do
 		fromJust $ postFirstRun webapp
 	redirect $ T.pack url
 
-{- Makes a new git repository. Or, if a git repository already
- - exists, returns False. -}
-makeRepo :: FilePath -> Bool -> IO Bool
-makeRepo path bare = ifM (probeRepoExists path)
-	( return False
-	, do
-		(transcript, ok) <-
-			processTranscript "git" (toCommand params) Nothing
-		unless ok $
-			error $ "git init failed!\nOutput:\n" ++ transcript
-		return True
-	)
-  where
-	baseparams = [Param "init", Param "--quiet"]
-	params
-		| bare = baseparams ++ [Param "--bare", File path]
-		| otherwise = baseparams ++ [File path]
-
-{- Runs an action in the git repository in the specified directory. -}
-inDir :: FilePath -> Annex a -> IO a
-inDir dir a = do
-	state <- Annex.new =<< Git.Config.read =<< Git.Construct.fromPath dir
-	Annex.eval state a
-
-{- Creates a new repository, and returns its UUID. -}
-initRepo :: Bool -> Bool -> FilePath -> Maybe String -> Maybe StandardGroup -> IO UUID
-initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
-	initRepo' desc mgroup
-	{- Initialize the master branch, so things that expect
-	 - to have it will work, before any files are added. -}
-	unlessM (Git.Config.isBare <$> gitRepo) $
-		void $ inRepo $ Git.Command.runBool
-			[ Param "commit"
-			, Param "--quiet"
-			, Param "--allow-empty"
-			, Param "-m"
-			, Param "created repository"
-			]
-	{- Repositories directly managed by the assistant use direct mode.
-	 - 
-	 - Automatic gc is disabled, as it can be slow. Insted, gc is done
-	 - once a day.
-	 -}
-	when primary_assistant_repo $ do
-		setDirect True
-		inRepo $ Git.Command.run
-			[Param "config", Param "gc.auto", Param "0"]
-	getUUID
-{- Repo already exists, could be a non-git-annex repo though so
- - still initialize it. -}
-initRepo False _ dir desc mgroup = inDir dir $ do
-	initRepo' desc mgroup
-	getUUID
-
-initRepo' :: Maybe String -> Maybe StandardGroup -> Annex ()
-initRepo' desc mgroup = unlessM isInitialized $ do
-	initialize desc
-	u <- getUUID
-	maybe noop (defaultStandardGroup u) mgroup
-	{- Ensure branch gets committed right away so it is
-	 - available for merging immediately. -}
-	Annex.Branch.commit "update"
-
 {- Checks if the user can write to a directory.
  -
  - The directory may be in the process of being created; if so
@@ -485,11 +418,6 @@ canWrite dir = do
 	tocheck <- ifM (doesDirectoryExist dir)
 		(return dir, return $ parentDir dir)
 	catchBoolIO $ fileAccess tocheck False True False
-
-{- Checks if a git repo exists at a location. -}
-probeRepoExists :: FilePath -> IO Bool
-probeRepoExists dir = isJust <$>
-	catchDefaultIO Nothing (Git.Construct.checkForRepo dir)
 
 {- Gets the UUID of the git repo at a location, which may not exist, or
  - not be a git-annex repo. -}
