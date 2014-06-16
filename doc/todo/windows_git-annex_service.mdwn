@@ -13,18 +13,13 @@ Windows) that does:
 1. git -c core.sharedRepository=true init $repo
 2. cd $repo; git annex init
 4. chmod 777 -R $repo
-5. Add $repo to C:\Documents and Settings\All Users\.config\git-annex\autostart
+5. Add $repo to C:\.config\git-annex\autostart
 6. If git-annex service does not yet exist in nssm, set it up and start it.
 
-Note that the shared repository perms are not perfect, but this should
-allow any user to drop files into the annex, and whatever use the service
-runs as (probably LocalService) can write to the .git/ repository).
+**Problem**: With 2 users writing to one repository, files and subdirs
+will end up owned by git-annex or by the desktop user, and the other user 
+won't be able to eg, edit a file or remove a file from a directory.
 
-Make git-annex read `C:\Documents and Settings\All Users\.config\git-annex\autostart`
-on Windows, rather than the one in $HOME. This way, `git annex assistant
+Make git-annex read `C:\.config\git-annex\autostart`
+on Windows, in addition to the one in $HOME. This way, `git annex assistant
 --autostart` and `git annex webapp` will use it, no matter which user.
-
-This bypasses the normal webapp configuration of the repo, but an annex
-folder on the desktop is a fine default in Windows, and the webapp can be
-used to add other repositories if desired. (Might need to tweak their
-permissions though.)
