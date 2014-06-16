@@ -3,10 +3,7 @@ now! --[[Joey]]
 
 ## status
 
-* Doesn't daemonize. Maybe use
-  <http://hackage.haskell.org/package/Win32-services>
-  or perhaps easier,
-  <http://hackage.haskell.org/package/Win32-services-wrapper>
+* [[todo/windows_git-annex_service]] needed
 
 * XMPP library not yet built. (See below.)
 

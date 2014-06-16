@@ -1,0 +1,30 @@
+## git-annex as service on windows
+
+Use nssm to run git-annex as a service. Will need to include it in the
+git-annex bundle.
+
+Problem: nssm runs git-annex as a service as a LocalService user. (Or some
+similar user.) This leads to permission problems, when the normal user
+tries to write to its directory.
+
+Solution: Make `git-annex mkservice $repo` command (only avilable on
+Windows) that does:
+
+1. git -c core.sharedRepository=true init $repo
+2. cd $repo; git annex init
+4. chmod 777 -R $repo
+5. Add $repo to C:\Documents and Settings\All Users\.config\git-annex\autostart
+6. If git-annex service does not yet exist in nssm, set it up and start it.
+
+Note that the shared repository perms are not perfect, but this should
+allow any user to drop files into the annex, and whatever use the service
+runs as (probably LocalService) can write to the .git/ repository).
+
+Make git-annex read `C:\Documents and Settings\All Users\.config\git-annex\autostart`
+on Windows, rather than the one in $HOME. This way, `git annex assistant
+--autostart` and `git annex webapp` will use it, no matter which user.
+
+This bypasses the normal webapp configuration of the repo, but an annex
+folder on the desktop is a fine default in Windows, and the webapp can be
+used to add other repositories if desired. (Might need to tweak their
+permissions though.)
