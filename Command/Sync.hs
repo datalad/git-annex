@@ -172,8 +172,13 @@ mergeLocal (Just branch) = go =<< needmerge
 		next $ next $ autoMergeFrom syncbranch (Just branch)
 
 pushLocal :: Maybe Git.Ref -> CommandStart
-pushLocal Nothing = stop
-pushLocal (Just branch) = do
+pushLocal b = do
+	updateSyncBranch b
+	stop
+
+updateSyncBranch :: Maybe Git.Ref -> Annex ()
+updateSyncBranch Nothing = noop
+updateSyncBranch (Just branch) = do
 	-- Update the sync branch to match the new state of the branch
 	inRepo $ updateBranch $ syncBranch branch
 	-- In direct mode, we're operating on some special direct mode
@@ -181,7 +186,6 @@ pushLocal (Just branch) = do
 	-- branch.
 	whenM isDirect $
 		inRepo $ updateBranch $ fromDirectBranch branch
-	stop
 
 updateBranch :: Git.Ref -> Git.Repo -> IO ()
 updateBranch syncbranch g = 

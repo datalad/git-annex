@@ -5,3 +5,5 @@ When a change is made on A, the assistant commits it to annex/direct/master. But
 B notices there is a change, pulls from A. Gets annex/direct/master, but does not merge it into its local branch at all.
 
 [[!tag confirmed]]
+
+> [[fixed|done]] --[[Joey]]
