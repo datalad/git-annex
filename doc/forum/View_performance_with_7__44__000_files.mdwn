@@ -1,0 +1,26 @@
+I've imported about half of my photos into an annex on an external HDD,
+using metadata extensively for EXIF info, including place names.
+
+Checking out a new view is slower than I expected, at ~6 minutes.
+Is this expected behavior, am I pushing the limits of file count already?
+
+Is there anything I can do to speed things up?
+
+    % ls -1 | wc -l
+        7050
+    
+    % git branch -vv
+      git-annex                      4e590d4 update
+    * master                         985ba54 add jen's phone backups
+      views/Year=_;Month=_;Address=_ 795a58b refs/heads/views/Year=_;Month=_;Address=_
+    
+    % /usr/bin/time -p git annex view "Year=*" "Address=*" 
+    view  (searching...)
+    
+    Checking out files: 100% (12789/12789), done.
+    Switched to branch 'views/Year=_;Address=_'
+    ok
+    real       376.80
+    user        17.98
+    sys          9.66
+
