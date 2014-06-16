@@ -1,0 +1,76 @@
+my school uses moodle for our classes.  We have to sign in and then manually click to download each file, assignment and video uploaded.  I asked the school's tech administrator if there was a direct way I could access the videos through the ssh access they've given us to one of the servers, but he said it wasn't possible.
+
+when I click on the link shown, the location I see is: http://moodle.jct.ac.il/mod/resource/view.php?id=135374
+Inspect element gives more information. the response from the server is:
+
+    Remote Address:147.161.6.59:80
+    Request URL:http://moodle.jct.ac.il/mod/resource/view.php?id=135374
+    Request Method:GET
+    Status Code:303 See Other
+    Request Headersview source
+    Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+    Accept-Encoding:gzip,deflate,sdch
+    Accept-Language:en-US,en;q=0.8,he;q=0.6
+    Connection:keep-alive
+    Cookie:visid_incap_97364=qJx2WaKqQfGidGf9VfM6QWrnlFIAAAAAQUIPAAAAAAC5EXcbt00vqNu9jdVDwEDN; __utma=98014340.1409421308.1381214363.1381214363.1390387318.2; __utmz=98014340.1381214363.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); MoodleSession5771=7s1cfqfo4ahdtmna5h7vserg97; MOODLEID1_5771=%257F%25D39%2522N%25B4%25AFY
+    DNT:1
+    Host:moodle.jct.ac.il
+    Referer:http://moodle.jct.ac.il/course/view.php?id=20151
+    User-Agent:Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.67 Safari/537.36
+    Query String Parametersview sourceview URL encoded
+    id:135374
+    Response Headersview source
+    Cache-Control:no-store, no-cache, must-revalidate, post-check=0, pre-check=0
+    Connection:Keep-Alive
+    Content-Encoding:gzip
+    Content-Language:he
+    Content-Length:503
+    Content-Type:text/html
+    Date:Mon, 16 Jun 2014 12:31:22 GMT
+    Expires:Thu, 19 Nov 1981 08:52:00 GMT
+    Keep-Alive:timeout=15, max=100
+    Location:http://moodle.jct.ac.il/pluginfile.php/288409/mod_resource/content/0/movie%205773/150151.5773.week1.wmv?forcedownload=1
+    Pragma:no-cache
+    Server:Apache/2.2.14 (Ubuntu)
+    Vary:Accept-Encoding
+    X-Powered-By:PHP/5.3.2-1ubuntu4.24
+
+this then pulls the following: 
+
+    Remote Address:147.161.6.59:80
+    Request URL:http://moodle.jct.ac.il/pluginfile.php/288409/mod_resource/content/0/movie%205773/150151.5773.week1.wmv?forcedownload=1
+    Request Method:GET
+    Status Code:200 OK
+    Request Headersview source
+    Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8
+    Accept-Encoding:gzip,deflate,sdch
+    Accept-Language:en-US,en;q=0.8,he;q=0.6
+    Connection:keep-alive
+    Cookie:visid_incap_97364=qJx2WaKqQfGidGf9VfM6QWrnlFIAAAAAQUIPAAAAAAC5EXcbt00vqNu9jdVDwEDN; __utma=98014340.1409421308.1381214363.1381214363.1390387318.2; __utmz=98014340.1381214363.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); MoodleSession5771=7s1cfqfo4ahdtmna5h7vserg97; MOODLEID1_5771=%257F%25D39%2522N%25B4%25AFY
+    DNT:1
+    Host:moodle.jct.ac.il
+    Referer:http://moodle.jct.ac.il/course/view.php?id=20151
+    User-Agent:Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.67 Safari/537.36
+    Query String Parametersview sourceview URL encoded
+    forcedownload:1
+    Response Headersview source
+    Accept-Ranges:bytes
+    Cache-Control:max-age=86400
+    Connection:Keep-Alive
+    Content-Disposition:attachment; filename="150151.5773.week1.wmv"
+    Content-Length:1353673203
+    Content-Type:application/x-forcedownload
+    Date:Mon, 16 Jun 2014 12:31:23 GMT
+    ETag:675e7d2cffd7a79afd8686c59ff2533f9e3508b7
+    Expires:Tue, 17 Jun 2014 12:31:23 GMT
+    Keep-Alive:timeout=15, max=99
+    Last-Modified:Fri, 19 Jul 2013 17:06:54 GMT
+    Pragma:
+    Server:Apache/2.2.14 (Ubuntu)
+    X-Powered-By:PHP/5.3.2-1ubuntu4.24
+
+when I right-click on the second one in the inspect element window, I can select "copy as cURL" i get:
+
+    curl 'http://moodle.jct.ac.il/pluginfile.php/288409/mod_resource/content/0/movie%205773/150151.5773.week1.wmv?forcedownload=1' -H 'DNT: 1' -H 'Accept-Encoding: gzip,deflate,sdch' -H 'Accept-Language: en-US,en;q=0.8,he;q=0.6' -H 'User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/36.0.1985.67 Safari/537.36' -H 'Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8' -H 'Referer: http://moodle.jct.ac.il/course/view.php?id=20151' -H 'Cookie: visid_incap_97364=qJx2WaKqQfGidGf9VfM6QWrnlFIAAAAAQUIPAAAAAAC5EXcbt00vqNu9jdVDwEDN; __utma=98014340.1409421308.1381214363.1381214363.1390387318.2; __utmz=98014340.1381214363.1.1.utmcsr=(direct)|utmccn=(direct)|utmcmd=(none); MoodleSession5771=7s1cfqfo4ahdtmna5h7vserg97; MOODLEID1_5771=%257F%25D39%2522N%25B4%25AFY' -H 'Connection: keep-alive' --compressed
+
+if I append " > week1.wmv" to the end of that output it downloads fine.  How can I add this file to a git-annex repo?
