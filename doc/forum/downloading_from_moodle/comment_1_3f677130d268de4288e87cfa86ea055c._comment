@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="108.236.230.124"
+ subject="comment 1"
+ date="2014-06-16T17:55:13Z"
+ content="""
+`git annex addurl` does not support storing cookies needed to access files. I doubt that makes sense anyway, since most login cookies expire.
+
+So, your best bet seems to just be to `git annex add` the file after you download it.
+"""]]
