@@ -23,3 +23,5 @@ won't be able to eg, edit a file or remove a file from a directory.
 Make git-annex read `C:\.config\git-annex\autostart`
 on Windows, in addition to the one in $HOME. This way, `git annex assistant
 --autostart` and `git annex webapp` will use it, no matter which user.
+
+WIP git branch: `winservice`
