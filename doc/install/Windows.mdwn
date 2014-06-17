@@ -4,8 +4,9 @@ git-annex now does Windows!
 * Then, [install git-annex](https://downloads.kitenet.net/git-annex/windows/current/)
 
 This port is now in reasonably good shape for command-line use of
-git-annex. The assistant and webapp are still in an early state.
-See [[todo/windows_support]] for current status.
+git-annex. The assistant and webapp are also usable. There are some known
+problems and parts that don't work. See [[todo/windows_support]] for
+current status.
 
 The autobuilder is not currently able to run the test suite, so
 testing git-annex on Windows is up to you! To check that the build of
