@@ -25,3 +25,6 @@ on Windows, in addition to the one in $HOME. This way, `git annex assistant
 --autostart` and `git annex webapp` will use it, no matter which user.
 
 WIP git branch: `winservice`
+
+> I am calling this [[done]], it's not done using a service, but it works.
+> --[[Joey]]

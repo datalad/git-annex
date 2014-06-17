@@ -3,8 +3,6 @@ now! --[[Joey]]
 
 ## status
 
-* [[todo/windows_git-annex_service]] needed
-
 * XMPP library not yet built. (See below.)
 
 * View debug log is empty in windows -- all logs go to console.
