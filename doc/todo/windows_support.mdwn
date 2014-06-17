@@ -5,11 +5,6 @@ usable!
 
 * XMPP library not yet built. (See below.)
 
-* View debug log is empty in windows -- all logs go to console.
-  This messes up a few parts of UI that direct user to the debug log.
-  To fix, redirect output to some file when running git-annex via the
-  VBScript hack.
-
 * Local pairing seems to fail, after acking on Linux box, it stalls.
   (Also, of course, the Windows box is unlikely to have a ssh server,
   so only pairing with a !Windows box will work.)
