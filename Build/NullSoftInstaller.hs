@@ -42,8 +42,12 @@ main = do
 			when (isNothing p) $
 				print ("unable to find in PATH", f)
 			return p
+		let webappscript = tmpdir </> "git-annex-webapp.vbs"
+		webappscript <- vbsLauncher tmpdir "git-annex-webapp" "git-annex webapp"
+		autostartscript <- vbsLauncher tmpdir "git-annex-autostart" "git annex assistant --autostart"
 		writeFile nsifile $ makeInstaller gitannex license $
-			catMaybes extrafiles
+			catMaybes extrafiles ++
+			[ webappscript, autostartscript ]
 		mustSucceed "makensis" [File nsifile]
 	removeFile nsifile -- left behind if makensis fails
   where
@@ -53,6 +57,17 @@ main = do
 		case r of
 			True -> return ()
 			False -> error $ cmd ++ " failed"
+
+{- Generates a .vbs launcher which runs a command without any visible DOS
+ - box. -}
+vbsLauncher :: FilePath -> String -> String -> IO String
+vbsLauncher tmpdir basename cmd = do
+	let f = tmpdir </> basename ++ ".vbs"
+	writeFile f $ unlines
+		[ "Set objshell=CreateObject(\"Wscript.Shell\")"
+		, "objShell.Run(\"" ++ cmd ++ "\"), 0, False"
+		]
+	return f
 
 gitannexprogram :: FilePath
 gitannexprogram = "git-annex.exe"
@@ -71,6 +86,9 @@ gitInstallDir = fromString "$PROGRAMFILES\\Git\\bin"
 
 startMenuItem :: Exp FilePath
 startMenuItem = "$SMPROGRAMS/git-annex.lnk"
+
+autoStartItem :: Exp FilePath
+autoStartItem = "$SMSTARTUP/git-annex-autostart.lnk"
 
 needGit :: Exp String
 needGit = strConcat
@@ -101,13 +119,21 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	-- Start menu shortcut
 	Development.NSIS.createDirectory "$SMPROGRAMS"
 	createShortcut startMenuItem
-		[ Target "$INSTDIR/git-annex.exe"
-		, Parameters "webapp"
+		[ Target "wscript.exe"
+		, Parameters "$INSTDIR/git-annex-webapp.vbs"
+		, StartOptions "SW_SHOWMINIMIZED"
 		, IconFile "$INSTDIR/git-annex.exe"
 		, IconIndex 2
-		, StartOptions "SW_SHOWMINIMIZED"
 		, KeyboardShortcut "ALT|CONTROL|a"
 		, Description "git-annex webapp"
+		]
+	createShortcut autoStartItem
+		[ Target "wscript.exe"
+		, Parameters "$INSTDIR/git-annex-autostart.vbs"
+		, StartOptions "SW_SHOWMINIMIZED"
+		, IconFile "$INSTDIR/git-annex.exe"
+		, IconIndex 2
+		, Description "git-annex autostart"
 		]
 	-- Groups of files to install
 	section "main" [] $ do
@@ -118,11 +144,12 @@ makeInstaller gitannex license extrafiles = nsis $ do
 		writeUninstaller $ str uninstaller
 	uninstall $ do
 		delete [RebootOK] $ startMenuItem
+		delete [RebootOK] $ autoStartItem
 		mapM_ (\f -> delete [RebootOK] $ fromString $ "$INSTDIR/" ++ f) $
 			[ gitannexprogram
 			, licensefile
 			, uninstaller
-			] ++ cygwinPrograms ++ cygwinDlls
+			] ++ cygwinPrograms ++ cygwinDlls ++ extrafiles
   where
 	addfile f = file [] (str f)
 

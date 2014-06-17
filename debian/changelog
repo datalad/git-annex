@@ -1,6 +1,9 @@
 git-annex (5.20140614) UNRELEASED; urgency=medium
 
   * assistant: Fix one-way assistant->assistant sync in direct mode.
+  * Windows: Got rid of that pesky DOS box when starting the webapp.
+  * Windows: Added Startup menu item so assistant starts automatically
+    on login.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 16 Jun 2014 11:28:42 -0400
 
