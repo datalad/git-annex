@@ -1,5 +1,5 @@
-The git-annex Windows port is not ready for prime time. But it does exist
-now! --[[Joey]] 
+The git-annex Windows port is beta, but rapidly becoming polished and
+usable!
 
 ## status
 
@@ -7,8 +7,8 @@ now! --[[Joey]]
 
 * View debug log is empty in windows -- all logs go to console.
   This messes up a few parts of UI that direct user to the debug log.
-  Should try to get rid of the console, but only once ssh passwords
-  (and possibly gpg) are not prompted there anymore.
+  To fix, redirect output to some file when running git-annex via the
+  VBScript hack.
 
 * Local pairing seems to fail, after acking on Linux box, it stalls.
   (Also, of course, the Windows box is unlikely to have a ssh server,
