@@ -1,0 +1,17 @@
+### Please describe the problem.
+
+My repo contains more than 1000 files, many are unicode filenames. Now that [this bug](http://git-annex.branchable.com/bugs/fails_to_get_content_from_bare_repo_on_windows/) is resolved, almost all files are fetched, except one file named '移动硬盘 1T Buffalo USB3.0 白色.rtf'. 
+
+### What steps will reproduce the problem?
+
+I reproduced this problem by creating a repo containing only this file with no content. If anyone wants to reproduce this, just create an empty file by copy and paste the above filename in the quote.
+
+I created the repo on mac, synced with a usb drive, then on windows machine try to sync it back.
+
+* When run git-annex webapp in the newly created windows repo, after the usb drive is added as a remote, an error popups up: http://imgur.com/5ZfIeGQ  although the remote is added successfully (http://imgur.com/04O8kaC)
+* On the command line, git annex sync runs successfully, but git annex get . failed: http://imgur.com/bIVrbe2
+* The file is there (http://imgur.com/URGwWWt) with correct filename, just that the content is not there. 
+
+### What version of git-annex are you using? On what operating system?
+
+Latest release of git-annex on both mac and windows. The initial repo on mac is indirect repo, the one on usb drive is a bare repo, the one on windows is direct repo.
