@@ -121,7 +121,7 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	createShortcut startMenuItem
 		[ Target "wscript.exe"
 		, Parameters "\"$INSTDIR/git-annex-webapp.vbs\""
-		, StartOptions "SW_SHOWMINIMIZED"
+		, StartOptions "SW_SHOWNORMAL"
 		, IconFile "$INSTDIR/git-annex.exe"
 		, IconIndex 2
 		, KeyboardShortcut "ALT|CONTROL|a"
@@ -130,7 +130,7 @@ makeInstaller gitannex license extrafiles = nsis $ do
 	createShortcut autoStartItem
 		[ Target "wscript.exe"
 		, Parameters "\"$INSTDIR/git-annex-autostart.vbs\""
-		, StartOptions "SW_SHOWMINIMIZED"
+		, StartOptions "SW_SHOWNORMAL"
 		, IconFile "$INSTDIR/git-annex.exe"
 		, IconIndex 2
 		, Description "git-annex autostart"
