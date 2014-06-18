@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 10"
+ date="2014-06-18T20:15:42Z"
+ content="""
+``git ls-files --cached | wc -l`` returns: 1882028
+
+As far as I can tell, the largest objects in .git/objects are 65kb, there are just a bunch of them (257). Also, my repo contains 1,886,125 files and directories total, most in a single directory (after git annex add completed, that one directory contained 8.3GB of symlinks.
+
+``git-annex add .`` just completed successfully, I am now running ``git commit -a -m added``, it is chugging away and taking its time.
+
+Is there an obvious upper limit to the number of files or the total size of files that git annex can handle? For example, is 1 million files too many? How about 6TB? or 9TB? For this repo I think I have a little less than 2m files, and the total size of the repo is greater than 6TB. Is that too much? Should I split it into multiple repos?
+
+I also have a question just about the utility of git-annex for this purpose. I don't need to backup this data, I just want to have it off the big hard drive and onto a bunch of small drives. I have added 3 4TB drives as remotes and I want all of the data stored on them, I will take them offline and put them in a safe. Ideally my file and directory structure will remain intact as symlinks, and then when I want to access a file in the future, I can run ``git annex get <file>``, connect the drive that git annex tells me to, and then get that file, use it, and then drop it when I am done. From all of my reading it seems like that is a good usage for git annex, but I want to check with you and see if that makes sense to you. Also, can I just run ``git annex drop --auto --numcopies=1``  to get git annex to move all of the files to my remote repositories?
+
+Thanks for all of your help, and let me know if there are any other debug steps you would like me to run. I am still waiting for git commit to run, and for an exact repo size for you.
+"""]]
