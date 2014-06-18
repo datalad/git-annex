@@ -32,8 +32,8 @@ autobuilds :: [(URLString, FilePath)]
 autobuilds = 
 	(map linuxarch ["i386", "amd64", "armel"]) ++
 	(map androidversion ["4.0", "4.3"]) ++
-	[ ("https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/git-annex.dmg", "OSX/current/10.9_Mavericks")
-	, ("https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/lastSuccessfulBuild/artifact/git-annex/git-annex-installer.exe", "windows/current/git-annex-installer.exe")
+	[ ("https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/git-annex.dmg", "git-annex/OSX/current/10.9_Mavericks/git-annex.dmg")
+	, ("https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/lastSuccessfulBuild/artifact/git-annex/git-annex-installer.exe", "git-annex/windows/current/git-annex-installer.exe")
 	]
   where
 	linuxarch a =
@@ -42,7 +42,7 @@ autobuilds =
 		)
 	androidversion v =
 		( "http://downloads.kitenet.net/git-annex/autobuild/android/" ++ v ++ "/git-annex.apk"
-		, "android/current/" ++ v ++ "/git-annex.apk"
+		, "git-annex/android/current/" ++ v ++ "/git-annex.apk"
 		)
 
 main :: IO ()
