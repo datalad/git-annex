@@ -21,6 +21,7 @@ import Git.Command
 
 import Data.Default
 import Data.Time.Clock
+import Data.Char
 
 -- git-annex distribution signing key (for Joey Hess)
 signingKey :: String
@@ -59,10 +60,10 @@ main = do
 getbuild :: FilePath -> (URLString, FilePath) -> IO (Maybe (FilePath, Version))
 getbuild repodir (url, f) = do
 	bv1 <- getbv
-	createDirectoryIfMissing True repodir
 	let dest = repodir </> f
 	let tmp = dest ++ ".tmp"
 	nukeFile tmp
+	createDirectoryIfMissing True (parentDir dest)
 	let oops s = do
 		nukeFile tmp
 		putStrLn $ "*** " ++ s
@@ -86,7 +87,8 @@ getbuild repodir (url, f) = do
 	getbv = do
 		bv <- catchDefaultIO "" $
 			readProcess "curl" [takeDirectory url ++ "build-version"]
-		return $ if null bv then Nothing else Just bv
+		return $ if null bv || any (not . versionchar) bv then Nothing else Just bv
+	versionchar c = isAlphaNum c || c == '.' || c == '-'
 
 makeinfos :: [(FilePath, Version)] -> Annex ()
 makeinfos updated = do
