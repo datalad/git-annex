@@ -3,6 +3,8 @@ git-annex is available in recent versions of Fedora.
 
 Should be as simple as: `yum install git-annex`
 
+Note: Fedora's build does not currently include the git-annex webapp.
+
 ----
 
 To install the latest version of git-annex on Fedora 18 and later, you can use `cabal`:
