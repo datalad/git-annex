@@ -63,11 +63,15 @@ getbuild repodir (url, f) = do
 	let dest = repodir </> f
 	let tmp = dest ++ ".tmp"
 	nukeFile tmp
+	let oops s = do
+		nukeFile tmp
+		putStrLn $ "*** " ++ s
+		return Nothing
 	ifM (download url tmp def)
 		( do
 			bv2 <- getbv
 			case bv2 of
-				Nothing -> return Nothing
+				Nothing -> oops $ "no build-version file for " ++ url
 				(Just v)
 					| bv2 == bv1 -> do
 						nukeFile dest
@@ -75,10 +79,8 @@ getbuild repodir (url, f) = do
 						-- remove git rev part of version
 						let v' = takeWhile (/= '-') v
 						return $ Just (f, v')
-					| otherwise -> do
-						nukeFile tmp
-						error $ "build version changed while downloading " ++ url ++ " " ++ show (bv1, bv2)
-		, return Nothing
+					| otherwise -> oops $ "build version changed while downloading " ++ url ++ " " ++ show (bv1, bv2)
+		, oops $ "failed to download " ++ url
 		)
   where
 	getbv = do
