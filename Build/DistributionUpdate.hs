@@ -37,7 +37,7 @@ autobuilds =
 	]
   where
 	linuxarch a =
-		( "https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-" ++ a ++ ".tar.gz"
+		( "https://downloads.kitenet.net/git-annex/autobuild/" ++ a ++ "/git-annex-standalone-" ++ a ++ ".tar.gz"
 		, "git-annex/linux/current/git-annex-standalone-" ++ a ++ ".tar.gz"
 		)
 	androidversion v =
