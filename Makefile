@@ -83,7 +83,8 @@ clean:
 	rm -rf tmp dist git-annex $(mans) configure  *.tix .hpc \
 		doc/.ikiwiki html dist tags Build/SysConfig.hs build-stamp \
 		Setup Build/InstallDesktopFile Build/EvilSplicer \
-		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs Build/DistributionUpdate \
+		Build/Standalone Build/OSXMkLibs Build/LinuxMkLibs \
+		Build/DistributionUpdate Build/BuildVersion \
 		git-union-merge .tasty-rerun-log
 	find . -name \*.o -exec rm {} \;
 	find . -name \*.hi -exec rm {} \;

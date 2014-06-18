@@ -25,10 +25,10 @@ isReleaseBuild = isJust <$> catchMaybeIO (getEnv "RELEASE_BUILD")
  -
  - If git or a git repo is not available, or something goes wrong,
  - or this is a release build, just use the version from the changelog. -}
-getVersion :: Test
+getVersion :: IO String
 getVersion = do
 	changelogversion <- getChangelogVersion
-	version <- ifM (isReleaseBuild)
+	ifM (isReleaseBuild)
 		( return changelogversion
 		, catchDefaultIO changelogversion $ do
 			let major = takeWhile (/= '.') changelogversion
@@ -40,7 +40,6 @@ getVersion = do
 				then return changelogversion
 				else return $ concat [ major, ".", autoversion ]
 		)
-	return $ Config "packageversion" (StringConfig version)
 	
 getChangelogVersion :: IO String
 getChangelogVersion = do
