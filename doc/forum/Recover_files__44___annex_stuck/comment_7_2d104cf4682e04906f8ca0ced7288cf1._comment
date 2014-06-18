@@ -1,0 +1,17 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.203"
+ subject="comment 7"
+ date="2014-06-18T17:14:40Z"
+ content="""
+Ok, so the repository is in indirect mode, and this rules out a large quantity of problems that could have been caused by direct mode (no, I don't recommend using direct mode).
+
+If you want to build git-annex with the +RTS option enabled, you just need to pass -rtsopts to ghc when building git-annex. (Not -with-rtsopts ...) 
+That *might* let you pump up the memory and bypass whatever the problem is, or at least find out how much memory it's trying to allocate, which might be a useful clue. But I would be much more interested in debugging and fixing the actual problem, since git-annex should not normally need to allocate a 8+ mb chunk of memory.
+
+The  \"No HEAD commit to compare with (yet)\" failure mode was removed from git in 2011. You must have been using old versions of git and git-annex before you upgraded. Perhaps they have left the repository in some broken state.
+
+What size does `du -hsc .git/objects` report? How about `du -h .git/index`?
+
+Are git commands that do not involve git-annex still taking a long time to run or failing in some way? (Note that `git commit` has a hook that runs git-annex; you can bypass that with `git commit --no-verify`)
+"""]]
