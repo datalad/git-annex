@@ -86,7 +86,7 @@ getbuild repodir (url, f) = do
   where
 	getbv = do
 		bv <- catchDefaultIO "" $
-			readProcess "curl" [takeDirectory url ++ "build-version"]
+			readProcess "curl" ["--silent", takeDirectory url ++ "build-version"]
 		return $ if null bv || any (not . versionchar) bv then Nothing else Just bv
 	versionchar c = isAlphaNum c || c == '.' || c == '-'
 
