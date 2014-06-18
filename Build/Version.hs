@@ -10,7 +10,6 @@ import System.Directory
 import Data.Char
 import System.Process
 
-import Build.TestConfig
 import Utility.Monad
 import Utility.Exception
 
