@@ -82,16 +82,16 @@ new lim = Queue 0 (fromMaybe defaultLimit lim) M.empty
  -}
 addCommand :: String -> [CommandParam] -> [FilePath] -> Queue -> Repo -> IO Queue
 addCommand subcommand params files q repo =
-	updateQueue action different (length newfiles) q repo
+	updateQueue action different (length files) q repo
   where
 	key = actionKey action
 	action = CommandAction
 		{ getSubcommand = subcommand
 		, getParams = params
-		, getFiles = newfiles
+		, getFiles = allfiles
 		}
-	newfiles = map File files ++ maybe [] getFiles (M.lookup key $ items q)
-		
+	allfiles = map File files ++ maybe [] getFiles (M.lookup key $ items q)
+	
 	different (CommandAction { getSubcommand = s }) = s /= subcommand
 	different _ = True
 
