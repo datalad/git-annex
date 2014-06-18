@@ -103,14 +103,14 @@ makeinfos updated = do
 	now <- liftIO getCurrentTime
 	liftIO $ putStrLn $ "building info files in " ++ basedir
 	forM_ updated $ \(f, bv) -> do
-		v <- lookupFile f
+		v <- lookupFile (basedir </> f)
 		case v of
 			Nothing -> noop
 			Just k -> whenM (inAnnex k) $ do
 				liftIO $ putStrLn f
-				let infofile = f ++ ".info"
+				let infofile = basedir </> f ++ ".info"
 				liftIO $ writeFile infofile $ show $ GitAnnexDistribution
-					{ distributionUrl = mkUrl basedir f
+					{ distributionUrl = mkUrl f
 					, distributionKey = k
 					, distributionVersion = bv
 					, distributionReleasedate = now
@@ -118,7 +118,7 @@ makeinfos updated = do
 					}
 				void $ inRepo $ runBool [Param "add", File infofile]
 				signFile infofile
-				signFile f
+				signFile (basedir </> f)
 	void $ inRepo $ runBool 
 		[ Param "commit"
 		, Param "-m"
@@ -151,8 +151,8 @@ getRepoDir = do
 	home <- liftIO myHomeDir
 	return $ home </> "lib" </> "downloads"
 
-mkUrl :: FilePath -> FilePath -> String
-mkUrl basedir f = "https://downloads.kitenet.net/" ++ relPathDirToFile basedir f
+mkUrl :: FilePath -> String
+mkUrl f = "https://downloads.kitenet.net/" ++ f
 				
 signFile :: FilePath -> Annex ()
 signFile f = do
