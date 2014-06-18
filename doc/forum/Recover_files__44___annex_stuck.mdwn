@@ -6,12 +6,10 @@ That mostly worked, although it understandably took ages, although it missed sev
 
 Next I tried to do ``git commit -a -m added``, hoping that this would copy all of my files to the remotes.  It didn't it just died with the error 
 
-``
-fatal: No HEAD commit to compare with (yet)
-fatal: No HEAD commit to compare with (yet)
-Stack space overflow: current size 8388608 bytes.
-Use `+RTS -Ksize -RTS' to increase it.
-``
+    fatal: No HEAD commit to compare with (yet)
+    fatal: No HEAD commit to compare with (yet)
+    Stack space overflow: current size 8388608 bytes.
+    Use `+RTS -Ksize -RTS' to increase it.
 
 So I freaked out and decided to undo the mess and just go with tar instead, since at this point every git command takes multiple minutes and fails with the same error as above.
 
