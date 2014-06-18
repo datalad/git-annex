@@ -1,0 +1,18 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="comment 12"
+ date="2014-06-18T22:28:27Z"
+ content="""
+Yes, you are right. ``git-annex add`` got through almost all of the files in the first run, which I did a week ago, I am not sure how long it took, several days I think (which is fine, time isn't that important here).
+
+I re-ran ``git-annex add .`` yesterday after having trouble with ``git commit``, which is when I uncovered these problems. I think you are right that the problem appears when git-annex is staging files into the index. No problems occurred during checksumming or moving files.
+
+Also, the repo isn't as large as I thought, it if 4.1TB, so it makes sense that the issue is number of files, not files size.
+
+``git add`` and ``git commit`` are now working fine, all git operations (e.g. ``git status``) are now taking around 30s to 1 min, which is acceptable. 
+
+I am going to try and move the data to the remotes now. Is there anything special I need to do since the remotes are smaller than the current repo? The remotes are just single drives with ext4 filesystems and an empty repo on them. I ideally want to fill each drive as much as possible, and have the current repo contain no files, how do I do that? Can I just run ``git-annex move --to mito_backup1`` and then when it is full run a second command of ``git-annex move --to mito_backup2``.  Is it better to use ``git-annex copy`` instead of ``move`` and then use ``drop`` after?
+
+Thanks! 
+"""]]
