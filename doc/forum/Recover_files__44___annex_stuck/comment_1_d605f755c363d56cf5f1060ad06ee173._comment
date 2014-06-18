@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.203"
+ subject="comment 1"
+ date="2014-06-18T16:22:13Z"
+ content="""
+What version of git-annex are you using? And what version of git? Is your git-annex repository in direct mode or indirect mode?
+"""]]
