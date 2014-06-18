@@ -1,0 +1,54 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawmwjQzWgiD7_I3zw-_91rMRf_6qoThupis"
+ nickname="Mike"
+ subject="Frustrating"
+ date="2014-06-18T16:29:31Z"
+ content="""
+OK, this is a little frustrating. I found this post from three years ago: [[http://git-annex.branchable.com/forum/Problems_with_large_numbers_of_files/]] and I decided to try a newer version of git-annex.
+
+I uninstalled ghc and haskell from Scientific Linux because all of these Red Hat based distros have ancient packages.
+
+I installed the latest git from source, the latest ghc linux x86_64 binary, and then the latest haskell platform from source. Then I used cabal to install all dependencies for git annex with ``cabal install --only-dependencies git-annex``. Finally I installed git annex from source.
+
+I then tried to run ``git-annex add .`` in my directory and got the following error:
+
+    #> git annex add .
+    add AllStudies.txt.csv.gz ok
+    add GWAS/action.txt.gz ok
+    add GWAS/archive/dump2.txt.gz ok
+    add GWAS/archive/dump3.txt.gz ok
+    add GWAS/by-download-number/27080.log.gz ok
+    (Recording state in git...)
+    Stack space overflow: current size 8388608 bytes.
+    Use `+RTS -Ksize -RTS' to increase it.
+
+
+Ok, I was hoping that the latest version would just work, no luck. So I did what it told me to:
+
+``git-annex +RTS -K1000000 -RTS add .``
+
+That gave the error:
+
+``
+    git-annex: Most RTS options are disabled. Link with -rtsopts to enable them.
+``
+
+Grr.
+
+So I went into the Makefile and added the line ``-rtsopts -with-rtsopts=\"-K1000m\"`` after every call to ghc I could find. I also added ``ghc-options: -with-rtsopts=\"-K100000\"`` to my ~/.cabal/config file.
+
+Now when I run ``make`` I get this error:
+
+
+    if [ \"cabal \" = ./Setup ]; then ghc --make Setup; fi
+    cabal  configure
+    cabal: Most RTS options are disabled. Link with -rtsopts to enable them.
+    make: *** [Build/SysConfig.hs] Error 1
+
+
+Do I have to manually compile the entire Haskell Platform with the -rtsopts flag in order to get this to work?
+
+I can't find any easy-to-follow information anywhere that shows me how to just increase the memory limit. My server has 48 cores, 192GB of memory, over 1TB of scratch space, and over 60TB of storage. I really want to be able to use git-annex to easily move files from our large RAID arrays onto archive drives, and be able to intelligently get that data back whenever I want, I don't understand why I am being limited to 8MB of memory for this.
+
+Any advice would be fantastic, thank you.
+"""]]
