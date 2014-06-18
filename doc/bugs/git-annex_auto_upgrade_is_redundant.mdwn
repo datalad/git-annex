@@ -28,3 +28,7 @@ Current.
 [[!meta title="upgrade loop when info file contains newer version than distributed version of git-annex"]]
 
 [[!tag confirmed]]
+
+> [[fixed|done]]; the release process now uses versions from build-version
+> files that are created by the autobuilders, so should always be accurate.
+> --[[Joey]]

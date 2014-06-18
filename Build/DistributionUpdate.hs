@@ -1,6 +1,9 @@
-{- Builds distributon info files for each git-annex release in a directory
- - tree, which must itself be part of a git-annex repository. Only files
- - that are present have their info file created.
+{- Downloads git-annex autobuilds and installs them into the git-annex
+ - repository in ~/lib/downloads that is used to distribute git-annex
+ - releases.
+ -
+ - Generates info files, containing the version (of the corresponding file
+ - from the autobuild).
  -
  - Also gpg signs the files.
  -}
@@ -9,25 +12,82 @@ import Common.Annex
 import Types.Distribution
 import Build.Version
 import Utility.UserInfo
-import Utility.Path
+import Utility.Url
 import qualified Git.Construct
 import qualified Annex
 import Annex.Content
 import Backend
 import Git.Command
 
+import Data.Default
 import Data.Time.Clock
 
 -- git-annex distribution signing key (for Joey Hess)
 signingKey :: String
 signingKey = "89C809CB"
 
-main = do
-	state <- Annex.new =<< Git.Construct.fromPath =<< getRepoDir
-	Annex.eval state makeinfos
+-- URL to an autobuilt git-annex file, and the place to install
+-- it in the repository.
+autobuilds :: [(URLString, FilePath)]
+autobuilds = 
+	(map linuxarch ["i386", "amd64", "armel"]) ++
+	(map androidversion ["4.0", "4.3"]) ++
+	[ ("https://downloads.kitenet.net/git-annex/autobuild/x86_64-apple-mavericks/git-annex.dmg", "OSX/current/10.9_Mavericks")
+	, ("https://qa.nest-initiative.org/view/msysGit/job/msysgit-git-annex-assistant-test/lastSuccessfulBuild/artifact/git-annex/git-annex-installer.exe", "windows/current/git-annex-installer.exe")
+	]
+  where
+	linuxarch a =
+		( "https://downloads.kitenet.net/git-annex/autobuild/i386/git-annex-standalone-" ++ a ++ ".tar.gz"
+		, "git-annex/linux/current/git-annex-standalone-" ++ a ++ ".tar.gz"
+		)
+	androidversion v =
+		( "http://downloads.kitenet.net/git-annex/autobuild/android/" ++ v ++ "/git-annex.apk"
+		, "android/current/" ++ v ++ "/git-annex.apk"
+		)
 
-makeinfos :: Annex ()
-makeinfos = do
+main :: IO ()
+main = do
+	repodir <- getRepoDir
+	updated <- catMaybes <$> mapM (getbuild repodir) autobuilds
+	state <- Annex.new =<< Git.Construct.fromPath repodir
+	Annex.eval state (makeinfos updated)
+
+-- Download a build from the autobuilder, and return its version.
+-- It's very important that the version matches the build, otherwise
+-- auto-upgrades can loop reatedly. So, check build-version before
+-- and after downloading the file.
+getbuild :: FilePath -> (URLString, FilePath) -> IO (Maybe (FilePath, Version))
+getbuild repodir (url, f) = do
+	bv1 <- getbv
+	createDirectoryIfMissing True repodir
+	let dest = repodir </> f
+	let tmp = dest ++ ".tmp"
+	nukeFile tmp
+	ifM (download url tmp def)
+		( do
+			bv2 <- getbv
+			case bv2 of
+				Nothing -> return Nothing
+				(Just v)
+					| bv2 == bv1 -> do
+						nukeFile dest
+						renameFile tmp dest
+						-- remove git rev part of version
+						let v' = takeWhile (/= '-') v
+						return $ Just (f, v')
+					| otherwise -> do
+						nukeFile tmp
+						error $ "build version changed while downloading " ++ url ++ " " ++ show (bv1, bv2)
+		, return Nothing
+		)
+  where
+	getbv = do
+		bv <- catchDefaultIO "" $
+			readProcess "curl" [takeDirectory url ++ "build-version"]
+		return $ if null bv then Nothing else Just bv
+
+makeinfos :: [(FilePath, Version)] -> Annex ()
+makeinfos updated = do
 	version <- liftIO getChangelogVersion
 	void $ inRepo $ runBool 
 		[ Param "commit"
@@ -37,9 +97,8 @@ makeinfos = do
 		]
 	basedir <- liftIO getRepoDir
 	now <- liftIO getCurrentTime
-	liftIO $ putStrLn $ "building info files for version " ++ version ++ " in " ++ basedir
-	fs <- liftIO $ dirContentsRecursiveSkipping (const False) True (basedir </> "git-annex")
-	forM_ fs $ \f -> do
+	liftIO $ putStrLn $ "building info files in " ++ basedir
+	forM_ updated $ \(f, bv) -> do
 		v <- lookupFile f
 		case v of
 			Nothing -> noop
@@ -49,7 +108,7 @@ makeinfos = do
 				liftIO $ writeFile infofile $ show $ GitAnnexDistribution
 					{ distributionUrl = mkUrl basedir f
 					, distributionKey = k
-					, distributionVersion = version
+					, distributionVersion = bv
 					, distributionReleasedate = now
 					, distributionUrgentUpgrade = Nothing
 					}
@@ -70,7 +129,7 @@ makeinfos = do
 		, Params "sync"
 		]
 	
-	{- Check for out of date info files. -}
+	-- Check for out of date info files.
 	infos <- liftIO $ filter (".info" `isSuffixOf`)
 		<$> dirContentsRecursive (basedir </> "git-annex")
 	ds <- liftIO $ forM infos (readish <$$> readFile)
