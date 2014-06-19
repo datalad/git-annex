@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.203"
+ subject="comment 13"
+ date="2014-06-18T22:43:08Z"
+ content="""
+It will be faster to use `git annex move`, assuming you want to only have 1 copy of each file, and not more. git-annex will stop storing files on a drive once it gets close to full (annex.diskreserve), and you can safely interrupt it and switch to the next drive.
+
+Do you have any special git configuration? In particular I'm curious about any annex.queuesize setting, which if set to something really high would make `git annex add` buffer a lot of filenames and stage them all at once. (However, I just noticed that annex.queuesize didn't cause as large a queue to be used as intended, so it would need to have been set to some really enormous value to run it out of stack space.)
+
+Also, see [[scalability]].
+"""]]
