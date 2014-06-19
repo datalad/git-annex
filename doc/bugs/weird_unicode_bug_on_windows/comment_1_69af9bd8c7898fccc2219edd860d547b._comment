@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.203"
+ subject="comment 1"
+ date="2014-06-19T22:39:46Z"
+ content="""
+I don't quite reproduce this on windows. Instead of the file showing up and `git annex get` not getting it, the file never shows up at all. It seems that the direct mode merge code fails to create the file in the work tree. This also means that another sync will commit the deletion of the file.
+
+Based on the screenshot, I do have the identical filename checked into git, which git ls-files etc represents as \"\347\247\273\345\212\250\347\241\254\347\233\230 1T Buffalo USB3.0 \347\231\275\350\211\262.rtf\"
+
+Anyway, the root cause is probably the same. See [[todo/windows_support]] for a discussion of several issues with filename encodings and windows.
+"""]]
