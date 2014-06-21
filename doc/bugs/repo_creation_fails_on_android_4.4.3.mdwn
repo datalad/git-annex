@@ -2,12 +2,12 @@ Hello everyone,
 Creating a new repository through the web-app fails on Android 4.4.3 (current git annex version downloaded from http://downloads.kitenet.net/git-annex/android/current/4.3/git-annex.apk ).
 
 Steps to reproduce the problem:
-(1) install git annex from the aforementioned apk
-(2) launch git annex.
-(3) the terminal opens up reporting some (non-fatal?) errors. (I notice that I can't do anything in the terminal, is it supposed to reply to git annex commands? typing in "git annex version" does nothing.)
-(4) The web-app is launched
-(5) Click on make repository
-(6) Error message
+1. install git annex from the aforementioned apk
+2. launch git annex.
+3. the terminal opens up reporting some (non-fatal?) errors. (I notice that I can't do anything in the terminal, is it supposed to reply to git annex commands? typing in "git annex version" does nothing.)
+4. The web-app is launched
+5. Click on make repository
+6. Error message
 
 I've made a few screenshots to illustrate:
 
