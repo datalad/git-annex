@@ -1,5 +1,5 @@
 Hello everyone,
-Creating a new repository through the web-app fails on Android 4.4.3 (current git annex version downloaded from <http://downloads.kitenet.net/git-annex/android/current/4.3/git-annex.apk>).
+Creating a new repository through the web-app fails on Android 4.4.3, git annex version 5.20140612-g1bebb0d.
 
 Steps to reproduce the problem:
 
