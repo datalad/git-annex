@@ -2,23 +2,28 @@ Hello everyone,
 Creating a new repository through the web-app fails on Android 4.4.3 (current git annex version downloaded from http://downloads.kitenet.net/git-annex/android/current/4.3/git-annex.apk ).
 
 Steps to reproduce the problem:
-1. install git annex from the aforementioned apk
-2. launch git annex.
-3. the terminal opens up reporting some (non-fatal?) errors. (I notice that I can't do anything in the terminal, is it supposed to reply to git annex commands? typing in "git annex version" does nothing.)
+
+1. "install git annex from the aforementioned apk"
+
+2. "launch git annex."
+
+3. "the terminal opens up reporting some (non-fatal?) errors. (I notice that I can't do anything in the terminal, is it supposed to reply to git annex commands? typing in "git annex version" does nothing.)"
+
 4. The web-app is launched
+
 5. Click on make repository
+
 6. Error message
 
 I've made a few screenshots to illustrate:
 
-This is the terminal:
-https://drive.google.com/file/d/0B1qM91oKErVDSEJwbnhiaFJhQVU/edit?usp=sharing
+[terminal screenshot](https://drive.google.com/file/d/0B1qM91oKErVDSEJwbnhiaFJhQVU/edit?usp=sharing)
 
 This is the webapp error when creating a new repo:
-(1) to be continued in 2.
-https://drive.google.com/file/d/0B1qM91oKErVDVHVuLVpacmJaOEU/edit?usp=sharing
-(2) ... continued from 1.
-https://drive.google.com/file/d/0B1qM91oKErVDX3R3cFhyb2VjcHc/edit?usp=sharing
+
+[first](https://drive.google.com/file/d/0B1qM91oKErVDVHVuLVpacmJaOEU/edit?usp=sharing)
+
+[second](https://drive.google.com/file/d/0B1qM91oKErVDX3R3cFhyb2VjcHc/edit?usp=sharing)
 
 Being on android I can't find any ".git/annex/daemon.log to" to report. I tried to look in the repo folder but there was no .git in it (maybe hidden?)
 
