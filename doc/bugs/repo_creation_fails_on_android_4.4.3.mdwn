@@ -3,7 +3,7 @@ Creating a new repository through the web-app fails on Android 4.4.3, git annex 
 
 Steps to reproduce the problem:
 
-1. Install git annex from the aforementioned apk.
+1. Install git annex for android 4.3
 
 2. Launch git annex.
 
