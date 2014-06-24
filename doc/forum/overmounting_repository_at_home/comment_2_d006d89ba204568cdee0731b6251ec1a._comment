@@ -1,0 +1,11 @@
+[[!comment format=mdwn
+ username="cehteh"
+ ip="217.8.62.137"
+ subject="comment 2"
+ date="2014-06-24T14:03:01Z"
+ content="""
+I know that this is a bad idea right now when done in a naive approach, I am wondering if git-annex could be made aware of this case and how it could be implemented.
+A immature idea for example would be only to overmount the .git/annex/objects folder and let the git-annex check if the objects lay on a different device, if so, refuse to do operation on the object store.
+
+I started this thread to figure out if there is some interest in such functionality and if so, polishing it out to see how it could be done. 
+"""]]
