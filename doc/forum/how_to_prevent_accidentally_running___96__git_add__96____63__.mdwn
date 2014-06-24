@@ -1,0 +1,1 @@
+I fear that while using git annex I will at some point accidentally `git annex` some small files and not notice it until the only way to fix the problem is to rewrite history. What would be the best way to prevent myself from ever `git add`-ing a file into my annex repository instead of `git annex add`-ing it?
