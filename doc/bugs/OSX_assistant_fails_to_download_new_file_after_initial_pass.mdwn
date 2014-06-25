@@ -11,20 +11,25 @@ git-annex 5.20140517.4 on Ubuntu 12.04 behaves as expected and downloads new fil
 ### What steps will reproduce the problem?
 
 (all using git-annex webapp)
--create client repo on Mac OSX, direct mode (used two 10.8.5 machines)
--create client repo on Ubuntu, direct mode (used several 12.04 VMs)
 
--create repo (transfer mode) on VPS
--create shared encryption repo (backup mode) on same VPS
--add VPS transfer repo to each client (shared encryption repo appears and syncing is enabled for each client)
+--create client repo on Mac OSX, direct mode (used two 10.8.5 machines)
 
-create file in Mac OSX annex - file gets distributed to VPS backup repo and each linux system. Symlink is created on 2nd Mac OS X machine.
-create file in Ubuntu VM annex - file gets distributed to VPS backup repo and each linux system.  Symlink is created on both Mac OSX machines.
+--create client repo on Ubuntu, direct mode (used several 12.04 VMs)
+
+--create repo (transfer mode) on VPS
+
+--create shared encryption repo (backup mode) on same VPS
+
+--add VPS transfer repo to each client (shared encryption repo appears and syncing is enabled for each client)
+
+--create file in Mac OSX annex - file gets distributed to VPS backup repo and each linux system. Symlink is created on 2nd Mac OS X machine.
+
+--create file in Ubuntu VM annex - file gets distributed to VPS backup repo and each linux system.  Symlink is created on both Mac OSX machines.
 
 
 
 ### What version of git-annex are you using? On what operating system?
-git-annex version: 5.2014042 (installed using brew), Mac OSX 10.8.5
+git-annex version: 5.20140421 (installed using brew), Mac OSX 10.8.5
 
 I tested 5.20140613 (from brew) also and it appears to also not download new files automatically.
 
