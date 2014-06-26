@@ -1,0 +1,24 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawlhaXbLZQ5uQ6fM2kV0n8bj6IwZjx2CLeM"
+ nickname="Shane"
+ subject="Annex can't find Glacier remote"
+ date="2014-06-26T05:50:38Z"
+ content="""
+I'm setting up git-annex with glacier-cli for the first time.  I have installed git-annex via Yum and glacier-cli according to the instructions on Github.  The `glacier` command is in my path.  I did not set up hooks with Git annex as it appears that using hooks for glacier is no longer required.
+
+Here is my version information for git-annex:
+
+	$ git-annex version
+	git-annex version: 3.20120523
+	local repository version: 3
+	default repository version: 3
+	supported repository versions: 3
+	upgrade supported from repository versions: 0 1 2
+
+When I attempt to add my Glacier remote, here is what I see:
+
+	$ git annex initremote glacier type=glacier keyid=ABCDEFG
+	git-annex: Unknown remote type glacier
+
+Is there something else I need to do in order to correctly install Glacier integration with git-annex?  I'm having trouble finding up-to-date information that describes the installation process.
+"""]]
