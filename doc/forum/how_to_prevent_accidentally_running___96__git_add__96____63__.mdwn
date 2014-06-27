@@ -1,3 +1,5 @@
 I fear that while using git annex I will at some point accidentally `git add` some small files and not notice it until the only way to fix the problem is to rewrite history. What would be the best way to prevent myself from ever `git add`-ing a file into my annex repository instead of `git annex add`-ing it?
 
-And secondly, how can I best search in my git annex repository whether I already did this mistake in the past or not?
+And secondly, how can I best search in my git annex repository whether I already did this mistake in the past or not? Currently I'm using this:
+
+    git ls-files -s | awk ' $1 != '120000' { print $4 }'
