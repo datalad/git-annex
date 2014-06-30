@@ -9,6 +9,8 @@ git-annex (5.20140614) UNRELEASED; urgency=medium
   * Windows: Assistant now logs to daemon.log.
   * Fix bug in annex.queuesize calculation that caused much more
     queue flushing than necessary.
+  * Run standalone install process when the assistant is started
+    (was only being run when the webapp was opened).
 
  -- Joey Hess <joeyh@debian.org>  Mon, 16 Jun 2014 11:28:42 -0400
 
