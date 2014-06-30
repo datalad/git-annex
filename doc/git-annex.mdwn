@@ -644,7 +644,8 @@ subdirectories).
   `--format`. The default output format is the same as `--format='${file}\\n'`
 
   These variables are available for use in formats: file, key, backend,
-  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime.
+  bytesize, humansize, keyname, hashdirlower, hashdirmixed, mtime (for 
+  the mtime field of a WORM key).
 
 * `whereis [path ...]`
 
