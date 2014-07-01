@@ -59,8 +59,7 @@ retest: git-annex
 
 # hothasktags chokes on some template haskell etc, so ignore errors
 tags:
-	grep -v '/\*' dist/build/autogen/cabal_macros.h > dist/build/autogen/cabal_macros.h.munged
-	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags -c --include=dist/build/autogen/cabal_macros.h.munged $$f; done) 2>/dev/null | sort > tags
+	(for f in $$(find . | grep -v /.git/ | grep -v /tmp/ | grep -v /dist/ | grep -v /doc/ | egrep '\.hs$$'); do hothasktags -c --cpp -c -traditional -c --include=dist/build/autogen/cabal_macros.h $$f; done) 2>/dev/null | sort > tags
 
 # If ikiwiki is available, build static html docs suitable for being
 # shipped in the software package.
