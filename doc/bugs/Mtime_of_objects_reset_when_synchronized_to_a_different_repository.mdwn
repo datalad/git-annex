@@ -1,0 +1,14 @@
+### Please describe the problem.
+Files transferred from one repository to a standard remote by the assistant do not retain the original mtime
+
+### What steps will reproduce the problem?
+Create manually two repositories, in my case on two external drives directly connected to my box, with normal remotes pointing to each other.
+Activate git annex assistant and synchronize some files from one to the other.
+
+### What version of git-annex are you using? On what operating system?
+Git annex version 5.20140610-g5ec8bcf on Ubuntu Linux 12.04
+
+### Please provide any additional information below.
+I've noticed how files synchronized from one repository to another do not retain the original mtime information.
+Perhaps it's intended, but in my view retaining the time of modification of the object is essential.
+
