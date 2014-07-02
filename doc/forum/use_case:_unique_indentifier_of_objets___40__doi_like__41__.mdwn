@@ -1,10 +1,10 @@
 Dear all,
            From some time now I am wondering about a way to index a set of files, lets say PDF documents. The idea is to have a unique identifier for each file and to cross-reference using this identifier. For instance, I use a project management (PM) software (web based) on a public server of my university. Then I have a set of tasks saying, review document X, or Y. And those documents are stored on an internal server of my lab.
 I see several options
-1) Upload the required documents to the PM site and directly link
-2) Share online my internal server and use the URL of the docs in the PM
-3) Just use the unique identifier in the PM, and then look in git annex for that ID
-4) Use some sort of document management system (DMS)
+1. Upload the required documents to the PM site and directly link
+2. Share online my internal server and use the URL of the docs in the PM
+3. Just use the unique identifier in the PM, and then look in git annex for that ID
+4. Use some sort of document management system (DMS)
 
 Options 1 and 2 are inpractical for several reasons. Option 4 usually requires that your files are inside the DMS.
 So my question is. Do you think this is doable with git-annex?
