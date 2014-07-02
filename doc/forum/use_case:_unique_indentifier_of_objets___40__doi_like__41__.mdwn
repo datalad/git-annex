@@ -9,9 +9,10 @@ I see several options:
 
 Options 1 and 2 are impractical for several reasons. Option 4 usually requires that your files are inside the DMS.
 So my question is. Do you think this is doable with git-annex?
-Is there an easy way to ask it: give me the document with this index?
-I think the best answer for this question is: git annex find --include '*' --format='${key} ${file}' | grep <KEY>
-And conversely, how do I find the key of a certain document?
+* Is there an easy way to ask it: give me the document with this index?
+* I think the best answer for this question is: git annex find --include '*' --format='${key} ${file}' | grep <KEY>
+* And conversely, how do I find the key of a certain document?
+
 Thanks in advance.
 Best,
        Juan
