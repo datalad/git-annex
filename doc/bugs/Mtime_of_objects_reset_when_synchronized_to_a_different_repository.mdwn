@@ -12,3 +12,4 @@ Git annex version 5.20140610-g5ec8bcf on Ubuntu Linux 12.04
 I've noticed how files synchronized from one repository to another do not retain the original mtime information.
 Perhaps it's intended, but in my view retaining the time of modification of the object is essential.
 
+> [[done]]; dup and/or out of scope, --[[Joey]]
