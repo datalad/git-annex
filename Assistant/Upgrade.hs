@@ -33,6 +33,7 @@ import Utility.ThreadScheduler
 import Utility.Tmp
 import Utility.UserInfo
 import Utility.Gpg
+import Utility.FileMode
 import qualified Utility.Lsof as Lsof
 import qualified Build.SysConfig
 import qualified Utility.Url as Url
