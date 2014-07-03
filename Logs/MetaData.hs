@@ -95,10 +95,12 @@ addMetaData k metadata = addMetaData' k metadata =<< liftIO getPOSIXTime
  - will tend to be generated across the different log files, and so
  - git will be able to pack the data more efficiently. -}
 addMetaData' :: Key -> MetaData -> POSIXTime -> Annex ()
-addMetaData' k (MetaData m) now = Annex.Branch.change (metaDataLogFile k) $
-	showLog . simplifyLog 
-		. S.insert (LogEntry now metadata)
-		. parseLog
+addMetaData' k d@(MetaData m) now
+	| d == emptyMetaData = noop
+	| otherwise = Annex.Branch.change (metaDataLogFile k) $
+		showLog . simplifyLog 
+			. S.insert (LogEntry now metadata)
+			. parseLog
   where
 	metadata = MetaData $ M.filterWithKey (\f _ -> not (isLastChangedField f)) m
 

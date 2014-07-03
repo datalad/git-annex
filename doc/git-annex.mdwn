@@ -268,7 +268,7 @@ subdirectories).
 
   Use `--template` to control where the files are stored.
   The default template is '${feedtitle}/${itemtitle}${extension}'
-  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate)
+  (Other available variables: feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid, itempubdate, title, author)
 
   The `--relaxed` and `--fast` options behave the same as they do in addurl.
   
@@ -1346,8 +1346,12 @@ Here are all the supported configuration settings.
 * `annex.genmetadata`
 
   Set this to `true` to make git-annex automatically generate some metadata
-  when adding files to the repository. In particular, it stores
-  year and month metadata, from the file's modification date.
+  when adding files to the repository. 
+  
+  In particular, it stores year and month metadata, from the file's
+  modification date.
+
+  When importfeed is used, it stores additional metadata from the feed.
 
 * `annex.queuesize`
 
