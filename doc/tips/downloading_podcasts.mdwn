@@ -24,7 +24,7 @@ there's a --template option. The default is
 
 Other available template variables:  
 feedauthor, itemauthor, itemsummary, itemdescription, itemrights, itemid,
-itempubdate
+itempubdate, author, title.
 
 ## catching up
 
@@ -68,3 +68,12 @@ and transferring to your laptop on demand.
 If your git-annex is also built with quvi support, you can also use
 `git annex importfeed` on youtube playlists. It will automatically download
 the videos linked to by the playlist.
+
+## metadata
+
+As well as storing the urls for items imported from a feed, git-annex can
+store additional [[metadata]], like the author, and itemdescription.
+This can then be looked up later, used in [[metadata_driven_views]], etc.
+
+To make all available metadata from the feed be stored:
+`git config annex.genmetadata true`
