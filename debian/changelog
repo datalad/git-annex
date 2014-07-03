@@ -13,6 +13,7 @@ git-annex (5.20140614) UNRELEASED; urgency=medium
     (was only being run when the webapp was opened).
   * importfeed: When annex.genmetadata is set, metadata from the feed
     is added to files that are imported from it.
+  * Android: patch git to avoid fchmod, which fails on /sdcard.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 16 Jun 2014 11:28:42 -0400
 
