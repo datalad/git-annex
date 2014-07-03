@@ -75,15 +75,15 @@ ok
 
 # Question:
 
-cat /etc/xdg/autostart/git-annex.desktop
-[Desktop Entry]
-Type=Application
-Version=1.0
-Name=Git Annex Assistant
-Comment=Autostart
-Terminal=false
-Exec=/usr/bin/git-annex assistant --autostart
-Categories=
+    cat /etc/xdg/autostart/git-annex.desktop
+    [Desktop Entry]
+    Type=Application
+    Version=1.0
+    Name=Git Annex Assistant
+    Comment=Autostart
+    Terminal=false
+    Exec=/usr/bin/git-annex assistant --autostart
+    Categories=
 
 Should there be a git-annex process whenever I log in even if I don't launch the webapp ?
 I can check that on next login.
