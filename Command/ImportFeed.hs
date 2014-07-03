@@ -228,7 +228,7 @@ feedFile tmpl i extension = Utility.Format.format tmpl $
 
 extractMetaData :: ToDownload -> MetaData
 extractMetaData i = case getItemPublishDate (item i) :: Maybe (Maybe UTCTime) of
-	Just (Just d) -> addDateMetaData d meta
+	Just (Just d) -> unionMetaData meta (dateMetaData d meta)
 	_ -> meta
   where
 	tometa (k, v) = (mkMetaFieldUnchecked k, S.singleton (toMetaValue v))

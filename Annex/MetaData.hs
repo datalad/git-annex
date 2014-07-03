@@ -7,7 +7,7 @@
 
 module Annex.MetaData (
 	genMetaData,
-	addDateMetaData,
+	dateMetaData,
 	module X
 ) where
 
@@ -39,14 +39,14 @@ genMetaData key file status = do
 	maybe noop (flip copyMetaData key) =<< catKeyFileHEAD file
 	whenM (annexGenMetaData <$> Annex.getGitConfig) $ do
 		curr <- getCurrentMetaData key
-		addMetaData key (addDateMetaData mtime curr)
+		addMetaData key (dateMetaData mtime curr)
   where
 	mtime = posixSecondsToUTCTime $ realToFrac $ modificationTime status
 
 {- Generates metadata for a file's date stamp.
  - Does not overwrite any existing metadata values. -}
-addDateMetaData :: UTCTime -> MetaData -> MetaData
-addDateMetaData mtime old = MetaData $ M.fromList $ filter isnew
+dateMetaData :: UTCTime -> MetaData -> MetaData
+dateMetaData mtime old = MetaData $ M.fromList $ filter isnew
 	[ (yearMetaField, S.singleton $ toMetaValue $ show y)
 	, (monthMetaField, S.singleton $ toMetaValue $ show m)
 	]
