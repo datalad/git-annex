@@ -1,0 +1,72 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawm7eqCMh_B7mxE0tnchbr0JoYu11FUAFRY"
+ nickname="Stéphane"
+ subject="Cconfirmed it was a LXDE issue, now fixed."
+ date="2014-07-03T09:58:24Z"
+ content="""
+Since this is a little strange, I just looked again at the machine.
+Your software attracts archivist kind of git-annex user, so don't be surprise that I kept logs of the machine.
+
+Short answer: **confirmed it was a LXDE issue, now fixed**.
+
+## From what date has git-annex started to work ?
+
+	git log | grep Date:
+
+    (many other lines...)
+    Date:   Mon Jun 30 21:43:49 2014 +0200
+    Date:   Mon Jun 30 21:42:07 2014 +0200
+    Date:   Mon Jun 30 21:38:22 2014 +0200
+    Date:   Sun Jun 8 14:34:13 2014 +0200
+    Date:   Sun Jun 8 14:28:48 2014 +0200
+    Date:   Sat Jun 7 16:21:06 2014 +0200
+
+So I tried to enable it on June 7, reported bug on June 8.
+The the machine was used on a regular basis but git-annex assistant was ineffective.
+Then it started working as expected from June 30th.
+
+## Any package install near June 30th ?
+
+Updates installed regularly.
+
+    cd /var/log ; zgrep -h \" installed.*\" dpkg.log* | grep '2014-0[67]-..' -o | sort | uniq -c
+
+          2 2014-06-02
+          3 2014-06-03
+          3 2014-06-04
+          3 2014-06-06
+         49 2014-06-07
+          3 2014-06-10
+          8 2014-06-11
+         45 2014-06-12
+          7 2014-06-13
+          2 2014-06-16
+         42 2014-06-21
+         20 2014-06-25
+          3 2014-06-26
+         23 2014-06-27
+         13 2014-06-28
+          6 2014-06-30
+         15 2014-07-02
+          3 2014-07-03
+
+Which packages were installed on 2014-06-30 ?
+
+    cd /var/log ; zgrep -h \" installed.*\" dpkg.log* | grep '2014-06-(29|30)' -E
+
+    2014-06-30 17:29:15 status installed lxsession-data:all 0.4.9.2+git20140410-0ubuntu1.1
+    2014-06-30 17:29:29 status installed desktop-file-utils:i386 0.22-1ubuntu1
+    2014-06-30 17:29:30 status installed mime-support:all 3.54ubuntu1
+    2014-06-30 17:29:30 status installed lxsession-default-apps:i386 0.4.9.2+git20140410-0ubuntu1.1
+    2014-06-30 17:29:44 status installed lxsession-logout:i386 0.4.9.2+git20140410-0ubuntu1.1
+    2014-06-30 17:29:58 status installed lxsession:i386 0.4.9.2+git20140410-0ubuntu1.1
+
+And indeed [0.4.9.2+git20140410-0ubuntu1.1 : “lxsession” package : Ubuntu](https://launchpad.net/ubuntu/+source/lxsession/0.4.9.2+git20140410-0ubuntu1.1)
+
+So it was indeed a lxde bug.
+
+[Diff text](http://launchpadlibrarian.net/177201602/lxsession_0.4.9.2%2Bgit20140410-0ubuntu1_0.4.9.2%2Bgit20140410-0ubuntu1.1.diff.gz)
+
+I added a comment there (#69) which may serve as a hint to other people having not updated their system. [Bug #1308348 “network settings indicator missing from panel” : Bugs : “lxsession” package : Ubuntu](https://bugs.launchpad.net/ubuntu/+source/lxsession/+bug/1308348)
+
+"""]]
