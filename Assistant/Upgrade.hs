@@ -348,7 +348,7 @@ verifyDistributionSig :: FilePath -> IO Bool
 verifyDistributionSig sig = do
 	p <- readProgramFile
 	if isAbsolute p
-		then withTmpDir "git-annex-gpg.tmp" $ \gpgtmp -> do
+		then withUmask 0o0077 $ withTmpDir "git-annex-gpg.tmp" $ \gpgtmp -> do
 			let trustedkeys = takeDirectory p </> "trustedkeys.gpg"
 			boolSystem gpgcmd
 				[ Param "--no-default-keyring"
