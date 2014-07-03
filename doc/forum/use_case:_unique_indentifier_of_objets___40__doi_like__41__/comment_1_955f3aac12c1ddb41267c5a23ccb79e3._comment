@@ -1,0 +1,12 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 1"
+ date="2014-07-03T19:10:53Z"
+ content="""
+To make git-annex output the key of a file, run: `git annex lookupkey $file`
+
+I don't know if the git-annex key is appropriate for your use-case. If the files never get changed, then it's a nice stable identifier. If ongoing changes are made to a file, and you want to link to the most recent version, the key would not be useful.
+
+You might also look at git-annex's [[metadata]]; you could make up some metadata field and value and attach it to a file, and it would persist as the file was modified.
+"""]]
