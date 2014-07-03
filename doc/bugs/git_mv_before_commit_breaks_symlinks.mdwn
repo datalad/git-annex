@@ -1,0 +1,14 @@
+### Please describe the problem.
+
+When I `git mv` a file that I just `git annex add`-ed without having `git commit`-ed it first, then the symlink will break.
+
+### What steps will reproduce the problem?
+
+    $ mkdir foo
+    $ echo hello > foo/bar
+    $ git annex add foo/bar
+    $ git mv foo/bar .
+
+### What version of git-annex are you using? On what operating system?
+
+5.20140529 on Debian testing
