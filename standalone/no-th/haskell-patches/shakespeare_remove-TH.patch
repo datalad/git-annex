@@ -1,24 +1,24 @@
-From a4b8a90dbb97392378a3c5980cbb9c033702dfb2 Mon Sep 17 00:00:00 2001
-From: Your Name <you@example.com>
-Date: Tue, 20 May 2014 21:17:27 +0000
-Subject: [PATCH] remove TN
+From 6de4e75bfbfccb8aedcbf3ee75e5d544f1eeeca5 Mon Sep 17 00:00:00 2001
+From: dummy <dummy@example.com>
+Date: Thu, 3 Jul 2014 21:48:14 +0000
+Subject: [PATCH] remove TH
 
 ---
- Text/Cassius.hs          |  23 ------
- Text/Coffee.hs           |  56 ++-------------
- Text/Css.hs              | 151 ----------------------------------------
- Text/CssCommon.hs        |   4 --
- Text/Hamlet.hs           |  86 +++++++----------------
- Text/Hamlet/Parse.hs     |   3 +-
- Text/Julius.hs           |  67 +++---------------
- Text/Lucius.hs           |  46 +-----------
- Text/Roy.hs              |  51 ++------------
- Text/Shakespeare.hs      |  70 +++----------------
- Text/Shakespeare/Base.hs |  28 --------
- Text/Shakespeare/I18N.hs | 178 ++---------------------------------------------
- Text/Shakespeare/Text.hs | 125 +++------------------------------
- shakespeare.cabal        |   2 +-
- 14 files changed, 78 insertions(+), 812 deletions(-)
+ Text/Cassius.hs          |   23 ------
+ Text/Coffee.hs           |   56 ++-------------
+ Text/Css.hs              |  151 ---------------------------------------
+ Text/CssCommon.hs        |    4 --
+ Text/Hamlet.hs           |   86 +++++++---------------
+ Text/Hamlet/Parse.hs     |    3 +-
+ Text/Julius.hs           |   67 +++--------------
+ Text/Lucius.hs           |   46 +-----------
+ Text/Roy.hs              |   51 ++-----------
+ Text/Shakespeare.hs      |   70 +++---------------
+ Text/Shakespeare/Base.hs |   28 --------
+ Text/Shakespeare/I18N.hs |  178 ++--------------------------------------------
+ Text/Shakespeare/Text.hs |  125 +++-----------------------------
+ shakespeare.cabal        |    3 +-
+ 14 files changed, 78 insertions(+), 813 deletions(-)
 
 diff --git a/Text/Cassius.hs b/Text/Cassius.hs
 index 91fc90f..c515807 100644
@@ -345,7 +345,7 @@ index 719e0a8..8c40e8c 100644
 -mkSizeType "ExSize" "ex"
 -mkSizeType "PixelSize" "px"
 diff --git a/Text/Hamlet.hs b/Text/Hamlet.hs
-index 9500ecb..ec8471a 100644
+index 39c1528..6321cd3 100644
 --- a/Text/Hamlet.hs
 +++ b/Text/Hamlet.hs
 @@ -11,36 +11,36 @@
@@ -497,7 +497,7 @@ index 9500ecb..ec8471a 100644
  
  -- | Checks for truth in the left value in each pair in the first argument. If
  -- a true exists, then the corresponding right action is performed. Only the
-@@ -452,7 +420,7 @@ hamletUsedIdentifiers settings =
+@@ -460,7 +428,7 @@ hamletUsedIdentifiers settings =
  data HamletRuntimeRules = HamletRuntimeRules {
                              hrrI18n :: Bool
                            }
@@ -506,7 +506,7 @@ index 9500ecb..ec8471a 100644
  hamletFileReloadWithSettings :: HamletRuntimeRules
                               -> HamletSettings -> FilePath -> Q Exp
  hamletFileReloadWithSettings hrr settings fp = do
-@@ -479,7 +447,7 @@ hamletFileReloadWithSettings hrr settings fp = do
+@@ -487,7 +455,7 @@ hamletFileReloadWithSettings hrr settings fp = do
              c VTUrlParam = [|EUrlParam|]
              c VTMixin = [|\r -> EMixin $ \c -> r c|]
              c VTMsg = [|EMsg|]
@@ -1294,19 +1294,21 @@ index 6865a5a..e25a8be 100644
 -    rendered <- shakespeareFile rs{ justVarInterpolation = True } fp
 -    return (render `AppE` rendered)
 diff --git a/shakespeare.cabal b/shakespeare.cabal
-index a555c24..d73da26 100644
+index 05b985e..dd8762a 100644
 --- a/shakespeare.cabal
 +++ b/shakespeare.cabal
-@@ -62,8 +62,8 @@ library
+@@ -61,10 +61,9 @@ library
+                      Text.Lucius
                       Text.Cassius
                       Text.Shakespeare.Base
++                     Text.Css
                       Text.Shakespeare
--    other-modules:   Text.Hamlet.Parse
-                      Text.Css
-+    other-modules:   Text.Hamlet.Parse
+-                     Text.TypeScript
+     other-modules:   Text.Hamlet.Parse
+-                     Text.Css
                       Text.MkSizeType
                       Text.IndentToBrace
                       Text.CssCommon
 -- 
-2.0.0.rc2
+1.7.10.4
 
