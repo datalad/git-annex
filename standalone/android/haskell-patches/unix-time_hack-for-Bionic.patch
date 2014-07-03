@@ -1,7 +1,7 @@
-From e6d5c141186dbdbe97c698294485ffc4dcd3a843 Mon Sep 17 00:00:00 2001
+From 5433c4f62b1818e09682a64dee229142f88f17d9 Mon Sep 17 00:00:00 2001
 From: dummy <dummy@example.com>
-Date: Fri, 18 Oct 2013 16:45:50 +0000
-Subject: [PATCH] hack for bionic + cross build
+Date: Thu, 3 Jul 2014 20:48:02 +0000
+Subject: [PATCH] ihack for bionic and cross build
 
 ---
  Data/UnixTime/Types.hsc |   12 ------------
@@ -9,10 +9,10 @@ Subject: [PATCH] hack for bionic + cross build
  2 files changed, 1 insertion(+), 13 deletions(-)
 
 diff --git a/Data/UnixTime/Types.hsc b/Data/UnixTime/Types.hsc
-index d30f39b..ec7ca4c 100644
+index 403daa6..4e66880 100644
 --- a/Data/UnixTime/Types.hsc
 +++ b/Data/UnixTime/Types.hsc
-@@ -9,8 +9,6 @@ import Foreign.Storable
+@@ -10,8 +10,6 @@ import Data.Binary
  
  #include <sys/time.h>
  
@@ -21,7 +21,7 @@ index d30f39b..ec7ca4c 100644
  -- |
  -- Data structure for Unix time.
  data UnixTime = UnixTime {
-@@ -20,16 +18,6 @@ data UnixTime = UnixTime {
+@@ -21,16 +19,6 @@ data UnixTime = UnixTime {
    , utMicroSeconds :: {-# UNPACK #-} !Int32
    } deriving (Eq,Ord,Show)
  
@@ -35,14 +35,14 @@ index d30f39b..ec7ca4c 100644
 -            (#poke struct timeval, tv_sec)  ptr (utSeconds ut)
 -            (#poke struct timeval, tv_usec) ptr (utMicroSeconds ut)
 -
- -- |
- -- Format of the strptime()/strftime() style.
- type Format = ByteString
+ instance Binary UnixTime where
+         put (UnixTime (CTime sec) msec) = do
+             put sec
 diff --git a/cbits/conv.c b/cbits/conv.c
-index 7ff7b87..2e4c870 100644
+index ec31fef..b7bc0f9 100644
 --- a/cbits/conv.c
 +++ b/cbits/conv.c
-@@ -55,7 +55,7 @@ time_t c_parse_unix_time_gmt(char *fmt, char *src) {
+@@ -96,7 +96,7 @@ time_t c_parse_unix_time_gmt(char *fmt, char *src) {
  #else
      strptime(src, fmt, &dst);
  #endif
