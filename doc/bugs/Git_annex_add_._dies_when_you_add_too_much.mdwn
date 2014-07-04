@@ -54,3 +54,5 @@ Linux quad 3.8.0-34-generic #49~precise1-Ubuntu SMP Wed Nov 13 18:05:00 UTC 2013
 """]]
 
 > Ancient git-annex version. Doubt it affects current version. [[!tag moreinfo]] --[[Joey]] 
+
+>> Actually, this is a dup of [[runs_of_of_memory_adding_2_million_files]] so [[done]] --[[Joey]]
