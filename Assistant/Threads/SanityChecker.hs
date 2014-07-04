@@ -23,7 +23,6 @@ import Assistant.TransferQueue
 import Assistant.Types.UrlRenderer
 import qualified Annex.Branch
 import qualified Git.LsFiles
-import qualified Git.Command
 import qualified Git.Command.Batch
 import qualified Git.Config
 import Utility.ThreadScheduler
