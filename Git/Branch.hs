@@ -14,6 +14,7 @@ import Git
 import Git.Sha
 import Git.Command
 import qualified Git.Ref
+import qualified Git.BuildVersion
 
 {- The currently checked out branch.
  -
@@ -110,6 +111,12 @@ fastForward branch (first:rest) repo =
 data CommitMode = ManualCommit | AutomaticCommit
 	deriving (Eq)
 
+applyCommitMode :: CommitMode -> [CommandParam] -> [CommandParam]
+applyCommitMode commitmode ps
+	| commitmode == AutomaticCommit && not (Git.BuildVersion.older "1.8.5") =
+		Param "--no-gpg-sign" : ps
+	| otherwise = ps
+
 {- Commit via the usual git command. -}
 commitCommand :: CommitMode -> [CommandParam] -> Repo -> IO Bool
 commitCommand = commitCommand' runBool
@@ -119,11 +126,8 @@ commitQuiet :: CommitMode -> [CommandParam] -> Repo -> IO ()
 commitQuiet commitmode ps = void . tryIO . commitCommand' runQuiet commitmode ps
 
 commitCommand' :: ([CommandParam] -> Repo -> IO a) -> CommitMode -> [CommandParam] -> Repo -> IO a
-commitCommand' runner commitmode ps = runner (Param "commit" : ps')
-  where
-	ps'
-		| commitmode == AutomaticCommit = Param "--no-gpg-sign" : ps
-		| otherwise = ps
+commitCommand' runner commitmode ps = runner $
+	Param "commit" : applyCommitMode commitmode ps
 
 {- Commits the index into the specified branch (or other ref), 
  - with the specified parent refs, and returns the committed sha.
@@ -140,22 +144,21 @@ commit commitmode allowempty message branch parentrefs repo = do
 		pipeReadStrict [Param "write-tree"] repo
 	ifM (cancommit tree)
 		( do
-			sha <- getSha "commit-tree" $ pipeWriteRead
-				(map Param $ ["commit-tree", fromRef tree] ++ ps)
-				(Just $ flip hPutStr message) repo
+			sha <- getSha "commit-tree" $
+				pipeWriteRead ([Param "commit-tree", Param (fromRef tree)] ++ ps) sendmsg repo
 			update branch sha repo
 			return $ Just sha
 		, return Nothing
 		)
   where
-	ps = 
-		(if commitmode == AutomaticCommit then ["--no-gpg-sign"] else [])
-		++ concatMap (\r -> ["-p", fromRef r]) parentrefs
+	ps = applyCommitMode commitmode $
+		map Param $ concatMap (\r -> ["-p", fromRef r]) parentrefs
 	cancommit tree
 		| allowempty = return True
 		| otherwise = case parentrefs of
 			[p] -> maybe False (tree /=) <$> Git.Ref.tree p repo
 			_ -> return True
+	sendmsg = Just $ flip hPutStr message
 
 commitAlways :: CommitMode -> String -> Branch -> [Ref] -> Repo -> IO Sha
 commitAlways commitmode message branch parentrefs repo = fromJust
