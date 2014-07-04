@@ -77,7 +77,7 @@ getJournalFilesStale :: Annex [FilePath]
 getJournalFilesStale = do
 	g <- gitRepo
 	fs <- liftIO $ catchDefaultIO [] $
-		getDirectoryContents $ gitAnnexJournalDir g
+		getDirectoryContents' $ gitAnnexJournalDir g
 	return $ filter (`notElem` [".", ".."]) fs
 
 {- Checks if there are changes in the journal. -}

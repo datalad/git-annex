@@ -18,12 +18,56 @@ import System.FilePath
 import Control.Applicative
 import System.IO.Unsafe (unsafeInterleaveIO)
 
+#ifdef mingw32_HOST_OS
+import qualified System.Win32 as Win32
+#else
+import qualified System.Posix as Posix
+#endif
+
 import Utility.PosixFiles
 import Utility.SafeCommand
 import Utility.Tmp
 import Utility.Exception
 import Utility.Monad
 import Utility.Applicative
+
+{- Unlike getDirectoryContents, this can be used in arbitrarily
+ - large directories without using much memory; the list steams lazily.
+ -
+ - However, any errors that may be encountered while reading the directory
+ - contents are *ignored*, rather than throw them in the context of
+ - whatever code consumes the lazy list.
+ -
+ - See https://ghc.haskell.org/trac/ghc/ticket/9266
+ -}
+getDirectoryContents' :: FilePath -> IO [FilePath]
+getDirectoryContents' path = loop =<< opendir
+  where
+#ifndef mingw32_HOST_OS
+	opendir = Posix.openDirStream path
+	loop dirp = do
+		v <- tryNonAsync $ Posix.readDirStream dirp
+		case v of
+			(Right ent) | not (null ent) -> do
+				rest <- unsafeInterleaveIO (loop dirp)
+				return (ent:rest)
+			_ -> do
+				void $ tryNonAsync $ Posix.closeDirStream dirp
+				return []
+#else
+	opendir = Win32.findFirstFile (path </> "*")
+	loop (h, fdat) = do
+		-- there is always at least 1 file ("." and "..")
+		ent <- Win32.getFindDataFileName fdat
+		v <- tryNonAsync $ Win32.findNextFile h fdat
+		case v of
+			Right True -> 
+				rest <- unsafeInterleaveIO loop (h, fdat)
+				return (ent:rest)
+			_ -> 
+				void $ tryNonAsync $ Win32.findClose h
+				return [ent]
+#endif
 
 dirCruft :: FilePath -> Bool
 dirCruft "." = True
