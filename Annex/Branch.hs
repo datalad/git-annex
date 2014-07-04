@@ -390,18 +390,34 @@ stageJournal jl = withIndex $ do
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
 	fs <- getJournalFiles jl
+	(jlogf, jlogh) <- openjlog
 	liftIO $ do
 		h <- hashObjectStart g
 		Git.UpdateIndex.streamUpdateIndex g
-			[genstream dir h fs]
+			[genstream dir h fs jlogh]
 		hashObjectStop h
-	return $ liftIO $ mapM_ (removeFile . (dir </>)) fs
+	return $ cleanup dir jlogh jlogf
   where
-	genstream dir h fs streamer = forM_ fs $ \file -> do
+	genstream dir h fs jlogh streamer = forM_ fs $ \file -> do
 		let path = dir </> file
 		sha <- hashFile h path
+		hPutStrLn jlogh file
 		streamer $ Git.UpdateIndex.updateIndexLine
 			sha FileBlob (asTopFilePath $ fileJournal file)
+	-- Clean up the staged files, as listed in the temp log file.
+	-- The temp file is used to avoid needing to buffer all the
+	-- filenames in memory.
+	cleanup dir jlogh jlogf = do
+		hFlush jlogh
+		hSeek jlogh AbsoluteSeek 0
+		stagedfs <- lines <$> hGetContents jlogh
+		mapM_ (removeFile . (dir </>)) stagedfs
+		hClose jlogh
+		nukeFile jlogf
+	openjlog = do
+		tmpdir <- fromRepo gitAnnexTmpMiscDir
+		createAnnexDirectory tmpdir
+		liftIO $ openTempFile tmpdir "jlog"
 
 {- This is run after the refs have been merged into the index,
  - but before the result is committed to the branch.

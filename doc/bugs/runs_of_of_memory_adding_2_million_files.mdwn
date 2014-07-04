@@ -13,3 +13,5 @@ add 999999 ok
 Stack space overflow: current size 8388608 bytes.
 Use `+RTS -Ksize -RTS' to increase it.
 </pre>
+
+> [[fixed|done]] --[[Joey]]

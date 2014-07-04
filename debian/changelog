@@ -16,6 +16,8 @@ git-annex (5.20140614) UNRELEASED; urgency=medium
   * Android: patch git to avoid fchmod, which fails on /sdcard.
   * Support users who have set commit.gpgsign, by disabling gpg signatures
     for git-annex branch commits and commits made by the assistant.
+  * Fix memory leak when committing millions of changes to the git-annex
+    branch, eg after git-annex add has run on 2 million files in one go.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 16 Jun 2014 11:28:42 -0400
 
