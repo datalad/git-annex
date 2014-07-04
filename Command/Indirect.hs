@@ -12,7 +12,7 @@ import Control.Exception.Extensible
 import Common.Annex
 import Command
 import qualified Git
-import qualified Git.Command
+import qualified Git.Branch
 import qualified Git.LsFiles
 import Git.FileMode
 import Config
@@ -49,9 +49,8 @@ perform = do
 	showStart "commit" ""
 	whenM stageDirect $ do
 		showOutput
-		void $ inRepo $ Git.Command.runBool
-			[ Param "commit"
-			, Param "-m"
+		void $ inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
+			[ Param "-m"
 			, Param "commit before switching to indirect mode"
 			]
 	showEndOk

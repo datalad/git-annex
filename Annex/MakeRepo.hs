@@ -12,6 +12,7 @@ import Annex.Init
 import qualified Git.Construct
 import qualified Git.Config
 import qualified Git.Command
+import qualified Git.Branch
 import qualified Annex
 import Annex.UUID
 import Annex.Direct
@@ -50,9 +51,8 @@ initRepo True primary_assistant_repo dir desc mgroup = inDir dir $ do
 	{- Initialize the master branch, so things that expect
 	 - to have it will work, before any files are added. -}
 	unlessM (Git.Config.isBare <$> gitRepo) $
-		void $ inRepo $ Git.Command.runBool
-			[ Param "commit"
-			, Param "--quiet"
+		void $ inRepo $ Git.Branch.commitCommand Git.Branch.AutomaticCommit
+			[ Param "--quiet"
 			, Param "--allow-empty"
 			, Param "-m"
 			, Param "created repository"

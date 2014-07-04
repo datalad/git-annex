@@ -221,7 +221,7 @@ commitStaged = do
 	case v of
 		Left _ -> return False
 		Right _ -> do
-			ok <- Command.Sync.commitStaged ""
+			ok <- Command.Sync.commitStaged Git.Branch.AutomaticCommit ""
 			when ok $
 				Command.Sync.updateSyncBranch =<< inRepo Git.Branch.current
 			return ok

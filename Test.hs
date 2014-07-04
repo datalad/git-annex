@@ -1406,9 +1406,9 @@ clonerepo testenv old new bare = do
 	ensuretmpdir
 	let b = if bare then " --bare" else ""
 	boolSystem "git" [Params ("clone -q" ++ b), File old, File new] @? "git clone failed"
+	configrepo testenv new
 	indir testenv new $
 		git_annex testenv "init" ["-q", new] @? "git annex init failed"
-	configrepo testenv new
 	unless bare $
 		indir testenv new $
 			handleforcedirect testenv
@@ -1416,8 +1416,11 @@ clonerepo testenv old new bare = do
 
 configrepo :: TestEnv -> FilePath -> IO ()
 configrepo testenv dir = indir testenv dir $ do
+	-- ensure git is set up to let commits happen
 	boolSystem "git" [Params "config user.name", Param "Test User"] @? "git config failed"
 	boolSystem "git" [Params "config user.email test@example.com"] @? "git config failed"
+	-- avoid signed commits by test suite
+	boolSystem "git" [Params "config commit.gpgsign false"] @? "git config failed"
 
 handleforcedirect :: TestEnv -> IO ()
 handleforcedirect testenv = when (M.lookup "FORCEDIRECT" testenv == Just "1") $

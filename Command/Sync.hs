@@ -127,14 +127,12 @@ commit = next $ next $ ifM isDirect
 		showStart "commit" ""
 		void stageDirect
 		void preCommitDirect
-		commitStaged commitmessage
+		commitStaged Git.Branch.ManualCommit commitmessage
 	, do
 		showStart "commit" ""
 		Annex.Branch.commit "update"
-		-- Commit will fail when the tree is clean, so ignore failure.
-		_ <- inRepo $ tryIO . Git.Command.runQuiet
-			[ Param "commit"
-			, Param "-a"
+		inRepo $ Git.Branch.commitQuiet Git.Branch.ManualCommit
+			[ Param "-a"
 			, Param "-m"
 			, Param commitmessage
 			]
@@ -143,14 +141,14 @@ commit = next $ next $ ifM isDirect
   where
 	commitmessage = "git-annex automatic sync"
 
-commitStaged :: String -> Annex Bool
-commitStaged commitmessage = go =<< inRepo Git.Branch.currentUnsafe
+commitStaged :: Git.Branch.CommitMode -> String -> Annex Bool
+commitStaged commitmode commitmessage = go =<< inRepo Git.Branch.currentUnsafe
   where
 	go Nothing = return False
 	go (Just branch) = do
 		runAnnexHook preCommitAnnexHook
 		parent <- inRepo $ Git.Ref.sha branch
-		void $ inRepo $ Git.Branch.commit False commitmessage branch
+		void $ inRepo $ Git.Branch.commit commitmode False commitmessage branch
 			(maybeToList parent)
 		return True
 
@@ -169,7 +167,7 @@ mergeLocal (Just branch) = go =<< needmerge
 	go False = stop
 	go True = do
 		showStart "merge" $ Git.Ref.describe syncbranch
-		next $ next $ autoMergeFrom syncbranch (Just branch)
+		next $ next $ autoMergeFrom syncbranch (Just branch) Git.Branch.ManualCommit
 
 pushLocal :: Maybe Git.Ref -> CommandStart
 pushLocal b = do
@@ -221,7 +219,7 @@ mergeRemote remote b = case b of
 	Just thisbranch ->
 		and <$> (mapM (merge (Just thisbranch)) =<< tomerge (branchlist b))
   where
-	merge thisbranch = flip autoMergeFrom thisbranch . remoteBranch remote
+	merge thisbranch br = autoMergeFrom (remoteBranch remote br) thisbranch Git.Branch.ManualCommit
 	tomerge = filterM (changed remote)
 	branchlist Nothing = []
 	branchlist (Just branch) = [branch, syncBranch branch]

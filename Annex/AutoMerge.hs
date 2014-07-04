@@ -12,12 +12,12 @@ import qualified Annex.Queue
 import Annex.Direct
 import Annex.CatFile
 import Annex.Link
-import qualified Git.Command
 import qualified Git.LsFiles as LsFiles
 import qualified Git.UpdateIndex as UpdateIndex
 import qualified Git.Merge
 import qualified Git.Ref
 import qualified Git
+import qualified Git.Branch
 import Git.Types (BlobType(..))
 import Config
 import Annex.ReplaceFile
@@ -29,17 +29,17 @@ import qualified Data.Set as S
 {- Merges from a branch into the current branch
  - (which may not exist yet),
  - with automatic merge conflict resolution. -}
-autoMergeFrom :: Git.Ref -> (Maybe Git.Ref) -> Annex Bool
-autoMergeFrom branch currbranch = do
+autoMergeFrom :: Git.Ref -> (Maybe Git.Ref) -> Git.Branch.CommitMode -> Annex Bool
+autoMergeFrom branch currbranch commitmode = do
 	showOutput
 	case currbranch of
 		Nothing -> go Nothing
 		Just b -> go =<< inRepo (Git.Ref.sha b)
   where
 	go old = ifM isDirect
-		( mergeDirect currbranch old branch (resolveMerge old branch)
-		, inRepo (Git.Merge.mergeNonInteractive branch)
-			<||> (resolveMerge old branch <&&> commitResolvedMerge)
+		( mergeDirect currbranch old branch (resolveMerge old branch) commitmode
+		, inRepo (Git.Merge.mergeNonInteractive branch commitmode)
+			<||> (resolveMerge old branch <&&> commitResolvedMerge commitmode)
 		)
 
 {- Resolves a conflicted merge. It's important that any conflicts be
@@ -166,10 +166,9 @@ cleanConflictCruft resolvedfs top = do
 	matchesresolved f = S.member (base f) s
 	base f = reverse $ drop 1 $ dropWhile (/= '~') $ reverse f
 	
-commitResolvedMerge :: Annex Bool
-commitResolvedMerge = inRepo $ Git.Command.runBool
-	[ Param "commit"
-	, Param "--no-verify"
+commitResolvedMerge :: Git.Branch.CommitMode -> Annex Bool
+commitResolvedMerge commitmode = inRepo $ Git.Branch.commitCommand commitmode
+	[ Param "--no-verify"
 	, Param "-m"
 	, Param "git-annex automatic merge conflict fix"
 	]

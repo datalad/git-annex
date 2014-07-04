@@ -83,7 +83,7 @@ onChange file
 				[ "merging", Git.fromRef changedbranch
 				, "into", Git.fromRef current
 				]
-			void $ liftAnnex  $ autoMergeFrom changedbranch (Just current)
+			void $ liftAnnex  $ autoMergeFrom changedbranch (Just current) Git.Branch.AutomaticCommit
 	mergecurrent _ = noop
 
 	handleDesynced = case fromTaggedBranch changedbranch of

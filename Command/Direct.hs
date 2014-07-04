@@ -12,8 +12,8 @@ import Control.Exception.Extensible
 import Common.Annex
 import Command
 import qualified Git
-import qualified Git.Command
 import qualified Git.LsFiles
+import qualified Git.Branch
 import Config
 import Annex.Direct
 import Annex.Exception
@@ -33,9 +33,8 @@ perform :: CommandPerform
 perform = do
 	showStart "commit" ""
 	showOutput
-	_ <- inRepo $ Git.Command.runBool
-		[ Param "commit"
-		, Param "-a"
+	_ <- inRepo $ Git.Branch.commitCommand Git.Branch.ManualCommit
+		[ Param "-a"
 		, Param "-m"
 		, Param "commit before switching to direct mode"
 		]
