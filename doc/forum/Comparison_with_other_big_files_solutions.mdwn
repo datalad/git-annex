@@ -1,11 +1,10 @@
 # Comparison
 
 Based on my understanding of the http://git-annex.branchable.com/not/ page and of some research,
-I have made a draft of an online excel sheet that compares different git file solutions.
+I have made a draft of an [Online excel document][1] that compares different git file solutions.
 
 Feel free to edit the document and help the community to understand the different solutions out there.
 
-1. [Comparison][1]
 [1]: https://onedrive.live.com/redir?resid=C66C90783BD2C185!1200&authkey=!ACF-Ol_mG3DwQ2k&ithint=file%2c.xlsx
 
 Thank you very much,
