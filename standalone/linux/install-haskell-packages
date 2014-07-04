@@ -13,7 +13,7 @@
 
 set -e
 
-if [ ! -d ../haskell-patches ]; then
+if [ ! -d haskell-patches ]; then
 	cd standalone/linux
 fi
 
