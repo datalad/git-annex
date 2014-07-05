@@ -18,6 +18,8 @@ git-annex (5.20140614) UNRELEASED; urgency=medium
     for git-annex branch commits and commits made by the assistant.
   * Fix memory leak when committing millions of changes to the git-annex
     branch, eg after git-annex add has run on 2 million files in one go.
+  * assistant: Fix bug, introduced in last release, that caused the assistant
+    to make many unncessary empty merge commits.
 
  -- Joey Hess <joeyh@debian.org>  Mon, 16 Jun 2014 11:28:42 -0400
 

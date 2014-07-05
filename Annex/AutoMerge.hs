@@ -28,7 +28,11 @@ import qualified Data.Set as S
 
 {- Merges from a branch into the current branch
  - (which may not exist yet),
- - with automatic merge conflict resolution. -}
+ - with automatic merge conflict resolution.
+ -
+ - Callers should use Git.Branch.changed first, to make sure that
+ - there are changed from the current branch to the branch being merged in.
+ -}
 autoMergeFrom :: Git.Ref -> (Maybe Git.Ref) -> Git.Branch.CommitMode -> Annex Bool
 autoMergeFrom branch currbranch commitmode = do
 	showOutput

@@ -14,3 +14,5 @@ Using the standalone build, 64bit, on ArchLinux, Fedora 20 and Ubuntu 14.04.
     local repository version: 5
     supported repository version: 5
     upgrade supported from repository versions: 0 1 2 4
+
+> [[fixed|done]] --[[Joey]]
