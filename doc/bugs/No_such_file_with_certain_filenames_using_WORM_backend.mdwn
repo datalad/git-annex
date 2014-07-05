@@ -2,6 +2,8 @@
 
 I get no such file errors when using WORM backend on files with a certain name. Doesn't like brackets?
 
+Default backend is fine (see output below).
+
 ### What steps will reproduce the problem?
 
 See additional info
