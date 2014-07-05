@@ -61,10 +61,10 @@ getDirectoryContents' path = loop =<< opendir
 		ent <- Win32.getFindDataFileName fdat
 		v <- tryNonAsync $ Win32.findNextFile h fdat
 		case v of
-			Right True -> 
-				rest <- unsafeInterleaveIO loop (h, fdat)
+			Right True -> do
+				rest <- unsafeInterleaveIO (loop (h, fdat))
 				return (ent:rest)
-			_ -> 
+			_ -> do
 				void $ tryNonAsync $ Win32.findClose h
 				return [ent]
 #endif
