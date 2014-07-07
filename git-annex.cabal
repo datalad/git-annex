@@ -191,7 +191,7 @@ Executable git-annex
      yesod, yesod-default, yesod-static, yesod-form, yesod-core,
      http-types, transformers, wai, wai-extra, warp, warp-tls,
      blaze-builder, crypto-api, hamlet, clientsession,
-     template-haskell, data-default, aeson, network-conduit,
+     template-haskell, data-default, aeson,
      shakespeare
     CPP-Options: -DWITH_WEBAPP
   if flag(Webapp) && flag (Webapp-secure)
