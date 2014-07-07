@@ -45,7 +45,7 @@ autobuilds =
 		( autobuild ("android/" ++ v ++ "/git-annex.apk")
 		, "git-annex/android/current/" ++ v ++ "/git-annex.apk"
 		)
-	autobuld f = "https://downloads.kitenet.net/git-annex/autobuild/" ++ f
+	autobuild f = "https://downloads.kitenet.net/git-annex/autobuild/" ++ f
 
 main :: IO ()
 main = do
