@@ -10,9 +10,6 @@
 module Command.Unused where
 
 import qualified Data.Set as S
-import Data.BloomFilter
-import Data.BloomFilter.Easy
-import Data.BloomFilter.Hash
 import Control.Monad.ST
 import qualified Data.Map as M
 
@@ -36,6 +33,7 @@ import Annex.CatFile
 import Types.Key
 import Git.FilePath
 import Logs.View (is_branchView)
+import Utility.Bloom
 
 def :: [Command]
 def = [withOptions [unusedFromOption] $ command "unused" paramNothing seek
