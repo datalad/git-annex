@@ -17,3 +17,5 @@ The issue is because git-annex is trying to connect to @domain.com as the jabber
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
