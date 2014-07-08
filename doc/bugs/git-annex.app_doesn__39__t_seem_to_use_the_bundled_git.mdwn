@@ -46,3 +46,5 @@ Run `git-annex.app` for the first time and give it a path.
         └── refs
             ├── heads
             └── tags
+
+> [[fixed|done]] --[[Joey]]
