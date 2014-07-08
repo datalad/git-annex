@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.55"
+ subject="comment 1"
+ date="2014-07-08T17:31:53Z"
+ content="""
+This is something git's distributed nature preludes. You might frankly be better with one of the centralized VCSs that supports locking in this specific case. Or, you can do some kind of \"lock server\" that the clients contact, layering a centralized approach on top of git.
+"""]]
