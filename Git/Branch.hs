@@ -113,7 +113,7 @@ data CommitMode = ManualCommit | AutomaticCommit
 
 applyCommitMode :: CommitMode -> [CommandParam] -> [CommandParam]
 applyCommitMode commitmode ps
-	| commitmode == AutomaticCommit && not (Git.BuildVersion.older "1.8.5") =
+	| commitmode == AutomaticCommit && not (Git.BuildVersion.older "2.0.0") =
 		Param "--no-gpg-sign" : ps
 	| otherwise = ps
 

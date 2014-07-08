@@ -1,3 +1,9 @@
+git-annex (5.20140708) UNRELEASED; urgency=medium
+
+  * Fix git version that supported --no-gpg-sign.
+
+ -- Joey Hess <joeyh@debian.org>  Tue, 08 Jul 2014 12:44:42 -0400
+
 git-annex (5.20140707) unstable; urgency=medium
 
   * assistant: Fix bug, introduced in last release, that caused the assistant
