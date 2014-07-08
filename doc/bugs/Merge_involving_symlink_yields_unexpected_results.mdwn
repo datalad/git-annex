@@ -47,3 +47,5 @@ git-annex  5.20140613
 
 
 [[!tag confirmed]]
+
+> [[fixed|done]] --[[Joey]]

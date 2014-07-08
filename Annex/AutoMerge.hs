@@ -110,11 +110,11 @@ resolveMerge' (Just us) them u = do
 				makelink keyUs
 		-- Our side is annexed file, other side is not.
 		(Just keyUs, Nothing) -> resolveby $ do
-			graftin them file
+			graftin them file LsFiles.valThem LsFiles.valThem
 			makelink keyUs
 		-- Our side is not annexed file, other side is.
 		(Nothing, Just keyThem) -> resolveby $ do
-			graftin us file
+			graftin us file LsFiles.valUs LsFiles.valUs
 			makelink keyThem
 		-- Neither side is annexed file; cannot resolve.
 		(Nothing, Nothing) -> return Nothing
@@ -131,17 +131,41 @@ resolveMerge' (Just us) them u = do
 	makelink key = do
 		let dest = variantFile file key
 		l <- inRepo $ gitAnnexLink dest key
-		ifM isDirect
-			( do
-				d <- fromRepo gitAnnexMergeDir
-				replaceFile (d </> dest) $ makeAnnexLink l
-			, replaceFile dest $ makeAnnexLink l
-			)
+		replacewithlink dest l
 		stageSymlink dest =<< hashSymlink l
 
-	{- stage a graft of a directory or file from a branch -}
-	graftin b item = Annex.Queue.addUpdateIndex
-		=<< fromRepo (UpdateIndex.lsSubTree b item)
+	replacewithlink file link = ifM isDirect
+		( do
+			d <- fromRepo gitAnnexMergeDir
+			replaceFile (d </> file) $ makeGitLink link
+		, replaceFile file $ makeGitLink link
+		)
+
+	{- Stage a graft of a directory or file from a branch.
+	 -
+	 - When there is a conflicted merge where one side is a directory
+	 - or file, and the other side is a symlink, git merge always
+	 - updates the work tree to contain the non-symlink. So, the
+	 - directory or file will already be in the work tree correctly,
+	 - and they just need to be staged into place. Do so by copying the
+	 - index. (Note that this is also better than calling git-add
+	 - because on a crippled filesystem, it preserves any symlink
+	 - bits.)
+	 -
+	 - It's also possible for the branch to have a symlink in it,
+	 - which is not a git-annex symlink. In this special case,
+	 - git merge does not update the work tree to contain the symlink
+	 - from the branch, so we have to do so manually.
+	 -}
+	graftin b item select select' = do
+		Annex.Queue.addUpdateIndex
+			=<< fromRepo (UpdateIndex.lsSubTree b item)
+		when (select (LsFiles.unmergedBlobType u) == Just SymlinkBlob) $
+			case select' (LsFiles.unmergedSha u) of
+				Nothing -> noop
+				Just sha -> do
+					link <- catLink True sha
+					replacewithlink item link
 		
 	resolveby a = do
 		{- Remove conflicted file from index so merge can be resolved. -}

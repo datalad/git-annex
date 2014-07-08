@@ -15,6 +15,7 @@ module Annex.CatFile (
 	catKey,
 	catKeyFile,
 	catKeyFileHEAD,
+	catLink,
 ) where
 
 import qualified Data.ByteString.Lazy as L
@@ -77,21 +78,25 @@ catFileHandle = do
 catKey :: Ref -> FileMode -> Annex (Maybe Key)
 catKey = catKey' True
 
-catKey' :: Bool -> Ref -> FileMode -> Annex (Maybe Key)
-catKey' modeguaranteed ref mode
+catKey' :: Bool -> Sha -> FileMode -> Annex (Maybe Key)
+catKey' modeguaranteed sha mode
 	| isSymLink mode = do
-		l <- fromInternalGitPath . decodeBS <$> get
+		l <- catLink modeguaranteed sha
 		return $ if isLinkToAnnex l
 			then fileKey $ takeFileName l
 			else Nothing
 	| otherwise = return Nothing
+
+{- Gets a symlink target. -}
+catLink :: Bool -> Sha -> Annex String
+catLink modeguaranteed sha = fromInternalGitPath . decodeBS <$> get
   where
   	-- If the mode is not guaranteed to be correct, avoid
 	-- buffering the whole file content, which might be large.
 	-- 8192 is enough if it really is a symlink.
   	get
-		| modeguaranteed = catObject ref
-		| otherwise = L.take 8192 <$> catObject ref
+		| modeguaranteed = catObject sha
+		| otherwise = L.take 8192 <$> catObject sha
 
 {- Looks up the key corresponding to the Ref using the running cat-file.
  -
