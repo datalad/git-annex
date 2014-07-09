@@ -42,6 +42,9 @@ Note that it's possible that some repositories may have pruned the deleted
 files as unused. This is most likely to happen in the repository that made
 the bad merge commit in the first place.
 
+If you have any problems following these instructions, please contact
+<urgent2014@joeyh.name> for support.
+
 [[!tag confirmed urgent]]
 
 ## analysis
