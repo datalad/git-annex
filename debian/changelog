@@ -1,16 +1,16 @@
-git-annex (5.20140708) UNRELEASED; urgency=medium
+git-annex (5.20140709) unstable; urgency=medium
 
-  * Fix git version that supported --no-gpg-sign.
-  * Fix bug in automatic merge conflict resolution, when one side is an
-    annexed symlink, and the other side is a non-annexed symlink.
   * Fix race in direct mode merge code that could cause all files in the
     repository to be removed. It should be able to recover repositories
     experiencing this bug without data loss. See:
     http://git-annex.branchable.com/bugs/bad_merge_commit_deleting_all_files/
+  * Fix git version that supported --no-gpg-sign.
+  * Fix bug in automatic merge conflict resolution, when one side is an
+    annexed symlink, and the other side is a non-annexed symlink.
   * Really fix bug that caused the assistant to make many unncessary
     empty merge commits.
 
- -- Joey Hess <joeyh@debian.org>  Tue, 08 Jul 2014 12:44:42 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 15:22:01 -0400
 
 git-annex (5.20140707) unstable; urgency=medium
 
