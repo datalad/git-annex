@@ -40,7 +40,25 @@ git-annex assistant, in direct mode. It was git-annex version 5.20140613.
 This version had a bug that caused it to do unncessary merge commits.
 That bug has been fixed in 5.20140707.
 That is apparently related, in that it caused the assistant to do much more
-work than normal. But, I don't think that bug is fully responsible for the
-problem.
+work than normal. 
 
+But, I don't think that bug is fully responsible for the
+problem. I think a few users have run into this bug before, although I have
+never succeeded in getting a full problem description from anyone who might
+have. I think that the unncessary commit bug made it more likely to happen.
+(This suggests a race may be involved.)
 
+The bad merge commit looked like this:
+
+<pre>
+commit a36077cf1234eeb755fec8f699d3cbaaee817bac
+Merge: 52ecff2 9d8bfd4
+Author: xxx
+Date:   Mon Jul 7 19:58:18 2014 -0400
+
+    merge refs/heads/synced/master
+</pre>
+
+Both parent trees were good and contained all files. In fact, the 2
+parent trees contained the same set of files. But the merge commit
+"resolved" the merge by deleting all the files.
