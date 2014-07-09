@@ -1,0 +1,46 @@
+In our family repository, we had an event where git-annex committed a bad
+merge commit. This had the effect of seeming to delete all the files
+in the repository. However, it is completely recoverable with no file loss.
+
+Another user has reported apparently the same problem.
+--[[Joey]]
+
+## recovery
+
+Look through the git log for the bad commit. It will be the one 
+that deletes a lot of files. Since the bad commit is a merge commit,
+you need to include the -c switch:
+
+	git log -c --stat
+
+Once the bad commit sha is found, revert it. Since it's a merge commit,
+you will need to pass -m 1 to git revert. If the repository you're working
+is uses direct mode, you will first need to switch it to indirect mode.
+
+	git annex indirect
+	git revert -m 1 a36077cf1234eeb755fec8f699d3cbaaee817bac
+
+(It's possible, but I think unlikely that this will pick the wrong
+branch of the merge to revert. If it did, "git reset --hard HEAD@{1}" and
+redo, passing `-m 2` instead.)
+
+Once the revert is done, all your files should be back. You can switch
+the repository back to direct mode if desired (`git annex direct`)
+and can `git annex sync` to push the fix out to all other clones.
+Everywhere the fix lands should restore the deleted files. (Although 
+it's possible that some repositories may have pruned the deleted
+files as unused.)
+
+[[!tag confirmed urgent]]
+
+## analysis
+
+In the one case I have of this happening, the commit was made by the
+git-annex assistant, in direct mode. It was git-annex version 5.20140613.
+This version had a bug that caused it to do unncessary merge commits.
+That bug has been fixed in 5.20140707.
+That is apparently related, in that it caused the assistant to do much more
+work than normal. But, I don't think that bug is fully responsible for the
+problem.
+
+
