@@ -5,6 +5,8 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
+{-# LANGUAGE CPP #-}
+
 module Annex.Direct where
 
 import Common.Annex
@@ -150,13 +152,16 @@ addDirect file cache = do
  - directory, and the merge is staged into a copy of the index.
  - Then the work tree is updated to reflect the merge, and
  - finally, the merge is committed and the real index updated.
+ -
+ - A lock file is used to avoid races with any other caller of mergeDirect.
+ - 
+ - To avoid other git processes from making change to the index while our
+ - merge is in progress, the index lock file is used as the temp index
+ - file. This is the same as what git does when updating the index
+ - normally.
  -}
 mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
-mergeDirect startbranch oldref branch resolvemerge commitmode = do
-	-- Use the index lock file as the temp index file.
-	-- This is actually what git does when updating the index,
-	-- and so it will prevent other git processes from making
-	-- any changes to the index while our merge is in progress.
+mergeDirect startbranch oldref branch resolvemerge commitmode = lockMerge $ do
 	reali <- fromRepo indexFile
 	tmpi <- fromRepo indexFileLock
 	liftIO $ copyFile reali tmpi
@@ -174,8 +179,28 @@ mergeDirect startbranch oldref branch resolvemerge commitmode = do
 			else resolvemerge
 		mergeDirectCleanup d (fromMaybe Git.Sha.emptyTree oldref)
 		mergeDirectCommit merged startbranch branch commitmode
+
 		liftIO $ rename tmpi reali
+
 		return r
+
+lockMerge :: Annex a -> Annex a
+lockMerge a = do
+	lockfile <- fromRepo gitAnnexMergeLock
+	createAnnexDirectory $ takeDirectory lockfile
+	mode <- annexFileMode
+	bracketIO (lock lockfile mode) unlock (const a)
+  where
+#ifndef mingw32_HOST_OS
+	lock lockfile mode = do
+		l <- noUmask mode $ createFile lockfile mode
+		waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
+		return l
+	unlock = closeFd
+#else
+	lock lockfile _mode = waitToLock $ lockExclusive lockfile
+	unlock = dropLock
+#endif
 
 {- Stage a merge into the index, avoiding changing HEAD or the current
  - branch. -}

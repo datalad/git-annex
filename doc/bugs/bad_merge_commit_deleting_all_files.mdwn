@@ -27,9 +27,11 @@ redo, passing `-m 2` instead.)
 Once the revert is done, all your files should be back. You can switch
 the repository back to direct mode if desired (`git annex direct`)
 and can `git annex sync` to push the fix out to all other clones.
-Everywhere the fix lands should restore the deleted files. (Although 
-it's possible that some repositories may have pruned the deleted
-files as unused.)
+Everywhere the fix lands should restore the deleted files. 
+
+Note that it's possible that some repositories may have pruned the deleted
+files as unused. This is most likely to happen in the repository that made
+the bad merge commit in the first place.
 
 [[!tag confirmed urgent]]
 
