@@ -38,6 +38,9 @@ import Annex.Exception
 import Annex.VariantFile
 import Git.Index
 import Annex.Index
+#ifdef mingw32_HOST_OS
+import Utility.WinLock
+#endif
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
