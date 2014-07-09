@@ -4,7 +4,7 @@
  subject="theory"
  date="2014-07-09T18:31:07Z"
  content="""
-Suppose we have 2 mergeDirect's (A and B) running at the same time somehow, with B around 3 seconds behind A, and this sequence of events occurs:
+Suppose we have 2 mergeDirect's A and B running at the same time somehow, with B around 3 seconds behind A, and this sequence of events occurs:
 
 1. A copies index file to index.lock
 2. A stages an empty commit
