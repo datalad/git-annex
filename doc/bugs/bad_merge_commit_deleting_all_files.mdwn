@@ -2,8 +2,17 @@ In our family repository, we had an event where git-annex committed a bad
 merge commit. This had the effect of seeming to delete all the files
 in the repository. However, it is completely recoverable with no file loss.
 
-Another user has reported apparently the same problem.
+Other users have reported apparently the same problem.
 --[[Joey]]
+
+> This appears to be a race, and I have put in a fix for that.
+> It will be released in git-annex 5.20140709.
+> 
+> It's a little bit difficult to say for sure that the bug is fixed, since
+> I don't have a good way to reproduce it. However, everything I am seeing
+> is consistent with my analysis, at least as far as the people who
+> reported this happening with versions 5.20140613-5.20140707. 
+> Calling this [[done]]. --[[Joey]]
 
 ## recovery
 
