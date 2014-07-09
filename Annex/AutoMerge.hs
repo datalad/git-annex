@@ -134,11 +134,11 @@ resolveMerge' (Just us) them u = do
 		replacewithlink dest l
 		stageSymlink dest =<< hashSymlink l
 
-	replacewithlink file link = ifM isDirect
+	replacewithlink dest link = ifM isDirect
 		( do
 			d <- fromRepo gitAnnexMergeDir
-			replaceFile (d </> file) $ makeGitLink link
-		, replaceFile file $ makeGitLink link
+			replaceFile (d </> dest) $ makeGitLink link
+		, replaceFile dest $ makeGitLink link
 		)
 
 	{- Stage a graft of a directory or file from a branch.
