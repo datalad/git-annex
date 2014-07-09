@@ -10,7 +10,7 @@ git-annex (5.20140709) unstable; urgency=medium
   * Really fix bug that caused the assistant to make many unncessary
     empty merge commits.
 
- -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 15:22:01 -0400
+ -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 15:28:03 -0400
 
 git-annex (5.20140707) unstable; urgency=medium
 
