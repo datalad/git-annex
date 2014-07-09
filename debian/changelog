@@ -7,6 +7,8 @@ git-annex (5.20140708) UNRELEASED; urgency=medium
     repository to be removed. It should be able to recover repositories
     experiencing this bug without data loss. See:
     http://git-annex.branchable.com/bugs/bad_merge_commit_deleting_all_files/
+  * Really fix bug that caused the assistant to make many unncessary
+    empty merge commits.
 
  -- Joey Hess <joeyh@debian.org>  Tue, 08 Jul 2014 12:44:42 -0400
 

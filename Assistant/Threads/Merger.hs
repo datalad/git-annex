@@ -78,8 +78,7 @@ onChange file
 	changedbranch = fileToBranch file
 
 	mergecurrent (Just current)
-		| equivBranches changedbranch current = do
-			void $ liftAnnex $ autoMergeFrom changedbranch (Just current) Git.Branch.AutomaticCommit 
+		| equivBranches changedbranch current =
 			whenM (liftAnnex $ inRepo $ Git.Branch.changed current changedbranch) $ do
 				debug
 					[ "merging", Git.fromRef changedbranch
