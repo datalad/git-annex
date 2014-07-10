@@ -17,3 +17,5 @@ Cf. above.
 git-annex 5.20140708
 
 Linux 3.15.4
+
+> [[done]] not a bug per comment.
