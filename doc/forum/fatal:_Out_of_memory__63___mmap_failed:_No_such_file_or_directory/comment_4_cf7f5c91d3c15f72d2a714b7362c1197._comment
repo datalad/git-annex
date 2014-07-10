@@ -1,0 +1,30 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 4"
+ date="2014-07-10T20:16:28Z"
+ content="""
+[2014-06-29 12:49:57 Mitteleurop├ñische Sommerzeit] call: git [\"--git-dir=C:\\Users\\Name\\Pictures\\.git\",\"--work-tree=C:\\Users\\Name\\Pictures\",\"add\",\"-f\",\"Hochzeit von NameB und NameC/2013-08-17_MVI_9701.MOV\"]
+
+When does git-annex in direct mode run \"git add -f\"? In stageDirect, when a file has been modified that is not an annexed file, but already has been committed  directly to git.
+
+This certainly points in the direction of what the problem is with the repository. I think you need to take a look at `git log --stat \"Hochzeit von NameB und NameC/2013-08-18_MVI_0583.MOV\"` and see if it has been committed to git as a symlink or if it is indeed being stored as a Bin file in git. 
+
+Here's how the log would look for a regular git-annexed symlink:
+
+<pre>
+ $somefile | 1 +
+ 1 file changed, 1 insertion(+)
+</pre>
+
+And here for a binary file stored in git:
+
+<pre>
+ $somefile | Bin 0 -> 1016920 bytes
+ 1 file changed, 0 insertions(+), 0 deletions(-)
+</pre>
+
+If you find the latter in the log, then the author and commit message of the commit adding it would be interesting.
+
+Hypothesis: Perhaps this repository started off on a Linux or OSX system, and you were using a git-annex older than 5.20131118, when the direct mode guard was added. You might have added this file back then and accidentially committed it directly to git.
+"""]]
