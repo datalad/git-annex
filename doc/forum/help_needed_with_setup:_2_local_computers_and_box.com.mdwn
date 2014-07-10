@@ -28,7 +28,7 @@ The problem is that this won't work for the following use-case, which I'm curren
 (continued from the previous steps)
 
 6. *B* goes offline.
-7. *A* creates a file (or makes a change), which is correctly synced to box.com (*whereis* shows that it's there too). As expected, syncing with B fails because B is offline.
+7. *A* creates a file which is correctly synced to box.com.
 8. *A* goes offline.
 9. *B* come back online.
 
