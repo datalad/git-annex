@@ -17,10 +17,7 @@ import Common.Annex
 import Annex.Exception
 import qualified Git
 import Annex.Perms
-
-#ifdef mingw32_HOST_OS
-import Utility.WinLock
-#endif
+import Annex.LockFile
 
 {- Records content for a file in the branch to the journal.
  -
@@ -121,19 +118,4 @@ data JournalLocked = ProduceJournalLocked
 {- Runs an action that modifies the journal, using locking to avoid
  - contention with other git-annex processes. -}
 lockJournal :: (JournalLocked -> Annex a) -> Annex a
-lockJournal a = do
-	lockfile <- fromRepo gitAnnexJournalLock
-	createAnnexDirectory $ takeDirectory lockfile
-	mode <- annexFileMode
-	bracketIO (lock lockfile mode) unlock (const $ a ProduceJournalLocked)
-  where
-#ifndef mingw32_HOST_OS
-	lock lockfile mode = do
-		l <- noUmask mode $ createFile lockfile mode
-		waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
-		return l
-	unlock = closeFd
-#else
-	lock lockfile _mode = waitToLock $ lockExclusive lockfile
-	unlock = dropLock
-#endif
+lockJournal a = withExclusiveLock gitAnnexJournalLock $ a ProduceJournalLocked

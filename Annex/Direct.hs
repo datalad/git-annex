@@ -5,8 +5,6 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-{-# LANGUAGE CPP #-}
-
 module Annex.Direct where
 
 import Common.Annex
@@ -38,9 +36,7 @@ import Annex.Exception
 import Annex.VariantFile
 import Git.Index
 import Annex.Index
-#ifdef mingw32_HOST_OS
-import Utility.WinLock
-#endif
+import Annex.LockFile
 
 {- Uses git ls-files to find files that need to be committed, and stages
  - them into the index. Returns True if some changes were staged. -}
@@ -164,7 +160,7 @@ addDirect file cache = do
  - normally.
  -}
 mergeDirect :: Maybe Git.Ref -> Maybe Git.Ref -> Git.Branch -> Annex Bool -> Git.Branch.CommitMode -> Annex Bool
-mergeDirect startbranch oldref branch resolvemerge commitmode = lockMerge $ do
+mergeDirect startbranch oldref branch resolvemerge commitmode = exclusively $ do
 	reali <- fromRepo indexFile
 	tmpi <- fromRepo indexFileLock
 	liftIO $ copyFile reali tmpi
@@ -186,24 +182,8 @@ mergeDirect startbranch oldref branch resolvemerge commitmode = lockMerge $ do
 		liftIO $ rename tmpi reali
 
 		return r
-
-lockMerge :: Annex a -> Annex a
-lockMerge a = do
-	lockfile <- fromRepo gitAnnexMergeLock
-	createAnnexDirectory $ takeDirectory lockfile
-	mode <- annexFileMode
-	bracketIO (lock lockfile mode) unlock (const a)
   where
-#ifndef mingw32_HOST_OS
-	lock lockfile mode = do
-		l <- noUmask mode $ createFile lockfile mode
-		waitToSetLock l (WriteLock, AbsoluteSeek, 0, 0)
-		return l
-	unlock = closeFd
-#else
-	lock lockfile _mode = waitToLock $ lockExclusive lockfile
-	unlock = dropLock
-#endif
+	exclusively = withExclusiveLock gitAnnexMergeLock
 
 {- Stage a merge into the index, avoiding changing HEAD or the current
  - branch. -}
