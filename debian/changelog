@@ -3,6 +3,7 @@ git-annex (5.20140710) UNRELEASED; urgency=medium
   * Fix minor FD leak in journal code.
   * direct: Fix handling of case where a work tree subdirectory cannot
     be written to due to permissions.
+  * migrate: Avoid re-checksumming when migrating from hashE to hash backend.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 23:29:21 -0400
 

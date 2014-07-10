@@ -11,7 +11,7 @@ import Common.Annex
 import Command
 import Backend
 import qualified Types.Key
-import qualified Types.Backend
+import Types.Backend (canUpgradeKey, fastMigrate)
 import Types.KeySource
 import Annex.Content
 import qualified Command.ReKey
@@ -51,8 +51,7 @@ start file key = do
 upgradableKey :: Backend -> Key -> Bool
 upgradableKey backend key = isNothing (Types.Key.keySize key) || backendupgradable
   where
-	backendupgradable = maybe False (\a -> a key)
-		(Types.Backend.canUpgradeKey backend)
+	backendupgradable = maybe False (\a -> a key) (canUpgradeKey backend)
 
 {- Store the old backend's key in the new backend
  - The old backend's key is not dropped from it, because there may
@@ -67,15 +66,22 @@ perform :: FilePath -> Key -> Backend -> Backend -> CommandPerform
 perform file oldkey oldbackend newbackend = go =<< genkey
   where
   	go Nothing = stop
-	go (Just newkey) = stopUnless checkcontent $ finish newkey
+	go (Just (newkey, knowngoodcontent))
+		| knowngoodcontent = finish newkey
+		| otherwise = stopUnless checkcontent $ finish newkey
 	checkcontent = Command.Fsck.checkBackend oldbackend oldkey $ Just file
 	finish newkey = stopUnless (Command.ReKey.linkKey oldkey newkey) $
 		next $ Command.ReKey.cleanup file oldkey newkey
-	genkey = do
-		content <- calcRepo $ gitAnnexLocation oldkey
-		let source = KeySource
-			{ keyFilename = file
-			, contentLocation = content
-			, inodeCache = Nothing
-			}
-		liftM fst <$> genKey source (Just newbackend)
+	genkey = case maybe Nothing (\fm -> fm oldkey newbackend) (fastMigrate oldbackend) of
+		Just newkey -> return $ Just (newkey, True)
+		Nothing -> do
+			content <- calcRepo $ gitAnnexLocation oldkey
+			let source = KeySource
+				{ keyFilename = file
+				, contentLocation = content
+				, inodeCache = Nothing
+				}
+			v <- genKey source (Just newbackend)
+			return $ case v of
+				Just (newkey, _) -> Just (newkey, False)
+				_ -> Nothing

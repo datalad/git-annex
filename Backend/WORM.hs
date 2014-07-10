@@ -22,6 +22,7 @@ backend = Backend
 	, getKey = keyValue
 	, fsckKey = Nothing
 	, canUpgradeKey = Nothing
+	, fastMigrate = Nothing
 	}
 
 {- The key includes the file size, modification time, and the

@@ -44,6 +44,7 @@ genBackend hash = Just Backend
 	, getKey = keyValue hash
 	, fsckKey = Just $ checkKeyChecksum hash
 	, canUpgradeKey = Just needsUpgrade
+	, fastMigrate = Just trivialMigrate
 	}
 
 genBackendE :: Hash -> Maybe Backend
@@ -128,6 +129,15 @@ validExtension c
 needsUpgrade :: Key -> Bool
 needsUpgrade key = "\\" `isPrefixOf` keyHash key ||
 	any (not . validExtension) (takeExtensions $ keyName key)
+
+{- Fast migration from hashE to hash backend. (Optimisation) -}
+trivialMigrate :: Key -> Backend -> Maybe Key
+trivialMigrate oldkey newbackend
+	| keyBackendName oldkey == name newbackend ++ "E" = Just $ oldkey
+		{ keyName = keyHash oldkey
+		, keyBackendName = name newbackend
+		}
+	| otherwise = Nothing
 
 hashFile :: Hash -> FilePath -> Integer -> Annex String
 hashFile hash file filesize = liftIO $ go hash
