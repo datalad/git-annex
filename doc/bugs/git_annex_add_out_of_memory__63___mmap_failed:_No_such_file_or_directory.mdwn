@@ -39,3 +39,5 @@ fatal: Out of memory? mmap failed: No such file or directory
 
 # End of transcript or log.
 """]]
+
+[[!meta title="msysgit failure on Windows: mmap failed: No such file or directory "]]
