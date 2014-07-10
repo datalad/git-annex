@@ -89,3 +89,5 @@ Should there be a git-annex process whenever I log in even if I don't launch the
 I can check that on next login.
 
 At the moment there is "git-annex webapp" and several child processes.
+
+[[!tag moreinfo]]
