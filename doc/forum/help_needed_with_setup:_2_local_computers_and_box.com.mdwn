@@ -1,4 +1,5 @@
 Hello everyone,
+
 I need some help with this use-case: two local computers, paired with git annex, also sync in the cloud (box.com) to pull and push changes even when the other local computer is offline.
 
 I've tried the following steps with the webapp, but the result isn't working so far:
