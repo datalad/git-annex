@@ -218,10 +218,11 @@ unitTests note gettestenv = testGroup ("Unit Tests " ++ note)
 	, check "conflict resolution" test_conflict_resolution
 	, check "conflict resolution movein regression" test_conflict_resolution_movein_regression
 	, check "conflict resolution (mixed directory and file)" test_mixed_conflict_resolution
-	, check "conflict resolution symlinks" test_conflict_resolution_symlinks
+	, check "conflict resolution symlink bit" test_conflict_resolution_symlink_bit
 	, check "conflict resolution (uncommitted local file)" test_uncommitted_conflict_resolution
 	, check "conflict resolution (removed file)" test_remove_conflict_resolution
-	, check "conflict resolution (nonannexed)" test_nonannexed_conflict_resolution
+	, check "conflict resolution (nonannexed file)" test_nonannexed_file_conflict_resolution
+	, check "conflict resolution (nonannexed symlink)" test_nonannexed_symlink_conflict_resolution
 	, check "map" test_map
 	, check "uninit" test_uninit
 	, check "uninit (in git-annex branch)" test_uninit_inbranch
@@ -946,14 +947,14 @@ test_remove_conflict_resolution testenv = do
 		length v == 1
 			@? (what ++ " too many variant files in: " ++ show v)
 
-{- Check merge confalict resolution when a file is annexed in one repo,
- - and checked directly into git in the other repo.
- -
- - This test requires indirect mode to set it up, but tests both direct and
- - indirect mode.
- -}
-test_nonannexed_conflict_resolution :: TestEnv -> Assertion
-test_nonannexed_conflict_resolution testenv = do
+ {- Check merge confalict resolution when a file is annexed in one repo,
+  - and checked directly into git in the other repo.
+  -
+  - This test requires indirect mode to set it up, but tests both direct and
+  - indirect mode.
+  -}
+test_nonannexed_file_conflict_resolution :: TestEnv -> Assertion
+test_nonannexed_file_conflict_resolution testenv = do
 	check True False
 	check False False
 	check True True
@@ -994,6 +995,57 @@ test_nonannexed_conflict_resolution testenv = do
 		s <- catchMaybeIO (readFile (d </> conflictor))
 		s == Just nonannexed_content
 			@? (what ++ " wrong content for nonannexed file: " ++ show s)
+
+
+{- Check merge confalict resolution when a file is annexed in one repo,
+ - and is a non-git-annex symlink in the other repo.
+ -
+ - Test can only run when coreSymlinks is supported, because git needs to
+ - be able to check out the non-git-annex symlink.
+ -}
+test_nonannexed_symlink_conflict_resolution :: TestEnv -> Assertion
+test_nonannexed_symlink_conflict_resolution testenv = do
+	check True False
+	check False False
+	check True True
+	check False True
+  where
+	check inr1 switchdirect = withtmpclonerepo testenv False $ \r1 ->
+		withtmpclonerepo testenv False $ \r2 -> do
+			whenM (checkRepo (Types.coreSymlinks <$> Annex.getGitConfig) r1
+			       <&&> isInDirect r1 <&&> isInDirect r2) $ do
+				indir testenv r1 $ do
+					disconnectOrigin
+					writeFile conflictor "conflictor"
+					git_annex testenv "add" [conflictor] @? "add conflicter failed"
+					git_annex testenv "sync" [] @? "sync failed in r1"
+				indir testenv r2 $ do
+					disconnectOrigin
+					createSymbolicLink symlinktarget "conflictor"
+					boolSystem "git" [Params "add", File conflictor] @? "git add conflictor failed"
+					git_annex testenv "sync" [] @? "sync failed in r2"
+				pair testenv r1 r2
+				let l = if inr1 then [r1, r2] else [r2, r1]
+				forM_ l $ \r -> indir testenv r $ do
+					when switchdirect $
+						git_annex testenv "direct" [] @? "failed switching to direct mode"
+					git_annex testenv "sync" [] @? "sync failed"
+				checkmerge ("r1" ++ show switchdirect) r1
+				checkmerge ("r2" ++ show switchdirect) r2
+	conflictor = "conflictor"
+	symlinktarget = "dummy-target"
+	variantprefix = conflictor ++ ".variant"
+	checkmerge what d = do
+		l <- getDirectoryContents d
+		let v = filter (variantprefix `isPrefixOf`) l
+		not (null v)
+			@? (what ++ " conflictor variant file missing in: " ++ show l )
+		length v == 1
+			@? (what ++ " too many variant files in: " ++ show v)
+		conflictor `elem` l @? (what ++ " conflictor file missing in: " ++ show l)
+		s <- catchMaybeIO (readSymbolicLink (d </> conflictor))
+		s == Just symlinktarget
+			@? (what ++ " wrong target for nonannexed symlink: " ++ show s)
 
 {- Check merge conflict resolution when there is a local file,
  - that is not staged or committed, that conflicts with what's being added
@@ -1045,8 +1097,8 @@ test_uncommitted_conflict_resolution testenv = do
 {- On Windows/FAT, repeated conflict resolution sometimes 
  - lost track of whether a file was a symlink. 
  -}
-test_conflict_resolution_symlinks :: TestEnv -> Assertion
-test_conflict_resolution_symlinks testenv = do
+test_conflict_resolution_symlink_bit :: TestEnv -> Assertion
+test_conflict_resolution_symlink_bit testenv = do
 	withtmpclonerepo testenv False $ \r1 ->
 		withtmpclonerepo testenv False $ \r2 -> do
 			withtmpclonerepo testenv False $ \r3 -> do
@@ -1360,10 +1412,13 @@ intmpclonerepoInDirect testenv a = intmpclonerepo testenv $
 		Annex.Init.initialize Nothing
 		Config.isDirect
 
-isInDirect :: FilePath -> IO Bool
-isInDirect d = do
+checkRepo :: Types.Annex a -> FilePath -> IO a
+checkRepo getval d = do
 	s <- Annex.new =<< Git.Construct.fromPath d
-	not <$> Annex.eval s Config.isDirect
+	Annex.eval s getval
+
+isInDirect :: FilePath -> IO Bool
+isInDirect = checkRepo (not <$> Config.isDirect)
 
 intmpbareclonerepo :: TestEnv -> Assertion -> Assertion
 intmpbareclonerepo testenv a = withtmpclonerepo testenv True $ \r -> indir testenv r a
