@@ -6,7 +6,7 @@ I've tried the following steps with the webapp, but the result isn't working so 
 
 1. Create repo in *Computer A* through the webapp.
 2. Create repo in *Computer B* through the webapp.
-3. In *Computer A*, add box.com repository and put it in the 'backup' group (Just to make sure that it gets everything but I've also tried re-doing the whole procedure with box.com set to 'transfer' (as suggested by the webapp), and still will not work).
+3. In *Computer A*, add box.com encrypted repository and put it in the 'backup' group (Just to make sure that it gets everything but I've also tried re-doing the whole procedure with box.com set to 'transfer' (as suggested by the webapp), and still will not work).
 4. Pair computer *A* and *B* over the local network. 
 5. Now also enable box.com in *B* (the cloud repo has appeared thanks to pairing)
 
