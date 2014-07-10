@@ -354,7 +354,11 @@ toDirectGen k f = do
 		void $ addAssociatedFile k f
 		modifyContent loc $ do
 			thawContent loc
-			replaceFile f $ liftIO . moveFile loc
+			replaceFileOr f
+				(liftIO . moveFile loc)
+				$ \tmp -> do -- rollback
+					liftIO (moveFile tmp loc)
+					freezeContent loc
 	fromdirect loc = do
 		replaceFile f $
 			liftIO . void . copyFileExternal loc
