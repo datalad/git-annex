@@ -30,6 +30,4 @@ The expected behavior here is that B gets the new file (or change) from box.com,
 
 **What am I missing? Should I do something differently to get this behavior?**
 
-(This use-case is important for me because I need to keep some binary files in sync. These files are frequently modified by either *B* or *A*, and very often one of the two repos is not online. The different versions can't be simply merged back because of the binary nature of the files.)
-
 Thanks everyone for your help.
