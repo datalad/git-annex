@@ -1,7 +1,13 @@
 **EDIT: partially solved**
-*by looking around I might have come upon the solution to my own question: the webapp uses a shared cipher for encryption, and since the cipher is stored in the git repository, only the contents will be synced in the encrypted repository (in the cloud in this case). So both computers need to be online to sync, because the cloud only has the annexed files and not the whole git repository. I'm going to try with the hybrid or pub enc method to see if that'd work*
+*by looking around I might have come upon the solution to my own question: the webapp uses a shared cipher for encryption, and since the cipher is stored in the git repository, only the contents will be synced in the encrypted repository (in the cloud in this case). So both computers need to be online to sync, because the cloud only has the annexed files and not the whole git repository. I'm going to try with the hybrid or pub enc method to see if that'd work.*
 
 ---
+
+**EDIT2: still not working**
+I've tried with hybrid encryption and with no encryption and it's still not working. Help? Is it a limitation of webdav remotes? Can they store the git repository as well as the annexed files? 
+
+---
+
 
 Hello everyone,
 
