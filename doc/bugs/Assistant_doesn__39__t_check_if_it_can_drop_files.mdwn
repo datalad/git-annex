@@ -60,3 +60,5 @@ I wish to retain control of the commits on "master" (annex.autocommit false) but
     git annex drop --auto
 
 works as expected.
+
+> [[done]]; user misconfiguration. --[[Joey]]
