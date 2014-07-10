@@ -11,7 +11,7 @@ module Utility.Directory where
 
 import System.IO.Error
 import System.Directory
-import Control.Exception (throw)
+import Control.Exception (throw, bracket)
 import Control.Monad
 import Control.Monad.IfElse
 import System.FilePath
@@ -215,3 +215,16 @@ readDirectory hdl@(DirectoryHandle _ h fdat mv) = do
 		filename <- Win32.getFindDataFileName fdat
 		return (Just filename)
 #endif
+
+-- True only when directory exists and contains nothing.
+-- Throws exception if directory does not exist.
+isDirectoryEmpty :: FilePath -> IO Bool
+isDirectoryEmpty d = bracket (openDirectory d) closeDirectory check
+  where
+	check h = do
+		v <- readDirectory h
+		case v of
+			Nothing -> return True
+			Just f
+				| not (dirCruft f) -> return False
+				| otherwise -> check h

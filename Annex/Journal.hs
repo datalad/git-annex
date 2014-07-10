@@ -87,17 +87,11 @@ withJournalHandle a = do
 
 {- Checks if there are changes in the journal. -}
 journalDirty :: Annex Bool
-journalDirty = withJournalHandle go
-  where
-	go h = do
-		v <- readDirectory h
-		case v of
-			(Just f)
-				| not (dirCruft f) -> do
-					closeDirectory h
-					return True
-				| otherwise -> go h
-			Nothing -> return False
+journalDirty = do
+	d <- fromRepo gitAnnexJournalDir
+	liftIO $ 
+		(not <$> isDirectoryEmpty d)
+			`catchIO` (const $ doesDirectoryExist d)
 
 {- Produces a filename to use in the journal for a file on the branch.
  -
