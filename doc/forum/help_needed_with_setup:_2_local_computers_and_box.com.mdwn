@@ -1,5 +1,5 @@
 **EDIT: partially solved**
-*by looking around I might have come upon the solution to my own question: the webapp uses a shared cipher for encryption, and since the cipher is stored in the git repository, only the contents will be synced in the encrypted repository (in the cloud in this case). So both computers need to be online to sync, because the cloud only has the content of the files and not the whole annex repository.*
+*by looking around I might have come upon the solution to my own question: the webapp uses a shared cipher for encryption, and since the cipher is stored in the git repository, only the contents will be synced in the encrypted repository (in the cloud in this case). So both computers need to be online to sync, because the cloud only has the annexed files and not the whole git repository. I'm going to try with the hybrid or pub enc method to see if that'd work*
 
 ---
 
