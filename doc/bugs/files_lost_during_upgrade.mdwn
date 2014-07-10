@@ -2186,3 +2186,6 @@ channel 4: bad ext data
 
 # End of transcript or log.
 """]]
+
+> [[fixed|done]]; the merge race has been fixed. The upgrade loop has also
+> been dealt with. --[[Joey]]
