@@ -1,3 +1,9 @@
+git-annex (5.20140710) UNRELEASED; urgency=medium
+
+  * Fix minor FD leak in journal code.
+
+ -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 23:29:21 -0400
+
 git-annex (5.20140709) unstable; urgency=medium
 
   * Fix race in direct mode merge code that could cause all files in the

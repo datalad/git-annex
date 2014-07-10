@@ -77,12 +77,27 @@ getJournalFilesStale :: Annex [FilePath]
 getJournalFilesStale = do
 	g <- gitRepo
 	fs <- liftIO $ catchDefaultIO [] $
-		getDirectoryContents' $ gitAnnexJournalDir g
+		getDirectoryContents $ gitAnnexJournalDir g
 	return $ filter (`notElem` [".", ".."]) fs
+
+withJournalHandle :: (DirectoryHandle -> IO a) -> Annex a
+withJournalHandle a = do
+	d <- fromRepo gitAnnexJournalDir
+	bracketIO (openDirectory d) closeDirectory (liftIO . a)
 
 {- Checks if there are changes in the journal. -}
 journalDirty :: Annex Bool
-journalDirty = not . null <$> getJournalFilesStale
+journalDirty = withJournalHandle go
+  where
+	go h = do
+		v <- readDirectory h
+		case v of
+			(Just f)
+				| not (dirCruft f) -> do
+					closeDirectory h
+					return True
+				| otherwise -> go h
+			Nothing -> return False
 
 {- Produces a filename to use in the journal for a file on the branch.
  -

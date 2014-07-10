@@ -389,21 +389,26 @@ stageJournal jl = withIndex $ do
 	prepareModifyIndex jl
 	g <- gitRepo
 	let dir = gitAnnexJournalDir g
-	fs <- getJournalFiles jl
 	(jlogf, jlogh) <- openjlog
-	liftIO $ do
+	withJournalHandle $ \jh -> do
 		h <- hashObjectStart g
 		Git.UpdateIndex.streamUpdateIndex g
-			[genstream dir h fs jlogh]
+			[genstream dir h jh jlogh]
 		hashObjectStop h
 	return $ cleanup dir jlogh jlogf
   where
-	genstream dir h fs jlogh streamer = forM_ fs $ \file -> do
-		let path = dir </> file
-		sha <- hashFile h path
-		hPutStrLn jlogh file
-		streamer $ Git.UpdateIndex.updateIndexLine
-			sha FileBlob (asTopFilePath $ fileJournal file)
+	genstream dir h jh jlogh streamer = do
+		v <- readDirectory jh
+		case v of
+			Nothing -> return ()
+			Just file -> do
+				unless (dirCruft file) $ do
+					let path = dir </> file
+					sha <- hashFile h path
+					hPutStrLn jlogh file
+					streamer $ Git.UpdateIndex.updateIndexLine
+						sha FileBlob (asTopFilePath $ fileJournal file)
+				genstream dir h jh jlogh streamer
 	-- Clean up the staged files, as listed in the temp log file.
 	-- The temp file is used to avoid needing to buffer all the
 	-- filenames in memory.
