@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-11T19:46:05Z"
+ content="""
+How did you set your PATH? Note that the bash shell provides a lot of dotfiles which you can set the PATH in -- and reuses to read any single one of them when a noninteractive login is made to run a command.
+
+It might help to install git on the NAS. It's included in the git-annex tarball, but not in a way that will put it on PATH; only in a way that will let git-annex use it.
+"""]]
