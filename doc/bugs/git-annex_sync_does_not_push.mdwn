@@ -48,3 +48,5 @@ The following script (from <https://gist.github.com/gioele/d4e0905a3570f097fb0b>
 ### What version of git-annex are you using? On what operating system?
 
 5.20140412ubuntu1 from Ubuntu 14.04.
+
+> Documentation fixed, so provisionally [[done]] --[[Joey]] 
