@@ -5,7 +5,10 @@
  - Licensed under the GNU GPL version 3 or higher.
  -}
 
-module Annex.AutoMerge (autoMergeFrom) where
+module Annex.AutoMerge
+	( autoMergeFrom
+	, resolveMerge
+	) where
 
 import Common.Annex
 import qualified Annex.Queue

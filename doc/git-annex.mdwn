@@ -170,8 +170,8 @@ subdirectories).
 
 * `merge`
 
-  This performs the same merging that is done by the sync command, but
-  without pushing or pulling any data.
+  This performs the same merging (and merge conflict resolution)
+  that is done by the sync command, but without pushing or pulling any data.
 
   One way to use this is to put `git annex merge` into a repository's
   post-receive hook. Then any syncs to the repository will update its working
@@ -938,6 +938,16 @@ subdirectories).
 
   Most MATCHING OPTIONS can be used with findref, to limit the files it
   finds. However, the --include and --exclude options will not work.
+
+* `resolvemerge`
+
+  Resolves a conflicted merge, by adding both conflicting versions of the
+  file to the tree, using variants of their filename. This is done
+  automatically when using `git annex sync` or `git annex merge`.
+
+  Note that only merge conflicts that involve an annexed file are resolved.
+  Merge conflicts between two files that are not annexed will not be
+  automatically resolved.
 
 * `test`
 

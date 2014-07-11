@@ -9,6 +9,8 @@ git-annex (5.20140710) UNRELEASED; urgency=medium
   * S3: Deal with AWS ACL configurations that do not allow creating or
     checking the location of a bucket, but only reading and writing content to
     it.
+  * resolvemerge: New plumbing command that runs the automatic merge conflict
+    resolver.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 23:29:21 -0400
 
