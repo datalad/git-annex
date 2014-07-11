@@ -20,3 +20,5 @@ Moving an annex file.
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
