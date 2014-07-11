@@ -23,3 +23,5 @@ gpg: /home/zilti/.gnupg/gpg.conf:201: invalid option
 
 # End of transcript or log.
 """]]
+
+[[!tag moreinfo]]
