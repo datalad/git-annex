@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="https://www.google.com/accounts/o8/id?id=AItOawncukUQl56TwiBJb7dIyAqP1YirNg_wjR4"
+ nickname="Matthew"
+ subject="comment 4"
+ date="2014-07-11T17:11:41Z"
+ content="""
+I should add that in the web app on OSX, the behavior is consistent;  syncing the local repository on an OSX client create a symlink (if that hasn't already been done in the background).  resyncing \"here\" (local client) doesn't download the file.  syncing the remote SSH repo, however does download the file content (as does git-annex sync --content)
+
+thanks! 
+"""]]
