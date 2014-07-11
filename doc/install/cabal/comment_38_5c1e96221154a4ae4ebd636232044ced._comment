@@ -1,0 +1,16 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 38"
+ date="2014-07-11T18:30:55Z"
+ content="""
+@Daniel, I suggest you either follow the instuctions above, or if you don't want to follow the instructions, follow the error messages. :P In this case, the instructions say to do:
+
+> PATH=$HOME/bin:$PATH
+> cabal install c2hs --bindir=$HOME/bin
+
+Which is exactly to work around the problem that we can see in your transcript: `Installing executable(s) in /root/.cabal/bin` 
+
+Also, to reiterate the top of the page: If you are not comfortable tracking down and dealing with library build problems, installing git-annex with cabal is probably not the right choice for you!
+
+"""]]
