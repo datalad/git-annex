@@ -1,0 +1,32 @@
+### Please describe the problem.
+
+I suppose that in a direct mode repo, one might as well just «chmod -R
++w .git/annex; rm -r .git/annex», but I noticed that, when using «git
+annex uninit», this will fail to remove some files in .git/annex.
+
+### What steps will reproduce the problem?
+[[!format sh """
+# If you can, paste a complete transcript of the problem occurring here.
+# If the problem is with the git-annex assistant, paste in .git/annex/daemon.log
+$ mkdir /tmp/foo
+$ cd /tmp/foo
+$ git init
+$ git annex init
+$ echo quux > file
+$ git annex add file
+$ git annex sync
+$ git annex uninit
+unannex file ok
+git-annex: /tmp/foo/.git/annex/objects/zQ/MQ/SHA256E-s3--98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4/SHA256E-s3--98ea6e4f216f2fb4b69fff9b3a44842c38686ca685f3f55dc48c5d3fb1107be4.map: removeLink: permission denied (Permission denied)
+
+# End of transcript or log.
+"""]]
+
+
+### What version of git-annex are you using? On what operating system?
+git-annex 5.20140709-1
+
+linux 3.15.5
+
+### Please provide any additional information below.
+
