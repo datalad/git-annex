@@ -177,7 +177,7 @@ resolveMerge' (Just us) them u = do
 		return (Just file)
 
 {- git-merge moves conflicting files away to files
- - named something like f~HEAD or f~branch, but the
+ - named something like f~HEAD or f~branch or just f, but the
  - exact name chosen can vary. Once the conflict is resolved,
  - this cruft can be deleted. To avoid deleting legitimate
  - files that look like this, only delete files that are
@@ -194,7 +194,7 @@ cleanConflictCruft resolvedfs top = do
 			liftIO $ nukeFile f
 		| otherwise = noop
 	s = S.fromList resolvedfs
-	matchesresolved f = S.member (base f) s
+	matchesresolved f = S.member f s || S.member (base f) s
 	base f = reverse $ drop 1 $ dropWhile (/= '~') $ reverse f
 	
 commitResolvedMerge :: Git.Branch.CommitMode -> Annex Bool

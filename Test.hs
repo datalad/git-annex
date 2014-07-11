@@ -857,6 +857,7 @@ test_conflict_resolution testenv =
 		let v = filter (variantprefix `isPrefixOf`) l
 		length v == 2
 			@? (what ++ " not exactly 2 variant files in: " ++ show l)
+		conflictor `notElem` l @? ("conflictor still present after conflict resolution")
 		indir testenv d $ do
 			git_annex testenv "get" v @? "get failed"
 			git_annex_expectoutput testenv "find" v v
