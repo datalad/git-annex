@@ -6,6 +6,9 @@ git-annex (5.20140710) UNRELEASED; urgency=medium
   * migrate: Avoid re-checksumming when migrating from hashE to hash backend.
   * uninit: Avoid failing final removal in some direct mode repositories
     due to file modes.
+  * S3: Deal with AWS ACL configurations that do not allow creating or
+    checking the location of a bucket, but only reading and writing content to
+    it.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 23:29:21 -0400
 

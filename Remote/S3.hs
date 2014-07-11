@@ -255,20 +255,28 @@ iaMunge = (>>= munge)
 		| isSpace c = []
 		| otherwise = "&" ++ show (ord c) ++ ";"
 
+{- Generate the bucket if it does not already exist, including creating the
+ - UUID file within the bucket.
+ -
+ - To check if the bucket exists, ask for its location. However, some ACLs
+ - can allow read/write to buckets, but not querying location, so first
+ - check if the UUID file already exists and we can skip doing anything.
+ -}
 genBucket :: RemoteConfig -> UUID -> Annex ()
 genBucket c u = do
 	conn <- s3ConnectionRequired c u
 	showAction "checking bucket"
-	loc <- liftIO $ getBucketLocation conn bucket 
-	case loc of
-		Right _ -> writeUUIDFile c u
-		Left err@(NetworkError _) -> s3Error err
-		Left (AWSError _ _) -> do
-			showAction $ "creating bucket in " ++ datacenter
-			res <- liftIO $ createBucketIn conn bucket datacenter
-			case res of
-				Right _ -> writeUUIDFile c u
-				Left err -> s3Error err
+	unlessM ((== Right True) <$> checkUUIDFile c u conn) $ do
+		loc <- liftIO $ getBucketLocation conn bucket
+		case loc of
+			Right _ -> writeUUIDFile c u
+			Left err@(NetworkError _) -> s3Error err
+			Left (AWSError _ _) -> do
+				showAction $ "creating bucket in " ++ datacenter
+				res <- liftIO $ createBucketIn conn bucket datacenter
+				case res of
+					Right _ -> writeUUIDFile c u
+					Left err -> s3Error err
   where
 	bucket = fromJust $ getBucket c
 	datacenter = fromJust $ M.lookup "datacenter" c
@@ -284,19 +292,37 @@ genBucket c u = do
 writeUUIDFile :: RemoteConfig -> UUID -> Annex ()
 writeUUIDFile c u = do
 	conn <- s3ConnectionRequired c u
-	go conn =<< liftIO (tryNonAsync $ getObject conn $ mkobject L.empty)
+	v <- checkUUIDFile  c u conn
+	case v of
+		Left e -> error e
+		Right True -> return ()
+		Right False -> do
+			let object = setStorageClass (getStorageClass c) (mkobject uuidb)
+			either s3Error return =<< liftIO (sendObject conn object)
   where
-	go _conn (Right (Right o)) = unless (obj_data o == uuidb) $
-		error $ "This bucket is already in use by a different S3 special remote, with UUID: " ++ show (obj_data o)
-	go conn _ = do
-		let object = setStorageClass (getStorageClass c) (mkobject uuidb)
-		either s3Error return =<< liftIO (sendObject conn object)
-
-	file = filePrefix c ++ "annex-uuid"
+	file = uuidFile c
 	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
 	bucket = fromJust $ getBucket c
 
 	mkobject = S3Object bucket file "" (getXheaders c)
+
+{- Checks if the UUID file exists in the bucket and has the specified UUID already. -}
+checkUUIDFile :: RemoteConfig -> UUID -> AWSConnection -> Annex (Either String Bool)
+checkUUIDFile c u conn = check <$> liftIO (tryNonAsync $ getObject conn $ mkobject L.empty)
+  where
+	check (Right (Right o))
+		| obj_data o == uuidb = Right True
+		| otherwise = Left $ "This bucket is already in use by a different S3 special remote, with UUID: " ++ show (obj_data o)
+	check _ = Right False
+
+	uuidb = L.fromChunks [T.encodeUtf8 $ T.pack $ fromUUID u]
+	bucket = fromJust $ getBucket c
+	file = uuidFile c
+
+	mkobject = S3Object bucket file "" (getXheaders c)
+
+uuidFile :: RemoteConfig -> FilePath
+uuidFile c = filePrefix c ++ "annex-uuid"
 
 s3ConnectionRequired :: RemoteConfig -> UUID -> Annex AWSConnection
 s3ConnectionRequired c u =
