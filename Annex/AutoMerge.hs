@@ -8,6 +8,7 @@
 module Annex.AutoMerge
 	( autoMergeFrom
 	, resolveMerge
+	, commitResolvedMerge
 	) where
 
 import Common.Annex

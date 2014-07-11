@@ -30,7 +30,9 @@ start = do
 	them <- fromMaybe (error nomergehead) . extractSha
 		<$> liftIO (readFile merge_head)
 	ifM (resolveMerge (Just us) them)
-		( next $ next $ return True
+		( do
+			void $ commitResolvedMerge Git.Branch.ManualCommit
+			next $ next $ return True
 		, error "Merge conflict could not be automatically resolved."
 		)
   where
