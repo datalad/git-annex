@@ -22,9 +22,7 @@ import qualified Options.Applicative.Types as Opt
 #endif
 import Control.Exception.Extensible
 import qualified Data.Map as M
-import System.IO.HVFS (SystemFS(..))
 import qualified Text.JSON
-import System.Path
 
 import Common
 
@@ -78,6 +76,7 @@ import qualified Utility.Hash
 import qualified Utility.Scheduled
 import qualified Utility.HumanTime
 import qualified Utility.ThreadScheduler
+import qualified Command.Uninit
 #ifndef mingw32_HOST_OS
 import qualified CmdLine.GitAnnex as GitAnnex
 import qualified Remote.Helper.Encryptable
@@ -1492,11 +1491,7 @@ cleanup = cleanup' False
 
 cleanup' :: Bool -> FilePath -> IO ()
 cleanup' final dir = whenM (doesDirectoryExist dir) $ do
-	-- Allow all files and directories to be written to, so
-	-- they can be deleted. Both git and git-annex use file
-	-- permissions to prevent deletion.
-	recurseDir SystemFS dir >>=
-		mapM_ (void . tryIO . Utility.FileMode.allowWrite)
+	Command.Uninit.prepareRemoveAnnexDir dir
 	-- This sometimes fails on Windows, due to some files
 	-- being still opened by a subprocess.
 	catchIO (removeDirectoryRecursive dir) $ \e ->
