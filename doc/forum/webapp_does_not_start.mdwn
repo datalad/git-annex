@@ -2,17 +2,29 @@ Sorry, I have again an issue :(
 
 What could be the problem that the webapp is not starting (in Windows)? git annex just exists without messages, connection to localhost failes of course
 
-me@laptop /cygdrive/c/Data
-$ git annex --verbose --debug webapp
-
-me@laptop /cygdrive/c/Data
-$
+    me@laptop /cygdrive/c/Data
+    $ git annex --verbose --debug webapp
+    
+    me@laptop /cygdrive/c/Data
+    $
 
 If I run it within an annexed directory I get at least one message - but it still immideately exits:
 
-me@laptop /cygdrive/c/Data/annex
-$ git annex --verbose --debug webapp
-[2014-07-11 19:06:58 Pacific Daylight Time] chat: git-annex ["--verbose","--debug","webapp"]
+    me@laptop /cygdrive/c/Data/annex
+    $ git annex --verbose --debug webapp
+    [2014-07-11 19:06:58 Pacific Daylight Time] chat: git-annex ["--verbose","--debug","webapp"]
 
-me@laptop /cygdrive/c/Data/annex
-$
+    me@laptop /cygdrive/c/Data/annex
+    $
+
+
+
+    git-annex version: 5.20140707-g8116d10
+    build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
+    key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
+    remote types: git gcrypt S3 bup directory rsync web webdav tahoe glacier ddar hook external
+    local repository version: 5
+    supported repository version: 5
+    upgrade supported from repository versions: 2 3 4
+
+
