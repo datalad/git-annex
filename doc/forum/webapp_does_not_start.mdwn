@@ -1,0 +1,18 @@
+Sorry, I have again an issue :(
+
+What could be the problem that the webapp is not starting (in Windows)? git annex just exists without messages, connection to localhost failes of course
+
+me@laptop /cygdrive/c/Data
+$ git annex --verbose --debug webapp
+
+me@laptop /cygdrive/c/Data
+$
+
+If I run it within an annexed directory I get at least one message - but it still immideately exits:
+
+me@laptop /cygdrive/c/Data/annex
+$ git annex --verbose --debug webapp
+[2014-07-11 19:06:58 Pacific Daylight Time] chat: git-annex ["--verbose","--debug","webapp"]
+
+me@laptop /cygdrive/c/Data/annex
+$
