@@ -1,0 +1,23 @@
+Hey!
+
+I have got a Kindle Fire HD (2nd generation) and want to use Git Annex to sync my data round. However, it does not sync my data at all (my other setups, e.g. PC or laptop do work quite well). The reason for that seems to be quite simple, but I do not know how to fix that:
+
+I always get the warning message:
+
+> TransferScanner crashed: /storage/emulated/legacy/annex/.git/index: copyFile: does not exist (No such file or directory).
+
+I found the same error in the log:
+
+> git-annex: /storage/emulated/legacy/annex/.git/index: copyFile: does not exist (No such file or directory)
+> ...
+> fatal: Run with no arguments or with -c cmd
+> git-annex-shell: git-shell failed
+
+I am using the latest versions for android and arm (server, raspberry pi) from this site from today (13.07.2014)
+
+http://git-annex.branchable.com/install/
+
+I hope somebody can help me. I tried restaring the TransferScanner, restarting git-annex, restarting the OS, resetting the OS (to shipping defaults), nothing helped.
+
+Cheers,
+Stephan
