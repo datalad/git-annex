@@ -1398,9 +1398,11 @@ Here are all the supported configuration settings.
 * `annex.alwayscommit`
 
   By default, git-annex automatically commits data to the git-annex branch
-  after each command is run. To disable these commits,
-  set to `false`. Then data will only be committed when
-  running `git annex merge` (or by automatic merges) or `git annex sync`.
+  after each command is run. If you have a series
+  of commands that you want to make a single commit, you can 
+  run the commands with `-c annex.alwayscommit=false`. You can later
+  commit the data by running `git annex merge` (or by automatic merges)
+  or `git annex sync`.
 
 * `annex.delayadd`
 
