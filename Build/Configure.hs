@@ -60,7 +60,7 @@ shaTestCases l = map make l
 		Config key . MaybeStringConfig <$> search (shacmds n)
 	  where
 		key = "sha" ++ show n
-	  	search [] = return Nothing
+		search [] = return Nothing
 		search (c:cmds) = do
 			sha <- externalSHA c n "/dev/null"
 			if sha == Right knowngood
