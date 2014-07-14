@@ -102,7 +102,6 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 		createAnnexDirectory (parentDir logfile)
 		ifM (liftIO $ isNothing <$> getEnv flag)
 			( liftIO $ withFile devNull WriteMode $ \nullh -> do
-				Utility.Daemon.lockPidFile pidfile
 				when (not foreground) $
 					debugM desc $ "logging to " ++ logfile
 				loghandle <- openLog logfile
@@ -116,7 +115,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 					, std_err = UseHandle loghandle
 					}
 				exitWith =<< waitForProcess pid
-			, start id $ do
+			, start (Utility.Daemon.foreground (Just pidfile)) $
 				case startbrowser of
 					Nothing -> Nothing
 					Just a -> Just $ a Nothing Nothing

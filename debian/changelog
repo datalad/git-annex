@@ -13,6 +13,8 @@ git-annex (5.20140710) UNRELEASED; urgency=medium
     resolver.
   * Deal with change in git 2.0 that made indirect mode merge conflict
     resolution leave behind old files.
+  * Windows: Fix locking issue that prevented the webapp starting
+    (since 5.20140707).
 
  -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 23:29:21 -0400
 
