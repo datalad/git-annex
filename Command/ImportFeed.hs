@@ -265,7 +265,7 @@ extractField k (_:rest) = extractField k rest
  - Throws an error if the feed is broken, otherwise shows a warning. -}
 feedProblem :: URLString -> String -> Annex ()
 feedProblem url message = ifM (checkFeedBroken url)
-	( error $ message ++ " (having repeated problems with this feed!)"
+	( error $ message ++ " (having repeated problems with feed: " ++ url ++ ")"
 	, warning $ "warning: " ++ message
 	)
 
