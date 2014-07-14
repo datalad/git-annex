@@ -47,3 +47,6 @@ gcrypt: Failed to decrypt manifest!
 
 # End of transcript or log.
 """]]
+
+[[!tag forwarded]]
+[[!meta title="using git-remote-gcrypt with multiple keys causes unncessary password prompts for keys that did not encrypt the repository"]]
