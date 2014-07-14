@@ -17,8 +17,6 @@ If I run it within an annexed directory I get at least one message - but it stil
     me@laptop /cygdrive/c/Data/annex
     $
 
-
-
     git-annex version: 5.20140707-g8116d10
     build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV DNS Feeds Quvi TDFA CryptoHash
     key/value backends: SHA256E SHA1E SHA512E SHA224E SHA384E SKEIN256E SKEIN512E SHA256 SHA1 SHA512 SHA224 SHA384 SKEIN256 SKEIN512 WORM URL
@@ -28,3 +26,26 @@ If I run it within an annexed directory I get at least one message - but it stil
     upgrade supported from repository versions: 2 3 4
 
 
+EDIT:
+1.) Interestingly, also "git annex test" fails:
+
+    [...]
+    ok
+    push origin To C:/Data/.t\repo
+       bcc4611..91f5218  git-annex -> synced/git-annex
+       6f47922..92c578a  annex/direct/master -> synced/master
+    
+    ok
+    add ../dir2/foo ok
+    (Recording state in git...)
+    FAIL
+          Exception: .t/tmprepo9/.git/annex/journal: getDirectoryContents: permission denied (Access is denied.)
+
+    2 out of 83 tests failed
+      (This could be due to a bug in git-annex, or an incompatability
+       with utilities, such as git, installed on this system.)
+
+
+
+2.) There's really something very weird going on. At the beginning it worked. Then it stopped (as per above). Sometimes, when I start it using "Git Bash" it works. But then not any more.
+3.) Rebooting the machine does not help
