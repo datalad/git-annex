@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 2"
+ date="2014-07-14T18:30:38Z"
+ content="""
+You can use --clean-duplicates unless your goal is for some reason to add the duplicate files to your repository a second time.
+"""]]
