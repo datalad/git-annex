@@ -8,6 +8,7 @@ I don't know. Just run git-annex assistant and wait for this to happen.
 ### What version of git-annex are you using? On what operating system?
 Version: 5.20140709
 Build flags: Assistant Webapp Webapp-secure Pairing Testsuite S3 WebDAV Inotify DBus XMPP DNS Feeds Quvi TDFA CryptoHash 
+
 Gentoo
 
 ### Please provide any additional information below.
