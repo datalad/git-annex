@@ -19,12 +19,11 @@ import Annex
 import Types.LockPool
 import qualified Git
 import Annex.Exception
+import Annex.Perms
 
 import qualified Data.Map as M
 
-#ifndef mingw32_HOST_OS
-import Annex.Perms
-#else
+#ifdef mingw32_HOST_OS
 import Utility.WinLock
 #endif
 
