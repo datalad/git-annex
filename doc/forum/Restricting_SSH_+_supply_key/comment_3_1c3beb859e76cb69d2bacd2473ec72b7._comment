@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 3"
+ date="2014-07-14T20:20:28Z"
+ content="""
+Re the ssh config on Windows, my windows VM has a per-user .ssh/config inside c:\Documents and Settings\$user. This is where the assistant stores configurations so I know it works.
+
+The soution to ssh still trying to use the agent is probably to set \"IdentitiesOnly yes\" in the stanza for a host. This is what the assistant does, anyway.
+"""]]
