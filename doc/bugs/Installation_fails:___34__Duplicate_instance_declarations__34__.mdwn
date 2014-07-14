@@ -31,3 +31,5 @@ git-annex-5.20140709, Fedora 20
 
 # End of transcript or log.
 """]]
+
+> Already fixed in git yesterday. [[done]] --[[Joey]]
