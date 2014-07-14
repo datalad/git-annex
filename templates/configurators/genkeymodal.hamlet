@@ -2,9 +2,11 @@
   <div .modal-header>
     <div .modal-dialog>
       <div .modal-content>
-        <h3>
-          <img src="@{StaticR activityicon_gif}" alt=""> #
-          Generating a #{maxRecommendedKeySize} bit GnuPg key.
+        <div .modal-header>
+          <h3>
+            <img src="@{StaticR activityicon_gif}" alt=""> #
+            Generating a #{maxRecommendedKeySize} bit GnuPg key.
+        <div .modal-body>
         <p>
           Generating a GnuPg key can take a long time. To speed up the process, #
           it actually helps to use your computer for other things, which helps #
