@@ -49,3 +49,24 @@ EDIT:
 
 2.) There's really something very weird going on. At the beginning it worked. Then it stopped (as per above). Sometimes, when I start it using "Git Bash" it works. But then not any more.
 3.) Rebooting the machine does not help
+
+EDIT once again:
+4.) I am afraid there is something big broken. Suddenly I could start the daemon again. The thing I did was to delete my complete annex.
+But if I shutdown the daemon now I get:
+
+    $ git annex webapp
+    Launching web browser on file://C:\cygwin\tmp\webapp85796.html
+    
+      Detected a filesystem without fifo support.
+    
+      Disabling ssh connection caching.
+    
+      Detected a crippled filesystem.
+    
+      Enabling direct mode.
+    
+    (Recording state in git...)
+    WebApp crashed: ExitFailu
+
+... and the whole loop starts again. webapp daemon does not start as long as I delete the annex. Interestingly this is independent from %USERPROFILE%\.config. Deleting this directory does not change anything. So somehow git-annex "knows" that there is somewhere an annex and fails if it is.
+
