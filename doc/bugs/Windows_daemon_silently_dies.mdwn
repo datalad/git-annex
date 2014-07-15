@@ -8,7 +8,7 @@ I hope this will reproduce:
 
 * Create a remote with an invalid host which is not reachable
 * Start git-annex-autostart.vbs
-* Wait 15-30 minutes until no git.exe/git-annex.exe are visible any more in task manager
+* Wait 5-30 minutes until no git.exe/git-annex.exe are visible any more in task manager (for my current test it took 10 minutes)
 * Inspect the logs
 
 ### What version of git-annex are you using? On what operating system?
