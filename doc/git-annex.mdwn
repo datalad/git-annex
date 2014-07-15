@@ -139,10 +139,10 @@ subdirectories).
 * `sync [remote ...]`
 
   Use this command when you want to synchronize the local repository with
-  one or more of its remotes. You can specify the remotes to sync with;
-  the default is to sync with all remotes that have an annex.uuid
-  configured. Or specify `--fast` to sync with the remotes with the
-  lowest annex-cost value. Or specify the remotes to sync with.
+  one or more of its remotes. You can specify the remotes to sync with by
+  name; the default is to sync with all remotes.
+  Or specify `--fast` to sync with the remotes with the
+  lowest annex-cost value.
 
   The sync process involves first committing all local changes,
   then fetching and merging the `synced/master` and the `git-annex` branch

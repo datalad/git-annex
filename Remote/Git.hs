@@ -191,19 +191,10 @@ tryGitConfigRead r
 	| Git.repoIsHttp r = store geturlconfig
 	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
 	| Git.repoIsUrl r = return r
-	| otherwise = store $ safely $ do
-		s <- Annex.new r
-		Annex.eval s $ do
-			Annex.BranchState.disableUpdate
-			ensureInitialized
-			Annex.getState Annex.repo
+	| otherwise = store $ liftIO $
+		readlocalannexconfig `catchNonAsync` (const $ Git.Config.read r)
   where
 	haveconfig = not . M.null . Git.config
-
-	-- Reading config can fail due to IO error or
-	-- for other reasons; catch all possible exceptions.
-	safely a = either (const $ return r) return
-			=<< liftIO (try a :: IO (Either SomeException Git.Repo))
 
 	pipedconfig cmd params = do
 		v <- Git.Config.fromPipe r cmd params
@@ -282,6 +273,15 @@ tryGitConfigRead r
 			Nothing -> return r
 			Just v -> store $ liftIO $ setUUID r $
 				genUUIDInNameSpace gCryptNameSpace v
+
+	{- Throws an exception if the remote is not already initialied
+	 - or cannot be automatically initialized. -}
+	readlocalannexconfig = do
+		s <- Annex.new r
+		Annex.eval s $ do
+			Annex.BranchState.disableUpdate
+			ensureInitialized
+			Annex.getState Annex.repo
 
 {- Checks if a given remote has the content for a key inAnnex.
  - If the remote cannot be accessed, or if it cannot determine
