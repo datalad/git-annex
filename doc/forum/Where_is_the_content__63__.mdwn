@@ -1,0 +1,8 @@
+On Android 4.4.4, I can install the most recent git annex. I want to join a git annex runnong on my linux server. Git annex on android seems to be able to contact remote, and it asks if I want to 'merge' with it. I hope that did not mean erase the remote.  Anyway, the sync says it is proceeding, but when it is done, I cannot find a filder with remote copies of files. 
+
+I figure either it worked, or it destroyed my remote. 
+
+After new install, I have folders /sdcard/annex and /sdcard/git-annex.home. I don't find a new folder with name of remote repo, don't understand why.
+
+Help?
+
