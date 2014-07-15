@@ -50,3 +50,8 @@ gcrypt: Failed to decrypt manifest!
 
 [[!tag forwarded]]
 [[!meta title="using git-remote-gcrypt with multiple keys causes unncessary password prompts for keys that did not encrypt the repository"]]
+
+> [[fixed|done]]; upgrade git-remote-gcrypt and `git config gcrypt.publish-participants true`
+> and after the next push to the repo, it'll stop guessing at keys, and use
+> the right one. git-annex will do this by default for new gcrypt
+> repositories. --[[Joey]]
