@@ -263,10 +263,14 @@ shellOrRsync r ashell arsync = case method of
  - participants, which gcrypt requires is the case, and may not be
  - depending on system configuration.
  -
- - (For shared encryption, gcrypt's default behavior is used.) -}
+ - (For shared encryption, gcrypt's default behavior is used.)
+ -
+ - Also, sets gcrypt-publish-participants to avoid unncessary gpg
+ - passphrase prompts.
+ -}
 setGcryptEncryption :: RemoteConfig -> String -> Annex ()
 setGcryptEncryption c remotename = do
-	let participants = ConfigKey $ Git.GCrypt.remoteParticipantConfigKey remotename
+	let participants = remoteconfig Git.GCrypt.remoteParticipantConfigKey
 	case extractCipher c of
 		Nothing -> noCrypto
 		Just (EncryptedCipher _ _ (KeyIds { keyIds = ks})) -> do
@@ -278,6 +282,10 @@ setGcryptEncryption c remotename = do
 				(k:_) -> setConfig signingkey k
 		Just (SharedCipher _) ->
 			unsetConfig participants
+	setConfig (remoteconfig Git.GCrypt.remotePublishParticipantConfigKey)
+		(Git.Config.boolConfig True)
+  where
+	remoteconfig n = ConfigKey $ n remotename
 
 store :: Remote -> Remote.Rsync.RsyncOpts -> (Cipher, Key) -> Key -> MeterUpdate -> Annex Bool
 store r rsyncopts (cipher, enck) k p

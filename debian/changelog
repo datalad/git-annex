@@ -17,6 +17,11 @@ git-annex (5.20140710) UNRELEASED; urgency=medium
     (since 5.20140707).
   * sync: Fix git sync with local git remotes even when they don't have an
     annex.uuid set. (The assistant already did so.)
+  * Set gcrypt-publish-participants when setting up a gcrypt repository,
+    to avoid unncessary passphrase prompts.
+    This is a security/usability tradeoff. To avoid exposing the gpg key
+    ids who can decrypt the repository, users can unset
+    gcrypt-publish-participants.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 23:29:21 -0400
 

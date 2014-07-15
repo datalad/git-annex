@@ -43,3 +43,8 @@ way git-remote-gcrypt encrypts the git repository, you will need to somehow
 force it to re-push everything again, so that the encrypted repository can
 be decrypted by the added keys. Probably this can be done by setting
 `GCRYPT_FULL_REPACK` and doing a forced push of branches.
+
+Recent versions of git-annex configure gcrypt-publish-participants when
+setting up a gcrypt repository. This is done to avoid unncessary gpg
+passphrase prompts, but it does publish the gpg keyids that can decrypt the
+repository. Unset it if you need to obscure that.
