@@ -1,6 +1,6 @@
 I'm sorry to ask this again, but I'm not being able to find my previous message regarding this issue. I'm finding very hard to find older posts in forums. Is there a way to search for all my posted messages?
 Anyway, after some automount problems (changed mount point name), my usb repo ended in a weird state.
-See for instance the screenshot: http://picpaste.com/git-annex-problem-eZvOl90y.jpg
+See for instance the screenshot: <http://picpaste.com/git-annex-problem-eZvOl90y.jpg>
 
 In addition making a git-annex info gives the following:
 
