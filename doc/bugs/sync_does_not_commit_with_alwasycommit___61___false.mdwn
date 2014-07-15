@@ -87,4 +87,4 @@ git-annex version: 5.20140708-g8c9c55c on Ubuntu 12.04.4
 > I have improved the documentation to not imply that sync/merge are a
 > special case. They honor the autocommit settings more or less
 > intentionally, and to get a commit to be made, just pass -c
-> autocommit=true when running them. --[[Joey]]
+> autocommit=true when running them. [[done]] --[[Joey]]
