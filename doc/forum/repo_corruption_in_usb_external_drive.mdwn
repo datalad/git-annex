@@ -4,25 +4,25 @@ See for instance the screenshot: <http://picpaste.com/git-annex-problem-eZvOl90y
 
 In addition making a git-annex info gives the following:
 
-repository mode: direct
-trusted repositories: error: refs/heads/master does not point to a valid object!
-error: refs/heads/synced/git-annex does not point to a valid object!
-error: refs/heads/synced/master does not point to a valid object!
-error: refs/remotes/sapo/annex/direct/master does not point to a valid object!
-error: refs/remotes/sapo/git-annex does not point to a valid object!
-error: refs/remotes/sapo/master does not point to a valid object!
-error: refs/synced/1912d5a7-3929-47f0-8e25-a071d7079cc4/git-annex does not point to a valid object!
-error: refs/synced/1912d5a7-3929-47f0-8e25-a071d7079cc4/master does not point to a valid object!
-error: refs/heads/master does not point to a valid object!
-error: refs/heads/synced/git-annex does not point to a valid object!
-error: refs/heads/synced/master does not point to a valid object!
-error: refs/remotes/sapo/annex/direct/master does not point to a valid object!
-error: refs/remotes/sapo/git-annex does not point to a valid object!
-error: refs/remotes/sapo/master does not point to a valid object!
-error: refs/synced/1912d5a7-3929-47f0-8e25-a071d7079cc4/git-annex does not point to a valid object!
-error: refs/synced/1912d5a7-3929-47f0-8e25-a071d7079cc4/master does not point to a valid object!
-fatal: index file smaller than expected
-git-annex: failed to read sha from git write-tree
+ * repository mode: direct
+ * trusted repositories: error: refs/heads/master does not point to a valid object!
+ * error: refs/heads/synced/git-annex does not point to a valid object!
+ * error: refs/heads/synced/master does not point to a valid object!
+ * error: refs/remotes/sapo/annex/direct/master does not point to a valid object!
+ * error: refs/remotes/sapo/git-annex does not point to a valid object!
+ * error: refs/remotes/sapo/master does not point to a valid object!
+ * error: refs/synced/1912d5a7-3929-47f0-8e25-a071d7079cc4/git-annex does not point to a valid object!
+ * error: refs/synced/1912d5a7-3929-47f0-8e25-a071d7079cc4/master does not point to a valid object!
+ * error: refs/heads/master does not point to a valid object!
+ * error: refs/heads/synced/git-annex does not point to a valid object!
+ * error: refs/heads/synced/master does not point to a valid object!
+ * error: refs/remotes/sapo/annex/direct/master does not point to a valid object!
+ * error: refs/remotes/sapo/git-annex does not point to a valid object!
+ * error: refs/remotes/sapo/master does not point to a valid object!
+ * error: refs/synced/1912d5a7-3929-47f0-8e25-a071d7079cc4/git-annex does not point to a valid object!
+ * error: refs/synced/1912d5a7-3929-47f0-8e25-a071d7079cc4/master does not point to a valid object!
+ * fatal: index file smaller than expected
+ * git-annex: failed to read sha from git write-tree
 
 
 What should I do? delete the usb repo and start again. Thank god this is just a trial.
