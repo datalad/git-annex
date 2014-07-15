@@ -1,0 +1,8 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-15T18:53:47Z"
+ content="""
+Well, it's easy enough to make symlinks to content in a git-annex repository yourself if you want to. I don't see why this belongs in `git annex import`, which is too complicated already.
+"""]]

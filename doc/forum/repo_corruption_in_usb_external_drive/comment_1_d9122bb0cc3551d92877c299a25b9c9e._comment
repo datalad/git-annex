@@ -1,0 +1,10 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-15T18:50:29Z"
+ content="""
+It's normal for git-repair to take a long time.
+
+git-annex uses checksums to detect if a file gets corrupted.
+"""]]
