@@ -28,4 +28,14 @@ In addition making a git-annex info gives the following:
 What should I do? delete the usb repo and start again. Thank god this is just a trial.
 
 What happens if a file gets corrupted. Lets say it is corrupted in repo A, and fine in repo B. Will the good copy be overridden?
+
+git-repair takes a long time and seems to be stuck there, or maybe it just takes a long time (10Gb repo). Is this normal?
+    > git-annex repair
+    Running git fsck ...
+    Initialized empty Git repository in /tmp/tmprepo.1/.git/
+    Trying to recover missing objects from remote sapo.
+    Unpacking all pack files.
+    Unpacking objects: 100% (348848/348848), done.
+
+
 Thanks in advance.
