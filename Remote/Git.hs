@@ -192,7 +192,9 @@ tryGitConfigRead r
 	| Git.GCrypt.isEncrypted r = handlegcrypt =<< getConfigMaybe (remoteConfig r "uuid")
 	| Git.repoIsUrl r = return r
 	| otherwise = store $ liftIO $
-		readlocalannexconfig `catchNonAsync` (const $ Git.Config.read r)
+		readlocalannexconfig
+			`catchNonAsync` (const $ Git.Config.read r)
+				`catchNonAsync` (const $ return r)
   where
 	haveconfig = not . M.null . Git.config
 
