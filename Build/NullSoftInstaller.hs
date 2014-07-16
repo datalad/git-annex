@@ -121,7 +121,7 @@ makeInstaller gitannex license extrabins launchers = nsis $ do
 		[ Target "wscript.exe"
 		, Parameters "\"$INSTDIR/git-annex-webapp.vbs\""
 		, StartOptions "SW_SHOWNORMAL"
-		, IconFile "$INSTDIR/bin/git-annex.exe"
+		, IconFile "$INSTDIR/cmd/git-annex.exe"
 		, IconIndex 2
 		, KeyboardShortcut "ALT|CONTROL|a"
 		, Description "git-annex webapp"
@@ -130,15 +130,16 @@ makeInstaller gitannex license extrabins launchers = nsis $ do
 		[ Target "wscript.exe"
 		, Parameters "\"$INSTDIR/git-annex-autostart.vbs\""
 		, StartOptions "SW_SHOWNORMAL"
-		, IconFile "$INSTDIR/bin/git-annex.exe"
+		, IconFile "$INSTDIR/cmd/git-annex.exe"
 		, IconIndex 2
 		, Description "git-annex autostart"
 		]
-	-- Groups of files to install
 	section "bins" [] $ do
 		setOutPath "$INSTDIR\\bin"
-		addfile gitannex
 		mapM_ addfile extrabins
+	section "cmd" [] $ do
+		setOutPath "$INSTDIR\\cmd"
+		addfile gitannex
 	section "meta" [] $ do
 		setOutPath "$INSTDIR"
 		addfile license
@@ -147,13 +148,13 @@ makeInstaller gitannex license extrabins launchers = nsis $ do
 	uninstall $ do
 		delete [RebootOK] $ startMenuItem
 		delete [RebootOK] $ autoStartItem
+		removefilesFrom "$INSTDIR/bin" extrabins
+		removefilesFrom "$INSTDIR/cmd" [gitannex]
 		removefilesFrom "$INSTDIR" $
+			launchers ++
 			[ license
 			, uninstaller
-			] ++ launchers
-		removefilesFrom "$INSTDIR/bin" $
-			[ gitannex
-			] ++ extrabins
+			]
   where
 	addfile f = file [] (str f)
 	removefilesFrom d = mapM_ (\f -> delete [RebootOK] $ fromString $ d ++ "/" ++ takeFileName f)
