@@ -126,3 +126,5 @@ git-annex: <stdin>: hGetLine: invalid argument (Bad file descriptor)
 failed
 git-annex: assistant: 1 failed 
 """]]
+
+[[!tag confirmed]]
