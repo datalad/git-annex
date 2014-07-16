@@ -57,7 +57,7 @@ unboundDelay time = do
 waitForTermination :: IO ()
 waitForTermination = do
 #ifdef mingw32_HOST_OS
-	forever $ threadDelaySeconds (Seconds 6)
+	forever $ threadDelaySeconds (Seconds 6000)
 #else
 	lock <- newEmptyMVar
 	let check sig = void $
