@@ -92,9 +92,9 @@ installNautilus :: FilePath -> IO ()
 #ifdef linux_HOST_OS
 installNautilus program = do
 	scriptdir <- (\d -> d </> "nautilus" </> "scripts") <$> userDataDir
-	whenM (doesDirectoryExist scriptdir) $ do
-		genscript scriptdir "get"
-		genscript scriptdir "drop"
+	createDirectoryIfMissing True scriptdir
+	genscript scriptdir "get"
+	genscript scriptdir "drop"
   where
 	genscript scriptdir action =
 		installscript (scriptdir </> scriptname action) $ unlines

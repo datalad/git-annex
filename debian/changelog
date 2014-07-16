@@ -22,6 +22,8 @@ git-annex (5.20140710) UNRELEASED; urgency=medium
     This is a security/usability tradeoff. To avoid exposing the gpg key
     ids who can decrypt the repository, users can unset
     gcrypt-publish-participants.
+  * Install nautilus hooks even when ~/.local/share/nautilus/ does not yet
+    exist, since it is not automatically created for Gnome 3 users.
 
  -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 23:29:21 -0400
 
