@@ -76,7 +76,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
-	debugM desc $ "logging to " ++ logfile
+	liftIO $ debugM desc $ "logging to " ++ logfile
 #ifndef mingw32_HOST_OS
 	createAnnexDirectory (parentDir logfile)
 	logfd <- liftIO $ handleToFd =<< openLog logfile
