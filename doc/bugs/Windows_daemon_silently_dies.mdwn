@@ -128,3 +128,5 @@ git-annex: assistant: 1 failed
 """]]
 
 [[!tag confirmed]]
+
+> [[fixed|done]] --[[Joey]]
