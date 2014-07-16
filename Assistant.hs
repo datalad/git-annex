@@ -76,6 +76,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 	Annex.changeState $ \s -> s { Annex.daemon = True }
 	pidfile <- fromRepo gitAnnexPidFile
 	logfile <- fromRepo gitAnnexLogFile
+	debugM desc $ "logging to " ++ logfile
 #ifndef mingw32_HOST_OS
 	createAnnexDirectory (parentDir logfile)
 	logfd <- liftIO $ handleToFd =<< openLog logfile
@@ -85,9 +86,7 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 				fdToHandle =<< dup stdOutput
 			origerr <- liftIO $ catchMaybeIO $ 
 				fdToHandle =<< dup stdError
-			let undaemonize a = do
-				debugM desc $ "logging to " ++ logfile
-				Utility.Daemon.foreground logfd (Just pidfile) a
+			let undaemonize = Utility.Daemon.foreground logfd (Just pidfile)
 			start undaemonize $ 
 				case startbrowser of
 					Nothing -> Nothing
@@ -102,8 +101,6 @@ startDaemon assistant foreground startdelay cannotrun listenhost startbrowser = 
 		createAnnexDirectory (parentDir logfile)
 		ifM (liftIO $ isNothing <$> getEnv flag)
 			( liftIO $ withFile devNull WriteMode $ \nullh -> do
-				when (not foreground) $
-					debugM desc $ "logging to " ++ logfile
 				loghandle <- openLog logfile
 				e <- getEnvironment
 				cmd <- readProgramFile
