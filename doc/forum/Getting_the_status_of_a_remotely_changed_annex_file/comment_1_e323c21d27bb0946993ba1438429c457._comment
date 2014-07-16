@@ -1,0 +1,14 @@
+[[!comment format=mdwn
+ username="http://joeyh.name/"
+ ip="209.250.56.2"
+ subject="comment 1"
+ date="2014-07-16T18:18:00Z"
+ content="""
+As soon as git-annex syncs with a remote that has made changes to the repository, any new files or files that have been modified, and the content is not yet available in the local repository will be broken symlinks. You can generally easily see a broken symlink by running `ls`, at least with a good `ls` on eg Linux that supports colorization. (Look for the red filenames.) Many file managers also represent broken symlinks in a visual way. 
+
+Or, you can run a command like `git annex whereis $file` and see if it includes \"here\" in the list of locations.
+
+Or, you can run `git annex find --not --in here` to find all files whose current content is not present.
+
+The reason `git annex status` doesn't say is that it's focused on showing you which files in the local repository have not yet been committed to git. The `git annex list` command has a similar one line per file output, but puts a \"_\" in the first column (under \"here\") if the file is not locally present.
+"""]]
