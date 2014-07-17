@@ -1,0 +1,14 @@
+Sorry that I am not stop asking questions - I am trying to wrap my head around annex still - and I do not fully understand the standard groups/preferred contents yet.
+
+
+First, basic: Is the "preferred content group" an attribute of a repository or of a remote? E.g., when I use assistant, I can set this property for a *remote* repository. Will this property be synced to all other clients then or is it only valid for this particular client?
+
+Second, I think the standard groups do still not cover what I want and I wonder if this could be done with preferred contents somehow? What I want:
+
+* Generally only the structure should be synced, no contents (i.e. "manual" is the closest)
+
+* When I (manually) do "git annex get" on a file this file should be synced whenever it changes locally *or* remotely (until I drop it again). Currently it seems that when it changes remotely, it is "dropped" again so I need to manually use "git annex get" again
+
+* When I (manually) do "git annex get" on a directory, it should be (recursively) synced whenever it or any file changes locally or remotely (until I drop it again). Currently nothing seems to sync at all in this case (except the meta data)
+
+Thanks!
