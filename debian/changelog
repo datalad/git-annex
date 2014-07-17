@@ -1,4 +1,4 @@
-git-annex (5.20140710) UNRELEASED; urgency=medium
+git-annex (5.20140717) unstable; urgency=high
 
   * Fix minor FD leak in journal code. Closes: #754608
   * direct: Fix handling of case where a work tree subdirectory cannot
@@ -13,8 +13,6 @@ git-annex (5.20140710) UNRELEASED; urgency=medium
     resolver.
   * Deal with change in git 2.0 that made indirect mode merge conflict
     resolution leave behind old files.
-  * Windows: Fix locking issue that prevented the webapp starting
-    (since 5.20140707).
   * sync: Fix git sync with local git remotes even when they don't have an
     annex.uuid set. (The assistant already did so.)
   * Set gcrypt-publish-participants when setting up a gcrypt repository,
@@ -26,8 +24,10 @@ git-annex (5.20140710) UNRELEASED; urgency=medium
     exist, since it is not automatically created for Gnome 3 users.
   * Windows: Move .vbs files out of git\bin, to avoid that being in the
     PATH, which caused some weird breakage. (Thanks, divB)
+  * Windows: Fix locking issue that prevented the webapp starting
+    (since 5.20140707).
 
- -- Joey Hess <joeyh@debian.org>  Wed, 09 Jul 2014 23:29:21 -0400
+ -- Joey Hess <joeyh@debian.org>  Thu, 17 Jul 2014 11:27:25 -0400
 
 git-annex (5.20140709) unstable; urgency=medium
 
