@@ -2,7 +2,7 @@
 
 Obviously, since directories themselves are not git-annex objects, there is no way to say whether or not they are "present", but perhaps the most intuitive would be to say whether or not any git-annex files under a given directory are present.
 
-For example, if I have: 
+For example, if I have:  
 ./  
 +-- subdir0/  
 |  +-- file0 (present in local git-annex repo)  
